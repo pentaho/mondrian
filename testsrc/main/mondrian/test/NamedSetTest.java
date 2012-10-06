@@ -29,6 +29,8 @@ public class NamedSetTest extends FoodMartTestCase {
     public NamedSetTest() {
         super();
     }
+
+    @SuppressWarnings("UnusedDeclaration")
     public NamedSetTest(String name) {
         super(name);
     }
@@ -171,6 +173,9 @@ public class NamedSetTest extends FoodMartTestCase {
      * Set defined using filter expression.
      */
     public void testIntrinsic() {
+//        testNamedSet();
+//        testNamedSetOnMember();
+        testNamedSetAsList();
         assertQueryReturns(
             "WITH SET [ChardonnayChablis] AS\n"
             + "   'Filter([Product].Members, (InStr(1, [Product].CurrentMember.Name, \"chardonnay\") <> 0) OR (InStr(1, [Product].CurrentMember.Name, \"chablis\") <> 0))'\n"
@@ -183,6 +188,7 @@ public class NamedSetTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "Axis #2:\n"
             + "{[Measures].[Unit Sales]}\n");
+
         assertQueryReturns(
             "WITH SET [BeerMilk] AS\n"
             + "   'Filter([Product].Members, (InStr(1, [Product].CurrentMember.Name, \"Beer\") <> 0) OR (InStr(1, LCase([Product].CurrentMember.Name), \"milk\") <> 0))'\n"
@@ -718,11 +724,11 @@ public class NamedSetTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[USA].[CA].[Alameda]}\n"
-            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
-            + "{[Store].[USA].[CA].[Los Angeles]}\n"
-            + "{[Store].[USA].[CA].[San Diego]}\n"
-            + "{[Store].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[Store].[USA].[CA].[Alameda]}\n"
+            + "{[Store].[Store].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[Store].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[Store].[USA].[CA].[San Francisco]}\n"
             + "Row #0: \n"
             + "Row #1: 21,333\n"
             + "Row #2: 25,663\n"
@@ -740,8 +746,8 @@ public class NamedSetTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[USA].[CA].[Los Angeles]}\n"
-            + "{[Store].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[Store].[USA].[CA].[San Diego]}\n"
             + "Row #0: 25,663\n"
             + "Row #1: 25,635\n");
 
@@ -756,7 +762,7 @@ public class NamedSetTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[USA].[OR].[Portland]}\n"
+            + "{[Store].[Store].[USA].[OR].[Portland]}\n"
             + "Row #0: 26,079\n");
 
         // When [CA Cities] is overridden, does the named set [Top CA Cities],
@@ -772,8 +778,8 @@ public class NamedSetTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[USA].[CA].[Los Angeles]}\n"
-            + "{[Store].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[Store].[USA].[CA].[San Diego]}\n"
             + "Row #0: 25,663\n"
             + "Row #1: 25,635\n");
     }
@@ -791,7 +797,7 @@ public class NamedSetTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Store Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[Store].[USA].[CA].[Los Angeles]}\n"
             + "Row #0: 54,545.28\n");
         // Use non-existent set.
         tc.assertQueryThrows(
@@ -895,23 +901,23 @@ public class NamedSetTest extends FoodMartTestCase {
             + "from [Sales]\n"
             + "where [Marital Status].[S]",
             "Axis #0:\n"
-            + "{[Marital Status].[S]}\n"
+            + "{[Marital Status].[Marital Status].[S]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[CA City Sales]}\n"
             + "Axis #2:\n"
-            + "{[Time].[Time].[1997].[Q1], [Product].[Food].[Produce]}\n"
-            + "{[Time].[Time].[1997].[Q1], [Product].[Food].[Snack Foods]}\n"
-            + "{[Time].[Time].[1997].[Q1], [Product].[Non-Consumable].[Household]}\n"
-            + "{[Time].[Time].[1997].[Q2], [Product].[Food].[Produce]}\n"
-            + "{[Time].[Time].[1997].[Q2], [Product].[Food].[Snack Foods]}\n"
-            + "{[Time].[Time].[1997].[Q2], [Product].[Non-Consumable].[Household]}\n"
-            + "{[Time].[Time].[1997].[Q3], [Product].[Food].[Produce]}\n"
-            + "{[Time].[Time].[1997].[Q3], [Product].[Food].[Snack Foods]}\n"
-            + "{[Time].[Time].[1997].[Q3], [Product].[Non-Consumable].[Household]}\n"
-            + "{[Time].[Time].[1997].[Q4], [Product].[Food].[Produce]}\n"
-            + "{[Time].[Time].[1997].[Q4], [Product].[Food].[Snack Foods]}\n"
-            + "{[Time].[Time].[1997].[Q4], [Product].[Non-Consumable].[Household]}\n"
+            + "{[Time].[Time].[1997].[Q1], [Product].[Product].[Food].[Produce]}\n"
+            + "{[Time].[Time].[1997].[Q1], [Product].[Product].[Food].[Snack Foods]}\n"
+            + "{[Time].[Time].[1997].[Q1], [Product].[Product].[Non-Consumable].[Household]}\n"
+            + "{[Time].[Time].[1997].[Q2], [Product].[Product].[Food].[Produce]}\n"
+            + "{[Time].[Time].[1997].[Q2], [Product].[Product].[Food].[Snack Foods]}\n"
+            + "{[Time].[Time].[1997].[Q2], [Product].[Product].[Non-Consumable].[Household]}\n"
+            + "{[Time].[Time].[1997].[Q3], [Product].[Product].[Food].[Produce]}\n"
+            + "{[Time].[Time].[1997].[Q3], [Product].[Product].[Food].[Snack Foods]}\n"
+            + "{[Time].[Time].[1997].[Q3], [Product].[Product].[Non-Consumable].[Household]}\n"
+            + "{[Time].[Time].[1997].[Q4], [Product].[Product].[Food].[Produce]}\n"
+            + "{[Time].[Time].[1997].[Q4], [Product].[Product].[Food].[Snack Foods]}\n"
+            + "{[Time].[Time].[1997].[Q4], [Product].[Product].[Non-Consumable].[Household]}\n"
             + "Row #0: 4,872\n"
             + "Row #0: $1,218.0\n"
             + "Row #1: 3,746\n"
@@ -1069,6 +1075,96 @@ public class NamedSetTest extends FoodMartTestCase {
             + "Row #8: 68,755\n"
             + "Row #8: 8\n"
             + "Row #8: ([Customer].[Gender].[M], [Customer].[Marital Status].[S])\n");
+    }
+
+    /**
+     * Test case for issue on developers list which involves a named set and a
+     * range in the WHERE clause. Current Mondrian behavior appears to be
+     * correct.
+     */
+    public void testNamedSetRangeInSlicer() {
+        String expected =
+            "Axis #0:\n"
+            + "{[Time].[Time].[1997].[Q1].[1]}\n"
+            + "{[Time].[Time].[1997].[Q1].[2]}\n"
+            + "{[Time].[Time].[1997].[Q1].[3]}\n"
+            + "{[Time].[Time].[1997].[Q2].[4]}\n"
+            + "{[Time].[Time].[1997].[Q2].[5]}\n"
+            + "{[Time].[Time].[1997].[Q2].[6]}\n"
+            + "{[Time].[Time].[1997].[Q3].[7]}\n"
+            + "{[Time].[Time].[1997].[Q3].[8]}\n"
+            + "{[Time].[Time].[1997].[Q3].[9]}\n"
+            + "{[Time].[Time].[1997].[Q4].[10]}\n"
+            + "Axis #1:\n"
+            + "{[Customer].[Customers].[USA].[WA].[Spokane].[Mary Francis Benigar], [Measures].[Unit Sales]}\n"
+            + "{[Customer].[Customers].[USA].[WA].[Spokane].[James Horvat], [Measures].[Unit Sales]}\n"
+            + "{[Customer].[Customers].[USA].[WA].[Spokane].[Matt Bellah], [Measures].[Unit Sales]}\n"
+            + "{[Customer].[Customers].[USA].[WA].[Spokane].[Ida Rodriguez], [Measures].[Unit Sales]}\n"
+            + "{[Customer].[Customers].[USA].[WA].[Spokane].[Kristin Miller], [Measures].[Unit Sales]}\n"
+            + "Row #0: 422\n"
+            + "Row #0: 369\n"
+            + "Row #0: 363\n"
+            + "Row #0: 344\n"
+            + "Row #0: 323\n";
+        assertQueryReturns(
+            "SELECT\n"
+            + "NON EMPTY TopCount([Customers].[Name].Members, 5, [Measures].[Unit Sales]) * [Measures].[Unit Sales] on 0\n"
+            + "FROM [Sales]\n"
+            + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q4].[10]",
+            expected);
+        // as above, but remove NON EMPTY
+        assertQueryReturns(
+            "SELECT\n"
+            + "TopCount([Customers].[Name].Members, 5, [Measures].[Unit Sales]) * [Measures].[Unit Sales] on 0\n"
+            + "FROM [Sales]\n"
+            + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q4].[10]",
+            expected);
+        // as above, but with DISTINCT
+        assertQueryReturns(
+            "SELECT\n"
+            + "TopCount(Distinct([Customers].[Name].Members), 5, [Measures].[Unit Sales]) * [Measures].[Unit Sales] on 0\n"
+            + "FROM [Sales]\n"
+            + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q4].[10]",
+            expected);
+        // As above, but convert TopCount expression to a named set. Named
+        // sets are evaluated after the slicer but before any axes. I.e. not
+        // in the context of any particular position on ROWS or COLUMNS, nor
+        // inheriting the NON EMPTY constraint on the axis.
+        assertQueryReturns(
+            "WITH SET [Top Count] AS\n"
+            + "  TopCount([Customers].[Name].Members, 5, [Measures].[Unit Sales])\n"
+            + "SELECT [Top Count] * [Measures].[Unit Sales] on 0\n"
+            + "FROM [Sales]\n"
+            + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q4].[10]",
+            expected);
+        // as above, but with DISTINCT
+        if (false)
+        assertQueryReturns(
+            "WITH SET [Top Count] AS\n"
+            + "{\n"
+            + "  TopCount(\n"
+            + "    Distinct([Customers].[Name].Members),\n"
+            + "    5,\n"
+            + "    [Measures].[Unit Sales])\n"
+            + "}\n"
+            + "SELECT [Top Count] * [Measures].[Unit Sales] on 0\n"
+            + "FROM [Sales]\n"
+            + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q4].[10]",
+            expected);
+    }
+
+    /**
+     * Variant of {@link #testNamedSetRangeInSlicer()} that calls
+     * {@link mondrian.test.CompoundSlicerTest#testBugMondrian899()} to
+     * prime the cache and therefore fails even when run standalone.
+     *
+     * <p>Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-1203">
+     * MONDRIAN-1203, "Error 'Failed to load all aggregations after 10 passes'
+     * while evaluating composite slicer"</a>.</p>
+     */
+    public void testNamedSetRangeInSlicerPrimed() {
+        new CompoundSlicerTest().testBugMondrian899();
+        testNamedSetRangeInSlicer();
     }
 
     /**

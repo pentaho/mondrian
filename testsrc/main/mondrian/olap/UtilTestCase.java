@@ -17,6 +17,9 @@ import junit.framework.TestCase;
 
 import java.sql.Driver;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * Tests for methods in {@link mondrian.olap.Util} and, sometimes, classes in
@@ -612,6 +615,91 @@ public class UtilTestCase extends TestCase {
             total += s + ";";
         }
         assertEquals("x;y;a;b;c;", total);
+    }
+
+    /**
+     * Unit test for
+     * {@link Util#filter(Iterable, mondrian.olap.Util.Predicate1[])}.
+     */
+    public void testFilter() {
+        class NotMultiple extends Util.Predicate1<Integer> {
+            private final int n;
+
+            public NotMultiple(int n) {
+                this.n = n;
+            }
+
+            public boolean test(Integer integer) {
+                return integer % n != 0;
+            }
+        }
+
+        class IntegersLessThan implements Iterable<Integer> {
+            private final int n;
+
+            public IntegersLessThan(int n) {
+                this.n = n;
+            }
+
+            public Iterator<Integer> iterator() {
+                return new Iterator<Integer>() {
+                    int i;
+
+                    public boolean hasNext() {
+                        return i < n;
+                    }
+
+                    public Integer next() {
+                        return i++;
+                    }
+
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+        }
+
+        final StringBuilder buf = new StringBuilder();
+
+        // list the natural numbers < 20 that are not multiples of 2, 3 or 5.
+        final Iterable<Integer> filter =
+            Util.filter(
+                new IntegersLessThan(20),
+                new NotMultiple(2),
+                new NotMultiple(3),
+                new NotMultiple(5));
+        for (Integer integer : filter) {
+            buf.append(integer).append(";");
+        }
+        assertEquals("1;7;11;13;17;19;", buf.toString());
+        buf.setLength(0);
+
+        // underlying iterable is empty
+        final Iterable<Integer> filter0 =
+            Util.filter(
+                new IntegersLessThan(0),
+                new NotMultiple(2),
+                new NotMultiple(5));
+        for (Integer integer : filter0) {
+            buf.append(integer).append(";");
+        }
+        assertEquals("", buf.toString());
+        buf.setLength(0);
+
+        // some "always true" predicates to be eliminated
+        final Iterable<Integer> filter8 =
+            Util.filter(
+                new IntegersLessThan(8),
+                Util.<Integer>truePredicate1(),
+                new NotMultiple(2),
+                Util.<Integer>truePredicate1(),
+                new NotMultiple(5));
+        for (Integer integer : filter8) {
+            buf.append(integer).append(";");
+        }
+        assertEquals("1;3;7;", buf.toString());
+        buf.setLength(0);
     }
 
     public void testAreOccurrencesEqual() {
@@ -1367,46 +1455,111 @@ public class UtilTestCase extends TestCase {
     }
 
     /**
-     * Unit test for {@link Triple}.
+     * Unit test for {@link mondrian.olap.Util#newIdentityHashSet()}.
      */
-    public void testTriple() {
+    @SuppressWarnings("UnnecessaryBoxing")
+    public void _testIdentityHashSet() {
+        final Set<Integer> set = Util.newIdentityHashSet();
+        assertTrue(set.isEmpty());
+        assertEquals(0, set.size());
+
+        final Integer oneA = new Integer(1);
+        assertTrue(set.add(oneA));
+        assertEquals(1, set.size());
+
+        Integer twoA = new Integer(2);
+        assertTrue(set.add(twoA));
+        assertEquals(2, set.size());
+
+        assertFalse(set.add(oneA));
+        assertEquals(2, set.size());
+
+        final Integer oneB = new Integer(1);
+        assertTrue(set.add(oneB));
+        assertEquals(3, set.size());
+
+        assertTrue(set.contains(oneA));
+        assertTrue(set.contains(oneA));
+        final Integer oneC = new Integer(1);
+        assertFalse(set.contains(oneC));
+        assertTrue(set.contains(twoA));
+
+        final List<Integer> list = new ArrayList<Integer>(set);
+        Collections.sort(list);
+        assertEquals("[1, 1, 2]", list.toString());
+
+        // add via iterator
+        list.clear();
+        for (Integer integer : set) {
+            list.add(integer);
+        }
+        Collections.sort(list);
+        assertEquals("[1, 1, 2]", list.toString());
+
+        set.clear();
+        assertTrue(set.isEmpty());
+
+        set.addAll(list);
+        assertFalse(set.isEmpty());
+        assertEquals(3, set.size());
+
+        assertTrue(set.remove(oneA));
+        assertFalse(set.remove(oneC));
+        assertTrue(set.remove(oneB));
+        assertTrue(set.remove(twoA));
+        assertTrue(set.isEmpty());
+    }
+
+    /**
+     * Unit test for {@link Tuple3}.
+     */
+    public void testTuple3() {
         if (Util.PreJdk15) {
-            // Boolean is not Comparable until JDK 1.5. Triple works, but this
+            // Boolean is not Comparable until JDK 1.5. Tuple3 works, but this
             // test does not.
             return;
         }
-        final Triple<Integer, String, Boolean> triple0 =
-            Triple.of(5, "foo", true);
-        final Triple<Integer, String, Boolean> triple1 =
-            Triple.of(5, "foo", false);
-        final Triple<Integer, String, Boolean> triple2 =
-            Triple.of(5, "foo", true);
-        final Triple<Integer, String, Boolean> triple3 =
-            Triple.of(null, "foo", true);
+        final Tuple3<Integer, String, Boolean> tuple0 =
+            Tuple3.of(5, "foo", true);
+        final Tuple3<Integer, String, Boolean> tuple1 =
+            Tuple3.of(5, "foo", false);
+        final Tuple3<Integer, String, Boolean> tuple2 =
+            Tuple3.of(5, "foo", true);
+        final Tuple3<Integer, String, Boolean> tuple3 =
+            Tuple3.of(null, "foo", true);
 
-        assertEquals(triple0, triple0);
-        assertFalse(triple0.equals(triple1));
-        assertFalse(triple1.equals(triple0));
-        assertFalse(triple0.hashCode() == triple1.hashCode());
-        assertEquals(triple0, triple2);
-        assertEquals(triple0.hashCode(), triple2.hashCode());
-        assertEquals(triple3, triple3);
-        assertFalse(triple0.equals(triple3));
-        assertFalse(triple3.equals(triple0));
-        assertFalse(triple0.hashCode() == triple3.hashCode());
+        assertEquals(tuple0, tuple0);
+        assertFalse(tuple0.equals(tuple1));
+        assertFalse(tuple1.equals(tuple0));
+        assertFalse(tuple0.hashCode() == tuple1.hashCode());
+        assertEquals(tuple0, tuple2);
+        assertEquals(tuple0.hashCode(), tuple2.hashCode());
+        assertEquals(tuple3, tuple3);
+        assertFalse(tuple0.equals(tuple3));
+        assertFalse(tuple3.equals(tuple0));
+        assertFalse(tuple0.hashCode() == tuple3.hashCode());
 
-        final SortedSet<Triple<Integer, String, Boolean>> set =
-            new TreeSet<Triple<Integer, String, Boolean>>(
-                Arrays.asList(triple0, triple1, triple2, triple3, triple1));
+        final SortedSet<Tuple3<Integer, String, Boolean>> set =
+            new TreeSet<Tuple3<Integer, String, Boolean>>(
+                Arrays.asList(tuple0, tuple1, tuple2, tuple3, tuple1));
         assertEquals(3, set.size());
         assertEquals(
             "[<null, foo, true>, <5, foo, false>, <5, foo, true>]",
             set.toString());
 
-        assertEquals("<5, foo, true>", triple0.toString());
-        assertEquals("<5, foo, false>", triple1.toString());
-        assertEquals("<5, foo, true>", triple2.toString());
-        assertEquals("<null, foo, true>", triple3.toString());
+        assertEquals("<5, foo, true>", tuple0.toString());
+        assertEquals("<5, foo, false>", tuple1.toString());
+        assertEquals("<5, foo, true>", tuple2.toString());
+        assertEquals("<null, foo, true>", tuple3.toString());
+
+        // Unzip and zip.
+        assertEquals(
+            Util.toList(
+                Tuple3.iterate(
+                    Tuple3.slice0(set),
+                    Tuple3.slice1(set),
+                    Tuple3.slice2(set))),
+            Util.toList(set));
     }
 
     public void testRolapUtilComparator() throws Exception {
@@ -1499,7 +1652,7 @@ public class UtilTestCase extends TestCase {
         final int[] calls = {0};
         final Lazy<Integer> integerLazy =
             new Lazy<Integer>(
-                new Util.Functor0<Integer>() {
+                new Util.Function0<Integer>() {
                     public Integer apply() {
                         return calls[0]++;
                     }
@@ -1513,7 +1666,7 @@ public class UtilTestCase extends TestCase {
 
         final Lazy<String> nullLazy =
             new Lazy<String>(
-                new Util.Functor0<String>() {
+                new Util.Function0<String>() {
                     public String apply() {
                         calls[0]++;
                         return null;
@@ -1598,4 +1751,3 @@ public class UtilTestCase extends TestCase {
 }
 
 // End UtilTestCase.java
-

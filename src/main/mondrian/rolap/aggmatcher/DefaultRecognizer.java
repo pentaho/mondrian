@@ -5,13 +5,12 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
 
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Level;
+import mondrian.olap.*;
 import mondrian.recorder.MessageRecorder;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
@@ -205,10 +204,10 @@ class DefaultRecognizer extends Recognizer {
                 String usagePrefix = hierarchyUsage.getUsagePrefix();
                 String hierName = hierarchy.getName();
                 String levelName = rLevel.getName();
-                assert rLevel.getAttribute().keyList.size() == 1
+                assert rLevel.getAttribute().getKeyList().size() == 1
                     : "TODO: handle composite keys";
                 final RolapSchema.PhysColumn column =
-                    rLevel.getAttribute().keyList.get(0);
+                    rLevel.getAttribute().getKeyList().get(0);
                 String levelColumnName = getColumnName(column);
 
                 Recognizer.Matcher matcher = getRules().getLevelMatcher(
@@ -237,9 +236,9 @@ class DefaultRecognizer extends Recognizer {
                         Pair<RolapLevel, Column> o1,
                         Pair<RolapLevel, Column> o2)
                     {
-                        return
-                            Integer.valueOf(o1.left.getDepth()).compareTo(
-                                Integer.valueOf(o2.left.getDepth()));
+                        return Util.compare(
+                            o1.left.getDepth(),
+                            o2.left.getDepth());
                     }
                 });
             // Validate by iterating.
@@ -301,7 +300,7 @@ class DefaultRecognizer extends Recognizer {
                     hierarchy,
                     hierarchyUsage,
                     pair.right.column.name,
-                    getColumnName(pair.left.getAttribute().keyList.get(0)),
+                    getColumnName(pair.left.getAttribute().getKeyList().get(0)),
                     pair.left.getName(),
                     collapsed,
                     pair.left);

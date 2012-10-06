@@ -166,32 +166,41 @@ public class BatchTestCase extends FoodMartTestCase {
     }
 
     protected GroupingSet getGroupingSet(
-        Execution execution,
-        String[] tableNames,
-        String[] fieldNames,
-        String[][] fieldValues,
-        String cubeName,
-        String measure)
+        final String[] tableNames,
+        final String[] fieldNames,
+        final String[][] fieldValues,
+        final String cubeName,
+        final String measure)
     {
-        final RolapCube cube = getCube(cubeName);
-        final BatchLoader fbcr =
-            new BatchLoader(
-                Locus.peek(),
-                execution.getMondrianStatement().getMondrianConnection()
-                    .getServer().getAggregationManager().cacheMgr,
-                cube.getSchema().getDialect(),
-                cube);
-        BatchLoader.Batch batch =
-            createBatch(
-                fbcr,
-                tableNames, fieldNames,
-                fieldValues, cubeName,
-                measure);
-        GroupingSetsCollector collector = new GroupingSetsCollector(true);
-        final List<Future<Map<Segment, SegmentWithData>>> segmentFutures =
-            new ArrayList<Future<Map<Segment, SegmentWithData>>>();
-        batch.loadAggregation(collector, segmentFutures);
-        return collector.getGroupingSets().get(0);
+        return Locus.execute(
+            ((RolapConnection)getConnection()),
+            "BatchTestCase.getGroupingSet",
+            new Locus.Action<GroupingSet>() {
+                public GroupingSet execute() {
+                    final RolapCube cube = getCube(cubeName);
+                    final BatchLoader fbcr =
+                        new BatchLoader(
+                            Locus.peek(),
+                            ((RolapConnection)getConnection()).getServer()
+                                .getAggregationManager().cacheMgr,
+                            cube.getSchema().getDialect(),
+                            cube);
+                    BatchLoader.Batch batch =
+                        createBatch(
+                            fbcr,
+                            tableNames, fieldNames,
+                            fieldValues, cubeName,
+                            measure);
+                    GroupingSetsCollector collector =
+                        new GroupingSetsCollector(true);
+                    final List<Future<Map<Segment, SegmentWithData>>>
+                        segmentFutures =
+                            new ArrayList<
+                                Future<Map<Segment, SegmentWithData>>>();
+                    batch.loadAggregation(collector, segmentFutures);
+                    return collector.getGroupingSets().get(0);
+                }
+            });
     }
 
     /**
@@ -212,6 +221,7 @@ public class BatchTestCase extends FoodMartTestCase {
         CellRequest[] requests,
         SqlPattern[] patterns)
     {
+        propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
         assertRequestSql(requests, patterns, false);
     }
 
@@ -353,8 +363,28 @@ public class BatchTestCase extends FoodMartTestCase {
         String mdxQuery,
         SqlPattern[] patterns)
     {
+        propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
         assertQuerySqlOrNot(
             getTestContext(), mdxQuery, patterns, false, false, true);
+    }
+
+    /**
+     * Checks that a given MDX query results in a particular SQL statement
+     * being generated, for a single database dialect.
+     *
+     * @param mdx MDX query
+     * @param databaseProduct Database product to run for (usually MySQL)
+     * @param sql Expected SQL statement
+     */
+    protected void assertQuerySql(
+        String mdx,
+        Dialect.DatabaseProduct databaseProduct,
+        String sql)
+    {
+        SqlPattern[] patterns = {
+            new SqlPattern(databaseProduct, sql, sql)
+        };
+        assertQuerySql(mdx, patterns);
     }
 
     /**
@@ -370,6 +400,7 @@ public class BatchTestCase extends FoodMartTestCase {
         String mdxQuery,
         SqlPattern[] patterns)
     {
+        propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
         assertQuerySqlOrNot(
             testContext, mdxQuery, patterns, false, false, true);
     }
@@ -495,7 +526,11 @@ public class BatchTestCase extends FoodMartTestCase {
                 if (bomb == null) {
                     fail("expected query [" + sql + "] did not occur");
                 }
-                assertEquals(replaceQuotes(sql), replaceQuotes(bomb.sql));
+                assertEquals(
+                    replaceQuotes(
+                        sql.replaceAll("\r\n", "\n")),
+                    replaceQuotes(
+                        bomb.sql.replaceAll("\r\n", "\n")));
             }
         }
 
@@ -1039,13 +1074,15 @@ public class BatchTestCase extends FoodMartTestCase {
         private final String trigger;
 
         public TriggerHook(String trigger) {
-            this.trigger = trigger;
+            this.trigger = trigger.replaceAll("\r\n", "\n");
         }
 
         private boolean matchTrigger(String sql) {
             if (trigger == null) {
                 return true;
             }
+            // Cleanup the endlines.
+            sql = sql.replaceAll("\r\n", "\n");
             // different versions of mysql drivers use different quoting, so
             // ignore quotes
             String s = replaceQuotes(sql);

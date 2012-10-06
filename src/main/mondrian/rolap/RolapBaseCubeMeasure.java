@@ -132,6 +132,10 @@ public class RolapBaseCubeMeasure
         return measureGroup;
     }
 
+    public RolapCubeDimension getDimension() {
+        return ((RolapCubeLevel) level).cubeDimension;
+    }
+
     public RolapResult.ValueFormatter getFormatter() {
         return formatter;
     }

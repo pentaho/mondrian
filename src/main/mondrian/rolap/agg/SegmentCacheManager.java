@@ -11,6 +11,7 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.*;
 import mondrian.olap.CacheControl.CellRegion;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.rolap.cache.*;
 import mondrian.server.Execution;
@@ -218,8 +219,19 @@ public class SegmentCacheManager {
      */
     public final ExecutorService cacheExecutor =
         Util.getExecutorService(
-            10, 0, 1, -1,
-            "mondrian.rolap.agg.SegmentCacheManager$cacheExecutor");
+            MondrianProperties.instance()
+                .SegmentCacheManagerNumberCacheThreads.get(),
+            0, 1,
+            "mondrian.rolap.agg.SegmentCacheManager$cacheExecutor",
+            new RejectedExecutionHandler() {
+                public void rejectedExecution(
+                    Runnable r,
+                    ThreadPoolExecutor executor)
+                {
+                    throw MondrianResource.instance()
+                        .SegmentCacheLimitReached.ex();
+                }
+            });
 
     /**
      * Executor with which to execute SQL requests.
@@ -229,8 +241,19 @@ public class SegmentCacheManager {
      */
     public final ExecutorService sqlExecutor =
         Util.getExecutorService(
-            10, 0, 1, 10,
-            "mondrian.rolap.agg.SegmentCacheManager$sqlExecutor");
+            MondrianProperties.instance()
+                .SegmentCacheManagerNumberSqlThreads.get(),
+            0, 1,
+            "mondrian.rolap.agg.SegmentCacheManager$sqlExecutor",
+            new RejectedExecutionHandler() {
+                public void rejectedExecution(
+                    Runnable r,
+                    ThreadPoolExecutor executor)
+                {
+                    throw MondrianResource.instance()
+                        .SqlQueryLimitReached.ex();
+                }
+            });
 
     // NOTE: This list is only mutable for testing purposes. Would rather it
     // were immutable.
@@ -256,7 +279,9 @@ public class SegmentCacheManager {
         this.indexRegistry = new SegmentCacheIndexRegistry();
 
         // Add a local cache, if needed.
-        if (!MondrianProperties.instance().DisableCaching.get()) {
+        if (!MondrianProperties.instance().DisableLocalSegmentCache.get()
+            && !MondrianProperties.instance().DisableCaching.get())
+        {
             final MemorySegmentCache cache = new MemorySegmentCache();
             segmentCacheWorkers.add(
                 new SegmentCacheWorker(cache, thread));
@@ -381,6 +406,10 @@ public class SegmentCacheManager {
         SegmentHeader header,
         MondrianServer server)
     {
+        if (MondrianProperties.instance().DisableCaching.get()) {
+            // Ignore cache requests.
+            return;
+        }
         ACTOR.event(
             handler,
             new ExternalSegmentCreatedEvent(
@@ -402,6 +431,10 @@ public class SegmentCacheManager {
         SegmentHeader header,
         MondrianServer server)
     {
+        if (MondrianProperties.instance().DisableCaching.get()) {
+            // Ignore cache requests.
+            return;
+        }
         ACTOR.event(
             handler,
             new ExternalSegmentDeletedEvent(
@@ -576,7 +609,7 @@ public class SegmentCacheManager {
                     }
                 }
             );
-            Util.discard(future);
+            Util.safeGet(future, "SegmentCacheManager.segmentremoved");
         }
 
         public void visit(ExternalSegmentCreatedEvent event) {
@@ -679,6 +712,19 @@ public class SegmentCacheManager {
                         storedMeasure.getMeasureGroup().getStar()
                             .getFactTable().getAlias(),
                         flushRegion));
+                if (cacheControlImpl.isTraceEnabled()) {
+                    Collections.sort(
+                        headers,
+                        new Comparator<SegmentHeader>() {
+                            public int compare(
+                                SegmentHeader o1,
+                                SegmentHeader o2)
+                            {
+                                return o1.getUniqueID()
+                                    .compareTo(o2.getUniqueID());
+                            }
+                        });
+                }
             }
 
             // If flushRegion is empty, this means we must clear all
@@ -691,7 +737,7 @@ public class SegmentCacheManager {
                     // Remove the segment from external caches. Use an
                     // executor, because it may take some time. We discard
                     // the future, because we don't care too much if it fails.
-                    Util.discard(cacheMgr.cacheExecutor.submit(
+                    final Future<?> task = cacheMgr.cacheExecutor.submit(
                         new Runnable() {
                             public void run() {
                                 try {
@@ -706,7 +752,8 @@ public class SegmentCacheManager {
                                         e);
                                 }
                             }
-                        }));
+                        });
+                    Util.safeGet(task, "SegmentCacheManager.flush");
                 }
                 return new FlushResult(
                     Collections.<Callable<Boolean>>emptyList());
@@ -1323,6 +1370,9 @@ public class SegmentCacheManager {
         }
 
         public boolean contains(SegmentHeader header) {
+            if (MondrianProperties.instance().DisableCaching.get()) {
+                return false;
+            }
             for (SegmentCacheWorker worker : workers) {
                 if (worker.contains(header)) {
                     return true;
@@ -1332,6 +1382,9 @@ public class SegmentCacheManager {
         }
 
         public List<SegmentHeader> getSegmentHeaders() {
+            if (MondrianProperties.instance().DisableCaching.get()) {
+                return Collections.emptyList();
+            }
             // Special case 0 and 1 workers, for which the 'union' operation
             // is trivial.
             switch (workers.size()) {
@@ -1354,6 +1407,9 @@ public class SegmentCacheManager {
         }
 
         public boolean put(SegmentHeader header, SegmentBody body) {
+            if (MondrianProperties.instance().DisableCaching.get()) {
+                return true;
+            }
             for (SegmentCacheWorker worker : workers) {
                 worker.put(header, body);
             }
@@ -1422,7 +1478,7 @@ public class SegmentCacheManager {
             final RolapStar.Measure measure = request.getMeasure();
             final RolapStar star = measure.getStar();
             final RolapSchema schema = star.getSchema();
-            final AggregationKey key = new AggregationKey(request);
+            final AggregationKey key = AggregationKey.create(request);
             final List<SegmentHeader> headers =
                 indexRegistry.getIndex(star)
                     .locate(
@@ -1456,23 +1512,26 @@ public class SegmentCacheManager {
                     {
                         /*
                          * We can't satisfy this request, and we must clear the
-                         * data from our cache. We clear it from the index
-                         * first, then queue up a job in the background
-                         * to remove the data from all the caches.
+                         * data from our cache. This must be in sync with the
+                         * actor thread to maintain consistency.
                          */
                         indexRegistry.getIndex(star).remove(header);
-                        Util.discard(cacheExecutor.submit(
-                            new Runnable() {
-                                public void run() {
-                                    try {
-                                        compositeCache.remove(header);
-                                    } catch (Throwable e) {
-                                        LOGGER.warn(
-                                            "remove header failed: " + header,
-                                            e);
+                        Util.safeGet(
+                            cacheExecutor.submit(
+                                new Runnable() {
+                                    public void run() {
+                                        try {
+                                            compositeCache.remove(header);
+                                        } catch (Throwable e) {
+                                            LOGGER.warn(
+                                                "remove header failed: "
+                                                + header,
+                                                e);
+                                        }
                                     }
-                                }
-                            }));
+                                }),
+                            "SegmentCacheManager.peek");
+                        continue;
                     }
                     converterMap.put(
                         SegmentCacheIndexImpl.makeConverterKey(header),
@@ -1509,7 +1568,7 @@ public class SegmentCacheManager {
      */
     public class SegmentCacheIndexRegistry {
         private final Map<RolapStar, SegmentCacheIndex> indexes =
-            new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.SOFT);
+            new WeakHashMap<RolapStar, SegmentCacheIndex>();
         /**
          * Returns the {@link SegmentCacheIndex} for a given
          * {@link RolapStar}.

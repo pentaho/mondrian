@@ -11,7 +11,6 @@ package mondrian.rolap.sql;
 
 import mondrian.olap.Evaluator;
 import mondrian.rolap.*;
-import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.util.Pair;
 
 import java.util.*;
@@ -45,23 +44,21 @@ public class MemberKeyConstraint
     }
 
     public void addConstraint(
-        SqlQuery sqlQuery, RolapStarSet baseCube, AggStar aggStar)
+        SqlQuery sqlQuery, RolapStarSet baseCube)
     {
         for (int i = 0; i < columnList.size(); i++) {
             RolapSchema.PhysColumn expression = columnList.get(i);
             final Comparable value = valueList.get(i);
-            sqlQuery.addWhere(
                 SqlConstraintUtils.constrainLevel2(
                     sqlQuery,
                     expression,
-                    value));
+                    value);
         }
     }
 
     public void addLevelConstraint(
         SqlQuery sqlQuery,
         RolapStarSet baseCube,
-        AggStar aggStar,
         RolapLevel level)
     {
     }

@@ -14,7 +14,6 @@ import mondrian.olap.*;
 import mondrian.server.Execution;
 import mondrian.server.Statement;
 import mondrian.spi.Dialect;
-import mondrian.spi.DialectManager;
 
 import java.util.*;
 
@@ -39,7 +38,7 @@ class RolapEvaluatorRoot {
     final Statement statement;
     final Query query;
     private final Date queryStartTime;
-    final Dialect currentDialect;
+    final Dialect dialect;
 
     /**
      * Default members of each hierarchy, from the schema reader's
@@ -110,8 +109,7 @@ class RolapEvaluatorRoot {
             }
         }
         this.defaultMembers = list.toArray(new RolapMember[list.size()]);
-        this.currentDialect =
-            DialectManager.createDialect(schemaReader.getDataSource(), null);
+        this.dialect = schemaReader.getSchema().getDialect();
 
         this.recursionCheckCommandCount = (defaultMembers.length << 4);
     }

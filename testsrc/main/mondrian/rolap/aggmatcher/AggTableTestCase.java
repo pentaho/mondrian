@@ -9,7 +9,6 @@
 */
 package mondrian.rolap.aggmatcher;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.test.loader.CsvDBTestCase;
 
 /**

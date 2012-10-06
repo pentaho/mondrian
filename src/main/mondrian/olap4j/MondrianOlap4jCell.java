@@ -123,8 +123,8 @@ class MondrianOlap4jCell implements Cell {
         return drillThroughInternal(
             -1,
             -1,
-            new ArrayList<Exp>(),
-            false,
+            null,
+            true,
             null,
             null);
     }

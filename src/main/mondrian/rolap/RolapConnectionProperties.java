@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2010 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -30,7 +30,7 @@ public enum RolapConnectionProperties {
 
     /**
      * The "Jdbc" property is the URL of the JDBC database where the data is
-     * stored. You must specify either {@link #DataSource} or {@link #Jdbc}.
+     * stored. You must specify either {@link #DataSource} or {@code Jdbc}.
      */
     Jdbc,
 
@@ -54,6 +54,22 @@ public enum RolapConnectionProperties {
      * specified in the JDBC URL.)
      */
     JdbcPassword,
+
+    /**
+     * The "Dialect" property specifies the SQL dialect to use for connections
+     * to this JDBC database.
+     *
+     * <p>The value of the property is the name of a class that implements the
+     * {@link mondrian.spi.Dialect} SPI. The class must be on the classpath. It
+     * is recommended, but not essential, that the class is in the
+     * <code>META-INF/services/mondrian.spi.Dialect</code> configuration
+     * file.</p>
+     *
+     * <p>If the property is not specified, Mondrian scans the registered
+     * dialects and uses the first that claims to be able to handle this kind
+     * of JDBC connection.</p>
+     */
+    Dialect,
 
     /**
      * The "Catalog" property is the URL of the catalog, an XML file which
@@ -90,7 +106,7 @@ public enum RolapConnectionProperties {
     /**
      * The "DataSource" property is the name of a data source class. It must
      * implement the {@link javax.sql.DataSource} interface.
-     * You must specify either {@link #DataSource} or {@link #Jdbc}.
+     * You must specify either {@code DataSource} or {@link #Jdbc}.
      */
     DataSource,
 
@@ -98,7 +114,15 @@ public enum RolapConnectionProperties {
      * The "PoolNeeded" property tells Mondrian whether to add a layer of
      * connection pooling.
      *
-     * <p>If no value is specified, we assume that:<ul>
+     * <p>If the value is "true", Mondrian uses its own connection pool
+     * for all JDBC connections.</p>
+     *
+     * <p>If the value is "false", Mondrian does not use a connection pool
+     * for any JDBC connections.</p>
+     *
+     * <p>If no value is specified, Mondrian uses a connection pool for
+     * connections created via the JDBC driver manager (that is, using the
+     * {@link #Jdbc} property. In other words, it assumes that:<ul>
      * <li>connections created via the {@link #Jdbc} property are not pooled,
      *     and therefore need to be pooled,
      * <li>connections created via the {@link #DataSource} are already pooled.
@@ -165,7 +189,15 @@ public enum RolapConnectionProperties {
      * running in the current JVM. If there are multiple mondrian servers, it
      * ensures that the connection belongs to the correct one.
      */
-    Instance;
+    Instance,
+
+    /**
+     * The "JdbcConnectionUuid" property is the unique identifier for the
+     * underlying JDBC connection. If defined, Mondrian will assume that two
+     * connections bearing the same JdbcConnectionUuid point to identical
+     * databases without looking at any other properties.
+     */
+    JdbcConnectionUuid;
 
     /**
      * Any property beginning with this value will be added to the

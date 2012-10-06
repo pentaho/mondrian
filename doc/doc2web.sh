@@ -157,7 +157,6 @@ doHtml en optimizing_performance.html
 doHtml en roadmap.html
 doHtml en schema.html
 doHtml en xml_schema.html
-doHtml en workbench.html
 
 for i in images/*.png; do
   doImg $i

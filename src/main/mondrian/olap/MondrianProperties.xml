@@ -37,6 +37,16 @@ on the class path.
         <Type>String</Type>
         <Default>sun.jdbc.odbc.JdbcOdbcDriver,org.hsqldb.jdbcDriver,oracle.jdbc.OracleDriver,com.mysql.jdbc.Driver</Default>
     </PropertyDefinition>
+	<PropertyDefinition>
+        <Name>CellBatchSize</Name>
+        <Path>mondrian.rolap.cellBatchSize</Path>
+        <Description>
+Integer property that, if set to a value greater than zero, sets a hard limit on the
+number of cells that are batched together when building segments.
+</Description>
+        <Type>int</Type>
+        <Default>-1</Default>
+    </PropertyDefinition>
     <PropertyDefinition>
         <Name>ResultLimit</Name>
         <Path>mondrian.result.limit</Path>
@@ -283,15 +293,14 @@ The default value is null, to cope with DBMSs that don't need this.
         <Type>String</Type>
     </PropertyDefinition>
     <PropertyDefinition>
-        <Name>RollupAnalyzerNumberThreads</Name>
-        <Path>mondrian.rolap.RollupAnalyzerNumberThreads</Path>
+        <Name>EnableInMemoryRollup</Name>
+        <Path>mondrian.rolap.EnableInMemoryRollup</Path>
         <Description>
-Property which defines how many threads are created in order to
-analyze possible segment rollup opportunities. This value defaults
-to 4, but it can be set to a higher value on big multi-core systems.
+Property which turns on or off the in-memory rollup
+of segment data. Defaults to <code>true</code>.
         </Description>
-        <Type>int</Type>
-        <Default>4</Default>
+        <Type>boolean</Type>
+        <Default>true</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>SegmentCache</Name>
@@ -581,6 +590,18 @@ Boolean property that controls whether a RolapStar's
 aggregate data cache is cleared after each query.
 If true, no RolapStar will cache aggregate data from one
 query to the next (the cache is cleared after each query).
+        </Description>
+        <Type>boolean</Type>
+        <Default>false</Default>
+    </PropertyDefinition>
+    <PropertyDefinition>
+        <Name>DisableLocalSegmentCache</Name>
+        <Path>mondrian.rolap.star.disableLocalSegmentCache</Path>
+        <Category>Caching</Category>
+        <Description>
+Boolean property that controls whether the data from segments
+is cached locally. To create custom caches, look for the
+SegmentCache SPI.
         </Description>
         <Type>boolean</Type>
         <Default>false</Default>
@@ -934,11 +955,33 @@ as expected. Defaults to 1000ms.</p>
         <Name>RolapConnectionShepherdNbThreads</Name>
         <Path>mondrian.rolap.maxQueryThreads</Path>
         <Description>
-<p>Maximum number of user threads per Mondrian server instance.
+<p>Maximum number of MDX query threads per Mondrian server instance.
 Defaults to 10.</p>
         </Description>
         <Type>int</Type>
         <Default>10</Default>
+    </PropertyDefinition>
+    <PropertyDefinition>
+        <Name>SegmentCacheManagerNumberSqlThreads</Name>
+        <Path>mondrian.rolap.maxSqlThreads</Path>
+        <Description>
+<p>Maximum number of threads per Mondrian server instance that
+are used to run SQL queries when populating segments.
+Defaults to 100.</p>
+        </Description>
+        <Type>int</Type>
+        <Default>100</Default>
+    </PropertyDefinition>
+    <PropertyDefinition>
+        <Name>SegmentCacheManagerNumberCacheThreads</Name>
+        <Path>mondrian.rolap.maxCacheThreads</Path>
+        <Description>
+<p>Maximum number of threads per Mondrian server instance that
+are used to run perform operations on the external caches.
+Defaults to 100.</p>
+        </Description>
+        <Type>int</Type>
+        <Default>100</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>IgnoreInvalidMembers</Name>
@@ -1234,7 +1277,7 @@ property.</p>
 Property that controls the behavior of
 {@link Property#SOLVE_ORDER solve order} of calculated members and sets.
 
-<p>Valid values are "absolute" and "scoped" (the default). See
+<p>Valid values are "ABSOLUTE" (the default) and "SCOPED". See
 {@link mondrian.olap.SolveOrderMode} for details.</p>
         </Description>
         <Type>String</Type>
@@ -1326,6 +1369,34 @@ table, during your ETL process, and to set this property to
         <Type>boolean</Type>
         <Default>true</Default>
     </PropertyDefinition>
+
+    <PropertyDefinition>
+        <Name>StatisticsProviders</Name>
+        <Path>mondrian.statistics.providers</Path>
+        <Description>
+<p>Comma-separated list of classes to be used to get statistics about the
+number of rows in a table, or the number of distinct values in a column.</p>
+
+<p>If there is a value for mondrian.statistics.providers.DATABASE, where
+DAtABASE is the current database name (e.g. MYSQL or ORACLE), then that
+property overrides.</p>
+
+<p>Example:</p>
+
+<blockquote><code>
+mondrian.statistics.providers=mondrian.spi.impl.JdbcStatisticsProvider<br/>
+mondrian.statistics.providers.MYSQL=mondrian.spi.impl.JdbcStatisticsProvider,mondrian.spi.impl.JdbcStatisticsProvider</code></blockquote>
+
+<p>This would use JDBC's statistics (via the
+java.sql.DatabaseMetaData.getIndexInfo method) for most
+databases, but for connections to a MySQL database, would use
+external statistics first, and fall back to JDBC statistics
+only if external statistics were not available.</p>
+        </Description>
+        <Core>true</Core>
+        <Type>String</Type>
+    </PropertyDefinition>
+
     <PropertyDefinition>
         <Name>WebappDeploy</Name>
         <Path>mondrian.webapp.deploy</Path>
@@ -1365,5 +1436,29 @@ log4j.configuration=file:log4j.properties</code></blockquote>
         <Core>false</Core>
         <Type>String</Type>
     </PropertyDefinition>
-    
+    <PropertyDefinition>
+        <Name>VfsClass</Name>
+        <Path>mondrian.spi.virtualFileHandlerClass</Path>
+        <Category>Factories</Category>
+        <Description>
+            <p>Name of the class that allows Mondrian to read from files or
+                URLs. The class must implement the
+                "mondrian.spi.VirtualFileHandler" interface.
+                Implementations include
+                "mondrian.spi.impl.ApacheVfsVirtualFileHandler"
+                (uses Apache VFS version 1),
+                "mondrian.spi.impl.ApacheVfs2VirtualFileHandler"
+                (uses Apache VFS version 2),
+                "mondrian.spi.impl.JavaNetVirtualFileHandler"
+                (uses "java.net.URL.openStream").</p>
+
+            <p>If not specified, Mondrian tries to instantiate
+                ApacheVfs2VirtualFileHandler,
+                then ApacheVfsVirtualFileHandler,
+                and lastly JavaNetVirtualFileHandler as a fallback. The
+                effect is that the server will use Apache VFS2 if it is
+                available on the classpath.</p>
+        </Description>
+        <Type>String</Type>
+    </PropertyDefinition>
 </PropertyDefinitions>

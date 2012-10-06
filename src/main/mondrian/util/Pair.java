@@ -242,6 +242,46 @@ public class Pair <L, R>
             }
         };
     }
+
+    /**
+     * Returns a list of the left elements of a list of pairs.
+     */
+    public static <L, R> List<L> left(final List<Pair<L, R>> list) {
+        return new AbstractList<L>() {
+            public L get(int index) {
+                return list.get(index).left;
+            }
+
+            public int size() {
+                return list.size();
+            }
+
+            public L remove(int index) {
+                Pair<L, R> pair = list.remove(index);
+                return pair == null ? null : pair.left;
+            }
+        };
+    }
+
+    /**
+     * Returns a list of the right elements of a list of pairs.
+     */
+    public static <L, R> List<R> right(final List<Pair<L, R>> list) {
+        return new AbstractList<R>() {
+            public R get(int index) {
+                return list.get(index).right;
+            }
+
+            public int size() {
+                return list.size();
+            }
+
+            public R remove(int index) {
+                Pair<L, R> pair = list.remove(index);
+                return pair == null ? null : pair.right;
+            }
+        };
+    }
 }
 
 // End Pair.java

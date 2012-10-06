@@ -183,7 +183,8 @@ public class RolapUtil {
      * consideration
      */
     private static String mdxNullLiteral = null;
-    public static final String sqlNullLiteral = "null";
+
+    public static final String SQL_FALSE_LITERAL = "FALSE";
 
     public static String mdxNullLiteral() {
         if (mdxNullLiteral == null) {

@@ -76,6 +76,9 @@ public class RolapCubeDimension extends RolapDimension {
                     this,
                     rolapHierarchy,
                     rolapHierarchy.getSubName(),
+                    rolapHierarchy.getDimension().isMeasures()
+                        ? rolapHierarchy.getUniqueName()
+                        : Util.makeFqName(this, rolapHierarchy.getSubName()),
                     hierarchyList.size(),
                     applyPrefix(
                         rolapHierarchy.getCaption(),
@@ -93,7 +96,7 @@ public class RolapCubeDimension extends RolapDimension {
         return cube;
     }
 
-    public Schema getSchema() {
+    public RolapSchema getSchema() {
         return rolapDimension.getSchema();
     }
 

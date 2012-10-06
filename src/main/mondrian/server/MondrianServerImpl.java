@@ -11,7 +11,7 @@ package mondrian.server;
 
 import mondrian.olap.MondrianException;
 import mondrian.olap.MondrianServer;
-import mondrian.olap4j.CatalogFinder;
+import mondrian.olap4j.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapResultShepherd;
@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 
 import org.olap4j.OlapConnection;
 
-import java.lang.ref.WeakReference;
+import java.lang.ref.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -179,6 +179,10 @@ class MondrianServerImpl
         this.aggMgr = new AggregationManager(this);
 
         this.shepherd = new RolapResultShepherd();
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("new MondrianServer: id=" + id);
+        }
     }
 
     @Override
@@ -307,6 +311,14 @@ class MondrianServerImpl
 
     @Override
     public void addConnection(RolapConnection connection) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                "addConnection "
+                + ", id=" + id
+                + ", statements=" + statementMap.size()
+                + " (not null " + nonNullCount(statementMap) + ")"
+                + ", connections=" + connectionMap.size());
+        }
         if (shutdown) {
             throw new MondrianException("Server already shutdown.");
         }
@@ -322,6 +334,14 @@ class MondrianServerImpl
 
     @Override
     public void removeConnection(RolapConnection connection) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                "removeConnection "
+                + ", id=" + id
+                + ", statements=" + statementMap.size()
+                + " (not null " + nonNullCount(statementMap) + ")"
+                + ", connections=" + connectionMap.size());
+        }
         if (shutdown) {
             throw new MondrianException("Server already shutdown.");
         }
@@ -346,6 +366,14 @@ class MondrianServerImpl
         if (shutdown) {
             throw new MondrianException("Server already shutdown.");
         }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                "addStatement "
+                + ", id=" + id
+                + ", statements=" + statementMap.size()
+                + " (not null " + nonNullCount(statementMap) + ")"
+                + ", connections=" + connectionMap.size());
+        }
         statementMap.put(
             statement.getId(),
             new WeakReference<Statement>(statement));
@@ -361,6 +389,14 @@ class MondrianServerImpl
 
     @Override
     public void removeStatement(Statement statement) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                "removeStatement "
+                + ", id=" + id
+                + ", statements=" + statementMap.size()
+                + " (not null " + nonNullCount(statementMap) + ")"
+                + ", connections=" + connectionMap.size());
+        }
         if (shutdown) {
             throw new MondrianException("Server already shutdown.");
         }
@@ -438,6 +474,20 @@ class MondrianServerImpl
             Locus.pop(locus);
             locus.execution.end();
         }
+    }
+
+    public XmlaHandler.XmlaExtra getExtra() {
+        return MondrianOlap4jDriver.EXTRA;
+    }
+
+    private <K, V> int nonNullCount(Map<K, ? extends Reference<V>> map) {
+        int n = 0;
+        for (Map.Entry<K, ? extends Reference<V>> entry : map.entrySet()) {
+            if (entry.getValue().get() != null) {
+                ++n;
+            }
+        }
+        return n;
     }
 
     /**

@@ -25,7 +25,7 @@ import java.util.Map;
 public abstract class OlapElementBase
     implements OlapElement
 {
-    protected String caption = null;
+    public String caption = null;
 
     protected boolean visible = true;
 

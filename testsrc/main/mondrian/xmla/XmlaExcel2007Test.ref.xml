@@ -60,12 +60,12 @@ where [Measures].[Unit Sales]
                         <AxesInfo>
                             <AxisInfo name="Axis0">
                                 <HierarchyInfo name="Customers">
-                                    <UName name="[Customers].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Customers].[MEMBER_CAPTION]"/>
-                                    <LName name="[Customers].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Customers].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Customers].[DISPLAY_INFO]"/>
-                                    <PARENT_UNIQUE_NAME name="[Customers].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
+                                    <UName name="[Customer].[Customers].[MEMBER_UNIQUE_NAME]"/>
+                                    <Caption name="[Customer].[Customers].[MEMBER_CAPTION]"/>
+                                    <LName name="[Customer].[Customers].[LEVEL_UNIQUE_NAME]"/>
+                                    <LNum name="[Customer].[Customers].[LEVEL_NUMBER]"/>
+                                    <DisplayInfo name="[Customer].[Customers].[DISPLAY_INFO]"/>
+                                    <PARENT_UNIQUE_NAME name="[Customer].[Customers].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
                             <AxisInfo name="SlicerAxis">
@@ -89,41 +89,41 @@ where [Measures].[Unit Sales]
                             <Tuples>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                        <UName>[Customers].[All Customers]</UName>
+                                        <UName>[Customer].[Customers].[All Customers]</UName>
                                         <Caption>All Customers</Caption>
-                                        <LName>[Customers].[(All)]</LName>
+                                        <LName>[Customer].[Customers].[(All)]</LName>
                                         <LNum>0</LNum>
                                         <DisplayInfo>65539</DisplayInfo>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                        <UName>[Customers].[USA]</UName>
+                                        <UName>[Customer].[Customers].[USA]</UName>
                                         <Caption>USA</Caption>
-                                        <LName>[Customers].[Country]</LName>
+                                        <LName>[Customer].[Customers].[Country]</LName>
                                         <LNum>1</LNum>
                                         <DisplayInfo>65539</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Customers].[All Customers]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Customer].[Customers].[All Customers]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                        <UName>[Customers].[USA].[CA]</UName>
+                                        <UName>[Customer].[Customers].[USA].[CA]</UName>
                                         <Caption>CA</Caption>
-                                        <LName>[Customers].[State Province]</LName>
+                                        <LName>[Customer].[Customers].[State Province]</LName>
                                         <LNum>2</LNum>
                                         <DisplayInfo>65581</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Customers].[USA]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Customer].[Customers].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
                                     <Member Hierarchy="Customers">
-                                        <UName>[Customers].[USA].[CA].[Beverly Hills]</UName>
+                                        <UName>[Customer].[Customers].[USA].[CA].[Beverly Hills]</UName>
                                         <Caption>Beverly Hills</Caption>
-                                        <LName>[Customers].[City]</LName>
+                                        <LName>[Customer].[Customers].[City]</LName>
                                         <LNum>3</LNum>
                                         <DisplayInfo>94</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Customers].[USA].[CA]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Customer].[Customers].[USA].[CA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -385,21 +385,21 @@ where [Measures].[Unit Sales]
                         </CubeInfo>
                         <AxesInfo>
                             <AxisInfo name="Axis0">
-                                <HierarchyInfo name="Store">
-                                    <UName name="[Store].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Store].[MEMBER_CAPTION]"/>
-                                    <LName name="[Store].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Store].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Store].[DISPLAY_INFO]"/>
-                                    <PARENT_UNIQUE_NAME name="[Store].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
-                                    <Store_x0020_Type name="[Store].[Store Type]" type="xsd:string"/>
-                                    <Store_x0020_Manager name="[Store].[Store Manager]" type="xsd:string"/>
-                                    <Store_x0020_Sqft name="[Store].[Store Sqft]" type="xsd:unsignedInt"/>
-                                    <Grocery_x0020_Sqft name="[Store].[Grocery Sqft]" type="xsd:unsignedInt"/>
-                                    <Frozen_x0020_Sqft name="[Store].[Frozen Sqft]" type="xsd:unsignedInt"/>
-                                    <Meat_x0020_Sqft name="[Store].[Meat Sqft]" type="xsd:unsignedInt"/>
-                                    <Has_x0020_coffee_x0020_bar name="[Store].[Has coffee bar]" type="xsd:boolean"/>
-                                    <Street_x0020_address name="[Store].[Street address]" type="xsd:string"/>
+                                <HierarchyInfo name="Stores">
+                                    <UName name="[Store].[Stores].[MEMBER_UNIQUE_NAME]"/>
+                                    <Caption name="[Store].[Stores].[MEMBER_CAPTION]"/>
+                                    <LName name="[Store].[Stores].[LEVEL_UNIQUE_NAME]"/>
+                                    <LNum name="[Store].[Stores].[LEVEL_NUMBER]"/>
+                                    <DisplayInfo name="[Store].[Stores].[DISPLAY_INFO]"/>
+                                    <PARENT_UNIQUE_NAME name="[Store].[Stores].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
+                                    <Store_x0020_Type name="[Store].[Stores].[Store Type]" type="xsd:string"/>
+                                    <Store_x0020_Manager name="[Store].[Stores].[Store Manager]" type="xsd:string"/>
+                                    <Store_x0020_Sqft name="[Store].[Stores].[Store Sqft]" type="xsd:unsignedInt"/>
+                                    <Grocery_x0020_Sqft name="[Store].[Stores].[Grocery Sqft]" type="xsd:unsignedInt"/>
+                                    <Frozen_x0020_Sqft name="[Store].[Stores].[Frozen Sqft]" type="xsd:unsignedInt"/>
+                                    <Meat_x0020_Sqft name="[Store].[Stores].[Meat Sqft]" type="xsd:unsignedInt"/>
+                                    <Has_x0020_coffee_x0020_bar name="[Store].[Stores].[Has coffee bar]" type="xsd:string"/>
+                                    <Street_x0020_address name="[Store].[Stores].[Street address]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
                             <AxisInfo name="SlicerAxis">
@@ -411,11 +411,11 @@ where [Measures].[Unit Sales]
                                     <DisplayInfo name="[Measures].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
                                 <HierarchyInfo name="Gender">
-                                    <UName name="[Gender].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Gender].[MEMBER_CAPTION]"/>
-                                    <LName name="[Gender].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Gender].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Gender].[DISPLAY_INFO]"/>
+                                    <UName name="[Customer].[Gender].[MEMBER_UNIQUE_NAME]"/>
+                                    <Caption name="[Customer].[Gender].[MEMBER_CAPTION]"/>
+                                    <LName name="[Customer].[Gender].[LEVEL_UNIQUE_NAME]"/>
+                                    <LNum name="[Customer].[Gender].[LEVEL_NUMBER]"/>
+                                    <DisplayInfo name="[Customer].[Gender].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
                             </AxisInfo>
                         </AxesInfo>
@@ -427,128 +427,128 @@ where [Measures].[Unit Sales]
                         <Axis name="Axis0">
                             <Tuples>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[All Stores]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[All Stores]</UName>
                                         <Caption>All Stores</Caption>
-                                        <LName>[Store].[(All)]</LName>
+                                        <LName>[Store].[Stores].[(All)]</LName>
                                         <LNum>0</LNum>
                                         <DisplayInfo>65539</DisplayInfo>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[USA]</UName>
                                         <Caption>USA</Caption>
-                                        <LName>[Store].[Store Country]</LName>
+                                        <LName>[Store].[Stores].[Store Country]</LName>
                                         <LNum>1</LNum>
                                         <DisplayInfo>65539</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[All Stores]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Store].[Stores].[All Stores]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[CA]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[USA].[CA]</UName>
                                         <Caption>CA</Caption>
-                                        <LName>[Store].[Store State]</LName>
+                                        <LName>[Store].[Stores].[Store State]</LName>
                                         <LNum>2</LNum>
                                         <DisplayInfo>65541</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Store].[Stores].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[CA].[Beverly Hills]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[USA].[CA].[Beverly Hills]</UName>
                                         <Caption>Beverly Hills</Caption>
-                                        <LName>[Store].[Store City]</LName>
+                                        <LName>[Store].[Stores].[Store City]</LName>
                                         <LNum>3</LNum>
                                         <DisplayInfo>65537</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[CA]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Store].[Stores].[USA].[CA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[CA].[Beverly Hills].[Store 6]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[USA].[CA].[Beverly Hills].[Store 6]</UName>
                                         <Caption>Store 6</Caption>
-                                        <LName>[Store].[Store Name]</LName>
+                                        <LName>[Store].[Stores].[Store Name]</LName>
                                         <LNum>4</LNum>
                                         <DisplayInfo>0</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[CA].[Beverly Hills]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Store].[Stores].[USA].[CA].[Beverly Hills]</PARENT_UNIQUE_NAME>
                                         <Store_x0020_Type>Gourmet Supermarket</Store_x0020_Type>
                                         <Store_x0020_Manager>Maris</Store_x0020_Manager>
                                         <Store_x0020_Sqft>23688</Store_x0020_Sqft>
                                         <Grocery_x0020_Sqft>15337</Grocery_x0020_Sqft>
                                         <Frozen_x0020_Sqft>5011</Frozen_x0020_Sqft>
                                         <Meat_x0020_Sqft>3340</Meat_x0020_Sqft>
-                                        <Has_x0020_coffee_x0020_bar>1</Has_x0020_coffee_x0020_bar>
+                                        <Has_x0020_coffee_x0020_bar>true</Has_x0020_coffee_x0020_bar>
                                         <Street_x0020_address>5495 Mitchell Canyon Road</Street_x0020_address>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[CA].[Los Angeles]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[USA].[CA].[Los Angeles]</UName>
                                         <Caption>Los Angeles</Caption>
-                                        <LName>[Store].[Store City]</LName>
+                                        <LName>[Store].[Stores].[Store City]</LName>
                                         <LNum>3</LNum>
                                         <DisplayInfo>65537</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[CA]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Store].[Stores].[USA].[CA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[CA].[Los Angeles].[Store 7]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[USA].[CA].[Los Angeles].[Store 7]</UName>
                                         <Caption>Store 7</Caption>
-                                        <LName>[Store].[Store Name]</LName>
+                                        <LName>[Store].[Stores].[Store Name]</LName>
                                         <LNum>4</LNum>
                                         <DisplayInfo>0</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[CA].[Los Angeles]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Store].[Stores].[USA].[CA].[Los Angeles]</PARENT_UNIQUE_NAME>
                                         <Store_x0020_Type>Supermarket</Store_x0020_Type>
                                         <Store_x0020_Manager>White</Store_x0020_Manager>
                                         <Store_x0020_Sqft>23598</Store_x0020_Sqft>
                                         <Grocery_x0020_Sqft>14210</Grocery_x0020_Sqft>
                                         <Frozen_x0020_Sqft>5633</Frozen_x0020_Sqft>
                                         <Meat_x0020_Sqft>3755</Meat_x0020_Sqft>
-                                        <Has_x0020_coffee_x0020_bar>0</Has_x0020_coffee_x0020_bar>
+                                        <Has_x0020_coffee_x0020_bar>false</Has_x0020_coffee_x0020_bar>
                                         <Street_x0020_address>1077 Wharf Drive</Street_x0020_address>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[CA].[San Diego]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[USA].[CA].[San Diego]</UName>
                                         <Caption>San Diego</Caption>
-                                        <LName>[Store].[Store City]</LName>
+                                        <LName>[Store].[Stores].[Store City]</LName>
                                         <LNum>3</LNum>
                                         <DisplayInfo>1</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[CA]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Store].[Stores].[USA].[CA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[CA].[San Francisco]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[USA].[CA].[San Francisco]</UName>
                                         <Caption>San Francisco</Caption>
-                                        <LName>[Store].[Store City]</LName>
+                                        <LName>[Store].[Stores].[Store City]</LName>
                                         <LNum>3</LNum>
                                         <DisplayInfo>131073</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[CA]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Store].[Stores].[USA].[CA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[OR]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[USA].[OR]</UName>
                                         <Caption>OR</Caption>
-                                        <LName>[Store].[Store State]</LName>
+                                        <LName>[Store].[Stores].[Store State]</LName>
                                         <LNum>2</LNum>
                                         <DisplayInfo>2</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Store].[Stores].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[USA].[WA]</UName>
                                         <Caption>WA</Caption>
-                                        <LName>[Store].[Store State]</LName>
+                                        <LName>[Store].[Stores].[Store State]</LName>
                                         <LNum>2</LNum>
                                         <DisplayInfo>131079</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Store].[Stores].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                             </Tuples>
@@ -564,9 +564,9 @@ where [Measures].[Unit Sales]
                                         <DisplayInfo>0</DisplayInfo>
                                     </Member>
                                     <Member Hierarchy="Gender">
-                                        <UName>[Gender].[M]</UName>
+                                        <UName>[Customer].[Gender].[M]</UName>
                                         <Caption>M</Caption>
-                                        <LName>[Gender].[Gender]</LName>
+                                        <LName>[Customer].[Gender].[Gender]</LName>
                                         <LNum>1</LNum>
                                         <DisplayInfo>0</DisplayInfo>
                                     </Member>
@@ -694,924 +694,560 @@ where [Measures].[Unit Sales]
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Store Type</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Store Type</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Store Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Store.Stores Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Store Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Store.Stores Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Store Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Store.Stores Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Store Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Store.Stores Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Store Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Store.Stores Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Store Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Store.Stores Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>11</DATA_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Store Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Store.Stores Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Street address</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Store Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>HR</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Employees]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Employees]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Employees].[Employee Id]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Marital Status</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Marital Status</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Employees Hierarchy - Employee Id Level - Marital Status Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>HR</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Employees]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Employees]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Employees].[Employee Id]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Position Title</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Position Title</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Employees Hierarchy - Employee Id Level - Position Title Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>HR</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Employees]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Employees]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Employees].[Employee Id]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Gender</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Gender</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Employees Hierarchy - Employee Id Level - Gender Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>HR</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Employees]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Employees]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Employees].[Employee Id]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Salary</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Salary</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Employees Hierarchy - Employee Id Level - Salary Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>HR</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Employees]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Employees]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Employees].[Employee Id]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Education Level</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Education Level</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Employees Hierarchy - Employee Id Level - Education Level Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>HR</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Employees]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Employees]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Employees].[Employee Id]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Management Role</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Management Role</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>HR Cube - Employees Hierarchy - Employee Id Level - Management Role Property</DESCRIPTION>
+                        <DESCRIPTION>HR Cube - Store.Stores Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Store Type</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Store Type</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store.Stores Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store.Stores Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store.Stores Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store.Stores Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store.Stores Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store.Stores Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>11</DATA_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store.Stores Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Street address</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Store Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Store.Stores Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Gender</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Gender</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy - Name Level - Gender Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Marital Status</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Marital Status</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy - Name Level - Marital Status Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Education</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Education</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy - Name Level - Education Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Yearly Income</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Yearly Income</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy - Name Level - Yearly Income Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
+                        <CUBE_NAME>Store</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Store Type</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Store Type</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>11</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Street address</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Store Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Gender</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Gender</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Customers Hierarchy - Name Level - Gender Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Marital Status</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Marital Status</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Customers Hierarchy - Name Level - Marital Status Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Education</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Education</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Customers Hierarchy - Name Level - Education Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Yearly Income</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Yearly Income</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Sales Ragged Cube - Customers Hierarchy - Name Level - Yearly Income Property</DESCRIPTION>
+                        <DESCRIPTION>Store Cube - Store.Stores Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Store</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Store Cube - Store.Stores Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Store</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Store Cube - Store.Stores Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Store</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Store Cube - Store.Stores Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Store</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Store Cube - Store.Stores Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Store</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Store Cube - Store.Stores Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Store</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Store Cube - Store.Stores Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Store</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Street address</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Store Cube - Store.Stores Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Store Type</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Store Type</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Store Cube - Store Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Store</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Store Cube - Store Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Store</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Store Cube - Store Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Store</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Store Cube - Store Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Store</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Store Cube - Store Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Store</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Store Cube - Store Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Store</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>11</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Store Cube - Store Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Store</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Street address</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Store Cube - Store Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse Cube - Store.Stores Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse Cube - Store.Stores Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse Cube - Store.Stores Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse Cube - Store.Stores Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse Cube - Store.Stores Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse Cube - Store.Stores Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse Cube - Store.Stores Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Street address</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION>Warehouse Cube - Store.Stores Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Store Type</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Store Type</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store.Stores Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store.Stores Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store.Stores Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store.Stores Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store.Stores Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>5</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store.Stores Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>11</DATA_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store.Stores Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse</CUBE_NAME>
+                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store].[Stores]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Stores].[Store Name]</LEVEL_UNIQUE_NAME>
                         <PROPERTY_NAME>Street address</PROPERTY_NAME>
                         <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>1</PROPERTY_TYPE>
                         <DATA_TYPE>130</DATA_TYPE>
                         <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse Cube - Store Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Gender</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Gender</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Customers Hierarchy - Name Level - Gender Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Marital Status</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Marital Status</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Customers Hierarchy - Name Level - Marital Status Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Education</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Education</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Customers Hierarchy - Name Level - Education Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Yearly Income</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Yearly Income</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Customers Hierarchy - Name Level - Yearly Income Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Type</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Type</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>5</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>11</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
-                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
-                        <PROPERTY_NAME>Street address</PROPERTY_NAME>
-                        <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
-                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
-                        <DATA_TYPE>130</DATA_TYPE>
-                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
-                        <DESCRIPTION>Warehouse and Sales Cube - Store Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
+                        <DESCRIPTION>Warehouse and Sales Cube - Store.Stores Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
                     </row>
                 </root>
             </cxmla:return>
@@ -2095,21 +1731,21 @@ WITH  SET [XL_Row_Dim_0] AS 'VisualTotals(Distinct(Hierarchize(
                         </CubeInfo>
                         <AxesInfo>
                             <AxisInfo name="Axis0">
-                                <HierarchyInfo name="Store">
-                                    <UName name="[Store].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Store].[MEMBER_CAPTION]"/>
-                                    <LName name="[Store].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Store].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Store].[DISPLAY_INFO]"/>
-                                    <PARENT_UNIQUE_NAME name="[Store].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
-                                    <Store_x0020_Type name="[Store].[Store Type]" type="xsd:string"/>
-                                    <Store_x0020_Manager name="[Store].[Store Manager]" type="xsd:string"/>
-                                    <Store_x0020_Sqft name="[Store].[Store Sqft]" type="xsd:unsignedInt"/>
-                                    <Grocery_x0020_Sqft name="[Store].[Grocery Sqft]" type="xsd:unsignedInt"/>
-                                    <Frozen_x0020_Sqft name="[Store].[Frozen Sqft]" type="xsd:unsignedInt"/>
-                                    <Meat_x0020_Sqft name="[Store].[Meat Sqft]" type="xsd:unsignedInt"/>
-                                    <Has_x0020_coffee_x0020_bar name="[Store].[Has coffee bar]" type="xsd:boolean"/>
-                                    <Street_x0020_address name="[Store].[Street address]" type="xsd:string"/>
+                                <HierarchyInfo name="Stores">
+                                    <UName name="[Store].[Stores].[MEMBER_UNIQUE_NAME]"/>
+                                    <Caption name="[Store].[Stores].[MEMBER_CAPTION]"/>
+                                    <LName name="[Store].[Stores].[LEVEL_UNIQUE_NAME]"/>
+                                    <LNum name="[Store].[Stores].[LEVEL_NUMBER]"/>
+                                    <DisplayInfo name="[Store].[Stores].[DISPLAY_INFO]"/>
+                                    <PARENT_UNIQUE_NAME name="[Store].[Stores].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
+                                    <Store_x0020_Type name="[Store].[Stores].[Store Type]" type="xsd:string"/>
+                                    <Store_x0020_Manager name="[Store].[Stores].[Store Manager]" type="xsd:string"/>
+                                    <Store_x0020_Sqft name="[Store].[Stores].[Store Sqft]" type="xsd:unsignedInt"/>
+                                    <Grocery_x0020_Sqft name="[Store].[Stores].[Grocery Sqft]" type="xsd:unsignedInt"/>
+                                    <Frozen_x0020_Sqft name="[Store].[Stores].[Frozen Sqft]" type="xsd:unsignedInt"/>
+                                    <Meat_x0020_Sqft name="[Store].[Stores].[Meat Sqft]" type="xsd:unsignedInt"/>
+                                    <Has_x0020_coffee_x0020_bar name="[Store].[Stores].[Has coffee bar]" type="xsd:string"/>
+                                    <Street_x0020_address name="[Store].[Stores].[Street address]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
                             <AxisInfo name="SlicerAxis">
@@ -2133,125 +1769,7 @@ WITH  SET [XL_Row_Dim_0] AS 'VisualTotals(Distinct(Hierarchize(
                     </OlapInfo>
                     <Axes>
                         <Axis name="Axis0">
-                            <Tuples>
-                                <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[All Stores]</UName>
-                                        <Caption>All Stores</Caption>
-                                        <LName>[Store].[(All)]</LName>
-                                        <LNum>0</LNum>
-                                        <DisplayInfo>65539</DisplayInfo>
-                                    </Member>
-                                </Tuple>
-                                <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA]</UName>
-                                        <Caption>USA</Caption>
-                                        <LName>[Store].[Store Country]</LName>
-                                        <LNum>1</LNum>
-                                        <DisplayInfo>65539</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[All Stores]</PARENT_UNIQUE_NAME>
-                                    </Member>
-                                </Tuple>
-                                <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[OR]</UName>
-                                        <Caption>OR</Caption>
-                                        <LName>[Store].[Store State]</LName>
-                                        <LNum>2</LNum>
-                                        <DisplayInfo>2</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
-                                    </Member>
-                                </Tuple>
-                                <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA]</UName>
-                                        <Caption>WA</Caption>
-                                        <LName>[Store].[Store State]</LName>
-                                        <LNum>2</LNum>
-                                        <DisplayInfo>196615</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
-                                    </Member>
-                                </Tuple>
-                                <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA].[Bremerton]</UName>
-                                        <Caption>Bremerton</Caption>
-                                        <LName>[Store].[Store City]</LName>
-                                        <LNum>3</LNum>
-                                        <DisplayInfo>65537</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
-                                    </Member>
-                                </Tuple>
-                                <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA].[Bremerton].[Store 3]</UName>
-                                        <Caption>Store 3</Caption>
-                                        <LName>[Store].[Store Name]</LName>
-                                        <LNum>4</LNum>
-                                        <DisplayInfo>0</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[WA].[Bremerton]</PARENT_UNIQUE_NAME>
-                                        <Store_x0020_Type>Supermarket</Store_x0020_Type>
-                                        <Store_x0020_Manager>Davis</Store_x0020_Manager>
-                                        <Store_x0020_Sqft>39696</Store_x0020_Sqft>
-                                        <Grocery_x0020_Sqft>24390</Grocery_x0020_Sqft>
-                                        <Frozen_x0020_Sqft>9184</Frozen_x0020_Sqft>
-                                        <Meat_x0020_Sqft>6122</Meat_x0020_Sqft>
-                                        <Has_x0020_coffee_x0020_bar>0</Has_x0020_coffee_x0020_bar>
-                                        <Street_x0020_address>1501 Ramsey Circle</Street_x0020_address>
-                                    </Member>
-                                </Tuple>
-                                <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA].[Seattle]</UName>
-                                        <Caption>Seattle</Caption>
-                                        <LName>[Store].[Store City]</LName>
-                                        <LNum>3</LNum>
-                                        <DisplayInfo>1</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
-                                    </Member>
-                                </Tuple>
-                                <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA].[Spokane]</UName>
-                                        <Caption>Spokane</Caption>
-                                        <LName>[Store].[Store City]</LName>
-                                        <LNum>3</LNum>
-                                        <DisplayInfo>131073</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
-                                    </Member>
-                                </Tuple>
-                                <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA].[Tacoma]</UName>
-                                        <Caption>Tacoma</Caption>
-                                        <LName>[Store].[Store City]</LName>
-                                        <LNum>3</LNum>
-                                        <DisplayInfo>131073</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
-                                    </Member>
-                                </Tuple>
-                                <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA].[Walla Walla]</UName>
-                                        <Caption>Walla Walla</Caption>
-                                        <LName>[Store].[Store City]</LName>
-                                        <LNum>3</LNum>
-                                        <DisplayInfo>131073</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
-                                    </Member>
-                                </Tuple>
-                                <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA].[Yakima]</UName>
-                                        <Caption>Yakima</Caption>
-                                        <LName>[Store].[Store City]</LName>
-                                        <LNum>3</LNum>
-                                        <DisplayInfo>131073</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[WA]</PARENT_UNIQUE_NAME>
-                                    </Member>
-                                </Tuple>
-                            </Tuples>
+                            <Tuples/>
                         </Axis>
                         <Axis name="SlicerAxis">
                             <Tuples>
@@ -2267,52 +1785,7 @@ WITH  SET [XL_Row_Dim_0] AS 'VisualTotals(Distinct(Hierarchize(
                             </Tuples>
                         </Axis>
                     </Axes>
-                    <CellData>
-                        <Cell CellOrdinal="0">
-                            <Value xsi:type="xsd:int">419</Value>
-                            <FormatString>#,#</FormatString>
-                        </Cell>
-                        <Cell CellOrdinal="1">
-                            <Value xsi:type="xsd:int">419</Value>
-                            <FormatString>#,#</FormatString>
-                        </Cell>
-                        <Cell CellOrdinal="2">
-                            <Value xsi:type="xsd:int">136</Value>
-                            <FormatString>#,#</FormatString>
-                        </Cell>
-                        <Cell CellOrdinal="3">
-                            <Value xsi:type="xsd:int">283</Value>
-                            <FormatString>#,#</FormatString>
-                        </Cell>
-                        <Cell CellOrdinal="4">
-                            <Value xsi:type="xsd:int">62</Value>
-                            <FormatString>#,#</FormatString>
-                        </Cell>
-                        <Cell CellOrdinal="5">
-                            <Value xsi:type="xsd:int">62</Value>
-                            <FormatString>#,#</FormatString>
-                        </Cell>
-                        <Cell CellOrdinal="6">
-                            <Value xsi:type="xsd:int">62</Value>
-                            <FormatString>#,#</FormatString>
-                        </Cell>
-                        <Cell CellOrdinal="7">
-                            <Value xsi:type="xsd:int">62</Value>
-                            <FormatString>#,#</FormatString>
-                        </Cell>
-                        <Cell CellOrdinal="8">
-                            <Value xsi:type="xsd:int">74</Value>
-                            <FormatString>#,#</FormatString>
-                        </Cell>
-                        <Cell CellOrdinal="9">
-                            <Value xsi:type="xsd:int">4</Value>
-                            <FormatString>#,#</FormatString>
-                        </Cell>
-                        <Cell CellOrdinal="10">
-                            <Value xsi:type="xsd:int">19</Value>
-                            <FormatString>#,#</FormatString>
-                        </Cell>
-                    </CellData>
+                    <CellData/>
                 </root>
             </cxmla:return>
         </cxmla:ExecuteResponse>

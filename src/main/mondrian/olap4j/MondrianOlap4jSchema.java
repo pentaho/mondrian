@@ -13,6 +13,8 @@ import mondrian.olap.Hierarchy;
 import mondrian.olap.OlapElement;
 import mondrian.olap.Role;
 
+import mondrian.rolap.RolapSchema;
+
 import org.olap4j.OlapException;
 import org.olap4j.impl.*;
 import org.olap4j.metadata.*;
@@ -32,7 +34,7 @@ class MondrianOlap4jSchema
 {
     final MondrianOlap4jCatalog olap4jCatalog;
     final String schemaName;
-    final mondrian.olap.Schema schema;
+    final RolapSchema schema;
 
     /**
      * Creates a MondrianOlap4jSchema.
@@ -49,7 +51,7 @@ class MondrianOlap4jSchema
     MondrianOlap4jSchema(
         MondrianOlap4jCatalog olap4jCatalog,
         String schemaName,
-        mondrian.olap.Schema schema)
+        RolapSchema schema)
     {
         this.olap4jCatalog = olap4jCatalog;
         this.schemaName = schemaName;
@@ -58,6 +60,26 @@ class MondrianOlap4jSchema
 
     public Catalog getCatalog() {
         return olap4jCatalog;
+    }
+
+    public String getUniqueName() {
+        return schema.getUniqueName();
+    }
+
+    public String getCaption() {
+        return schema.getLocalized(
+            OlapElement.LocalizedProperty.CAPTION,
+            getLocale());
+    }
+
+    public String getDescription() {
+        return schema.getLocalized(
+            OlapElement.LocalizedProperty.DESCRIPTION,
+            getLocale());
+    }
+
+    public boolean isVisible() {
+        return schema.isVisible();
     }
 
     public NamedList<Cube> getCubes() throws OlapException {
@@ -120,7 +142,7 @@ class MondrianOlap4jSchema
     }
 
     protected OlapElement getOlapElement() {
-        return null;
+        return schema;
     }
 }
 

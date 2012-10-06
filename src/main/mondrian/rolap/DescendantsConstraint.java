@@ -11,7 +11,6 @@
 package mondrian.rolap;
 
 import mondrian.olap.Evaluator;
-import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
 
 import java.util.*;
@@ -45,19 +44,17 @@ class DescendantsConstraint implements TupleConstraint {
 
     public void addConstraint(
         SqlQuery sqlQuery,
-        RolapStarSet starSet,
-        AggStar aggStar)
+        RolapStarSet starSet)
     {
-        mcc.addMemberConstraint(sqlQuery, starSet, aggStar, parentMembers);
+        mcc.addMemberConstraint(sqlQuery, starSet, parentMembers);
     }
 
     public void addLevelConstraint(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        AggStar aggStar,
         RolapLevel level)
     {
-        mcc.addLevelConstraint(sqlQuery, starSet, aggStar, level);
+        mcc.addLevelConstraint(sqlQuery, starSet, level);
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(

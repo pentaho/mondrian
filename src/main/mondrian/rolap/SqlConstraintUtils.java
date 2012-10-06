@@ -39,16 +39,14 @@ public class SqlConstraintUtils {
      * a WHERE condition and a join to the fact table.
      *
      * @param sqlQuery the query to modify
-     * @param starSet
-     * @param aggStar Aggregate table, or null if query is against fact table
+     * @param starSet Star set
      * @param restrictMemberTypes defines the behavior if the current context
-     *   contains calculated members. If true, thows an exception.
+     *   contains calculated members. If true, throws an exception.
      * @param evaluator Evaluator
      */
     public static void addContextConstraint(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        AggStar aggStar,
         Evaluator evaluator,
         boolean restrictMemberTypes)
     {
@@ -82,46 +80,63 @@ public class SqlConstraintUtils {
         RolapStar.Column[] columns = request.getConstrainedColumns();
         Object[] values = request.getSingleValues();
         int arity = columns.length;
+
+        if (starSet.getAggMeasureGroup() != null) {
+            RolapGalaxy galaxy = ((RolapCube) evaluator.getCube()).galaxy;
+            @SuppressWarnings("unchecked")
+            final AggregationManager.StarConverter starConverter =
+                new BatchLoader.StarConverterImpl(
+                    galaxy,
+                    starSet.getStar(),
+                    starSet.getAggMeasureGroup().getStar(),
+                    Collections.EMPTY_MAP);
+            columns = starConverter.convertColumnArray(columns);
+        }
+
         // following code is similar to
         // AbstractQuerySpec#nonDistinctGenerateSQL()
+        final StringBuilder buf = new StringBuilder();
         for (int i = 0; i < arity; i++) {
             RolapStar.Column column = columns[i];
 
             String expr;
-            if (aggStar != null) {
+/*
+            if (starSet.getAggMeasureGroup() != null) {
                 int bitPos = column.getBitPosition();
-                AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+                AggStar.Table.Column aggColumn =
+                    starSet.getAggMeasureGroup().lookupColumn(bitPos);
                 AggStar.Table table = aggColumn.getTable();
                 table.addToFrom(sqlQuery, false, true);
 
                 expr = aggColumn.generateExprString(sqlQuery);
             } else {
+*/
                 RolapStar.Table table = column.getTable();
                 table.addToFrom(sqlQuery, false, true);
 
                 expr = column.getExpression().toSql();
+/*
             }
+*/
 
             final String value = String.valueOf(values[i]);
+            buf.setLength(0);
             if ((RolapUtil.mdxNullLiteral().equalsIgnoreCase(value))
                 || (value.equalsIgnoreCase(RolapUtil.sqlNullValue.toString())))
             {
-                sqlQuery.addWhere(
-                    expr,
-                    " is ",
-                    RolapUtil.sqlNullLiteral);
+                buf.append(expr).append(" is null");
             } else {
-                if (column.getDatatype().isNumeric()) {
-                    // make sure it can be parsed
-                    Double.valueOf(value);
+                final Dialect dialect = sqlQuery.getDialect();
+                try {
+                    buf.append(expr)
+                        .append(" = ");
+                    dialect.quote(buf, value, column.getDatatype());
+                } catch (NumberFormatException e) {
+                    buf.setLength(0);
+                    dialect.quoteBooleanLiteral(buf, false);
                 }
-                final StringBuilder buf = new StringBuilder();
-                sqlQuery.getDialect().quote(buf, value, column.getDatatype());
-                sqlQuery.addWhere(
-                    expr,
-                    " = ",
-                    buf.toString());
             }
+            sqlQuery.addWhere(buf.toString());
         }
     }
 
@@ -261,19 +276,19 @@ public class SqlConstraintUtils {
      * table.
      *
      * @param sqlQuery sql query under construction
-     * @param starSet
-     * @param aggStar
+     * @param starSet Star set
      * @param e evaluator corresponding to query
      * @param level level to be added to query
      */
     public static void joinLevelTableToFactTable(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        AggStar aggStar,
         Evaluator e,
         RolapCubeLevel level)
     {
-        /*
+        Util.deprecated(false, false); // REMOVE method
+/*
+        AggStar aggStar = starSet.getAggStar();
         TODO: fix this code later. In the attribute-oriented world, we would
         go about joining to fact table differently.
 
@@ -292,30 +307,27 @@ public class SqlConstraintUtils {
 //                table.addToFrom(sqlQuery, false, true);
             }
         }
-         */
+*/
     }
 
     /**
      * Creates a "WHERE parent = value" constraint.
      *
      * @param sqlQuery the query to modify
-     * @param starSet
-     * @param aggStar Definition of the aggregate table, or null
+     * @param starSet Star set
      * @param parent the list of parent members
      * @param restrictMemberTypes defines the behavior if <code>parent</code>
      */
     public static void addMemberConstraint(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        AggStar aggStar,
         RolapMember parent,
         boolean restrictMemberTypes)
     {
         List<RolapMember> list = Collections.singletonList(parent);
         boolean exclude = false;
         addMemberConstraint(
-            sqlQuery, starSet, aggStar, list, restrictMemberTypes, false,
-            exclude);
+            sqlQuery, starSet, list, restrictMemberTypes, false, exclude);
     }
 
     /**
@@ -332,19 +344,16 @@ public class SqlConstraintUtils {
      *
      * @param sqlQuery the query to modify
      * @param starSet Star set
-     * @param aggStar (not used)
      * @param members the list of members for this constraint
      * @param restrictMemberTypes defines the behavior if <code>parents</code>
      *   contains calculated members.
      *   If true, and one of the members is calculated, an exception is thrown.
      * @param crossJoin true if constraint is being generated as part of
      * @param exclude whether to exclude the members in the SQL predicate.
-     *  e.g. not in { member list}.
      */
     public static void addMemberConstraint(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        AggStar aggStar,
         List<RolapMember> members,
         boolean restrictMemberTypes,
         boolean crossJoin,
@@ -401,7 +410,7 @@ public class SqlConstraintUtils {
                 constrainMultiLevelMembers(
                     queryBuilder,
                     starSet.getMeasureGroup(),
-                    aggStar,
+                    starSet.getAggStar(),
                     members,
                     firstUniqueParentLevel,
                     restrictMemberTypes,
@@ -411,7 +420,7 @@ public class SqlConstraintUtils {
                 condition,
                 queryBuilder,
                 starSet.getMeasureGroup(),
-                aggStar,
+                starSet.getAggStar(),
                 members,
                 firstUniqueParentLevel,
                 restrictMemberTypes,
@@ -620,9 +629,10 @@ public class SqlConstraintUtils {
             if (p instanceof RolapCubeMember) {
                 RolapCubeMember cubeMember = (RolapCubeMember) p;
                 final RolapAttribute attribute = p.getLevel().getAttribute();
-                final List<Object> keyList = cubeMember.getKeyAsList();
+                final List<Comparable> keyList = cubeMember.getKeyAsList();
                 int j = 0;
-                for (RolapSchema.PhysColumn physColumn : attribute.keyList) {
+                for (RolapSchema.PhysColumn physColumn : attribute.getKeyList())
+                {
                     final RolapStar.Column column =
                         measureGroup.getRolapStarColumn(
                             cubeMember.getDimension(), physColumn);
@@ -793,7 +803,7 @@ public class SqlConstraintUtils {
      * @return string value corresponding to the member
      */
     private static String getColumnValue(
-        Object key,
+        Comparable key,
         Dialect dialect,
         Dialect.Datatype datatype)
     {
@@ -813,8 +823,8 @@ public class SqlConstraintUtils {
      * @param aggStar aggregate star if available
      * @param columnValue value constraining the level
      * @param caseSensitive if true, need to handle case sensitivity of the
-     * member value
-     *    @return generated string corresponding to the expression
+     *                      member value
+     * @return generated string corresponding to the expression
      */
     public static String constrainLevel(
         RolapLevel level,
@@ -861,7 +871,7 @@ public class SqlConstraintUtils {
             }
         } else {
             assert aggStar == null;
-            RolapSchema.PhysExpr exp = level.getAttribute().nameExp;
+            RolapSchema.PhysExpr exp = level.getAttribute().getNameExp();
             datatype = exp.getDatatype();
             columnString = exp.toSql();
         }
@@ -869,17 +879,26 @@ public class SqlConstraintUtils {
         String constraint;
 
         if (RolapUtil.mdxNullLiteral().equalsIgnoreCase(columnValue)) {
-            constraint = columnString + " is " + RolapUtil.sqlNullLiteral;
+            constraint = columnString + " is null";
         } else {
             if (datatype.isNumeric()) {
-                // make sure it can be parsed
+                // A numeric data type deserves a numeric value.
                 try {
                     Double.valueOf(columnValue);
                 } catch (NumberFormatException e) {
-                    // fall back to
-                    //   numeric_column = 'string value'
-                    // even though it's extremely unlikely to match
-                    datatype = Dialect.Datatype.String;
+                    // Trying to equate a numeric column to a non-numeric value,
+                    // for example
+                    //
+                    //    WHERE int_column = 'Foo Bar'
+                    //
+                    // It's clearly impossible to match, so convert condition
+                    // to FALSE. We used to play games like
+                    //
+                    //   WHERE Upper(int_column) = Upper('Foo Bar')
+                    //
+                    // but Postgres in particular didn't like that. And who can
+                    // blame it.
+                    return RolapUtil.SQL_FALSE_LITERAL;
                 }
             }
             final StringBuilder buf = new StringBuilder();
@@ -903,28 +922,33 @@ public class SqlConstraintUtils {
     }
 
     /**
-     * Generates a sql expression constraining a level by some value
+     * Generates a SQL expression constraining a level by some value,
+     * and appends it to the WHERE clause. If the value is invalid for its
+     * data type, appends 'WHERE FALSE'.
      *
      * @param exp Key expression
      * @param query the query that the sql expression will be added to
      * @param columnValue value constraining the level
-     *
-     * @return generated string corresponding to the expression
      */
-    public static String constrainLevel2(
+    public static void constrainLevel2(
         SqlQuery query,
         RolapSchema.PhysColumn exp,
         Comparable columnValue)
     {
         String columnString = exp.toSql();
         if (columnValue == RolapUtil.sqlNullValue) {
-            return columnString + " is " + RolapUtil.sqlNullLiteral;
+            query.addWhere(columnString + " is null");
         } else {
             final StringBuilder buf = new StringBuilder();
-            buf.append(columnString);
-            buf.append(" = ");
-            query.getDialect().quote(buf, columnValue, exp.getDatatype());
-            return buf.toString();
+            try {
+                buf.append(columnString);
+                buf.append(" = ");
+                query.getDialect().quote(buf, columnValue, exp.getDatatype());
+            } catch (NumberFormatException e) {
+                buf.setLength(0);
+                query.getDialect().quoteBooleanLiteral(buf, false);
+            }
+            query.addWhere(buf.toString());
         }
     }
 
@@ -973,7 +997,8 @@ public class SqlConstraintUtils {
         if (level instanceof RolapCubeLevel) {
             final RolapCubeLevel cubeLevel = (RolapCubeLevel) level;
             columns = new ArrayList<RolapStar.Column>();
-            for (RolapSchema.PhysColumn key : cubeLevel.attribute.keyList) {
+            for (RolapSchema.PhysColumn key : cubeLevel.attribute.getKeyList())
+            {
                 columns.add(
                     measureGroup.getRolapStarColumn(
                         cubeLevel.cubeDimension,
@@ -1021,7 +1046,7 @@ public class SqlConstraintUtils {
             }
         } else {
             assert aggStar == null;
-            RolapSchema.PhysExpr nameExp = level.getAttribute().nameExp;
+            RolapSchema.PhysExpr nameExp = level.getAttribute().getNameExp();
             columnString = nameExp.toSql();
         }
 
@@ -1045,10 +1070,10 @@ public class SqlConstraintUtils {
             memberBuf.setLength(0);
             memberBuf.append("(");
 
-            for (Pair<RolapSchema.PhysColumn, Object> pair
-                : Pair.iterate(level.attribute.keyList, m.getKeyAsList()))
+            for (Pair<RolapSchema.PhysColumn, Comparable> pair
+                : Pair.iterate(level.attribute.getKeyList(), m.getKeyAsList()))
             {
-                final Object o = pair.right;
+                final Comparable o = pair.right;
                 final Dialect.Datatype datatype = pair.left.getDatatype();
                 String value =
                     getColumnValue(
@@ -1121,7 +1146,7 @@ public class SqlConstraintUtils {
         buf.append("(");
 
         // generate the left-hand side of the IN expression
-        boolean isFirstLevelInMultiple = true;
+        int levelInMultiple = 0;
         for (RolapMember m = member; m != null; m = m.getParentMember()) {
             if (m.isAll()) {
                 continue;
@@ -1148,18 +1173,15 @@ public class SqlConstraintUtils {
                 }
                 columnString = nameColumn.getExpression().toSql();
             } else {
-                RolapSchema.PhysExpr nameExp = level.getAttribute().nameExp;
-                columnString = nameExp.toSql();
+                columnString = level.getAttribute().getNameExp().toSql();
             }
 
-            if (!isFirstLevelInMultiple) {
+            if (levelInMultiple++ > 0) {
                 buf.append(" or ");
-            } else {
-                isFirstLevelInMultiple = false;
             }
 
-            buf.append(columnString);
-            buf.append(" is null");
+            buf.append(columnString)
+                .append(" is null");
 
             // Only needs to compare up to the first(lowest) unique level.
             if (m.getLevel() == fromLevel) {
@@ -1234,7 +1256,8 @@ public class SqlConstraintUtils {
             }
 
             final RolapLevel level = m.getLevel();
-            for (RolapSchema.PhysColumn key : level.getAttribute().keyList) {
+            for (RolapSchema.PhysColumn key : level.getAttribute().getKeyList())
+            {
                 // this method can be called within the context of shared
                 // members, outside of the normal rolap star, therefore we need
                 // to check the level to see if it is a shared or cube level.
@@ -1284,7 +1307,7 @@ public class SqlConstraintUtils {
                 StarPredicate cc =
                     getColumnPredicates(
                         measureGroup,
-                        level.getAttribute().keyList.get(0).relation
+                        level.getAttribute().getKeyList().get(0).relation
                             .getSchema(),
                         members2);
 

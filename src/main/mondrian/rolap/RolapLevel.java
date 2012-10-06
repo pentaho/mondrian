@@ -40,6 +40,8 @@ public class RolapLevel extends LevelBase {
     private final HideMemberCondition hideMemberCondition;
     private final Map<String, Annotation> annotationMap;
 
+    private final List<RolapSchema.PhysColumn> orderByList;
+
     static final RolapProperty KEY_PROPERTY =
         new RolapProperty(
             Property.KEY.name, null, null, Property.Datatype.TYPE_STRING, null,
@@ -76,20 +78,23 @@ public class RolapLevel extends LevelBase {
         String description,
         int depth,
         RolapAttribute attribute,
+        List<RolapSchema.PhysColumn> orderByList,
         HideMemberCondition hideMemberCondition,
         Map<String, Annotation> annotationMap)
     {
         super(hierarchy, name, visible, caption, description, depth);
         this.annotationMap = annotationMap;
         this.attribute = attribute;
+        this.orderByList = orderByList;
         this.hideMemberCondition = hideMemberCondition;
 
         assert annotationMap != null;
+        assert orderByList != null;
         assert hideMemberCondition != null;
     }
 
     public org.olap4j.metadata.Level.Type getLevelType() {
-        return attribute.levelType;
+        return attribute.getLevelType();
     }
 
     public RolapHierarchy getHierarchy() {
@@ -101,7 +106,7 @@ public class RolapLevel extends LevelBase {
     }
 
     public MemberFormatter getMemberFormatter() {
-        return attribute.memberFormatter;
+        return attribute.getMemberFormatter();
     }
 
     // override with refined return type
@@ -134,11 +139,15 @@ public class RolapLevel extends LevelBase {
         return true; // REVIEW:
     }
 
+    int getOrderByKeyArity() {
+        return orderByList.size();
+    }
+
     /**
      * Returns whether this level is parent-child.
      */
     public boolean isParentChild() {
-        return attribute.parentAttribute != null;
+        return attribute.getParentAttribute() != null;
     }
 
     private Property lookupProperty(
@@ -180,19 +189,16 @@ public class RolapLevel extends LevelBase {
                         + "property with the same name but different type");
                 }
             }
+            if (level.isParentChild()) {
+                closedPeerLevel =
+                    (RolapLevel) level.attribute.getClosure().closedPeerLevel;
+            }
         }
         this.inheritedProperties = list.toArray(new RolapProperty[list.size()]);
-
-        if (closure) {
-            final RolapDimension dimension =
-                ((RolapHierarchy) hierarchy).createClosedPeerDimension(this);
-            closedPeerLevel =
-                dimension.getHierarchyList().get(0).getLevelList().get(1);
-        }
     }
 
     public final boolean isAll() {
-        return attribute.levelType == org.olap4j.metadata.Level.Type.ALL;
+        return attribute.getLevelType() == org.olap4j.metadata.Level.Type.ALL;
     }
 
     public boolean areMembersUnique() {
@@ -213,6 +219,14 @@ public class RolapLevel extends LevelBase {
             return approxRowCount;
         }
         return attribute.getApproxRowCount();
+    }
+
+    /**
+     * The column(s) that this level is ordered on. Usually the list is
+     * similar to the underlying attribute's list.
+     */
+    public List<RolapSchema.PhysColumn> getOrderByList() {
+        return orderByList;
     }
 
     /**
@@ -248,7 +262,8 @@ public class RolapLevel extends LevelBase {
                     keyValues.add(keyValue);
                 }
             }
-            final List<RolapSchema.PhysColumn> keyExps = attribute.keyList;
+            Collections.reverse(keyValues);
+            final List<RolapSchema.PhysColumn> keyExps = attribute.getKeyList();
             if (keyExps.size() != keyValues.size()) {
                 throw Util.newError(
                     "Wrong number of values in member key; "
@@ -257,7 +272,8 @@ public class RolapLevel extends LevelBase {
                     + " columns "
                     + new AbstractList<String>() {
                         public String get(int index) {
-                            return keyExps.get(index).toSql();
+                            return keyExps.get(keyExps.size() - 1 - index)
+                                .toSql();
                         }
 
                         public int size() {

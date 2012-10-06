@@ -3,500 +3,383 @@
     <TestCase name="testTrivialCalcMemberDrillThrough">
         <Resource name="sql">
             <![CDATA[select
-    `time_by_day`.`the_year` as `Year (Key)`,
-    `product_class`.`product_family` as `Product Family (Key)`,
-    `sales_fact_1997`.`unit_sales` as `Unit Sales`
+    `time_by_day`.`the_year` as `Year`,
+    `time_by_day`.`quarter` as `Quarter`,
+    `time_by_day`.`month_of_year` as `Month`,
+    `product`.`product_name` as `Product Name`,
+    `product_class`.`product_family` as `Product Family`,
+    `product_class`.`product_department` as `Product Department`,
+    `product_class`.`product_category` as `Product Category`,
+    `product_class`.`product_subcategory` as `Product Subcategory`,
+    `product`.`brand_name` as `Brand Name`,
+    sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
     `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
-    `product_class` as `product_class`,
-    `product` as `product`
+    `product` as `product`,
+    `product_class` as `product_class`
 where
-    `time_by_day`.`time_id` = `sales_fact_1997`.`time_id`
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
     `time_by_day`.`the_year` = 1997
 and
-    `product`.`product_id` = `sales_fact_1997`.`product_id`
+    `sales_fact_1997`.`product_id` = `product`.`product_id`
 and
-    `product_class`.`product_class_id` = `product`.`product_class_id`
+    `product`.`product_class_id` = `product_class`.`product_class_id`
 and
     `product_class`.`product_family` = 'Drink'
-order by
-    `time_by_day`.`the_year` ASC,
-    `product_class`.`product_family` ASC]]>
+group by
+    `time_by_day`.`the_year`,
+    `time_by_day`.`quarter`,
+    `time_by_day`.`month_of_year`,
+    `product`.`product_name`,
+    `product_class`.`product_family`,
+    `product_class`.`product_department`,
+    `product_class`.`product_category`,
+    `product_class`.`product_subcategory`,
+    `product`.`brand_name`]]>
         </Resource>
         <Resource name="sql2">
             <![CDATA[select
-    `time_by_day`.`the_year` as `Year (Key)`,
-    `product_class`.`product_family` as `Product Family (Key)`,
-    `sales_fact_1997`.`unit_sales` as `Unit Sales`
+    `time_by_day`.`the_year` as `Year`,
+    `time_by_day`.`quarter` as `Quarter`,
+    `time_by_day`.`month_of_year` as `Month`,
+    `product`.`product_name` as `Product Name`,
+    `product_class`.`product_family` as `Product Family`,
+    `product_class`.`product_department` as `Product Department`,
+    `product_class`.`product_category` as `Product Category`,
+    `product_class`.`product_subcategory` as `Product Subcategory`,
+    `product`.`brand_name` as `Brand Name`,
+    sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
     `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
-    `product_class` as `product_class`,
-    `product` as `product`
+    `product` as `product`,
+    `product_class` as `product_class`
 where
-    `time_by_day`.`time_id` = `sales_fact_1997`.`time_id`
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
     `time_by_day`.`the_year` = 1997
 and
-    `product`.`product_id` = `sales_fact_1997`.`product_id`
+    `sales_fact_1997`.`product_id` = `product`.`product_id`
 and
-    `product_class`.`product_class_id` = `product`.`product_class_id`
+    `product`.`product_class_id` = `product_class`.`product_class_id`
 and
     `product_class`.`product_family` = 'Drink'
-order by
-    `time_by_day`.`the_year` ASC,
-    `product_class`.`product_family` ASC]]>
+group by
+    `time_by_day`.`the_year`,
+    `time_by_day`.`quarter`,
+    `time_by_day`.`month_of_year`,
+    `product`.`product_name`,
+    `product_class`.`product_family`,
+    `product_class`.`product_department`,
+    `product_class`.`product_category`,
+    `product_class`.`product_subcategory`,
+    `product`.`brand_name`]]>
         </Resource>
     </TestCase>
     <TestCase name="testDrillThrough">
         <Resource name="sql">
             <![CDATA[select
-    `time_by_day`.`the_year` as `Year (Key)`,
-    `product_class`.`product_family` as `Product Family (Key)`,
-    `sales_fact_1997`.`unit_sales` as `Unit Sales`
+    `time_by_day`.`the_year` as `Year`,
+    `time_by_day`.`quarter` as `Quarter`,
+    `time_by_day`.`month_of_year` as `Month`,
+    `product`.`product_name` as `Product Name`,
+    `product_class`.`product_family` as `Product Family`,
+    `product_class`.`product_department` as `Product Department`,
+    `product_class`.`product_category` as `Product Category`,
+    `product_class`.`product_subcategory` as `Product Subcategory`,
+    `product`.`brand_name` as `Brand Name`,
+    sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
     `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
-    `product_class` as `product_class`,
-    `product` as `product`
+    `product` as `product`,
+    `product_class` as `product_class`
 where
-    `time_by_day`.`time_id` = `sales_fact_1997`.`time_id`
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
     `time_by_day`.`the_year` = 1997
 and
-    `product`.`product_id` = `sales_fact_1997`.`product_id`
+    `sales_fact_1997`.`product_id` = `product`.`product_id`
 and
-    `product_class`.`product_class_id` = `product`.`product_class_id`
+    `product`.`product_class_id` = `product_class`.`product_class_id`
 and
     `product_class`.`product_family` = 'Drink'
-order by
-    `time_by_day`.`the_year` ASC,
-    `product_class`.`product_family` ASC]]>
+group by
+    `time_by_day`.`the_year`,
+    `time_by_day`.`quarter`,
+    `time_by_day`.`month_of_year`,
+    `product`.`product_name`,
+    `product_class`.`product_family`,
+    `product_class`.`product_department`,
+    `product_class`.`product_category`,
+    `product_class`.`product_subcategory`,
+    `product`.`brand_name`]]>
         </Resource>
     </TestCase>
     <TestCase name="testDrillThrough2">
         <Resource name="sql">
-            <![CDATA[        String expectedSql =
-            "select `store`.`store_country` as `Store Country`,"
-            + " `store`.`store_state` as `Store State`,"
-            + " `store`.`store_city` as `Store City`,"
-            + " `store`.`store_name` as `Store Name`,"
-            + " `store`.`store_type` as `Store Name (Store Type)`,"
-            + " `store`.`store_sqft` as `Store Name (Store Sqft)`,"
-            + " `time_by_day`.`the_year` as `Year`,"
-            + " `time_by_day`.`quarter` as `Quarter`,"
-            + " `time_by_day`.`month_of_year` as `Month`,"
-            + " `time_by_day`.`week_of_year` as `Week`,"
-            + " `time_by_day`.`day_of_month` as `Day`,"
-            + " `product_class`.`product_family` as `Product Family`,"
-            + " `product_class`.`product_department` as `Product Department`,"
-            + " `product_class`.`product_category` as `Product Category`,"
-            + " `product_class`.`product_subcategory` as `Product Subcategory`,"
-            + " `product`.`brand_name` as `Brand Name`,"
-            + " `product`.`product_name` as `Product Name`,"
-            + " `promotion`.`media_type` as `Media Type`,"
-            + " `promotion`.`promotion_name` as `Promotion Name`,"
-            + " `customer`.`country` as `Country`,"
-            + " `customer`.`state_province` as `State Province`,"
-            + " `customer`.`city` as `City`,"
-            + " `customer`.`customer_id` as `Name (Key)`,"
-            + " "
-            + nameExpStr
-            + " as `Name`,"
-            + " `customer`.`gender` as `Name (Gender)`,"
-            + " `customer`.`marital_status` as `Name (Marital Status)`,"
-            + " `customer`.`education` as `Name (Education)`,"
-            + " `customer`.`yearly_income` as `Name (Yearly Income)`,"
-            + " `sales_fact_1997`.`unit_sales` as `Unit Sales` "
-            + "from `store` =as= `store`,"
-            + " `sales_fact_1997` =as= `sales_fact_1997`,"
-            + " `time_by_day` =as= `time_by_day`,"
-            + " `product_class` =as= `product_class`,"
-            + " `product` =as= `product`,"
-            + " `promotion` =as= `promotion`,"
-            + " `customer` =as= `customer` "
-            + "where `sales_fact_1997`.`store_id` = `store`.`store_id`"
-            + " and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`"
-            + " and `time_by_day`.`the_year` = 1997"
-            + " and `sales_fact_1997`.`product_id` = `product`.`product_id`"
-            + " and `product`.`product_class_id` = `product_class`.`product_class_id`"
-            + " and `product_class`.`product_family` = 'Drink'"
-            + " and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`"
-            + " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
-            + "order by `store`.`store_country` ASC,"
-            + " `store`.`store_state` ASC,"
-            + " `store`.`store_city` ASC,"
-            + " `store`.`store_name` ASC,"
-            + " `store`.`store_type` ASC,"
-            + " `store`.`store_sqft` ASC,"
-            + " `time_by_day`.`the_year` ASC,"
-            + " `time_by_day`.`quarter` ASC,"
-            + " `time_by_day`.`month_of_year` ASC,"
-            + " `time_by_day`.`week_of_year` ASC,"
-            + " `time_by_day`.`day_of_month` ASC,"
-            + " `product_class`.`product_family` ASC,"
-            + " `product_class`.`product_department` ASC,"
-            + " `product_class`.`product_category` ASC,"
-            + " `product_class`.`product_subcategory` ASC,"
-            + " `product`.`brand_name` ASC,"
-            + " `product`.`product_name` ASC,"
-            + " `promotion`.`media_type` ASC,"
-            + " `promotion`.`promotion_name` ASC,"
-            + " `customer`.`country` ASC,"
-            + " `customer`.`state_province` ASC,"
-            + " `customer`.`city` ASC,"
-            + " `customer`.`customer_id` ASC,"
-            + " "
-            + nameExpStr
-            + " ASC,"
-            + " `customer`.`gender` ASC,"
-            + " `customer`.`marital_status` ASC,"
-            + " `customer`.`education` ASC,"
-            + " `customer`.`yearly_income` ASC";
-]]>
+            <![CDATA[select
+    `time_by_day`.`the_year` as `Year`,
+    `time_by_day`.`quarter` as `Quarter`,
+    `time_by_day`.`month_of_year` as `Month`,
+    `product`.`product_name` as `Product Name`,
+    `product_class`.`product_family` as `Product Family`,
+    `product_class`.`product_department` as `Product Department`,
+    `product_class`.`product_category` as `Product Category`,
+    `product_class`.`product_subcategory` as `Product Subcategory`,
+    `product`.`brand_name` as `Brand Name`,
+    sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
+from
+    `time_by_day` as `time_by_day`,
+    `sales_fact_1997` as `sales_fact_1997`,
+    `product` as `product`,
+    `product_class` as `product_class`
+where
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    `time_by_day`.`the_year` = 1997
+and
+    `sales_fact_1997`.`product_id` = `product`.`product_id`
+and
+    `product`.`product_class_id` = `product_class`.`product_class_id`
+and
+    `product_class`.`product_family` = 'Drink'
+group by
+    `time_by_day`.`the_year`,
+    `time_by_day`.`quarter`,
+    `time_by_day`.`month_of_year`,
+    `product`.`product_name`,
+    `product_class`.`product_family`,
+    `product_class`.`product_department`,
+    `product_class`.`product_category`,
+    `product_class`.`product_subcategory`,
+    `product`.`brand_name`]]>
         </Resource>
     </TestCase>
     <TestCase name="testDrillThrough3">
         <Resource name="sql">
-            <![CDATA[
-                                "select"
-            + " `store`.`store_country` as `Store Country`,"
-            + " `store`.`store_state` as `Store State`,"
-            + " `store`.`store_city` as `Store City`,"
-            + " `store`.`store_name` as `Store Name`,"
-            + " `store`.`store_sqft` as `Store Sqft`,"
-            + " `store`.`store_type` as `Store Type`,"
-            + " `time_by_day`.`the_year` as `Year`,"
-            + " `time_by_day`.`quarter` as `Quarter`,"
-            + " `time_by_day`.`month_of_year` as `Month`,"
-            + " `time_by_day`.`week_of_year` as `Week`,"
-            + " `time_by_day`.`day_of_month` as `Day`,"
-            + " `product_class`.`product_family` as `Product Family`,"
-            + " `product_class`.`product_department` as `Product Department`,"
-            + " `product_class`.`product_category` as `Product Category`,"
-            + " `product_class`.`product_subcategory` as `Product Subcategory`,"
-            + " `product`.`brand_name` as `Brand Name`,"
-            + " `product`.`product_name` as `Product Name`,"
-            + " `promotion`.`media_type` as `Media Type`,"
-            + " `promotion`.`promotion_name` as `Promotion Name`,"
-            + " `customer`.`country` as `Country`,"
-            + " `customer`.`state_province` as `State Province`,"
-            + " `customer`.`city` as `City`,"
-            + " " + nameExpStr + " as `Name`,"
-            + " `customer`.`customer_id` as `Name (Key)`,"
-            + " `customer`.`education` as `Education Level`,"
-            + " `customer`.`gender` as `Gender`,"
-            + " `customer`.`marital_status` as `Marital Status`,"
-            + " `customer`.`yearly_income` as `Yearly Income`,"
-            + " `sales_fact_1997`.`unit_sales` as `Unit Sales` "
-            + "from `store =as= `store`, "
-            + "`sales_fact_1997` =as= `sales_fact_1997`, "
-            + "`time_by_day` =as= `time_by_day`, "
-            + "`product_class` =as= `product_class`, "
-            + "`product` =as= `product`, "
-            + "`promotion` =as= `promotion`, "
-            + "`customer` =as= `customer` "
-            + "where `sales_fact_1997`.`store_id` = `store`.`store_id` and "
-            + "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and "
-            + "`time_by_day`.`the_year` = 1997 and "
-            + "`time_by_day`.`quarter` = 'Q4' and "
-            + "`time_by_day`.`month_of_year` = 12 and "
-            + "`sales_fact_1997`.`product_id` = `product`.`product_id` and "
-            + "`product`.`product_class_id` = `product_class`.`product_class_id` and "
-            + "`product_class`.`product_family` = 'Drink' and "
-            + "`product_class`.`product_department` = 'Dairy' and "
-            + "`sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` and "
-            + "`sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
-            + "order by `store`.`store_country` ASC,"
-            + " `store`.`store_state` ASC,"
-            + " `store`.`store_city` ASC,"
-            + " `store`.`store_name` ASC,"
-            + " `store`.`store_sqft` ASC,"
-            + " `store`.`store_type` ASC,"
-            + " `time_by_day`.`the_year` ASC,"
-            + " `time_by_day`.`quarter` ASC,"
-            + " `time_by_day`.`month_of_year` ASC,"
-            + " `time_by_day`.`week_of_year` ASC,"
-            + " `time_by_day`.`day_of_month` ASC,"
-            + " `product_class`.`product_family` ASC,"
-            + " `product_class`.`product_department` ASC,"
-            + " `product_class`.`product_category` ASC,"
-            + " `product_class`.`product_subcategory` ASC,"
-            + " `product`.`brand_name` ASC,"
-            + " `product`.`product_name` ASC,"
-            + " `promotion.media_type` ASC,"
-            + " `promotion`.`promotion_name` ASC,"
-            + " `customer`.`country` ASC,"
-            + " `customer`.`state_province` ASC,"
-            + " `customer`.`city` ASC,"
-            + " " + nameExpStr + " ASC,"
-            + " `customer`.`customer_id` ASC,"
-            + " `customer`.`education` ASC,"
-            + " `customer`.gender` ASC,"
-            + " `customer`.`marital_status` ASC,"
-            + " `customer`.`yearly_income` ASC";
-                    ]]>
+            <![CDATA[select
+    `time_by_day`.`the_year` as `Month`,
+    `time_by_day`.`month_of_year` as `Month_0`,
+    `product`.`product_id` as `Product Name`,
+    `product_class`.`product_family` as `Product Department`,
+    `product_class`.`product_department` as `Product Department_0`,
+    `product_class`.`product_category` as `Product Category`,
+    `product_class`.`product_subcategory` as `Product Subcategory`,
+    `product`.`brand_name` as `Brand Name`,
+    sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
+from
+    `time_by_day` as `time_by_day`,
+    `sales_fact_1997` as `sales_fact_1997`,
+    `product` as `product`,
+    `product_class` as `product_class`
+where
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    `time_by_day`.`the_year` = 1997
+and
+    `time_by_day`.`month_of_year` = 12
+and
+    `sales_fact_1997`.`product_id` = `product`.`product_id`
+and
+    `product`.`product_class_id` = `product_class`.`product_class_id`
+and
+    `product_class`.`product_family` = 'Drink'
+and
+    `product_class`.`product_department` = 'Dairy'
+group by
+    `time_by_day`.`the_year`,
+    `time_by_day`.`month_of_year`,
+    `product`.`product_id`,
+    `product_class`.`product_family`,
+    `product_class`.`product_department`,
+    `product_class`.`product_category`,
+    `product_class`.`product_subcategory`,
+    `product`.`brand_name`]]>
         </Resource>
     </TestCase>
     <TestCase name="testDrillThroughBugMondrian180">
         <Resource name="sql">
-            <![CDATA[
-            "select"
-            + " `store`.`store_state` as `Store State`,"
-            + " `store`.`store_city` as `Store City`,"
-            + " `store`.`store_name` as `Store Name`,"
-            + " `store`.`store_type` as `Store Name (Store Type)`,"
-            + " `store`.`store_sqft` as `Store Name (Store Sqft)`,"
-            + " `time_by_day`.`the_year` as `Year`,"
-            + " `time_by_day`.`quarter` as `Quarter`,"
-            + " `time_by_day`.`month_of_year` as `Month`,"
-            + " `time_by_day`.`week_of_year` as `Week`,"
-            + " `time_by_day`.`day_of_month` as `Day`,"
-            + " `product_class`.`product_family` as `Product Family`,"
-            + " `product_class`.`product_department` as `Product Department`,"
-            + " `product_class`.`product_category` as `Product Category`,"
-            + " `product_class`.`product_subcategory` as `Product Subcategory`,"
-            + " `product`.`brand_name` as `Brand Name`,"
-            + " `product`.`product_name` as `Product Name`,"
-            + " `promotion`.`media_type` as `Media Type`,"
-            + " `promotion`.`promotion_name` as `Promotion Name`,"
-            + " `customer`.`country` as `Country`,"
-            + " `customer`.`state_province` as `State Province`,"
-            + " `customer`.`city` as `City`,"
-            + " `customer`.`customer_id` as `Name (Key)`,"
-            + " "
-            + nameExpStr
-            + " as `Name`,"
-            + " `customer`.`gender` as `Name (Gender)`,"
-            + " `customer`.`marital_status` as `Name (Marital Status)`,"
-            + " `customer`.`education` as `Name (Education)`,"
-            + " `customer`.`yearly_income` as `Name (Yearly Income)`,"
-            + " `sales_fact_1997`.`unit_sales` as `Unit Sales` "
-            + "from `store` =as= `store`,"
-            + " `sales_fact_1997` =as= `sales_fact_1997`,"
-            + " `time_by_day` =as= `time_by_day`,"
-            + " `product_class` =as= `product_class`,"
-            + " `product` =as= `product`,"
-            + " `promotion` =as= `promotion`,"
-            + " `customer` =as= `customer` "
-            + "where `sales_fact_1997`.`store_id` = `store`.`store_id` and"
-            + " `store`.`store_state` = 'CA' and"
-            + " `store`.`store_city` = 'Beverly Hills' and"
-            + " `sales_fact_1997`.time_id` = `time_by_day`.`time_id` and"
-            + " `sales_fact_1997`.`product_id` = `product`.`product_id` and"
-            + " `product`.`product_class_id` = `product_class`.`product_class_id` and"
-            + " `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` and"
-            + " `sales_fact_1997`.`customer_id` = `customer`.`customer_id`"
-            + " order by"
-            + " `store`.`store_state` ASC,"
-            + " `store`.`store_city` ASC,"
-            + " `store`.`store_name` ASC,"
-            + " `store`.`store_type` ASC,"
-            + " `store`.`store_sqft` ASC,"
-            + " `time_by_day`.`the_year` ASC,"
-            + " `time_by_day`.`quarter` ASC,"
-            + " `time_by_day`.`month_of_year` ASC,"
-            + " `time_by_day`.`week_of_year` ASC,"
-            + " `time_by_day`.`day_of_month` ASC,"
-            + " `product_class`.`product_family` ASC,"
-            + " `product_class`.`product_department` ASC,"
-            + " `product_class`.`product_category` ASC,"
-            + " `product_class`.`product_subcategory` ASC,"
-            + " `product`.`brand_name` ASC,"
-            + " `product`.`product_name` ASC,"
-            + " `promotion`.`media_type` ASC,"
-            + " `promotion`.`promotion_name` ASC,"
-            + " `customer`.`country` ASC,"
-            + " `customer`.`state_province` ASC,"
-            + " `customer`.`city` ASC,"
-            + " `customer`.`customer_id` ASC,"
-            + " "
-            + nameExpStr
-            + " ASC,"
-            + " `customer`.`gender` ASC,"
-            + " `customer`.`marital_status` ASC,"
-            + " `customer`.`education` ASC,"
-            + " `customer`.`yearly_income` ASC
-                    ]]>
+            <![CDATA[select
+    `store`.`store_state` as `Store City`,
+    `store`.`store_city` as `Store City_0`,
+    `store`.`store_name` as `Store Name`,
+    `time_by_day`.`the_year` as `Year`,
+    `time_by_day`.`quarter` as `Quarter`,
+    `time_by_day`.`month_of_year` as `Month`,
+    sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
+from
+    `store` as `store`,
+    `sales_fact_1997` as `sales_fact_1997`,
+    `time_by_day` as `time_by_day`
+where
+    `sales_fact_1997`.`store_id` = `store`.`store_id`
+and
+    `store`.`store_state` = 'CA'
+and
+    `store`.`store_city` = 'Beverly Hills'
+and
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+group by
+    `store`.`store_state`,
+    `store`.`store_city`,
+    `store`.`store_name`,
+    `time_by_day`.`the_year`,
+    `time_by_day`.`quarter`,
+    `time_by_day`.`month_of_year`]]>
         </Resource>
     </TestCase>
     <TestCase name="testDrillThroughMeasureExp">
         <Resource name="sql">
             <![CDATA[select
-    `time_by_day`.`the_year` as `Year (Key)`,
-    `product_class`.`product_family` as `Product Family (Key)`,
-    (case when `sales_fact_1997`.`promotion_id` = 0 then 0 else `sales_fact_1997`.`store_sales` end) as `Promotion Sales`
+    `time_by_day`.`the_year` as `Year`,
+    `time_by_day`.`quarter` as `Quarter`,
+    `time_by_day`.`month_of_year` as `Month`,
+    `product`.`product_name` as `Product Name`,
+    `product_class`.`product_family` as `Product Family`,
+    `product_class`.`product_department` as `Product Department`,
+    `product_class`.`product_category` as `Product Category`,
+    `product_class`.`product_subcategory` as `Product Subcategory`,
+    `product`.`brand_name` as `Brand Name`,
+    sum(`sales_fact_1997`.`store_sales`) as `Promotion Sales`
 from
     `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
-    `product_class` as `product_class`,
-    `product` as `product`
+    `product` as `product`,
+    `product_class` as `product_class`
 where
-    `time_by_day`.`time_id` = `sales_fact_1997`.`time_id`
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
     `time_by_day`.`the_year` = 1997
 and
-    `product`.`product_id` = `sales_fact_1997`.`product_id`
+    `sales_fact_1997`.`product_id` = `product`.`product_id`
 and
-    `product_class`.`product_class_id` = `product`.`product_class_id`
+    `product`.`product_class_id` = `product_class`.`product_class_id`
 and
     `product_class`.`product_family` = 'Drink'
-order by
-    `time_by_day`.`the_year` ASC,
-    `product_class`.`product_family` ASC]]>
+group by
+    `time_by_day`.`the_year`,
+    `time_by_day`.`quarter`,
+    `time_by_day`.`month_of_year`,
+    `product`.`product_name`,
+    `product_class`.`product_family`,
+    `product_class`.`product_department`,
+    `product_class`.`product_category`,
+    `product_class`.`product_subcategory`,
+    `product`.`brand_name`]]>
         </Resource>
     </TestCase>
     <TestCase name="testDrillThroughDupKeys">
         <Resource name="sql">
             <![CDATA[select
-    `store`.`store_id` as `Store Id (Key)`,
-    `time_by_day`.`the_year` as `Year (Key)`,
-    `store_ragged`.`store_id` as `Store Id (Key)_0`,
-    `sales_fact_1997`.`unit_sales` as `Unit Sales`
+    `store`.`store_id` as `Store Id`,
+    `time_by_day`.`the_year` as `Year`,
+    `store_ragged`.`store_id` as `Store Id_0`,
+    sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
     `store` as `store`,
     `sales_fact_1997` as `sales_fact_1997`,
     `time_by_day` as `time_by_day`,
     `store_ragged` as `store_ragged`
 where
-    `store`.`store_id` = `sales_fact_1997`.`store_id`
+    `sales_fact_1997`.`store_id` = `store`.`store_id`
 and
     `store`.`store_id` = 2
 and
-    `time_by_day`.`time_id` = `sales_fact_1997`.`time_id`
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
     `time_by_day`.`the_year` = 1997
 and
-    `store_ragged`.`store_id` = `sales_fact_1997`.`store_id`
+    `sales_fact_1997`.`store_id` = `store_ragged`.`store_id`
 and
     `store_ragged`.`store_id` = 19
-order by
-    `store`.`store_id` ASC,
-    `time_by_day`.`the_year` ASC,
-    `store_ragged`.`store_id` ASC]]>
+group by
+    `store`.`store_id`,
+    `time_by_day`.`the_year`,
+    `store_ragged`.`store_id`]]>
         </Resource>
     </TestCase>
     <TestCase name="testDrillThroughVirtualCube">
         <Resource name="sql">
             <![CDATA[select
-            `time_by_day`.`the_year` as `Year`,"
-            + " `time_by_day`.`quarter` as `Quarter`,"
-            + " `time_by_day`.month_of_year` as `Month`,"
-            + " `customer`.`state_province` as `State Province`,"
-            + " `customer`.`city` as `City`,"
-            + " `customer`.`gender` as `Name (Gender)`,"
-            + " `sales_fact_1997`.`unit_sales` as `Unit Sales`"
-            + " from `time_by_day` =as= `time_by_day`,"
-            + " `sales_fact_1997` =as= `sales_fact_1997`,"
-            + " `customer` =as= `customer`"
-            + " where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and"
-            + " `time_by_day`.`the_year` = 1997 and"
-            + " `time_by_day`.`quarter` = 'Q4' and"
-            + " `time_by_day`.`month_of_year` = 12 and"
-            + " `sales_fact_1997`.`customer_id` = `customer`.customer_id` and"
-            + " `customer`.`state_province` = 'OR' and"
-            + " `customer`.`city` = 'Albany' and"
-            + " `customer`.`gender` = 'F'"
-            + " order by `time_by_day`.`the_year` ASC,"
-            + " `time_by_day`.`quarter` ASC,"
-            + " `time_by_day`.`month_of_year` ASC,"
-            + " `customer`.`state_province` ASC,"
-            + " `customer`.`city` ASC,"
-            + " `customer`.`gender` ASC]]>
+    `time_by_day`.`the_year` as `Month`,
+    `time_by_day`.`quarter` as `Month_0`,
+    `time_by_day`.`month_of_year` as `Month_1`,
+    `customer`.`customer_id` as `Name`,
+    `customer`.`state_province` as `City`,
+    `customer`.`gender` as `Gender`,
+    `customer`.`city` as `City_0`,
+    sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
+from
+    `time_by_day` as `time_by_day`,
+    `sales_fact_1997` as `sales_fact_1997`,
+    `customer` as `customer`
+where
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    `time_by_day`.`the_year` = 1997
+and
+    `time_by_day`.`quarter` = 'Q4'
+and
+    `time_by_day`.`month_of_year` = 12
+and
+    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`
+and
+    `customer`.`state_province` = 'OR'
+and
+    `customer`.`gender` = 'F'
+and
+    `customer`.`city` = 'Albany'
+group by
+    `time_by_day`.`the_year`,
+    `time_by_day`.`quarter`,
+    `time_by_day`.`month_of_year`,
+    `customer`.`customer_id`,
+    `customer`.`state_province`,
+    `customer`.`gender`,
+    `customer`.`city`]]>
         </Resource>
     </TestCase>
     <TestCase name="testBug1438285">
         <Resource name="sql">
-            <![CDATA[
-            "select "
-            + "`store`.`store_country` as `Store Country`,"
-            + " `store`.`store_state` as `Store State`,"
-            + " `store`.`store_city` as `Store City`,"
-            + " `store`.`store_name` as `Store Name`,"
-            + " `store`.`store_type` as `Store Name (Store Type)`,"
-            + " `store`.`store_sqft` as `Store Name (Store Sqft)`,"
-            + " `time_by_day`.`the_year` as `Year`,"
-            + " `time_by_day`.`quarter` as `Quarter`,"
-            + " `time_by_day`.`month_of_year` as `Month`,"
-            + " `time_by_day`.`week_of_year` as `Week`,"
-            + " `time_by_day`.`day_of_month` as `Day`,"
-            + " `product_class`.`product_family` as `Product Family`,"
-            + " `product_class`.`product_department` as `Product Department`,"
-            + " `product_class`.`product_category` as `Product Category`,"
-            + " `product_class`.`product_subcategory` as `Product Subcategory`,"
-            + " `product`.`brand_name` as `Brand Name`,"
-            + " `product`.`product_name` as `Product Name`,"
-            + " `store_ragged`.`store_id` as `Store Id`,"
-            + " `store_ragged`.`store_id` as `Store Id (Key)`,"
-            + " `promotion`.`media_type` as `Media Type`,"
-            + " `promotion`.`promotion_name` as `Promotion Name`,"
-            + " `customer`.`country` as `Country`,"
-            + " `customer`.`state_province` as `State Province`,"
-            + " `customer`.`city` as `City`,"
-            + " `customer`.`customer_id` as `Name (Key)`,"
-            + " "
-            + nameExpStr
-            + " as `Name`,"
-            + " `customer`.`gender` as `Name (Gender)`,"
-            + " `customer`.`marital_status` as `Name (Marital Status)`,"
-            + " `customer`.`education` as `Name (Education)`,"
-            + " `customer`.`yearly_income` as `Name (Yearly Income)`,"
-            + " `sales_fact_1997`.`unit_sales` as `Unit Sales` "
-            + "from `store` =as= `store`,"
-            + " `sales_fact_1997` =as= `sales_fact_1997`,"
-            + " `time_by_day` =as= `time_by_day`,"
-            + " `product_class` =as= `product_class`,"
-            + " `product` =as= `product`,"
-            + " `store_ragged` =as= `store_ragged`,"
-            + " `promotion` =as= `promotion`,"
-            + " `customer` =as= `customer` "
-            + "where `sales_fact_1997`.`store_id` = `store`.`store_id`"
-            + " and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`"
-            + " and `time_by_day`.`the_year` = 1997"
-            + " and `sales_fact_1997`.`product_id` = `product`.`product_id`"
-            + " and `product`.`product_class_id` = `product_class`.`product_class_id`"
-            + " and `sales_fact_1997`.`store_id` = `store_ragged`.`store_id`"
-            + " and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`"
-            + " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
-            + "order by `store`.`store_country` ASC,"
-            + " `store`.`store_state` ASC,"
-            + " `store`.`store_city` ASC,"
-            + " `store`.`store_name` ASC,"
-            + " `store`.`store_type` ASC,"
-            + " `store`.`store_sqft` ASC,"
-            + " `time_by_day`.`the_year` ASC,"
-            + " `time_by_day`.`quarter` ASC,"
-            + " `time_by_day`.`month_of_year` ASC,"
-            + " `product_class`.`product_family` ASC,"
-            + " `product_class`.`product_department` ASC,"
-            + " `product_class`.`product_category` ASC,"
-            + " `product_class`.`product_subcategory` ASC,"
-            + " `product`.`brand_name` ASC,"
-            + " `product`.`product_name` ASC,"
-            + " `store_ragged`.`store_id` ASC,"
-            + " `promotion`.`media_type` ASC,"
-            + " `promotion`.`promotion_name` ASC,"
-            + " `customer`.`country` ASC,"
-            + " `customer`.`state_province` ASC,"
-            + " `customer`.`city` ASC,"
-            + " `customer`.`customer_id` ASC,"
-            + " "
-            + nameExpStr
-            + " ASC,"
-            + " `customer`.`gender` ASC,"
-            + " `customer`.`marital_status` ASC,"
-            + " `customer`.`education` ASC,"
-            + " `customer`.`yearly_income` ASC";
-                    ]]>
+            <![CDATA[select
+    `time_by_day`.`the_year` as `Year`,
+    `time_by_day`.`quarter` as `Quarter`,
+    `time_by_day`.`month_of_year` as `Month`,
+    `store_ragged`.`store_id` as `Store Id`,
+    sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
+from
+    `time_by_day` as `time_by_day`,
+    `sales_fact_1997` as `sales_fact_1997`,
+    `store_ragged` as `store_ragged`
+where
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    `time_by_day`.`the_year` = 1997
+and
+    `sales_fact_1997`.`store_id` = `store_ragged`.`store_id`
+and
+    `store_ragged`.`store_id` = 24
+group by
+    `time_by_day`.`the_year`,
+    `time_by_day`.`quarter`,
+    `time_by_day`.`month_of_year`,
+    `store_ragged`.`store_id`]]>
         </Resource>
     </TestCase>
-    <TestCase name="testTrivialCalcMemberDrillThrough">
+    <TestCase name="testDrillThroughMultiPositionCompoundSlicer">
         <Resource name="sql-compound-in">
-            <![CDATA[
-select sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and (((time_by_day.the_year, time_by_day.quarter) in ((1997, 'Q1'), (1997, 'Q2'))))
-                    ]]>
+            <![CDATA[select
+    sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
+from
+    `sales_fact_1997` as `sales_fact_1997`,
+    `time_by_day` as `time_by_day`
+where
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    ((`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q2' and `time_by_day`.`the_year` = 1997))]]>
         </Resource>
         <Resource name="sql">
             <![CDATA[
@@ -516,14 +399,27 @@ or (time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))
 order by customer.gender ASC, customer.marital_status ASC]]>
         </Resource>
         <Resource name="sql2-compound-in">
-            <![CDATA[
-select customer.gender as Gender, customer.marital_status as Marital Status, sales_fact_1997.unit_sales as Unit Sales
-from customer as customer, sales_fact_1997 as sales_fact_1997, time_by_day as time_by_day
-where sales_fact_1997.customer_id = customer.customer_id
-and customer.gender = 'F' and customer.marital_status = 'M'
-and sales_fact_1997.time_id = time_by_day.time_id
-and (((time_by_day.the_year, time_by_day.quarter) in ((1997, 'Q1'), (1997, 'Q2'))))
-order by customer.gender ASC, customer.marital_status ASC]]>
+            <![CDATA[select
+    `customer`.`marital_status` as `Marital Status`,
+    `customer`.`gender` as `Gender`,
+    sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
+from
+    `customer` as `customer`,
+    `sales_fact_1997` as `sales_fact_1997`,
+    `time_by_day` as `time_by_day`
+where
+    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`
+and
+    `customer`.`marital_status` = 'M'
+and
+    `customer`.`gender` = 'F'
+and
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    ((`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q2' and `time_by_day`.`the_year` = 1997))
+group by
+    `customer`.`marital_status`,
+    `customer`.`gender`]]>
         </Resource>
         <Resource name="sql3">
             <![CDATA[
@@ -536,28 +432,40 @@ or (customer.gender = 'M' and time_by_day.quarter = 'Q2' and time_by_day.the_yea
             ]]>
         </Resource>
         <Resource name="sql3-compound-in">
-            <![CDATA[
-select sales_fact_1997.unit_sales as Unit Sales
-from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997, customer as customer
-where sales_fact_1997.time_id = time_by_day.time_id
-and sales_fact_1997.customer_id = customer.customer_id
-and (((time_by_day.the_year, time_by_day.quarter, customer.gender) in ((1997, 'Q1', 'F'), (1997, 'Q2', 'M'))))
-            ]]>
+            <![CDATA[select
+    sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
+from
+    `sales_fact_1997` as `sales_fact_1997`,
+    `time_by_day` as `time_by_day`,
+    `customer` as `customer`
+where
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`
+and
+    ((`customer`.`gender` = 'F' and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`customer`.`gender` = 'M' and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q2' and `time_by_day`.`the_year` = 1997))]]>
         </Resource>
         <Resource name="sql4">
-            <![CDATA[
-select sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997))]]>
+            <![CDATA[select
+    sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
+from
+    `sales_fact_1997` as `sales_fact_1997`,
+    `time_by_day` as `time_by_day`
+where
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    ((`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`month_of_year` = 1 and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997))]]>
         </Resource>
         <Resource name="sql5">
-            <![CDATA[
-select sales_fact_1997.unit_sales as Unit Sales
-from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997
-where sales_fact_1997.time_id = time_by_day.time_id
-and ((time_by_day.month_of_year = 1
-and time_by_day.quarter = 'Q1'
-and time_by_day.the_year = 1997)
-or (time_by_day.quarter = 'Q2'
-and time_by_day.the_year = 1997)) ]]>
+            <![CDATA[select
+    sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
+from
+    `sales_fact_1997` as `sales_fact_1997`,
+    `time_by_day` as `time_by_day`
+where
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    ((`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`month_of_year` = 1 and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q2' and `time_by_day`.`the_year` = 1997))]]>
         </Resource>
     </TestCase>
 </Root>

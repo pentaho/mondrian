@@ -1340,7 +1340,7 @@
                         <MEASURE_AGGREGATOR>0</MEASURE_AGGREGATOR>
                         <DATA_TYPE>3</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion].[Media Type].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Customer Count Member</DESCRIPTION>
                     </row>
                     <row>
@@ -1377,7 +1377,7 @@
                         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
                         <DATA_TYPE>5</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion].[Media Type].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Promotion Sales Member</DESCRIPTION>
                     </row>
                     <row>
@@ -1390,7 +1390,7 @@
                         <MEASURE_AGGREGATOR>2</MEASURE_AGGREGATOR>
                         <DATA_TYPE>3</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion].[Media Type].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Sales Count Member</DESCRIPTION>
                     </row>
                     <row>
@@ -1403,7 +1403,7 @@
                         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
                         <DATA_TYPE>5</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion].[Media Type].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Store Cost Member</DESCRIPTION>
                     </row>
                     <row>
@@ -1416,7 +1416,7 @@
                         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
                         <DATA_TYPE>5</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion].[Media Type].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Store Sales Member</DESCRIPTION>
                     </row>
                     <row>
@@ -1429,7 +1429,7 @@
                         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
                         <DATA_TYPE>5</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion].[Media Type].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Unit Sales Member</DESCRIPTION>
                     </row>
                 </root>
@@ -1602,65 +1602,14 @@
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_NAME>Customers</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Customers</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>8</DIMENSION_ORDINAL>
+                        <DIMENSION_NAME>Customer</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customer]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Customer</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>5</DIMENSION_ORDINAL>
                         <DIMENSION_TYPE>3</DIMENSION_TYPE>
                         <DIMENSION_CARDINALITY>10282</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Customers]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Sales Cube - Customers Dimension</DESCRIPTION>
-                        <IS_VIRTUAL>false</IS_VIRTUAL>
-                        <IS_READWRITE>false</IS_READWRITE>
-                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_NAME>Education Level</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Education Level]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Education Level</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>9</DIMENSION_ORDINAL>
-                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>6</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Education Level]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Sales Cube - Education Level Dimension</DESCRIPTION>
-                        <IS_VIRTUAL>false</IS_VIRTUAL>
-                        <IS_READWRITE>false</IS_READWRITE>
-                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_NAME>Gender</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Gender</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>10</DIMENSION_ORDINAL>
-                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>3</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Gender]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Sales Cube - Gender Dimension</DESCRIPTION>
-                        <IS_VIRTUAL>false</IS_VIRTUAL>
-                        <IS_READWRITE>false</IS_READWRITE>
-                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_NAME>Marital Status</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Marital Status</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>11</DIMENSION_ORDINAL>
-                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>112</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Marital Status]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Sales Cube - Marital Status Dimension</DESCRIPTION>
+                        <DEFAULT_HIERARCHY>[Customer]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION>Sales Cube - Customer Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
@@ -1690,7 +1639,7 @@
                         <DIMENSION_NAME>Product</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
                         <DIMENSION_CAPTION>Product</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>5</DIMENSION_ORDINAL>
+                        <DIMENSION_ORDINAL>3</DIMENSION_ORDINAL>
                         <DIMENSION_TYPE>3</DIMENSION_TYPE>
                         <DIMENSION_CARDINALITY>1561</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Product]</DEFAULT_HIERARCHY>
@@ -1704,31 +1653,14 @@
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_NAME>Promotion Media</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Promotion].[Media Type]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Promotion Media</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>6</DIMENSION_ORDINAL>
+                        <DIMENSION_NAME>Promotion</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Promotion]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Promotion</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>4</DIMENSION_ORDINAL>
                         <DIMENSION_TYPE>3</DIMENSION_TYPE>
                         <DIMENSION_CARDINALITY>15</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Promotion].[Media Type]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Sales Cube - Promotion Media Dimension</DESCRIPTION>
-                        <IS_VIRTUAL>false</IS_VIRTUAL>
-                        <IS_READWRITE>false</IS_READWRITE>
-                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_NAME>Promotions</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Promotions]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Promotions</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>7</DIMENSION_ORDINAL>
-                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>52</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Promotions]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Sales Cube - Promotions Dimension</DESCRIPTION>
+                        <DEFAULT_HIERARCHY>[Promotion]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION>Sales Cube - Promotion Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
@@ -1755,65 +1687,14 @@
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_NAME>Store Size in SQFT</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Store Size in SQFT</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>2</DIMENSION_ORDINAL>
-                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>22</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Store Size in SQFT]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Sales Cube - Store Size in SQFT Dimension</DESCRIPTION>
-                        <IS_VIRTUAL>false</IS_VIRTUAL>
-                        <IS_READWRITE>false</IS_READWRITE>
-                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_NAME>Store Type</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Store Type</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>3</DIMENSION_ORDINAL>
-                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>7</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Store Type]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Sales Cube - Store Type Dimension</DESCRIPTION>
-                        <IS_VIRTUAL>false</IS_VIRTUAL>
-                        <IS_READWRITE>false</IS_READWRITE>
-                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_NAME>Time</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
                         <DIMENSION_CAPTION>Time</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>4</DIMENSION_ORDINAL>
+                        <DIMENSION_ORDINAL>2</DIMENSION_ORDINAL>
                         <DIMENSION_TYPE>1</DIMENSION_TYPE>
                         <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Time]</DEFAULT_HIERARCHY>
                         <DESCRIPTION>Sales Cube - Time Dimension</DESCRIPTION>
-                        <IS_VIRTUAL>false</IS_VIRTUAL>
-                        <IS_READWRITE>false</IS_READWRITE>
-                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
-                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_NAME>Yearly Income</DIMENSION_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Yearly Income]</DIMENSION_UNIQUE_NAME>
-                        <DIMENSION_CAPTION>Yearly Income</DIMENSION_CAPTION>
-                        <DIMENSION_ORDINAL>12</DIMENSION_ORDINAL>
-                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>9</DIMENSION_CARDINALITY>
-                        <DEFAULT_HIERARCHY>[Yearly Income]</DEFAULT_HIERARCHY>
-                        <DESCRIPTION>Sales Cube - Yearly Income Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
@@ -2018,7 +1899,7 @@
       <Restrictions>
         <RestrictionList>
           <CUBE_NAME>Sales</CUBE_NAME>
-          <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Time].[Time]</HIERARCHY_UNIQUE_NAME>
         </RestrictionList>
       </Restrictions>
       <Properties>
@@ -2084,9 +1965,9 @@
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Time].[Time]</HIERARCHY_UNIQUE_NAME>
                         <LEVEL_NAME>Year</LEVEL_NAME>
-                        <LEVEL_UNIQUE_NAME>[Time].[Year]</LEVEL_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Time].[Time].[Year]</LEVEL_UNIQUE_NAME>
                         <LEVEL_CAPTION>Year</LEVEL_CAPTION>
                         <LEVEL_NUMBER>0</LEVEL_NUMBER>
                         <LEVEL_CARDINALITY>2</LEVEL_CARDINALITY>
@@ -2101,15 +1982,15 @@
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Time].[Time]</HIERARCHY_UNIQUE_NAME>
                         <LEVEL_NAME>Quarter</LEVEL_NAME>
-                        <LEVEL_UNIQUE_NAME>[Time].[Quarter]</LEVEL_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Time].[Time].[Quarter]</LEVEL_UNIQUE_NAME>
                         <LEVEL_CAPTION>Quarter</LEVEL_CAPTION>
                         <LEVEL_NUMBER>1</LEVEL_NUMBER>
                         <LEVEL_CARDINALITY>8</LEVEL_CARDINALITY>
                         <LEVEL_TYPE>68</LEVEL_TYPE>
                         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
-                        <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
+                        <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
                         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
                         <DESCRIPTION>Sales Cube - Time Hierarchy - Quarter Level</DESCRIPTION>
                     </row>
@@ -2118,15 +1999,15 @@
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Time].[Time]</HIERARCHY_UNIQUE_NAME>
                         <LEVEL_NAME>Month</LEVEL_NAME>
-                        <LEVEL_UNIQUE_NAME>[Time].[Month]</LEVEL_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Time].[Time].[Month]</LEVEL_UNIQUE_NAME>
                         <LEVEL_CAPTION>Month</LEVEL_CAPTION>
                         <LEVEL_NUMBER>2</LEVEL_NUMBER>
                         <LEVEL_CARDINALITY>24</LEVEL_CARDINALITY>
                         <LEVEL_TYPE>132</LEVEL_TYPE>
                         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
-                        <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
+                        <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
                         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
                         <DESCRIPTION>Sales Cube - Time Hierarchy - Month Level</DESCRIPTION>
                     </row>
@@ -2248,7 +2129,7 @@
       <Restrictions>
         <RestrictionList>
           <CUBE_NAME>Sales</CUBE_NAME>
-          <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Customer].[Customers]</HIERARCHY_UNIQUE_NAME>
         </RestrictionList>
       </Restrictions>
       <Properties>
@@ -2313,10 +2194,10 @@
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customer]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customer].[Customers]</HIERARCHY_UNIQUE_NAME>
                         <LEVEL_NAME>(All)</LEVEL_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[(All)]</LEVEL_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customer].[Customers].[(All)]</LEVEL_UNIQUE_NAME>
                         <LEVEL_CAPTION>(All)</LEVEL_CAPTION>
                         <LEVEL_NUMBER>0</LEVEL_NUMBER>
                         <LEVEL_CARDINALITY>1</LEVEL_CARDINALITY>
@@ -2324,16 +2205,16 @@
                         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
                         <LEVEL_UNIQUE_SETTINGS>3</LEVEL_UNIQUE_SETTINGS>
                         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy - (All) Level</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customer.Customers Hierarchy - (All) Level</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customer]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customer].[Customers]</HIERARCHY_UNIQUE_NAME>
                         <LEVEL_NAME>Country</LEVEL_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Country]</LEVEL_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customer].[Customers].[Country]</LEVEL_UNIQUE_NAME>
                         <LEVEL_CAPTION>Country</LEVEL_CAPTION>
                         <LEVEL_NUMBER>1</LEVEL_NUMBER>
                         <LEVEL_CARDINALITY>3</LEVEL_CARDINALITY>
@@ -2341,16 +2222,16 @@
                         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
                         <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
                         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy - Country Level</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customer.Customers Hierarchy - Country Level</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customer]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customer].[Customers]</HIERARCHY_UNIQUE_NAME>
                         <LEVEL_NAME>State Province</LEVEL_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[State Province]</LEVEL_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customer].[Customers].[State Province]</LEVEL_UNIQUE_NAME>
                         <LEVEL_CAPTION>State Province</LEVEL_CAPTION>
                         <LEVEL_NUMBER>2</LEVEL_NUMBER>
                         <LEVEL_CARDINALITY>13</LEVEL_CARDINALITY>
@@ -2358,33 +2239,33 @@
                         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
                         <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
                         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy - State Province Level</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customer.Customers Hierarchy - State Province Level</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customer]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customer].[Customers]</HIERARCHY_UNIQUE_NAME>
                         <LEVEL_NAME>City</LEVEL_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[City]</LEVEL_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customer].[Customers].[City]</LEVEL_UNIQUE_NAME>
                         <LEVEL_CAPTION>City</LEVEL_CAPTION>
                         <LEVEL_NUMBER>3</LEVEL_NUMBER>
                         <LEVEL_CARDINALITY>109</LEVEL_CARDINALITY>
                         <LEVEL_TYPE>0</LEVEL_TYPE>
                         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
-                        <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
+                        <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
                         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy - City Level</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customer.Customers Hierarchy - City Level</DESCRIPTION>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
-                        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
-                        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Customer]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Customer].[Customers]</HIERARCHY_UNIQUE_NAME>
                         <LEVEL_NAME>Name</LEVEL_NAME>
-                        <LEVEL_UNIQUE_NAME>[Customers].[Name]</LEVEL_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Customer].[Customers].[Name]</LEVEL_UNIQUE_NAME>
                         <LEVEL_CAPTION>Name</LEVEL_CAPTION>
                         <LEVEL_NUMBER>4</LEVEL_NUMBER>
                         <LEVEL_CARDINALITY>10281</LEVEL_CARDINALITY>
@@ -2392,7 +2273,7 @@
                         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
                         <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
                         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
-                        <DESCRIPTION>Sales Cube - Customers Hierarchy - Name Level</DESCRIPTION>
+                        <DESCRIPTION>Sales Cube - Customer.Customers Hierarchy - Name Level</DESCRIPTION>
                     </row>
                 </root>
             </cxmla:return>
@@ -2457,7 +2338,7 @@
   <Body>
     <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
       <Command>
-        <Statement>SELECT {[Measures].[Sales Count], [Measures].[Store Cost]} DIMENSION PROPERTIES PARENT_UNIQUE_NAME ON COLUMNS , NON EMPTY HIERARCHIZE({DrillDownMember({{DrillDownMember({{DrillDownMember({DrillDownLevel({[Store].[All Stores]})}, {[Store].[USA]})}}, {[Store].[USA].[OR]})}}, {[Store].[USA].[OR].[Salem]})}) DIMENSION PROPERTIES PARENT_UNIQUE_NAME ON ROWS  FROM [Sales]</Statement>
+        <Statement>SELECT {[Measures].[Sales Count], [Measures].[Store Cost]} DIMENSION PROPERTIES PARENT_UNIQUE_NAME ON COLUMNS , NON EMPTY HIERARCHIZE({DrillDownMember({{DrillDownMember({{DrillDownMember({DrillDownLevel({[Store].[Stores].[All Stores]})}, {[Store].[Stores].[USA]})}}, {[Store].[Stores].[USA].[OR]})}}, {[Store].[Stores].[USA].[OR].[Salem]})}) DIMENSION PROPERTIES PARENT_UNIQUE_NAME ON ROWS  FROM [Sales]</Statement>
       </Command>
       <Properties>
         <PropertyList>
@@ -2667,13 +2548,13 @@
                                 </HierarchyInfo>
                             </AxisInfo>
                             <AxisInfo name="Axis1">
-                                <HierarchyInfo name="Store">
-                                    <UName name="[Store].[MEMBER_UNIQUE_NAME]"/>
-                                    <Caption name="[Store].[MEMBER_CAPTION]"/>
-                                    <LName name="[Store].[LEVEL_UNIQUE_NAME]"/>
-                                    <LNum name="[Store].[LEVEL_NUMBER]"/>
-                                    <DisplayInfo name="[Store].[DISPLAY_INFO]"/>
-                                    <PARENT_UNIQUE_NAME name="[Store].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
+                                <HierarchyInfo name="Stores">
+                                    <UName name="[Store].[Stores].[MEMBER_UNIQUE_NAME]"/>
+                                    <Caption name="[Store].[Stores].[MEMBER_CAPTION]"/>
+                                    <LName name="[Store].[Stores].[LEVEL_UNIQUE_NAME]"/>
+                                    <LNum name="[Store].[Stores].[LEVEL_NUMBER]"/>
+                                    <DisplayInfo name="[Store].[Stores].[DISPLAY_INFO]"/>
+                                    <PARENT_UNIQUE_NAME name="[Store].[Stores].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
                             <AxisInfo name="SlicerAxis"/>
@@ -2710,82 +2591,82 @@
                         <Axis name="Axis1">
                             <Tuples>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[All Stores]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[All Stores]</UName>
                                         <Caption>All Stores</Caption>
-                                        <LName>[Store].[(All)]</LName>
+                                        <LName>[Store].[Stores].[(All)]</LName>
                                         <LNum>0</LNum>
                                         <DisplayInfo>65539</DisplayInfo>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[USA]</UName>
                                         <Caption>USA</Caption>
-                                        <LName>[Store].[Store Country]</LName>
+                                        <LName>[Store].[Stores].[Store Country]</LName>
                                         <LNum>1</LNum>
                                         <DisplayInfo>65539</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[All Stores]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Store].[Stores].[All Stores]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[CA]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[USA].[CA]</UName>
                                         <Caption>CA</Caption>
-                                        <LName>[Store].[Store State]</LName>
+                                        <LName>[Store].[Stores].[Store State]</LName>
                                         <LNum>2</LNum>
                                         <DisplayInfo>5</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Store].[Stores].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[OR]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[USA].[OR]</UName>
                                         <Caption>OR</Caption>
-                                        <LName>[Store].[Store State]</LName>
+                                        <LName>[Store].[Stores].[Store State]</LName>
                                         <LNum>2</LNum>
                                         <DisplayInfo>196610</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Store].[Stores].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[OR].[Portland]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[USA].[OR].[Portland]</UName>
                                         <Caption>Portland</Caption>
-                                        <LName>[Store].[Store City]</LName>
+                                        <LName>[Store].[Stores].[Store City]</LName>
                                         <LNum>3</LNum>
                                         <DisplayInfo>1</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[OR]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Store].[Stores].[USA].[OR]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[OR].[Salem]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[USA].[OR].[Salem]</UName>
                                         <Caption>Salem</Caption>
-                                        <LName>[Store].[Store City]</LName>
+                                        <LName>[Store].[Stores].[Store City]</LName>
                                         <LNum>3</LNum>
                                         <DisplayInfo>196609</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[OR]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Store].[Stores].[USA].[OR]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[OR].[Salem].[Store 13]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[USA].[OR].[Salem].[Store 13]</UName>
                                         <Caption>Store 13</Caption>
-                                        <LName>[Store].[Store Name]</LName>
+                                        <LName>[Store].[Stores].[Store Name]</LName>
                                         <LNum>4</LNum>
                                         <DisplayInfo>0</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA].[OR].[Salem]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Store].[Stores].[USA].[OR].[Salem]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                                 <Tuple>
-                                    <Member Hierarchy="Store">
-                                        <UName>[Store].[USA].[WA]</UName>
+                                    <Member Hierarchy="Stores">
+                                        <UName>[Store].[Stores].[USA].[WA]</UName>
                                         <Caption>WA</Caption>
-                                        <LName>[Store].[Store State]</LName>
+                                        <LName>[Store].[Stores].[Store State]</LName>
                                         <LNum>2</LNum>
                                         <DisplayInfo>7</DisplayInfo>
-                                        <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
+                                        <PARENT_UNIQUE_NAME>[Store].[Stores].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
                             </Tuples>

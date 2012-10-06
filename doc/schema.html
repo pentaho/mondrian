@@ -6,14 +6,14 @@
   == You must accept the terms of that agreement to use this software.
   ==
   == Copyright (C) 2001-2005 Julian Hyde
-  == Copyright (C) 2005-2011 Pentaho
+  == Copyright (C) 2005-2012 Pentaho
   == All Rights Reserved.
   ==
   == jhyde, 24 September, 2002
   -->
 <head>
     <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
-	<title>Pentaho Analysis Services: How to Design a Mondrian Schema</title>
+	<title>Pentaho Analysis: How to Design a Mondrian Schema</title>
 </head>
 <body>
 <!-- doc2web start -->
@@ -63,7 +63,6 @@
   	</li>
   	<li><a href="#Advanced_logical_constructs">Advanced logical constructs</a>
 		<ol>
-			<li><a href="#Virtual_cubes">Virtual cubes</a></li>
 			<li><a href="#Parent_child_hierarchies">Parent-child hierarchies</a><ol>
 			<li><a href="#Tuning_parent-child_hierarchies">Tuning parent-child 
 			hierarchies</a></li>
@@ -108,17 +107,29 @@
 ############################# -->
 
 <h3>1. What is a schema?<a name="What_is_a_schema">&nbsp;</a></h3>
-<p>A schema defines a multi-dimensional database. It contains a logical model, consisting of cubes, hierarchies, and members, and a mapping of this model onto a physical model.</p>
-<p>The logical model consists of the constructs used to write queries in MDX language: cubes, dimensions, hierarchies, levels, and members.</p>
-<p>The physical model is the source of the data which is presented through the logical model. It is typically a star schema, which is a set of tables in a relational database; later, we shall see examples of other kinds of mappings.</p>
+
+<p>A schema defines a multi-dimensional database. It contains a logical model,
+consisting of cubes, measures, dimensions and attributes, and a mapping of this
+model onto a physical model.</p>
+
+<p>The logical model consists of the constructs used to write queries in MDX
+language: cubes, measures, dimensions, attributes, hierarchies, levels, and
+members.</p>
+
+<p>The physical model is the source of the data which is presented through the
+logical model. It is a set of tables and other relational expressions, connected
+using links. Typically the tables are stored in a relational database and
+arranged in a star or snowflake schema; later, we shall see examples of other
+kinds of mappings.</p>
+
 <!--
 ###########################
 ##  2. overview start #####
 ########################### -->
 <h3>2. Schema files<a name="Schema_files">&nbsp;</a></h3>
 <p>Mondrian schemas are represented in an XML file. An example schema, containing almost all of the
-constructs we discuss here, is supplied as <code>demo/FoodMart.xml</code> in the mondrian distribution.
-The dataset to populate this schema is <a href="install.html#2_Set_up_test_data">also in the distribution</a>.</p>
+constructs we discuss here, is supplied as <code>demo/FoodMart.xml</code> in the Mondrian distribution.
+The dataset to populate this schema <a href="install.html#2_Set_up_test_data">can be downloaded from Pentaho</a>.</p>
 <p>Currently, the only way to create a schema is to edit a schema XML file in a text editor. The XML
 syntax is not too complicated, so this is not as difficult as it sounds, particularly if you use the FoodMart
 schema as a guiding example.</p>
@@ -128,45 +139,61 @@ schema as a guiding example.</p>
 <blockquote style="text-indent: -20px">
     <code>
         <div style="padding-left:20px">&lt;<a href="#XML_Schema">Schema</a>&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_Cube">Cube</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_PhysicalSchema">PhysicalSchema</a>&gt;</div>
                 <div style="padding-left:60px;">&lt;<a href="#XML_Table">Table</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_AggName">AggName</a>&gt;</div>
-                        <div style="padding-left:100px;">aggElements</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_AggPattern">AggPattern</a>&gt;</div>
-                        <div style="padding-left:100px;">aggElements</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_Dimension">Dimension</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
-                        <div style="padding-left:100px;">relation</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_Closure">Closure</a>/&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_Level">Level</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_KeyExpression">KeyExpression</a>&gt;</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_NameExpression">NameExpression</a>&gt;</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_CaptionExpression">CaptionExpression</a>&gt;</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_OrdinalExpression">OrdinalExpression</a>&gt;</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_ParentExpression">ParentExpression</a>&gt;</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a  href="#XML_Property">Property</a>&gt;</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_PropertyExpression">PropertyExpression</a>&gt;</div>
-                                    <div style="padding-left:160px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_DimensionUsage">DimensionUsage</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_Measure">Measure</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_MeasureExpression">MeasureExpression</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_MemberProperty">CalculatedMemberProperty</a>/&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_Formula">Formula</a>/&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_MemberProperty">CalculatedMemberProperty</a>/&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_NamedSet">NamedSet</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_Formula">Formula</a>/&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_VirtualCube">VirtualCube</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_CubeUsages">CubeUsages</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_CubeUsage">CubeUsage</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_VirtualCubeDimension">VirtualCubeDimension</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Key">Key</a>&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_Column">Column</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Query">Query</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_SQL">SQL</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_InlineTable">InlineTable</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_ColumnDefs">ColumnDefs</a>&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_ColumnDef">ColumnDef</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Key">Key</a>&gt; (as for Table)</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Rows">Rows</a>&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_Row">Row</a>&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a href="#XML_Value">Value</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Link">Link</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Dimension">Dimension</a>/&gt; (shared; as for Dimension within Cube)</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_Cube">Cube</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Dimensions">Dimensions</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_Dimension">Dimension</a>&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_Attributes">Attributes</a>&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a href="#XML_Attribute">Attribute</a>&gt;</div>
+                                <div style="padding-left:140px;">&lt;<a href="#XML_Key">Key</a>&gt;</div>
+                                    <div style="padding-left:160px;">&lt;<a href="#XML_Column">Column</a>/&gt;</div>
+                                <div style="padding-left:140px;">&lt;<a href="#XML_Name">Name</a>/&gt; (as Key)</div>
+                                <div style="padding-left:140px;">&lt;<a href="#XML_Caption">Caption</a>&gt; (as Key)</div>
+                                <div style="padding-left:140px;">&lt;<a href="#XML_OrderBy">OrderBy</a>&gt; (as Key)</div>
+                                <div style="padding-left:140px;">&lt;<a href="#XML_Closure">Closure</a>&gt;</div>
+                                <div style="padding-left:140px;">&lt;<a href="#XML_MemberFormatter">MemberFormatter</a>&gt;</div>
+                                    <div style="padding-left:160px;">&lt;<a href="#XML_Script">Script</a>&gt;</div>
+                                <div style="padding-left:140px;">&lt;<a  href="#XML_Property">Property</a>&gt;</div>
+                                    <div style="padding-left:160px;">&lt;<a href="#XML_PropertyFormatter">PropertyFormatter</a>&gt;</div>
+                                        <div style="padding-left:180px;">&lt;<a href="#XML_Script">Script</a>&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_Hierarchies">Hierarchies</a>&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
+                                <div style="padding-left:140px;">&lt;<a href="#XML_Levels">Levels</a>&gt;</div>
+                                    <div style="padding-left:160px;">&lt;<a href="#XML_Level">Level</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_MeasureGroups">MeasureGroups</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_MeasureGroup">MeasureGroup</a>&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_Measures">Measure</a>&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a href="#XML_Measure">Measure</a>&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a href="#XML_MeasureRef">MeasureRef</a>&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_DimensionLinks">DimensionLinks</a>&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a href="#XML_ForeignKeyLink">ForeignKeyLink</a>&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a href="#XML_FactLink">FactLink</a>&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a href="#XML_ReferenceLink">ReferenceLink</a>&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a href="#XML_CopyLink">CopyLink</a>&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a href="#XML_NoLink">NoLink</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_CalculatedMembers">CalculatedMembers</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_Formula">Formula</a>&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_CellFormatter">CellFormatter</a>&gt;</div>
+                            <div style="padding-left:120px;">&lt;<a href="#XML_Script">Script</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_NamedSets">NamedSets</a>&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_NamedSet">NamedSet</a>&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_Formula">Formula</a>&gt;</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_Role">Role</a>&gt;</div>
                 <div style="padding-left:60px;">&lt;<a href="#XML_SchemaGrant">SchemaGrant</a>&gt;</div>
                     <div style="padding-left:80px;">&lt;<a href="#XML_CubeGrant">CubeGrant</a>&gt;</div>
@@ -175,42 +202,23 @@ schema as a guiding example.</p>
                             <div style="padding-left:120px;">&lt;<a href="#XML_MemberGrant">MemberGrant</a>/&gt;</div>
                 <div style="padding-left:60px;">&lt;<a href="#XML_Union">Union</a>&gt;</div>
                     <div style="padding-left:80px;">&lt;<a href="#XML_RoleUsage">RoleUsage</a>/&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a>/&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a>&gt;</div>
+                <div style="padding-left:60px;">&lt;<a href="#XML_Script">Script</a>&gt;</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_Parameter">Parameter</a>/&gt;</div>
-        <br/>
-        relation ::=<br/>
-            <div style="padding-left:40px;">&lt;<a href="#XML_Table">Table</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_View">View</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_SQL">SQL</a>/&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_InlineTable">InlineTable</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_ColumnDefs">ColumnDefs</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_ColumnDef">ColumnDef</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_Rows">Rows</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_Row">Row</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_Value">Value</a>&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_Join">Join</a>&gt;</div>
-                <div style="padding-left:60px;">relation</div>
-        <br/>
-        aggElement ::=<br/>
-            <div style="padding-left:40px;">&lt;<a href="#XML_AggExclude">AggExclude</a>&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_AggFactCount">AggFactCount</a>&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_AggIgnoreColumn">AggIgnoreColumn</a>&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_AggForeignKey">AggForeignKey</a>&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_AggMeasure">AggMeasure</a>&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_AggLevel">AggLevel</a>&gt;</div>
     </code>
 </blockquote>
 
-<p><b>NOTE</b>: The order of XML elements is important. For example,
-<code><a href="#XML_UserDefinedFunction">&lt;UserDefinedFunction&gt;</a></code>
-element has to occur inside the <code><a href="#XML_Schema">&lt;Schema&gt;</a></code>
-element after all collections of <code><a href="#XML_Cube">&lt;Cube&gt;</a></code>,
-<code><a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a></code>,
-<code><a href="#XML_NamedSet">&lt;NamedSet&gt;</a></code>
-and <code><a href="#XML_Role">&lt;Role&gt;</a></code> elements. If you include it before the first
-<code><a href="#XML_Cube">&lt;Cube&gt;</a></code> element,
-the rest of the schema will be ignored.</p>
+<p>The order of XML elements is not important. For example, as long as it occurs
+as a child of a
+<code><a href="#XML_Schema">&lt;Schema&gt;</a></code> element,
+a <code><a href="#XML_UserDefinedFunction">&lt;UserDefinedFunction&gt;</a></code>
+element might occur after one <code><a href="#XML_Cube">&lt;Cube&gt;</a></code>
+element and after another.</p>
+
+<p>This is different to Mondrian-3.x, where order of elements was very important.
+For other changes with previous versions of the schema, see the
+<a href="https://github.com/pentaho/mondrian/tree/lagunitas/RELEASE.txt">release
+notes</a>.</p>
 
 <p>The content of each XML element is described in
 <a href="#Appendix_A_XML_elements">Appendix A</a> and in the <a href="xml_schema.html">XML schema</a>.</p>
@@ -220,18 +228,18 @@ the rest of the schema will be ignored.</p>
 ##  2.1 Annotations  #####
 ########################## -->
 <h1>2.1 Annotation<a name="Annotation">&nbsp;</a></h1>
-<p>The major element types (schema, cube, virtual cube, shared dimension, 
-dimension, hierarchy, level, measure, calculated member) support annotations. An 
-annotation is a way of associating a user-defined property with a metadata 
-element, and in particular, allows tools to add metadata without extending the 
-official Mondrian schema.</p>
+
+<p>The major element types (schema, cube, shared dimension, dimension,
+attribute, hierarchy, level, measure group, measure, calculated member) support
+annotations. An annotation is a way of associating a user-defined property with
+a metadata element, and in particular, allows tools to add metadata without
+extending the official Mondrian schema.</p>
 
 <p>Create an 
 <code><a href="#XML_Annotations">&lt;Annotations&gt;</a></code> element as a child of the element you wish to
-annotate (generally it is the first child element, but check the schema
-definition for details), then include a number of 
+annotate, then include a number of 
 <code><a href="#XML_Annotation">&lt;Annotation&gt;</a></code> elements. 
-<code><a href="#XML_Annotation">&lt;Annotation&gt;</a></code> Annotation 
+<code><a href="#XML_Annotation">&lt;Annotation&gt;</a></code>
 elements' names must be unique within their element. If you are adding 
 annotations to support a particular tool that you maintain, choose annotation 
 names carefully, to ensure that they do not clash with annotations used by other 
@@ -241,7 +249,7 @@ tools.</p>
 
 <blockquote style="text-indent: -20px">
 	<code>
-  		<div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a> name=&quot;Rock Sales&quot;&gt;</div>
+  		<div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a> name=&quot;Rock Sales&quot; metamodelVersion=&quot;4.0&quot;&gt;</div>
 			<div style="padding-left:40px;;">&lt;<a href="#XML_Annotations">Annotations</a>&gt;</div>
 			<div style="padding-left:60px;;">&lt;<a href="#XML_Annotation">Annotation</a> name="Author"&gt;Fred Flintstone&lt;/<a href="#XML_Annotation">Annotation</a>&gt;</div>
 			<div style="padding-left:60px;;">&lt;<a href="#XML_Annotation">Annotation</a> name="Date"&gt;10,000 BC&lt;/<a href="#XML_Annotation">Annotation</a>&gt;</div>
@@ -250,6 +258,43 @@ tools.</p>
 			<div style="padding-left:60px;;">...</div>
 </code>
 </blockquote>
+
+<p>Some annotation names are used by convention across several tools. They are
+as follows:</p>
+
+<table class="grayTable" id="AutoNumber3">
+<tr>
+  <th>Annotation</th>
+  <th>Element(s)</th>
+  <th>Description</th>
+</tr>
+<tr>
+  <td>AnalyzerBusinessGroup</td>
+  <td>Measure, CalculatedMember</td>
+  <td>Used to create folders in the UI</td>
+</tr>
+<tr>
+  <td>AnalyzerBusinessGroupDescription</td>
+  <td>Measure, CalculatedMember</td>
+  <td>Description for the folders</td>
+</tr>
+<tr>
+  <td>AnalyzerDateFormat</td>
+  <td>?</td>
+  <td>Used for relative date filters</td>
+</tr>
+<tr>
+  <td>AnalyzerHideInUI</td>
+  <td>?</td>
+  <td>Hides the field in the UI</td>
+</tr>
+<tr>
+  <td>AnalyzerDisableDrillLinks</td>
+  <td>?</td>
+  <td>Disables drillthrough links on the cube</td>
+</tr>
+</table>
+
 <!--
 ###########################
 ##  3. Logical model  #####
@@ -297,7 +342,7 @@ tools.</p>
 </blockquote>
 
 <p>This schema contains a single cube, called "Sales". The Sales cube has two dimensions,
-"Time", and "Gender", and two measures, "Unit Sales" and "Store Sales".</p>
+"Time", and "Gender", and four measures, "Unit Sales", "Store Sales", "Store Cost", and "Profit".</p>
 
 <p>We can write an MDX query on this schema:</p>
 
@@ -399,7 +444,7 @@ construct to build more complicated SQL statements. The
 
 <p>The optional <code>datatype</code> attribute specifies how cell values are represented in Mondrian's
 cache, and how they are returned via XML for Analysis. The <code>datatype</code> attribute can have
-values "<code>String</code>", "<code>Integer</code>", &quot;<code>Numeric</code>", &quot;<code>Boolean</code>&quot;,
+values "<code>String</code>", "<code>Integer</code>", "<code>Numeric</code>", &quot;<code>Boolean</code>&quot;,
 &quot;<code>Date</code>&quot;, &quot;<code>Time</code>&quot;, and &quot;<code>Timestamp</code>&quot;.
 The default is "<code>Numeric</code>", except for "<code>count</code>" and
 "<code>distinct-count</code>" measures, which are "<code>Integer</code>".</p>
@@ -438,7 +483,7 @@ an example of this.</p>
  	</code>
 </blockquote>
 
-<p>In this case, sales are only included in the summation if they correspond to a promotion sales.
+<p>In this case, sales are only included in the summation if they correspond to a promotion sale.
 Arbitrary SQL expressions can be used, including subqueries. However, the underlying database
 must be able to support that SQL expression in the context of an aggregate. Variations in syntax
 between different databases is handled by specifying the dialect in the SQL tag.</p>
@@ -457,7 +502,7 @@ between different databases is handled by specifying the dialect in the SQL tag.
 	'USA' are all members of the store hierarchy.</li>
   	<li>A <dfn>hierarchy</dfn> is a set of members organized into a structure for convenient analysis.
 	For example, the store hierarchy consists of the store name, city, state, and nation. The
-	hierarchy allows you form intermediate sub-totals: the sub-total for a state is the sum of the
+	hierarchy allows you to form intermediate sub-totals: the sub-total for a state is the sum of the
 	sub-totals of all of the cities in that state, each of which is the sum of the sub-totals of
 	the stores in that city.</li>
 	<li>A <dfn>level</dfn> is a collection of members which have the
@@ -503,7 +548,7 @@ joining from the fact table "sales_fact_1997.customer_id" to the dimension table
 <p>A dimension is joined to a cube by means of a pair of columns, one in the fact table, the other in the dimension table.
 The <code>&lt;Dimension&gt;</code> element has a <code>foreignKey</code> attribute,
 which is the name of a column in the fact table; the <code>&lt;Hierarchy&gt;</code> element has
-<code>primaryKey</code> attribute.</p>
+a <code>primaryKey</code> attribute.</p>
 
 <p>If the hierarchy has more than one table, you can disambiguate using the <code>primaryKeyTable</code>
 attribute. </p>
@@ -706,17 +751,17 @@ indicated by the level's <code>levelType</code> attribute, whose allowable value
 ########################################## -->
 <h1>3.3.4 Order and display of levels<a name="Level_Order_and_Display">&nbsp;</a></h1>
 
-<p>Notice that in the time hierarchy example above the <code>ordinalColumn</code> and
+<p>Notice in the time hierarchy example above the <code>ordinalColumn</code> and
 <code>nameColumn</code> attributes on the <code>&lt;Level&gt;</code> element. These
-effect how levels are displayed in a result. The <code>ordinalColumn</code> attribute specifies a
-column in the Hierarchy table that provides the order of the members in a given Level, while the
+affect how levels are displayed in a result. The <code>ordinalColumn</code> attribute specifies a
+column in the Hierarchy table that provides the order of the members in a given level, while the
 <code>nameColumn</code> specifies a column that will be displayed.</p>
 
-<p>For example, in the Month Level above, the <code>datehierarchy</code> table has month (1 .. 12)
+<p>For example, in the Month level above, the <code>datehierarchy</code> table has month (1 .. 12)
 and month_name (January, February, ...) columns. The column value that will be used internally within MDX is the
 month column, so valid member specifications will be of the form:
 <code>[Time].[2005].[Q1].[<b><i>1</i></b>]</code>. Members of the <code>[Month]</code>
-level will displayed in the order January, February, etc.</p>
+level will be displayed in the order January, February, etc.</p>
 
 <p>In a parent-child hierarchy, members are always sorted in hierarchical
 order. The <code>ordinalColumn</code> attribute controls the order that
@@ -731,7 +776,7 @@ java.lang.Comparable</a>
 which yield the desired ordering when their
 <code>Comparable.compareTo</code> method is called.</p>
 
-<p>Levels contain a <code>type</code> attribute, which can have values &quot;<code>String</code>", "<code>Integer</code>", &quot;<code>Numeric</code>", &quot;<code>Boolean</code>&quot;,
+<p>Levels contain a <code>type</code> attribute, which can have values "<code>String</code>", "<code>Integer</code>", "<code>Numeric</code>", &quot;<code>Boolean</code>&quot;,
 &quot;<code>Date</code>&quot;, &quot;<code>Time</code>&quot;, and &quot;<code>Timestamp</code>&quot;.
 The default value is <code>&quot;Numeric&quot;</code> because key columns generally have a numeric type. If it is a
 different type, Mondrian needs to know this so it can generate SQL statements
@@ -770,7 +815,7 @@ quotes:</p>
 <p>Notice that the first hierarchy doesn't have a name. By default, a hierarchy has the
 same name as its dimension, so the first hierarchy is called "Time".</p>
 
-<p>These hierarchies don't have much in common ? they don't even have the same table! ? except
+<p>These hierarchies don't have much in common -- they don't even have the same table! -- except
 that they are joined from the same column in the fact table, <code>"time_id"</code>.
 The main reason to put two hierarchies in the same dimension is because it makes more sense to
 the end-user: end-users know that it makes no sense to have the "Time" hierarchy on one axis
@@ -984,20 +1029,18 @@ and a <a href="#Member_formatter">member formatter</a>.</p>
 ################################################ -->
 <h1>3.3.10 Default Measure Attribute<a name="Default_Measure_Attribute">&nbsp;</a></h1>
 
-<p>The <a href="#XML_Cube">&lt;Cube&gt;</a> and <a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a>
-elements allows specifying the optional attribute "defaultMeasure".</p>
+<p>The <a href="#XML_Cube">&lt;Cube&gt;</a> element allows specifying the
+optional attribute "defaultMeasure".</p>
 
 <p>Specifying <code>defaultMeasure</code> in <a href="#XML_Cube">&lt;Cube&gt;</a> element allows users
-to explicitly specify any base measure as default Measure.</p>
+to explicitly specify any base measure as a default Measure.</p>
 
-<p>Specifying <code>defaultMeasure</code> in <a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a>
-element allows users to explicitly specify any VirtualCube Measure as a default Measure.</p>
+<p>Note that if a default measure is not specified it takes the first measure
+defined in the cube as the default measure.</p>
 
-<p>Note that if default measure is not specified it takes the first measure defined in the cube as the default measure. In the case of virtual cube,
- it would pick up the first base measure of the first cube defined within it as the default.</p>
-
-<p>Specifying the <code>defaultMeasure</code> explicitly would be useful in cases where you would want a calculated member to be picked up as the default measure.
- To facilitate this, the calculated member could be defined in one of the base cubes and specified as the <code>defaultMeasure</code> in the virtual cube.</p>
+<p>Specifying the <code>defaultMeasure</code> explicitly would be useful in
+cases where you would want a calculated member to be picked up as the default
+measure.</p>
 
 <blockquote style="text-indent: -20px">
 <code>
@@ -1008,10 +1051,6 @@ element allows users to explicitly specify any VirtualCube Measure as a default 
             <div style="padding-left:60px">...</div>
         <div style="padding-left:40px">&lt;/<span><a href="#XML_CalculatedMember">CalculatedMember</a></span>&gt;</div>
     <div style="padding-left:20px">&lt;/<a href="#XML_Cube">Cube</a>&gt;</div>
-    <div style="padding-left:20px">&lt;<a href="#XML_VirtualCube">VirtualCube</a> name=&quot;Warehouse and Sales&quot; defaultMeasure=&quot;Profit&quot;&gt;</div>
-        <div style="padding-left:40px">...</div>
-        <div style="padding-left:40px"><a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Profit]&quot;/&gt;</div>
-    <div style="padding-left:20px">&lt;/<a href="#XML_VirtualCube">VirtualCube</a>&gt;</div>
 </code>
 </blockquote>
 <!--
@@ -1026,19 +1065,19 @@ are typically the result of business rules associated with the systems producing
 the data, and often cannot be inferred just by looking at the data itself.</p>
 
 <p>Functional dependencies are declared to Mondrian using the
-<a href="#dependsOnLevelValue">&lt;dependsOnLevelValue&gt</a> attribute of the
+<code>dependsOnLevelValue</code> attribute of the
 <a href="#XML_Property">&lt;Property&gt</a> element and the
-<a href="#uniqueKeyLevelName">&lt;uniqueKeyLevelName&gt</a> attribute of the
+<code>uniqueKeyLevelName</code> attribute of the
 <a href="#XML_Hierarchy">&lt;Hierarchy&gt</a> element.</p>
 
-<p>The <a href="#dependsOnLevelValue">&lt;dependsOnLevelValue&gt</a> attribute of a
+<p>The <code>dependsOnLevelValue</code> attribute of a
 <a href="#Member_properties">member property</a> is used to indicate
 that the value of the member property is functionally dependent on the value
 of the <a href="#XML_Level">&lt;Level&gt</a> in which the member property is
 defined.  In other words, for a given value of the level, the value of the
 property is invariant.</p>
 
-<p>The <a href="#uniqueKeyLevelName">&lt;uniqueKeyLevelName&gt</a> attribute of a
+<p>The <code>uniqueKeyLevelName</code> attribute of a
 <a href="#XML_Hierarchy">&lt;Hierarchy&gt</a> is used to indicate that the given
 level (if any) taken together with all higher levels in the hierarchy acts as a
 unique alternate key, ensuring that for any unique combination of those level values,
@@ -1075,8 +1114,8 @@ dependent on the associated level values.</p>
 
 <p>Additionally, we know that the Vehicle Identification Number uniquely identifies
 each car, and that each car only has one license.  Thus, we know that the
-combination of Make, Model, Manufacturing Plant, and Vehicle Ientification
-Number uniquely identify each vehicle; the license number is redundant.</p>
+combination of Make, Model, Manufacturing Plant, and Vehicle Identification
+Number uniquely identifies each vehicle; the license number is redundant.</p>
 
 <p>These attributes enable optimization of the GROUP BY clause in the SQL statements Mondrian generates.  Absent any
 functional dependency information, a typical query on the Automotive dimension
@@ -1118,7 +1157,7 @@ would look something like:</p>
 we know that the query is selecting at a depth that includes the "unique key" level,
 and that all properties in the query are also functionally dependent on their levels.
 In such cases the GROUP BY clause is redundant and may be eliminated completely,
-reducing SQL query performance significantly on some databases:</p>
+increasing SQL query performance significantly on some databases:</p>
 
 <blockquote style="text-indent: -20px">
     <code>
@@ -1184,7 +1223,7 @@ While the expectation is that the 4.0 schema processor will maintain backward
 compatibility with schemas developed for Mondrian 3.1, these are transitional
 attributes introduced to allow support in the interim, and 4.0 will not be
 backward compatible with them. Therefore, any schema using these attributes will
-need to be migrated to the new syntax as part of upgrading to Mondrian 4.0</p>
+need to be migrated to the new syntax as part of upgrading to Mondrian 4.0.</p>
 
 <!--
 ####################################################
@@ -1226,7 +1265,7 @@ follows:</p>
 <p>As with the functional dependency optimizations, support for table hints
 is in a transitional stage, and are likely to change in Mondrian 4.0.  Any
 schema using them may need to be migrated to the new schema syntax as part of
-upgrading to Mondrian 4.0</p>
+upgrading to Mondrian 4.0.</p>
 
 <!--
 #######################################
@@ -1246,7 +1285,7 @@ and is defined using the <code>&lt;<a href="#XML_Join">Join</a>&gt;</code> opera
 <code>
     <div style="padding-left:20px;">&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;</div>
         <div style="padding-left:40px;">...</div>
-        <div style="padding-left:40px;"><a href="#XML_Dimension">Dimension</a> name=&quot;Product&quot; foreignKey=&quot;product_id&quot;&gt;</div>
+        <div style="padding-left:40px;">&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Product&quot; foreignKey=&quot;product_id&quot;&gt;</div>
 			<div style="padding-left:60px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; primaryKey=&quot;product_id&quot; primaryKeyTable=&quot;product&quot;&gt;</div>
                 <div style="padding-left:80px;">&lt;<a href="#XML_Join">Join</a> leftKey=&quot;product_class_key&quot; rightAlias=&quot;product_class&quot; rightKey=&quot;product_class_id&quot;&gt;</div>
 				    <div style="padding-left:100px;">&lt;<a href="#XML_Table">Table</a> name=&quot;product&quot;/&gt;</div>
@@ -1271,7 +1310,7 @@ a <code>&lt;Join&gt;</code> element nested within a <code>&lt;Join&gt;
 </code> element because <code>&lt;Join&gt;</code> takes two operands; the operands
 can be tables, joins, or even queries.</p>
 
-<p>The arrangement of the tables seems complex, the simple rule of thumb is to order the tables
+<p>The arrangement of the tables seems complex; the simple rule of thumb is to order the tables
 by the number of rows they contain. The <code>"product"</code> table has the most
 rows, so it joins to the fact table and appears first; <code>"product_class"</code>
 has fewer rows, and <code>"product_type"</code>, at the tip of the snowflake, has
@@ -1288,7 +1327,7 @@ column unambiguously comes from the <code>"product"</code> table.</p>
 ############################### -->
 <h1>4.1 Shared dimensions<a name="Shared_dimensions">&nbsp;</a></h1>
 
-<p>When generating the SQL for a join, mondrian needs to know which column to join to. If you are
+<p>When generating the SQL for a join, Mondrian needs to know which column to join to. If you are
 joining to a join, then you need to tell it which of the tables in the join that column belongs
 to (usually it will be the first table in the join).</p>
 
@@ -1401,7 +1440,7 @@ Holds CubeUsage elements.</p>
 <p>The <code>&lt;<a href="#XML_CubeUsage">CubeUsage</a>&gt;</code>
 element is optional. It specifies the base cube that is imported into the
 virtual cube. Currently it is possible to define a VirtualCubeMeasure and
-similar imports from base cube without defining CubeUsage for the cube.
+similar imports from a base cube without defining CubeUsage for the cube.
 The <code>cubeName</code> attribute specifies the base cube being imported.
 The <code>ignoreUnrelatedDimensions</code> attribute specifies that the measures
 from this base cube will have non joining dimension members pushed to the
@@ -1413,7 +1452,7 @@ the similarly named feature in SSAS 2005.
 mentions "When IgnoreUnrelatedDimensions is true, unrelated dimensions are forced
 to their top level; when the value is false, dimensions are not forced to their
 top level. This property is similar to the Multidimensional Expressions
-(MDX) ValidMeasure function". Current mondrian implementation of
+(MDX) ValidMeasure function". Current Mondrian implementation of
 <code>ignoreUnrelatedDimensions</code> depends on use of ValidMeasure. E.g. If we
 want to apply this behaviour to "Unit Sales" measure in the "Warehouse and Sales"
 virtual cube then we need to define a CubeUsage entry for "Sales" cube as shown
@@ -1890,9 +1929,9 @@ The DATATYPE property of a calculated member can have values "<code>String</code
     </code>
 </blockquote>
 
-<p>You can make a calculated member or a measure invisible. If you specify <code>visible="false"
-</code> (the default is "true") in the <code>&lt;<a href="#XML_Measure">Measure</a>&gt; or &lt;
-<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code> element, user-interfaces such as
+<p>You can make a calculated member or a measure invisible. If you specify <code>visible="false"</code>
+(the default is "true") in the <code>&lt;<a href="#XML_Measure">Measure</a>&gt;</code> or
+<code>&lt;<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code> element, user-interfaces such as
 JPivot will notice this property and hide the member. This is useful if you want to perform
 calculations in a number of steps, and hide intermediate steps from end-users. For example,
 here only "Margin per Sqft" is visible, and its factors "Store Cost", "Margin" and "Store Sqft"
@@ -1903,8 +1942,10 @@ are hidden:</p>
         <div style="padding-left:20px;">&lt;<a href="#XML_Measure">Measure</a> name="Store Cost" column="store_cost" aggregator="sum" formatString="#,###.00" visible="false"/&gt;</div>
         <div style="padding-left:20px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="Margin" dimension="Measures" visible="false"&gt;</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_Formula">Formula</a>&gt;([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]&lt;/<a href="#XML_Formula">Formula</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</div>
         <div style="padding-left:20px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="Store Sqft" dimension="Measures" visible="false"&gt;</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_Formula">Formula</a>&gt;[Store].Properties("Sqft")&lt;/<a href="#XML_Formula">Formula</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</div>
         <div style="padding-left:20px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="Margin per Sqft" dimension="Measures" visible="true"&gt;</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_Formula">Formula</a>&gt;[Measures].[Margin] / [Measures].[Store Cost]&lt;/<a href="#XML_Formula">Formula</a>&gt;</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name="FORMAT_STRING" value="$#,##0.00"/&gt;</div>
@@ -1934,8 +1975,8 @@ WHERE [Time].[Year].[1997]</code>
 </blockquote>
 
 <p>The <code>WITH SET</code> clause is very similar to the <code>WITH MEMBER</code> clause,
-and as you might expect, it has a construct in schema analogous to <code>&lt;
-<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code>. The
+and as you might expect, it has a construct in schema analogous to
+<code>&lt;<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code>. The
 <code>&lt;<a href="#XML_NamedSet">NamedSet</a>&gt;</code> element allows you to define a
 named set in your schema as part of a cube definition. It is implicitly available for
 any query against that cube:</p>
@@ -1985,7 +2026,7 @@ WHERE [Time].[Year].[1997]</code>
       </tr>
   </table>
 
-<p>A named set defined against a cube is not inherited by a virtual cubes defined against
+<p>A named set defined against a cube is not inherited by a virtual cube defined against
 that cube. (But you can define a named set against a virtual cube.)</p>
 
 <p>You can also define a named set as global to a schema:</p>
@@ -2140,7 +2181,7 @@ return null;<br/>
 
 <blockquote style="text-indent: -20px">
     <code>
-        <div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a> ...&gt;</div>
             <div style="padding-left:40px;">...</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a> name="PlusOne" className="com.example.PlusOneUdf"/&gt;</div>
         <div style="padding-left:20px;">&lt;/<a href="#XML_Schema">Schema</a>&gt;</div>
@@ -2264,7 +2305,7 @@ return null;<br/>
 
 <blockquote>
     <code>
-        <div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a> ...&gt;</div>
             <div style="padding-left:40px;">...</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a> name="PlusOne" className="com.example.PlusOrMinusOneUdf"&gt;</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a> name="MinusOne" className="com.example.PlusOrMinusOneUdf"&gt;</div>
@@ -2823,7 +2864,7 @@ substitution on a single schema file.</p>
 
 <blockquote style="text-indent: -20px">
     <code>
-        <div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a> measuresCaption="%{foodmart.measures.caption}"&gt;</div>
+        <div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a> ... measuresCaption="%{foodmart.measures.caption}"&gt;</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_Dimension">Dimension</a> name="Store" caption="%{foodmart.dimension.store.caption}" 
 				description=&quot;%{foodmart.dimension.store.description}&quot;&gt;</div>
                 <div style="padding-left:60px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" allMemberName="All Stores" allMemberCaption="%{foodmart.dimension.store.allmember.caption =All Stores}" primaryKey="store_id"&nbsp; 
@@ -3353,154 +3394,156 @@ Schema.lookupRole(String)</a>.</li>
       	<td><b>Description</b></td>
     </tr>
     <tr>
-      	<td>&nbsp;</td>
-      	<td>&nbsp;</td>
+      	<td colspan="2"><i><br/>Schema</i></td>
     </tr>
     <tr>
       	<td><code>&lt;<a name="XML_Schema" href="xml_schema.html#Schema">Schema</a>&gt;</code></td>
-      	<td>Collection of Cubes, Virtual cubes, Shared dimensions, and Roles.</td>
-    </tr>
-    <tr>
-      	<td colspan="2"><i><br/>Logical elements</i></td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_Cube" href="xml_schema.html#Cube">Cube</a>&gt;</code></td>
-      	<td>A collection of dimensions and measures, all centered on a fact table.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_VirtualCube" href="xml_schema.html#VirtualCube">VirtualCube</a>&gt;</code></td>
-      	<td>A cube defined by combining the dimensions and measures of one or more cubes.
-A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;</code>.</td>
-    </tr>
-    <tr>
-        <td><code>&lt;<a name="XML_CubeUsages" href="xml_schema.html#CubeUsages">CubeUsages</a>&gt;</code></td>
-        <td>Base cubes that are imported into a virtual cube</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_CubeUsage" href="xml_schema.html#CubeUsage">CubeUsage</a>&gt;</code></td>
-      	<td>Usage of a base cube by a virtual cube.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_VirtualCubeDimension" href="xml_schema.html#VirtualCubeDimension">VirtualCubeDimension</a>&gt;</code></td>
-      	<td>Usage of a dimension by a virtual cube.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_VirtualCubeMeasure" href="xml_schema.html#VirtualCubeMeasure">VirtualCubeMeasure</a>&gt;</code></td>
-      	<td>Usage of a measure by a virtual cube.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_Dimension" href="xml_schema.html#Dimension">Dimension</a>&gt;</code></td>
-      	<td>Dimension.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_DimensionUsage" href="xml_schema.html#DimensionUsage">DimensionUsage</a>&gt;</code></td>
-      	<td>Usage of a shared dimension by a cube.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_Hierarchy" href="xml_schema.html#Hierarchy">Hierarchy</a>&gt;</code></td>
-      	<td>Hierarchy.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_Level" href="xml_schema.html#Level">Level</a>&gt;</code></td>
-      	<td>Level of a hierarchy.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_KeyExpression" href="xml_schema.html#KeyExpression">KeyExpression</a>&gt;</code></td>
-      	<td>SQL expression used as key of the level, in lieu of a column.</td>
-    </tr>
-	<tr>
-      	<td><code>&lt;<a name="XML_NameExpression" href="xml_schema.html#NameExpression">NameExpression</a>&gt;</code></td>
-      	<td>SQL expression used to compute the name of a member, in lieu of <code>Level.nameColumn</code>.</td>
-    </tr>
-	<tr>
-      	<td><code>&lt;<a name="XML_CaptionExpression" href="xml_schema.html#CaptionExpression">CaptionExpression</a>&gt;</code></td>
-      	<td>SQL expression used to compute the caption of a member, in lieu of<code>Level.captionColumn</code>.</td>
-    </tr>
-	<tr>
-      	<td><code>&lt;<a name="XML_OrdinalExpression" href="xml_schema.html#OrdinalExpression">OrdinalExpression</a>&gt;</code></td>
-      	<td>SQL expression used to sort members of a level, in lieu of <code>Level.ordinalColumn</code>.</td>
-    </tr>
-	<tr>
-      	<td><code>&lt;<a name="XML_ParentExpression" href="xml_schema.html#ParentExpression">ParentExpression</a>&gt;</code></td>
-      	<td>SQL expression used to compute a measure, in lieu of <code>Level.parentColumn</code>.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_Property"  href="xml_schema.html#Property">Property</a>&gt;</code></td>
-      	<td>Member property. The definition is against a hierarchy or level, but the property will be available to all members.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_PropertyExpression" href="xml_schema.html#PropertyExpression">PropertyExpression</a>&gt;</code></td>
-      	<td>SQL expression used to compute the value of a property, in lieu of <code>Property.column</code>.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_Measure" href="xml_schema.html#Measure">Measure</a>&gt;</code></td>
-      	<td>Measure.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_CalculatedMember" href="xml_schema.html#CalculatedMember">CalculatedMember</a>&gt;</code></td>
-      	<td>A member whose value is derived using a formula, defined as part of a cube.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_NamedSet" href="xml_schema.html#NamedSet">NamedSet</a>&gt;</code></td>
-      	<td>A set whose value is derived using a formula, defined as part of a cube.</td>
+      	<td>The top-level collection of elements relating to a particular
+      	enterprise. Cubes belong to a Schema, as do shared Dimensions, Named
+      	Sets, Roles, User-defined functions, and Parameters. (Dimensions and
+      	Named Sets may also be defined privately within a particular Cube.)</td>
     </tr>
     <tr>
       	<td colspan="2"><i><br/>Physical elements</i></td>
     </tr>
     <tr>
+      	<td><code>&lt;<a name="XML_PhysicalSchema" href="xml_schema.html#PhysicalSchema">PhysicalSchema</a>&gt;</code></td>
+      	<td>Collection of table usages, linked via relationships, upon which the logical schema is constructed.</td>
+    </tr>
+    <tr>
       	<td><code>&lt;<a name="XML_Table" href="xml_schema.html#Table">Table</a>&gt;</code></td>
-      	<td>Fact or dimension table.</td>
+      	<td>Defines a use of a table.</td>
     </tr>
     <tr>
-      	<td><code>&lt;<a name="XML_View" href="xml_schema.html#View">View</a>&gt;</code></td>
+      	<td><code>&lt;<a name="XML_Query" href="xml_schema.html#Query">Query</a>&gt;</code></td>
       	<td>Defines a 'table' using a SQL query, which can have different variants for different underlying databases.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_Join" href="xml_schema.html#Join">Join</a>&gt;</code></td>
-      	<td>Defines a 'table' by joining a set of queries.</td>
     </tr>
     <tr>
       	<td><code>&lt;<a name="XML_InlineTable" href="xml_schema.html#InlineTable">InlineTable</a>&gt;</code></td>
       	<td>Defines a table using an inline dataset.</td>
     </tr>
     <tr>
+      	<td><code>&lt;<a name="XML_Link" href="xml_schema.html#Link">Link</a>&gt;</code></td>
+      	<td>Link between two tables.</td>
+    </tr>
+    <tr>
+      	<td colspan="2"><i><br/>Logical elements</i></td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_Cube" href="xml_schema.html#Cube">Cube</a>&gt;</code></td>
+      	<td>A collection of dimensions and measures.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_Dimensions" href="xml_schema.html#Dimensions">Dimensions</a>&gt;</code></td>
+      	<td>Collection of Dimension elements.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_Dimension" href="xml_schema.html#Dimension">Dimension</a>&gt;</code></td>
+      	<td>Dimension.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_Attributes" href="xml_schema.html#Attributes">Attributes</a>&gt;</code></td>
+      	<td>Collection of Attribute elements.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_Attribute" href="xml_schema.html#Attribute">Attribute</a>&gt;</code></td>
+      	<td>Attribute.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_Hierarchies" href="xml_schema.html#Hierarchies">Hierarchies</a>&gt;</code></td>
+      	<td>Collection of Hierarchy elements.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_Hierarchy" href="xml_schema.html#Hierarchy">Hierarchy</a>&gt;</code></td>
+      	<td>Hierarchy.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_Levels" href="xml_schema.html#Levels">Levels</a>&gt;</code></td>
+      	<td>Collection of Level elements.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_Level" href="xml_schema.html#Level">Level</a>&gt;</code></td>
+      	<td>Level of a hierarchy.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_Key" href="xml_schema.html#Key">Key</a>&gt;</code></td>
+      	<td>Column or columns that are the key of an attribute, in lieu of <code>Attribute.keyColumn</code>.</td>
+    </tr>
+	<tr>
+      	<td><code>&lt;<a name="XML_Name" href="xml_schema.html#Name">Name</a>&gt;</code></td>
+      	<td>Column that holds the name of an attribute, in lieu of <code>Attribute.nameColumn</code>.</td>
+    </tr>
+	<tr>
+      	<td><code>&lt;<a name="XML_Caption" href="xml_schema.html#Caption">Caption</a>&gt;</code></td>
+      	<td>Column that holds the caption of an attribute, in lieu of<code>Attribute.captionColumn</code>.</td>
+    </tr>
+	<tr>
+      	<td><code>&lt;<a name="XML_OrderBy" href="xml_schema.html#OrderBy">OrderBy</a>&gt;</code></td>
+      	<td>Column or columns that used to sort members of an attribute, in lieu of <code>Attribute.orderByColumn</code>.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_Property"  href="xml_schema.html#Property">Property</a>&gt;</code></td>
+      	<td>Member property. The definition is against a hierarchy or level, but the property will be available to all members.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_MeasureGroups" href="xml_schema.html#MeasureGroups">MeasureGroups</a>&gt;</code></td>
+      	<td>Collection of MeasureGroup elements.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_MeasureGroup" href="xml_schema.html#MeasureGroup">MeasureGroup</a>&gt;</code></td>
+      	<td>MeasureGroup.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_Measures" href="xml_schema.html#Measures">Measures</a>&gt;</code></td>
+      	<td>Collection of Measure elements.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_Measure" href="xml_schema.html#Measure">Measure</a>&gt;</code></td>
+      	<td>Measure.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_DimensionLinks" href="xml_schema.html#DimensionLinks">DimensionLinks</a>&gt;</code></td>
+      	<td>Collection of links between a measure group and the dimensions of the cube.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_ForeignKeyLink" href="xml_schema.html#ForeignKeyLink">ForeignKeyLink</a>&gt;</code></td>
+      	<td>TODO.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_FactLink" href="xml_schema.html#FactLink">FactLink</a>&gt;</code></td>
+      	<td>TODO.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_CopyLink" href="xml_schema.html#CopyLink">CopyLink</a>&gt;</code></td>
+      	<td>TODO.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_ReferenceLink" href="xml_schema.html#ReferenceLink">ReferenceLink</a>&gt;</code></td>
+      	<td>TODO.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_NoLink" href="xml_schema.html#NoLink">NoLink</a>&gt;</code></td>
+      	<td>TODO.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_CalculatedMembers" href="xml_schema.html#CalculatedMembers">CalculatedMembers</a>&gt;</code></td>
+      	<td>Collection of CalculatedMember elements.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_CalculatedMember" href="xml_schema.html#CalculatedMember">CalculatedMember</a>&gt;</code></td>
+      	<td>A member whose value is derived using a formula, defined as part of a cube.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_NamedSets" href="xml_schema.html#NamedSets">NamedSets</a>&gt;</code></td>
+      	<td>Collection of NamedSet elements.</td>
+    </tr>
+    <tr>
+      	<td><code>&lt;<a name="XML_NamedSet" href="xml_schema.html#NamedSet">NamedSet</a>&gt;</code></td>
+      	<td>A set whose value is derived using a formula, defined as part of a cube.</td>
+    </tr>
+    <tr>
       	<td><code>&lt;<a name="XML_Closure" href="xml_schema.html#Closure">Closure</a>&gt;</code></td>
       	<td>Maps a parent-child hierarchy onto a closure table.</td>
-    </tr>
-    <tr>
-      	<td colspan="2"><i><br/>Aggregate Tables</i></td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_AggExclude" href="xml_schema.html#AggExclude">AggExclude</a>&gt;</code></td>
-      	<td>Exclude a candidate aggregate table by name or pattern matching.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_AggName" href="xml_schema.html#AggName">AggName</a>&gt;</code></td>
-      	<td>Declares an aggregate table to be matched by name.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_AggPattern" href="xml_schema.html#AggPattern">AggPattern</a>&gt;</code></td>
-      	<td>Declares a set of aggregate tables by regular expression pattern.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_AggFactCount" href="xml_schema.html#AggFactCount">AggFactCount</a>&gt;</code></td>
-      	<td>Specifies name of the column in the candidate aggregate table which contains the number of fact table rows.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_AggIgnoreColumn" href="xml_schema.html#AggIgnoreColumn">AggIgnoreColumn</a>&gt;</code></td>
-      	<td>Tells Mondrian to ignore a column in an aggregate table.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_AggForeignKey" href="xml_schema.html#AggForeignKey">AggForeignKey</a>&gt;</code></td>
-      	<td>Maps foreign key in the fact table to a foreign key column in the candidate aggregate table.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_AggMeasure" href="xml_schema.html#AggMeasure">AggMeasure</a>&gt;</code></td>
-      	<td>Maps a measure to a column in the candidate aggregate table.</td>
-    </tr>
-    <tr>
-      	<td><code>&lt;<a name="XML_AggLevel" href="xml_schema.html#AggLevel">AggLevel</a>&gt;</code></td>
-      	<td>Maps a level to a column in the candidate aggregate table.</td>
     </tr>
     <tr>
       	<td colspan="2"><i><br/>Access control</i></td>
@@ -3612,11 +3655,9 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
 <br />
 <br />
 
-<p>Author: Julian Hyde; last modified May 2011.<br/>
-    Version: $Id$
-    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/schema.html?ac=22">log</a>)<br/>
+<p>Author: Julian Hyde; last modified October 2012.<br/>
     Copyright (C) 2001-2005 Julian Hyde.<br/>
-    Copyright (C) 2005-2011 Pentaho and others
+    Copyright (C) 2005-2012 Pentaho and others
 </p>
 
 <br />

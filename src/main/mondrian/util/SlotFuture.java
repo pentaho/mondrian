@@ -4,10 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2011 Pentaho
+// Copyright (C) 2011-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
+
+import org.apache.log4j.Logger;
 
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -24,6 +26,7 @@ public class SlotFuture<V> implements Future<V> {
     private final CountDownLatch dataGate = new CountDownLatch(1);
     private final ReentrantReadWriteLock stateLock =
         new ReentrantReadWriteLock();
+    private static final Logger LOG = Logger.getLogger(SlotFuture.class);
 
     /**
      * Creates a SlotFuture.
@@ -59,7 +62,7 @@ public class SlotFuture<V> implements Future<V> {
     public boolean isDone() {
         stateLock.readLock().lock();
         try {
-            return done;
+            return done || cancelled || throwable != null;
         } finally {
             stateLock.readLock().unlock();
         }
@@ -106,10 +109,13 @@ public class SlotFuture<V> implements Future<V> {
         stateLock.writeLock().lock(); // need exclusive write access to state
         try {
             if (done) {
-                throw new IllegalArgumentException(
+                final String message =
                     "Future is already done (cancelled=" + cancelled
                     + ", value=" + this.value
-                    + ", throwable=" + throwable + ")");
+                    + ", throwable=" + throwable + ")";
+                LOG.error(message);
+                throw new IllegalArgumentException(
+                    message);
             }
             this.value = value;
             this.done = true;

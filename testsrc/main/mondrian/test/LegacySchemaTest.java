@@ -419,6 +419,75 @@ public class LegacySchemaTest extends FoodMartTestCase {
             + "Row #0: 6,577.33\n"
             + "Row #0: 36.50\n");
     }
+
+    // TODO: Test that mondrian gives a warning if a legacy schema contains
+    // AggPattern (or any other aggregate elements that cannot be converted)
+
+
+    public void testHierarchyDefaultMember() {
+        TestContext testContext = getTestContext().createSubstitutingCube(
+            "Sales",
+            "  <Dimension name=\"Gender with default\" foreignKey=\"customer_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" "
+            + "primaryKey=\"customer_id\" "
+            // Define a default member's whose unique name includes the
+            // 'all' member.
+            + "defaultMember=\"[Gender with default].[All Gender with defaults].[M]\" >\n"
+            + "      <Table name=\"customer\"/>\n"
+            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\" />\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>");
+        testContext.assertQueryReturns(
+            "select {[Gender with default]} on columns from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender with default].[M]}\n"
+            + "Row #0: 135,215\n");
+    }
+
+    public void testLevelUniqueMembers() {
+        // If uniqueMembers is not specified for first level of hierarchy,
+        // defaults to false.
+        createLevelUniqueMembersTestContext("")
+            .assertSimpleQuery();
+        createLevelUniqueMembersTestContext(" uniqueMembers='true'")
+            .assertSimpleQuery();
+        createLevelUniqueMembersTestContext(" uniqueMembers='false'")
+            .assertSchemaError(
+                "First level of a hierarchy must have unique members \\(at ${pos}\\)",
+                "<Level name='Store Country' column='store_country' uniqueMembers='false'/>");
+    }
+
+    private TestContext createLevelUniqueMembersTestContext(final String s) {
+        return TestContext.instance().createSubstitutingCube(
+            "Sales",
+            "    <Dimension name='Store' foreignKey='store_id'>\n"
+            + "    <Hierarchy hasAll='true' primaryKey='store_id'>\n"
+            + "      <Table name='store'/>\n"
+            + "      <Level name='Store Country' column='store_country'"
+            + s
+            + "/>\n"
+            + "      <Level name='Store State' column='store_state' uniqueMembers='true'/>\n"
+            + "    </Hierarchy>\n"
+            + "</Dimension>");
+    }
+
+    public void testDimensionRequiresForeignKey() {
+        final TestContext testContext =
+            getTestContext().createSubstitutingCube(
+                "Sales",
+                "    <Dimension name='Store'>\n"
+                + "    <Hierarchy hasAll='true' primaryKey='store_id'>\n"
+                + "      <Table name='store'/>\n"
+                + "      <Level name='Store Country' column='store_country'/>\n"
+                + "      <Level name='Store State' column='store_state' uniqueMembers='true'/>\n"
+                + "    </Hierarchy>\n"
+                + "</Dimension>");
+        testContext.assertSchemaError(
+            "Dimension or DimensionUsage must have foreignKey \\(at ${pos}\\)",
+            "<Dimension name='Store'>");
+    }
 }
 
 // End LegacySchemaTest.java

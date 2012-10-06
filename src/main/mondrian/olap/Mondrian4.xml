@@ -5,8 +5,9 @@
   == This software is subject to the terms of the Eclipse Public License v1.0
   == Agreement, available at the following URL:
   == http://www.eclipse.org/legal/epl-v10.html.
-  == Copyright (C) 2001-2002 Kana Software, Inc.
-  == Copyright (C) 2001-2012 Julian Hyde and others
+  ==
+  == Copyright (C) 2001-2005 Julian Hyde
+  == Copyright (C) 2005-2012 Pentaho and others
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   ==
@@ -104,7 +105,7 @@ In other words, (physColumn, physPath) uniquely identifies a RolapStar.Column.
  dtdName="mondrian.dtd"
  className="MondrianDef"
  packageName="mondrian.olap"
- importName="mondrian.rolap.sql.SqlQuery; import mondrian.util.Pair; import java.util.*; import org.olap4j.metadata.NamedList; import org.eigenbase.xom.NodeDef"
+ importName="mondrian.rolap.sql.SqlQuery; import mondrian.util.Pair; import java.util.*; import org.olap4j.metadata.NamedList; import org.eigenbase.xom.ElementDef; import org.eigenbase.xom.NodeDef"
  root="Schema"
  defaultKeepDef="true"
  version="1.0">
@@ -190,6 +191,7 @@ Revision is $Id$
         <Code>
             <![CDATA[
                 List<? extends NodeDef> list();
+                Holder copy();
             ]]>
         </Code>
     </Class>
@@ -205,9 +207,16 @@ Revision is $Id$
         <Attribute name="name" required="true">
             <Doc>Name of this schema.</Doc>
         </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the Schema's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
         <Attribute name="description" required="false">
             <Doc>
-                Description of this schema.
+                Description of this Schema.
+                Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
         <Attribute name="measuresCaption" required="false">
@@ -218,6 +227,25 @@ Revision is $Id$
         </Attribute>
         <Attribute name="defaultRole" required="false">
             <Doc>The name of the default role for connections to this schema</Doc>
+        </Attribute>
+        <Attribute name="quoteSql" required="false" type="Boolean" default="true">
+            <Doc>Whether to quote identifiers (table and column names) when
+                generating SQL. The default is true.
+
+                <p>Identifiers that are not alphanumeric are always quoted.</p>
+
+                <p>If this property is false, identifiers are not quoted. Most
+                    databases' SQL parsers convert quoted identifiers to upper
+                    case. Thus
+                    <blockquote>SELECT ename FROM emp</blockquote>
+                    is equivalent to
+                    <blockquote>SELECT `ENAME` FROM `EMP`</blockquote>
+                    and
+                    <blockquote>SELECT ENAME FROM EMP</blockquote>. Therefore
+                    you should typically set <code>quoteSql</code> to
+                    <code>false</code> if and only if you used unquoted DDL
+                    to create your database.</p>
+            </Doc>
         </Attribute>
         <Attribute name="missingLink" required="true" default="warning">
             <Doc>
@@ -314,7 +342,7 @@ Revision is $Id$
             return s1;
         }
 
-        private static <T> T only(Object[] os, Class<T> clazz, T dflt) {
+        private static <T> T only(Object[] os, Class<T> clazz) {
             T t = null;
             int count = 0;
             for (Object o : os) {
@@ -325,7 +353,26 @@ Revision is $Id$
             }
             switch (count) {
             case 0:
-                return dflt;
+                return null;
+            case 1:
+                return t;
+            default:
+                throw new RuntimeException(); // TODO: user error
+            }
+        }
+
+        private static <T extends Holder> T onlyDeflt(Object[] os, Class<T> clazz, T dflt) {
+            T t = null;
+            int count = 0;
+            for (Object o : os) {
+                if (clazz.isInstance(o)) {
+                    t = clazz.cast(o);
+                    ++count;
+                }
+            }
+            switch (count) {
+            case 0:
+                return (T) dflt.copy();
             case 1:
                 return t;
             default:
@@ -364,7 +411,7 @@ Revision is $Id$
             return new NamedListImpl<T>(list(ts));
         }
 
-        public static abstract class Children<T extends org.eigenbase.xom.NodeDef> {
+        public static abstract class Children<T extends NodeDef> implements Iterable<T> {
             private final Class[] classes;
 
             Children(Class<T> iface, Class<? extends T>... classes) {
@@ -380,6 +427,10 @@ Revision is $Id$
 
             abstract void setArray(T[] t);
 
+            public Iterator<T> iterator() {
+                return list(getArray()).iterator();
+            }
+
             <T2> List<T2> filter(Class<T2> clazz) {
                 return list(getArray(), clazz);
             }
@@ -389,11 +440,11 @@ Revision is $Id$
             }
 
             <T2> T2 singleton(Class<T2> clazz) {
-                return MondrianDef.only(getArray(), clazz, null);
+                return MondrianDef.only(getArray(), clazz);
             }
 
-            <T2> T2 only(T2 empty) {
-                return MondrianDef.only(getArray(), (Class<T2>) empty.getClass(), empty);
+            <T2 extends Holder> T2 only(T2 empty) {
+                return MondrianDef.onlyDeflt(getArray(), (Class<T2>) empty.getClass(), empty);
             }
 
             public void add(T t) {
@@ -627,6 +678,11 @@ Revision is $Id$
                 EMPTY = new Dimensions();
                 EMPTY.array = new Dimension[0];
             }
+            public Dimensions copy() {
+                Dimensions c = new Dimensions();
+                c.array = array.clone();
+                return c;
+            }
             public NamedList<Dimension> list() {
                 return new NamedListImpl<Dimension>(
                     new MutableArrayList<Dimension>() {
@@ -750,6 +806,11 @@ Revision is $Id$
                 EMPTY = new Hierarchies();
                 EMPTY.array = new Hierarchy[0];
             }
+            public Hierarchies copy() {
+                Hierarchies c = new Hierarchies();
+                c.array = array.clone();
+                return c;
+            }
             public NamedList<Hierarchy> list() {
                 return new NamedListImpl<Hierarchy>(
                     new MutableArrayList<Hierarchy>() {
@@ -775,6 +836,11 @@ Revision is $Id$
             static {
                 EMPTY = new Attributes();
                 EMPTY.array = new Attribute[0];
+            }
+            public Attributes copy() {
+                Attributes c = new Attributes();
+                c.array = array.clone();
+                return c;
             }
             public NamedList<Attribute> list() {
                 return new NamedListImpl<Attribute>(
@@ -856,7 +922,7 @@ Revision is $Id$
                 member in a parent-child hierarchy.
             </Doc>
         </Attribute>
-        <Attribute name="nullValue" required="false">
+        <Attribute name="nullParentValue" required="false">
             <Doc>
                 Value which identifies null members of this Attribute.
                 Used when defining a parent-child attribute.
@@ -880,7 +946,7 @@ Revision is $Id$
             <Doc>
                 The name of the column used to sort members. See also the
                 OrderBy sub-element. If neither orderByColumn nor OrderBy are
-                specified, defaults to the key.
+                specified, defaults to the name.
 
                 <p>If an attribute is used within a multi-level hierarchy,
                 the members of one level are always sorted within the parent
@@ -1179,15 +1245,50 @@ Revision is $Id$
 
     <Element type="Closure" class="AttributeElement">
         <Doc>
-            Specifies the transitive closure of a parent-child hierarchy.
+            <p>Specifies the transitive closure of a parent-child hierarchy.
             Optional, but recommended for better performance.
             The closure is provided as a set of (parent, child) pairs:
             since it is the transitive closure these are actually (ancestor,
-            descendant) pairs.
+            descendant) pairs.</p>
+            <p>Each row of the table must be a tuple of the parent-child
+            hierarchy.</p>
         </Doc>
-        <Attribute name="parentColumn" required="true"/>
-        <Attribute name="childColumn" required="true"/>
-        <Attribute name="table" required="true"/>
+        <Attribute name="parentColumn" required="true">
+            <Doc>
+                <p>The column of the closure table which contains the key
+                of the parent member of the parent-child tuple.</p>
+            </Doc>
+        </Attribute>
+        <Attribute name="childColumn" required="true">
+            <Doc>
+                <p>The column of the closure table which contains the key
+                of the child member of the parent-child tuple.</p>
+            </Doc>
+        </Attribute>
+        <Attribute name="distanceColumn" required="false" default="distance">
+            <Doc>
+                <p>The column of the closure table which contains the number,
+                in relative descendance count, of generations covered by the
+                parent-child tuple.</p>
+                <p>For example, In the relation
+                A &lt; B &lt; C where A is the root and C is a grandchildren, the
+                closure table should contain:</p>
+                <code>
+PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
+&#160;&#160;0&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;A&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;1<br/>
+&#160;&#160;A&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;B&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;1<br/>
+&#160;&#160;A&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;C&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;2<br/>
+&#160;&#160;B&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;C&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;1<br/>
+</code>
+            </Doc>
+        </Attribute>
+        <Attribute name="table" required="true">
+            <Doc>
+	            <p>The name of the table to use as a closure table. The table
+	            must be defined as part of the <code>PhysicalSchema</code>
+	            section of the schema.</p>
+            </Doc>
+        </Attribute>
     </Element>
 
     <Element type="Property" class="NamedElement,AttributeElement">
@@ -1242,7 +1343,34 @@ Revision is $Id$
         </Code>
     </Element>
 
-    <Element type="Measure" class="NamedElement">
+    <Element type="MeasureOrRef" class="NamedElement" abstract="true">
+    </Element>
+
+    <Element type="MeasureRef" class="MeasureOrRef">
+        <Doc>
+            Specifies the column where the aggregation of a given measure is
+            stored in the current aggregate table.
+
+            <p>Can only occur in a MeasureGroup whose type is 'aggregate'.</p>
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>Name of the referenced measure.</Doc>
+        </Attribute>
+        <Attribute name="aggColumn" required="true">
+            <Doc>
+                Column where the aggregation is stored.
+            </Doc>
+        </Attribute>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() {
+                return name;
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Measure" class="MeasureOrRef">
         <Attribute name="name" required="true">
             <Doc>Name of this measure.</Doc>
         </Attribute>
@@ -1372,6 +1500,11 @@ Revision is $Id$
             static {
                 EMPTY = new CalculatedMembers();
                 EMPTY.array = new CalculatedMember[0];
+            }
+            public CalculatedMembers copy() {
+                CalculatedMembers c = new CalculatedMembers();
+                c.array = array.clone();
+                return c;
             }
             public NamedList<CalculatedMember> list() {
                 return new NamedListImpl<CalculatedMember>(
@@ -1545,6 +1678,11 @@ Revision is $Id$
                 EMPTY = new NamedSets();
                 EMPTY.array = new NamedSet[0];
             }
+            public NamedSets copy() {
+                NamedSets c = new NamedSets();
+                c.array = array.clone();
+                return c;
+            }
             public NamedList<NamedSet> list() {
                 return new NamedListImpl<NamedSet>(
                     new MutableArrayList<NamedSet>() {
@@ -1639,7 +1777,7 @@ Revision is $Id$
         </Code>
     </Element>
 
-    <Element type="Formula" class="CalculatedMemberElement">
+    <Element type="Formula" class="CalculatedMemberElement,NamedSetElement">
         <CData/>
     </Element>
 
@@ -1717,7 +1855,7 @@ Revision is $Id$
              */
             public void setCData(String cdata) {
                 this.children =
-                    new org.eigenbase.xom.NodeDef[] {
+                    new NodeDef[] {
                         new org.eigenbase.xom.TextDef(cdata)};
             }
 
@@ -1832,20 +1970,32 @@ Revision is $Id$
         ]]></Code>
     </Element>
 
-    <Element type="Hints" class="TableElement">
+    <Element type="Hints" class="Holder,TableElement">
         <Doc>
             Collection of hints.
         </Doc>
         <Array name="array" type="Hint"/>
         <Code><![CDATA[
-        private static final Hints EMPTY;
-        static {
-            EMPTY = new Hints();
-            EMPTY.array = new Hint[0];
-        }
-        private List<Hint> list() {
-            return MondrianDef.list(array);
-        }
+            private static final Hints EMPTY;
+            static {
+                EMPTY = new Hints();
+                EMPTY.array = new Hint[0];
+            }
+            public Hints copy() {
+                Hints c = new Hints();
+                c.array = array.clone();
+                return c;
+            }
+            public List<Hint> list() {
+                return new MutableArrayList<Hint>() {
+                    protected Hint[] getArray() {
+                        return array == null ? EMPTY.array : array;
+                    }
+                    protected void setArray(Hint[] ts) {
+                        array = ts;
+                    }
+                };
+            }
         ]]></Code>
     </Element>
 
@@ -1952,6 +2102,11 @@ Revision is $Id$
             static {
                 EMPTY = new ColumnDefs();
                 EMPTY.array = new RealOrCalcColumnDef[0];
+            }
+            public ColumnDefs copy() {
+                ColumnDefs c = new ColumnDefs();
+                c.array = array.clone();
+                return c;
             }
             public List<RealOrCalcColumnDef> list() {
                 return new MutableArrayList<RealOrCalcColumnDef>() {
@@ -2061,6 +2216,11 @@ Revision is $Id$
                 EMPTY = new Rows();
                 EMPTY.array = new Row[0];
             }
+            public Rows copy() {
+                Rows c = new Rows();
+                c.array = array.clone();
+                return c;
+            }
             public List<Row> list() {
                 return new MutableArrayList<Row>() {
                     protected Row[] getArray() {
@@ -2097,7 +2257,7 @@ Revision is $Id$
     </Element>
 
     <!-- AggTable ======================================================= -->
-    <Element type="AggTable" abstract="true">
+    <Element type="AggTable">
         <Doc>
             A definition of an aggregate table for a base fact table.
             This aggregate table must be in the same schema as the
@@ -2283,29 +2443,6 @@ Revision is $Id$
         </Code>
     </Element>
 
-    <Element type="Aggregates" class="MeasureGroupElement">
-        <Doc>
-            Holder element for {@link MondrianDef.AggTable} elements.
-        </Doc>
-        <Array name="array" type="AggTable">
-            <Doc>
-                Aggregate tables.
-            </Doc>
-        </Array>
-        <Code>
-            <![CDATA[
-            private static final Aggregates EMPTY;
-            static {
-                EMPTY = new Aggregates();
-                EMPTY.array = new AggTable[0];
-            }
-            private List<AggTable> list() {
-                return MondrianDef.list(array);
-            }
-            ]]>
-        </Code>
-    </Element>
-
     <!-- Columns and keys ================================================== -->
     <Element type="Columns" class="Holder">
         <Doc>
@@ -2318,6 +2455,11 @@ Revision is $Id$
             static {
                 EMPTY = new Columns();
                 EMPTY.array = new Column[0];
+            }
+            public Columns copy() {
+                Columns c = new Columns();
+                c.array = array.clone();
+                return c;
             }
             public List<Column> list() {
                 return new MutableArrayList<Column>() {
@@ -2372,7 +2514,7 @@ Revision is $Id$
 
     <Element type="Column" class="Expression">
         <Doc>
-            Reference to a column in an expression or key.
+            Reference to a column in an expression, key, or CopyLink.
 
             <p>Table name is optional if the column is being used within a
                 table definition. If the column reference is used within a key,
@@ -2388,6 +2530,14 @@ Revision is $Id$
         <Attribute name="name" required="true">
             <Doc>
                 Name of the column.
+            </Doc>
+        </Attribute>
+        <Attribute name="aggColumn" required="false">
+            <Doc>
+                Applicable only for columns in a CopyLink (part of the
+                definition of an aggregate MeasureGroup), specifies the
+                column in the aggregate table that corresponds to the given
+                dimension table column.
             </Doc>
         </Attribute>
         <Code><![CDATA[
@@ -2587,6 +2737,11 @@ Revision is $Id$
                  EMPTY = new Union();
                  EMPTY.array = new RoleUsage[0];
             }
+            public Union copy() {
+                Union c = new Union();
+                c.array = array.clone();
+                return c;
+            }
             public List<RoleUsage> list() {
                 return new MutableArrayList<RoleUsage>() {
                     protected RoleUsage[] getArray() {
@@ -2701,6 +2856,11 @@ Revision is $Id$
             static {
                 EMPTY = new Annotations();
                 EMPTY.array = new Annotation[0];
+            }
+            public Annotations copy() {
+                Annotations c = new Annotations();
+                c.array = array.clone();
+                return c;
             }
             public NamedList<Annotation> list() {
                 return new NamedListImpl<Annotation>(
@@ -2916,6 +3076,11 @@ Revision is $Id$
                 EMPTY = new MeasureGroups();
                 EMPTY.array = new MeasureGroup[0];
             }
+            public MeasureGroups copy() {
+                MeasureGroups c = new MeasureGroups();
+                c.array = array.clone();
+                return c;
+            }
             public NamedList<MeasureGroup> list() {
                 return new NamedListImpl<MeasureGroup>(
                     new MutableArrayList<MeasureGroup>() {
@@ -2936,10 +3101,24 @@ Revision is $Id$
         <Doc>
             Collection of measures that reside in the same fact table.
         </Doc>
-        <Attribute name="name" required="true" type="String">
+        <Attribute name="name" type="String">
             <Doc>
                 Name of this measure group.
+
+                <p>If not specified, defaults to name of table. Must be
+                    unique within cube.</p>
             </Doc>
+        </Attribute>
+        <Attribute name="type" type="String" default="fact">
+            <Doc>
+                Whether this measure group is defining a fact or aggregate
+                table. Valid values are 'fact' (the default) and 'aggregate'.
+
+                <p>Aggregate measure groups can contain 'MeasureRef' and
+                    'CopyLink' elements.</p>
+            </Doc>
+            <Value>fact</Value>
+            <Value>aggregate</Value>
         </Attribute>
         <Attribute name="table" required="true" type="String">
             <Doc>
@@ -2953,22 +3132,44 @@ Revision is $Id$
                 measure group will be pushed to top level member.
             </Doc>
         </Attribute>
+        <Attribute name="approxRowCount" required="false">
+            <Doc>
+                The estimated number of rows in this measure group's
+                (fact or aggregate) table. Setting this property improves the
+                performance of the aggregation optimizer and
+                prevents it from issuing 'select count(*)'
+                queries over the aggregation table.
+            </Doc>
+        </Attribute>
         <Array name="childArray" type="MeasureGroupElement">
             <Doc>
                 Child elements of this MeasureGroup. These are Measures and
-                DimensionLinks (once), Aggregates (at most once), in any order.
+                DimensionLinks (once), in any order.
             </Doc>
         </Array>
         <Code>
             <![CDATA[
-            public String getNameAttribute() { return name; }
+            /**
+             * Returns whether this measure group represents an aggregate table
+             * (or hybrid fact-aggregate), as opposed to a fact table.
+             */
+            public boolean isAggregate() {
+                assert type == null
+                    || type.equals("aggregate")
+                    || type.equals("fact");
+                return "aggregate".equals(type);
+            }
+
+            public String getNameAttribute() {
+                return first(name, table);
+            }
+
             private static final MeasureGroupElement[] EMPTY = {};
             public final Children<MeasureGroupElement> children =
                 new Children<MeasureGroupElement>(
                     MeasureGroupElement.class,
                     Measures.class,
-                    DimensionLinks.class,
-                    Aggregates.class)
+                    DimensionLinks.class)
                 {
                     MeasureGroupElement[] getArray() {
                         return childArray == null ? EMPTY : childArray;
@@ -2980,11 +3181,8 @@ Revision is $Id$
             public List<DimensionLink> getDimensionLinks() {
                 return children.only(DimensionLinks.EMPTY).list();
             }
-            public NamedList<Measure> getMeasures() {
+            public NamedList<MeasureOrRef> getMeasures() {
                 return children.only(Measures.EMPTY).list();
-            }
-            public List<AggTable> getAggregates() {
-                return children.only(Aggregates.EMPTY).list();
             }
             ]]>
         </Code>
@@ -2994,7 +3192,7 @@ Revision is $Id$
         <Doc>
             Holder element for {@link MondrianDef.Measure} elements.
         </Doc>
-        <Array name="array" type="Measure">
+        <Array name="array" type="MeasureOrRef">
             <Doc>
                 Measures.
             </Doc>
@@ -3004,15 +3202,20 @@ Revision is $Id$
             private static final Measures EMPTY;
             static {
                 EMPTY = new Measures();
-                EMPTY.array = new Measure[0];
+                EMPTY.array = new MeasureOrRef[0];
             }
-            public NamedList<Measure> list() {
-                return new NamedListImpl<Measure>(
-                    new MutableArrayList<Measure>() {
-                        protected Measure[] getArray() {
+            public Measures copy() {
+                Measures c = new Measures();
+                c.array = array.clone();
+                return c;
+            }
+            public NamedList<MeasureOrRef> list() {
+                return new NamedListImpl<MeasureOrRef>(
+                    new MutableArrayList<MeasureOrRef>() {
+                        protected MeasureOrRef[] getArray() {
                             return array == null ? EMPTY.array : array;
                         }
-                        protected void setArray(Measure[] ts) {
+                        protected void setArray(MeasureOrRef[] ts) {
                             array = ts;
                         }
                     }
@@ -3037,6 +3240,11 @@ Revision is $Id$
             static {
                 EMPTY = new DimensionLinks();
                 EMPTY.array = new DimensionLink[0];
+            }
+            public DimensionLinks copy() {
+                DimensionLinks c = new DimensionLinks();
+                c.array = array.clone();
+                return c;
             }
             public List<DimensionLink> list() {
                 return new MutableArrayList<DimensionLink>() {
@@ -3089,17 +3297,13 @@ Revision is $Id$
                 specify the 'ForeignKey' element.
             </Doc>
         </Attribute>
-        <!--
-        <Object name="key" type="Key" required="false">
+        <Attribute name="attribute" required="false">
             <Doc>
-                Array of references to the columns that form the primary key
-                of this dimension.
-
-                <p/>This element should be omitted if you specify the
-                'factColumn' attribute.
+                Name of the attribute in the dimension that is referenced by
+                the foreign key. Not required; if not specified, the dimension's
+                key attribute is used.
             </Doc>
-        </Object>
-        -->
+        </Attribute>
         <Object name="foreignKey" type="ForeignKey" required="false">
             <Doc>
                 Column in the fact table that links to this attribute (or
@@ -3139,6 +3343,18 @@ Revision is $Id$
             Schema.missingLink=warning (the default) and create explicit links
             for all dimensions.</p>
         </Doc>
+    </Element>
+
+    <Element type="CopyLink" class="DimensionLink">
+        <Doc>
+            Indicates dimension that is represented by key columns in the fact
+            table; or rather, the aggregate table, since this kind of link may
+            only be used in a MeasureGroup whose type is 'aggregate'.
+        </Doc>
+        <Array name="columnRefs" type="Column">
+            <Doc>Columns from the given dimension that are present in this
+                aggregate table.</Doc>
+        </Array>
     </Element>
 
     <!--

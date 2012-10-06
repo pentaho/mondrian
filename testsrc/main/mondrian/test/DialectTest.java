@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho
+// Copyright (C) 2007-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -177,6 +177,8 @@ public class DialectTest extends TestCase {
                 "(?s).*ERROR:  Function 'COUNT', number of parameters greater than the maximum \\(1\\).*",
                 // Vertica
                 "ERROR: function count\\(int, int\\) does not exist, or permission is denied for count\\(int, int\\)",
+                // postgres
+                "(?s).*ERROR: function count\\(integer, integer\\) does not exist.*",
             };
             assertQueryFails(sql, errs);
         }
@@ -308,7 +310,7 @@ public class DialectTest extends TestCase {
                 // hive
                 "(?s).*mismatched input \'<EOF>\' expecting Identifier in subquery source.*",
                 // postgres
-                "ERROR\\: subquery in FROM must have an alias.*",
+                "(?s)ERROR: subquery in FROM must have an alias.*",
                 // teradata
                 ".*Syntax error, expected something like a name or a Unicode "
                 + "delimited identifier or an 'UDFCALLNAME' keyword between "
@@ -401,6 +403,8 @@ public class DialectTest extends TestCase {
                 // Greenplum / Postgres
                 "ERROR: ORDER BY on a UNION/INTERSECT/EXCEPT result must be on "
                 + "one of the result columns.*",
+                // Postgres 9
+                "(?s)ERROR: invalid UNION/INTERSECT/EXCEPT ORDER BY clause.*",
                 // Vectorwise
                 "Parse error in StringBuffer at line 0, column 525\\: \\<missing\\>\\.",
             };
@@ -461,7 +465,7 @@ public class DialectTest extends TestCase {
                 // luciddb
                 "(?s).*Encountered \"GROUPING\" at line 3, column 2\\..*",
                 // postgres
-                "ERROR: syntax error at or near \"SETS\".*",
+                "(?s)ERROR: syntax error at or near \"SETS\".*",
                 // neoview
                 NEOVIEW_SYNTAX_ERROR,
                 // netezza
@@ -877,9 +881,9 @@ public class DialectTest extends TestCase {
                 // teradata
                 ".*Selected non-aggregate values must be part of the "
                 + "associated group.",
-                // Greenplum
-                "ERROR: column \"time_by_day.the_month\" must appear in the "
-                + "GROUP BY clause or be used in an aggregate function",
+                // Greenplum & postgresql
+                "(?s).*ERROR: column \"time_by_day.the_month\" must appear in "
+                + "the GROUP BY clause or be used in an aggregate function.*",
                 // Vectorwise
                 "line 1, The columns in the SELECT clause must be contained in the GROUP BY clause\\."
             };
@@ -1026,6 +1030,15 @@ public class DialectTest extends TestCase {
                     "Got error 'repetition-operator operand invalid' from "
                     + "regexp"));
             break;
+        case POSTGRESQL:
+            assertNotNull(throwable);
+            assertTrue(couldTranslate);
+            assertTrue(
+                throwable.getMessage(),
+                throwable.getMessage().contains(
+                    "ERROR: invalid regular expression: quantifier operand "
+                    + "invalid"));
+            break;
         default:
             // As far as we know, all other databases either handle this regex
             // just fine or our dialect for that database refuses to translate
@@ -1066,6 +1079,28 @@ public class DialectTest extends TestCase {
         } else {
             return false;
         }
+    }
+
+    public void testRectifyCase() {
+        Dialect dialect = getDialect();
+        Dialect dialectSans = getDialect().withQuoting(false);
+        switch (dialect.getDatabaseProduct()) {
+        case ORACLE:
+        case MYSQL:
+        case POSTGRESQL:
+            assertEquals("EMP", dialectSans.rectifyCase("Emp"));
+            assertEquals("EMP", dialectSans.rectifyCase("emp"));
+            assertEquals("EMP", dialectSans.rectifyCase("EMP"));
+            assertEquals(
+                "Emp with Space", dialectSans.rectifyCase("Emp with Space"));
+            break;
+        }
+        Dialect dialectWith = getDialect().withQuoting(true);
+        assertEquals("Emp", dialectWith.rectifyCase("Emp"));
+        assertEquals("emp", dialectWith.rectifyCase("emp"));
+        assertEquals("EMP", dialectWith.rectifyCase("EMP"));
+        assertEquals(
+            "Emp with Space", dialectWith.rectifyCase("Emp with Space"));
     }
 }
 

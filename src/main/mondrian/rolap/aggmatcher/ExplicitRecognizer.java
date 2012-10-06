@@ -276,7 +276,7 @@ class ExplicitRecognizer extends Recognizer {
                             }
 
                             final List<RolapSchema.PhysColumn> keyList =
-                                rLevel.getAttribute().keyList;
+                                rLevel.getAttribute().getKeyList();
                             if (keyList.size() > 0) {
                                 // TODO: support composite keys
                                 continue;
@@ -405,7 +405,7 @@ class ExplicitRecognizer extends Recognizer {
                     pair.right,
                     hierarchy,
                     hierarchyUsage,
-                    getColumnName(pair.left.getAttribute().keyList.get(0)),
+                    getColumnName(pair.left.getAttribute().getKeyList().get(0)),
                     aggLevels.get(levelMatches.indexOf(pair)).getColumnName(),
                     pair.left.getName(),
                     forceCollapse

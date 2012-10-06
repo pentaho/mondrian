@@ -136,7 +136,7 @@ abstract class Recognizer {
     /**
      * Create an ignore usage for the aggColumn.
      *
-     * @param aggColumn
+     * @param aggColumn Aggregate table column
      */
     protected void makeIgnore(final JdbcSchema.Table.Column aggColumn) {
         JdbcSchema.Table.Column.Usage usage =
@@ -214,7 +214,7 @@ abstract class Recognizer {
     /**
      * Create a fact count usage for the aggColumn.
      *
-     * @param aggColumn
+     * @param aggColumn Aggregate table column
      */
     protected void makeFactCount(final JdbcSchema.Table.Column aggColumn) {
         JdbcSchema.Table.Column.Usage usage =
@@ -335,8 +335,8 @@ abstract class Recognizer {
      * Creates an aggregate table column measure usage from a fact
      * table column measure usage.
      *
-     * @param factUsage
-     * @param aggColumn
+     * @param factUsage Fact usage
+     * @param aggColumn Aggregate table column
      */
     protected void makeMeasure(
         final JdbcSchema.Table.Column.Usage factUsage,
@@ -441,7 +441,7 @@ abstract class Recognizer {
      * Currently, this is NOT checked explicitly. For the explicit rules any
      * extra columns MUST ge declared ignored or one gets an error.
      *
-     * @param notSeenForeignKeys
+     * @param notSeenForeignKeys List of foreign keys not seen
      */
     protected void checkLevels(
         List<JdbcSchema.Table.Column.Usage> notSeenForeignKeys)
@@ -473,8 +473,8 @@ abstract class Recognizer {
                     if (true) {
                         continue;
                     }
-                    HierarchyUsage[] hierarchyUsages = null; /*
-                        cube.getUsages(hierarchy);*/
+                    HierarchyUsage[] hierarchyUsages =
+                        null; // was: cube.getUsages(hierarchy)
                     for (HierarchyUsage hierarchyUsage : hierarchyUsages) {
                         // Search through the notSeenForeignKeys list
                         // making sure that this HierarchyUsage's
@@ -515,7 +515,7 @@ abstract class Recognizer {
     /**
      * Debug method: Print out not seen foreign key list.
      *
-     * @param notSeenForeignKeys
+     * @param notSeenForeignKeys List of foreign keys not seen
      */
     private void printNotSeenForeignKeys(List notSeenForeignKeys) {
         LOGGER.debug(
@@ -533,9 +533,9 @@ abstract class Recognizer {
      * explicitly supplied. This is needed is when the aggregate table's column
      * names may not match those found in the RolapStar.
      *
-     * @param factUsage
-     * @param aggColumn
-     * @param rightJoinConditionColumnName
+     * @param factUsage Fact usage
+     * @param aggColumn Aggregate table oclumn
+     * @param rightJoinConditionColumnName Right join condition column name
      */
     protected void makeForeignKey(
         final JdbcSchema.Table.Column.Usage factUsage,
@@ -740,8 +740,8 @@ abstract class Recognizer {
      * Note: this code assumes that the aggregate table does not have an
      * explicit average aggregation column.
      *
-     * @param aggUsage
-     * @param factAgg
+     * @param aggUsage Aggregate table column usage
+     * @param factAgg Fact aggregator
      */
     protected RolapAggregator convertAggregator(
         final JdbcSchema.Table.Column.Usage aggUsage,
@@ -779,9 +779,9 @@ abstract class Recognizer {
      * if no new aggregator was selected, then the fact table's aggregator
      * rollup aggregator is used.
      *
-     * @param aggUsage
-     * @param factAgg
-     * @param siblingAgg
+     * @param aggUsage Aggregate table column usage
+     * @param factAgg Fact aggregator
+     * @param siblingAgg Sibling aggregator
      */
     protected RolapAggregator convertAggregator(
         final JdbcSchema.Table.Column.Usage aggUsage,
@@ -886,7 +886,7 @@ abstract class Recognizer {
      *
      * <p>Note: if the {@link mondrian.rolap.RolapSchema.PhysExpr} is
      * not a {@link mondrian.rolap.RolapSchema.PhysRealColumn} or
-     * {@link mondrian.olap.MondrianDef.KeyExpression}, returns null. This
+     * {@code mondrian.olap.MondrianDef.KeyExpression}, returns null. This
      * will result in an error.
      */
     protected String getColumnName(RolapSchema.PhysExpr expr) {

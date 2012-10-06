@@ -292,7 +292,7 @@ public class Property extends EnumeratedValues.BasicValue {
      */
     public static final Property MEMBER_TYPE =
         new Property(
-            "MEMBER_TYPE", Datatype.TYPE_STRING, MEMBER_TYPE_ORDINAL, false,
+            "MEMBER_TYPE", Datatype.TYPE_NUMERIC, MEMBER_TYPE_ORDINAL, false,
             true, false,
             "Required. Type of the member. Can be one of the following values: "
             + "MDMEMBER_TYPE_REGULAR, MDMEMBER_TYPE_ALL, "

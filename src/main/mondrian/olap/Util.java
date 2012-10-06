@@ -16,11 +16,10 @@ import mondrian.olap.fun.Resolver;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
-import mondrian.spi.UserDefinedFunction;
+import mondrian.spi.*;
 import mondrian.util.*;
 
-import org.apache.commons.vfs.*;
-import org.apache.commons.vfs.provider.http.HttpFileObject;
+import org.apache.commons.collections.Predicate;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.XOMUtil;
@@ -30,12 +29,14 @@ import org.olap4j.mdx.*;
 import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.reflect.*;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Statement;
+import java.sql.*;
+import java.sql.Connection;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
@@ -74,6 +75,12 @@ public class Util extends XOMUtil {
      */
     private static final Random metaRandom =
             createRandom(MondrianProperties.instance().TestSeed.get());
+
+    /** Unique id for this JVM instance. Part of a key that ensures that if
+     * two JVMs in the same cluster have a data-source with the same
+     * identity-hash-code, they will be treated as different data-sources,
+     * and therefore caches will not be incorrectly shared. */
+    public static final UUID JVM_INSTANCE_UUID = UUID.randomUUID();
 
     /**
      * Whether we are running a version of Java before 1.5.
@@ -140,6 +147,9 @@ public class Util extends XOMUtil {
     public static final ComparableEmptyList COMPARABLE_EMPTY_LIST =
         new ComparableEmptyList();
 
+    public static final Lazy<VirtualFileHandler> VIRTUAL_FILE_HANDLER =
+        new Lazy<VirtualFileHandler>(VirtualFileHandler.FACTORY);
+
     static {
         String className;
         if (PreJdk15 || Retrowoven) {
@@ -168,12 +178,12 @@ public class Util extends XOMUtil {
         boolean b = false;
         if (!PreJdk16) {
             try {
-                final Functor0<Boolean> functor =
+                final Function0<Boolean> function =
                     compatible.compileScript(
-                        Functor0.class,
+                        Function0.class,
                         "function apply() { return true; }",
                         "JavaScript");
-                b = functor.apply();
+                b = function.apply();
             } catch (MondrianException e) {
                 Util.discard(e);
             }
@@ -237,23 +247,7 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Creates an {@link ExecutorService} object backed by a thread pool
-     * with a fixed number of threads..
-     * @param maxNbThreads Maximum number of concurrent
-     * threads.
-     * @param name The name of the threads.
-     * @return An executor service preconfigured.
-     */
-    public static ExecutorService getExecutorService(
-        final int maxNbThreads,
-        String name)
-    {
-        return getExecutorService(maxNbThreads, 0, 1, -1, name);
-    }
-
-    /**
-     * Creates an {@link ExecutorService} object backed by a thread pool
-     * with a fixed number of threads..
+     * Creates an {@link ExecutorService} object backed by a thread pool.
      * @param maximumPoolSize Maximum number of concurrent
      * threads.
      * @param corePoolSize Minimum number of concurrent
@@ -261,32 +255,26 @@ public class Util extends XOMUtil {
      * idle.
      * @param keepAliveTime Time, in seconds, for which to
      * keep alive unused threads.
-     * @param queueLength Maximum number of tasks that can be
-     * put in the queue of tasks to be executed. <code>-1</code>
-     * means no limit.
      * @param name The name of the threads.
+     * @param rejectionPolicy The rejection policy to enforce.
      * @return An executor service preconfigured.
      */
     public static ExecutorService getExecutorService(
         int maximumPoolSize,
         int corePoolSize,
         long keepAliveTime,
-        int queueLength,
-        final String name)
+        final String name,
+        RejectedExecutionHandler rejectionPolicy)
     {
         if (Util.PreJdk16) {
             // On JDK1.5, if you specify corePoolSize=0, nothing gets executed.
             // Bummer.
             corePoolSize = Math.max(corePoolSize, 1);
         }
-        return new ThreadPoolExecutor(
-            corePoolSize,
-            maximumPoolSize,
-            keepAliveTime,
-            TimeUnit.SECONDS,
-            queueLength < 0
-                ? new LinkedBlockingQueue<Runnable>()
-                : new ArrayBlockingQueue<Runnable>(queueLength),
+
+        // We must create a factory where the threads
+        // have the right name and are marked as daemon threads.
+        final ThreadFactory factory =
             new ThreadFactory() {
                 public Thread newThread(Runnable r) {
                     final Thread t =
@@ -295,7 +283,36 @@ public class Util extends XOMUtil {
                     t.setName(name);
                     return t;
                 }
-            });
+            };
+
+        // Ok, create the executor
+        final ThreadPoolExecutor executor =
+            new ThreadPoolExecutor(
+                corePoolSize,
+                maximumPoolSize > 0
+                    ? maximumPoolSize
+                    : Integer.MAX_VALUE,
+                keepAliveTime,
+                TimeUnit.SECONDS,
+                // we use a sync queue. any other type of queue
+                // will prevent the tasks from running concurrently
+                // because the executors API requires blocking queues.
+                // Important to pass true here. This makes the
+                // order of tasks deterministic.
+                // TODO Write a non-blocking queue which implements
+                // the blocking queue API so we can pass that to the
+                // executor.
+                new SynchronousQueue<Runnable>(true),
+                factory);
+
+        // Set the rejection policy if required.
+        if (rejectionPolicy != null) {
+            executor.setRejectedExecutionHandler(
+                rejectionPolicy);
+        }
+
+        // Done
+        return executor;
     }
 
     /**
@@ -1339,12 +1356,17 @@ public class Util extends XOMUtil {
         // If the first level is 'all', lookup member at second level. For
         // example, they could say '[USA]' instead of '[(All
         // Customers)].[USA]'.
-        return (rootMembers.size() > 0 && rootMembers.get(0).isAll())
-            ? reader.lookupMemberChildByName(
-                rootMembers.get(0),
-                memberName,
-                matchType)
-            : null;
+        if (rootMembers.size() <= 0 || !rootMembers.get(0).isAll()) {
+            return null;
+        }
+
+        // REVIEW: Since we look up root members frequently -- whenever we
+        // resolve an MDX name -- it would probably be better to retrieve
+        // all root members, not just the one by a particular name.
+        return reader.lookupMemberChildByName(
+            rootMembers.get(0),
+            memberName,
+            matchType);
     }
 
     /**
@@ -2032,9 +2054,9 @@ public class Util extends XOMUtil {
      */
     public static <T> Iterable<T> filter(
         final Iterable<T> iterable,
-        final Functor1<Boolean, T>... conds)
+        final Predicate1<T>... conds)
     {
-        final Functor1<Boolean, T>[] conds2 = optimizeConditions(conds);
+        final Predicate1<T>[] conds2 = optimizeConditions(conds);
         if (conds2.length == 0) {
             return iterable;
         }
@@ -2049,8 +2071,8 @@ public class Util extends XOMUtil {
                         outer:
                         while (iterator.hasNext()) {
                             next = iterator.next();
-                            for (Functor1<Boolean, T> cond : conds2) {
-                                if (!cond.apply(next)) {
+                            for (Predicate1<T> cond : conds2) {
+                                if (!cond.test(next)) {
                                     continue outer;
                                 }
                             }
@@ -2077,22 +2099,22 @@ public class Util extends XOMUtil {
         };
     }
 
-    private static <T> Functor1<Boolean, T>[] optimizeConditions(
-        Functor1<Boolean, T>[] conds)
+    private static <T> Predicate1<T>[] optimizeConditions(
+        Predicate1<T>[] conds)
     {
-        final List<Functor1<Boolean, T>> functor1List =
-            new ArrayList<Functor1<Boolean, T>>(Arrays.asList(conds));
-        for (Iterator<Functor1<Boolean, T>> funcIter =
-            functor1List.iterator(); funcIter.hasNext();)
+        final List<Predicate1<T>> predicateList =
+            new ArrayList<Predicate1<T>>(Arrays.asList(conds));
+        for (Iterator<Predicate1<T>> funcIter = predicateList.iterator();
+            funcIter.hasNext();)
         {
-            Functor1<Boolean, T> booleanTFunctor1 = funcIter.next();
-            if (booleanTFunctor1 == trueFunctor()) {
+            Predicate1<T> predicate = funcIter.next();
+            if (predicate == truePredicate1()) {
                 funcIter.remove();
             }
         }
-        if (functor1List.size() < conds.length) {
+        if (predicateList.size() < conds.length) {
             //noinspection unchecked
-            return functor1List.toArray(new Functor1[functor1List.size()]);
+            return predicateList.toArray(new Predicate1[predicateList.size()]);
         } else {
             return conds;
         }
@@ -2114,8 +2136,8 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Sorts a collection of objects using a {@link java.util.Comparator} and returns a
-     * list.
+     * Sorts a collection of objects using a {@link java.util.Comparator} and
+     * returns a list.
      *
      * @param collection Collection
      * @param comparator Comparator
@@ -2454,6 +2476,62 @@ public class Util extends XOMUtil {
             - y / 100
             + y / 400
             - 32045;
+    }
+
+    public static <T> List<T> toList(Iterable<? extends T> iterable) {
+        final List<T> list = new ArrayList<T>();
+        for (T t : iterable) {
+            list.add(t);
+        }
+        return list;
+    }
+
+    /**
+     * Closes a JDBC result set, statement, and connection, ignoring any errors.
+     * If any of them are null, that's fine.
+     *
+     * <p>If any of them throws a {@link SQLException}, returns the first
+     * such exception, but always executes all closes.</p>
+     *
+     * @param resultSet Result set
+     * @param statement Statement
+     * @param connection Connection
+     */
+    public static SQLException close(
+        ResultSet resultSet,
+        Statement statement,
+        Connection connection)
+    {
+        SQLException firstException = null;
+        if (resultSet != null) {
+            try {
+                if (statement == null) {
+                    statement = resultSet.getStatement();
+                }
+                resultSet.close();
+            } catch (SQLException e) {
+                firstException = e;
+            }
+        }
+        if (statement != null) {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                if (firstException == null) {
+                    firstException = e;
+                }
+            }
+        }
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                if (firstException == null) {
+                    firstException = e;
+                }
+            }
+        }
+        return firstException;
     }
 
     public static class ErrorCellValue {
@@ -3428,80 +3506,14 @@ public class Util extends XOMUtil {
     /**
      * Gets content via Apache VFS. File must exist and have content
      *
-     * @param url String
-     * @return Apache VFS FileContent for further processing
-     * @throws FileSystemException on error
+     * @param url URL String
+     * @return Contents of file as an input stream
+     * @throws java.io.IOException on error
      */
     public static InputStream readVirtualFile(String url)
-        throws FileSystemException
+        throws IOException
     {
-        // Treat catalogUrl as an Apache VFS (Virtual File System) URL.
-        // VFS handles all of the usual protocols (http:, file:)
-        // and then some.
-        FileSystemManager fsManager = VFS.getManager();
-        if (fsManager == null) {
-            throw newError("Cannot get virtual file system manager");
-        }
-
-        // Workaround VFS bug.
-        if (url.startsWith("file://localhost")) {
-            url = url.substring("file://localhost".length());
-        }
-        if (url.startsWith("file:")) {
-            url = url.substring("file:".length());
-        }
-
-        //work around for VFS bug not closing http sockets
-        // (Mondrian-585)
-        if (url.startsWith("http")) {
-            try {
-                return new URL(url).openStream();
-            } catch (IOException e) {
-                throw newError(
-                    "Could not read URL: " + url);
-            }
-        }
-
-        File userDir = new File("").getAbsoluteFile();
-        FileObject file = fsManager.resolveFile(userDir, url);
-        FileContent fileContent = null;
-        try {
-            // Because of VFS caching, make sure we refresh to get the latest
-            // file content. This refresh may possibly solve the following
-            // workaround for defect MONDRIAN-508, but cannot be tested, so we
-            // will leave the work around for now.
-            file.refresh();
-
-            // Workaround to defect MONDRIAN-508. For HttpFileObjects, verifies
-            // the URL of the file retrieved matches the URL passed in.  A VFS
-            // cache bug can cause it to treat URLs with different parameters
-            // as the same file (e.g. http://blah.com?param=A,
-            // http://blah.com?param=B)
-            if (file instanceof HttpFileObject
-                && !file.getName().getURI().equals(url))
-            {
-                fsManager.getFilesCache().removeFile(
-                    file.getFileSystem(),  file.getName());
-
-                file = fsManager.resolveFile(userDir, url);
-            }
-
-            if (!file.isReadable()) {
-                throw newError(
-                    "Virtual file is not readable: " + url);
-            }
-
-            fileContent = file.getContent();
-        } finally {
-            file.close();
-        }
-
-        if (fileContent == null) {
-            throw newError(
-                "Cannot get virtual file content: " + url);
-        }
-
-        return fileContent.getInputStream();
+        return VIRTUAL_FILE_HANDLER.get().readVirtualFile(url);
     }
 
     public static String readVirtualFileAsString(
@@ -4428,34 +4440,73 @@ public class Util extends XOMUtil {
         }
     }
 
-    public static interface Functor0<RT> {
+    /**
+     * Function that takes zero arguments and returns {@code RT}.
+     *
+     * @param <RT> Return type
+     */
+    public static interface Function0<RT> {
         RT apply();
     }
 
-    public static interface Functor1<RT, PT> {
+    /**
+     * Function that takes one argument ({@code PT}) and returns {@code RT}.
+     *
+     * @param <RT> Return type
+     * @param <PT> Parameter type
+     */
+    public static interface Function1<PT, RT> {
         RT apply(PT param);
     }
 
-    public static <T> Functor1<T, T> identityFunctor() {
-        //noinspection unchecked
-        return (Functor1) IDENTITY_FUNCTOR;
+    /**
+     * Predicate that takes one argument ({@code PT}).
+     * Can be used as a {@code Functor1&lt;PT&gt;} or as an Apache-collections
+     * Predicate.
+     *
+     * @param <PT> Parameter type
+     */
+    public static abstract class Predicate1<PT>
+        implements Predicate, Function1<PT, Boolean>
+    {
+        public Boolean apply(PT param) {
+            return test(param);
+        }
+
+        public boolean evaluate(Object o) {
+            //noinspection unchecked
+            return test((PT) o);
+        }
+
+        public abstract boolean test(PT pt);
     }
 
-    private static final Functor1 IDENTITY_FUNCTOR =
-        new Functor1<Object, Object>() {
+    public static <T> Function1<T, T> identityFunctor() {
+        //noinspection unchecked
+        return (Function1) IDENTITY_FUNCTION;
+    }
+
+    private static final Function1 IDENTITY_FUNCTION =
+        new Function1<Object, Object>() {
             public Object apply(Object param) {
                 return param;
             }
         };
 
-    public static <PT> Functor1<Boolean, PT> trueFunctor() {
+    /**
+     * Returns a predicate that takes 1 argument and always returns true.
+     *
+     * @param <PT> Parameter type
+     * @return Predicate that always returns true
+     */
+    public static <PT> Predicate1<PT> truePredicate1() {
         //noinspection unchecked
-        return (Functor1) TRUE_FUNCTOR;
+        return (Predicate1) TRUE_PREDICATE1;
     }
 
-    private static final Functor1 TRUE_FUNCTOR =
-        new Functor1<Boolean, Object>() {
-            public Boolean apply(Object param) {
+    private static final Predicate1 TRUE_PREDICATE1 =
+        new Predicate1<Object>() {
+            public boolean test(Object o) {
                 return true;
             }
         };

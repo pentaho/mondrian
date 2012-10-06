@@ -44,37 +44,56 @@ public abstract class RolapAggregator
                 default:
                     return false;
                 }
-            };
+            }
             public Object aggregate(List<Object> rawData) {
                 assert rawData.size() > 0;
-                if (rawData.get(0) instanceof Integer) {
+                // Find the first non-null reference to a data object.
+                Object firstNonNull = null;
+                for (Object obj : rawData) {
+                    if (obj != null) {
+                        firstNonNull = obj;
+                        break;
+                    }
+                }
+                if (firstNonNull == null) {
+                    return 0;
+                }
+                if (firstNonNull instanceof Integer) {
                     int totalValue = 0;
                     for (Object data : rawData) {
-                        totalValue += (Integer)data;
+                        if (data != null) {
+                            totalValue += (Integer)data;
+                        }
                     }
                     return totalValue;
                 }
-                if (rawData.get(0) instanceof Double) {
+                if (firstNonNull instanceof Double) {
                     double totalValue = 0d;
                     for (Object data : rawData) {
-                        totalValue += (Double)data;
+                        if (data != null) {
+                            totalValue += (Double)data;
+                        }
                     }
                     return totalValue;
                 }
-                if (rawData.get(0) instanceof Long) {
+                if (firstNonNull instanceof Long) {
                     long totalValue = 0l;
                     for (Object data : rawData) {
-                        totalValue += (Long)data;
+                        if (data != null) {
+                            totalValue += (Long)data;
+                        }
                     }
                     return totalValue;
                 }
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException(
+                    "Unknown data type: "
+                    + firstNonNull.getClass().getName());
             }
         };
 
     public static final RolapAggregator Count =
         new RolapAggregator("count", index++, false) {
-            public Aggregator getRollup() {
+            public RolapAggregator getRollup() {
                 return Sum;
             }
 
@@ -98,6 +117,7 @@ public abstract class RolapAggregator
             {
                 return FunUtil.min(evaluator, members, exp);
             }
+
             public boolean supportsFastAggregates(Dialect.Datatype dataType) {
                 switch (dataType) {
                 case Integer:
@@ -106,31 +126,51 @@ public abstract class RolapAggregator
                 default:
                     return false;
                 }
-            };
+            }
+
             public Object aggregate(List<Object> rawData) {
                 assert rawData.size() > 0;
-                if (rawData.get(0) instanceof Integer) {
+                // Find the first non-null reference to a data object.
+                Object firstNonNull = null;
+                for (Object obj : rawData) {
+                    if (obj != null) {
+                        firstNonNull = obj;
+                        break;
+                    }
+                }
+                if (firstNonNull == null) {
+                    return null;
+                }
+                if (firstNonNull instanceof Integer) {
                     int min = Integer.MAX_VALUE;
                     for (Object data : rawData) {
-                        min = Math.min(min, (Integer)data);
+                        if (data != null) {
+                            min = Math.min(min, (Integer)data);
+                        }
                     }
                     return min;
                 }
-                if (rawData.get(0) instanceof Double) {
+                if (firstNonNull instanceof Double) {
                     double min = Double.MAX_VALUE;
                     for (Object data : rawData) {
-                        min = Math.min(min, (Double)data);
+                        if (data != null) {
+                            min = Math.min(min, (Double)data);
+                        }
                     }
                     return min;
                 }
-                if (rawData.get(0) instanceof Long) {
+                if (firstNonNull instanceof Long) {
                     long min = Long.MAX_VALUE;
                     for (Object data : rawData) {
-                        min = Math.min(min, (Long)data);
+                        if (data != null) {
+                            min = Math.min(min, (Long)data);
+                        }
                     }
                     return min;
                 }
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException(
+                    "Unknown data type: "
+                    + firstNonNull.getClass().getName());
             }
         };
 
@@ -141,6 +181,7 @@ public abstract class RolapAggregator
             {
                 return FunUtil.max(evaluator, members, exp);
             }
+
             public boolean supportsFastAggregates(Dialect.Datatype dataType) {
                 switch (dataType) {
                 case Integer:
@@ -149,37 +190,57 @@ public abstract class RolapAggregator
                 default:
                     return false;
                 }
-            };
+            }
+
             public Object aggregate(List<Object> rawData) {
                 assert rawData.size() > 0;
-                if (rawData.get(0) instanceof Integer) {
+                // Find the first non-null reference to a data object.
+                Object firstNonNull = null;
+                for (Object obj : rawData) {
+                    if (obj != null) {
+                        firstNonNull = obj;
+                        break;
+                    }
+                }
+                if (firstNonNull == null) {
+                    return null;
+                }
+                if (firstNonNull instanceof Integer) {
                     int min = Integer.MIN_VALUE;
                     for (Object data : rawData) {
-                        min = Math.max(min, (Integer)data);
+                        if (data != null) {
+                            min = Math.max(min, (Integer)data);
+                        }
                     }
                     return min;
                 }
-                if (rawData.get(0) instanceof Double) {
+                if (firstNonNull instanceof Double) {
                     double min = Double.MIN_VALUE;
                     for (Object data : rawData) {
-                        min = Math.max(min, (Double)data);
+                        if (data != null) {
+                            min = Math.max(min, (Double)data);
+                        }
                     }
                     return min;
                 }
-                if (rawData.get(0) instanceof Long) {
+                if (firstNonNull instanceof Long) {
                     long min = Long.MIN_VALUE;
                     for (Object data : rawData) {
-                        min = Math.max(min, (Long)data);
+                        if (data != null) {
+                            min = Math.max(min, (Long)data);
+                        }
                     }
                     return min;
                 }
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException(
+                    "Unknown data type: "
+                    + firstNonNull.getClass().getName());
             }
         };
 
     public static final RolapAggregator Avg =
         new RolapAggregator("avg", index++, false) {
-            public Aggregator getRollup() {
+            public RolapAggregator getRollup() {
                 return new RolapAggregator("avg", index, false) {
                     public Object aggregate(
                         Evaluator evaluator,
@@ -190,6 +251,7 @@ public abstract class RolapAggregator
                     }
                 };
             }
+
             public Object aggregate(
                 Evaluator evaluator, TupleList members, Calc exp)
             {
@@ -199,7 +261,7 @@ public abstract class RolapAggregator
 
     public static final RolapAggregator DistinctCount =
         new RolapAggregator("distinct-count", index++, true) {
-            public Aggregator getRollup() {
+            public RolapAggregator getRollup() {
                 // Distinct counts cannot always be rolled up, when they can,
                 // it's using Sum.
                 return Sum;
@@ -316,6 +378,7 @@ public abstract class RolapAggregator
         public AvgFromAvg(String factCountExpr) {
             super("AvgFromAvg", factCountExpr);
         }
+
         public String getExpression(String operand) {
             StringBuilder buf = new StringBuilder(64);
             buf.append("sum(");
@@ -343,6 +406,7 @@ public abstract class RolapAggregator
         public SumFromAvg(String factCountExpr) {
             super("SumFromAvg", factCountExpr);
         }
+
         public String getExpression(String operand) {
             StringBuilder buf = new StringBuilder(64);
             buf.append("sum(");
@@ -397,7 +461,7 @@ public abstract class RolapAggregator
      * Returns the aggregator used to roll up. By default, aggregators roll up
      * themselves.
      */
-    public Aggregator getRollup() {
+    public RolapAggregator getRollup() {
         return this;
     }
 

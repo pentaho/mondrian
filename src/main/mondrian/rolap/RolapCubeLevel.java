@@ -46,6 +46,7 @@ public class RolapCubeLevel extends RolapLevel {
             level.getDescription(),
             level.getDepth(),
             level.attribute,
+            level.getOrderByList(),
             level.getHideMemberCondition(),
             level.getAnnotationMap());
 
@@ -69,7 +70,7 @@ public class RolapCubeLevel extends RolapLevel {
             this.levelReader = new AllLevelReaderImpl();
         } else if (getLevelType() == org.olap4j.metadata.Level.Type.NULL) {
             this.levelReader = new NullLevelReader();
-        } else if (closure) {
+        } else if (rolapLevel.hasClosedPeer()) {
             RolapDimension dimension =
                 rolapLevel.getClosedPeer().getHierarchy().getDimension();
 
@@ -115,7 +116,7 @@ public class RolapCubeLevel extends RolapLevel {
     {
         assert measureGroup != null;
         throw new UnsupportedOperationException();
-        /*
+/*
         // the base cube for the specificed virtual level
         Util.deprecated("remove this method?", false);
         // TODO: was a parameter, should not be needed, if we use the physColumn
@@ -135,7 +136,7 @@ public class RolapCubeLevel extends RolapLevel {
             final boolean fail = false;
             return star.getColumn(expr, fail);
         }
-        */
+*/
     }
 
     /**
@@ -261,7 +262,7 @@ public class RolapCubeLevel extends RolapLevel {
             CellRequest request)
         {
             assert member.getLevel() == cubeLevel;
-            final List<Object> key = member.getKeyAsList();
+            final List<Comparable> key = member.getKeyAsList();
             if (key.isEmpty()) {
                 if (member == member.getHierarchy().getNullMember()) {
                     // cannot form a request if one of the members is null
@@ -274,7 +275,9 @@ public class RolapCubeLevel extends RolapLevel {
             }
 
             int keyOrdinal = 0;
-            for (RolapSchema.PhysColumn column : cubeLevel.attribute.keyList) {
+            for (RolapSchema.PhysColumn column
+                : cubeLevel.attribute.getKeyList())
+            {
                 RolapStar.Column starColumn =
                     measureGroup.getRolapStarColumn(
                         cubeLevel.cubeDimension, column, false);
@@ -307,17 +310,6 @@ public class RolapCubeLevel extends RolapLevel {
                 ++keyOrdinal;
             }
 
-            if (request.extendedContext
-                && cubeLevel.attribute.nameExp != null)
-            {
-                final RolapStar.Column nameColumn =
-                    measureGroup.getRolapStarColumn(
-                        cubeLevel.cubeDimension,
-                        cubeLevel.attribute.nameExp,
-                        true);
-                request.addConstrainedColumn(nameColumn, null);
-            }
-
             // Request is satisfiable.
             return false;
         }
@@ -348,7 +340,7 @@ public class RolapCubeLevel extends RolapLevel {
                 //  optimization potential
                 Util.deprecated("adding predicate multiple times?", false);
                 for (RolapSchema.PhysColumn physColumn
-                    : cubeLevel.attribute.keyList)
+                    : cubeLevel.attribute.getKeyList())
                 {
                     cacheRegion.addPredicate(predicate);
                 }
@@ -449,9 +441,13 @@ public class RolapCubeLevel extends RolapLevel {
                     new RolapMemberBase(
                         wrappedAllMember,
                         closedPeerLevel,
-                        member.getKeyCompact());
+                        member.getKeyCompact(),
+                        member.getName(),
+                        member.getMemberType());
                 member =
                     new RolapCubeMember(
+                        // REVIEW pass the actual parent member instead of the
+                        // 'all member'?
                         allMember,
                         wrappedMember, closedPeerCubeLevel);
 

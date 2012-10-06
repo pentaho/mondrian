@@ -24,7 +24,7 @@ public class ValueColumnPredicate
     extends AbstractColumnPredicate
     implements Comparable
 {
-    private final Object value;
+    private final Comparable value;
 
     /**
      * Creates a column constraint.
@@ -36,7 +36,7 @@ public class ValueColumnPredicate
      */
     public ValueColumnPredicate(
         PredicateColumn constrainedColumn,
-        Object value)
+        Comparable value)
     {
         super(constrainedColumn);
         assert value != null;
@@ -49,7 +49,7 @@ public class ValueColumnPredicate
      *
      * @return Value to compare column to
      */
-    public Object getValue() {
+    public Comparable getValue() {
         return value;
     }
 
@@ -75,11 +75,11 @@ public class ValueColumnPredicate
             return columnBitKeyComp;
         }
 
-        if (this.value instanceof Comparable
-            && that.value instanceof Comparable
+        if (this.value != null
+            && that.value != null
             && this.value.getClass() == that.value.getClass())
         {
-            return ((Comparable) this.value).compareTo(that.value);
+            return this.value.compareTo(that.value);
         } else {
             String thisComp = String.valueOf(this.value);
             String thatComp = String.valueOf(that.value);
@@ -147,6 +147,7 @@ public class ValueColumnPredicate
     }
 
     public void toSql(Dialect dialect, StringBuilder buf) {
+        int length = buf.length();
         final RolapSchema.PhysColumn column = getColumn().physColumn;
         String expr = column.toSql();
         buf.append(expr);
@@ -155,7 +156,13 @@ public class ValueColumnPredicate
             buf.append(" is null");
         } else {
             buf.append(" = ");
-            dialect.quote(buf, key, column.getDatatype());
+            try {
+                dialect.quote(buf, key, column.getDatatype());
+            } catch (NumberFormatException e) {
+                // Illegal value cannot be matched.
+                buf.setLength(length);
+                dialect.quoteBooleanLiteral(buf, false);
+            }
         }
     }
 

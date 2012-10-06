@@ -11,6 +11,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.olap.Member.MemberType;
 import mondrian.olap.fun.VisualTotalsFunDef;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.MemberChildrenConstraint;
@@ -51,6 +52,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
      * @param cubeDimension Dimension
      * @param rolapHierarchy Wrapped hierarchy
      * @param subName Name of hierarchy within dimension
+     * @param uniqueName Unique name of hierarchy
      * @param ordinal Ordinal of hierarchy within cube
      * @param caption Caption
      * @param description Description
@@ -60,6 +62,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         RolapCubeDimension cubeDimension,
         RolapHierarchy rolapHierarchy,
         String subName,
+        String uniqueName,
         int ordinal,
         final String caption,
         final String description)
@@ -67,7 +70,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         super(
             cubeDimension,
             subName,
-            rolapHierarchy.getUniqueName(),
+            uniqueName,
             rolapHierarchy.isVisible(),
             caption,
             description,
@@ -122,8 +125,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                     new RolapCubeLevel(
                         rolapHierarchy.getAllMember().getLevel(),
                         this);
-                allLevel.initLevel(
-                    schemaLoader, false);
+                allLevel.initLevel(schemaLoader, false);
             }
 
             this.currentAllMember =
@@ -185,7 +187,9 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 rolapParent = cubeParent.getRolapMember();
             }
             RolapMember member =
-                new RolapMemberBase(rolapParent, rolapLevel, name);
+                new RolapMemberBase(
+                    rolapParent, rolapLevel, name,
+                    name, MemberType.REGULAR);
             return wrapMember(cubeParent, member, cubeLevel);
         } else if (level.getDimension().isMeasures()) {
             RolapCalculatedMeasure member =
@@ -1035,6 +1039,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             RolapLevel childLevel,
             Comparable key,
             Object captionValue,
+            String nameValue,
             boolean parentChild,
             SqlStatement stmt,
             SqlTupleReader.LevelColumnLayout layout)
@@ -1055,6 +1060,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                     childCubeLevel.getRolapLevel(),
                     key,
                     captionValue,
+                    nameValue,
                     parentChild,
                     stmt,
                     layout);

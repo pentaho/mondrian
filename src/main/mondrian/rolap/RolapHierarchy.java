@@ -145,7 +145,8 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 null,
                 0,
-                ALL_ATTRIBUTE,
+                ALL_ATTRIBUTE.inDimension(getDimension()),
+                Collections.<RolapSchema.PhysColumn>emptyList(),
                 RolapLevel.HideMemberCondition.Never,
                 Collections.<String, Annotation>emptyMap());
         if (hasAll) {
@@ -162,7 +163,8 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 null,
                 0,
-                NULL_ATTRIBUTE,
+                NULL_ATTRIBUTE.inDimension(getDimension()),
+                Collections.<RolapSchema.PhysColumn>emptyList(),
                 RolapLevel.HideMemberCondition.Never,
                 Collections.<String, Annotation>emptyMap());
 
@@ -175,7 +177,8 @@ public class RolapHierarchy extends HierarchyBase {
                     null,
                     null,
                     levelList.size(),
-                    MEASURES_ATTRIBUTE,
+                    MEASURES_ATTRIBUTE.inDimension(getDimension()),
+                    Collections.<RolapSchema.PhysColumn>emptyList(),
                     RolapLevel.HideMemberCondition.Never,
                     Collections.<String, Annotation>emptyMap()));
         }
@@ -366,7 +369,8 @@ public class RolapHierarchy extends HierarchyBase {
     {
         if (formula == null) {
             return new RolapMemberBase(
-                (RolapMember) parent, (RolapLevel) level, name);
+                (RolapMember) parent, (RolapLevel) level, name,
+                name, mondrian.olap.Member.MemberType.REGULAR);
         } else if (level.getDimension().isMeasures()) {
             return new RolapCalculatedMeasure(
                 (RolapMember) parent, (RolapLevel) level, name, formula);
@@ -391,7 +395,7 @@ public class RolapHierarchy extends HierarchyBase {
      *    joins
      */
     void addToFromInverse(SqlQuery query, RolapSchema.PhysExpr expression) {
-        /*
+/*
         if (relation == null) {
             throw Util.newError(
                 "cannot add hierarchy " + getUniqueName()
@@ -406,8 +410,11 @@ public class RolapHierarchy extends HierarchyBase {
                     relationSubsetInverse(relation, expression.getTableAlias());
             }
         }
-        query.addFrom(subRelation, null, failIfExists);
-                 */
+        query.addFrom(
+            subRelation,
+            expression == null ? null : expression.getTableAlias(),
+            failIfExists);
+*/
     }
 
     /**
@@ -719,7 +726,8 @@ public class RolapHierarchy extends HierarchyBase {
                 caption,
                 description,
                 peerHier.levelList.size(),
-                src.attribute.parentAttribute,
+                src.attribute.getParentAttribute(),
+                Collections.<RolapSchema.PhysColumn>emptyList(),
                 src.getHideMemberCondition(),
                 Collections.<String, Annotation>emptyMap());
         peerHier.levelList.add(level);
@@ -738,6 +746,7 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 peerHier.levelList.size(),
                 src.attribute, // TODO: new attr, also change its row count
+                Collections.<RolapSchema.PhysColumn>emptyList(),
                 src.getHideMemberCondition(),
                 Collections.<String, Annotation>emptyMap());
         peerHier.levelList.add(sublevel);
@@ -949,11 +958,10 @@ public class RolapHierarchy extends HierarchyBase {
         @Override
         public RolapMember substitute(final RolapMember member) {
             if (member == null) {
-                return member;
+                return null;
             }
-            if (member instanceof MultiCardinalityDefaultMember
-                && hierarchyAccess.hasInaccessibleDescendants(
-                    member.getParentMember()))
+            if (member != null
+                && member instanceof MultiCardinalityDefaultMember)
             {
                 return new LimitedRollupMember(
                     ((MultiCardinalityDefaultMember) member).getParentMember(),
@@ -1068,8 +1076,8 @@ public class RolapHierarchy extends HierarchyBase {
         }
     }
 
-    private static final RolapAttribute ALL_ATTRIBUTE =
-        new RolapAttribute(
+    private static final RolapSharedAttribute ALL_ATTRIBUTE =
+        new RolapSharedAttribute(
             "All",
             true,
             null,
@@ -1081,10 +1089,11 @@ public class RolapHierarchy extends HierarchyBase {
             null,
             null,
             org.olap4j.metadata.Level.Type.ALL,
+            null,
             ALL_LEVEL_CARDINALITY);
 
-    private static final RolapAttribute NULL_ATTRIBUTE =
-        new RolapAttribute(
+    private static final RolapSharedAttribute NULL_ATTRIBUTE =
+        new RolapSharedAttribute(
             "Null",
             true,
             null,
@@ -1096,10 +1105,11 @@ public class RolapHierarchy extends HierarchyBase {
             null,
             null,
             org.olap4j.metadata.Level.Type.NULL,
+            null,
             NULL_LEVEL_CARDINALITY);
 
-    private static final RolapAttribute MEASURES_ATTRIBUTE =
-        new RolapAttribute(
+    private static final RolapSharedAttribute MEASURES_ATTRIBUTE =
+        new RolapSharedAttribute(
             "Measures",
             true,
             null,
@@ -1111,6 +1121,7 @@ public class RolapHierarchy extends HierarchyBase {
             null,
             null,
             org.olap4j.metadata.Level.Type.REGULAR,
+            null,
             Integer.MIN_VALUE);
 }
 

@@ -96,6 +96,7 @@ public class AggregationManager extends RolapAggregationManager {
      *     place a list of the segments it has loaded, when it completes
      */
     public static void loadAggregation(
+        StarConverter starConverter,
         SegmentCacheManager cacheMgr,
         int cellRequestCount,
         List<RolapStar.Measure> measures,
@@ -114,7 +115,7 @@ public class AggregationManager extends RolapAggregationManager {
         predicates = aggregation.optimizePredicates(columns, predicates);
         aggregation.load(
             cacheMgr, cellRequestCount, columns, measures, predicates,
-            groupingSetsCollector, segmentFutures);
+            starConverter, groupingSetsCollector, segmentFutures);
     }
 
     /**
@@ -165,6 +166,10 @@ public class AggregationManager extends RolapAggregationManager {
                 if (pw != null) {
                     pw.println(message);
                 }
+            }
+
+            public boolean isTraceEnabled() {
+                return pw != null;
             }
         };
     }
@@ -237,6 +242,9 @@ public class AggregationManager extends RolapAggregationManager {
              && !hasCompoundPredicates)
         {
             final boolean[] rollup = {false};
+
+            // Find an aggregate table. (There aren't any registered anymore, so
+            // this will never find anything.)
             AggStar aggStar = findAgg(star, levelBitKey, measureBitKey, rollup);
 
             if (aggStar != null) {
@@ -344,6 +352,13 @@ public class AggregationManager extends RolapAggregationManager {
         final BitKey measureBitKey,
         boolean[] rollup)
     {
+        if (!MondrianProperties.instance().ReadAggregates.get()
+            || !MondrianProperties.instance().UseAggregates.get())
+        {
+            // Can't do anything here.
+            return null;
+        }
+
         // If there is no distinct count measure, isDistinct == false,
         // then all we want is an AggStar whose BitKey is a superset
         // of the combined measure BitKey and foreign-key/level BitKey.
@@ -408,37 +423,6 @@ public class AggregationManager extends RolapAggregationManager {
             }
 
             if (aggStar.hasForeignKeys()) {
-/*
-                    StringBuilder buf = new StringBuilder(256);
-                    buf.append("");
-                    buf.append(star.getFactTable().getAlias());
-                    buf.append(Util.nl);
-                    buf.append("foreign =");
-                    buf.append(levelBitKey);
-                    buf.append(Util.nl);
-                    buf.append("measure =");
-                    buf.append(measureBitKey);
-                    buf.append(Util.nl);
-                    buf.append("aggstar =");
-                    buf.append(aggStar.getBitKey());
-                    buf.append(Util.nl);
-                    buf.append("distinct=");
-                    buf.append(aggStar.getDistinctMeasureBitKey());
-                    buf.append(Util.nl);
-                    buf.append("AggStar=");
-                    buf.append(aggStar.getFactTable().getName());
-                    buf.append(Util.nl);
-                    for (Iterator columnIter =
-                            aggStar.getFactTable().getColumns().iterator();
-                         columnIter.hasNext();) {
-                        AggStar.Table.Column column =
-                                (AggStar.Table.Column) columnIter.next();
-                        buf.append("   ");
-                        buf.append(column);
-                        buf.append(Util.nl);
-                    }
-System.out.println(buf.toString());
-*/
                 // This is a little pessimistic. If the measure is
                 // 'count(distinct customer_id)' and one of the foreign keys is
                 // 'customer_id' then it is OK to roll up.
@@ -497,6 +481,27 @@ System.out.println(buf.toString());
         extends HashSet<Segment>
         implements RolapAggregationManager.PinSet
     {
+    }
+
+    public interface StarConverter {
+        RolapStar convertStar(RolapStar star);
+
+        BitKey convertBitKey(BitKey bitKey);
+
+        RolapStar.Column[] convertColumnArray(RolapStar.Column[] columns);
+
+        RolapStar.Measure convertMeasure(RolapStar.Measure measure);
+
+        StarColumnPredicate[] convertPredicateArray(
+            StarColumnPredicate[] predicates);
+
+        List<StarPredicate> convertPredicateList(
+            List<StarPredicate> predicateList);
+
+        Set<StarColumnPredicate>[] convertPredicateSets(
+            Set<StarColumnPredicate>[] valueSets);
+
+        RolapStar.Column convertColumn(RolapStar.Column column);
     }
 }
 

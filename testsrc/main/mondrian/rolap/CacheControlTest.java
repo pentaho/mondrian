@@ -508,6 +508,44 @@ public class CacheControlTest extends FoodMartTestCase {
     }
 
     /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1120">MONDRIAN-1120</a>
+     * <p>SegmentCacheIndexImpl.intersects was not comparing the
+     * header column values to those of the cache region.
+     */
+    public void testPartialFlush_2() throws Exception {
+        if (MondrianProperties.instance().DisableCaching.get()) {
+            return;
+        }
+
+        final TestContext testContext = getTestContext();
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw);
+        final CacheControl cacheControl =
+            testContext.getConnection().getCacheControl(pw);
+
+        final CacheControl.CellRegion regionF =
+            createCellRegionFemale(testContext, cacheControl);
+        final CacheControl.CellRegion regionM =
+            createCellRegionMale(testContext, cacheControl);
+
+        flushCache(testContext);
+
+        executeQuery(
+            "select {[Measures].[Unit Sales]} on columns, {[Gender].[M]} on rows from [Sales]");
+
+        sw.getBuffer().setLength(0);
+        cacheControl.flush(regionF);
+        pw.flush();
+        assertCacheStateEquals("output", "${output}", sw.toString());
+
+        sw.getBuffer().setLength(0);
+        cacheControl.flush(regionM);
+        pw.flush();
+        assertCacheStateEquals("output2", "${output2}", sw.toString());
+    }
+
+    /**
      * Creates a partial cell region over a range, runs a query, then flushes
      * the cache.
      */
@@ -773,6 +811,54 @@ public class CacheControlTest extends FoodMartTestCase {
             regionFemale);
     }
 
+    private CacheControl.CellRegion createCellRegionFemale(
+        TestContext testContext,
+        CacheControl cacheControl)
+    {
+        final Connection connection = testContext.getConnection();
+        final Cube salesCube =
+            connection.getSchema().lookupCube("Sales", true);
+
+        final SchemaReader schemaReader =
+            salesCube.getSchemaReader(null).withLocus();
+        final Member memberFemale =
+            schemaReader.getMemberByUniqueName(
+                Id.Segment.toList("Gender", "F"), true);
+
+        final CacheControl.CellRegion regionFemale =
+            cacheControl.createMemberRegion(memberFemale, true);
+
+        final CacheControl.CellRegion measuresRegion =
+            cacheControl.createMeasuresRegion(salesCube);
+        return cacheControl.createCrossjoinRegion(
+            measuresRegion,
+            regionFemale);
+    }
+
+    private CacheControl.CellRegion createCellRegionMale(
+        TestContext testContext,
+        CacheControl cacheControl)
+    {
+        final Connection connection = testContext.getConnection();
+        final Cube salesCube =
+            connection.getSchema().lookupCube("Sales", true);
+
+        final SchemaReader schemaReader =
+            salesCube.getSchemaReader(null).withLocus();
+        final Member memberFemale =
+            schemaReader.getMemberByUniqueName(
+                Id.Segment.toList("Gender", "M"), true);
+
+        final CacheControl.CellRegion regionFemale =
+            cacheControl.createMemberRegion(memberFemale, true);
+
+        final CacheControl.CellRegion measuresRegion =
+            cacheControl.createMeasuresRegion(salesCube);
+        return cacheControl.createCrossjoinRegion(
+            measuresRegion,
+            regionFemale);
+    }
+
     /**
      * Asserts that a given string contains a given pattern.
      *
@@ -825,7 +911,7 @@ public class CacheControlTest extends FoodMartTestCase {
         } catch (RuntimeException e) {
             assertContains(
                 "Cannot union cell regions of different dimensionalities. "
-                + "(Dimensionalities are '[[Time]]', '[[Product]]'.)",
+                + "(Dimensionalities are '[[Time].[Time]]', '[[Product].[Products]]'.)",
                 e.getMessage());
         }
 
@@ -981,7 +1067,7 @@ public class CacheControlTest extends FoodMartTestCase {
             + "Member([Customer].[Gender].[F]))",
             regionTimeXProductXGender.toString());
         assertEquals(
-            "[[Time], [Product], [Customer]]",
+            "[[Time].[Time], [Product].[Products], [Customer].[Gender]]",
             regionTimeXProductXGender.getDimensionality().toString());
 
         // Three-way crossjoin, should be same as previous
@@ -998,7 +1084,7 @@ public class CacheControlTest extends FoodMartTestCase {
             + "Member([Customer].[Gender].[F]))",
             regionTimeXProductXGender2.toString());
         assertEquals(
-            "[[Time], [Product], [Customer]]",
+            "[[Time].[Time], [Product].[Products], [Customer].[Gender]]",
             regionTimeXProductXGender2.getDimensionality().toString());
 
         // Compose a non crossjoin with a crossjoin
@@ -1014,7 +1100,7 @@ public class CacheControlTest extends FoodMartTestCase {
             + ".[Beer and Wine].[Beer]))",
             regionGenderXTimeXProduct.toString());
         assertEquals(
-            "[[Customer], [Time], [Product]]",
+            "[[Customer].[Gender], [Time].[Time], [Product].[Products]]",
             regionGenderXTimeXProduct.getDimensionality().toString());
     }
 

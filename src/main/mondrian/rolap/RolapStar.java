@@ -89,10 +89,24 @@ public class RolapStar {
         this.cacheAggregations = true;
         this.schema = schema;
         this.dataSource = dataSource;
-        this.factTable = new RolapStar.Table(this, fact, null, null);
+        final RolapSchema.PhysPath path =
+            new RolapSchema.PhysPathBuilder(fact).done();
+        this.factTable = new RolapStar.Table(this, fact, null, path);
 
         this.sqlQueryDialect = schema.getDialect();
         this.changeListener = schema.getDataSourceChangeListener();
+    }
+
+    /**
+     * Returns a measure of the IO cost of querying this table. It can be
+     * either the row count or the row count times the size of a row.
+     * If the property {@link MondrianProperties#ChooseAggregateByVolume}
+     * is true, then volume is returned, otherwise row count.
+     */
+    public int getCost() {
+        return MondrianProperties.instance().ChooseAggregateByVolume.get()
+            ? factTable.relation.getVolume()
+            : factTable.relation.getRowCount();
     }
 
     /**
@@ -123,7 +137,7 @@ public class RolapStar {
     {
         // REVIEW: Is it possible to optimize this so not every cell lookup
         // causes an AggregationKey to be created?
-        AggregationKey aggregationKey = new AggregationKey(request);
+        AggregationKey aggregationKey = AggregationKey.create(request);
 
         final Bar bar = localBars.get();
         for (SegmentWithData segment : Util.GcIterator.over(bar.segmentRefs)) {
@@ -172,6 +186,21 @@ public class RolapStar {
     public void register(SegmentWithData segment) {
         localBars.get().segmentRefs.add(
             new SoftReference<SegmentWithData>(segment));
+    }
+
+    /**
+     * Returns whether the rows in this star's table are unique.
+     *
+     * <p>Typically, an aggregate table has unique rows but a fact table does
+     * not. But there can be exceptions to both of these.</p>
+     *
+     * <p>If Mondrian knows rows are unique, sometimes it can avoid generating a
+     * GROUP BY.</p>
+     *
+     * @return Whether rows are unique
+     */
+    public boolean areRowsUnique() {
+        return !getFactTable().getRelation().getKeyList().isEmpty();
     }
 
     /**
@@ -260,11 +289,11 @@ public class RolapStar {
      */
     public void addAggStar(AggStar aggStar) {
         // Add it before the first AggStar which is larger, if there is one.
-        int size = aggStar.getSize();
+        int size = aggStar.getCost();
         ListIterator<AggStar> lit = aggStars.listIterator();
         while (lit.hasNext()) {
             AggStar as = lit.next();
-            if (as.getSize() >= size) {
+            if (as.getCost() >= size) {
                 lit.previous();
                 lit.add(aggStar);
                 return;
@@ -441,7 +470,7 @@ public class RolapStar {
     }
 
     /**
-     * Used by TestAggregationManager only.
+     * Used by TestAggregationManager only. (Not safe in general.)
      */
     public Column lookupColumn(String tableAlias, String columnName) {
         final Table table = factTable.findDescendant(tableAlias);
@@ -449,7 +478,7 @@ public class RolapStar {
     }
 
     /**
-     * Used by test code only.
+     * Used by test code only. (Not safe in general.)
      */
     public BitKey getBitKey(String[] tableAlias, String[] columnName) {
         BitKey bitKey = BitKey.Factory.makeBitKey(getColumnCount());
@@ -494,6 +523,7 @@ public class RolapStar {
         Table table,
         RolapSchema.PhysRealColumn joinColumn)
     {
+        Util.deprecated("used only by AggMatcher", true);
         if (joinColumn == null) {
             columnList.addAll(table.columnList);
         }
@@ -727,70 +757,12 @@ public class RolapStar {
          * @return the column cardinality.
          */
         public int getCardinality() {
-            if (approxCardinality == Integer.MIN_VALUE) {
-                final RolapSchema.PhysStatistic statistic =
-                    getStar().getSchema().getStatistic();
-                statistic.getCardinality(
-                    table.getRelation(),
-                    expression,
-                    new Util.Functor0<Integer>() {
-                        public Integer apply() {
-                            return computeCardinality();
-                        }
-                    });
+            if (approxCardinality < 0) {
+                approxCardinality =
+                    table.relation.getSchema().statistic.getColumnCardinality(
+                        table.relation, expression, approxCardinality);
             }
             return approxCardinality;
-        }
-
-        private int computeCardinality() {
-            final DataSource dataSource = table.star.getDataSource();
-            Dialect dialect = table.star.getSqlQueryDialect();
-            SqlQuery sqlQuery = new SqlQuery(dialect);
-            if (dialect.allowsCountDistinct()) {
-                // e.g. "select count(distinct product_id) from product"
-                sqlQuery.addSelect(
-                    "count(distinct " + getExpression().toSql() + ")",
-                    null);
-
-                // no need to join fact table here
-                table.addToFrom(sqlQuery, true, false);
-            } else if (dialect.allowsFromQuery()) {
-                // Some databases (e.g. Access) don't like 'count(distinct)',
-                // so use, e.g., "select count(*) from (select distinct
-                // product_id from product)"
-                SqlQuery inner = sqlQuery.cloneEmpty();
-                inner.setDistinct(true);
-                inner.addSelect(getExpression().toSql(), null);
-                boolean failIfExists = true,
-                    joinToParent = false;
-                table.addToFrom(inner, failIfExists, joinToParent);
-                sqlQuery.addSelect("count(*)", null);
-                sqlQuery.addFrom(inner, "init", failIfExists);
-            } else {
-                throw Util.newInternal(
-                    "Cannot compute cardinality: this database neither "
-                    + "supports COUNT DISTINCT nor SELECT in the FROM clause.");
-            }
-            String sql = sqlQuery.toString();
-            final SqlStatement stmt =
-                RolapUtil.executeQuery(
-                    dataSource,
-                    sql,
-                    new Locus(
-                        Locus.peek().execution,
-                        "RolapStar.Column.getCardinality",
-                        "while counting distinct values of column '"
-                        + expression.toSql()));
-            try {
-                ResultSet resultSet = stmt.getResultSet();
-                Util.assertTrue(resultSet.next());
-                ++stmt.rowCount;
-                return resultSet.getInt(1);
-            } catch (SQLException e) {
-                throw stmt.handle(e);
-            } finally {
-                stmt.close();
-            }
         }
 
         public String toString() {
@@ -828,7 +800,7 @@ public class RolapStar {
          * @return String representation of column's datatype
          */
         public String getDatatypeString(Dialect dialect) {
-            Util.deprecated("move to dialect?", false);
+            Util.deprecated("move to dialect, or remove?; not used?", true);
             final SqlQuery query = new SqlQuery(dialect);
             query.addFrom(
                 table.star.factTable.relation, table.star.factTable.alias,
@@ -837,10 +809,10 @@ public class RolapStar {
             query.addSelect(expression.toSql(), null);
             final String sql = query.toString();
             Connection jdbcConnection = null;
+            PreparedStatement pstmt = null;
             try {
                 jdbcConnection = table.star.dataSource.getConnection();
-                final PreparedStatement pstmt =
-                    jdbcConnection.prepareStatement(sql);
+                pstmt = jdbcConnection.prepareStatement(sql);
                 final ResultSetMetaData resultSetMetaData =
                     pstmt.getMetaData();
                 assert resultSetMetaData.getColumnCount() == 1;
@@ -858,22 +830,13 @@ public class RolapStar {
                 } else {
                     typeString = type + "(" + precision + ", " + scale + ")";
                 }
-                pstmt.close();
-                jdbcConnection.close();
-                jdbcConnection = null;
                 return typeString;
             } catch (SQLException e) {
                 throw Util.newError(
                     e,
                     "Error while deriving type of column " + toString());
             } finally {
-                if (jdbcConnection != null) {
-                    try {
-                        jdbcConnection.close();
-                    } catch (SQLException e) {
-                        // ignore
-                    }
-                }
+                Util.close(null, pstmt, jdbcConnection);
             }
         }
 
@@ -986,14 +949,14 @@ public class RolapStar {
         private final List<Column> columnList;
         private final Table parent;
         private List<Table> children;
-        private final Condition joinCondition;
         private final String alias;
+        private final RolapSchema.PhysPath path; // path from fact table
 
         private Table(
             RolapStar star,
             RolapSchema.PhysRelation relation,
             Table parent,
-            Condition joinCondition)
+            RolapSchema.PhysPath path)
         {
             assert star != null;
             assert relation != null;
@@ -1001,10 +964,9 @@ public class RolapStar {
             this.relation = relation;
             this.alias = chooseAlias();
             this.parent = parent;
-            this.joinCondition = joinCondition;
+            this.path = path;
             this.columnList = new ArrayList<Column>();
             this.children = Collections.emptyList();
-            assert (parent == null) == (joinCondition == null);
         }
 
         /**
@@ -1012,7 +974,8 @@ public class RolapStar {
          * {@link #getParentTable() parent}; or null if this is the fact table.
          */
         public Condition getJoinCondition() {
-            return joinCondition;
+            Util.deprecated("obsolete", true);
+            return null;
         }
 
         /**
@@ -1127,7 +1090,7 @@ public class RolapStar {
                         null,
                         // TODO: pass in usagePrefix (from DimensionUsage)
                         null,
-                        -1,
+                        Integer.MIN_VALUE,
                         star.getColumnCount());
                 addColumn(column);
                 return column;
@@ -1193,14 +1156,23 @@ public class RolapStar {
         }
 
         void makeMeasure(RolapBaseCubeMeasure measure) {
+            final Measure starMeasure =
+                makeMeasure(measure, measure.getExpr(), false);
+            measure.setStarMeasure(starMeasure); // reverse mapping
+        }
+
+        Measure makeMeasure(
+            RolapBaseCubeMeasure measure,
+            RolapSchema.PhysExpr expr,
+            boolean rollup)
+        {
             Dialect.Datatype datatype =
                 measure.getAggregator().deriveDatatype(
-                    measure.getExpr() == null
+                    expr == null
                         ? Collections.<Dialect.Datatype>emptyList()
-                        : Collections.singletonList(
-                            measure.getExpr().getDatatype()));
+                        : Collections.singletonList(expr.getDatatype()));
             if (datatype == null
-                && measure.getExpr() != null)
+                && expr != null)
             {
                 // Sometimes we don't know the type of the expression (e.g. if
                 // it is a SQL expression) but we do know the type of the
@@ -1211,41 +1183,42 @@ public class RolapStar {
                 new RolapStar.Measure(
                     measure.getName(),
                     measure.getCube().getName(),
-                    measure.getAggregator(),
+                    rollup
+                        ? measure.getAggregator().getRollup()
+                        : measure.getAggregator(),
                     this,
-                    measure.getExpr(),
+                    expr,
                     datatype);
 
             addColumn(starMeasure);
-            measure.setStarMeasure(starMeasure); // reverse mapping
+            return starMeasure;
         }
 
         /**
          * Returns a child relation which maps onto a given relation, or null
          * if there is none.
          *
-         * @param relation Relation to join to
-         * @param joinCondition Join condition
+         * @param hop Hop between one relation and another
          * @param add Whether to add a child if not found
          *
          * @return Child, or null if not found and add is false
          */
         public Table findChild(
-            RolapSchema.PhysRelation relation,
-            Condition joinCondition,
+            RolapSchema.PhysHop hop,
             boolean add)
         {
             for (Table child : getChildren()) {
-                if (child.relation.equals(relation)) {
-                    if (child.joinCondition.equals(joinCondition)) {
+                if (child.relation.equals(hop.relation)) {
+                    if (Util.last(child.path.hopList).equals(hop)) {
                         return child;
                     }
                 }
             }
             if (add) {
+                RolapSchema.PhysPath path2 =
+                    new RolapSchema.PhysPathBuilder(path).add(hop).done();
                 Table child =
-                    new RolapStar.Table(
-                        star, relation, this, joinCondition);
+                    new RolapStar.Table(star, hop.relation, this, path2);
                 if (this.children.isEmpty()) {
                     this.children = new ArrayList<Table>();
                 }
@@ -1311,13 +1284,12 @@ public class RolapStar {
         {
             Util.deprecated("use PhysPath.addToFrom", false);
             query.addFrom(relation, alias, failIfExists);
-            Util.assertTrue((parent == null) == (joinCondition == null));
             if (joinToParent) {
                 if (parent != null) {
                     parent.addToFrom(query, failIfExists, joinToParent);
                 }
-                if (joinCondition != null) {
-                    query.addWhere(joinCondition.toString(query));
+                if (getLastHop() != null) {
+                    query.addWhere(getLastHop().link.toSql());
                 }
             }
         }
@@ -1344,18 +1316,7 @@ public class RolapStar {
         public RolapStar.Table findTableWithLeftJoinCondition(
             final String columnName)
         {
-            for (Table child : getChildren()) {
-                Condition condition = child.joinCondition;
-                if (condition != null) {
-                    if (condition.left instanceof RolapSchema.PhysRealColumn) {
-                        RolapSchema.PhysRealColumn mcolumn =
-                            (RolapSchema.PhysRealColumn) condition.left;
-                        if (mcolumn.name.equals(columnName)) {
-                            return child;
-                        }
-                    }
-                }
-            }
+            Util.deprecated("obsolete", true);
             return null;
         }
 
@@ -1367,18 +1328,7 @@ public class RolapStar {
         public RolapStar.Table findTableWithLeftCondition(
             final RolapSchema.PhysExpr left)
         {
-            for (Table child : getChildren()) {
-                Condition condition = child.joinCondition;
-                if (condition != null) {
-                    if (condition.left instanceof RolapSchema.PhysRealColumn) {
-                        RolapSchema.PhysRealColumn mcolumn =
-                            (RolapSchema.PhysRealColumn) condition.left;
-                        if (mcolumn.equals(left)) {
-                            return child;
-                        }
-                    }
-                }
-            }
+            Util.deprecated("obsolete", true);
             return null;
         }
 
@@ -1435,12 +1385,19 @@ public class RolapStar {
                 pw.println();
             }
 
-            if (this.joinCondition != null) {
-                this.joinCondition.print(pw, subprefix);
+            if (getLastHop() != null) {
+                pw.print(subprefix);
+                pw.print(getLastHop());
             }
             for (Table child : getChildren()) {
                 child.print(pw, subprefix);
             }
+        }
+
+        private RolapSchema.PhysHop getLastHop() {
+            return path.hopList.size() == 1
+                ? null
+                : path.hopList.get(path.hopList.size() - 1);
         }
 
         /**
@@ -1448,6 +1405,10 @@ public class RolapStar {
          */
         public boolean containsColumn(String columnName) {
             return relation.getColumn(columnName, false) != null;
+        }
+
+        public RolapSchema.PhysPath getPath() {
+            return path;
         }
     }
 
@@ -1464,6 +1425,7 @@ public class RolapStar {
             assert left != null;
             assert right != null;
 
+            Util.deprecated("obsolete class Condition", true);
             if (!(left instanceof RolapSchema.PhysRealColumn)) {
                 // TODO: Will this ever print?? if not then left should be
                 // of type MondrianDef.Column.
@@ -1475,17 +1437,6 @@ public class RolapStar {
             this.right = right;
         }
 
-        Condition(
-            RolapSchema.PhysLink link)
-        {
-            this(
-                link.sourceKey.columnList.get(0),
-                link.columnList.get(0));
-            assert link.sourceKey.columnList.size() == 1
-                : "TODO: implement compound keys by obsoleting Condition and"
-                  + "using PhysLink";
-        }
-
         public RolapSchema.PhysExpr getLeft() {
             return left;
         }
@@ -1494,9 +1445,8 @@ public class RolapStar {
             return right;
         }
 
-        public String toString(SqlQuery query) {
-            Util.deprecated("obsolete query param", false);
-            return left.toSql() + " = " + right.toSql();
+        public String toSql() {
+            return right.toSql() + " = " + left.toSql();
         }
 
         public int hashCode() {

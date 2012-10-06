@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -16,9 +16,9 @@ import mondrian.calc.TupleList;
 import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
-import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.cache.*;
 import mondrian.rolap.sql.*;
+import mondrian.spi.Dialect;
 
 import org.apache.log4j.Logger;
 
@@ -99,10 +99,9 @@ public abstract class RolapNativeSet extends RolapNative {
 
         public void addConstraint(
             SqlQuery sqlQuery,
-            RolapStarSet starSet,
-            AggStar aggStar)
+            RolapStarSet starSet)
         {
-            super.addConstraint(sqlQuery, starSet, aggStar);
+            super.addConstraint(sqlQuery, starSet);
             for (CrossJoinArg arg : args) {
                 // if the cross join argument has calculated members in its
                 // enumerated set, ignore the constraint since we won't
@@ -116,7 +115,7 @@ public abstract class RolapNativeSet extends RolapNative {
                     if (level == null
                         || levelIsOnBaseCube(starSet.getMeasureGroup(), level))
                     {
-                        arg.addConstraint(sqlQuery, starSet, aggStar);
+                        arg.addConstraint(sqlQuery, starSet);
                     }
                 }
             }
@@ -242,26 +241,29 @@ public abstract class RolapNativeSet extends RolapNative {
                 newPartialResult = new ArrayList<List<RolapMember>>();
             }
             DataSource dataSource = schemaReader.getDataSource();
+            final Dialect dialect = schemaReader.getSchema().getDialect();
             if (args.length == 1) {
                 result =
                     tr.readMembers(
-                        dataSource, partialResult, newPartialResult);
+                        dialect, dataSource, partialResult, newPartialResult);
             } else {
                 result =
                     tr.readTuples(
-                        dataSource, partialResult, newPartialResult);
+                        dialect, dataSource, partialResult, newPartialResult);
             }
 
-            if (hasEnumTargets) {
-                if (newPartialResult != null) {
-                    cache.put(
-                        key,
-                        new DelegatingTupleList(
-                            args.length,
-                            Util.<List<Member>>cast(newPartialResult)));
+            if (!MondrianProperties.instance().DisableCaching.get()) {
+                if (hasEnumTargets) {
+                    if (newPartialResult != null) {
+                        cache.put(
+                            key,
+                            new DelegatingTupleList(
+                                args.length,
+                                Util.<List<Member>>cast(newPartialResult)));
+                    }
+                } else {
+                    cache.put(key, result);
                 }
-            } else {
-                cache.put(key, result);
             }
             return result;
         }

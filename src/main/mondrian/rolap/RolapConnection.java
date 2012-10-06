@@ -73,6 +73,7 @@ public class RolapConnection extends ConnectionBase {
     private static DataSourceResolver dataSourceResolver;
     private final int id;
     private final Statement internalStatement;
+    final Dialect dialect; // set only for internal connections
 
     /**
      * Creates a connection.
@@ -139,6 +140,8 @@ public class RolapConnection extends ConnectionBase {
         server.addConnection(this);
 
         if (schema == null) {
+            this.dialect = null;
+
             // If RolapSchema.Pool.get were to call this with schema == null,
             // we would loop.
             Statement bootstrapStatement = createInternalStatement(false);
@@ -222,42 +225,41 @@ public class RolapConnection extends ConnectionBase {
             // connection and for external connections built on top of this.
             Connection conn = null;
             java.sql.Statement statement = null;
+            Dialect dialect = null;
             try {
                 conn = this.dataSource.getConnection();
-                Dialect dialect =
-                    DialectManager.createDialect(this.dataSource, conn);
+                final String dialectClassName =
+                    connectInfo.get(RolapConnectionProperties.Dialect.name());
+                dialect = DialectManager.createDialect(
+                    this.dataSource, conn, dialectClassName);
                 if (dialect.getDatabaseProduct()
                     == Dialect.DatabaseProduct.DERBY)
                 {
                     // Derby requires a little extra prodding to do the
                     // validation to detect an error.
                     statement = conn.createStatement();
-                    statement.executeQuery("select * from bogustable");
+                    try {
+                        statement.executeQuery("select * from bogustable");
+                    } catch (SQLException e) {
+                        if (e.getMessage().equals(
+                                "Table/View 'BOGUSTABLE' does not exist."))
+                        {
+                            // Ignore. This exception comes from Derby when the
+                            // connection is valid. If the connection were
+                            // invalid, we would receive an error such as
+                            // "Schema 'BOGUSUSER' does not exist"
+                        } else {
+                            throw e;
+                        }
+                    }
                 }
             } catch (SQLException e) {
-                if (e.getMessage().equals(
-                        "Table/View 'BOGUSTABLE' does not exist."))
-                {
-                    // Ignore. This exception comes from Derby when the
-                    // connection is valid. If the connection were invalid, we
-                    // would receive an error such as "Schema 'BOGUSUSER' does
-                    // not exist"
-                } else {
-                    throw Util.newError(
-                        e,
-                        "Error while creating SQL connection: " + buf);
-                }
+                throw Util.newError(
+                    e,
+                    "Error while creating SQL connection: " + buf);
             } finally {
-                try {
-                    if (statement != null) {
-                        statement.close();
-                    }
-                    if (conn != null) {
-                        conn.close();
-                    }
-                } catch (SQLException e) {
-                    // ignore
-                }
+                this.dialect = dialect;
+                Util.close(null, statement, conn);
             }
         }
 

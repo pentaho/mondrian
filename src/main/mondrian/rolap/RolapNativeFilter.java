@@ -6,17 +6,15 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
 
 import java.util.*;
-import javax.sql.DataSource;
 
 /**
  * Computes a Filter(set, condition) in SQL.
@@ -67,16 +65,16 @@ public class RolapNativeFilter extends RolapNativeSet {
 
         public void addConstraint(
             SqlQuery sqlQuery,
-            RolapStarSet starSet,
-            AggStar aggStar)
+            RolapStarSet starSet)
         {
             // Use aggregate table to generate filter condition
             RolapNativeSql sql =
                 new RolapNativeSql(
-                    sqlQuery, aggStar, getEvaluator(), args[0].getLevel());
+                    sqlQuery, starSet.getAggStar(), getEvaluator(),
+                    args[0].getLevel());
             String filterSql =  sql.generateFilterCondition(filterExpr);
             sqlQuery.addHaving(filterSql);
-            super.addConstraint(sqlQuery, starSet, aggStar);
+            super.addConstraint(sqlQuery, starSet);
         }
 
         public Object getCacheKey() {
@@ -141,15 +139,12 @@ public class RolapNativeFilter extends RolapNativeSet {
             return null;
         }
 
-        // extract "order by" expression
-        SchemaReader schemaReader = evaluator.getSchemaReader();
-        DataSource ds = schemaReader.getDataSource();
-
         // generate the WHERE condition
         // Need to generate where condition here to determine whether
         // or not the filter condition can be created. The filter
         // condition could change to use an aggregate table later in evaluation
-        SqlQuery sqlQuery = SqlQuery.newQuery(ds, "NativeFilter");
+        final SqlQuery sqlQuery =
+            SqlQuery.newQuery(evaluator.getDialect(), "NativeFilter");
         RolapNativeSql sql =
             new RolapNativeSql(
                 sqlQuery, null, evaluator, cjArgs[0].getLevel());
@@ -189,7 +184,8 @@ public class RolapNativeFilter extends RolapNativeSet {
             new FilterConstraint(
                 combinedArgs, evaluator, measureGroupList, filterExpr);
         evaluator.restore(savepoint);
-        return new SetEvaluator(cjArgs, schemaReader, constraint);
+        return new SetEvaluator(
+            cjArgs, evaluator.getSchemaReader(), constraint);
     }
 }
 

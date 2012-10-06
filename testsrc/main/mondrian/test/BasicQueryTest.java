@@ -20,10 +20,16 @@ import mondrian.olap.*;
 import mondrian.olap.fun.FunctionTest;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
+import mondrian.rolap.RolapSchema;
+import mondrian.server.Execution;
 import mondrian.spi.*;
+import mondrian.spi.impl.JdbcStatisticsProvider;
+import mondrian.spi.impl.SqlStatisticsProvider;
 import mondrian.util.Bug;
 
 import junit.framework.Assert;
+
+import org.eigenbase.util.property.StringProperty;
 
 import org.olap4j.*;
 import org.olap4j.impl.ArrayMap;
@@ -34,6 +40,7 @@ import java.io.StringWriter;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 /**
@@ -341,11 +348,11 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     private static final String query6 =
             "with\n"
-            + "   member [Product].[Drink].[Percent of Alcoholic Drinks] as '[Product].[Drink].[Alcoholic Beverages]/[Product].[Drink]',\n"
+            + "   member [Product].[Products].[Drink].[Percent of Alcoholic Drinks] as '[Product].[Products].[Drink].[Alcoholic Beverages]/[Product].[Products].[Drink]',\n"
             + "       format_string = '#.00%'\n"
             + "select\n"
-            + "   { [Product].[Drink].[Percent of Alcoholic Drinks] } on columns,\n"
-            + "   order([Customers].[USA].[WA].Children, [Product].[Drink].[Percent of Alcoholic Drinks],BDESC) on rows\n"
+            + "   { [Product].[Products].[Drink].[Percent of Alcoholic Drinks] } on columns,\n"
+            + "   order([Customer].[Customers].[USA].[WA].Children, [Product].[Products].[Drink].[Percent of Alcoholic Drinks],BDESC) on rows\n"
             + "from Sales\n"
             + "where ([Measures].[Unit Sales])";
 
@@ -781,13 +788,13 @@ public class BasicQueryTest extends FoodMartTestCase {
 
         assertQueryReturns(
             "// now for some comments in a larger command\n"
-            + "with // create calculate measure [Product].[Drink].[Percent of Alcoholic Drinks]\n"
-            + "   member [Product].[Drink].[Percent of Alcoholic Drinks]/*the measure name*/as '                        // begin the definition of the measure next\n"
-            + "       [Product]./****this is crazy****/[All Products].[Drink].[Alcoholic Beverages]/[Product].[Drink]',  // divide number of alcoholic drinks by total # of drinks\n"
+            + "with // create calculate measure [Product].[Products].[Drink].[Percent of Alcoholic Drinks]\n"
+            + "   member [Product].[Products].[Drink].[Percent of Alcoholic Drinks]/*the measure name*/as '                        // begin the definition of the measure next\n"
+            + "       [Product].[Products]./****this is crazy****/[All Products].[Drink].[Alcoholic Beverages]/[Product].[Drink]',  // divide number of alcoholic drinks by total # of drinks\n"
             + "       format_string = '#.00%'  // a custom format for our measure\n"
             + "select\n"
-            + "   { [Product]/**** still crazy ****/.[Drink].[Percent of Alcoholic Drinks] } on columns,\n"
-            + "   order(/****do not put a comment inside square brackets****/[Customers].[USA].[WA].Children, [Product].[Drink].[Percent of Alcoholic Drinks],BDESC) on rows\n"
+            + "   { [Product].[Products]/**** still crazy ****/.[Drink].[Percent of Alcoholic Drinks] } on columns,\n"
+            + "   order(/****do not put a comment inside square brackets****/[Customer].[Customers].[USA].[WA].Children, [Product].[Products].[Drink].[Percent of Alcoholic Drinks],BDESC) on rows\n"
             + "from Sales\n"
             + "where ([Measures].[Unit Sales] /****,[Time].[1997]****/) -- a comment at the end of the command",
 
@@ -1053,9 +1060,11 @@ public class BasicQueryTest extends FoodMartTestCase {
         // filter
         assertQueryReturns(
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
-            + " {[Time].[1997].Children} ON ROWS\n"
+            + " {[Time].[Time].[1997].Children} ON ROWS\n"
             + "FROM [Sales]"
-            + "WHERE ([Marital Status].[S], " + timeWeekly + ".[1997].[20])",
+            + "WHERE ([Customer].[Marital Status].[S], "
+            + timeWeekly
+            + ".[1997].[20])",
             "Axis #0:\n"
             + "{[Customer].[Marital Status].[S], [Time].[Weekly].[1997].[20]}\n"
             + "Axis #1:\n"
@@ -1445,9 +1454,6 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testSolveOrderNonMeasure2() {
-        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
-            return;
-        }
         assertQueryReturns(
             "WITH\n"
             + "   MEMBER [Store].[Stores].[StoreCalc] as '0', SOLVE_ORDER=0\n"
@@ -1460,9 +1466,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Product].[ProdCalc]}\n"
+            + "{[Product].[Products].[ProdCalc]}\n"
             + "Axis #2:\n"
-            + "{[Store].[StoreCalc]}\n"
+            + "{[Store].[Stores].[StoreCalc]}\n"
             + "Row #0: 1\n");
     }
 
@@ -1476,9 +1482,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * comes before Customers in the FoodMart.xml schema.
      */
     public void testSolveOrderAmbiguous1() {
-        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
-            return;
-        }
         assertQueryReturns(
             "WITH\n"
             + "   MEMBER [Promotions].[Calc] AS '1'\n"
@@ -1491,7 +1494,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Promotions].[Calc]}\n"
+            + "{[Promotion].[Promotions].[Calc]}\n"
             + "Axis #2:\n"
             + "{[Customer].[Customers].[Calc]}\n"
             + "Row #0: 1\n");
@@ -1502,9 +1505,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * Promotions in the FoodMart.xml schema.
      */
     public void testSolveOrderAmbiguous2() {
-        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
-            return;
-        }
         assertQueryReturns(
             "WITH\n"
             + "   MEMBER [Promotions].[Calc] AS '1'\n"
@@ -1517,7 +1517,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Promotions].[Calc]}\n"
+            + "{[Promotion].[Promotions].[Calc]}\n"
             + "Axis #2:\n"
             + "{[Product].[Products].[Calc]}\n"
             + "Row #0: 2\n");
@@ -1566,9 +1566,6 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testMultipleCalculatedMembersWhichAreNotMeasures() {
-        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
-            return;
-        }
         assertQueryReturns(
             "WITH\n"
             + "  MEMBER [Store].[Stores].[x] AS '1'\n"
@@ -1592,9 +1589,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * previous one would work ok.
      */
     public void testMultipleCalculatedMembersWhichAreNotMeasures2() {
-        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
-            return;
-        }
         assertQueryReturns(
             "WITH\n"
             + "  MEMBER [Product].[Products].[x] AS '1'\n"
@@ -1614,9 +1608,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * name as [Product].[Products].[x]. (See MONDRIAN-77.)
      */
     public void testMultipleCalculatedMembersWhichAreNotMeasures3() {
-        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
-            return;
-        }
         assertQueryReturns(
             "WITH\n"
             + "  MEMBER [Product].[Products].[x] AS '1'\n"
@@ -2698,6 +2689,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * "Small negative numbers cause exceptions w 2-section format".
      */
     public void testFormatOfNil() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with member measures.formatTest as '0.000001',\n"
             + " FORMAT_STRING='#.##;(#.##)' \n"
@@ -3727,6 +3721,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * "Problem with the MID function getting last character in a string."</a>.
      */
     public void testMid() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with\n"
             + "member measures.x as Mid('yahoo',5, 1)\n"
@@ -4863,9 +4860,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * [Product].[All Products] is referenced from the expression.
      */
     public void testDependsOn() {
-        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
-            return;
-        }
         assertQueryReturns(
             "with member [Customers].[my] as \n"
             + "  'Aggregate(Filter([Customers].[City].Members, (([Measures].[Unit Sales] / ([Measures].[Unit Sales], [Product].[All Products])) > 0.1)))' \n"
@@ -4893,9 +4887,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * @throws Exception on error
      */
     public void testFilterWithCrossJoin() throws Exception {
-        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
-            return;
-        }
         String queryWithFilter =
             "WITH SET [#DataSet#] AS 'Filter(Crossjoin({[Store].[All Stores]}, {[Customers].[All Customers]}), "
             + "[Measures].[Unit Sales] > 5)' "
@@ -5579,6 +5570,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testOverrideDimension() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with member  [Gender].[test] as '\n"
             + "  aggregate(\n"
@@ -5675,6 +5669,12 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #2: 30,114\n");
     }
 
+    /**
+     * Test case for {@link MondrianProperties#CompareSiblingsByOrderKey},
+     * which partially fixes
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-259">MONDRIAN-259,
+     * "MEMBER_ORDINAL property incompatible with native filtering"</a>.
+     */
     public void testMemberOrdinalCaching() {
         propSaver.set(props.CompareSiblingsByOrderKey, true);
         // Use a fresh connection to make sure bad member ordinals haven't
@@ -5692,7 +5692,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         // definition below from zero to
         // [Customers].[Name].currentmember.Properties('MEMBER_ORDINAL'), you
         // can see that the absolute ordinals returned are incorrect due to bug
-        // 1660383 (http://tinyurl.com/3xb56f).  For now, this test just
+        // http://jira.pentaho.com/browse/MONDRIAN-259.  For now, this test just
         // verifies that the member sorting is correct when using relative
         // order key rather than absolute ordinal value.  If absolute ordinals
         // get fixed, replace zero with the MEMBER_ORDINAL property.
@@ -5856,6 +5856,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testFormatInheritance() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with member measures.foo as 'measures.bar' "
             + "member measures.bar as "
@@ -5868,6 +5871,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testFormatInheritanceWithIIF() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with member measures.foo as 'measures.bar' "
             + "member measures.bar as "
@@ -5884,6 +5890,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * neither [unit sales] nor [customer count] format is used.
      */
     public void testFormatInheritanceWorksWithFirstFormatItFinds() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with member measures.foo as 'measures.bar' "
             + "member measures.bar as "
@@ -5947,9 +5956,14 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * This tests a fix for bug #1603653
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-244">MONDRIAN-244,
+     * "Avg - cast problem in Mondrian 2.1.1"</a>.
      */
     public void testAvgCastProblem() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with member measures.bar as "
             + "'iif(measures.profit>3000,min([Education Level].[Education Level].Members),min([Education Level].[Education Level].Members))' "
@@ -5979,6 +5993,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * first does not have one.
      */
     public void testFormatInheritanceUseSecondIfFirstHasNoFormat() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with member measures.foo as 'measures.bar+measures.blah'"
             + " member measures.bar as '10'"
@@ -5994,6 +6011,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * format of the first member that has a valid format is used.
      */
     public void testFormatInheritanceUseFirstValid() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with member measures.foo as '13+31*measures.[Unit Sales]/"
             + "iif(measures.profit>0,measures.profit,measures.[Customer Count])'"
@@ -6053,6 +6073,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testGetCaptionUsingMemberDotCaption() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "SELECT Filter(Stores.allmembers, "
             + "[stores].currentMember.caption = \"USA\") on 0 FROM SALES",
@@ -6064,6 +6087,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testGetCaptionUsingMemberDotPropertiesCaption() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "SELECT Filter(Stores.allmembers, "
             + "[stores].currentMember.properties(\"caption\") = \"USA\") "
@@ -6104,6 +6130,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testDefaultMeasureInCube() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         TestContext testContext = defaultMeasureContext("Supply Time");
         String queryWithoutFilter =
             "select stores.members on 0 from "
@@ -6233,9 +6262,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Product].[Products].[Non-Consumable].[Household]}\n"
             + "{[Product].[Products].[Non-Consumable].[Periodicals]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[F]}\n"
-            + "{[Gender].[M]}\n"
-            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[Gender].[F]}\n"
+            + "{[Gender].[Gender].[M]}\n"
+            + "{[Gender].[Gender].[All Gender]}\n"
             + "Row #0: 3,439\n"
             + "Row #0: 6,776\n"
             + "Row #0: 1,987\n"
@@ -6337,8 +6366,8 @@ public class BasicQueryTest extends FoodMartTestCase {
             null,
             ArrayMap.of(
                 "Sales",
-                "<ForeignKeyLink dimension='Customer_2' foreignKeyColumn='customer_id'/>")
-);
+                "<ForeignKeyLink dimension='Customer_2' "
+                + "foreignKeyColumn='customer_id'/>"));
 
         Result result = testContext.executeQuery(
             "WITH SET [#DataSet#] AS "
@@ -6495,10 +6524,10 @@ public class BasicQueryTest extends FoodMartTestCase {
         assertQueryReturns(
             "WITH\n"
             + "MEMBER [Gender].agg "
-            + "AS 'IIF(1=1, ([Gender].[All Gender],measures.[unit sales]),"
+            + "AS 'IIF(1=1, ([Gender].[All Gender],Measures.[unit sales]),"
             + "([Gender].[All Gender]))', SOLVE_ORDER = 4 "
             + "SELECT {[Measures].[unit sales]} ON 0, "
-            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM sales",
+            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM Sales",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -6517,9 +6546,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             "WITH\n"
             + "MEMBER [Gender].agg "
             + "AS 'IIF(1=1, ([Gender].[All Gender]),"
-            + "([Gender].[All Gender],measures.[unit sales]))', SOLVE_ORDER = 4 "
+            + "([Gender].[All Gender],Measures.[unit sales]))', SOLVE_ORDER = 4 "
             + "SELECT {[Measures].[unit sales]} ON 0, "
-            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM sales",
+            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM Sales",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -6540,7 +6569,8 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "AS 'IIF(1=1, ([Gender].[All Gender]),"
             + "([Gender].[All Gender],[Time].[1997]))', SOLVE_ORDER = 4 "
             + "SELECT {[Measures].[unit sales]} ON 0, "
-            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM sales",
+            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 "
+            + "FROM [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -6563,7 +6593,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "([Gender].[All Gender]))', "
             + "SOLVE_ORDER = 4 "
             + "SELECT {[Measures].[unit sales]} ON 0, "
-            + "{([Gender].agg)} on 1 FROM sales",
+            + "{([Gender].agg)} on 1 FROM [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -6578,10 +6608,10 @@ public class BasicQueryTest extends FoodMartTestCase {
             "WITH\n"
             + "MEMBER [Gender].agg "
             + "AS 'IIF(Measures.currentMember is [Measures].[Unit Sales], "
-            + "([Store].[All Stores],[Gender].[All Gender],measures.[unit sales]),"
+            + "([Store].[All Stores],[Gender].[All Gender],Measures.[unit sales]),"
             + "([Store].[All Stores],[Gender].[All Gender]))', SOLVE_ORDER = 4 "
-            + "SELECT {[Measures].[unit sales]} ON 0, "
-            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM sales",
+            + "SELECT {[Measures].[Unit Sales]} ON 0, "
+            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM Sales",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -6600,10 +6630,10 @@ public class BasicQueryTest extends FoodMartTestCase {
             "WITH\n"
             + "MEMBER [Gender].agg "
             + "AS 'IIF(Measures.currentMember is [Measures].[Unit Sales], "
-            + "([Store].[All Stores],[Gender].[M],measures.[unit sales]),"
+            + "([Store].[All Stores],[Gender].[M],Measures.[unit sales]),"
             + "([Gender].[M],[Store].[All Stores]))', SOLVE_ORDER = 4 "
             + "SELECT {[Measures].[unit sales]} ON 0, "
-            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM sales",
+            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM Sales",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -6618,6 +6648,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testEmptyAggregationListDueToFilterDoesNotThrowException() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         propSaver.set(props.IgnoreMeasureForNonJoiningDimension, true);
         assertQueryReturns(
             "WITH \n"
@@ -6822,6 +6855,49 @@ public class BasicQueryTest extends FoodMartTestCase {
         }
     }
 
+    public static class CountConcurrentUdf implements UserDefinedFunction {
+        private static AtomicInteger count = new AtomicInteger();
+        public String getName() {
+            return "CountConcurrentUdf";
+        }
+
+        public String getDescription() {
+            return "Counts the current number of threads using this thing.";
+        }
+
+        public Syntax getSyntax() {
+            return Syntax.Function;
+        }
+
+        public Type getReturnType(Type[] parameterTypes) {
+            return new NumericType();
+        }
+
+        public Type[] getParameterTypes() {
+            return new Type[] {};
+        }
+
+        public Object execute(Evaluator evaluator, Argument[] arguments) {
+            try {
+                count.incrementAndGet();
+                Thread.sleep(10000);
+            } catch (Exception ex) {
+                // no op
+            } finally {
+                count.decrementAndGet();
+            }
+            return null;
+        }
+
+        static int getCount() {
+            return count.get();
+        }
+
+        public String[] getReservedWords() {
+            return null;
+        }
+    }
+
     /**
      * This unit test would cause connection leaks without a fix for bug
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-571">MONDRIAN-571,
@@ -6875,7 +6951,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "  }"
             + "  on 0,"
             + "  [Measures].[units shipped] on 1"
-            + " from warehouse";
+            + " from Warehouse";
         assertQueryReturns(
             mdx,
             "Axis #0:\n"
@@ -6898,7 +6974,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "<Formula>([Customer].[Gender].LastChild)</Formula>"
             + "</CalculatedMember>");
         testContext.assertQueryReturns(
-            "select {[Gender].[M]} on 0 from sales",
+            "select {[Gender].[M]} on 0 from Sales",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -7221,6 +7297,164 @@ public class BasicQueryTest extends FoodMartTestCase {
             break;
         case 4:
         }
+    }
+
+    /**
+     * Unit test for {@link StatisticsProvider} and implementations
+     * {@link JdbcStatisticsProvider} and
+     * {@link SqlStatisticsProvider}.
+     */
+    public void testStatistics() {
+        final String product =
+            getTestContext().getDialect().getDatabaseProduct().name();
+        propSaver.set(
+            new StringProperty(
+                MondrianProperties.instance(),
+                MondrianProperties.instance().StatisticsProviders.getPath()
+                + "."
+                + product,
+                null),
+            MyJdbcStatisticsProvider.class.getName()
+            + ","
+            + SqlStatisticsProvider.class.getName());
+        final TestContext testContext = getTestContext().withFreshConnection();
+        testContext.assertSimpleQuery();
+
+        final List<StatisticsProvider> statisticsProviders =
+            testContext.getDialect().getStatisticsProviders();
+        assertEquals(2, statisticsProviders.size());
+        assertTrue(
+            statisticsProviders.get(0) instanceof MyJdbcStatisticsProvider);
+        assertTrue(
+            statisticsProviders.get(1) instanceof SqlStatisticsProvider);
+
+        for (StatisticsProvider statisticsProvider : statisticsProviders) {
+            int rowCount =
+                statisticsProvider.getTableCardinality(
+                    testContext.getDialect(),
+                    testContext.getConnection().getDataSource(),
+                    null,
+                    null,
+                    "customer",
+                    new Execution(
+                        ((RolapSchema) testContext.getConnection().getSchema())
+                            .getInternalConnection()
+                            .getInternalStatement(),
+                        0));
+
+            if (statisticsProvider instanceof SqlStatisticsProvider) {
+                assertTrue(
+                    "Row count estimate: " + rowCount + " (actual 10281)",
+                    rowCount > 10000 && rowCount < 15000);
+            }
+
+            int valueCount =
+                statisticsProvider.getColumnCardinality(
+                    testContext.getDialect(),
+                    testContext.getConnection().getDataSource(),
+                    null,
+                    null,
+                    "customer",
+                    "gender",
+                    new Execution(
+                        ((RolapSchema) testContext.getConnection().getSchema())
+                            .getInternalConnection().getInternalStatement(),
+                        0));
+            assertTrue(
+                "Value count estimate: " + valueCount + " (actual 2)",
+                statisticsProvider instanceof JdbcStatisticsProvider
+                    ? valueCount == -1
+                    : valueCount == 2);
+        }
+    }
+
+    public void testResultLimit() throws Exception {
+        propSaver.set(
+            MondrianProperties.instance().ResultLimit,
+            1000);
+        assertAxisThrows(
+            "CrossJoin([Product].[Brand Name].Members, [Gender].[Gender].Members)",
+            "Mondrian Error:Number of cell results to be read exceeded limit of (1,000)");
+        propSaver.set(
+            MondrianProperties.instance().ResultLimit,
+            5000);
+        executeQuery(
+            "select CrossJoin([Product].[Brand Name].Members, [Gender].[Gender].Members) on columns from [Sales]");
+    }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1161">
+     * MONDRIAN-1161</a>. It verifies that two queries can run
+     * at the same time.
+     */
+    public void testConcurrentStatementRun_2() throws Exception {
+        // timeout is issued after 2 seconds so the test query needs to
+        // run for at least that long; it will because the query references
+        // a Udf that has a 1 ms sleep in it; and there are enough rows
+        // in the result that the Udf should execute > 2000 times
+        final TestContext tc = TestContext.instance().create(
+            null,
+            null,
+            null,
+            null,
+            "<UserDefinedFunction name='CountConcurrentUdf' className='"
+            + CountConcurrentUdf.class.getName()
+            + "'/>",
+            null);
+
+        final String query =
+            "WITH\n"
+            + "  MEMBER [Measures].[CountyThigny]\n"
+            + "    AS 'CountConcurrentUdf()'\n"
+            + "SELECT {[Measures].[CountyThigny]} ON COLUMNS,\n"
+            + "  {[Product].members} ON ROWS\n"
+            + "FROM [Sales]";
+
+        final ExecutorService es =
+            Executors.newCachedThreadPool(
+                new ThreadFactory() {
+                    public Thread newThread(Runnable r) {
+                        final Thread thread =
+                            Executors.defaultThreadFactory().newThread(r);
+                        thread.setName(
+                            "mondrian.test.BasicQueryTest.testConcurrentStatementRun_2");
+                        thread.setDaemon(true);
+                        return thread;
+                    }
+                });
+
+        // Submit a query twice.
+        es.submit(
+            new Callable<Result>() {
+                public Result call() throws Exception {
+                    return tc.executeQuery(query);
+                }
+            });
+        es.submit(
+            new Callable<Result>() {
+                public Result call() throws Exception {
+                    return tc.executeQuery(query);
+                }
+            });
+
+        // Let the backend run a bit
+        Thread.sleep(5000);
+
+        // There should be 2 queries running.
+        assertEquals(2, CountConcurrentUdf.getCount());
+
+        // cleanup and leave.
+        es.shutdownNow();
+    }
+
+    /**
+     * Dummy statistics provider for
+     * {@link mondrian.test.BasicQueryTest#testStatistics()}.
+     */
+    public static class MyJdbcStatisticsProvider
+        extends JdbcStatisticsProvider
+    {
     }
 }
 

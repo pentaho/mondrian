@@ -32,7 +32,8 @@ public class MondrianInprocProxy
 {
     private final ExecutorService executor =
         Util.getExecutorService(
-            1, 1, 1, -1, "MondrianInprocProxy$executor");
+            1, 1, 1, "MondrianInprocProxy$executor",
+            new ThreadPoolExecutor.CallerRunsPolicy());
     private final Map<String, String> catalogNameUrls;
     private final String urlString;
     private final Map servletCache =

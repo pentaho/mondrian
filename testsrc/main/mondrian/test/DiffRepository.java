@@ -492,7 +492,7 @@ public class DiffRepository
     }
 
     /**
-     * Calls {@link #assertEquals(String, String, String, mondrian.olap.Util.Functor1)}
+     * Calls {@link #assertEquals(String, String, String, mondrian.olap.Util.Function1)}
      * with a null filter.
      *
      * @param tag Tag
@@ -509,7 +509,7 @@ public class DiffRepository
         String tag,
         String expected,
         String actual,
-        Util.Functor1<String, String> filter)
+        Util.Function1<String, String> filter)
     {
         final String testCaseName = getCurrentTestCaseName(true);
         String expected2 = expand(tag, expected);

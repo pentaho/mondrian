@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2000-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 2 November, 2000
@@ -71,17 +71,6 @@ public class Format {
     public static final int CacheLimit = 1000;
 
     /**
-     * Gets the dummy implementation of {@link FieldPosition} which the JDK
-     * uses when you don't care about the status of a call to
-     * {@link Format#format}.
-     */
-    private static FieldPosition createDummyFieldPos() {
-        final DummyDecimalFormat format1 = new DummyDecimalFormat();
-        format1.format(0.0);
-        return format1.pos;
-    }
-
-    /**
      * Maps (formatString, locale) pairs to {@link Format} objects.
      *
      * <p>If the number of entries in the cache exceeds 1000,
@@ -122,13 +111,6 @@ public class Format {
      */
     private static final Map<String, FormatLocale> mapLocaleToFormatLocale =
         new HashMap<String, FormatLocale>();
-
-    /**
-     * Maps macro token names with their related object. Used
-     * to fast-resolve a macro token without iterating.
-     */
-    private static final Map<String, MacroToken> macroTokenMap =
-        new HashMap<String, MacroToken>();
 
     /**
      * Cache of parsed format strings and their thousand separator
@@ -679,8 +661,7 @@ public class Format {
      * prints numbers with a given number of decimal places, leading zeroes, in
      * exponential notation, etc.
      *
-     * <p>It is implemented using {@link FloatingDecimal}, which is a
-     * barely-modified version of <code>java.lang.FloatingDecimal</code>.
+     * <p>It is implemented using {@link MondrianFloatingDecimal}.
      */
     static class NumericFormat extends JavaFormat
     {
@@ -750,15 +731,7 @@ public class Format {
 
             // Check if we're dealing with a format macro token rather than
             // an actual format string.
-            if (macroTokenMap.containsKey(formatString)) {
-                MacroToken macroToken = macroTokenMap.get(formatString);
-                if (macroToken.name.equals("Currency")) {
-                    formatString = locale.currencyFormat
-                        + ";("  + locale.currencyFormat + ")";
-                } else {
-                    formatString = macroToken.translation;
-                }
-            }
+            formatString = MacroToken.expand(locale, formatString);
 
             if (thousandSeparatorTokenMap.containsKey(formatString)) {
                 cachedThousandSeparatorPositions =
@@ -789,8 +762,8 @@ public class Format {
                             getFormatToken(FORMAT_DECIMAL));
                     final int endIndex =
                         decimalPos == -1
-                        ? formatStringBuffer.length()
-                                : decimalPos;
+                            ? formatStringBuffer.length()
+                            : decimalPos;
                         final String wholeFormat =
                             formatStringBuffer.substring(0, endIndex);
 
@@ -805,7 +778,7 @@ public class Format {
                         // ie: #,###,###
                         st.nextToken();
 
-                        // Now we build a list of the token lenghts in
+                        // Now we build a list of the token lengths in
                         // reverse order. The last one in the reversed
                         // list will be re-applied if the number is
                         // longer than the format string.
@@ -844,16 +817,18 @@ public class Format {
 
         void format(double n, StringBuilder buf)
         {
-            FloatingDecimal fd = new FloatingDecimal(n);
-            fd.shift(decimalShift);
+            MondrianFloatingDecimal fd = new MondrianFloatingDecimal(n);
+            shift(fd, decimalShift);
             final int formatDigitsRightOfPoint =
                 zeroesRightOfPoint + digitsRightOfPoint;
             if (n == 0.0 || (n < 0 && !shows(fd, formatDigitsRightOfPoint))) {
                 // Underflow of negative number. Make it zero, so there is no
                 // '-' sign.
-                fd = new FloatingDecimal(0);
+                fd = new MondrianFloatingDecimal(0);
             }
-            String s = fd.toJavaFormatString(
+            formatFd0(
+                fd,
+                buf,
                 zeroesLeftOfPoint,
                 locale.decimalPlaceholder,
                 zeroesRightOfPoint,
@@ -864,22 +839,21 @@ public class Format {
                 useThouSep ? locale.thousandSeparator : '\0',
                 useDecimal,
                 getThousandSeparatorPositions());
-            buf.append(s);
         }
 
         boolean isApplicableTo(double n) {
             if (n >= 0) {
                 return true;
             }
-            FloatingDecimal fd = new FloatingDecimal(n);
-            fd.shift(decimalShift);
+            MondrianFloatingDecimal fd = new MondrianFloatingDecimal(n);
+            shift(fd, decimalShift);
             final int formatDigitsRightOfPoint =
                 zeroesRightOfPoint + digitsRightOfPoint;
             return shows(fd, formatDigitsRightOfPoint);
         }
 
         private static boolean shows(
-            FloatingDecimal fd,
+            MondrianFloatingDecimal fd,
             int formatDigitsRightOfPoint)
         {
             final int i0 = - fd.decExponent - formatDigitsRightOfPoint;
@@ -897,10 +871,12 @@ public class Format {
 
         void format(long n, StringBuilder buf)
         {
-            mondrian.util.Format.FloatingDecimal fd =
-                new mondrian.util.Format.FloatingDecimal(n);
-            fd.shift(decimalShift);
-            String s = fd.toJavaFormatString(
+            MondrianFloatingDecimal fd =
+                new MondrianFloatingDecimal(n);
+            shift(fd, decimalShift);
+            formatFd0(
+                fd,
+                buf,
                 zeroesLeftOfPoint,
                 locale.decimalPlaceholder,
                 zeroesRightOfPoint,
@@ -911,7 +887,6 @@ public class Format {
                 useThouSep ? locale.thousandSeparator : '\0',
                 useDecimal,
                 getThousandSeparatorPositions());
-            buf.append(s);
         }
     }
 
@@ -1921,78 +1896,108 @@ public class Format {
             + "displayed."),
     };
 
-    static class MacroToken {
-        String name;
-        String translation;
-        String description;
-
-        MacroToken(String name, String translation, String description)
-        {
-            this.name = name;
-            this.translation = translation;
-            this.description = description;
-            macroTokenMap.put(name, this);
-        }
-    }
-
     // Named formats.  todo: Supply the translation strings.
-    private static final MacroToken[] macroTokens = {
-        new MacroToken(
+    private enum MacroToken {
+        CURRENCY(
             "Currency",
             null,
             "Shows currency values according to the locale's CurrencyFormat.  "
             + "Negative numbers are inside parentheses."),
-        new MacroToken(
+        FIXED(
             "Fixed", "0", "Shows at least one digit."),
-        new MacroToken(
+        STANDARD(
             "Standard", "#,##0", "Uses a thousands separator."),
-        new MacroToken(
+        PERCENT(
             "Percent",
             "0.00%",
             "Multiplies the value by 100 with a percent sign at the end."),
-        new MacroToken(
+        SCIENTIFIC(
             "Scientific", "0.00e+00", "Uses standard scientific notation."),
-        new MacroToken(
+        LONG_DATE(
             "Long Date",
             "dddd, mmmm dd, yyyy",
             "Uses the Long Date format specified in the Regional Settings "
             + "dialog box of the Microsoft Windows Control Panel."),
-        new MacroToken(
+        MEDIUM_DATE(
             "Medium Date",
             "dd-mmm-yy",
             "Uses the dd-mmm-yy format (for example, 03-Apr-93)"),
-        new MacroToken(
+        SHORT_DATE(
             "Short Date",
             "m/d/yy",
             "Uses the Short Date format specified in the Regional Settings "
             + "dialog box of the Windows Control Panel."),
-        new MacroToken(
+        LONG_TIME(
             "Long Time",
             "h:mm:ss AM/PM",
             "Shows the hour, minute, second, and \"AM\" or \"PM\" using the "
             + "h:mm:ss format."),
-        new MacroToken(
+        MEDIUM_TIME(
             "Medium Time",
             "h:mm AM/PM",
             "Shows the hour, minute, and \"AM\" or \"PM\" using the \"hh:mm "
             + "AM/PM\" format."),
-        new MacroToken(
+        SHORT_TIME(
             "Short Time",
             "hh:mm",
             "Shows the hour and minute using the hh:mm format."),
-        new MacroToken(
+        YES_NO(
             "Yes/No",
             "\\Y\\e\\s;\\Y\\e\\s;\\N\\o;\\N\\o",
             "Any nonzero numeric value (usually - 1) is Yes. Zero is No."),
-        new MacroToken(
+        TRUE_FALSE(
             "True/False",
             "\\T\\r\\u\\e;\\T\\r\\u\\e;\\F\\a\\l\\s\\e;\\F\\a\\l\\s\\e",
             "Any nonzero numeric value (usually - 1) is True. Zero is False."),
-        new MacroToken(
+        ON_OFF(
             "On/Off",
             "\\O\\n;\\O\\n;\\O\\f\\f;\\O\\f\\f",
-            "Any nonzero numeric value (usually - 1) is On. Zero is Off."),
-    };
+            "Any nonzero numeric value (usually - 1) is On. Zero is Off.");
+
+        /**
+         * Maps macro token names with their related object. Used
+         * to fast-resolve a macro token without iterating.
+         */
+        private static final Map<String, MacroToken> MAP =
+            new HashMap<String, MacroToken>();
+
+        static {
+            for (MacroToken macroToken : values()) {
+                MAP.put(macroToken.token, macroToken);
+            }
+        }
+
+        MacroToken(String token, String translation, String description) {
+            this.token = token;
+            this.translation = translation;
+            this.description = description;
+            assert name().equals(
+                token
+                    .replace(',', '_')
+                    .replace(' ', '_')
+                    .replace('/', '_')
+                    .toUpperCase());
+            assert (translation == null) == name().equals("CURRENCY");
+        }
+
+        final String token;
+        final String translation;
+        final String description;
+
+        static String expand(FormatLocale locale, String formatString) {
+            final MacroToken macroToken = MAP.get(formatString);
+            if (macroToken == null) {
+                return formatString;
+            }
+            if (macroToken == MacroToken.CURRENCY) {
+                // e.g. "$#,##0.00;($#,##0.00)"
+                return locale.currencyFormat
+                    + ";("  + locale.currencyFormat + ")";
+            } else {
+                return macroToken.translation;
+            }
+        }
+    }
 
     /**
      * Constructs a <code>Format</code> in a specific locale.
@@ -2149,7 +2154,7 @@ public class Format {
         final DateFormatSymbols dateSymbols = new DateFormatSymbols(locale);
 
         Calendar calendar = Calendar.getInstance(locale);
-        calendar.set(1969, 11, 31, 0, 0, 0);
+        calendar.set(1969, Calendar.DECEMBER, 31, 0, 0, 0);
         final Date date = calendar.getTime();
 
         final java.text.DateFormat dateFormat =
@@ -2193,12 +2198,10 @@ public class Format {
         buf.append(currencyRight);
         String currencyFormatString = buf.toString();
 
-        /*
-         * If the locale passed is only a language, Java cannot
-         * resolve the currency symbol and will instead return
-         * u00a4 (The international currency symbol). For those cases,
-         * we use the default system locale currency symbol.
-         */
+        // If the locale passed is only a language, Java cannot
+        // resolve the currency symbol and will instead return
+        // u00a4 (The international currency symbol). For those cases,
+        // we use the default system locale currency symbol.
         String currencySymbol = decimalSymbols.getCurrencySymbol();
         if (currencySymbol.equals(Format.intlCurrencySymbol + "")) {
             final DecimalFormatSymbols defaultDecimalSymbols =
@@ -2344,23 +2347,7 @@ public class Format {
         // todo: Parse the string for ;s
 
         // Look for the format string in the table of named formats.
-        if (macroTokenMap.containsKey(formatString)) {
-            MacroToken macroToken = macroTokenMap.get(formatString);
-            if (macroToken.translation == null) {
-                // this macro requires special-case code
-                if (macroToken.name.equals("Currency")) {
-                    // e.g. "$#,##0.00;($#,##0.00)"
-                    formatString = locale.currencyFormat
-                                   + ";("  + locale.currencyFormat + ")";
-                } else {
-                    throw new Error(
-                        "Format: internal: token " + macroToken.name
-                        + " should have translation");
-                }
-            } else {
-                formatString = macroToken.translation;
-            }
-        }
+        formatString = MacroToken.expand(locale, formatString);
 
         // Add a semi-colon to the end of the string so the end of the string
         // looks like the end of an alternate.
@@ -2370,25 +2357,19 @@ public class Format {
 
         // Scan through the format string for format elements.
         List<BasicFormat> formatList = new ArrayList<BasicFormat>();
+        List<Integer> thousands = new ArrayList<Integer>();
+        int decimalShift = 0;
         loop:
         while (formatString.length() > 0) {
             BasicFormat format = null;
-            String newFormatString = null;
-            boolean ignoreToken = false;
-            for (int i = tokens.length - 1; i > 0; i--) {
-                Token token = tokens[i];
-                if (!formatString.startsWith(token.token)) {
-                    continue;
-                }
-                if (!token.compatibleWith(formatTypeOut[0])) {
-                    continue;
-                }
+            String newFormatString;
+            final Token token = findToken(formatString, formatTypeOut[0]);
+            if (token != null) {
                 String matched = token.token;
                 newFormatString = formatString.substring(matched.length());
                 if (token.isSpecial()) {
                     switch (token.code) {
                     case FORMAT_SEMI:
-                        formatString = newFormatString;
                         break loop;
 
                     case FORMAT_POUND:
@@ -2467,6 +2448,11 @@ public class Format {
 
                     case FORMAT_DECIMAL:
                     {
+                        if (numberState == LEFT_OF_POINT) {
+                            decimalShift =
+                                fixThousands(
+                                    thousands, formatString, decimalShift);
+                        }
                         numberState = RIGHT_OF_POINT;
                         useDecimal = true;
                         break;
@@ -2477,6 +2463,7 @@ public class Format {
                         if (numberState == LEFT_OF_POINT) {
                             // e.g. "#,##"
                             useThouSep = true;
+                            thousands.add(formatString.length());
                         } else {
                             // e.g. "ddd, mmm dd, yyy"
                             format = token.makeFormat(locale);
@@ -2518,6 +2505,11 @@ public class Format {
                     case FORMAT_E_MINUS_LOWER:
                     case FORMAT_E_PLUS_LOWER:
                     {
+                        if (numberState == LEFT_OF_POINT) {
+                            decimalShift =
+                                fixThousands(
+                                    thousands, formatString, decimalShift);
+                        }
                         numberState = RIGHT_OF_EXP;
                         expFormat = token.code;
                         if (zeroesLeftOfPoint == 0
@@ -2601,7 +2593,6 @@ public class Format {
                         // If the special-case code does not set format,
                         // we should not create a format element.  (The
                         // token probably caused some flag to be set.)
-                        ignoreToken = true;
                         ignored.append(matched);
                     } else {
                         prevIgnored = ignored.toString();
@@ -2610,10 +2601,7 @@ public class Format {
                 } else {
                     format = token.makeFormat(locale);
                 }
-                break;
-            }
-
-            if (format == null && !ignoreToken) {
+            } else {
                 // None of the standard format elements matched.  Make the
                 // current character into a literal.
                 format = new LiteralFormat(
@@ -2625,6 +2613,11 @@ public class Format {
                 if (numberState != NOT_IN_A_NUMBER) {
                     // Having seen a few number tokens, we're looking at a
                     // non-number token.  Create the number first.
+                    if (numberState == LEFT_OF_POINT) {
+                        decimalShift =
+                            fixThousands(
+                                thousands, formatString, decimalShift);
+                    }
                     NumericFormat numericFormat = new NumericFormat(
                         prevIgnored, locale, expFormat, digitsLeftOfPoint,
                         zeroesLeftOfPoint, digitsRightOfPoint,
@@ -2646,6 +2639,11 @@ public class Format {
 
         if (numberState != NOT_IN_A_NUMBER) {
             // We're still in a number.  Create a number format.
+            if (numberState == LEFT_OF_POINT) {
+                decimalShift =
+                    fixThousands(
+                        thousands, formatString, decimalShift);
+            }
             NumericFormat numericFormat = new NumericFormat(
                 prevIgnored, locale, expFormat, digitsLeftOfPoint,
                 zeroesLeftOfPoint, digitsRightOfPoint, zeroesRightOfPoint,
@@ -2656,11 +2654,14 @@ public class Format {
             haveSeenNumber = true;
         }
 
+        if (formatString.startsWith(";")) {
+            formatString = formatString.substring(1);
+        }
+
         // If they used some symbol like 'AM/PM' in the format string, tell all
         // date formats to use twelve hour clock.  Likewise, figure out the
         // multiplier implied by their use of "%" or ",".
         boolean twelveHourClock = false;
-        int decimalShift = 0;
         for (int i = 0; i < formatList.size(); i++) {
             switch (formatList.get(i).code) {
             case FORMAT_UPPER_AM_SOLIDUS_PM:
@@ -2764,6 +2765,36 @@ public class Format {
         return formatString;
     }
 
+    private Token findToken(String formatString, FormatType formatType) {
+        for (int i = tokens.length - 1; i > 0; i--) {
+            final Token token = tokens[i];
+            if (formatString.startsWith(token.token)
+                && token.compatibleWith(formatType))
+            {
+                return token;
+            }
+        }
+        return null;
+    }
+
+    private int fixThousands(
+        List<Integer> thousands, String formatString, int shift)
+    {
+        int offset = formatString.length() + 1;
+        for (int i = thousands.size() - 1; i >= 0; i--) {
+            Integer integer = thousands.get(i);
+            thousands.set(i, integer - offset);
+            ++offset;
+        }
+        while (thousands.size() > 0
+            && thousands.get(thousands.size() - 1) == 0)
+        {
+            shift -= 3;
+            thousands.remove(thousands.size() - 1);
+        }
+        return shift;
+    }
+
     public String format(Object o)
     {
         StringBuilder buf = new StringBuilder();
@@ -2815,11 +2846,274 @@ public class Format {
         return formatString;
     }
 
-    /**
-     * Locates a {@link Format.FormatLocale} for a given locale.
-     */
-    public interface LocaleFormatFactory {
-        FormatLocale get(Locale locale);
+    private static void shift(
+        MondrianFloatingDecimal fd,
+        int i)
+    {
+        if (fd.isExceptional
+            || fd.nDigits == 1 && fd.digits[0] == '0')
+        {
+            ; // don't multiply zero
+        } else {
+            fd.decExponent += i;
+        }
+    }
+
+    /** Formats a floating decimal to a given buffer. */
+    private static void formatFd0(
+        MondrianFloatingDecimal fd,
+        StringBuilder buf,
+        int minDigitsLeftOfDecimal,
+        char decimalChar, // '.' or ','
+        int minDigitsRightOfDecimal,
+        int maxDigitsRightOfDecimal,
+        char expChar, // 'E' or 'e'
+        boolean expSign, // whether to print '+' if exp is positive
+        int minExpDigits, // minimum digits in exponent
+        char thousandChar, // ',' or '.', or 0
+        boolean useDecimal,
+        ArrayStack<Integer> thousandSeparatorPositions)
+    {
+        // char result[] = new char[nDigits + 10]; // crashes for 1.000.000,00
+        // the result length does *not* depend from nDigits
+        //  it is : decExponent
+        //         +maxDigitsRightOfDecimal
+        //          + 10  (for decimal point and sign or -Infinity)
+        //         +decExponent/3 (for the thousand separators)
+        int resultLen =
+            10 + Math.abs(fd.decExponent) * 4 / 3 + maxDigitsRightOfDecimal;
+        char result[] = new char[resultLen];
+        int i = formatFd1(
+            fd,
+            result,
+            0,
+            minDigitsLeftOfDecimal,
+            decimalChar,
+            minDigitsRightOfDecimal,
+            maxDigitsRightOfDecimal,
+            expChar,
+            expSign,
+            minExpDigits,
+            thousandChar,
+            useDecimal,
+            thousandSeparatorPositions);
+        buf.append(result, 0, i);
+    }
+
+    /** Formats a floating decimal to a given char array. */
+    private static int formatFd1(
+        MondrianFloatingDecimal fd,
+        char result[],
+        int i,
+        int minDigitsLeftOfDecimal,
+        char decimalChar, // '.' or ','
+        int minDigitsRightOfDecimal,
+        int maxDigitsRightOfDecimal,
+        char expChar, // 'E' or 'e'
+        boolean expSign, // whether to print '+' if exp is positive
+        int minExpDigits, // minimum digits in exponent
+        char thousandChar, // ',' or '.' or 0
+        boolean useDecimal,
+        ArrayStack<Integer> thousandSeparatorPositions)
+    {
+        if (expChar != 0) {
+            // Print the digits left of the 'E'.
+            int oldExp = fd.decExponent;
+            fd.decExponent = Math.min(minDigitsLeftOfDecimal, fd.nDigits);
+            boolean oldIsNegative = fd.isNegative;
+            fd.isNegative = false;
+            i = formatFd2(
+                fd,
+                result,
+                i,
+                minDigitsLeftOfDecimal,
+                decimalChar,
+                minDigitsRightOfDecimal,
+                maxDigitsRightOfDecimal,
+                '\0',
+                useDecimal,
+                thousandSeparatorPositions);
+            fd.decExponent = oldExp;
+            fd.isNegative = oldIsNegative;
+
+            result[i++] = expChar;
+            // Print the digits right of the 'E'.
+            return fd.formatExponent(result, i, expSign, minExpDigits);
+        } else {
+            return formatFd2(
+                fd,
+                result,
+                i,
+                minDigitsLeftOfDecimal,
+                decimalChar,
+                minDigitsRightOfDecimal,
+                maxDigitsRightOfDecimal,
+                thousandChar,
+                useDecimal,
+                thousandSeparatorPositions);
+        }
+    }
+
+    static int formatFd2(
+        MondrianFloatingDecimal fd,
+        char result[],
+        int i,
+        int minDigitsLeftOfDecimal,
+        char decimalChar, // '.' or ','
+        int minDigitsRightOfDecimal,
+        int maxDigitsRightOfDecimal,
+        char thousandChar, // ',' or '.' or 0
+        boolean useDecimal,
+        ArrayStack<Integer> thousandSeparatorPositions)
+    {
+        if (fd.isNegative) {
+            result[i++] = '-';
+        }
+        if (fd.isExceptional) {
+            System.arraycopy(fd.digits, 0, result, i, fd.nDigits);
+            return i + fd.nDigits;
+        }
+        // Build a new array of digits, padded with 0s at either end.  For
+        // example, here is the array we would build for 1234.56.
+        //
+        // |  0     0     1     2     3  .  4     5     6     0     0   |
+        // |           |- nDigits=6 -----------------------|            |
+        // |           |- decExponent=3 -|                              |
+        // |- minDigitsLeftOfDecimal=5 --|                              |
+        // |                             |- minDigitsRightOfDecimal=5 --|
+        // |- wholeDigits=5 -------------|- fractionDigits=5 -----------|
+        // |- totalDigits=10 -------------------------------------------|
+        // |                             |- maxDigitsRightOfDecimal=5 --|
+        int wholeDigits = Math.max(fd.decExponent, minDigitsLeftOfDecimal),
+            fractionDigits = Math.max(
+                fd.nDigits - fd.decExponent, minDigitsRightOfDecimal),
+            totalDigits = wholeDigits + fractionDigits;
+        char[] digits2 = new char[totalDigits];
+        for (int j = 0; j < totalDigits; j++) {
+            digits2[j] = '0';
+        }
+        for (int j = 0; j < fd.nDigits; j++) {
+            digits2[wholeDigits - fd.decExponent + j] = fd.digits[j];
+        }
+
+        // Now round.  Suppose that we want to round 1234.56 to 1 decimal
+        // place (that is, maxDigitsRightOfDecimal = 1).  Then lastDigit
+        // initially points to '5'.  We find out that we need to round only
+        // when we see that the next digit ('6') is non-zero.
+        //
+        // |  0     0     1     2     3  .  4     5     6     0     0   |
+        // |                             |  ^   |                       |
+        // |                                maxDigitsRightOfDecimal=1   |
+        int lastDigit = wholeDigits + maxDigitsRightOfDecimal;
+        if (lastDigit < totalDigits) {
+            // We need to truncate -- also round if the trailing digits are
+            // 5000... or greater.
+            int m = totalDigits;
+            while (true) {
+                m--;
+                if (m < 0) {
+                    // The entire number was 9s.  Re-allocate, so we can
+                    // prepend a '1'.
+                    wholeDigits++;
+                    totalDigits++;
+                    lastDigit++;
+                    char[] old = digits2;
+                    digits2 = new char[totalDigits];
+                    digits2[0] = '1';
+                    System.arraycopy(old, 0, digits2, 1, old.length);
+                    break;
+                } else if (m == lastDigit) {
+                    char d = digits2[m];
+                    digits2[m] = '0';
+                    if (d < '5') {
+                        break; // no need to round
+                    }
+                } else if (m > lastDigit) {
+                    digits2[m] = '0';
+                } else if (digits2[m] == '9') {
+                    digits2[m] = '0';
+                    // do not break - we have to carry
+                } else {
+                    digits2[m]++;
+                    break; // nothing to carry
+                }
+            }
+        }
+
+        // Find the first non-zero digit and the last non-zero digit.
+        int firstNonZero = wholeDigits,
+            firstTrailingZero = 0;
+        for (int j = 0; j < totalDigits; j++) {
+            if (digits2[j] != '0') {
+                if (j < firstNonZero) {
+                    firstNonZero = j;
+                }
+                firstTrailingZero = j + 1;
+            }
+        }
+
+        int firstDigitToPrint = firstNonZero;
+        if (firstDigitToPrint > wholeDigits - minDigitsLeftOfDecimal) {
+            firstDigitToPrint = wholeDigits - minDigitsLeftOfDecimal;
+        }
+        int lastDigitToPrint = firstTrailingZero;
+        if (lastDigitToPrint > wholeDigits + maxDigitsRightOfDecimal) {
+            lastDigitToPrint = wholeDigits + maxDigitsRightOfDecimal;
+        }
+        if (lastDigitToPrint < wholeDigits + minDigitsRightOfDecimal) {
+            lastDigitToPrint = wholeDigits + minDigitsRightOfDecimal;
+        }
+
+        if (thousandChar != '\0'
+            && thousandSeparatorPositions.size() > 0)
+        {
+            // Now print the number. That will happen backwards, so we
+            // store it temporarily and then invert.
+            ArrayStack<Character> formattedWholeDigits =
+                new ArrayStack<Character>();
+            // We need to keep track of how many digits we printed in the
+            // current token.
+            int nbInserted = 0;
+            for (int j = wholeDigits - 1; j >= firstDigitToPrint; j--) {
+                // Check if we need to insert another thousand separator
+                if (nbInserted % thousandSeparatorPositions.peek() == 0
+                    && nbInserted > 0)
+                {
+                    formattedWholeDigits.push(thousandChar);
+                    nbInserted = 0;
+                    // The last format token is kept because we re-apply it
+                    // until the end of the digits.
+                    if (thousandSeparatorPositions.size() > 1) {
+                        thousandSeparatorPositions.pop();
+                    }
+                }
+                // Insert the next digit.
+                formattedWholeDigits.push(digits2[j]);
+                nbInserted++;
+            }
+            // We're done. Invert the print out and add it to
+            // the result array.
+            while (formattedWholeDigits.size() > 0) {
+                result[i++] = formattedWholeDigits.pop();
+            }
+        } else {
+            // There are no thousand separators. Just put the
+            // digits in the results array.
+            for (int j = firstDigitToPrint; j < wholeDigits; j++) {
+                result[i++] = digits2[j];
+            }
+        }
+
+        if (wholeDigits < lastDigitToPrint
+            || (useDecimal
+            && wholeDigits == lastDigitToPrint))
+        {
+            result[i++] = decimalChar;
+        }
+        for (int j = wholeDigits; j < lastDigitToPrint; j++) {
+            result[i++] = digits2[j];
+        }
+        return i;
     }
 
     private enum FormatType {
@@ -2841,1720 +3135,71 @@ public class Format {
         }
     }
 
-/**
- * Copied from <code>java.lang.FloatingDecimal</code>.
- */
-static class FloatingDecimal {
-    boolean     isExceptional;
-    boolean     isNegative;
-    int         decExponent;
-    char        digits[];
-    int         nDigits;
+    /** Specification for MondrianFloatingDecimal. */
+    private static class MondrianFloatingDecimalSpec {
+        boolean     isExceptional;
+        boolean     isNegative;
+        int         decExponent;
+        char        digits[];
+        int         nDigits;
 
-    /*
-     * Constants of the implementation
-     * Most are IEEE-754 related.
-     * (There are more really boring constants at the end.)
-     */
-    static final long   signMask = 0x8000000000000000L;
-    static final long   expMask  = 0x7ff0000000000000L;
-    static final long   fractMask = ~(signMask | expMask);
-    static final int    expShift = 52;
-    static final int    expBias  = 1023;
-    static final long   fractHOB = (1L << expShift); // assumed High-Order bit
-    static final long   expOne = ((long)expBias) << expShift; // exponent of 1.0
-    static final int    maxSmallBinExp = 62;
-    static final int    minSmallBinExp = -(63 / 3);
-
-    static final long   highbyte = 0xff00000000000000L;
-    static final long   highbit  = 0x8000000000000000L;
-    static final long   lowbytes = ~highbyte;
-
-    static final int    singleSignMask =    0x80000000;
-    static final int    singleExpMask  =    0x7f800000;
-    static final int    singleFractMask =   ~(singleSignMask | singleExpMask);
-    static final int    singleExpShift  =   23;
-    static final int    singleFractHOB  =   1 << singleExpShift;
-    static final int    singleExpBias   =   127;
-
-    /**
-     * count number of bits from high-order 1 bit to low-order 1 bit,
-     * inclusive.
-     */
-    private static int
-    countBits(long v) {
-        //
-        // the strategy is to shift until we get a non-zero sign bit
-        // then shift until we have no bits left, counting the difference.
-        // we do byte shifting as a hack. Hope it helps.
-        //
-        if (v == 0L) {
-            return 0;
+        /** Creates a floating decimal with a given value. */
+        MondrianFloatingDecimalSpec(double n) {
         }
 
-        while ((v & highbyte) == 0L) {
-            v <<= 8;
-        }
-        while (v > 0L) { // i.e. while ((v&highbit) == 0L )
-            v <<= 1;
-        }
-
-        int n = 0;
-        while ((v & lowbytes) != 0L) {
-            v <<= 8;
-            n += 8;
-        }
-        while (v != 0L) {
-            v <<= 1;
-            n += 1;
-        }
-        return n;
-    }
-
-    /**
-     * Keep big powers of 5 handy for future reference.
-     */
-    private static FDBigInt b5p[];
-
-    private static FDBigInt
-    big5pow(int p) {
-        if (p < 0) {
-            throw new RuntimeException("Assertion botch: negative power of 5");
-        }
-        if (b5p == null) {
-            b5p = new FDBigInt[p + 1];
-        } else if (b5p.length <= p) {
-            FDBigInt t[] = new FDBigInt[p + 1];
-            System.arraycopy(b5p, 0, t, 0, b5p.length);
-            b5p = t;
-        }
-        if (b5p[p] != null) {
-            return b5p[p];
-        } else if (p < small5pow.length) {
-            return b5p[p] = new FDBigInt(small5pow[p]);
-        } else if (p < long5pow.length) {
-            return b5p[p] = new FDBigInt(long5pow[p]);
-        } else {
-            // construct the damn thing.
-            // recursively.
-            int q, r;
-            // in order to compute 5^p,
-            // compute its square root, 5^(p/2) and square.
-            // or, let q = p / 2, r = p -q, then
-            // 5^p = 5^(q+r) = 5^q * 5^r
-            q = p >> 1;
-            r = p - q;
-            FDBigInt bigq =  b5p[q];
-            if (bigq == null) {
-                bigq = big5pow(q);
-            }
-            if (r < small5pow.length) {
-                return (b5p[p] = bigq.mult(small5pow[r]));
-            } else {
-                FDBigInt bigr = b5p[r];
-                if (bigr == null) {
-                    bigr = big5pow(r);
-                }
-                return (b5p[p] = bigq.mult(bigr));
-            }
-        }
-    }
-
-    /**
-     * This is the easy subcase --
-     * all the significant bits, after scaling, are held in lvalue.
-     * negSign and decExponent tell us what processing and scaling
-     * has already been done. Exceptional cases have already been
-     * stripped out.
-     *
-     * <p>In particular:
-     * lvalue is a finite number (not Inf, nor NaN)
-     * lvalue > 0L (not zero, nor negative).
-     *
-     * <p>The only reason that we develop the digits here, rather than
-     * calling on Long.toString() is that we can do it a little faster,
-     * and besides want to treat trailing 0s specially. If Long.toString
-     * changes, we should re-evaluate this strategy!
-     */
-    private void
-    developLongDigits(int decExponent, long lvalue, long insignificant) {
-        char digits[];
-        int  ndigits;
-        int  digitno;
-        int  c;
-        //
-        // Discard non-significant low-order bits, while rounding,
-        // up to insignificant value.
-        int i;
-        for (i = 0; insignificant >= 10L; i++) {
-            insignificant /= 10L;
-        }
-        if (i != 0) {
-            long pow10 = long5pow[i] << i; // 10^i == 5^i * 2^i;
-            long residue = lvalue % pow10;
-            lvalue /= pow10;
-            decExponent += i;
-            if (residue >= (pow10 >> 1)) {
-                // round up based on the low-order bits we're discarding
-                lvalue++;
-            }
-        }
-        if (lvalue <= Integer.MAX_VALUE) {
-            if (lvalue <= 0L) {
-                throw new RuntimeException(
-                    "Assertion botch: value " + lvalue + " <= 0");
-            }
-            // even easier subcase!
-            // can do int arithmetic rather than long!
-            int  ivalue = (int)lvalue;
-            digits = new char[ndigits = 10];
-            digitno = ndigits - 1;
-            c = ivalue % 10;
-            ivalue /= 10;
-            while (c == 0) {
-                decExponent++;
-                c = ivalue % 10;
-                ivalue /= 10;
-            }
-            while (ivalue != 0) {
-                digits[digitno--] = (char)(c + '0');
-                decExponent++;
-                c = ivalue % 10;
-                ivalue /= 10;
-            }
-            digits[digitno] = (char)(c + '0');
-        } else {
-            // same algorithm as above (same bugs, too)
-            // but using long arithmetic.
-            digits = new char[ndigits = 20];
-            digitno = ndigits - 1;
-            c = (int)(lvalue % 10L);
-            lvalue /= 10L;
-            while (c == 0) {
-                decExponent++;
-                c = (int)(lvalue % 10L);
-                lvalue /= 10L;
-            }
-            while (lvalue != 0L) {
-                digits[digitno--] = (char)(c + '0');
-                decExponent++;
-                c = (int)(lvalue % 10L);
-                lvalue /= 10;
-            }
-            digits[digitno] = (char)(c + '0');
-        }
-        char result [];
-        ndigits -= digitno;
-        if (digitno == 0) {
-            result = digits;
-        } else {
-            result = new char[ndigits];
-            System.arraycopy(digits, digitno, result, 0, ndigits);
-        }
-        this.digits = result;
-        this.decExponent = decExponent + 1;
-        this.nDigits = ndigits;
-    }
-
-    //
-    // add one to the least significant digit.
-    // in the unlikely event there is a carry out,
-    // deal with it.
-    // assert that this will only happen where there
-    // is only one digit, e.g. (float)1e-44 seems to do it.
-    //
-    private void
-    roundup() {
-        int i;
-        int q = digits[i = (nDigits - 1)];
-        if (q == '9') {
-            while (q == '9' && i > 0) {
-                digits[i] = '0';
-                q = digits[--i];
-            }
-            if (q == '9') {
-                // carryout! High-order 1, rest 0s, larger exp.
-                decExponent += 1;
-                digits[0] = '1';
-                return;
-            }
-            // else fall through.
-        }
-        digits[i] = (char)(q + 1);
-    }
-
-    /**
-     * FIRST IMPORTANT CONSTRUCTOR: DOUBLE
-     */
-    public FloatingDecimal(double d)
-    {
-        long    dBits = Double.doubleToLongBits(d);
-        long    fractBits;
-        int     binExp;
-        int     nSignificantBits;
-
-        // discover and delete sign
-        if ((dBits & signMask) != 0) {
-            isNegative = true;
-            dBits ^= signMask;
-        } else {
-            isNegative = false;
-        }
-        // Begin to unpack
-        // Discover obvious special cases of NaN and Infinity.
-        binExp = (int)((dBits & expMask) >> expShift);
-        fractBits = dBits & fractMask;
-        if (binExp == (int)(expMask >> expShift)) {
-            isExceptional = true;
-            if (fractBits == 0L) {
-                digits =  infinity;
-            } else {
-                digits = notANumber;
-                isNegative = false; // NaN has no sign!
-            }
-            nDigits = digits.length;
-            return;
-        }
-        isExceptional = false;
-        // Finish unpacking
-        // Normalize denormalized numbers.
-        // Insert assumed high-order bit for normalized numbers.
-        // Subtract exponent bias.
-        if (binExp == 0) {
-            if (fractBits == 0L) {
-                // not a denorm, just a 0!
-                decExponent = 0;
-                digits = zero;
-                nDigits = 1;
-                return;
-            }
-            while ((fractBits & fractHOB) == 0L) {
-                fractBits <<= 1;
-                binExp -= 1;
-            }
-            // recall binExp is  - shift count.
-            nSignificantBits = expShift + binExp;
-            binExp += 1;
-        } else {
-            fractBits |= fractHOB;
-            nSignificantBits = expShift + 1;
-        }
-        binExp -= expBias;
-        // call the routine that actually does all the hard work.
-        dtoa(binExp, fractBits, nSignificantBits);
-    }
-
-    /**
-     * SECOND IMPORTANT CONSTRUCTOR: SINGLE
-     */
-    public FloatingDecimal(float f)
-    {
-        int     fBits = Float.floatToIntBits(f);
-        int     fractBits;
-        int     binExp;
-        int     nSignificantBits;
-
-        // discover and delete sign
-        if ((fBits & singleSignMask) != 0) {
-            isNegative = true;
-            fBits ^= singleSignMask;
-        } else {
-            isNegative = false;
-        }
-        // Begin to unpack
-        // Discover obvious special cases of NaN and Infinity.
-        binExp = ((fBits & singleExpMask) >> singleExpShift);
-        fractBits = fBits & singleFractMask;
-        if (binExp == (singleExpMask >> singleExpShift)) {
-            isExceptional = true;
-            if (fractBits == 0L) {
-                digits =  infinity;
-            } else {
-                digits = notANumber;
-                isNegative = false; // NaN has no sign!
-            }
-            nDigits = digits.length;
-            return;
-        }
-        isExceptional = false;
-        // Finish unpacking
-        // Normalize denormalized numbers.
-        // Insert assumed high-order bit for normalized numbers.
-        // Subtract exponent bias.
-        if (binExp == 0) {
-            if (fractBits == 0) {
-                // not a denorm, just a 0!
-                decExponent = 0;
-                digits = zero;
-                nDigits = 1;
-                return;
-            }
-            while ((fractBits & singleFractHOB) == 0) {
-                fractBits <<= 1;
-                binExp -= 1;
-            }
-            // recall binExp is  - shift count.
-            nSignificantBits = singleExpShift + binExp;
-            binExp += 1;
-        } else {
-            fractBits |= singleFractHOB;
-            nSignificantBits = singleExpShift + 1;
-        }
-        binExp -= singleExpBias;
-        // call the routine that actually does all the hard work.
-        dtoa(
-            binExp,
-            ((long)fractBits) << (expShift - singleExpShift),
-            nSignificantBits);
-    }
-
-    private void
-    dtoa(int binExp, long fractBits, int nSignificantBits)
-    {
-        int     nFractBits; // number of significant bits of fractBits;
-        int     nTinyBits;  // number of these to the right of the point.
-        int     decExp;
-
-        // Examine number. Determine if it is an easy case,
-        // which we can do pretty trivially using float/long conversion,
-        // or whether we must do real work.
-        nFractBits = countBits(fractBits);
-        nTinyBits = Math.max(0, nFractBits - binExp - 1);
-        if (binExp <= maxSmallBinExp && binExp >= minSmallBinExp) {
-            // Look more closely at the number to decide if,
-            // with scaling by 10^nTinyBits, the result will fit in
-            // a long.
-            if ((nTinyBits < long5pow.length)
-                && ((nFractBits + n5bits[nTinyBits]) < 64))
-            {
-                /*
-                 * We can do this:
-                 * take the fraction bits, which are normalized.
-                 * (a) nTinyBits == 0: Shift left or right appropriately
-                 *     to align the binary point at the extreme right, i.e.
-                 *     where a long int point is expected to be. The integer
-                 *     result is easily converted to a string.
-                 * (b) nTinyBits > 0: Shift right by expShift-nFractBits,
-                 *     which effectively converts to long and scales by
-                 *     2^nTinyBits. Then multiply by 5^nTinyBits to
-                 *     complete the scaling. We know this won't overflow
-                 *     because we just counted the number of bits necessary
-                 *     in the result. The integer you get from this can
-                 *     then be converted to a string pretty easily.
-                 */
-                long halfULP;
-                if (nTinyBits == 0) {
-                    if (binExp > nSignificantBits) {
-                        halfULP = 1L << (binExp - nSignificantBits - 1);
-                    } else {
-                        halfULP = 0L;
-                    }
-                    if (binExp >= expShift) {
-                        fractBits <<= (binExp - expShift);
-                    } else {
-                        fractBits >>>= (expShift - binExp);
-                    }
-                    developLongDigits(0, fractBits, halfULP);
-                    return;
-                }
-                /*
-                 * The following causes excess digits to be printed
-                 * out in the single-float case. Our manipulation of
-                 * halfULP here is apparently not correct. If we
-                 * better understand how this works, perhaps we can
-                 * use this special case again. But for the time being,
-                 * we do not.
-                 * else {
-                 *     fractBits >>>= expShift + 1-nFractBits;
-                 *     fractBits *= long5pow[ nTinyBits ];
-                 *     halfULP = long5pow[ nTinyBits ]
-                 *         >> (1 + nSignificantBits - nFractBits);
-                 *     developLongDigits(-nTinyBits, fractBits, halfULP);
-                 *     return;
-                 * }
-                 */
-            }
-        }
-        /*
-         * This is the hard case. We are going to compute large positive
-         * integers B and S and integer decExp, s.t.
-         *      d = (B / S) * 10^decExp
-         *      1 <= B / S < 10
-         * Obvious choices are:
-         *      decExp = floor(log10(d))
-         *      B      = d * 2^nTinyBits * 10^max(0, -decExp)
-         *      S      = 10^max(0, decExp) * 2^nTinyBits
-         * (noting that nTinyBits has already been forced to non-negative)
-         * I am also going to compute a large positive integer
-         *      M      = (1/2^nSignificantBits)
-         *               * 2^nTinyBits
-         *               * 10^max(0, -decExp)
-         * i.e. M is (1/2) of the ULP of d, scaled like B.
-         * When we iterate through dividing B/S and picking off the
-         * quotient bits, we will know when to stop when the remainder
-         * is <= M.
+        /**
+         * Appends {@link #decExponent} to result string. Returns i plus the
+         * number of chars written.
          *
-         * We keep track of powers of 2 and powers of 5.
-         */
-
-        /*
-         * Estimate decimal exponent. (If it is small-ish,
-         * we could double-check.)
+         * <p>Implementation may assume that exponent has 3 or fewer digits.</p>
          *
-         * First, scale the mantissa bits such that 1 <= d2 < 2.
-         * We are then going to estimate
-         *          log10(d2) ~=~  (d2-1.5)/1.5 + log(1.5)
-         * and so we can estimate
-         *      log10(d) ~=~ log10(d2) + binExp * log10(2)
-         * take the floor and call it decExp.
-         * FIXME -- use more precise constants here. It costs no more.
-         */
-        double d2 = Double.longBitsToDouble(
-            expOne | (fractBits &~ fractHOB));
-        decExp = (int)Math.floor(
-            (d2 - 1.5D) * 0.289529654D
-            + 0.176091259
-            + (double)binExp * 0.301029995663981);
-        int B2, B5; // powers of 2 and powers of 5, respectively, in B
-        int S2, S5; // powers of 2 and powers of 5, respectively, in S
-        int M2, M5; // powers of 2 and powers of 5, respectively, in M
-        int Bbits; // binary digits needed to represent B, approx.
-        int tenSbits; // binary digits needed to represent 10*S, approx.
-        FDBigInt Sval, Bval, Mval;
-
-        B5 = Math.max(0, -decExp);
-        B2 = B5 + nTinyBits + binExp;
-
-        S5 = Math.max(0, decExp);
-        S2 = S5 + nTinyBits;
-
-        M5 = B5;
-        M2 = B2 - nSignificantBits;
-
-        /*
-         * the long integer fractBits contains the (nFractBits) interesting
-         * bits from the mantissa of d (hidden 1 added if necessary) followed
-         * by (expShift + 1-nFractBits) zeros. In the interest of compactness,
-         * I will shift out those zeros before turning fractBits into a
-         * FDBigInt. The resulting whole number will be
-         *      d * 2^(nFractBits-1-binExp).
-         */
-        fractBits >>>= (expShift + 1 - nFractBits);
-        B2 -= nFractBits - 1;
-        int common2factor = Math.min(B2, S2);
-        B2 -= common2factor;
-        S2 -= common2factor;
-        M2 -= common2factor;
-
-        /*
-         * HACK!! For exact powers of two, the next smallest number
-         * is only half as far away as we think (because the meaning of
-         * ULP changes at power-of-two bounds) for this reason, we
-         * hack M2. Hope this works.
-         */
-        if (nFractBits == 1) {
-            M2 -= 1;
-        }
-        if (M2 < 0) {
-            // oops.
-            // since we cannot scale M down far enough,
-            // we must scale the other values up.
-            B2 -= M2;
-            S2 -= M2;
-            M2 =  0;
-        }
-        /*
-         * Construct, Scale, iterate.
-         * Some day, we'll write a stopping test that takes
-         * account of the assymetry of the spacing of floating-point
-         * numbers below perfect powers of 2
-         * 26 Sept 96 is not that day.
-         * So we use a symmetric test.
-         */
-        char digits[] = this.digits = new char[18];
-        int  ndigit = 0;
-        boolean low, high;
-        long lowDigitDifference;
-        int  q;
-
-        /*
-         * Detect the special cases where all the numbers we are about
-         * to compute will fit in int or long integers.
-         * In these cases, we will avoid doing FDBigInt arithmetic.
-         * We use the same algorithms, except that we "normalize"
-         * our FDBigInts before iterating. This is to make division easier,
-         * as it makes our fist guess (quotient of high-order words)
-         * more accurate!
+         * <p>For example, given {@code decExponent} = 2,
+         * {@code formatExponent(result, 5, true, 2)}
+         * will write '0' into result[5]
+         * and '2' into result[6] and return 7.</p>
          *
-         * Some day, we'll write a stopping test that takes
-         * account of the assymetry of the spacing of floating-point
-         * numbers below perfect powers of 2
-         * 26 Sept 96 is not that day.
-         * So we use a symmetric test.
+         * @param result Result buffer
+         * @param i Initial offset into result buffer
+         * @param expSign Whether to print a '+' sign if exponent is positive
+         *                (always prints '-' if negative)
+         * @param minExpDigits Minimum number of digits to write
+         * @return Offset into result buffer after writing chars
          */
-        Bbits =
-            nFractBits
-            + B2
-            + ((B5 < n5bits.length) ? n5bits[B5] : (B5 * 3));
-        tenSbits =
-            S2
-            + 1
-            + (((S5 + 1) < n5bits.length) ? n5bits[(S5 + 1)] : ((S5 + 1) * 3));
-        if (Bbits < 64 && tenSbits < 64) {
-            if (Bbits < 32 && tenSbits < 32) {
-                // wa-hoo! They're all ints!
-                int b = ((int)fractBits * small5pow[B5]) << B2;
-                int s = small5pow[S5] << S2;
-                int m = small5pow[M5] << M2;
-                int tens = s * 10;
-                /*
-                 * Unroll the first iteration. If our decExp estimate
-                 * was too high, our first quotient will be zero. In this
-                 * case, we discard it and decrement decExp.
-                 */
-                ndigit = 0;
-                q = (b / s);
-                b = 10 * (b % s);
-                m *= 10;
-                low  = (b <  m);
-                high = (b + m > tens);
-                if (q >= 10) {
-                    // bummer, dude
-                    throw new RuntimeException(
-                        "Assertion botch: excessivly large digit " + q);
-                } else if ((q == 0) && ! high) {
-                    // oops. Usually ignore leading zero.
-                    decExp--;
-                } else {
-                    digits[ndigit++] = (char)('0' + q);
-                }
-                /*
-                 * HACK! Java spec sez that we always have at least
-                 * one digit after the . in either F- or E-form output.
-                 * Thus we will need more than one digit if we're using
-                 * E-form
-                 */
-                if (decExp <= -3 || decExp >= 8) {
-                    high = low = false;
-                }
-                while (! low && ! high) {
-                    q = (b / s);
-                    b = 10 * (b % s);
-                    m *= 10;
-                    if (q >= 10) {
-                        // bummer, dude
-                        throw new RuntimeException(
-                            "Assertion botch: excessivly large digit " + q);
-                    }
-                    if (m > 0L) {
-                        low  = (b <  m);
-                        high = (b + m > tens);
-                    } else {
-                        // hack -- m might overflow!
-                        // in this case, it is certainly > b,
-                        // which won't
-                        // and b+m > tens, too, since that has overflowed
-                        // either!
-                        low = true;
-                        high = true;
-                    }
-                    digits[ndigit++] = (char)('0' + q);
-                }
-                lowDigitDifference = (b << 1) - tens;
-            } else {
-                // still good! they're all longs!
-                long b = (fractBits * long5pow[B5]) << B2;
-                long s = long5pow[S5] << S2;
-                long m = long5pow[M5] << M2;
-                long tens = s * 10L;
-                /*
-                 * Unroll the first iteration. If our decExp estimate
-                 * was too high, our first quotient will be zero. In this
-                 * case, we discard it and decrement decExp.
-                 */
-                ndigit = 0;
-                q = (int) (b / s);
-                b = 10L * (b % s);
-                m *= 10L;
-                low  = (b <  m);
-                high = (b + m > tens);
-                if (q >= 10) {
-                    // bummer, dude
-                    throw new RuntimeException(
-                        "Assertion botch: excessivly large digit " + q);
-                } else if ((q == 0) && ! high) {
-                    // oops. Usually ignore leading zero.
-                    decExp--;
-                } else {
-                    digits[ndigit++] = (char)('0' + q);
-                }
-                /*
-                 * HACK! Java spec sez that we always have at least
-                 * one digit after the . in either F- or E-form output.
-                 * Thus we will need more than one digit if we're using
-                 * E-form
-                 */
-                if (decExp <= -3 || decExp >= 8) {
-                    high = low = false;
-                }
-                while (! low && ! high) {
-                    q = (int) (b / s);
-                    b = 10 * (b % s);
-                    m *= 10;
-                    if (q >= 10) {
-                        // bummer, dude
-                        throw new RuntimeException(
-                            "Assertion botch: excessivly large digit " + q);
-                    }
-                    if (m > 0L) {
-                        low  = (b <  m);
-                        high = (b + m > tens);
-                    } else {
-                        // hack -- m might overflow!
-                        // in this case, it is certainly > b,
-                        // which won't
-                        // and b+m > tens, too, since that has overflowed
-                        // either!
-                        low = true;
-                        high = true;
-                    }
-                    digits[ndigit++] = (char)('0' + q);
-                }
-                lowDigitDifference = (b << 1) - tens;
-            }
-        } else {
-            FDBigInt tenSval;
-            int  shiftBias;
-
-            /*
-             * We really must do FDBigInt arithmetic.
-             * Fist, construct our FDBigInt initial values.
-             */
-            Bval = new FDBigInt(fractBits);
-            if (B5 != 0) {
-                if (B5 < small5pow.length) {
-                    Bval = Bval.mult(small5pow[B5]);
-                } else {
-                    Bval = Bval.mult(big5pow(B5));
-                }
-            }
-            if (B2 != 0) {
-                Bval.lshiftMe(B2);
-            }
-            Sval = new FDBigInt(big5pow(S5));
-            if (S2 != 0) {
-                Sval.lshiftMe(S2);
-            }
-            Mval = new FDBigInt(big5pow(M5));
-            if (M2 != 0) {
-                Mval.lshiftMe(M2);
-            }
-
-
-            // normalize so that division works better
-            Bval.lshiftMe(shiftBias = Sval.normalizeMe());
-            Mval.lshiftMe(shiftBias);
-            tenSval = Sval.mult(10);
-            /*
-             * Unroll the first iteration. If our decExp estimate
-             * was too high, our first quotient will be zero. In this
-             * case, we discard it and decrement decExp.
-             */
-            ndigit = 0;
-            q = Bval.quoRemIteration(Sval);
-            Mval = Mval.mult(10);
-            low  = (Bval.cmp(Mval) < 0);
-            high = (Bval.add(Mval).cmp(tenSval) > 0);
-            if (q >= 10) {
-                // bummer, dude
-                throw new RuntimeException(
-                    "Assertion botch: excessivly large digit " + q);
-            } else if ((q == 0) && ! high) {
-                // oops. Usually ignore leading zero.
-                decExp--;
-            } else {
-                digits[ndigit++] = (char)('0' + q);
-            }
-            /*
-             * HACK! Java spec sez that we always have at least
-             * one digit after the . in either F- or E-form output.
-             * Thus we will need more than one digit if we're using
-             * E-form
-             */
-            if (decExp <= -3 || decExp >= 8) {
-                high = low = false;
-            }
-            while (! low && ! high) {
-                q = Bval.quoRemIteration(Sval);
-                Mval = Mval.mult(10);
-                if (q >= 10) {
-                    // bummer, dude
-                    throw new RuntimeException(
-                        "Assertion botch: excessivly large digit " + q);
-                }
-                low  = (Bval.cmp(Mval) < 0);
-                high = (Bval.add(Mval).cmp(tenSval) > 0);
-                digits[ndigit++] = (char)('0' + q);
-            }
-            if (high && low) {
-                Bval.lshiftMe(1);
-                lowDigitDifference = Bval.cmp(tenSval);
-            } else {
-                lowDigitDifference = 0L; // this here only for flow analysis!
-            }
-        }
-        this.decExponent = decExp + 1;
-        this.digits = digits;
-        this.nDigits = ndigit;
-        /*
-         * Last digit gets rounded based on stopping condition.
-         */
-        if (high) {
-            if (low) {
-                if (lowDigitDifference == 0L) {
-                    // it's a tie!
-                    // choose based on which digits we like.
-                    if ((digits[nDigits - 1] & 1) != 0) {
-                        roundup();
-                    }
-                } else if (lowDigitDifference > 0) {
-                    roundup();
-                }
-            } else {
-                roundup();
-            }
-        }
-    }
-
-    public String
-    toString() {
-        // most brain-dead version
-        StringBuilder result = new StringBuilder(nDigits + 8);
-        if (isNegative) {
-            result.append('-');
-        }
-        if (isExceptional) {
-            result.append(digits, 0, nDigits);
-        } else {
-            result.append("0.");
-            result.append(digits, 0, nDigits);
-            result.append('e');
-            result.append(decExponent);
-        }
-        return new String(result);
-    }
-
-    public String
-    toJavaFormatString() {
-        char result[] = new char[nDigits + 10];
-        int  i = 0;
-        if (isNegative) {
-            result[0] = '-';
-            i = 1;
-        }
-        if (isExceptional) {
-            System.arraycopy(digits, 0, result, i, nDigits);
-            i += nDigits;
-        } else {
-            if (decExponent > 0 && decExponent < 8) {
-                // print digits.digits.
-                int charLength = Math.min(nDigits, decExponent);
-                System.arraycopy(digits, 0, result, i, charLength);
-                i += charLength;
-                if (charLength < decExponent) {
-                    charLength = decExponent - charLength;
-                    System.arraycopy(zero, 0, result, i, charLength);
-                    i += charLength;
-                    result[i++] = '.';
-                    result[i++] = '0';
-                } else {
-                    result[i++] = '.';
-                    if (charLength < nDigits) {
-                        int t = nDigits - charLength;
-                        System.arraycopy(digits, charLength, result, i, t);
-                        i += t;
-                    } else {
-                        result[i++] = '0';
-                    }
-                }
-            } else if (decExponent <=0 && decExponent > -3) {
-                result[i++] = '0';
-                result[i++] = '.';
-                if (decExponent != 0) {
-                    System.arraycopy(zero, 0, result, i, -decExponent);
-                    i -= decExponent;
-                }
-                System.arraycopy(digits, 0, result, i, nDigits);
-                i += nDigits;
-            } else {
-                result[i++] = digits[0];
-                result[i++] = '.';
-                if (nDigits > 1) {
-                    System.arraycopy(digits, 1, result, i, nDigits - 1);
-                    i += nDigits - 1;
-                } else {
-                    result[i++] = '0';
-                }
-                result[i++] = 'E';
-                int e;
-                if (decExponent <= 0) {
-                    result[i++] = '-';
-                    e = -decExponent + 1;
-                } else {
-                    e = decExponent - 1;
-                }
-                // decExponent has 1, 2, or 3, digits
-                if (e <= 9) {
-                    result[i++] = (char)(e + '0');
-                } else if (e <= 99) {
-                    result[i++] = (char)(e / 10 + '0');
-                    result[i++] = (char)(e % 10 + '0');
-                } else {
-                    result[i++] = (char)(e / 100 + '0');
-                    e %= 100;
-                    result[i++] = (char)(e / 10 + '0');
-                    result[i++] = (char)(e % 10 + '0');
-                }
-            }
-        }
-        return new String(result, 0, i);
-    }
-
-    // jhyde added
-    public FloatingDecimal(long n)
-    {
-        isExceptional = false; // I don't think longs can be exceptional
-        if (n < 0) {
-            isNegative = true;
-            n = -n; // if n == MIN_LONG, oops!
-        } else {
-            isNegative = false;
-        }
-        if (n == 0) {
-            nDigits = 1;
-            digits = new char[] {'0', '0', '0', '0', '0', '0', '0', '0'};
-            decExponent = 0;
-        } else {
-            nDigits = 0;
-            for (long m = n; m != 0; m = m / 10) {
-                nDigits++;
-            }
-            decExponent = nDigits;
-            digits = new char[nDigits];
-            int i = nDigits - 1;
-            for (long m = n; m != 0; m = m / 10) {
-                digits[i--] = (char) ('0' + (m % 10));
-            }
-        }
-    }
-
-    // jhyde added
-    public void shift(int i)
-    {
-        if (isExceptional
-            || nDigits == 1 && digits[0] == '0')
+        int formatExponent(
+            char[] result,
+            int i,
+            boolean expSign,
+            int minExpDigits)
         {
-            ; // don't multiply zero
-        } else {
-            decExponent += i;
+            return i;
         }
-    }
 
-    // jhyde added
-    public String toJavaFormatString(
-        int minDigitsLeftOfDecimal,
-        char decimalChar, // '.' or ','
-        int minDigitsRightOfDecimal,
-        int maxDigitsRightOfDecimal, // todo: use
-        char expChar, // 'E' or 'e'
-        boolean expSign, // whether to print '+' if exp is positive
-        int minExpDigits, // minimum digits in exponent
-        char thousandChar, // ',' or '.', or 0
-        boolean useDecimal,
-        ArrayStack<Integer> thousandSeparatorPositions)
-    {
-        // char result[] = new char[nDigits + 10]; // crashes for 1.000.000,00
-        // the result length does *not* depend from nDigits
-        //  it is : decExponent
-        //         +maxDigitsRightOfDecimal
-        //          + 10  (for decimal point and sign or -Infinity)
-        //         +decExponent/3 (for the thousand separators)
-        int resultLen =
-            10 + Math.abs(decExponent) * 4 / 3 + maxDigitsRightOfDecimal;
-        char result[] = new char[resultLen];
-        int i = toJavaFormatString(
-            result, 0, minDigitsLeftOfDecimal, decimalChar,
-            minDigitsRightOfDecimal, maxDigitsRightOfDecimal, expChar, expSign,
-            minExpDigits, thousandChar, useDecimal, thousandSeparatorPositions);
-        return new String(result, 0, i);
-    }
-
-    // jhyde added
-    private synchronized int toJavaFormatString(
-        char result[],
-        int i,
-        int minDigitsLeftOfDecimal,
-        char decimalChar, // '.' or ','
-        int minDigitsRightOfDecimal,
-        int maxDigitsRightOfDecimal, // todo: use
-        char expChar, // 'E' or 'e'
-        boolean expSign, // whether to print '+' if exp is positive
-        int minExpDigits, // minimum digits in exponent
-        char thousandChar, // ',' or '.' or 0
-        boolean useDecimal,
-        ArrayStack<Integer> thousandSeparatorPositions)
-    {
-        if (isNegative) {
-            result[i++] = '-';
-        }
-        if (isExceptional) {
-            System.arraycopy(digits, 0, result, i, nDigits);
-            i += nDigits;
-        } else if (expChar == 0) {
-            // Build a new array of digits, padded with 0s at either end.  For
-            // example, here is the array we would build for 1234.56.
-            //
-            // |  0     0     1     2     3  .  4     5     6     0     0   |
-            // |           |- nDigits=6 -----------------------|            |
-            // |           |- decExponent=3 -|                              |
-            // |- minDigitsLeftOfDecimal=5 --|                              |
-            // |                             |- minDigitsRightOfDecimal=5 --|
-            // |- wholeDigits=5 -------------|- fractionDigits=5 -----------|
-            // |- totalDigits=10 -------------------------------------------|
-            // |                             |- maxDigitsRightOfDecimal=5 --|
-            int wholeDigits = Math.max(decExponent, minDigitsLeftOfDecimal),
-                fractionDigits = Math.max(
-                    nDigits - decExponent, minDigitsRightOfDecimal),
-                totalDigits = wholeDigits + fractionDigits;
-            char[] digits2 = new char[totalDigits];
-            for (int j = 0; j < totalDigits; j++) {
-                digits2[j] = '0';
-            }
-            for (int j = 0; j < nDigits; j++) {
-                digits2[wholeDigits - decExponent + j] = digits[j];
-            }
-
-            // Now round.  Suppose that we want to round 1234.56 to 1 decimal
-            // place (that is, maxDigitsRightOfDecimal = 1).  Then lastDigit
-            // initially points to '5'.  We find out that we need to round only
-            // when we see that the next digit ('6') is non-zero.
-            //
-            // |  0     0     1     2     3  .  4     5     6     0     0   |
-            // |                             |  ^   |                       |
-            // |                                maxDigitsRightOfDecimal=1   |
-            int lastDigit = wholeDigits + maxDigitsRightOfDecimal;
-            if (lastDigit < totalDigits) {
-                // We need to truncate -- also round if the trailing digits are
-                // 5000... or greater.
-                int m = totalDigits;
-                while (true) {
-                    m--;
-                    if (m < 0) {
-                        // The entire number was 9s.  Re-allocate, so we can
-                        // prepend a '1'.
-                        wholeDigits++;
-                        totalDigits++;
-                        lastDigit++;
-                        char[] old = digits2;
-                        digits2 = new char[totalDigits];
-                        digits2[0] = '1';
-                        System.arraycopy(old, 0, digits2, 1, old.length);
-                        break;
-                    } else if (m == lastDigit) {
-                        char d = digits2[m];
-                        digits2[m] = '0';
-                        if (d < '5') {
-                            break; // no need to round
-                        }
-                    } else if (m > lastDigit) {
-                        digits2[m] = '0';
-                    } else if (digits2[m] == '9') {
-                        digits2[m] = '0';
-                        // do not break - we have to carry
-                    } else {
-                        digits2[m]++;
-                        break; // nothing to carry
-                    }
-                }
-            }
-
-            // Find the first non-zero digit and the last non-zero digit.
-            int firstNonZero = wholeDigits,
-                firstTrailingZero = 0;
-            for (int j = 0; j < totalDigits; j++) {
-                if (digits2[j] != '0') {
-                    if (j < firstNonZero) {
-                        firstNonZero = j;
-                    }
-                    firstTrailingZero = j + 1;
-                }
-            }
-
-            int firstDigitToPrint = firstNonZero;
-            if (firstDigitToPrint > wholeDigits - minDigitsLeftOfDecimal) {
-                firstDigitToPrint = wholeDigits - minDigitsLeftOfDecimal;
-            }
-            int lastDigitToPrint = firstTrailingZero;
-            if (lastDigitToPrint > wholeDigits + maxDigitsRightOfDecimal) {
-                lastDigitToPrint = wholeDigits + maxDigitsRightOfDecimal;
-            }
-            if (lastDigitToPrint < wholeDigits + minDigitsRightOfDecimal) {
-                lastDigitToPrint = wholeDigits + minDigitsRightOfDecimal;
-            }
-
-            if (thousandChar != '\0'
-                && thousandSeparatorPositions.size() > 0)
-            {
-                // Now print the number. That will happen backwards, so we
-                // store it temporarely and then invert.
-                ArrayStack<Character> formatedWholeDigits =
-                    new ArrayStack<Character>();
-                // We need to keep track of how many digits we printed in the
-                // current token.
-                int nbInserted = 0;
-                for (int j = wholeDigits - 1; j >= firstDigitToPrint; j--) {
-                    // Check if we need to insert another thousand separator
-                    if (nbInserted % thousandSeparatorPositions.peek() == 0
-                        && nbInserted > 0)
-                    {
-                        formatedWholeDigits.push(thousandChar);
-                        nbInserted = 0;
-                        // The last format token is kept because we re-apply it
-                        // until the end of the digits.
-                        if (thousandSeparatorPositions.size() > 1) {
-                            thousandSeparatorPositions.pop();
-                        }
-                    }
-                    // Insert the next digit.
-                    formatedWholeDigits.push(digits2[j]);
-                    nbInserted++;
-                }
-                // We're done. Invert the print out and add it to
-                // the result array.
-                while (formatedWholeDigits.size() > 0) {
-                    result[i++] = formatedWholeDigits.pop();
-                }
-            } else {
-                // There are no thousand separators. Just put the
-                // digits in the results array.
-                for (int j = firstDigitToPrint; j < wholeDigits; j++) {
-                    result[i++] = digits2[j];
-                }
-            }
-
-            if (wholeDigits < lastDigitToPrint
-                || (useDecimal
-                    && wholeDigits == lastDigitToPrint))
-            {
-                result[i++] = decimalChar;
-            }
-            for (int j = wholeDigits; j < lastDigitToPrint; j++) {
-                result[i++] = digits2[j];
-            }
-        } else {
-            // Make a recursive call to print the digits left of the 'E'.
-            int oldExp = decExponent;
-            decExponent = Math.min(minDigitsLeftOfDecimal, nDigits);
-            boolean oldIsNegative = isNegative;
-            isNegative = false;
-            i = toJavaFormatString(
-                result, i, minDigitsLeftOfDecimal, decimalChar,
-                minDigitsRightOfDecimal, maxDigitsRightOfDecimal, (char) 0,
-                false, minExpDigits, '\0', useDecimal,
-                thousandSeparatorPositions);
-            decExponent = oldExp;
-            isNegative = oldIsNegative;
-
-            result[i++] = expChar;
-            int de = decExponent;
-            if (nDigits == 1 && digits[0] == '0') {
-                de = 1; // 0's exponent is 0, but that's not convenient here
-            }
-            int e;
-            if (de <= 0) {
-                result[i++] = '-';
-                e = -de + 1;
-            } else {
-                if (expSign) {
-                    result[i++] = '+';
-                }
-                e = de - 1;
-            }
-            // decExponent has 1, 2, or 3, digits
-            int nExpDigits = e <= 9 ? 1 : e <= 99 ? 2 : 3;
-            for (int j = nExpDigits; j < minExpDigits; j++) {
-                result[i++] = '0';
-            }
-            if (e <= 9) {
-                result[i++] = (char)(e + '0');
-            } else if (e <= 99) {
-                result[i++] = (char)(e / 10 + '0');
-                result[i++] = (char)(e % 10 + '0');
-            } else {
-                result[i++] = (char)(e / 100 + '0');
-                e %= 100;
-                result[i++] = (char)(e / 10 + '0');
-                result[i++] = (char)(e % 10 + '0');
-            }
-        }
-        return i;
-    }
-
-    private static final int small5pow[] = {
-        1,
-        5,
-        5 * 5,
-        5 * 5 * 5,
-        5 * 5 * 5 * 5,
-        5 * 5 * 5 * 5 * 5,
-        5 * 5 * 5 * 5 * 5 * 5,
-        5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
-    };
-
-    private static final long long5pow[] = {
-        1L,
-        5L,
-        5L * 5,
-        5L * 5 * 5,
-        5L * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
-        * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
-        * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
-        * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
-        * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
-        * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
-        * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
-        * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-        5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
-        * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
-    };
-
-    // approximately ceil(log2(long5pow[i]))
-    private static final int n5bits[] = {
-        0,
-        3,
-        5,
-        7,
-        10,
-        12,
-        14,
-        17,
-        19,
-        21,
-        24,
-        26,
-        28,
-        31,
-        33,
-        35,
-        38,
-        40,
-        42,
-        45,
-        47,
-        49,
-        52,
-        54,
-        56,
-        59,
-        61,
-    };
-
-    private static final char infinity[] = {
-        'I', 'n', 'f', 'i', 'n', 'i', 't', 'y'
-    };
-    private static final char notANumber[] = { 'N', 'a', 'N' };
-    private static final char zero[] = {
-        '0', '0', '0', '0', '0', '0', '0', '0'
-    };
-}
-
-/**
- * A really, really simple bigint package
- * tailored to the needs of floating base conversion.
- */
-static class FDBigInt {
-    int nWords; // number of words used
-    int data[]; // value: data[0] is least significant
-
-    private static boolean debugging = false;
-
-    public static void setDebugging(boolean d) {
-        debugging = d;
-    }
-
-    public FDBigInt(int v) {
-        nWords = 1;
-        data = new int[1];
-        data[0] = v;
-    }
-
-    public FDBigInt(long v) {
-        data = new int[2];
-        data[0] = (int)v;
-        data[1] = (int)(v >>> 32);
-        nWords = (data[1] == 0) ? 1 : 2;
-    }
-
-    public FDBigInt(FDBigInt other) {
-        data = new int[nWords = other.nWords];
-        System.arraycopy(other.data, 0, data, 0, nWords);
-    }
-
-    private FDBigInt(int [] d, int n) {
-        data = d;
-        nWords = n;
-    }
-
-    /*
-     * Left shift by c bits.
-     * Shifts this in place.
-     */
-    public void
-    lshiftMe(int c)throws IllegalArgumentException {
-        if (c <= 0) {
-            if (c == 0) {
-                return; // silly.
-            } else {
-                throw new IllegalArgumentException("negative shift count");
-            }
-        }
-        int wordcount = c >> 5;
-        int bitcount  = c & 0x1f;
-        int anticount = 32 - bitcount;
-        int t[] = data;
-        int s[] = data;
-        if (nWords + wordcount + 1 > t.length) {
-            // reallocate.
-            t = new int[nWords + wordcount + 1];
-        }
-        int target = nWords + wordcount;
-        int src    = nWords - 1;
-        if (bitcount == 0) {
-            // special hack, since an anticount of 32 won't go!
-            System.arraycopy(s, 0, t, wordcount, nWords);
-            target = wordcount - 1;
-        } else {
-            t[target--] = s[src] >>> anticount;
-            while (src >= 1) {
-                t[target--] = (s[src] << bitcount) | (s[--src] >>> anticount);
-            }
-            t[target--] = s[src] << bitcount;
-        }
-        while (target >= 0) {
-            t[target--] = 0;
-        }
-        data = t;
-        nWords += wordcount + 1;
-        // may have constructed high-order word of 0.
-        // if so, trim it
-        while (nWords > 1 && data[nWords - 1] == 0) {
-            nWords--;
-        }
-    }
-
-    /**
-     * normalize this number by shifting until
-     * the MSB of the number is at 0x08000000.
-     * This is in preparation for quoRemIteration, below.
-     * The idea is that, to make division easier, we want the
-     * divisor to be "normalized" -- usually this means shifting
-     * the MSB into the high words sign bit. But because we know that
-     * the quotient will be 0 < q < 10, we would like to arrange that
-     * the dividend not span up into another word of precision.
-     * (This needs to be explained more clearly!)
-     */
-    public int
-    normalizeMe() throws IllegalArgumentException {
-        int src;
-        int wordcount = 0;
-        int bitcount  = 0;
-        int v = 0;
-        for (src = nWords - 1 ; src >= 0 && (v = data[src]) == 0; src--) {
-            wordcount += 1;
-        }
-        if (src < 0) {
-            // oops. Value is zero. Cannot normalize it!
-            throw new IllegalArgumentException("zero value");
-        }
-        /*
-         * In most cases, we assume that wordcount is zero. This only
-         * makes sense, as we try not to maintain any high-order
-         * words full of zeros. In fact, if there are zeros, we will
-         * simply SHORTEN our number at this point. Watch closely...
+        /**
+         * Handles an exceptional number. If {@link #isExceptional} is false,
+         * does nothing. If {@link #isExceptional} is true, appends the contents
+         * of {@link #digits} to result starting from i and returns the
+         * incremented i.
+         *
+         * @param result Result buffer
+         * @param i Initial offset into result buffer
+         * @return Offset into result buffer after writing chars
          */
-        nWords -= wordcount;
-        /*
-         * Compute how far left we have to shift v s.t. its highest-
-         * order bit is in the right place. Then call lshiftMe to
-         * do the work.
+        int handleExceptional(char[] result, int i) {
+            return i;
+        }
+
+        /**
+         * Handles a negative number. If {@link #isNegative}, appends '-' to
+         * result at i and returns i + 1; otherwise does nothing and returns i.
+         *
+         * @param result Result buffer
+         * @param i Initial offset into result buffer
+         * @return Offset into result buffer after writing chars
          */
-        if ((v & 0xf0000000) != 0) {
-            // will have to shift up into the next word.
-            // too bad.
-            for (bitcount = 32 ; (v & 0xf0000000) != 0 ; bitcount--) {
-                v >>>= 1;
-            }
-        } else {
-            while (v <= 0x000fffff) {
-                // hack: byte-at-a-time shifting
-                v <<= 8;
-                bitcount += 8;
-            }
-            while (v <= 0x07ffffff) {
-                v <<= 1;
-                bitcount += 1;
-            }
-        }
-        if (bitcount != 0) {
-            lshiftMe(bitcount);
-        }
-        return bitcount;
-    }
-
-    /**
-     * Multiply a FDBigInt by an int.
-     * Result is a new FDBigInt.
-     */
-    public FDBigInt
-    mult(int iv) {
-        long v = iv;
-        int r[];
-        long p;
-
-        // guess adequate size of r.
-        r =
-            new int[
-                (v * ((long)data[nWords - 1] & 0xffffffffL) > 0xfffffffL)
-                    ? nWords + 1
-                    : nWords];
-        p = 0L;
-        for (int i = 0; i < nWords; i++) {
-            p += v * ((long)data[i] & 0xffffffffL);
-            r[i] = (int)p;
-            p >>>= 32;
-        }
-        if (p == 0L) {
-            return new FDBigInt(r, nWords);
-        } else {
-            r[nWords] = (int)p;
-            return new FDBigInt(r, nWords + 1);
+        int handleNegative(char[] result, int i) {
+            return i;
         }
     }
-
-    /**
-     * Multiply a FDBigInt by another FDBigInt.
-     * Result is a new FDBigInt.
-     */
-    public FDBigInt
-    mult(FDBigInt other) {
-        // crudely guess adequate size for r
-        int r[] = new int[nWords + other.nWords];
-        int i;
-        // I think I am promised zeros...
-
-        for (i = 0; i < this.nWords; i++) {
-            long v = (long)this.data[i] & 0xffffffffL; // UNSIGNED CONVERSION
-            long p = 0L;
-            int j;
-            for (j = 0; j < other.nWords; j++) {
-                // UNSIGNED CONVERSIONS ALL 'ROUND.
-                p +=
-                    ((long)r[i + j] & 0xffffffffL)
-                    + v * ((long)other.data[j] & 0xffffffffL);
-                r[i + j] = (int)p;
-                p >>>= 32;
-            }
-            r[i + j] = (int)p;
-        }
-        // compute how much of r we actually needed for all that.
-        for (i = r.length - 1; i > 0; i--) {
-            if (r[i] != 0) {
-                break;
-            }
-        }
-        return new FDBigInt(r, i + 1);
-    }
-
-    /**
-     * Add one FDBigInt to another. Return a FDBigInt
-     */
-    public FDBigInt
-    add(FDBigInt other) {
-        int i;
-        int a[], b[];
-        int n, m;
-        long c = 0L;
-        // arrange such that a.nWords >= b.nWords;
-        // n = a.nWords, m = b.nWords
-        if (this.nWords >= other.nWords) {
-            a = this.data;
-            n = this.nWords;
-            b = other.data;
-            m = other.nWords;
-        } else {
-            a = other.data;
-            n = other.nWords;
-            b = this.data;
-            m = this.nWords;
-        }
-        int r[] = new int[n];
-        for (i = 0; i < n; i++) {
-            c += (long)a[i] & 0xffffffffL;
-            if (i < m) {
-                c += (long)b[i] & 0xffffffffL;
-            }
-            r[i] = (int) c;
-            c >>= 32; // signed shift.
-        }
-        if (c != 0L) {
-            // oops -- carry out -- need longer result.
-            int s[] = new int[r.length + 1];
-            System.arraycopy(r, 0, s, 0, r.length);
-            s[i++] = (int)c;
-            return new FDBigInt(s, i);
-        }
-        return new FDBigInt(r, i);
-    }
-
-    /**
-     * Subtract one FDBigInt from another. Return a FDBigInt
-     * Assert that the result is positive.
-     */
-    public FDBigInt
-    sub(FDBigInt other) {
-        int r[] = new int[this.nWords];
-        int i;
-        int n = this.nWords;
-        int m = other.nWords;
-        int nzeros = 0;
-        long c = 0L;
-        for (i = 0; i < n; i++) {
-            c += (long)this.data[i] & 0xffffffffL;
-            if (i < m) {
-                c -= (long)other.data[i] & 0xffffffffL;
-            }
-            if ((r[i] = (int) c) == 0) {
-                nzeros++;
-            } else {
-                nzeros = 0;
-            }
-            c >>= 32; // signed shift.
-        }
-        if (c != 0L) {
-            throw new RuntimeException(
-                "Assertion botch: borrow out of subtract");
-        }
-        while (i < m) {
-            if (other.data[i++] != 0) {
-                throw new RuntimeException(
-                    "Assertion botch: negative result of subtract");
-            }
-        }
-        return new FDBigInt(r, n - nzeros);
-    }
-
-    /**
-     * Compare FDBigInt with another FDBigInt. Return an integer
-     * >0: this > other
-     *  0: this == other
-     * <0: this < other
-     */
-    public int
-    cmp(FDBigInt other) {
-        int i;
-        if (this.nWords > other.nWords) {
-            // if any of my high-order words is non-zero,
-            // then the answer is evident
-            int j = other.nWords - 1;
-            for (i = this.nWords - 1; i > j ; i--) {
-                if (this.data[i] != 0) {
-                    return 1;
-                }
-            }
-        } else if (this.nWords < other.nWords) {
-            // if any of other's high-order words is non-zero,
-            // then the answer is evident
-            int j = this.nWords - 1;
-            for (i = other.nWords - 1; i > j ; i--) {
-                if (other.data[i] != 0) {
-                    return -1;
-                }
-            }
-        } else {
-            i = this.nWords - 1;
-        }
-        for (; i > 0 ; i--) {
-            if (this.data[i] != other.data[i]) {
-                break;
-            }
-        }
-        // careful! want unsigned compare!
-        // use brute force here.
-        int a = this.data[i];
-        int b = other.data[i];
-        if (a < 0) {
-            // a is really big, unsigned
-            if (b < 0) {
-                return a - b; // both big, negative
-            } else {
-                return 1; // b not big, answer is obvious;
-            }
-        } else {
-            // a is not really big
-            if (b < 0) {
-                // but b is really big
-                return -1;
-            } else {
-                return a - b;
-            }
-        }
-    }
-
-    /**
-     * Compute
-     * q = (int)(this / S)
-     * this = 10 * (this mod S)
-     * Return q.
-     * This is the iteration step of digit development for output.
-     * We assume that S has been normalized, as above, and that
-     * "this" has been lshift'ed accordingly.
-     * Also assume, of course, that the result, q, can be expressed
-     * as an integer, 0 <= q < 10.
-     */
-    public int
-    quoRemIteration(FDBigInt S)throws IllegalArgumentException {
-        // ensure that this and S have the same number of
-        // digits. If S is properly normalized and q < 10 then
-        // this must be so.
-        if (nWords != S.nWords) {
-            throw new IllegalArgumentException("disparate values");
-        }
-        // estimate q the obvious way. We will usually be
-        // right. If not, then we're only off by a little and
-        // will re-add.
-        int n = nWords - 1;
-        long q = ((long)data[n] & 0xffffffffL) / (long)S.data[n];
-        long diff = 0L;
-        for (int i = 0; i <= n ; i++) {
-            diff +=
-                ((long)data[i] & 0xffffffffL)
-                -  q * ((long)S.data[i] & 0xffffffffL);
-            data[i] = (int)diff;
-            diff >>= 32; // N.B. SIGNED shift.
-        }
-        if (diff != 0L) {
-            // damn, damn, damn. q is too big.
-            // add S back in until this turns +. This should
-            // not be very many times!
-            long sum = 0L;
-            while (sum ==  0L) {
-                sum = 0L;
-                for (int i = 0; i <= n; i++) {
-                    sum +=
-                        ((long)data[i] & 0xffffffffL)
-                        + ((long)S.data[i] & 0xffffffffL);
-                    data[i] = (int) sum;
-                    sum >>= 32; // Signed or unsigned, answer is 0 or 1
-                }
-                /*
-                 * Originally the following line read
-                 * "if (sum !=0 && sum != -1)"
-                 * but that would be wrong, because of the
-                 * treatment of the two values as entirely unsigned,
-                 * it would be impossible for a carry-out to be interpreted
-                 * as -1 -- it would have to be a single-bit carry-out, or
-                 *  + 1.
-                 */
-                if (sum != 0 && sum != 1) {
-                    throw new RuntimeException(
-                        "Assertion botch: " + sum
-                        + " carry out of division correction");
-                }
-                q -= 1;
-            }
-        }
-        // finally, we can multiply this by 10.
-        // it cannot overflow, right, as the high-order word has
-        // at least 4 high-order zeros!
-        long p = 0L;
-        for (int i = 0; i <= n; i++) {
-            p += 10 * ((long)data[i] & 0xffffffffL);
-            data[i] = (int)p;
-            p >>= 32; // SIGNED shift.
-        }
-        if (p != 0L) {
-            throw new RuntimeException("Assertion botch: carry out of *10");
-        }
-        return (int)q;
-    }
-
-    public long
-    longValue() {
-        // if this can be represented as a long,
-        // return the value
-        int i;
-        for (i = this.nWords - 1; i > 1 ; i--) {
-            if (data[i] != 0) {
-                throw new RuntimeException("Assertion botch: value too big");
-            }
-        }
-        switch (i) {
-        case 1:
-            if (data[1] < 0) {
-                throw new RuntimeException("Assertion botch: value too big");
-            }
-            return ((long)(data[1]) << 32) | ((long)data[0] & 0xffffffffL);
-        case 0:
-            return ((long)data[0] & 0xffffffffL);
-        default:
-            throw new RuntimeException("Assertion botch: longValue confused");
-        }
-    }
-
-    public String
-    toString() {
-        StringBuilder r = new StringBuilder(30);
-        r.append('[');
-        int i = Math.min(nWords - 1, data.length - 1);
-        if (nWords > data.length) {
-            r.append("(" + data.length + "<" + nWords + "!)");
-        }
-        for (; i > 0 ; i--) {
-            r.append(Integer.toHexString(data[i]));
-            r.append(' ');
-        }
-        r.append(Integer.toHexString(data[0]));
-        r.append(']');
-        return new String(r);
-    }
-}
 }
 
 // End Format.java

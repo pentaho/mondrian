@@ -5,14 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2011 Pentaho and others
+// Copyright (C) 2006-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.rolap.*;
-import mondrian.rolap.aggmatcher.AggStar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -220,11 +219,10 @@ public class MemberListCrossJoinArg implements CrossJoinArg {
 
     public void addConstraint(
         SqlQuery sqlQuery,
-        RolapStarSet starSet,
-        AggStar aggStar)
+        RolapStarSet starSet)
     {
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, starSet, aggStar,
+            sqlQuery, starSet,
             members, restrictMemberTypes, true, exclude);
     }
 

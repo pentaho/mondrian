@@ -37,7 +37,7 @@ Axis #1:
 {[Measures].[*FORMATTED_MEASURE_3]}
 {[Measures].[*FORMATTED_MEASURE_4]}
 Axis #2:
-{[Store].[Stores].[USA].[CA], [Time].[1997]}
+{[Store].[Stores].[USA].[CA], [Time].[Time].[1997]}
 Row #0: 74,748
 Row #0: 159,168
 Row #0: 63,530
@@ -100,9 +100,9 @@ Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 {[Measures].[*FORMATTED_MEASURE_1]}
 Axis #2:
-{[Product].[Products].[Drink], [Time].[1997]}
-{[Product].[Products].[Food], [Time].[1997]}
-{[Product].[Products].[Non-Consumable], [Time].[1997]}
+{[Product].[Products].[Drink], [Time].[Time].[1997]}
+{[Product].[Products].[Food], [Time].[Time].[1997]}
+{[Product].[Products].[Non-Consumable], [Time].[Time].[1997]}
 Row #0: 48,836
 Row #0: 24,597
 Row #1: 409,036

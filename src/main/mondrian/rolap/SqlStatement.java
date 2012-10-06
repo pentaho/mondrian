@@ -13,7 +13,7 @@ import mondrian.olap.Util;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.monitor.*;
-import mondrian.util.DelegatingInvocationHandler;
+import mondrian.util.*;
 
 import java.lang.reflect.Proxy;
 import java.sql.*;
@@ -119,8 +119,10 @@ public class SqlStatement {
     public void execute() {
         assert state == State.FRESH : "cannot re-execute";
         state = State.ACTIVE;
+        Counters.SQL_STATEMENT_EXECUTE_COUNT.incrementAndGet();
+        Counters.SQL_STATEMENT_EXECUTING_IDS.add(id);
         String status = "failed";
-        Statement statement = null;
+        Statement statement;
         try {
             this.jdbcConnection = dataSource.getConnection();
             querySemaphore.enter();
@@ -223,18 +225,11 @@ public class SqlStatement {
             }
         } catch (Throwable e) {
             status = ", failed (" + e + ")";
-            try {
-                if (statement != null) {
-                    statement.close();
-                }
-            } catch (SQLException e2) {
-                // ignore
-            }
-            if (haveSemaphore) {
-                haveSemaphore = false;
-                querySemaphore.leave();
-            }
             if (e instanceof Error) {
+                try {
+                    close();
+                } catch (Throwable ignore) {
+                }
                 throw (Error) e;
             } else {
                 throw handle(e);
@@ -257,9 +252,16 @@ public class SqlStatement {
      * {@link RuntimeException} describing the high-level operation which
      * this statement was performing. No further error-handling is required
      * to produce a descriptive stack trace, unless you want to absorb the
-     * error.
+     * error.</p>
+     *
+     * <p>This method is idempotent.</p>
      */
     public void close() {
+        if (state == State.CLOSED) {
+            return;
+        }
+        state = State.CLOSED;
+
         if (haveSemaphore) {
             haveSemaphore = false;
             querySemaphore.leave();
@@ -269,33 +271,16 @@ public class SqlStatement {
         // its result sets, and closing a connection automatically closes its
         // statements. But let's be conservative and close everything
         // explicitly.
-        Statement statement = null;
-        if (resultSet != null) {
-            try {
-                statement = resultSet.getStatement();
-                resultSet.close();
-            } catch (SQLException e) {
-                throw Util.newError(locus.message + "; sql=[" + sql + "]");
-            } finally {
-                resultSet = null;
-            }
+        SQLException ex = Util.close(resultSet, null, jdbcConnection);
+        resultSet = null;
+        jdbcConnection = null;
+
+        if (ex != null) {
+            throw Util.newError(
+                ex,
+                locus.message + "; sql=[" + sql + "]");
         }
-        if (statement != null) {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                throw Util.newError(locus.message + "; sql=[" + sql + "]");
-            }
-        }
-        if (jdbcConnection != null) {
-            try {
-                jdbcConnection.close();
-            } catch (SQLException e) {
-                throw Util.newError(locus.message + "; sql=[" + sql + "]");
-            } finally {
-                jdbcConnection = null;
-            }
-        }
+
         long endTime = System.currentTimeMillis();
         long totalMs = endTime - startTimeMillis;
         String status =
@@ -306,10 +291,21 @@ public class SqlStatement {
 
         RolapUtil.SQL_LOGGER.debug(id + ": " + status);
 
+        Counters.SQL_STATEMENT_CLOSE_COUNT.incrementAndGet();
+        boolean remove = Counters.SQL_STATEMENT_EXECUTING_IDS.remove(id);
+        status += ", ex=" + Counters.SQL_STATEMENT_EXECUTE_COUNT.get()
+            + ", close=" + Counters.SQL_STATEMENT_CLOSE_COUNT.get()
+            + ", open=" + Counters.SQL_STATEMENT_EXECUTING_IDS;
+
         if (RolapUtil.LOGGER.isDebugEnabled()) {
             RolapUtil.LOGGER.debug(
                 locus.component + ": done executing sql [" + sql + "]"
                 + status);
+        }
+
+        if (!remove) {
+            throw new AssertionError(
+                "SqlStatement closed that was never executed: " + id);
         }
 
         locus.getServer().getMonitor().sendEvent(
@@ -453,9 +449,9 @@ public class SqlStatement {
             final Accessor accessor = createAccessor(column, type, false);
             return new Accessor() {
                 int lastRowCount = -1;
-                Object lastValue;
+                Comparable lastValue;
 
-                public Object get() throws SQLException {
+                public Comparable get() throws SQLException {
                     if (SqlStatement.this.rowCount > lastRowCount) {
                         lastValue = accessor.get();
                         lastRowCount = SqlStatement.this.rowCount;
@@ -468,19 +464,19 @@ public class SqlStatement {
         switch (type) {
         case OBJECT:
             return new Accessor() {
-                public Object get() throws SQLException {
-                    return resultSet.getObject(columnPlusOne);
+                public Comparable get() throws SQLException {
+                    return (Comparable) resultSet.getObject(columnPlusOne);
                 }
             };
         case STRING:
             return new Accessor() {
-                public Object get() throws SQLException {
+                public Comparable get() throws SQLException {
                     return resultSet.getString(columnPlusOne);
                 }
             };
         case INT:
             return new Accessor() {
-                public Object get() throws SQLException {
+                public Comparable get() throws SQLException {
                     final int val = resultSet.getInt(columnPlusOne);
                     if (val == 0 && resultSet.wasNull()) {
                         return null;
@@ -490,7 +486,7 @@ public class SqlStatement {
             };
         case LONG:
             return new Accessor() {
-                public Object get() throws SQLException {
+                public Comparable get() throws SQLException {
                     final long val = resultSet.getLong(columnPlusOne);
                     if (val == 0 && resultSet.wasNull()) {
                         return null;
@@ -500,7 +496,7 @@ public class SqlStatement {
             };
         case DOUBLE:
             return new Accessor() {
-                public Object get() throws SQLException {
+                public Comparable get() throws SQLException {
                     final double val = resultSet.getDouble(columnPlusOne);
                     if (val == 0 && resultSet.wasNull()) {
                         return null;
@@ -598,7 +594,7 @@ public class SqlStatement {
     }
 
     public interface Accessor {
-        Object get() throws SQLException;
+        Comparable get() throws SQLException;
     }
 
     /**
@@ -639,7 +635,8 @@ public class SqlStatement {
     private enum State {
         FRESH,
         ACTIVE,
-        DONE
+        DONE,
+        CLOSED
     }
 
     public static class StatementLocus extends Locus {

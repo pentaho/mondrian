@@ -282,7 +282,15 @@
 
 <exception id="350650" name="DrillthroughDisabled">
     <text>Can''t perform drillthrough operations because ''{0}'' is set to false.</text>
-</exception>bacon
+</exception>
+
+<exception id="350660" name="DrillthroughUnknownMemberInReturnClause">
+    <text>Can''t perform drillthrough operation on unknown member ''{0}'' in RETURN clause.</text>
+</exception>
+
+<exception id="350670" name="DrillthroughInvalidMemberInReturnClause">
+    <text>The RETURN clause can only contain dimensions, hierarchies, levels and measures. The expression ''{0}'' is of type ''{1}''.</text>
+</exception>
 
 <!-- ====================================================================== -->
 <!-- Connectivity errors -->
@@ -500,6 +508,10 @@
 
 <exception id="600020" name="MemberFetchLimitExceeded" className="mondrian.olap.ResourceLimitExceededException">
    <text>Number of members to be read exceeded limit ({0,number})</text>
+</exception>
+
+<exception id="600025" name="SegmentFetchLimitExceeded" className="mondrian.olap.ResourceLimitExceededException">
+   <text>Number of cell results to be read exceeded limit of ({0,number})</text>
 </exception>
 
 <exception id="600030" name="QueryCanceled" className="mondrian.olap.QueryCanceledException">
@@ -873,6 +885,23 @@
     </text>
 </exception>
 
+<exception id="8500100" name="QueryLimitReached">
+    <text>
+        The number of concurrent MDX statements which can be processed simultaneously by this Mondrian server instance has been reached. Set ''mondrian.rolap.maxQueryThreads'' to change the current limit.
+    </text>
+</exception>
+
+<exception id="8500200" name="SqlQueryLimitReached">
+    <text>
+        The number of concurrent SQL statements which can be used simultaneously by this Mondrian server instance has been reached. Set ''mondrian.rolap.maxSqlQueryThreads'' to change the current limit.
+    </text>
+</exception>
+
+<exception id="8500300" name="SegmentCacheLimitReached">
+    <text>
+        The number of concurrent segment cache operations which can be run simultaneously by this Mondrian server instance has been reached. Set ''mondrian.rolap.maxCacheThreads'' to change the current limit.
+    </text>
+</exception>
 <!-- ====================================================================== -->
 <!-- GC -->
 <exception id="9000001" name="FinalizerErrorRolapSchema">

@@ -10,7 +10,6 @@
 package mondrian.util;
 
 import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
 import mondrian.spi.Dialect;
 
 import org.apache.log4j.Logger;
@@ -77,16 +76,6 @@ public class Bug {
      */
     public static final boolean BugMondrian229Fixed = false;
 
-    // Properties relating to checkin 7641.
-    // This is part of the junit test Checkin_7641 that
-    // shows that there is a difference when the default
-    // member is not the one used in an axis.
-    // When Checkin 7641 is resolved, then this System property access and
-    // boolean should go away.
-    // (What's the bug associated with this??)
-
-    public static final boolean Checkin7641UseOptimizer = false;
-
     /**
      * Whether
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-207">MONDRIAN-207,
@@ -101,22 +90,6 @@ public class Bug {
      * is fixed.
      */
     public static final boolean BugMondrian446Fixed = false;
-
-    /**
-     * Whether
-     * <a href="http://jira.pentaho.com/browse/MONDRIAN-313">bug MONDRIAN-313,
-     * "Predicate references RolapStar.Column when used in AggStar"</a>
-     * is fixed.
-     */
-    public static final boolean BugMondrian313Fixed = true;
-
-    /**
-     * Whether
-     * <a href="http://jira.pentaho.com/browse/MONDRIAN-314">bug MONDRIAN-314,
-     * "Predicate sometimes has null RolapStar.Column"</a>
-     * is fixed.
-     */
-    public static final boolean BugMondrian314Fixed = true;
 
     /**
      * Whether
@@ -234,37 +207,43 @@ public class Bug {
 
     /**
      * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-941">bug MONDRIAN-951,
+     * "Support for member unique names containing primary keys (e.g.
+     * [Customer].[Customer Id].&amp;1234)"</a> is fixed.
+     */
+    public static final boolean BugMondrian951Fixed = false;
+
+    /**
+     * Whether
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-1001">bug MONDRIAN-1001,
      * "Tests disabled due to property trigger issues"</a> is fixed.
      */
     public static final boolean BugMondrian1001Fixed = false;
 
     /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1129">bug MONDRIAN-1129,
+     * "Re-enable Olap4jTckTest in lagunitas (mondrian-4 development)
+     * branch"</a> is fixed.
+     */
+    public static final boolean BugMondrian1129Fixed = false;
+
+    /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1173">bug MONDRIAN-1173,
+     * "Revisit member ordinals in mondrian version 4"</a>
+     * is fixed.
+     *
+     * <p>In a few cases, members come out sorted wrong. Not assigning ordinal
+     * correctly?</p>
+     */
+    public static final boolean BugMondrian1173Fixed = false;
+
+    /**
      * Whether RolapCubeMember and RolapMember have been fully segregated; any
      * piece of code should be working with one or the other, not both.
      */
     public static final boolean BugSegregateRolapCubeMemberFixed = false;
-
-    /**
-     * Whether the bug that calc members cannot be referenced by a partially
-     * qualified name is fixed. For example, if you define a calc member
-     * [Store].[Foo], which is short for dimension [Stores] hierarchiy [Store]
-     * member [Foo], the resolved cannot currently find it. There is no logged
-     * bug, just this placeholder. It must be fixed before integrate to main.
-     */
-    public static final boolean BugPartiallyQualifiedCalcMemberFixed =
-        Util.deprecated(false, false);
-
-    /**
-     * Whether
-     * <a href="http://jira.pentaho.com/browse/MONDRIAN-960">MONDRIAN-960,
-     * "Ability to define non-measure calculated members in a cube under a
-     * specifc parent"</a> is fixed. The bug also gives problems resolving a
-     * measure, whose fq name is [Measures].[Measures].[Unit Sales], using the
-     * name [Measures].[Unit Sales].
-     */
-    public static final boolean BugMondrian960Fixed =
-        Util.deprecated(true, false);
 
     /**
      * Returns whether to avoid a test because the memory monitor may cause it
@@ -349,11 +328,6 @@ public class Bug {
      * UnsupportedOperationException in getBaseStarKeyColumn
      */
     public static final boolean BaseStarKeyColumnFixed = Enable;
-
-    /**
-     * Members come out sorted wrong. Not assigning ordinal correctly?
-     */
-    public static final boolean OrdinalFixed = Enable;
 
     /**
      * Whether the bug is fixed that causes upgrade of virtual cubes to fail

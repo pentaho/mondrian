@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -168,9 +168,9 @@ public class AbstractAggregateFunDef extends FunDefBase {
         TupleList tuplesForAggregation,
         RolapMeasureGroup measureGroup)
     {
-        Set<Dimension> nonJoiningDimensions =
+        Iterable<RolapCubeDimension> nonJoiningDimensions =
             nonJoiningDimensions(measureGroup, tuplesForAggregation);
-        if (nonJoiningDimensions.size() > 0) {
+        if (nonJoiningDimensions.iterator().hasNext()) {
             return TupleCollections.emptyList(tuplesForAggregation.getArity());
         }
         return tuplesForAggregation;
@@ -189,21 +189,26 @@ public class AbstractAggregateFunDef extends FunDefBase {
         TupleList tuplesForAggregation,
         RolapMeasureGroup measureGroup)
     {
-        Set<Dimension> nonJoiningDimensions =
-            nonJoiningDimensions(measureGroup, tuplesForAggregation);
+        Set<RolapCubeDimension> nonJoiningDimensions =
+            new HashSet<RolapCubeDimension>();
+        for (RolapCubeDimension dimension
+            : nonJoiningDimensions(measureGroup, tuplesForAggregation))
+        {
+            nonJoiningDimensions.add(dimension);
+        }
         final Set<List<Member>> processedTuples =
             new LinkedHashSet<List<Member>>(tuplesForAggregation.size());
         for (List<Member> tuple : tuplesForAggregation) {
             List<Member> tupleCopy = tuple;
             for (int j = 0; j < tuple.size(); j++) {
-                final Member member = tuple.get(j);
+                final RolapMemberInCube member =
+                    (RolapMemberInCube) tuple.get(j);
                 if (nonJoiningDimensions.contains(member.getDimension())) {
                     if (tupleCopy == tuple) {
                         // Avoid making a copy until we have to change a tuple.
                         tupleCopy = new ArrayList<Member>(tuple);
                     }
-                    final Hierarchy hierarchy =
-                        member.getDimension().getHierarchy();
+                    final Hierarchy hierarchy = member.getHierarchy();
                     if (hierarchy.hasAll()) {
                         tupleCopy.set(j, hierarchy.getAllMember());
                     } else {
@@ -219,13 +224,12 @@ public class AbstractAggregateFunDef extends FunDefBase {
                 processedTuples));
     }
 
-    private static Set<Dimension> nonJoiningDimensions(
+    private static Iterable<RolapCubeDimension> nonJoiningDimensions(
         RolapMeasureGroup measureGroup,
         TupleList tuplesForAggregation)
     {
         List<Member> tuple = tuplesForAggregation.get(0);
-        return measureGroup.nonJoiningDimensions(
-            tuple.toArray(new Member[tuple.size()]));
+        return measureGroup.nonJoiningDimensions(tuple);
     }
 }
 

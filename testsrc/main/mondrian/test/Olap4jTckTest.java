@@ -25,9 +25,9 @@ import java.util.Properties;
  * @since 2010/11/22
  */
 public class Olap4jTckTest extends TestCase {
-    private static final Util.Functor1<Boolean, Test> CONDITION =
-        new Util.Functor1<Boolean, Test>() {
-            public Boolean apply(Test test) {
+    private static final Util.Predicate1<Test> CONDITION =
+        new Util.Predicate1<Test>() {
+            public boolean test(Test test) {
                 if (!(test instanceof TestCase)) {
                     return true;
                 }

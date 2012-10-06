@@ -142,7 +142,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "from [sales]");
     }
 
-    /*
+    /**
      * Tests that ParallelPeriod with Aggregate function works
      */
     public void testParallelPeriodWithSlicer() {
@@ -1478,7 +1478,7 @@ public class FunctionTest extends FoodMartTestCase {
 
         // <Level>.allmembers applied to measures dimension
         // Note -- cube-level calculated members ARE present
-        getTestContext().withCube("[Warehouse and Sales]").assertAxisReturns(
+        getTestContext().withCube("Warehouse and Sales").assertAxisReturns(
             "{[Measures].[MeasuresLevel].allmembers}",
             "[Measures].[Unit Sales]\n"
             + "[Measures].[Store Cost]\n"
@@ -1486,6 +1486,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "[Measures].[Sales Count]\n"
             + "[Measures].[Customer Count]\n"
             + "[Measures].[Promotion Sales]\n"
+            + "[Measures].[Fact Count]\n"
             + "[Measures].[Store Invoice]\n"
             + "[Measures].[Supply Time]\n"
             + "[Measures].[Warehouse Cost]\n"
@@ -1493,7 +1494,6 @@ public class FunctionTest extends FoodMartTestCase {
             + "[Measures].[Units Shipped]\n"
             + "[Measures].[Units Ordered]\n"
             + "[Measures].[Warehouse Profit]\n"
-            + "[Measures].[Fact Count]\n"
             + "[Measures].[Profit]\n"
             + "[Measures].[Profit last Period]\n"
             + "[Measures].[Profit Growth]\n"
@@ -5884,6 +5884,30 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1227">MONDRIAN-1227,
+     * "Properties function does not implicitly convert dimension to member; has
+     * documentation typos"</a>.
+     */
+    public void testPropertiesOnDimension() {
+        // [Store] is a dimension. When called with a property like FirstChild,
+        // it is implicitly converted to a member.
+        assertAxisReturns("[Store].FirstChild", "[Store].[Canada]");
+
+        // The same should happen with the <Member>.Properties(<String>)
+        // function; now the bug is fixed, it does. Dimension is implicitly
+        // converted to member.
+        assertExprReturns(
+            "[Store].Properties('MEMBER_UNIQUE_NAME')",
+            "[Store].[All Stores]");
+
+        // Hierarchy is implicitly converted to member.
+        assertExprReturns(
+            "[Store].[USA].Hierarchy.Properties('MEMBER_UNIQUE_NAME')",
+            "[Store].[All Stores]");
+    }
+
+    /**
      * Tests that non-existent property throws an error. *
      */
     public void testPropertiesNonExistent() {
@@ -7179,10 +7203,8 @@ public class FunctionTest extends FoodMartTestCase {
             + "                <Column name='month_of_year'/>\n"
             + "            </Name>\n"
             + "            <OrderBy>\n"
-            /*
-            + "                <Column name='the_year'/>\n"
-            + "                <Column name='quarter'/>\n"
-            */
+            // + "                <Column name='the_year'/>\n"
+            // + "                <Column name='quarter'/>\n"
             + "                <Column name='the_month'/>\n"
             + "            </OrderBy>\n"
             + "        </Attribute>\n"
@@ -7217,7 +7239,11 @@ public class FunctionTest extends FoodMartTestCase {
             null)
             .withCube(cubeName);
 
-        // The [Time_Alphabetical] is ordered alphabetically by month
+        if (!Bug.BugMondrian1173Fixed) {
+            testContext.assertSimpleQuery();
+            return;
+        }
+            // The [Time_Alphabetical] is ordered alphabetically by month
         if (!Bug.CubeRaggedFeature) {
             testContext.assertAxisReturns(
                 "Head([Time_Alphabetical].[Time_Alphabetical].members, 7)",
@@ -7957,7 +7983,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderMemberMemberValueExpNew() {
-        if (!Bug.OrdinalFixed) {
+        if (!Bug.BugMondrian1173Fixed) {
             return;
         }
         propSaver.set(
@@ -8096,7 +8122,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderMemberMultiKeysMemberValueExp2() {
-        if (!Bug.OrdinalFixed) {
+        if (!Bug.BugMondrian1173Fixed) {
             return;
         }
         propSaver.set(
@@ -8149,7 +8175,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderTupleSingleKeysNew() {
-        if (!Bug.OrdinalFixed) {
+        if (!Bug.BugMondrian1173Fixed) {
             return;
         }
         propSaver.set(
@@ -8376,7 +8402,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #0: 75\n");
     }
 
-    public void testOrderDiffrentDim() {
+    public void testOrderDifferentDim() {
         assertQueryReturns(
             "select \n"
             + "  Order("
@@ -8696,7 +8722,6 @@ public class FunctionTest extends FoodMartTestCase {
      * After optimizing, who knows?
      */
     public void testTopCountHuge() {
-        // TODO convert printfs to trace
         final String query =
             "SELECT [Measures].[Store Sales] ON 0,\n"
             + "TopCount([Time].[Month].members * "
@@ -10085,31 +10110,27 @@ public class FunctionTest extends FoodMartTestCase {
             -126.65,
             0.50);
 
-/*
--1#IND missing data
-*/
-/*
-1#INF division by zero
-*/
-/*
-The following table shows query return values from using different
-FORMAT_STRING's in an expression involving 'division by zero' (tested on
-Intel platforms):
-
-+===========================+=====================+
-| Format Strings            | Query Return Values |
-+===========================+=====================+
-| FORMAT_STRING="           | 1.#INF              |
-+===========================+=====================+
-| FORMAT_STRING='Standard'  | 1.#J                |
-+===========================+=====================+
-| FORMAT_STRING='Fixed'     | 1.#J                |
-+===========================+=====================+
-| FORMAT_STRING='Percent'   | 1#I.NF%             |
-+===========================+=====================+
-| FORMAT_STRING='Scientific'| 1.JE+00             |
-+===========================+=====================+
-*/
+// -1#IND missing data
+//
+// 1#INF division by zero
+//
+// The following table shows query return values from using different
+// FORMAT_STRING's in an expression involving 'division by zero' (tested on
+// Intel platforms):
+//
+// +===========================+=====================+
+// | Format Strings            | Query Return Values |
+// +===========================+=====================+
+// | FORMAT_STRING="           | 1.#INF              |
+// +===========================+=====================+
+// | FORMAT_STRING='Standard'  | 1.#J                |
+// +===========================+=====================+
+// | FORMAT_STRING='Fixed'     | 1.#J                |
+// +===========================+=====================+
+// | FORMAT_STRING='Percent'   | 1#I.NF%             |
+// +===========================+=====================+
+// | FORMAT_STRING='Scientific'| 1.JE+00             |
+// +===========================+=====================+
 
         // Mondrian can not return "missing data" value -1.#IND
         // empty set

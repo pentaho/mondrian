@@ -147,16 +147,16 @@ public class XmlaExcel2007Test extends XmlaBaseTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[XL_PT0]}\n"
-            + "Row #0: [Store].[USA].[CA]\n");
+            + "{[Store].[Stores].[XL_PT0]}\n"
+            + "Row #0: [Store].[Stores].[USA].[CA]\n");
         assertQueryReturns(
             "WITH MEMBER [Store].[Stores].[XL_PT0] AS 'strtomember(\"[Store].[All Stores].[USA].[CA]\").UniqueName' SELECT {[Store].[XL_PT0]} ON 0 FROM \n"
             + "[HR] CELL PROPERTIES VALUE ",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[XL_PT0]}\n"
-            + "Row #0: [Store].[USA].[CA]\n");
+            + "{[Store].[Stores].[XL_PT0]}\n"
+            + "Row #0: [Store].[Stores].[USA].[CA]\n");
     }
 
     /**

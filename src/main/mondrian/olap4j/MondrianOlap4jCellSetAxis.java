@@ -4,12 +4,11 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho
+// Copyright (C) 2007-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
 
-import mondrian.calc.TupleList;
 import mondrian.olap.AxisOrdinal;
 import mondrian.rolap.RolapAxis;
 
@@ -72,7 +71,7 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
     public List<Position> getPositions() {
         return new AbstractList<Position>() {
             public Position get(final int index) {
-                return new MondrianOlap4jPosition(axis.getTupleList(), index);
+                return new MondrianOlap4jPosition(index);
             }
 
             public int size() {
@@ -89,21 +88,15 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
         return getPositions().listIterator();
     }
 
-    private class MondrianOlap4jPosition implements Position {
-        private final TupleList tupleList;
+    class MondrianOlap4jPosition implements Position {
         private final int index;
 
         /**
          * Creates a MondrianOlap4jPosition.
          *
-         * @param tupleList Tuple list
          * @param index Index of tuple
          */
-        public MondrianOlap4jPosition(
-            TupleList tupleList,
-            int index)
-        {
-            this.tupleList = tupleList;
+        public MondrianOlap4jPosition(int index) {
             this.index = index;
         }
 
@@ -111,19 +104,23 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
             return new AbstractList<Member>() {
                 public Member get(int slice) {
                     final mondrian.olap.Member mondrianMember =
-                        tupleList.get(slice, index);
+                        axis.getTupleList().get(slice, index);
                     return olap4jCellSet.olap4jStatement.olap4jConnection
                         .toOlap4j(mondrianMember);
                 }
 
                 public int size() {
-                    return tupleList.getArity();
+                    return axis.getTupleList().getArity();
                 }
             };
         }
 
         public int getOrdinal() {
             return index;
+        }
+
+        int getAxisOrdinal() {
+            return queryAxis.getAxisOrdinal().logicalOrdinal();
         }
     }
 }

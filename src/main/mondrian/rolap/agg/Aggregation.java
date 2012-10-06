@@ -14,6 +14,7 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.*;
 import mondrian.rolap.*;
+import mondrian.util.Pair;
 
 import java.util.*;
 import java.util.concurrent.Future;
@@ -109,9 +110,9 @@ public class Aggregation {
      * state = {CA, OR},
      * gender = unconstrained</pre></blockquote>
      *
+     * @param starConverter
      * @param segmentFutures List of futures wherein each statement will place
      *                       a list of the segments it has loaded, when it
-     *                       completes
      */
     public void load(
         SegmentCacheManager cacheMgr,
@@ -119,6 +120,7 @@ public class Aggregation {
         RolapStar.Column[] columns,
         List<RolapStar.Measure> measures,
         StarColumnPredicate[] predicates,
+        AggregationManager.StarConverter starConverter,
         GroupingSetsCollector groupingSetsCollector,
         List<Future<Map<Segment, SegmentWithData>>> segmentFutures)
     {
@@ -126,15 +128,16 @@ public class Aggregation {
         int axisCount = columns.length;
         Util.assertTrue(predicates.length == axisCount);
 
-        List<Segment> segments =
+        Pair<Segment, List<Segment>> segments =
             createSegments(
-                columns, measures, measureBitKey, predicates);
+                starConverter, columns, measures, measureBitKey, predicates);
 
         // The constrained columns are simply the level and foreign columns
         BitKey levelBitKey = getConstrainedColumnsBitKey();
         GroupingSet groupingSet =
             new GroupingSet(
-                segments, levelBitKey, measureBitKey, predicates, columns);
+                segments.left, segments.right, levelBitKey, measureBitKey,
+                predicates, columns);
         if (groupingSetsCollector.useGroupingSets()) {
             groupingSetsCollector.add(groupingSet);
         } else {
@@ -148,17 +151,20 @@ public class Aggregation {
         }
     }
 
-    private List<Segment> createSegments(
+    private Pair<Segment, List<Segment>> createSegments(
+        AggregationManager.StarConverter starConverter,
         RolapStar.Column[] columns,
         List<RolapStar.Measure> measures,
         BitKey measureBitKey,
         StarColumnPredicate[] predicates)
     {
         List<Segment> segments = new ArrayList<Segment>(measures.size());
+        Segment baseSegment = null;
         for (RolapStar.Measure measure : measures) {
             measureBitKey.set(measure.getBitPosition());
             Segment segment =
-                new Segment(
+                Segment.create(
+                    starConverter,
                     star,
                     constrainedColumnsBitKey,
                     columns,
@@ -166,8 +172,25 @@ public class Aggregation {
                     predicates,
                     Collections.<Segment.ExcludedRegion>emptyList(),
                     compoundPredicateList);
+            if (segments.isEmpty()) {
+                if (starConverter == null) {
+                    baseSegment = segment;
+                } else {
+                    baseSegment =
+                        Segment.create(
+                            null,
+                            star,
+                            constrainedColumnsBitKey,
+                            columns,
+                            measure,
+                            predicates,
+                            Collections.<Segment.ExcludedRegion>emptyList(),
+                            compoundPredicateList);
+                }
+            }
             segments.add(segment);
         }
+
         // It is important to sort the segments per measure bitkey.
         // The order in which the measures come in is not deterministic.
         // It actually depends on the order of the CellRequests.
@@ -175,14 +198,15 @@ public class Aggregation {
         // Failure to sort them will give out wrong results (uses the wrong
         // column) if we have more than one column in the grouping set.
         Collections.sort(
-            segments, new Comparator<Segment>() {
+            segments,
+            new Comparator<Segment>() {
                 public int compare(Segment o1, Segment o2) {
-                    return Integer.valueOf(
-                        o1.measure.getBitPosition())
-                            .compareTo(o2.measure.getBitPosition());
+                    return Util.compare(
+                        o1.measure.getBitPosition(),
+                        o2.measure.getBitPosition());
                 }
             });
-        return segments;
+        return Pair.of(baseSegment, segments);
     }
 
     /**
@@ -474,6 +498,7 @@ public class Aggregation {
             SegmentAxis[] segmentAxes,
             SegmentDataset data)
         {
+            Util.deprecated("not used", true);
             this.flushPredicate = flushPredicate;
             this.arity = flushPredicate.getColumnList().size();
             this.axes = new SegmentAxis[arity];

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
@@ -214,15 +214,20 @@ public class SqlQueryTest extends BatchTestCase {
             + "`time_by_day`.`the_year`, `time_by_day`.`quarter`";
 
         String mysqlSql =
-            "select "
-            + "`time_by_day`.`the_year` as `c0`, `time_by_day`.`quarter` as `c1`, "
-            + "sum(`sales_fact_1997`.`unit_sales`) as `m0` "
-            + "from "
-            + "`time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997` "
-            + "where "
-            + "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and "
-            + "`time_by_day`.`the_year` = 1997 "
-            + "group by `time_by_day`.`the_year`, `time_by_day`.`quarter`";
+            "select\n"
+            + "    `time_by_day`.`the_year` as `c0`,\n"
+            + "    `time_by_day`.`quarter` as `c1`,\n"
+            + "    sum(`sales_fact_1997`.`unit_sales`) as `m0`\n"
+            + "from\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `time_by_day`.`the_year` = 1997\n"
+            + "group by\n"
+            + "    `time_by_day`.`the_year`,\n"
+            + "    `time_by_day`.`quarter`";
 
         SqlPattern[] sqlPatterns = {
             new SqlPattern(
@@ -263,15 +268,12 @@ public class SqlQueryTest extends BatchTestCase {
             + "ALL"
             + ") DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON AXIS(0) \n"
             + "FROM [HR]  CELL PROPERTIES VALUE, FORMAT_STRING";
-        SqlPattern[] sqlPatterns = {
-            new SqlPattern(Dialect.DatabaseProduct.ACCESS, sql, sql)
-        };
-        assertQuerySql(mdx, sqlPatterns);
+        assertQuerySql(mdx, Dialect.DatabaseProduct.ACCESS, sql);
     }
 
     public void testPredicatesAreNotOptimizedWhenPropertyIsFalse() {
         if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
-            // Sql pattner will be different if using aggregate tables.
+            // Sql pattern will be different if using aggregate tables.
             // This test cover predicate generation so it's sufficient to
             // only check sql pattern when aggregate tables are not used.
             return;
@@ -293,16 +295,22 @@ public class SqlQueryTest extends BatchTestCase {
             + "`time_by_day`.`the_year`, `time_by_day`.`quarter`";
 
         String mysqlSql =
-            "select "
-            + "`time_by_day`.`the_year` as `c0`, `time_by_day`.`quarter` as `c1`, "
-            + "sum(`sales_fact_1997`.`unit_sales`) as `m0` "
-            + "from "
-            + "`time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997` "
-            + "where "
-            + "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and "
-            + "`time_by_day`.`the_year` = 1997 and "
-            + "`time_by_day`.`quarter` in ('Q1', 'Q2', 'Q3') "
-            + "group by `time_by_day`.`the_year`, `time_by_day`.`quarter`";
+            "select\n"
+            + "    `time_by_day`.`the_year` as `c0`,\n"
+            + "    `time_by_day`.`quarter` as `c1`,\n"
+            + "    sum(`sales_fact_1997`.`unit_sales`) as `m0`\n"
+            + "from\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `time_by_day`.`the_year` = 1997\n"
+            + "and\n"
+            + "    `time_by_day`.`quarter` in ('Q1', 'Q2', 'Q3')\n"
+            + "group by\n"
+            + "    `time_by_day`.`the_year`,\n"
+            + "    `time_by_day`.`quarter`";
 
         SqlPattern[] sqlPatterns = {
             new SqlPattern(
@@ -335,15 +343,20 @@ public class SqlQueryTest extends BatchTestCase {
             + " `time_by_day`.`quarter`";
 
         String mysqlSql =
-            "select "
-            + "`time_by_day`.`the_year` as `c0`, `time_by_day`.`quarter` as `c1`, "
-            + "sum(`sales_fact_1997`.`unit_sales`) as `m0` "
-            + "from "
-            + "`time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997` "
-            + "where "
-            + "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and "
-            + "`time_by_day`.`the_year` = 1997 "
-            + "group by `time_by_day`.`the_year`, `time_by_day`.`quarter`";
+            "select\n"
+            + "    `time_by_day`.`the_year` as `c0`,\n"
+            + "    `time_by_day`.`quarter` as `c1`,\n"
+            + "    sum(`sales_fact_1997`.`unit_sales`) as `m0`\n"
+            + "from\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `time_by_day`.`the_year` = 1997\n"
+            + "group by\n"
+            + "    `time_by_day`.`the_year`,\n"
+            + "    `time_by_day`.`quarter`";
 
         SqlPattern[] sqlPatterns = {
             new SqlPattern(
@@ -494,7 +507,7 @@ public class SqlQueryTest extends BatchTestCase {
 
         // assertQuerySql(testContext, query, patterns);
 
-        // Test when the double value itself cotnains "E".
+        // Test when the double value itself contains "E".
         String dimensionSqlExpression =
             "cast(cast(\"salary\" as double)*cast(1000.0 as double)/cast(3.1234567890123456 as double) as double)\n";
 
@@ -643,7 +656,7 @@ public class SqlQueryTest extends BatchTestCase {
         };
 
         final TestContext testContext =
-            TestContext.instance().create(
+            TestContext.instance().legacy().create(
                 null,
                 cubeSchema,
                 null,

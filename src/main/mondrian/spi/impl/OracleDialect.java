@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2011 Pentaho
+// Copyright (C) 2008-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -127,28 +127,6 @@ public class OracleDialect extends JdbcDialectImpl {
         quoteStringLiteral(sb, suffix);
         sb.append(")");
         return sb.toString();
-    }
-
-    public void quoteDateLiteral(StringBuilder buf, String value) {
-        Date date;
-        try {
-            /*
-             * The format of the 'value' parameter is not certain.
-             * Some JDBC drivers will return a timestamp even though
-             * we ask for a date (oracle is one of them). We must try to
-             * convert both formats.
-             */
-            date = Date.valueOf(value);
-        } catch (IllegalArgumentException ex) {
-            try {
-                date =
-                    new Date(Timestamp.valueOf(value).getTime());
-            } catch (IllegalArgumentException ex2) {
-                throw new NumberFormatException(
-                    "Illegal DATE literal:  " + value);
-            }
-        }
-        quoteDateLiteral(buf, value, date);
     }
 }
 

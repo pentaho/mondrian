@@ -94,20 +94,7 @@ public class DateTableBuilder implements RolapSchema.PhysTable.Hook {
                 e,
                 "Error while creating date dimension table; DDL=[" + ddl + "]");
         } finally {
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException e) {
-                    // ignore
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    // ignore
-                }
-            }
+            Util.close(null, statement, connection);
         }
     }
 
@@ -133,20 +120,7 @@ public class DateTableBuilder implements RolapSchema.PhysTable.Hook {
                 "Error while creating date dimension table; DDL=[" + insert
                 + "]");
         } finally {
-            if (pstmt != null) {
-                try {
-                    pstmt.close();
-                } catch (SQLException e) {
-                    // ignore
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    // ignore
-                }
-            }
+            Util.close(null, pstmt, connection);
         }
     }
 

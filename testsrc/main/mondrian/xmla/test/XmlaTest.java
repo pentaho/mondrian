@@ -81,6 +81,8 @@ public class XmlaTest extends TestCase {
         DiffRepository diffRepos = getDiffRepos();
         diffRepos.setCurrentTestCaseName(null);
         server.shutdown();
+        server = null;
+        handler = null;
         super.tearDown();
     }
 

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -240,10 +240,6 @@ public class AggStar extends RolapStar {
         this.levelColumnsToJoin = new HashMap<Integer, AggStar.Table.Column>();
     }
 
-    public RolapStar.Table getFactTable() {
-        return super.getFactTable();
-    }
-
     /**
      * Returns the fact table.
      *
@@ -254,13 +250,8 @@ public class AggStar extends RolapStar {
         return (FactTable) aggTable;
     }
 
-    /**
-     * Returns a measure of the IO cost of querying this table. It can be
-     * either the row count or the row count times the size of a row.
-     * If the property {@link MondrianProperties#ChooseAggregateByVolume}
-     * is true, then volume is returned, otherwise row count.
-     */
-    public int getSize() {
+    @Override
+    public int getCost() {
         return MondrianProperties.instance().ChooseAggregateByVolume.get()
             ? getAggFactTable().getVolume()
             : getAggFactTable().getNumberOfRows();
@@ -1115,6 +1106,9 @@ public class AggStar extends RolapStar {
          */
         public int getNumberOfRows() {
             if (numberOfRows < 0) {
+                numberOfRows =
+                    getRelation().getSchema().statistic.getRelationCardinality(
+                        getRelation(), getName(), approxRowCount);
                 makeNumberOfRows();
             }
             return numberOfRows;
@@ -1316,7 +1310,7 @@ public class AggStar extends RolapStar {
                      * will do that for us later on.
                      */
                     final RolapSchema.PhysColumn key0 =
-                        parentLevel.getAttribute().keyList.get(0);
+                        parentLevel.getAttribute().getKeyList().get(0);
                     final BitKey bk = AggStar.this.star.getBitKey(
                         new String[] {key0.relation.getAlias()},
                         new String[] {key0.name});

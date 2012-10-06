@@ -1905,21 +1905,36 @@ public class NonEmptyTest extends BatchTestCase {
             + "order by CASE WHEN \"store\".\"store_country\" IS NULL THEN 1 ELSE 0 END, \"store\".\"store_country\" ASC, CASE WHEN \"store\".\"store_state\" IS NULL THEN 1 ELSE 0 END, \"store\".\"store_state\" ASC, CASE WHEN \"store\".\"store_city\" IS NULL THEN 1 ELSE 0 END, \"store\".\"store_city\" ASC, CASE WHEN \"product_class\".\"product_family\" IS NULL THEN 1 ELSE 0 END, \"product_class\".\"product_family\" ASC";
 
         String necjSqlMySql =
-            "select "
-            + "`store`.`store_country` as `c0`, `store`.`store_state` as `c1`, "
-            + "`store`.`store_city` as `c2`, `product_class`.`product_family` as `c3` "
-            + "from "
-            + "`store` as `store`, `sales_fact_1997` as `sales_fact_1997`, "
-            + "`product` as `product`, `product_class` as `product_class` "
-            + "where "
-            + "`sales_fact_1997`.`store_id` = `store`.`store_id` "
-            + "and `product`.`product_class_id` = `product_class`.`product_class_id` "
-            + "and `sales_fact_1997`.`product_id` = `product`.`product_id` "
-            + "and ((`store`.`store_city`, `store`.`store_state`) in (('Portland', 'OR'), ('Salem', 'OR'), ('San Francisco', 'CA'), ('Tacoma', 'WA'))) "
-            + "and (`product_class`.`product_family` = 'Food') "
-            + "group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `product_class`.`product_family` "
-            + "order by ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC, ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC, "
-            + "ISNULL(`store`.`store_city`) ASC, `store`.`store_city` ASC, ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
+            "select\n"
+            + "    `store`.`store_country` as `c0`,\n"
+            + "    `store`.`store_state` as `c1`,\n"
+            + "    `store`.`store_city` as `c2`,\n"
+            + "    `product_class`.`product_family` as `c3`\n"
+            + "from\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `store` as `store`,\n"
+            + "    `product` as `product`,\n"
+            + "    `product_class` as `product_class`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+            + "and\n"
+            + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+            + "and\n"
+            + "    ((`store`.`store_state`, `store`.`store_city`) in (('OR', 'Portland'), ('OR', 'Salem'), ('CA', 'San Francisco'), ('WA', 'Tacoma')))\n"
+            + "and\n"
+            + "    (`product_class`.`product_family` = 'Food')\n"
+            + "group by\n"
+            + "    `store`.`store_country`,\n"
+            + "    `store`.`store_state`,\n"
+            + "    `store`.`store_city`,\n"
+            + "    `product_class`.`product_family`\n"
+            + "order by\n"
+            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
+            + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC,\n"
+            + "    ISNULL(`store`.`store_city`) ASC, `store`.`store_city` ASC,\n"
+            + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
 
         if (MondrianProperties.instance().UseAggregates.get()
             && MondrianProperties.instance().ReadAggregates.get())
@@ -2032,7 +2047,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
 
         TestContext testContext =
-            TestContext.instance().create(
+            getTestContext().legacy().create(
                 dimension,
                 cube,
                 null,
@@ -2126,7 +2141,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "`warehouse`.`warehouse_name` ASC, ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
 
         TestContext testContext =
-            TestContext.instance().create(
+            getTestContext().legacy().create(
                 dimension,
                 cube,
                 null,
@@ -2217,7 +2232,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
 
         TestContext testContext =
-            TestContext.instance().create(
+            getTestContext().legacy().create(
                 dimension,
                 cube,
                 null,
@@ -2329,14 +2344,13 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().EnableNativeCrossJoin, false);
         boolean oldEnableNativeNonEmpty =
             MondrianProperties.instance().EnableNativeNonEmpty.get();
-        MondrianProperties.instance().EnableNativeNonEmpty.set(false);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeNonEmpty, false);
 
         executeQuery(
             "select non empty CrossJoin([Customers].[Name].Members, "
             + "{[Promotions].[All Promotions].[Fantastic Discounts]}) "
             + "ON COLUMNS FROM [Sales]");
-        MondrianProperties.instance().EnableNativeNonEmpty.set(
-            oldEnableNativeNonEmpty);
     }
 
     /**
@@ -2389,7 +2403,7 @@ public class NonEmptyTest extends BatchTestCase {
         clearAndHardenCache(ssmrch);
 
         LimitedQuery c = new LimitedQuery(
-            50,
+            100,
             21,
             "select \n"
             + "{[Measures].[Unit Sales]} ON columns,\n"
@@ -3190,7 +3204,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         // members in set are a cross product of (1997, 1998) and (Q1, Q2, Q3)
         checkNative(
-            15, 15,
+            50, 15,
             "select "
             + "{[Measures].[Unit Sales]} on columns, "
             + "NonEmptyCrossJoin(" + EDUCATION_LEVEL_LEVEL + ".Members, "
@@ -3688,13 +3702,55 @@ public class NonEmptyTest extends BatchTestCase {
      * 1722959, "NON EMPTY Level.MEMBERS fails if nonempty.enable=false"
      */
     public void testNonEmptyLevelMembers() {
-        boolean currentNativeNonEmpty =
-                MondrianProperties.instance().EnableNativeNonEmpty.get();
-        boolean currentNonEmptyOnAllAxis =
-                MondrianProperties.instance().EnableNonEmptyOnAllAxis.get();
-        try {
-            MondrianProperties.instance().EnableNativeNonEmpty.set(false);
-            MondrianProperties.instance().EnableNonEmptyOnAllAxis.set(true);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeNonEmpty, false);
+        propSaver.set(
+            MondrianProperties.instance().EnableNonEmptyOnAllAxis, true);
+        assertQueryReturns(
+            "WITH MEMBER [Measures].[One] AS '1' "
+            + "SELECT "
+            + "NON EMPTY {[Measures].[One], [Measures].[Store Sales]} ON rows, "
+            + "NON EMPTY [Store].[Store State].MEMBERS on columns "
+            + "FROM sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[Stores].[Canada].[BC]}\n"
+            + "{[Store].[Stores].[Mexico].[DF]}\n"
+            + "{[Store].[Stores].[Mexico].[Guerrero]}\n"
+            + "{[Store].[Stores].[Mexico].[Jalisco]}\n"
+            + "{[Store].[Stores].[Mexico].[Veracruz]}\n"
+            + "{[Store].[Stores].[Mexico].[Yucatan]}\n"
+            + "{[Store].[Stores].[Mexico].[Zacatecas]}\n"
+            + "{[Store].[Stores].[USA].[CA]}\n"
+            + "{[Store].[Stores].[USA].[OR]}\n"
+            + "{[Store].[Stores].[USA].[WA]}\n"
+            + "Axis #2:\n"
+            + "{[Measures].[One]}\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: 159,167.84\n"
+            + "Row #1: 142,277.07\n"
+            + "Row #1: 263,793.22\n");
+
+        if (Bug.BugMondrian446Fixed) {
+            MondrianProperties.instance().EnableNativeNonEmpty.set(true);
             assertQueryReturns(
                 "WITH MEMBER [Measures].[One] AS '1' "
                 + "SELECT "
@@ -3737,57 +3793,6 @@ public class NonEmptyTest extends BatchTestCase {
                 + "Row #1: 159,167.84\n"
                 + "Row #1: 142,277.07\n"
                 + "Row #1: 263,793.22\n");
-
-            if (Bug.BugMondrian446Fixed) {
-                MondrianProperties.instance().EnableNativeNonEmpty.set(true);
-                assertQueryReturns(
-                    "WITH MEMBER [Measures].[One] AS '1' "
-                    + "SELECT "
-                    + "NON EMPTY {[Measures].[One], [Measures].[Store Sales]} ON rows, "
-                    + "NON EMPTY [Store].[Store State].MEMBERS on columns "
-                    + "FROM sales",
-                    "Axis #0:\n"
-                    + "{}\n"
-                    + "Axis #1:\n"
-                    + "{[Store].[Stores].[Canada].[BC]}\n"
-                    + "{[Store].[Stores].[Mexico].[DF]}\n"
-                    + "{[Store].[Stores].[Mexico].[Guerrero]}\n"
-                    + "{[Store].[Stores].[Mexico].[Jalisco]}\n"
-                    + "{[Store].[Stores].[Mexico].[Veracruz]}\n"
-                    + "{[Store].[Stores].[Mexico].[Yucatan]}\n"
-                    + "{[Store].[Stores].[Mexico].[Zacatecas]}\n"
-                    + "{[Store].[Stores].[USA].[CA]}\n"
-                    + "{[Store].[Stores].[USA].[OR]}\n"
-                    + "{[Store].[Stores].[USA].[WA]}\n"
-                    + "Axis #2:\n"
-                    + "{[Measures].[One]}\n"
-                    + "{[Measures].[Store Sales]}\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #1: \n"
-                    + "Row #1: \n"
-                    + "Row #1: \n"
-                    + "Row #1: \n"
-                    + "Row #1: \n"
-                    + "Row #1: \n"
-                    + "Row #1: \n"
-                    + "Row #1: 159,167.84\n"
-                    + "Row #1: 142,277.07\n"
-                    + "Row #1: 263,793.22\n");
-            }
-        } finally {
-            MondrianProperties.instance().EnableNativeNonEmpty.set(
-                currentNativeNonEmpty);
-            MondrianProperties.instance().EnableNonEmptyOnAllAxis.set(
-                currentNonEmptyOnAllAxis);
         }
     }
 
@@ -4704,11 +4709,14 @@ public class NonEmptyTest extends BatchTestCase {
         SqlPattern[] patterns = {
             new SqlPattern(
                 Dialect.DatabaseProduct.MYSQL,
-                "select `product_class`.`product_family` as `c0` "
-                + "from `product_class` as `product_class` "
-                + "group by `product_class`.`product_family` "
-                + "order by ISNULL(`product_class`.`product_family`) ASC,"
-                + " `product_class`.`product_family` ASC",
+                "select\n"
+                + "    `product_class`.`product_family` as `c0`\n"
+                + "from\n"
+                + "    `product_class` as `product_class`\n"
+                + "group by\n"
+                + "    `product_class`.`product_family`\n"
+                + "order by\n"
+                + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC",
                 null)
         };
         final TestContext context = getTestContext().withFreshConnection();

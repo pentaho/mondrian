@@ -11,7 +11,6 @@
 package mondrian.rolap;
 
 import mondrian.olap.Evaluator;
-import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
 
 import java.util.Collections;
@@ -41,15 +40,13 @@ public class DefaultTupleConstraint implements TupleConstraint {
 
     public void addConstraint(
         SqlQuery sqlQuery,
-        RolapStarSet starSet,
-        AggStar aggStar)
+        RolapStarSet starSet)
     {
     }
 
     public void addLevelConstraint(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        AggStar aggStar,
         RolapLevel level)
     {
     }

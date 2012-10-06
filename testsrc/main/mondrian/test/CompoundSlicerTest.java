@@ -281,6 +281,20 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "Row #3: 2.20\n");
     }
 
+    public void testCompoundSlicerCrossjoinRange() {
+        assertQueryReturns(
+            "select\n"
+            + "from [Sales]\n"
+            + "where [Customer].[Gender].[M]\n"
+            + " * [Product].[Drink]\n"
+            + " * {[Time].[1997].[Q1] : [Time].[1997].[Q3]}",
+            "Axis #0:\n"
+            + "{[Customer].[Gender].[M], [Product].[Products].[Drink], [Time].[Time].[1997].[Q1]}\n"
+            + "{[Customer].[Gender].[M], [Product].[Products].[Drink], [Time].[Time].[1997].[Q2]}\n"
+            + "{[Customer].[Gender].[M], [Product].[Products].[Drink], [Time].[Time].[1997].[Q3]}\n"
+            + "9,032");
+    }
+
     /**
      * Tests that if the slicer contains zero members, all cells are null.
      */
@@ -676,8 +690,8 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "where [Measures].[Avg Unit Sales]\n"
             + "   * {[Customers].[USA].[OR], [Customers].[USA].[CA]}",
             "Axis #0:\n"
-            + "{[Measures].[Avg Unit Sales], [Customers].[USA].[OR]}\n"
-            + "{[Measures].[Avg Unit Sales], [Customers].[USA].[CA]}\n"
+            + "{[Measures].[Avg Unit Sales], [Customers].[Customers].[USA].[OR]}\n"
+            + "{[Measures].[Avg Unit Sales], [Customers].[Customers].[USA].[CA]}\n"
             + "6.189");
 
         // roll up using a named set
@@ -687,7 +701,7 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "select from [Sales]\n"
             + "where ([Measures].[Avg Unit Sales], [Customers].[OR and CA])",
             "Axis #0:\n"
-            + "{[Measures].[Avg Unit Sales], [Customers].[OR and CA]}\n"
+            + "{[Measures].[Avg Unit Sales], [Customers].[Customers].[OR and CA]}\n"
             + "3.094");
     }
 

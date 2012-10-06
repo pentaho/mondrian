@@ -39,7 +39,7 @@ public class MondrianXmlaServlet extends DefaultXmlaServlet {
         throws ServletException
     {
         if (server == null) {
-            // A derived class can alter how the calalog locator object is
+            // A derived class can alter how the catalog locator object is
             // created.
             CatalogLocator catalogLocator = makeCatalogLocator(servletConfig);
 

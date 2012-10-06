@@ -12,6 +12,8 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.util.Pair;
 
+import org.apache.commons.collections.iterators.FilterIterator;
+
 import java.util.*;
 
 /**
@@ -34,10 +36,14 @@ public class RolapMeasureGroup {
     private final String name;
     public final boolean ignoreUnrelatedDimensions;
     private final RolapStar star;
+    final boolean aggregate;
     final List<RolapStoredMeasure> measureList =
         new ArrayList<RolapStoredMeasure>();
+    final List<RolapMeasureRef> measureRefList;
     private final Map<RolapDimension, RolapSchema.PhysPath> dimensionMap =
         new HashMap<RolapDimension, RolapSchema.PhysPath>();
+    final Map<RolapMeasure, RolapMeasure> measureReferences =
+        new HashMap<RolapMeasure, RolapMeasure>();
 
     /**
      * As dimensionMap, but keys are dimensions, not cube-dimensions.
@@ -56,13 +62,17 @@ public class RolapMeasureGroup {
      */
     RolapBaseCubeMeasure factCountMeasure;
 
-    private final Map<RolapAttribute, List<RolapAttribute>> attrMap =
-        new HashMap<RolapAttribute, List<RolapAttribute>>();
     final Map<Pair<RolapCubeDimension, RolapSchema.PhysColumn>,
               RolapStar.Column>
         starColumnMap =
         new HashMap<Pair<RolapCubeDimension, RolapSchema.PhysColumn>,
                     RolapStar.Column>();
+
+    /**
+     * Columns in this measure group that hold columns from other dimensions.
+     */
+    final List<Pair<RolapStar.Column, RolapSchema.PhysColumn>> copyColumnList =
+        new ArrayList<Pair<RolapStar.Column, RolapSchema.PhysColumn>>();
 
     /**
      * Creates a RolapMeasureGroup.
@@ -72,17 +82,27 @@ public class RolapMeasureGroup {
      * @param ignoreUnrelatedDimensions If true, dimensions that are not related
      *     to measures in this measure group will be pushed to top level member
      * @param star Star
+     * @param aggregate Whether this measure group represents an aggregate table
+     *                  (or a hybrid fact/aggregate), as opposed to a fact table
      */
     public RolapMeasureGroup(
         RolapCube cube,
         String name,
         boolean ignoreUnrelatedDimensions,
-        RolapStar star)
+        RolapStar star,
+        boolean aggregate)
     {
         this.name = name;
         this.cube = cube;
         this.ignoreUnrelatedDimensions = ignoreUnrelatedDimensions;
         this.star = star;
+        this.aggregate = aggregate;
+        if (aggregate) {
+            measureRefList = new ArrayList<RolapMeasureRef>();
+        } else {
+            // read-only empty list, to protect against accidents
+            measureRefList = Collections.emptyList();
+        }
         assert cube != null;
         assert name != null;
         assert star != null;
@@ -94,42 +114,45 @@ public class RolapMeasureGroup {
      * <p>Useful for finding out non-joining dimensions for a stored measure
      * from a base cube.
      *
-     * @param tuple array of members
+     * @param tuple List of members
      * @return Set of dimensions that do not exist (non joining) in this cube
      */
-    public Set<Dimension> nonJoiningDimensions(Member[] tuple) {
-        Set<Dimension> otherDims = new HashSet<Dimension>();
+    public Iterable<RolapCubeDimension> nonJoiningDimensions(List<Member> tuple)
+    {
+        Set<RolapCubeDimension> otherDims = new HashSet<RolapCubeDimension>();
         for (Member member : tuple) {
             if (!member.isCalculated()) {
-                otherDims.add(member.getDimension());
+                otherDims.add((RolapCubeDimension) member.getDimension());
             }
         }
         return nonJoiningDimensions(otherDims);
     }
 
     /**
-     * Finds out non joining dimensions for this cube.  Equality test for
-     * dimensions is done based on the unique name. Object equality can't be
-     * used.
+     * Finds out non-joining dimensions for this measure group.
      *
-     * @param otherDims Set of dimensions to be tested for existence in this
-     * cube
+     * <p>The result preserves the order in {@code otherDims}.</p>
+     *
+     * @param otherDims Collection of dimensions to be tested for existence in
+     *                  this measure group
      * @return Set of dimensions that do not exist (non joining) in this cube
      */
-    public Set<Dimension> nonJoiningDimensions(Set<Dimension> otherDims) {
-        Dimension[] baseCubeDimensions =
-            new Dimension[0]; // TODO: getDimensions();
-        Set<String>  baseCubeDimNames = new HashSet<String>();
-        for (Dimension baseCubeDimension : baseCubeDimensions) {
-            baseCubeDimNames.add(baseCubeDimension.getUniqueName());
-        }
-        Set<Dimension> nonJoiningDimensions = new HashSet<Dimension>();
-        for (Dimension otherDim : otherDims) {
-            if (!baseCubeDimNames.contains(otherDim.getUniqueName())) {
-                nonJoiningDimensions.add(otherDim);
+    public Iterable<RolapCubeDimension> nonJoiningDimensions(
+        final Iterable<? extends RolapCubeDimension> otherDims)
+    {
+        return new Iterable<RolapCubeDimension>() {
+            public Iterator<RolapCubeDimension> iterator() {
+                //noinspection unchecked
+                return (Iterator<RolapCubeDimension>) new FilterIterator(
+                    otherDims.iterator(),
+                    new Util.Predicate1<RolapCubeDimension>() {
+                        public boolean test(RolapCubeDimension dimension) {
+                            return !dimensionMap3.containsKey(dimension)
+                                && !dimension.isMeasures();
+                        }
+                    });
             }
-        }
-        return nonJoiningDimensions;
+        };
     }
 
     /**
@@ -307,6 +330,22 @@ public class RolapMeasureGroup {
                 e);
         }
         return pathBuilder.done();
+    }
+
+    /**
+     * Reference to a measure defined in another measure group.
+     */
+    static class RolapMeasureRef {
+        final RolapBaseCubeMeasure measure;
+        final RolapSchema.PhysColumn aggColumn;
+
+        public RolapMeasureRef(
+            RolapBaseCubeMeasure measure,
+            RolapSchema.PhysColumn aggColumn)
+        {
+            this.measure = measure;
+            this.aggColumn = aggColumn;
+        }
     }
 }
 

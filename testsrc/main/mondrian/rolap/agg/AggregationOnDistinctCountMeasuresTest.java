@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho and others
+// Copyright (C) 2007-2012 Pentaho and others
 // All Rights Reserved.
 //
 // ajogleka, 19 December, 2007
@@ -34,7 +34,6 @@ import java.util.*;
  * @since 19 December, 2007
  */
 public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
-    private final MondrianProperties props = MondrianProperties.instance();
 
     private SchemaReader salesCubeSchemaReader = null;
     private SchemaReader schemaReader = null;
@@ -52,12 +51,13 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public TestContext getTestContext() {
-        return TestContext.instance().create(
+        return TestContext.instance().legacy().create(
             null,
             null,
             "<VirtualCube name=\"Warehouse and Sales2\" defaultMeasure=\"Store Sales\">\n"
             + "   <VirtualCubeDimension cubeName=\"Sales\" name=\"Gender\"/>\n"
             + "   <VirtualCubeDimension name=\"Store\"/>\n"
+            + "   <VirtualCubeDimension name=\"Time\"/>\n"
             + "   <VirtualCubeDimension name=\"Product\"/>\n"
             + "   <VirtualCubeDimension cubeName=\"Warehouse\" name=\"Warehouse\"/>\n"
             + "   <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n"
@@ -69,6 +69,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "   </CubeUsages>\n"
             + "   <VirtualCubeDimension cubeName=\"Sales\" name=\"Gender\"/>\n"
             + "   <VirtualCubeDimension name=\"Store\"/>\n"
+            + "   <VirtualCubeDimension name=\"Time\"/>\n"
             + "   <VirtualCubeDimension name=\"Product\"/>\n"
             + "   <VirtualCubeDimension cubeName=\"Warehouse\" name=\"Warehouse\"/>\n"
             + "   <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Customer Count]\"/>\n"
@@ -86,7 +87,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customer].[Gender].[X]}\n"
+            + "{[Gender].[Gender].[X]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 5,581\n");
@@ -100,7 +101,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customer].[Gender].[X]}\n"
+            + "{[Gender].[Gender].[X]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 5,581\n");
@@ -115,7 +116,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customer].[Gender].[X]}\n"
+            + "{[Gender].[Gender].[X]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 2,716\n";
@@ -133,13 +134,23 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "group by \"time_by_day\".\"the_year\"";
 
         String mysqlSql =
-            "select `time_by_day`.`the_year` as `c0`, "
-            + "count(distinct `sales_fact_1997`.`customer_id`) as `m0` "
-            + "from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `store` as `store` "
-            + "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` "
-            + "and `time_by_day`.`the_year` = 1997 "
-            + "and `sales_fact_1997`.`store_id` = `store`.`store_id` and `store`.`store_state` = 'CA' "
-            + "group by `time_by_day`.`the_year`";
+            "select\n"
+            + "    `time_by_day`.`the_year` as `c0`,\n"
+            + "    count(distinct `sales_fact_1997`.`customer_id`) as `m0`\n"
+            + "from\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `store` as `store`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `time_by_day`.`the_year` = 1997\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+            + "and\n"
+            + "    `store`.`store_state` = 'CA'\n"
+            + "group by\n"
+            + "    `time_by_day`.`the_year`";
 
         String oraTeraSql =
             "select \"time_by_day\".\"the_year\" as \"c0\", "
@@ -171,7 +182,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customer].[Gender].[X]}\n"
+            + "{[Gender].[Gender].[X]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 2,716\n";
@@ -191,13 +202,23 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "group by \"time_by_day\".\"the_year\"";
 
         String mysqlSql =
-            "select `time_by_day`.`the_year` as `c0`, "
-            + "count(distinct `sales_fact_1997`.`customer_id`) as `m0` "
-            + "from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `store` as `store` "
-            + "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 "
-            + "and `sales_fact_1997`.`store_id` = `store`.`store_id` "
-            + "and (`store`.`store_state` = 'CA' or `store`.`store_country` = 'Canada') "
-            + "group by `time_by_day`.`the_year`";
+            "select\n"
+            + "    `time_by_day`.`the_year` as `c0`,\n"
+            + "    count(distinct `sales_fact_1997`.`customer_id`) as `m0`\n"
+            + "from\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `store` as `store`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `time_by_day`.`the_year` = 1997\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+            + "and\n"
+            + "    (`store`.`store_state` = 'CA' or `store`.`store_country` = 'Canada')\n"
+            + "group by\n"
+            + "    `time_by_day`.`the_year`";
 
         String oraTeraSql =
             "select \"time_by_day\".\"the_year\" as \"c0\", "
@@ -228,7 +249,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customer].[Gender].[X]}\n"
+            + "{[Gender].[Gender].[X]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 1,389\n");
@@ -241,7 +262,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customer].[Gender].[X]}\n"
+            + "{[Gender].[Gender].[X]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 5,581\n");
@@ -254,15 +275,15 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[Store].[USA].[CA]}\n"
             + "Axis #2:\n"
-            + "{[Measures].[Customer Count], [Customer].[Gender].[M]}\n"
+            + "{[Measures].[Customer Count], [Gender].[Gender].[M]}\n"
             + "Row #0: 1,389\n");
     }
 
     public void testDistinctCountOnSetOfMembers() {
         assertQueryReturns(
-            "WITH MEMBER STORE.STORES.X as 'Aggregate({[STORE].[ALL STORES].[USA].[CA],"
+            "WITH MEMBER STORE.STORE.X as 'Aggregate({[STORE].[ALL STORES].[USA].[CA],"
             + "[STORE].[ALL STORES].[USA].[WA]})'"
             + "SELECT STORE.X  ON ROWS, "
             + "{[MEASURES].[CUSTOMER COUNT]} ON COLUMNS\n"
@@ -272,13 +293,14 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Store].[X]}\n"
+            + "{[Store].[Store].[X]}\n"
             + "Row #0: 4,544\n");
     }
 
     public void testDistinctCountOnTuplesWithSomeNonJoiningDimensions() {
         propSaver.set(
-            props.IgnoreMeasureForNonJoiningDimension, false);
+            MondrianProperties.instance()
+                .IgnoreMeasureForNonJoiningDimension, false);
         String mdx =
             "WITH MEMBER WAREHOUSE.X as 'Aggregate({WAREHOUSE.[STATE PROVINCE].MEMBERS}*"
             + "{[Gender].Members})'"
@@ -291,11 +313,12 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse].[Warehouses].[X]}\n"
+            + "{[Warehouse].[Warehouse].[X]}\n"
             + "Row #0: \n";
         assertQueryReturns(mdx, expectedResult);
         propSaver.set(
-            props.IgnoreMeasureForNonJoiningDimension, true);
+            MondrianProperties.instance()
+                .IgnoreMeasureForNonJoiningDimension, true);
         assertQueryReturns(mdx, expectedResult);
     }
 
@@ -308,7 +331,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customer].[Gender].[X]}\n"
+            + "{[Gender].[Gender].[X]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 5,581\n");
@@ -327,7 +350,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse].[Warehouses].[X]}\n"
+            + "{[Warehouse].[Warehouse].[X]}\n"
             + "Row #0: \n");
     }
 
@@ -342,7 +365,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse].[Warehouses].[X]}\n"
+            + "{[Warehouse].[Warehouse].[X]}\n"
             + "Row #0: 5,581\n");
     }
 
@@ -358,7 +381,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse].[Warehouses].[X]}\n"
+            + "{[Warehouse].[Warehouse].[X]}\n"
             + "Row #0: 5,581\n");
 
         assertQueryReturns(
@@ -372,7 +395,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse].[Warehouses].[X]}\n"
+            + "{[Warehouse].[Warehouse].[X]}\n"
             + "Row #0: 5,581\n");
     }
 
@@ -388,7 +411,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse].[Warehouses].[X]}\n"
+            + "{[Warehouse].[Warehouse].[X]}\n"
             + "Row #0: \n");
 
         assertQueryReturns(
@@ -402,13 +425,12 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse].[Warehouses].[X]}\n"
+            + "{[Warehouse].[Warehouse].[X]}\n"
             + "Row #0: 5,581\n");
     }
 
     public void testAggregationOverLargeListGeneratesError() {
-        int origMaxConstraint = props.MaxConstraints.get();
-        props.MaxConstraints.set(7);
+        propSaver.set(MondrianProperties.instance().MaxConstraints, 7);
 
         String result;
         final Dialect dialect = getTestContext().getDialect();
@@ -420,7 +442,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 + "Axis #1:\n"
                 + "{[Measures].[Customer Count]}\n"
                 + "Axis #2:\n"
-                + "{[Product].[Products].[X]}\n"
+                + "{[Product].[Product].[X]}\n"
                 + "Row #0: 1,360\n";
         } else {
             result =
@@ -429,7 +451,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 + "Axis #1:\n"
                 + "{[Measures].[Customer Count]}\n"
                 + "Axis #2:\n"
-                + "{[Product].[Products].[X]}\n"
+                + "{[Product].[Product].[X]}\n"
                 + "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: "
                 + "Aggregation is not supported over a list with more than 7 predicates (see property mondrian.rolap.maxConstraints)\n";
         }
@@ -448,8 +470,46 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "{[MEASURES].[CUSTOMER COUNT]} ON COLUMNS\n"
             + "FROM [WAREHOUSE AND SALES2]",
             result);
+    }
 
-        props.MaxConstraints.set(origMaxConstraint);
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.org/browse/MONDRIAN-1122">MONDRIAN-1122,
+     * "Aggregation is not supported over a list with more than 1000
+     * predicates"</a>.
+     *
+     * @see #testAggregationOverLargeListGeneratesError
+     */
+    public void testAggregateMaxConstraints() {
+        propSaver.set(MondrianProperties.instance().MaxConstraints, 5);
+        TestContext.instance().assertQueryReturns(
+            "SELECT\n"
+            + "  Measures.[Unit Sales] on columns,\n"
+            + "  Product.[Product Family].Members on rows\n"
+            + "FROM Sales\n"
+            + "WHERE {\n"
+            + "  [Time].[All Weeklys].[1997].[1].[15],\n"
+            + "  [Time].[All Weeklys].[1997].[2].[1],\n"
+            + "  [Time].[All Weeklys].[1997].[3].[11],\n"
+            + "  [Time].[All Weeklys].[1997].[4].[13],\n"
+            + "  [Time].[All Weeklys].[1997].[5].[22],\n"
+            + "  [Time].[All Weeklys].[1997].[6].[1]}",
+            "Axis #0:\n"
+            + "{[Time].[Weekly].[1997].[1].[15]}\n"
+            + "{[Time].[Weekly].[1997].[2].[1]}\n"
+            + "{[Time].[Weekly].[1997].[3].[11]}\n"
+            + "{[Time].[Weekly].[1997].[4].[13]}\n"
+            + "{[Time].[Weekly].[1997].[5].[22]}\n"
+            + "{[Time].[Weekly].[1997].[6].[1]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "Row #0: 458\n"
+            + "Row #1: 3,746\n"
+            + "Row #2: 937\n");
     }
 
     public void testMultiLevelMembersNullParents() {
@@ -496,16 +556,18 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "and \"warehouse\".\"wa_address2\" is null))";
 
         String necjSqlMySql =
-            "select count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0` "
-            + "from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997` "
-            + "where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` "
-            + "and ((`warehouse`.`wa_address2` is null "
-            + "and (`warehouse`.`wa_address1`, `warehouse`.`warehouse_name`) "
-            + "in (('5617 Saclan Terrace', 'Arnold and Sons'), "
-            + "('3377 Coachman Place', 'Jones International'))))";
+            "select\n"
+            + "    count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0`\n"
+            + "from\n"
+            + "    `inventory_fact_1997` as `inventory_fact_1997`,\n"
+            + "    `warehouse` as `warehouse`\n"
+            + "where\n"
+            + "    `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id`\n"
+            + "and\n"
+            + "    ((`warehouse`.`wa_address2` is null and (`warehouse`.`warehouse_name`, `warehouse`.`wa_address1`) in (('Arnold and Sons', '5617 Saclan Terrace'), ('Jones International', '3377 Coachman Place'))))";
 
         TestContext testContext =
-            TestContext.instance().create(
+            TestContext.instance().legacy().create(
                 dimension,
                 cube,
                 null,
@@ -558,7 +620,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "select count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997` where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and ((`warehouse`.`warehouse_name` = 'Freeman And Co' and `warehouse`.`wa_address1` = '234 West Covina Pkwy' and `warehouse`.`warehouse_fax` is null) or (`warehouse`.`warehouse_name` = 'Jones International' and `warehouse`.`wa_address1` = '3377 Coachman Place' and `warehouse`.`warehouse_fax` = '971-555-6213'))";
 
         TestContext testContext =
-            TestContext.instance().create(
+            TestContext.instance().legacy().create(
                 dimension,
                 cube,
                 null,
@@ -572,7 +634,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Cost Count]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse2].[TwoMembers]}\n"
+            + "{[Warehouse2].[Warehouse2].[TwoMembers]}\n"
             + "Row #0: 220\n";
 
         testContext.assertQueryReturns(query, result);
@@ -613,7 +675,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "select count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997` where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and ((`warehouse`.`warehouse_fax` is null and `warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null) or (`warehouse`.`warehouse_fax` = '971-555-6213' and `warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null))";
 
         TestContext testContext =
-            TestContext.instance().create(
+            TestContext.instance().legacy().create(
                 dimension,
                 cube,
                 null,
@@ -627,7 +689,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Cost Count]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse2].[TwoMembers]}\n"
+            + "{[Warehouse2].[Warehouse2].[TwoMembers]}\n"
             + "Row #0: 220\n";
 
         testContext.assertQueryReturns(query, result);
@@ -637,7 +699,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         // Mondrian does not use GROUPING SETS for distinct-count measures.
         // So, this test should not use GROUPING SETS, even if they are enabled.
         // See change 12310, bug MONDRIAN-470 (aka SF.net 2207515).
-        Util.discard(props.EnableGroupingSets);
 
         String oraTeraSql =
             "select \"store\".\"store_state\" as \"c0\","
@@ -681,12 +742,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testCanNotBatchForDifferentCompoundPredicate() {
-        boolean originalGroupingSetsPropertyValue =
-            props.EnableGroupingSets.get();
-        props.EnableGroupingSets.set(true);
+        propSaver.set(MondrianProperties.instance().EnableGroupingSets, true);
         String mdxQueryWithFewMembers =
             "WITH "
-            + "MEMBER [Store].[Stores].[COG_OQP_USR_Aggregate(Store)] AS "
+            + "MEMBER [Store].[Store].[COG_OQP_USR_Aggregate(Store)] AS "
             + "'AGGREGATE({[Store].[All Stores].[USA].[CA], [Store].[All Stores].[USA].[OR],[Store].[All Stores].[USA].[WA]})', SOLVE_ORDER = 8"
             + "SELECT {[Measures].[Customer Count]} ON AXIS(0), "
             + "{[Store].[All Stores].[USA].[CA], [Store].[All Stores].[USA].[OR], [Store].[COG_OQP_USR_Aggregate(Store)]} "
@@ -699,9 +758,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Store].[USA].[CA]}\n"
-            + "{[Store].[USA].[OR]}\n"
-            + "{[Store].[COG_OQP_USR_Aggregate(Store)]}\n"
+            + "{[Store].[Store].[USA].[CA]}\n"
+            + "{[Store].[Store].[USA].[OR]}\n"
+            + "{[Store].[Store].[COG_OQP_USR_Aggregate(Store)]}\n"
             + "Row #0: 2,716\n"
             + "Row #1: 1,037\n"
             + "Row #2: 5,581\n";
@@ -751,7 +810,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
         assertQueryReturns(mdxQueryWithFewMembers, desiredResult);
         assertQuerySql(mdxQueryWithFewMembers, patterns);
-        props.EnableGroupingSets.set(originalGroupingSetsPropertyValue);
     }
 
 
@@ -760,12 +818,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
      * with mixed measures.
      */
     public void testDistinctCountInNonGroupingSetsQuery() {
-        boolean originalGroupingSetsPropertyValue =
-            props.EnableGroupingSets.get();
-        props.EnableGroupingSets.set(true);
+        propSaver.set(MondrianProperties.instance().EnableGroupingSets, true);
         String mdxQueryWithFewMembers =
             "WITH "
-            + "MEMBER [Store].[Stores].[COG_OQP_USR_Aggregate(Store)] AS "
+            + "MEMBER [Store].[Store].[COG_OQP_USR_Aggregate(Store)] AS "
             + "'AGGREGATE({[Store].[All Stores].[USA].[CA], [Store].[All Stores].[USA].[OR]})', SOLVE_ORDER = 8"
             + "SELECT {[Measures].[Customer Count],[Measures].[Unit Sales]} ON AXIS(0), "
             + "{[Store].[All Stores].[USA].[CA], [Store].[All Stores].[USA].[OR], [Store].[COG_OQP_USR_Aggregate(Store)]} "
@@ -779,9 +835,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "{[Measures].[Customer Count]}\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[USA].[CA]}\n"
-            + "{[Store].[USA].[OR]}\n"
-            + "{[Store].[COG_OQP_USR_Aggregate(Store)]}\n"
+            + "{[Store].[Store].[USA].[CA]}\n"
+            + "{[Store].[Store].[USA].[OR]}\n"
+            + "{[Store].[Store].[COG_OQP_USR_Aggregate(Store)]}\n"
             + "Row #0: 2,716\n"
             + "Row #0: 74,748\n"
             + "Row #1: 1,037\n"
@@ -834,13 +890,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
         assertQueryReturns(mdxQueryWithFewMembers, desiredResult);
         assertQuerySql(mdxQueryWithFewMembers, patterns);
-        props.EnableGroupingSets.set(originalGroupingSetsPropertyValue);
     }
 
     public void testAggregationOfMembersAndDefaultMemberWithoutGroupingSets() {
-        boolean originalGroupingSetsPropertyValue =
-            props.EnableGroupingSets.get();
-        props.EnableGroupingSets.set(false);
+        propSaver.set(MondrianProperties.instance().EnableGroupingSets, false);
         String mdxQueryWithMembers =
             "WITH "
             + "MEMBER [Gender].[COG_OQP_USR_Aggregate(Gender)] AS "
@@ -865,10 +918,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Customer].[Gender].[All Gender]}\n"
-            + "{[Customer].[Gender].[F]}\n"
-            + "{[Customer].[Gender].[M]}\n"
-            + "{[Customer].[Gender].[COG_OQP_USR_Aggregate(Gender)]}\n"
+            + "{[Gender].[Gender].[All Gender]}\n"
+            + "{[Gender].[Gender].[F]}\n"
+            + "{[Gender].[Gender].[M]}\n"
+            + "{[Gender].[Gender].[COG_OQP_USR_Aggregate(Gender)]}\n"
             + "Row #0: 5,581\n"
             + "Row #1: 2,755\n"
             + "Row #2: 2,826\n"
@@ -896,7 +949,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         assertQuerySql(mdxQueryWithMembers, patterns);
         assertQueryReturns(mdxQueryWithDefaultMember, desiredResult);
         assertQuerySql(mdxQueryWithDefaultMember, patterns);
-        props.EnableGroupingSets.set(originalGroupingSetsPropertyValue);
     }
 
     public void testOptimizeChildren() {
@@ -909,7 +961,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customer].[Gender].[x]}\n"
+            + "{[Gender].[Gender].[x]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 5,581\n";
@@ -965,7 +1017,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[High Quality],\n"
             + "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Red Wing],\n"
             + "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Sunset]} *\n"
-            + "{[Customer].[Gender].[Gender].Members})'\n"
+            + "{[Gender].[Gender].[Gender].Members})'\n"
             + "SELECT {Product.Agg} on 0, {[Measures].[Customer Count]} on 1\n"
             + "from Sales\n"
             + "where [Time.Weekly].[1997]";
@@ -973,73 +1025,44 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{[Time].[Weekly].[1997]}\n"
             + "Axis #1:\n"
-            + "{[Product].[Products].[Agg]}\n"
+            + "{[Product].[Product].[Agg]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 421\n";
         assertQueryReturns(query, expected);
-        String derbySql =
-            "select \"time_by_day\".\"the_year\" as \"c0\", "
-            + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
-            + "from \"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", "
-            + "\"product\" as \"product\", \"product_class\" as \"product_class\" "
-            + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
-            + "and \"time_by_day\".\"the_year\" = 1997 and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" "
-            + "and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" "
-            + "and (((\"product\".\"brand_name\" = 'Red Wing' and \"product_class\".\"product_subcategory\" = 'Pot Scrubbers' "
-            + "and \"product_class\".\"product_category\" = 'Kitchen Products' "
-            + "and \"product_class\".\"product_department\" = 'Household' "
-            + "and \"product_class\".\"product_family\" = 'Non-Consumable') "
-            + "or (\"product\".\"brand_name\" = 'Cormorant' and \"product_class\".\"product_subcategory\" = 'Pot Scrubbers' "
-            + "and \"product_class\".\"product_category\" = 'Kitchen Products' "
-            + "and \"product_class\".\"product_department\" = 'Household' "
-            + "and \"product_class\".\"product_family\" = 'Non-Consumable') "
-            + "or (\"product\".\"brand_name\" = 'Denny' and \"product_class\".\"product_subcategory\" = 'Pot Scrubbers' "
-            + "and \"product_class\".\"product_category\" = 'Kitchen Products' "
-            + "and \"product_class\".\"product_department\" = 'Household' "
-            + "and \"product_class\".\"product_family\" = 'Non-Consumable') or (\"product\".\"brand_name\" = 'High Quality' "
-            + "and \"product_class\".\"product_subcategory\" = 'Pot Scrubbers' "
-            + "and \"product_class\".\"product_category\" = 'Kitchen Products' "
-            + "and \"product_class\".\"product_department\" = 'Household' and \"product_class\".\"product_family\" = 'Non-Consumable')) "
-            + "or (\"product_class\".\"product_subcategory\" = 'Pots and Pans' "
-            + "and \"product_class\".\"product_category\" = 'Kitchen Products' and \"product_class\".\"product_department\" = 'Household' "
-            + "and \"product_class\".\"product_family\" = 'Non-Consumable')) "
-            + "group by \"time_by_day\".\"the_year\"";
 
-        String accessSql =
-            "select `d0` as `c0`, count(`m0`) as `c1` from (select distinct `time_by_day`.`the_year` as `d0`, `sales_fact_1997`.`customer_id` as `m0` "
-            + "from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `product` as `product`, `product_class` as `product_class` "
-            + "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 "
-            + "and `sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` "
-            + "and (((`product`.`brand_name` = 'High Quality' and `product_class`.`product_subcategory` = 'Pot Scrubbers' "
-            + "and `product_class`.`product_category` = 'Kitchen Products' and `product_class`.`product_department` = 'Household' "
-            + "and `product_class`.`product_family` = 'Non-Consumable') or (`product`.`brand_name` = 'Denny' "
-            + "and `product_class`.`product_subcategory` = 'Pot Scrubbers' and `product_class`.`product_category` = 'Kitchen Products' "
-            + "and `product_class`.`product_department` = 'Household' "
-            + "and `product_class`.`product_family` = 'Non-Consumable') or (`product`.`brand_name` = 'Red Wing' "
-            + "and `product_class`.`product_subcategory` = 'Pot Scrubbers' and `product_class`.`product_category` = 'Kitchen Products' "
-            + "and `product_class`.`product_department` = 'Household' "
-            + "and `product_class`.`product_family` = 'Non-Consumable') or (`product`.`brand_name` = 'Cormorant' "
-            + "and `product_class`.`product_subcategory` = 'Pot Scrubbers' and `product_class`.`product_category` = 'Kitchen Products' "
-            + "and `product_class`.`product_department` = 'Household' "
-            + "and `product_class`.`product_family` = 'Non-Consumable')) or (`product_class`.`product_subcategory` = 'Pots and Pans' "
-            + "and `product_class`.`product_category` = 'Kitchen Products' and `product_class`.`product_department` = 'Household' "
-            + "and `product_class`.`product_family` = 'Non-Consumable'))) as `dummyname` group by `d0`";
+        String mysqlSql =
+            "select\n"
+            + "    `time_by_day`.`the_year` as `c0`,\n"
+            + "    count(distinct `sales_fact_1997`.`customer_id`) as `m0`\n"
+            + "from\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `product` as `product`,\n"
+            + "    `product_class` as `product_class`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `time_by_day`.`the_year` = 1997\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+            + "and\n"
+            + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+            + "and\n"
+            + "    ((((`product`.`brand_name`, `product_class`.`product_category`, `product_class`.`product_department`, `product_class`.`product_family`, `product_class`.`product_subcategory`) in"
+            + " (('Cormorant', 'Kitchen Products', 'Household', 'Non-Consumable', 'Pot Scrubbers'),"
+            + " ('Denny', 'Kitchen Products', 'Household', 'Non-Consumable', 'Pot Scrubbers'),"
+            + " ('High Quality', 'Kitchen Products', 'Household', 'Non-Consumable', 'Pot Scrubbers'),"
+            + " ('Red Wing', 'Kitchen Products', 'Household', 'Non-Consumable', 'Pot Scrubbers')))) "
+            + "or"
+            + " (`product_class`.`product_family` = 'Non-Consumable'"
+            + " and `product_class`.`product_department` = 'Household'"
+            + " and `product_class`.`product_category` = 'Kitchen Products'"
+            + " and `product_class`.`product_subcategory` = 'Pots and Pans'))\n"
+            + "group by\n"
+            + "    `time_by_day`.`the_year`";
 
-        // FIXME jvs 20-Sept-2008: The Derby pattern fails, probably due to
-        // usage of non-order-deterministic Hash data structures in
-        // AggregateFunDef.  (Access may be failing too; I haven't tried it.)
-        // So it is disabled for now.  Perhaps this test should be calling
-        // directly into optimizeChildren like some of the tests below rather
-        // than using SQL pattern verification.
-        SqlPattern[] patterns = {
-            /*
-            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
-            */
-            new SqlPattern(
-                Dialect.DatabaseProduct.ACCESS, accessSql, accessSql)};
-
-        assertQuerySql(query, patterns);
+        assertQuerySql(query, Dialect.DatabaseProduct.MYSQL, mysqlSql);
     }
 
     public void testOptimizeListWithTuplesOfLength3() {
@@ -1056,7 +1079,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[High Quality],\n"
             + "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Red Wing],\n"
             + "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Sunset]} *\n"
-            + "{[Customer].[Gender].[Gender].Members}*"
+            + "{[Gender].[Gender].[Gender].Members}*"
             + "{[Store].[All Stores].[USA].[CA].[Alameda],\n"
             + "[Store].[All Stores].[USA].[CA].[Alameda].[HQ],\n"
             + "[Store].[All Stores].[USA].[CA].[Beverly Hills],\n"
@@ -1071,7 +1094,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Product].[Products].[Agg]}\n"
+            + "{[Product].[Product].[Agg]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 189\n";
@@ -1270,55 +1293,45 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testAggregatesAtTheSameLevelForNormalAndDistinctCountMeasure() {
-        boolean useGroupingSets = props.EnableGroupingSets.get();
-        props.EnableGroupingSets.set(true);
-        try {
-            assertQueryReturns(
-                "WITH "
-                + "MEMBER GENDER.AGG AS 'AGGREGATE({ GENDER.[F] })' "
-                + "MEMBER GENDER.AGG2 AS 'AGGREGATE({ GENDER.[M] })' "
-                + "SELECT "
-                + "{ MEASURES.[CUSTOMER COUNT], MEASURES.[UNIT SALES] } ON 0, "
-                + "{ GENDER.AGG, GENDER.AGG2 } ON 1 \n"
-                + "FROM SALES",
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Customer Count]}\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Axis #2:\n"
-                + "{[Customer].[Gender].[AGG]}\n"
-                + "{[Customer].[Gender].[AGG2]}\n"
-                + "Row #0: 2,755\n"
-                + "Row #0: 131,558\n"
-                + "Row #1: 2,826\n"
-                + "Row #1: 135,215\n");
-        } finally {
-            props.EnableGroupingSets.set(useGroupingSets);
-        }
+        propSaver.set(MondrianProperties.instance().EnableGroupingSets, true);
+        assertQueryReturns(
+            "WITH "
+            + "MEMBER GENDER.AGG AS 'AGGREGATE({ GENDER.[F] })' "
+            + "MEMBER GENDER.AGG2 AS 'AGGREGATE({ GENDER.[M] })' "
+            + "SELECT "
+            + "{ MEASURES.[CUSTOMER COUNT], MEASURES.[UNIT SALES] } ON 0, "
+            + "{ GENDER.AGG, GENDER.AGG2 } ON 1 \n"
+            + "FROM SALES",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[Gender].[AGG]}\n"
+            + "{[Gender].[Gender].[AGG2]}\n"
+            + "Row #0: 2,755\n"
+            + "Row #0: 131,558\n"
+            + "Row #1: 2,826\n"
+            + "Row #1: 135,215\n");
     }
 
     public void testDistinctCountForAggregatesAtTheSameLevel() {
-        boolean useGroupingSets = props.EnableGroupingSets.get();
-        props.EnableGroupingSets.set(true);
-        try {
-            assertQueryReturns(
-                "WITH "
-                + "MEMBER GENDER.AGG AS 'AGGREGATE({ GENDER.[F], GENDER.[M] })' "
-                + "SELECT "
-                + "{MEASURES.[CUSTOMER COUNT]} ON 0, "
-                + "{GENDER.AGG } ON 1 "
-                + "FROM SALES",
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Customer Count]}\n"
-                + "Axis #2:\n"
-                + "{[Customer].[Gender].[AGG]}\n"
-                + "Row #0: 5,581\n");
-        } finally {
-            props.EnableGroupingSets.set(useGroupingSets);
-        }
+        propSaver.set(MondrianProperties.instance().EnableGroupingSets, true);
+        assertQueryReturns(
+            "WITH "
+            + "MEMBER GENDER.AGG AS 'AGGREGATE({ GENDER.[F], GENDER.[M] })' "
+            + "SELECT "
+            + "{MEASURES.[CUSTOMER COUNT]} ON 0, "
+            + "{GENDER.AGG } ON 1 "
+            + "FROM SALES",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[Gender].[AGG]}\n"
+            + "Row #0: 5,581\n");
     }
 
     /**

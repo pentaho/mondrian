@@ -11,6 +11,8 @@ package mondrian.tui;
 
 import mondrian.olap.Category;
 import mondrian.olap.*;
+import mondrian.olap.Connection;
+import mondrian.olap.DriverManager;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.fun.FunInfo;
 import mondrian.olap.type.TypeUtil;
@@ -21,9 +23,16 @@ import org.apache.log4j.*;
 
 import org.eigenbase.util.property.Property;
 
+import org.olap4j.CellSet;
+import org.olap4j.OlapConnection;
+import org.olap4j.OlapStatement;
+import org.olap4j.OlapWrapper;
+import org.olap4j.layout.RectangularCellSetFormatter;
+
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.sql.*;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
@@ -50,6 +59,7 @@ public class CmdRunner {
     private static String[][] commentDelim;
     private static char[] commentStartChars;
     private static boolean allowNestedComments;
+    private static final boolean USE_OLAP4J = false;
 
     private final Options options;
     private long queryTime;
@@ -551,6 +561,20 @@ public class CmdRunner {
      * @return result String
      */
     public String execute(String queryString) {
+        if (USE_OLAP4J) {
+            return runQuery(
+                queryString,
+                new Util.Function1<CellSet, String>() {
+                    public String apply(CellSet param) {
+                        StringWriter stringWriter = new StringWriter();
+                        PrintWriter printWriter = new PrintWriter(stringWriter);
+                        new RectangularCellSetFormatter(false)
+                            .format(param, printWriter);
+                        printWriter.flush();
+                        return stringWriter.toString();
+                    }
+                });
+        }
         Result result = runQuery(queryString, true);
         if (this.options.highCardResults) {
             return highCardToString(result);
@@ -587,6 +611,32 @@ public class CmdRunner {
         return result;
     }
 
+    /**
+     * Executes a query and processes the result using a callback.
+     *
+     * @param queryString MDX query text
+     */
+    public <T> T runQuery(String queryString, Util.Function1<CellSet, T> f) {
+        long start = System.currentTimeMillis();
+        OlapConnection connection = null;
+        OlapStatement statement = null;
+        CellSet cellSet = null;
+        try {
+            connection = getOlapConnection();
+            statement = connection.createStatement();
+            debug("CmdRunner.runQuery: AFTER createStatement");
+            start = System.currentTimeMillis();
+            cellSet = statement.executeOlapQuery(queryString);
+            return f.apply(cellSet);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            queryTime = (System.currentTimeMillis() - start);
+            totalQueryTime += queryTime;
+            debug("CmdRunner.runQuery: BOTTOM");
+            Util.close(cellSet, statement, connection);
+        }
+    }
 
     /**
      * Converts a {@link Result} object to a string
@@ -725,9 +775,28 @@ public class CmdRunner {
         }
         return this.connection;
     }
+
+    /**
+     * Gets an olap4j connection, creating a new one if fresh is true.
+     *
+     * @return mondrian Connection.
+     */
+    public synchronized OlapConnection getOlapConnection() throws SQLException {
+        if (this.connectString == null) {
+            makeConnectString();
+        }
+        final String olapConnectString = "jdbc:mondrian:" + connectString;
+        final java.sql.Connection jdbcConnection =
+            java.sql.DriverManager.getConnection(olapConnectString);
+        // Cast to OlapWrapper lets code work on JDK1.5, before java.sql.Wrapper
+        //noinspection RedundantCast
+        return ((OlapWrapper) jdbcConnection).unwrap(OlapConnection.class);
+    }
+
     public String getConnectString() {
         return getConnectString(CmdRunner.RELOAD_CONNECTION);
     }
+
     public synchronized String getConnectString(boolean fresh) {
         if (this.connectString == null) {
             makeConnectString();

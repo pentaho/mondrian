@@ -6,14 +6,13 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.mdx.MemberExpr;
 import mondrian.olap.*;
-import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
 import mondrian.spi.Dialect;
 
@@ -77,13 +76,12 @@ public class RolapNativeTopCount extends RolapNativeSet {
 
         public void addConstraint(
             SqlQuery sqlQuery,
-            RolapStarSet starSet,
-            AggStar aggStar)
+            RolapStarSet starSet)
         {
             if (orderByExpr != null) {
                 RolapNativeSql sql =
                     new RolapNativeSql(
-                        sqlQuery, aggStar, getEvaluator(), null);
+                        sqlQuery, starSet.getAggStar(), getEvaluator(), null);
                 String orderBySql = sql.generateTopCountOrderBy(orderByExpr);
                 Dialect dialect = sqlQuery.getDialect();
                 boolean nullable = deduceNullability(orderByExpr);
@@ -96,7 +94,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
                     sqlQuery.addOrderBy(orderBySql, ascending, true, nullable);
                 }
             }
-            super.addConstraint(sqlQuery, starSet, aggStar);
+            super.addConstraint(sqlQuery, starSet);
         }
 
         private boolean deduceNullability(Exp expr) {
@@ -194,7 +192,8 @@ public class RolapNativeTopCount extends RolapNativeSet {
         // Need to generate top count order by to determine whether
         // or not it can be created. The top count
         // could change to use an aggregate table later in evaulation
-        SqlQuery sqlQuery = SqlQuery.newQuery(ds, "NativeTopCount");
+        SqlQuery sqlQuery =
+            SqlQuery.newQuery(evaluator.getDialect(), "NativeTopCount");
         RolapNativeSql sql =
             new RolapNativeSql(
                 sqlQuery, null, evaluator, null);

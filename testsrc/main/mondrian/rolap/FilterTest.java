@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2011 Pentaho and others
+// Copyright (C) 2009-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -104,7 +104,7 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(100, 88, query, null, requestFreshConnection);
+        checkNative(200, 88, query, null, requestFreshConnection);
     }
 
     public void testIsFilterSimple() throws Exception {
@@ -172,7 +172,7 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(100, 88, query, null, requestFreshConnection);
+        checkNative(200, 88, query, null, requestFreshConnection);
     }
 
     /**
@@ -350,10 +350,10 @@ public class FilterTest extends BatchTestCase {
             "With "
             + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customers],[*BASE_MEMBERS_Quarters])' "
             + "Set [*BASE_MEMBERS_Customers] as 'Filter([Customers].[Country].Members, [Customers].CurrentMember In {[Customers].[All Customers].[USA]})' "
-            + "Set [*BASE_MEMBERS_Quarters] as 'Filter([Time].[Quarter].Members, "
-            + "[Time].currentMember not in {[Time].[1997].[Q1], [Time].[1998].[Q3]})' "
-            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Customers].currentMember,[Time].currentMember)})' "
-            + "Set [*ORDERED_CJ_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], [Time].currentmember.OrderKey, BASC)' "
+            + "Set [*BASE_MEMBERS_Quarters] as 'Filter([Time].[Time].[Quarter].Members, "
+            + "[Time].[Time].currentMember not in {[Time].[Time].[1997].[Q1], [Time].[Time].[1998].[Q3]})' "
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Customers].currentMember,[Time].[Time].currentMember)})' "
+            + "Set [*ORDERED_CJ_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], [Time].[Time].currentmember.OrderKey, BASC)' "
             + "Select "
             + "{[Measures].[Customer Count]} on columns, "
             + "Non Empty [*ORDERED_CJ_ROW_AXIS] on rows "
@@ -417,10 +417,10 @@ public class FilterTest extends BatchTestCase {
             "With "
             + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customers],[*BASE_MEMBERS_Quarters])' "
             + "Set [*BASE_MEMBERS_Customers] as 'Filter([Customers].[Country].Members, [Customers].CurrentMember In {[Customers].[All Customers].[USA]})' "
-            + "Set [*BASE_MEMBERS_Quarters] as 'Filter([Time].[Quarter].Members, "
-            + "[Time].currentMember not in {[Time].[1997].[Q1], [Time].[1997].[Q3]})' "
-            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Customers].currentMember,[Time].currentMember)})' "
-            + "Set [*ORDERED_CJ_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], [Time].currentmember.OrderKey, BASC)' "
+            + "Set [*BASE_MEMBERS_Quarters] as 'Filter([Time].[Time].[Quarter].Members, "
+            + "[Time].[Time].currentMember not in {[Time].[Time].[1997].[Q1], [Time].[Time].[1997].[Q3]})' "
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Customers].currentMember,[Time].[Time].currentMember)})' "
+            + "Set [*ORDERED_CJ_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], [Time].[Time].currentmember.OrderKey, BASC)' "
             + "Select "
             + "{[Measures].[Customer Count]} on columns, "
             + "Non Empty [*ORDERED_CJ_ROW_AXIS] on rows "
@@ -441,20 +441,33 @@ public class FilterTest extends BatchTestCase {
             + "order by CASE WHEN \"customer\".\"country\" IS NULL THEN 1 ELSE 0 END, \"customer\".\"country\" ASC, CASE WHEN \"time_by_day\".\"the_year\" IS NULL THEN 1 ELSE 0 END, \"time_by_day\".\"the_year\" ASC, CASE WHEN \"time_by_day\".\"quarter\" IS NULL THEN 1 ELSE 0 END, \"time_by_day\".\"quarter\" ASC";
 
         String necjSqlMySql =
-            "select `customer`.`country` as `c0`, `time_by_day`.`the_year` as "
-            + "`c1`, `time_by_day`.`quarter` as `c2` from `customer` as "
-            + "`customer`, `sales_fact_1997` as `sales_fact_1997`, `time_by_day` "
-            + "as `time_by_day` where `sales_fact_1997`.`customer_id` = "
-            + "`customer`.`customer_id` and `sales_fact_1997`.`time_id` = "
-            + "`time_by_day`.`time_id` and (`customer`.`country` = 'USA') and "
-            + "((not (`time_by_day`.`quarter` in ('Q1', 'Q3')) or "
-            + "(`time_by_day`.`quarter` is null)) or (not "
-            + "(`time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` "
-            + "is null))) group by `customer`.`country`, `time_by_day`.`the_year`,"
-            + " `time_by_day`.`quarter` order by ISNULL(`customer`.`country`) ASC, "
-            + "`customer`.`country` ASC, ISNULL(`time_by_day`.`the_year`) ASC, "
-            + "`time_by_day`.`the_year` ASC, ISNULL(`time_by_day`.`quarter`) ASC, "
-            + "`time_by_day`.`quarter` ASC";
+            "select\n"
+            + "    `time_by_day`.`the_year` as `c0`,\n"
+            + "    `time_by_day`.`quarter` as `c1`\n"
+            + "    `customer`.`country` as `c2`\n"
+            + "from\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `customer` as `customer`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    (`customer`.`country` = 'USA')\n"
+            + "and\n"
+            + "    ((not (`time_by_day`.`quarter` in ('Q1', 'Q3')) or (`time_by_day`.`quarter` is null)) or (not (`time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` is null)))\n"
+            + "group by\n"
+            + "    `time_by_day`.`the_year`,\n"
+            + "    `time_by_day`.`quarter`,\n"
+            + "    `customer`.`country`\n"
+            + "order by\n"
+            + "    ISNULL(`customer`.`country`) ASC,\n"
+            + "    `customer`.`country` ASC,\n"
+            + "    ISNULL(`time_by_day`.`the_year`) ASC,\n"
+            + "    `time_by_day`.`the_year` ASC,\n"
+            + "     ISNULL(`time_by_day`.`quarter`) ASC,\n"
+            + "    `time_by_day`.`quarter` ASC";
 
         SqlPattern[] patterns = {
             new SqlPattern(

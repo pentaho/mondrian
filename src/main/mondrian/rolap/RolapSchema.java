@@ -18,8 +18,10 @@ import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.server.*;
+import mondrian.server.Statement;
 import mondrian.spi.*;
-import mondrian.spi.impl.Scripts;
+import mondrian.spi.impl.*;
 import mondrian.util.*;
 
 import org.apache.log4j.Logger;
@@ -38,14 +40,14 @@ import javax.sql.DataSource;
 
 /**
  * A <code>RolapSchema</code> is a collection of {@link RolapCube}s and
- * shared {@link RolapDimension}s. It is shared betweeen {@link
+ * shared {@link RolapDimension}s. It is shared between {@link
  * RolapConnection}s. It caches {@link MemberReader}s, etc.
  *
  * @see RolapConnection
  * @author jhyde
  * @since 26 July, 2001
  */
-public class RolapSchema implements Schema {
+public class RolapSchema extends OlapElementBase implements Schema {
     static final Logger LOGGER = Logger.getLogger(RolapSchema.class);
 
     final String name;
@@ -54,6 +56,8 @@ public class RolapSchema implements Schema {
      * Internal use only.
      */
     private RolapConnection internalConnection;
+
+    private final Dialect dialect;
 
     /**
      * Holds cubes in this schema.
@@ -83,8 +87,6 @@ public class RolapSchema implements Schema {
 
     ByteString md5Bytes;
 
-    final boolean useContentChecksum;
-
     /**
      * A schema's aggregation information
      */
@@ -94,7 +96,7 @@ public class RolapSchema implements Schema {
      * This is basically a unique identifier for this RolapSchema instance
      * used it its equals and hashCode methods.
      */
-    final String key;
+    final SchemaKey key;
 
     /**
      * Maps {@link String names of roles} to {@link Role roles with those names}.
@@ -112,8 +114,6 @@ public class RolapSchema implements Schema {
      * for this schema.
      */
     private FunTable funTable;
-
-    private MondrianDef.Schema xmlSchema;
 
     final List<RolapSchemaParameter > parameterList =
         new ArrayList<RolapSchemaParameter >();
@@ -141,7 +141,7 @@ public class RolapSchema implements Schema {
      */
     private final String id;
 
-    private final PhysStatistic statistic = new PhysStatistic();
+    private final String description;
 
     /**
      * Creates a schema.
@@ -155,31 +155,42 @@ public class RolapSchema implements Schema {
      * @param md5Bytes MD5 hash
      * @param useContentChecksum Whether to use content checksum
      * @param name Name
+     * @param caption Caption
+     * @param description Description
+     * @param quoteSql Whether dialect should not quote SQL identifiers
      * @param annotationMap Annotation map
      */
     RolapSchema(
-        final String key,
+        final SchemaKey key,
         final Util.PropertyList connectInfo,
         final DataSource dataSource,
         final ByteString md5Bytes,
         boolean useContentChecksum,
         String name,
+        String caption,
+        String description,
+        boolean quoteSql,
         Map<String, Annotation> annotationMap)
     {
         this.id = Util.generateUuidString();
+        this.caption = caption;
+        this.description = description;
         this.key = key;
         this.md5Bytes = md5Bytes;
-        this.useContentChecksum = useContentChecksum;
-        assert !(useContentChecksum && md5Bytes == null);
+        if (useContentChecksum && md5Bytes == null) {
+            throw new AssertionError();
+        }
 
         // the order of the next two lines is important
         this.defaultRole = Util.createRootRole(this);
         final MondrianServer internalServer = MondrianServer.forId(null);
         this.internalConnection =
             new RolapConnection(internalServer, connectInfo, this, dataSource);
+        assert internalConnection.dialect != null;
         internalServer.removeConnection(internalConnection);
         internalServer.removeStatement(
             internalConnection.getInternalStatement());
+        this.dialect = internalConnection.dialect.withQuoting(quoteSql);
 
         this.aggTableManager = new AggTableManager(this);
         this.dataSourceChangeListener =
@@ -199,6 +210,32 @@ public class RolapSchema implements Schema {
         } else {
             warningList = null;
         }
+    }
+
+    public String getUniqueName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public OlapElement lookupChild(
+        SchemaReader schemaReader, Id.Segment s, MatchType matchType)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getQualifiedName() {
+        return name;
+    }
+
+    public Hierarchy getHierarchy() {
+        throw new UnsupportedOperationException();
+    }
+
+    public Dimension getDimension() {
+        throw new UnsupportedOperationException();
     }
 
     protected void finalCleanUp() {
@@ -252,10 +289,6 @@ public class RolapSchema implements Schema {
         return defaultRole;
     }
 
-    public MondrianDef.Schema getXMLSchema() {
-        return xmlSchema;
-    }
-
     public String getName() {
         return name;
     }
@@ -281,6 +314,10 @@ public class RolapSchema implements Schema {
      * @return dialect
      */
     public Dialect getDialect() {
+        if (true) {
+            Util.deprecated("clean up", false);
+            return dialect;
+        }
         DataSource dataSource = getInternalConnection().getDataSource();
         return DialectManager.createDialect(dataSource, null);
     }
@@ -653,7 +690,14 @@ public class RolapSchema implements Schema {
             } else {
                 LOGGER.debug(
                     "Normal cardinality for " + hierarchy.getDimension());
-                return new SmartMemberReader(source);
+                if (MondrianProperties.instance().DisableCaching.get()) {
+                    // If the cell cache is disabled, we can't cache
+                    // the members or else we get undefined results,
+                    // depending on the functions used and all.
+                    return new NoCacheMemberReader(source);
+                } else {
+                    return new SmartMemberReader(source);
+                }
             }
         }
     }
@@ -663,7 +707,8 @@ public class RolapSchema implements Schema {
     }
 
     /**
-     * Creates a {@link DataSourceChangeListener} with which to detect changes to datasources.
+     * Creates a {@link DataSourceChangeListener} with which to detect changes
+     * to datasources.
      */
     private DataSourceChangeListener createDataSourceChangeListener(
         Util.PropertyList connectInfo)
@@ -676,21 +721,10 @@ public class RolapSchema implements Schema {
         String dataSourceChangeListenerStr = connectInfo.get(
             RolapConnectionProperties.DataSourceChangeListener.name());
 
-        if (! Util.isEmpty(dataSourceChangeListenerStr)) {
+        if (!Util.isEmpty(dataSourceChangeListenerStr)) {
             try {
                 Class<?> clazz = Class.forName(dataSourceChangeListenerStr);
                 Constructor<?> constructor = clazz.getConstructor();
-                changeListener =
-                    (DataSourceChangeListener) constructor.newInstance();
-
-/*
-                final Class<DataSourceChangeListener> clazz =
-                    (Class<DataSourceChangeListener>)
-                        Class.forName(dataSourceChangeListenerStr);
-                final Constructor<DataSourceChangeListener> ctor =
-                    clazz.getConstructor();
-                changeListener = ctor.newInstance();
-*/
                 changeListener =
                     (DataSourceChangeListener) constructor.newInstance();
             } catch (Exception e) {
@@ -747,10 +781,6 @@ public class RolapSchema implements Schema {
     {
         funTable = new RolapSchemaFunctionTable(userDefinedFunctions);
         ((RolapSchemaFunctionTable) funTable).init();
-    }
-
-    public PhysStatistic getStatistic() {
-        return statistic;
     }
 
     /**
@@ -934,23 +964,24 @@ public class RolapSchema implements Schema {
 
         private int columnCount;
 
+        public final PhysStatistic statistic;
+
         /**
          * Creates a physical schema.
          *
          * @param dialect Dialect
-         * @param dataSource JDBC data source
+         * @param internalConnection Internal connection (for data source, and
+         *                           accounting of stats queries)
          */
         public PhysSchema(
             Dialect dialect,
-            DataSource dataSource)
+            RolapConnection internalConnection)
         {
             this.dialect = dialect;
-            this.jdbcSchema = JdbcSchema.makeDB(dataSource);
-            try {
-                jdbcSchema.load();
-            } catch (SQLException e) {
-                throw Util.newError(e, "Error while loading JDBC schema");
-            }
+            this.jdbcSchema =
+                JdbcSchema.makeDB(internalConnection.getDataSource());
+            jdbcSchema.load();
+            statistic = new PhysStatistic(dialect, internalConnection);
         }
 
         /**
@@ -1029,6 +1060,56 @@ public class RolapSchema implements Schema {
 
         public int getColumnCount() {
             return columnCount;
+        }
+
+        List<ColumnInfo> describe(
+            RolapSchemaLoader loader,
+            NodeDef xmlNode,
+            String sql)
+        {
+            java.sql.Connection connection = null;
+            try {
+                connection =
+                    jdbcSchema.getDataSource().getConnection();
+                final PreparedStatement pstmt =
+                    connection.prepareStatement(sql);
+                final ResultSetMetaData metaData = pstmt.getMetaData();
+                final int columnCount = metaData.getColumnCount();
+                final List<ColumnInfo> columnInfoList =
+                    new ArrayList<ColumnInfo>();
+                for (int i = 0; i < columnCount; i++) {
+                    final String columnName =  metaData.getColumnName(i + 1);
+                    final String typeName = metaData.getColumnTypeName(i + 1);
+                    final int type = metaData.getColumnType(i + 1);
+                    // REVIEW: We want the physical size of the column in bytes.
+                    //  Ideally it would be comparable with the value returned
+                    //  from DatabaseMetaData.getColumns for a base table.
+                    final int columnSize = metaData.getColumnDisplaySize(i + 1);
+                    assert columnSize > 0;
+                    final Dialect.Datatype datatype =
+                        dialect.sqlTypeToDatatype(typeName, type);
+                    if (datatype == null) {
+                        loader.getHandler().warning(
+                            "Unknown data type "
+                            + typeName + " (" + type + ") for column "
+                            + columnName + " of view; mondrian is probably"
+                            + " not familiar with this database's type"
+                            + " system",
+                            xmlNode,
+                            null);
+                        continue;
+                    }
+                    columnInfoList.add(
+                        new ColumnInfo(columnName, datatype, columnSize));
+                }
+                return columnInfoList;
+            } catch (SQLException e) {
+                loader.getHandler().warning(
+                    "View is invalid: " + e.getMessage(), xmlNode, null, e);
+                return null;
+            } finally {
+                Util.close(null, null, connection);
+            }
         }
     }
 
@@ -1199,10 +1280,17 @@ public class RolapSchema implements Schema {
                 case 1:
                     return pathList.get(0);
                 default:
-                    throw new PhysSchemaException(
-                        "Needed to find exactly one path from " + prevRelation
-                        + " to " + nextRelation + ", but found "
-                        + pathList.size() + " (" + pathList + ")");
+                    // When more than one path is possible,
+                    // we use the one with the least amount of joins.
+                    List<Pair<PhysLink, Boolean>> smallest = null;
+                    for (List<Pair<PhysLink, Boolean>> path : pathList) {
+                        if (smallest == null
+                            || smallest.size() > path.size())
+                        {
+                            smallest = path;
+                        }
+                    }
+                    return smallest;
                 }
             }
             throw new PhysSchemaException(
@@ -1336,7 +1424,7 @@ public class RolapSchema implements Schema {
         /**
          * Returns the number of rows in the table.
          */
-        int getNumberOfRows();
+        int getRowCount();
 
         void addColumn(PhysColumn column);
     }
@@ -1387,14 +1475,14 @@ public class RolapSchema implements Schema {
         }
 
         public int getVolume() {
-            return getTotalColumnSize() * getNumberOfRows();
+            return getTotalColumnSize() * getRowCount();
         }
 
         protected int getTotalColumnSize() {
             return totalColumnByteCount;
         }
 
-        public int getNumberOfRows() {
+        public int getRowCount() {
             return rowCount;
         }
 
@@ -1468,15 +1556,17 @@ public class RolapSchema implements Schema {
         /**
          * Populates the columns of a table by querying JDBC metadata.
          *
-         * <p>Throws if table was not found or view had an error.
+         * <p>Returns whether populated successfully. If there was an error (say
+         * if table was not found or view had an error), posts a warning and
+         * returns false.
          *
          * @return Whether table was found
-         * @param schema Schema (for logging errors)
+         * @param loader Schema (for logging errors)
          * @param xmlNode XML element
          * @param rowCountAndSize Output array, to hold the number of rows in
          */
         protected abstract boolean populateColumns(
-            RolapSchemaLoader schema,
+            RolapSchemaLoader loader,
             NodeDef xmlNode,
             int[] rowCountAndSize);
 
@@ -1552,60 +1642,40 @@ public class RolapSchema implements Schema {
             NodeDef xmlNode,
             int[] rowCountAndSize)
         {
-            java.sql.Connection connection = null;
-            try {
-                connection =
-                    physSchema.jdbcSchema.getDataSource().getConnection();
-                final PreparedStatement pstmt =
-                    connection.prepareStatement(sqlString);
-                final ResultSetMetaData metaData = pstmt.getMetaData();
-                final int columnCount = metaData.getColumnCount();
-                for (int i = 0; i < columnCount; i++) {
-                    final String columnName =  metaData.getColumnName(i + 1);
-                    final String typeName = metaData.getColumnTypeName(i + 1);
-                    final int type = metaData.getColumnType(i + 1);
-                    // REVIEW: We want the physical size of the column in bytes.
-                    //  Ideally it would be comparable with the value returned
-                    //  from DatabaseMetaData.getColumns for a base table.
-                    final int columnSize = metaData.getColumnDisplaySize(i + 1);
-                    assert columnSize > 0;
-                    final Dialect.Datatype datatype =
-                        physSchema.dialect.sqlTypeToDatatype(typeName, type);
-                    if (datatype == null) {
-                        loader.getHandler().warning(
-                            "Unknown data type "
-                            + typeName + " (" + type + ") for column "
-                            + columnName + " of view; mondrian is probably"
-                            + " not familiar with this database's type"
-                            + " system", xmlNode,
-                            null);
-                    }
-                    addColumn(
-                        new RolapSchema.PhysRealColumn(
-                            this, columnName, datatype,
-                            null, columnSize));
-                }
-                final int rowCount = 1; // TODO:
-                int rowByteCount = 0;
-                for (PhysColumn physColumn : columnsByName.values()) {
-                    rowByteCount += physColumn.getColumnSize();
-                }
-                rowCountAndSize[0] = rowCount;
-                rowCountAndSize[1] = rowByteCount;
-                return true;
-            } catch (SQLException e) {
-                loader.getHandler().warning(
-                    "View is invalid: " + e.getMessage(), xmlNode, null, e);
+            final List<ColumnInfo> columnInfoList =
+                physSchema.describe(loader, xmlNode, sqlString);
+            if (columnInfoList == null) {
                 return false;
-            } finally {
-                if (connection != null) {
-                    try {
-                        connection.close();
-                    } catch (SQLException e) {
-                        // ignore
-                    }
-                }
             }
+            for (ColumnInfo columnInfo : columnInfoList) {
+                addColumn(
+                    new RolapSchema.PhysRealColumn(
+                        this,
+                        columnInfo.name,
+                        columnInfo.datatype,
+                        null,
+                        columnInfo.size));
+            }
+            final int rowCount = 1; // TODO:
+            int rowByteCount = 0;
+            for (PhysColumn physColumn : columnsByName.values()) {
+                rowByteCount += physColumn.getColumnSize();
+            }
+            rowCountAndSize[0] = rowCount;
+            rowCountAndSize[1] = rowByteCount;
+            return true;
+        }
+    }
+
+    static class ColumnInfo {
+        String name;
+        Dialect.Datatype datatype;
+        int size;
+
+        public ColumnInfo(String name, Dialect.Datatype datatype, int size) {
+            this.name = name;
+            this.datatype = datatype;
+            this.size = size;
         }
     }
 
@@ -1655,7 +1725,7 @@ public class RolapSchema implements Schema {
         }
 
         protected boolean populateColumns(
-            RolapSchemaLoader schema, NodeDef xmlNode, int[] rowCountAndSize)
+            RolapSchemaLoader loader, NodeDef xmlNode, int[] rowCountAndSize)
         {
             // not much to do; was populated on creation
             rowCountAndSize[0] = rowList.size();
@@ -1779,7 +1849,13 @@ public class RolapSchema implements Schema {
                 throw Util.newError(
                     "Error while loading columns of table '" + name + "'");
             }
-            rowCount = jdbcTable.getNumberOfRows();
+
+            rowCount =
+                physSchema.statistic.getRelationCardinality(
+                    this,
+                    alias,
+                    -1);
+
             for (JdbcSchema.Table.Column jdbcColumn : jdbcTable.getColumns()) {
                 PhysColumn column =
                     columnsByName.get(
@@ -1798,7 +1874,7 @@ public class RolapSchema implements Schema {
             return true;
         }
 
-        public int getNumberOfRows() {
+        public int getRowCount() {
             return rowCount;
         }
 
@@ -1976,7 +2052,7 @@ public class RolapSchema implements Schema {
          * Calls a callback for each embedded PhysColumn.
          */
         public abstract void foreachColumn(
-            Util.Functor1<Void, PhysColumn> callback);
+            Util.Function1<PhysColumn, Void> callback);
 
         /**
          * Returns the data type of this expression, or null if not known.
@@ -2017,7 +2093,7 @@ public class RolapSchema implements Schema {
             assert measureGroup != null;
             assert cubeDimension != null;
             foreachColumn(
-                new Util.Functor1<Void, PhysColumn>() {
+                new Util.Function1<PhysColumn, Void>() {
                     public Void apply(PhysColumn column) {
                         final RolapStar.Column starColumn =
                             measureGroup.getRolapStarColumn(
@@ -2047,7 +2123,7 @@ public class RolapSchema implements Schema {
             // nothing to do
         }
 
-        public void foreachColumn(Util.Functor1<Void, PhysColumn> callback) {
+        public void foreachColumn(Util.Function1<PhysColumn, Void> callback) {
             // nothing
         }
 
@@ -2063,7 +2139,7 @@ public class RolapSchema implements Schema {
     public static abstract class PhysColumn extends PhysExpr {
         public final PhysRelation relation;
         public final String name;
-        Dialect.Datatype datatype;
+        Dialect.Datatype datatype; // may be null, temporarily
         protected final int columnSize;
         private final int ordinal;
         private SqlStatement.Type internalType; // may be null
@@ -2101,7 +2177,7 @@ public class RolapSchema implements Schema {
             return internalType;
         }
 
-        public void foreachColumn(Util.Functor1<Void, PhysColumn> callback) {
+        public void foreachColumn(Util.Function1<PhysColumn, Void> callback) {
             callback.apply(this);
         }
 
@@ -2169,10 +2245,14 @@ public class RolapSchema implements Schema {
     }
 
     public static final class PhysCalcColumn extends PhysColumn {
+        private RolapSchemaLoader loader; // cleared once compute succeeds
+        private NodeDef xmlNode; // cleared once compute succeeds
         private List<RolapSchema.PhysExpr> list;
         private String sql;
 
         PhysCalcColumn(
+            RolapSchemaLoader loader,
+            NodeDef xmlNode,
             PhysRelation table,
             String name,
             Dialect.Datatype datatype,
@@ -2180,20 +2260,44 @@ public class RolapSchema implements Schema {
             List<PhysExpr> list)
         {
             super(table, name, 4, datatype, internalType);
+            this.loader = loader;
+            this.xmlNode = xmlNode;
             this.list = list;
             compute();
         }
 
         public void compute() {
+            if (loader != null
+                && !list.isEmpty()
+                && getUnresolvedColumnCount() == 0)
+            {
+                sql = deriveSql();
+                if (datatype == null) {
+                    final PhysSchema physSchema = relation.getSchema();
+                    final SqlQuery query = new SqlQuery(physSchema.dialect);
+                    query.addSelect(sql, null);
+                    query.addFrom(relation, relation.getAlias(), true);
+                    final List<ColumnInfo> columnInfoList =
+                        physSchema.describe(loader, xmlNode, query.toSql());
+                    if (columnInfoList != null
+                        && columnInfoList.size() == 1)
+                    {
+                        datatype = columnInfoList.get(0).datatype;
+                    }
+                }
+                loader = null;
+                xmlNode = null;
+            }
+        }
+
+        private int getUnresolvedColumnCount() {
             int unresolvedCount = 0;
             for (PhysExpr expr : list) {
                 if (expr instanceof UnresolvedColumn) {
                     ++unresolvedCount;
                 }
             }
-            if (unresolvedCount == 0) {
-                sql = deriveSql();
-            }
+            return unresolvedCount;
         }
 
         public String toSql() {
@@ -2209,7 +2313,7 @@ public class RolapSchema implements Schema {
         }
 
         @Override
-        public void foreachColumn(Util.Functor1<Void, PhysColumn> callback) {
+        public void foreachColumn(Util.Function1<PhysColumn, Void> callback) {
             for (PhysExpr physExpr : list) {
                 physExpr.foreachColumn(callback);
             }
@@ -2253,7 +2357,7 @@ public class RolapSchema implements Schema {
             return buf.toString();
         }
 
-        public void foreachColumn(Util.Functor1<Void, PhysColumn> callback) {
+        public void foreachColumn(Util.Function1<PhysColumn, Void> callback) {
             for (Object o : list) {
                 if (o instanceof PhysExpr) {
                     ((PhysExpr) o).foreachColumn(callback);
@@ -2274,7 +2378,8 @@ public class RolapSchema implements Schema {
             String name,
             ElementDef xml)
         {
-            super(relation, name, 0, null, null);
+            // Boolean datatype is a dummy value, to keep an assert happy.
+            super(relation, name, 0, Dialect.Datatype.Boolean, null);
             assert tableName != null;
             assert name != null;
             this.tableName = tableName;
@@ -2327,6 +2432,17 @@ public class RolapSchema implements Schema {
             this.forward = forward;
         }
 
+        public boolean equals(Object obj) {
+            return obj instanceof PhysHop
+                && relation.equals(((PhysHop) obj).relation)
+                && Util.equals(link, ((PhysHop) obj).link)
+                && forward == ((PhysHop) obj).forward;
+        }
+
+        public int hashCode() {
+            return Util.hashV(0, relation, link, forward);
+        }
+
         public final PhysRelation fromRelation() {
             return forward
                 ? link.sourceKey.relation
@@ -2344,20 +2460,26 @@ public class RolapSchema implements Schema {
      * A path is a sequence of {@link PhysHop hops}.
      *
      * <p>It connects a pair of {@link PhysRelation relations} with a sequence
-     * of link traversals. In general, a path between relations R1 and Rn
-     * consists of the hops
+     * of link traversals. In general, a path between relations R<sub>1</sub>
+     * and R<sub>n</sub> consists of the following hops:</p>
      *
-     *    { Hop(R1, null),
-     *      Hop(R2, Link(R1, R2)),
-     *      Hop(R3, Link(R2, R3)),
+     * <pre>
+     *    { Hop(R<sub>1</sub>, null),
+     *      Hop(R<sub>2</sub>, Link(R<sub>1</sub>, R<sub>2</sub>)),
+     *      Hop(R<sub>3</sub>, Link(R<sub>2</sub>, R<sub>3</sub>)),
      *      ...
-     *      Hop(Rn, Link(Rn-1, Rn)) }
+     *      Hop(R<sub>n</sub>, Link(R<sub>n-1</sub>, R<sub>n</sub>)) }
+     * </pre>
+     *
+     * <p>Paths are immutable. The best way to create them is to uSe a
+     * {@link PhysPathBuilder}.</p>
      *
      * <p>REVIEW: Is it worth making paths canonical? That is, if two paths
-     * within a schema are equal, then they will always be the same object.
+     * within a schema are equal, then they will always be the same object.</p>
      */
     public static class PhysPath {
         final List<PhysHop> hopList;
+
         public static final PhysPath EMPTY =
             new PhysPath(Collections.<PhysHop>emptyList());
 
@@ -2395,6 +2517,7 @@ public class RolapSchema implements Schema {
                 }
             };
         }
+
         /**
          * Adds the relations in this path to the FROM clause of a query.
          *
@@ -2455,7 +2578,12 @@ public class RolapSchema implements Schema {
             PhysRelation relation,
             boolean forward)
         {
-            hopList.add(new PhysHop(relation, link, forward));
+            return add(new PhysHop(relation, link, forward));
+        }
+
+        public PhysPathBuilder add(PhysHop hop)
+        {
+            hopList.add(hop);
             return this;
         }
 
@@ -2705,7 +2833,7 @@ public class RolapSchema implements Schema {
 
         public void addToFrom(PhysExpr expr) {
             expr.foreachColumn(
-                new Util.Functor1<Void, PhysColumn>() {
+                new Util.Function1<PhysColumn, Void>() {
                     public Void apply(PhysColumn column) {
                         addRelation(column.relation);
                         return null;
@@ -2803,40 +2931,185 @@ public class RolapSchema implements Schema {
     }
 
     /**
-     * Caches the cardinality of columns.
+     * Provides and caches statistics of relations and columns.
      *
-     * <p>The cache is stored in the schema so that queries on different
-     * cubes can share them.</p>
+     * <p>Wrapper around a chain of {@link mondrian.spi.StatisticsProvider}s,
+     * followed by a cache to store the results.</p>
      */
-    public class PhysStatistic {
-        private final Map<Pair<PhysRelation, PhysExpr>, Integer> map =
-            new HashMap<Pair<PhysRelation, PhysExpr>, Integer>();
+    public static class PhysStatistic {
+        private final Map<List, Integer> columnMap =
+            new HashMap<List, Integer>();
+        private final Map<List, Integer> tableMap =
+            new HashMap<List, Integer>();
+        private final Map<String, Integer> queryMap =
+            new HashMap<String, Integer>();
+        private final Dialect dialect;
+        private final Statement internalStatement;
+        private final DataSource dataSource;
 
-        /**
-         * Gets the cardinality for a given column (the number of distinct
-         * values of the column). If there is no value in cache, executes the
-         * callback to find the cardinality.
-         *
-         * @param relation the relation associated with the column expression
-         * @param expression the column expression to cache the cardinality for
-         * @param functor Computes the cardinality for the column expression
-         * @return Cardinality of given column
-         */
-        public int getCardinality(
-            PhysRelation relation,
-            PhysExpr expression,
-            Util.Functor0<Integer> functor)
+        PhysStatistic(
+            Dialect dialect,
+            RolapConnection internalConnection)
         {
-            final Pair<PhysRelation, PhysExpr> key =
-                Pair.of(relation, expression);
-            Integer card = map.get(key);
-            if (card == null) {
-                // If not cached, issue SQL to get the cardinality for
-                // this column.
-                card = functor.apply();
-                map.put(key, card);
+            this.dialect = dialect;
+            this.internalStatement = internalConnection.getInternalStatement();
+            this.dataSource = internalConnection.getDataSource();
+        }
+
+        public int getRelationCardinality(
+            RolapSchema.PhysRelation relation,
+            String alias,
+            int approxRowCount)
+        {
+            if (approxRowCount >= 0) {
+                return approxRowCount;
             }
-            return card;
+            if (relation instanceof MondrianDef.Table) {
+                final MondrianDef.Table table = (MondrianDef.Table) relation;
+                return getTableCardinality(
+                    null, table.schema, table.name);
+            } else {
+                final SqlQuery sqlQuery = new SqlQuery(dialect);
+                sqlQuery.addSelect("1", null);
+                sqlQuery.addFrom(relation, null, true);
+                return getQueryCardinality(sqlQuery.toString());
+            }
+        }
+
+        private int getTableCardinality(
+            String catalog,
+            String schema,
+            String table)
+        {
+            final List<String> key = Arrays.asList(catalog, schema, table);
+            int rowCount = -1;
+            if (tableMap.containsKey(key)) {
+                rowCount = tableMap.get(key);
+            } else {
+                final Dialect dialect = this.dialect;
+                final List<StatisticsProvider> statisticsProviders =
+                    dialect.getStatisticsProviders();
+                final Execution execution =
+                    new Execution(internalStatement, 0);
+                for (StatisticsProvider statisticsProvider
+                    : statisticsProviders)
+                {
+                    rowCount = statisticsProvider.getTableCardinality(
+                        dialect,
+                        dataSource,
+                        catalog,
+                        schema,
+                        table,
+                        execution);
+                    if (rowCount >= 0) {
+                        break;
+                    }
+                }
+
+                // Note: If all providers fail, we put -1 into the cache,
+                // to ensure that we won't try again.
+                tableMap.put(key, rowCount);
+            }
+            return rowCount;
+        }
+
+        private int getQueryCardinality(String sql) {
+            int rowCount = -1;
+            if (queryMap.containsKey(sql)) {
+                rowCount = queryMap.get(sql);
+            } else {
+                final Dialect dialect = this.dialect;
+                final List<StatisticsProvider> statisticsProviders =
+                    dialect.getStatisticsProviders();
+                final Execution execution =
+                    new Execution(
+                        internalStatement,
+                        0);
+                for (StatisticsProvider statisticsProvider
+                    : statisticsProviders)
+                {
+                    rowCount = statisticsProvider.getQueryCardinality(
+                        dialect, dataSource, sql, execution);
+                    if (rowCount >= 0) {
+                        break;
+                    }
+                }
+
+                // Note: If all providers fail, we put -1 into the cache,
+                // to ensure that we won't try again.
+                queryMap.put(sql, rowCount);
+            }
+            return rowCount;
+        }
+
+        public int getColumnCardinality(
+            RolapSchema.PhysRelation relation,
+            RolapSchema.PhysExpr expression,
+            int approxCardinality)
+        {
+            if (approxCardinality >= 0) {
+                return approxCardinality;
+            }
+            if (relation instanceof RolapSchema.PhysTable
+                && expression instanceof RolapSchema.PhysRealColumn)
+            {
+                final RolapSchema.PhysTable table =
+                    (RolapSchema.PhysTable) relation;
+                final RolapSchema.PhysColumn column =
+                    (RolapSchema.PhysColumn) expression;
+                return getColumnCardinality(
+                    null,
+                    table.getSchemaName(),
+                    table.name,
+                    column.name);
+            } else {
+                final SqlQuery sqlQuery = new SqlQuery(dialect);
+                sqlQuery.setDistinct(true);
+                sqlQuery.addSelect(expression.toSql(), null);
+                sqlQuery.addFrom(relation, null, true);
+                return getQueryCardinality(sqlQuery.toString());
+            }
+        }
+
+        private int getColumnCardinality(
+            String catalog,
+            String schema,
+            String table,
+            String column)
+        {
+            final List<String> key =
+                Arrays.asList(catalog, schema, table, column);
+            int rowCount = -1;
+            if (columnMap.containsKey(key)) {
+                rowCount = columnMap.get(key);
+            } else {
+                final List<StatisticsProvider> statisticsProviders =
+                    dialect.getStatisticsProviders();
+                final Execution execution =
+                    new Execution(
+                        internalStatement,
+                        0);
+                for (StatisticsProvider statisticsProvider
+                    : statisticsProviders)
+                {
+                    rowCount = statisticsProvider.getColumnCardinality(
+                        dialect,
+                        dataSource,
+                        catalog,
+                        schema,
+                        table,
+                        column,
+                        execution);
+                    if (rowCount >= 0) {
+                        break;
+                    }
+                }
+
+                // Note: If all providers fail, we put -1 into the cache,
+                //to ensure that we won't try again.
+                columnMap.put(key, rowCount);
+            }
+            return rowCount;
         }
     }
 }

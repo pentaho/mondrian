@@ -83,7 +83,11 @@ public class Segment {
      */
     protected final RolapStar.Column[] columns;
 
+    protected final RolapStar.Column[] aggColumns;
+
     public final RolapStar.Measure measure;
+
+    public final RolapStar.Measure aggMeasure;
 
     /**
      * An array of axes, one for each constraining column, containing the values
@@ -113,15 +117,18 @@ public class Segment {
      * Creates a <code>Segment</code>; it's not loaded yet.
      *
      * @param star Star that this Segment belongs to
-     * @param measure Measure whose values this Segment contains
+     * @param aggMeasure Measure whose values this Segment contains
+     * @param baseMeasure Corresponding measure in fact table
      * @param predicates List of predicates constraining each axis
      * @param excludedRegions List of regions which are not in this segment.
      */
     public Segment(
         RolapStar star,
         BitKey constrainedColumnsBitKey,
-        RolapStar.Column[] columns,
-        RolapStar.Measure measure,
+        RolapStar.Column[] aggColumns,
+        RolapStar.Column[] baseColumns,
+        RolapStar.Measure aggMeasure,
+        RolapStar.Measure baseMeasure,
         StarColumnPredicate[] predicates,
         List<ExcludedRegion> excludedRegions,
         final List<StarPredicate> compoundPredicateList)
@@ -129,8 +136,10 @@ public class Segment {
         this.id = nextId++;
         this.star = star;
         this.constrainedColumnsBitKey = constrainedColumnsBitKey;
-        this.columns = columns;
-        this.measure = measure;
+        this.columns = baseColumns;
+        this.aggColumns = aggColumns;
+        this.measure = baseMeasure;
+        this.aggMeasure = aggMeasure;
         this.predicates = predicates;
         this.excludedRegions = excludedRegions;
         this.compoundPredicateList = compoundPredicateList;
@@ -153,7 +162,44 @@ public class Segment {
                 star,
                 compoundPredicateBitKeys);
         this.segmentHeader =
-            SegmentBuilder.toHeader(star.getSchema().getStatistic(), this);
+            SegmentBuilder.toHeader(
+                star.getFactTable().getRelation().getSchema().statistic,
+                this);
+    }
+
+    public static Segment create(
+        AggregationManager.StarConverter starConverter,
+        RolapStar star,
+        BitKey constrainedColumnsBitKey,
+        RolapStar.Column[] columns,
+        RolapStar.Measure measure,
+        StarColumnPredicate[] predicates,
+        List<ExcludedRegion> excludedRegions,
+        final List<StarPredicate> compoundPredicateList)
+    {
+        if (starConverter != null) {
+            return new Segment(
+                starConverter.convertStar(star),
+                starConverter.convertBitKey(constrainedColumnsBitKey),
+                columns,
+                starConverter.convertColumnArray(columns),
+                measure,
+                starConverter.convertMeasure(measure),
+                starConverter.convertPredicateArray(predicates),
+                Collections.<ExcludedRegion>emptyList(),
+                starConverter.convertPredicateList(compoundPredicateList));
+        } else {
+            return new Segment(
+                star,
+                constrainedColumnsBitKey,
+                columns,
+                columns,
+                measure,
+                measure,
+                predicates,
+                excludedRegions,
+                compoundPredicateList);
+        }
     }
 
     /**

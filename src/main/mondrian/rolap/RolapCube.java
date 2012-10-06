@@ -19,7 +19,6 @@ import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.server.Statement;
-import mondrian.util.Bug;
 
 import org.apache.log4j.Logger;
 
@@ -86,6 +85,9 @@ public class RolapCube extends CubeBase {
         new ArrayList<RolapMeasureGroup>();
 
     private BitKey closureColumnBitKey;
+
+    // set in init
+    public RolapGalaxy galaxy;
 
     /**
      * Creates a <code>RolapCube</code> from a regular cube.
@@ -252,6 +254,15 @@ public class RolapCube extends CubeBase {
         }
     }
 
+    /**
+     * Post-initialization, doing things which cannot be done until
+     * {@link RolapMeasureGroup}s and their {@link RolapStar}s are initialized.
+     */
+    void init2()
+    {
+        this.galaxy = new RolapGalaxy(this);
+    }
+
     public RolapSchema getSchema() {
         return schema;
     }
@@ -357,6 +368,7 @@ public class RolapCube extends CubeBase {
      * @param dimension Dimension
      */
     void addDimension(RolapCubeDimension dimension) {
+        assert dimensionList.get(dimension.getName()) == null;
         dimensionList.add(dimension);
     }
 
@@ -623,6 +635,17 @@ public class RolapCube extends CubeBase {
             return members;
         }
 
+        public int getLevelCardinality(
+            Level level, boolean approximate,
+            boolean materialize)
+        {
+            int levelCardinality =
+                super.getLevelCardinality(
+                    level, approximate, materialize);
+            levelCardinality += getCalculatedMembers(level).size();
+            return levelCardinality;
+        }
+
         public Member getCalculatedMember(List<Id.Segment> nameParts) {
             final String uniqueName = Util.implode(nameParts);
             for (Formula formula : calculatedMemberList) {
@@ -630,14 +653,6 @@ public class RolapCube extends CubeBase {
                     formula.getMdxMember().getUniqueName();
                 if (formulaUniqueName.equals(uniqueName)
                     && getRole().canAccess(formula.getMdxMember()))
-                {
-                    return formula.getMdxMember();
-                }
-                if (!Bug.BugMondrian960Fixed
-                    && Util.equalName(
-                        Query.getUniqueNameWithoutDimension(
-                            formula.getMdxMember()),
-                        uniqueName))
                 {
                     return formula.getMdxMember();
                 }

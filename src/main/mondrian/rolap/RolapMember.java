@@ -30,7 +30,7 @@ public interface RolapMember extends Member, RolapCalculation {
      *
      * @return Key value
      */
-    Object getKey();
+    Comparable getKey();
 
     /**
      * Returns this member's key as a list. Never returns null.
@@ -45,7 +45,7 @@ public interface RolapMember extends Member, RolapCalculation {
      *
      * <p>The caller must not modify the list.
      */
-    List<Object> getKeyAsList();
+    List<Comparable> getKeyAsList();
 
     /**
      * Returns this member's key as an array.
@@ -153,7 +153,7 @@ public interface RolapMember extends Member, RolapCalculation {
             if (level.isAll()) {
                 return key.equals(Util.COMPARABLE_EMPTY_LIST);
             }
-            final int keyCount = level.attribute.keyList.size();
+            final int keyCount = level.attribute.getKeyList().size();
             if (key instanceof String
                 || key instanceof Number
                 || key instanceof Boolean
@@ -182,6 +182,15 @@ public interface RolapMember extends Member, RolapCalculation {
                 }
             }
             return false;
+        }
+
+        /** Returns a representation of a key that is quicker to create than
+         * that returned by {@link #create(Comparable[])} but may not implement
+         * {@link Comparable}. */
+        public static Object quick(Comparable[] keyValues) {
+            return keyValues.length == 1
+                ? keyValues[0]
+                : Arrays.asList(keyValues);
         }
     }
 }

@@ -456,30 +456,30 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Retail].[BC].[Vancouver]}\n"
-            + "{[Retail].[BC].[Victoria]}\n"
-            + "{[Retail].[CA].[Alameda]}\n"
-            + "{[Retail].[CA].[Beverly Hills]}\n"
-            + "{[Retail].[CA].[Los Angeles]}\n"
-            + "{[Retail].[CA].[San Diego]}\n"
-            + "{[Retail].[CA].[San Francisco]}\n"
-            + "{[Retail].[DF].[Mexico City]}\n"
-            + "{[Retail].[DF].[San Andres]}\n"
-            + "{[Retail].[Guerrero].[Acapulco]}\n"
-            + "{[Retail].[Jalisco].[Guadalajara]}\n"
-            + "{[Retail].[OR].[Portland]}\n"
-            + "{[Retail].[OR].[Salem]}\n"
-            + "{[Retail].[Veracruz].[Orizaba]}\n"
-            + "{[Retail].[WA].[Bellingham]}\n"
-            + "{[Retail].[WA].[Bremerton]}\n"
-            + "{[Retail].[WA].[Seattle]}\n"
-            + "{[Retail].[WA].[Spokane]}\n"
-            + "{[Retail].[WA].[Tacoma]}\n"
-            + "{[Retail].[WA].[Walla Walla]}\n"
-            + "{[Retail].[WA].[Yakima]}\n"
-            + "{[Retail].[Yucatan].[Merida]}\n"
-            + "{[Retail].[Zacatecas].[Camacho]}\n"
-            + "{[Retail].[Zacatecas].[Hidalgo]}\n"
+            + "{[Retail].[Retail].[BC].[Vancouver]}\n"
+            + "{[Retail].[Retail].[BC].[Victoria]}\n"
+            + "{[Retail].[Retail].[CA].[Alameda]}\n"
+            + "{[Retail].[Retail].[CA].[Beverly Hills]}\n"
+            + "{[Retail].[Retail].[CA].[Los Angeles]}\n"
+            + "{[Retail].[Retail].[CA].[San Diego]}\n"
+            + "{[Retail].[Retail].[CA].[San Francisco]}\n"
+            + "{[Retail].[Retail].[DF].[Mexico City]}\n"
+            + "{[Retail].[Retail].[DF].[San Andres]}\n"
+            + "{[Retail].[Retail].[Guerrero].[Acapulco]}\n"
+            + "{[Retail].[Retail].[Jalisco].[Guadalajara]}\n"
+            + "{[Retail].[Retail].[OR].[Portland]}\n"
+            + "{[Retail].[Retail].[OR].[Salem]}\n"
+            + "{[Retail].[Retail].[Veracruz].[Orizaba]}\n"
+            + "{[Retail].[Retail].[WA].[Bellingham]}\n"
+            + "{[Retail].[Retail].[WA].[Bremerton]}\n"
+            + "{[Retail].[Retail].[WA].[Seattle]}\n"
+            + "{[Retail].[Retail].[WA].[Spokane]}\n"
+            + "{[Retail].[Retail].[WA].[Tacoma]}\n"
+            + "{[Retail].[Retail].[WA].[Walla Walla]}\n"
+            + "{[Retail].[Retail].[WA].[Yakima]}\n"
+            + "{[Retail].[Retail].[Yucatan].[Merida]}\n"
+            + "{[Retail].[Retail].[Zacatecas].[Camacho]}\n"
+            + "{[Retail].[Retail].[Zacatecas].[Hidalgo]}\n"
             + "Row #0: \n"
             + "Row #0: \n"
             + "Row #0: \n"
@@ -506,11 +506,11 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             + "Row #0: \n");
         tc.assertAxisReturns(
             "[Retail].[CA].Children",
-            "[Retail].[CA].[Alameda]\n"
-            + "[Retail].[CA].[Beverly Hills]\n"
-            + "[Retail].[CA].[Los Angeles]\n"
-            + "[Retail].[CA].[San Diego]\n"
-            + "[Retail].[CA].[San Francisco]");
+            "[Retail].[Retail].[CA].[Alameda]\n"
+            + "[Retail].[Retail].[CA].[Beverly Hills]\n"
+            + "[Retail].[Retail].[CA].[Los Angeles]\n"
+            + "[Retail].[Retail].[CA].[San Diego]\n"
+            + "[Retail].[Retail].[CA].[San Francisco]");
         final MemberReader memberReader = hierarchy.getMemberReader();
         final MemberCache memberCache =
             ((SmartMemberReader) memberReader).getMemberCache();
@@ -540,43 +540,43 @@ public class MemberCacheControlTest extends FoodMartTestCase {
 
         tc.assertAxisReturns(
             "[Retail].[CA].Children",
-            "[Retail].[CA].[Alameda]\n"
-            + "[Retail].[CA].[Beverly Hills]\n"
-            + "[Retail].[CA].[Los Angeles]\n"
-            + "[Retail].[CA].[San Diego]\n"
-            + "[Retail].[CA].[San Francisco]\n"
-            + "[Retail].[CA].[Berkeley]");
+            "[Retail].[Retail].[CA].[Alameda]\n"
+            + "[Retail].[Retail].[CA].[Beverly Hills]\n"
+            + "[Retail].[Retail].[CA].[Los Angeles]\n"
+            + "[Retail].[Retail].[CA].[San Diego]\n"
+            + "[Retail].[Retail].[CA].[San Francisco]\n"
+            + "[Retail].[Retail].[CA].[Berkeley]");
 
         tc.assertQueryReturns(
             "select {[Retail].[City].Members} on columns from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Retail].[BC].[Vancouver]}\n"
-            + "{[Retail].[BC].[Victoria]}\n"
-            + "{[Retail].[CA].[Alameda]}\n"
-            + "{[Retail].[CA].[Berkeley]}\n"
-            + "{[Retail].[CA].[Beverly Hills]}\n"
-            + "{[Retail].[CA].[Los Angeles]}\n"
-            + "{[Retail].[CA].[San Diego]}\n"
-            + "{[Retail].[CA].[San Francisco]}\n"
-            + "{[Retail].[DF].[Mexico City]}\n"
-            + "{[Retail].[DF].[San Andres]}\n"
-            + "{[Retail].[Guerrero].[Acapulco]}\n"
-            + "{[Retail].[Jalisco].[Guadalajara]}\n"
-            + "{[Retail].[OR].[Portland]}\n"
-            + "{[Retail].[OR].[Salem]}\n"
-            + "{[Retail].[Veracruz].[Orizaba]}\n"
-            + "{[Retail].[WA].[Bellingham]}\n"
-            + "{[Retail].[WA].[Bremerton]}\n"
-            + "{[Retail].[WA].[Seattle]}\n"
-            + "{[Retail].[WA].[Spokane]}\n"
-            + "{[Retail].[WA].[Tacoma]}\n"
-            + "{[Retail].[WA].[Walla Walla]}\n"
-            + "{[Retail].[WA].[Yakima]}\n"
-            + "{[Retail].[Yucatan].[Merida]}\n"
-            + "{[Retail].[Zacatecas].[Camacho]}\n"
-            + "{[Retail].[Zacatecas].[Hidalgo]}\n"
+            + "{[Retail].[Retail].[BC].[Vancouver]}\n"
+            + "{[Retail].[Retail].[BC].[Victoria]}\n"
+            + "{[Retail].[Retail].[CA].[Alameda]}\n"
+            + "{[Retail].[Retail].[CA].[Berkeley]}\n"
+            + "{[Retail].[Retail].[CA].[Beverly Hills]}\n"
+            + "{[Retail].[Retail].[CA].[Los Angeles]}\n"
+            + "{[Retail].[Retail].[CA].[San Diego]}\n"
+            + "{[Retail].[Retail].[CA].[San Francisco]}\n"
+            + "{[Retail].[Retail].[DF].[Mexico City]}\n"
+            + "{[Retail].[Retail].[DF].[San Andres]}\n"
+            + "{[Retail].[Retail].[Guerrero].[Acapulco]}\n"
+            + "{[Retail].[Retail].[Jalisco].[Guadalajara]}\n"
+            + "{[Retail].[Retail].[OR].[Portland]}\n"
+            + "{[Retail].[Retail].[OR].[Salem]}\n"
+            + "{[Retail].[Retail].[Veracruz].[Orizaba]}\n"
+            + "{[Retail].[Retail].[WA].[Bellingham]}\n"
+            + "{[Retail].[Retail].[WA].[Bremerton]}\n"
+            + "{[Retail].[Retail].[WA].[Seattle]}\n"
+            + "{[Retail].[Retail].[WA].[Spokane]}\n"
+            + "{[Retail].[Retail].[WA].[Tacoma]}\n"
+            + "{[Retail].[Retail].[WA].[Walla Walla]}\n"
+            + "{[Retail].[Retail].[WA].[Yakima]}\n"
+            + "{[Retail].[Retail].[Yucatan].[Merida]}\n"
+            + "{[Retail].[Retail].[Zacatecas].[Camacho]}\n"
+            + "{[Retail].[Retail].[Zacatecas].[Hidalgo]}\n"
             + "Row #0: \n"
             + "Row #0: \n"
             + "Row #0: \n"
@@ -608,16 +608,16 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Retail].[BC]}\n"
-            + "{[Retail].[CA]}\n"
-            + "{[Retail].[DF]}\n"
-            + "{[Retail].[Guerrero]}\n"
-            + "{[Retail].[Jalisco]}\n"
-            + "{[Retail].[OR]}\n"
-            + "{[Retail].[Veracruz]}\n"
-            + "{[Retail].[WA]}\n"
-            + "{[Retail].[Yucatan]}\n"
-            + "{[Retail].[Zacatecas]}\n"
+            + "{[Retail].[Retail].[BC]}\n"
+            + "{[Retail].[Retail].[CA]}\n"
+            + "{[Retail].[Retail].[DF]}\n"
+            + "{[Retail].[Retail].[Guerrero]}\n"
+            + "{[Retail].[Retail].[Jalisco]}\n"
+            + "{[Retail].[Retail].[OR]}\n"
+            + "{[Retail].[Retail].[Veracruz]}\n"
+            + "{[Retail].[Retail].[WA]}\n"
+            + "{[Retail].[Retail].[Yucatan]}\n"
+            + "{[Retail].[Retail].[Zacatecas]}\n"
             + "Row #0: \n"
             + "Row #0: 74,748\n"
             + "Row #0: \n"
@@ -661,11 +661,11 @@ public class MemberCacheControlTest extends FoodMartTestCase {
 
         tc.assertAxisReturns(
             "[Retail].[CA].Children",
-            "[Retail].[CA].[Alameda]\n"
-            + "[Retail].[CA].[Beverly Hills]\n"
-            + "[Retail].[CA].[Los Angeles]\n"
-            + "[Retail].[CA].[San Diego]\n"
-            + "[Retail].[CA].[San Francisco]");
+            "[Retail].[Retail].[CA].[Alameda]\n"
+            + "[Retail].[Retail].[CA].[Beverly Hills]\n"
+            + "[Retail].[Retail].[CA].[Los Angeles]\n"
+            + "[Retail].[Retail].[CA].[San Diego]\n"
+            + "[Retail].[Retail].[CA].[San Francisco]");
 
         final MemberReader memberReader = hierarchy.getMemberReader();
         final MemberCache memberCache =
@@ -702,10 +702,10 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         // The list of children should be updated.
         tc.assertAxisReturns(
             "[Retail].[CA].Children",
-            "[Retail].[CA].[Alameda]\n"
-            + "[Retail].[CA].[Beverly Hills]\n"
-            + "[Retail].[CA].[Los Angeles]\n"
-            + "[Retail].[CA].[San Diego]");
+            "[Retail].[Retail].[CA].[Alameda]\n"
+            + "[Retail].[Retail].[CA].[Beverly Hills]\n"
+            + "[Retail].[Retail].[CA].[Los Angeles]\n"
+            + "[Retail].[Retail].[CA].[San Diego]");
     }
 
     public void testMoveCommand() {
@@ -741,17 +741,17 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         // test axis contents
         tc.assertAxisReturns(
             "[Retail].[CA].Children",
-            "[Retail].[CA].[Alameda]\n"
-            + "[Retail].[CA].[Beverly Hills]\n"
-            + "[Retail].[CA].[Los Angeles]\n"
-            + "[Retail].[CA].[San Diego]\n"
-            + "[Retail].[CA].[San Francisco]");
+            "[Retail].[Retail].[CA].[Alameda]\n"
+            + "[Retail].[Retail].[CA].[Beverly Hills]\n"
+            + "[Retail].[Retail].[CA].[Los Angeles]\n"
+            + "[Retail].[Retail].[CA].[San Diego]\n"
+            + "[Retail].[Retail].[CA].[San Francisco]");
         tc.assertAxisReturns(
             "[Retail].[CA].[Alameda].Children",
-            "[Retail].[CA].[Alameda].[HQ]");
+            "[Retail].[Retail].[CA].[Alameda].[HQ]");
         tc.assertAxisReturns(
             "[Retail].[CA].[San Francisco].Children",
-            "[Retail].[CA].[San Francisco].[Store 14]");
+            "[Retail].[Retail].[CA].[San Francisco].[Store 14]");
 
         List<RolapMember> sfChildren =
             memberCache.getChildrenFromCache(sfMember, null);
@@ -784,8 +784,8 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             "");
         tc.assertAxisReturns(
             "[Retail].[CA].[Alameda].Children",
-            "[Retail].[CA].[Alameda].[HQ]\n"
-            + "[Retail].[CA].[Alameda].[Store 14]");
+            "[Retail].[Retail].[CA].[Alameda].[HQ]\n"
+            + "[Retail].[Retail].[CA].[Alameda].[Store 14]");
 
         // Test parent object
         assertTrue(
@@ -819,14 +819,14 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         // test axis contents
         tc.assertAxisReturns(
             "[Retail].[CA].Children",
-            "[Retail].[CA].[Alameda]\n"
-            + "[Retail].[CA].[Beverly Hills]\n"
-            + "[Retail].[CA].[Los Angeles]\n"
-            + "[Retail].[CA].[San Diego]\n"
-            + "[Retail].[CA].[San Francisco]");
+            "[Retail].[Retail].[CA].[Alameda]\n"
+            + "[Retail].[Retail].[CA].[Beverly Hills]\n"
+            + "[Retail].[Retail].[CA].[Los Angeles]\n"
+            + "[Retail].[Retail].[CA].[San Diego]\n"
+            + "[Retail].[Retail].[CA].[San Francisco]");
         tc.assertAxisReturns(
             "[Retail].[CA].[San Francisco].Children",
-            "[Retail].[CA].[San Francisco].[Store 14]");
+            "[Retail].[Retail].[CA].[San Francisco].[Store 14]");
 
         List<RolapMember> sfChildren =
             memberCache.getChildrenFromCache(sfMember, null);
@@ -854,14 +854,14 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         // test axis contents. should not have been modified
         tc.assertAxisReturns(
             "[Retail].[CA].[San Francisco].Children",
-            "[Retail].[CA].[San Francisco].[Store 14]");
+            "[Retail].[Retail].[CA].[San Francisco].[Store 14]");
         tc.assertAxisReturns(
             "[Retail].[CA].Children",
-            "[Retail].[CA].[Alameda]\n"
-            + "[Retail].[CA].[Beverly Hills]\n"
-            + "[Retail].[CA].[Los Angeles]\n"
-            + "[Retail].[CA].[San Diego]\n"
-            + "[Retail].[CA].[San Francisco]");
+            "[Retail].[Retail].[CA].[Alameda]\n"
+            + "[Retail].[Retail].[CA].[Beverly Hills]\n"
+            + "[Retail].[Retail].[CA].[Los Angeles]\n"
+            + "[Retail].[Retail].[CA].[San Diego]\n"
+            + "[Retail].[Retail].[CA].[San Francisco]");
 
         // Test parent object. should be the same
         assertTrue(
@@ -1035,9 +1035,9 @@ public class MemberCacheControlTest extends FoodMartTestCase {
                         // to an 'all' member.
                         testContext.assertAxisReturns(
                             "[Store].Children",
-                            "[Store].[Canada]\n"
-                            + "[Store].[Mexico]\n"
-                            + "[Store].[USA]");
+                            "[Store].[Store].[Canada]\n"
+                            + "[Store].[Store].[Mexico]\n"
+                            + "[Store].[Store].[USA]");
                     }
                 });
             checkFlushHierarchy(

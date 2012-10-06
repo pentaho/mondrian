@@ -45,19 +45,19 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * relates each descendant to all its ancestors.
      */
     private TestContext getEmpClosureTestContext() {
-        return TestContext.instance().createSubstitutingCube(
+        return getTestContext().legacy().createSubstitutingCube(
             "HR",
             "  <Dimension name=\"EmployeesClosure\" foreignKey=\"employee_id\">\n"
             + "      <Hierarchy hasAll=\"true\" allMemberName=\"All Employees\"\n"
-            + "          primaryKey=\"employee_id\" primaryKeyTable=\"employee_closure\">\n"
-            + "        <Join leftKey=\"supervisor_id\" rightKey=\"employee_id\">\n"
-            + "          <Table name=\"employee_closure\"/>\n"
-            + "          <Table name=\"employee\" alias=\"employee2\" />\n"
+            + "          primaryKey=\"employee_id\" primaryKeyTable=\"empcl2\">\n"
+            + "        <Join leftAlias=\"empcl2\" leftKey=\"supervisor_id\" rightAlias=\"emp2\" rightKey=\"employee_id\">\n"
+            + "          <Table name=\"employee_closure\" alias=\"empcl2\"/>\n"
+            + "          <Table name=\"employee\" alias=\"emp2\" />\n"
             + "        </Join>\n"
             + "        <Level name=\"Closure\"  type=\"Numeric\" uniqueMembers=\"true\"\n"
-            + "            table=\"employee_closure\" column=\"supervisor_id\"/>\n"
+            + "            table=\"empcl2\" column=\"supervisor_id\"/>\n"
             + "        <Level name=\"Employee\" type=\"Numeric\" uniqueMembers=\"true\"\n"
-            + "            table=\"employee_closure\" column=\"employee_id\"/>\n"
+            + "            table=\"empcl2\" column=\"employee_id\"/>\n"
             + "      </Hierarchy>\n"
             + "  </Dimension>");
     }
@@ -69,7 +69,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * to validate joins with closures work
      */
     private TestContext getEmpSnowFlakeClosureTestContext() {
-        return TestContext.instance().createSubstitutingCube(
+        return getTestContext().legacy().createSubstitutingCube(
             "HR",
             "<Dimension name=\"EmployeeSnowFlake\" foreignKey=\"employee_id\">"
             + "<Hierarchy hasAll=\"true\" allMemberName=\"All Employees\""
@@ -147,7 +147,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "    formatString=\"#,#\"/>"
             + "</Cube>";
 
-        return TestContext.instance().create(
+        return getTestContext().legacy().create(
             sharedClosureDimension, cube, null, null, null, null);
     }
 
@@ -158,7 +158,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * closure to validate that non-closures work
      */
     private TestContext getEmpNonClosureTestContext() {
-        return TestContext.instance().createSubstitutingCube(
+        return getTestContext().createSubstitutingCube(
             "HR",
             "<Dimension name=\"EmployeesNonClosure\" foreignKey=\"employee_id\">"
             + "<Hierarchy hasAll=\"true\" allMemberName=\"All Employees\""
@@ -190,7 +190,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         getEmpSnowFlakeClosureTestContext().assertQueryReturns(
             "select {[Measures].[Count], [Measures].[Org Salary], \n"
             + "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns,\n"
-            + "{[EmployeeSnowFlake]} on rows\n"
+            + "{[EmployeeSnowFlake].[EmployeeSnowFlake]} on rows\n"
             + "from [HR]",
             "Axis #0:\n"
             + "{}\n"
@@ -200,7 +200,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Number of Employees]}\n"
             + "{[Measures].[Avg Salary]}\n"
             + "Axis #2:\n"
-            + "{[EmployeeSnowFlake].[All Employees]}\n"
+            + "{[EmployeeSnowFlake].[EmployeeSnowFlake].[All Employees]}\n"
             + "Row #0: 7,392\n"
             + "Row #0: $39,431.67\n"
             + "Row #0: 616\n"
@@ -211,15 +211,14 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         TestContext context = getEmpSharedClosureTestContext();
         context.assertQueryReturns(
             "Select "
-            + "{[SharedEmployee].[All SharedEmployees].[Sheri Nowmer].[Derrick Whelply].children} on columns "
-            // + [SharedEmployee].[Sheri Nowmer].children
-            + "from EmployeeSharedClosureCube",
+            + "{[SharedEmployee].[SharedEmployee].[All SharedEmployees].[Sheri Nowmer].[Derrick Whelply].children} on columns "
+            + "from [EmployeeSharedClosureCube]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[SharedEmployee].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]}\n"
-            + "{[SharedEmployee].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo]}\n"
-            + "{[SharedEmployee].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges]}\n"
+            + "{[SharedEmployee].[SharedEmployee].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]}\n"
+            + "{[SharedEmployee].[SharedEmployee].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo]}\n"
+            + "{[SharedEmployee].[SharedEmployee].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges]}\n"
             + "Row #0: $10,256.30\n"
             + "Row #0: $29,121.55\n"
             + "Row #0: $35,487.69\n");
@@ -347,7 +346,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         assertQueryReturns(
             "select {[Measures].[Count], [Measures].[Org Salary], \n"
             + "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns,\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki]} on rows\n"
+            + "{[Employee].[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki]} on rows\n"
             + "from [HR]",
             "Axis #0:\n"
             + "{}\n"
@@ -383,7 +382,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Number of Employees]}\n"
             + "{[Measures].[Avg Salary]}\n"
             + "Axis #2:\n"
-            + "{[EmployeesClosure].[All Employees]}\n"
+            + "{[EmployeesClosure].[EmployeesClosure].[All Employees]}\n"
             + "Row #0: 7,392\n"
             + "Row #0: $39,431.67\n"
             + "Row #0: 616\n"
@@ -406,7 +405,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Number of Employees]}\n"
             + "{[Measures].[Avg Salary]}\n"
             + "Axis #2:\n"
-            + "{[EmployeesClosure].[1]}\n"
+            + "{[EmployeesClosure].[EmployeesClosure].[1]}\n"
             + "Row #0: 7,392\n"
             + "Row #0: $39,431.67\n"
             + "Row #0: 616\n"
@@ -427,7 +426,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Number of Employees]}\n"
             + "{[Measures].[Avg Salary]}\n"
             + "Axis #2:\n"
-            + "{[EmployeesClosure].[7]}\n"
+            + "{[EmployeesClosure].[EmployeesClosure].[7]}\n"
             + "Row #0: 24\n"
             + "Row #0: $234.36\n"
             + "Row #0: 2\n"
@@ -481,7 +480,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "FROM HR\n"
             + "WHERE ([Pay Type].[Hourly])",
             "Axis #0:\n"
-            + "{[Pay Type].[Hourly]}\n"
+            + "{[Employee].[Pay Type].[Hourly]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Employee Salary]}\n"
             + "{[Measures].[Number of Employees]}\n"
@@ -538,26 +537,26 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Number of Employees]}\n"
             + "Axis #2:\n"
+            + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro].[Bunny McCown]}\n"
             + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck]}\n"
             + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Joy Sincich]}\n"
             + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Bertha Jameson]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena].[Matthew Hunter].[Florence Vonholt]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena].[Matthew Hunter].[Eddie Holmes]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena].[Matthew Hunter].[Gerald Drury]}\n"
+            + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton]}\n"
+            + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Gary Dumin]}\n"
+            + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin]}\n"
             + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Jose Bernard].[Mary Hunt].[Libby Allen]}\n"
             + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Jose Bernard].[Mary Hunt].[Bonnie Bruno]}\n"
             + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Jose Bernard].[Mary Hunt].[Angela Bowers]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Charles Macaluso].[Barbara Wallin].[Michael Bruha]}\n"
-            + "Row #0: 23\n"
-            + "Row #1: 23\n"
-            + "Row #2: 23\n"
-            + "Row #3: 23\n"
-            + "Row #4: 23\n"
-            + "Row #5: 23\n"
-            + "Row #6: 19\n"
-            + "Row #7: 19\n"
-            + "Row #8: 19\n"
-            + "Row #9: 19\n");
+            + "Row #0: 1\n"
+            + "Row #1: 1\n"
+            + "Row #2: 1\n"
+            + "Row #3: 1\n"
+            + "Row #4: 1\n"
+            + "Row #5: 1\n"
+            + "Row #6: 1\n"
+            + "Row #7: 1\n"
+            + "Row #8: 1\n"
+            + "Row #9: 1\n");
     }
 
     public void testAllMembersParent() {
@@ -654,7 +653,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Org Salary]}\n"
             + "Row #0: $39,431.67\n");
 
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = getTestContext().legacy().create(
             null,
             "<Cube name='HR-fewer-dims'>\n"
             + "    <Table name='salary'/>\n"
@@ -687,13 +686,13 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
 
         // On a cube with fewer dimensions, this gave a false failure.
         testContext.assertQueryReturns(
-            "SELECT {[Employees].[All Employees].Children} on columns,\n"
+            "SELECT {[Employees].[Employees].[All Employees].Children} on columns,\n"
             + " {[Measures].[Org Salary]} on rows\n"
             + "FROM [HR-fewer-dims]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Employee].[Employees].[Sheri Nowmer]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Org Salary]}\n"
             + "Row #0: $271,552.44\n");
@@ -783,7 +782,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "[Employee].[Employees].[All Employees]",
             "$39,431.67",
             "select"
-            + " `time_by_day`.`the_year` as `Year`,"
+            + " `time_by_day`.`the_year` as `Year (Key)`,"
             + " `salary`.`salary_paid` as `Org Salary` "
             + "from `time_by_day` =as= `time_by_day`,"
             + " `salary` =as= `salary` "
@@ -800,19 +799,16 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             result,
             1,
             extendedContext,
-            "[Employees].[Sheri Nowmer]",
+            "[Employee].[Employees].[Sheri Nowmer]",
             "$39,431.67",
-            "select `time_by_day`.`the_year` as `Year`,"
-            + " `employee`.`employee_id` as `Employee Id (Key)`,"
-            + " `salary`.`salary_paid` as `Org Salary` "
-            + "from `time_by_day` =as= `time_by_day`,"
-            + " `salary` =as= `salary`,"
-            + " `employee` =as= `employee` "
-            + "where `salary`.`pay_date` = `time_by_day`.`the_date`"
-            + " and `time_by_day`.`the_year` = 1997"
-            + " and `salary`.`employee_id` = `employee`.`employee_id`"
-            + " and `employee`.`employee_id` = 1 "
-            + "order by `time_by_day`.`the_year` ASC, `employee`.`employee_id` ASC",
+            "select employee.employee_id as Employee Id (Key),"
+            + " time_by_day.the_year as Year (Key), salary.salary_paid as"
+            + " Org Salary from employee as employee, salary as salary,"
+            + " time_by_day as time_by_day where salary.employee_id ="
+            + " employee.employee_id and employee.employee_id = 1"
+            + " and salary.pay_date = time_by_day.the_date"
+            + " and time_by_day.the_year = 1997"
+            + " order by employee.employee_id ASC, time_by_day.the_year ASC",
             12);
 
         // Drill-through for row #2, [Employees].[All].[Sheri Nowmer].
@@ -821,19 +817,19 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             result,
             2,
             extendedContext,
-            "[Employees].[Sheri Nowmer].[Derrick Whelply]",
+            "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply]",
             "$36,494.07",
-            "select `time_by_day`.`the_year` as `Year`,"
-            + " `employee`.`employee_id` as `Employee Id (Key)`,"
-            + " `salary`.`salary_paid` as `Org Salary` "
-            + "from `time_by_day` =as= `time_by_day`,"
-            + " `salary` =as= `salary`,"
-            + " `employee` =as= `employee` "
-            + "where `salary`.`pay_date` = `time_by_day`.`the_date`"
-            + " and `time_by_day`.`the_year` = 1997"
-            + " and `salary`.`employee_id` = `employee`.`employee_id`"
-            + " and `employee`.`employee_id` = 2 "
-            + "order by `time_by_day`.`the_year` ASC, `employee`.`employee_id` ASC",
+            "select employee.employee_id as Employee Id (Key),"
+            + " time_by_day.the_year as Year (Key),"
+            + " salary.salary_paid as Org Salary"
+            + " from employee as employee,"
+            + " salary as salary, time_by_day as time_by_day"
+            + " where salary.employee_id = employee.employee_id"
+            + " and employee.employee_id = 2"
+            + " and salary.pay_date = time_by_day.the_date"
+            + " and time_by_day.the_year = 1997"
+            + " order by employee.employee_id ASC,"
+            + " time_by_day.the_year ASC",
             12);
     }
 
@@ -965,7 +961,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         if (Bug.avoidSlowTestOnLucidDB(getTestContext().getDialect())) {
             return;
         }
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = getTestContext().legacy().create(
             null,
             "<Cube name=\"HR-ordered\">\n"
             + "  <Table name=\"salary\"/>\n"
@@ -998,58 +994,56 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
 
         // Make sure <Member>.CHILDREN is sorted.
         testContext.assertQueryReturns(
-            "select {[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].Children} on columns from [HR-ordered]",
+            "select {[Employees].[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].Children} on columns from [HR-ordered]",
 
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Sandra Brunner]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Sandra Brunner]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]}\n"
             + "Row #0: $60.00\n"
             + "Row #0: $152.76\n");
 
         // Make sure <Member>.DESCENDANTS is sorted.
         testContext.assertQueryReturns(
-            "select {HEAD(DESCENDANTS([Employees].[Sheri Nowmer], [Employees].[Employee Id], LEAVES), 6)} on columns from [HR-ordered]",
+            "select {HEAD(DESCENDANTS([Employees].[Employees].[Sheri Nowmer], [Employees].[Employee Id], LEAVES), 6)} on columns from [HR-ordered]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Donna Arnold].[Doris Carter]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra].[Phyllis Burchett]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra].[Jennifer Cooper]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra].[Jessica Olguin]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra].[Peggy Petty]}\n"
-            + "Row #0: $193.80\n"
-            + "Row #0: $60.00\n"
-            + "Row #0: $120.00\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro].[Bunny McCown].[Nancy Miller]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro].[Bunny McCown].[Wanda Hollar]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[Corinne Zugschwert]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[Michelle Adams]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[Donahue Steen]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[John Baker]}\n"
+            + "Row #0: $148.20\n"
+            + "Row #0: $80.36\n"
+            + "Row #0: $159.60\n"
+            + "Row #0: $155.04\n"
             + "Row #0: $152.76\n"
-            + "Row #0: $120.00\n"
-            + "Row #0: $182.40\n");
+            + "Row #0: $186.96\n");
     }
 
     public void testLevelMembers() {
-        final TestContext testContext = new TestContext() {
-            public String getDefaultCubeName() {
-                return "HR";
-            }
-        };
+        final TestContext testContext =
+            getTestContext().withCube("HR");
         // <Dimension>.MEMBERS
-        testContext.assertExprReturns("[Employees].Members.Count", "1,156");
+        testContext.assertExprReturns(
+            "[Employee].[Employees].Members.Count", "1,156");
         // <Level>.MEMBERS
         testContext.assertExprReturns(
-            "[Employees].[Employee Id].Members.Count", "1,155");
+            "[Employee].[Employees].[Employee Id].Members.Count", "1,155");
         // <Member>.CHILDREN
         testContext.assertExprReturns(
-            "[Employees].[Sheri Nowmer].Children.Count", "7");
+            "[Employee].[Employees].[Sheri Nowmer].Children.Count", "7");
 
         // Make sure that members of the [Employee] hierarachy don't
         // as calculated (even though they are calculated, internally)
         // but that real calculated members are counted as calculated.
         testContext.assertQueryReturns(
-            "with member [Employees].[Foo] as ' Sum([Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].Children) '\n"
-            + "member [Measures].[Count1] AS [Employees].MEMBERS.Count\n"
-            + "member [Measures].[Count2] AS [Employees].ALLMEMBERS.COUNT\n"
+            "with member [Employees].[Foo] as ' Sum([Employee].[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].Children) '\n"
+            + "member [Measures].[Count1] AS [Employee].[Employees].MEMBERS.Count\n"
+            + "member [Measures].[Count2] AS [Employee].[Employees].ALLMEMBERS.COUNT\n"
             + "select {[Measures].[Count1], [Measures].[Count2]} ON COLUMNS\n"
             + "from [HR]",
             "Axis #0:\n"
@@ -1067,7 +1061,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * "Closure Tables not working with Virtual Cubes"</a>.
      */
     public void testClosureTableInVirtualCube() {
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = getTestContext().legacy().create(
             "<Dimension name=\"Employees\" >"
             + "   <Hierarchy hasAll=\"true\" allMemberName=\"All Employees\""
             + "      primaryKey=\"employee_id\" primaryKeyTable=\"employee\">"
@@ -1106,14 +1100,14 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
 
         testContext.assertQueryReturns(
             "select "
-            + "[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].Children"
+            + "[Employees].[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].Children"
             + " ON COLUMNS, "
             + "{[Measures].[Org Salary]} ON ROWS from [CustomSalesAndHR]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Sandra Brunner]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Sandra Brunner]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Org Salary]}\n"
             + "Row #0: 152.76\n"
@@ -1155,10 +1149,11 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "  <Measure name=\"Count\" column=\"employee_id\" aggregator=\"count\" />\n"
             + "</Cube>\n";
 
-        final TestContext testClosureContext = TestContext.instance().create(
+        final TestContext testClosureContext = getTestContext().legacy().create(
             null, cubestart + closure + cubeend, null, null, null, null);
-        final TestContext testNoClosureContext = TestContext.instance().create(
-            null, cubestart + cubeend, null, null, null, null);
+        final TestContext testNoClosureContext =
+            getTestContext().legacy().create(
+                null, cubestart + cubeend, null, null, null, null);
 
         String mdx;
         String expected;
@@ -1166,7 +1161,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         // 1. Run a big query on both contexts and check that both give same.
         mdx =
             "select {[Measures].[Count]} ON COLUMNS,\n"
-            + " NON EMPTY {[Employees].AllMembers} ON ROWS\n"
+            + " NON EMPTY {[Employees].[Employees].AllMembers} ON ROWS\n"
             + "from [HR4C]";
         expected =
             TestContext.toString(testClosureContext.executeQuery(mdx));
@@ -1183,7 +1178,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         // [Sheri Nowmer]. There was a bug where [All] had a much higher total.
         mdx =
             "select {[Measures].[Count]} ON COLUMNS,\n"
-            + " Descendants([Employees], 2, SELF_AND_BEFORE) ON ROWS\n"
+            + " Descendants([Employees].[Employees].[All], 2, SELF_AND_BEFORE) ON ROWS\n"
             + "from [HR4C]";
         expected =
             "Axis #0:\n"
@@ -1191,15 +1186,15 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Count]}\n"
             + "Axis #2:\n"
-            + "{[Employee].[Employees].[All]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Michael Spence]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Maya Gutierrez]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Rebecca Kanagaki]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Darren Stanz]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Donna Arnold]}\n"
+            + "{[Employees].[Employees].[All]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Derrick Whelply]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Michael Spence]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Maya Gutierrez]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Roberta Damstra]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Rebecca Kanagaki]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Darren Stanz]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Donna Arnold]}\n"
             + "Row #0: 21,252\n"
             + "Row #1: 21,252\n"
             + "Row #2: 14,472\n"
@@ -1216,8 +1211,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     public void testSchemaReaderLevelMembers()
     {
         final SchemaReader schemaReader =
-            TestContext.instance().getConnection()
-            .getSchemaReader().withLocus();
+            getTestContext().getConnection().getSchemaReader().withLocus();
         int found = 0;
         for (Cube cube : schemaReader.getCubes()) {
             if (!cube.getName().equals("HR")) {
@@ -1237,10 +1231,10 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                         schemaReader.getLevelMembers(level, true);
                     assertEquals(1155, memberList.size());
                     assertEquals(
-                        "[Employees].[Sheri Nowmer]",
+                        "[Employee].[Employees].[Sheri Nowmer]",
                         memberList.get(0).getUniqueName());
                     assertEquals(
-                        "[Employees].[Sheri Nowmer].[Derrick Whelply]",
+                        "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply]",
                         memberList.get(1).getUniqueName());
                 }
             }

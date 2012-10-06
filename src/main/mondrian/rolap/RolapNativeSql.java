@@ -61,7 +61,7 @@ public class RolapNativeSql {
     }
 
     private RolapStar getStar(RolapStoredMeasure m) {
-        return ((RolapStar.Measure) m.getStarMeasure()).getStar();
+        return m.getStarMeasure().getStar();
     }
 
     /**
@@ -167,8 +167,7 @@ public class RolapNativeSql {
             if (aggStar != null
                 && measure.getStarMeasure() instanceof RolapStar.Column)
             {
-                RolapStar.Column column =
-                    (RolapStar.Column) measure.getStarMeasure();
+                RolapStar.Column column = measure.getStarMeasure();
                 int bitPos = column.getBitPosition();
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
                 exprInner = aggColumn.generateExprString(sqlQuery);
@@ -255,12 +254,12 @@ public class RolapNativeSql {
                 final RolapCubeHierarchy hierarchy =
                     (RolapCubeHierarchy) evaluator.getCachedResult(
                         new ExpCacheDescriptor(dimExpr, evaluator));
-                dimension = (RolapCubeDimension) hierarchy.getDimension();
+                dimension = hierarchy.getDimension();
             } else if (dimExpr instanceof LevelExpr) {
                 final RolapCubeLevel level =
                     (RolapCubeLevel) evaluator.getCachedResult(
                         new ExpCacheDescriptor(dimExpr, evaluator));
-                dimension = (RolapCubeDimension) level.getDimension();
+                dimension = level.getDimension();
             } else {
                 return null;
             }
@@ -275,10 +274,10 @@ public class RolapNativeSql {
                 //  - name requested: name->key
                 RolapSchema.PhysColumn expression =
                     useCaption
-                        ? rolapLevel.attribute.captionExp == null
-                            ? rolapLevel.attribute.nameExp
-                            : rolapLevel.attribute.captionExp
-                        : rolapLevel.attribute.nameExp;
+                        ? rolapLevel.attribute.getCaptionExp() == null
+                            ? rolapLevel.attribute.getNameExp()
+                            : rolapLevel.attribute.getCaptionExp()
+                        : rolapLevel.attribute.getNameExp();
                 /*
                  * If an aggregation table is used, it might be more efficient
                  * to use only the aggregate table and not the hierarchy table.
@@ -290,8 +289,8 @@ public class RolapNativeSql {
                 String sourceExp;
                 if (aggStar != null
                     && rolapLevel instanceof RolapCubeLevel
-                    && rolapLevel.attribute.keyList.size() == 1
-                    && rolapLevel.attribute.keyList.get(0) == expression)
+                    && rolapLevel.attribute.getKeyList().size() == 1
+                    && rolapLevel.attribute.getKeyList().get(0) == expression)
                 {
                     // The following is disabled until we sort out AggStars.
                     // "col" will always come out null.

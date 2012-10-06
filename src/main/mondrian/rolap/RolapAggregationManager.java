@@ -14,6 +14,7 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.*;
 import mondrian.util.Pair;
 
@@ -202,57 +203,96 @@ public abstract class RolapAggregationManager {
         final RolapMeasureGroup measureGroup = measure.getMeasureGroup();
         final RolapStar.Measure starMeasure = measure.getStarMeasure();
         assert starMeasure != null;
-        final CellRequest request;
-        if (drillThrough) {
-            request =
-                new DrillThroughCellRequest(starMeasure, extendedContext);
-        } else {
-            request =
-                new CellRequest(starMeasure, extendedContext, drillThrough);
-        }
 
-        // Since 'if (extendedContext)' is a well-worn code path,
-        // we have moved the test outside the loop.
-        if (extendedContext) {
-            if (fieldsList != null) {
-                // If a field list was specified, there will be some columns
-                // to include in the result set, other that we don't. This
+        if (drillThrough) {
+            // This is a drillthrough request.
+            DrillThroughCellRequest request =
+                new DrillThroughCellRequest(starMeasure, extendedContext);
+            if (fieldsList != null
+                && fieldsList.size() > 0)
+            {
+                // Since a field list was specified, there will be some columns
+                // to include in the result set & others that we don't. This
                 // happens when the MDX is a DRILLTHROUGH operation and
-                // includes a RETURN clause.
+                // includes a RETURN clause which specified exactly which
+                // fields to return.
                 final SchemaReader reader = cube.getSchemaReader().withLocus();
                 for (Exp exp : fieldsList) {
-                    final RolapCubeMember member = (RolapCubeMember)
+                    final OlapElement member =
                         reader.lookupCompound(
                             cube,
                             Util.parseIdentifier(exp.toString()),
-                            true,
+                            false,
                             Category.Unknown);
-                    if (member.getHierarchy().getRolapHierarchy().closureFor
-                        != null)
-                    {
-                        continue;
+                    if (member == null) {
+                        throw MondrianResource.instance()
+                            .DrillthroughUnknownMemberInReturnClause
+                                .ex(exp.toString());
                     }
-                    addNonConstrainingColumns(member, measureGroup, request);
+                    addDrillthroughColumn(
+                        member, measureGroup,
+                        (DrillThroughCellRequest) request);
                 }
             }
-            for (int i = 1; i < members.length; i++) {
+
+            // Iterate over members.
+            for (int i = 0; i < members.length; i++) {
                 final RolapCubeMember member = (RolapCubeMember) members[i];
                 if (member.getHierarchy().getRolapHierarchy().closureFor
                     != null)
                 {
+                    // If this gets called for an internal "closure" level,
+                    // we skip this level.
+                    // REVIEW: Why should this ever happen??
                     continue;
                 }
-                addNonConstrainingColumns(member, measureGroup, request);
-
-                final RolapCubeLevel level = member.getLevel();
+                // Start by constraining the request on the current member.
+                // This will result in a SQL with a WHERE clause which will
+                // limit the rows to those covered by the current cell.
+                RolapCubeLevel level = member.getLevel();
                 final boolean needToReturnNull =
                     level.getLevelReader().constrainRequest(
                         member, measureGroup, request);
                 if (needToReturnNull) {
                     return null;
                 }
+                if (fieldsList == null
+                    || fieldsList.size() == 0)
+                {
+                    // There was no RETURN clause in the query.
+                    // We add the key columns of the non-all members
+                    // which are part of the evaluator.
+                    // This is the default behavior.
+                    if (member.getDimension().isMeasures()) {
+                        // Measures are a bit different.
+                        if (!member.isCalculated()) {
+                            request.addDrillThroughMeasure(
+                                ((RolapStoredMeasure)member).getStarMeasure(),
+                                member.getName());
+                        }
+                    } else {
+                        // We can't add 'all' levels, since they don't
+                        // map to a DB column.
+                        if (!level.isAll()) {
+                            addNonConstrainingColumns(
+                                level, measureGroup, request);
+                            if (extendedContext) {
+                                while (level.getChildLevel() != null) {
+                                    level = level.getChildLevel();
+                                    addNonConstrainingColumns(
+                                        level, measureGroup, request);
+                                }
+                            }
+                        }
+                    }
+                }
             }
+            return request;
         } else {
+            // This is the code path for regular cell requests.
+            // For each member in the evaluator, we constrain the request.
+            CellRequest request =
+                new CellRequest(starMeasure, extendedContext, drillThrough);
             for (int i = 1; i < members.length; i++) {
                 if (!(members[i] instanceof RolapCubeMember)) {
                     Util.deprecated("no longer occurs?", true);
@@ -267,8 +307,8 @@ public abstract class RolapAggregationManager {
                     return null;
                 }
             }
+            return request;
         }
-        return request;
     }
 
     /**
@@ -293,86 +333,107 @@ public abstract class RolapAggregationManager {
      *   and [State] = 'CA'
      *   </pre></blockquote>
      *
-     * @param member Member to constraint
+     * @param level Level to constrain
      * @param measureGroup Measure group
      * @param request Cell request
      */
     private static void addNonConstrainingColumns(
-        final RolapCubeMember member,
+        RolapCubeLevel level,
         final RolapMeasureGroup measureGroup,
         final CellRequest request)
     {
-        final RolapAttribute level1 = member.getLevel().getAttribute();
-        for (RolapSchema.PhysColumn column : level1.keyList) {
-            RolapStar.Column starColumn =
-                measureGroup.getRolapStarColumn(
-                    member.getDimension(),
-                    column);
-            if (starColumn != null) {
-                request.addConstrainedColumn(starColumn, null);
-            }
+        List<RolapCubeLevel> levels = new ArrayList<RolapCubeLevel>();
+        if (request.extendedContext) {
+            // As per the API, if extendedContext is set to
+            // true, we must also add columns for the sub
+            // levels of the members which are part of the
+            // evaluator. This will ventilate the results
+            // and make it more human friendly.
+            do {
+                levels.add(level);
+                level = level.getChildLevel();
+            } while (level != null);
+        } else {
+            levels.add(level);
         }
-        if (request.extendedContext
-            && level1.nameExp != null)
-        {
-            RolapStar.Column starColumn =
-                measureGroup.getRolapStarColumn(
-                    member.getDimension(),
-                    level1.nameExp);
-            // REVIEW: Is it valid to assume that the level has a join path to
-            //     the measure group? If it has no join path, will we notice
-            //     that getRolapStarColumn returns null for the key cols?
-            //     Should we curry the map: mGroup.map1(dimension).map2(expr)?
-            //     map1 could be empty or null if dimension is not linked.
-            assert starColumn != null;
-            request.addConstrainedColumn(starColumn, null);
+        for (RolapCubeLevel currentLevel : levels) {
+            for (RolapSchema.PhysColumn column
+                : currentLevel.attribute.getKeyList())
+            {
+                RolapStar.Column starColumn =
+                    measureGroup.getRolapStarColumn(
+                        currentLevel.cubeDimension,
+                        column);
+                if (starColumn != null) {
+                    request.addConstrainedColumn(starColumn, null);
+                }
+                if (request instanceof DrillThroughCellRequest) {
+                    ((DrillThroughCellRequest) request)
+                        .addDrillThroughColumn(
+                            starColumn,
+                            currentLevel.getName());
+                }
+            }
         }
     }
 
-    /*
-    private static void addNonConstrainingColumns(
+    private static void addDrillthroughColumn(
         final OlapElement member,
-        final RolapCube baseCube,
-        final CellRequest request)
+        final RolapMeasureGroup measureGroup,
+        final DrillThroughCellRequest request)
     {
-        RolapCubeLevel level;
-        if (member instanceof RolapCubeLevel) {
+        final RolapCubeLevel level;
+        if (member.getDimension().isMeasures()) {
+            // Measures are a bit different.
+            request.addDrillThroughMeasure(
+                ((RolapStoredMeasure)member).getStarMeasure(),
+                member.getName());
+            return;
+        } else if (member instanceof RolapCubeLevel) {
             level = (RolapCubeLevel) member;
-        } else if (member instanceof RolapCubeHierarchy
-            || member instanceof RolapCubeDimension)
-        {
-            level = (RolapCubeLevel) member.getHierarchy().getLevels()[0];
-            if (level.isAll()) {
-                level = level.getChildLevel();
+        } else if (member instanceof RolapCubeDimension) {
+            Hierarchy hierarchy =
+                ((RolapCubeDimension)member).getHierarchy();
+            if (hierarchy.getLevelList().get(0).isAll()) {
+                level = (RolapCubeLevel)
+                    hierarchy.getLevelList().get(1);
+            } else {
+                level = (RolapCubeLevel)
+                    hierarchy.getLevelList().get(0);
             }
-        } else if (member instanceof RolapStar.Measure) {
-            ((DrillThroughCellRequest)request)
-                .addDrillThroughMeasure((RolapStar.Measure)member);
-            return;
-        } else if (member instanceof RolapBaseCubeMeasure) {
-            ((DrillThroughCellRequest)request)
-                .addDrillThroughMeasure(
-                    (RolapStar.Measure)
-                        ((RolapBaseCubeMeasure)member).getStarMeasure());
-            return;
+        } else if (member instanceof RolapCubeHierarchy) {
+            Hierarchy hierarchy = ((RolapCubeHierarchy)member);
+            if (hierarchy.getLevelList().get(0).isAll()) {
+                level = (RolapCubeLevel)
+                    hierarchy.getLevelList().get(1);
+            } else {
+                level = (RolapCubeLevel)
+                    hierarchy.getLevelList().get(0);
+            }
+        } else if (member instanceof RolapCubeMember) {
+            level = ((RolapCubeMember)member).cubeLevel;
         } else {
-            // FIXME make this better.
-            throw new MondrianException();
+            throw MondrianResource.instance()
+                .DrillthroughInvalidMemberInReturnClause
+                    .ex(member.getUniqueName(), member.getClass().getName());
         }
-        RolapStar.Column column = level.getBaseStarKeyColumn(mGbaseCube);
-        if (column != null) {
-            request.addConstrainedColumn(column, null);
-            ((DrillThroughCellRequest)request).addDrillThroughColumn(column);
-            if (request.extendedContext
-                && level.getNameExp() != null)
-            {
-                final RolapStar.Column nameColumn = column.getNameColumn();
-                Util.assertTrue(nameColumn != null);
-                request.addConstrainedColumn(nameColumn, null);
+        if (level.getHierarchy().closureFor != null) {
+            return;
+        }
+
+        for (RolapSchema.PhysColumn column : level.attribute.getKeyList()) {
+            RolapStar.Column starColumn =
+                measureGroup.getRolapStarColumn(
+                    level.cubeDimension,
+                    column);
+            if (starColumn != null) {
+                request.addConstrainedColumn(starColumn, null);
+                request.addDrillThroughColumn(
+                    starColumn,
+                    level.getName());
             }
         }
     }
-    */
 
     /**
      * Groups members (or tuples) from the same compound (i.e. hierarchy) into
@@ -507,7 +568,7 @@ public abstract class RolapAggregationManager {
     {
         assert measureGroup != null;
         final RolapCubeLevel level = member.getLevel();
-        for (RolapSchema.PhysColumn key : level.getAttribute().keyList) {
+        for (RolapSchema.PhysColumn key : level.getAttribute().getKeyList()) {
             final RolapStar.Column column =
                 measureGroup.getRolapStarColumn(
                     level.getDimension(),
@@ -647,9 +708,10 @@ public abstract class RolapAggregationManager {
         StarPredicate memberPredicate)
     {
         final RolapCubeLevel level = member.getLevel();
-        final List<RolapSchema.PhysColumn> keyList = level.attribute.keyList;
-        final List<Object> valueList = member.getKeyAsList();
-        for (Pair<RolapSchema.PhysColumn, Object> pair
+        final List<RolapSchema.PhysColumn> keyList =
+            level.attribute.getKeyList();
+        final List<Comparable> valueList = member.getKeyAsList();
+        for (Pair<RolapSchema.PhysColumn, Comparable> pair
             : Pair.iterate(keyList, valueList))
         {
             final ValueColumnPredicate predicate =

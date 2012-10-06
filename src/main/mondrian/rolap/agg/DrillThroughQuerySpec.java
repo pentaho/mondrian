@@ -61,29 +61,43 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
 
         final RolapStar.Column[] columns = getColumns();
         for (RolapStar.Column column : columns) {
-            addColumnName(column, columnNames, columnNameSet);
+            addColumnName(
+                request.getColumnAlias(column),
+                column,
+                columnNames,
+                columnNameSet);
         }
 
-        addColumnName(request.getMeasure(), columnNames, columnNameSet);
+        addColumnName(
+            request.getMeasure().getName(),
+            request.getMeasure(),
+            columnNames,
+            columnNameSet);
 
         return columnNames;
     }
 
     private void addColumnName(
+        String columnName,
         final RolapStar.Column column,
         final List<String> columnNames,
         final Set<String> columnNameSet)
     {
-        String columnName = column.getName();
-        if (columnName != null) {
-            // nothing
-        } else if (column.getExpression()
-            instanceof RolapSchema.PhysRealColumn)
-        {
-            columnName =
-                ((RolapSchema.PhysRealColumn) column.getExpression()).name;
-        } else {
-            columnName = "c" + Integer.toString(columnNames.size());
+        if (columnName == null) {
+            columnName = column.getName();
+            if (columnName != null) {
+                if (columnName.startsWith("$")) {
+                    // internal property name. truncate the $.
+                    columnName = columnName.replace("$", "");
+                }
+            } else if (column.getExpression()
+                instanceof RolapSchema.PhysRealColumn)
+            {
+                columnName =
+                    ((RolapSchema.PhysRealColumn) column.getExpression()).name;
+            } else {
+                columnName = "c" + Integer.toString(columnNames.size());
+            }
         }
         // Register the column name, and if it's not unique, append numeric
         // suffixes until it is. Also make sure that it is within the
@@ -173,16 +187,21 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
 
         if (!countOnly) {
             String expr = measure.getExpression().toSql();
+            expr = measure.getAggregator().getExpression(expr);
             sqlQuery.addSelect(expr, null, getMeasureAlias(i));
         }
     }
 
     protected boolean isAggregate() {
-        return false;
+        // As per SSAS 2005, the query must include a Group By clause
+        // so that each row returned contains the aggregated value
+        // of the measures for all rows with similar key values.
+        return true;
     }
 
     protected boolean isOrdered() {
-        return true;
+        // We don't order drillthrough queries.
+        return false;
     }
 
     protected List<StarPredicate> getPredicateList() {

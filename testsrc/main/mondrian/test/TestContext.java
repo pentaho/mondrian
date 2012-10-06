@@ -123,6 +123,42 @@ public class TestContext {
     }
 
     /**
+     * Creates a predicate that accepts tests whose name matches the given
+     * regular expression.
+     *
+     * @param regexp Test case regular expression
+     * @return Predicate that accepts tests with the given name
+     */
+    public static Util.Predicate1<Test> patternPredicate(final String regexp) {
+        final Pattern pattern = Pattern.compile(regexp);
+        return new Util.Predicate1<Test>() {
+            public boolean test(Test test) {
+                if (!(test instanceof TestCase)) {
+                    return true;
+                }
+                final TestCase testCase = (TestCase) test;
+                final String testCaseName = testCase.getName();
+                return pattern.matcher(testCaseName).matches();
+            }
+        };
+    }
+
+    /**
+     * Creates a predicate that accepts tests with the given name.
+     *
+     * @param name Test case name
+     * @return Predicate that accepts tests with the given name
+     */
+    public static Util.Predicate1<Test> namePredicate(final String name) {
+        return new Util.Predicate1<Test>() {
+            public boolean test(Test test) {
+                return !(test instanceof TestCase)
+                    || ((TestCase) test).getName().equals(name);
+            }
+        };
+    }
+
+    /**
      * Returns the connect string by which the unit tests can talk to the
      * FoodMart database.
      *
@@ -328,6 +364,11 @@ public class TestContext {
             int i = s.indexOf(
                 "<VirtualCube name=\"Warehouse and Sales\" "
                 + "defaultMeasure=\"Store Sales\">");
+            if (i < 0) {
+                throw new RuntimeException(
+                    "VirtualCube may only specified in legacy TestContext; see "
+                    + "TestContext.legacy()");
+            }
             s = s.substring(0, i)
                 + virtualCubeDefs
                 + s.substring(i);
@@ -415,10 +456,22 @@ public class TestContext {
         Map<String, String> dimensionLinks)
     {
         String s = rawSchema;
+        int h;
 
         final boolean v4 = s.contains("<PhysicalSchema");
+        if (v4
+            && dimensionDefs != null
+            && getFlag(Flag.AUTO_MISSING_LINK) != Boolean.FALSE)
+        {
+            // If we're adding one or more dimensions, we don't want to have to
+            // add a link to every measure group.
+            h = s.indexOf("<Schema ");
+            h = s.indexOf(">", h);
+            s = s.substring(0, h) + " missingLink='ignore'" + s.substring(h);
+        }
+
         // Search for the <Cube> or <VirtualCube> element.
-        int h = s.indexOf("<Cube name=\"" + cubeName + "\"");
+        h = s.indexOf("<Cube name=\"" + cubeName + "\"");
         int end;
         if (h < 0) {
             h = s.indexOf("<Cube name='" + cubeName + "'");
@@ -1061,7 +1114,10 @@ public class TestContext {
      *   member. Throws otherwise.
      */
     public Member executeSingletonAxis(String expression) {
-        final String cubeName = getDefaultCubeName();
+        String cubeName = getDefaultCubeName();
+        if (cubeName.indexOf(' ') >= 0) {
+            cubeName = Util.quoteMdxIdentifier(cubeName);
+        }
         Result result = executeQuery(
             "select {" + expression + "} on columns from " + cubeName);
         Axis axis = result.getAxes()[0];
@@ -1090,9 +1146,13 @@ public class TestContext {
      * whole axis.
      */
     public Axis executeAxis(String expression) {
+        String cubeName = getDefaultCubeName();
+        if (cubeName.indexOf(' ') >= 0) {
+            cubeName = Util.quoteMdxIdentifier(cubeName);
+        }
         Result result = executeQuery(
             "select {" + expression + "} on columns from "
-            + getDefaultCubeName());
+            + cubeName);
         return result.getAxes()[0];
     }
 
@@ -1108,7 +1168,10 @@ public class TestContext {
         Throwable throwable = null;
         Connection connection = getConnection();
         try {
-            final String cubeName = getDefaultCubeName();
+            String cubeName = getDefaultCubeName();
+            if (cubeName.indexOf(' ') >= 0) {
+                cubeName = Util.quoteMdxIdentifier(cubeName);
+            }
             final String queryString =
                     "select {" + expression + "} on columns from " + cubeName;
             Query query = connection.parseQuery(queryString);
@@ -1411,27 +1474,42 @@ public class TestContext {
      */
     public static TestSuite copySuite(
         TestSuite suite,
-        Util.Functor1<Boolean, Test> testPattern)
+        Util.Predicate1<Test> testPattern)
     {
         TestSuite newSuite = new TestSuite(suite.getName());
+        copyTests(newSuite, suite, testPattern);
+        return newSuite;
+    }
+
+    /**
+     * Copies tests that match a given predicate into a target sourceSuite.
+     *
+     * @param targetSuite Target test suite
+     * @param suite Source test suite
+     * @param predicate Predicate that determines whether to copy a test
+     */
+    static void copyTests(
+        TestSuite targetSuite,
+        TestSuite suite,
+        Util.Predicate1<Test> predicate)
+    {
         //noinspection unchecked
         for (Test test : Collections.list((Enumeration<Test>) suite.tests())) {
-            if (!testPattern.apply(test)) {
+            if (!predicate.test(test)) {
                 continue;
             }
             if (test instanceof TestCase) {
-                newSuite.addTest(test);
+                targetSuite.addTest(test);
             } else if (test instanceof TestSuite) {
-                TestSuite subSuite = copySuite((TestSuite) test, testPattern);
+                TestSuite subSuite = copySuite((TestSuite) test, predicate);
                 if (subSuite.countTestCases() > 0) {
-                    newSuite.addTest(subSuite);
+                    targetSuite.addTest(subSuite);
                 }
             } else {
                 // some other kind of test
-                newSuite.addTest(test);
+                targetSuite.addTest(test);
             }
         }
-        return newSuite;
     }
 
     public void close() {
@@ -1453,13 +1531,17 @@ public class TestContext {
         String expected,
         String errorLoc)
     {
+        assertSchemaError(pattern(expected, errorLoc));
+    }
+
+    public void assertSchemaError(Predicate predicate) {
         final List<Exception> exceptionList = new ArrayList<Exception>();
         try {
             assertSimpleQuery();
         } catch (Exception e) {
             exceptionList.add(e);
         }
-        assertContains(exceptionList, expected, errorLoc);
+        assertContains(exceptionList, predicate);
     }
 
     /**
@@ -1485,6 +1567,39 @@ public class TestContext {
         default:
             throw Util.unexpected(dataSet);
         }
+    }
+
+    /**
+     * Sets a flag in this test context. Flags are intended to affect test
+     * behavior, not Mondrian's behavior.
+     *
+     * @see #getFlag
+     *
+     * @param flag Flag
+     * @param value Value of flag
+     * @return This test context
+     */
+    public TestContext withFlag(Flag flag, Object value) {
+        final Flag defineFlag = flag;
+        final Object defineValue = value;
+        return new DelegatingTestContext(this) {
+            public Object getFlag(Flag flag) {
+                if (flag == defineFlag) {
+                    return defineValue;
+                }
+                return super.getFlag(flag);
+            }
+        };
+    }
+
+    /**
+     * Retrieves the value of a test flag.
+     *
+     * @param flag Flag
+     * @return Value of flag, or null if not defined
+     */
+    public Object getFlag(Flag flag) {
+        return null;
     }
 
     private TestContext withPropertiesReplace(
@@ -1671,8 +1786,8 @@ public class TestContext {
         String actualSql,
         int expectedRows)
     {
-        final Util.Functor1<String, String> filter =
-            new Util.Functor1<String, String>()
+        final Util.Function1<String, String> filter =
+            new Util.Function1<String, String>()
             {
                 public String apply(String param) {
                     return transformQuotes(
@@ -1914,11 +2029,15 @@ public class TestContext {
         // Construct a query, and mine it for a parsed expression.
         // Use a fresh connection, because some tests define their own dims.
         final Connection connection = getConnection();
+        String cubeName = getDefaultCubeName();
+        if (cubeName.indexOf(' ') >= 0) {
+            cubeName = Util.quoteMdxIdentifier(cubeName);
+        }
         final String queryString =
             "WITH MEMBER [Measures].[Foo] AS "
             + Util.singleQuoteString(expr)
             + " SELECT FROM "
-            + getDefaultCubeName();
+            + cubeName;
         final Query query = connection.parseQuery(queryString);
         query.resolve();
         final Formula formula = query.getFormulas()[0];
@@ -2027,7 +2146,7 @@ public class TestContext {
      * @return TestContext which contains the substituted schema
      */
     public final TestContext withSubstitution(
-        final Util.Functor1<String, String> substitution)
+        final Util.Function1<String, String> substitution)
     {
         return new DelegatingTestContext(this) {
             public Util.PropertyList getConnectionProperties() {
@@ -2037,7 +2156,7 @@ public class TestContext {
                     propertyList.get(
                         RolapConnectionProperties.CatalogContent.name());
                 if (catalogContent == null) {
-                    catalogContent = super.getRawSchema();
+                    catalogContent = context.getRawSchema();
                 }
                 String catalogContent2 = substitution.apply(catalogContent);
                 Util.PropertyList propertyList2 = propertyList.clone();
@@ -2215,10 +2334,12 @@ public class TestContext {
      * @param cubeName Cube name
      * @return Test context with the given default cube
      */
-    public final TestContext withCube(final String cubeName) {
+    public final TestContext withCube(String cubeName) {
+        final String cubeNameRef =
+            cubeName.replaceAll("\\[", "");
         return new DelegatingTestContext(this) {
             public String getDefaultCubeName() {
-                return cubeName;
+                return cubeNameRef;
             }
         };
     }
@@ -2307,9 +2428,48 @@ public class TestContext {
         String expected,
         String errorLoc)
     {
+        assertContains(
+            exceptionList,
+            new PatternPredicate(expected, errorLoc));
+    }
+
+    /**
+     * Creates a predicate that matches a regex pattern.
+     *
+     * @param expected Expected message
+     * @param errorLoc Location of error
+     * @return predicate
+     */
+    public Predicate pattern(String expected, String errorLoc) {
+        return new PatternPredicate(expected, errorLoc);
+    }
+
+    /** Returns a predicate that matches an exception where expected
+     * occurs as a substring (not a regexp). */
+    public static Predicate fragment(String expected, String errorLoc) {
+        // TODO:
+        return new PatternPredicate(expected, errorLoc);
+    }
+
+
+    /**
+     * Asserts that a list of exceptions (probably from
+     * {@link mondrian.olap.Schema#getWarnings()}) contains the expected
+     * exception.
+     *
+     * <p>If the expected string contains the token "${pos}", it is replaced
+     * with the range indicated by carets when the schema was created: see
+     * {@link #setErrorLocation(String, int, int)}.
+     *
+     * @param exceptionList List of exceptions
+     * @param predicate Checks exception is as expected
+     */
+    public void assertContains(
+        List<Exception> exceptionList,
+        Predicate predicate)
+    {
         final StringBuilder buf = new StringBuilder();
         final StringWriter sw = new StringWriter();
-        final int posPos = expected.indexOf("${pos}");
         for (Exception exception : exceptionList) {
             RolapSchema.XmlLocation xmlLocation = null;
             if (exception instanceof RolapSchema.MondrianSchemaException) {
@@ -2317,66 +2477,8 @@ public class TestContext {
                     (RolapSchema.MondrianSchemaException) exception;
                 xmlLocation = mse.getXmlLocation();
             }
-            String expected2 = expected;
-            if (posPos >= 0 && xmlLocation != null) {
-                String pos = xmlLocation.toString();
-                expected2 =
-                    expected.substring(0, posPos)
-                    + pos
-                    + expected.substring(posPos + "${pos}".length());
-            }
-            final String message = exception.getMessage();
-            if (message != null && message.matches(expected2)) {
-                if (xmlLocation == null) {
-                    Assert.fail(
-                        "Actual message matched expected message, '"
-                        + message
-                        + "'; but we expected an error location and actual "
-                        + "exception had no location");
-                    return;
-                }
-                if (errorLoc == null && errorStart != -1) {
-                    throw new AssertionFailedError(
-                        "Test must specify expected error location. Either use "
-                        + "carets (^) in the schema string, or specify the "
-                        + "errorLoc parameter");
-                }
-                if (errorLoc != null) {
-                    int errorStart = -1;
-                    final String schema = getCatalogContent();
-                    while ((errorStart =
-                        schema.indexOf(errorLoc, errorStart + 1)) >= 0)
-                    {
-                        int errorEnd = errorStart + errorLoc.length();
-                        sw.append(schema.substring(errorStart, errorEnd))
-                            .append(", start=")
-                            .append(String.valueOf(errorStart))
-                            .append(", end=")
-                            .append(String.valueOf(errorEnd))
-                            .append(", range=")
-                            .append(xmlLocation.getRange())
-                            .append(nl);
-                        if (xmlLocation.getRange().equals(
-                                errorStart + "-" + errorEnd))
-                        {
-                            return;
-                        }
-                    }
-                }
-                if (errorStart != -1) {
-                    if (xmlLocation.getRange().equals(
-                            errorStart + "-" + errorEnd))
-                    {
-                        return;
-                    }
-                }
-                throw new AssertionFailedError(
-                    "Actual message matched expected, but actual error "
-                    + "location (" + xmlLocation + ") did not match expected."
-                    + (sw.getBuffer().length() > 0
-                        ? " Other info: "
-                        : "")
-                    + sw);
+            if (predicate.foo(exception, xmlLocation, sw, this)) {
+                return;
             }
             if (buf.length() > 0) {
                 buf.append(Util.nl);
@@ -2385,7 +2487,7 @@ public class TestContext {
         }
         throw new AssertionFailedError(
             "Exception list did not contain expected exception. Exception is:\n"
-            + expected
+            + predicate.describe()
             + "\nException list is:\n"
             + buf
             + "\nOther info:\n" + sw);
@@ -2463,11 +2565,7 @@ public class TestContext {
     }
 
     public static String hierarchyName(String dimension, String hierarchy) {
-        return MondrianProperties.instance().SsasCompatibleNaming.get()
-            ? "[" + dimension + "].[" + hierarchy + "]"
-            : (hierarchy.equals(dimension)
-                ? "[" + dimension + "]"
-                : "[" + dimension + "." + hierarchy + "]");
+        return "[" + dimension + "].[" + hierarchy + "]";
     }
 
     public static String levelName(
@@ -2564,7 +2662,7 @@ public class TestContext {
      * @param <K> Key type
      * @param <V> Value type
      */
-    private static class WeakMap<K, V> implements Map<K, V> {
+    public static class WeakMap<K, V> implements Map<K, V> {
         private final Map<K, WeakReference<V>> map =
             new HashMap<K, WeakReference<V>>();
 
@@ -2663,7 +2761,7 @@ public class TestContext {
      * Iterator over a collection of entries that removes entries whose value
      * is null.
      *
-     * @see Util.GcIterator
+     * @see mondrian.olap.Util.GcIterator
      *
      * @param <K> Key type
      * @param <V> Value type
@@ -2706,6 +2804,105 @@ public class TestContext {
 
         public void remove() {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    /**
+     * Definition of property that affects the behavior of this TestContext.
+     */
+    enum Flag {
+        AUTO_MISSING_LINK
+    }
+
+    interface Predicate {
+        boolean foo(
+            Exception exception,
+            RolapSchema.XmlLocation xmlLocation,
+            StringWriter sw, TestContext testContext);
+        String describe();
+    }
+
+    static class PatternPredicate implements Predicate {
+        final String errorLoc;
+        final String expected;
+
+        public PatternPredicate(String expected, String errorLoc) {
+            this.errorLoc = errorLoc;
+            this.expected = expected;
+        }
+
+        public String describe() {
+            return expected;
+        }
+
+        public boolean foo(
+            Exception exception,
+            RolapSchema.XmlLocation xmlLocation,
+            StringWriter sw, TestContext testContext)
+        {
+            String expected2 = expected;
+            final int posPos = expected.indexOf("${pos}");
+            if (posPos >= 0 && xmlLocation != null) {
+                String pos = xmlLocation.toString();
+                expected2 =
+                    expected.substring(0, posPos)
+                    + pos
+                    + expected.substring(posPos + "${pos}".length());
+            }
+            final String message = exception.getMessage();
+            if (message == null || !message.matches(expected2)) {
+                return false;
+            }
+            if (xmlLocation == null) {
+                Assert.fail(
+                    "Actual message matched expected message, '"
+                    + message
+                    + "'; but we expected an error location and actual "
+                    + "exception had no location");
+                return true;
+            }
+            if (errorLoc == null && testContext.errorStart != -1) {
+                throw new AssertionFailedError(
+                    "Test must specify expected error location. Either use "
+                    + "carets (^) in the schema string, or specify the "
+                    + "errorLoc parameter");
+            }
+            if (errorLoc != null) {
+                int errorStart = -1;
+                final String schema = testContext.getCatalogContent();
+                while ((errorStart =
+                    schema.indexOf(errorLoc, errorStart + 1)) >= 0)
+                {
+                    int errorEnd = errorStart + errorLoc.length();
+                    sw.append(schema.substring(errorStart, errorEnd))
+                        .append(", start=")
+                        .append(String.valueOf(errorStart))
+                        .append(", end=")
+                        .append(String.valueOf(errorEnd))
+                        .append(", range=")
+                        .append(xmlLocation.getRange())
+                        .append(nl);
+                    if (xmlLocation.getRange().equals(
+                            errorStart + "-" + errorEnd))
+                    {
+                        return true;
+                    }
+                }
+            }
+            if (testContext.errorStart != -1) {
+                if (xmlLocation.getRange().equals(
+                        testContext.errorStart + "-" + testContext.errorEnd))
+                {
+                    return true;
+                }
+            }
+            throw new AssertionFailedError(
+                "Actual message matched expected, but actual error "
+                + "location (" + xmlLocation + ") did not match expected."
+                + (sw.getBuffer().length() > 0
+                   ? " Other info: "
+                   : "")
+                + sw);
         }
     }
 }

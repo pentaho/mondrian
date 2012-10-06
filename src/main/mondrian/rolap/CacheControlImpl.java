@@ -10,7 +10,6 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.olap.Id.Quoting;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.SegmentCacheManager;
 import mondrian.rolap.sql.MemberChildrenConstraint;
@@ -165,7 +164,9 @@ public class CacheControlImpl implements CacheControl {
         }
         final List<Member> measures =
             cube.getSchemaReader(null).withLocus().getLevelMembers(
-                measuresDimension.getHierarchy().getLevelList().get(0),
+                measuresDimension
+                    .getHierarchyList().get(0)
+                    .getLevelList().get(0),
                 false);
         if (measures.size() == 0) {
             return new EmptyCellRegion();
@@ -253,8 +254,20 @@ public class CacheControlImpl implements CacheControl {
         // ignore message
     }
 
+    public boolean isTraceEnabled() {
+        return false;
+    }
+
     public void flushSchemaCache() {
         RolapSchemaPool.instance().clear();
+        // In some cases, the request might originate from a reference
+        // to the schema which isn't in the pool anymore. We must also call
+        // the cleanup procedure on the current connection.
+        if (connection != null
+            && connection.getSchema() != null)
+        {
+            connection.getSchema().finalCleanUp();
+        }
     }
 
     // todo: document
@@ -266,6 +279,7 @@ public class CacheControlImpl implements CacheControl {
     {
         RolapSchemaPool.instance().remove(
             catalogUrl,
+            null,
             connectionKey,
             jdbcUser,
             dataSourceStr);
@@ -278,6 +292,7 @@ public class CacheControlImpl implements CacheControl {
     {
         RolapSchemaPool.instance().remove(
             catalogUrl,
+            null, // dialectClassName
             dataSource);
     }
 
@@ -497,7 +512,7 @@ public class CacheControlImpl implements CacheControl {
                         // FIXME: assumes non-composite key
                         final String ccName =
                             ((RolapLevel)member.getLevel()).getAttribute()
-                                .keyList.get(0).toSql();
+                                .getKeyList().get(0).toSql();
                         Set<Comparable> levelValueSet = levels.get(ccName);
                         if (levelValueSet == null) {
                             levelValueSet = new HashSet<Comparable>();
@@ -544,7 +559,8 @@ public class CacheControlImpl implements CacheControl {
                     // FIXME: Don't assume key is non-composite.
                     list.add(
                         new SegmentColumn(
-                            region.level.getAttribute().keyList.get(0).toSql(),
+                            region.level.getAttribute().getKeyList().get(0)
+                                .toSql(),
                             -1,
                             null));
                 }

@@ -13,8 +13,8 @@ import mondrian.olap.*;
 import mondrian.olap.Property;
 import mondrian.olap.fun.FunInfo;
 import mondrian.rolap.*;
-import mondrian.xmla.RowsetDefinition;
-import mondrian.xmla.XmlaHandler;
+import mondrian.xmla.*;
+import mondrian.xmla.RowsetDefinition.MdschemaFunctionsRowset.VarType;
 
 import org.olap4j.*;
 import org.olap4j.metadata.*;
@@ -35,7 +35,7 @@ import java.util.*;
  * @author jhyde
  * @since Nov 12, 2010
  */
-class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
+class MondrianOlap4jExtra extends XmlaHandler.XmlaExtraImpl {
     static final MondrianOlap4jExtra INSTANCE = new MondrianOlap4jExtra();
 
     public ResultSet executeDrillthrough(
@@ -64,10 +64,14 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
         if (level instanceof MondrianOlap4jLevel) {
             // Improved implementation if the provider is mondrian.
             final MondrianOlap4jLevel olap4jLevel = (MondrianOlap4jLevel) level;
+            final RolapCube cube =
+                ((RolapCubeLevel)olap4jLevel.level).getCube();
+            final MondrianOlap4jConnection olapConnection =
+                (MondrianOlap4jConnection) olap4jLevel.olap4jSchema
+                    .olap4jCatalog.olap4jDatabase.getOlapConnection();
             final mondrian.olap.SchemaReader schemaReader =
-                olap4jLevel.olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
-                    .olap4jConnection.getMondrianConnection().getSchemaReader()
-                    .withLocus();
+                cube.getSchemaReader(
+                    olapConnection.getMondrianConnection2().getRole());
             return schemaReader.getLevelCardinality(
                 olap4jLevel.level, true, true);
         } else {
@@ -78,7 +82,7 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
     public void getSchemaFunctionList(
         List<FunctionDefinition> funDefs,
         Schema schema,
-        Util.Functor1<Boolean, String> functionFilter)
+        org.olap4j.xmla.server.impl.Util.Predicate1<String> functionFilter)
     {
         final FunTable funTable =
             ((MondrianOlap4jSchema) schema).schema.getFunTable();
@@ -90,8 +94,8 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
             case Parentheses:
                 continue;
             }
-            final Boolean passes = functionFilter.apply(fi.getName());
-            if (passes == null || !passes) {
+            final boolean passes = functionFilter.test(fi.getName());
+            if (!passes) {
                 continue;
             }
 
@@ -136,8 +140,7 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
                     }
 
                     RowsetDefinition.MdschemaFunctionsRowset.VarType varType =
-                        RowsetDefinition.MdschemaFunctionsRowset.VarType
-                            .forCategory(returnCategory);
+                        categoryToVarType(returnCategory);
                     funDefs.add(
                         new FunctionDefinition(
                             fi.getName(),
@@ -157,15 +160,54 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
         }
     }
 
+    private static VarType categoryToVarType(int category) {
+        switch (category) {
+        case Category.Unknown:
+            // expression == unknown ???
+            // case Category.Expression:
+            return VarType.Empty;
+        case Category.Array:
+            return VarType.Array;
+        case Category.Dimension:
+        case Category.Hierarchy:
+        case Category.Level:
+        case Category.Member:
+        case Category.Set:
+        case Category.Tuple:
+        case Category.Cube:
+        case Category.Value:
+            return VarType.Variant;
+        case Category.Logical:
+            return VarType.Boolean;
+        case Category.Numeric:
+            return VarType.Double;
+        case Category.String:
+        case Category.Symbol:
+        case Category.Constant:
+            return VarType.String;
+        case Category.DateTime:
+            return VarType.Date;
+        case Category.Integer:
+        case Category.Mask:
+            return VarType.Integer;
+        }
+        // NOTE: this should never happen
+        return VarType.Empty;
+    }
+
     public int getHierarchyCardinality(Hierarchy hierarchy)
         throws OlapException
     {
         final MondrianOlap4jHierarchy olap4jHierarchy =
             (MondrianOlap4jHierarchy) hierarchy;
+        final RolapCube cube =
+            ((RolapCubeHierarchy)olap4jHierarchy.hierarchy).getCube();
+        final MondrianOlap4jConnection olapConnection =
+            (MondrianOlap4jConnection) olap4jHierarchy.olap4jSchema
+                .olap4jCatalog.olap4jDatabase.getOlapConnection();
         final mondrian.olap.SchemaReader schemaReader =
-            olap4jHierarchy.olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
-                .olap4jConnection.getMondrianConnection().getSchemaReader()
-                .withLocus();
+            cube.getSchemaReader(
+                olapConnection.getMondrianConnection2().getRole());
         return RolapMemberBase.getHierarchyCardinality(
             schemaReader, olap4jHierarchy.hierarchy);
     }
@@ -242,17 +284,13 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
 
     public List<String> getSchemaRoleNames(Schema schema) {
         MondrianOlap4jSchema olap4jSchema = (MondrianOlap4jSchema) schema;
-        // TODO: this returns ALL roles, no the current user's roles
-        return new ArrayList<String>(
-            ((RolapSchema) olap4jSchema.schema).roleNames());
+        // TODO: this returns ALL roles, not the current user's roles
+        return new ArrayList<String>(olap4jSchema.schema.roleNames());
     }
 
     public String getCubeType(Cube cube) {
         return
-            (cube instanceof MondrianOlap4jCube)
-            && ((RolapCube) ((MondrianOlap4jCube) cube).cube).isVirtual()
-                ? RowsetDefinition.MdschemaCubesRowset.MD_CUBTYPE_VIRTUAL_CUBE
-                : RowsetDefinition.MdschemaCubesRowset.MD_CUBTYPE_CUBE;
+            RowsetDefinition.MdschemaCubesRowset.MD_CUBTYPE_CUBE;
     }
 
     public boolean isLevelUnique(Level level) {
@@ -300,6 +338,37 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
             }
         }
         return Collections.emptyMap();
+    }
+
+    public String getHierarchyName(Hierarchy hierarchy) {
+        String hierarchyName = hierarchy.getName();
+        if (MondrianProperties.instance().SsasCompatibleNaming.get()
+            && !hierarchyName.equals(hierarchy.getDimension().getName()))
+        {
+            hierarchyName =
+                hierarchy.getDimension().getName() + "." + hierarchyName;
+        }
+        return hierarchyName;
+    }
+
+    public boolean isTotalCountEnabled() {
+        return MondrianProperties.instance().EnableTotalCount.booleanValue();
+    }
+
+    public String getPropertyValue(PropertyDefinition propertyDefinition) {
+        switch (propertyDefinition) {
+        case ProviderName:
+            return "Mondrian XML for Analysis Provider";
+        case ProviderVersion:
+            return MondrianServer.forId(null).getVersion().getVersionString();
+        default:
+            return super.getPropertyValue(propertyDefinition);
+        }
+    }
+
+    public List<String> getKeywords() {
+        MondrianServer mondrianServer = MondrianServer.forId(null);
+        return mondrianServer.getKeywords();
     }
 }
 

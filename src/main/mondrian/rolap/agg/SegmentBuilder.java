@@ -135,7 +135,7 @@ public class SegmentBuilder {
             } else {
                 final List<StarColumnPredicate> valuePredicateList =
                     new ArrayList<StarColumnPredicate>();
-                for (Object value : values) {
+                for (Comparable value : values) {
                     valuePredicateList.add(
                         new ValueColumnPredicate(
                             new PredicateColumn(
@@ -159,6 +159,8 @@ public class SegmentBuilder {
             star,
             constrainedColumnsBitKey,
             constrainedColumns,
+            constrainedColumns,
+            measure,
             measure,
             predicateList.toArray(
                 new StarColumnPredicate[predicateList.size()]),
@@ -292,6 +294,7 @@ public class SegmentBuilder {
                 ++z;
             }
             Map<CellKey, Object> v = body.getValueMap();
+            entryLoop:
             for (Map.Entry<CellKey, Object> vEntry : v.entrySet()) {
                 z = 0;
                 for (int i = 0; i < vEntry.getKey().size(); i++) {
@@ -311,7 +314,13 @@ public class SegmentBuilder {
                                 0, axes[z].values.length,
                                 value);
                     }
-                    pos[z++] = targetOrdinal;
+                    if (targetOrdinal >= 0) {
+                        pos[z++] = targetOrdinal;
+                    } else {
+                        // This happens when one of the rollup candidate doesn't
+                        // contain the requested cell.
+                        continue entryLoop;
+                    }
                 }
                 final CellKey ck = CellKey.Generator.newCellKey(pos);
                 if (!cellValues.containsKey(ck)) {
@@ -409,8 +418,7 @@ public class SegmentBuilder {
                     final int offset =
                         CellKey.Generator.getOffset(
                             entry.getKey().getOrdinals(), axisMultipliers);
-                    data[offset] =
-                        (Object)rollupAggregator.aggregate(entry.getValue());
+                    data[offset] = rollupAggregator.aggregate(entry.getValue());
                 }
                 body =
                     new DenseObjectSegmentBody(
@@ -583,16 +591,10 @@ public class SegmentBuilder {
             ccs.add(
                 new SegmentColumn(
                     predicate.getColumn().physColumn.toSql(),
-                    statistic.getCardinality(
+                    statistic.getColumnCardinality(
                         predicate.getColumn().physColumn.relation,
                         predicate.getColumn().physColumn,
-                        new Util.Functor0<Integer>() {
-                            public Integer apply() {
-                                // -1 means "I don't know".
-                                // FIXME: generate SQL to find cardinality
-                                return -1;
-                            }
-                        }),
+                        -1),
                     valueList));
         }
         return ccs;

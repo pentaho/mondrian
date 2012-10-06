@@ -9,6 +9,7 @@
 */
 package mondrian.rolap.cache;
 
+import mondrian.olap.Util;
 import mondrian.rolap.BitKey;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.agg.*;
@@ -128,7 +129,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         return list;
     }
 
-    public void add(
+    public boolean add(
         SegmentHeader header,
         boolean loading,
         SegmentBuilder.SegmentConverter converter)
@@ -139,8 +140,10 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         if (headerInfo != null) {
             if (loading && headerInfo.slot == null) {
                 headerInfo.slot = new SlotFuture<SegmentBody>();
+                // Returns true. same as creating.
+                return true;
             }
-            return;
+            return false;
         }
         headerMap.put(
             header,
@@ -176,6 +179,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
             fuzzyFactMap.put(fuzzyFactKey, fuzzyFactInfo);
         }
         fuzzyFactInfo.headerList.add(header);
+        return true;
     }
 
     public void loadSucceeded(SegmentHeader header, SegmentBody body) {
@@ -186,7 +190,9 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
             : "segment header " + header.getUniqueID() + " is missing";
         assert headerInfo.slot != null
             : "segment header " + header.getUniqueID() + " is not loading";
-        headerInfo.slot.put(body);
+        if (!headerInfo.slot.isDone()) {
+            headerInfo.slot.put(body);
+        }
         if (headerInfo.removeAfterLoad) {
             remove(header);
         }
@@ -347,7 +353,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
             final SortedSet<Comparable> regionValues =
                 regionColumn.getValues();
             final SortedSet<Comparable> headerValues =
-                regionColumn.getValues();
+                headerColumn.getValues();
             if (headerValues == null || regionValues == null) {
                 // This is a wildcard, so it always intersects.
                 return true;
@@ -734,6 +740,13 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
                 final SegmentColumn column1 =
                     header.getConstrainedColumn(
                         column.columnExpression);
+                if (column1 == null) {
+                    // This has been known to occur when segments are populated
+                    // from aggregate tables.
+                    throw Util.newInternal(
+                        "Could not find column for " + column.columnExpression
+                        + " in segment header " + header);
+                }
                 if (column1.getValues() == null) {
                     // Wildcard. Mark all values as present.
                     for (Entry<Comparable, BitSet> entry : valueMap.entrySet())
@@ -807,7 +820,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
             new CartesianProductList<Comparable>(valueLists);
         final List<SegmentHeader> usedSegments = new ArrayList<SegmentHeader>();
         final List<SegmentHeader> unusedSegments =
-            new ArrayList<SegmentHeader>(headers);
+            new ArrayList<SegmentHeader>(Pair.left(matchingHeaders));
         tupleLoop:
         for (List<Comparable> tuple : tuples) {
             // If the value combination is handled by one of the used segments,

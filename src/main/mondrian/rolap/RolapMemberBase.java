@@ -129,15 +129,6 @@ public class RolapMemberBase
         this.key = null;
     }
 
-    RolapMemberBase(
-        RolapMember parentMember,
-        RolapLevel level,
-        Comparable value)
-    {
-        this(parentMember, level, value, null, MemberType.REGULAR);
-        assert !(level instanceof RolapCubeLevel);
-    }
-
     protected Logger getLogger() {
         return LOGGER;
     }
@@ -328,7 +319,6 @@ public class RolapMemberBase
     public Object getPropertyValue(String propertyName, boolean matchCase) {
         Property property = Property.lookup(propertyName, matchCase);
         if (property != null) {
-            Schema schema;
             Member parentMember;
             List<RolapMember> list;
             switch (property.ordinal) {
@@ -351,8 +341,7 @@ public class RolapMemberBase
                 break;
 
             case Property.SCHEMA_NAME_ORDINAL:
-                schema = getHierarchy().getDimension().getSchema();
-                return schema.getName();
+                return getHierarchy().getDimension().getSchema().getName();
 
             case Property.CUBE_NAME_ORDINAL:
                 // TODO: can't go from member to cube cube yet
@@ -503,6 +492,7 @@ public class RolapMemberBase
     }
 
     void setOrderKey(Comparable orderKey) {
+        assert arity(orderKey) == ((RolapLevel) level).getOrderByKeyArity();
         this.orderKey = orderKey;
     }
 
@@ -510,7 +500,7 @@ public class RolapMemberBase
         this.ordinal = -1;
     }
 
-    public Object getKey() {
+    public Comparable getKey() {
         return this.key;
     }
 
@@ -519,23 +509,37 @@ public class RolapMemberBase
         return this.key;
     }
 
-    public List<Object> getKeyAsList() {
-        Object key = getKey();
+    public List<Comparable> getKeyAsList() {
+        return asList(getKey());
+    }
+
+    private static List<Comparable> asList(Comparable key) {
         if (key instanceof List) {
-            return (List<Object>) key;
+            return (List<Comparable>) key;
         } else {
             return Collections.singletonList(key);
         }
     }
 
     public Object[] getKeyAsArray() {
-        Object key = getKey();
+        return asArray(getKey());
+    }
+
+    private static Object[] asArray(Object key) {
         if (key == null) {
             return EMPTY_OBJECT_ARRAY;
         } else if (key instanceof List) {
             return ((List) key).toArray();
         } else {
             return new Object[] {key};
+        }
+    }
+
+    private static int arity(Object key) {
+        if (key instanceof List) {
+            return ((List<Object>) key).size();
+        } else {
+            return 1;
         }
     }
 
@@ -624,7 +628,11 @@ public class RolapMemberBase
     }
 
     public int getDepth() {
-        return getLevel().getDepth();
+        if (parentMember != null) {
+            return getParentMember().getDepth() + 1;
+        } else {
+            return getLevel().getDepth();
+        }
     }
 
     public String getPropertyFormattedValue(String propertyName) {
@@ -738,22 +746,20 @@ public class RolapMemberBase
     {
         seedMember = RolapUtil.strip((RolapMember) seedMember);
 
-        /*
-         * The following are times for executing different set ordinals
-         * algorithms for both the FoodMart Sales cube/Store dimension
-         * and a Large Data set with a dimension with about 250,000 members.
-         *
-         * Times:
-         *    Original setOrdinals Top-down
-         *       Foodmart: 63ms
-         *       Large Data set: 651865ms
-         *    Calling getAllMembers before calling original setOrdinals Top-down
-         *       Foodmart: 32ms
-         *       Large Data set: 73880ms
-         *    Bottom-up/Top-down
-         *       Foodmart: 17ms
-         *       Large Data set: 4241ms
-         */
+        // The following are times for executing different set ordinals
+        // algorithms for both the FoodMart Sales cube/Store dimension
+        // and a Large Data set with a dimension with about 250,000 members.
+        //
+        // Times:
+        //    Original setOrdinals Top-down
+        //       Foodmart: 63ms
+        //       Large Data set: 651865ms
+        //    Calling getAllMembers before calling original setOrdinals Top-down
+        //       Foodmart: 32ms
+        //       Large Data set: 73880ms
+        //    Bottom-up/Top-down
+        //       Foodmart: 17ms
+        //       Large Data set: 4241ms
         long start = System.currentTimeMillis();
 
         try {

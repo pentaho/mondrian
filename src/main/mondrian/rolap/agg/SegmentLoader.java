@@ -13,6 +13,7 @@ package mondrian.rolap.agg;
 import mondrian.olap.MondrianException;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.rolap.cache.SegmentCacheIndex;
 import mondrian.server.Locus;
@@ -100,16 +101,18 @@ public class SegmentLoader {
         List<StarPredicate> compoundPredicateList,
         List<Future<Map<Segment, SegmentWithData>>> segmentFutures)
     {
-        for (GroupingSet groupingSet : groupingSets) {
-            for (Segment segment : groupingSet.getSegments()) {
-                final SegmentCacheIndex index =
-                    cacheMgr.getIndexRegistry().getIndex(segment.star);
-                index.add(
-                    segment.getHeader(),
-                    true,
-                    new SegmentBuilder.StarSegmentConverter(
-                        segment.measure,
-                        compoundPredicateList));
+        if (!MondrianProperties.instance().DisableCaching.get()) {
+            for (GroupingSet groupingSet : groupingSets) {
+                for (Segment segment : groupingSet.getSegments()) {
+                    final SegmentCacheIndex index =
+                        cacheMgr.getIndexRegistry().getIndex(segment.star);
+                    index.add(
+                        segment.getHeader(),
+                        true,
+                        new SegmentBuilder.StarSegmentConverter(
+                            segment.measure,
+                            compoundPredicateList));
+                }
             }
         }
         try {
@@ -168,7 +171,7 @@ public class SegmentLoader {
         List<StarPredicate> compoundPredicateList)
     {
         // Simple assertion. Is this Execution instance still valid,
-        // or should we get outa here.
+        // or should we get outta here.
         Locus.peek().execution.checkCancelOrTimeout();
 
         SqlStatement stmt = null;
@@ -254,7 +257,6 @@ public class SegmentLoader {
         SegmentHeader header,
         SegmentBody body)
     {
-        cacheMgr.loadSucceeded(star, header, body);
         // Write the segment into external cache.
         //
         // It would be a mistake to do this from the cacheMgr -- because the
@@ -264,7 +266,10 @@ public class SegmentLoader {
         // Also note that we push the segments to external cache after we have
         // called cacheMgr.loadSucceeded. That call will allow the current
         // query to proceed.
-        cacheMgr.compositeCache.put(header, body);
+        if (!MondrianProperties.instance().DisableCaching.get()) {
+            cacheMgr.compositeCache.put(header, body);
+            cacheMgr.loadSucceeded(star, header, body);
+        }
     }
 
     private boolean setFailOnStillLoadingSegments(
@@ -597,8 +602,9 @@ public class SegmentLoader {
         final RowList processedRows = new RowList(processedTypes, 100);
 
         while (rawRows.next()) {
-            ++stmt.rowCount;
+            checkResultLimit(++stmt.rowCount);
             processedRows.createRow();
+
             // get the columns
             int columnIndex = 0;
             for (int axisIndex = 0; axisIndex < arity;
@@ -754,6 +760,15 @@ public class SegmentLoader {
             }
         }
         return processedRows;
+    }
+
+    private void checkResultLimit(int currentCount) {
+        final int limit =
+            MondrianProperties.instance().ResultLimit.get();
+        if (limit > 0 && currentCount > limit) {
+            throw MondrianResource.instance()
+                .SegmentFetchLimitExceeded.ex(limit);
+        }
     }
 
     /**

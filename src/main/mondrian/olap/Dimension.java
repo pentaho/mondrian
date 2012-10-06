@@ -24,6 +24,15 @@ public interface Dimension extends OlapElement, Annotated, Named {
     final String MEASURES_NAME = "Measures";
 
     /**
+     * {@inheritDoc}
+     *
+     * @deprecated Uses of this method are suspect, if a dimension has more than
+     * one hierarchy. Hierarchy.getDimension().getHierarchy() will give you back
+     * a different hierarchy. If you have a specific hierarchy, use it.
+     */
+    Hierarchy getHierarchy();
+
+    /**
      * Returns an array of the hierarchies which belong to this dimension.
      *
      * @deprecated Use {@link #getHierarchyList()}.

@@ -204,7 +204,9 @@ public final class NameResolver {
             } else {
                 // If parent is not a member, member must be a root member.
                 return parent.equals(formulaMember.getHierarchy())
-                    || parent.equals(formulaMember.getDimension());
+                    || parent.equals(formulaMember.getDimension())
+                    || parent instanceof Cube
+                    && !MondrianProperties.instance().NeedDimensionPrefix.get();
             }
         } else {
             return parent instanceof Cube;

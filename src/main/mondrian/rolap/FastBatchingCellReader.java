@@ -121,7 +121,9 @@ public class FastBatchingCellReader implements CellReader {
         // synchronous request for the cell segment. If it is in the cache, it
         // will be worth the wait, because we can avoid the effort of batching
         // up requests that could have been satisfied by the same segment.
-        if (missCount == 0) {
+        if (!MondrianProperties.instance().DisableCaching.get()
+            && missCount == 0)
+        {
             SegmentWithData segmentWithData = cacheMgr.peek(request);
             if (segmentWithData != null) {
                 segmentWithData.getStar().register(segmentWithData);
@@ -156,7 +158,12 @@ public class FastBatchingCellReader implements CellReader {
         assert !request.isUnsatisfiable();
         ++missCount;
         cellRequests.add(request);
-        if (cellRequests.size() % 5000 == 0) {
+        int limit =
+            MondrianProperties.instance().CellBatchSize.get();
+        if (limit <= 0) {
+            limit = 5000; // TODO Make this logic into a pluggable algorithm.
+        }
+        if (cellRequests.size() % limit == 0) {
             // Signal that it's time to ask the cache manager if it has cells
             // we need in the cache. Not really an exception.
             throw CellRequestQuantumExceededException.INSTANCE;
@@ -239,19 +246,19 @@ public class FastBatchingCellReader implements CellReader {
             Map<SegmentHeader, SegmentBody> headerBodies =
                 new HashMap<SegmentHeader, SegmentBody>();
 
-            // Segments that could not be loaded. Will need to tell cache mgr to
-            // remove them from the index.
-            final Set<SegmentHeader> failedSegments =
-                new HashSet<SegmentHeader>();
-
             // Load each suggested segment from cache, and place it in
             // thread-local cache. Note that this step can't be done by the
             // cacheMgr -- it's our cache.
             for (SegmentHeader header : response.cacheSegments) {
                 final SegmentBody body = cacheMgr.compositeCache.get(header);
                 if (body == null) {
-                    cacheMgr.remove(cube.getStar(), header);
-                    failedSegments.add(header);
+                    // REVIEW: This is an async call. It will return before the
+                    // index is informed that this header is there,
+                    // so a LoadBatchCommand might still return
+                    // it on the next iteration.
+                    if (cube.getStar() != null) {
+                        cacheMgr.remove(cube.getStar(), header);
+                    }
                     ++failureCount;
                     continue;
                 }
@@ -261,27 +268,25 @@ public class FastBatchingCellReader implements CellReader {
                 segmentWithData.getStar().register(segmentWithData);
             }
 
-            // Perform each suggested rollup.
-
-            // Rollups that failed. If there are any, we may need to re-process
-            // some cell requests.
-            final List<BatchLoader.RollupInfo> failedRollups =
-                new ArrayList<BatchLoader.RollupInfo>();
+            /*
+             * Perform each suggested rollup.
+             *
+             * TODO this could be improved.
+             * See http://jira.pentaho.com/browse/MONDRIAN-1195
+             */
 
             // Rollups that succeeded. Will tell cache mgr to put the headers
             // into the index and the header/bodies in cache.
             final Map<SegmentHeader, SegmentBody> succeededRollups =
                 new HashMap<SegmentHeader, SegmentBody>();
 
-            for (BatchLoader.RollupInfo rollup : response.rollups) {
+            for (final BatchLoader.RollupInfo rollup : response.rollups) {
                 // Gather the required segments.
                 Map<SegmentHeader, SegmentBody> map =
                     findResidentRollupCandidate(headerBodies, rollup);
                 if (map == null) {
                     // None of the candidate segment-sets for this rollup was
                     // all present in the cache.
-                    failedRollups.add(rollup);
-                    ++failureCount;
                     continue;
                 }
 
@@ -310,7 +315,43 @@ public class FastBatchingCellReader implements CellReader {
 
                 final SegmentWithData segmentWithData =
                     response.convert(header, body);
+
+                // Register this segment with the local star.
                 segmentWithData.getStar().register(segmentWithData);
+
+                /*
+                 * Make sure that the cache manager knows about this new
+                 * segment. First thing we do is to add it to the index.
+                 * Then we insert the segment body into the SlotFuture.
+                 * This has to be done on the SegmentCacheManager's
+                 * Actor thread to ensure thread safety.
+                 */
+                if (!MondrianProperties.instance().DisableCaching.get()) {
+                    final Locus locus = Locus.peek();
+                    cacheMgr.execute(
+                        new SegmentCacheManager.Command<Void>() {
+                            public Void call() throws Exception {
+                                SegmentCacheIndex index =
+                                    cacheMgr.getIndexRegistry()
+                                        .getIndex(segmentWithData.getStar());
+                                boolean added = index.add(
+                                    segmentWithData.getHeader(), true,
+                                    response.converterMap.get(
+                                        SegmentCacheIndexImpl
+                                        .makeConverterKey(
+                                            segmentWithData.getHeader())));
+                                if (added) {
+                                    ((SlotFuture<SegmentBody>)index.getFuture(
+                                        segmentWithData.getHeader()))
+                                        .put(body);
+                                }
+                                return null;
+                            }
+                            public Locus getLocus() {
+                                return locus;
+                            }
+                        });
+                }
             }
 
             // Wait for SQL statements to end -- but only if there are no
@@ -445,7 +486,9 @@ public class FastBatchingCellReader implements CellReader {
         }
         body = cacheMgr.compositeCache.get(header);
         if (body == null) {
-            cacheMgr.remove(cube.getStar(), header);
+            if (cube.getStar() != null) {
+                cacheMgr.remove(cube.getStar(), header);
+            }
             return null;
         }
         headerBodies.put(header, body);
@@ -520,7 +563,37 @@ class BatchLoader {
     private void recordCellRequest2(final CellRequest request) {
         // If there is a segment matching these criteria, write it to the list
         // of found segments, and remove the cell request from the list.
-        final AggregationKey key = new AggregationKey(request);
+        final AggregationKey key = AggregationKey.create(request);
+
+        final SegmentBuilder.SegmentConverterImpl converter =
+                new SegmentBuilder.SegmentConverterImpl(key, request);
+
+        boolean success =
+            loadFromCaches(request, key, converter);
+        // Skip the batch if we already have a rollup for it.
+        if (rollupBitmaps.contains(request.getConstrainedColumnsBitKey())) {
+            return;
+        }
+
+        // As a last resort, we load from SQL.
+        if (!success) {
+            loadFromSql(request, key, converter);
+        }
+    }
+
+    /**
+     * Loads a cell from caches. If the cell is successfully loaded,
+     * we return true.
+     */
+    private boolean loadFromCaches(
+        final CellRequest request,
+        final AggregationKey key,
+        final SegmentBuilder.SegmentConverterImpl converter)
+    {
+        if (MondrianProperties.instance().DisableCaching.get()) {
+            // Caching is disabled. Return always false.
+            return false;
+        }
 
         // Is request matched by one of the headers we intend to load?
         final Map<String, Comparable> mappedCellValues =
@@ -529,6 +602,7 @@ class BatchLoader {
             AggregationKey.getCompoundPredicateStringList(
                 key.getStar(),
                 key.getCompoundPredicateList());
+
         for (SegmentHeader header : cacheHeaders) {
             if (SegmentCacheIndexImpl.matches(
                     header,
@@ -538,7 +612,7 @@ class BatchLoader {
                 // It's likely that the header will be in the cache, so this
                 // request will be satisfied. If not, the header will be removed
                 // from the segment index, and we'll be back.
-                return;
+                return true;
             }
         }
         final RolapStar.Measure measure = request.getMeasure();
@@ -560,8 +634,7 @@ class BatchLoader {
         // Ask for the first segment to be loaded from cache. (If it's no longer
         // in cache, we'll be back, and presumably we'll try the second
         // segment.)
-        final SegmentBuilder.SegmentConverterImpl converter =
-            new SegmentBuilder.SegmentConverterImpl(key, request);
+
         if (!headersInCache.isEmpty()) {
             final SegmentHeader headerInCache = headersInCache.get(0);
             final Future<SegmentBody> future =
@@ -585,7 +658,7 @@ class BatchLoader {
             converterMap.put(
                 SegmentCacheIndexImpl.makeConverterKey(request, key),
                 converter);
-            return;
+            return true;
         }
 
         // Try to roll up if the measure's rollup aggregator supports
@@ -601,7 +674,9 @@ class BatchLoader {
         // for example. Both the measure's aggregator and its rollup
         // aggregator must support raw data aggregation. We call
         // Aggregator.supportsFastAggregates() to verify.
-        if (measure.getAggregator().supportsFastAggregates(
+        if (MondrianProperties.instance()
+                .EnableInMemoryRollup.get()
+            && measure.getAggregator().supportsFastAggregates(
                 measure.getDatatype())
             && measure.getAggregator().getRollup().supportsFastAggregates(
                 measure.getDatatype())
@@ -632,10 +707,17 @@ class BatchLoader {
                     new SegmentBuilder.StarSegmentConverter(
                         measure,
                         key.getCompoundPredicateList()));
-                return;
+                return true;
             }
         }
+        return false;
+    }
 
+    private void loadFromSql(
+        final CellRequest request,
+        final AggregationKey key,
+        final SegmentBuilder.SegmentConverterImpl converter)
+    {
         // Finally, add to a batch. It will turn in to a SQL request.
         Batch batch = batches.get(key);
         if (batch == null) {
@@ -690,23 +772,28 @@ class BatchLoader {
             recordCellRequest2(cellRequest);
         }
 
+        // Create a list of all batches, converting batches into requests on
+        // (smaller) aggregate tables, if possible.
+        final List<Batch> batchList = new ArrayList<Batch>();
+        for (Batch batch : batches.values()) {
+            final Batch newBatch = batch.pullUp(cube.galaxy);
+            batchList.add(newBatch != null ? newBatch : batch);
+        }
+
         // Sort the batches into deterministic order.
-        List<Batch> batchList =
-            new ArrayList<Batch>(batches.values());
-        Collections.sort(batchList, BatchComparator.instance);
+        Collections.sort(batchList);
+
         final List<Future<Map<Segment, SegmentWithData>>> segmentMapFutures =
             new ArrayList<Future<Map<Segment, SegmentWithData>>>();
+        List<? extends Loadable> loadableList = batchList;
         if (shouldUseGroupingFunction()) {
             LOGGER.debug("Using grouping sets");
-            List<CompositeBatch> groupedBatches = groupBatches(batchList);
-            for (CompositeBatch batch : groupedBatches) {
-                batch.load(segmentMapFutures);
-            }
-        } else {
-            // Load batches in turn.
-            for (Batch batch : batchList) {
-                batch.loadAggregation(segmentMapFutures);
-            }
+            loadableList = groupBatches(batchList);
+        }
+
+        // Load batches in turn.
+        for (Loadable loadable : loadableList) {
+            loadable.load(segmentMapFutures);
         }
 
         if (LOGGER.isDebugEnabled()) {
@@ -728,7 +815,7 @@ class BatchLoader {
             futures);
     }
 
-    static List<CompositeBatch> groupBatches(List<Batch> batchList) {
+    static List<Loadable> groupBatches(List<Batch> batchList) {
         Map<AggregationKey, CompositeBatch> batchGroups =
             new HashMap<AggregationKey, CompositeBatch>();
         for (int i = 0; i < batchList.size(); i++) {
@@ -749,23 +836,15 @@ class BatchLoader {
             }
         }
 
-        wrapNonBatchedBatchesWithCompositeBatches(batchList, batchGroups);
-        final CompositeBatch[] compositeBatches =
-            batchGroups.values().toArray(
-                new CompositeBatch[batchGroups.size()]);
-        Arrays.sort(compositeBatches, CompositeBatchComparator.instance);
-        return Arrays.asList(compositeBatches);
-    }
-
-    private static void wrapNonBatchedBatchesWithCompositeBatches(
-        List<Batch> batchList,
-        Map<AggregationKey, CompositeBatch> batchGroups)
-    {
+        final List<Loadable> loadables = new ArrayList<Loadable>();
+        loadables.addAll(batchGroups.values());
         for (Batch batch : batchList) {
             if (batchGroups.get(batch.batchKey) == null) {
-                batchGroups.put(batch.batchKey, new CompositeBatch(batch));
+                loadables.add(batch);
             }
         }
+        Collections.sort(loadables);
+        return loadables;
     }
 
     static void addToCompositeBatch(
@@ -838,9 +917,18 @@ class BatchLoader {
     }
 
     /**
+     * Superclass of {@link Batch} and {@link CompositeBatch}.
+     */
+    interface Loadable extends Comparable<Loadable> {
+        void load(List<Future<Map<Segment, SegmentWithData>>> segmentFutures);
+
+        Batch getDetailedBatch();
+    }
+
+    /**
      * Set of Batches which can grouped together.
      */
-    static class CompositeBatch {
+    static class CompositeBatch implements Loadable {
         /** Batch with most number of constraint columns */
         final Batch detailedBatch;
 
@@ -849,6 +937,14 @@ class BatchLoader {
 
         CompositeBatch(Batch detailedBatch) {
             this.detailedBatch = detailedBatch;
+        }
+
+        public Batch getDetailedBatch() {
+            return detailedBatch;
+        }
+
+        public int compareTo(Loadable o) {
+            return detailedBatch.compareTo(o.getDetailedBatch());
         }
 
         void add(Batch summaryBatch) {
@@ -971,7 +1067,8 @@ class BatchLoader {
         }
     }
 
-    public class Batch {
+    public class Batch implements Loadable {
+        private final AggregationManager.StarConverter starConverter;
         // the CellRequest's constrained columns
         final RolapStar.Column[] columns;
         final List<RolapStar.Measure> measuresList =
@@ -985,12 +1082,27 @@ class BatchLoader {
             new ArrayList<StarColumnPredicate[]>();
 
         public Batch(CellRequest request) {
-            columns = request.getConstrainedColumns();
-            valueSets = new HashSet[columns.length];
+            //noinspection unchecked
+            this(
+                null,
+                request.getConstrainedColumns(),
+                new HashSet[request.getConstrainedColumns().length],
+                AggregationKey.create(request));
             for (int i = 0; i < valueSets.length; i++) {
                 valueSets[i] = new HashSet<StarColumnPredicate>();
             }
-            batchKey = new AggregationKey(request);
+        }
+
+        private Batch(
+            AggregationManager.StarConverter starConverter,
+            RolapStar.Column[] columns,
+            Set<StarColumnPredicate>[] valueSets,
+            AggregationKey batchKey)
+        {
+            this.starConverter = starConverter;
+            this.columns = columns;
+            this.valueSets = valueSets;
+            this.batchKey = batchKey;
         }
 
         public String toString() {
@@ -1007,6 +1119,14 @@ class BatchLoader {
                 string = buf.toString();
             }
             return string;
+        }
+
+        public Batch getDetailedBatch() {
+            return this;
+        }
+
+        public int compareTo(Loadable o) {
+            return compareBatches(this, o.getDetailedBatch());
         }
 
         public final void add(CellRequest request) {
@@ -1051,7 +1171,7 @@ class BatchLoader {
             return cacheMgr;
         }
 
-        public final void loadAggregation(
+        public final void load(
             List<Future<Map<Segment, SegmentWithData>>> segmentFutures)
         {
             GroupingSetsCollector collectorWithGroupingSetsTurnedOff =
@@ -1084,13 +1204,14 @@ class BatchLoader {
 
             if (tooManyDistinctMeasures) {
                 doSpecialHandlingOfDistinctCountMeasures(
+                    starConverter,
                     predicates,
                     groupingSetsCollector,
                     segmentFutures);
             }
 
-            // Load agg(distinct <SQL expression>) measures individually
-            // for DBs that does allow multiple distinct SQL measures.
+            // Load "agg(distinct <SQL expression>)" measures individually
+            // for databases that do not allow multiple distinct SQL measures.
             if (!dialect.allowsMultipleDistinctSqlMeasures()) {
                 // Note that the intention was originally to capture the
                 // subquery SQL measures and separate them out; However,
@@ -1105,6 +1226,7 @@ class BatchLoader {
                     getDistinctSqlMeasures(measuresList);
                 for (RolapStar.Measure measure : distinctSqlMeasureList) {
                     AggregationManager.loadAggregation(
+                        starConverter,
                         cacheMgr,
                         cellRequestCount,
                         Collections.singletonList(measure),
@@ -1120,6 +1242,7 @@ class BatchLoader {
             final int measureCount = measuresList.size();
             if (measureCount > 0) {
                 AggregationManager.loadAggregation(
+                    starConverter,
                     cacheMgr,
                     cellRequestCount,
                     measuresList,
@@ -1138,6 +1261,7 @@ class BatchLoader {
         }
 
         private void doSpecialHandlingOfDistinctCountMeasures(
+            AggregationManager.StarConverter starConverter,
             StarColumnPredicate[] predicates,
             GroupingSetsCollector groupingSetsCollector,
             List<Future<Map<Segment, SegmentWithData>>> segmentFutures)
@@ -1167,6 +1291,7 @@ class BatchLoader {
                 // Load all the distinct measures based on the same expression
                 // together
                 AggregationManager.loadAggregation(
+                    starConverter,
                     cacheMgr,
                     cellRequestCount,
                     distinctMeasuresList,
@@ -1526,68 +1651,293 @@ class BatchLoader {
         {
             return otherValueSet.equals(thisValueSet);
         }
+
+        /**
+         * Converts this batch into a batch that will return the same result
+         * by reading from an aggregate table.
+         *
+         * @param galaxy Galaxy (defines available stars)
+         * @return Rolled up batch, or null if roll up is not possible
+         */
+        public Batch pullUp(RolapGalaxy galaxy) {
+            if (!batchKey.getCompoundPredicateList().isEmpty()) {
+                return null;
+            }
+            final RolapStar star = getStar();
+            final RolapMeasureGroup aggMeasureGroup =
+                galaxy.findAgg(
+                    star,
+                    getConstrainedColumnsBitKey(),
+                    getMeasureBitKey(),
+                    new boolean[]{false});
+            if (aggMeasureGroup == null) {
+                return null;
+            }
+            final RolapStar newStar = aggMeasureGroup.getStar();
+            assert newStar != star : "expected improvement";
+            final List<RolapStar.Column> newColumnList =
+                new ArrayList<RolapStar.Column>();
+            final BitKey newBitKey =
+                BitKey.Factory.makeBitKey(newStar.getColumnCount());
+            final Map<RolapSchema.PhysColumn, RolapSchema.PhysColumn> map =
+                new HashMap<RolapSchema.PhysColumn, RolapSchema.PhysColumn>();
+            for (RolapStar.Column column : columns) {
+                final RolapStar.Column newColumn =
+                    galaxy.getEquivalentColumn(column, newStar);
+                map.put(
+                    (RolapSchema.PhysColumn) column.getExpression(),
+                    (RolapSchema.PhysColumn) newColumn.getExpression());
+                newColumnList.add(newColumn);
+                newBitKey.set(newColumn.getBitPosition());
+            }
+            final AggregationManager.StarConverter starConverter =
+                new StarConverterImpl(
+                    galaxy, newStar, star, Collections.EMPTY_MAP);
+
+            final AggregationManager.StarConverter reverseConverter =
+                new StarConverterImpl(
+                    galaxy, star, newStar, map);
+            final RolapStar.Column[] newColumns =
+                newColumnList.toArray(
+                    new RolapStar.Column[newColumnList.size()]);
+            final Batch newBatch =
+                new Batch(
+                    starConverter,
+                    newColumns,
+                    reverseConverter.convertPredicateSets(valueSets),
+                    new AggregationKey(
+                        newBitKey,
+                        newStar,
+                        Collections.<StarPredicate>emptyList()));
+            for (RolapStar.Measure measure : measuresList) {
+                newBatch.measuresList.add(
+                    (RolapStar.Measure)
+                        galaxy.getEquivalentColumn(measure, newStar));
+            }
+            return newBatch;
+        }
+
+        private BitKey getMeasureBitKey() {
+            BitKey bitKey = getConstrainedColumnsBitKey().emptyCopy();
+            for (RolapStar.Measure measure : measuresList) {
+                bitKey.set(measure.getBitPosition());
+            }
+            return bitKey;
+        }
     }
 
-    private static class CompositeBatchComparator
-        implements Comparator<CompositeBatch>
+    /**
+     * Converts from one star to another. Generally fromStar is an
+     * aggregation table, and toStar is the fact.
+     */
+    static class StarConverterImpl
+        implements AggregationManager.StarConverter
     {
-        static final CompositeBatchComparator instance =
-            new CompositeBatchComparator();
+        private final RolapGalaxy galaxy;
+        private final RolapStar fromStar;
+        private final RolapStar toStar;
+        private final Map<RolapSchema.PhysColumn, RolapSchema.PhysColumn>
+            map;
 
-        public int compare(CompositeBatch o1, CompositeBatch o2) {
-            return BatchComparator.instance.compare(
-                o1.detailedBatch,
-                o2.detailedBatch);
+        public StarConverterImpl(
+            RolapGalaxy galaxy,
+            RolapStar fromStar,
+            RolapStar toStar,
+            Map<RolapSchema.PhysColumn, RolapSchema.PhysColumn> map)
+        {
+            this.galaxy = galaxy;
+            this.fromStar = fromStar;
+            this.toStar = toStar;
+            this.map = map;
+        }
+
+        public RolapStar convertStar(RolapStar star) {
+            assert star == fromStar;
+            return toStar;
+        }
+
+        public BitKey convertBitKey(BitKey bitKey) {
+            final BitKey toBitKey =
+                BitKey.Factory.makeBitKey(toStar.getColumnCount());
+            for (int i : bitKey) {
+                toBitKey.set(galaxy.getEquivalentBit(i, fromStar, toStar));
+            }
+            return toBitKey;
+        }
+
+        public RolapStar.Column[] convertColumnArray(
+            RolapStar.Column[] columns)
+        {
+            final RolapStar.Column[] toColumns = columns.clone();
+            for (int i = 0; i < columns.length; i++) {
+                toColumns[i] =
+                    convertColumn(columns[i]);
+            }
+            return toColumns;
+        }
+
+        public RolapStar.Column convertColumn(RolapStar.Column column) {
+            return galaxy.getEquivalentColumn(column, toStar);
+        }
+
+        public RolapStar.Measure convertMeasure(RolapStar.Measure measure) {
+            return (RolapStar.Measure) convertColumn(measure);
+        }
+
+        public StarColumnPredicate[] convertPredicateArray(
+            StarColumnPredicate[] predicates)
+        {
+            final StarColumnPredicate[] toPredicates = predicates.clone();
+            for (int i = 0; i < toPredicates.length; i++) {
+                toPredicates[i] = convertPredicate(predicates[i]);
+            }
+            return toPredicates;
+        }
+
+        public List<StarPredicate> convertPredicateList(
+            final List<StarPredicate> predicateList)
+        {
+            return new AbstractList<StarPredicate>() {
+                public StarPredicate get(int index) {
+                    return convertPredicate(predicateList.get(index));
+                }
+                public int size() {
+                    return predicateList.size();
+                }
+            };
+        }
+
+        public Set<StarColumnPredicate>[] convertPredicateSets(
+            Set<StarColumnPredicate>[] valueSets)
+        {
+            final Set<StarColumnPredicate>[] sets =
+                new Set[valueSets.length];
+            for (int i = 0; i < sets.length; i++) {
+                sets[i] =
+                    convertPredicateSet(valueSets[i]);
+            }
+            return sets;
+        }
+
+        private Set<StarColumnPredicate> convertPredicateSet(
+            Set<StarColumnPredicate> set)
+        {
+            final Set<StarColumnPredicate> convertedSet =
+                new HashSet<StarColumnPredicate>();
+            for (StarColumnPredicate predicate : set) {
+                convertedSet.add(
+                    convertPredicate(predicate));
+            }
+            return convertedSet;
+        }
+
+        public List<StarColumnPredicate> convertStarColumnPredicateList(
+            final List<StarColumnPredicate> predicateList)
+        {
+            return new AbstractList<StarColumnPredicate>() {
+                public StarColumnPredicate get(int index) {
+                    return convertPredicate(predicateList.get(index));
+                }
+                public int size() {
+                    return predicateList.size();
+                }
+            };
+        }
+
+        private StarColumnPredicate convertPredicate(
+            StarColumnPredicate predicate)
+        {
+            if (predicate instanceof ListColumnPredicate) {
+                return convertPredicate((ListColumnPredicate) predicate);
+            }
+            if (predicate instanceof ValueColumnPredicate) {
+                return convert((ValueColumnPredicate) predicate);
+            }
+            if (predicate instanceof LiteralColumnPredicate) {
+                return predicate;
+            }
+            throw new UnsupportedOperationException(
+                "unexpected predicate: " + predicate
+                + "; class: " + predicate.getClass());
+        }
+
+        private ValueColumnPredicate convert(ValueColumnPredicate predicate)
+        {
+            return new ValueColumnPredicate(
+                convert(predicate.getColumn()),
+                predicate.getValue());
+        }
+
+        private StarColumnPredicate convertPredicate(
+            ListColumnPredicate predicate)
+        {
+            return new ListColumnPredicate(
+                convert(predicate.getColumn()),
+                convertStarColumnPredicateList(
+                    predicate.getPredicates()));
+        }
+
+        private PredicateColumn convert(PredicateColumn predicateColumn) {
+            return new PredicateColumn(
+                RolapSchema.BadRouter.INSTANCE,
+                convertPhysColumn(predicateColumn.physColumn));
+        }
+
+        private RolapSchema.PhysColumn convertPhysColumn(
+            RolapSchema.PhysColumn physColumn)
+        {
+            final RolapSchema.PhysColumn convertedColumn =
+                map.get(physColumn);
+            return convertedColumn == null ? physColumn : convertedColumn;
+        }
+
+        private StarPredicate convertPredicate(StarPredicate predicate) {
+            throw new UnsupportedOperationException(
+                "unexpected predicate: " + predicate
+                + "; class: " + predicate.getClass());
         }
     }
 
-    private static class BatchComparator implements Comparator<Batch> {
-        static final BatchComparator instance = new BatchComparator();
-
-        private BatchComparator() {
+    static int compareBatches(Batch o1, Batch o2) {
+        int c = o1.columns.length - o2.columns.length;
+        if (c != 0) {
+            return c;
         }
-
-        public int compare(
-            Batch o1, Batch o2)
-        {
-            if (o1.columns.length != o2.columns.length) {
-                return o1.columns.length - o2.columns.length;
+        Util.deprecated(
+            "review: this assumes that RolapStar.Column names are unique - not sure this is true",
+            false);
+        for (int i = 0; i < o1.columns.length; i++) {
+            c = o1.columns[i].getName().compareTo(
+                o2.columns[i].getName());
+            if (c != 0) {
+                return c;
             }
-            Util.deprecated(
-                "review: this assumes that RolapStar.Column names are unique - not sure this is true",
-                false);
-            for (int i = 0; i < o1.columns.length; i++) {
-                int c = o1.columns[i].getName().compareTo(
-                    o2.columns[i].getName());
-                if (c != 0) {
-                    return c;
-                }
-            }
-            for (int i = 0; i < o1.columns.length; i++) {
-                int c = compare(o1.valueSets[i], o2.valueSets[i]);
-                if (c != 0) {
-                    return c;
-                }
-            }
-            return 0;
         }
-
-        <T> int compare(Set<T> set1, Set<T> set2) {
-            if (set1.size() != set2.size()) {
-                return set1.size() - set2.size();
+        for (int i = 0; i < o1.columns.length; i++) {
+            c = compare(o1.valueSets[i], o2.valueSets[i]);
+            if (c != 0) {
+                return c;
             }
-            Iterator<T> iter1 = set1.iterator();
-            Iterator<T> iter2 = set2.iterator();
-            while (iter1.hasNext()) {
-                T v1 = iter1.next();
-                T v2 = iter2.next();
-                int c = Util.compareKey(v1, v2);
-                if (c != 0) {
-                    return c;
-                }
-            }
-            return 0;
         }
+        return 0;
+    }
+
+    static <T> int compare(Set<T> set1, Set<T> set2) {
+        int c = set1.size() - set2.size();
+        if (c != 0) {
+            return c;
+        }
+        Iterator<T> iter1 = set1.iterator();
+        Iterator<T> iter2 = set2.iterator();
+        while (iter1.hasNext()) {
+            T v1 = iter1.next();
+            T v2 = iter2.next();
+            c = Util.compareKey(v1, v2);
+            if (c != 0) {
+                return c;
+            }
+        }
+        return 0;
     }
 
     private static class ValueColumnConstraintComparator
@@ -1614,7 +1964,6 @@ class BatchLoader {
             }
         }
     }
-
 }
 
 // End FastBatchingCellReader.java

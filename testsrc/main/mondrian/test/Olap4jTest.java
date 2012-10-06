@@ -10,11 +10,16 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.olap4j.MondrianOlap4jDriver;
 import mondrian.xmla.XmlaHandler;
 
 import org.olap4j.*;
 import org.olap4j.Cell;
+import org.olap4j.Position;
+import org.olap4j.impl.ArrayMap;
 import org.olap4j.mdx.IdentifierNode;
+import org.olap4j.mdx.SelectNode;
+import org.olap4j.mdx.parser.*;
 import org.olap4j.metadata.*;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Hierarchy;
@@ -25,9 +30,7 @@ import org.olap4j.metadata.Property;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Tests mondrian's olap4j API.
@@ -138,7 +141,7 @@ public class Olap4jTest extends FoodMartTestCase {
         assertEquals("Ventes", annotation.getValue());
 
         final Map<String, Object> map =
-            XmlaHandler.getExtra(connection).getAnnotationMap(salesCube);
+            MondrianOlap4jDriver.EXTRA.getAnnotationMap(salesCube);
         assertEquals("Ventes", map.get("caption.fr_FR"));
     }
 
@@ -321,6 +324,225 @@ public class Olap4jTest extends FoodMartTestCase {
     static void closeOnCompletion(Object statement) throws Exception {
         Method method = java.sql.Statement.class.getMethod("closeOnCompletion");
         method.invoke(statement);
+    }
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-1123">
+     * MONDRIAN-1123, "ClassCastException for calculated members that are not
+     * part of the measures dimension"</a>.
+     *
+     * @throws java.sql.SQLException on error
+     */
+    public void testCalcMemberInCube() throws SQLException {
+        final OlapConnection testContext =
+            TestContext.instance().legacy().createSubstitutingCube(
+                "Sales",
+                null,
+                "<CalculatedMember name='H1 1997' formula='Aggregate([Time].[1997].[Q1]:[Time].[1997].[Q2])' dimension='Time' />")
+            .getOlap4jConnection();
+        final Cube cube = testContext.getOlapSchema().getCubes().get("Sales");
+        final List<Measure> measureList = cube.getMeasures();
+        StringBuilder buf = new StringBuilder();
+        for (Measure measure : measureList) {
+            buf.append(measure.getName()).append(";");
+        }
+        // Calc member in the Time dimension does not appear in the list.
+        // Never did, as far as I can tell.
+        assertEquals(
+            "Unit Sales;Store Cost;Store Sales;Sales Count;Customer Count;"
+            + "Promotion Sales;Profit;Profit last Period;Profit Growth;",
+            buf.toString());
+
+        final CellSet cellSet = testContext.createStatement().executeOlapQuery(
+            "select AddCalculatedMembers([Time].[Time].Members) on 0 from [Sales]");
+        int n = 0, n2 = 0;
+        for (Position position : cellSet.getAxes().get(0).getPositions()) {
+            if (position.getMembers().get(0).getName().equals("H1 1997")) {
+                ++n;
+            }
+            ++n2;
+        }
+        assertEquals(1, n);
+        assertEquals(35, n2);
+
+        final CellSet cellSet2 = testContext.createStatement().executeOlapQuery(
+            "select Filter(\n"
+            + " AddCalculatedMembers([Time].[Time].Members),\n"
+            + " [Time].[Time].CurrentMember.Properties('MEMBER_TYPE') = 4) on 0\n"
+            + "from [Sales]");
+        n = 0;
+        n2 = 0;
+        for (Position position : cellSet2.getAxes().get(0).getPositions()) {
+            if (position.getMembers().get(0).getName().equals("H1 1997")) {
+                ++n;
+            }
+            ++n2;
+        }
+        assertEquals(1, n);
+        assertEquals(1, n2);
+    }
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-1124">
+     * MONDRIAN-1124, "Unique name of hierarchy should always have 2 parts, even
+     * if dimension &amp; hierarchy have same name"</a>.
+     *
+     * @throws java.sql.SQLException on error
+     */
+    public void testUniqueName() throws SQLException {
+        // Things are straightforward if dimension, hierarchy, level have
+        // distinct names. This worked even before MONDRIAN-1124 was fixed.
+        CellSet x =
+            getTestContext().getOlap4jConnection().createStatement()
+                .executeOlapQuery(
+                    "select [Store].[Stores] on 0\n"
+                    + "from [Sales]");
+        Member member =
+            x.getAxes().get(0).getPositions().get(0).getMembers().get(0);
+        assertEquals("[Store]", member.getDimension().getUniqueName());
+        assertEquals("[Store].[Stores]", member.getHierarchy().getUniqueName());
+        assertEquals(
+            "[Store].[Stores].[(All)]", member.getLevel().getUniqueName());
+        assertEquals("[Store].[Stores].[All Stores]", member.getUniqueName());
+
+        CellSet y =
+            getTestContext()
+                .createSubstitutingCube(
+                    "Sales",
+                    "<Dimension name='Store Type' key='Store Id' table='store'>\n"
+                    + "  <Attributes>\n"
+                    + "    <Attribute name='Store Id' keyColumn='store_id'/>\n"
+                    + "    <Attribute name='Store Type' table='store' keyColumn='store_type'/>\n"
+                    + "  </Attributes>\n"
+                    + "  <Hierarchies>\n"
+                    + "    <Hierarchy name='Store Type'>\n"
+                    + "      <Level attribute='Store Type'/>\n"
+                    + "    </Hierarchy>\n"
+                    + "  </Hierarchies>\n"
+                    + "</Dimension>\n",
+                    null,
+                    null,
+                    null,
+                    ArrayMap.of(
+                        "Sales",
+                        "<ForeignKeyLink dimension='Store Type' "
+                        + "foreignKeyColumn='store_id'/>"))
+                .getOlap4jConnection().createStatement()
+                .executeOlapQuery(
+                    "select [Store Type].[Store Type] on 0\n"
+                    + "from [Sales]");
+        member =
+            y.getAxes().get(0).getPositions().get(0).getMembers().get(0);
+        assertEquals("[Store Type]", member.getDimension().getUniqueName());
+        assertEquals(
+            "[Store Type].[Store Type]", member.getHierarchy().getUniqueName());
+        assertEquals(
+            "[Store Type].[Store Type].[(All)]",
+            member.getLevel().getUniqueName());
+        assertEquals(
+            "[Store Type].[Store Type].[All Store Types]",
+            member.getUniqueName());
+    }
+
+    public void testCellSetGetCellPositionArray() throws SQLException {
+        // Create a cell set with 1 column and 2 rows.
+        // Only coordinates (0, 0) and (0, 1) are valid.
+        CellSet x =
+            getTestContext().getOlap4jConnection().createStatement()
+                .executeOlapQuery(
+                    "select {[Customer].[Gender].[M]} on 0,\n"
+                    + " {[Customer].[Marital Status].[M],\n"
+                    + "  [Customer].[Marital Status].[S]} on 1\n"
+                    + "from [Sales]");
+        Cell cell;
+
+        // column=0, row=1 via getCell(List<Integer>)
+        cell = x.getCell(Arrays.asList(0, 1));
+        final String xxx = "68,755";
+        assertEquals(xxx, cell.getFormattedValue());
+
+        // column=1, row=0 out of range
+        try {
+            cell = x.getCell(Arrays.asList(1, 0));
+            fail("expected exception, got " + cell);
+        } catch (IndexOutOfBoundsException e) {
+            assertEquals(
+                "Cell coordinates (1, 0) fall outside CellSet bounds (1, 2)",
+                e.getMessage());
+        }
+
+        // ordinal=1 via getCell(int)
+        cell = x.getCell(1);
+        assertEquals(xxx, cell.getFormattedValue());
+
+        // column=0, row=1 via getCell(Position...)
+        final Position col0 = x.getAxes().get(0).getPositions().get(0);
+        final Position row1 = x.getAxes().get(1).getPositions().get(1);
+        final Position row0 = x.getAxes().get(1).getPositions().get(0);
+        cell = x.getCell(col0, row1);
+        assertEquals(xxx, cell.getFormattedValue());
+
+        // row=1, column=0 via getCell(Position...).
+        // This is OK, even though positions are not in axis order.
+        // Result same as previous.
+        cell = x.getCell(row1, col0);
+        assertEquals(xxx, cell.getFormattedValue());
+
+        try {
+            cell = x.getCell(col0);
+            fail("expected exception, got " + cell);
+        } catch (IllegalArgumentException e) {
+            assertEquals(
+                "Coordinates have different dimension (1) than axes (2)",
+                e.getMessage());
+        }
+
+        try {
+            cell = x.getCell(col0, row1, col0);
+            fail("expected exception, got " + cell);
+        } catch (IllegalArgumentException e) {
+            assertEquals(
+                "Coordinates have different dimension (3) than axes (2)",
+                e.getMessage());
+        }
+
+        try {
+            cell = x.getCell(row0, row1);
+            fail("expected exception, got " + cell);
+        } catch (IllegalArgumentException e) {
+            assertEquals(
+                "Coordinates contain axis 1 more than once",
+                e.getMessage());
+        }
+    }
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1204">MONDRIAN-1204,
+     * "Olap4j's method toOlap4j throws NPE if we have a function"</a>.
+     */
+    public void testBugMondrian1204() throws SQLException {
+        final OlapConnection connection =
+            TestContext.instance().getOlap4jConnection();
+        final String mdx =
+            "SELECT\n"
+            + "NON EMPTY {Hierarchize({[Measures].[Customer Count]})} ON COLUMNS,\n"
+            + "CurrentDateMember([Time].[Year], \"\"\"[Time].[Year].[1997]\"\"\") ON ROWS\n"
+            + "FROM [Sales 2]";
+        try {
+            final MdxParserFactory parserFactory =
+                connection.getParserFactory();
+            MdxParser mdxParser =
+                parserFactory.createMdxParser(connection);
+            MdxValidator mdxValidator =
+                parserFactory.createMdxValidator(connection);
+
+            SelectNode select = mdxParser.parseSelect(mdx);
+            SelectNode validatedSelect = mdxValidator.validateSelect(select);
+            Util.discard(validatedSelect);
+        } finally {
+            Util.close(null, null, connection);
+        }
     }
 }
 

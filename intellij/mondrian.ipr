@@ -43,6 +43,8 @@
       <file url="file://$PROJECT_DIR$/../../olap4j/src/mondrian/olap4j/FactoryJdbc3Impl.java" />
       <file url="file://$PROJECT_DIR$/../../olap4j/src/org/olap4j/driver/xmla/FactoryJdbc3Impl.java" />
       <file url="file://$PROJECT_DIR$/../src/main/mondrian/olap4j/FactoryJdbc3Impl.java" />
+      <file url="file://$PROJECT_DIR$/../src/main/mondrian/olap4j/FactoryJdbc4Impl.java" />
+      <file url="file://$PROJECT_DIR$/../src/main/mondrian/util/UtilCompatibleJdk16.java" />
     </excludeFromCompile>
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />
@@ -314,7 +316,6 @@
     <custom-packaging allow="false" />
   </component>
   <component name="VcsDirectoryMappings">
-    <mapping directory="" vcs="" />
     <mapping directory="$PROJECT_DIR$/.." vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../mondrianpro" vcs="svn" />
     <mapping directory="$PROJECT_DIR$/../../olap4j" vcs="svn" />
@@ -349,6 +350,7 @@
         <root url="jar://$PROJECT_DIR$/../lib/jlfgr.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/servlet-api.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/commons-io.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/commons-vfs2.jar!/" />
       </CLASSES>
       <JAVADOC>
         <root url="jar://$PROJECT_DIR$/../lib/commons-math-javadoc.jar!/" />
@@ -422,25 +424,14 @@
       <JAVADOC />
       <SOURCES />
     </library>
-    <library name="pentaho">
+    <library name="olap4j-xmlaserver">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../workbench/plugins/pentaho-mondrianschemaworkbench-plugins.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../workbench/plugins/kettle-db.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../workbench/plugins/pentaho-xul-swing.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../workbench/plugins/kettle-engine.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../workbench/plugins/kettle-core.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../workbench/plugins/pentaho-xul-core.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../workbench/plugins/kettle-dbdialog.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/olap4j-xmlaserver.jar!/" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="validation-api">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../lib/validation-api.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
+      <SOURCES>
+        <root url="file://$PROJECT_DIR$/../../olap4j-xmlaserver/src/main/java" />
+      </SOURCES>
     </library>
     <library name="xmlunit">
       <CLASSES>

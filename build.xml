@@ -44,7 +44,6 @@
   <property name="javatest.dir" value="${testsrc.dir}/main"/>
   <property name="etc.dir" value="${src.dir}/etc"/>
   <property name="lib.dir" value="lib"/>
-  <property name="wb.plugins.dir" value="workbench/plugins"/>
   <property name="doc.dir" value="doc"/>
   <property name="resource.location" location="resource"/>
   <property name="javadoc.dir" value="${doc.dir}/api"/>
@@ -53,26 +52,17 @@
   <property name="testclasses-jdk14.dir" value="testclasses-jdk14"/>
   <property name="build.dir" value="build"/>
   <property name="dist.name" value="${name}-${project.revision}"/>
-  <property name="embedded.dist.name" value="${name}-${project.revision}-embedded"/>
   <property name="dist.base" value="distribution"/>
   <property name="dist.dir" value="dist"/>
   <property name="demo.dir" value="demo"/>
   <property name="webapp.dir" value="webapp"/>
   <property name="dist.src.file" value="${dist.dir}/${dist.name}-src.zip"/>
   <property name="dist.bin.file" value="${dist.dir}/${dist.name}.zip"/>
-  <property name="dist.bin.derby.file" value="${dist.dir}/${dist.name}-derby.zip"/>
   <property name="dist.doc.file" value="${dist.dir}/doc.tar.gz"/>
   <property name="jar.file" value="${lib.dir}/${name}.jar"/>
   <property name="jar-jdk14.file" value="${lib.dir}/${name}-jdk14.jar" />
-  <property name="workbench.jar.file" value="${lib.dir}/workbench.jar"/>
-  <property name="workbench.dist.name" value="workbench-${project.revision}"/>
-  <property name="workbench.zip-dist.file" value="${workbench.dist.name}.zip"/>
-  <property name="workbench.tar-dist.file" value="${workbench.dist.name}.tar.gz"/>
-  <property name="workbench.main.class" value="mondrian.gui.Workbench"/>
   <property name="resource.jar.file" value="${lib.dir}/eigenbase-resgen.jar"/>
   <property name="xom.jar.file" value="${lib.dir}/eigenbase-xom.jar"/>
-  <property name="war.file" value="${lib.dir}/${name}.war"/>
-  <property name="war.embeddedDb.file" value="${lib.dir}/${name}-embedded.war"/>
   <property name="jdk.home" value="${env.JAVA_HOME}"/>
 
   <property name="log4j.configuration" value="log4j.properties" />
@@ -129,28 +119,23 @@ ${java.dir}/mondrian/parser/ParseException.java,
 ${java.dir}/mondrian/parser/SimpleCharStream.java,
 ${java.dir}/mondrian/parser/Token.java,
 ${java.dir}/mondrian/parser/TokenMgrError.java,
+${java.dir}/mondrian/olap/Mondrian3Def.java,
 ${java.dir}/mondrian/olap/MondrianDef.java,
 ${java.dir}/mondrian/olap/MondrianProperties.java,
-${java.dir}/mondrian/gui/MondrianGuiDef.java,
 ${java.dir}/mondrian/resource/MondrianResource*.java,
 ${java.dir}/mondrian/xmla/DataSourcesConfig*.java,
 ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   <property name="generated.lib.files" value="
 ${lib.dir}/mondrian.jar,
-${lib.dir}/workbench.jar,
 ${jar-jdk14.file},
 ${lib.dir}/olap4j-jdk14.jar,
-${lib.dir}/mondrian.war,
 ${lib.dir}/mondrian.xml,
-${lib.dir}/mondrian-embedded.war,
 ${lib.dir}/web.xml,
 ${lib.dir}/index.jsp,
 ${lib.dir}/*.dtd,
 VERSION.txt,
 ${doc.dir}/properties.html,
-mondrian.properties.template,
-demo/FoodMartCreateData.sql,
-demo/access/MondrianFoodMart.mdb"/>
+mondrian.properties.template"/>
 
   <path id="project.classpath">
     <pathelement location="${lib.dir}/servlet-api.jar"/>
@@ -161,25 +146,20 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${lib.dir}/commons-math.jar"/>
     <pathelement location="${lib.dir}/commons-pool.jar"/>
     <pathelement location="${lib.dir}/commons-vfs.jar"/>
+    <pathelement location="${lib.dir}/commons-vfs2.jar"/>
     <pathelement location="${lib.dir}/eigenbase-properties.jar"/>
     <pathelement location="${lib.dir}/eigenbase-resgen.jar"/>
     <pathelement location="${lib.dir}/eigenbase-xom.jar"/>
     <pathelement location="${lib.dir}/javacup.jar"/>
     <pathelement location="${lib.dir}/log4j.jar"/>
     <pathelement location="${lib.dir}/olap4j.jar"/>
+    <pathelement location="${lib.dir}/olap4j-xmlaserver.jar"/>
     <pathelement location="${lib.dir}/xalan.jar"/>
     <pathelement location="${lib.dir}/xercesImpl.jar"/>
     <pathelement location="${lib.dir}/validation-api.jar"/>
     <pathelement path="${env.CLASSPATH}"/>
     <pathelement location="${ant.home}/lib/ant.jar"/>
     <pathelement location="${ant.home}/lib/optional.jar"/>
-    <pathelement location="${wb.plugins.dir}/kettle-dbdialog.jar"/>
-    <pathelement location="${wb.plugins.dir}/kettle-core.jar"/>
-    <pathelement location="${wb.plugins.dir}/kettle-db.jar"/>
-    <pathelement location="${wb.plugins.dir}/kettle-engine.jar"/>
-    <pathelement location="${wb.plugins.dir}/pentaho-xul-core.jar"/>
-    <pathelement location="${wb.plugins.dir}/pentaho-xul-swing.jar"/>
-    <pathelement location="${wb.plugins.dir}/commons-io.jar"/>
   </path>
 
   <path id="project.build.classpath">
@@ -194,7 +174,6 @@ demo/access/MondrianFoodMart.mdb"/>
     <fileset dir="${lib.dir}">
       <include name="olap4j-tck.jar"/>
       <include name="olap4j-xmla.jar"/>
-      <include name="derby.jar"/>
       <include name="xmlunit.jar"/>
       <include name="junit.jar"/>
     </fileset>
@@ -211,7 +190,6 @@ demo/access/MondrianFoodMart.mdb"/>
     <fileset dir="${lib.dir}">
       <include name="olap4j-tck.jar"/>
       <include name="olap4j-xmla.jar"/>
-      <include name="derby.jar"/>
       <include name="xmlunit.jar"/>
       <include name="junit.jar"/>
       <include name="xml-apis.jar"/>
@@ -363,19 +341,22 @@ demo/access/MondrianFoodMart.mdb"/>
       <fileset dir="${classes.dir}" includes="**/*.class,**/*.properties"/>
       <fileset dir="${testclasses.dir}" includes="**/*.class,**/*.properties"/>
       <fileset dir="." includes="${generated.java.files},${generated.lib.files},VERSION.txt"/>
-      <fileset dir="demo/derby/foodmart"/>
       <fileset dir="${javadoc.dir}" />
       <fileset dir="${build.dir}" />
       <fileset dir="${testclasses-jdk14.dir}" />
       <fileset dir="${testsrc.dir}" includes="**/*.log.xml"/>
       <fileset dir="${testsrc.dir}" includes="**/*JUnit.java"/>
-      <fileset dir="${wb.plugins.dir}" includes="*.jar"/>
+
+      <!-- Obsolete files. Still worthwhile cleaning them. -->
+      <fileset dir="demo/derby/foodmart"/>
+      <fileset dir="${java.dir}" includes="mondrian/gui/MondrianGuiDef.java"/>
+      <fileset dir="${java.dir}/mondrian/gui"/>
     </delete>
   </target>
 
   <target name="clean-deep">
     <delete includeEmptyDirs="true" quiet="true">
-      <fileset dir="${lib.dir}" includes="*.jar,*.war" excludes="xml-apis.jar"/>
+      <fileset dir="${lib.dir}" includes="*.jar" excludes="xml-apis.jar"/>
       <fileset dir="${classes.dir}"/>
       <fileset dir="${testclasses.dir}"/>
       <fileset dir="${dist.dir}"/>
@@ -399,16 +380,9 @@ demo/access/MondrianFoodMart.mdb"/>
       </condition>
       <echo message="symlink=${symlink}"/>
 
-      <!-- Workbench dependencies to workbench/plugins -->
-      <ivy:resolve file="workbench/ivy.xml"/>
-      <ivy:retrieve symlink="${symlink}" type="jar"
-          pattern="${wb.plugins.dir}/[module].[ext]"/>
-      <ivy:retrieve symlink="${symlink}" type="source,javadoc"
-          pattern="${wb.plugins.dir}/[module]-[type].[ext]"/>
-
       <!-- Mondrian dependencies. -->
       <ivy:resolve file="ivy.xml"/>
-      <ivy:retrieve symlink="${symlink}" type="jar,war"
+      <ivy:retrieve symlink="${symlink}" type="jar"
           pattern="${lib.dir}/[module].[ext]"/>
       <ivy:retrieve symlink="${symlink}" type="source,javadoc"
           pattern="${lib.dir}/[module]-[type].[ext]"/>
@@ -477,13 +451,7 @@ demo/access/MondrianFoodMart.mdb"/>
 
     <target name="all" depends="
 compile,
-compile.tests,
-unzip-databases"/>
-
-    <target name="unzip-databases" depends="
-unzip-FoodMartCreateData,
-unzip-FoodMartAccessDB,
-unzip-FoodMartDerbyDB"/>
+compile.tests"/>
 
   <target name="compile" depends="
 version,
@@ -587,8 +555,6 @@ META-INF/**"/>
   </target>
 
   <target name="compile.tests" depends="info">
-  	<pathconvert property="test.classpath.formatted" pathsep="${line.separator} " refid="test.classpath" />
-  	<echo message="Test Classpath: ${test.classpath.formatted}" /> 
     <javac
         srcdir="${javatest.dir}"
         destdir="${testclasses.dir}"
@@ -627,14 +593,6 @@ META-INF/**"/>
         dtdname="mondrian.dtd"/>
     <copy file="${java.dir}/mondrian/olap/mondrian.dtd"
         todir="${lib.dir}"/>
-
-    <!-- Workbench needs a different model. See Mondrian_SW.xml for details. -->
-    <xomgen
-        model="${java.dir}/mondrian/olap/Mondrian_SW.xml"
-        destdir="${java.dir}"
-        classname="mondrian.gui.MondrianGuiDef"
-        dtdname="mondrian_SW.dtd"
-        />
 
     <xomgen
         model="${java.dir}/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml"
@@ -705,7 +663,7 @@ META-INF/**"/>
 
   <target name="test"
       description="Runs all JUnit tests."
-      depends="compile,compile.tests,unzip-databases,set.connectString"
+      depends="compile,compile.tests,set.connectString"
       unless="tests.skip">
     <antcall target="test-nobuild"/>
   </target>
@@ -747,7 +705,7 @@ in {mondrian.foodmart.jdbcURL}."
         classpathref="project.test.classpath"
         classname="mondrian.test.Main"
         fork="yes"
-        maxmemory="768m">
+        maxmemory="2g">
       <arg value="${test.args}"/>
       <jvmarg line="${junit.jvmargs}"/>
       <sysproperty key="log4j.configuration"
@@ -910,6 +868,8 @@ in {mondrian.foodmart.jdbcURL}."
   <target name="version">
     <echo file="VERSION.txt">Title: ${name}
 Version: ${project.revision}
+VersionMajor: ${project.revision.major}
+VersionMinor: ${project.revision.minor}
 Vendor: ${vendor}
 </echo>
    <echo file="${java.dir}/mondrian/olap4j/MondrianOlap4jDriverVersion.java">/*
@@ -979,15 +939,6 @@ bin/cmdrunner.cmd,
 bin/run.sh,
 misc/**/*.mf,
 misc/Meta.xsl,
-workbench/drivers/readme.txt,
-workbench/plugins/readme.txt,
-workbench/cpappend.bat,
-workbench/ivy.xml,
-workbench/log4j.xml,
-workbench/mondrian.properties,
-workbench/readme.txt,
-workbench/workbench.bat,
-workbench/workbench.sh,
 build.xml,
 build.bat,
 build.sh,
@@ -1021,73 +972,6 @@ buildOnJdk.sh" />
     </zip>
   </target>
 
-  <target name="check-FoodMartCreateData-uptodate">
-    <condition property="FoodMartCreateData.uptodate">
-      <or>
-        <not>
-          <available file="demo/FoodMartCreateData.zip"/>
-        </not>
-        <uptodate
-            srcfile="demo/FoodMartCreateData.zip"
-            targetfile="demo/FoodMartCreateData.sql"/>
-      </or>
-    </condition>
-  </target>
-
-  <target name="unzip-FoodMartCreateData"
-      depends="check-FoodMartCreateData-uptodate"
-      unless="FoodMartCreateData.uptodate">
-    <unzip src="demo/FoodMartCreateData.zip" dest="demo">
-      <patternset includes="FoodMartCreateData.sql"/>
-    </unzip>
-    <touch file="demo/FoodMartCreateData.sql"/>
-  </target>
-
-  <target name="check-FoodMartAccessDB-uptodate">
-    <condition property="FoodMartAccessDB.uptodate">
-      <or>
-        <not>
-          <available file="demo/access/MondrianFoodMart-Access.zip"/>
-        </not>
-        <uptodate
-            srcfile="demo/access/MondrianFoodMart-Access.zip"
-            targetfile="demo/access/MondrianFoodMart.mdb"/>
-      </or>
-    </condition>
-  </target>
-
-  <target name="unzip-FoodMartAccessDB"
-      depends="check-FoodMartAccessDB-uptodate"
-      unless="FoodMartAccessDB.uptodate">
-    <unzip src="demo/access/MondrianFoodMart-Access.zip" dest="demo/access">
-      <patternset includes="MondrianFoodMart.mdb"/>
-    </unzip>
-    <touch file="demo/access/MondrianFoodMart.mdb"/>
-  </target>
-
-  <target name="check-FoodMartDerbyDB-uptodate">
-    <condition property="FoodMartDerbyDB.uptodate">
-      <or>
-        <not>
-          <available file="demo/derby/derby-foodmart.zip"/>
-        </not>
-        <uptodate
-            srcfile="demo/derby/derby-foodmart.zip"
-            targetfile="demo/derby/foodmart/service.properties"/>
-      </or>
-    </condition>
-  </target>
-
-  <target name="unzip-FoodMartDerbyDB"
-      depends="check-FoodMartDerbyDB-uptodate"
-      unless="FoodMartDerbyDB.uptodate">
-    <unzip src="demo/derby/derby-foodmart.zip" dest="demo/derby">
-      <patternset includes="**/*.*"/>
-    </unzip>
-    <touch file="demo/derby/foodmart/service.properties"/>
-  </target>
-
-
   <target name="load-foodmart"
         depends="info"
         description="load the foodmart database from the data file using the Mondrian loader. Assumes empty database exists">
@@ -1096,17 +980,6 @@ buildOnJdk.sh" />
            classpathref="project.test.classpath" property="driver.present.for.load-foodmart"/>
 
     <echo message="Driver present: ${driver.present.for.load-foodmart}"/>
-    <!--
-        Load from demo/FoodMartCreateData.zip directly - no need to unzip
-
-        Otherwise override, like
-                <arg value="-inputFile=demo/myData.sql"/>
-                <arg value="-inputFile=demo/myData.zip"/> - will access this without unzipping
-
-        You can override the JDBC batch size by setting the same
-        property in your mondrian.properties.  Current using the
-        default of 50 SQL statements per batch.
-    -->
 
     <property name="mondrian.foodmart.loaderBatchSize" value="50" />
     <property name="mondrian.foodmart.jdbcSchema" value="" />
@@ -1127,7 +1000,7 @@ buildOnJdk.sh" />
 
   </target>
 
-  <target name="release" depends="clean-deep, binzip, binDerbyzip"/>
+  <target name="release" depends="clean-deep, binzip"/>
 
   <target name="upload">
     <ftp server="upload.sourceforge.net"
@@ -1137,13 +1010,12 @@ buildOnJdk.sh" />
         verbose="yes">
       <fileset dir=".">
         <include name="${dist.bin.file}"/>
-        <include name="${dist.bin.derby.file}"/>
       </fileset>
     </ftp>
   </target>
 
   <target name="binzip"
-      depends="version,checkIsJdk15,war,srczip,javadoc,xml_schema,retroweave,unzip-FoodMartCreateData,unzip-FoodMartAccessDB">
+      depends="version,checkIsJdk15,jar,srczip,javadoc,xml_schema,retroweave">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
     <zip zipfile="${dist.bin.file}">
@@ -1156,15 +1028,12 @@ ${doc.dir}/**/*.html,
 ${doc.dir}/**/*.css,
 ${doc.dir}/**/*.png,
 ${doc.dir}/api/**/*.xml,
-${war.file},
 ${jar.file},
 ${jar-jdk14.file},
 ${lib.dir}/olap4j-jdk14.jar,
 ${lib.dir}/retroweaver-rt.jar,
 lib/*.dtd,
 demo/FoodMart.xml,
-demo/FoodMartCreateData.sql,
-demo/access/MondrianFoodMart.mdb,
 LICENSE.html,
 README.txt,
 VERSION.txt"
@@ -1176,42 +1045,6 @@ ${doc.dir}/api/src-html/**/*"/>
       <zipfileset
           dir="${dist.dir}"
           prefix="${dist.name}"
-          includes="${dist.name}-src.zip"/>
-    </zip>
-  </target>
-
-  <target name="binDerbyzip"
-      depends="version,derby-war,srczip,javadoc,xml_schema,unzip-FoodMartDerbyDB">
-    <mkdir dir="${dist.dir}" />
-    <delete file="${dist.bin.derby.file}"/>
-    <zip zipfile="${dist.bin.derby.file}">
-      <zipfileset
-          dir="."
-          prefix="${embedded.dist.name}"
-          includes="
-${doc.dir}/**/*.jpg,
-${doc.dir}/**/*.html,
-${doc.dir}/**/*.css,
-${doc.dir}/**/*.png,
-${doc.dir}/api/**/*.xml,
-${war.embeddedDb.file},
-${jar.file},
-${jar-jdk14.file},
-${lib.dir}/olap4j-jdk14.jar,
-${lib.dir}/retroweaver-rt.jar,
-lib/*.dtd,
-demo/FoodMart.xml,
-LICENSE.html,
-README.txt,
-VERSION.txt"
-          excludes="
-**/*~,
-**/_vti*/*,
-**/*.psp,
-${doc.dir}/api/src-html/**/*"/>
-      <zipfileset
-          dir="${dist.dir}"
-          prefix="${embedded.dist.name}"
           includes="${dist.name}-src.zip"/>
     </zip>
   </target>
@@ -1285,8 +1118,7 @@ must be run under JDK 1.5." />
 **/*.class,
 **/*.properties,
 **/*.xml,
-META-INF/**"
-          excludes="mondrian/gui/**/*.*"/>
+META-INF/**"/>
       <zipfileset
           dir="${testclasses.dir}"
           includes="
@@ -1294,10 +1126,6 @@ mondrian/test/loader/**/*.class,
 mondrian/olap4j/MondrianInprocProxy*.class,
 mondrian/test/AbstractMondrianOlap4jTester.class,
 mondrian/test/MondrianOlap4jTester.class"/>
-      <zipfileset
-          dir="${javatest.dir}"
-          includes="
-mondrian/test/loader/insert.sql"/>
       <zipfileset
           dir="."
           includes="
@@ -1518,277 +1346,6 @@ diagrams and hyperlinks to source code">
     </exec>
   </target>
 
-  <target name="war" depends="jar,compile.tests" description="
-Creates mondrian.war based upon jpivot.war.
-Assumes that mondrian.jar exists (use 'jar' target)">
-
-    <!-- The Ant war task was doing funny things with update="yes" so piece the mondrian.war
-         together from the jpivot.war and Mondrian specific settings -->
-
-    <filterset filtersfile="mondrian.properties" onmissingfiltersfile="warn"/>
-    <delete dir="${build.dir}/mondrian" />
-    <mkdir dir="${build.dir}/mondrian" />
-    <delete file="${war.file}"/>
-    <unzip src="${lib.dir}/jpivot.war" dest="${build.dir}/mondrian"/>
-
-    <!-- Remove the jpivot stuff we intend to overwrite. -->
-    <delete>
-      <fileset dir="${build.dir}/mondrian" includes="index.jsp,xmla.jsp"/>
-      <fileset dir="${build.dir}/mondrian/WEB-INF" includes="web.xml,datasources.xml,mondrian.properties"/>
-      <fileset dir="${build.dir}/mondrian/WEB-INF/queries" includes="xmla.jsp,*.xml"/>
-      <fileset dir="${build.dir}/mondrian/WEB-INF/lib" includes="${name}.jar,eigenbase-*.jar,*.xml,mondrian.dtd"/>
-    </delete>
-
-    <mkdir dir="${lib.dir}" />
-
-    <!-- Build the WEB-INF directory. -->
-    <copy file="${webapp.dir}/WEB-INF/web-jpivot.xml"
-        tofile="${build.dir}/mondrian/WEB-INF/web.xml" />
-    <copy todir="${build.dir}/mondrian/WEB-INF">
-      <fileset
-          dir="${webapp.dir}/WEB-INF"
-          includes="mondrian.properties,datasources.xml,*.xsl,*.tld,**/*.jsp"/>
-    </copy>
-
-    <!-- our FoodMart.xml may be newer than jpivot's -->
-    <copy
-        file="${demo.dir}/FoodMart.xml"
-        todir="${build.dir}/mondrian/WEB-INF/queries" />
-
-    <war warfile="${war.file}"
-        webxml="${build.dir}/mondrian/WEB-INF/web.xml">
-      <webinf dir="${build.dir}/mondrian/WEB-INF" excludes="web.xml"/>
-      <fileset dir="${build.dir}/mondrian" excludes="WEB-INF/**/*,*.jsp"/>
-      <fileset dir="${webapp.dir}" includes="*.*"/>
-      <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,olap4j-xmla.jar,eigenbase-*.jar,xalan.jar,xmlunit.jar,*.dtd"/>
-      <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
-      <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
-      <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>
-      <classes dir="${testclasses.dir}" includes="mondrian/test/DiffRepository.*"/>
-    </war>
-  </target>
-
-  <target name="deploy-war" depends="war" description="Deploy WAR with JPivot to web server">
-    <copy file="${war.file}" todir="${mondrian.webapp.deploy}"/>
-  </target>
-
-  <target name="derby-war" depends="jar,compile.tests,unzip-FoodMartDerbyDB" description="
-Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded database.">
-    <filterset filtersfile="mondrian.properties" onmissingfiltersfile="warn"/>
-    <delete dir="${build.dir}/mondrian-embedded" />
-    <mkdir dir="${build.dir}/mondrian-embedded" />
-    <delete file="${war.embeddedDb.file}"/>
-    <unzip src="${lib.dir}/jpivot.war" dest="${build.dir}/mondrian-embedded"/>
-
-    <!-- Remove the jpivot stuff we intend to overwrite. -->
-    <delete>
-      <fileset dir="${build.dir}/mondrian-embedded" includes="index.jsp,xmla.jsp"/>
-      <fileset dir="${build.dir}/mondrian-embedded/WEB-INF" includes="datasources.xml,mondrian.properties"/>
-      <fileset dir="${build.dir}/mondrian-embedded/WEB-INF/queries" includes="*.jsp,*.xml"/>
-      <fileset dir="${build.dir}/mondrian-embedded/WEB-INF/lib" includes="${name}.jar,eigenbase-*.jar,*.xml"/>
-    </delete>
-
-    <mkdir dir="${lib.dir}" />
-
-    <!-- Build the WEB-INF directory. -->
-    <copy file="${webapp.dir}/WEB-INF/web-jpivot.xml"
-        filtering="true"
-        tofile="${build.dir}/mondrian-embedded/WEB-INF/web.xml" />
-    <copy todir="${build.dir}/mondrian-embedded/WEB-INF">
-      <fileset
-          dir="${webapp.dir}/WEB-INF"
-          includes="mondrian.properties,datasources.xml,*.xsl,*.tld,**/*.jsp"/>
-    </copy>
-
-    <!-- our FoodMart.xml may be newer than jpivot's -->
-    <copy
-        file="${demo.dir}/FoodMart.xml"
-        todir="${build.dir}/mondrian-embedded/WEB-INF/queries" />
-
-    <copy
-        todir="${build.dir}/mondrian-embedded/WEB-INF">
-      <fileset
-          dir="${demo.dir}/derby"
-          includes="queries/*.jsp,datasources.xml,mondrian.properties"/>
-    </copy>
-
-    <war warfile="${war.embeddedDb.file}"
-        webxml="${demo.dir}/derby/web.xml">
-      <webinf dir="${build.dir}/mondrian-embedded/WEB-INF" excludes="web.xml"/>
-
-      <fileset dir="${build.dir}/mondrian-embedded" excludes="busy.jsp,WEB-INF/**/*"/>
-      <fileset dir="${webapp.dir}" excludes="index.jsp,testpage.jsp,WEB-INF/**/*"/>
-      <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,olap4j-xmla.jar,eigenbase-*.jar,xalan.jar,xmlunit.jar,derby.jar,*.dtd"/>
-      <classes dir="${demo.dir}/derby" includes="foodmart/**/*.*"/>
-      <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
-      <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
-      <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>
-    </war>
-  </target>
-
-  <target name="deploy-derby-war" depends="derby-war" description="Deploy WAR with JPivot to web server">
-    <mkdir dir="${mondrian.webapp.deploy}/${name}-embedded" />
-    <unzip src="${war.embeddedDb.file}" dest="${mondrian.webapp.deploy}/${name}-embedded" overwrite="true"/>
-  </target>
-
-  <target name="war-no-jpivot" depends="jar" description="
-Creates mondrian.war.
-Assumes that mondrian.jar exists (use 'jar' target),
-and lib contains ant.jar, junit.jar etc.">
-    <filterset filtersfile="mondrian.properties" onmissingfiltersfile="warn"/>
-    <mkdir dir="${lib.dir}" />
-    <delete file="${war.file}"/>
-    <delete file="${lib.dir}/web.xml"/>
-    <copy file="${webapp.dir}/WEB-INF/web.xml"
-        filtering="true" todir="${lib.dir}"/>
-    <war warfile="${war.file}"
-        webxml="${lib.dir}/web.xml">
-      <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml"/>
-      <webinf dir="${demo.dir}" includes="FoodMart.xml"/>
-      <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*"/>
-      <lib dir="${lib.dir}" includes="
-${name}.jar,
-javacup.jar,
-olap4j.jar,
-olap4j-xmla.jar,
-eigenbase-*.jar,
-xalan.jar"/>
-    </war>
-  </target>
-
-  <target name="deploy-no-jpivot-war" depends="war-no-jpivot" description="Deploy standalone WAR to web server">
-    <delete>
-      <fileset dir="${mondrian.webapp.deploy}" includes="${war.file}"/>
-    </delete>
-    <copy file="${war.file}" todir="${mondrian.webapp.deploy}"/>
-  </target>
-
-  <target name="workbench" depends="jar">
-    <jar jarfile="${workbench.jar.file}" update="true">
-      <fileset
-          dir="${classes.dir}"
-          includes="mondrian/gui/**/*.class"/>
-      <fileset
-          dir="${java.dir}"
-          includes="mondrian/gui/**/*.gif,mondrian/gui/**/*.png,mondrian/gui/**/*.properties,mondrian/gui/**/*.html"/>
-      <manifest>
-          <attribute name="Main-Class" value="${workbench.main.class}"/>
-      </manifest>
-    </jar>
-    <copy todir="${classes.dir}">
-      <fileset
-          dir="${java.dir}"
-          includes="mondrian/gui/**/*.gif,mondrian/gui/**/*.png,mondrian/gui/**/*.properties,mondrian/gui/**/*.html"/>
-    </copy>
-  </target>
-
-  <path id="workbench.run.classpath">
-    <pathelement path="${workbench.jar.file}"/>
-    <path refid="project.test.classpath"/>
-    <pathelement path="lib/jlfgr.jar"/>
-  </path>
-
-  <target name="workbench-run" >
-
-    <available classname="${mondrian.jdbcDrivers}"
-           classpathref="workbench.run.classpath" property="driver.present.for.workbench"/>
-
-    <available classname="${workbench.main.class}"
-           classpathref="workbench.run.classpath" property="workbench.main.present"/>
-
-    <!-- check if mondrian.jar and workbench jar file exists -->
-    <available file="${jar.file}" property="mondrian.jar.exists"/>
-    <available file="${workbench.jar.file}" property="workbench.jar.exists"/>
-
-    <java  classpathref="workbench.run.classpath"  classname="${workbench.main.class}"  fork="yes">
-        <sysproperty key="log4j.configuration" value="${log4j.configuration}"/>
-    </java>
-  </target>
-
-  <target name="workbench-dist"
-      depends="version,workbench">
-    <mkdir dir="${dist.dir}" />
-    <delete file="${dist.dir}/${workbench.zip-dist.file}"/>
-    <zip zipfile="${dist.dir}/${workbench.zip-dist.file}">
-      <zipfileset
-          dir="."
-          prefix="${workbench.dist.name}"
-          includes="
-			${doc.dir}/**/*.pdf,
-			lib/mondrian.jar,
-			lib/workbench.jar,
-			lib/log4j.jar,
-			lib/x*.jar,
-			lib/eigenbase*.jar,
-			lib/commons*.jar,
-			lib/javacup.jar,
-			lib/jlfgr.jar,
-			lib/olap4j.jar,
-			lib/pentaho-application-launcher.jar,
-			lib/*.dtd,
-			lib/*.xsd,
-			demo/FoodMart.xml,
-			LICENSE.html"
-          excludes="
-			**/*~,
-			**/_vti*/*,
-			**/*.psp,
-			${doc.dir}/api/src-html/**/*"/>
-      <zipfileset
-          dir="workbench"
-          prefix="${workbench.dist.name}"
-          includes="**/*"/>
-      <zipfileset
-          dir="src/main"
-          prefix="${workbench.dist.name}/src"
-          includes="mondrian/gui/**/*"/>
-    </zip>
-    <delete file="${dist.dir}/${workbench.tar-dist.file}"/>
-    <tar destfile="${dist.dir}/${workbench.tar-dist.file}" longfile="gnu" compression="gzip">
-        <tarfileset dir="." prefix="${workbench.dist.name}" mode="755" includes="*.sh"/>
-	    <tarfileset dir="."  prefix="${workbench.dist.name}" includes="
-				${doc.dir}/**/*.pdf,
-				lib/mondrian.jar,
-				lib/workbench.jar,
-				lib/log4j.jar,
-				lib/x*.jar,
-				lib/eigenbase*.jar,
-				lib/commons*.jar,
-				lib/javacup.jar,
-				lib/jlfgr.jar,
-				lib/olap4j.jar,
-				lib/pentaho-application-launcher.jar,
-				lib/*.dtd,
-				lib/*.xsd,
-				demo/FoodMart.xml,
-				LICENSE.html"
-          		excludes="
-				**/*~,
-				**/_vti*/*,
-				**/*.psp,
-	    		**/*.sh,
-	    		**/JavaApplicationStub,
-				${doc.dir}/api/src-html/**/*"/>
-      	<tarfileset mode="755"
-          dir="workbench"
-          prefix="${workbench.dist.name}">
-            <include name="**/*.sh" />
-            <include name="**/JavaApplicationStub" />
-   		</tarfileset>      		
-      	<tarfileset
-          dir="workbench"
-          prefix="${workbench.dist.name}">
-      		<include name="**/*" />
-            <exclude name="**/*.sh" />
-            <exclude name="**/JavaApplicationStub" />
-   		</tarfileset>
-      	<tarfileset
-          dir="src/main"
-          prefix="${workbench.dist.name}/src"
-          includes="mondrian/gui/**/*"/>
-    </tar>
-  </target>
-
   <!--
        Retroweaver re-engineers JDK 1.5-compatible code so it can run under
        JDK 1.4. This task compiles all core and test classes under 1.5 then
@@ -1808,7 +1365,7 @@ xalan.jar"/>
        After you've run this task, you can invoke 'ant test' from a JDK 1.4 and
        all the tests will run. You should also be able replace mondrian.jar with
        mondrian-jdk14.jar and retroweaver-rt.jar (retroweaver's runtime library)
-       in your web application and run jpivot, but I haven't tried
+       in your web application and run it, but I haven't tried
        that. Exercise for the reader.
 
        Choosing the right ant version is a bit tricky. The retroweaver task

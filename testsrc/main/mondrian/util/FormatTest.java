@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -788,6 +788,31 @@ public class FormatTest extends TestCase {
     }
 
     /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-968">
+     * MONDRIAN-968</a>, "Thousands formatting does not work. #,###,, <-
+     * Multiple Comma not rounding".
+     */
+    public void testThousandsThousands() {
+        final int i = 1234567890;
+        if (false) {
+        checkFormat(null, i, "#,##0,,", "1,235");
+            return;
+        }
+        checkFormat(null, i, "#,#", "1,234,567,890");
+
+        // Quoth Microsoft:
+        // "If one or more commas are specified immediately to the left of the
+        // explicit or implicit decimal point, the number to be formatted is
+        // divided by 1000 for each comma."
+        checkFormat(null, i, "#,##0,,", "1,235");
+        checkFormat(null, i, "#,,", "1235");
+        checkFormat(null, i, "#,,;(#)", "1235");
+        checkFormat(null, i, "#,,,", "1");
+        checkFormat(null, i, "#,##0,.0", "1,234,567.9");
+        checkFormat(null, i, "#,##0,,.0", "1,234.6");
+    }
+
+    /**
      * Tests the international currency symbol parsing
      * in format strings according to different locales.
      */
@@ -827,6 +852,22 @@ public class FormatTest extends TestCase {
             new BigDecimal("1.2"),
             "" + Format.intlCurrencySymbol + "#",
             "$1");
+    }
+
+    public void testInfinity() {
+        String[] strings = {"#", "#.#", "#,###.0"};
+        for (String string : strings) {
+            checkFormat(
+                null,
+                Double.POSITIVE_INFINITY,
+                string,
+                "Infinity");
+            checkFormat(
+                null,
+                Double.NEGATIVE_INFINITY,
+                string,
+                "-Infinity");
+        }
     }
 }
 

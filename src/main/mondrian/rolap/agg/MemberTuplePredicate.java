@@ -262,7 +262,7 @@ public class MemberTuplePredicate implements StarPredicate {
 
     private static class Bound {
         private final RolapMember member;
-        private final List<Object> values;
+        private final List<Comparable> values;
         private final List<RelOp> relOps;
 
         Bound(RolapMember member, RelOp relOp) {
