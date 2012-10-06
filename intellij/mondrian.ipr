@@ -340,7 +340,6 @@
         <root url="jar://$PROJECT_DIR$/../lib/xercesImpl.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/jsp-api.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/xalan.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/javacup.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/eigenbase-xom.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/eigenbase-resgen.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/commons-vfs.jar!/" />

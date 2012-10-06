@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2011 Pentaho
+// Copyright (C) 2011-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -24,7 +24,7 @@ public class Explain extends QueryPart {
      *
      * @param query Query (SELECT or DRILLTHROUGH)
      */
-    Explain(
+    public Explain(
         QueryPart query)
     {
         this.query = query;

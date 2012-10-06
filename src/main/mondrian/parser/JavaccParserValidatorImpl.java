@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2011 Pentaho
+// Copyright (C) 2010-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.parser;
@@ -19,13 +19,13 @@ import mondrian.server.Statement;
  * @author jhyde
  */
 public class JavaccParserValidatorImpl implements MdxParserValidator {
-    private final QueryPartFactory factory;
+    protected final QueryPartFactory factory;
 
     /**
      * Creates a JavaccParserValidatorImpl.
      */
     public JavaccParserValidatorImpl() {
-        this(new Parser.FactoryImpl());
+        this(new QueryPartFactoryImpl());
     }
 
     /**

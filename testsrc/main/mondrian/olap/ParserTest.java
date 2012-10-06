@@ -13,15 +13,17 @@ package mondrian.olap;
 import mondrian.mdx.QueryPrintWriter;
 import mondrian.mdx.UnresolvedFunCall;
 import mondrian.olap.fun.BuiltinFunTable;
-import mondrian.parser.JavaccParserValidatorImpl;
-import mondrian.parser.MdxParserValidator;
-import mondrian.server.Statement;
+import mondrian.parser.*;
+import mondrian.rolap.*;
+import mondrian.server.*;
+import mondrian.spi.ProfileHandler;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 import mondrian.util.Bug;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,7 +40,7 @@ public class ParserTest extends FoodMartTestCase {
     static final BuiltinFunTable funTable = BuiltinFunTable.instance();
 
     protected TestParser createParser() {
-        return new TestParser();
+        return new TestParser(new Factory());
     }
 
     public void testAxisParsing() throws Exception {
@@ -61,16 +63,81 @@ public class ParserTest extends FoodMartTestCase {
     {
         TestParser p = createParser();
         String q = "select [member] on " + s + " from [cube]";
-        QueryPart query = p.parseInternal(null, q, false, funTable, false);
+        QueryPart query =
+            p.parseInternal(mockStmt(), q, false, funTable, false);
         assertNull("Test parser should return null query", query);
 
-        QueryAxis[] axes = p.getAxes();
+        QueryAxis[] axes = p.getFactory().getAxes();
 
         assertEquals("Number of axes must be 1", 1, axes.length);
         assertEquals(
             "Axis index name must be correct",
             expectedName,
             axes[0].getAxisName());
+    }
+
+    private Statement mockStmt() {
+        return new Statement() {
+            public void close() {
+            }
+
+            public SchemaReader getSchemaReader() {
+                return getConnection().getSchemaReader();
+            }
+
+            public RolapSchema getSchema() {
+                return null;
+            }
+
+            public RolapConnection getMondrianConnection() {
+                return null;
+            }
+
+            public Object getProperty(String name) {
+                return null;
+            }
+
+            public Query getQuery() {
+                return null;
+            }
+
+            public void setQuery(Query query) {
+            }
+
+            public void enableProfiling(ProfileHandler profileHandler) {
+            }
+
+            public ProfileHandler getProfileHandler() {
+                return null;
+            }
+
+            public void setQueryTimeoutMillis(long timeoutMillis) {
+            }
+
+            public long getQueryTimeoutMillis() {
+                return 0;
+            }
+
+            public void checkCancelOrTimeout() {
+            }
+
+            public void cancel() throws SQLException {
+            }
+
+            public Execution getCurrentExecution() {
+                return null;
+            }
+
+            public void end(Execution execution) {
+            }
+
+            public void start(Execution execution) {
+            }
+
+            public long getId() {
+                return 0;
+            }
+        };
     }
 
     public void testNegativeCases() throws Exception {
@@ -120,11 +187,13 @@ public class ParserTest extends FoodMartTestCase {
             + "from [_Bar_Baz]\n");
 
         // # is not allowed
+        // FIXME: Doesn't work on the new parser.
         assertParseQueryFails(
             "with member [Measures].#_Foo as 1 + 2\n"
             + "select __Foo on 0\n"
             + "from _Bar#Baz",
             "Unexpected character '#'");
+
         assertParseQueryFails(
             "with member [Measures].Foo as 1 + 2\n"
             + "select Foo on 0\n"
@@ -186,13 +255,15 @@ public class ParserTest extends FoodMartTestCase {
 
     private void checkFails(TestParser p, String query, String expected) {
         try {
-            p.parseInternal(null, query, false, funTable, false);
+            p.parseInternal(mockStmt(), query, false, funTable, false);
 
             fail("Must return an error");
         } catch (Exception e) {
-            Exception nested = (Exception) e.getCause();
-            String message = nested.getMessage();
-            if (message.indexOf(expected) < 0) {
+            if (e.getCause() != null) {
+                e = (Exception) e.getCause();
+            }
+            String message = e.getMessage();
+            if (message == null || message.indexOf(expected) < 0) {
                 fail(
                     "Actual result [" + message
                     + "] did not contain [" + expected + "]");
@@ -207,9 +278,9 @@ public class ParserTest extends FoodMartTestCase {
 
         assertNull(
             "Test parser should return null query",
-            p.parseInternal(null, query, false, funTable, false));
+            p.parseInternal(mockStmt(), query, false, funTable, false));
 
-        QueryAxis[] axes = p.getAxes();
+        QueryAxis[] axes = p.getFactory().getAxes();
 
         assertEquals("Number of axes", 2, axes.length);
         assertEquals(
@@ -226,7 +297,7 @@ public class ParserTest extends FoodMartTestCase {
 
         assertNull(
             "Test parser should return null query",
-            p.parseInternal(null, query, false, funTable, false));
+            p.parseInternal(mockStmt(), query, false, funTable, false));
 
         assertEquals("Number of axes", 2, axes.length);
         assertEquals(
@@ -399,7 +470,7 @@ public class ParserTest extends FoodMartTestCase {
      * can resolve them correctly.
      */
     public void testMultiplication() {
-        Parser p = new Parser();
+        JavaccParserValidatorImpl p = new JavaccParserValidatorImpl();
         final String mdx =
             wrapExpr(
                 "([Measures].[Unit Sales]"
@@ -411,7 +482,6 @@ public class ParserTest extends FoodMartTestCase {
         try {
             final QueryPart query =
                 p.parseInternal(
-                    new Parser.FactoryImpl(),
                     statement, mdx, false,
                     funTable, false);
             assertTrue(query instanceof Query);
@@ -440,12 +510,14 @@ public class ParserTest extends FoodMartTestCase {
         final String mdx = "[Foo].&Key1&Key2.&[Key3]&Key4&[5]";
         assertParseExpr(mdx, mdx, false);
 
-        TestParser p = createParser();
         final String mdxQuery = wrapExpr(mdx);
-        new JavaccParserValidatorImpl(p).parseInternal(
+        Factory factory = new Factory();
+        JavaccParserValidatorImpl parser =
+            new JavaccParserValidatorImpl(factory);
+        parser.parseInternal(
             null, mdxQuery, false, funTable, false);
-        assertEquals(1, p.getFormulas().length);
-        Formula withMember = p.getFormulas()[0];
+        assertEquals(1, factory.getFormulas().length);
+        Formula withMember = factory.getFormulas()[0];
         final Exp expr = withMember.getExpression();
         Id id = (Id) expr;
         assertEquals(3, id.getSegments().size());
@@ -566,20 +638,18 @@ public class ParserTest extends FoodMartTestCase {
             "(- 3141592653589793.14159265358979)");
 
         // exponents akimbo
-        assertParseExpr("1e2", "100", true);
         assertParseExpr("1e2", Util.PreJdk15 ? "100" : "1E+2", false);
 
         assertParseExprFails(
             "1e2e3",
-            "Syntax error at line 1, column 37, token 'e3'");
+            "Syntax error at line 1, column 36, token 'e3'");
 
-        assertParseExpr("1.2e3", "1200", true);
         assertParseExpr("1.2e3", Util.PreJdk15 ? "1200" : "1.2E+3", false);
 
         assertParseExpr("-1.2345e3", "(- 1234.5)");
         assertParseExprFails(
             "1.2e3.4",
-            "Syntax error at line 1, column 39, token '0.4'");
+            "Syntax error at line 1, column 38, token '.4'");
         assertParseExpr(".00234e0003", "2.34");
         assertParseExpr(
             ".00234e-0067",
@@ -659,9 +729,9 @@ public class ParserTest extends FoodMartTestCase {
     }
 
     /**
-     * Test case for empty expressions. Test case for <a href=
-  "http://sf.net/tracker/?func=detail&aid=3030772&group_id=168953&atid=848534"
-     * > bug 3030772, "DrilldownLevelTop parser error"</a>.
+     * Test case for empty expressions. Test case for
+     * <a href="http://sf.net/tracker/?func=detail&aid=3030772&group_id=168953&atid=848534">
+     * olap4j bug 3030772, "DrilldownLevelTop parser error"</a>.
      */
     public void testEmptyExpr() {
         assertParseQuery(
@@ -898,36 +968,24 @@ public class ParserTest extends FoodMartTestCase {
 
     /**
      * Parses an MDX query and asserts that the result is as expected when
-     * unparsed.
+     * un-parsed.
      *
      * @param mdx MDX query
-     * @param expected Expected result of unparsing
+     * @param expected Expected result of un-parsing
      */
     private void assertParseQuery(String mdx, final String expected) {
-        assertParseQuery(mdx, expected, true);
-        assertParseQuery(mdx, expected, false);
-    }
-
-    private void assertParseQuery(
-        String mdx, final String expected, boolean old)
-    {
-        TestParser p = createParser();
-        final QueryPart query;
-        if (old) {
-            query = p.parseInternal(null, mdx, false, funTable, false);
-        } else {
-            MdxParserValidator parser =
-                new JavaccParserValidatorImpl(p);
-            query =
-                parser.parseInternal(
-                    null, mdx, false, funTable, false);
-        }
+        Factory factory = new Factory();
+        MdxParserValidator parser =
+            new JavaccParserValidatorImpl(factory);
+        final QueryPart query =
+            parser.parseInternal(
+                null, mdx, false, funTable, false);
         if (!(query instanceof DrillThrough
             || query instanceof Explain))
         {
             assertNull("Test parser should return null query", query);
         }
-        final String actual = p.toMdxString();
+        final String actual = factory.toMdxString();
         TestContext.assertEqualsVerbose(expected, actual);
     }
 
@@ -946,20 +1004,16 @@ public class ParserTest extends FoodMartTestCase {
     private void assertParseExpr(
         String expr, final String expected, boolean old)
     {
-        TestParser p = createParser();
         final String mdx = wrapExpr(expr);
-        final QueryPart query;
-        if (old) {
-            query = p.parseInternal(null, mdx, false, funTable, false);
-        } else {
-            MdxParserValidator parser =
-                new JavaccParserValidatorImpl(p);
-            query =
-                parser.parseInternal(
-                    null, mdx, false, funTable, false);
-        }
+        Factory factory = new Factory();
+        MdxParserValidator parser =
+            new JavaccParserValidatorImpl(factory);
+        final QueryPart query =
+            parser.parseInternal(
+                null, mdx, false, funTable, false);
         assertNull("Test parser should return null query", query);
-        final String actual = Util.unparse(p.formulas[0].getExpression());
+        final String actual =
+            Util.unparse(factory.formulas[0].getExpression());
         TestContext.assertEqualsVerbose(expected, actual);
     }
 
@@ -970,8 +1024,19 @@ public class ParserTest extends FoodMartTestCase {
             + "\n select from [Sales]";
     }
 
-    public static class TestParser
-        extends Parser
+    static class TestParser
+        extends JavaccParserValidatorImpl
+    {
+        public TestParser(Factory factory) {
+            super(factory);
+        }
+
+        public Factory getFactory() {
+            return (Factory) factory;
+        }
+    }
+
+    static class Factory
         implements MdxParserValidator.QueryPartFactory
     {
         private Formula[] formulas;
@@ -984,26 +1049,6 @@ public class ParserTest extends FoodMartTestCase {
         private int firstRowOrdinal;
         private List<Exp> returnList;
         private boolean explain;
-
-        public TestParser() {
-            super();
-        }
-
-        public QueryPart parseInternal(
-            Statement statement,
-            String queryString,
-            boolean debug,
-            FunTable funTable,
-            boolean strictValidation)
-        {
-            return super.parseInternal(
-                this,
-                statement,
-                queryString,
-                debug,
-                funTable,
-                strictValidation);
-        }
 
         public Query makeQuery(
             Statement statement,

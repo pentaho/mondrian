@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -102,9 +102,7 @@ public abstract class ConnectionBase implements Connection {
     }
 
     protected MdxParserValidator createParser() {
-        return true
-            ? new JavaccParserValidatorImpl()
-            : new MdxParserValidatorImpl();
+        return new JavaccParserValidatorImpl();
     }
 }
 

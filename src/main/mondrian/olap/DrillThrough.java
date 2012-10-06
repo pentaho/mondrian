@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2010 Pentaho
+// Copyright (C) 2010-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -31,7 +31,7 @@ public class DrillThrough extends QueryPart {
      * @param firstRowOrdinal Ordinal of first row to return, or -1
      * @param returnList List of columns to return
      */
-    DrillThrough(
+    public DrillThrough(
         Query query,
         int maxRowCount,
         int firstRowOrdinal,

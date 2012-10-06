@@ -4,7 +4,6 @@
 	<classpathentry kind="src" path="testsrc/main"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/commons-collections.jar"/>
-	<classpathentry kind="lib" path="lib/javacup.jar"/>
 	<classpathentry kind="lib" path="lib/jlfgr.jar"/>
 	<classpathentry kind="lib" path="lib/eigenbase-resgen.jar"/>
 	<classpathentry kind="lib" path="lib/eigenbase-xom.jar"/>

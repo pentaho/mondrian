@@ -111,8 +111,6 @@
   </condition>
 
   <property name="generated.java.files" value="
-${java.dir}/mondrian/olap/Parser.java,
-${java.dir}/mondrian/olap/ParserSym.java,
 ${java.dir}/mondrian/parser/MdxParserImpl.java,
 ${java.dir}/mondrian/parser/MdxParserImplTokenManager.java,
 ${java.dir}/mondrian/parser/ParseException.java,
@@ -150,7 +148,6 @@ mondrian.properties.template"/>
     <pathelement location="${lib.dir}/eigenbase-properties.jar"/>
     <pathelement location="${lib.dir}/eigenbase-resgen.jar"/>
     <pathelement location="${lib.dir}/eigenbase-xom.jar"/>
-    <pathelement location="${lib.dir}/javacup.jar"/>
     <pathelement location="${lib.dir}/log4j.jar"/>
     <pathelement location="${lib.dir}/olap4j.jar"/>
     <pathelement location="${lib.dir}/olap4j-xmlaserver.jar"/>
@@ -262,10 +259,6 @@ mondrian.properties.template"/>
            classpathref="project.test.classpath" property="driver.present"/>
 
   <target name="define-tasks"> <!-- depends="prepare" -->
-    <taskdef name="javacup" classname="java_cup.JavaCUPTask">
-      <classpath refid="project.classpath"/>
-    </taskdef>
-
     <taskdef name="xomgen" classname="org.eigenbase.xom.XOMGenTask">
       <classpath refid="project.classpath"/>
     </taskdef>
@@ -349,7 +342,10 @@ mondrian.properties.template"/>
 
       <!-- Obsolete files. Still worthwhile cleaning them. -->
       <fileset dir="demo/derby/foodmart"/>
-      <fileset dir="${java.dir}" includes="mondrian/gui/MondrianGuiDef.java"/>
+      <fileset dir="${java.dir}" includes="
+mondrian/gui/MondrianGuiDef.java,
+mondrian/olap/Parser.java,
+mondrian/olap/ParserSym.java"/>
       <fileset dir="${java.dir}/mondrian/gui"/>
     </delete>
   </target>
@@ -400,7 +396,6 @@ mondrian.properties.template"/>
     <unjar src="${lib.dir}/eigenbase-properties.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/eigenbase-resgen.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/eigenbase-xom.jar" dest="${crtmp.dir}"/>
-    <unjar src="${lib.dir}/javacup.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/log4j.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/mondrian.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/servlet-api.jar" dest="${crtmp.dir}"/>
@@ -568,13 +563,6 @@ META-INF/**"/>
   </target>
 
   <target name="parser" depends="define-tasks">
-    <!-- Old parser. -->
-    <javacup
-        srcdir="${java.dir}"
-        input="${java.dir}/mondrian/olap/Parser.cup"
-        expect="63"
-        interface="true"/>
-    <!-- New parser. -->
     <javacc
         target="${java.dir}/mondrian/parser/MdxParser.jj"
         javacchome="${lib.dir}"/>
@@ -912,7 +900,6 @@ ${java.dir}/mondrian/rolap/aggmatcher/DefaultRules.xml,
 ${java.dir}/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml,
 ${java.dir}/mondrian/xmla/DataSourcesConfig.xml,
 ${java.dir}/**/*.java,
-${java.dir}/**/*.cup,
 ${java.dir}/**/*.jj,
 ${java.dir}/**/*.gif,
 ${java.dir}/**/*.png,

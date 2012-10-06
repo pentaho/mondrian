@@ -56,7 +56,18 @@ public class CmdRunner {
     private static final Map<Object, String> paraNameValues =
         new HashMap<Object, String>();
 
-    private static String[][] commentDelim;
+    /**
+     * Comment delimiters. Modify this list to support other comment styles.
+     */
+    private static final String[][] commentDelim = {
+        // CmdRunner has extra delimiter; # to end of line
+        new String[] {"#", null},
+        // Comment delimiters for regular MDX parser
+        new String[] {"//", null},
+        new String[] {"--", null},
+        new String[] {"/*", "*/"},
+    };
+
     private static char[] commentStartChars;
     private static boolean allowNestedComments;
     private static final boolean USE_OLAP4J = false;
@@ -1126,7 +1137,7 @@ public class CmdRunner {
         }
     }
 
-   /**
+    /**
      * Read the next line of input.  Return the terminating character,
      * -1 for end of file, or \n or \r.  Add \n and \r to the end of the
      * buffer to be included in strings and comment blocks.
@@ -1143,9 +1154,7 @@ public class CmdRunner {
             if (i == -1) {
                 return i;
             }
-
             line.append((char)i);
-
             if (i == '\n' || i == '\r') {
                 return i;
             }
@@ -2455,29 +2464,18 @@ public class CmdRunner {
     }
 
     /**
-     * Set the default comment delimiters for CmdRunner.  These defaults are
+     * Sets the default comment delimiters for CmdRunner.  These defaults are
      * # to end of line
-     * plus all the comment delimiters in Scanner.
+     * plus all the comment delimiters in the MDX parser.
      */
     private static void setDefaultCommentState() {
-        allowNestedComments = mondrian.olap.Scanner.getNestedCommentsState();
-        String[][] scannerCommentsDelimiters =
-            mondrian.olap.Scanner.getCommentDelimiters();
-        commentDelim = new String[scannerCommentsDelimiters.length + 1][2];
-        commentStartChars = new char[scannerCommentsDelimiters.length + 1];
+        // was: allowNestedComments = Scanner.getNestedCommentsState();
+        allowNestedComments = true;
 
-
-        // CmdRunner has extra delimiter; # to end of line
-        commentDelim[0][0] = "#";
-        commentDelim[0][1] = null;
-        commentStartChars[0] = commentDelim[0][0].charAt(0);
-
-
-        // copy all the rest of the delimiters
-        for (int x = 0; x < scannerCommentsDelimiters.length; x++) {
-            commentDelim[x + 1][0] = scannerCommentsDelimiters[x][0];
-            commentDelim[x + 1][1] = scannerCommentsDelimiters[x][1];
-            commentStartChars[x + 1] = commentDelim[x + 1][0].charAt(0);
+        // was: scannerCommentsDelimiters = Scanner.getCommentDelimiters();
+        commentStartChars = new char[commentDelim.length];
+        for (int x = 0; x < commentDelim.length; x++) {
+            commentStartChars[x] = commentDelim[x][0].charAt(0);
         }
     }
 
