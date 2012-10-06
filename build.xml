@@ -1336,6 +1336,8 @@ diagrams and hyperlinks to source code">
     </exec>
   </target>
 
+  <target name="workbench-dist"/>
+
   <!--
        Retroweaver re-engineers JDK 1.5-compatible code so it can run under
        JDK 1.4. This task compiles all core and test classes under 1.5 then
