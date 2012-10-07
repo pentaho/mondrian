@@ -166,8 +166,10 @@ import java.io.PrintWriter;<br />
 <br />
 Connection connection = DriverManager.getConnection(<br />
 &nbsp;&nbsp;&nbsp;&nbsp;"Provider=mondrian;" +<br />
-&nbsp;&nbsp;&nbsp;&nbsp;"Jdbc=jdbc:odbc:MondrianFoodMart;" +<br />
-&nbsp;&nbsp;&nbsp;&nbsp;"Catalog=/WEB-INF/FoodMart.xml;",<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"Jdbc=jdbc:mysql://localhost/foodmart;" +<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"JdbcUser=foodmart;" +<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"JdbcPassword=foodmart;" +<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"Catalog=/WEB-INF/FoodMart.mondrian.xml;",<br />
 &nbsp;&nbsp;&nbsp;&nbsp;null,<br />
 &nbsp;&nbsp;&nbsp;&nbsp;false);<br />
 Query query = connection.parseQuery(<br />

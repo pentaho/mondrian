@@ -306,10 +306,10 @@ public class UtilTestCase extends TestCase {
     public void testConvertConnectString() {
         assertEquals(
             "Provider=Mondrian; Datasource=jdbc/SampleData;"
-            + "Catalog=foodmart/FoodMart.xml;",
+            + "Catalog=foodmart/FoodMart.mondrian.xml;",
             Util.convertOlap4jConnectStringToNativeMondrian(
                 "jdbc:mondrian:Datasource=jdbc/SampleData;"
-                + "Catalog=foodmart/FoodMart.xml;"));
+                + "Catalog=foodmart/FoodMart.mondrian.xml;"));
     }
 
     public void testQuoteMdxIdentifier() {

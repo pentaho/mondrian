@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.xmla.impl;
@@ -192,7 +192,7 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
                 .append("//marmalade.hydromatic.net:1521/XE;")
                 .append("JdbcUser=foodmart;JdbcPassword=foodmart;")
                 .append("JdbcDrivers=oracle.jdbc.OracleDriver;")
-                .append("Catalog=/WEB-INF/queries/FoodMart.xml")
+                .append("Catalog=/WEB-INF/queries/FoodMart.mondrian.xml")
                 .append("</DataSourceInfo>");
             ds.append("       <ProviderName>Mondrian</ProviderName>");
             ds.append("       <ProviderType>MDP</ProviderType>");

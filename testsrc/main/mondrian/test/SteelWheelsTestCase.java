@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2011 Pentaho and others
+// Copyright (C) 2009-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -74,7 +74,7 @@ public class SteelWheelsTestCase extends TestCase {
                 RolapConnectionProperties.Catalog.name(),
                 Util.replace(
                     catalog,
-                    "FoodMart.xml",
+                    "FoodMart.mondrian.xml",
                     "SteelWheels.mondrian.xml"));
         }
         return context.withProperties(properties);

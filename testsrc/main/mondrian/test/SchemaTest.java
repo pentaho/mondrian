@@ -1831,7 +1831,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
     public void testViewFactTable2() {
         final TestContext testContext = getTestContext().create(
             null,
-            // Similar to "Store" cube in FoodMart.xml.
+            // Similar to "Store" cube in FoodMart.mondrian.xml.
             "<Cube name='Store2'>\n"
             + "  <View alias='FACT'>\n"
             + "    <SQL dialect='generic'>\n"
@@ -1887,7 +1887,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
     public void testViewFactTableInvalid() {
         TestContext testContext = getTestContext().create(
             null,
-            // Similar to "Store" cube in FoodMart.xml.
+            // Similar to "Store" cube in FoodMart.mondrian.xml.
             "<Cube name='Store2'>\n"
             + "  <View alias='FACT'>\n"
             + "    <SQL dialect='generic'>\n"
@@ -6973,7 +6973,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
     // is null and dimension has no key attribute
 
     // TODO: automatically load agg tables (don't require them to be in
-    // PhysSchema). Remove agg tables from top of NewFoodMart.xml.
+    // PhysSchema). Remove agg tables from top of FoodMart.mondrian.xml.
 
     // TODO: Try to create a MeasureRef to a calculated measure. Should fail
     // (for now).
@@ -6984,9 +6984,10 @@ Test that get error if a dimension has more than one hierarchy with same name.
     // how to reliably deduce whether the measure group is a fact or an
     // aggregate, and if an aggregate, which is the base. Otherwise we will
     // tend to create a measure called "Fact Count" in aggregate measure groups
-    // too, and the names will clash. Do we want that? In NewFoodMart.xml, we
-    // solved the problem temporarily by creating an explicit "Fact Count"
-    // measure in the base MeasureGroup.)
+    // too, and the names will clash. Do we want that? In version 4
+    // FoodMart.mondrian.xml, we solved the problem temporarily by
+    // creating an explicit "Fact Count" measure in the base
+    // MeasureGroup.)
 
     // TODO: Test Schema.measuresCaption. (Suspect it is not implemented.)
 
@@ -7008,9 +7009,15 @@ Test that get error if a dimension has more than one hierarchy with same name.
     // orderKey of Customer contains city). OrderKey only needs to distinguish
     // between And test.
 
-    // TODO: Test NamedSet with a Formula element
+    // TODO: Test NamedSet with a Formula element (as opposed to
+    // formula attribute)
 
     // TODO: Make sure that MeasureGroup, Attribute can have annotations.
+
+    // TODO: test cube where MeasureGroups occrs before Dimensions
+
+    // TODO: test cube where there is more than one Dimensions element
+    // (should give error)
 }
 
 // End SchemaTest.java

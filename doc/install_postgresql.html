@@ -456,7 +456,7 @@
 	<div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
 		<span class="code">&lt;jp:mondrianQuery id=&quot;query01&quot; jdbcDriver=&quot;<span style=color:red>sun.jdbc.odbc.JdbcOdbcDriver</span>&quot;
 			jdbcUrl=&quot;<span style=color:red>jdbc:odbc:MondrianFoodMart</span>&quot;
-			catalogUri=&quot;/WEB-INF/queries/FoodMart.xml&quot;&gt;</span>
+			catalogUri=&quot;/WEB-INF/queries/FoodMart.mondrian.xml&quot;&gt;</span>
 	</div>
 </blockquote>
 <p>with</p>
@@ -464,7 +464,7 @@
 	<div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
 		<span class="code">&lt;jp:mondrianQuery id=&quot;query01&quot; jdbcDriver=&quot;<span style=color:blue>org.postgresql.Driver</span>&quot;
 			jdbcUrl=&quot;<span style=color:blue>jdbc:postgresql://localhost/foodmartdb?user=foodmart&amp;#38;password=foodmart</span>&quot;
-			catalogUri=&quot;/WEB-INF/queries/FoodMart.xml&quot;&gt;</span>
+			catalogUri=&quot;/WEB-INF/queries/FoodMart.mondrian.xml&quot;&gt;</span>
 	</div>
 </blockquote>
 <p><span class="caution">[!]</span>&nbsp;Please note the use of &quot;&amp;#38;&quot;.
@@ -473,7 +473,7 @@
 			Check the value of the &quot;<span class="code">connectString</span>&quot;
 			parameter under <BR>&quot;<span class="code">&lt;servlet-name&gt;MDXQueryServlet&lt;/servlet-name&gt;</span>&quot;.</p>
 <p>This must have the value &quot;<span class="code">jdbc:postgresql://localhost/foodmartdb?user=foodmart&amp;#38;password=foodmart&quot;
-			catalogUri=&quot;/WEB-INF/queries/FoodMart.xml</span>&quot;. If it does not
+			catalogUri=&quot;/WEB-INF/queries/FoodMart.mondrian.xml</span>&quot;. If it does not
 			have the value, please update this.</p>
 <p><STRONG>After making these modifications</STRONG>, remove the &quot;<span class="code">%CATALINA_HOME%/work/Catalina/localhost/mondrian</span>&quot;
 			folder and restart Tomcat.

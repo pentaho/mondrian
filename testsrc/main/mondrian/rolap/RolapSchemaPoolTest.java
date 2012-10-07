@@ -171,10 +171,10 @@ public class RolapSchemaPoolTest extends FoodMartTestCase {
 
     protected URL getFoodmartCatalogUrl() {
         // Works if we are running in root directory of source tree
-        File file = new File("demo/FoodMart.xml");
+        File file = new File("demo/FoodMart.mondrian.xml");
         if (!file.exists()) {
             // Works if we are running in bin directory of runtime env
-            file = new File("../demo/FoodMart.xml");
+            file = new File("../demo/FoodMart.mondrian.xml");
         }
         try {
             return Util.toURL(file);
@@ -194,4 +194,5 @@ public class RolapSchemaPoolTest extends FoodMartTestCase {
     }
 
 }
+
 // End RolapSchemaPoolTest.java

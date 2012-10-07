@@ -45,7 +45,7 @@
              Catalogs can override the connect string with their own
              <DataSourceInfo> element.
           -->
-        <DataSourceInfo>Provider=mondrian;Jdbc=jdbc:oracle:thin:foodmart/foodmart@//marmalade.hydromatic.net:1521/XE;JdbcUser=foodmart;JdbcPassword=foodmart;JdbcDrivers=oracle.jdbc.OracleDriver;Catalog=/WEB-INF/queries/FoodMart.xml</DataSourceInfo>
+        <DataSourceInfo>Provider=mondrian;Jdbc=jdbc:oracle:thin:foodmart/foodmart@//marmalade.hydromatic.net:1521/XE;JdbcUser=foodmart;JdbcPassword=foodmart;JdbcDrivers=oracle.jdbc.OracleDriver;Catalog=/WEB-INF/queries/FoodMart.mondrian.xml</DataSourceInfo>
 
         <!-- 
              Provider name must be 'Mondrian'.
@@ -81,13 +81,13 @@
                      different JDBC data sources.
                  -->
                 <!--
-                <DataSourceInfo>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver</DataSourceInfo>
+                <DataSourceInfo>Provider=mondrian;Jdbc=jdbc:mysql://localhost/foodmart;JdbcUser=foodmart;JdbcPassword=foodmart;JdbcDrivers=com.mysql.jdbc.Driver</DataSourceInfo>
                  -->
 
                 <!-- 
                     URI of the schema definition file.
                 -->
-                <Definition>/WEB-INF/queries/FoodMart.xml</Definition>
+                <Definition>/WEB-INF/queries/FoodMart.mondrian.xml</Definition>
             </Catalog>
         </Catalogs>
 

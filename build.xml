@@ -276,17 +276,17 @@ mondrian.properties.template"/>
   -->
 
   <!-- Comma-separated list of jdbc drivers. Override in test.properties. -->
-  <property name="mondrian.jdbcDrivers" value="sun.jdbc.odbc.JdbcOdbcDriver"/>
+  <property name="mondrian.jdbcDrivers" value="com.mysql.jdbc.Driver"/>
 
   <!-- Connect string to the database. Override in test.properties. -->
-  <property name="mondrian.foodmart.jdbcURL" value="jdbc:odbc:MondrianFoodMart"/>
+  <property name="mondrian.foodmart.jdbcURL" value="jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart"/>
 
   <!-- Classpath for JDBC drivers. Override in your test.properties. -->
   <property name="driver.classpath" value=""/>
 
   <!-- URL of the catalog definition. -->
   <property name="mondrian.foodmart.catalogURL"
-      value="file:${project.location}/${demo.dir}/FoodMart.xml"/>
+      value="file:${project.location}/${demo.dir}/FoodMart.mondrian.xml"/>
 
   <!-- Test class name. -->
   <property name="mondrian.test.Class" value=""/>
@@ -940,7 +940,8 @@ LICENSE.html,
 README.txt,
 subfloor.xml,
 VERSION.txt,
-${demo.dir}/FoodMart.xml"
+${demo.dir}/FoodMart.mondrian.xml,
+${demo.dir}/FoodMart3.mondrian.xml"
           excludes="
 ${javadoc.dir}/**,
 **/_vti*/*,
@@ -1023,7 +1024,8 @@ ${jar-jdk14.file},
 ${lib.dir}/olap4j-jdk14.jar,
 ${lib.dir}/retroweaver-rt.jar,
 lib/*.dtd,
-demo/FoodMart.xml,
+demo/FoodMart.mondrian.xml,
+demo/FoodMart3.mondrian.xml,
 LICENSE.html,
 README.txt,
 VERSION.txt"

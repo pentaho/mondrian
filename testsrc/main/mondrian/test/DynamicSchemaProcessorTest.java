@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2011 Pentaho and others
+// Copyright (C) 2011-2012 Pentaho and others
 // All Rights Reserved.
  */
 package mondrian.test;
@@ -154,11 +154,10 @@ public class DynamicSchemaProcessorTest
     }
 
     /**
-     * Checks to make sure our Catalog property contains our FoodMart.xml VFS
-     * URL
+     * Checks to make sure our Catalog property contains our
+     * <code>FoodMart.mondrian.xml</code> VFS URL.
      *
      * @author ngoodman
-     *
      */
     public static class FoodMartCatalogDsp extends BaseDsp {
         public String processSchema(
@@ -166,7 +165,9 @@ public class DynamicSchemaProcessorTest
             Util.PropertyList connectInfo)
             throws Exception
         {
-            if (connectInfo.get("Catalog").indexOf("FoodMart.xml") <= 0) {
+            if (connectInfo.get("Catalog").indexOf("FoodMart.mondrian.xml")
+                <= 0)
+            {
                 this.replaceToken = "NoFoodmartFoundInCatalogProperty";
             } else {
                 this.replaceToken = "FoodmartFoundInCatalogProperty";

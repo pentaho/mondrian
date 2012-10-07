@@ -341,19 +341,7 @@ com.mysql.jdbc.Driver</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp; -inputFile=/mondr
 	</li>
 	<li>Abra el fichero web.xml en <code><i>TOMCAT_HOME</i></code><code>/webapps/mondrian/WEB-INF
 	</code>y personalice las dos cadenas de conexión existentes a la base de datos FoodMart que ha instalado, teniendo en&nbsp; 
-cuenta el tipo de base de datos que ha elegido. Es decir,
-
-  <blockquote>
-	<div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
-		<code>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;</code></div>
-	</blockquote>
-	<p>Cambiaría a&nbsp; </p>
-	<blockquote>
-		<div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
-			<code>Provider=mondrian;Jdbc=jdbc:mysql://localhost/foodmart?user=foodmart&amp;#38;password=foodmart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=
-com.mysql.jdbc.Driver;</code> </div>
-	</blockquote> 
-	</li>
+cuenta el tipo de base de datos que ha elegido.</li>
 
 	<li>Modigique los ficheros <code>fourheir.jsp</code>, <code>mondrian.jsp</code>, 
 	<code>colors.jsp</code>
@@ -361,7 +349,7 @@ com.mysql.jdbc.Driver;</code> </div>
 
   <blockquote>
 	<div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
-		<code>&lt;jp:mondrianQuery id=&quot;query01&quot; jdbcDriver=&quot;sun.jdbc.odbc.JdbcOdbcDriver&quot; jdbcUrl=&quot;jdbc:odbc:MondrianFoodMart&quot; catalogUri=&quot;/WEB-INF/queries/FoodMart.xml&quot;&gt;
+		<code>&lt;jp:mondrianQuery id=&quot;query01&quot; jdbcDriver=&quot;sun.jdbc.odbc.JdbcOdbcDriver&quot; jdbcUrl=&quot;jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart&quot; catalogUri=&quot;/WEB-INF/queries/FoodMart.mondrian.xml&quot;&gt;
 		</code></div>
 </blockquote>
 <p>por los mismos parámetros de base de datos para la base de datos FoodMart instalada según las instrucciones. Para el caso de MySQL, deberíamos tener algo del estilo a: 
@@ -370,7 +358,7 @@ com.mysql.jdbc.Driver;</code> </div>
 <blockquote>
 
   <div style="border-style: solid; border-width: 1px; padding-left: 4px; padding-right: 4px; padding-top: 1px; padding-bottom: 1px">
-	<code>&lt;jp:mondrianQuery id=&quot;query01&quot; jdbcDriver=&quot;com.mysql.jdbc.Driver&quot; jdbcUrl=&quot;jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart&quot; catalogUri=&quot;/WEB-INF/queries/FoodMart.xml&quot;&gt;
+	<code>&lt;jp:mondrianQuery id=&quot;query01&quot; jdbcDriver=&quot;com.mysql.jdbc.Driver&quot; jdbcUrl=&quot;jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart&quot; catalogUri=&quot;/WEB-INF/queries/FoodMart.mondrian.xml&quot;&gt;
   </code></div>
 </blockquote>
     </li>
@@ -424,7 +412,7 @@ JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver&lt;/DataSourceInfo&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;AuthenticationMode&gt;Unauthenticated&lt;/AuthenticationMode&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;Catalogs&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;FoodMart&quot;&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Definition&gt;/WEB-INF/schema/FoodMart.xml&lt;/Definition&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Definition&gt;/WEB-INF/schema/FoodMart.mondrian.xml&lt;/Definition&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/Catalog&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;Marketing&quot;&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

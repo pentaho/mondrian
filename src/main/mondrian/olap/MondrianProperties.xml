@@ -1419,7 +1419,7 @@ manager'</code> to the connect string.</p>
         </Description>
         <Core>false</Core>
         <Type>String</Type>
-        <Default>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver</Default>
+        <Default>Provider=mondrian;Jdbc=jdbc:mysql://localhost/foodmart;JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=/WEB-INF/queries/FoodMart.mondrian.xml;JdbcDrivers=com.mysql.jdbc.Driver</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>Log4jConfiguration</Name>

@@ -182,7 +182,7 @@ public class TestContext {
      *     overrides the <code>Jdbc</code> property.</li>
      * <li>If the <code>catalog</code> URL is unset or invalid, it assumes that
      *     we are at the root of the source tree, and references
-     *     <code>demo/FoodMart.xml</code></li>.
+     *     <code>demo/FoodMart.mondrian.xml</code></li>.
      * </ul>
      */
     public static String getDefaultConnectString() {
@@ -209,8 +209,8 @@ public class TestContext {
             connectProperties.put("JdbcPassword", jdbcPassword);
         }
 
-        // Find the catalog. Use the URL specified in the connect string, if
-        // it is specified and is valid. Otherwise, reference FoodMart.xml
+        // Find the catalog. Use the URL specified in the connect string, if it
+        // is specified and is valid. Otherwise, reference FoodMart.mondrian.xml
         // assuming we are at the root of the source tree.
         URL catalogURL = null;
         String catalog = connectProperties.get("catalog");
@@ -223,10 +223,10 @@ public class TestContext {
         }
         if (catalogURL == null) {
             // Works if we are running in root directory of source tree
-            File file = new File("demo/FoodMart.xml");
+            File file = new File("demo/FoodMart.mondrian.xml");
             if (!file.exists()) {
                 // Works if we are running in bin directory of runtime env
-                file = new File("../demo/FoodMart.xml");
+                file = new File("../demo/FoodMart.mondrian.xml");
             }
             try {
                 catalogURL = Util.toURL(file);
@@ -1555,13 +1555,13 @@ public class TestContext {
         case FOODMART:
             return withPropertiesReplace(
                 RolapConnectionProperties.Catalog,
-                "FoodMart.xml",
-                "NewFoodMart.xml");
+                "FoodMart3.mondrian.xml",
+                "FoodMart.mondrian.xml");
         case LEGACY_FOODMART:
             return withPropertiesReplace(
                 RolapConnectionProperties.Catalog,
-                "NewFoodMart.xml",
-                "FoodMart.xml");
+                "FoodMart.mondrian.xml",
+                "FoodMart3.mondrian.xml");
         case STEELWHEELS:
             return SteelWheelsTestCase.createContext(this, null);
         default:
@@ -2618,7 +2618,7 @@ public class TestContext {
      * appear in the list of values in the
      * {@link MondrianProperties#TestHighCardinalityDimensionList} property.
      * It's a convenient way to run the whole suite against high-cardinality
-     * dimensions without modifying FoodMart.xml.
+     * dimensions without modifying FoodMart.mondrian.xml.
      */
     public static class HighCardDynamicSchemaProcessor
         extends FilterDynamicSchemaProcessor

@@ -36,8 +36,8 @@ public enum RolapConnectionProperties {
 
     /**
      * The "JdbcDrivers" property is a comma-separated list of JDBC driver
-     * classes, for example,
-     * <code>"sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver"</code>.
+     * classes, for example, <code>"com.mysql.jdbc.Driver,
+     * sun.jdbc.odbc.JdbcOdbcDriver, oracle.jdbc.OracleDriver"</code>.
      */
     JdbcDrivers,
 

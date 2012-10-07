@@ -19,7 +19,7 @@
     private static final String ACTION_SET_MEMBER = "setMember";
 
     private static final String OLAP_URL =
-        "Provider=mondrian; Jdbc=jdbc:odbc:MondrianFoodMart; Catalog=file:/c:/open/mondrian/demo/FoodMart.xml";
+        "Provider=mondrian; Jdbc=jdbc:mysql://localhost/foodmart; JdbcUser=foodmart; JdbcPassword=foodmart; Catalog=file:/c:/open/mondrian/demo/FoodMart.mondrian.xml";
 
     private Cube lookup(Cube[] cubes, String cubeName) {
         for (Cube cube : cubes) {

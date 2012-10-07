@@ -456,7 +456,7 @@ public class Util extends XOMUtil {
                 && ((i + 1) < st.length())
                 && (st.charAt(i + 1) != '.'))
             {
-                retString.append(']'); //escaping character
+                retString.append(']'); // escaping character
             }
             retString.append(c);
         }
@@ -3993,10 +3993,11 @@ public class Util extends XOMUtil {
      * Converts an olap4j connect string into a legacy mondrian connect string.
      *
      * <p>For example,
-     * "jdbc:mondrian:Datasource=jdbc/SampleData;Catalog=foodmart/FoodMart.xml;"
+     * "jdbc:mondrian:Datasource=jdbc/SampleData;
+     * Catalog=foodmart/FoodMart.mondrian.xml;"
      * becomes
      * "Provider=Mondrian;
-     * Datasource=jdbc/SampleData;Catalog=foodmart/FoodMart.xml;"
+     * Datasource=jdbc/SampleData;Catalog=foodmart/FoodMart.mondrian.xml;"
      *
      * <p>This method is intended to allow legacy applications (such as JPivot
      * and Mondrian's XMLA server) to continue to create connections using

@@ -1479,7 +1479,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * when defining the cube wins.
      *
      * <p>In the first test, the answer should be 1 because Promotions
-     * comes before Customers in the FoodMart.xml schema.
+     * comes before Customers in the FoodMart.mondrian.xml schema.
      */
     public void testSolveOrderAmbiguous1() {
         assertQueryReturns(
@@ -1502,7 +1502,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     /**
      * In the second test, the answer should be 2 because Product comes before
-     * Promotions in the FoodMart.xml schema.
+     * Promotions in the FoodMart.mondrian.xml schema.
      */
     public void testSolveOrderAmbiguous2() {
         assertQueryReturns(
@@ -4776,8 +4776,8 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
 
-    /*
-     * takes quite long
+    /**
+     * Disabled, because takes quite a long time.
      */
     public void dont_testParallelMutliple() {
         for (int i = 0; i < 5; i++) {

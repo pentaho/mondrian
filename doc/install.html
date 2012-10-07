@@ -358,18 +358,7 @@ to <code><i>TOMCAT_HOME</i>/webapps/mondrian</code></li>
 properties for the database you set up from the instructions above.</li>
   <li>Open the web.xml file in <code><i>TOMCAT_HOME</i>/webapps/mondrian/WEB-INF</code> and customize the two
 connect strings there to the same database parameters for the FoodMart database
-  you installed as per the above instructions. That is,
-
-  <blockquote>
-    <code>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;</code>
-  </blockquote>
-
-  becomes
-
-  <blockquote>
-      <code>Provider=mondrian;Jdbc=jdbc:mysql://localhost/foodmart?user=foodmart&amp;#38;password=foodmart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=com.mysql.jdbc.Driver;</code>
-  </blockquote>
-  </li>
+  you installed as per the above instructions.
 
   <li>Modify the <code>fourhier.jsp</code>, <code>mondrian.jsp</code>, <code>colors.jsp</code>
 and <code>arrows.jsp </code>files in the <code><i>TOMCAT_HOME</i>/webapps/mondrian/WEB-INF/queries</code>
@@ -378,21 +367,13 @@ and <code>arrows.jsp </code>files in the <code><i>TOMCAT_HOME</i>/webapps/mondri
 
 <blockquote>
 <code>&lt;jp:mondrianQuery id="query01"
-jdbcDriver="sun.jdbc.odbc.JdbcOdbcDriver"
-jdbcUrl="jdbc:odbc:MondrianFoodMart"
-catalogUri="/WEB-INF/queries/FoodMart.xml"&gt;</code>
+jdbcDriver="com.mysql.jdbc.Driver"
+jdbcUrl="jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart"
+catalogUri="/WEB-INF/queries/FoodMart.mondrian.xml"&gt;</code>
 </blockquote>
 
   <p>to the same database parameters for the FoodMart database you
-installed as per the above instructions. For MySQL, this would be
-something like the following:
-
-<blockquote>
-<code>&lt;jp:mondrianQuery id="query01"
-jdbcDriver="com.mysql.jdbc.Driver"
-jdbcUrl="jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart"
-catalogUri="/WEB-INF/queries/FoodMart.xml"&gt;</code>
-</blockquote></p></li>
+installed as per the above instructions.</p></li>
 
 <li>Copy the following files:
   <ul>
@@ -433,13 +414,12 @@ Warehouse From MS Analysis Services&lt;/DataSourceDescription&gt;<br>
 &nbsp;&nbsp;&nbsp;
 &lt;URL&gt;http://localhost:8080/mondrian/xmla&lt;/URL&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;DataSourceInfo&gt;Provider=mondrian;
-Jdbc=jdbc:odbc:MondrianFoodMart;
-JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver&lt;/DataSourceInfo&gt;<br>
+Jdbc=jdbc:mysql://localhost/foodmart?user=foodmart&amp;&#38;password=foodmart&amp;&#38;JdbcUser=foodmart;JdbcPassword=foodmart;JdbcDrivers=com.mysql.jdbc.Driver&lt;/DataSourceInfo&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;ProviderType&gt;MDP&lt;/ProviderType&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;AuthenticationMode&gt;Unauthenticated&lt;/AuthenticationMode&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;Catalogs&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;FoodMart&quot;&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Definition&gt;/WEB-INF/schema/FoodMart.xml&lt;/Definition&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Definition&gt;/WEB-INF/schema/FoodMart.mondrian.xml&lt;/Definition&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/Catalog&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Catalog name=&quot;Marketing&quot;&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

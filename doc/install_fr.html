@@ -558,16 +558,7 @@ en fonction de la base de donn&eacute;es utilis&eacute;e.</li>
   <li>Ouvrir le fichier web.xml dans le
 r&eacute;pertoire&nbsp;<code><i>TOMCAT_HOME</i>/webapps/mondrian/WEB-INF</code>
 et personnalisez-le avec les deux cha&icirc;nes de connexion que
-vous avez utilis&eacute;es pour la base de donn&eacute;es test.
-Cela:
-    <blockquote> <code>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;</code>
-    </blockquote>
-
-devient
-    <blockquote> <code>Provider=mondrian;Jdbc=jdbc:mysql://localhost/foodmart?user=foodmart&amp;#38;password=foodmart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=com.mysql.jdbc.Driver;</code>
-    </blockquote>
-
-  </li>
+vous avez utilis&eacute;es pour la base de donn&eacute;es test.</li>
 
   <li>Modifier le fichier <code>fourheir.jsp</code>,
     <code>mondrian.jsp</code>, <code>colors.jsp</code>
@@ -575,9 +566,9 @@ ainsi que le fichier <code>arrows.jsp </code>dans le
 r&eacute;pertoire <code><i>TOMCAT_HOME</i>/webapps/mondrian/WEB-INF/queries</code>.
 Modifier les lignes
     <blockquote><code>&lt;jp:mondrianQuery id="query01"
-jdbcDriver="sun.jdbc.odbc.JdbcOdbcDriver"
-jdbcUrl="jdbc:odbc:MondrianFoodMart"
-catalogUri="/WEB-INF/queries/FoodMart.xml"&gt;</code> </blockquote>
+jdbcDriver="com.mysql.jdbc.Driver"
+jdbcUrl="jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart"
+catalogUri="/WEB-INF/queries/FoodMart.mondrian.xml"&gt;</code> </blockquote>
 
     <p>avec les param&egrave;tres de votre base de
 donn&eacute;es FoodMart database. Pour MySQL, cela donnera quelque
@@ -586,7 +577,7 @@ chose du genre: </p>
     <blockquote><code>&lt;jp:mondrianQuery id="query01"
 jdbcDriver="com.mysql.jdbc.Driver"
 jdbcUrl="jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart"
-catalogUri="/WEB-INF/queries/FoodMart.xml"&gt;</code> </blockquote>
+catalogUri="/WEB-INF/queries/FoodMart.mondrian.xml"&gt;</code> </blockquote>
 
     <p></p>
 
@@ -673,7 +664,7 @@ JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver&lt;/DataSourceInfo&gt;<br>
 &lt;Catalog name="FoodMart"&gt;<br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;Definition&gt;/WEB-INF/schema/FoodMart.xml&lt;/Definition&gt;<br>
+&lt;Definition&gt;/WEB-INF/schema/FoodMart.mondrian.xml&lt;/Definition&gt;<br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;/Catalog&gt;<br>

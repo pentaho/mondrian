@@ -32,7 +32,7 @@ public class StandAlone {
     public static final String ConnectionString =
         "Provider=mondrian;"
         + "Jdbc=jdbc:JSQLConnect://engdb04:1433/database=MondrianFoodmart/user=mondrian/password=password;"
-        + "Catalog=file:demo\\FoodMart.xml;"
+        + "Catalog=file:demo\\FoodMart.mondrian.xml;"
         + "JdbcDrivers=com.jnetdirect.jsql.JSQLDriver;";
 
     public static void main(String[] args) {

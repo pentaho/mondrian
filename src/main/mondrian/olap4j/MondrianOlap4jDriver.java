@@ -36,9 +36,10 @@ import java.util.logging.Logger;
  * <br/>
  * Connection connection =<br/>
  * &nbsp;&nbsp;DriverManager.getConnection(<br/>
- * &nbsp;&nbsp;&nbsp;&nbsp;"jdbc:mondrian:Jdbc=jdbc:odbc:MondrianFoodMart;
- * Catalog=file:/mondrian/demo/FoodMart.xml;
- * JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver");<br/>
+ * &nbsp;&nbsp;&nbsp;&nbsp;"jdbc:mondrian:Jdbc=jdbc:mysql://localhost/foodmart;
+ * JdbcUser=foodmart; JdbcPassword=foodmart;
+ * Catalog=file:/mondrian/demo/FoodMart.mondrian.xml;
+ * JdbcDrivers=com.mysql.jdbc.Driver");<br/>
  * OlapConnection olapConnection =<br/>
  * &nbsp;&nbsp;connection.unwrap(OlapConnection.class);</code>
  * </blockquote>

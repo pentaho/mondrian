@@ -29,7 +29,7 @@ CLASSPATH="$CLASSPATH:$MONDRIAN_HOME/testclasses"
 
 export CLASSPATH
 
-CATALOG_URL="file://localhost${MONDRIAN_HOME}/demo/FoodMart.xml"
+CATALOG_URL="file://localhost${MONDRIAN_HOME}/demo/FoodMart.mondrian.xml"
 
 # oracle 
 #JDBC_DRIVER=oracle.jdbc.OracleDriver

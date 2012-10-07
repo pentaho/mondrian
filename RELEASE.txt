@@ -124,5 +124,12 @@ Bugs and feature requests fixed for 4.0
 ---------------------------------------
 TODO
 
+Removed
+-------
+
+To be removed
+-------------
+Property.formatter (XML attribute)
+SchemaGrant.access value "all_dimensions"
 # End
 
