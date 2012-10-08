@@ -35,6 +35,7 @@ import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.mdx.IdentifierSegment;
 
 import java.io.*;
+import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -876,12 +877,12 @@ public class RolapSchema implements Schema {
 
         private static Pool pool = new Pool();
 
-        private final Map<String, SoftReference<RolapSchema>> mapUrlToSchema =
-            new HashMap<String, SoftReference<RolapSchema>>();
+        private final Map<String, Reference<RolapSchema>> mapUrlToSchema =
+            new HashMap<String, Reference<RolapSchema>>();
 
-        private final Map<ByteString, SoftReference<RolapSchema>>
+        private final Map<ByteString, Reference<RolapSchema>>
             mapMd5ToSchema =
-            new HashMap<ByteString, SoftReference<RolapSchema>>();
+            new HashMap<ByteString, Reference<RolapSchema>>();
 
         private Pool() {
         }
@@ -937,6 +938,16 @@ public class RolapSchema implements Schema {
 
             String dynProcName = connectInfo.get(
                 RolapConnectionProperties.DynamicSchemaProcessor.name());
+            final boolean pinSchema =
+                Boolean.parseBoolean(
+                    connectInfo.get(
+                        RolapConnectionProperties.PinSchema.name(),
+                        "false"));
+            final int pinSchemaTimeout =
+                Integer.parseInt(
+                    connectInfo.get(
+                        RolapConnectionProperties.PinSchemaTimeout.name(),
+                        "30"));
 
             String catalogStr = connectInfo.get(
                 RolapConnectionProperties.CatalogContent.name());
@@ -1036,7 +1047,7 @@ public class RolapSchema implements Schema {
                 }
 
                 if (md5Bytes != null) {
-                    SoftReference<RolapSchema> ref =
+                    Reference<RolapSchema> ref =
                         mapMd5ToSchema.get(md5Bytes);
                     if (ref != null) {
                         schema = ref.get();
@@ -1061,8 +1072,8 @@ public class RolapSchema implements Schema {
                         connectInfo,
                         dataSource);
 
-                    SoftReference<RolapSchema> ref =
-                        new SoftReference<RolapSchema>(schema);
+                    Reference<RolapSchema> ref =
+                        createReference(schema, pinSchema, pinSchemaTimeout);
                     if (md5Bytes != null) {
                         mapMd5ToSchema.put(md5Bytes, ref);
                     }
@@ -1081,7 +1092,7 @@ public class RolapSchema implements Schema {
                 }
 
             } else {
-                SoftReference<RolapSchema> ref = mapUrlToSchema.get(key);
+                Reference<RolapSchema> ref = mapUrlToSchema.get(key);
                 if (ref != null) {
                     schema = ref.get();
                     if (schema == null) {
@@ -1101,7 +1112,7 @@ public class RolapSchema implements Schema {
 
                     mapUrlToSchema.put(
                         key,
-                        new SoftReference<RolapSchema>(schema));
+                        createReference(schema, pinSchema, pinSchemaTimeout));
 
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug(
@@ -1115,6 +1126,19 @@ public class RolapSchema implements Schema {
                 }
             }
             return schema;
+        }
+
+        private Reference<RolapSchema> createReference(
+            RolapSchema schema,
+            boolean pinSchema,
+            int pinSchemaTimeout)
+        {
+            if (pinSchema) {
+                return new ExpiringReference<RolapSchema>(
+                    schema, pinSchemaTimeout);
+            } else {
+                return new SoftReference<RolapSchema>(schema);
+            }
         }
 
         synchronized void remove(
@@ -1161,7 +1185,7 @@ public class RolapSchema implements Schema {
         }
 
         private void remove(String key) {
-            SoftReference<RolapSchema> ref = mapUrlToSchema.get(key);
+            Reference<RolapSchema> ref = mapUrlToSchema.get(key);
             if (ref != null) {
                 RolapSchema schema = ref.get();
                 if (schema != null) {
@@ -1177,7 +1201,7 @@ public class RolapSchema implements Schema {
                 LOGGER.debug("Pool.clear: clearing all RolapSchemas");
             }
 
-            for (SoftReference<RolapSchema> ref : mapUrlToSchema.values()) {
+            for (Reference<RolapSchema> ref : mapUrlToSchema.values()) {
                 if (ref != null) {
                     RolapSchema schema = ref.get();
                     if (schema != null) {
@@ -1252,6 +1276,73 @@ public class RolapSchema implements Schema {
                     buf.append('.');
                 }
                 buf.append(s);
+            }
+        }
+
+        /**
+         * An expiring reference is a subclass of {@link SoftReference}
+         * which pins the reference in memory until a certain timeout
+         * is reached. After that, the reference is free to be garbage
+         * collected if needed.
+         */
+        private static class ExpiringReference<T> extends SoftReference<T> {
+            @SuppressWarnings("unused")
+            private T hardRef;
+            private final int timeout;
+
+            /**
+             * A Timer object to execute what we need to do.
+             */
+            private static final Timer timer =
+                new Timer(
+                    "mondrian.rolap.RolapSchemaPool.ExpiringReference$timer",
+                    true);
+
+            /**
+             * A task to schedule which clears the hard reference.
+             */
+            private TimerTask timerTask = new TimerTask() {
+                public void run() {
+                    ExpiringReference.this.hardRef = null;
+                }
+            };
+
+            /**
+             * Creates an expiring reference.
+             * @param ref The referent.
+             * @param timeout The timeout to enforce, in minutes.
+             * If timeout is equal or less than 0, this means a hard reference.
+             */
+            public ExpiringReference(T ref, int timeout) {
+                super(ref);
+                this.hardRef = ref;
+                this.timeout = timeout;
+                if (timeout > 0) {
+                    setTimer();
+                }
+            }
+
+            private synchronized void setTimer() {
+                // Cancel anything running or else we will double-trigger.
+                timerTask.cancel();
+                // Schedule for cleanup.
+                timer.schedule(
+                    timerTask,
+                    this.timeout * 60 * 1000); // Timeout is provided in minutes.
+            }
+
+            public synchronized T get() {
+                final T weakRef = super.get();
+
+                if (weakRef != null && timeout > 0) {
+                    // This object is still alive.
+                    setTimer();
+                    // Set the reference after the task starts, or else
+                    // any previous tasks might have wiped it.
+                    this.hardRef = weakRef;
+                }
+
+                return weakRef;
             }
         }
     }
