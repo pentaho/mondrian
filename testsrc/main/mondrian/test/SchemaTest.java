@@ -30,6 +30,9 @@ import java.util.Map;
 /**
  * Unit tests for various schema features.
  *
+ * @see SchemaVersionTest
+ * @see mondrian.rolap.SharedDimensionTest
+ *
  * @author jhyde
  * @since August 7, 2006
  */

@@ -38,6 +38,7 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.sql.Connection;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
@@ -76,6 +77,12 @@ public class Util extends XOMUtil {
      */
     private static final Random metaRandom =
             createRandom(MondrianProperties.instance().TestSeed.get());
+
+    /** Unique id for this JVM instance. Part of a key that ensures that if
+     * two JVMs in the same cluster have a data-source with the same
+     * identity-hash-code, they will be treated as different data-sources,
+     * and therefore caches will not be incorrectly shared. */
+    public static final UUID JVM_INSTANCE_UUID = UUID.randomUUID();
 
     /**
      * Whether we are running a version of Java before 1.5.
@@ -307,111 +314,9 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Creates an {@link ExecutorService} object backed by an expanding
-     * cached thread pool.
-     * @param name The name of the threads.
-     * @return An executor service preconfigured.
-     */
-    public static ExecutorService getExecutorService(
-        final String name)
-    {
-        return Executors.newCachedThreadPool(
-            new ThreadFactory() {
-                public Thread newThread(Runnable r) {
-                    final Thread thread =
-                        Executors.defaultThreadFactory().newThread(r);
-                    thread.setDaemon(true);
-                    thread.setName(name);
-                    return thread;
-                }
-            }
-        );
-    }
-
-    /**
-     * Distributes and executes a list of tasks via an executor
-     * service. This function will only return if one of the two
-     * following things occur:
-     * <ul>
-     * <li>all tasks have finished running</li>
-     * <li><code>breakAtFirstNonNull</code> is set to true and
-     * one of the tasks has returned a non null value.</li>
-     * </ul>
-     * @param <E>
-     * @param tasks List of tasks to run.
-     * @param executor The executor service to use.
-     * @param breakAtFirstNonNull Whether or not to stop executing
-     * the tasks if one of them returns a non null value. Useful
-     * when scanning a list of items for the first match found.
-     * @return If <code>breakAtFirstNonNull</code> is true, this
-     * function returns the first non null result given by the first
-     * task to complete. Returns null otherwise.
-     */
-    public static <E> E executeDistributedTasks(
-        List<Callable<E>> tasks,
-        ExecutorService executor,
-        boolean breakAtFirstNonNull)
-    {
-        final List<Future<E>> tasksList =
-            new ArrayList<Future<E>>();
-        final CountDownLatch latch =
-            new CountDownLatch(tasks.size());
-        try {
-            for (final Callable<E> call : tasks) {
-                tasksList.add(
-                    executor.submit(
-                        new Callable<E>() {
-                            public E call() throws Exception {
-                                E result = call.call();
-                                latch.countDown();
-                                return result;
-                            }
-                        }));
-            }
-
-            E result = null;
-            taskLoop:
-            while (true) {
-                if (breakAtFirstNonNull) {
-                    for (Future<E> task : tasksList) {
-                        if (task.isDone()) {
-                            E taskResult = null;
-                            try {
-                                taskResult = task.get();
-                            } catch (InterruptedException e) {
-                                throw new MondrianException(e);
-                            } catch (ExecutionException e) {
-                                throw new MondrianException(e);
-                            }
-                            if (taskResult != null) {
-                                result = taskResult;
-                                break taskLoop;
-                            }
-                        }
-                    }
-                }
-                // Break anyway if all tasks are completed.
-                if (latch.getCount() == 0) {
-                    break taskLoop;
-                }
-                // Sleep for some time as not all tasks seem completed.
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    throw new MondrianException(e);
-                }
-            }
-            return result;
-        } finally {
-            // Make double sure all tasks are killed
-            for (Future<E> task : tasksList) {
-                task.cancel(true);
-            }
-        }
-    }
-
-    /**
      * Encodes string for MDX (escapes ] as ]] inside a name).
+     *
+     * @deprecated Will be removed in 4.0
      */
     public static String mdxEncodeString(String st) {
         StringBuilder retString = new StringBuilder(st.length() + 20);
@@ -2341,36 +2246,48 @@ public class Util extends XOMUtil {
      * Closes a JDBC result set, statement, and connection, ignoring any errors.
      * If any of them are null, that's fine.
      *
+     * <p>If any of them throws a {@link SQLException}, returns the first
+     * such exception, but always executes all closes.</p>
+     *
      * @param resultSet Result set
      * @param statement Statement
      * @param connection Connection
      */
-    public static void close(
+    public static SQLException close(
         ResultSet resultSet,
         Statement statement,
-        java.sql.Connection connection)
+        Connection connection)
     {
+        SQLException firstException = null;
         if (resultSet != null) {
             try {
+                if (statement == null) {
+                    statement = resultSet.getStatement();
+                }
                 resultSet.close();
             } catch (SQLException e) {
-                // ignore
+                firstException = e;
             }
         }
         if (statement != null) {
             try {
                 statement.close();
             } catch (SQLException e) {
-                // ignore
+                if (firstException == null) {
+                    firstException = e;
+                }
             }
         }
         if (connection != null) {
             try {
                 connection.close();
             } catch (SQLException e) {
-                // ignore
+                if (firstException == null) {
+                    firstException = e;
+                }
             }
         }
+        return firstException;
     }
 
     public static class ErrorCellValue {

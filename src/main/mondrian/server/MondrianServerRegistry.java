@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2010 Pentaho
+// Copyright (C) 2010-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server;
@@ -15,10 +15,9 @@ import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.IdentityCatalogLocator;
 import mondrian.util.LockBox;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.*;
 
 /**
  * Registry of all servers within this JVM, and also serves as a factory for
@@ -138,18 +137,46 @@ public class MondrianServerRegistry {
                         resource.getProtocol(),
                         resource.getHost(),
                         path2);
-                String versionString = Util.readURL(resource2);
-                Pattern pattern =
-                    Pattern.compile(
-                        "(?s)Title: (.*)\nVersion: (.*)\nVendor: (.*)\n.*");
-                Matcher matcher = pattern.matcher(versionString);
-                if (matcher.matches()) {
-                    int groupCount = matcher.groupCount();
-                    assert groupCount == 3;
-                    title = matcher.group(1);
-                    version = matcher.group(2);
-                    vendor = matcher.group(3);
+
+                // Parse VERSION.txt. E.g.
+                //   Title: mondrian
+                //   Version: 3.4.9
+                // becomes {("Title", "mondrian"), ("Version", "3.4.9")}
+                final Map<String, String> map = new HashMap<String, String>();
+                final LineNumberReader r =
+                    new LineNumberReader(
+                        new InputStreamReader(resource2.openStream()));
+                try {
+                    String line;
+                    while ((line = r.readLine()) != null) {
+                        int i = line.indexOf(": ");
+                        if (i >= 0) {
+                            String key = line.substring(0, i);
+                            String value = line.substring(i + ": ".length());
+                            map.put(key, value);
+                        }
+                    }
+                } finally {
+                    r.close();
                 }
+
+                title = map.get("Title");
+                version = map.get("Version");
+                try {
+                    Integer.parseInt(version);
+                } catch (NumberFormatException e) {
+                    // Version is not a number (e.g. "TRUNK-SNAPSHOT").
+                    // Fall back on VersionMajor, VersionMinor, if present.
+                    String versionMajor = map.get("VersionMajor");
+                    String versionMinor = map.get("VersionMinor");
+                    if (versionMajor != null) {
+                        version = versionMajor;
+                    }
+                    if (versionMinor != null) {
+                        version += "." + versionMinor;
+                    }
+                }
+                vendor = map.get("Vendor");
             } catch (IOException e) {
                 // ignore exception - it's OK if file is not found
                 Util.discard(e);

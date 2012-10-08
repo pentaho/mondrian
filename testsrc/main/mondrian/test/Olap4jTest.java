@@ -26,10 +26,9 @@ import org.olap4j.metadata.Property;
 
 import java.lang.reflect.Method;
 import java.sql.*;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
 
 /**
  * Tests mondrian's olap4j API.
@@ -315,7 +314,9 @@ public class Olap4jTest extends FoodMartTestCase {
     }
 
     /**
-     * Calls {@link java.sql.Statement#closeOnCompletion()} via reflection.
+     * Calls {@link java.sql.Statement}.closeOnCompletion() via reflection.
+     * (It cannot be called directly because it only exists from JDK 1.7
+     * onwards.)
      *
      * @param statement Statement or result set
      * @throws Exception on error
@@ -340,7 +341,6 @@ public class Olap4jTest extends FoodMartTestCase {
         ResultSetMetaData metaData = resultSet.getMetaData();
         results.add("foreground " + metaData.getColumnCount());
         assertEquals("foreground 29", results.poll(10, TimeUnit.SECONDS));
-        metaData = null;
 
         // Background. Works fine.
         Executor executor =
@@ -408,6 +408,118 @@ public class Olap4jTest extends FoodMartTestCase {
             Util.discard(validatedSelect);
         } finally {
             Util.close(null, null, connection);
+        }
+    }
+
+    /**
+     * Runs a statement repeatedly, flushing cache every 10 iterations and
+     * calling cancel at random intervals.
+     *
+     * <p>Test case for </p>
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1217">MONDRIAN-1217,
+     * "Statement.cancel() during fact query leads to permanent segment
+     * lock"</a>.
+     */
+    public void testBugMondrian1217() throws SQLException {
+        // The checked-in version does nothing. Uncomment one of the following
+        // lines to stress the system in a dev environment.
+        if (false) {
+            checkBugMondrian1217(10000, 20000);
+        }
+        if (false) {
+            checkBugMondrian1217(1000, 4000);
+        }
+    }
+
+    private void checkBugMondrian1217(final int cancelMin, final int cancelMax)
+        throws SQLException
+    {
+        assert cancelMin < cancelMax;
+        final AtomicBoolean finished = new AtomicBoolean(false);
+        final AtomicInteger failCount = new AtomicInteger();
+        final AtomicInteger cancelCount = new AtomicInteger();
+        final AtomicInteger tryCancelCount = new AtomicInteger();
+        final AtomicInteger actualCancelCount = new AtomicInteger();
+        final AtomicReference<Statement> stmtRef =
+            new AtomicReference<Statement>();
+        try {
+            TestContext testContext = TestContext.instance();
+            final OlapConnection connection =
+                testContext.getOlap4jConnection();
+
+            final Thread thread = new Thread(
+                new Runnable() {
+                    public void run() {
+                        final Random random = new Random();
+                        while (!finished.get()) {
+                            try {
+                                Thread.sleep(
+                                    random.nextInt(cancelMax - cancelMin)
+                                    + cancelMin);
+                            } catch (InterruptedException e) {
+                                return;
+                            }
+                            try {
+                                Statement statement = stmtRef.get();
+                                tryCancelCount.incrementAndGet();
+                                if (statement != null) {
+                                    actualCancelCount.incrementAndGet();
+                                    statement.cancel();
+                                }
+                            } catch (SQLException e) {
+                                failCount.incrementAndGet();
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                });
+            thread.start();
+
+            CacheControl cacheControl = testContext.getCacheControl();
+            Cube cube0 =
+                connection.getOlapSchema().getCubes().get("Sales");
+            mondrian.olap.Cube cube =
+                ((OlapWrapper) cube0).unwrap(mondrian.olap.Cube.class);
+            CacheControl.CellRegion cellRegion =
+                cacheControl.createMeasuresRegion(cube);
+            final Random random = new Random();
+            final String[] queries = {
+                "select [Product].Members on 0 from [Sales]",
+                "select [Product].[Drink].Children on 0 from [Sales]",
+                "select [Product].[Food].Children on 0 from [Sales]"
+            };
+            for (int i = 0;; i++) {
+                if (i % 10 == 0) {
+                    cacheControl.flush(cellRegion);
+                }
+                final OlapStatement statement = connection.createStatement();
+                stmtRef.set(statement);
+                try {
+                final CellSet cellSet =
+                    statement.executeOlapQuery(
+                        queries[i == 0 ? 0 : random.nextInt(3)]);
+                    String s = TestContext.toString(cellSet);
+                    assertNotNull(s);
+                    cellSet.close();
+                } catch (OlapException e) {
+                    assertEquals(
+                        Arrays.toString(Util.convertStackToString(e)),
+                        "Query canceled",
+                        e.getMessage());
+                    cancelCount.incrementAndGet();
+                }
+                statement.close();
+                stmtRef.set(null);
+
+                System.out.println(
+                    "i=" + i
+                    + ", failCount=" + failCount
+                    + ", tryCancelCount=" + tryCancelCount
+                    + ", actualCancelCount=" + tryCancelCount
+                    + ", cancelCount=" + tryCancelCount);
+            }
+        } finally {
+            finished.set(true);
         }
     }
 }

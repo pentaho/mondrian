@@ -82,6 +82,11 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     final Factory factory;
     final MondrianOlap4jDriver driver;
     private String roleName;
+
+    /** List of role names. Empty if role is the 'all' role. Value must always
+     * be an unmodifiable list, because {@link #getRoleNames()} returns the
+     * value directly. */
+    private List<String> roleNames = Collections.emptyList();
     private boolean autoCommit;
     private boolean readOnly;
     boolean preferList;
@@ -648,25 +653,85 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     }
 
     public void setRoleName(String roleName) throws OlapException {
-        final Role role;
-        final RolapConnection connection1 = getMondrianConnection();
         if (roleName == null) {
-            role = Util.createRootRole(connection1.getSchema());
+            final RolapConnection connection1 = getMondrianConnection();
+            final Role role = Util.createRootRole(connection1.getSchema());
             assert role != null;
+            this.roleName = roleName;
+            this.roleNames = Collections.emptyList();
+            connection1.setRole(role);
         } else {
-            role = connection1.getSchema().lookupRole(roleName);
+            setRoleNames(Collections.singletonList(roleName));
+        }
+    }
+
+    /**
+     * <p>Set the active role(s) in this connection based on a list of role
+     * names.</p>
+     *
+     * <p>The list may be not be empty. Each role name must be not-null and the
+     * name of a valid role for the current user.</p>
+     *
+     * <p>This method is not part of the olap4j-1.x API. It may be included
+     * in olap4j-2.0. If you want to call this method on a
+     * {@link OlapConnection}, use {@link #unwrap} to get the underlying
+     * Mondrian connection.</p>
+     *
+     * @param roleNames List of role names
+     *
+     * @see #getRoleNames()
+     */
+    public void setRoleNames(List<String> roleNames) throws OlapException {
+        final RolapConnection connection1 = getMondrianConnection();
+        final List<Role> roleList = new ArrayList<Role>();
+        for (String roleName : roleNames) {
+            if (roleName == null) {
+                throw new NullPointerException("null role name");
+            }
+            final Role role = connection1.getSchema().lookupRole(roleName);
             if (role == null) {
                 throw helper.createException("Unknown role '" + roleName + "'");
             }
+            roleList.add(role);
         }
+
         // Remember the name of the role, because mondrian roles don't know
         // their own name.
-        this.roleName = roleName;
+        Role role;
+        switch (roleList.size()) {
+        case 0:
+            throw helper.createException("Empty list of role names");
+        case 1:
+            role = roleList.get(0);
+            this.roleName = roleNames.get(0);
+            this.roleNames = Collections.singletonList(roleName);
+            break;
+        default:
+            role = RoleImpl.union(roleList);
+            this.roleNames =
+                Collections.unmodifiableList(new ArrayList<String>(roleNames));
+            this.roleName = this.roleNames.toString();
+            break;
+        }
         connection1.setRole(role);
     }
 
     public String getRoleName() {
         return roleName;
+    }
+
+    /**
+     * Returns a list of the current role names.
+     *
+     * <p>This method is not part of the olap4j-1.x API. It may be included
+     * in olap4j-2.0. If you want to call this method on a
+     * {@link OlapConnection}, use {@link #unwrap} to get the underlying
+     * Mondrian connection.</p>
+     *
+     * @return List of the current role names
+     */
+    public List<String> getRoleNames() {
+        return roleNames;
     }
 
     public List<String> getAvailableRoleNames() throws OlapException {

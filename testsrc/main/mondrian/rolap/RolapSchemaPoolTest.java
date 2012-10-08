@@ -22,7 +22,7 @@ import java.net.URL;
 import javax.sql.DataSource;
 
 /**
- * Test for {@link RolapSchema.Pool}.
+ * Test for {@link RolapSchemaPool}.
  */
 public class RolapSchemaPoolTest extends FoodMartTestCase {
 
@@ -31,7 +31,7 @@ public class RolapSchemaPoolTest extends FoodMartTestCase {
     }
 
     public void testBasicSchemaFetch() {
-        RolapSchema.Pool schemaPool = RolapSchema.Pool.instance();
+        RolapSchemaPool schemaPool = RolapSchemaPool.instance();
         schemaPool.clear();
 
         String catalogUrl = getFoodmartCatalogUrl().toString();
@@ -57,7 +57,7 @@ public class RolapSchemaPoolTest extends FoodMartTestCase {
     }
 
     public void testSchemaFetchCatalogUrlJdbcUuid() {
-        RolapSchema.Pool schemaPool = RolapSchema.Pool.instance();
+        RolapSchemaPool schemaPool = RolapSchemaPool.instance();
         schemaPool.clear();
         final String uuid = "UUID-1";
 
@@ -112,7 +112,7 @@ public class RolapSchemaPoolTest extends FoodMartTestCase {
      * fetches the same schema in all scenarios.
      */
     public void testSchemaFetchMd5JdbcUid() throws IOException {
-        RolapSchema.Pool pool = RolapSchema.Pool.instance();
+        RolapSchemaPool pool = RolapSchemaPool.instance();
         pool.clear();
         final String uuid = "UUID-1";
         String catalogUrl = getFoodmartCatalogUrl().toString();

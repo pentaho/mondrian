@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2011 Pentaho
+// Copyright (C) 2010-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server;
@@ -162,7 +162,7 @@ public class FileRepository implements Repository {
     }
 
     public void shutdown() {
-        scheduledFuture.cancel(true);
+        scheduledFuture.cancel(false);
         repositoryContentFinder.shutdown();
     }
 

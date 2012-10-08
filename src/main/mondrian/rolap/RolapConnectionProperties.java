@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2010 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -30,7 +30,7 @@ public enum RolapConnectionProperties {
 
     /**
      * The "Jdbc" property is the URL of the JDBC database where the data is
-     * stored. You must specify either {@link #DataSource} or {@link #Jdbc}.
+     * stored. You must specify either {@link #DataSource} or {@code #Jdbc}.
      */
     Jdbc,
 
@@ -90,7 +90,7 @@ public enum RolapConnectionProperties {
     /**
      * The "DataSource" property is the name of a data source class. It must
      * implement the {@link javax.sql.DataSource} interface.
-     * You must specify either {@link #DataSource} or {@link #Jdbc}.
+     * You must specify either {@code DataSource} or {@link #Jdbc}.
      */
     DataSource,
 
@@ -168,11 +168,45 @@ public enum RolapConnectionProperties {
     Instance,
 
     /**
-     * The "JdbcConnectionUuid" is the unique identifier for the connection.
-     * If defined, Mondrian will assume that two connections bearing the same JdbcConnectionUuid
-     * point to perfectly identical databases without looking at any other properties. 
+     * The "JdbcConnectionUuid" property is the unique identifier for the
+     * underlying JDBC connection. If defined, Mondrian will assume that two
+     * connections bearing the same JdbcConnectionUuid point to identical
+     * databases without looking at any other properties.
      */
-    JdbcConnectionUuid;
+    JdbcConnectionUuid,
+
+    /**
+     * The "PinSchema" property instructs Mondrian to keep a hard reference
+     * to the schema within its pool. This prevents the garbage collector
+     * from removing it from the memory.
+     *
+     * <p>It is highly recommended to use it in conjunction with the property
+     * "PinSchemaTimeout" to prevent the memory from filling up, especially
+     * when using a DynamicSchemaProcessor.
+     *
+     * <p>After the timeout is reached, the hard reference will be cleared
+     * and the schema will be made a candidate for garbage collection. If the
+     * timeout wasn't reached yet and a second query requires the same schema,
+     * the timeout will be re-computed from the time of the second access and
+     * a new hard reference is established until the new timer reaches its end.
+     *
+     * <p>Valid property values are "true" and "false". Defaults to "false".
+     */
+    PinSchema,
+
+    /**
+     * The "PinSchemaTimeout" defines, in minutes, how much time must Mondrian
+     * keep a hard reference to schema objects within the pool. This only
+     * applies to schemas which were created with the property "PinSchema"
+     * set to true.
+     *
+     * <p>If the timeout is equal to or less than zero, the schema will get
+     * pinned permanently. It is inadvisable to use a this mode when using
+     * a DynamicSchemaProcessor at the risk of filling up the memory.
+     *
+     * <p>Must be an integer value. Defaults to 30 minutes.
+     */
+    PinSchemaTimeout;
 
     /**
      * Any property beginning with this value will be added to the

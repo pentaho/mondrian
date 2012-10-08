@@ -98,6 +98,13 @@ class MonitorImpl
     public void sendEvent(Event event) {
         // The implementation does not need to take any locks.
         try {
+            if (Thread.interrupted()) {
+                // Interrupt should not happen. Mondrian uses cancel without
+                // setting interrupt. But if interrupts are happening, it's
+                // best to know now, rather than failing next time we make a
+                // blocking system call.
+                throw new AssertionError();
+            }
             ACTOR.eventQueue.put(Pair.<Handler, Message>of(handler, event));
         } catch (InterruptedException e) {
             throw Util.newError(e, "Exception while sending event " + event);
@@ -894,12 +901,12 @@ class MonitorImpl
             try {
                 eventQueue.put(Pair.<Handler, Message>of(handler, command));
             } catch (InterruptedException e) {
-                throw Util.newError(e, "Exception while executing " + command);
+                throw Util.newError(e, "Interrupted while sending " + command);
             }
             try {
                 return responseQueue.take(command);
             } catch (InterruptedException e) {
-                throw Util.newError(e, "Exception while executing " + command);
+                throw Util.newError(e, "Interrupted while awaiting " + command);
             }
         }
     }

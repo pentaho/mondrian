@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2010 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 */
@@ -1411,21 +1411,27 @@ public class SchemaPropertyCellEditor
                                 NodeDef[] children = sharedDim.getChildren();
                                 for (int k = 0; k < children.length; k++) {
                                     if (children[k] instanceof Hierarchy) {
-                                        String hname = ((Hierarchy) children[k]).name;
+                                        String hname =
+                                            ((Hierarchy) children[k]).name;
                                         if (hname != null) {
                                             if (MondrianProperties.instance()
                                                 .SsasCompatibleNaming.get())
                                             {
                                                 hiers.add(
                                                     Util.quoteMdxIdentifier(
-                                                        s.cubes[i].dimensions[j].name)
+                                                        s.cubes[i].dimensions[j]
+                                                            .name)
                                                         + "."
-                                                        + Util.quoteMdxIdentifier(hname));
+                                                        + Util
+                                                            .quoteMdxIdentifier(
+                                                                hname));
                                             } else {
                                                 hiers.add(
                                                     Util.quoteMdxIdentifier(
-                                                        s.cubes[i].dimensions[j].name
-                                                        + "." + hname));
+                                                        s.cubes[i].dimensions[j]
+                                                            .name
+                                                        + "."
+                                                        + hname));
                                             }
                                         } else {
                                             hiers.add(Util.quoteMdxIdentifier(

@@ -15,7 +15,6 @@ import mondrian.olap.fun.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.AggTableManager;
-import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.spi.CellFormatter;
 import mondrian.spi.*;
 import mondrian.spi.MemberFormatter;
@@ -33,7 +32,6 @@ import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.mdx.IdentifierSegment;
 
 import java.io.*;
-import java.lang.ref.SoftReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -50,7 +48,7 @@ import javax.sql.DataSource;
  * @since 26 July, 2001
  */
 public class RolapSchema implements Schema {
-    private static final Logger LOGGER = Logger.getLogger(RolapSchema.class);
+    static final Logger LOGGER = Logger.getLogger(RolapSchema.class);
 
     private static final Set<Access> schemaAllowed =
         Olap4jUtil.enumSetOf(
@@ -106,8 +104,6 @@ public class RolapSchema implements Schema {
 
     private ByteString md5Bytes;
 
-    private final boolean useContentChecksum;
-
     /**
      * A schema's aggregation information
      */
@@ -117,7 +113,7 @@ public class RolapSchema implements Schema {
      * This is basically a unique identifier for this RolapSchema instance
      * used it its equals and hashCode methods.
      */
-    private String key;
+    final SchemaKey key;
 
     /**
      * Maps {@link String names of roles} to {@link Role roles with those names}.
@@ -172,7 +168,7 @@ public class RolapSchema implements Schema {
      * @param useContentChecksum Whether to use content checksum
      */
     private RolapSchema(
-        final String key,
+        final SchemaKey key,
         final Util.PropertyList connectInfo,
         final DataSource dataSource,
         final ByteString md5Bytes,
@@ -181,8 +177,9 @@ public class RolapSchema implements Schema {
         this.id = Util.generateUuidString();
         this.key = key;
         this.md5Bytes = md5Bytes;
-        this.useContentChecksum = useContentChecksum;
-        assert !(useContentChecksum && md5Bytes == null);
+        if (useContentChecksum && md5Bytes == null) {
+            throw new AssertionError();
+        }
 
         // the order of the next two lines is important
         this.defaultRole = Util.createRootRole(this);
@@ -207,8 +204,8 @@ public class RolapSchema implements Schema {
      * @param catalogStr may be null
      * @param connectInfo Connection properties
      */
-    private RolapSchema(
-        String key,
+    RolapSchema(
+        SchemaKey key,
         ByteString md5Bytes,
         String catalogUrl,
         String catalogStr,
@@ -407,6 +404,9 @@ public class RolapSchema implements Schema {
                 md5Bytes = new ByteString(Util.digestMd5(catalogStr));
             }
 
+            // throw error if we have an incompatible schema
+            checkSchemaVersion(def);
+
             xmlSchema = new MondrianDef.Schema(def);
 
             if (getLogger().isDebugEnabled()) {
@@ -429,6 +429,53 @@ public class RolapSchema implements Schema {
 
         aggTableManager.initialize();
         setSchemaLoadDate();
+    }
+
+    private void checkSchemaVersion(final DOMWrapper schemaDom) {
+        String schemaVersion = schemaDom.getAttribute("metamodelVersion");
+        if (schemaVersion == null) {
+            if (hasMondrian4Elements(schemaDom)) {
+                schemaVersion = "4.x";
+            } else {
+                schemaVersion = "3.x";
+            }
+        }
+
+        String[] versionParts = schemaVersion.split("\\.");
+        final String schemaMajor =
+            versionParts.length > 0 ? versionParts[0] : "";
+
+        MondrianServer.MondrianVersion mondrianVersion =
+            MondrianServer.forId(null).getVersion();
+        final String serverMajor =
+            mondrianVersion.getMajorVersion() + ""; // "3"
+
+        if (serverMajor.compareTo(schemaMajor) < 0) {
+            String errorMsg =
+                "Schema version '" + schemaVersion
+                + "' is later than schema version "
+                + "'3.x' supported by this version of Mondrian";
+            throw Util.newError(errorMsg);
+        }
+    }
+
+    private boolean hasMondrian4Elements(final DOMWrapper schemaDom) {
+        // check for Mondrian 4 schema elements:
+        for (DOMWrapper child : schemaDom.getChildren()) {
+            if ("PhysicalSchema".equals(child.getTagName())) {
+                // Schema/PhysicalSchema
+                return true;
+            } else if ("Cube".equals(child.getTagName())) {
+                for (DOMWrapper grandchild : child.getChildren()) {
+                    if ("MeasureGroups".equals(grandchild.getTagName())) {
+                        // Schema/Cube/MeasureGroups
+                        return true;
+                    }
+                }
+            }
+        }
+        // otherwise assume version 3.x
+        return false;
     }
 
     private void setSchemaLoadDate() {
@@ -578,7 +625,7 @@ public class RolapSchema implements Schema {
             } else {
                 // At this stage, the only roles in mapNameToRole are
                 // RoleImpl roles so it is safe to case.
-                defaultRole = (RoleImpl) role;
+                defaultRole = role;
             }
         }
     }
@@ -851,439 +898,12 @@ public class RolapSchema implements Schema {
         return cube;
     }
 
-    /**
-     * A collection of schemas, identified by their connection properties
-     * (catalog name, JDBC URL, and so forth).
-     *
-     * <p>To lookup a schema, call <code>Pool.instance().{@link #get}</code>.
-     */
-    static class Pool {
-
-        private static Pool pool = new Pool();
-
-        private final Map<String, SoftReference<RolapSchema>> mapUrlToSchema =
-            new HashMap<String, SoftReference<RolapSchema>>();
-
-        private final Map<ByteString, SoftReference<RolapSchema>>
-            mapMd5ToSchema =
-            new HashMap<ByteString, SoftReference<RolapSchema>>();
-
-        private Pool() {
-        }
-
-        static Pool instance() {
-            return pool;
-        }
-
-        synchronized RolapSchema get(
-            final String catalogUrl,
-            final String connectionKey,
-            final String jdbcUser,
-            final String dataSourceStr,
-            final Util.PropertyList connectInfo)
-        {
-            return get(
-                catalogUrl,
-                connectionKey,
-                jdbcUser,
-                dataSourceStr,
-                null,
-                connectInfo);
-        }
-
-        synchronized RolapSchema get(
-            final String catalogUrl,
-            final DataSource dataSource,
-            final Util.PropertyList connectInfo)
-        {
-            return get(
-                catalogUrl,
-                null,
-                null,
-                null,
-                dataSource,
-                connectInfo);
-        }
-
-        private RolapSchema get(
-            final String catalogUrl,
-            final String connectionKey,
-            final String jdbcUser,
-            final String dataSourceStr,
-            final DataSource dataSource,
-            final Util.PropertyList connectInfo)
-        {
-            String connectionUuid = connectInfo.get(
-                RolapConnectionProperties.JdbcConnectionUuid.name());
-
-            if (Util.isEmpty(connectionUuid)) {
-                connectionUuid =
-                    makeConnectionKey(
-                        dataSource,
-                        catalogUrl,
-                        connectionKey,
-                        jdbcUser,
-                        dataSourceStr);
-            }
-
-            String catalogStr = getSchemaContent(connectInfo, catalogUrl);
-            String key = makeKey(
-                getSchemaKey(connectInfo, catalogUrl, catalogStr),
-                connectionUuid);
-
-            // Use the schema pool unless "UseSchemaPool" is explicitly false.
-            final boolean useSchemaPool =
-                Boolean.parseBoolean(
-                    connectInfo.get(
-                        RolapConnectionProperties.UseSchemaPool.name(),
-                        "true"));
-            if (!useSchemaPool) {
-                return new RolapSchema(
-                    key,
-                    null,
-                    catalogUrl,
-                    catalogStr,
-                    connectInfo,
-                    dataSource);
-            }
-
-            RolapSchema schema = null;
-
-            final boolean useContentChecksum =
-                Boolean.parseBoolean(
-                    connectInfo.get(
-                        RolapConnectionProperties.UseContentChecksum.name()));
-
-            if (useContentChecksum) {
-                ByteString md5Bytes =
-                    new ByteString(Util.digestMd5(catalogStr));
-                SoftReference<RolapSchema> ref =
-                    mapMd5ToSchema.get(md5Bytes);
-
-                if (ref != null) {
-                    schema = ref.get();
-                    if (schema == null) {
-                        // clear out the reference since schema is null
-                        mapUrlToSchema.remove(key);
-                        mapMd5ToSchema.remove(md5Bytes);
-                    }
-                }
-
-                if (schema == null) {
-                    schema = new RolapSchema(
-                        key,
-                        md5Bytes,
-                        catalogUrl,
-                        catalogStr,
-                        connectInfo,
-                        dataSource);
-                    putSchema(schema, md5Bytes);
-                }
-                return schema;
-            }
-
-            SoftReference<RolapSchema> ref = mapUrlToSchema.get(key);
-            if (ref != null) {
-                schema = ref.get();
-                if (schema == null) {
-                    mapUrlToSchema.remove(key);
-                }
-            }
-
-            if (schema == null) {
-                schema = new RolapSchema(
-                    key,
-                    null,
-                    catalogUrl,
-                    catalogStr,
-                    connectInfo,
-                    dataSource);
-                putSchema(schema, null);
-            }
-
-            return schema;
-        }
-
-        private void putSchema(
-            final RolapSchema schema,
-            final ByteString md5Bytes)
-        {
-            SoftReference<RolapSchema> ref =
-                new SoftReference<RolapSchema>(schema);
-            if (md5Bytes != null) {
-                mapMd5ToSchema.put(md5Bytes, ref);
-            }
-            mapUrlToSchema.put(schema.key, ref);
-        }
-
-        private static String getSchemaContent(
-            final Util.PropertyList connectInfo,
-            final String catalogUrl)
-        {
-            // We will return the first of the following:
-            //  1. CatalogContent property if set
-            //  2. DynamicSchemaProcessor#processSchema if set
-            //  3. Util.readVirtualFileAsString(catalogUrl)
-
-            String catalogStr = connectInfo.get(
-                RolapConnectionProperties.CatalogContent.name());
-
-            if (Util.isEmpty(catalogStr)) {
-                if (Util.isEmpty(catalogUrl)) {
-                    throw MondrianResource.instance()
-                    .ConnectStringMandatoryProperties.ex(
-                        RolapConnectionProperties.Catalog.name(),
-                        RolapConnectionProperties.CatalogContent.name());
-                }
-                //check for a DynamicSchemaProcessor
-                String dynProcName = connectInfo.get(
-                    RolapConnectionProperties.DynamicSchemaProcessor.name());
-                if (!Util.isEmpty(dynProcName)) {
-                    catalogStr =
-                        processDynamicSchema(
-                            dynProcName, catalogUrl, connectInfo);
-                }
-
-                if (Util.isEmpty(catalogStr)) {
-                    //read schema from file
-                    try {
-                        catalogStr = Util.readVirtualFileAsString(catalogUrl);
-                    } catch (IOException e) {
-                        throw Util.newError(
-                            e,
-                            "loading schema from url " + catalogUrl);
-                    }
-                }
-            }
-
-            return catalogStr;
-        }
-
-        private static String getSchemaKey(
-            final Util.PropertyList connectInfo,
-            final String catalogUrl,
-            final String catalogContents)
-        {
-            final String catalogContentProp =
-                RolapConnectionProperties.CatalogContent.name();
-            final String dynamicSchemaProp =
-                RolapConnectionProperties.DynamicSchemaProcessor.name();
-
-            if (!Util.isEmpty(connectInfo.get(catalogContentProp))
-                || !Util.isEmpty(connectInfo.get(dynamicSchemaProp)))
-            {
-                return catalogContents;
-            } else {
-                return catalogUrl;
-            }
-        }
-
-        private static String processDynamicSchema(
-            final String dynProcName,
-            final String catalogUrl,
-            final Util.PropertyList connectInfo)
-        {
-            String catalogStr = null;
-            try {
-                  @SuppressWarnings("unchecked")
-                  final Class<DynamicSchemaProcessor> clazz =
-                      (Class<DynamicSchemaProcessor>)
-                          Class.forName(dynProcName);
-                  final Constructor<DynamicSchemaProcessor> ctor =
-                      clazz.getConstructor();
-                  final DynamicSchemaProcessor dynProc = ctor.newInstance();
-                  catalogStr = dynProc.processSchema(catalogUrl, connectInfo);
-            } catch (Exception e) {
-                throw Util.newError(
-                    e,
-                    "loading DynamicSchemaProcessor " + dynProcName);
-            }
-
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
-                    "Pool.get: create schema \"" + catalogUrl
-                    + "\" using dynamic processor");
-            }
-            return catalogStr;
-        }
-
-        synchronized void remove(
-            final String catalogUrl,
-            final String connectionKey,
-            final String jdbcUser,
-            final String dataSourceStr)
-        {
-            final String key = makeKey(
-                catalogUrl,
-                connectionKey,
-                jdbcUser,
-                dataSourceStr);
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
-                    "Pool.remove: schema \"" + catalogUrl
-                    + "\" and datasource string \"" + dataSourceStr + "\"");
-            }
-            remove(key);
-        }
-
-        synchronized void remove(
-            final String catalogUrl,
-            final DataSource dataSource)
-        {
-            final String key = makeKey(catalogUrl, dataSource);
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
-                    "Pool.remove: schema \"" + catalogUrl
-                    + "\" and datasource object");
-            }
-            remove(key);
-        }
-
-        synchronized void remove(RolapSchema schema) {
-            if (schema != null) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "Pool.remove: schema \"" + schema.name
-                        + "\" and datasource object");
-                }
-                remove(schema.key);
-            }
-        }
-
-        private void remove(String key) {
-            SoftReference<RolapSchema> ref = mapUrlToSchema.get(key);
-            if (ref != null) {
-                RolapSchema schema = ref.get();
-                if (schema != null) {
-                    mapMd5ToSchema.remove(schema.md5Bytes);
-                    schema.finalCleanUp();
-                }
-            }
-            mapUrlToSchema.remove(key);
-        }
-
-        synchronized void clear() {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Pool.clear: clearing all RolapSchemas");
-            }
-
-            for (SoftReference<RolapSchema> ref : mapUrlToSchema.values()) {
-                if (ref != null) {
-                    RolapSchema schema = ref.get();
-                    if (schema != null) {
-                        schema.finalCleanUp();
-                    }
-                }
-            }
-            mapUrlToSchema.clear();
-            mapMd5ToSchema.clear();
-            JdbcSchema.clearAllDBs();
-        }
-
-        /**
-         * Returns a list of schemas in this pool.
-         *
-         * @return List of schemas in this pool
-         */
-        synchronized List<RolapSchema> getRolapSchemas() {
-            List<RolapSchema> list = new ArrayList<RolapSchema>();
-            for (RolapSchema schema
-                : Util.GcIterator.over(mapUrlToSchema.values()))
-            {
-                list.add(schema);
-            }
-            return list;
-        }
-
-        synchronized boolean contains(RolapSchema rolapSchema) {
-            return mapUrlToSchema.containsKey(rolapSchema.key);
-        }
-
-        private static String makeConnectionKey(
-            final DataSource dataSource,
-            final String catalogUrl,
-            final String connectionKey,
-            final String jdbcUser,
-            final String dataSourceStr)
-        {
-            String uuid = null;
-
-            if (dataSource == null) {
-                final StringBuilder buf = new StringBuilder(100);
-                appendIfNotNull(buf, connectionKey);
-                appendIfNotNull(buf, jdbcUser);
-                appendIfNotNull(buf, dataSourceStr);
-                uuid = new ByteString(
-                    Util.digestMd5(buf.toString())).toString();
-            } else {
-                uuid = "#external" + System.identityHashCode(dataSource);
-            }
-
-            return uuid;
-        }
-
-        private static String makeKey(String schemaKey, String connectionUuid)
-        {
-            StringBuilder buf = new StringBuilder(100);
-
-            appendIfNotNull(buf, schemaKey);
-            appendIfNotNull(buf, connectionUuid);
-
-            return buf.toString();
-        }
-
-        /**
-         * Creates a key with which to identify a schema in the cache.
-         */
-        private static String makeKey(
-            final String catalogUrl,
-            final String connectionKey,
-            final String jdbcUser,
-            final String dataSourceStr)
-        {
-            final StringBuilder buf = new StringBuilder(100);
-
-            appendIfNotNull(buf, catalogUrl);
-            appendIfNotNull(buf, connectionKey);
-            appendIfNotNull(buf, jdbcUser);
-            appendIfNotNull(buf, dataSourceStr);
-
-            return buf.toString();
-        }
-
-        /**
-         * Creates a key with which to identify a schema in the cache.
-         */
-        private static String makeKey(
-            final String catalogUrl,
-            final DataSource dataSource)
-        {
-            final StringBuilder buf = new StringBuilder(100);
-
-            appendIfNotNull(buf, catalogUrl);
-            buf.append('.');
-            buf.append("external#");
-            buf.append(System.identityHashCode(dataSource));
-
-            return buf.toString();
-        }
-
-        private static void appendIfNotNull(StringBuilder buf, String s) {
-            if (s != null) {
-                if (buf.length() > 0) {
-                    buf.append('.');
-                }
-                buf.append(s);
-            }
-        }
-    }
-
     public static List<RolapSchema> getRolapSchemas() {
-        return Pool.instance().getRolapSchemas();
+        return RolapSchemaPool.instance().getRolapSchemas();
     }
 
     public static boolean cacheContains(RolapSchema rolapSchema) {
-        return Pool.instance().contains(rolapSchema);
+        return RolapSchemaPool.instance().contains(rolapSchema);
     }
 
     public Cube lookupCube(final String cube, final boolean failIfNotFound) {
@@ -1647,7 +1267,8 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     }
 
     /**
-     * Creates a {@link DataSourceChangeListener} with which to detect changes to datasources.
+     * Creates a {@link DataSourceChangeListener} with which to detect changes
+     * to datasources.
      */
     private DataSourceChangeListener createDataSourceChangeListener(
         Util.PropertyList connectInfo)
@@ -1660,21 +1281,10 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         String dataSourceChangeListenerStr = connectInfo.get(
             RolapConnectionProperties.DataSourceChangeListener.name());
 
-        if (! Util.isEmpty(dataSourceChangeListenerStr)) {
+        if (!Util.isEmpty(dataSourceChangeListenerStr)) {
             try {
                 Class<?> clazz = Class.forName(dataSourceChangeListenerStr);
                 Constructor<?> constructor = clazz.getConstructor();
-                changeListener =
-                    (DataSourceChangeListener) constructor.newInstance();
-
-/*
-                final Class<DataSourceChangeListener> clazz =
-                    (Class<DataSourceChangeListener>)
-                        Class.forName(dataSourceChangeListenerStr);
-                final Constructor<DataSourceChangeListener> ctor =
-                    clazz.getConstructor();
-                changeListener = ctor.newInstance();
-*/
                 changeListener =
                     (DataSourceChangeListener) constructor.newInstance();
             } catch (Exception e) {
