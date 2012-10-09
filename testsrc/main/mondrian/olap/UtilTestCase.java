@@ -18,6 +18,7 @@ import junit.framework.TestCase;
 
 import java.sql.Driver;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Tests for methods in {@link mondrian.olap.Util} and, sometimes, classes in
@@ -1459,6 +1460,103 @@ public class UtilTestCase extends TestCase {
         assertTrue(nullValuesMap.containsValue(null));
         assertFalse(nullValuesMap.containsKey(null));
         assertFalse(nullValuesMap.keySet().contains("Something"));
+    }
+
+    /**
+     * Unit test for {@link Util#parseInterval}.
+     */
+    public void testParseInterval() {
+        // no default unit
+        assertEquals(
+            Pair.of(1L, TimeUnit.SECONDS),
+            Util.parseInterval("1s", null));
+        // same default unit as actual
+        assertEquals(
+            Pair.of(1L, TimeUnit.SECONDS),
+            Util.parseInterval("1s", TimeUnit.SECONDS));
+        // different default than actual
+        assertEquals(
+            Pair.of(1L, TimeUnit.SECONDS),
+            Util.parseInterval("1s", TimeUnit.HOURS));
+        assertEquals(
+            Pair.of(2L, TimeUnit.HOURS),
+            Util.parseInterval("2h", TimeUnit.MICROSECONDS));
+        // now each unit in turn (ns, us, ms, s, h, m, d)
+        assertEquals(
+            Pair.of(5L, TimeUnit.NANOSECONDS),
+            Util.parseInterval("5ns", null));
+        assertEquals(
+            Pair.of(3L, TimeUnit.MICROSECONDS),
+            Util.parseInterval("3us", null));
+        assertEquals(
+            Pair.of(4L, TimeUnit.MILLISECONDS),
+            Util.parseInterval("4ms", null));
+        assertEquals(
+            Pair.of(6L, TimeUnit.HOURS),
+            Util.parseInterval("6h", null));
+        assertEquals(
+            Pair.of(7L, TimeUnit.DAYS),
+            Util.parseInterval("7d", null));
+        // negative
+        assertEquals(
+            Pair.of(-8L, TimeUnit.DAYS),
+            Util.parseInterval("-8d", null));
+        assertEquals(
+            Pair.of(3L, TimeUnit.MICROSECONDS),
+            Util.parseInterval("3", TimeUnit.MICROSECONDS));
+        try {
+            Pair<Long, TimeUnit> x = Util.parseInterval("4", null);
+            fail("expected error, got " + x);
+        } catch (NumberFormatException e) {
+            assertTrue(
+                e.getMessage(),
+                e.getMessage().startsWith(
+                    "Invalid time interval '4'. Does not contain a time "
+                    + "unit."));
+        }
+        // fractional part rounded away
+        assertEquals(
+            Pair.of(1234L, TimeUnit.HOURS),
+            Util.parseInterval("1234.567h", TimeUnit.MICROSECONDS));
+        // Invalid unit means that interval cannot be parsed.
+        // (No 'S' is not valid for 's'. See 'man sleep'.)
+        try {
+            Pair<Long, TimeUnit> x = Util.parseInterval("40S", null);
+            fail("expected error, got " + x);
+        } catch (NumberFormatException e) {
+            assertTrue(
+                e.getMessage(),
+                e.getMessage().startsWith(
+                    "Invalid time interval '40S'. Does not contain a time "
+                    + "unit."));
+        }
+        // Even a space is not allowed.
+        try {
+            Pair<Long, TimeUnit> x = Util.parseInterval("40 m", null);
+            fail("expected error, got " + x);
+        } catch (NumberFormatException e) {
+            assertTrue(
+                e.getMessage(),
+                e.getMessage().startsWith(
+                    "Invalid time interval '40 m'"));
+        }
+        // Two time units.
+        try {
+            Pair<Long, TimeUnit> x = Util.parseInterval("40sms", null);
+            fail("expected error, got " + x);
+        } catch (NumberFormatException e) {
+            assertTrue(
+                e.getMessage(),
+                e.getMessage().startsWith(
+                    "Invalid time interval '40sms'"));
+        }
+        // Null
+        try {
+            Pair<Long, TimeUnit> x = Util.parseInterval(null, null);
+            fail("expected error, got " + x);
+        } catch (NullPointerException e) {
+            // ok
+        }
     }
 }
 
