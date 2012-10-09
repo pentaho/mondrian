@@ -1286,7 +1286,6 @@ public class RolapSchema implements Schema {
          * collected if needed.
          */
         private static class ExpiringReference<T> extends SoftReference<T> {
-            @SuppressWarnings("unused")
             private T hardRef;
             private final int timeout;
 
@@ -1297,15 +1296,6 @@ public class RolapSchema implements Schema {
                 new Timer(
                     "mondrian.rolap.RolapSchemaPool.ExpiringReference$timer",
                     true);
-
-            /**
-             * A task to schedule which clears the hard reference.
-             */
-            private TimerTask timerTask = new TimerTask() {
-                public void run() {
-                    ExpiringReference.this.hardRef = null;
-                }
-            };
 
             /**
              * Creates an expiring reference.
@@ -1323,8 +1313,11 @@ public class RolapSchema implements Schema {
             }
 
             private synchronized void setTimer() {
-                // Cancel anything running or else we will double-trigger.
-                timerTask.cancel();
+                final TimerTask timerTask = new TimerTask() {
+                    public void run() {
+                        ExpiringReference.this.hardRef = null;
+                    }
+                };
                 // Schedule for cleanup.
                 timer.schedule(
                     timerTask,
@@ -1335,11 +1328,14 @@ public class RolapSchema implements Schema {
                 final T weakRef = super.get();
 
                 if (weakRef != null && timeout > 0) {
-                    // This object is still alive.
-                    setTimer();
-                    // Set the reference after the task starts, or else
-                    // any previous tasks might have wiped it.
-                    this.hardRef = weakRef;
+                    if (hardRef == null) {
+                        // This object is still alive but was cleaned.
+                        // set a new TimerTask.
+                        setTimer();
+                        // Set the reference after the task starts, or else
+                        // any previous tasks might have wiped it.
+                        this.hardRef = weakRef;
+                    }
                 }
 
                 return weakRef;
