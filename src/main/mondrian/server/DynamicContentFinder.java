@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server;
@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Implementation of
@@ -59,14 +60,19 @@ public class DynamicContentFinder
         timer = Util.newTimer(
             "mondrian.server.DynamicContentFinder$timer",
             true);
+        final Pair<Long, TimeUnit> interval =
+            Util.parseInterval(
+                MondrianProperties.instance().XmlaSchemaRefreshInterval.get(),
+                TimeUnit.MILLISECONDS);
+        final long period = interval.right.toMillis(interval.left);
         timer.scheduleAtFixedRate(
             new TimerTask() {
                 public void run() {
                     reloadDataSources();
                 }
             },
-            MondrianProperties.instance().XmlaSchemaRefreshInterval.get(),
-            MondrianProperties.instance().XmlaSchemaRefreshInterval.get());
+            period,
+            period);
     }
 
     /**

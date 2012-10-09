@@ -9,18 +9,21 @@
 */
 package mondrian.xmla.impl;
 
-import mondrian.olap.MondrianProperties;
+import mondrian.olap.*;
 import mondrian.server.DynamicContentFinder;
+import mondrian.util.Pair;
 import mondrian.xmla.DataSourcesConfig;
 
 import junit.framework.TestCase;
 
 import org.eigenbase.xom.*;
+import org.eigenbase.xom.Parser;
 
 import org.olap4j.impl.Olap4jUtil;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Unit test for DynamicDatasourceXmlaServlet
@@ -290,8 +293,12 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
         out.close();
 
         // Wait for it to auto-reload.
+        final Pair<Long, TimeUnit> interval =
+            Util.parseInterval(
+                MondrianProperties.instance().XmlaSchemaRefreshInterval.get(),
+                TimeUnit.MILLISECONDS);
         Thread.sleep(
-            MondrianProperties.instance().XmlaSchemaRefreshInterval.get()
+            interval.right.toMillis(interval.left)
             + 1000);
 
         assertTrue(
