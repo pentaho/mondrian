@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.XOMUtil;
 
+import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.mdx.*;
 
 import java.io.*;
@@ -456,7 +457,7 @@ public class Util extends XOMUtil {
                 && ((i + 1) < st.length())
                 && (st.charAt(i + 1) != '.'))
             {
-                retString.append(']'); // escaping character
+                retString.append(']'); //escaping character
             }
             retString.append(c);
         }
@@ -1977,6 +1978,58 @@ public class Util extends XOMUtil {
         default:
             throw newInternal(
                 "bad locale string '" + localeString + "'");
+        }
+    }
+
+    static final Map<String, TimeUnit> TIME_UNITS = Olap4jUtil.mapOf(
+        "ns", TimeUnit.NANOSECONDS,
+        "us", TimeUnit.MICROSECONDS,
+        "ms", TimeUnit.MILLISECONDS,
+        "s", TimeUnit.SECONDS,
+        "m", TimeUnit.MINUTES,
+        "h", TimeUnit.HOURS,
+        "d", TimeUnit.DAYS);
+
+    /**
+     * Parses an interval.
+     *
+     * <p>For example, "30s" becomes (30, {@link TimeUnit#SECONDS});
+     * "2d" becomes (2, {@link TimeUnit#DAYS}).</p>
+     *
+     * @param s String to parse
+     * @param unit Default time unit; may be null
+     *
+     * @return Pair of value and time unit. Neither pair or its components are
+     * null
+     *
+     * @throws NumberFormatException if unit is not present and there is no
+     * default, or if number is not valid
+     */
+    public static Pair<Long, TimeUnit> parseInterval(
+        String s,
+        TimeUnit unit)
+        throws NumberFormatException
+    {
+        final String original = s;
+        for (Map.Entry<String, TimeUnit> entry : TIME_UNITS.entrySet()) {
+            if (s.endsWith(entry.getKey())) {
+                unit = entry.getValue();
+                s = s.substring(0, s.length() - entry.getKey().length());
+                break;
+            }
+        }
+        if (unit == null) {
+            throw new NumberFormatException(
+                "Invalid time interval '" + original + "'. Does not contain a "
+                + "time unit. (Suffix may be ns (nanoseconds), "
+                + "us (microseconds), ms (milliseconds), s (seconds), "
+                + "h (hours), d (days). For example, '20s' means 20 seconds.)");
+        }
+        try {
+            return Pair.of(new BigDecimal(s).longValue(), unit);
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException(
+                "Invalid time interval '" + original + "'");
         }
     }
 
@@ -3513,7 +3566,73 @@ public class Util extends XOMUtil {
     public static InputStream readVirtualFile(String url)
         throws IOException
     {
-        return VIRTUAL_FILE_HANDLER.get().readVirtualFile(url);
+        // Treat catalogUrl as an Apache VFS (Virtual File System) URL.
+        // VFS handles all of the usual protocols (http:, file:)
+        // and then some.
+        FileSystemManager fsManager = VFS.getManager();
+        if (fsManager == null) {
+            throw newError("Cannot get virtual file system manager");
+        }
+
+        // Workaround VFS bug.
+        if (url.startsWith("file://localhost")) {
+            url = url.substring("file://localhost".length());
+        }
+        if (url.startsWith("file:")) {
+            url = url.substring("file:".length());
+        }
+
+        //work around for VFS bug not closing http sockets
+        // (Mondrian-585)
+        if (url.startsWith("http")) {
+            try {
+                return new URL(url).openStream();
+            } catch (IOException e) {
+                throw newError(
+                    "Could not read URL: " + url);
+            }
+        }
+
+        File userDir = new File("").getAbsoluteFile();
+        FileObject file = fsManager.resolveFile(userDir, url);
+        FileContent fileContent = null;
+        try {
+            // Because of VFS caching, make sure we refresh to get the latest
+            // file content. This refresh may possibly solve the following
+            // workaround for defect MONDRIAN-508, but cannot be tested, so we
+            // will leave the work around for now.
+            file.refresh();
+
+            // Workaround to defect MONDRIAN-508. For HttpFileObjects, verifies
+            // the URL of the file retrieved matches the URL passed in.  A VFS
+            // cache bug can cause it to treat URLs with different parameters
+            // as the same file (e.g. http://blah.com?param=A,
+            // http://blah.com?param=B)
+            if (file instanceof HttpFileObject
+                && !file.getName().getURI().equals(url))
+            {
+                fsManager.getFilesCache().removeFile(
+                    file.getFileSystem(),  file.getName());
+
+                file = fsManager.resolveFile(userDir, url);
+            }
+
+            if (!file.isReadable()) {
+                throw newError(
+                    "Virtual file is not readable: " + url);
+            }
+
+            fileContent = file.getContent();
+        } finally {
+            file.close();
+        }
+
+        if (fileContent == null) {
+            throw newError(
+                "Cannot get virtual file content: " + url);
+        }
+
+        return fileContent.getInputStream();
     }
 
     public static String readVirtualFileAsString(
