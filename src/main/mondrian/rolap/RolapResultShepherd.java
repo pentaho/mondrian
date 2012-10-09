@@ -64,30 +64,12 @@ public class RolapResultShepherd {
         Util.newTimer("mondrian.rolap.RolapResultShepherd#timer", true);
 
     public RolapResultShepherd() {
-        final IntegerProperty property =
-            MondrianProperties.instance().RolapConnectionShepherdNbThreads;
-        final int maximumPoolSize = property.get();
-        executor =
-            Util.getExecutorService(
-                maximumPoolSize,
-                0, 1,
-                "mondrian.rolap.RolapResultShepherd$executor",
-                new RejectedExecutionHandler() {
-                    public void rejectedExecution(
-                        Runnable r,
-                        ThreadPoolExecutor executor)
-                    {
-                        throw MondrianResource.instance().QueryLimitReached.ex(
-                            maximumPoolSize,
-                            property.getPath());
-                    }
-                });
         final Pair<Long, TimeUnit> interval =
             Util.parseInterval(
                 MondrianProperties.instance()
                     .RolapConnectionShepherdThreadPollingInterval.get(),
                 TimeUnit.MILLISECONDS);
-        long period = interval.right.toMillis(interval.left);
+        final long period = interval.right.toMillis(interval.left);
         timer.scheduleAtFixedRate(
             new TimerTask() {
             public void run() {
@@ -123,10 +105,8 @@ public class RolapResultShepherd {
                 }
             }
         },
-        MondrianProperties.instance()
-            .RolapConnectionShepherdThreadPollingInterval.get(),
-        MondrianProperties.instance()
-            .RolapConnectionShepherdThreadPollingInterval.get());
+        period,
+        period);
     }
 
     /**
