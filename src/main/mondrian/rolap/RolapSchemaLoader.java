@@ -2254,10 +2254,10 @@ public class RolapSchemaLoader {
     /**
      * Creates a dimension.
      *
-     * @param schemaLoader
-     * @param cube
-     * @param xmlCubeDimension
-     * @param xmlSchema
+     * @param schemaLoader Schema loader
+     * @param cube Cube
+     * @param xmlCubeDimension Cube dimension XML element
+     * @param xmlSchema Schema XML element
      * @return Dimension; or null on error
      */
     RolapCubeDimension createDimension(
@@ -2531,7 +2531,7 @@ public class RolapSchemaLoader {
                         toBoolean(xmlAttribute.visible, true),
                         xmlAttribute.caption,
                         xmlAttribute.description,
-                        true, // REVIEW: add Attribute@hierarchyHasAll?
+                        toBoolean(xmlAttribute.hierarchyHasAll, true),
                         null,
                         Collections.<String, Annotation>emptyMap());
                 dimension.addHierarchy(hierarchy);
@@ -2540,9 +2540,15 @@ public class RolapSchemaLoader {
                     attribute);
                 hierarchy.initHierarchy(
                     this,
-                    null, // REVIEW: add Attribute@hierarchyAllLevelName?
-                    null, // REVIEW: add Attribute@hierarchyAllMemberName?
-                    null); // REVIEW: add Attribute@hierarchyAllMemberCaption?
+                    hierarchy.hasAll()
+                        ? xmlAttribute.hierarchyAllLevelName
+                        : null,
+                    hierarchy.hasAll()
+                        ? xmlAttribute.hierarchyAllMemberName
+                        : null,
+                    hierarchy.hasAll()
+                        ? xmlAttribute.hierarchyAllMemberCaption
+                        : null);
                 hierarchy.init1(
                     this,
                     null);

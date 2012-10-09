@@ -862,7 +862,22 @@ version 3.x schemas.</p>
     </Element>
 
     <Element type="Attribute" class="NamedElement">
-        <Doc>TODO:</Doc>
+        <Doc>
+            <p>An attribute is a data value.</p>
+
+            <p>If you are familiar with modeling relational database schemas,
+                then an attribute is the nearest equivalent in the Mondrian
+                schema to a column.</p>
+
+            <p>Every attribute belongs to a dimension. (So, continuing the
+                analogy, a dimension is the nearest equivalent of a table.)</p>
+
+            <p>By setting <code>hasHierarchy</code>
+                to true, you can automatically create a Hierarchy that has
+                a single Level based on this attribute, called an attribute
+                hierarchy. An attribute can also be used to build multi-level
+                hierarchies, by including it in a Level.</p>
+        </Doc>
         <Attribute name="name" required="true">
             <Doc>
                 Name of this Attribute.
@@ -985,7 +1000,49 @@ version 3.x schemas.</p>
                 same name as the attribute.
             </Doc>
         </Attribute>
-
+        <Attribute name="hierarchyHasAll" type="Boolean" required="false" default="true">
+            <Doc>
+                Whether the attribute hierarchy has an 'all' member.
+                Ignored if <code>hasHierarchy</code> is <code>false</code>.
+            </Doc>
+        </Attribute>
+        <Attribute name="hierarchyAllMemberName" required="false">
+            <Doc>
+                Name of the 'all' member of the attribute hierarchy.
+                Ignored if <code>hasHierarchy</code> is <code>false</code>
+                or <code>hierarchyHasAll</code> is <code>false</code>.
+                If this attribute is not specified,
+                the all member is named 'All <i>attributeName</i>', for
+                example, 'All Gender' if the attribute is named 'Gender'.
+            </Doc>
+        </Attribute>
+        <Attribute name="hierarchyAllMemberCaption" required="false">
+            <Doc>
+                Caption of the 'all' member of the attribute hierarchy.
+                Ignored if <code>hasHierarchy</code> is <code>false</code>
+                or <code>hierarchyHasAll</code> is <code>false</code>.
+                If this attribute is not specified, the all member's caption
+                is the same as its name.
+            </Doc>
+        </Attribute>
+        <Attribute name="hierarchyAllLevelName" required="false">
+            <Doc>
+                Name of the 'all' level of the attribute hierarchy.
+                Ignored if <code>hasHierarchy</code> is <code>false</code>
+                or <code>hierarchyHasAll</code> is <code>false</code>.
+                If this attribute is not specified,
+                the all level is named '(All)'.
+            </Doc>
+        </Attribute>
+        <Attribute name="hierarchyDefaultMember">
+            <Doc>
+                Unique name of the default member of the attribute hierarchy.
+                Ignored if <code>hasHierarchy</code> is <code>false</code>.
+                If not specified, the default member is the 'all' member,
+                if the hierarchy has one, otherwise the first member of the
+                first level.
+            </Doc>
+        </Attribute>
         <Array name="childArray" type="AttributeElement">
             <Doc>
                 Child elements. Key, Name, OrderBy, Caption, Closure,
@@ -1076,19 +1133,21 @@ version 3.x schemas.</p>
             <Doc>
                 Name of the 'all' member. If this attribute is not specified,
                 the all member is named 'All <i>hierarchyName</i>', for
-                example, 'All Store'.
+                example, 'All Stores' if the hierarchy is named 'Stores'.
             </Doc>
         </Attribute>
         <Attribute name="allMemberCaption" required="false">
             <Doc>
-                A string being displayed instead as the all member's name.
+                Caption of the 'all' member.
+                If this attribute is not specified, the 'all' member's caption
+                is the same as its name.
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
         <Attribute name="allLevelName" required="false">
             <Doc>
                 Name of the 'all' level. If this attribute is not specified,
-                the all member is named '(All)'.
+                the all level is named '(All)'.
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>

@@ -7014,10 +7014,21 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
     // TODO: Make sure that MeasureGroup, Attribute can have annotations.
 
-    // TODO: test cube where MeasureGroups occrs before Dimensions
+    // TODO: test cube where MeasureGroups occurs before Dimensions
 
     // TODO: test cube where there is more than one Dimensions element
     // (should give error)
+
+    // TODO: test Attribute.hierarchyHasAll
+
+    // TODO: test Attribute.hierarchyAllMemberName
+
+    // TODO: test Attribute.hierarchyAllMemberCaption
+
+    // TODO: test Attribute.hierarchyAllLevelName
+
+    // TODO: test Attribute.hierarchyDefaultMember
+
 }
 
 // End SchemaTest.java

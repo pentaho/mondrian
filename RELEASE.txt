@@ -55,6 +55,9 @@ Some functionality is not complete in this beta version.
  - Pentaho Analyzer does not yet work against Mondrian-4.
  - It's not as easy as it should be to download and load sample
    data sets such as FoodMart.
+ - Default value of Attribute.hasHierarchy is currently false.
+   Before production, this will change it to true, if attribute
+   is not included in any hierarchies.
 
 API and MDX language changes from 3.x to 4.0
 --------------------------------------------
@@ -99,12 +102,19 @@ pattern-matching the names of tables and columns in the
 schema. You can use the new aggregate table API to scan the
 schema and define aggregate tables.
 
+The standard demonstration schema is now called
+FoodMart.mondrian.xml.  (The longer extension helps tools such as
+Pentaho more easily identify the purpose of the file.)  It is in
+version 4 format, of course. The previous demonstration schema,
+which was called FoodMart.xml in version 3, is now called
+FoodMart3.mondrian.xml.
+
 In 3.x releases, the mondrian-<version>.zip file contained the
 FoodMart data set in MySQL and Microsoft Access formats, and
 there was an additional mondrian-<version>-derby.zip containing
-the FoodMart data set in Apache Derby format. This release's
-distribution does not contain the data set. It can be downloaded
-from
+the FoodMart data set in Apache Derby format. The binary
+distribution of this release does not contain the data set. It
+can be downloaded from
 http://repo.pentaho.org/artifactory/repo/pentaho/mondrian-data-foodmart.
 
 JPivot is no longer included with the release. Neither is there a
@@ -131,5 +141,5 @@ To be removed
 -------------
 Property.formatter (XML attribute)
 SchemaGrant.access value "all_dimensions"
-# End
 
+# End
