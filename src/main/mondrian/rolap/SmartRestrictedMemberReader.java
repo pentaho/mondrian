@@ -69,7 +69,7 @@ class SmartRestrictedMemberReader extends RestrictedMemberReader {
                 // Sadly, we need to do a hard cast here,
                 // but since we know what it is, it's fine.
                 children.addAll(
-                    (Collection<? extends RolapMember>) memberList);
+                    memberList.children);
 
                 return memberList.accessMap;
             }
@@ -90,7 +90,9 @@ class SmartRestrictedMemberReader extends RestrictedMemberReader {
 
             memberToChildren.put(
                 member,
-                new AccessAwareMemberList(membersWithAccessDetails));
+                new AccessAwareMemberList(
+                    membersWithAccessDetails,
+                    new ArrayList(membersWithAccessDetails.keySet())));
 
             return membersWithAccessDetails;
         } finally {
@@ -98,15 +100,15 @@ class SmartRestrictedMemberReader extends RestrictedMemberReader {
         }
     }
 
-    private static class AccessAwareMemberList
-        extends ArrayList<Member>
-    {
-        private static final long serialVersionUID = 1L;
-        private Map<? extends Member, Access> accessMap;
-
-        public AccessAwareMemberList(Map<? extends Member, Access> accessMap) {
-            super(accessMap.keySet());
+    private static class AccessAwareMemberList {
+        private final Map<? extends Member, Access> accessMap;
+        private final Collection<RolapMember> children;
+        public AccessAwareMemberList(
+            Map<? extends Member, Access> accessMap,
+            Collection<RolapMember> children)
+        {
             this.accessMap = accessMap;
+            this.children = children;
         }
     }
 }
