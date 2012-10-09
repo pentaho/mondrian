@@ -70,9 +70,12 @@ public class RolapResultShepherd {
                             property.getPath());
                     }
                 });
-        final int period =
-            MondrianProperties.instance()
-                .RolapConnectionShepherdThreadPollingInterval.get();
+        final Pair<Long, TimeUnit> interval =
+            Util.parseInterval(
+                MondrianProperties.instance()
+                    .RolapConnectionShepherdThreadPollingInterval.get(),
+                TimeUnit.MILLISECONDS);
+        long period = interval.right.toMillis(interval.left);
         timer.scheduleAtFixedRate(
             new TimerTask() {
                 public void run() {

@@ -941,15 +941,17 @@ value of 0 (the default) indicates no timeout.</p>
         <Name>RolapConnectionShepherdThreadPollingInterval</Name>
         <Path>mondrian.rolap.shepherdThreadPollingInterval</Path>
         <Description>
-<p>Property that defines the interval value (in milliseconds) between
+<p>Property that defines the interval value between
 polling operations performed by the RolapConnection shepherd thread.
 This controls query timeouts and cancellation, so a small value
 (a few milliseconds) is best. Setting this to a value higher than
 mondrian.rolap.queryTimeout will result the timeout not being enforced
-as expected. Defaults to 1000ms.</p>
+as expected.</p>
+
+<p>Default value is "1000ms". Default time unit is "ms".</p>
         </Description>
-        <Type>int</Type>
-        <Default>1000</Default>
+        <Type>String</Type>
+        <Default>1000ms</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>RolapConnectionShepherdNbThreads</Name>
@@ -1330,7 +1332,7 @@ whether to enable new naming behavior.</p>
         <Name>XmlaSchemaRefreshInterval</Name>
         <Path>mondrian.xmla.SchemaRefreshInterval</Path>
         <Description>
-<p>Interval, in milliseconds, at which to refresh the
+<p>Interval at which to refresh the
 list of XML/A catalogs. (Usually known as the
 datasources.xml file.)</p>
 
@@ -1338,13 +1340,15 @@ datasources.xml file.)</p>
 serves as a rate limiter. The refresh process is triggered by requests
 to the doPost() servlet method.</p>
 
-<p>Default value is 3000 milliseconds (3 seconds).</p>
+<p>Values may have time unit suffixes such as 's' (second) or 'ms'
+(milliseconds). Default value is 3000 milliseconds (3 seconds).
+Default time unit is milliseconds.</p>
 
 <p>See also
 {@link mondrian.xmla.impl.DynamicDatasourceXmlaServlet}.</p>
         </Description>
-        <Type>int</Type>
-        <Default>3000</Default>
+        <Type>String</Type>
+        <Default>3000ms</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>FilterChildlessSnowflakeMembers</Name>

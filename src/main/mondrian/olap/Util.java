@@ -1785,14 +1785,15 @@ public class Util extends XOMUtil {
         }
     }
 
-    static final Map<String, TimeUnit> TIME_UNITS = Olap4jUtil.mapOf(
-        "ns", TimeUnit.NANOSECONDS,
-        "us", TimeUnit.MICROSECONDS,
-        "ms", TimeUnit.MILLISECONDS,
-        "s", TimeUnit.SECONDS,
-        "m", TimeUnit.MINUTES,
-        "h", TimeUnit.HOURS,
-        "d", TimeUnit.DAYS);
+    private static final Map<String, String> TIME_UNITS =
+        Olap4jUtil.mapOf(
+            "ns", "NANOSECONDS",
+            "us", "MICROSECONDS",
+            "ms", "MILLISECONDS",
+            "s", "SECONDS",
+            "m", "MINUTES",
+            "h", "HOURS",
+            "d", "DAYS");
 
     /**
      * Parses an interval.
@@ -1815,11 +1816,17 @@ public class Util extends XOMUtil {
         throws NumberFormatException
     {
         final String original = s;
-        for (Map.Entry<String, TimeUnit> entry : TIME_UNITS.entrySet()) {
-            if (s.endsWith(entry.getKey())) {
-                unit = entry.getValue();
-                s = s.substring(0, s.length() - entry.getKey().length());
-                break;
+        for (Map.Entry<String, String> entry : TIME_UNITS.entrySet()) {
+            final String abbrev = entry.getKey();
+            if (s.endsWith(abbrev)) {
+                final String full = entry.getValue();
+                try {
+                    unit = TimeUnit.valueOf(full);
+                    s = s.substring(0, s.length() - abbrev.length());
+                    break;
+                } catch (IllegalArgumentException e) {
+                    // ignore - MINUTES, HOURS, DAYS are not defined in JDK1.5
+                }
             }
         }
         if (unit == null) {
