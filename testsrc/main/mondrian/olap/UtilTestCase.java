@@ -1479,8 +1479,8 @@ public class UtilTestCase extends TestCase {
             Pair.of(1L, TimeUnit.SECONDS),
             Util.parseInterval("1s", TimeUnit.HOURS));
         assertEquals(
-            Pair.of(2L, TimeUnit.HOURS),
-            Util.parseInterval("2h", TimeUnit.MICROSECONDS));
+            Pair.of(2L, TimeUnit.NANOSECONDS),
+            Util.parseInterval("2ns", TimeUnit.MICROSECONDS));
         // now each unit in turn (ns, us, ms, s, h, m, d)
         assertEquals(
             Pair.of(5L, TimeUnit.NANOSECONDS),
@@ -1491,16 +1491,22 @@ public class UtilTestCase extends TestCase {
         assertEquals(
             Pair.of(4L, TimeUnit.MILLISECONDS),
             Util.parseInterval("4ms", null));
-        assertEquals(
-            Pair.of(6L, TimeUnit.HOURS),
-            Util.parseInterval("6h", null));
-        assertEquals(
-            Pair.of(7L, TimeUnit.DAYS),
-            Util.parseInterval("7d", null));
+        if (!Util.PreJdk16) {
+            // JDK1.5 does not have TimeUnit.MINUTES, .HOURS or .DAYS.
+            assertEquals(
+                Pair.of(5L, TimeUnit.valueOf("MINUTES")),
+                Util.parseInterval("5m", null));
+            assertEquals(
+                Pair.of(6L, TimeUnit.valueOf("HOURS")),
+                Util.parseInterval("6h", null));
+            assertEquals(
+                Pair.of(7L, TimeUnit.valueOf("DAYS")),
+                Util.parseInterval("7d", null));
+        }
         // negative
         assertEquals(
-            Pair.of(-8L, TimeUnit.DAYS),
-            Util.parseInterval("-8d", null));
+            Pair.of(-8L, TimeUnit.SECONDS),
+            Util.parseInterval("-8s", null));
         assertEquals(
             Pair.of(3L, TimeUnit.MICROSECONDS),
             Util.parseInterval("3", TimeUnit.MICROSECONDS));
@@ -1516,8 +1522,8 @@ public class UtilTestCase extends TestCase {
         }
         // fractional part rounded away
         assertEquals(
-            Pair.of(1234L, TimeUnit.HOURS),
-            Util.parseInterval("1234.567h", TimeUnit.MICROSECONDS));
+            Pair.of(1234L, TimeUnit.SECONDS),
+            Util.parseInterval("1234.567s", TimeUnit.MICROSECONDS));
         // Invalid unit means that interval cannot be parsed.
         // (No 'S' is not valid for 's'. See 'man sleep'.)
         try {
