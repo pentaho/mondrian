@@ -1477,7 +1477,7 @@ public class UtilTestCase extends TestCase {
         // different default than actual
         assertEquals(
             Pair.of(1L, TimeUnit.SECONDS),
-            Util.parseInterval("1s", TimeUnit.HOURS));
+            Util.parseInterval("1s", TimeUnit.MILLISECONDS));
         assertEquals(
             Pair.of(2L, TimeUnit.NANOSECONDS),
             Util.parseInterval("2ns", TimeUnit.MICROSECONDS));
