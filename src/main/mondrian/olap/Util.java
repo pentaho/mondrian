@@ -1799,7 +1799,11 @@ public class Util extends XOMUtil {
      * Parses an interval.
      *
      * <p>For example, "30s" becomes (30, {@link TimeUnit#SECONDS});
-     * "2d" becomes (2, {@link TimeUnit#DAYS}).</p>
+     * "2us" becomes (2, {@link TimeUnit#MICROSECONDS}).</p>
+     *
+     * <p>Units m (minutes), h (hours) and d (days) are only available
+     * in JDK 1.6 or later, because the corresponding constants are missing
+     * from {@link TimeUnit} in JDK 1.5.</p>
      *
      * @param s String to parse
      * @param unit Default time unit; may be null
