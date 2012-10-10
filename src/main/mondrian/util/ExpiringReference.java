@@ -9,12 +9,11 @@
 */
 package mondrian.util;
 
+import mondrian.olap.Util;
+
 import java.lang.ref.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-
-import mondrian.olap.MondrianException;
-import mondrian.olap.Util;
 
 /**
  * An expiring reference is a subclass of {@link SoftReference}
@@ -52,8 +51,10 @@ public class ExpiringReference<T> extends SoftReference<T> {
     }
 
     private synchronized void setTimer(T referent, String timeoutString) {
-        final long timeout =
-            toMillis(timeoutString);
+        Pair<Long, TimeUnit> pair =
+            Util.parseInterval(timeoutString, null);
+        final long timeout = pair.right.toMillis(pair.left);
+
         if (timeout == Long.MIN_VALUE
             && expiry != Long.MIN_VALUE)
         {
@@ -95,28 +96,6 @@ public class ExpiringReference<T> extends SoftReference<T> {
 
         // Timeout is < 0. Act as a regular soft ref.
         this.hardRef = null;
-    }
-
-    private long toMillis(String timeoutString) {
-        Pair<Long, TimeUnit> pair =
-            Util.parseInterval(
-                timeoutString, TimeUnit.SECONDS);
-        switch (pair.right) {
-        case DAYS:
-            return pair.left * 1000 * 60 * 60 * 24;
-        case HOURS:
-            return pair.left * 1000 * 60 * 60;
-        case MINUTES:
-            return pair.left * 1000 * 60;
-        case SECONDS:
-            return pair.left * 1000;
-        case MILLISECONDS:
-            return pair.left;
-        default :
-            throw new MondrianException(
-                "Unsupported time unit for reference expiry timeout. "
-                + "Valid values are: [d, h, m, s, ms]");
-        }
     }
 
     TimerTask getTask() {

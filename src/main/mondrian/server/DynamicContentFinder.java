@@ -62,7 +62,9 @@ public class DynamicContentFinder
             true);
         final Pair<Long, TimeUnit> interval =
             Util.parseInterval(
-                MondrianProperties.instance().XmlaSchemaRefreshInterval.get(),
+                String.valueOf(
+                    MondrianProperties.instance()
+                        .XmlaSchemaRefreshInterval.get()),
                 TimeUnit.MILLISECONDS);
         final long period = interval.right.toMillis(interval.left);
         timer.scheduleAtFixedRate(

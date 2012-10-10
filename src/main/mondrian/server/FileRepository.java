@@ -61,7 +61,9 @@ public class FileRepository implements Repository {
         assert repositoryContentFinder != null;
         final Pair<Long, TimeUnit> interval =
             Util.parseInterval(
-                MondrianProperties.instance().XmlaSchemaRefreshInterval.get(),
+                String.valueOf(
+                    MondrianProperties.instance()
+                        .XmlaSchemaRefreshInterval.get()),
                 TimeUnit.MILLISECONDS);
         scheduledFuture = executorService.scheduleWithFixedDelay(
             new Runnable() {
