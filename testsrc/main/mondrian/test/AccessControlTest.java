@@ -590,8 +590,8 @@ public class AccessControlTest extends FoodMartTestCase {
         return connection;
     }
 
-    /* todo: test that access to restricted measure fails (will not work --
-    have not fixed Cube.getMeasures) */
+    // TODO: test that access to restricted measure fails (will not
+    // work -- have not fixed Cube.getMeasures)
     private class RestrictedTestContext extends TestContext {
         public synchronized Connection getConnection() {
             return getRestrictedConnection(false);
@@ -969,7 +969,7 @@ public class AccessControlTest extends FoodMartTestCase {
             Role.RollupPolicy.PARTIAL,
             hierarchyAccess.getRollupPolicy());
         // One of the roles is restricting the levels, so we
-        //expect only the levels from 2 to 4 to be available.
+        // expect only the levels from 2 to 4 to be available.
         assertEquals(2, hierarchyAccess.getTopLevelDepth());
         assertEquals(4, hierarchyAccess.getBottomLevelDepth());
 
@@ -1083,7 +1083,7 @@ public class AccessControlTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customers].[USA].[CA]}\n"
+            + "{[Customer].[Customers].[USA].[CA]}\n"
             + "Row #0: 74,748\n");
 
         testContext.assertQueryReturns(
@@ -1107,7 +1107,7 @@ public class AccessControlTest extends FoodMartTestCase {
             reader.getCubeDimensions(cube);
         Dimension dimension = null;
         for (Dimension dim : dimensions) {
-            if (dim.getName().equals("Customers")) {
+            if (dim.getName().equals("Customer")) {
                 dimension = dim;
             }
         }
@@ -1355,24 +1355,24 @@ public class AccessControlTest extends FoodMartTestCase {
         final TestContext testContext =
             TestContext.instance().create(
                 null, null, null, null, null,
-                "<Role name=\"California manager\">\n"
+                "<Role name=\"California manager2\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
                 + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
                 + "      <HierarchyGrant hierarchy=\"[Stores]\" access=\"none\" />\n"
                 + "    </CubeGrant>\n"
-                + "    <CubeGrant cube=\"Sales Ragged\" access=\"all\">\n"
+                + "    <CubeGrant cube=\"HR\" access=\"all\">\n"
                 + "      <HierarchyGrant hierarchy=\"[Stores]\" access=\"custom\" />\n"
                 + "    </CubeGrant>\n"
                 + "  </SchemaGrant>\n"
                 + "</Role>")
-                .withRole("California manager");
+                .withRole("California manager2");
         assertHierarchyAccess(
             testContext.getConnection(), Access.NONE, "Sales", "Stores");
         assertHierarchyAccess(
             testContext.getConnection(),
             Access.CUSTOM,
-            "Sales Ragged",
-            "Store");
+            "HR",
+            "[Store].[Stores]");
     }
 
     public void testPartialRollupParentChildHierarchy() {
@@ -1743,9 +1743,10 @@ public class AccessControlTest extends FoodMartTestCase {
             + "  </SchemaGrant>\n"
             + "</Role>").withRole("VCRole");
         testContext.assertQueryReturns(
-            "select [Store].[Stores].Members on 0 from [Warehouse and Sales]",
+            "select [Store].[Stores].Members on 0 from [Warehouse and Sales]\n"
+            + "where [Measures].[Store Sales]",
             "Axis #0:\n"
-            + "{}\n"
+            + "{[Measures].[Store Sales]}\n"
             + "Axis #1:\n"
             + "{[Store].[Stores].[All Stores]}\n"
             + "{[Store].[Stores].[USA]}\n"
@@ -1954,7 +1955,7 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Org Salary]}\n"
             + "Axis #2:\n"
-            + "{[Department].[14], [Employee].[Employees].[All Employees]}\n"
+            + "{[Department].[Department].[14], [Employee].[Employees].[All Employees]}\n"
             + "Row #0: $97.20\n");
 
         // This query gave the right answer, even with MONDRIAN-694.
@@ -1967,8 +1968,8 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Org Salary]}\n"
             + "Axis #2:\n"
-            + "{[Store].[Department].[14], [Employee].[Employees].[All Employees]}\n"
-            + "{[Store].[Department].[14], [Employee].[Employees].[Sheri Nowmer]}\n"
+            + "{[Department].[Department].[14], [Employee].[Employees].[All Employees]}\n"
+            + "{[Department].[Department].[14], [Employee].[Employees].[Sheri Nowmer]}\n"
             + "Row #0: $97.20\n"
             + "Row #1: $97.20\n");
 
@@ -1983,8 +1984,8 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Org Salary]}\n"
             + "Axis #2:\n"
-            + "{[Store].[Department].[14], [Employee].[Employees].[All Employees]}\n"
-            + "{[Store].[Department].[14], [Employee].[Employees].[Sheri Nowmer]}\n"
+            + "{[Department].[Department].[14], [Employee].[Employees].[All Employees]}\n"
+            + "{[Department].[Department].[14], [Employee].[Employees].[Sheri Nowmer]}\n"
             + "Row #0: $97.20\n"
             + "Row #1: $97.20\n");
 
@@ -1997,8 +1998,8 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Org Salary]}\n"
             + "Axis #2:\n"
-            + "{[Employee].[Employees].[All Employees], [Store].[Department].[14]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer], [Store].[Department].[14]}\n"
+            + "{[Employee].[Employees].[All Employees], [Department].[Department].[14]}\n"
+            + "{[Employee].[Employees].[Sheri Nowmer], [Department].[Department].[14]}\n"
             + "Row #0: $97.20\n"
             + "Row #1: $97.20\n");
     }
@@ -2527,6 +2528,51 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "Axis #2:\n"
                 + "{[Customer].[Customers].[USA]}\n"
                 + "Row #0: 2,009\n");
+    }
+
+    /**
+     * Tests running queries when (a) the Measures hierarchy is not accessible
+     * or (b) the Measures hierarchy is accessible but has no accessible
+     * members.
+     */
+    public void testNoMeasuresVisible() {
+        TestContext testContext =
+            getTestContext().create(
+                null, null, null, null, null,
+                "<Role name='No measures hierarchy'>\n"
+                + "  <SchemaGrant access='none'>\n"
+                + "    <CubeGrant cube='Sales' access='all'>\n"
+                + "      <HierarchyGrant hierarchy='[Measures]' access='none'/>\n"
+                + "    </CubeGrant>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>"
+                + "<Role name='No measures'>\n"
+                + "  <SchemaGrant access='none'>\n"
+                + "    <CubeGrant cube='Sales' access='all'>\n"
+                + "      <HierarchyGrant hierarchy='[Measures]' access='custom'>\n"
+                + "        <MemberGrant member='[Measures].[Unit Sales]' access='none'/>\n"
+                + "        <MemberGrant member='[Measures].[Store Cost]' access='none'/>\n"
+                + "        <MemberGrant member='[Measures].[Store Sales]' access='none'/>\n"
+                + "        <MemberGrant member='[Measures].[Sales Count]' access='none'/>\n"
+                + "        <MemberGrant member='[Measures].[Customer Count]' access='none'/>\n"
+                + "        <MemberGrant member='[Measures].[Promotion Sales]' access='none'/>\n"
+                + "      </HierarchyGrant>\n"
+                + "    </CubeGrant>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>");
+        testContext.withRole("No measures hierarchy")
+            .assertQueryThrows(
+                "select from [Sales]",
+                "Illegal access to members of hierarchy [Measures]");
+        testContext.withRole("No measures")
+            .assertQueryThrows(
+                "select [Measures].[Unit Sales] on 0 from [Sales]",
+                "MDX object '[Measures].[Unit Sales]' not found in "
+                + "cube 'Sales'");
+        testContext.withRole("No measures")
+            .assertQueryThrows(
+                "select from [Sales]",
+                "Hierarchy '[Measures]' has no accessible members.");
     }
 }
 

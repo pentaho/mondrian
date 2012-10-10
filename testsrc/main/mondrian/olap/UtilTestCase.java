@@ -1778,7 +1778,7 @@ public class UtilTestCase extends TestCase {
                 e.getMessage(),
                 e.getMessage().startsWith(
                     "Invalid time interval '4'. Does not contain a time "
-                        + "unit."));
+                    + "unit."));
         }
         // fractional part rounded away
         assertEquals(
@@ -1794,7 +1794,7 @@ public class UtilTestCase extends TestCase {
                 e.getMessage(),
                 e.getMessage().startsWith(
                     "Invalid time interval '40S'. Does not contain a time "
-                        + "unit."));
+                    + "unit."));
         }
         // Even a space is not allowed.
         try {

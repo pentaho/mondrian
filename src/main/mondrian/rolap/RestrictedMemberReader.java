@@ -200,20 +200,23 @@ class RestrictedMemberReader extends DelegatingMemberReader {
     }
 
     public List<RolapMember> getRootMembers() {
-        int topLevelDepth = hierarchyAccess.getTopLevelDepth();
+        final List<RolapMember> memberList;
+        final int topLevelDepth = hierarchyAccess.getTopLevelDepth();
         if (topLevelDepth > 0) {
             RolapLevel topLevel =
                 getHierarchy().getLevelList().get(topLevelDepth);
-            final List<RolapMember> memberList =
-                getMembersInLevel(topLevel);
-            if (memberList.isEmpty()) {
-                throw MondrianResource.instance()
-                    .HierarchyHasNoAccessibleMembers.ex(
-                        getHierarchy().getUniqueName());
-            }
-            return memberList;
+            memberList = getMembersInLevel(topLevel);
+        } else {
+            List<RolapMember> unfilteredMemberList = super.getRootMembers();
+            memberList = new ArrayList<RolapMember>();
+            filterMembers(unfilteredMemberList, memberList);
         }
-        return super.getRootMembers();
+        if (memberList.isEmpty()) {
+            throw MondrianResource.instance()
+                .HierarchyHasNoAccessibleMembers.ex(
+                    getHierarchy().getUniqueName());
+        }
+        return memberList;
     }
 
     public List<RolapMember> getMembersInLevel(
