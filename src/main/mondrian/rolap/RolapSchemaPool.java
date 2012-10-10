@@ -14,7 +14,7 @@ import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.spi.DynamicSchemaProcessor;
-import mondrian.util.ByteString;
+import mondrian.util.*;
 
 import org.apache.log4j.Logger;
 
@@ -37,15 +37,17 @@ class RolapSchemaPool {
 
     private static final RolapSchemaPool INSTANCE = new RolapSchemaPool();
 
-    private final Map<SchemaKey, Reference<RolapSchema>> mapKeyToSchema =
-        new HashMap<SchemaKey, Reference<RolapSchema>>();
+    private final Map<SchemaKey, ExpiringReference<RolapSchema>>
+        mapKeyToSchema =
+            new HashMap<SchemaKey, ExpiringReference<RolapSchema>>();
 
     // REVIEW: This map is now considered unsafe. If two schemas have identical
     // metadata but a different underlying database connection, we should not
     // share a cache. Since SchemaContentKey is now a hash of the schema
     // definition, this field can probably be removed.
-    private final Map<ByteString, Reference<RolapSchema>> mapMd5ToSchema =
-        new HashMap<ByteString, Reference<RolapSchema>>();
+    private final Map<ByteString, ExpiringReference<RolapSchema>>
+        mapMd5ToSchema =
+            new HashMap<ByteString, ExpiringReference<RolapSchema>>();
 
     private RolapSchemaPool() {
     }
@@ -99,16 +101,10 @@ class RolapSchemaPool {
                 connectInfo.get(
                     RolapConnectionProperties.UseSchemaPool.name(),
                     "true"));
-        final boolean pinSchema =
-            Boolean.parseBoolean(
-                connectInfo.get(
-                    RolapConnectionProperties.PinSchema.name(),
-                    "false"));
-        final int pinSchemaTimeout =
-            Integer.parseInt(
-                connectInfo.get(
-                    RolapConnectionProperties.PinSchemaTimeout.name(),
-                    "30"));
+        final String pinSchemaTimeout =
+            connectInfo.get(
+                RolapConnectionProperties.PinSchemaTimeout.name(),
+                "-1s");
         final boolean useContentChecksum =
             Boolean.parseBoolean(
                 connectInfo.get(
@@ -166,7 +162,7 @@ class RolapSchemaPool {
         if (useContentChecksum) {
             final ByteString md5Bytes =
                 new ByteString(Util.digestMd5(catalogStr));
-            final Reference<RolapSchema> ref =
+            final ExpiringReference<RolapSchema> ref =
                 mapMd5ToSchema.get(md5Bytes);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(
@@ -175,7 +171,7 @@ class RolapSchemaPool {
             }
 
             if (ref != null) {
-                schema = ref.get();
+                schema = ref.get(pinSchemaTimeout);
                 if (schema == null) {
                     // clear out the reference since schema is null
                     mapKeyToSchema.remove(key);
@@ -196,19 +192,19 @@ class RolapSchemaPool {
                         "create: schema-name=" + schema.getName()
                         + ", schema-id=" + System.identityHashCode(schema));
                 }
-                putSchema(schema, md5Bytes, pinSchema, pinSchemaTimeout);
+                putSchema(schema, md5Bytes, pinSchemaTimeout);
             }
             return schema;
         }
 
-        Reference<RolapSchema> ref = mapKeyToSchema.get(key);
+        ExpiringReference<RolapSchema> ref = mapKeyToSchema.get(key);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(
                 "get(key=" + key
                 + ") returned " + toString(ref));
         }
         if (ref != null) {
-            schema = ref.get();
+            schema = ref.get(pinSchemaTimeout);
             if (schema == null) {
                 mapKeyToSchema.remove(key);
             }
@@ -225,7 +221,7 @@ class RolapSchemaPool {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("create: " + schema);
             }
-            putSchema(schema, null, pinSchema, pinSchemaTimeout);
+            putSchema(schema, null, pinSchemaTimeout);
         }
 
         return schema;
@@ -234,18 +230,11 @@ class RolapSchemaPool {
     private void putSchema(
         final RolapSchema schema,
         final ByteString md5Bytes,
-        final boolean pin,
-        final int pinTimeout)
+        final String pinTimeout)
     {
-        final Reference<RolapSchema> reference;
-        if (pin) {
-            reference =
-                new ExpiringReference<RolapSchema>(
-                    schema, pinTimeout);
-        } else {
-            reference =
-                new SoftReference<RolapSchema>(schema);
-        }
+        final ExpiringReference<RolapSchema> reference =
+            new ExpiringReference<RolapSchema>(
+                schema, pinTimeout);
         if (md5Bytes != null) {
             mapMd5ToSchema.put(md5Bytes, reference);
         }
@@ -458,69 +447,6 @@ class RolapSchemaPool {
                     + ", id=" + Integer.toHexString(System.identityHashCode(t))
                     + ")";
             }
-        }
-    }
-
-    /**
-     * An expiring reference is a subclass of {@link SoftReference}
-     * which pins the reference in memory until a certain timeout
-     * is reached. After that, the reference is free to be garbage
-     * collected if needed.
-     */
-    private static class ExpiringReference<T> extends SoftReference<T> {
-        private T hardRef;
-        private final int timeout;
-
-        /**
-         * A Timer object to execute what we need to do.
-         */
-        private static final Timer timer =
-            new Timer(
-                "mondrian.rolap.RolapSchemaPool.ExpiringReference$timer",
-                true);
-
-        /**
-         * Creates an expiring reference.
-         * @param ref The referent.
-         * @param timeout The timeout to enforce, in minutes.
-         * If timeout is equal or less than 0, this means a hard reference.
-         */
-        public ExpiringReference(T ref, int timeout) {
-            super(ref);
-            this.hardRef = ref;
-            this.timeout = timeout;
-            if (timeout > 0) {
-                setTimer();
-            }
-        }
-
-        private synchronized void setTimer() {
-            final TimerTask timerTask = new TimerTask() {
-                public void run() {
-                    ExpiringReference.this.hardRef = null;
-                }
-            };
-            // Schedule for cleanup.
-            timer.schedule(
-                timerTask,
-                this.timeout * 60 * 1000); // Timeout is provided in minutes.
-        }
-
-        public synchronized T get() {
-            final T weakRef = super.get();
-
-            if (weakRef != null && timeout > 0) {
-                if (hardRef == null) {
-                    // This object is still alive but was cleaned.
-                    // set a new TimerTask.
-                    setTimer();
-                    // Set the reference after the task starts, or else
-                    // any previous tasks might have wiped it.
-                    this.hardRef = weakRef;
-                }
-            }
-
-            return weakRef;
         }
     }
 }

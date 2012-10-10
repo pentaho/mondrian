@@ -295,7 +295,9 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
         // Wait for it to auto-reload.
         final Pair<Long, TimeUnit> interval =
             Util.parseInterval(
-                MondrianProperties.instance().XmlaSchemaRefreshInterval.get(),
+                String.valueOf(
+                    MondrianProperties.instance()
+                        .XmlaSchemaRefreshInterval.get()),
                 TimeUnit.MILLISECONDS);
         Thread.sleep(
             interval.right.toMillis(interval.left)
