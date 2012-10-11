@@ -400,7 +400,8 @@ public class SqlConstraintUtils {
      * Currently, only the Aggregate function is supported
      *
      * @param member
-     * @return
+     * @return <i>true</i> if the calculated member is supported for native
+     * evaluation
      */
     public static boolean isSupportedCalculatedMember(Member member) {
 
@@ -459,7 +460,7 @@ public class SqlConstraintUtils {
      * cell request isn't unsatisfiable, following the same logic
      * as RolapEvaluator
      * @param members
-     * @return 
+     * @return Unique ordinal cube members
      */
     
     protected static Member[] getUniqueOrdinalMembers(Member[] members){

@@ -48,7 +48,7 @@ class RolapSetEvaluator
      * Creates a RolapNamedSetEvaluator.
      *
      * @param rrer Evaluation root context
-     * @param namedSet Named set
+     * @param exp Expression
      */
     public RolapSetEvaluator(
             RolapResult.RolapResultEvaluatorRoot rrer,

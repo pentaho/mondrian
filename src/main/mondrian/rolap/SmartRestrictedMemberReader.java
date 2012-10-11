@@ -10,109 +10,105 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.rolap.RolapHierarchy.LimitedRollupMember;
 import mondrian.rolap.sql.*;
 
 import java.util.*;
+import java.util.concurrent.locks.*;
 
-class SmartRestrictedMemberReader extends DelegatingMemberReader {
+/**
+ * A {@link SmartRestrictedMemberReader} is a subclass of
+ * {@link RestrictedMemberReader} which caches the access rights
+ * per children's list. We place them in this throw-away object
+ * to speed up partial rollup calculations.
+ *
+ * <p>The speed improvement is noticeable when dealing with very
+ * big dimensions with a lot of branches (like a parent-child
+ * hierarchy) because the 'partial' rollup policy forces us to
+ * navigate the tree and find the lowest level to rollup to and
+ * then figure out all of the children on which to constraint
+ * the SQL query.
+ */
+class SmartRestrictedMemberReader extends RestrictedMemberReader {
 
-    SmartRestrictedMemberReader(MemberReader memberReader, Role role) {
+    SmartRestrictedMemberReader(
+        final MemberReader memberReader,
+        final Role role)
+    {
         // We want to extend a RestrictedMemberReader with access details
         // that we cache.
-        super(new RestrictedMemberReader(memberReader, role));
+        super(memberReader, role);
     }
+
+    // Our little ad-hoc cache.
+    final Map<RolapMember, AccessAwareMemberList>
+        memberToChildren =
+            new WeakHashMap<RolapMember, AccessAwareMemberList>();
+
+    // The lock for cache access.
+    final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     @Override
     public Map<? extends Member, Access> getMemberChildren(
-        RolapMember parentMember,
+        RolapMember member,
         List<RolapMember> children,
         MemberChildrenConstraint constraint)
     {
-        SmartMemberReader reader =
-            (SmartMemberReader)((RestrictedMemberReader)memberReader)
-                .memberReader;
+        // Strip off the rollup wrapper.
+        if (member instanceof LimitedRollupMember) {
+            member = ((LimitedRollupMember)member).member;
+        }
+        try {
+            // Get the read lock.
+            lock.readLock().lock();
 
-        synchronized (reader.cacheHelper) {
-            reader.checkCacheStatus();
-            AccessAwareMemberList list =
-                (AccessAwareMemberList) reader.cacheHelper
-                    .getChildrenFromCache(parentMember, constraint);
-            if (list == null) {
-                // the null member has no children
-                if (!parentMember.isNull()) {
-                    List<RolapMember> computedChildren =
-                        new LinkedList<RolapMember>();
-                    Map<? extends Member, Access> membersWithAccessDetails =
-                        super.getMemberChildren(
-                            parentMember,
-                            computedChildren,
-                            constraint);
+            AccessAwareMemberList memberList =
+                memberToChildren.get(member);
 
-                    reader.cacheHelper.putChildren(
-                        parentMember,
-                        constraint,
-                        new AccessAwareMemberList(
-                            computedChildren,
-                            membersWithAccessDetails));
+            if (memberList != null) {
+                // Sadly, we need to do a hard cast here,
+                // but since we know what it is, it's fine.
+                children.addAll(
+                    memberList.children);
 
-                    children.addAll(computedChildren);
-
-                    return membersWithAccessDetails;
-
-                } else {
-                    return new HashMap<Member, Access>();
-                }
-            } else {
-                children.addAll(list);
-                return list.getAccessMap();
+                return memberList.accessMap;
             }
+        } finally {
+            lock.readLock().unlock();
+        }
+
+        // No cache data.
+        try {
+            // Get a write lock.
+            lock.writeLock().lock();
+
+            Map<? extends Member, Access> membersWithAccessDetails =
+                super.getMemberChildren(
+                    member,
+                    children,
+                    constraint);
+
+            memberToChildren.put(
+                member,
+                new AccessAwareMemberList(
+                    membersWithAccessDetails,
+                    new ArrayList(membersWithAccessDetails.keySet())));
+
+            return membersWithAccessDetails;
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
-    @Override
-    public synchronized Map<? extends Member, Access> getMemberChildren(
-        List<RolapMember> parentMembers,
-        List<RolapMember> children,
-        MemberChildrenConstraint constraint)
-    {
-        SmartMemberReader reader =
-            (SmartMemberReader)((RestrictedMemberReader)memberReader)
-                .memberReader;
-
-        synchronized (reader.cacheHelper) {
-            reader.checkCacheStatus();
-
-            Map<Member, Access> allMembersWithAccessDetails =
-                new HashMap<Member, Access>();
-            for (RolapMember parentMember : parentMembers) {
-                allMembersWithAccessDetails.putAll(
-                    getMemberChildren(parentMember, children, constraint));
-            }
-            return allMembersWithAccessDetails;
-        }
-    }
-
-    private static class AccessAwareMemberList
-        extends AbstractList<RolapMember>
-    {
-        private List<RolapMember> delegate;
-        private Map<? extends Member, Access> accessMap;
+    private static class AccessAwareMemberList {
+        private final Map<? extends Member, Access> accessMap;
+        private final Collection<RolapMember> children;
         public AccessAwareMemberList(
-            List<RolapMember> delegate,
-            Map<? extends Member, Access> accessMap)
+            Map<? extends Member, Access> accessMap,
+            Collection<RolapMember> children)
         {
-            super();
-            this.delegate = delegate;
             this.accessMap = accessMap;
-        }
-        public RolapMember get(int arg0) {
-            return delegate.get(arg0);
-        }
-        public int size() {
-            return delegate.size();
-        }
-        public Map<? extends Member, Access> getAccessMap() {
-            return accessMap;
+            this.children = children;
         }
     }
 }
