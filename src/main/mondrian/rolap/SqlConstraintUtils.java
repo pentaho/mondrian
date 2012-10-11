@@ -110,7 +110,7 @@ public class SqlConstraintUtils {
 //        }
 
         // Now, remove calc members
-        members = removeCalculatedAndDefaultMembers(members);
+        // members = removeCalculatedAndDefaultMembers(members);
         
         
         final CellRequest request =
