@@ -26,6 +26,10 @@ class RolapNamedSetEvaluator
     private final RolapResult.RolapResultEvaluatorRoot rrer;
     private final NamedSet namedSet;
 
+    //TODO: temporary
+    private static final int RECURSION_TOLERANCE = 3;//
+    private int recursionCount;
+
     /** Value of this named set; set on first use. */
     private TupleList list;
 
@@ -68,11 +72,14 @@ class RolapNamedSetEvaluator
      */
     private void ensureList() {
         if (list != null) {
-            if (list == DUMMY_LIST) {
-                throw rrer.result.slicerEvaluator.newEvalException(
-                    null,
-                    "Illegal attempt to reference value of named set '"
-                    + namedSet.getName() + "' while evaluating itself");
+            if (list == DUMMY_LIST) {// && ++recursionCount > RECURSION_LIMIT) {
+                recursionCount ++;
+                if (recursionCount > RECURSION_TOLERANCE) {
+                  throw rrer.result.slicerEvaluator.newEvalException(
+                      null,
+                      "Illegal attempt to reference value of named set '"
+                      + namedSet.getName() + "' while evaluating itself");
+                }
             }
             return;
         }
@@ -115,6 +122,7 @@ class RolapNamedSetEvaluator
             if (this.list == DUMMY_LIST) {
                 this.list = null;
             }
+            recursionCount = 0;//TODO:REMOVE
         }
     }
 
