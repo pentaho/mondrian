@@ -43,7 +43,11 @@ class RolapSetEvaluator
      * &lt;Named Set&gt;.CurrentOrdinal and &lt;Named Set&gt;.Current functions.
      */
     private int currentOrdinal;
-
+    
+    //TODO: temporary
+    private static int RECURSION_LIMIT = 2;
+    private int recursionCount;
+    
     /**
      * Creates a RolapNamedSetEvaluator.
      *
@@ -55,6 +59,8 @@ class RolapSetEvaluator
             Exp exp) {
         this.rrer = rrer;
         this.exp = exp;
+        //TODO
+        this.recursionCount = 0;
     }
 
     public TupleIterable evaluateTupleIterable() {
@@ -68,7 +74,7 @@ class RolapSetEvaluator
      */
     private void ensureList() {
         if (list != null) {
-            if (list == DUMMY_LIST) {
+            if (list == DUMMY_LIST && ++recursionCount >= RECURSION_LIMIT) {
                 throw rrer.result.slicerEvaluator.newEvalException(
                         null,
                         "Illegal attempt to reference value of a set '"
@@ -114,6 +120,7 @@ class RolapSetEvaluator
             if (this.list == DUMMY_LIST) {
                 this.list = null;
             }
+            recursionCount = 0;//TODO:REMOVE
         }
     }
 
