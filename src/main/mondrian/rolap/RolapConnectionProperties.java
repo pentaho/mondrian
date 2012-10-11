@@ -10,6 +10,8 @@
 */
 package mondrian.rolap;
 
+import java.lang.ref.SoftReference;
+
 /**
  * <code>RolapConnectionProperties</code> enumerates the allowable values of
  * keywords in a Mondrian connect string.
@@ -176,13 +178,8 @@ public enum RolapConnectionProperties {
     JdbcConnectionUuid,
 
     /**
-     * The "PinSchema" property instructs Mondrian to keep a hard reference
-     * to the schema within its pool. This prevents the garbage collector
-     * from removing it from the memory.
-     *
-     * <p>It is highly recommended to use it in conjunction with the property
-     * "PinSchemaTimeout" to prevent the memory from filling up, especially
-     * when using a DynamicSchemaProcessor.
+     * The "PinSchemaTimeout" defines how much time must Mondrian
+     * keep a hard reference to schema objects within the pool of schemas.
      *
      * <p>After the timeout is reached, the hard reference will be cleared
      * and the schema will be made a candidate for garbage collection. If the
@@ -190,21 +187,20 @@ public enum RolapConnectionProperties {
      * the timeout will be re-computed from the time of the second access and
      * a new hard reference is established until the new timer reaches its end.
      *
-     * <p>Valid property values are "true" and "false". Defaults to "false".
-     */
-    PinSchema,
-
-    /**
-     * The "PinSchemaTimeout" defines, in minutes, how much time must Mondrian
-     * keep a hard reference to schema objects within the pool. This only
-     * applies to schemas which were created with the property "PinSchema"
-     * set to true.
-     *
-     * <p>If the timeout is equal to or less than zero, the schema will get
-     * pinned permanently. It is inadvisable to use a this mode when using
+     * <p>If the timeout is equal to zero, the schema will get
+     * pinned permanently. It is inadvisable to use this mode when using
      * a DynamicSchemaProcessor at the risk of filling up the memory.
      *
-     * <p>Must be an integer value. Defaults to 30 minutes.
+     * <p>If the timeout is a negative value, the reference will behave
+     * the same as a {@link SoftReference}. This is the default behavior.
+     *
+     * <p>The timeout value must be provided as a String representing
+     * both the time value and the time unit. For example, 1 second is
+     * represented as "1s". Valid time units are [d, h, m, s, ms],
+     * representing respectively days, hours, minutes, seconds and
+     * milliseconds.
+     *
+     * <p>Defaults to "-1s".
      */
     PinSchemaTimeout;
 

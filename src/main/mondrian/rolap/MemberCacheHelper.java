@@ -199,19 +199,19 @@ public class MemberCacheHelper implements MemberCache {
                         <RolapLevel, Object>, List<RolapMember>>> iterator)
                 {
                     while (iterator.hasNext()) {
-                       Map.Entry<Pair
-                           <RolapLevel, Object>, List<RolapMember>> entry =
-                               iterator.next();
-                       final RolapLevel cacheLevel = entry.getKey().left;
-                       if (cacheLevel.equals(levelRef)
-                           || (cacheLevel.getHierarchy()
-                               .equals(levelRef.getHierarchy())
-                               && cacheLevel.getDepth()
-                                   >= levelRef.getDepth()))
-                       {
-                           iterator.remove();
-                       }
-                   }
+                        Map.Entry<Pair
+                            <RolapLevel, Object>, List<RolapMember>> entry =
+                            iterator.next();
+                        final RolapLevel cacheLevel = entry.getKey().left;
+                        if (cacheLevel.equals(levelRef)
+                            || (cacheLevel.getHierarchy()
+                            .equals(levelRef.getHierarchy())
+                            && cacheLevel.getDepth()
+                            >= levelRef.getDepth()))
+                        {
+                            iterator.remove();
+                        }
+                    }
                 }
             });
 

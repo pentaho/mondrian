@@ -11,17 +11,12 @@
 package mondrian.test;
 
 import mondrian.olap.*;
-import mondrian.util.LockBox.Entry;
 
 import junit.framework.Assert;
 
 import org.olap4j.mdx.IdentifierNode;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-
 
 /**
  * <code>AccessControlTest</code> is a set of unit-tests for access-control.
@@ -2859,6 +2854,84 @@ public class AccessControlTest extends FoodMartTestCase {
         assertEquals(
             "[Store].[All Stores]",
             allMember.getHierarchy().getRootMembers().get(0).getUniqueName());
+    }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/mondrian-1259">MONDRIAN-1259</a>
+     *
+     * <p>Enhancements made to the SmartRestrictedMemberReader were causing
+     * security leaks between roles and potantial class cast exceptions.
+     */
+    public void testMondrian1259() throws Exception {
+        final String mdx =
+            "select non empty {[Store].Members} on columns from [Sales]";
+        final TestContext testContext = TestContext.instance().create(
+            null, null, null, null, null,
+            "<Role name=\"Role1\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+            + "        <MemberGrant member=\"[Store].[USA].[CA]\" access=\"all\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>"
+            + "<Role name=\"Role2\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+            + "        <MemberGrant member=\"[Store].[USA].[OR]\" access=\"all\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>");
+        testContext.withRole("Role1").assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[USA]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 21,333\n"
+            + "Row #0: 21,333\n"
+            + "Row #0: 25,663\n"
+            + "Row #0: 25,663\n"
+            + "Row #0: 25,635\n"
+            + "Row #0: 25,635\n"
+            + "Row #0: 2,117\n"
+            + "Row #0: 2,117\n");
+        testContext.withRole("Role2").assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[USA]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[OR].[Portland]}\n"
+            + "{[Store].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Store].[USA].[OR].[Salem]}\n"
+            + "{[Store].[USA].[OR].[Salem].[Store 13]}\n"
+            + "Row #0: 67,659\n"
+            + "Row #0: 67,659\n"
+            + "Row #0: 67,659\n"
+            + "Row #0: 26,079\n"
+            + "Row #0: 26,079\n"
+            + "Row #0: 41,580\n"
+            + "Row #0: 41,580\n");
     }
 }
 

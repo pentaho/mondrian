@@ -192,6 +192,5 @@ public class RolapSchemaPoolTest extends FoodMartTestCase {
             return Util.readVirtualFileAsString(schemaUrl);
         }
     }
-
 }
 // End RolapSchemaPoolTest.java

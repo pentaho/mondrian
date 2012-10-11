@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.XOMUtil;
 
+import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.mdx.*;
 
 import java.io.*;
@@ -326,7 +327,7 @@ public class Util extends XOMUtil {
                 && ((i + 1) < st.length())
                 && (st.charAt(i + 1) != '.'))
             {
-                retString.append(']'); //escaping character
+                retString.append(']'); // escaping character
             }
             retString.append(c);
         }
@@ -1781,6 +1782,69 @@ public class Util extends XOMUtil {
         default:
             throw newInternal(
                 "bad locale string '" + localeString + "'");
+        }
+    }
+
+    private static final Map<String, String> TIME_UNITS =
+        Olap4jUtil.mapOf(
+            "ns", "NANOSECONDS",
+            "us", "MICROSECONDS",
+            "ms", "MILLISECONDS",
+            "s", "SECONDS",
+            "m", "MINUTES",
+            "h", "HOURS",
+            "d", "DAYS");
+
+    /**
+     * Parses an interval.
+     *
+     * <p>For example, "30s" becomes (30, {@link TimeUnit#SECONDS});
+     * "2us" becomes (2, {@link TimeUnit#MICROSECONDS}).</p>
+     *
+     * <p>Units m (minutes), h (hours) and d (days) are only available
+     * in JDK 1.6 or later, because the corresponding constants are missing
+     * from {@link TimeUnit} in JDK 1.5.</p>
+     *
+     * @param s String to parse
+     * @param unit Default time unit; may be null
+     *
+     * @return Pair of value and time unit. Neither pair or its components are
+     * null
+     *
+     * @throws NumberFormatException if unit is not present and there is no
+     * default, or if number is not valid
+     */
+    public static Pair<Long, TimeUnit> parseInterval(
+        String s,
+        TimeUnit unit)
+        throws NumberFormatException
+    {
+        final String original = s;
+        for (Map.Entry<String, String> entry : TIME_UNITS.entrySet()) {
+            final String abbrev = entry.getKey();
+            if (s.endsWith(abbrev)) {
+                final String full = entry.getValue();
+                try {
+                    unit = TimeUnit.valueOf(full);
+                    s = s.substring(0, s.length() - abbrev.length());
+                    break;
+                } catch (IllegalArgumentException e) {
+                    // ignore - MINUTES, HOURS, DAYS are not defined in JDK1.5
+                }
+            }
+        }
+        if (unit == null) {
+            throw new NumberFormatException(
+                "Invalid time interval '" + original + "'. Does not contain a "
+                + "time unit. (Suffix may be ns (nanoseconds), "
+                + "us (microseconds), ms (milliseconds), s (seconds), "
+                + "h (hours), d (days). For example, '20s' means 20 seconds.)");
+        }
+        try {
+            return Pair.of(new BigDecimal(s).longValue(), unit);
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException(
+                "Invalid time interval '" + original + "'");
         }
     }
 
@@ -3243,7 +3307,7 @@ public class Util extends XOMUtil {
             url = url.substring("file:".length());
         }
 
-        //work around for VFS bug not closing http sockets
+        // work around for VFS bug not closing http sockets
         // (Mondrian-585)
         if (url.startsWith("http")) {
             try {

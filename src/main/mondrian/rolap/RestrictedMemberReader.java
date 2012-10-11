@@ -128,7 +128,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         // todo: optimize if parentMember is beyond last level
         List<RolapMember> grandChildren = null;
         Map<RolapMember, Access> memberToAccessMap =
-            new HashMap<RolapMember, Access>();
+            new LinkedHashMap<RolapMember, Access>();
         for (int i = 0; i < fullChildren.size(); i++) {
             RolapMember member = fullChildren.get(i);
             // If a child is hidden (due to raggedness) include its children.

@@ -1342,6 +1342,12 @@ public class RolapHierarchy extends HierarchyBase {
                 && ((LimitedRollupMember) o).member.equals(member);
         }
 
+        public int hashCode() {
+            int hash = member.hashCode();
+            hash = Util.hash(hash, exp);
+            return hash;
+        }
+
         public Exp getExpression() {
             return exp;
         }
