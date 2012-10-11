@@ -98,6 +98,9 @@ public class MockServletContext implements ServletContext {
      *
      */
     public URL getResource(String name) throws MalformedURLException {
+        if(!resources.containsKey(name)) {
+            addResource(name, new URL("file://" + name));
+        }
         return resources.get(name);
     }
 
