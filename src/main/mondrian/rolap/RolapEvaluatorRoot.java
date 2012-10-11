@@ -220,12 +220,12 @@ class RolapEvaluatorRoot {
 
     
     /**
-     * Evaluates a named set.
+     * Evaluates a named set represented by an expression.
      *
      * <p>The default implementation throws
      * {@link UnsupportedOperationException}.
      *
-     * @param namedSet Named set
+     * @param exp Expression
      * @param create Whether to create named set evaluator if not found
      */
     protected Evaluator.SetEvaluator evaluateSet(
