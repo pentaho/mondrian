@@ -32,6 +32,7 @@ public class RolapNativeRegistry extends RolapNative {
          */
         register("NonEmptyCrossJoin".toUpperCase(), new RolapNativeCrossJoin());
         register("CrossJoin".toUpperCase(), new RolapNativeCrossJoin());
+        register("*", new RolapNativeCrossJoin());
         register("TopCount".toUpperCase(), new RolapNativeTopCount());
         register("Filter".toUpperCase(), new RolapNativeFilter());
     }
