@@ -5007,13 +5007,13 @@ public class NonEmptyTest extends BatchTestCase {
     
     
     
-    public void testNonEmptyAggregateSlicerIsNative() {
+public void testNonEmptyAggregateSlicerIsNative() {
         checkNative(
                 20,
-                2,
+                1,
                 "select NON EMPTY\n"
-                + " [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]\n"
-                + " * [Customers].[USA].[WA].[Puyallup].Children ON COLUMNS\n"
+                + " Crossjoin([Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]\n"
+                + " , [Customers].[USA].[WA].[Puyallup].Children) ON COLUMNS\n"
                 + "from [Sales]\n"
                 + "where ([Time].[1997].[Q1].[2] : [Time].[1997].[Q2].[5])",
                 "Axis #0:\n"
@@ -5022,10 +5022,10 @@ public class NonEmptyTest extends BatchTestCase {
                 + "{[Time].[1997].[Q2].[4]}\n"
                 + "{[Time].[1997].[Q2].[5]}\n"
                 + "Axis #1:\n"
+                + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth], [Customers].[USA].[WA].[Puyallup].[Diane Biondo]}\n"
             + "Row #0: 2\n",
             true);
- }
-    
+    }    
     
 }
 
