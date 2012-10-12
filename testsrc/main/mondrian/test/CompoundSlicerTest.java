@@ -857,264 +857,250 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "Row #8: 79\n"
             + "Row #9: 79\n");
     }
-    
+
     /**
      * Test case for the support of native top count with aggregated measures
-     */ 
-    
+     */
+
     public void testTopCountWithAggregatedMember() {
         assertQueryReturns(
-                "with set a as '([Time].[1997].[Q1] : [Time].[1997].[Q2])' "
-                + "member Time.x as Aggregate(a,[Measures].[Store Sales]) "
-                + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
-                + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
-                + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
-                + " SELECT NON EMPTY products ON 1, "
-                + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
-                + " FROM [Sales] where Time.x",
-                "Axis #0:\n"
-                + "{[Time].[x]}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Store Sales]}\n"
-                + "{[Measures].[x1]}\n"
-                + "{[Measures].[x2]}\n"
-                + "Axis #2:\n"
-                + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
-                + "{[Product].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Raspberry Fruit Roll]}\n"
-                + "Row #0: 497.42\n"
-                + "Row #0: 235.62\n"
-                + "Row #0: 261.80\n"
-                + "Row #1: 462.84\n"
-                + "Row #1: 226.20\n"
-                + "Row #1: 236.64\n");
+            "with set a as '([Time].[1997].[Q1] : [Time].[1997].[Q2])' "
+            + "member Time.x as Aggregate(a,[Measures].[Store Sales]) "
+            + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
+            + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
+            + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
+            + " SELECT NON EMPTY products ON 1, "
+            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
+            + " FROM [Sales] where Time.x",
+            "Axis #0:\n"
+            + "{[Time].[x]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "{[Measures].[x1]}\n"
+            + "{[Measures].[x2]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
+            + "{[Product].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Raspberry Fruit Roll]}\n"
+            + "Row #0: 497.42\n"
+            + "Row #0: 235.62\n"
+            + "Row #0: 261.80\n"
+            + "Row #1: 462.84\n"
+            + "Row #1: 226.20\n"
+            + "Row #1: 236.64\n");
     }
 
 
-    
+
      /**
-     * Test case for the support of native top count with aggregated measures 
+     * Test case for the support of native top count with aggregated measures
      * using a different format, same results
-     */ 
-    
+     */
+
     public void testTopCountWithAggregatedMember2() {
         assertQueryReturns(
-                "with "
-                + "member Time.x as Aggregate([Time].[1997].[Q1] : [Time].[1997].[Q2],[Measures].[Store Sales]) "
-                + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
-                + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
-                + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
-                + " SELECT NON EMPTY products ON 1, "
-                + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
-                + "FROM [Sales] where Time.x",
-                "Axis #0:\n"
-                + "{[Time].[x]}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Store Sales]}\n"
-                + "{[Measures].[x1]}\n"
-                + "{[Measures].[x2]}\n"
-                + "Axis #2:\n"
-                + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
-                + "{[Product].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Raspberry Fruit Roll]}\n"
-                + "Row #0: 497.42\n"
-                + "Row #0: 235.62\n"
-                + "Row #0: 261.80\n"
-                + "Row #1: 462.84\n"
-                + "Row #1: 226.20\n"
-                + "Row #1: 236.64\n");
+            "with "
+            + "member Time.x as Aggregate([Time].[1997].[Q1] : [Time].[1997].[Q2],[Measures].[Store Sales]) "
+            + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
+            + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
+            + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
+            + " SELECT NON EMPTY products ON 1, "
+            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
+            + "FROM [Sales] where Time.x",
+            "Axis #0:\n"
+            + "{[Time].[x]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "{[Measures].[x1]}\n"
+            + "{[Measures].[x2]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
+            + "{[Product].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Raspberry Fruit Roll]}\n"
+            + "Row #0: 497.42\n"
+            + "Row #0: 235.62\n"
+            + "Row #0: 261.80\n"
+            + "Row #1: 462.84\n"
+            + "Row #1: 226.20\n"
+            + "Row #1: 236.64\n");
     }
 
      /**
      * Test case for the support of native top count with aggregated measures
-     */ 
-    
+     */
     public void testTopCountWithAggregatedMember3() {
         assertQueryReturns(
-                "with set a as '{[Time].[1997].[Q1] , [Time].[1997].[Q2]}' "
-                + "member Time.x as Aggregate(a,[Measures].[Store Sales]) "
-                + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
-                + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
-                + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
-                + " SELECT NON EMPTY products ON 1, "
-                + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
-                + " FROM [Sales] where Time.x",
-                "Axis #0:\n"
-                + "{[Time].[x]}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Store Sales]}\n"
-                + "{[Measures].[x1]}\n"
-                + "{[Measures].[x2]}\n"
-                + "Axis #2:\n"
-                + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
-                + "{[Product].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Raspberry Fruit Roll]}\n"
-                + "Row #0: 497.42\n"
-                + "Row #0: 235.62\n"
-                + "Row #0: 261.80\n"
-                + "Row #1: 462.84\n"
-                + "Row #1: 226.20\n"
-                + "Row #1: 236.64\n");
+            "with set a as '{[Time].[1997].[Q1] , [Time].[1997].[Q2]}' "
+            + "member Time.x as Aggregate(a,[Measures].[Store Sales]) "
+            + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
+            + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
+            + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
+            + " SELECT NON EMPTY products ON 1, "
+            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
+            + " FROM [Sales] where Time.x",
+            "Axis #0:\n"
+            + "{[Time].[x]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "{[Measures].[x1]}\n"
+            + "{[Measures].[x2]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
+            + "{[Product].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Raspberry Fruit Roll]}\n"
+            + "Row #0: 497.42\n"
+            + "Row #0: 235.62\n"
+            + "Row #0: 261.80\n"
+            + "Row #1: 462.84\n"
+            + "Row #1: 226.20\n"
+            + "Row #1: 236.64\n");
     }
 
-    
      /**
-     * Test case for the support of native top count with aggregated measures 
+     * Test case for the support of native top count with aggregated measures
      * using a different format, same results
-     */ 
-    
+     */
     public void testTopCountWithAggregatedMember4() {
         assertQueryReturns(
-                "with "
-                + "member Time.x as Aggregate({[Time].[1997].[Q1] , [Time].[1997].[Q2]},[Measures].[Store Sales]) "
-                + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
-                + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
-                + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
-                + " SELECT NON EMPTY products ON 1, "
-                + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
-                + "FROM [Sales] where Time.x",
-                "Axis #0:\n"
-                + "{[Time].[x]}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Store Sales]}\n"
-                + "{[Measures].[x1]}\n"
-                + "{[Measures].[x2]}\n"
-                + "Axis #2:\n"
-                + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
-                + "{[Product].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Raspberry Fruit Roll]}\n"
-                + "Row #0: 497.42\n"
-                + "Row #0: 235.62\n"
-                + "Row #0: 261.80\n"
-                + "Row #1: 462.84\n"
-                + "Row #1: 226.20\n"
-                + "Row #1: 236.64\n");
+            "with "
+            + "member Time.x as Aggregate({[Time].[1997].[Q1] , [Time].[1997].[Q2]},[Measures].[Store Sales]) "
+            + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
+            + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
+            + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
+            + " SELECT NON EMPTY products ON 1, "
+            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
+            + "FROM [Sales] where Time.x",
+            "Axis #0:\n"
+            + "{[Time].[x]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "{[Measures].[x1]}\n"
+            + "{[Measures].[x2]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
+            + "{[Product].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Raspberry Fruit Roll]}\n"
+            + "Row #0: 497.42\n"
+            + "Row #0: 235.62\n"
+            + "Row #0: 261.80\n"
+            + "Row #1: 462.84\n"
+            + "Row #1: 226.20\n"
+            + "Row #1: 236.64\n");
     }
-    
-        
+
      /**
-     * Test case for the support of native top count with aggregated measures 
+     * Test case for the support of native top count with aggregated measures
      * using yet another different format, slightly different results
-     */ 
-    
+     */
     public void testTopCountWithAggregatedMember5() {
         assertQueryReturns(
-                "with\n"
-                + "member Time.x as Aggregate([Time].[1997].[Q1] : [Time].[1997].[Q2],[Measures].[Store Sales]) \n"
-                + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) \n"
-                + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) \n"
-                + " set products as TopCount(Product.[Product Name].Members,2,(Measures.[Store Sales],Time.x))\n"
-                + " SELECT NON EMPTY products ON 1, \n"
-                + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 \n"
-                + "FROM [Sales]" 
-                ,
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Store Sales]}\n"
-                + "{[Measures].[x1]}\n"
-                + "{[Measures].[x2]}\n"
-                + "Axis #2:\n"
-                + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
-                + "{[Product].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Raspberry Fruit Roll]}\n"
-                + "Row #0: 845.24\n"
-                + "Row #0: 235.62\n"
-                + "Row #0: 261.80\n"
-                + "Row #1: 730.80\n"
-                + "Row #1: 226.20\n"
-                + "Row #1: 236.64\n");
+            "with\n"
+            + "member Time.x as Aggregate([Time].[1997].[Q1] : [Time].[1997].[Q2],[Measures].[Store Sales]) \n"
+            + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) \n"
+            + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) \n"
+            + " set products as TopCount(Product.[Product Name].Members,2,(Measures.[Store Sales],Time.x))\n"
+            + " SELECT NON EMPTY products ON 1, \n"
+            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 \n"
+            + "FROM [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "{[Measures].[x1]}\n"
+            + "{[Measures].[x2]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
+            + "{[Product].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Raspberry Fruit Roll]}\n"
+            + "Row #0: 845.24\n"
+            + "Row #0: 235.62\n"
+            + "Row #0: 261.80\n"
+            + "Row #1: 730.80\n"
+            + "Row #1: 226.20\n"
+            + "Row #1: 236.64\n");
     }
-    
-    
+
      /**
-     * Test case for the support of native top count with aggregated measures 
+     * Test case for the support of native top count with aggregated measures
      * using the most complex format I can think of, slightly different results.
-     * We'll execute 2 queries to make sure Time.x is not member of the cache key
-     */ 
-    
+     * We'll execute 2 queries to make sure Time.x is not member of the cache
+     * key.
+     */
     public void testTopCountWithAggregatedMemberCacheKey() {
-
-        
         assertQueryReturns(
-                "with "
-                + "member Time.x as Aggregate({[Time].[1997].[Q1] , [Time].[1997].[Q2]},[Measures].[Store Sales]) "
-                + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
-                + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
-                + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
-                + " SELECT NON EMPTY products ON 1, "
-                + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
-                + "FROM [Sales] where Time.x",
-                "Axis #0:\n"
-                + "{[Time].[x]}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Store Sales]}\n"
-                + "{[Measures].[x1]}\n"
-                + "{[Measures].[x2]}\n"
-                + "Axis #2:\n"
-                + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
-                + "{[Product].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Raspberry Fruit Roll]}\n"
-                + "Row #0: 497.42\n"
-                + "Row #0: 235.62\n"
-                + "Row #0: 261.80\n"
-                + "Row #1: 462.84\n"
-                + "Row #1: 226.20\n"
-                + "Row #1: 236.64\n");
+            "with "
+            + "member Time.x as Aggregate({[Time].[1997].[Q1] , [Time].[1997].[Q2]},[Measures].[Store Sales]) "
+            + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
+            + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
+            + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
+            + " SELECT NON EMPTY products ON 1, "
+            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
+            + "FROM [Sales] where Time.x",
+            "Axis #0:\n"
+            + "{[Time].[x]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "{[Measures].[x1]}\n"
+            + "{[Measures].[x2]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
+            + "{[Product].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Raspberry Fruit Roll]}\n"
+            + "Row #0: 497.42\n"
+            + "Row #0: 235.62\n"
+            + "Row #0: 261.80\n"
+            + "Row #1: 462.84\n"
+            + "Row #1: 226.20\n"
+            + "Row #1: 236.64\n");
 
 
         assertQueryReturns(
-                "with\n"
-                + "member Time.x as Aggregate(Union({[Time].[1997].[Q4]},[Time].[1997].[Q1] : [Time].[1997].[Q2]),[Measures].[Store Sales]) \n"
-                + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) \n"
-                + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) \n"
-                + " set products as TopCount(Product.[Product Name].Members,2,(Measures.[Store Sales]))\n"
-                + " SELECT NON EMPTY products ON 1, \n"
-                + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 \n"
-                + "FROM [Sales]\n"
-                + "where  Time.x",
-                "Axis #0:\n"
-                + "{[Time].[x]}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Store Sales]}\n"
-                + "{[Measures].[x1]}\n"
-                + "{[Measures].[x2]}\n"
-                + "Axis #2:\n"
-                + "{[Product].[Drink].[Beverages].[Drinks].[Flavored Drinks].[Washington].[Washington Apple Drink]}\n"
-                + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
-                + "Row #0: 737.10\n"
-                + "Row #0: 189.54\n"
-                + "Row #0: 203.58\n"
-                + "Row #1: 729.30\n"
-                + "Row #1: 235.62\n"
-                + "Row #1: 261.80\n");
+            "with\n"
+            + "member Time.x as Aggregate(Union({[Time].[1997].[Q4]},[Time].[1997].[Q1] : [Time].[1997].[Q2]),[Measures].[Store Sales]) \n"
+            + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) \n"
+            + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) \n"
+            + " set products as TopCount(Product.[Product Name].Members,2,(Measures.[Store Sales]))\n"
+            + " SELECT NON EMPTY products ON 1, \n"
+            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 \n"
+            + "FROM [Sales]\n"
+            + "where  Time.x",
+            "Axis #0:\n"
+            + "{[Time].[x]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "{[Measures].[x1]}\n"
+            + "{[Measures].[x2]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink].[Beverages].[Drinks].[Flavored Drinks].[Washington].[Washington Apple Drink]}\n"
+            + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
+            + "Row #0: 737.10\n"
+            + "Row #0: 189.54\n"
+            + "Row #0: 203.58\n"
+            + "Row #1: 729.30\n"
+            + "Row #1: 235.62\n"
+            + "Row #1: 261.80\n");
     }
 
 
      /**
-     * Now that some native evaluation is supporting aggregated members, we 
+     * Now that some native evaluation is supporting aggregated members, we
      * need to push that logic down to the AggStar selection
-     */ 
-    
+     */
     public void testTopCountWithAggregatedMemberAggStar() {
-
-       
         assertQueryReturns(
-                "with member [Time.Weekly].x as Aggregate([Time.Weekly].[1997].Children) "
-                + "set products as "
-                + "'TopCount([Product].[Product Department].Members, 2, "
-                + "[Measures].[Store Sales])' "
-                + "select NON EMPTY {[Measures].[Store Sales]} ON COLUMNS, "
-                + "NON EMPTY [products] ON ROWS "
-                + " from [Sales] where [Time.Weekly].[x]",
-                "Axis #0:\n"
-                + "{[Time].[Weekly].[x]}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Store Sales]}\n"
-                + "Axis #2:\n"
-                + "{[Product].[Food].[Produce]}\n"
-                + "{[Product].[Food].[Snack Foods]}\n"
-                + "Row #0: 82,248.42\n"
-                + "Row #1: 67,609.82\n");
-
-
+            "with member [Time.Weekly].x as Aggregate([Time.Weekly].[1997].Children) "
+            + "set products as "
+            + "'TopCount([Product].[Product Department].Members, 2, "
+            + "[Measures].[Store Sales])' "
+            + "select NON EMPTY {[Measures].[Store Sales]} ON COLUMNS, "
+            + "NON EMPTY [products] ON ROWS "
+            + " from [Sales] where [Time.Weekly].[x]",
+            "Axis #0:\n"
+            + "{[Time].[Weekly].[x]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Food].[Produce]}\n"
+            + "{[Product].[Food].[Snack Foods]}\n"
+            + "Row #0: 82,248.42\n"
+            + "Row #1: 67,609.82\n");
     }
 
-    
+
 
     /**
      * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-900">

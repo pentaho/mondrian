@@ -1010,8 +1010,9 @@ public class RolapEvaluator implements Evaluator {
     }
 
     public final SetEvaluator getSetEvaluator(
-            Exp exp,
-            boolean create) {
+        Exp exp,
+        boolean create)
+    {
         return root.evaluateSet(exp, create);
     }
 

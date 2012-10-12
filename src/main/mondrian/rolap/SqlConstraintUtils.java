@@ -262,15 +262,14 @@ public class SqlConstraintUtils {
         Map<RelationOrJoin, Set<RolapMember>> mapOfSlicerMembers =
             new HashMap<RelationOrJoin, Set<RolapMember>>();
 
-        Member[] expandedSlicers = 
+        Member[] expandedSlicers =
             expandSupportedCalculatedMembers(
                 ((RolapEvaluator)evaluator).getSlicerMembers(),
                 evaluator.push());
-      
+
         if (hasMultiPositionSlicer(expandedSlicers)) {
             for (Member slicerMember : expandedSlicers) {
-                if(slicerMember.isMeasure())
-                {
+                if (slicerMember.isMeasure()) {
                     continue;
                 }
                 RelationOrJoin rel =
@@ -294,23 +293,12 @@ public class SqlConstraintUtils {
      */
     public static boolean hasMultiPositionSlicer(Evaluator evaluator) {
         if (evaluator instanceof RolapEvaluator) {
-            
-            // Get 
-            Member[] members = expandSupportedCalculatedMembers( ((RolapEvaluator) evaluator).getSlicerMembers() , evaluator);
+            // Get
+            Member[] members =
+                expandSupportedCalculatedMembers(
+                    ((RolapEvaluator) evaluator).getSlicerMembers(),
+                    evaluator);
             return hasMultiPositionSlicer(members);
-//            Map<Hierarchy, Member> mapOfSlicerMembers =
-//                new HashMap<Hierarchy, Member>();
-//            
-//            for (
-//                Member slicerMember: members )
-//            {
-//                Hierarchy hierarchy = slicerMember.getHierarchy();
-//                if (mapOfSlicerMembers.containsKey(hierarchy)) {
-//                    // We have found a second member in this hierarchy
-//                    return true;
-//                }
-//                mapOfSlicerMembers.put(hierarchy, slicerMember);
-//            }
         }
         return false;
     }
@@ -319,7 +307,7 @@ public class SqlConstraintUtils {
         Map<Hierarchy, Member> mapOfSlicerMembers =
             new HashMap<Hierarchy, Member>();
         for (
-            Member slicerMember: slicerMembers )
+            Member slicerMember : slicerMembers)
         {
             Hierarchy hierarchy = slicerMember.getHierarchy();
             if (mapOfSlicerMembers.containsKey(hierarchy)) {
@@ -331,34 +319,38 @@ public class SqlConstraintUtils {
         return false;
     }
 
-    
-    public static Member[] expandSupportedCalculatedMembers(List<Member> listOfMembers, Evaluator evaluator) {
-        
-        return expandSupportedCalculatedMembers(listOfMembers.toArray(new Member[listOfMembers.size()]), evaluator);
-        
+
+    public static Member[] expandSupportedCalculatedMembers(
+        List<Member> listOfMembers,
+        Evaluator evaluator)
+    {
+        return expandSupportedCalculatedMembers(
+            listOfMembers.toArray(
+                new Member[listOfMembers.size()]),
+                evaluator);
     }
 
-    
-    public static Member[] expandSupportedCalculatedMembers(Member[] members, Evaluator evaluator){
-    
+    public static Member[] expandSupportedCalculatedMembers(
+        Member[] members,
+        Evaluator evaluator)
+    {
         ArrayList<Member> listOfMembers = new ArrayList<Member>();
-        
-        for (Member member : members) {
 
-                if (member.isCalculated() && isSupportedCalculatedMember(member)) {
+        for (Member member : members) {
+                if (member.isCalculated()
+                    && isSupportedCalculatedMember(member))
+                {
                     // Extract the list of members
-                    List<Member> evaluatedSet = getSetFromCalculatedMember(evaluator, member);
+                    List<Member> evaluatedSet =
+                            getSetFromCalculatedMember(evaluator, member);
                     listOfMembers.addAll(evaluatedSet);
-                }
-                else{
+                } else {
                     // just add the member
-                    listOfMembers.add(member);                    
+                    listOfMembers.add(member);
                 }
         }
-        
         members = listOfMembers.toArray(new Member[listOfMembers.size()]);
         return members;
-    
     }
 
     /**
@@ -371,7 +363,6 @@ public class SqlConstraintUtils {
      * evaluation
      */
     public static boolean isSupportedCalculatedMember(Member member) {
-
         // Is it a supported function?
         if (member.getExpression() instanceof ResolvedFunCall) {
             ResolvedFunCall fun = (ResolvedFunCall) member.getExpression();
@@ -379,14 +370,14 @@ public class SqlConstraintUtils {
                 // We can only deal with Aggregates
                 return true;
             }
-
         }
-
         return false;
     }
 
-    public static List<Member> getSetFromCalculatedMember(Evaluator evaluator, Member member) {
-
+    public static List<Member> getSetFromCalculatedMember(
+        Evaluator evaluator,
+        Member member)
+    {
         // sanity check - is theis a supported one?
         if (!isSupportedCalculatedMember(member)) {
             return null;
@@ -400,58 +391,47 @@ public class SqlConstraintUtils {
         ResolvedFunCall fun = (ResolvedFunCall) member.getExpression();
         String funName = fun.getFunName();
         if (funName.equalsIgnoreCase("Aggregate")) {
-            
             // Calling the main set evaluator to extend this.
-            
             Exp exp = fun.getArg(0);
-            
-            TupleIterable tupleIterable = evaluator.getSetEvaluator(exp, true).evaluateTupleIterable();
+            TupleIterable tupleIterable =
+                    evaluator.getSetEvaluator(
+                        exp, true).evaluateTupleIterable();
             Iterable<Member> iterable = tupleIterable.slice(0);
 
             ArrayList<Member> list = new ArrayList<Member>();
             for (Iterator<Member> it = iterable.iterator(); it.hasNext();) {
                 Member m = it.next();
                 list.add(m);
-
             }
             return list;
-            
-
         }
-
         return null;
     }
 
     /**
-     * Gets a list of unique ordinal cube members to make sure our 
+     * Gets a list of unique ordinal cube members to make sure our
      * cell request isn't unsatisfiable, following the same logic
      * as RolapEvaluator
      * @param members
      * @return Unique ordinal cube members
      */
-    
-    protected static Member[] getUniqueOrdinalMembers(Member[] members){
 
-        
+    protected static Member[] getUniqueOrdinalMembers(Member[] members) {
         ArrayList<Integer> currentOrdinals = new ArrayList<Integer>();
         ArrayList<Member> uniqueMembers = new ArrayList<Member>();
 
         for (Member member : members) {
-            
             final RolapMemberBase m = (RolapMemberBase) member;
             int ordinal = m.getHierarchyOrdinal();
-            if (!currentOrdinals.contains(ordinal)){
+            if (!currentOrdinals.contains(ordinal)) {
                 uniqueMembers.add(member);
                 currentOrdinals.add(ordinal);
             }
         }
-        
+
         return uniqueMembers.toArray(new Member[uniqueMembers.size()]);
-        
-                
     }
-    
-    
+
     protected static Member[] removeMultiPositionSlicerMembers(
         Member[] members,
         Evaluator evaluator)
@@ -548,26 +528,23 @@ public class SqlConstraintUtils {
             });
     }
 
-    
     public static boolean containsCalculatedMember(Member[] members) {
-        return containsCalculatedMember(members,false);
-     
+        return containsCalculatedMember(members, false);
     }
-    
-    public static boolean containsCalculatedMember(Member[] members, boolean allowExpandableMembers) {
+
+    public static boolean containsCalculatedMember(
+        Member[] members,
+        boolean allowExpandableMembers)
+    {
         for (Member member : members) {
             if (member.isCalculated()) {
-                
-                if(allowExpandableMembers){
-                    if(!isSupportedCalculatedMember(member)){
+                if (allowExpandableMembers) {
+                    if (!isSupportedCalculatedMember(member)) {
                         return true;
                     }
-                }
-                else{
+                } else {
                     return true;
                 }
-                
-                
             }
         }
         return false;

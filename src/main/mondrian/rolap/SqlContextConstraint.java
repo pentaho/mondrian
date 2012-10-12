@@ -98,7 +98,9 @@ public class SqlContextConstraint
         // like aggregates are exceptions
         Member[] members = context.getMembers();
         for (int i = 1; i < members.length; i++) {
-            if (members[i].isCalculated() && !SqlConstraintUtils.isSupportedCalculatedMember(members[i])) {
+            if (members[i].isCalculated()
+                && !SqlConstraintUtils.isSupportedCalculatedMember(members[i]))
+            {
                 return false;
             }
         }
@@ -207,23 +209,23 @@ public class SqlContextConstraint
         cacheKey = new ArrayList<Object>();
         cacheKey.add(getClass());
         cacheKey.add(strict);
-        
+
         List<Member> members = new ArrayList<Member>();
         List<Member> expandedMembers = new ArrayList<Member>();
-        
+
         members.addAll(
             Arrays.asList(
                 SqlConstraintUtils.removeMultiPositionSlicerMembers(
                     evaluator.getMembers(), evaluator)));
 
         // Now we'll need to expand the aggregated members
-          
         expandedMembers.addAll(
             Arrays.asList(
-                SqlConstraintUtils.expandSupportedCalculatedMembers(members, evaluator)));
+                SqlConstraintUtils.expandSupportedCalculatedMembers(
+                    members,
+                    evaluator)));
         cacheKey.add(expandedMembers);
-        
-        
+
         // For virtual cubes, context constraint should be evaluated in the
         // query's context, because the query might reference different base
         // cubes.

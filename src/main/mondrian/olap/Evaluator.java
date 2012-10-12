@@ -342,13 +342,12 @@ public interface Evaluator {
      */
     SetEvaluator getSetEvaluator(Exp exp, boolean create);
 
-    
     /**
      * Returns an evaluator for a named set.
      *
      * @param namedSet Named set
      * @param create Whether to create evaluator if not found
-     * @return Evaluator of named set
+     * @return Evaluator of named set¯
      */
     NamedSetEvaluator getNamedSetEvaluator(NamedSet namedSet, boolean create);
 
@@ -538,8 +537,7 @@ public interface Evaluator {
          */
         Member[] currentTuple();
     }
-    
-    
+
     /**
      * Interface for generically evaluating a set.
      */

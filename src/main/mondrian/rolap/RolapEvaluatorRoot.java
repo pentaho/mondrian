@@ -218,7 +218,7 @@ class RolapEvaluatorRoot {
         throw new UnsupportedOperationException();
     }
 
-    
+
     /**
      * Evaluates a named set represented by an expression.
      *
@@ -229,12 +229,13 @@ class RolapEvaluatorRoot {
      * @param create Whether to create named set evaluator if not found
      */
     protected Evaluator.SetEvaluator evaluateSet(
-            Exp exp,
-            boolean create) {
+        Exp exp,
+        boolean create)
+    {
         throw new UnsupportedOperationException();
     }
 
-    
+
     /**
      * Returns the value of a parameter, evaluating its default expression
      * if necessary.
