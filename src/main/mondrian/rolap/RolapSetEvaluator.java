@@ -9,12 +9,13 @@
  */
 package mondrian.rolap;
 
+import mondrian.calc.*;
+import mondrian.olap.*;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
-import mondrian.calc.*;
-import mondrian.olap.*;
 
 /**
  * Evaluation context to be able to expand a generic expression that returns a
@@ -24,7 +25,8 @@ import mondrian.olap.*;
  * @since September 14, 2012
  */
 class RolapSetEvaluator
-        implements Evaluator.SetEvaluator, TupleList.PositionCallback {
+        implements Evaluator.SetEvaluator, TupleList.PositionCallback
+    {
 
     private final RolapResult.RolapResultEvaluatorRoot rrer;
     private final Exp exp;
@@ -43,7 +45,7 @@ class RolapSetEvaluator
      * &lt;Named Set&gt;.CurrentOrdinal and &lt;Named Set&gt;.Current functions.
      */
     private int currentOrdinal;
-    
+
     /**
      * Creates a RolapNamedSetEvaluator.
      *
@@ -51,8 +53,9 @@ class RolapSetEvaluator
      * @param exp Expression
      */
     public RolapSetEvaluator(
-            RolapResult.RolapResultEvaluatorRoot rrer,
-            Exp exp) {
+        RolapResult.RolapResultEvaluatorRoot rrer,
+        Exp exp)
+    {
         this.rrer = rrer;
         this.exp = exp;
     }
@@ -70,25 +73,25 @@ class RolapSetEvaluator
         if (list != null) {
             if (list == DUMMY_LIST) {
                 throw rrer.result.slicerEvaluator.newEvalException(
-                        null,
-                        "Illegal attempt to reference value of a set '"
-                        + getExpression() + "' while evaluating itself");
+                    null,
+                    "Illegal attempt to reference value of a set '"
+                    + getExpression() + "' while evaluating itself");
             }
             return;
         }
         if (RolapResult.LOGGER.isDebugEnabled()) {
             RolapResult.LOGGER.debug(
-                    "Set " + exp + ": starting evaluation");
+                "Set " + exp + ": starting evaluation");
         }
         list = DUMMY_LIST; // recursion detection
         try {
             final Calc calc =
-                    rrer.getCompiled(
+                rrer.getCompiled(
                     exp, false, ResultStyle.ITERABLE);
             TupleIterable iterable =
                     (TupleIterable) rrer.result.evaluateExp(
-                    calc,
-                    rrer.result.slicerEvaluator);
+                        calc,
+                        rrer.result.slicerEvaluator);
 
             // Axes can be in two forms: list or iterable. If iterable, we
             // need to materialize it, to ensure that all cell values are in
@@ -159,13 +162,10 @@ class RolapSetEvaluator
     }
 
     private String getExpression() {
-
         final Writer result = new StringWriter();
         final PrintWriter printWriter = new PrintWriter(result);
         exp.unparse(printWriter);
         return result.toString();
-
-
     }
 
     public int currentOrdinal() {
@@ -186,4 +186,4 @@ class RolapSetEvaluator
     }
 }
 
-// End RolapNamedSetEvaluator.java
+// End RolapSetEvaluator.java

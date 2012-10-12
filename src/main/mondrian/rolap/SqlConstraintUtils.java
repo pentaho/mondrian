@@ -19,9 +19,10 @@ import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.Dialect;
 import mondrian.util.FilteredIterableList;
 
-import java.util.*;
 import mondrian.calc.TupleIterable;
 import mondrian.mdx.ResolvedFunCall;
+
+import java.util.*;
 import java.util.Map.Entry;
 
 
@@ -56,21 +57,22 @@ public class SqlConstraintUtils {
     {
         // Add constraint using the current evaluator context
         Member[] members = evaluator.getNonAllMembers();
-        
+
         // Expand the ones that can be expanded. For this particular code line,
         // since this will be used to build a cell request, we need to stay with
-        // only one member per ordinal in cube. This follows the same line of though
-        // as the setContext in RolapEvaluator
-        
+        // only one member per ordinal in cube.
+        // This follows the same line of thought as the setContext in
+        // RolapEvaluator.
+
         members = expandSupportedCalculatedMembers(members, evaluator);
         members = getUniqueOrdinalMembers(members);
-        
+
         RolapCube baseCube = null;
         if (evaluator instanceof RolapEvaluator) {
             baseCube = ((RolapEvaluator)evaluator).getCube();
         }
 
-        if (restrictMemberTypes ) {
+        if (restrictMemberTypes) {
             if (containsCalculatedMember(members, true)) {
                 throw Util.newInternal(
                     "can not restrict SQL to calculated Members");
@@ -80,43 +82,10 @@ public class SqlConstraintUtils {
             members = removeMultiPositionSlicerMembers(members, evaluator);
         }
 
-        
-//        Map<RelationOrJoin, Set<RolapMember>> mapOfSlicerMembers =
-//                new HashMap<RelationOrJoin, Set<RolapMember>>();
-//
-//        Member[] expandedSlicers = 
-//            expandSupportedCalculatedMembers(
-//                ((RolapEvaluator)evaluator).getSlicerMembers(), evaluator.push());
-//
-//        if (hasMultiPositionSlicer(expandedSlicers)) {
-//
-////            Member[] slicerMembers = expandSupportedCalculatedMembers(
-////                    ((RolapEvaluator)evaluator).getSlicerMembers(), evaluator);
-//
-//            for (Member slicerMember : expandedSlicers) {
-//
-//                if(slicerMember.isMeasure())
-//                {
-//                    continue;
-//                }
-//                RelationOrJoin rel =
-//                        ((RolapCubeHierarchy)slicerMember.getHierarchy())
-//                        .getRelation();
-//                if (!mapOfSlicerMembers.containsKey(rel)) {
-//                    mapOfSlicerMembers.put(rel, new HashSet<RolapMember>());
-//                }
-//                mapOfSlicerMembers.get(rel).add((RolapMember)slicerMember);
-//            }
-//        }
-
-        // Now, remove calc members
-        // members = removeCalculatedAndDefaultMembers(members);
-        
-        
         final CellRequest request =
             RolapAggregationManager.makeRequest(members);
         if (request == null) {
-            if (restrictMemberTypes) { 
+            if (restrictMemberTypes) {
                 throw Util.newInternal("CellRequest is null - why?");
             }
             // One or more of the members was null or calculated, so the
@@ -287,21 +256,19 @@ public class SqlConstraintUtils {
         }
     }
 
-    public static Map<RelationOrJoin, Set<RolapMember>> getSlicerMemberMap(Evaluator evaluator) {
+    public static Map<RelationOrJoin, Set<RolapMember>> getSlicerMemberMap(
+        Evaluator evaluator)
+        {
         Map<RelationOrJoin, Set<RolapMember>> mapOfSlicerMembers =
             new HashMap<RelationOrJoin, Set<RolapMember>>();
 
         Member[] expandedSlicers = 
             expandSupportedCalculatedMembers(
-                ((RolapEvaluator)evaluator).getSlicerMembers(), evaluator.push());
+                ((RolapEvaluator)evaluator).getSlicerMembers(),
+                evaluator.push());
       
         if (hasMultiPositionSlicer(expandedSlicers)) {
-      
-      //      Member[] slicerMembers = expandSupportedCalculatedMembers(
-      //              ((RolapEvaluator)evaluator).getSlicerMembers(), evaluator);
-      
             for (Member slicerMember : expandedSlicers) {
-      
                 if(slicerMember.isMeasure())
                 {
                     continue;
