@@ -219,21 +219,14 @@ public class SqlConstraintUtils {
                     }
 
                     if (slicerMembers.size() > 0) {
-                        int levelIndex =
-                            slicerMembers.get(0).getHierarchy()
-                                .getLevels().length;
-                        RolapCubeLevel levelForWhere =
-                            (RolapCubeLevel) slicerMembers
-                                .get(0).getHierarchy()
-                                .getLevels()[levelIndex - 1];
                         final String where =
-                                generateMultiValueInExpr(
-                                    sqlQuery, baseCube,
-                                    aggStar, slicerMembers,
-                                    levelForWhere,
-                                    restrictMemberTypes, null);
+                            generateMultiValueInExpr(
+                                sqlQuery, baseCube,
+                                aggStar, slicerMembers,
+                                (RolapCubeLevel) affectedLevel,
+                                restrictMemberTypes, null);
                         whereClausesForRoleConstraints.put(
-                            levelForWhere, where);
+                            (RolapCubeLevel) affectedLevel, where);
                     }
                 }
             }
