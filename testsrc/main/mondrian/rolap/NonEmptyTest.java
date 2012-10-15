@@ -4350,7 +4350,7 @@ public class NonEmptyTest extends BatchTestCase {
                 + "order by\n"
                 + "    \"agg_c_14_sales_fact_1997\".\"the_year\" ASC NULLS LAST,\n"
                 + "    \"promotion\".\"promotion_name\" ASC NULLS LAST"
-                :"select\n"
+                : "select\n"
                 + "    \"time_by_day\".\"the_year\" as \"c0\",\n"
                 + "    \"promotion\".\"promotion_name\" as \"c1\"\n"
                 + "from\n"
