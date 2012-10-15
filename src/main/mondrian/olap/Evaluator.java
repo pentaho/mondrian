@@ -347,7 +347,7 @@ public interface Evaluator {
      *
      * @param namedSet Named set
      * @param create Whether to create evaluator if not found
-     * @return Evaluator of named set¯
+     * @return Evaluator of named set
      */
     NamedSetEvaluator getNamedSetEvaluator(NamedSet namedSet, boolean create);
 
