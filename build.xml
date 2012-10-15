@@ -1333,7 +1333,7 @@ diagrams and hyperlinks to source code">
   <target name="checkCodeFormatting">
     <!-- Only runs on unix currently, because it's a shell script.
          On Windows/cygwin, you can run bin/checkFile.sh manually. -->
-    <exec osfamily="unix" executable="${basedir}/bin/checkFile.sh">
+    <exec osfamily="unix" executable="${basedir}/bin/checkFile.sh" failonerror="true">
         <arg line="--under ."/>
     </exec>
   </target>

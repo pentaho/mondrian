@@ -94,11 +94,10 @@ public class MockServletContext implements ServletContext {
     }
 
     /**
-     *  Returns a URL to the resource that is mapped to a specified path.
-     *
+     * Returns a URL to the resource that is mapped to a specified path.
      */
     public URL getResource(String name) throws MalformedURLException {
-        if(!resources.containsKey(name)) {
+        if (!resources.containsKey(name)) {
             addResource(name, new URL("file://" + name));
         }
         return resources.get(name);
