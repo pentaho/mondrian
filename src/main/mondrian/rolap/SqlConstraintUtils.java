@@ -157,7 +157,6 @@ public class SqlConstraintUtils {
                             slicerMembers.remove(allMember);
                         }
 
-                        //
                         if (slicerMembers.size() > 0) {
                             int levelIndex = slicerMembers.get(0)
                                     .getHierarchy()
