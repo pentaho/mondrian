@@ -945,7 +945,7 @@ public class RolapHierarchy extends HierarchyBase {
      * the country level, we have to constrain at the city level, not state,
      * or else all the values of all cities in the state will be returned.
      */
-    private List<Member> getLowestMembersForAccess(
+    List<Member> getLowestMembersForAccess(
         Evaluator evaluator,
         HierarchyAccess hAccess,
         Map<Member, Access> membersWithAccess)
@@ -1323,15 +1323,18 @@ public class RolapHierarchy extends HierarchyBase {
     public static class LimitedRollupMember extends RolapCubeMember {
         public final RolapMember member;
         private final Exp exp;
+        final HierarchyAccess hierarchyAccess;
 
         LimitedRollupMember(
             RolapCubeMember member,
-            Exp exp)
+            Exp exp,
+            HierarchyAccess hierarchyAccess)
         {
             super(
                 member.getParentMember(),
                 member.getRolapMember(),
                 member.getLevel());
+            this.hierarchyAccess = hierarchyAccess;
             assert !(member instanceof LimitedRollupMember);
             this.member = member;
             this.exp = exp;
@@ -1426,7 +1429,9 @@ public class RolapHierarchy extends HierarchyBase {
                 return new LimitedRollupMember(
                     (RolapCubeMember)
                         ((MultiCardinalityDefaultMember) member)
-                            .member.getParentMember(), exp);
+                            .member.getParentMember(),
+                    exp,
+                    hierarchyAccess);
             }
             if (member != null
                 && (access == Access.CUSTOM || hierarchyAccess
@@ -1437,7 +1442,10 @@ public class RolapHierarchy extends HierarchyBase {
                 if (member instanceof LimitedRollupMember) {
                     member = ((LimitedRollupMember) member).member;
                 }
-                return new LimitedRollupMember((RolapCubeMember) member, exp);
+                return new LimitedRollupMember(
+                    (RolapCubeMember) member,
+                    exp,
+                    hierarchyAccess);
             } else {
                 // No need to substitute. Member and all of its
                 // descendants are accessible. Total for member

@@ -374,7 +374,9 @@ public class AggregationManager extends RolapAggregationManager {
             // The AggStar has no "distinct count" measures so
             // we can use it without looking any further.
             if (!isDistinct) {
-                rollup[0] = !aggStar.getLevelBitKey().equals(levelBitKey);
+                rollup[0] =
+                    levelBitKey.isEmpty()
+                    || !aggStar.getLevelBitKey().equals(levelBitKey);
                 return aggStar;
             }
 
