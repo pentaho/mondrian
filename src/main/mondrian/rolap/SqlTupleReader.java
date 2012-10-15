@@ -17,6 +17,7 @@ import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.RolapHierarchy.LimitedRollupMember;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.aggmatcher.AggStar;
@@ -30,6 +31,7 @@ import org.apache.log4j.Logger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+
 import javax.sql.DataSource;
 
 /**
@@ -1191,7 +1193,7 @@ public class SqlTupleReader implements TupleReader {
      * Obtains the AggStar instance which corresponds to an aggregate table
      * which can be used to support the member constraint.
      *
-     * @param constraint
+     * @param constraint The tuple constraint to apply.
      * @param evaluator the current evaluator to obtain the cube and members to
      *        be queried  @return AggStar for aggregate table
      * @param baseCube The base cube from which to choose an aggregation star.
@@ -1262,6 +1264,27 @@ public class SqlTupleReader implements TupleReader {
                     ((RolapCubeLevel)level).getBaseStarKeyColumn(baseCube);
                 if (column != null) {
                     levelBitKey.set(column.getBitPosition());
+                }
+            }
+        }
+
+        for (Member member : evaluator.getMembers()) {
+            if (member instanceof LimitedRollupMember) {
+                List<Member> lowestMembers =
+                    ((RolapHierarchy)member.getHierarchy())
+                        .getLowestMembersForAccess(
+                            evaluator,
+                            ((LimitedRollupMember)member).hierarchyAccess,
+                            FunUtil.getNonEmptyMemberChildrenWithDetails(
+                                evaluator,
+                                member));
+                for (Member lowestMember : lowestMembers) {
+                    RolapStar.Column column =
+                        ((RolapCubeLevel)lowestMember.getLevel())
+                            .getBaseStarKeyColumn(baseCube);
+                    if (column != null) {
+                        levelBitKey.set(column.getBitPosition());
+                    }
                 }
             }
         }

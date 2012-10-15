@@ -168,7 +168,7 @@ public class SqlConstraintUtils {
                                         restrictMemberTypes, null);
                             sqlQuery.addWhere(where);
                         } else {
-                            //No extra slicers.... just use the = method
+                            // No extra slicers.... just use the = method
                             final StringBuilder buf = new StringBuilder();
                             sqlQuery.getDialect().quote(
                                 buf, value,
@@ -196,7 +196,7 @@ public class SqlConstraintUtils {
 
         // force Role based Access filtering
         Map<RolapCubeLevel, String> whereClausesForRoleConstraints =
-            new HashMap<RolapCubeLevel, String>();
+            new LinkedHashMap<RolapCubeLevel, String>();
         SchemaReader schemaReader = evaluator.getSchemaReader();
         Member[] mm = evaluator.getMembers();
         for (int mIndex = 0; mIndex < mm.length; mIndex++) {
@@ -210,7 +210,8 @@ public class SqlConstraintUtils {
                     List<RolapMember> slicerMembers =
                         new ArrayList<RolapMember>();
 
-                    List<Member> availableMembers = schemaReader
+                    List<Member> availableMembers =
+                        schemaReader
                             .getLevelMembers(affectedLevel, false);
                     for (Member member : availableMembers) {
                         if (!member.isAll()) {
@@ -379,7 +380,7 @@ public class SqlConstraintUtils {
      * table
      *
      * @param sqlQuery sql query under construction
-     * @param aggStar
+     * @param aggStar The aggStar to use, if any.
      * @param e evaluator corresponding to query
      * @param level level to be added to query
      */
