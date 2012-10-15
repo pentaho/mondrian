@@ -96,7 +96,7 @@
                 conf="default-jdk1.4->default"/>
 
         <!-- Distribution Jars -->
-        <dependency org="hsqldb" name="hsqldb" rev="1.8.0" conf="dist->default"/>
+        <dependency org="hsqldb" name="hsqldb" rev="1.8.0.10" conf="dist->default"/>
 
         <!-- Test Jars -->
         <dependency org="junit" name="junit" rev="3.8.1" conf="test->default"/>
