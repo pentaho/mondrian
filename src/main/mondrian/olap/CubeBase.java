@@ -12,12 +12,6 @@ package mondrian.olap;
 
 import mondrian.resource.MondrianResource;
 
-import org.olap4j.impl.ArrayNamedListImpl;
-import org.olap4j.impl.NamedListImpl;
-import org.olap4j.metadata.*;
-import org.olap4j.type.LevelType;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -194,7 +188,9 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 
     public Level getTimeLevel(org.olap4j.metadata.Level.Type levelType) {
         for (Dimension dimension : getDimensionList()) {
-            if (dimension.getDimensionType() == DimensionType.TimeDimension) {
+            if (dimension.getDimensionType()
+                == org.olap4j.metadata.Dimension.Type.TIME)
+            {
                 for (Hierarchy hierarchy : dimension.getHierarchyList()) {
                     for (Level level : hierarchy.getLevelList()) {
                         if (level.getLevelType() == levelType) {

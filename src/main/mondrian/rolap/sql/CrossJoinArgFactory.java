@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2011 Pentaho and others
+// Copyright (C) 2006-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
@@ -14,8 +14,7 @@ import mondrian.calc.*;
 import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.*;
-import mondrian.olap.type.HierarchyType;
-import mondrian.olap.type.Type;
+import mondrian.olap.type.*;
 import mondrian.rolap.*;
 
 import org.apache.log4j.Logger;
@@ -31,7 +30,8 @@ import java.util.*;
 public class CrossJoinArgFactory {
     protected static final Logger LOGGER =
         Logger.getLogger(CrossJoinArgFactory.class);
-    private boolean restrictMemberTypes;
+
+    private final boolean restrictMemberTypes;
 
     public CrossJoinArgFactory(boolean restrictMemberTypes) {
         this.restrictMemberTypes = restrictMemberTypes;
@@ -245,9 +245,9 @@ public class CrossJoinArgFactory {
         List<CrossJoinArg> argList = new ArrayList<CrossJoinArg>();
         for (List<RolapMember> memberList : memberLists.values()) {
             if (memberList.size() == countNonLiteralMeasures(args)) {
-                //when the memberList and args list have the same length
-                //it means there must have been a constraint on each measure
-                //for this dimension.
+                // When the memberList and args list have the same length,
+                // it means there must have been a constraint on each measure
+                // for this dimension.
                 final CrossJoinArg cjArg =
                     MemberListCrossJoinArg.create(
                         evaluator,
@@ -775,9 +775,9 @@ public class CrossJoinArgFactory {
      * Check whether the predicate is an IN or IS predicate and can be
      * natively evaluated.
      *
-     * @param evaluator
-     * @param predicateCall
-     * @param exclude
+     * @param evaluator Evaluator
+     * @param predicateCall Call to predicate
+     * @param exclude Whether to exclude
      * @return the array of CrossJoinArg containing the predicate.
      */
     private CrossJoinArg[] checkFilterPredicateInIs(
@@ -831,8 +831,7 @@ public class CrossJoinArgFactory {
         Type currentMemberArgType = currentMemberArg.getType();
 
         // Input to CurremntMember should be either Dimension or Hierarchy type.
-        if (!(currentMemberArgType
-            instanceof mondrian.olap.type.DimensionType
+        if (!(currentMemberArgType instanceof DimensionType
             || currentMemberArgType instanceof HierarchyType))
         {
             return null;

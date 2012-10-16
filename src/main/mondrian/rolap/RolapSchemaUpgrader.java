@@ -1097,7 +1097,6 @@ public class RolapSchemaUpgrader {
                 // same set of levels.
                 RolapStar.Column parentColumn = null;
 
-                //RME
                 // If the level name is not null, then we need only register
                 // those columns for that level and above.
                 if (levelName != null) {
@@ -1141,7 +1140,7 @@ public class RolapSchemaUpgrader {
      * Formats a {@link mondrian.olap.Mondrian3Def.RelationOrJoin}, indenting
      * joins for readability.
      *
-     * @param relation
+     * @param relation Relation
      */
     private static String format(Mondrian3Def.RelationOrJoin relation) {
         StringBuilder buf = new StringBuilder();
@@ -1324,8 +1323,8 @@ public class RolapSchemaUpgrader {
      * in the relation there is not a level. In these cases, this method simply
      * return the original relation.
      *
-     * @param relation
-     * @param levels
+     * @param relation Relation
+     * @param levels Levels
      */
     private static Mondrian3Def.RelationOrJoin reorder(
         Mondrian3Def.RelationOrJoin relation,
@@ -1374,8 +1373,8 @@ public class RolapSchemaUpgrader {
      * certain cases where we do not want to (read: can not) do reordering, for
      * instance, when closures are involved.
      *
-     * @param relation
-     * @param map
+     * @param relation Relation
+     * @param map Map
      */
     private static boolean validateNodes(
         Mondrian3Def.RelationOrJoin relation,
@@ -1404,8 +1403,8 @@ public class RolapSchemaUpgrader {
      * lower levels (greater level depth, i.e., Day is lower than Month) to the
      * left of tables with high levels.
      *
-     * @param relation
-     * @param map
+     * @param relation Relaion
+     * @param map Map
      */
     private static int leftToRight(
         Mondrian3Def.RelationOrJoin relation,
@@ -1456,7 +1455,7 @@ public class RolapSchemaUpgrader {
      * Transforms so that all joins have a table as their left child and either
      * a table of child join on the right.
      *
-     * @param relation
+     * @param relation Relation
      */
     private static void topToBottom(Mondrian3Def.RelationOrJoin relation) {
         if (relation instanceof Mondrian3Def.Table) {
@@ -1490,7 +1489,7 @@ public class RolapSchemaUpgrader {
     /**
      * Copies a {@link mondrian.olap.Mondrian3Def.RelationOrJoin}.
      *
-     * @param relation
+     * @param relation Relation
      */
     private static Mondrian3Def.RelationOrJoin copy(
         Mondrian3Def.RelationOrJoin relation)
@@ -1524,8 +1523,8 @@ public class RolapSchemaUpgrader {
      * the tables with the given tableName (or table alias). The matching table
      * only appears once in the relation.
      *
-     * @param relation
-     * @param tableName
+     * @param relation Relation
+     * @param tableName Table name
      */
     private static Mondrian3Def.RelationOrJoin snip(
         Mondrian3Def.RelationOrJoin relation,
@@ -2649,7 +2648,11 @@ public class RolapSchemaUpgrader {
                 new MondrianDef.Hierarchies()).list();
         xmlDimension.caption = xmlLegacyDimension.caption;
         Util.discard(xmlLegacyDimension.highCardinality);
-        xmlDimension.type = xmlLegacyDimension.type;
+        xmlDimension.type =
+            xmlLegacyDimension.type == null
+            || xmlLegacyDimension.type.equalsIgnoreCase("Standard")
+            ? null
+            : xmlLegacyDimension.type;
         Util.discard(xmlLegacyDimension.usagePrefix);
 
         // Create key attribute with first hierarchy. Require that all
@@ -3776,8 +3779,8 @@ public class RolapSchemaUpgrader {
          * Finds a RelNode by table name or, if that fails, by table alias
          * from a map of RelNodes.
          *
-         * @param table
-         * @param map
+         * @param table Table
+         * @param map Map
          */
         private static RelNode lookup(
             Mondrian3Def.Relation table,

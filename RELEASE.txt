@@ -69,7 +69,8 @@ API and MDX language changes from 3.x to 4.0
    behavior was enabled only if the property
    mondrian.olap.SsasCompatibleNaming was set to true.)
  - The following deprecated APIs have been removed:
-  -- TODO
+  -- mondrian.olap.DimensionType
+  -- mondrian.olap.LevelType
  - TODO
 
 Other changes from 3.x to 4.0

@@ -602,17 +602,34 @@ version 3.x schemas.</p>
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
-        <Attribute name="type" required="false">
+        <Attribute name="type" required="false" default="OTHER">
             <Doc>
-                The dimension's type may be one of "Standard" or "Time". A
-                <dfn>time</dfn>
-                dimension will allow the use of the MDX time functions (WTD,
-                YTD, QTD, <i>etc.</i>). Use a <dfn>standard</dfn> dimension
-                if the dimension is not a time-related dimension. The default
-                value is <code>"Standard"</code>.
+                <p>The dimension's type is typically "OTHER" (default) or "TIME".
+                The full set of values is as specified by the XMLA and olap4j
+                specifications. See
+                <a href="http://www.olap4j.org/api/org/olap4j/metadata/Dimension.Type.html">the
+                    Dimension.Type enum in olap4j</a>.</p>
+
+                <p>A <dfn>TIME</dfn> dimension allows the use of the MDX
+                time functions (WTD, YTD, QTD, etc).</p>
             </Doc>
-            <Value>StandardDimension</Value>
-            <Value>TimeDimension</Value>
+            <Value>ACCOUNTS</Value>
+            <Value>BILL_OF_MATERIALS</Value>
+            <Value>CHANNEL</Value>
+            <Value>CURRENCY</Value>
+            <Value>CUSTOMERS</Value>
+            <Value>GEOGRAPHY</Value>
+            <Value>MEASURE</Value>
+            <Value>ORGANIZATION</Value>
+            <Value>OTHER</Value>
+            <Value>PRODUCTS</Value>
+            <Value>PROMOTION</Value>
+            <Value>QUANTITATIVE</Value>
+            <Value>RATES</Value>
+            <Value>SCENARIO</Value>
+            <Value>TIME</Value>
+            <Value>UNKNOWN</Value>
+            <Value>UTILITY</Value>
         </Attribute>
         <Attribute name="table" required="false">
             <Doc>

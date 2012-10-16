@@ -77,7 +77,7 @@ class RolapDimension extends DimensionBase {
         boolean visible,
         String caption,
         String description,
-        DimensionType dimensionType,
+        org.olap4j.metadata.Dimension.Type dimensionType,
         Map<String, Annotation> annotationMap)
     {
         // todo: recognition of a time dimension should be improved

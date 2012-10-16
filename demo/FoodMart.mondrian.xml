@@ -220,7 +220,7 @@
         </Hierarchies>
     </Dimension>
 
-    <Dimension name='Time' table='time_by_day' type='TimeDimension' key='Time Id'>
+    <Dimension name='Time' table='time_by_day' type='TIME' key='Time Id'>
         <Attributes>
             <Attribute name='Year' keyColumn='the_year' levelType='TimeYears'/>
             <Attribute name='Quarter' levelType='TimeQuarters'>

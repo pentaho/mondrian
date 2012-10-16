@@ -50,11 +50,9 @@ public interface Dimension extends OlapElement, Annotated, Named {
     boolean isMeasures();
 
     /**
-     * Returns the type of this dimension
-     * ({@link DimensionType#StandardDimension} or
-     * {@link DimensionType#TimeDimension}
+     * Returns the type of this dimension.
      */
-    DimensionType getDimensionType();
+    org.olap4j.metadata.Dimension.Type getDimensionType();
 
     /**
      * Returns the schema this dimension belongs to.

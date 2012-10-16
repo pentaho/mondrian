@@ -497,15 +497,6 @@ is the XML model for current Mondrian schemas.</p>
                 Util.assertPrecondition(schema != null, "schema != null");
                 return this;
             }
-
-            // Return the dimension's enumerated type.
-            public DimensionType getDimensionType() {
-                if (type == null) {
-                    return null; //DimensionType.StandardDimension;
-                } else {
-                    return DimensionType.valueOf(type);
-                }
-            }
         </Code>
     </Element>
 

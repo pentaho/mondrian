@@ -703,7 +703,8 @@ public class RolapResult extends ResultBase {
             }
             Hierarchy h = em.getHierarchy();
             Dimension d = h.getDimension();
-            if (d.getDimensionType() == DimensionType.TimeDimension) {
+            if (d.getDimensionType() == org.olap4j.metadata.Dimension.Type.TIME)
+            {
                 continue;
             }
             if (!em.isAll()) {

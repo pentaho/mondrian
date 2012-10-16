@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -15,11 +15,12 @@ import mondrian.calc.impl.AbstractListCalc;
 import mondrian.calc.impl.UnaryTupleList;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
-import mondrian.olap.DimensionType;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapHierarchy;
+
+import org.olap4j.metadata.Dimension;
 
 /**
  * Definition of <code>Ytd</code>, <code>Qtd</code>, <code>Mtd</code>,
@@ -82,9 +83,7 @@ class XtdFunDef extends FunDefBase {
             return new SetType(MemberType.forHierarchy(defaultTimeHierarchy));
         }
         final Type type = args[0].getType();
-        if (type.getDimension().getDimensionType()
-            != DimensionType.TimeDimension)
-        {
+        if (type.getDimension().getDimensionType() != Dimension.Type.TIME) {
             throw MondrianResource.instance().TimeArgNeeded.ex(getName());
         }
         return super.getResultType(validator, args);
@@ -106,7 +105,7 @@ class XtdFunDef extends FunDefBase {
 
                 public boolean dependsOn(Hierarchy hierarchy) {
                     return hierarchy.getDimension().getDimensionType()
-                        == mondrian.olap.DimensionType.TimeDimension;
+                        == Dimension.Type.TIME;
                 }
             };
         default:

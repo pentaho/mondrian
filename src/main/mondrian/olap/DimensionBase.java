@@ -32,7 +32,7 @@ public abstract class DimensionBase
     protected final String description;
     protected final NamedList<Hierarchy> hierarchyList =
         new NamedListImpl<Hierarchy>();
-    protected final DimensionType dimensionType;
+    protected final org.olap4j.metadata.Dimension.Type dimensionType;
 
     /**
      * Creates a DimensionBase.
@@ -45,7 +45,7 @@ public abstract class DimensionBase
         boolean visible,
         String caption,
         String description,
-        DimensionType dimensionType)
+        org.olap4j.metadata.Dimension.Type dimensionType)
     {
         this.name = name;
         this.caption = caption;
@@ -82,7 +82,7 @@ public abstract class DimensionBase
         return this;
     }
 
-    public DimensionType getDimensionType() {
+    public org.olap4j.metadata.Dimension.Type getDimensionType() {
         return dimensionType;
     }
 

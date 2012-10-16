@@ -122,7 +122,7 @@ public class RolapCube extends CubeBase {
                 true,
                 measuresCaption,
                 null,
-                DimensionType.MeasuresDimension,
+                org.olap4j.metadata.Dimension.Type.MEASURE,
                 Collections.<String, Annotation>emptyMap());
         RolapHierarchy measuresHierarchy =
             new RolapHierarchy(
@@ -392,7 +392,7 @@ public class RolapCube extends CubeBase {
     public RolapHierarchy getTimeHierarchy(String funName) {
         for (RolapHierarchy hierarchy : hierarchyList) {
             if (hierarchy.getDimension().getDimensionType()
-                == DimensionType.TimeDimension)
+                == org.olap4j.metadata.Dimension.Type.TIME)
             {
                 return hierarchy;
             }

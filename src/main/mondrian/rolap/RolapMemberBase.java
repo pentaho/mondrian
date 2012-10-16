@@ -234,7 +234,7 @@ public class RolapMemberBase
             final Dimension dimension = hierarchy.getDimension();
             final RolapLevel level = getLevel();
             if (dimension.getDimensionType()
-                == DimensionType.MeasuresDimension
+                == org.olap4j.metadata.Dimension.Type.MEASURE
                 && hierarchy.getName().equals(dimension.getName()))
             {
                 // Kludge to ensure that calc members are called

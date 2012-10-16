@@ -12,6 +12,8 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 
+import org.olap4j.metadata.Dimension;
+
 import java.util.*;
 
 import static mondrian.olap.Util.first;
@@ -146,7 +148,7 @@ public class RolapCubeDimension extends RolapDimension {
         rolapDimension.setCaption(caption);
     }
 
-    public DimensionType getDimensionType() {
+    public Dimension.Type getDimensionType() {
         return rolapDimension.getDimensionType();
     }
 

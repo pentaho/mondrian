@@ -14,12 +14,6 @@ import mondrian.calc.*;
 import mondrian.calc.impl.*;
 import mondrian.mdx.*;
 import mondrian.olap.*;
-import mondrian.olap.Dimension;
-import mondrian.olap.DimensionType;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Level;
-import mondrian.olap.Member;
-import mondrian.olap.Property;
 import mondrian.olap.Role.HierarchyAccess;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.*;
@@ -696,7 +690,7 @@ public class RolapHierarchy extends HierarchyBase {
             false,
             null,
             "Closure dimension for parent-child hierarchy " + getName(),
-            DimensionType.StandardDimension,
+            org.olap4j.metadata.Dimension.Type.OTHER,
             Collections.<String, Annotation>emptyMap());
 
         // Create a peer hierarchy.

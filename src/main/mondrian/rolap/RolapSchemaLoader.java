@@ -12,7 +12,6 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.olap.Cube;
 import mondrian.olap.Dimension;
-import mondrian.olap.DimensionType;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Level;
 import mondrian.olap.Member;
@@ -1153,14 +1152,6 @@ public class RolapSchemaLoader {
         return new RolapSchema.PhysSchema(
             schema.getDialect(),
             schema.getInternalConnection());
-    }
-
-    static DimensionType getDimensionType(MondrianDef.Dimension xmlDimension) {
-        if (xmlDimension.type == null) {
-            return null; //DimensionType.StandardDimension;
-        } else {
-            return DimensionType.valueOf(xmlDimension.type);
-        }
     }
 
     /**
@@ -2322,10 +2313,10 @@ public class RolapSchemaLoader {
             dimensionName = xmlDimension.name;
             dimensionSource = null;
         }
-        final DimensionType dimensionType =
+        final org.olap4j.metadata.Dimension.Type dimensionType =
             xmlDimension.type == null
-                ? DimensionType.StandardDimension
-                : DimensionType.valueOf(xmlDimension.type);
+                ? org.olap4j.metadata.Dimension.Type.OTHER
+                : org.olap4j.metadata.Dimension.Type.valueOf(xmlDimension.type);
         final RolapDimension dimension =
             new RolapDimension(
                 schema,
@@ -2675,11 +2666,11 @@ public class RolapSchemaLoader {
     private void validateDimensionType(
         RolapDimension dimension)
     {
-        final DimensionType dimensionType = dimension.getDimensionType();
         for (RolapHierarchy hierarchy : dimension.getHierarchyList()) {
             for (RolapLevel level : hierarchy.getLevelList()) {
                 if (level.getLevelType().isTime()
-                    && dimensionType != DimensionType.TimeDimension)
+                    && dimension.getDimensionType()
+                    != org.olap4j.metadata.Dimension.Type.TIME)
                 {
                     getHandler().error(
                         MondrianResource.instance().TimeLevelInNonTimeHierarchy
@@ -2689,7 +2680,8 @@ public class RolapSchemaLoader {
                 }
                 if (!level.getLevelType().isTime()
                     && !level.isAll()
-                    && dimensionType == DimensionType.TimeDimension)
+                    && dimension.getDimensionType()
+                    == org.olap4j.metadata.Dimension.Type.TIME)
                 {
                     getHandler().error(
                         MondrianResource.instance().NonTimeLevelInTimeHierarchy
@@ -2841,8 +2833,7 @@ public class RolapSchemaLoader {
                 dimension.getName()
                 + "$" + xmlParentAttribute.name
                 + "$Closure";
-            xmlClosureDimension.type =
-                dimension.getDimensionType().name();
+            xmlClosureDimension.type = null;
             xmlClosureDimension.visible = false;
             validator.putXml(dimension, xmlClosureDimension);
 
