@@ -19,6 +19,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.*;
 
+import org.eigenbase.util.property.IntegerProperty;
+
 /**
  * A utility class for {@link RolapConnection}. It specializes in
  * shepherding the creation of RolapResult by running the actual execution
@@ -38,22 +40,7 @@ public class RolapResultShepherd {
      * An executor service used for both the shepherd thread and the
      * Execution objects.
      */
-    private final ExecutorService executor =
-        Util.getExecutorService(
-            MondrianProperties.instance()
-                .RolapConnectionShepherdNbThreads.get(),
-            0, 1,
-            "mondrian.rolap.RolapResultShepherd$executor",
-            new RejectedExecutionHandler() {
-                public void rejectedExecution(
-                    Runnable r,
-                    ThreadPoolExecutor executor)
-                {
-                    throw MondrianResource.instance()
-                        .QueryLimitReached.ex();
-                }
-            });
-
+    private final ExecutorService executor;
     /**
      * List of tasks that should be monitored by the shepherd thread.
      */
@@ -64,6 +51,29 @@ public class RolapResultShepherd {
         Util.newTimer("mondrian.rolap.RolapResultShepherd#timer", true);
 
     public RolapResultShepherd() {
+
+        final IntegerProperty property =
+            MondrianProperties.instance().RolapConnectionShepherdNbThreads;
+        final int maximumPoolSize = property.get();
+        executor =
+            Util.getExecutorService(
+                maximumPoolSize,
+                0, 1,
+                "mondrian.rolap.RolapResultShepherd$executor",
+                new RejectedExecutionHandler() {
+                    public void rejectedExecution(
+                        Runnable r,
+                        ThreadPoolExecutor executor)
+                    {
+                        throw MondrianResource.instance().QueryLimitReached.ex();
+                    }
+                });
+        final Pair<Long, TimeUnit> interval =
+            Util.parseInterval(
+                MondrianProperties.instance()
+                    .RolapConnectionShepherdThreadPollingInterval.get(),
+                TimeUnit.MILLISECONDS);
+        long period = interval.right.toMillis(interval.left);
         timer.scheduleAtFixedRate(
             new TimerTask() {
             public void run() {
@@ -99,10 +109,8 @@ public class RolapResultShepherd {
                 }
             }
         },
-        MondrianProperties.instance()
-            .RolapConnectionShepherdThreadPollingInterval.get(),
-        MondrianProperties.instance()
-            .RolapConnectionShepherdThreadPollingInterval.get());
+        period,
+        period);
     }
 
     /**

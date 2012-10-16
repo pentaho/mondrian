@@ -15,6 +15,7 @@ import mondrian.rolap.*;
 import mondrian.spi.CatalogLocator;
 import mondrian.tui.XmlaSupport;
 import mondrian.util.LockBox;
+import mondrian.util.Pair;
 import mondrian.xmla.DataSourcesConfig;
 
 import org.apache.log4j.Logger;
@@ -59,6 +60,10 @@ public class FileRepository implements Repository {
         this.repositoryContentFinder = repositoryContentFinder;
         this.locator = locator;
         assert repositoryContentFinder != null;
+        final Pair<Long, TimeUnit> interval =
+            Util.parseInterval(
+                MondrianProperties.instance().XmlaSchemaRefreshInterval.get(),
+                TimeUnit.MILLISECONDS);
         scheduledFuture = executorService.scheduleWithFixedDelay(
             new Runnable() {
                 public void run() {
@@ -68,8 +73,8 @@ public class FileRepository implements Repository {
                 }
             },
             0,
-            MondrianProperties.instance().XmlaSchemaRefreshInterval.get(),
-            TimeUnit.MILLISECONDS);
+            interval.left,
+            interval.right);
     }
 
     public List<Map<String, Object>> getDatabases(

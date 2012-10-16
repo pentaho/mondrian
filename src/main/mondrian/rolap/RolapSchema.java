@@ -24,6 +24,7 @@ import mondrian.spi.MemberFormatter;
 import mondrian.spi.PropertyFormatter;
 import mondrian.spi.impl.Scripts;
 import mondrian.util.ByteString;
+import mondrian.util.ExpiringReference;
 
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.log4j.Logger;
@@ -877,12 +878,12 @@ public class RolapSchema implements Schema {
 
         private static Pool pool = new Pool();
 
-        private final Map<String, Reference<RolapSchema>> mapUrlToSchema =
-            new HashMap<String, Reference<RolapSchema>>();
+        private final Map<String, ExpiringReference<RolapSchema>> mapUrlToSchema =
+            new HashMap<String, ExpiringReference<RolapSchema>>();
 
-        private final Map<ByteString, Reference<RolapSchema>>
+        private final Map<ByteString, ExpiringReference<RolapSchema>>
             mapMd5ToSchema =
-            new HashMap<ByteString, Reference<RolapSchema>>();
+                new HashMap<ByteString, ExpiringReference<RolapSchema>>();
 
         private Pool() {
         }
@@ -938,16 +939,10 @@ public class RolapSchema implements Schema {
 
             String dynProcName = connectInfo.get(
                 RolapConnectionProperties.DynamicSchemaProcessor.name());
-            final boolean pinSchema =
-                Boolean.parseBoolean(
-                    connectInfo.get(
-                        RolapConnectionProperties.PinSchema.name(),
-                        "false"));
-            final int pinSchemaTimeout =
-                Integer.parseInt(
-                    connectInfo.get(
-                        RolapConnectionProperties.PinSchemaTimeout.name(),
-                        "30"));
+            final String pinSchemaTimeout =
+                connectInfo.get(
+                    RolapConnectionProperties.PinSchemaTimeout.name(),
+                    "30m");
 
             String catalogStr = connectInfo.get(
                 RolapConnectionProperties.CatalogContent.name());
@@ -1072,8 +1067,8 @@ public class RolapSchema implements Schema {
                         connectInfo,
                         dataSource);
 
-                    Reference<RolapSchema> ref =
-                        createReference(schema, pinSchema, pinSchemaTimeout);
+                    ExpiringReference<RolapSchema> ref =
+                        createReference(schema, pinSchemaTimeout);
                     if (md5Bytes != null) {
                         mapMd5ToSchema.put(md5Bytes, ref);
                     }
@@ -1112,7 +1107,7 @@ public class RolapSchema implements Schema {
 
                     mapUrlToSchema.put(
                         key,
-                        createReference(schema, pinSchema, pinSchemaTimeout));
+                        createReference(schema, pinSchemaTimeout));
 
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug(
@@ -1128,17 +1123,12 @@ public class RolapSchema implements Schema {
             return schema;
         }
 
-        private Reference<RolapSchema> createReference(
+        private ExpiringReference<RolapSchema> createReference(
             RolapSchema schema,
-            boolean pinSchema,
-            int pinSchemaTimeout)
+            String pinSchemaTimeout)
         {
-            if (pinSchema) {
-                return new ExpiringReference<RolapSchema>(
-                    schema, pinSchemaTimeout);
-            } else {
-                return new SoftReference<RolapSchema>(schema);
-            }
+            return new ExpiringReference<RolapSchema>(
+                schema, pinSchemaTimeout);
         }
 
         synchronized void remove(
@@ -1276,69 +1266,6 @@ public class RolapSchema implements Schema {
                     buf.append('.');
                 }
                 buf.append(s);
-            }
-        }
-
-        /**
-         * An expiring reference is a subclass of {@link SoftReference}
-         * which pins the reference in memory until a certain timeout
-         * is reached. After that, the reference is free to be garbage
-         * collected if needed.
-         */
-        private static class ExpiringReference<T> extends SoftReference<T> {
-            private T hardRef;
-            private final int timeout;
-
-            /**
-             * A Timer object to execute what we need to do.
-             */
-            private static final Timer timer =
-                new Timer(
-                    "mondrian.rolap.RolapSchemaPool.ExpiringReference$timer",
-                    true);
-
-            /**
-             * Creates an expiring reference.
-             * @param ref The referent.
-             * @param timeout The timeout to enforce, in minutes.
-             * If timeout is equal or less than 0, this means a hard reference.
-             */
-            public ExpiringReference(T ref, int timeout) {
-                super(ref);
-                this.hardRef = ref;
-                this.timeout = timeout;
-                if (timeout > 0) {
-                    setTimer();
-                }
-            }
-
-            private synchronized void setTimer() {
-                final TimerTask timerTask = new TimerTask() {
-                    public void run() {
-                        ExpiringReference.this.hardRef = null;
-                    }
-                };
-                // Schedule for cleanup.
-                timer.schedule(
-                    timerTask,
-                    this.timeout * 60 * 1000); // Timeout is provided in minutes.
-            }
-
-            public synchronized T get() {
-                final T weakRef = super.get();
-
-                if (weakRef != null && timeout > 0) {
-                    if (hardRef == null) {
-                        // This object is still alive but was cleaned.
-                        // set a new TimerTask.
-                        setTimer();
-                        // Set the reference after the task starts, or else
-                        // any previous tasks might have wiped it.
-                        this.hardRef = weakRef;
-                    }
-                }
-
-                return weakRef;
             }
         }
     }

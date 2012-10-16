@@ -4,23 +4,28 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.xmla.impl;
 
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.server.DynamicContentFinder;
+import mondrian.util.Pair;
 import mondrian.xmla.DataSourcesConfig;
 
 import junit.framework.TestCase;
 
 import org.eigenbase.xom.*;
+import org.eigenbase.xom.Parser;
 
 import org.olap4j.impl.Olap4jUtil;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Unit test for DynamicDatasourceXmlaServlet
@@ -290,9 +295,13 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
         out.close();
 
         // Wait for it to auto-reload.
+        final Pair<Long, TimeUnit> interval =
+            Util.parseInterval(
+                MondrianProperties.instance()
+                    .XmlaSchemaRefreshInterval.get(),
+                TimeUnit.MILLISECONDS);
         Thread.sleep(
-            MondrianProperties.instance().XmlaSchemaRefreshInterval.get()
-            + 1000);
+            interval.right.toMillis(interval.left));
 
         assertTrue(
             finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_0_NAME));
