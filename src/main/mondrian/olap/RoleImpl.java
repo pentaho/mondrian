@@ -191,7 +191,7 @@ public class RoleImpl implements Role {
         if (access == Access.CUSTOM) {
             // For legacy reasons, if there are no accessible hierarchies
             // and the dimension has an access level of custom, we deny.
-            // TODO Remove for Mondrian 4.0
+            Util.deprecated("TODO Remove for Mondrian 4.0");
             boolean canAccess = false;
             for (Hierarchy hierarchy : dimension.getHierarchyList()) {
                 final HierarchyAccessImpl hierarchyAccess =

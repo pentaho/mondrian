@@ -7029,6 +7029,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
     // TODO: test Attribute.hierarchyDefaultMember
 
+    // TODO: test Link.foreignKeyColumn
 }
 
 // End SchemaTest.java

@@ -601,71 +601,48 @@ public class RolapSchemaLoader {
         // Second pass, resolve links.
         List<UnresolvedLink> unresolvedLinkList =
             new ArrayList<UnresolvedLink>();
-        for (MondrianDef.Link link
+        for (MondrianDef.Link xmlLink
             : Util.filter(xmlPhysicalSchema.children, MondrianDef.Link.class))
         {
-            List<RolapSchema.PhysColumn> columnList =
-                new ArrayList<RolapSchema.PhysColumn>();
+            final List<RolapSchema.PhysColumn> columnList;
             int errorCount = 0;
             final RolapSchema.PhysRelation sourceTable =
-                physSchema.tablesByName.get(link.source);
-            String keyName = first(link.key, "primary");
+                physSchema.tablesByName.get(xmlLink.source);
+            String keyName = first(xmlLink.key, "primary");
             RolapSchema.PhysKey sourceKey = null;
             if (sourceTable == null) {
                 handler.warning(
-                    "Link references unknown source table '" + link.source
+                    "Link references unknown source table '" + xmlLink.source
                     + "'.",
-                    link,
+                    xmlLink,
                     "source");
                 ++errorCount;
             } else if ((sourceKey = sourceTable.lookupKey(keyName)) == null) {
                 handler.warning(
-                    "Source table '" + link.source
+                    "Source table '" + xmlLink.source
                     + "' of link has no key named '" + keyName + "'.",
-                    link,
+                    xmlLink,
                     "source");
                 ++errorCount;
             }
             final RolapSchema.PhysRelation targetRelation =
-                physSchema.tablesByName.get(link.target);
+                physSchema.tablesByName.get(xmlLink.target);
             if (targetRelation == null) {
                 handler.warning(
                     "Link references unknown target table '"
-                    + link.target + "'.",
-                    link,
+                    + xmlLink.target + "'.",
+                    xmlLink,
                     "target");
                 ++errorCount;
+                columnList = null;
             } else {
-                List<RolapSchema.PhysColumn> targetColumnList =
-                    new ArrayList<RolapSchema.PhysColumn>();
-                for (MondrianDef.Column foreignKeyColumn
-                    : link.foreignKey.array)
-                {
-                    if (foreignKeyColumn.table != null
-                        && !foreignKeyColumn.table.equals(link.target))
-                    {
-                        handler.warning(
-                            "link key column must belong to target table",
-                            foreignKeyColumn,
-                            "table");
-                        ++errorCount;
-                    } else {
-                        final RolapSchema.PhysColumn column =
-                            targetRelation.getColumn(
-                                foreignKeyColumn.name, false);
-                        if (column == null) {
-                            handler.warning(
-                                "column '" + foreignKeyColumn.name
-                                + "' is unknown in link target table '"
-                                + link.target + "'",
-                                foreignKeyColumn,
-                                "column");
-                            ++errorCount;
-                        } else {
-                            columnList.add(column);
-                        }
-                    }
-                }
+                columnList =
+                    createColumnList(
+                        xmlLink,
+                        "foreignKeyColumn",
+                        targetRelation,
+                        xmlLink.foreignKeyColumn,
+                        xmlLink.foreignKey);
             }
             if (errorCount == 0) {
                 unresolvedLinkList.add(
@@ -3243,7 +3220,7 @@ public class RolapSchemaLoader {
     {
         if (columnName != null) {
             if (xmlColumns != null) {
-                // Post an error, and coninue, ignoring xmlKey.
+                // Post an error, and continue, ignoring xmlKey.
                 getHandler().error(
                     "must not specify both "
                     + attributeName

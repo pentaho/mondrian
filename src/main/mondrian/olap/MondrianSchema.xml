@@ -2555,20 +2555,40 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
         </Attribute>
     </Element>
 
-    <Element type="Name" class="Columns,AttributeElement"/>
-    <Element type="OrderBy" class="Columns,AttributeElement"/>
-    <Element type="Caption" class="Columns,AttributeElement"/>
+    <Element type="Name" class="Columns,AttributeElement">
+        <doc>
+            Column that holds the name of an attribute.
+            See also <code>Attribute.nameColumn</code>.
+        </doc>
+    </Element>
+
+    <Element type="OrderBy" class="Columns,AttributeElement">
+        <doc>
+            Column(s) that define the order of members of an attribute.
+            See also <code>Attribute.orderByColumn</code>.
+        </doc>
+    </Element>
+
+    <Element type="Caption" class="Columns,AttributeElement">
+        <doc>
+            Column that holds the caption of an attribute.
+            See also <code>Attribute.captionColumn</code>.
+        </doc>
+    </Element>
 
     <Element type="ForeignKey" class="Columns">
         <Doc>
-            Definition of a foreign key.
+            Column(s) that hold the foreign key from a measure group's
+            fact table to a dimension's table.
+            See also <code>ForeignKeyLink.foreignKeyColumn</code>.
         </Doc>
     </Element>
 
     <Element type="Arguments" class="Columns,MeasureElement">
         <Doc>
             Arguments to a measure. For most measures, the argument is a single
-            Column. See also the column attribute of the Measure element.
+            Column. See also the <code>column</code> attribute of the Measure
+            element.
         </Doc>
     </Element>
 
@@ -3111,6 +3131,15 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
                 assigned to a key which is not explicitly named.
             </Doc>
         </Attribute>
+        <Attribute name="foreignKeyColumn">
+            <Doc>
+                Name of the foreign key column in the referencing table.
+
+                <p>This attribute is a shorthand form if the primary key of the
+                referenced table has only one column. If you use this form, you
+                must not specify the 'ForeignKey' element.</p>
+            </Doc>
+        </Attribute>
         <Object name="foreignKey" type="ForeignKey">
             <Doc>
                 List of foreign key columns.
@@ -3353,10 +3382,10 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
             <Doc>
                 Name of the foreign key column in the fact table.
 
-                <p/>This attribute is a shorthand form if the primary key of the
+                <p>This attribute is a shorthand form if the primary key of the
                 dimension is simple (has only one column), and is the key of the
                 leaf level of the dimension. If you use this form, you must not
-                specify the 'ForeignKey' element.
+                specify the 'ForeignKey' element.</p>
             </Doc>
         </Attribute>
         <Attribute name="attribute" required="false">

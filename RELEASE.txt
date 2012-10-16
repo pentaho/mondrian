@@ -127,6 +127,10 @@ XMLA server has been removed from the Mondrian code base. It is
 now a separate project. See
 https://github.com/julianhyde/olap4j-xmlaserver.
 
+The "high-cardinality dimensions" feature has been removed. There
+are better ways to support dimensions that have large numbers of
+members.
+
 See CHANGES.txt for a list of all source code changes since the
 previous release.
 
