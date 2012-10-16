@@ -57,80 +57,254 @@ or <code>/usr/local/mondrian-<i>x.y.z</i></code> &mdash; will be denoted <code>
 
 <h2>Building the code</h2>
 
-<p>Next, install a build environment. Install the <a href="#JDK">JDK</a>, <a href="#Ant">Ant</a>, <a href="#Tomcat">Tomcat</a>, <a href="#Xalan">Xalan</a>,
-and <a href="#JUnit">JUnit</a>, and set <code>JAVA_HOME</code>, <code>ANT_HOME</code>,
-  <code>TOMCAT_HOME</code>, <code>XALAN_HOME</code>, <code>JUNIT_HOME</code> in
-your environment.</p>
-
-<p>Download the latest <code>jpivot-<i>version</i>.war</code> from
-the <a target="_parent" href="http://sourceforge.net/projects/jpivot">JPivot project at SourceForge</a> and
-save it as <code><i>${project.location}</i>/lib/jpivot.war</code>.</p>
+<h3>Setting up your environment</h3>
+<ul>
+    <li>Download and install a JDK for Java 1.5, 1.6 and 1.7.
+        You can download the releases from
+        <a href="http://www.oracle.com/technetwork/java/javase/archive-139210.html">Oracle</a>
+        <p><i>Mondrian requires
+        all three versions to build correctly.  When Mondrian creates JDBC connections,
+        it creates JDBC version 3 connections with Java 1.5, version 4 connections with
+        Java 1.6 and version 4.1 connections with Java 1.7.  The factory classes
+        that create JDBC connections(FactoryJdbc3Impl, FactoryJdbc4Impl and FactoryJdbc41Impl)
+        need to be compiled with the matching JDK version.</i></p>
+        </li>
+    <li>Download and install Ant version 1.6 or later.  You can download Ant from <a href="http://ant.apache.org/bindownload.cgi">Apache</a></li>
+    <li>Setup environment variables <code>JAVA_HOME_15</code>, <code>JAVA_HOME_16</code>,
+        <code>JAVA_HOME_17</code> and <code>ANT_HOME</code> to point at the
+        locations where you installed them.  Set <code>JAVA_HOME</code> to your Java 1.5 JDK.</li>
+</ul>
 
 <p>Now build the code, as follows:</p>
 
 <blockquote>
-<code>C:\mondrian&gt; <b>ant</b><br/>
-Buildfile: build.xml<br/>
-<br/>
-sniff:<br/>
-<br/>
-prepare:<br/>
-<br/>
-parser:<br/>
-[javacup] Opening files...<br/>
-[javacup] Parsing specification from C:\mondrian\src\main\mondrian\olap\Parser.cup...<br/>
-[javacup] Checking specification...<br/>
-[javacup] Warning: Terminal &quot;UNKNOWN&quot; was declared but never used<br/>
-[javacup] Warning: Non terminal &quot;unsigned_integer&quot; was declared but never used<br/>
-[javacup] Building parse tables...<br/>
-[javacup] Computing non-terminal nullability...<br/>
-[javacup] Computing first sets...<br/>
-[javacup] Building state machine...<br/>
-[javacup] Filling in tables...<br/>
-[javacup] Checking for non-reduced productions...<br/>
-[javacup] Writing parser...<br/>
-[javacup] Closing files...<br/>
-[javacup] ------- CUP v0.10k Parser Generation Summary -------<br/>
-[javacup] 0 errors and 2 warnings<br/>
-[javacup] 47 terminals, 49 non-terminals, and 100 productions declared,<br/>
-[javacup] producing 153 unique parse states.<br/>
-[javacup] 2 terminals declared but not used.<br/>
-[javacup] 0 non-terminals declared but not used.<br/>
-[javacup] 0 productions never reduced.<br/>
-[javacup] 0 conflicts detected (0 expected).<br/>
-[javacup] Code written to &quot;Parser.java&quot;, and &quot;ParserSym.java&quot;.<br/>
-[javacup] ---------------------------------------------------- (v0.10k)<br/>
-<br/>
-generate.resources:<br/>
-[javac] Compiling 2 source files to D:\open\mondrian\classes<br/>
-[resgen] Generating D:\open\mondrian\src\main\mondrian\olap\MondrianResource.java<br/>
-[resgen] Generating D:\open\mondrian\src\main\mondrian\olap\MondrianResource.properties<br/>
-[resgen] Generating D:\open\mondrian\src\main\mondrian\olap\MondrianResource_en_US.java<br/>
-[resgen] Generating D:\open\mondrian\src\main\mondrian\olap\MondrianResource_en_US.properties<br/>
-[resgen] Generating D:\open\mondrian\src\main\mondrian\olap\MondrianResource_de_DE.java<br/>
-[resgen] Generating D:\open\mondrian\src\main\mondrian\olap\MondrianResource_de_DE.properties<br/>
-<br/>
-def:<br/>
-[xomgen] Writing src\main\mondrian\olap\mondrian.dtd<br/>
-[xomgen] Writing src\main\mondrian\olap\MondrianDef.java<br/>
-[xomgen] Done<br/>
-[copy] Copying 1 file to D:\open\mondrian\lib<br/>
-<br/>
-compile.java:<br/>
-[javac] Compiling 791 source files to D:\open\mondrian\classes<br/>
-[javac] Note: Some input files use or override a deprecated API.<br/>
-[javac] Note: Recompile with -deprecation for details.<br/>
-<br/>
-compile.jsp.maybe:<br/>
-<br/>
-copy.properties:<br/>
-[copy] Copying 4 files to D:\open\mondrian\classes<br/>
-<br/>
-compile:<br/>
-<br/>
-BUILD SUCCESSFUL<br/>
-Total time: 46 seconds</code>
+<pre>
+<code>
+    C:\mondrian> ant
+
+    Buildfile: C:\mondrian\build.xml
+
+    version:
+
+    antcontrib.download-check:
+
+    antcontrib.download:
+
+    install-antcontrib:
+
+    ivy.download-check:
+
+    ivy.download:
+
+    install-ivy:
+    [echo] Installing IVY...
+
+    resolve:
+    [echo] symlink=${symlink}
+    [ivy:resolve] :: Ivy 2.1.0 - 20090925235825 :: http://ant.apache.org/ivy/ ::
+    [ivy:resolve] :: loading settings :: url = file:C:/mondrian/ivysettings.xml
+    [ivy:resolve] :: resolving dependencies :: pentaho#mondrian-workbench;TRUNK-SNAPSHOT
+    [ivy:resolve] 	confs: [default]
+    [ivy:resolve] 	found commons-codec#commons-codec;1.2 in public
+
+    ....more ivy messages
+
+    prepare:
+    [mkdir] Created dir: C:\mondrian\build
+
+    define-tasks:
+
+    parser:
+    [javacup] Opening files...
+    [javacup] Parsing specification from C:\mondrian\src\main\mondrian\olap\Parser.cup...
+    [javacup] Checking specification...
+    [javacup] Warning: Terminal "UNKNOWN" was declared but never used
+    [javacup] Building parse tables...
+    [javacup]   Computing non-terminal nullability...
+    [javacup]   Computing first sets...
+    [javacup]   Building state machine...
+    [javacup]   Filling in tables...
+    [javacup] *** Reduce/Reduce conflict found in state #98
+    [javacup]   between value_expression_primary ::= NULL (*)
+    [javacup]   and     term3 ::= term3 IS NULL (*)
+    [javacup]   under symbols: {EOF, AND, AS, CELL, DIMENSION, ELSE, END, IN, IS, MATCHES, MEMBER, NOT, ON, OR, PROPERTIES, RETURN, SELECT, SET, THEN, WHEN, XOR, COLON, COMMA, EQ, GE, GT, LE, LT, NE, RBRACE, RPAREN}
+    [javacup]   Resolved in favor of the second production.
+    [javacup]
+    [javacup] *** Shift/Reduce conflict found in state #98
+    [javacup]   between value_expression_primary ::= NULL (*)
+    [javacup]   under symbol EOF
+    [javacup]   Resolved in favor of shifting.
+
+    ....more javacup messages
+
+    [javacup]   Checking for non-reduced productions...
+    [javacup] Writing parser...
+    [javacup] Closing files...
+    [javacup] ------- CUP v0.10k Parser Generation Summary -------
+    [javacup]   0 errors and 64 warnings
+    [javacup]   69 terminals, 67 non-terminals, and 147 productions declared,
+    [javacup]   producing 224 unique parse states.
+    [javacup]   1 terminal declared but not used.
+    [javacup]   0 non-terminal declared but not used.
+    [javacup]   0 productions never reduced.
+    [javacup]   63 conflicts detected (63 expected).
+    [javacup]   Code written to "Parser.java", and "ParserSym.java".
+    [javacup] ---------------------------------------------------- (v0.10k)
+    [javacc] Java Compiler Compiler Version 5.0 (Parser Generator)
+    [javacc] (type "javacc" with no arguments for help)
+    [javacc] Reading from file C:\mondrian\src\main\mondrian\parser\MdxParser.jj . . .
+    [javacc] Note: UNICODE_INPUT option is specified. Please make sure you create the parser/lexer using a Reader with the correct character encoding.
+    [javacc] File "TokenMgrError.java" does not exist.  Will create one.
+    [javacc] File "ParseException.java" does not exist.  Will create one.
+    [javacc] File "Token.java" does not exist.  Will create one.
+    [javacc] File "SimpleCharStream.java" does not exist.  Will create one.
+    [javacc] Parser generated successfully.
+
+    generate.resources:
+    [javac] Compiling 7 source files to C:\mondrian\classes
+    [resgen] Generating C:\mondrian\src\main\mondrian\resource\MondrianResource.java
+    [resgen] Generating C:\mondrian\classes\mondrian\resource\MondrianResource.properties
+    [resgen] Generating C:\mondrian\src\main\mondrian\resource\MondrianResource_en_US.java
+    [resgen] Generating C:\mondrian\classes\mondrian\resource\MondrianResource_en_US.properties
+    [resgen] Generating C:\mondrian\src\main\mondrian\resource\MondrianResource_de_DE.java
+    [resgen] Generating C:\mondrian\classes\mondrian\resource\MondrianResource_de_DE.properties
+    [resgen] Generating C:\mondrian\src\main\mondrian\resource\MondrianResource_de.java
+    [resgen] Generating C:\mondrian\classes\mondrian\resource\MondrianResource_de.properties
+    [resgen] Generating C:\mondrian\src\main\mondrian\resource\MondrianResource_es_ES.java
+    [resgen] Generating C:\mondrian\classes\mondrian\resource\MondrianResource_es_ES.properties
+
+    generate.properties:
+    [javac] Compiling 1 source file to C:\mondrian\classes
+    [java] Generating src\main\mondrian\olap\MondrianProperties.java
+    [java] Generating doc\properties.html
+    [java] Generating mondrian.properties.template
+
+    def:
+    [xomgen] Writing C:\mondrian\src\main\mondrian\olap\mondrian.dtd
+    [xomgen] Writing C:\mondrian\src\main\mondrian\olap\MondrianDef.java
+    [xomgen] Done
+    [copy] Copying 1 file to C:\mondrian\lib
+    [xomgen] Writing C:\mondrian\src\main\mondrian\gui\mondrian_SW.dtd
+    [xomgen] Writing C:\mondrian\src\main\mondrian\gui\MondrianGuiDef.java
+    [xomgen] Done
+    [copy] Copying 1 file to C:\mondrian\lib
+    [xomgen] Writing C:\mondrian\src\main\mondrian\xmla\datasourcesconfig.dtd
+    [xomgen] Writing C:\mondrian\src\main\mondrian\xmla\DataSourcesConfig.java
+    [xomgen] Done
+    [copy] Copying 1 file to C:\mondrian\lib
+
+    compileJdk15:
+    [exec] Using ANT_HOME: C:/Java/apache-ant-1.8.4
+    [exec] Using JAVA_HOME: C:/Java/jdk1.5.0_22
+    [exec] Using JAVACMD: C:/Java/jdk1.5.0_22\bin\java.exe
+    [exec] Using Ant arguments: -Drequested.java.version=jdk1.5 compile.java
+    [exec] Buildfile: C:\mondrian\build.xml
+    [exec]
+    [exec] apologise:
+    [exec]
+    [exec] compile.java:
+    [exec]      [echo] Compiling on JVM Version: 1.5.0_22-b03
+    [exec]     [javac] Compiling 722 source files to C:\mondrian\classes
+    [exec]     [javac] Note: Some input files use or override a deprecated API.
+    [exec]     [javac] Note: Recompile with -Xlint:deprecation for details.
+    [exec]     [javac] Note: Some input files use unchecked or unsafe operations.
+    [exec]     [javac] Note: Recompile with -Xlint:unchecked for details.
+    [exec]      [copy] Copying 1 file to C:\mondrian\classes
+    [exec]
+    [exec] BUILD SUCCESSFUL
+    [exec] Total time: 9 seconds
+
+    compileJdk16:
+    [exec] Using ANT_HOME: C:/Java/apache-ant-1.8.4
+    [exec] Using JAVA_HOME: c:/Java/jdk1.6.0_35
+    [exec] Using JAVACMD: c:/Java/jdk1.6.0_35\bin\java.exe
+    [exec] Using Ant arguments: -Drequested.java.version=jdk1.6 compile.java
+    [exec] Buildfile: C:\mondrian\build.xml
+    [exec]
+    [exec] apologise:
+    [exec]
+    [exec] compile.java:
+    [exec]      [echo] Compiling on JVM Version: 1.6.0_35-b10
+    [exec]     [javac] Compiling 3 source files to C:\mondrian\classes
+    [exec]     [javac] Note: C:\mondrian\src\main\mondrian\util\UtilCompatibleJdk16.java uses unchecked or unsafe operations.
+    [exec]     [javac] Note: Recompile with -Xlint:unchecked for details.
+    [exec]
+    [exec] BUILD SUCCESSFUL
+    [exec] Total time: 2 seconds
+
+    compileJdk17:
+    [exec] Using ANT_HOME: C:/Java/apache-ant-1.8.4
+    [exec] Using JAVA_HOME: c:/Java/jdk1.7.0_07
+    [exec] Using JAVACMD: c:/Java/jdk1.7.0_07\bin\java.exe
+    [exec] Using Ant arguments: -Drequested.java.version=jdk1.7 compile.java
+    [exec] Buildfile: C:\mondrian\build.xml
+    [exec]
+    [exec] apologise:
+    [exec]
+    [exec] compile.java:
+    [exec]      [echo] Compiling on JVM Version: 1.7.0_07-b11
+    [exec]     [javac] Compiling 1 source file to C:\mondrian\classes
+    [exec]
+    [exec] BUILD SUCCESSFUL
+    [exec] Total time: 1 second
+
+    compile:
+
+    info:
+    [echo] ==============================================================
+    [echo] | Mondrian configuration info                                |
+    [echo] ==============================================================
+    [echo] project.location             = C:\mondrian
+    [echo] jdk.home                     = C:/Java/jdk1.5.0_22
+    [echo] log4j.configuration          = log4j.properties
+    [echo] mondrian.foodmart.catalogURL = file:C:\mondrian/demo/FoodMart.xml
+    [echo] mondrian.foodmart.jdbcURL    = jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart
+    [echo] mondrian.jdbcDrivers         = com.mysql.jdbc.Driver
+    [echo] driver.classpath (additions) = C:/Java/jdbc/mysql-connector-java-5.1.22-bin.jar
+    [echo] ==============================================================
+
+    compile.tests:
+    [echo] Test Classpath: C:\mondrian\lib\ant-launcher.jar
+    [echo]  C:\mondrian\lib\ant.jar
+
+    ...more classpath messages
+
+    [javac] Compiling 174 source files to C:\mondrian\testclasses
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] Note: Some input files use unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked for details.
+
+    check-FoodMartCreateData-uptodate:
+
+    unzip-FoodMartCreateData:
+    [unzip] Expanding: C:\mondrian\demo\FoodMartCreateData.zip into C:\mondrian\demo
+
+    check-FoodMartAccessDB-uptodate:
+
+    unzip-FoodMartAccessDB:
+    [unzip] Expanding: C:\mondrian\demo\access\MondrianFoodMart-Access.zip into C:\mondrian\demo\access
+
+    check-FoodMartDerbyDB-uptodate:
+
+    unzip-FoodMartDerbyDB:
+    [unzip] Expanding: C:\mondrian\demo\derby\derby-foodmart.zip into C:\mondrian\demo\derby
+
+    unzip-databases:
+
+    all:
+
+    BUILD SUCCESSFUL
+    Total time: 32 seconds
+</code>
+</pre>
 </blockquote>
+<p>Pay close attention to the Ant targets named compileJdk1.5, compileJdk1.6
+    and compileJdk1.7, and ensure that each JVM compilation phase has compiled
+    the files it needed to. The JDK 1.5 should compile about 700+ files. The JDK
+    1.6 must compile the JDBC 4.0 classes (3 files) and JDK 1.7 should compile
+    the JDBC 4.1 driver (1 file). In each compileJdk1.x target, the first target
+    is called "apologise:", and must produce no output.</p>
 
 <h2>Installing the database</h2>
 
@@ -440,14 +614,9 @@ $ git merge upstream/[branch]</code></pre>
     to be merged into the Pentaho Mondrian repository.</p>
 <ol>
     <li><b>Make sure your change adheres to the <a href="#Coding_guidelines">
-        coding guidelines</a></b>.  To
-        verify that your contribution conforms to those standards, you can use
-        the <a href="#The_checkFile_utility">checkFile</a> utility. From the project&apos;s root folder you must run
-        and fix all the problems reported by the following command:
-        <pre><code>$ ./bin/checkFile.sh --under [folder where you made some changes, probably "./src"]</code></pre>
-
-        <p>You can use the --opened flag to check only files that are staged for commit.</p>
-        <pre><code>$ ./bin/checkFile.sh --opened</code></pre></li>
+        coding guidelines</a></b>.  To verify that your contribution conforms to
+        those standards, you can use the
+        <a href="#The_checkFile_utility">checkFile</a> utility.
     <li><b>Write a unit test for your change</b>. (Or unit tests: the number of
         unit tests you write should be appropriate for the scale of your change.)
         The test should fail before you make the change, and succeed after it. We
@@ -574,45 +743,6 @@ does.</li></ul></p><p>Remember that the purpose of these queries is to populate 
 	&rarr; <code>123,456</code></blockquote><p>Once the cache has been populated, the query won't be executed
 again. That's why I recommend that you restart the process each time
 you run this in the debugger.</p>
-
-<p>&nbsp;</p>
-
-<h2>Appendix A. Product installation instructions<a name="Appendix_A_Product_installation_instructions">&nbsp;</a></h2><p>These are the products I used to build mondrian. Install all of the products
-marked 'required'.</p><p>In the following, the symbol <code><i>${project.location}</i></code> means the root of your
-source tree.</p><table style="border-collapse: collapse;" border="1" cellpadding="2" cellspacing="0" id="table1">
-  <tbody>
-    <tr>
-      <th>Product</th><th>Required?</th><th>Version</th><th>Comment</th></tr><tr>
-      <td>JDK<a name="JDK">&nbsp;</a></td><td>Yes</td><td>1.5 or later (1.4
-		support available via retroweaver)</td><td>Available from <a href="http://developer.java.sun.com/" target="_blank">http://developer.java.sun.com/</a>.
-          I downloaded <code>jdk-1_5_0_08-windows-i586-p.exe</code>,
-          and installed to <code>C:/jdk1.5.0_08</code>, and set <code>JAVA_HOME</code>
-          to the same.</td></tr><tr>
-      <td>Ant<a name="Ant">&nbsp;</a></td><td>Yes</td><td>1.6 or later&nbsp;</td><td>Available from <a
- href="http://ant.apache.org/bindownload.cgi">http://ant.apache.org/bindownload.cgi</a>.
-I downloaded <code>apache-ant-1.6.2-bin.zip</code>, extracted to <code>C:/jakarta-ant-1.6.2</code>,
-and set <code>ANT_HOME</code> to the same.</td></tr><tr>
-      <td>Tomcat<a name="Tomcat">&nbsp;</a></td><td>Yes</td><td>5.0.25 or later</td><td>Available from <a href="http://jakarta.apache.org/tomcat"
- target="_blank"> http://jakarta.apache.org/tomcat</a>. I downloaded <code>
-jakarta-tomcat-5.0.25.zip</code>, extracted to <code>C:/jakarta-tomcat-5.0.25</code>,
-and set <code>TOMCAT_HOME</code> to the same.</td></tr><tr>
-      <td>Xerces<a name="Xerces">&nbsp;</a></td><td>&nbsp;</td>
-      <td>Use the version included with Tomcat</td><td>Xerces is included with Tomcat. If you use a different
-version, compatibility issues may arise.</td></tr><tr>
-      <td>Xalan<a name="Xalan">&nbsp;</a></td><td>Yes</td><td>2.6.0 or later</td><td>Available from <a href="http://xml.apache.org/xalan-j/"
- target="_blank"> http://xml.apache.org/xalan-j/</a>. I downloaded <code>xalan-j_2_6_0-bin.zip</code>,
-extracted to <code>C:/xalan-j_2_6_0</code>, and set <code>XALAN_HOME</code>
-to the same.
-      <p><b>Important</b>: copy <i><code>XALAN_HOME</code></i><code>/bin/xalan.jar</code>
-to <code><i>TOMCAT_HOME</i>/common/endorsed/</code>.</p></td></tr><tr>
-      <td>JUnit<a name="JUnit">&nbsp;</a></td><td>Yes</td><td>3.8.1 or later</td><td>Available from <a href="http://www.junit.org/">http://www.junit.org/</a>.
-I downloaded <code> junit3.8.1.zip</code>, extracted to <code>C:/junit3.8.1</code>,
-and set <code>JUNIT_HOME</code> to the same.</td></tr><tr>
-      <td>JavaCUP (parser generator)</td><td>Included with source distribution, as <code>lib/javacup.jar</code>.&nbsp;</td><td>v0.10g (with modifications)</td><td>Available from <a
- href="http://www.cs.princeton.edu/%7Eappel/modern/java/CUP/"
- target="_blank">http://www.cs.princeton.edu/~appel/modern/java/CUP/</a>.
-I modified version v.0.10g to add an Ant task, and to output error
-messages in a format which Emacs can parse.</td></tr></tbody></table><p>&nbsp;</p>
 
 <hr noshade size="1"/>
 <p>
