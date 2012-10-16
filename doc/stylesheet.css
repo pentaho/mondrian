@@ -108,13 +108,13 @@ ul {
 	margin-left: 16px;
 }
 
-ol { 
+ol, ul {
 	/*list-style-image: url(../images/bullet.png);*/
 	list-style-position: outside;
 	color: #ef8033;
 }
 
-ol li {
+ol li, ul li {
 	color:#808080;
 }
 

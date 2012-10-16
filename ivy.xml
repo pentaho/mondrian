@@ -96,7 +96,7 @@
 
         <!-- Distribution Jar and Wars -->
         <dependency org="org.apache.derby" name="derby" rev="10.2.2.0" conf="dist->default"/>
-        <dependency org="hsqldb" name="hsqldb" rev="1.8.0" conf="dist->default"/>
+        <dependency org="hsqldb" name="hsqldb" rev="1.8.0.10" conf="dist->default"/>
 
         <!-- Note that this is a build of jpivot's CVS trunk on 12-22-2008. -->
         <dependency org="com.tonbeller" name="jpivot" rev="1.8.0-100420" conf="dist->default">

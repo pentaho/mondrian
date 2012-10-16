@@ -13,6 +13,8 @@ package mondrian.rolap;
 import mondrian.mdx.MemberExpr;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.rolap.RestrictedMemberReader.MultiCardinalityDefaultMember;
+import mondrian.rolap.RolapHierarchy.LimitedRollupMember;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
 
@@ -310,7 +312,10 @@ public class SqlContextConstraint
         Member[] members = evaluator.getMembers();
         // members[0] is the Measure, so loop starts at 1
         for (int i = 1; i < members.length; i++) {
-            if (!members[i].isAll()) {
+            if (!members[i].isAll()
+                || members[i] instanceof LimitedRollupMember
+                || members[i] instanceof MultiCardinalityDefaultMember)
+            {
                 return true;
             }
         }
