@@ -20,13 +20,13 @@ rem ============================================================================
 rem ===== You can set some environment variables right here if needed ===========
 
 rem Change the following line to point to your JDK 1.5 home.
-set JAVA_HOME_15=C:\apps\java\jdk1.5.0_22
+rem set JAVA_HOME_15=C:\apps\java\jdk1.5.0_22
 
 rem Change the following line to point to your JDK 1.6 home.
-set JAVA_HOME_16=C:\apps\java\jdk1.6.0_27
+rem set JAVA_HOME_16=C:\apps\java\jdk1.6.0_27
 
 rem Change the following line to point to your JDK 1.7 home.
-set JAVA_HOME_17=C:\apps\java\jdk1.7.0_01
+rem set JAVA_HOME_17=C:\apps\java\jdk1.7.0_01
 
 rem Change the following line to point to your ant home.
 rem set ANT_HOME=C:\apps\ant\1.7.1
