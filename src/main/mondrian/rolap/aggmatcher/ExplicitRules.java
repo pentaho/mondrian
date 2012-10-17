@@ -159,8 +159,6 @@ public class ExplicitRules {
 
         /**
          * Add an exclude rule.
-         *
-         * @param exclude
          */
         public void addExclude(final ExplicitRules.Exclude exclude) {
             if (excludes == Collections.EMPTY_LIST) {
@@ -171,8 +169,6 @@ public class ExplicitRules {
 
         /**
          * Add a name or pattern (table) rule.
-         *
-         * @param tableDef
          */
         public void addTableDef(final ExplicitRules.TableDef tableDef) {
             if (tableDefs == Collections.EMPTY_LIST) {
@@ -330,8 +326,6 @@ public class ExplicitRules {
 
         /**
          * Prints this rule to a PrintWriter.
-         *
-         * @param pw PrintWriter
          * @param prefix Line prefix, for indentation
          */
         void print(final PrintWriter pw, final String prefix);
@@ -375,35 +369,34 @@ public class ExplicitRules {
                 String name = getName();
                 checkAttributeString(msgRecorder, name, "name");
 
-/*
-RME TODO
-                // If name does not match the PatternTableDef pattern,
-                // then issue warning.
-                // Why, because no table with the exclude's name will
-                // ever match the pattern, so the exclude is superfluous.
-                // This is best effort.
-                Pattern pattern =
-                    ExplicitRules.PatternTableDef.this.getPattern();
-                boolean patternIgnoreCase =
-                    ExplicitRules.PatternTableDef.this.isIgnoreCase();
-                boolean ignoreCase = isIgnoreCase();
 
-                // If pattern is ignoreCase and name is any case or pattern
-                // is not ignoreCase and name is not ignoreCase, then simply
-                // see if name matches.
-                // Else pattern in not ignoreCase and name is ignoreCase,
-                // then pattern could be "AB.*" and name "abc".
-                // Here "abc" would name, but not pattern - but who cares
-                if (patternIgnoreCase || ! ignoreCase) {
-                    if (! pattern.matcher(name).matches()) {
-                        msgRecorder.reportWarning(
-                            mres.getSuperfluousExludeName(
-                                        msgRecorder.getContext(),
-                                        name,
-                                        pattern.pattern()));
-                    }
-                }
-*/
+// RME TODO
+//                // If name does not match the PatternTableDef pattern,
+//                // then issue warning.
+//                // Why, because no table with the exclude's name will
+//                // ever match the pattern, so the exclude is superfluous.
+//                // This is best effort.
+//                Pattern pattern =
+//                    ExplicitRules.PatternTableDef.this.getPattern();
+//                boolean patternIgnoreCase =
+//                    ExplicitRules.PatternTableDef.this.isIgnoreCase();
+//                boolean ignoreCase = isIgnoreCase();
+//
+//                // If pattern is ignoreCase and name is any case or pattern
+//                // is not ignoreCase and name is not ignoreCase, then simply
+//                // see if name matches.
+//                // Else pattern in not ignoreCase and name is ignoreCase,
+//                // then pattern could be "AB.*" and name "abc".
+//                // Here "abc" would name, but not pattern - but who cares
+//                if (patternIgnoreCase || ! ignoreCase) {
+//                    if (! pattern.matcher(name).matches()) {
+//                        msgRecorder.reportWarning(
+//                            mres.getSuperfluousExludeName(
+//                                        msgRecorder.getContext(),
+//                                        name,
+//                                        pattern.pattern()));
+//                    }
+//                }
             } finally {
                 msgRecorder.popContextName();
             }
@@ -505,9 +498,6 @@ RME TODO
          * places it in the ExplicitRules.TableDef. This code is used for both
          * the NameTableDef and PatternTableDef subclasses of TableDef (it
          * extracts information common to both).
-         *
-         * @param tableDef
-         * @param aggTable
          */
         private static void add(
             final ExplicitRules.TableDef tableDef,
@@ -922,8 +912,6 @@ RME TODO
 
         /**
          * Set the name of the fact count column.
-         *
-         * @param factCountName
          */
         protected void setFactCountName(final String factCountName) {
             this.factCountName = factCountName;
@@ -961,8 +949,14 @@ RME TODO
                         it.hasNext();)
                     {
                         String ignoreName = it.next();
-                        if (ignoreName.equals(name)) {
-                            return true;
+                        if (isIgnoreCase()) {
+                            if (ignoreName.equalsIgnoreCase(name)) {
+                                return true;
+                            }
+                        } else {
+                            if (ignoreName.equals(name)) {
+                                return true;
+                            }
                         }
                     }
                     return false;
@@ -1290,8 +1284,6 @@ RME TODO
 
         /**
          * Validate name and base class.
-         *
-         * @param msgRecorder
          */
         public void validate(final MessageRecorder msgRecorder) {
             msgRecorder.pushContextName("NameTableDef");
@@ -1379,8 +1371,6 @@ RME TODO
 
         /**
          * Add an Exclude.
-         *
-         * @param exclude
          */
         private void add(final Exclude exclude) {
             if (this.excludes == Collections.EMPTY_LIST) {
@@ -1452,10 +1442,6 @@ RME TODO
     /**
      * Helper method used to determine if an attribute with name attrName has a
      * non-empty value.
-     *
-     * @param msgRecorder
-     * @param attrValue
-     * @param attrName
      */
     private static void checkAttributeString(
         final MessageRecorder msgRecorder,
