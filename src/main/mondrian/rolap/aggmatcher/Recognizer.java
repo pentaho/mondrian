@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -135,8 +135,6 @@ abstract class Recognizer {
 
     /**
      * Create an ignore usage for the aggColumn.
-     *
-     * @param aggColumn
      */
     protected void makeIgnore(final JdbcSchema.Table.Column aggColumn) {
         JdbcSchema.Table.Column.Usage usage =
@@ -213,8 +211,6 @@ abstract class Recognizer {
 
     /**
      * Create a fact count usage for the aggColumn.
-     *
-     * @param aggColumn
      */
     protected void makeFactCount(final JdbcSchema.Table.Column aggColumn) {
         JdbcSchema.Table.Column.Usage usage =
@@ -225,8 +221,6 @@ abstract class Recognizer {
 
     /**
      * Make sure there was at least one measure column identified.
-     *
-     * @param nosMeasures
      */
     protected void checkNosMeasures(int nosMeasures) {
         msgRecorder.pushContextName("Recognizer.checkNosMeasures");
@@ -334,9 +328,6 @@ abstract class Recognizer {
     /**
      * Creates an aggregate table column measure usage from a fact
      * table column measure usage.
-     *
-     * @param factUsage
-     * @param aggColumn
      */
     protected void makeMeasure(
         final JdbcSchema.Table.Column.Usage factUsage,
@@ -441,8 +432,6 @@ abstract class Recognizer {
      * Note: Levels should not be created for foreign keys that WERE seen.
      * Currently, this is NOT checked explicitly. For the explicit rules any
      * extra columns MUST ge declared ignored or one gets an error.
-     *
-     * @param notSeenForeignKeys
      */
     protected void checkLevels(
         List<JdbcSchema.Table.Column.Usage> notSeenForeignKeys)
@@ -504,7 +493,7 @@ abstract class Recognizer {
         List<JdbcSchema.Table.Column.Usage> notSeenForeignKeys)
     {
         for (JdbcSchema.Table.Column.Usage usage : notSeenForeignKeys) {
-            if (usage.getColumn().getName().equals(foreignKey)) {
+            if (usage.getColumn().getName().equalsIgnoreCase(foreignKey)) {
                 return true;
             }
         }
@@ -513,8 +502,6 @@ abstract class Recognizer {
 
     /**
      * Debug method: Print out not seen foreign key list.
-     *
-     * @param notSeenForeignKeys
      */
     private void printNotSeenForeignKeys(List notSeenForeignKeys) {
         LOGGER.debug(
@@ -531,10 +518,6 @@ abstract class Recognizer {
      * Here a measure ussage is created and the right join condition is
      * explicitly supplied. This is needed is when the aggregate table's column
      * names may not match those found in the RolapStar.
-     *
-     * @param factUsage
-     * @param aggColumn
-     * @param rightJoinConditionColumnName
      */
     protected void makeForeignKey(
         final JdbcSchema.Table.Column.Usage factUsage,
@@ -596,7 +579,7 @@ abstract class Recognizer {
                     String cName = levelColumnName;
 
                     if (! aggUsage.relation.equals(rel)
-                        || ! aggColumn.column.name.equals(cName))
+                        || ! aggColumn.column.name.equalsIgnoreCase(cName))
                     {
                         // this is an error so return
                         String msg = mres.DoubleMatchForLevel.str(
@@ -622,6 +605,7 @@ abstract class Recognizer {
                 aggUsage.relation = hierarchyUsage.getJoinTable();
                 aggUsage.joinExp = hierarchyUsage.getJoinExp();
                 aggUsage.levelColumnName = levelColumnName;
+                aggUsage.rightJoinConditionColumnName = levelColumnName;
                 aggUsage.collapsed = isCollapsed;
                 aggUsage.level = rLevel;
 
@@ -747,9 +731,6 @@ abstract class Recognizer {
      * <p>
      * Note: this code assumes that the aggregate table does not have an
      * explicit average aggregation column.
-     *
-     * @param aggUsage
-     * @param factAgg
      */
     protected RolapAggregator convertAggregator(
         final JdbcSchema.Table.Column.Usage aggUsage,
@@ -786,10 +767,6 @@ abstract class Recognizer {
      * <p>
      * if no new aggregator was selected, then the fact table's aggregator
      * rollup aggregator is used.
-     *
-     * @param aggUsage
-     * @param factAgg
-     * @param siblingAgg
      */
     protected RolapAggregator convertAggregator(
         final JdbcSchema.Table.Column.Usage aggUsage,
@@ -875,7 +852,7 @@ abstract class Recognizer {
             }
             RolapStar cubeStar = cube.getStar();
             String factTableName = cubeStar.getFactTable().getAlias();
-            if (name.equals(factTableName)) {
+            if (name.equalsIgnoreCase(factTableName)) {
                 list.add(cube);
             }
         }
