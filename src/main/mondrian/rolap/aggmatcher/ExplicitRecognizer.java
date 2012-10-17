@@ -169,9 +169,6 @@ class ExplicitRecognizer extends Recognizer {
     /**
      * Make a measure. This makes a measure usage using the Aggregator found in
      * the RolapStar.Measure associated with the ExplicitRules.TableDef.Measure.
-     *
-     * @param measure
-     * @param aggColumn
      */
     protected void makeMeasure(
         final ExplicitRules.TableDef.Measure measure,
@@ -219,7 +216,7 @@ class ExplicitRecognizer extends Recognizer {
                 continue;
             }
 
-            if (aggFK.equals(aggColumn.getName())) {
+            if (aggFK.equalsIgnoreCase(aggColumn.getName())) {
                 makeForeignKey(factUsage, aggColumn, aggFK);
                 matchCount++;
             }
@@ -261,12 +258,14 @@ class ExplicitRecognizer extends Recognizer {
                 {
                     if (level.getName().equals(levelUniqueName)) {
                         // Now can we find a column in the aggTable
-                        //that matches the Level's column
+                        // that matches the Level's column
                         final String columnName = level.getColumnName();
                         for (JdbcSchema.Table.Column aggColumn
                             : aggTable.getColumns())
                         {
-                            if (aggColumn.getName().equals(columnName)) {
+                            if (aggColumn.getName()
+                                .equalsIgnoreCase(columnName))
+                            {
                                 levelMatches.add(
                                     new Pair<RolapLevel,
                                         JdbcSchema.Table.Column>(
@@ -329,10 +328,8 @@ class ExplicitRecognizer extends Recognizer {
                         + pair.left.getUniqueName()
                         + " but its parent level is not part of that aggregation.");
                 }
-                /*
-                 * Warn if this level is marked as non-collapsed but the level
-                 * above it is present in this agg table.
-                 */
+                // Warn if this level is marked as non-collapsed but the level
+                // above it is present in this agg table.
                 if (levelMatches.indexOf(pair) > 0
                     && !aggLevels.get(levelMatches.indexOf(pair)).isCollapsed())
                 {
@@ -344,10 +341,8 @@ class ExplicitRecognizer extends Recognizer {
                         + pair.left.getUniqueName()
                         + " and is marked as non-collapsed, but its parent column is already present.");
                 }
-                /*
-                 * Fail if the level is the first, it isn't at the top,
-                 * but it is marked as collapsed.
-                 */
+                // Fail if the level is the first, it isn't at the top,
+                // but it is marked as collapsed.
                 if (levelMatches.indexOf(pair) == 0
                     && pair.left.getDepth() > 1
                     && aggLevels.get(levelMatches.indexOf(pair)).isCollapsed())

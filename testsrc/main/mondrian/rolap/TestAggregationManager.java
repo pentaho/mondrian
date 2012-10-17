@@ -825,7 +825,7 @@ public class TestAggregationManager extends BatchTestCase {
         assertRequestSql(new CellRequest[]{request}, patterns);
     }
 
-    /*
+    /**
      * Test that cells with the same compound member constraints are
      * loaded in one Sql statement.
      *
@@ -1190,7 +1190,7 @@ public class TestAggregationManager extends BatchTestCase {
             testContext, query2, patterns2, false, false, false);
     }
 
-    /*
+    /**
      * Test that using compound member constrant disables using AggregateTable
      */
     public void testCountDistinctWithConstraintAggMiss() {
@@ -2229,6 +2229,169 @@ public class TestAggregationManager extends BatchTestCase {
             + "Row #9: 19,958\n"
             + "Row #10: 25,270\n"
             + "Row #11: 26,796\n");
+    }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1271">MONDRIAN-1271</a>
+     *
+     * When a non-collapsed AggLevel was used, Mondrian would join on the
+     * key column of the lowest level isntead of the one it should have.
+     */
+    public void testMondrian1271() {
+        propSaver.set(
+            MondrianProperties.instance().UseAggregates,
+            true);
+        propSaver.set(
+            MondrianProperties.instance().ReadAggregates,
+            true);
+        propSaver.set(
+            propSaver.properties.GenerateFormattedSql,
+            true);
+        final String schema =
+            "<?xml version=\"1.0\"?>\n"
+            + "<Schema name=\"custom\">\n"
+            + "  <Dimension name=\"Store\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
+            + "      <Table name=\"store\"/>\n"
+            + "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Store State\" column=\"store_state\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Store City\" column=\"store_city\" uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\">\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Dimension name=\"Time\" type=\"TimeDimension\">\n"
+            + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
+            + "      <Table name=\"time_by_day\"/>\n"
+            + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+            + "          levelType=\"TimeYears\"/>\n"
+            + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
+            + "          levelType=\"TimeQuarters\"/>\n"
+            + "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"true\" type=\"Numeric\"\n"
+            + "          levelType=\"TimeMonths\"/>\n"
+            + "      <Level name=\"Day\" column=\"day_of_month\" uniqueMembers=\"false\" type=\"Numeric\"\n"
+            + "          levelType=\"TimeDays\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Cube name=\"Sales1\" defaultMeasure=\"Unit Sales\">\n"
+            + "    <Table name=\"sales_fact_1997\">\n"
+            + "      <AggExclude name=\"agg_c_special_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_c_10_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_l_04_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_lc_06_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_l_03_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_lc_100_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_pl_01_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_ll_01_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_l_05_sales_fact_1997\"/>"
+            + "      <AggName name=\"agg_c_14_sales_fact_1997\">\n"
+            + "        <AggFactCount column=\"FACT_COUNT\"/>\n"
+            + "        <AggIgnoreColumn column=\"PRODUCT_ID\" />\n"
+            + "        <AggIgnoreColumn column=\"CUSTOMER_ID\" />\n"
+            + "        <AggIgnoreColumn column=\"PROMOTION_ID\" />\n"
+            + "        <AggIgnoreColumn column=\"THE_YEAR\" />\n"
+            + "        <AggIgnoreColumn column=\"QUARTER\" />\n"
+            + "        <AggForeignKey factColumn=\"store_id\" aggColumn=\"STORE_ID\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"UNIT_SALES\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Store Cost]\" column=\"STORE_COST\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Store Sales]\" column=\"STORE_SALES\" />\n"
+            + "        <AggLevel name=\"[Time].[Month]\" column=\"month_of_year\" collapsed=\"false\" />\n"
+            + "      </AggName>\n"
+            + "    </Table>\n"
+            + "    <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
+            + "    <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+            + "    <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "    <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###.00\"/>\n"
+            + "    <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###.00\"/>\n"
+            + "  </Cube>\n"
+            + "</Schema>\n";
+
+        final String mdx =
+            "select {NonEmptyCrossJoin([Time].[Year].Members, [Store].[Store Country].Members)} on rows,"
+            + "{[Measures].[Unit Sales]} on columns "
+            + "from [Sales1]";
+
+        final String sqlMysqlTupleQuery =
+            "select\n"
+            + "    `time_by_day`.`the_year` as `c0`,\n"
+            + "    `store`.`store_country` as `c1`\n"
+            + "from\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
+            + "    `store` as `store`\n"
+            + "where\n"
+            + "    `agg_c_14_sales_fact_1997`.`month_of_year` = `time_by_day`.`month_of_year`\n"
+            + "and\n"
+            + "    `agg_c_14_sales_fact_1997`.`STORE_ID` = `store`.`store_id`\n"
+            + "group by\n"
+            + "    `time_by_day`.`the_year`,\n"
+            + "    `store`.`store_country`\n"
+            + "order by\n"
+            + "    ISNULL(`time_by_day`.`the_year`) ASC, `time_by_day`.`the_year` ASC,\n"
+            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC";
+
+        final String sqlMysqlSegmentQuery =
+            "select\n"
+            + "    `store`.`store_country` as `c0`,\n"
+            + "    `time_by_day`.`the_year` as `c1`,\n"
+            + "    sum(`agg_c_14_sales_fact_1997`.`unit_sales`) as `m0`\n"
+            + "from\n"
+            + "    `store` as `store`,\n"
+            + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
+            + "    `time_by_day` as `time_by_day`\n"
+            + "where\n"
+            + "    `agg_c_14_sales_fact_1997`.`STORE_ID` = `store`.`store_id`\n"
+            + "and\n"
+            + "    `store`.`store_country` = 'USA'\n"
+            + "and\n"
+            + "    `agg_c_14_sales_fact_1997`.`month_of_year` = `time_by_day`.`month_of_year`\n"
+            + "group by\n"
+            + "    `store`.`store_country`,\n"
+            + "    `time_by_day`.`the_year`";
+
+        final TestContext context =
+                TestContext.instance().withSchema(schema);
+
+        assertQuerySqlOrNot(
+            context,
+            mdx,
+            new SqlPattern[] {
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL,
+                    sqlMysqlTupleQuery,
+                    sqlMysqlTupleQuery.length())
+            },
+            false, false, true);
+
+        assertQuerySqlOrNot(
+            context,
+            mdx,
+            new SqlPattern[] {
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL,
+                    sqlMysqlSegmentQuery,
+                    sqlMysqlSegmentQuery.length())
+            },
+            false, false, true);
+
+        // Because we have caused a many-to-many relation between the agg table
+        // and the dim table, we expect retarded numbers here.
+        context.assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997], [Store].[USA]}\n"
+            + "{[Time].[1998], [Store].[USA]}\n"
+            + "Row #0: 8,119,905\n"
+            + "Row #1: 8,119,905\n");
     }
 }
 
