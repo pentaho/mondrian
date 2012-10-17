@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, Mar 21, 2002
@@ -335,7 +335,9 @@ public class SqlQuery {
                 // adds all relations between it and the fact table.)
                 MondrianDef.RelationOrJoin root =
                     mapRelationToRoot.get(relation1);
-                for (MondrianDef.Relation relation2 : relations) {
+                List<MondrianDef.Relation> relationsCopy =
+                    new ArrayList<MondrianDef.Relation>(relations);
+                for (MondrianDef.Relation relation2 : relationsCopy) {
                     if (relation2 != relation1
                         && mapRelationToRoot.get(relation2) == root)
                     {
