@@ -2650,8 +2650,10 @@ public class RolapSchemaUpgrader {
         Util.discard(xmlLegacyDimension.highCardinality);
         xmlDimension.type =
             xmlLegacyDimension.type == null
-            || xmlLegacyDimension.type.equalsIgnoreCase("Standard")
+            || xmlLegacyDimension.type.equalsIgnoreCase("StandardDimension")
             ? null
+            : xmlLegacyDimension.type.equalsIgnoreCase("TimeDimension")
+            ? "TIME"
             : xmlLegacyDimension.type;
         Util.discard(xmlLegacyDimension.usagePrefix);
 

@@ -18,10 +18,11 @@ demo/derby/foodmart/
 doc/properties.html
 doc/xml_schema.html
 doc/api
-doc/api/index.html
+doc/headapi
 intellij/mondrian.ipr
 intellij/mondrian.iml
 intellij/mondrian.iws
+junit-results/
 lib/aggregates.dtd
 lib/datasourcesconfig.dtd
 lib/jpivot.war

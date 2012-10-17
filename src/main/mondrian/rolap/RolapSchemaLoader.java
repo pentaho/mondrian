@@ -332,9 +332,6 @@ public class RolapSchemaLoader {
             validatePhysicalSchema(
                 xmlPhysicalSchema, getHandler(), dialect, schema);
 
-        this.physSchemaBuilder =
-            new PhysSchemaBuilder(null, schema.physicalSchema);
-
         // Validate user-defined functions. Must be done before we validate
         // calculated members, because calculated members will need to use the
         // function table.
@@ -538,6 +535,8 @@ public class RolapSchemaLoader {
         assert xmlPhysicalSchema != null;
         final RolapSchema.PhysSchema physSchema =
             createSyntheticPhysicalSchema();
+        this.physSchemaBuilder = new PhysSchemaBuilder(null, physSchema);
+
         final Set<ElementDef> skip = new HashSet<ElementDef>();
 
         // First pass through elements, creating tables, ensuring that
