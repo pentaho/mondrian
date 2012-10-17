@@ -858,47 +858,46 @@ of attributes, it is convenient to create hierarchies.</p>
 
 <p>Here is the <code[Time]</code> dimension, slightly extended from the earlier example:</p>
 
-<blockquote>
-  <code style='text-indent: 20px'>
-    <div style='padding-left:0px;'>&lt;<a href='#XML_Dimension'>Dimension</a> name="Time" table="time_by_day" key="Day"&gt;</div>
-      <div style='padding-left:20px;'>&lt;<a href='#XML_Attributes'>Attributes</a>&gt;</div>
-        <div style='padding-left:40px;'>&lt;<a href='#XML_Attribute'>Attribute</a> name="Year" column="the_year"/&gt;</div>
-        <div style='padding-left:40px;'>&lt;<a href='#XML_Attribute'>Attribute</a> name="Quarter"&gt;</div>
-          <div style='padding-left:60px;'>&lt;<a href='#XML_Key'>Key</a>&gt;</div>
-            <div style='padding-left:80px;'>&lt;<a href='#XML_Column'>Column</a> name="the_year"/&gt;</div>
-            <div style='padding-left:80px;'>&lt;<a href='#XML_Column'>Column</a> name="quarter"/&gt;</div>
-          <div style='padding-left:60px;'>&lt;/<a href='#XML_Key'>Key</a>&gt;</div>
-        <div style='padding-left:40px;'>&lt;/<a href='#XML_Attribute'>Attribute</a>&gt;</div>
-        <div style='padding-left:40px;'>&lt;<a href='#XML_Attribute'>Attribute</a> name="Month"&gt;</div>
-          <div style='padding-left:60px;'>&lt;<a href='#XML_Key'>Key</a>&gt;</div>
-            <div style='padding-left:80px;'>&lt;<a href='#XML_Column'>Column</a> name="the_year"/&gt;</div>
-            <div style='padding-left:80px;'>&lt;<a href='#XML_Column'>Column</a> name="month_of_year"/&gt;</div>
-          <div style='padding-left:60px;'>&lt;/<a href='#XML_Key'>Key</a>&gt;</div>
-        <div style='padding-left:40px;'>&lt;/<a href='#XML_Attribute'>Attribute</a>&gt;</div>
-        <div style='padding-left:40px;'>&lt;<a href='#XML_Attribute'>Attribute</a> name="Week"&gt;</div>
-          <div style='padding-left:60px;'>&lt;<a href='#XML_Key'>Key</a>&gt;</div>
-            <div style='padding-left:80px;'>&lt;<a href='#XML_Column'>Column</a> name="the_year"/&gt;</div>
-            <div style='padding-left:80px;'>&lt;<a href='#XML_Column'>Column</a> name="week_of_year"/&gt;</div>
-          <div style='padding-left:60px;'>&lt;/<a href='#XML_Key'>Key</a>&gt;</div>
-        <div style='padding-left:40px;'>&lt;/<a href='#XML_Attribute'>Attribute</a>&gt;</div>
-        <div style='padding-left:40px;'>&lt;<a href='#XML_Attribute'>Attribute</a> name="Day" column="time_id"/&gt;</div>
-      <div style='padding-left:20px;'>&lt;/<a href='#XML_Attributes'>Attributes</a>&gt;</div>
-      <div style='padding-left:20px;'>&lt;<a href='#XML_Hierarchies'>Hierarchies</a>&gt;</div>
-        <div style='padding-left:40px;'>&lt;<a href='#XML_Hierarchy'>Hierarchy</a> name="Yearly" hasAll="false"&gt;</div>
-          <div style='padding-left:60px;'>&lt;<a href='#XML_Level'>Level</a> attribute="Year"/&gt;</div>
-          <div style='padding-left:60px;'>&lt;<a href='#XML_Level'>Level</a> attribute="Quarter"/&gt;</div>
-          <div style='padding-left:60px;'>&lt;<a href='#XML_Level'>Level</a> attribute="Month"/&gt;</div>
-          <div style='padding-left:60px;'>&lt;<a href='#XML_Level'>Level</a> attribute="Day"/&gt;</div>
-        <div style='padding-left:40px;'>&lt;/<a href='#XML_Hierarchy'>Hierarchy</a>&gt;</div>
-        <div style='padding-left:40px;'>&lt;<a href='#XML_Hierarchy'>Hierarchy</a> name="Weekly" hasAll="false"&gt;</div>
-          <div style='padding-left:60px;'>&lt;<a href='#XML_Level'>Level</a> attribute="Year"/&gt;</div>
-          <div style='padding-left:60px;'>&lt;<a href='#XML_Level'>Level</a> attribute="Week"/&gt;</div>
-          <div style='padding-left:60px;'>&lt;<a href='#XML_Level'>Level</a> attribute="Day"/&gt;</div>
-        <div style='padding-left:40px;'>&lt;/<a href='#XML_Hierarchy'>Hierarchy</a>&gt;</div>
-      <div style='padding-left:20px;'>&lt;/<a href='#XML_Hierarchies'>Hierarchies</a>&gt;</div>
-    <div style='padding-left:0px;'>&lt;/<a href='#XML_Dimension'>Dimension</a>&gt;</div>
-  </code>
-</blockquote>
+{@xml
+<Dimension name="Time" table="time_by_day" key="Day">
+  <Attributes>
+    <Attribute name="Year" column="the_year"/>
+    <Attribute name="Quarter">
+      <Key>
+        <Column name="the_year"/>
+        <Column name="quarter"/>
+      </Key>
+    </Attribute>
+    <Attribute name="Month">
+      <Key>
+        <Column name="the_year"/>
+        <Column name="month_of_year"/>
+      </Key>
+    </Attribute>
+    <Attribute name="Week">
+      <Key>
+        <Column name="the_year"/>
+        <Column name="week_of_year"/>
+      </Key>
+    </Attribute>
+    <Attribute name="Day" column="time_id"/>
+  </Attributes>
+  <Hierarchies>
+    <Hierarchy name="Yearly" hasAll="false">
+      <Level attribute="Year"/>
+      <Level attribute="Quarter"/>
+      <Level attribute="Month"/>
+      <Level attribute="Day"/>
+    </Hierarchy>
+    <Hierarchy name="Weekly" hasAll="false">
+      <Level attribute="Year"/>
+      <Level attribute="Week"/>
+      <Level attribute="Day"/>
+    </Hierarchy>
+  </Hierarchies>
+</Dimension>
+}
+
 <p>You can see that most of the lines of XML in the dimension
 definition are taken up by attribute definitions.  Once the attributes
 are defined, you can build a hierarchy by choosing which attributes
@@ -923,11 +922,11 @@ member that is used for calculating cell values when the hierarchy is
 not included on an axis or in the slicer.</p>
 
 <p>Various attributes allow you to control the all level and member.
-The <code>&lt;<a href='#XML_Hierarchy'>Hierarchy</a>&gt;</code> element's <code>allMemberName</code>
+The {@element Hierarchy} element's <code>allMemberName</code>
 and <code>allLevelName</code> attributes override the default names of
 the all level and all member.</p>
 
-<p>If the <code>&lt;<a href='#XML_Hierarchy'>Hierarchy</a>&gt;</code> element
+<p>If the {@element Hierarchy} element
 has <code>hasAll="false"</code>, the 'all' level is suppressed. The
 default member of that dimension will now be the first member of the
 first level; for example, in a Time hierarchy, it will be the first
@@ -938,13 +937,12 @@ so you should generally use <code>hasAll="true"</code>.</p>
 explicitly. The <code>defaultMember</code> attribute should be the
 fully-qualified name of the default member.</p>
 
-<blockquote>
-  <code style='text-indent: 20px'>
-    <div style='padding-left:0px;'>&lt;<a href='#XML_Hierarchy'>Hierarchy</a> name="Yearly" hasAll="false" defaultMember="[Time].[1997].[Q1].[1]"&gt;</div>
-      <div style='padding-left:20px;'>...</div>
-    <div style='padding-left:0px;'>&lt;/<a href='#XML_Hierarchy'>Hierarchy</a>&gt;</div>
-  </code>
-</blockquote>
+{@xml
+<Hierarchy name="Yearly" hasAll="false" defaultMember="[Time].[1997].[Q1].[1]">
+  ...
+</Hierarchy>
+}
+
 <p>When specified in this way, the default member can even be a calculated member.</p>
 
 <!--- ### --->
