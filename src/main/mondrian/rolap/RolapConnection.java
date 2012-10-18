@@ -395,13 +395,11 @@ public class RolapConnection extends ConnectionBase {
                     jdbcProperties);
             }
 
-            if (jdbcConnectString.toLowerCase().indexOf("mysql") > -1) {
-                // mysql driver needs this autoReconnect parameter
-                jdbcProperties.setProperty("autoReconnect", "true");
-            }
             return RolapConnectionPool.instance()
                 .getDriverManagerPoolingDataSource(
-                    jdbcConnectString, jdbcProperties);
+                    jdbcConnectString,
+                    jdbcProperties,
+                    jdbcConnectString.toLowerCase().indexOf("mysql") > -1);
 
         } else if (dataSourceName != null) {
             appendKeyValue(
@@ -702,13 +700,11 @@ public class RolapConnection extends ConnectionBase {
             try {
                 statement.end(execution);
             } catch (Exception e1) {
-                /*
-                 * We can safely ignore that cleanup exception.
-                 * If an error is encountered here, it means that
-                 * one was already encountered at statement.start()
-                 * above and the exception we will throw after the
-                 * cleanup is the same as the original one.
-                 */
+                // We can safely ignore that cleanup exception.
+                // If an error is encountered here, it means that
+                // one was already encountered at statement.start()
+                // above and the exception we will throw after the
+                // cleanup is the same as the original one.
             }
             String queryString;
             try {

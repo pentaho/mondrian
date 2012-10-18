@@ -41,8 +41,8 @@ class RolapConnectionPool {
     private final Map<Object, ObjectPool> mapConnectKeyToPool =
         new HashMap<Object, ObjectPool>();
 
-    private final Map<Object, DataSource> dataSourceMap =
-        new WeakHashMap<Object, DataSource>();
+    private final Map<DataSourceKey, DataSource> dataSourceMap =
+        new WeakHashMap<DataSourceKey, DataSource>();
 
     private RolapConnectionPool() {
     }
@@ -69,11 +69,12 @@ class RolapConnectionPool {
      *   JDBC connect string or DataSource
      * @return a pooling DataSource object
      */
-    public synchronized DataSource getPoolingDataSource(
-        Object key,
-        ConnectionFactory connectionFactory)
+    synchronized DataSource getPoolingDataSource(
+        PoolKey key,
+        ConnectionFactory connectionFactory,
+        boolean mysql)
     {
-        ObjectPool connectionPool = getPool(key, connectionFactory);
+        ObjectPool connectionPool = getPool(key, connectionFactory, mysql);
         // create pooling datasource
         return new PoolingDataSource(connectionPool);
     }
@@ -87,7 +88,8 @@ class RolapConnectionPool {
 
     public synchronized DataSource getDriverManagerPoolingDataSource(
         String jdbcConnectString,
-        Properties jdbcProperties)
+        Properties jdbcProperties,
+        boolean mysql)
     {
         // First look for a data source with identical specification. This in
         // turn helps us to use the cache of Dialect objects.
@@ -97,9 +99,8 @@ class RolapConnectionPool {
         // user drives the schema. This makes JDBC pools act like JNDI pools,
         // with, in effect, a pool per DB user.
 
-        List<Object> key =
-            Arrays.<Object>asList(
-                "DriverManagerPoolingDataSource",
+        final DataSourceKey key =
+            DataSourceKey.of(
                 jdbcConnectString,
                 jdbcProperties);
         DataSource dataSource = dataSourceMap.get(key);
@@ -114,10 +115,10 @@ class RolapConnectionPool {
                 jdbcProperties);
 
         try {
-            String propertyString = jdbcProperties.toString();
             dataSource = getPoolingDataSource(
-                jdbcConnectString + propertyString,
-                connectionFactory);
+                PoolKey.of(jdbcConnectString, jdbcProperties),
+                connectionFactory,
+                mysql);
         } catch (Throwable e) {
             throw Util.newInternal(
                 e,
@@ -136,9 +137,8 @@ class RolapConnectionPool {
     {
         // First look for a data source with identical specification. This in
         // turn helps us to use the cache of Dialect objects.
-        List<Object> key =
-            Arrays.asList(
-                "DataSourcePoolingDataSource",
+        DataSourceKey key =
+            DataSourceKey.of(
                 dataSource,
                 jdbcUser,
                 jdbcPassword);
@@ -159,8 +159,9 @@ class RolapConnectionPool {
         try {
             pooledDataSource =
                 getPoolingDataSource(
-                    dataSourceName,
-                    connectionFactory);
+                    PoolKey.of(dataSourceName),
+                    connectionFactory,
+                    false); // REVIEW: we don't know whether it's MySQL
         } catch (Exception e) {
             throw Util.newInternal(
                 e,
@@ -176,8 +177,9 @@ class RolapConnectionPool {
      * specification.
      */
     private synchronized ObjectPool getPool(
-        Object key,
-        ConnectionFactory connectionFactory)
+        PoolKey key,
+        ConnectionFactory connectionFactory,
+        boolean mysql)
     {
         ObjectPool connectionPool = mapConnectKeyToPool.get(key);
         if (connectionPool == null) {
@@ -188,7 +190,7 @@ class RolapConnectionPool {
                 GenericObjectPool.WHEN_EXHAUSTED_GROW, // action when exhausted
                 3000, // max wait (milli seconds)
                 10, // max idle
-                false, // test on borrow
+                mysql, // test on borrow
                 false, // test on return
                 60000, // time between eviction runs (millis)
                 5, // number to test on eviction run
@@ -216,7 +218,7 @@ class RolapConnectionPool {
                     // validation query (must return at least 1 row e.g. Oracle:
                     // select count(*) from dual) to test connection, can be
                     // null
-                    null,
+                    mysql ? "SELECT 1" : null,
                     // default "read only" setting for borrowed connections
                     false,
                     // default "auto commit" setting for returned connections
@@ -233,6 +235,109 @@ class RolapConnectionPool {
         return connectionPool;
     }
 
+    /** Abstract base class for keys based upon a list and cached hash code. */
+    private static abstract class ListKey {
+        private final int hashCode;
+        private final Object[] values;
+
+        // Must be protected. Factory method in derived class must ensure values
+        // is a private copy.
+        protected ListKey(Object[] values) {
+            this.values = values;
+            this.hashCode = Arrays.hashCode(values);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return this == obj
+                || obj instanceof ListKey
+                && this.hashCode == ((ListKey) obj).hashCode
+                && getClass() == obj.getClass()
+                && Arrays.equals(this.values, ((ListKey) obj).values);
+        }
+
+        @Override
+        public int hashCode() {
+            return hashCode;
+        }
+
+        @Override
+        public String toString() {
+            return Arrays.toString(values) + "#" + hashCode;
+        }
+    }
+
+    private static class DataSourceKey extends ListKey {
+        private DataSourceKey(Object[] values) {
+            super(values);
+        }
+
+        @Override
+        public String toString() {
+            return "DataSourceKey" + super.toString();
+        }
+
+        /** Creates a key from a connect string and properties. */
+        public static DataSourceKey of(
+            String jdbcConnectString,
+            Properties jdbcProperties)
+        {
+            @SuppressWarnings("unchecked")
+            final Map<String, String> map = (Map) jdbcProperties;
+            String[] values = new String[jdbcProperties.size() * 2 + 1];
+            int i = 0;
+            values[i++] = jdbcConnectString;
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                values[i++] = entry.getKey();
+                values[i++] = entry.getValue();
+            }
+            return new DataSourceKey(values);
+        }
+
+        /** Creates a key from a data source and user/password. */
+        public static DataSourceKey of(
+            DataSource dataSource,
+            String jdbcUser,
+            String jdbcPassword)
+        {
+            Object[] values1 = {dataSource, jdbcUser, jdbcPassword};
+            return new DataSourceKey(values1);
+        }
+    }
+
+    private static class PoolKey extends ListKey {
+        private PoolKey(Object[] values) {
+            super(values);
+        }
+
+        @Override
+        public String toString() {
+            return "PoolKey" + super.toString();
+        }
+
+        /** Creates a key based upon a data source name. */
+        public static PoolKey of(String dataSourceName) {
+            return new PoolKey(new String[] {dataSourceName});
+        }
+
+        /** Creates a key based upon a connect string and property set. */
+        public static PoolKey of(
+            String jdbcConnectString,
+            Properties properties)
+        {
+            // Flatten properties into an array. Ensures immutability.
+            @SuppressWarnings("unchecked")
+            final Map<String, String> map = (Map) properties;
+            String[] values = new String[properties.size() * 2 + 1];
+            int i = 0;
+            values[i++] = jdbcConnectString;
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                values[i++] = entry.getKey();
+                values[i++] = entry.getValue();
+            }
+            return new PoolKey(values);
+        }
+    }
 }
 
 // End RolapConnectionPool.java
