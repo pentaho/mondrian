@@ -173,86 +173,100 @@ schema as a guiding example.</p>
 
 <p>The structure of the XML document is as follows:</p>
 
-<blockquote style="text-indent: -20px">
-    <code>
-        <div style="padding-left:20px">&lt;<a href="#XML_Schema">Schema</a>&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_PhysicalSchema">PhysicalSchema</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_Table">Table</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_Key">Key</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_Column">Column</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_Query">Query</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_SQL">SQL</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_InlineTable">InlineTable</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_ColumnDefs">ColumnDefs</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_ColumnDef">ColumnDef</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_Key">Key</a>&gt; (as for Table)</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_Rows">Rows</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_Row">Row</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_Value">Value</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_Link">Link</a>&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_Dimension">Dimension</a>/&gt; (shared; as for Dimension within Cube)</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_Cube">Cube</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_Dimensions">Dimensions</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_Dimension">Dimension</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_Attributes">Attributes</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_Attribute">Attribute</a>&gt;</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_Key">Key</a>&gt;</div>
-                                    <div style="padding-left:160px;">&lt;<a href="#XML_Column">Column</a>/&gt;</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_Name">Name</a>/&gt; (as Key)</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_Caption">Caption</a>&gt; (as Key)</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_OrderBy">OrderBy</a>&gt; (as Key)</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_Closure">Closure</a>&gt;</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_MemberFormatter">MemberFormatter</a>&gt;</div>
-                                    <div style="padding-left:160px;">&lt;<a href="#XML_Script">Script</a>&gt;</div>
-                                <div style="padding-left:140px;">&lt;<a  href="#XML_Property">Property</a>&gt;</div>
-                                    <div style="padding-left:160px;">&lt;<a href="#XML_PropertyFormatter">PropertyFormatter</a>&gt;</div>
-                                        <div style="padding-left:180px;">&lt;<a href="#XML_Script">Script</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_Hierarchies">Hierarchies</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_Levels">Levels</a>&gt;</div>
-                                    <div style="padding-left:160px;">&lt;<a href="#XML_Level">Level</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_MeasureGroups">MeasureGroups</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_MeasureGroup">MeasureGroup</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_Measures">Measure</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_Measure">Measure</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_MeasureRef">MeasureRef</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_DimensionLinks">DimensionLinks</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_ForeignKeyLink">ForeignKeyLink</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_FactLink">FactLink</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_ReferenceLink">ReferenceLink</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_CopyLink">CopyLink</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_NoLink">NoLink</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_CalculatedMembers">CalculatedMembers</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_Formula">Formula</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_CellFormatter">CellFormatter</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_Script">Script</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_NamedSets">NamedSets</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_NamedSet">NamedSet</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_Formula">Formula</a>&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_Role">Role</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_SchemaGrant">SchemaGrant</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_CubeGrant">CubeGrant</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_DimensionGrant">DimensionGrant</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_MemberGrant">MemberGrant</a>/&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_Union">Union</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_RoleUsage">RoleUsage</a>/&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_Script">Script</a>&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_Parameter">Parameter</a>/&gt;</div>
-    </code>
-</blockquote>
+{@xml
+<Schema>
+  <PhysicalSchema>
+    <Table>
+      <Key>
+        <Column>
+    {@ignore </Column></Key></Table> }
+    <Query>
+      <SQL>
+    {@ignore </SQL></Query> }
+    <InlineTable>
+      <ColumnDefs>
+        <ColumnDef>
+      {@ignore </ColumnDef></ColumnDefs> }
+      <Key> (as for Table)
+      {@ignore </Key> }
+      <Rows>
+        <Row>
+          <Value>
+    {@ignore </Value></Row></Rows></InlineTable> }
+    <Link/>
+  {@ignore </PhysicalSchema>}
+  <Dimension/> (shared; as for Dimension within Cube)
+  <Cube>
+    <Dimensions>
+      <Dimension>
+        <Attributes>
+          <Attribute>
+            <Key>
+              <Column/>
+            {@ignore </Key>}
+            <Name/> (as Key)
+            <Caption/> (as Key)
+            <OrderBy/> (as Key)
+            <Closure/>
+            <MemberFormatter>
+              <Script/>
+            {@ignore </MemberFormatter>}
+            <Property>
+              <PropertyFormatter>
+                <Script/>
+        {@ignore </PropertyFormatter></Property></Attribute></Attributes>}
+        <Hierarchies>
+          <Hierarchy>
+            <Levels>
+              <Level/>
+       {@ignore </Levels></Hierarchy></Hierarchies></Dimension></Dimensions>}
+    <MeasureGroups>
+      <MeasureGroup>
+        <Measures>
+          <Measure/>
+          <MeasureRef/>
+        {@ignore </Measures>}
+        <DimensionLinks>
+          <ForeignKeyLink/>
+          <FactLink/>
+          <ReferenceLink/>
+          <CopyLink/>
+          <NoLink/>
+    {@ignore </DimensionLinks></MeasureGroup></MeasureGroups>}
+    <CalculatedMembers>
+      <CalculatedMember>
+        <Formula/>
+        <CalculatedMemberProperty/>
+        <CellFormatter>
+          <Script/>
+      {@ignore </CellFormatter></CalculatedMember></CalculatedMembers>}
+    <NamedSets>
+      <NamedSet>
+        <Formula/>
+  {@ignore </NamedSet></NamedSets></Cube>}
+  <Role>
+    <SchemaGrant>
+      <CubeGrant>
+        <DimensionGrant/>
+        <HierarchyGrant>
+          <MemberGrant/>
+    {@ignore </HierarchyGrant></CubeGrant></SchemaGrant>}
+    <Union>
+      <RoleUsage/>
+  {@ignore </Union></Role>}
+  <UserDefinedFunction>
+    <Script/>
+  {@ignore </UserDefinedFunction>}
+  <Parameter/>
+}
+
 
 <p>The order of XML elements is not important.  For example, as long
-as it occurs as a child of a
-<code><a href="#XML_Schema">&lt;Schema&gt;</a></code> element,
-a <code><a href="#XML_UserDefinedFunction">&lt;UserDefinedFunction&gt;</a></code>
-element might occur after one <code><a href="#XML_Cube">&lt;Cube&gt;</a></code>
-element and after another.</p>
+as it occurs as a child of a {@element Schema} element, a
+{@element UserDefinedFunction} element might occur after one
+{@element Cube} element and after another.</p>
 
-<p>This is different to Mondrian-3.x, where order of elements was very important.
+<p>This is different to Mondrian version 3.x, where order of elements was very important.
 For other changes with previous versions of the schema, see the
 <a href="https://github.com/pentaho/mondrian/tree/lagunitas/RELEASE.txt">release
 notes</a>.</p>
@@ -266,14 +280,13 @@ notes</a>.</p>
 ############################# -->
 <h1>2.2 Schema element<a name="Schema_element">&nbsp;</a></h1>
 
-<p>The <code><a href="#XML_Schema">&lt;Schema&gt;</a></code> element
+<p>The {@element Schema} element
 is the root element of every Mondrian schema.  For example:</p>
 
-<blockquote style="text-indent: -20px">
-    <code>
-        <div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a> name=&quot;Rock Sales&quot; metamodelVersion=&quot;4.0&quot;&gt;</div>
-    </code>
-</blockquote>
+{@xml
+<Schema name="Rock Sales" metamodelVersion="4.0">
+  {@ignore </Schema>}
+}
 
 <p>A schema has a <code>name</code> attribute and, optionally,
 a <code>description</code>.  Other attributes are described in
@@ -282,9 +295,8 @@ the element description
 the <a href="#Appendix_A_XML_elements">Appendix A</a>.  (We shall not
 describe every attribute of in this guide, just the most important
 ones, so get into the habit of clicking on that link!)</p>
-</p>
 
-<p>The <code>metamodelVersion</code> allows Mondrian to tell which
+<p>The <code>metamodelVersion</code> attribute allows Mondrian to tell which
 version the schema was intended for; if the version is different than
 the current version of the software, Mondrian may be able to convert
 it automatically. The current version is &quot;4.0&quot;.  If the
@@ -304,29 +316,26 @@ annotations. An annotation is a way of associating a user-defined property with
 a metadata element, and in particular, allows tools to add metadata without
 extending the official Mondrian schema.</p>
 
-<p>Create an 
-<code><a href="#XML_Annotations">&lt;Annotations&gt;</a></code> element as a child of the element you wish to
-annotate, then include a number of 
-<code><a href="#XML_Annotation">&lt;Annotation&gt;</a></code> elements.
-<code><a href="#XML_Annotation">&lt;Annotation&gt;</a></code>
-elements' names must be unique within their element.  If you are
-adding annotations to support a particular tool that you maintain,
-choose annotation names carefully, to ensure that they do not clash
-with annotations used by other tools.</p>
+<p>Create an {@element Annotations} element as a child of the element
+you wish to annotate, then include a number of {@element Annotation}
+elements.  {@element Annotation} elements' names must be unique within
+their element.  If you are adding annotations to support a particular
+tool that you maintain, choose annotation names carefully, to ensure
+that they do not clash with annotations used by other tools.</p>
 
-<p>The following example shows &quot;Author&quot; and &quot;Date&quot; annotations attached to a <code><a href="#XML_Schema">&lt;Schema&gt;</a></code> object.</p>
+<p>The following example shows &quot;Author&quot; and &quot;Date&quot;
+annotations attached to a {@element Schema} object.</p>
 
-<blockquote style="text-indent: -20px">
-    <code>
-        <div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a> name=&quot;Rock Sales&quot; metamodelVersion=&quot;4.0&quot;&gt;</div>
-            <div style="padding-left:40px;;">&lt;<a href="#XML_Annotations">Annotations</a>&gt;</div>
-            <div style="padding-left:60px;;">&lt;<a href="#XML_Annotation">Annotation</a> name="Author"&gt;Fred Flintstone&lt;/<a href="#XML_Annotation">Annotation</a>&gt;</div>
-            <div style="padding-left:60px;;">&lt;<a href="#XML_Annotation">Annotation</a> name="Date"&gt;10,000 BC&lt;/<a href="#XML_Annotation">Annotation</a>&gt;</div>
-            <div style="padding-left:40px;;">&lt;/<a href="#XML_Annotations">Annotations</a>&gt;</div>
-            <div style="padding-left:40px;;">&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;</div>
-            <div style="padding-left:60px;;">...</div>
-</code>
-</blockquote>
+{@xml
+<Schema name="Rock Sales" metamodelVersion="4.0">
+  <Annotations>
+    <Annotation name="Author">Fred Flintstone</Annotation>
+    <Annotation name="Date">10,000 BC</Annotation>
+  </Annotations>
+  <Cube name="Sales">
+    ...
+    {@ignore </Cube></Schema> }
+}
 
 <p>Some annotation names are used by convention across several tools.
 They are as follows:</p>
@@ -395,71 +404,68 @@ They are as follows:</p>
 
 <p>Let's look at the XML definition of a simple schema.</p>
 
-<blockquote style="text-indent: -20px">
-    <code>
-        <div style="padding-left:20px;">&lt;<a href="#XML_Schema">Schema</a> name=&quot;Sales&quot; metamodelVersion=&quot;4.0&quot;&gt;</div>
-            <div style="padding-left:40px;;">&lt;<a href="#XML_PhysicalSchema">PhysicalSchema</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_Table">Table</a> name="sales_fact_1997"/&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_Table">Table</a> name="customer"/&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_Table">Table</a> name="time_by_day"/&gt;</div>
-            <div style="padding-left:40px;;">&lt;/<a href="#XML_PhysicalSchema">PhysicalSchema</a>&gt;</div>
-
-            <div style="padding-left:40px;;">&lt;<a href="#XML_Cube">Cube</a> name="Sales"&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_Dimensions">Dimensions</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_Dimension">Dimension</a> name="Customer" table="customer" key="Id"&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_Attributes">Attributes</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_Attribute">Attribute</a> name="Gender" column="gender"/&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_Attribute">Attribute</a> name="Id" column="customer_id"/&gt;</div>
-                        <div style="padding-left:100px;">&lt;/<a href="#XML_Attributes">Attributes</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_Dimension">Dimension</a> name="Time" table="time_by_day" key="Day"&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_Attributes">Attributes</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_Attribute">Attribute</a> name="Year" column="the_year"/&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_Attribute">Attribute</a> name="Quarter" column="quarter"/&gt;</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_Key">Key</a>&gt;</div>
-                                    <div style="padding-left:160px;">&lt;<a href="#XML_Key">Column</a> name="the_year"&gt;</div>
-                                    <div style="padding-left:160px;">&lt;<a href="#XML_Key">Column</a> name="quarter"&gt;</div>
-                                <div style="padding-left:140px;">&lt;/<a href="#XML_Key">Key</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;/<a href="#XML_Attribute">Attribute</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_Attribute">Attribute</a> name="Month" column="month_of_year"/&gt;</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_Key">Key</a>&gt;</div>
-                                    <div style="padding-left:160px;">&lt;<a href="#XML_Key">Column</a> name="the_year"&gt;</div>
-                                    <div style="padding-left:160px;">&lt;<a href="#XML_Key">Column</a> name="month_of_year"&gt;</div>
-                                <div style="padding-left:140px;">&lt;/<a href="#XML_Key">Key</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;/<a href="#XML_Attribute">Attribute</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_Attribute">Attribute</a> name="Day" column="time_id"/&gt;</div>
-                        <div style="padding-left:100px;">&lt;/<a href="#XML_Attributes">Attributes</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_Hierarchies">Hierarchies</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> name="Yearly" hasAll="false"&gt;</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_Level">Level</a> attribute="Year"/&gt;</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_Level">Level</a> attribute="Quarter"/&gt;</div>
-                                <div style="padding-left:140px;">&lt;<a href="#XML_Level">Level</a> attribute="Month"/&gt;</div>
-                            <div style="padding-left:120px;">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;/<a href="#XML_Hierarchies">Hierarchies</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;/<a href="#XML_Dimensions">Dimensions</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_MeasureGroups">MeasureGroups</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_MeasureGroup">MeasureGroup</a> name=&quot;Sales&quot; table=&quot;sales_fact_1997&quot;&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_Measures">Measures</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_Measure">Measure</a> name="Unit Sales" column="unit_sales" aggregator="sum" formatString="#,###"/&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_Measure">Measure</a> name="Store Sales" column="store_sales" aggregator="sum" formatString="#,###.##"/&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_Measure">Measure</a> name="Store Cost" column="store_cost" aggregator="sum" formatString="#,###.00"/&gt;</div>
-                        <div style="padding-left:100px;">&lt;/<a href="#XML_Measures">Measures</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_DimensionLinks">DimensionLinks</a>&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_ForeignKeyLink">ForeignKeyLink</a> dimension=&quot;Customer&quot; foreignKeyColumn=&quot;customer_id&quot;/&gt;</div>
-                            <div style="padding-left:120px;">&lt;<a href="#XML_ForeignKeyLink">ForeignKeyLink</a> dimension=&quot;Time&quot; foreignKeyColumn=&quot;time_id&quot;/&gt;</div>
-                        <div style="padding-left:100px;">&lt;/<a href="#XML_DimensionLinks">DimensionLinks</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;/<a href="#XML_MeasureGroup">MeasureGroup</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;/<a href="#XML_MeasureGroups">MeasureGroups</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_CalculatedMembers">CalculatedMembers</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="Profit" dimension="Measures" formula="[Measures].[Store Sales] - [Measures].[Store Cost]"&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name="FORMAT_STRING" value="$#,##0.00"/&gt;</div>
-                    <div style="padding-left:80px;">&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;/<a href="#XML_CalculatedMembers">CalculatedMembers</a>&gt;</div>
-            <div style="padding-left:40px;">&lt;/<a href="#XML_Cube">Cube</a>&gt;</div>
-        <div style="padding-left:20px">&lt;/<a href="#XML_Schema">Schema</a>&gt;</div>
-    </code>
-</blockquote>
+{@xml
+<Schema name="Sales" metamodelVersion="4.0">
+  <PhysicalSchema>
+    <Table name="sales_fact_1997"/>
+    <Table name="customer"/>
+    <Table name="time_by_day"/>
+  </PhysicalSchema>
+  <Cube name="Sales">
+    <Dimensions>
+      <Dimension name="Customer" table="customer" key="Id">
+        <Attributes>
+          <Attribute name="Gender" column="gender"/>
+          <Attribute name="Id" column="customer_id"/>
+        </Attributes>
+      </Dimension>
+      <Dimension name="Time" table="time_by_day" key="Day">
+        <Attributes>
+          <Attribute name="Year" column="the_year"/>
+          <Attribute name="Quarter" column="quarter">
+            <Key>
+              <Column name="the_year"/>
+              <Column name="quarter"/>
+            </Key>
+          </Attribute>
+          <Attribute name="Month" column="month_of_year">
+            <Key>
+              <Column name="the_year"/>
+              <Column name="month_of_year"/>
+            </Key>
+          </Attribute>
+          <Attribute name="Day" column="time_id"/>
+        </Attributes>
+        <Hierarchies>
+          <Hierarchy name="Yearly" hasAll="false">
+            <Level attribute="Year"/>
+            <Level attribute="Quarter"/>
+            <Level attribute="Month"/>
+          </Hierarchy>
+        </Hierarchies>
+      </Dimension>
+    </Dimensions>
+    <MeasureGroups>
+      <MeasureGroup name="Sales" table="sales_fact_1997">
+        <Measures>
+          <Measure name="Unit Sales" column="unit_sales" aggregator="sum" formatString="#,###"/>
+          <Measure name="Store Sales" column="store_sales" aggregator="sum" formatString="#,###.##"/>
+          <Measure name="Store Cost" column="store_cost" aggregator="sum" formatString="#,###.00"/>
+        </Measures>
+        <DimensionLinks>
+          <ForeignKeyLink dimension="Customer" foreignKeyColumn="customer_id"/>
+          <ForeignKeyLink dimension="Time" foreignKeyColumn="time_id"/>
+        </DimensionLinks>
+      </MeasureGroup>
+    </MeasureGroups>
+    <CalculatedMembers>
+      <CalculatedMember name="Profit" dimension="Measures" formula="[Measures].[Store Sales] - [Measures].[Store Cost]">
+        <CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
+      </CalculatedMember>
+    </CalculatedMembers>
+  </Cube>
+</Schema>
+}
 
 <p>This schema contains a single cube, called "Sales".  The Sales cube
 has two dimensions, "Time", and "Gender", and four measures, "Unit
@@ -483,7 +489,7 @@ the attribute <code>[Customer].[Gender]</code>, and various members of
 those dimensions.  The results are as follows:</p>
 
 <blockquote>
-    <table class="grayTable" id="AutoNumber1"  >
+    <table class="grayTable" id="AutoNumber1">
         <tr>
             <th align="left"><code>[Time]</code></th>
             <th><code>[Measures].[Unit Sales]</code></th>
@@ -520,17 +526,15 @@ those dimensions.  The results are as follows:</p>
 ######################## -->
 <h1>3.1 Cube<a name="Cube">&nbsp;</a></h1>
 
-<p>A cube (see <code><a href="#XML_Cube">&lt;Cube&gt;</a></code>) is a
-named collection of dimensions and measures.</p>
+<p>A cube (see {@element Cube}) is a named collection of dimensions
+and measures.</p>
 
-<p>The dimensions are children of a 
-<code><a href="#XML_Dimensions">&lt;Dimensions&gt;</a></code> holder
+<p>The dimensions are children of a {@element Dimensions} holder
 element. Even though schema order does not matter, typically the
 dimensions are declared first. Then follow the measures, organized
-into measure groups and under a
-<code><a href="#XML_MeasureGroups">&lt;MeasureGroups&gt;</a></code>
-holder element. (A measure group is a collection of measures that have
-the same fact table. The simple cubes we shall be considering at first
+into measure groups and under a {@element MeasureGroups} holder
+element. (A measure group is a collection of measures that have the
+same fact table. The simple cubes we shall be considering at first
 have just one measure group; later, we shall see examples of cubes
 with more than one measure group.)</p>
 
@@ -545,21 +549,21 @@ and <code>[Day]</code>.</p>
 table <code>"sales_fact_1997"</code>. As we shall see later, each
 table used in the logical schema must be declared within the physical
 schema, and sure enough, the
-<code><a href="#XML_PhysicalSchema">&lt;PhysicalSchema&gt;</a></code>
+{@element PhysicalSchema}
 element has a child element
-<code><a href="#XML_Table">&lt;Table name="sales_fact_1997"/&gt;</a></code>.</p>
+{@element Table name="sales_fact_1997"}.</p>
 
 <p>The fact table contains the columns from which measures are
 calculated, and foreign key columns that link to dimension tables.  To
 use these columns, Mondrian needs to know about them, so all of these
 columns occur somewhere in the
-<code><a href="#XML_MeasureGroup">&lt;MeasureGroup&gt;</a></code>
+{@element MeasureGroup}
 element.  The <code>unit_sales</code>, <code>store_sales</code>
 and <code>store_cost</code> columns each occur within a
-<code><a href="#XML_Measure">&lt;Measure&gt;</a></code> definition; and the
+{@element Measure} definition; and the
 <code>customer_id</code> and <code>time_id</code> columns each occur
 within a
-<code><a href="#XML_ForeignKeyLink">&lt;ForeignKeyLink&gt;</a></code>
+{@element ForeignKeyLink}
 element, linking the measure group to the <code>[Customer]</code>
 and <code>[Time]</code> dimensions, respectively.</p>
 
@@ -572,15 +576,13 @@ and <code>[Time]</code> dimensions, respectively.</p>
 
 <p>Let's look at the measures defined in the Sales cube's one and only measure group.</p>
 
-<blockquote style="text-indent: -20px">
-    <code>
-      <div style="padding-left:20px;">&lt;<a href="#XML_Measure">Measure</a> name="Unit Sales" column="unit_sales" aggregator="sum" formatString="#,###"/&gt;</div>
-      <div style="padding-left:20px;">&lt;<a href="#XML_Measure">Measure</a> name="Store Sales" column="store_sales" aggregator="sum" formatString="#,###.##"/&gt;</div>
-      <div style="padding-left:20px;">&lt;<a href="#XML_Measure">Measure</a> name="Store Cost" column="store_cost" aggregator="sum" formatString="#,###.00"/&gt;</div>
-    </code>
-</blockquote>
+{@xml
+<Measure name="Unit Sales" column="unit_sales" aggregator="sum" formatString="#,###"/>
+<Measure name="Store Sales" column="store_sales" aggregator="sum" formatString="#,###.##"/>
+<Measure name="Store Cost" column="store_cost" aggregator="sum" formatString="#,###.00"/>
+}
 
-<p>Each measure (see <code><a href="#XML_Measure">&lt;Measure&gt;</a></code>) has a name, a column in the fact table, and an
+<p>Each measure (see {@element Measure}) has a name, a column in the fact table, and an
 <code>aggregator</code>. The aggregator is usually "sum", but "count", "min", "max", "avg", and
 "distinct-count" are also allowed; "distinct-count" has some limitations if your cube contains a
 <a href="#Parent_child_hierarchies">parent-child hierarchy</a>.</p>
@@ -599,43 +601,37 @@ sense if you wish to localize the name of the measure as seen by
 end-users, or if you wish to display special letters (e.g. &#931; or
 &#928;) in the user interface:</p>
 
-<blockquote style="text-indent: -20px">
-    <code>
-        <div style="padding-left:20px;">&lt;<a href="#XML_Measure">Measure</a> name="Sum X" column="sum_x" aggregator="sum" caption="&amp;#931; X"/&gt;</div>
-    </code>
-</blockquote>
+{@xml
+<Measure name="Sum X" column="sum_x" aggregator="sum" caption="&amp;#931; X"/>
+}
 
 <p>Rather than coming from a column, a measure can use an SQL
 expression to calculate its value. To do this, add a calculated column
 <code>promotion_sales</code> to the declaration of the fact table:</p>
 
-<blockquote style="text-indent: -20px">
-    <code>
-        <div style="padding-left:20px">&lt;<a href="#XML_Table">Table</a> name="sales_fact_1997"&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_ColumnDefs">ColumnDefs</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_CalculatedColumnDef">CalculatedColumnDef</a> name="promotion_sales"&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_ExpressionView">ExpressionView</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_SQL">SQL</a> dialect="generic"&gt;</div>
-                            <div style="padding-left:120px;">(case when &lt;<a href="#XML_Column">Column</a> name="promotion_id"/&gt; = </div>
-                            <div style="padding-left:120px;">0 then 0 else &lt;<a href="#XML_Column">Column</a> name="store_sales"/&gt; end)</div>
-                        <div style="padding-left:100px;">&lt;/<a href="#XML_SQL">SQL</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;/<a href="#XML_ExpressionView">ExpressionView</a></div>
-                <div style="padding-left:60px;">&lt;/<a href="#XML_CalculatedColumnDef">CalculatedColumnDef</a>&gt;</div>
-            <div style="padding-left:40px;">&lt;/<a href="#XML_ColumnDefs">ColumnDefs</a>&gt;</div>
-        <div style="padding-left:20px">&lt;/<a href="#XML_Table">Table</a>&gt;</div>
-    </code>
-</blockquote>
+{@xml
+<Table name="sales_fact_1997">
+  <ColumnDefs>
+    <CalculatedColumnDef name="promotion_sales">
+      <ExpressionView>
+        <SQL dialect="generic">
+          (case when <Column name="promotion_id"/> =
+          0 then 0 else <Column name="store_sales"/> end)
+        </SQL>
+      </ExpressionView>
+    </CalculatedColumnDef>
+  </ColumnDefs>
+</Table>
+}
 
 then create the <code>[Promotion Sales]</code> measure based upon it:</p>
 
-<blockquote style="text-indent: -20px">
-    <code>
-        <div style="padding-left:20px">&lt;<a href="#XML_Measure">Measure</a> name="Promotion Sales" aggregator="sum" column="promotion_sales" formatString="#,###.00"&gt;</div>
-    </code>
-</blockquote>
+{@xml
+<Measure name="Promotion Sales" aggregator="sum" column="promotion_sales" formatString="#,###.00">
+}
 
 <p>Observe how the
-<code><a href="#XML_PhysicalSchema">&lt;PhysicalSchema&gt;</a></code>
+{@element PhysicalSchema}
 is doing its job and gathering implementation details in one
 place. The measure definition does not know or care that the
 <code>promotion_sales</code> column is actually calculated, and looks
@@ -648,136 +644,30 @@ correspond to a promotion sale.  Arbitrary SQL expressions can be
 used, including subqueries. However, the underlying database must be
 able to support that SQL expression in the context of an
 aggregate. Variations in syntax between different databases is handled
-by specifying more than one
-<code><a href="#XML_SQL">SQL</a></code>
-element, each with a different value for its <code>dialect</code>
-attribute.</p>
+by specifying more than one {@element Key} element:</p>
 
-<p>In order to provide a specific formatting of the cell values, a measure can use a
-<a href="#Cell_formatter">cell formatter</a>.</p>
+{@xml
+<Attribute name="Quarter">
+  <Key>
+    <Column name="the_year"/>
+    <Column name="quarter"/>
+  </Key>
+</Attribute>
+}
 
-<!--
-#######################################
-##  3.3 Dimensions and Attributes #####
-####################################### -->
-<h1>3.3 Dimensions and Attributes<a name="Dimensions_and_Attributes">&nbsp;</a></h1>
-
-<p>We said earlier that a dimension is a collection of related
-attributes. For example, recall the <code>[Customer]</code> dimension in our
-simple example:</p>
-
-<blockquote>
-  <code>
-    <div style="padding-left:20px;">&lt;<a href="#XML_Dimension">Dimension</a> name="Customer" table="customer" key="Id"&gt;</div>
-      <div style="padding-left:40px;">&lt;<a href="#XML_Attributes">Attributes</a>&gt;</div>
-        <div style="padding-left:60px;">&lt;<a href="#XML_Attribute">Attribute</a> name="Gender" column="gender"/&gt;</div>
-        <div style="padding-left:60px;">&lt;<a href="#XML_Attribute">Attribute</a> name="Id" column="customer_id"/&gt;</div>
-      <div style="padding-left:40px;">&lt;/<a href="#XML_Attributes">Attributes</a>&gt;</div>
-    <div style="padding-left:20px;">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
-  </code>
-</blockquote>
-
-<p>This contained <code>[Gender]</code> and <code>[Id]</code>
-attributes, and a longer example might be expected to contain more
-attributes related to customers, such
-as <code>[Customer&nbsp;Name]</code>, <code>[City]</code>,
-<code>[State]</code> and <code>[Marital Status]</code>.</p>
-
-<!-- ### Dimension key ### -->
-<h1>3.3.1 Dimension key<a name="Dimension_key">&nbsp;</a></h1>
-
-<p>But we did not say exactly what we meant by "related". Every dimension
-needs to designate one of its attributes as its "key" attribute, and
-all other attributes must be functionally dependent on that key. This
-means that for a given value of the key, there is one and only one
-value of each other attribute. Generally speaking, the key attribute
-maps onto the primary key of the dimension table, and the other
-attributes are based upon other columns of the dimension table.</p>
-
-<p>For example, the <code>key="Id"</code> attibute in
-the <code>[Customer]</code> dimension says that the <code>[Id]</code>
-attribute is its key, and this is based upon
-the <code>customer_id</code> column of the <code>customers</code>
-table. Because <code>customer_id</code> is the primary key, for a
-given value of <code>customer_id</code>, there is a unique row in
-the <code>customers</code> table, and therefore all other attributes
-are well-defined.</p>
-
-<p>We shall encounter the key attribute again when we describe how
-dimensions are linked to measure groups.</p>
-
-<!-- ### A simple attribute ### -->
-<h1>3.3.2 A simple attribute<a name="A_simple_attribute">&nbsp;</a></h1>
-
-<p><code>[Gender]</code> is a really simple
-attribute. The <code>gender</code> column has has two distinct values,
-"F" and "M", and so the <code>[Gender]</code> attribute has two
-members <code>[Customer].[Gender].[F]</code>
-and <code>[Customer].[Gender].[M]</code>.</p>
-
-<p>It is important that every row in the fact table has exactly one
-value for Gender (and for every other attribute).  In the Sales cube,
-each row in the fact table represents a sales transaction. By adding
-the totals for "F" and "M", every transaction is counted exactly
-once.</p>
-
-<!-- #### Attribute key and name #### -->
-<h1>3.3.3 Attribute key and name<a name="Attribute_key_and_name">&nbsp;</a></h1>
-
-<p>Attributes do not always have unique names. For example, there
-might be two distinct customers called "Abraham Lincoln", living in
-different cities or even the same city. We model such attributes by
-using different columns as their key and their name:</p>
-
-<blockquote>
-  <code>
-    <div style="padding-left:20px;">&lt;<a href="#XML_Attribute">Attribute</a> name="Customer Name" keyColumn="customer_id" nameColumn="full_name"/&gt;</div>
-  </code>
-</blockquote>
-
-<p>The <code><a href="#XML_Attribute">Attribute</a></code> element has
-a <code>table</code> attribute; we do not need to specify it in this
-case, because we inherit <code>table="customer"</code> from the
-enclosing <code><a href="#XML_Dimension">Dimension</a></code>
-element. In practice, the only time you need the <code>table</code>
-attribute is in <a href="#Snowflake_dimensions">snowflake dimensions</a>.</p>
-
-
-<!-- ### Composite key ### -->
-<h1>3.3.4 Composite key<a name="Composite_key">&nbsp;</a></h1>
-
-<p>The key of an attribute sometimes consists of more than one
-column. This is called a <dfn>composite key</dfn>.
-The <code>[Time].[Quarter]</code> is an example of this. If
-the key consisted just of the <code>quarter</code> column, the
-attribute would only have 4 values, whereas we would like 4
-values <i>per year covered by the data set</i>. A composite key
-(<code>the_year</code>, <code>quarter</code>) achieves this: the
-member with key <code>(2012, 'Q1')</code> is distinct from the member
-with key <code>(2011, 'Q1')</code>.</p>
-
-<p>We cannot use the <code>keyColumn</code> attribute, because it only
-allows one column. Instead, we use the nested
-<code><a href="#XML_Key">&lt;Key&gt;</a></code> element:
-
-<blockquote>
-  <code>
-    <div style="padding-left:20px;">&lt;<a href="#XML_Attribute">Attribute</a> name="Quarter"&gt;</div>
-      <div style="padding-left:40px;">&lt;<a href="#XML_Key">Key</a>&gt;</div>
-        <div style="padding-left:60px;">&lt;<a href="#XML_Column">Column</a> name="the_year"/&gt;</div>
-        <div style="padding-left:60px;">&lt;<a href="#XML_Column">Column</a> name="quarter"/&gt;</div>
-      <div style="padding-left:40px;">&lt;/<a href="#XML_Key">Key</a>&gt;</div>
-    <div style="padding-left:20px;">&lt;/<a href="#XML_Attribute">Attribute</a>&gt;</div>
-  </code>
-</blockquote>
-
-<p>If there is only one key column then
-<code><a href="#XML_Key">&lt;Key&gt;</a></code>
+<p>If there is only one key column then {@element Key}
 and <code>keyColumn</code> are equivalent. Use whichever you prefer:
 the former is more uniform, but the latter requires less typing.</p>
 
 <p>We do not need to specify <code>nameColumn</code>, because it
 defaults to the last column in the composite key.</p>
+
+<p>If a dimension table has a composite key, the key attribute for
+that dimension will have a composite key. To reference it from a fact
+table, you will need to need to create a {@element ForeignKeyLink} in
+the fact table's {@element MeasureGroup} that uses one column in the
+fact table for each of the columns of the dimension table's composite
+primary key.</p>
 
 <!-- ### Attribute order ### -->
 <h1>3.3.5 Attribute order<a name="Attribute_order">&nbsp;</a></h1>
@@ -789,18 +679,19 @@ in a composite key.) But sometimes name does not give us the order we
 want. The <code>[Time].[Month]</code> attribute is an example of
 this:</p>
 
-<blockquote>
-  <code>
-    <div style="padding-left:20px;">&lt;<a href="#XML_Attribute">Attribute</a> name="Month"&gt;</div>
-      <div style="padding-left:40px;">&lt;<a href="#XML_Key">Key</a>&gt;</div>
-        <div style="padding-left:60px;">&lt;<a href="#XML_Column">Column</a> name="the_year"/&gt;</div>
-        <div style="padding-left:60px;">&lt;<a href="#XML_Column">Column</a> name="month"/&gt;</div>
-      <div style="padding-left:40px;">&lt;/<a href="#XML_Key">Key</a>&gt;</div>
-    <div style="padding-left:20px;">&lt;/<a href="#XML_Attribute">Attribute</a>&gt;</div>
-  </code>
-</blockquote>
+{@xml
+<Attribute name="Month">
+  <Key>
+    <Column name="the_year"/>
+    <Column name="month"/>
+  </Key>
+</Attribute>
+}
 
-<p>Like <code>[Time].[Quarter]</code>, Month has a composite key. We would like 12 months per year covered by the data set, not just 12 months. Unlike Quarter, we have overridden the name. Let's see what happens if we execute a query.</p>
+<p>Like <code>[Time].[Quarter]</code>, Month has a composite key. We
+would like 12 months per year covered by the data set, not just 12
+months. Unlike Quarter, we have overridden the name. Let's see what
+happens if we execute a query.</p>
 
 <blockquote>
   <code>
@@ -820,16 +711,14 @@ this:</p>
 Mondrian is sorting by name. We got what we asked for, but not what we
 wanted! We need to tell Mondrian to sort by the key columns:</p>
 
-<blockquote>
-  <code>
-    <div style="padding-left:20px;">&lt;<a href="#XML_Attribute">Attribute</a> name="Month" nameColumn="month_name" orderByColumn="month"&gt;</div>
-      <div style="padding-left:40px;">&lt;<a href="#XML_Key">Key</a>&gt;</div>
-        <div style="padding-left:60px;">&lt;<a href="#XML_Column">Column</a> name="the_year"/&gt;</div>
-        <div style="padding-left:60px;">&lt;<a href="#XML_Column">Column</a> name="month"/&gt;</div>
-      <div style="padding-left:40px;">&lt;/<a href="#XML_Key">Key</a>&gt;</div>
-    <div style="padding-left:20px;">&lt;/<a href="#XML_Attribute">Attribute</a>&gt;</div>
-  </code>
-</blockquote>
+{@xml
+<Attribute name="Month" nameColumn="month_name" orderByColumn="month">
+  <Key>
+    <Column name="the_year"/>
+    <Column name="month"/>
+  </Key>
+</Attribute>
+}
 
 <p>Now the results are as we expect:</p>
 
@@ -856,7 +745,8 @@ wish to expand it to see the constituent cities. When viewing a month,
 they might wish to roll up into quarter or year. For such combinations
 of attributes, it is convenient to create hierarchies.</p>
 
-<p>Here is the <code[Time]</code> dimension, slightly extended from the earlier example:</p>
+<p>Here is the <code>[Time]</code> dimension, slightly extended from
+the earlier example:</p>
 
 {@xml
 <Dimension name="Time" table="time_by_day" key="Day">
@@ -990,11 +880,10 @@ can easily define a dozen or so attributes and start playing with them
 in queries before you start even thinking about hierarchies.</p>
 
 <p>To control whether an attribute has a hierarchy, use
-the <code>hasHierarchy</code> attribute of
-the <code><a href="#XML_Attribute">Attribute</a></code> element. Other
-attributes, mostly corresponding directly to similarly-named
-attributes of the <code><a href="#XML_Hierarchy">Hierarchy</a></code>
-element, are shown in the following table:</p>
+the <code>hasHierarchy</code> attribute of the {@element Attribute}
+element. Other attributes, mostly corresponding directly to
+similarly-named attributes of the {@element Hierarchy} element, are
+shown in the following table:</p>
 
 <table class="grayTable" id="table12">
   <tr>
@@ -1150,40 +1039,34 @@ equivalent to the above example:</p>
 
 <p>For example, if you are defining an attribute with a simple (non-composite) key you could either write</p>
 
-<blockquote style="text-indent: -120px">
-  <code>
-    <div style="padding-left:120px;">&lt;<a href="#XML_Attribute">Attribute</a> name="A"&gt;</div>
-      <div style="padding-left:140px;">&lt;<a href="#XML_Key">Key</a>&gt;</div>
-        <div style="padding-left:160px;">&lt;<a href="#XML_Key">Column</a> name="c"&gt;</div>
-      <div style="padding-left:140px;">&lt;/<a href="#XML_Key">Key</a>&gt;</div>
-    <div style="padding-left:120px;">&lt;/<a href="#XML_Attribute">Attribute</a>&gt;</div>
-</code>
-</blockquote>
+{@xml
+<Attribute name="A">
+  <Key>
+    <Column name="c">
+  </Key>
+</Attribute>
+}
 
 <p>or</p>
 
-<blockquote style="text-indent: -120px">
-  <code>
-    <div style="padding-left:120px;">&lt;<a href="#XML_Attribute">Attribute</a> name="A" column="c"/&gt;</div>
-</code>
-</blockquote>
+{@xml
+<Attribute name="A" column="c"/>
+}
 
 <p>These are equivalent, but the second is more concise, and you would
 probably choose to use it when writing schemas by hand. If the
 attribute has a composite key, or if you wish to use
 the <code>table</code> attribute, you have to use the nested
-<code><a href="#XML_Key">Key</a></code> element:
+{@element Key} element:
 
-<blockquote style="text-indent: -120px">
-  <code>
-    <div style="padding-left:120px;">&lt;<a href="#XML_Attribute">Attribute</a> name="A"&gt;</div>
-      <div style="padding-left:140px;">&lt;<a href="#XML_Key">Key</a>&gt;</div>
-        <div style="padding-left:160px;">&lt;<a href="#XML_Key">Column</a> table="t1" name="c1"/&gt;</div>
-        <div style="padding-left:160px;">&lt;<a href="#XML_Key">Column</a> table="t2" name="c2"/&gt;</div>
-      <div style="padding-left:140px;">&lt;/<a href="#XML_Key">Key</a>&gt;</div>
-    <div style="padding-left:120px;">&lt;/<a href="#XML_Attribute">Attribute</a>&gt;</div>
-</code>
-</blockquote>
+{@xml
+<Attribute name="A">
+  <Key>
+    <Column table="t1" name="c1"/>
+    <Column table="t2" name="c2"/>
+  </Key>
+</Attribute>
+}
 
 <p>The following table shows schema elements that can be expressed
 either using an attribute or a nested element.</p>
@@ -1196,52 +1079,52 @@ either using an attribute or a nested element.</p>
             <td><b>Description</b></td>
         </tr>
         <tr>
-            <td><code>&lt;<a href="#XML_Attribute">Attribute</a>&gt;</code></td>
+            <td>{@element Attribute}</td>
             <td><code>keyColumn</code></td>
-            <td><code>&lt;<a href="#XML_Key">Key</a>&gt;</code></td>
+            <td>{@element Key}</td>
             <td>Column(s) that comprise the key of this attribute.</td>
         </tr>
         <tr>
-            <td><code>&lt;<a href="#XML_Attribute">Attribute</a>&gt;</code></td>
+            <td>{@element Attribute}</td>
             <td><code>nameColumn</code></td>
-            <td><code>&lt;<a href="#XML_NameExpression">Name</a>&gt;</code></td>
+            <td>{@element Name}</td>
             <td>Column that defines the name of members of this attribute. If 
             not specified, the attribute key is used.</td>
         </tr>
         <tr>
-            <td><code>&lt;<a href="#XML_Attribute">Attribute</a>&gt;</code></td>
+            <td>{@element Attribute}</td>
             <td><code>orderByColumn</code></td>
-            <td><code>&lt;<a href="#XML_OrderBy">OrderBy</a>&gt;</code></td>
+            <td>{@element OrderBy}</td>
             <td>Column(s) that define the order of members. If not specified, 
             the attribute key is used.</td>
         </tr>
         <tr>
-            <td><code>&lt;<a href="#XML_Attribute">Attribute</a>&gt;</code></td>
+            <td>{@element Attribute}</td>
             <td><code>captionColumn</code></td>
-            <td><code>&lt;<a href="#XML_Caption">Caption</a>&gt;</code></td>
+            <td>{@element Caption}</td>
             <td>Column that forms the caption of members. If not specified, 
             the attribute name is used.</td>
         </tr>
         <tr>
-            <td><code>&lt;<a href="#XML_Measure">Measure</a>&gt;</code></td>
+            <td>{@element Measure}</td>
             <td><code>column</code></td>
-            <td><code>&lt;<a href="#XML_Arguments">Arguments</a>&gt;</code></td>
+            <td>{@element Arguments}</td>
             <td>Column(s) that are the arguments to this measure. (When
               this measure is implemented by generating a SQL
               expression, these columns become the argument to the SQL
               aggregate function.)</td>
         </tr>
         <tr>
-            <td><code>&lt;<a href="#XML_Link">Link</a>&gt;</code></td>
+            <td>{@element Link}</td>
             <td><code>foreignKeyColumn</code></td>
-            <td><code>&lt;<a href="#XML_ForeignKey">ForeignKey</a>&gt;</code></td>
+            <td>{@element ForeignKey}</td>
             <td>Column(s) that form a foreign key from this Link's
               referencing table to its referenced table.</td>
         </tr>
         <tr>
-            <td><code>&lt;<a href="#XML_ForeignKeyLink">ForeignKeyLink</a>&gt;</code></td>
+            <td>{@element ForeignKeyLink}</td>
             <td><code>foreignKeyColumn</code></td>
-            <td><code>&lt;<a href="#XML_ForeignKey">ForeignKey</a>&gt;</code></td>
+            <td>{@element ForeignKey}</td>
             <td>Column(s) that form a foreign key from a measure
             group's fact table to a dimension table.</td>
         </tr>
@@ -1523,8 +1406,7 @@ and a <a href="#Member_formatter">member formatter</a>.</p>
 ################################################ -->
 <h1>3.3.9 Approximate level cardinality<a name="Approximate_level_cardinality">&nbsp;</a></h1>
 
-<p>The <a
- href="#XML_Level">&lt;Level&gt;</a> element allows specifying the optional attribute "approxRowCount".  Specifying
+<p>The {@element Level} element allows specifying the optional attribute <code>approxRowCount</code>.  Specifying
     <code>approxRowCount</code> can improve performance by reducing the need to determine level, hierarchy, and dimension cardinality.
     This can have a significant impact when connecting to Mondrian via XMLA.</p>
 <!--
@@ -1533,10 +1415,10 @@ and a <a href="#Member_formatter">member formatter</a>.</p>
 ################################################ -->
 <h1>3.3.10 Default Measure Attribute<a name="Default_Measure_Attribute">&nbsp;</a></h1>
 
-<p>The <a href="#XML_Cube">&lt;Cube&gt;</a> element allows specifying the
+<p>The {@element Cube} element allows specifying the
 optional attribute "defaultMeasure".</p>
 
-<p>Specifying <code>defaultMeasure</code> in <a href="#XML_Cube">&lt;Cube&gt;</a> element allows users
+<p>Specifying <code>defaultMeasure</code> in the {@element Cube} element allows users
 to explicitly specify any base measure as a default Measure.</p>
 
 <p>Note that if a default measure is not specified it takes the first measure
@@ -1546,17 +1428,16 @@ defined in the cube as the default measure.</p>
 cases where you would want a calculated member to be picked up as the default
 measure.</p>
 
-<blockquote style="text-indent: -20px">
-<code>
-    <div style="padding-left:20px">&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot; defaultMeasure=&quot;Unit Sales&quot;&gt;</div>
-        <div style="padding-left:40px">...</div>
-        <div style="padding-left:40px">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name=&quot;Profit&quot; dimension=&quot;Measures&quot;&gt;</div>
-            <div style="padding-left:60px;">&lt;<a href="#XML_Formula">Formula</a>&gt;[Measures].[Store Sales] - [Measures].[Store Cost]&lt;/<a href="#XML_Formula">Formula</a>&gt;</div>
-            <div style="padding-left:60px">...</div>
-        <div style="padding-left:40px">&lt;/<span><a href="#XML_CalculatedMember">CalculatedMember</a></span>&gt;</div>
-    <div style="padding-left:20px">&lt;/<a href="#XML_Cube">Cube</a>&gt;</div>
-</code>
-</blockquote>
+{@xml
+<Cube name="Sales" defaultMeasure="Unit Sales">
+  ...
+  <CalculatedMember name="Profit" dimension="Measures">
+    <Formula>[Measures].[Store Sales] - [Measures].[Store Cost]</Formula>
+    ...
+  </CalculatedMember>
+</Cube>
+}
+
 <!--
 ####################################################
 ##  3.3.11 Functional Dependency Optimizations #####
@@ -1570,9 +1451,9 @@ the data, and often cannot be inferred just by looking at the data itself.</p>
 
 <p>Functional dependencies are declared to Mondrian using the
 <code>dependsOnLevelValue</code> attribute of the
-<a href="#XML_Property">&lt;Property&gt</a> element and the
-<code>uniqueKeyLevelName</code> attribute of the
-<a href="#XML_Hierarchy">&lt;Hierarchy&gt</a> element.</p>
+{@element Property} element and the
+<code>uniqueKeyLevelName</code> attribute of the {@element Hierarchy}
+element.</p>
 
 <p>The <code>dependsOnLevelValue</code> attribute of a
 <a href="#Member_properties">member property</a> is used to indicate
@@ -1582,7 +1463,7 @@ defined.  In other words, for a given value of the level, the value of the
 property is invariant.</p>
 
 <p>The <code>uniqueKeyLevelName</code> attribute of a
-<a href="#XML_Hierarchy">&lt;Hierarchy&gt</a> is used to indicate that the given
+{@element Hierarchy} is used to indicate that the given
 level (if any) taken together with all higher levels in the hierarchy acts as a
 unique alternate key, ensuring that for any unique combination of those level values,
 there is exactly one combination of values for all levels below it.
@@ -1736,7 +1617,7 @@ need to be migrated to the new syntax as part of upgrading to Mondrian 4.0.</p>
 <h1>3.3.12 Table Hints<a name="Table_hints">&nbsp;</a></h1>
 
 <p>Mondrian supports a limited set of database-specific hints for the
-<a href="#XML_Table">&lt;Table&gt</a> element, which will then be
+{@element Table} element, which will then be
 passed on to SQL queries involving the table.  These hints are as
 follows:</p>
 
@@ -1758,13 +1639,11 @@ follows:</p>
 
 <p>For example:</p>
 
-<blockquote style="text-indent: -20px">
-    <code>
-        <div style="padding-left:20px;">&lt;<a href="#XML_Table">Table</a> name="automotive_dim"&gt;</div>
-            <div style="padding-left:40px">&lt;<a href="#XML_Hint">Hint</a> type="force_index"&gt;my_index&lt;/<a href="#XML_Hint">Hint</a>&gt;</div>
-        <div style="padding-left:20px;">&lt;/<a href="#XML_Table">Table</a>&gt;</div>
-    </code>
-</blockquote>
+{@xml
+<Table name="automotive_dim">
+  <Hint type="force_index">my_index</Hint>
+</Table>
+}
 
 <p>As with the functional dependency optimizations, support for table hints
 is in a transitional stage, and are likely to change in Mondrian 4.0.  Any
@@ -1786,15 +1665,13 @@ upgrading to Mondrian 4.0.</p>
 <p>TODO</p>
 
 <p>Tables are declared using
-the <code><a href="#XML_Table">&lt;Table&gt;</a></code> element. If
+the {@link Table} element. If
 the fact table is not in the default schema, you can provide an
 explicit schema using the "schema" attribute; for example:</p>
 
-<blockquote>
-    <code>
-        <div style="padding-left:20px;">&lt;<a href="#XML_Table">Table</a> schema="Foodmart" name="sales_fact_1997"/&gt;</div>
-    </code>
-</blockquote>
+{@xml
+<Table schema="Foodmart" name="sales_fact_1997"/>
+}
 
 <p>[In a Column element,] the optional <code>datatype</code> attribute
 specifies how cell values are represented in Mondrian's cache, and how
@@ -1807,8 +1684,7 @@ The default is "<code>Numeric</code>", except for "<code>count</code>"
 and "<code>distinct-count</code>" measures, which are
 "<code>Integer</code>".</p>
 
-
-<p>You can also use the <code><a href="#XML_View">&lt;View&gt;</a></code>
+<p>You can also use the {@element View}
 construct to build more complicated SQL statements.</p>
 
 <!--
@@ -1817,46 +1693,45 @@ construct to build more complicated SQL statements.</p>
 ########################## -->
 <h1>4.2 Inline table<a name="Inline_tables">&nbsp;</a></h1>
 
-<p>The <code>&lt;<a href="#XML_InlineTable">InlineTable</a>&gt;</code> construct allows
+<p>The {@link InlineTable} construct allows
 you to define a dataset in the schema file. You must declare the names of the columns, the column types
 (&quot;String&quot; or &quot;Numeric&quot;), and a set of rows. As for
-<code>&lt;<a href="#XML_Table">Table</a>&gt;</code> and
-<code>&lt;<a href="#XML_View">View</a>&gt;</code>, you must provide a unique alias with which
+{@element Table} and
+{@element View}, you must provide a unique alias with which
 to refer to the dataset.</p>
 
 <p>Here is an example:</p>
 
-<blockquote style="text-indent: -20px">
-    <code>
-        <div style="padding-left:20px">&lt;<a href="#XML_Dimension">Dimension</a> name="Severity"&gt;</div>
-            <div style="padding-left:40px">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="severity_id"&gt;</div>
-                <div style="padding-left:60px">&lt;<a href="#XML_InlineTable">InlineTable</a> alias="severity"&gt;</div>
-                    <div style="padding-left:80px">&lt;<a href="#XML_ColumnDefs">ColumnDefs</a>&gt;</div>
-                        <div style="padding-left:100px">&lt;<a href="#XML_ColumnDef">ColumnDef</a> name=&quot;id&quot; type=&quot;Numeric&quot;/&gt;</div>
-                        <div style="padding-left:100px">&lt;<a href="#XML_ColumnDef">ColumnDef</a> name=&quot;desc&quot; type=&quot;String&quot;/&gt;</div>
-                    <div style="padding-left:80px">&lt;/<a href="#XML_ColumnDefs">ColumnDefs</a>&gt;</div>
-                    <div style="padding-left:80px">&lt;<a href="#XML_Rows">Rows</a>&gt;</div>
-                        <div style="padding-left:100px">&lt;<a href="#XML_Row">Row</a>&gt;</div>
-                            <div style="padding-left:120px">&lt;<a href="#XML_Value">Value</a> column=&quot;id&quot;&gt;1&lt;/<a href="#XML_Value">Value</a>&gt;</div>
-                            <div style="padding-left:120px">&lt;<a href="#XML_Value">Value</a> column=&quot;desc&quot;&gt;High&lt;/<a href="#XML_Value">Value</a>&gt;</div>
-                        <div style="padding-left:100px">&lt;/<a href="#XML_Row">Row</a>&gt;</div>
-                        <div style="padding-left:100px">&lt;<a href="#XML_Row">Row</a>&gt;</div>
-                            <div style="padding-left:120px">&lt;<a href="#XML_Value">Value</a> column=&quot;id&quot;&gt;2&lt;/<a href="#XML_Value">Value</a>&gt;</div>
-                            <div style="padding-left:120px">&lt;<a href="#XML_Value">Value</a> column=&quot;desc&quot;&gt;Medium&lt;/<a href="#XML_Value">Value</a>&gt;</div>
-                        <div style="padding-left:100px">&lt;/<a href="#XML_Row">Row</a>&gt;</div>
-                        <div style="padding-left:100px">&lt;<a href="#XML_Row">Row</a>&gt;</div>
-                            <div style="padding-left:120px">&lt;<a href="#XML_Value">Value</a> column=&quot;id&quot;&gt;3&lt;/<a href="#XML_Value">Value</a>&gt;</div>
-                            <div style="padding-left:120px">&lt;<a href="#XML_Value">Value</a> column=&quot;desc&quot;&gt;Low&lt;/<a href="#XML_Value">Value</a>&gt;</div>
-                        <div style="padding-left:100px">&lt;/<a href="#XML_Row">Row</a>&gt;</div>
-                    <div style="padding-left:80px">&lt;/<a href="#XML_Rows">Rows</a>&gt;</div>
-                <div style="padding-left:60px">&lt;/<a href="#XML_InlineTable">InlineTable</a>&gt;</div>
-                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Severity" column="id" nameColumn=&quot;desc&quot; uniqueMembers="true"/&gt;</div>
-            <div style="padding-left:40px">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
-        <div style="padding-left:20px">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
-    </code>
-</blockquote>
+{@xml
+<Dimension name="Severity">
+  <Hierarchy hasAll="true" primaryKey="severity_id">
+    <InlineTable alias="severity">
+      <ColumnDefs>
+        <ColumnDef name="id" type="Numeric"/>
+        <ColumnDef name="desc" type="String"/>
+      </ColumnDefs>
+      <Rows>
+        <Row>
+          <Value column="id">1</Value>
+          <Value column="desc">High</Value>
+        </Row>
+        <Row>
+          <Value column="id">2</Value>
+          <Value column="desc">Medium</Value>
+        </Row>
+        <Row>
+          <Value column="id">3</Value>
+          <Value column="desc">Low</Value>
+        </Row>
+      </Rows>
+    </InlineTable>
+    <Level name="Severity" column="id" nameColumn="desc" uniqueMembers="true"/>
+  </Hierarchy>
+</Dimension>
+}
 
-<p>This has the same effect as if you had a table called 'severity' in your database:</p>
+<p>This has the same effect as if you had a table called 'severity' in
+your database:</p>
 
   <table   id="table7" class="grayTable">
     <tr>
@@ -1879,16 +1754,14 @@ to refer to the dataset.</p>
 
 <p>and the declaration</p>
 
-<blockquote style="text-indent: -20px">
-<code>
-    <div style="padding-left:20px">&lt;<a href="#XML_Dimension">Dimension</a> name="Severity"&gt;</div>
-        <div style="padding-left:40px">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="severity_id"&gt;</div>
-            <div style="padding-left:60px">&lt;<a href="#XML_InlineTable">Table</a> name=&quot;severity&quot;/&gt;</div>
-            <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Severity" column="id" nameColumn=&quot;desc&quot; uniqueMembers="true"/&gt;</div>
-        <div style="padding-left:40px">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
-    <div style="padding-left:20px">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
-</code>
-</blockquote>
+{@xml
+<Dimension name="Severity">
+  <Hierarchy hasAll="true" primaryKey="severity_id">
+    <Table name="severity"/>
+    <Level name="Severity" column="id" nameColumn="desc" uniqueMembers="true"/>
+  </Hierarchy>
+</Dimension>
+}
 
 <p>To specify a NULL value for a column, omit the <code>&lt;Value&gt;</code>
 for that column, and the column's value will default to NULL.</p>
