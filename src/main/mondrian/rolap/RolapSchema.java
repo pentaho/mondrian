@@ -1068,11 +1068,11 @@ public class RolapSchema extends OlapElementBase implements Schema {
             String sql)
         {
             java.sql.Connection connection = null;
+            PreparedStatement pstmt = null;
             try {
                 connection =
                     jdbcSchema.getDataSource().getConnection();
-                final PreparedStatement pstmt =
-                    connection.prepareStatement(sql);
+                pstmt = connection.prepareStatement(sql);
                 final ResultSetMetaData metaData = pstmt.getMetaData();
                 final int columnCount = metaData.getColumnCount();
                 final List<ColumnInfo> columnInfoList =
@@ -1102,13 +1102,18 @@ public class RolapSchema extends OlapElementBase implements Schema {
                     columnInfoList.add(
                         new ColumnInfo(columnName, datatype, columnSize));
                 }
+                pstmt.close();
+                pstmt = null;
+                connection.close();
+                connection = null;
                 return columnInfoList;
             } catch (SQLException e) {
                 loader.getHandler().warning(
                     "View is invalid: " + e.getMessage(), xmlNode, null, e);
                 return null;
             } finally {
-                Util.close(null, null, connection);
+                //noinspection ThrowableResultOfMethodCallIgnored
+                Util.close(null, pstmt, connection);
             }
         }
     }
@@ -3106,7 +3111,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
                 }
 
                 // Note: If all providers fail, we put -1 into the cache,
-                //to ensure that we won't try again.
+                // to ensure that we won't try again.
                 columnMap.put(key, rowCount);
             }
             return rowCount;
