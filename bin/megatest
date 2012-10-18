@@ -373,22 +373,11 @@ doTest2() {
 chooseAntHome() {
   jdk=$1
   case $jdk in
-  jdk1.4)
-    case $(uname -o) in
-    Cygwin)
-      echo $(cd ${OPEN_DIR}/thirdparty/ant; pwd)
-      ;;
-    *)
-      echo $(cd /usr/local/apache-ant-1.6.0; pwd)
-    esac
+  (jdk1.4)
+    readlink -f /usr/local/apache-ant-1.6.0
     ;;
-  jdk1.5|jdk1.6|jdk1.7|openjdk1.6|openjdk1.7|ibmjdk1.6)
-    case $(uname -n) in
-    (plank.disruptivetech.com)
-      echo /home/jhyde/open/thirdparty/ant;;
-    *)
-      echo $(cd ${OPEN_DIR}/thirdparty/ant; pwd);;
-    esac
+  (*)
+    dirname $(dirname $(readlink -f $(which ant)))
     ;;
   esac
 }
