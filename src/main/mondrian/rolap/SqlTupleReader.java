@@ -200,24 +200,6 @@ public class SqlTupleReader implements TupleReader {
                         Comparable value = accessors.get(keyOrdinal).get();
                         keyValues[j] = SqlMemberSource.toComparable(value);
                     }
-                    final Comparable captionValue;
-                    if (layout.captionOrdinal >= 0) {
-                        captionValue =
-                            accessors.get(layout.captionOrdinal).get();
-                    } else {
-                        captionValue = null;
-                    }
-                    final String nameValue;
-                    if (layout.nameOrdinal >= 0) {
-                        final Comparable nameObject =
-                            accessors.get(layout.nameOrdinal).get();
-                        nameValue =
-                            nameObject == null
-                                ? null
-                                : String.valueOf(nameObject);
-                    } else {
-                        nameValue = null;
-                    }
                     final Object key = RolapMember.Key.quick(keyValues);
                     member = cache.getMember(childLevel, key, checkCacheStatus);
                     checkCacheStatus = false; // only check the first time
@@ -234,10 +216,49 @@ public class SqlTupleReader implements TupleReader {
                         if (member == null) {
                             final Comparable keyClone =
                                 RolapMember.Key.create(keyValues);
+                            final Comparable captionValue;
+                            if (layout.captionOrdinal >= 0) {
+                                captionValue =
+                                    accessors.get(layout.captionOrdinal).get();
+                            } else {
+                                captionValue = null;
+                            }
+                            final Comparable nameObject;
+                            final String nameValue;
+                            if (layout.nameOrdinal >= 0) {
+                                nameObject =
+                                    accessors.get(layout.nameOrdinal).get();
+                                nameValue =
+                                    nameObject == null
+                                        ? null
+                                        : String.valueOf(nameObject);
+                            } else {
+                                nameObject = null;
+                                nameValue = null;
+                            }
+                            final Comparable orderKey;
+                            switch (layout.orderBySource) {
+                            case NONE:
+                                orderKey = null;
+                                break;
+                            case KEY:
+                                orderKey = keyClone;
+                                break;
+                            case NAME:
+                                orderKey = nameObject;
+                                break;
+                            case MAPPED:
+                                orderKey =
+                                    SqlMemberSource.getCompositeKey(
+                                        accessors, layout.orderByOrdinals);
+                                break;
+                            default:
+                                throw Util.unexpected(layout.orderBySource);
+                            }
                             member = memberBuilder.makeMember(
                                 parentMember, childLevel, keyClone,
                                 captionValue, nameValue,
-                                parentChild, stmt, layout);
+                                orderKey, parentChild, stmt, layout);
                         }
                     }
 

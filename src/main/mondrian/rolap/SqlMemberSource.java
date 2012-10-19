@@ -365,14 +365,16 @@ class SqlMemberSource
                             captionValue = null;
                         }
                         final String nameValue;
+                        final Comparable nameObject;
                         if (levelLayout.nameOrdinal >= 0) {
-                            final Comparable nameObject =
+                            nameObject =
                                 accessors.get(levelLayout.nameOrdinal).get();
                             nameValue =
                                 nameObject == null
                                     ? null
                                     : String.valueOf(nameObject);
                         } else {
+                            nameObject = null;
                             nameValue = null;
                         }
                         RolapMemberBase memberBase =
@@ -395,7 +397,7 @@ class SqlMemberSource
                                 orderKey = key;
                                 break;
                             case NAME:
-                                orderKey = nameValue;
+                                orderKey = nameObject;
                                 break;
                             case MAPPED:
                                 orderKey =
@@ -602,7 +604,7 @@ class SqlMemberSource
         // an aggregate table than to the fact table. See whether a suitable
         // aggregate table exists.
         RolapMeasureGroup aggMeasureGroup = chooseAggStar(constraint, member);
-        //final AggStar aggStar1 = (AggStar) aggStar; // FIXME
+        //final AggStar aggStar1 = (AggStar) aggStar; // FIXME;
 
         // Create the condition, which is either the parent member or
         // the full context (non empty).
@@ -1091,23 +1093,6 @@ class SqlMemberSource
                         accessors.get(layout.keyOrdinals[i]).get();
                     keyValues[i] = toComparable(value);
                 }
-                final Comparable captionValue;
-                if (layout.captionOrdinal >= 0) {
-                    captionValue = accessors.get(layout.captionOrdinal).get();
-                } else {
-                    captionValue = null;
-                }
-                final String nameValue;
-                if (layout.nameOrdinal >= 0) {
-                    final Comparable nameObject =
-                        accessors.get(layout.nameOrdinal).get();
-                    nameValue =
-                        nameObject == null
-                            ? null
-                            : String.valueOf(nameObject);
-                } else {
-                    nameValue = null;
-                }
                 RolapMember member =
                     cache.getMember(
                         childLevel,
@@ -1115,11 +1100,49 @@ class SqlMemberSource
                         checkCacheStatus);
                 checkCacheStatus = false; // only check the first time
                 if (member == null) {
-                    Comparable keyClone = RolapMember.Key.create(keyValues);
+                    final Comparable keyClone =
+                        RolapMember.Key.create(keyValues);
+                    final Comparable captionValue;
+                    if (layout.captionOrdinal >= 0) {
+                        captionValue =
+                            accessors.get(layout.captionOrdinal).get();
+                    } else {
+                        captionValue = null;
+                    }
+                    final Comparable nameObject;
+                    final String nameValue;
+                    if (layout.nameOrdinal >= 0) {
+                        nameObject = accessors.get(layout.nameOrdinal).get();
+                        nameValue =
+                            nameObject == null
+                                ? null
+                                : String.valueOf(nameObject);
+                    } else {
+                        nameObject = null;
+                        nameValue = null;
+                    }
+                    final Comparable orderKey;
+                    switch (layout.orderBySource) {
+                    case NONE:
+                        orderKey = null;
+                        break;
+                    case KEY:
+                        orderKey = keyClone;
+                        break;
+                    case NAME:
+                        orderKey = nameObject;
+                        break;
+                    case MAPPED:
+                        orderKey =
+                            getCompositeKey(accessors, layout.orderByOrdinals);
+                        break;
+                    default:
+                        throw Util.unexpected(layout.orderBySource);
+                    }
                     member =
                         makeMember(
                             parentMember2, childLevel, keyClone, captionValue,
-                            nameValue, parentChild, stmt, layout);
+                            nameValue, orderKey, parentChild, stmt, layout);
                 }
                 if (Util.deprecated(false, false)
                     /* value == RolapUtil.sqlNullValue */)
@@ -1143,6 +1166,7 @@ class SqlMemberSource
         Comparable key,
         Object captionValue,
         String nameValue,
+        Comparable orderKey,
         boolean parentChild,
         SqlStatement stmt,
         SqlTupleReader.LevelColumnLayout layout)
@@ -1178,25 +1202,7 @@ class SqlMemberSource
                         parentMember, childLevel, key, member);
         }
         final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
-        order:
-        {
-            Comparable orderKey;
-            switch (layout.orderBySource) {
-            case NONE:
-                // skip
-                break order;
-            case KEY:
-                orderKey = key;
-                break;
-            case NAME:
-                orderKey = nameValue;
-                break;
-            case MAPPED:
-                orderKey = getCompositeKey(accessors, layout.orderByOrdinals);
-                break;
-            default:
-                throw Util.unexpected(layout.orderBySource);
-            }
+        if (layout.orderBySource != SqlTupleReader.OrderKeySource.NONE) {
             if (Util.deprecated(true, false)) {
                 // Setting ordinals is wrong unless we're sure we're reading
                 // the whole hierarchy.
@@ -1227,7 +1233,7 @@ class SqlMemberSource
         return member;
     }
 
-    private Comparable getCompositeKey(
+    static Comparable getCompositeKey(
         final List<SqlStatement.Accessor> accessors,
         final int[] ordinals) throws SQLException
     {

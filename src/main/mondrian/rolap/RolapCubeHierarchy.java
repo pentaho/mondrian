@@ -1040,6 +1040,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             Comparable key,
             Object captionValue,
             String nameValue,
+            Comparable orderKey,
             boolean parentChild,
             SqlStatement stmt,
             SqlTupleReader.LevelColumnLayout layout)
@@ -1061,6 +1062,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                     key,
                     captionValue,
                     nameValue,
+                    orderKey,
                     parentChild,
                     stmt,
                     layout);

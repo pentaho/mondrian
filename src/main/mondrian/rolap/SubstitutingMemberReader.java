@@ -256,6 +256,7 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
             Comparable key,
             Object captionValue,
             String nameValue,
+            Comparable orderKey,
             boolean parentChild,
             SqlStatement stmt,
             SqlTupleReader.LevelColumnLayout layout)
@@ -267,6 +268,7 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
                     childLevel, key,
                     captionValue,
                     nameValue,
+                    orderKey,
                     parentChild,
                     stmt,
                     layout));

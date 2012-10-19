@@ -84,23 +84,6 @@ public class Target extends TargetBase {
                     Comparable value = accessors.get(keyOrdinal).get();
                     keyValues[j] = SqlMemberSource.toComparable(value);
                 }
-                final Comparable captionValue;
-                if (layout.captionOrdinal >= 0) {
-                    captionValue = accessors.get(layout.captionOrdinal).get();
-                } else {
-                    captionValue = null;
-                }
-                final String nameValue;
-                if (layout.nameOrdinal >= 0) {
-                    final Comparable nameObject =
-                        accessors.get(layout.nameOrdinal).get();
-                    nameValue =
-                        nameObject == null
-                            ? null
-                            : String.valueOf(nameObject);
-                } else {
-                    nameValue = null;
-                }
                 RolapMember parentMember = member;
                 final Object key = RolapMember.Key.quick(keyValues);
                 member = cache.getMember(childLevel, key, checkCacheStatus);
@@ -117,9 +100,48 @@ public class Target extends TargetBase {
                     if (member == null) {
                         final Comparable keyClone =
                             RolapMember.Key.create(keyValues);
+                        final Comparable captionValue;
+                        if (layout.captionOrdinal >= 0) {
+                            captionValue =
+                                accessors.get(layout.captionOrdinal).get();
+                        } else {
+                            captionValue = null;
+                        }
+                        final Comparable nameObject;
+                        final String nameValue;
+                        if (layout.nameOrdinal >= 0) {
+                            nameObject =
+                                accessors.get(layout.nameOrdinal).get();
+                            nameValue =
+                                nameObject == null
+                                    ? null
+                                    : String.valueOf(nameObject);
+                        } else {
+                            nameObject = null;
+                            nameValue = null;
+                        }
+                        final Comparable orderKey;
+                        switch (layout.orderBySource) {
+                        case NONE:
+                            orderKey = null;
+                            break;
+                        case KEY:
+                            orderKey = keyClone;
+                            break;
+                        case NAME:
+                            orderKey = nameObject;
+                            break;
+                        case MAPPED:
+                            orderKey =
+                                SqlMemberSource.getCompositeKey(
+                                    accessors, layout.orderByOrdinals);
+                            break;
+                        default:
+                            throw Util.unexpected(layout.orderBySource);
+                        }
                         member = memberBuilder.makeMember(
                             parentMember, childLevel, keyClone, captionValue,
-                            nameValue, parentChild, stmt, layout);
+                            nameValue, orderKey, parentChild, stmt, layout);
                     }
                 }
             }
