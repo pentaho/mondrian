@@ -213,7 +213,7 @@ class ExplicitRecognizer extends Recognizer {
                 continue;
             }
 
-            if (aggFK.equalsIgnoreCase(aggColumn.getName())) {
+            if (aggFK.equals(aggColumn.getName())) {
                 makeForeignKey(factUsage, aggColumn, aggFK);
                 matchCount++;
             }
