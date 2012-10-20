@@ -871,7 +871,17 @@ public class AggStar {
             DimTable dimTable =
                 new DimTable(this, tableName, relation, joinCondition);
 
-            dimTable.convertColumns(rTable);
+            if (usage == null
+                || usage.getUsageType() != UsageType.LEVEL
+                || (usage.getUsageType() == UsageType.LEVEL
+                    && usage.collapsed))
+            {
+                // Only set the bits for all levels if we are not
+                // dealing with a non-collapsed AggLevel because we will
+                // set the bits manually in AggStar.FactTable.loadLevel.
+                dimTable.convertColumns(rTable);
+            }
+
             dimTable.convertChildren(rTable);
 
             return dimTable;

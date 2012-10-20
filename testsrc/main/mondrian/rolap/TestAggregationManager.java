@@ -1963,6 +1963,7 @@ public class TestAggregationManager extends BatchTestCase {
     public void testTwoNonCollapsedAggregate() throws Exception {
         propSaver.set(MondrianProperties.instance().UseAggregates, true);
         propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
         final String cube =
             "<Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
             + "  <Table name=\"sales_fact_1997\">\n"
@@ -2025,9 +2026,37 @@ public class TestAggregationManager extends BatchTestCase {
         final String mdx =
             "select {Crossjoin([Product].[Product Family].Members, [Store].[Store Id].Members)} on rows, {[Measures].[Unit Sales]} on columns from [Foo]";
         final String sqlOracle =
-            "select \"product_class\".\"product_family\" as \"c0\", \"store\".\"store_id\" as \"c1\", sum(\"agg_l_05_sales_fact_1997\".\"unit_sales\") as \"m0\" from \"product_class\" \"product_class\", \"product\" \"product\", \"agg_l_05_sales_fact_1997\" \"agg_l_05_sales_fact_1997\", \"store\" \"store\" where \"agg_l_05_sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and \"agg_l_05_sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" group by \"product_class\".\"product_family\", \"store\".\"store_id\"";
+            "select\n"
+            + "    \"product_class\".\"product_family\" as \"c0\",\n"
+            + "    \"agg_l_05_sales_fact_1997\".\"store_id\" as \"c1\",\n"
+            + "    sum(\"agg_l_05_sales_fact_1997\".\"unit_sales\") as \"m0\"\n"
+            + "from\n"
+            + "    \"product_class\" \"product_class\",\n"
+            + "    \"product\" \"product\",\n"
+            + "    \"agg_l_05_sales_fact_1997\" \"agg_l_05_sales_fact_1997\"\n"
+            + "where\n"
+            + "    \"agg_l_05_sales_fact_1997\".\"product_id\" = \"product\".\"product_id\"\n"
+            + "and\n"
+            + "    \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\"\n"
+            + "group by\n"
+            + "    \"product_class\".\"product_family\",\n"
+            + "    \"agg_l_05_sales_fact_1997\".\"store_id\"";
         final String sqlMysql =
-            "select `product_class`.`product_family` as `c0`, `store`.`store_id` as `c1`, sum(`agg_l_05_sales_fact_1997`.`unit_sales`) as `m0` from `product_class` as `product_class`, `product` as `product`, `agg_l_05_sales_fact_1997` as `agg_l_05_sales_fact_1997`, `store` as `store` where `agg_l_05_sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` and `agg_l_05_sales_fact_1997`.`store_id` = `store`.`store_id` group by `product_class`.`product_family`, `store`.`store_id`";
+            "select\n"
+            + "    `product_class`.`product_family` as `c0`,\n"
+            + "    `agg_l_05_sales_fact_1997`.`store_id` as `c1`,\n"
+            + "    sum(`agg_l_05_sales_fact_1997`.`unit_sales`) as `m0`\n"
+            + "from\n"
+            + "    `product_class` as `product_class`,\n"
+            + "    `product` as `product`,\n"
+            + "    `agg_l_05_sales_fact_1997` as `agg_l_05_sales_fact_1997`\n"
+            + "where\n"
+            + "    `agg_l_05_sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+            + "and\n"
+            + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+            + "group by\n"
+            + "    `product_class`.`product_family`,\n"
+            + "    `agg_l_05_sales_fact_1997`.`store_id`";
         assertQuerySqlOrNot(
             context,
             mdx,
@@ -2287,16 +2316,16 @@ public class TestAggregationManager extends BatchTestCase {
             + "      <AggExclude name=\"agg_ll_01_sales_fact_1997\"/>"
             + "      <AggExclude name=\"agg_l_05_sales_fact_1997\"/>"
             + "      <AggName name=\"agg_c_14_sales_fact_1997\">\n"
-            + "        <AggFactCount column=\"FACT_COUNT\"/>\n"
-            + "        <AggIgnoreColumn column=\"PRODUCT_ID\" />\n"
-            + "        <AggIgnoreColumn column=\"CUSTOMER_ID\" />\n"
-            + "        <AggIgnoreColumn column=\"PROMOTION_ID\" />\n"
-            + "        <AggIgnoreColumn column=\"THE_YEAR\" />\n"
-            + "        <AggIgnoreColumn column=\"QUARTER\" />\n"
-            + "        <AggForeignKey factColumn=\"store_id\" aggColumn=\"STORE_ID\" />\n"
-            + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"UNIT_SALES\" />\n"
-            + "        <AggMeasure name=\"[Measures].[Store Cost]\" column=\"STORE_COST\" />\n"
-            + "        <AggMeasure name=\"[Measures].[Store Sales]\" column=\"STORE_SALES\" />\n"
+            + "        <AggFactCount column=\"fact_count\"/>\n"
+            + "        <AggIgnoreColumn column=\"product_id\" />\n"
+            + "        <AggIgnoreColumn column=\"customer_id\" />\n"
+            + "        <AggIgnoreColumn column=\"promotion_id\" />\n"
+            + "        <AggIgnoreColumn column=\"the_year\" />\n"
+            + "        <AggIgnoreColumn column=\"quarter\" />\n"
+            + "        <AggForeignKey factColumn=\"store_id\" aggColumn=\"store_id\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_sales\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Store Cost]\" column=\"store_cost\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Store Sales]\" column=\"store_sales\" />\n"
             + "        <AggLevel name=\"[Time].[Month]\" column=\"month_of_year\" collapsed=\"false\" />\n"
             + "      </AggName>\n"
             + "    </Table>\n"
@@ -2315,6 +2344,10 @@ public class TestAggregationManager extends BatchTestCase {
             "select {NonEmptyCrossJoin([Time].[Year].Members, [Store].[Store Country].Members)} on rows,"
             + "{[Measures].[Unit Sales]} on columns "
             + "from [Sales1]";
+        final String mdxTooLowForAgg =
+            "select {NonEmptyCrossJoin([Time].[Day].Members, [Store].[Store Country].Members)} on rows,"
+            + "{[Measures].[Unit Sales]} on columns "
+            + "from [Sales1]";
 
         final String sqlMysqlTupleQuery =
             "select\n"
@@ -2327,7 +2360,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "where\n"
             + "    `agg_c_14_sales_fact_1997`.`month_of_year` = `time_by_day`.`month_of_year`\n"
             + "and\n"
-            + "    `agg_c_14_sales_fact_1997`.`STORE_ID` = `store`.`store_id`\n"
+            + "    `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
             + "group by\n"
             + "    `time_by_day`.`the_year`,\n"
             + "    `store`.`store_country`\n"
@@ -2345,7 +2378,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
             + "    `time_by_day` as `time_by_day`\n"
             + "where\n"
-            + "    `agg_c_14_sales_fact_1997`.`STORE_ID` = `store`.`store_id`\n"
+            + "    `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
             + "and\n"
             + "    `store`.`store_country` = 'USA'\n"
             + "and\n"
@@ -2353,6 +2386,55 @@ public class TestAggregationManager extends BatchTestCase {
             + "group by\n"
             + "    `store`.`store_country`,\n"
             + "    `time_by_day`.`the_year`";
+
+        final String sqlMysqlTooLowTupleQuery =
+            "select\n"
+            + "    `time_by_day`.`the_year` as `c0`,\n"
+            + "    `time_by_day`.`quarter` as `c1`,\n"
+            + "    `time_by_day`.`month_of_year` as `c2`,\n"
+            + "    `time_by_day`.`day_of_month` as `c3`,\n"
+            + "    `store`.`store_country` as `c4`\n"
+            + "from\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `store` as `store`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+            + "group by\n"
+            + "    `time_by_day`.`the_year`,\n"
+            + "    `time_by_day`.`quarter`,\n"
+            + "    `time_by_day`.`month_of_year`,\n"
+            + "    `time_by_day`.`day_of_month`,\n"
+            + "    `store`.`store_country`\n"
+            + "order by\n"
+            + "    ISNULL(`time_by_day`.`the_year`) ASC, `time_by_day`.`the_year` ASC,\n"
+            + "    ISNULL(`time_by_day`.`quarter`) ASC, `time_by_day`.`quarter` ASC,\n"
+            + "    ISNULL(`time_by_day`.`month_of_year`) ASC, `time_by_day`.`month_of_year` ASC,\n"
+            + "    ISNULL(`time_by_day`.`day_of_month`) ASC, `time_by_day`.`day_of_month` ASC,\n"
+            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC";
+
+        final String sqlMysqlTooLowSegmentQuery =
+            "select\n"
+            + "    `store`.`store_country` as `c0`,\n"
+            + "    `time_by_day`.`month_of_year` as `c1`,\n"
+            + "    `time_by_day`.`day_of_month` as `c2`,\n"
+            + "    sum(`sales_fact_1997`.`unit_sales`) as `m0`\n"
+            + "from\n"
+            + "    `store` as `store`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `time_by_day` as `time_by_day`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+            + "and\n"
+            + "    `store`.`store_country` = 'USA'\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "group by\n"
+            + "    `store`.`store_country`,\n"
+            + "    `time_by_day`.`month_of_year`,\n"
+            + "    `time_by_day`.`day_of_month`";
 
         final TestContext context =
                 TestContext.instance().withSchema(schema);
@@ -2392,6 +2474,30 @@ public class TestAggregationManager extends BatchTestCase {
             + "{[Time].[1998], [Store].[USA]}\n"
             + "Row #0: 8,119,905\n"
             + "Row #1: 8,119,905\n");
+
+        // Make sure that queries on lower levels don't trigger a
+        // false positive with the agg matcher.
+        assertQuerySqlOrNot(
+            context,
+            mdxTooLowForAgg,
+            new SqlPattern[] {
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL,
+                    sqlMysqlTooLowTupleQuery,
+                    sqlMysqlTooLowTupleQuery.length())
+            },
+            false, false, true);
+
+        assertQuerySqlOrNot(
+            context,
+            mdxTooLowForAgg,
+            new SqlPattern[] {
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL,
+                    sqlMysqlTooLowSegmentQuery,
+                    sqlMysqlTooLowSegmentQuery.length())
+            },
+            false, false, true);
     }
 }
 
