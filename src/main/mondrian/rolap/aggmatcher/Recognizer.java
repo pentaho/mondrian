@@ -493,7 +493,7 @@ abstract class Recognizer {
         List<JdbcSchema.Table.Column.Usage> notSeenForeignKeys)
     {
         for (JdbcSchema.Table.Column.Usage usage : notSeenForeignKeys) {
-            if (usage.getColumn().getName().equalsIgnoreCase(foreignKey)) {
+            if (usage.getColumn().getName().equals(foreignKey)) {
                 return true;
             }
         }
@@ -852,7 +852,7 @@ abstract class Recognizer {
             }
             RolapStar cubeStar = cube.getStar();
             String factTableName = cubeStar.getFactTable().getAlias();
-            if (name.equalsIgnoreCase(factTableName)) {
+            if (name.equals(factTableName)) {
                 list.add(cube);
             }
         }
