@@ -161,11 +161,11 @@ public class SqlConstraintUtils {
                                     .getHierarchy()
                                     .getLevels()[levelIndex - 1];
                             final String where =
-                                    generateMultiValueInExpr(
+                                    generateSingleValueInExpr(
                                         sqlQuery, baseCube,
                                         aggStar, slicerMembers,
                                         levelForWhere,
-                                        restrictMemberTypes, null);
+                                        restrictMemberTypes, false);
                             sqlQuery.addWhere(where);
                         } else {
                             // No extra slicers.... just use the = method
@@ -221,11 +221,11 @@ public class SqlConstraintUtils {
 
                     if (slicerMembers.size() > 0) {
                         final String where =
-                            generateMultiValueInExpr(
+                            generateSingleValueInExpr(
                                 sqlQuery, baseCube,
                                 aggStar, slicerMembers,
                                 (RolapCubeLevel) affectedLevel,
-                                restrictMemberTypes, null);
+                                restrictMemberTypes,false);
                         whereClausesForRoleConstraints.put(
                             (RolapCubeLevel) affectedLevel, where);
                     }
