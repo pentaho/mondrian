@@ -10,7 +10,7 @@
 package mondrian.test;
 
 import mondrian.olap.*;
-import mondrian.rolap.RolapConnectionProperties;
+import mondrian.rolap.*;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 
 import java.io.InputStream;
@@ -29,6 +29,175 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             "[Measures].[Quantity]\n"
             + "[Measures].[Sales]\n"
             + "[Measures].[Fact Count]");
+    }
+
+    public void testMondrian1273() {
+        final String schema =
+            "<Schema name=\"SteelWheels\">\n" +
+                "  <Cube name=\"SteelWheelsSales\" cache=\"true\" enabled=\"true\">\n" +
+                "    <Table name=\"orderfact\">\n" +
+                "    </Table>\n" +
+                "    <Dimension foreignKey=\"CUSTOMERNUMBER\" name=\"Markets\">\n" +
+                "      <Hierarchy hasAll=\"true\" allMemberName=\"All Markets\" primaryKey=\"CUSTOMERNUMBER\" primaryKeyTable=\"\">\n" +
+                "        <Table name=\"customer_w_ter\">\n" +
+                "        </Table>\n" +
+                "        <Level name=\"Territory\" column=\"TERRITORY\" type=\"String\" uniqueMembers=\"true\" levelType=\"Regular\"\n" +
+                "               hideMemberIf=\"Never\">\n" +
+                "        </Level>\n" +
+                "        <Level name=\"Country\" column=\"COUNTRY\" levelType=\"Regular\"\n" +
+                "               hideMemberIf=\"Never\">\n" +
+                "          <Annotations>\n" +
+                "            <Annotation name=\"Data.Role\">Geography</Annotation>\n" +
+                "            <Annotation name=\"Geo.Role\">country</Annotation>\n" +
+                "          </Annotations>\n" +
+                "        </Level>\n" +
+                "        <Level name=\"State Province\" column=\"STATE\" type=\"String\" levelType=\"Regular\"\n" +
+                "               hideMemberIf=\"Never\">\n" +
+                "          <Annotations>\n" +
+                "            <Annotation name=\"Data.Role\">Geography</Annotation>\n" +
+                "            <Annotation name=\"Geo.Role\">state</Annotation>\n" +
+                "            <Annotation name=\"Geo.RequiredParents\">country</Annotation>\n" +
+                "          </Annotations>\n" +
+                "        </Level>\n" +
+                "        <Level name=\"City\" column=\"CITY\" type=\"String\" levelType=\"Regular\" hideMemberIf=\"Never\">\n" +
+                "          <Annotations>\n" +
+                "            <Annotation name=\"Data.Role\">Geography</Annotation>\n" +
+                "            <Annotation name=\"Geo.Role\">city</Annotation>\n" +
+                "            <Annotation name=\"Geo.RequiredParents\">country,state</Annotation>\n" +
+                "          </Annotations>\n" +
+                "        </Level>\n" +
+                "      </Hierarchy>\n" +
+                "    </Dimension>\n" +
+                "    <Dimension foreignKey=\"CUSTOMERNUMBER\" name=\"Customers\">\n" +
+                "      <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKey=\"CUSTOMERNUMBER\">\n" +
+                "        <Table name=\"CUSTOMER_W_TER\">\n" +
+                "        </Table>\n" +
+                "        <Level name=\"Customer\" column=\"CUSTOMERNAME\" type=\"String\" uniqueMembers=\"true\" levelType=\"Regular\"\n" +
+                "               hideMemberIf=\"Never\">\n" +
+                "          <Property name=\"Customer Number\" column=\"CUSTOMERNUMBER\" type=\"Numeric\"/>\n" +
+                "          <Property name=\"Contact First Name\" column=\"CONTACTFIRSTNAME\" type=\"String\"/>\n" +
+                "          <Property name=\"Contact Last Name\" column=\"CONTACTLASTNAME\" type=\"String\"/>\n" +
+                "          <Property name=\"Phone\" column=\"PHONE\" type=\"String\"/>\n" +
+                "          <Property name=\"Address\" column=\"ADDRESSLINE1\" type=\"String\"/>\n" +
+                "          <Property name=\"Credit Limit\" column=\"CREDITLIMIT\" type=\"Numeric\"/>\n" +
+                "        </Level>\n" +
+                "      </Hierarchy>\n" +
+                "    </Dimension>\n" +
+                "    <Dimension foreignKey=\"PRODUCTCODE\" name=\"Product\">\n" +
+                "      <Hierarchy name=\"\" hasAll=\"true\" allMemberName=\"All Products\" primaryKey=\"PRODUCTCODE\" primaryKeyTable=\"PRODUCTS\"\n" +
+                "                 caption=\"\">\n" +
+                "        <Table name=\"PRODUCTS\">\n" +
+                "        </Table>\n" +
+                "        <Level name=\"Line\" table=\"PRODUCTS\" column=\"PRODUCTLINE\" type=\"String\" uniqueMembers=\"false\" levelType=\"Regular\"\n" +
+                "               hideMemberIf=\"Never\">\n" +
+                "        </Level>\n" +
+                "        <Level name=\"Vendor\" table=\"PRODUCTS\" column=\"PRODUCTVENDOR\" type=\"String\" uniqueMembers=\"false\"\n" +
+                "               levelType=\"Regular\" hideMemberIf=\"Never\">\n" +
+                "        </Level>\n" +
+                "        <Level name=\"Product\" table=\"PRODUCTS\" column=\"PRODUCTNAME\" type=\"String\" uniqueMembers=\"true\"\n" +
+                "               levelType=\"Regular\" hideMemberIf=\"Never\">\n" +
+                "          <Property name=\"Code\" column=\"PRODUCTCODE\" type=\"String\"/>\n" +
+                "          <Property name=\"Vendor\" column=\"PRODUCTVENDOR\" type=\"String\"/>\n" +
+                "          <Property name=\"Description\" column=\"PRODUCTDESCRIPTION\" type=\"String\"/>\n" +
+                "        </Level>\n" +
+                "      </Hierarchy>\n" +
+                "    </Dimension>\n" +
+                "    <Dimension type=\"TimeDimension\" foreignKey=\"TIME_ID\" name=\"Time\">\n" +
+                "      <Hierarchy hasAll=\"true\" allMemberName=\"All Years\" primaryKey=\"TIME_ID\">\n" +
+                "        <Table name=\"DIM_TIME\">\n" +
+                "        </Table>\n" +
+                "        <Level name=\"Years\" column=\"YEAR_ID\" type=\"String\" uniqueMembers=\"true\" levelType=\"TimeYears\"\n" +
+                "               hideMemberIf=\"Never\">\n" +
+                "          <Annotations>\n" +
+                "            <Annotation name=\"AnalyzerDateFormat\">[yyyy]</Annotation>\n" +
+                "          </Annotations>\n" +
+                "        </Level>\n" +
+                "        <Level name=\"Quarters\" column=\"QTR_NAME\" ordinalColumn=\"QTR_ID\" type=\"String\" uniqueMembers=\"false\"\n" +
+                "               levelType=\"TimeQuarters\" hideMemberIf=\"Never\">\n" +
+                "          <Annotations>\n" +
+                "            <Annotation name=\"AnalyzerDateFormat\">[yyyy].['QTR'q]</Annotation>\n" +
+                "          </Annotations>\n" +
+                "        </Level>\n" +
+                "        <Level name=\"Months\" column=\"MONTH_NAME\" ordinalColumn=\"MONTH_ID\" type=\"String\" uniqueMembers=\"false\"\n" +
+                "               levelType=\"TimeMonths\" hideMemberIf=\"Never\">\n" +
+                "          <Annotations>\n" +
+                "            <Annotation name=\"AnalyzerDateFormat\">[yyyy].['QTR'q].[MMM]</Annotation>\n" +
+                "          </Annotations>\n" +
+                "        </Level>\n" +
+                "      </Hierarchy>\n" +
+                "    </Dimension>\n" +
+                "    <Dimension foreignKey=\"STATUS\" name=\"Order Status\">\n" +
+                "      <Hierarchy hasAll=\"true\" allMemberName=\"All Status Types\" primaryKey=\"STATUS\">\n" +
+                "        <Level name=\"Type\" column=\"STATUS\" type=\"String\" uniqueMembers=\"true\" levelType=\"Regular\" hideMemberIf=\"Never\">\n" +
+                "        </Level>\n" +
+                "      </Hierarchy>\n" +
+                "    </Dimension>\n" +
+                "    <Measure name=\"Quantity\" column=\"QUANTITYORDERED\" formatString=\"#,###\" aggregator=\"sum\">\n" +
+                "      <Annotations>\n" +
+                "        <Annotation name=\"AnalyzerBusinessGroup\">Measures</Annotation>\n" +
+                "      </Annotations>\n" +
+                "    </Measure>\n" +
+                "    <Measure name=\"Sales\" column=\"TOTALPRICE\" formatString=\"#,###\" aggregator=\"sum\">\n" +
+                "      <Annotations>\n" +
+                "        <Annotation name=\"AnalyzerBusinessGroup\">Measures</Annotation>\n" +
+                "      </Annotations>\n" +
+                "    </Measure>\n" +
+                "  </Cube>\n" +
+                "  <Role name=\"dev\">\n" +
+                "    <SchemaGrant access=\"all\">\n" +
+                "      <CubeGrant cube=\"SteelWheelsSales\" access=\"all\">\n" +
+                "        <HierarchyGrant hierarchy=\"[Markets]\" topLevel=\"[Markets].[Territory]\" bottomLevel=\"[Markets].[Country]\" rollupPolicy=\"Partial\" access=\"custom\">\n" +
+                "          <MemberGrant member=\"[Markets].[APAC]\" access=\"all\"> </MemberGrant>\n" +
+                "          <MemberGrant member=\"[Markets].[APAC].[Australia]\" access=\"none\"> </MemberGrant>\n" +
+                "        </HierarchyGrant> \n" +
+                "      </CubeGrant>\n" +
+                "    </SchemaGrant>\n" +
+                "    <SchemaGrant access=\"all\">\n" +
+                "      <CubeGrant cube=\"SteelWheelsSales\" access=\"all\">\n" +
+                "        <HierarchyGrant hierarchy=\"Measures\" access=\"custom\">\n" +
+                "          <MemberGrant member=\"[Measures].[Quantity]\" access=\"none\"> </MemberGrant>\n" +
+                "          <MemberGrant member=\"[Measures].[Sales]\" access=\"all\"> </MemberGrant>\n" +
+                "        </HierarchyGrant>\n" +
+                "      </CubeGrant>\n" +
+                "    </SchemaGrant>\n" +
+                "  </Role> \n" +
+                "  <Role name=\"cto\">\n" +
+                "    <SchemaGrant access=\"all\">\n" +
+                "      <CubeGrant cube=\"SteelWheelsSales\" access=\"all\">\n" +
+                "        <HierarchyGrant hierarchy=\"Measures\" access=\"custom\">\n" +
+                "          <MemberGrant member=\"[Measures].[Quantity]\" access=\"none\"> </MemberGrant>\n" +
+                "          <MemberGrant member=\"[Measures].[Sales]\" access=\"all\"> </MemberGrant>\n" +
+                "        </HierarchyGrant>\n" +
+                "      </CubeGrant>\n" +
+                "    </SchemaGrant>\n" +
+                "  </Role> \n" +
+                "  <Role name=\"Admin\">\n" +
+                "    <SchemaGrant access=\"all\">\n" +
+                "      <CubeGrant cube=\"SteelWheelsSales\" access=\"all\"/>\n" +
+                "    </SchemaGrant>\n" +
+                "  </Role>\n" +
+                "</Schema>\n";
+        TestContext testContext = createContext(TestContext.instance(), schema).withCube("SteelWheelsSales").withRole("dev");
+        if (!testContext.databaseIsValid()) {
+            return;
+        }
+        testContext.assertQueryReturns("with set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Markets], (NOT IsEmpty([Measures].[Sales])))'\n" +
+            "  set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], [Markets].CurrentMember.OrderKey, BASC)'\n" +
+            "  set [*BASE_MEMBERS_Markets] as '[Markets].[Territory].Members'\n" +
+            "  set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n" +
+            "  set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {[Markets].CurrentMember})'\n" +
+            "  set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'\n" +
+            "  member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Sales]', FORMAT_STRING = \"#,###\", SOLVE_ORDER = 400\n" +
+            "select [*BASE_MEMBERS_Measures] ON COLUMNS,\n" +
+            "  [*SORTED_ROW_AXIS] ON ROWS\n" +
+            "from [SteelWheelsSales]\n",
+            "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[*FORMATTED_MEASURE_0]}\n" +
+                "Axis #2:\n" +
+                "{[Markets].[APAC]}\n" +
+                "Row #0: 651,083\n");
     }
 
     /**
