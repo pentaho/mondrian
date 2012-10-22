@@ -54,24 +54,24 @@
                 <li><a href="#All_and_default_members">'All' and default members</a></li>
                 <li><a href="#Designing_attributes_for_use_in_hierarchies">Designing
                     attributes for use in hierarchies</a></li>
+                <li><a href="#Attribute_Hierarchies">Attribute Hierarchies</a></li>
+                <li><a href="#Attributes_versus_Hierarchies">Attributes versus Hierarchies</a></li>
               </ol>
             </li>
-            <li><a href="#Attribute_Hierarchies">Attribute Hierarchies</a></li>
-            <li><a href="#Attributes_versus_Hierarchies">Attributes versus Hierarchies</a></li>
-            <li><a href="#The_Measures_dimension">The <code>Measures</code> dimension</a></li>
-            <li><a href="#Mapping_Hierarchies">Mapping dimensions and hierarchies onto tables</a></li>
             <li><a href="#Schema_short_cuts">Schema short cuts</a></li>
-            <li><a href="#Time_dimensions">Time dimensions</a></li>
-            <li><a href="#Level_Order_and_Display">Order and Display of Levels</a></li>
-            <li><a href="#Multiple_hierarchies">Multiple hierarchies</a></li>
-            <li><a href="#Snowflake_dimensions">Snowflake dimensions</a></li>
+            <li><a href="#More_about_dimensions">More about dimensions</a>
+              <ol>
+                <li><a href="#The_Measures_dimension">The <code>Measures</code> dimension</a></li>
+                <li><a href="#Star_and_snowflake_dimensions">Star and snowflake dimensions</a></li>
+                <li><a href="#Time_dimensions">Time dimensions</a></li>
+                <li><a href="#Member_properties">Member properties</a></li>
+              </ol>
+            </li>
             <li><a href="#Degenerate_dimensions">Degenerate dimensions</a></li>
-            <li><a href="#Inline_tables">Inline tables</a></li>
-            <li><a href="#Member_properties_and_formatters">Member properties and formatters</a></li>
+            <li><a href="#Level_Order_and_Display">Order and Display of Levels</a></li>
             <li><a href="#Approximate_level_cardinality">Approximate level cardinality</a></li>
             <li><a href="#Default_Measure_Attribute">Default Measure Attribute</a></li>
             <li><a href="#Functional_dependency_optimizations">Functional Dependency Optimizations</a></li>
-            <li><a href="#Table_hints">Table Hints</a></li>
         </ol>
     </li>
     <li><a href="#Physical_schemas">Physical schemas</a>
@@ -80,16 +80,16 @@
             <li><a href="#InlineTable">Inline table</a></li>
             <li><a href="#Query">Query</a></li>
             <li><a href="#Link">Link</a></li>
+            <li><a href="#Table_hints">Table Hints</a></li>
         </ol>
     </li>
     <li><a href="#Star_schemas">Star and snowflake schemas</a>
         <ol>
-            <li><a href="#Shared_dimensions">Shared dimensions</a></li>
-            <li><a href="#Join_optimization">Join optimization</a></li>
         </ol>
     </li>
     <li><a href="#Advanced_logical_constructs">Advanced logical constructs</a>
         <ol>
+            <li><a href="#Shared_dimensions">Shared dimensions</a></li>
             <li><a href="#Parent_child_hierarchies">Parent-child hierarchies</a><ol>
             <li><a href="#Tuning_parent-child_hierarchies">Tuning parent-child 
             hierarchies</a></li>
@@ -97,7 +97,6 @@
             <li><a href="#Populating_closure_tables">Populating closure tables</a></li>
         </ol>
             </li>
-            <li><a href="#Member_properties">Member properties</a></li>
             <li><a href="#Calculated_members">Calculated members</a></li>
             <li><a href="#Named_sets">Named sets</a></li>
         </ol>
@@ -876,9 +875,9 @@ that you have done something wrong.</p>
 
 <!--
 ##################################
-## 3.5 Attribute hierarchies #####
+## 3.4.3 Attribute hierarchies #####
 ################################## -->
-<h1>3.5 Attribute hierarchies<a name="Attribute_hierarchies">&nbsp;</a></h1>
+<h1>3.4.3 Attribute hierarchies<a name="Attribute_hierarchies">&nbsp;</a></h1>
 
 <p>Surprising as it may seem, the MDX language does not know about
 attributes. It only knows about dimensions, hierarchies, levels and
@@ -955,9 +954,9 @@ not being displayed on an axis.</p>
 
 <!--
 ###########################################
-##  3.x Attributes versus Hierarchies #####
+##  3.4.4 Attributes versus Hierarchies #####
 ########################################### -->
-<h1>Attributes versus Hierarchies<a name="Attributes_versus_Hierarchies">&nbsp;</a></h1>
+<h1>3.4.4 Attributes versus Hierarchies<a name="Attributes_versus_Hierarchies">&nbsp;</a></h1>
 
 <p>Attributes are a new feature in Mondrian version 4.  In previous
 versions of Mondrian, you could define what are now called "attribute
@@ -989,68 +988,25 @@ automatic mapping between them. The best you can do is to use a naming
 convention, such as "<i>Attribute</i> of <i>Parent</i>", for all such
 attributes, so that the correspondence is clear to your end-users.</p>
 
-<!-- ############################################################# -->
-<h1>3.6 The <code>Measures</code> dimension<a name="The_Measures_dimension">&nbsp;</a></h1> 
+<!-- ## 3.5 Schema short cuts #################################### -->
 
-<p>Measures are treated as members of a special dimension, called
-'Measures'. The dimension has a single hierarchy and a single
-level.</p>
+<h1>3.5 Schema short cuts<a name="Schema_short_cuts">&nbsp;</a></h1>
 
-<p>MDX allows you to omit the hierarchy name if a dimension only has
-one hierarchy (including attribute
-hierarchies). Therefore <code>[Measures].[Unit&nbsp;Sales]</code> is a
-valid shorthand for <code>[Measures].[Measures].[Unit&nbsp;Sales]</code>.</p>
+<p>XML is a suitable language for defining schemas because it can be
+read and written by both humans and machines. You can hand-write a
+schema in emacs, vi or notepad, or you can write one in a modeling
+tool. However, XML can be verbose. This is less of a problem for tools
+than for humans typing every character. Simple things should look
+simple, and not require a lot of typing.</p>
 
-<p>That measures belong to a dimension might seem strange. (If you
-come from a background in relational databases, it seems like
-declaring that every column is a row.) But it one of the defining
-properties of the dimensional model, and one of its strengths. Because
-measures are members, you can change the context from one measure to
-another in a calculation just as easily as you can time period or
-sales region. It allows for greater reuse of calculations. It also
-makes for easier access control, because you can grant on a cell, of
-which measure is just one coordinate.</p>
+<h2>Attribute as shorthand for a singleton nested collection</h2>
 
-<!-- ############################################################# -->
-<h1>3.7 Star and snowflake dimensions<a name="Star_and_snowflake_dimensions">&nbsp;</a></h1>
+<p>One recurring shorthand is to allow an attribute to be used instead
+of a collection of nested elements, if that collection has only one
+element.</p>
 
-<p>A dimension is joined to a cube by means of a pair of columns, one in the fact table, the other in the dimension table.
-The <code>&lt;Dimension&gt;</code> element has a <code>foreignKey</code> attribute,
-which is the name of a column in the fact table; the <code>&lt;Hierarchy&gt;</code> element has
-a <code>primaryKey</code> attribute.</p>
-
-<p>If the hierarchy has more than one table, you can disambiguate using the <code>primaryKeyTable</code>
-attribute. </p>
-
-<p>The <code>column</code> attribute defines the key of the level. It must be
-the name of a column in the level's table. If the key is an expression, you can 
-instead use the <code>&lt;KeyExpression&gt;</code> element inside the Level. The following is 
-equivalent to the above example:</p>
-
-<blockquote style="text-indent: -20px">
-    <code>
-        <div style="padding-left:20px">&lt;<a href="#XML_Dimension">Dimension</a> name="Gender" foreignKey="customer_id"&gt;</div>
-            <div style="padding-left:40px">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="true" primaryKey="customer_id"&gt;</div>
-                <div style="padding-left:60px">&lt;<a href="#XML_Table">Table</a> name="customer"/&gt;</div>
-                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Gender" column="gender" uniqueMembers="true"&gt;</div>
-                    <div style="padding-left:80px;">&lt;<a href="#XML_KeyExpression">KeyExpression</a>&gt;</div>
-                        <div style="padding-left:100px;">&lt;<a href="#XML_SQL">SQL</a> dialect=&quot;generic&quot;&gt;customer.gender&lt;/<a href="#XML_SQL">SQL</a>&gt;</div>
-                    <div style="padding-left:80px;">&lt;/<a href="#XML_KeyExpression">KeyExpression</a>&gt;</div>
-                <div style="padding-left:60px;">&lt;/<a href="#XML_Level">Level</a>&gt;</div>
-            <div style="padding-left:40px;">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
-        <div style="padding-left:20px">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
-    </code>
-</blockquote>
-
-<!--
-########################
-##  3.x Short cuts #####
-######################## -->
-<h1>3.x Schema short cuts<a name="Schema_short_cuts">&nbsp;</a></h1>
-
-<p>XML is a suitable language for defining schemas because it can be read and written by both humans and machines. You can hand-write a schema in emacs, vi or notepad, or you can write one in a modeling tool. However, XML can be verbose. This is less of a problem for tools than for humans typing every character. Simple things should look simple, and not require a lot of typing.</p>
-
-<p>For example, if you are defining an attribute with a simple (non-composite) key you could either write</p>
+<p>For example, if you are defining an attribute with a simple
+(non-composite) key you could either write</p>
 
 <blockquote>
   <code style='text-indent: -20px'>
@@ -1069,7 +1025,7 @@ equivalent to the above example:</p>
   </code>
 </blockquote>
 <p>These are equivalent, but the second is more concise, and you would
-probably choose to use it when writing schemas by hand. If the
+probably choose to use it when writing a schema by hand. If the
 attribute has a composite key, or if you wish to use
 the <code>table</code> attribute, you have to use the nested
 <code>&lt;<a href='#XML_Key'>Key</a>&gt;</code> element:
@@ -1084,8 +1040,10 @@ the <code>table</code> attribute, you have to use the nested
     <div style='padding-left:20px;'>&lt;/<a href='#XML_Attribute'>Attribute</a>&gt;</div>
   </code>
 </blockquote>
-<p>The following table shows schema elements that can be expressed
-either using an attribute or a nested element.</p>
+<p>The nested collection in this case is <code>&lt;<a href='#XML_Key'>Key</a>&gt;</code> and a set of
+<code>&lt;<a href='#XML_Column'>Column</a>&gt;</code> elements, and the attribute
+is <code>keyColumn</code>. But the pattern occurs elsewhere in the
+schema, as shown by the following table.</p>
 
     <table class="grayTable" id="table11" width="500">
         <tr>
@@ -1131,6 +1089,12 @@ either using an attribute or a nested element.</p>
               aggregate function.)</td>
         </tr>
         <tr>
+            <td><code>&lt;<a href='#XML_Table'>Table</a>&gt;</code></td>
+            <td><code>keyColumn</code></td>
+            <td><code>&lt;<a href='#XML_Key'>Key</a>&gt;</code></td>
+            <td>Column(s) that form this Table's key.</td>
+        </tr>
+        <tr>
             <td><code>&lt;<a href='#XML_Link'>Link</a>&gt;</code></td>
             <td><code>foreignKeyColumn</code></td>
             <td><code>&lt;<a href='#XML_ForeignKey'>ForeignKey</a>&gt;</code></td>
@@ -1146,12 +1110,144 @@ either using an attribute or a nested element.</p>
         </tr>
         </table>
 
+<h2>Inherited attributes</h2>
+
+<p>The <code>table</code> attribute occurs on <code>&lt;<a href='#XML_Dimension'>Dimension</a>&gt;</code>,
+<code>&lt;<a href='#XML_Attribute'>Attribute</a>&gt;</code> and <code>&lt;<a href='#XML_Column'>Column</a>&gt;</code> elements and, if not
+present, is inherited from the enclosing element. This makes
+definitions more concise if, for example, a dimension is based on a
+single table.</p>
+
+<h2>Default values for attributes</h2>
+
+<p>Many attributes have default values. For example, the default value
+of the <code>type</code> attribute of a <code>&lt;<a href='#XML_Dimension'>Dimension</a>&gt;</code> element
+is "OTHER". Default values are described in the schema reference.</p>
+
+<h2>Shared dimensions</h2>
+
+<p>If several cubes in the same schema use dimensions that have
+similar definitions, consider defining
+a <a href="#Shared_dimensions">shared dimension</a>.</p>
+
+
+<!-- ############################################################# -->
+<h1>3.6 More about dimensions<a name="More_about_dimensions">&nbsp;</a></h1> 
+
+<h1>3.6.1 The <code>Measures</code> dimension<a name="The_Measures_dimension">&nbsp;</a></h1> 
+
+<p>Measures are treated as members of a special dimension, called
+'Measures'. The dimension has a single hierarchy and a single
+level.</p>
+
+<p>MDX allows you to omit the hierarchy name if a dimension only has
+one hierarchy (including attribute
+hierarchies). Therefore <code>[Measures].[Unit&nbsp;Sales]</code> is a
+valid shorthand for <code>[Measures].[Measures].[Unit&nbsp;Sales]</code>.</p>
+
+<p>That measures belong to a dimension might seem strange. (If you
+come from a background in relational databases, it seems like
+declaring that every column is a row.) But it one of the defining
+properties of the dimensional model, and one of its strengths. Because
+measures are members, you can change the context from one measure to
+another in a calculation just as easily as you can time period or
+sales region. It allows for greater reuse of calculations. It also
+makes for easier access control, because you can grant on a cell, of
+which measure is just one coordinate.</p>
+
+<!-- ############################################################# -->
+<h1>3.6.2 Star and snowflake dimensions<a name="Star_and_snowflake_dimensions">&nbsp;</a></h1>
+
+<p>The dimensions we have seen so far have been based on a single
+table. Such dimensions are called <dfn>star dimensions</dfn>, because
+they are arranged around a fact table like the points of a star. It is
+also possible to have <dfn>snowflake dimensions</dfn>, which are based
+upon two or more dimension tables.</p>
+
+<p>First, make sure that every table in your snowflake dimension is
+defined in the <code>&lt;<a href='#XML_PhysicalSchema'>PhysicalSchema</a>&gt;</code>. You will be referencing
+tables by their table usage name.  The table usage name is unique
+within the schema. It is usually the same as the table name, but can
+be specified explicitly using the <code>&lt;<a href='#XML_Table'>Table</a>&gt;</code>
+element's <code>alias</code> attribute if there are two tables of the
+same name, and must be specified explicitly for <code>&lt;<a href='#XML_Query'>Query</a>&gt;</code> and
+<code>&lt;<a href='#XML_InlineTable'>InlineTable</a>&gt;</code> elements.</p>
+
+<p>Next, make sure that there is a path between the tables defined by
+one of more <code>&lt;<a href='#XML_Link'>Link</a>&gt;</code> elements. Usually there will be a direct
+link. For example, here are the <code>"product"</code>
+and <code>"product_class"</code> tables that we wish to build
+the <code>[Product]</code> dimension on:</p>
+
+<blockquote>
+  <code style='text-indent: -20px'>
+    <div style='padding-left:20px;'>&lt;<a href='#XML_Table'>Table</a> name='product' keyColumn='product_id'/&gt;</div>
+    <div style='padding-left:20px;'>&lt;<a href='#XML_Table'>Table</a> name='product_class' keyColumn='product_class_id'/&gt;</div>
+    <div style='padding-left:20px;'>&lt;<a href='#XML_Link'>Link</a> target='product' source='product_class' foreignKeyColumn='product_class_id'/&gt;</div>
+  </code>
+</blockquote>
+<p>Mondrian will give an error if it cannot find a path, or if there
+is more than one path.</p>
+
+<p>Now, define the dimension:</p>
+
+<blockquote>
+  <code style='text-indent: -20px'>
+    <div style='padding-left:20px;'>&lt;<a href='#XML_Dimension'>Dimension</a> name='Product' table='product' key='Product Id'&gt;</div>
+      <div style='padding-left:40px;'>&lt;<a href='#XML_Attributes'>Attributes</a>&gt;</div>
+        <div style='padding-left:60px;'>&lt;<a href='#XML_Attribute'>Attribute</a> name='Product Family' table='product_class' keyColumn='product_family'/&gt;</div>
+        <div style='padding-left:60px;'>&lt;<a href='#XML_Attribute'>Attribute</a> name='Product Department' table='product_class'&gt;</div>
+          <div style='padding-left:80px;'>&lt;<a href='#XML_Key'>Key</a>&gt;</div>
+            <div style='padding-left:100px;'>&lt;<a href='#XML_Column'>Column</a> name='product_family'/&gt;</div>
+            <div style='padding-left:100px;'>&lt;<a href='#XML_Column'>Column</a> name='product_department'/&gt;</div>
+          <div style='padding-left:80px;'>&lt;/<a href='#XML_Key'>Key</a>&gt;</div>
+        <div style='padding-left:60px;'>&lt;/<a href='#XML_Attribute'>Attribute</a>&gt;</div>
+        <div style='padding-left:60px;'>&lt;<a href='#XML_Attribute'>Attribute</a> name='Brand Name' table='product_class'&gt;</div>
+          <div style='padding-left:80px;'>&lt;<a href='#XML_Key'>Key</a>&gt;</div>
+            <div style='padding-left:100px;'>&lt;<a href='#XML_Column'>Column</a> name='product_family'/&gt;</div>
+            <div style='padding-left:100px;'>&lt;<a href='#XML_Column'>Column</a> name='product_department'/&gt;</div>
+            <div style='padding-left:100px;'>&lt;<a href='#XML_Column'>Column</a> table='product_class' name='brand_name'/&gt;</div>
+          <div style='padding-left:80px;'>&lt;/<a href='#XML_Key'>Key</a>&gt;</div>
+        <div style='padding-left:60px;'>&lt;/<a href='#XML_Attribute'>Attribute</a>&gt;</div>
+        <div style='padding-left:60px;'>&lt;<a href='#XML_Attribute'>Attribute</a> name='Product Name' table='product' keyColumn='product_id' nameColumn='product_name'/&gt;</div>
+        <div style='padding-left:60px;'>&lt;<a href='#XML_Attribute'>Attribute</a> name='Product Id' table='product' keyColumn='product_id'/&gt;</div>
+      <div style='padding-left:40px;'>&lt;/<a href='#XML_Attributes'>Attributes</a>&gt;</div>
+    <div style='padding-left:20px;'>&lt;/<a href='#XML_Dimension'>Dimension</a>&gt;</div>
+  </code>
+</blockquote>
+<p>The <code>table</code> attribute occurs in several places in this
+example. It can occur on <code>&lt;<a href='#XML_Dimension'>Dimension</a>&gt;</code>, <code>&lt;<a href='#XML_Attribute'>Attribute</a>&gt;</code>
+and <code>&lt;<a href='#XML_Column'>Column</a>&gt;</code> elements. Elements that do not specify a table
+inherit their parent element's table. The
+<code>&lt;<a href='#XML_Dimension'>Dimension</a> name='Product' table='product' key='Product Id'&gt;</code>
+element establishes a default table of <code>product</code> for the
+dimension.
+The <code>&lt;<a href='#XML_Attribute'>Attribute</a> name='Brand Name' table='product_class'&gt;</code>
+element overrides, and its
+<code>&lt;<a href='#XML_Column'>Column</a> table='product_class' name='brand_name'&gt;</code> child
+element overrides again.</p>
+
+<p>Think carefully before introducing a snowflake
+dimension. Normalizing the dimension table into multiple tables may
+save some disk space (although very little on a column-oriented
+database or any analytic database with good compression) but
+introduces another join, and the cost of that join often outweighs any
+benefits. One reasonable case for snowflake dimensions is where you
+are heavily using aggregate tables at the granularity of the outer
+table. (In the example, this would occur if a lot of important queries
+involved the <code>[Product].[Brand Name]</code> attribute and you
+decided to create an aggregate table at that
+level. Because <code>product_class</code> is a separate table, you
+could join to it to get columns such as <code>product_family</code>
+and <code>product_department</code>, and you would not need to include
+them in the aggregate table.)</p>
+
 
 <!--
 ###############################
-##  3.3.3 Time dimensions #####
+##  3.6.3 Time dimensions #####
 ############################### -->
-<h1>3.3.3 Time dimensions<a name="Time_dimensions">&nbsp;</a></h1>
+<h1>3.6.3 Time dimensions<a name="Time_dimensions">&nbsp;</a></h1>
 
 <p>Time dimensions based on year/month/week/day are coded differently in the Mondrian schema
 due to the MDX time related functions such as:</p>
@@ -1230,6 +1326,71 @@ indicated by the attributes's <code>levelType</code> attribute, whose allowable 
 </blockquote>
 
 <!--
+#################################
+##  3.6.4 Member properties #####
+################################# -->
+<h1>3.6.4 Member properties<a name="Member_properties">&nbsp;</a></h1>
+
+<p>Member properties are defined by the <code>&lt;<a href='#XML_Property'>Property</a>&gt;</code> element
+within an <code>&lt;<a href='#XML_Attribute'>Attribute</a>&gt;</code>, like this:</p>
+
+<blockquote>
+  <code style='text-indent: -20px'>
+    <div style='padding-left:20px;'>&lt;<a href='#XML_Attribute'>Attribute</a> name="City" keyColumn="city_id"&gt;</div>
+      <div style='padding-left:40px;'>&lt;<a href='#XML_Property'>Property</a> attribute="Country"/&gt;</div>
+      <div style='padding-left:40px;'>&lt;<a href='#XML_Property'>Property</a> attribute="State"/&gt;</div>
+      <div style='padding-left:40px;'>&lt;<a href='#XML_Property'>Property</a> attribute="City Population" name="Population"/&gt;</div>
+    <div style='padding-left:20px;'>&lt;/<a href='#XML_Attribute'>Attribute</a>&gt;</div>
+  </code>
+</blockquote>
+<p>We are defining the <code>[City]</code> attribute and three
+properties. Each property is defined in terms of another attribute in
+the same dimension. The <code>State</code> and <code>Country</code>
+properties inherit the name of the attribute they are defined from;
+the property created from the <code>City Population</code> attribute
+has an explicit <code>name</code> attribute to rename it
+to <code>Population</code>.</p>
+
+<p>Since properties are defined from attributes, they are not simple
+values. They have a key, a name, a caption, and a sort order, just
+like attributes.</p>
+
+<p>The attribute used to define a property must be functionally
+dependent. It would be illegal to define a property based on
+the <code>[Zipcode]</code> attribute, for instance, because there
+might be more than one zipcode in a given city. But each city has only
+one value for state, country, and population.</p>
+
+<p>You can also supply a nested <code>&lt;<a href='#XML_PropertyFormatter'>PropertyFormatter</a>&gt;</code> element
+define a <a href="#Property_formatter">property formatter</a>, which
+is explained later.</p>
+
+<p>Once properties have been defined in the schema, all members of
+that attribute will have those properties. (This applies to members of
+its attribute hierarchy, and also members of a level of an explicit
+hierarchy if that level is based on that attribute.) In an MDX query,
+you can access those properties via the
+<code><i>member</i>.Properties("<i>propertyName</i>")</code> function,
+for example:</p>
+
+<blockquote>
+<code>SELECT {[Measures].[Store Sales]} ON COLUMNS,<br/>
+&nbsp; TopCount(<br/>
+&nbsp;&nbsp;&nbsp; Filter(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Customer].[City].Members,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Customer].[City].CurrentMember.Properties("Population") < 10000),<br/>
+&nbsp;&nbsp;&nbsp; 10,<br/>
+&nbsp;&nbsp;&nbsp; [Measures].[Store Sales]) ON ROWS<br/>
+FROM [Sales]</code>
+</blockquote>
+
+<p>Mondrian deduces the type of the property expression, if it can. If the property name is a
+constant string, the type is based upon the <code>type</code> attribute ("String", "Numeric" or "Boolean")
+of the property definition. If the property name is an expression (for example,
+<code>CurrentMember.Properties("Popu" + "lation")</code>), Mondrian will return an untyped
+value.</p>
+
+<!--
 ##########################################
 ## 3.3.4 Order and display of levels #####
 ########################################## -->
@@ -1269,42 +1430,7 @@ quotes:</p>
 <blockquote>
     <p><code>WHERE productSku = '123-455-AA'</code></p>
 </blockquote>
-<!--
-####################################
-##  3.3.5 Multiple hierarchies #####
-#################################### -->
-<h1>3.3.5 Multiple hierarchies<a name="Multiple_hierarchies">&nbsp;</a></h1>
 
-<p>A dimension can contain more than one hierarchy:</p>
-
-<blockquote style="text-indent: -20px">
-    <code>
-        <div style="padding-left:20px;">&lt;<a href="#XML_Dimension">Dimension</a> name="Time" foreignKey="time_id"&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll="false" primaryKey="time_id"&gt;</div>
-                <div style="padding-left:60px;">&lt;<a href="#XML_Table">Table</a> name="time_by_day"/&gt;</div>
-                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Year" column="the_year" type="Numeric" uniqueMembers="true"/&gt;</div>
-                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Quarter" column="quarter" uniqueMembers="false"/&gt;</div>
-                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Month" column="month_of_year" type="Numeric" uniqueMembers="false"/&gt;</div>
-            <div style="padding-left:40px">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
-            <div style="padding-left:40px">&lt;<a href="#XML_Hierarchy">Hierarchy</a> name="Time Weekly" hasAll="false" primaryKey="time_id"&gt;</div>
-                <div style="padding-left:60px">&lt;<a href="#XML_Table">Table</a> name="time_by_week"/&gt;</div>
-                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Year" column="the_year" type="Numeric" uniqueMembers="true"/&gt;</div>
-                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Week" column="week" uniqueMembers="false"/&gt;</div>
-                <div style="padding-left:60px">&lt;<a href="#XML_Level">Level</a> name="Day" column="day_of_week" type="String" uniqueMembers="false"/&gt;</div>
-            <div style="padding-left:40px">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
-        <div style="padding-left:20px;">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
-    </code>
-</blockquote>
-
-<p>Notice that the first hierarchy doesn't have a name. By default, a hierarchy has the
-same name as its dimension, so the first hierarchy is called "Time".</p>
-
-<p>These hierarchies don't have much in common -- they don't even have the same table! -- except
-that they are joined from the same column in the fact table, <code>"time_id"</code>.
-The main reason to put two hierarchies in the same dimension is because it makes more sense to
-the end-user: end-users know that it makes no sense to have the "Time" hierarchy on one axis
-and the "Time Weekly" hierarchy on another axis. If two hierarchies are the same dimension, the
-MDX language enforces common sense, and does not allow you to use them both in the same query.</p>
 <!--
 #####################################
 ##  3.3.6 Degenerate dimensions #####
@@ -1408,14 +1534,7 @@ table, and Mondrian will assume that the columns come from the fact table.</p>
 <code>Dimension</code> is not necessary, and the <code>Hierarchy</code>
 element has no <code>&lt;Table&gt;</code> child element or
 <code>primaryKey</code> attribute.</p>
-<!--
-################################################
-##  3.3.8 Member properties and formatters #####
-################################################ -->
-<h1>3.3.8 Member properties and formatters<a name="Member_properties_and_formatters">&nbsp;</a></h1>
 
-<p>As we shall see later, a level definition can also define <a href="#Member_properties">member properties</a>
-and a <a href="#Member_formatter">member formatter</a>.</p>
 <!--
 ################################################
 ##  3.3.9 Approximate level cardinality #####
@@ -1475,7 +1594,7 @@ element.</p>
 <p>The <code>dependsOnLevelValue</code> attribute of a
 <a href="#Member_properties">member property</a> is used to indicate
 that the value of the member property is functionally dependent on the value
-of the <a href="#XML_Level">&lt;Level&gt</a> in which the member property is
+of the <code>&lt;<a href='#XML_Level'>Level</a>&gt;</code> in which the member property is
 defined.  In other words, for a given value of the level, the value of the
 property is invariant.</p>
 
@@ -1628,47 +1747,6 @@ backward compatible with them. Therefore, any schema using these attributes will
 need to be migrated to the new syntax as part of upgrading to Mondrian 4.0.</p>
 
 <!--
-####################################################
-##  3.3.12 Table Hints #####
-#################################################### -->
-<h1>3.3.12 Table Hints<a name="Table_hints">&nbsp;</a></h1>
-
-<p>Mondrian supports a limited set of database-specific hints for the
-<code>&lt;<a href='#XML_Table'>Table</a>&gt;</code> element, which will then be
-passed on to SQL queries involving the table.  These hints are as
-follows:</p>
-
-    <table class="grayTable" id="table12" width="500">
-        <tr>
-            <td><b>Database</b></td>
-            <td><b>Hint Type</b></td>
-            <td><b>Permitted Values</b></td>
-            <td><b>Description</b></td>
-        </tr>
-        <tr>
-            <td>MySQL</td>
-            <td><code>force_index</code></td>
-            <td>The name of an index on this table</td>
-            <td>Forces the named index to be used when selecting level values
-            from this table.</td>
-        </tr>
-        </table>
-
-<p>For example:</p>
-
-<blockquote>
-  <code style='text-indent: -20px'>
-    <div style='padding-left:20px;'>&lt;<a href='#XML_Table'>Table</a> name="automotive_dim"&gt;</div>
-      <div style='padding-left:40px;'>&lt;<a href='#XML_Hint'>Hint</a> type="force_index"&gt;my_index&lt;/<a href='#XML_Hint'>Hint</a>&gt;</div>
-    <div style='padding-left:20px;'>&lt;/<a href='#XML_Table'>Table</a>&gt;</div>
-  </code>
-</blockquote>
-<p>As with the functional dependency optimizations, support for table hints
-is in a transitional stage, and are likely to change in Mondrian 4.0.  Any
-schema using them may need to be migrated to the new schema syntax as part of
-upgrading to Mondrian 4.0.</p>
-
-<!--
 #############################
 ##  x. Physical schemas #####
 ############################# -->
@@ -1683,7 +1761,7 @@ upgrading to Mondrian 4.0.</p>
 <p>TODO</p>
 
 <p>Tables are declared using
-the {@link Table} element. If
+the <code>&lt;<a href='#XML_Table'>Table</a>&gt;</code> element. If
 the fact table is not in the default schema, you can provide an
 explicit schema using the "schema" attribute; for example:</p>
 
@@ -1703,16 +1781,16 @@ The default is "<code>Numeric</code>", except for "<code>count</code>"
 and "<code>distinct-count</code>" measures, which are
 "<code>Integer</code>".</p>
 
-<p>You can also use the <code>&lt;<a href='#XML_View'>View</a>&gt;</code>
+<p>You can also use the <code>&lt;<a href='#XML_Query'>Query</a>&gt;</code>
 construct to build more complicated SQL statements.</p>
 
 <!--
 ##########################
 ##  4.2 Inline table #####
 ########################## -->
-<h1>4.2 Inline table<a name="Inline_tables">&nbsp;</a></h1>
+<h1>4.2 Inline table<a name="Inline_table">&nbsp;</a></h1>
 
-<p>The {@link InlineTable} construct allows
+<p>The <code>&lt;<a href='#XML_InlineTable'>InlineTable</a>&gt;</code> construct allows
 you to define a dataset in the schema file. You must declare the names of the columns, the column types
 (&quot;String&quot; or &quot;Numeric&quot;), and a set of rows. As for
 <code>&lt;<a href='#XML_Table'>Table</a>&gt;</code> and
@@ -1789,19 +1867,60 @@ for that column, and the column's value will default to NULL.</p>
 
 <!--
 ###################
-##  x.3 Query #####
+##  4.3 Query #####
 ################### -->
-<h1>x.3 Query<a name="Query">&nbsp;</a></h1>
+<h1>4.3 Query<a name="Query">&nbsp;</a></h1>
 
 <p>TODO</p>
 
 <!--
 ##################
-##  x.4 Link #####
+##  4.4 Link #####
 ################## -->
-<h1>x.4 Link<a name="Link">&nbsp;</a></h1>
+<h1>4.4 Link<a name="Link">&nbsp;</a></h1>
 
 <p>TODO</p>
+
+<!--
+####################################################
+##  4.5 Table Hints #####
+#################################################### -->
+<h1>4.5 Table Hints<a name="Table_hints">&nbsp;</a></h1>
+
+<p>Mondrian supports a limited set of database-specific hints for the
+<code>&lt;<a href='#XML_Table'>Table</a>&gt;</code> element, which will then be
+passed on to SQL queries involving the table.  These hints are as
+follows:</p>
+
+    <table class="grayTable" id="table12" width="500">
+        <tr>
+            <td><b>Database</b></td>
+            <td><b>Hint Type</b></td>
+            <td><b>Permitted Values</b></td>
+            <td><b>Description</b></td>
+        </tr>
+        <tr>
+            <td>MySQL</td>
+            <td><code>force_index</code></td>
+            <td>The name of an index on this table</td>
+            <td>Forces the named index to be used when selecting level values
+            from this table.</td>
+        </tr>
+        </table>
+
+<p>For example:</p>
+
+<blockquote>
+  <code style='text-indent: -20px'>
+    <div style='padding-left:20px;'>&lt;<a href='#XML_Table'>Table</a> name="automotive_dim"&gt;</div>
+      <div style='padding-left:40px;'>&lt;<a href='#XML_Hint'>Hint</a> type="force_index"&gt;my_index&lt;/<a href='#XML_Hint'>Hint</a>&gt;</div>
+    <div style='padding-left:20px;'>&lt;/<a href='#XML_Table'>Table</a>&gt;</div>
+  </code>
+</blockquote>
+<p>As with the functional dependency optimizations, support for table hints
+is in a transitional stage, and are likely to change in Mondrian 4.0.  Any
+schema using them may need to be migrated to the new schema syntax as part of
+upgrading to Mondrian 4.0.</p>
 
 <!--
 #######################################
@@ -1896,25 +2015,6 @@ example shows the <code>Store Type</code> dimension being joined to the
         <div style="padding-left:20px;">&lt;/<a href="#XML_Cube">Cube</a>&gt;</div>
     </code>
 </blockquote>
-
-<!--
-###############################
-##  4.2 Join optimization #####
-############################### -->
-<h1>4.2 Join optimization<a name="Join_optimization">&nbsp;</a></h1>
-
-<p>The table mapping in the schema tells Mondrian how to get the data, but Mondrian is smart
-enough not to read the schema literally. It applies a number of optimizations when generating
-queries:</p>
-
-<ul>
-    <li>TODO: describe large dimension support</li>
-    <li>If a dimension (or, more precisely, the level of the dimension being accessed) is in the fact table, Mondrian does
-    not perform a join.</li>
-    <li>If two dimensions access the same table via the same join path, Mondrian only joins them once. For example,
-    <code>[Gender]</code> and <code>[Age]</code> might both be columns in the
-    <code>customers</code> table, joined via <code>sales_1997.cust_id = customers.cust_id</code>.</li>
-</ul>
 
 <!--
 ########################################
@@ -2342,50 +2442,7 @@ END //<br/>
     <br/>
     DELIMITER ;</code>
 </blockquote>
-<!--
-###############################
-##  5.3 Member properties #####
-############################### -->
-<h1>5.3 Member properties<a name="Member_properties">&nbsp;</a></h1>
 
-<p>Member properties are defined by the <code><a href="#XML_Property">&lt;Property&gt;</a></code>
-element within an <code>&lt;<a href="#XML_Attribute">Attribute</a>&gt;</code>, like this:</p>
-
-<blockquote style="text-indent: -20px">
-    <code>
-        <div style="padding-left:20px;">&lt;<a href="#XML_Attribute">Attribute</a> name="MyAttribute" column="attributeColumn"&gt;</div>
-            <div style="padding-left:40px;">&lt;<a href="#XML_Property">Property</a> name="MyProp" column="propColumn" formatter="com.example.MyPropertyFormatter"/&gt;</div>
-        <div style="padding-left:20px;">&lt;<a href="#XML_Attribute">Attribute</a>/&gt;</div>
-    </code>
-</blockquote>
-
-<p>The <code>formatter</code> attribute defines a <a href="#Property_formatter">property formatter
-</a>, which is explained later.</p>
-
-<p>Once properties have been defined in the schema, all members of
-that attribute will have those properties. (This applies to members of
-the attribute's default hierarchy, and also members of a level of an
-explicit hierarchy if that level is based on that attribute.) In an
-MDX query, you can access those properties via the
-<code><i>member</i>.Properties("<i>propertyName</i>")</code> function, for example:</p>
-
-<blockquote>
-<code>SELECT {[Store Sales]} ON COLUMNS,<br/>
-&nbsp; TopCount(Filter([Store].[Store Name].Members,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-[Store].CurrentMember.Properties("Store Type") = "Supermarket"),<br/>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Store
-Sales]) ON ROWS<br/>
-FROM [Sales]</code>
-</blockquote>
-
-<p>Mondrian deduces the type of the property expression, if it can. If the property name is a
-constant string, the type is based upon the <code>type</code> attribute ("String", "Numeric" or "Boolean")
-of the property definition. If the property name is an expression (for example
-<code>CurrentMember.Properties("Store " + "Type")</code>), Mondrian will return an untyped
-value.</p>
 <!--
 ################################
 ##  5.4 Calculated members #####
@@ -3907,7 +3964,9 @@ Schema.lookupRole(String)</a>.</li>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Dimension" href="xml_schema.html#Dimension">Dimension</a>&gt;</code></td>
-        <td>Dimension.</td>
+        <td>A collection of attributes that may be used to subdivide a
+        multidimensional data set, some of them organized into
+        hierarchies.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Attributes" href="xml_schema.html#Attributes">Attributes</a>&gt;</code></td>
@@ -3915,7 +3974,7 @@ Schema.lookupRole(String)</a>.</li>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Attribute" href="xml_schema.html#Attribute">Attribute</a>&gt;</code></td>
-        <td>Attribute.</td>
+        <td>Data item in a Dimension.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Hierarchies" href="xml_schema.html#Hierarchies">Hierarchies</a>&gt;</code></td>
@@ -3923,7 +3982,7 @@ Schema.lookupRole(String)</a>.</li>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Hierarchy" href="xml_schema.html#Hierarchy">Hierarchy</a>&gt;</code></td>
-        <td>Hierarchy.</td>
+        <td>Collection of Attributes organized into Levels.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Levels" href="xml_schema.html#Levels">Levels</a>&gt;</code></td>
@@ -3975,23 +4034,26 @@ Schema.lookupRole(String)</a>.</li>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_ForeignKeyLink" href="xml_schema.html#ForeignKeyLink">ForeignKeyLink</a>&gt;</code></td>
-        <td>TODO.</td>
+        <td>Links a Dimension to a MeasureGroup using a foreign key
+        from the fact table to the dimension table.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_FactLink" href="xml_schema.html#FactLink">FactLink</a>&gt;</code></td>
-        <td>TODO.</td>
+        <td>Declares that a Dimension is trivially linked to a
+        MeasureGroup because its dimension table is the same as the
+        fact table.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_CopyLink" href="xml_schema.html#CopyLink">CopyLink</a>&gt;</code></td>
-        <td>TODO.</td>
+        <td>Indicates dimension that is represented by key columns in the MeasureGroup's table.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_ReferenceLink" href="xml_schema.html#ReferenceLink">ReferenceLink</a>&gt;</code></td>
-        <td>TODO.</td>
+        <td>Links a Dimension to a MeasureGroup via another Dimension.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_NoLink" href="xml_schema.html#NoLink">NoLink</a>&gt;</code></td>
-        <td>TODO.</td>
+        <td>Documents that a Dimension is not linked to the current MeasureGroup.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_CalculatedMembers" href="xml_schema.html#CalculatedMembers">CalculatedMembers</a>&gt;</code></td>

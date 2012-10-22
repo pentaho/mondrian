@@ -73,6 +73,9 @@ function elementize(s, \
 
 function elementTag(s,      i, j, k, m, name) {
     i = index(s, "{@element ");
+    if (i == 0) {
+        return s;
+    }
     j = i + length("{@element ");
     for (k = j; index(letters, substr(s, k, 1)); k++) {}
     for (n = k; substr(s, n, 1) != "}"; n++) {}
@@ -142,13 +145,18 @@ inXml {
 }
 /{@element *$/ {
     error("Incomplete element tag");
-    s = elementTag(s);
 }
 /{@element/ {
     if ($0 !~ /{@element .*}/) {
         error("Incomplete element tag");
     }
-    s = elementTag(s);
+    for (;;) {
+        prev = s;
+        s = elementTag(s);
+        if (s == prev) {
+            break;
+        }
+    }
 }
 /{@xml/ {
     inXml = 1;
