@@ -412,7 +412,7 @@ public class Olap4jTest extends FoodMartTestCase {
                     "<Dimension name='Store Type' key='Store Id' table='store'>\n"
                     + "  <Attributes>\n"
                     + "    <Attribute name='Store Id' keyColumn='store_id'/>\n"
-                    + "    <Attribute name='Store Type' table='store' keyColumn='store_type'/>\n"
+                    + "    <Attribute name='Store Type' table='store' keyColumn='store_type' hasHierarchy='false'/>\n"
                     + "  </Attributes>\n"
                     + "  <Hierarchies>\n"
                     + "    <Hierarchy name='Store Type'>\n"

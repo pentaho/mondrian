@@ -2313,13 +2313,13 @@ public class RolapSchemaUpgrader {
             for (Mondrian3Def.Measure xmlLegacyMeasure
                 : info.xmlLegacyCube.measures)
             {
-                if (measureNames.add(xmlLegacyMeasure.name)) {
+                if (info.xmlMeasureGroup.getMeasures().get(
+                        xmlLegacyMeasure.name) == null)
+                {
                     final MondrianDef.Measure xmlMeasure =
                         convertMeasure(
                             cubeInfoMap.get(info.cubeName).fact,
                             xmlLegacyMeasure);
-                    convertAnnotations(
-                        xmlMeasure.children, xmlLegacyMeasure.annotations);
                     info.xmlMeasureGroup.children
                         .holder(new MondrianDef.Measures())
                         .list()
@@ -3091,14 +3091,15 @@ public class RolapSchemaUpgrader {
         }
 
         // name
-        convertColumnOrExpr(
-            relation,
-            xmlLegacyLevel.nameExp,
-            xmlLegacyLevel.nameColumn,
-            relations,
-            levelUniqueName,
-            MondrianDef.Name.class,
-            xmlAttribute.children);
+        MondrianDef.Column n =
+            convertColumnOrExpr(
+                relation,
+                xmlLegacyLevel.nameExp,
+                xmlLegacyLevel.nameColumn,
+                relations,
+                levelUniqueName,
+                MondrianDef.Name.class,
+                xmlAttribute.children);
         xmlAttribute.nameColumn = null;
 
         // name is not optional if key is composite
@@ -3121,15 +3122,25 @@ public class RolapSchemaUpgrader {
         xmlAttribute.captionColumn = null;
 
         // ordinal
-        convertColumnOrExpr(
-            relation,
-            xmlLegacyLevel.ordinalExp,
-            xmlLegacyLevel.ordinalColumn,
-            relations,
-            levelUniqueName,
-            MondrianDef.OrderBy.class,
-            xmlAttribute.children);
+        MondrianDef.Column x =
+            convertColumnOrExpr(
+                relation,
+                xmlLegacyLevel.ordinalExp,
+                xmlLegacyLevel.ordinalColumn,
+                relations,
+                levelUniqueName,
+                MondrianDef.OrderBy.class,
+                xmlAttribute.children);
         xmlAttribute.orderByColumn = null;
+
+        // In mondrian-3, ordinal defaulted to key, whereas
+        // in mondrian-4, ordinal defaults to name. If name is not specified,
+        // explicitly specify OrderBy to preserve mondrian-3 semantics.
+        if (x == null && n != null) {
+            xmlAttribute.children.holder(new MondrianDef.OrderBy())
+                .list()
+                .addAll(xmlAttribute.getKey().list());
+        }
 
         // parent becomes a new attribute
         if (xmlLegacyLevel.parentColumn != null
@@ -3150,7 +3161,7 @@ public class RolapSchemaUpgrader {
                 xmlParentAttribute.children);
             xmlAttribute.parent = xmlParentAttribute.name;
             xmlAttribute.nullParentValue = xmlLegacyLevel.nullParentValue;
-            xmlAttribute.hasHierarchy = false;
+            xmlParentAttribute.hasHierarchy = false;
 
             // Register closure table in physical schema, and link to fact
             // table.

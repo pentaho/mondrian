@@ -26,6 +26,9 @@ import mondrian.util.UnionIterator;
 
 import org.apache.log4j.Logger;
 
+import org.olap4j.impl.NamedListImpl;
+import org.olap4j.metadata.NamedList;
+
 import java.io.PrintWriter;
 import java.util.*;
 
@@ -73,10 +76,11 @@ public class RolapHierarchy extends HierarchyBase {
     private RolapMemberBase allMember;
     private static final int ALL_LEVEL_CARDINALITY = 1;
     private static final int NULL_LEVEL_CARDINALITY = 1;
+    final RolapAttribute attribute;
     private final Map<String, Annotation> annotationMap;
     final RolapHierarchy closureFor;
 
-    final List<RolapLevel> levelList = new ArrayList<RolapLevel>();
+    final NamedList<RolapLevel> levelList = new NamedListImpl<RolapLevel>();
 
     /**
      * Creates a RolapHierarchy.
@@ -86,6 +90,7 @@ public class RolapHierarchy extends HierarchyBase {
      *     dimension
      * @param uniqueName Unique name of hierarchy
      * @param hasAll Whether the dimension has an 'all' level
+     * @param attribute Attribute this is a hierarchy for; or null
      */
     RolapHierarchy(
         RolapDimension dimension,
@@ -96,11 +101,13 @@ public class RolapHierarchy extends HierarchyBase {
         String description,
         boolean hasAll,
         RolapHierarchy closureFor,
+        RolapAttribute attribute,
         Map<String, Annotation> annotationMap)
     {
         super(
             dimension, subName, uniqueName,
             visible, caption, description, hasAll);
+        this.attribute = attribute;
         this.annotationMap = annotationMap;
         this.closureFor = closureFor;
     }
@@ -704,6 +711,7 @@ public class RolapHierarchy extends HierarchyBase {
                 peerDimension.getDescription(),
                 true,
                 this,
+                null,
                 Collections.<String, Annotation>emptyMap());
         peerDimension.addHierarchy(peerHier);
         peerHier.allMemberName = getAllMemberName();

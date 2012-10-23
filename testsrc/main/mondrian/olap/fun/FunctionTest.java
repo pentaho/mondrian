@@ -1794,8 +1794,8 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #3: 36,177\n"
             + "Row #3: 76,345.49\n");
         //----------------------------------------------------
-        //Calc member in dimension based on level included
-        //Calc members in measures in schema included
+        // Calc member in dimension based on level included
+        // Calc members in measures in schema included
         //----------------------------------------------------
         assertQueryReturns(
             "WITH MEMBER [Store].[Stores].[USA].[CA plus OR] AS 'AGGREGATE({[Store].[USA].[CA], [Store].[Stores].[USA].[OR]})' "
@@ -1837,7 +1837,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #3: $45,833.33\n"
             + "Row #3: 0.0%\n");
         //----------------------------------------------------
-        //Two dimensions
+        // Two dimensions
         //----------------------------------------------------
         assertQueryReturns(
             "SELECT AddCalculatedMembers({[Measures].[Unit Sales], [Measures].[Store Sales]}) ON COLUMNS,"
@@ -1859,10 +1859,9 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #0: $10,771.98\n"
             + "Row #0: $10,771.98\n"
             + "Row #0: 0.0%\n");
-        //----------------------------------------------------
-        //Should throw more than one dimension error
-        //----------------------------------------------------
-
+        // ---------------------------------------------------
+        // Should throw more than one dimension error
+        // ---------------------------------------------------
         assertAxisThrows(
             "AddCalculatedMembers({([Store].[USA].[CA], [Gender].[F])})",
             "Only single dimension members allowed in set for "
@@ -1886,10 +1885,10 @@ public class FunctionTest extends FoodMartTestCase {
             "StripCalculatedMembers([Customers].CurrentMember.Children)",
             setOf("[Customer].[Customers]"));
 
-        //----------------------------------------------------
-        //Calc members in dimension based on level stripped
-        //Actual members in measures left alone
-        //----------------------------------------------------
+        // ---------------------------------------------------
+        // Calc members in dimension based on level stripped
+        // Actual members in measures left alone
+        // ---------------------------------------------------
         assertQueryReturns(
             "WITH MEMBER [Store].[Stores].[USA].[CA plus OR] AS "
             + "'AGGREGATE({[Store].[USA].[CA], [Store].[USA].[OR]})' "
@@ -3078,7 +3077,8 @@ public class FunctionTest extends FoodMartTestCase {
             "AVG({[Store].[All Stores].[USA].children},[Measures].[Store Sales])",
             "188,412.71");
     }
-    //todo: testAvgWithNulls
+
+    // todo: testAvgWithNulls
 
     public void testCorrelation() {
         assertExprReturns(
@@ -3242,7 +3242,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #0: 31\n");
     }
 
-    //todo: testCountNull, testCountNoExp
+    // todo: testCountNull, testCountNoExp
 
     public void testCovariance() {
         assertExprReturns(
@@ -3893,7 +3893,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "[Promotion].[Media Type].[Sunday Paper, Radio, TV]");
     }
 
-    //todo: test unordered
+    // todo: test unordered
 
     public void testBottomPercent() {
         assertAxisReturns(
@@ -3917,7 +3917,8 @@ public class FunctionTest extends FoodMartTestCase {
             "[Promotion].[Media Type].[Radio]\n"
             + "[Promotion].[Media Type].[Sunday Paper, Radio, TV]");
     }
-    //todo: test precision
+
+    // todo: test precision
 
     public void testBottomSum() {
         assertAxisReturns(
@@ -7182,7 +7183,7 @@ public class FunctionTest extends FoodMartTestCase {
             null,
             "<Cube name='" + cubeName + "'>\n"
             + "  <Dimensions>\n"
-            + "    <Dimension name='Time_Alphabetical' table='time_by_day' key='Time Id' type='TimeDimension'>\n"
+            + "    <Dimension name='Time_Alphabetical' table='time_by_day' key='Time Id' type='TIME'>\n"
             + "      <Attributes>\n"
             + "        <Attribute name='Year' keyColumn='the_year' levelType='TimeYears'/>\n"
             + "        <Attribute name='Quarter' levelType='TimeQuarters'>\n"
@@ -8382,7 +8383,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderConstant1() {
-        //sort by customerId (Abel = 7851, Adeline = 6442, Abe = 570)
+        // sort by customerId (Abel = 7851, Adeline = 6442, Abe = 570)
         assertQueryReturns(
             "select \n"
             + "  Order("
@@ -8753,7 +8754,7 @@ public class FunctionTest extends FoodMartTestCase {
             "[Promotion].[Media Type].[No Media]");
     }
 
-    //todo: test precision
+    // todo: test precision
 
     public void testTopSum() {
         assertAxisReturns(

@@ -226,8 +226,8 @@ public class FunUtil extends Util {
 
     /**
      * Throws an error if the expressions don't have the same hierarchy.
-     * @param left
-     * @param right
+     * @param left Left
+     * @param right Right
      * @throws MondrianEvaluationException if expressions don't have the same
      *     hierarchy
      */
@@ -1173,15 +1173,13 @@ public class FunUtil extends Util {
         }
         Arrays.sort(asArray);
 
-        /*
-         * The median is defined as the value that has exactly the same
-         * number of entries before it in the sorted list as after.
-         * So, if the number of entries in the list is odd, the
-         * median is the entry at (length-1)/2 (using zero-based indexes).
-         * If the number of entries is even, the median is defined as the
-         * arithmetic mean of the two numbers in the middle of the list, or
-         * (entries[length/2 - 1] + entries[length/2]) / 2.
-         */
+        // The median is defined as the value that has exactly the same
+        // number of entries before it in the sorted list as after.
+        // So, if the number of entries in the list is odd, the
+        // median is the entry at (length-1)/2 (using zero-based indexes).
+        // If the number of entries is even, the median is defined as the
+        // arithmetic mean of the two numbers in the middle of the list, or
+        // (entries[length/2 - 1] + entries[length/2]) / 2.
         int length = asArray.length;
 
         if (p == 0.5) {
@@ -1338,7 +1336,7 @@ public class FunUtil extends Util {
         SetWrapper sw1 = evaluateSet(evaluator, memberList, exp1);
         SetWrapper sw2 = evaluateSet(evaluator, memberList, exp2);
         Object covar = _covariance(sw1, sw2, false);
-        Object var1 = _var(sw1, false); //this should be false, yes?
+        Object var1 = _var(sw1, false); // this should be false, yes?
         Object var2 = _var(sw2, false);
         if ((covar instanceof Double)
             && (var1 instanceof Double)
@@ -1428,7 +1426,7 @@ public class FunUtil extends Util {
         for (int i = 0; i < sw.v.size(); i++) {
             sum += ((Double) sw.v.get(i)).doubleValue();
         }
-        //todo: should look at context and optionally include nulls
+        // todo: should look at context and optionally include nulls
         return sum / (double) sw.v.size();
     }
 
@@ -1745,14 +1743,10 @@ public class FunUtil extends Util {
         }
 
         if (distance == 0) {
-            /*
-            * Shortcut if there's nowhere to go.
-            */
+            // Shortcut if there's nowhere to go.
             return member;
         } else if (distance < 0) {
-            /*
-            * Can't go backwards.
-            */
+            // Can't go backwards.
             return member.getHierarchy().getNullMember();
         }
 
@@ -1762,10 +1756,7 @@ public class FunUtil extends Util {
 
         Member result = member.getHierarchy().getNullMember();
 
-        searchLoop:
-        for (int i = 0; i < ancestors.size(); i++) {
-            final Member ancestorMember = ancestors.get(i);
-
+        for (final Member ancestorMember : ancestors) {
             if (targetLevel != null) {
                 if (ancestorMember.getLevel() == targetLevel) {
                     if (schemaReader.isVisible(ancestorMember)) {
@@ -2205,7 +2196,7 @@ public class FunUtil extends Util {
     *
     * @param items will be partially-sorted in place
     * @param comp a Comparator; null means use natural comparison
-    * @param limit
+    * @param limit Limit
     */
     static <T> void partialSort(T[] items, Comparator<T> comp, int limit)
     {
@@ -2584,6 +2575,7 @@ public class FunUtil extends Util {
                 for (int i = start; i < left; i++) {
                     assert !more(vec[i], pivot);
                 }
+                //noinspection AssertWithSideEffects
                 assert equal(vec[left], pivot);
                 for (int i = left + 1;  i <= end;  i++) {
                     assert !less(vec[i], pivot);
@@ -3088,21 +3080,23 @@ public class FunUtil extends Util {
         List v = new ArrayList();
         public int errorCount = 0, nullCount = 0;
 
-        //private double avg = Double.NaN;
-        //todo: parameterize inclusion of nulls
-        //by making this a method of the SetWrapper, we can cache the result
-        //this allows its reuse in Correlation
-        // public double getAverage() {
-        //     if (avg == Double.NaN) {
-        //         double sum = 0.0;
-        //         for (int i = 0; i < resolvers.size(); i++) {
-        //             sum += ((Double) resolvers.elementAt(i)).doubleValue();
-        //         }
-        //         //todo: should look at context and optionally include nulls
-        //         avg = sum / (double) resolvers.size();
-        //     }
-        //     return avg;
-        // }
+/*
+        private double avg = Double.NaN;
+        // todo: parameterize inclusion of nulls
+        // by making this a method of the SetWrapper, we can cache the result
+        // this allows its reuse in Correlation
+        public double getAverage() {
+            if (avg == Double.NaN) {
+                double sum = 0.0;
+                for (int i = 0; i < resolvers.size(); i++) {
+                    sum += ((Double) resolvers.elementAt(i)).doubleValue();
+                }
+                // todo: should look at context and optionally include nulls
+                avg = sum / (double) resolvers.size();
+            }
+            return avg;
+        }
+*/
     }
 
     /**

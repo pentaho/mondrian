@@ -36,8 +36,7 @@ import org.apache.log4j.Logger;
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
 
-import org.olap4j.impl.Olap4jUtil;
-import org.olap4j.impl.UnmodifiableArrayMap;
+import org.olap4j.impl.*;
 import org.olap4j.metadata.*;
 
 import java.io.*;
@@ -210,6 +209,7 @@ public class RolapSchemaLoader {
             }
 
             final MondrianDef.Schema xmlSchema;
+            MondrianDef.Handler.THREAD_LOCAL.set(handler);
             final boolean legacy = isLegacy(def);
             final String metamodelVersion =
                 def.getAttribute("metamodelVersion");
@@ -243,6 +243,8 @@ public class RolapSchemaLoader {
             throw Util.newError(e, "while parsing catalog " + catalogUrl);
         } catch (IOException e) {
             throw Util.newError(e, "while parsing catalog " + catalogUrl);
+        } finally {
+            MondrianDef.Handler.THREAD_LOCAL.set(null);
         }
     }
 
@@ -372,20 +374,11 @@ public class RolapSchemaLoader {
 
         // Create cubes.
         for (MondrianDef.Cube xmlCube : xmlCubes) {
-            if (toBoolean(xmlCube.enabled, true)) {
-                RolapCube cube =
-                    new RolapCube(
-                        this,
-                        xmlCube.name,
-                        toBoolean(xmlCube.visible, true),
-                        xmlCube.caption,
-                        xmlCube.description,
-                        createAnnotationMap(xmlCube.getAnnotations()),
-                        xmlSchema.measuresCaption);
-                validator.putXml(cube, xmlCube);
-                initCube(cube);
-                schema.addCube(cube);
+            final RolapCube cube = createCube(schema, xmlCube, xmlSchema);
+            if (cube == null) {
+                continue;
             }
+            Util.discard(cube);
         }
 
         // Create named sets.
@@ -736,7 +729,7 @@ public class RolapSchemaLoader {
                 column);
         }
         registerKey(
-            handler, inlineTable.getKey(), unresolvedColumnList,
+            handler, null, inlineTable.getKey(), unresolvedColumnList,
             physInlineTable);
         for (MondrianDef.Row row : inlineTable.getRows()) {
             assert row.values.length == inlineTable.getColumnDefs().size();
@@ -793,8 +786,10 @@ public class RolapSchemaLoader {
         // Read columns from JDBC.
         physTable.ensurePopulated(this, xmlTable);
 
+        registerKey(
+            handler, xmlTable.keyColumn, null, unresolvedColumnList, physTable);
         for (MondrianDef.Key key : xmlTable.getKeys()) {
-            registerKey(handler, key, unresolvedColumnList, physTable);
+            registerKey(handler, null, key, unresolvedColumnList, physTable);
         }
         return physTable;
     }
@@ -937,16 +932,27 @@ public class RolapSchemaLoader {
 
     private void registerKey(
         Handler handler,
+        String columnName,
         MondrianDef.Key xmlKey,
         List<RolapSchema.UnresolvedColumn> unresolvedColumnList,
         final RolapSchema.PhysRelationImpl physTable)
     {
+        String keyName;
+        MondrianDef.Column[] columns;
         if (xmlKey == null) {
-            return;
-        }
-        String keyName = xmlKey.name;
-        if (keyName == null) {
+            if (columnName == null) {
+                // If both null, nothing to do.
+                return;
+            }
+            columns = new MondrianDef.Column[] {new MondrianDef.Column()};
+            columns[0].name = columnName;
             keyName = "primary";
+        } else {
+            columns = xmlKey.array;
+            keyName = xmlKey.name;
+            if (keyName == null) {
+                keyName = "primary";
+            }
         }
         if (physTable.lookupKey(keyName) != null) {
             handler.error(
@@ -960,7 +966,7 @@ public class RolapSchemaLoader {
             physTable.addKey(
                 keyName, new ArrayList<RolapSchema.PhysColumn>());
         int i = 0;
-        for (MondrianDef.Column columnRef : xmlKey.array) {
+        for (MondrianDef.Column columnRef : columns) {
             final int index = i++;
             final RolapSchema.UnresolvedColumn unresolvedColumn =
                 new RolapSchema.UnresolvedColumn(
@@ -1154,14 +1160,36 @@ public class RolapSchemaLoader {
     }
 
     /**
-     * Initializes a cube.
+     * Creates a cube.
      */
-    void initCube(RolapCube cube)
+    private RolapCube createCube(
+        RolapSchema schema,
+        MondrianDef.Cube xmlCube,
+        MondrianDef.Schema xmlSchema)
     {
+        if (!toBoolean(xmlCube.enabled, true)) {
+            return null;
+        }
+        if (schema.getCubeList().get(xmlCube.name) != null) {
+            getHandler().error(
+                "Duplicate cube '" + xmlCube.name + "'",
+                xmlCube,
+                null);
+            return null;
+        }
+        RolapCube cube =
+            new RolapCube(
+                this,
+                xmlCube.name,
+                toBoolean(xmlCube.visible, true),
+                xmlCube.caption,
+                xmlCube.description,
+                createAnnotationMap(xmlCube.getAnnotations()),
+                xmlSchema.measuresCaption);
+        validator.putXml(cube, xmlCube);
+
         dimensionPaths.clear();
 
-        final MondrianDef.Schema xmlSchema = validator.getXml(schema);
-        final MondrianDef.Cube xmlCube = validator.getXml(cube);
         final NamedList<MondrianDef.Dimension> xmlCubeDimensions =
             xmlCube.getDimensions();
         int ordinal = cube.getDimensionList().size();
@@ -1184,8 +1212,6 @@ public class RolapSchemaLoader {
             cube.addDimension(dimension);
         }
 
-        schema.addCube(cube);
-
         // Initialize dimensions before measure groups. (Measure groups contain
         // dimension links, and these reference dimensions.)
         for (RolapCubeDimension dimension : cube.getDimensionList()) {
@@ -1206,6 +1232,7 @@ public class RolapSchemaLoader {
                 null);
         }
 
+        final Set<String> measureNames = new HashSet<String>();
         final List<RolapMember> measureList = new ArrayList<RolapMember>();
         final List<RolapMember> aggFactCountMeasureList =
             new ArrayList<RolapMember>();
@@ -1281,9 +1308,22 @@ public class RolapSchemaLoader {
                         ? null
                         : getPhysRelation(
                             xmlMeasureGroup.table, xmlMeasureGroup, "table");
+
+                if (!measureNames.add(xmlMeasure.name)) {
+                    getHandler().error(
+                        "Duplicate measure '" + xmlMeasure.name + "' in cube '"
+                            + measureGroup.getCube().getName() + "'",
+                        xmlMeasure,
+                        null);
+                    continue;
+                }
+
                 final RolapBaseCubeMeasure measure =
                     createMeasure(
                         measureGroup, xmlMeasure, relation);
+                if (measure == null) {
+                    continue;
+                }
                 if (measure.getOrdinal() == -1) {
                     measure.setOrdinal(measureList.size());
                 }
@@ -1319,6 +1359,9 @@ public class RolapSchemaLoader {
                             xmlMeasureGroup.table, xmlMeasureGroup, "table");
                 measureGroup.factCountMeasure =
                     createMeasure(measureGroup, xmlMeasure, relation);
+                if (measureGroup.factCountMeasure == null) {
+                    throw new AssertionError();
+                }
                 measureList.add(measureGroup.factCountMeasure);
                 aggFactCountMeasureList.add(measureGroup.factCountMeasure);
             }
@@ -1420,12 +1463,24 @@ public class RolapSchemaLoader {
             unresolvedMeasure.apply();
         }
 
-        // The cube contains all measures except the [Fact Count] measures we
-        // created for measure groups.
+        // A cube must include at least one measure. The [Fact Count] measures
+        // that are created for measure groups do not count; they are not
+        // visible.
         final List<RolapMember> cubeMeasureList =
             new ArrayList<RolapMember>(measureList);
         removeAllByIdentity(cubeMeasureList, aggFactCountMeasureList);
+
+        if (cubeMeasureList.size() == 0) {
+            getHandler().error(
+                "Cube '" + xmlCube.name + "' must have at least one measure",
+                xmlCube,
+                null);
+            return null;
+        }
+
         cube.init(cubeMeasureList, cubeMeasureList.get(0));
+
+        schema.addCube(cube);
 
 //        // Check that every stored measure belongs to its measure group.
 //        List<RolapCubeHierarchy.RolapCubeStoredMeasure> storedMeasures =
@@ -1547,6 +1602,7 @@ public class RolapSchemaLoader {
         }
 
         cube.init2();
+        return cube;
     }
 
     private <T> void removeAllByIdentity(List<T> list, Collection<T> remove) {
@@ -1976,6 +2032,15 @@ public class RolapSchemaLoader {
         return measure;
     }
 
+    private boolean hasMeasure(RolapCube cube, String measureName) {
+        for (RolapMeasureGroup measureGroup : cube.getMeasureGroups()) {
+            if (measureGroup.measureList.get(measureName) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static RolapAggregator lookupAggregator(String aggregatorName) {
         RolapAggregator aggregator;
 
@@ -2215,20 +2280,18 @@ public class RolapSchemaLoader {
                 "Error while adding dimension to cube '" + cube
                 + "' from XML [" + xml + "]");
         }
-        return createDimension(this, cube, xmlDimension, null);
+        return createDimension(cube, xmlDimension, null);
     }
 
     /**
      * Creates a dimension.
      *
-     * @param schemaLoader Schema loader
      * @param cube Cube
      * @param xmlCubeDimension Cube dimension XML element
      * @param xmlSchema Schema XML element
      * @return Dimension; or null on error
      */
     RolapCubeDimension createDimension(
-        RolapSchemaLoader schemaLoader,
         RolapCube cube,
         MondrianDef.Dimension xmlCubeDimension,
         MondrianDef.Schema xmlSchema)
@@ -2251,7 +2314,7 @@ public class RolapSchemaLoader {
         // add to dimensions array
         cube.addDimension(dimension);
 
-        schemaLoader.initDimension(dimension);
+        initDimension(dimension);
 
         return dimension;
     }
@@ -2278,9 +2341,19 @@ public class RolapSchemaLoader {
         List<RolapCubeHierarchy> cubeHierarchyList,
         final Map<String, Annotation> annotationMap)
     {
-        final String dimensionName;
+        final String dimensionName =
+            first(xmlCubeDimension.name, xmlCubeDimension.source);
         final String dimensionSource;
         final MondrianDef.Dimension xmlDimension;
+
+        if (cube.dimensionList.get(dimensionName) != null) {
+            getHandler().error(
+                "Duplicate dimension '" + dimensionName + "'",
+                xmlCubeDimension,
+                null);
+            return null;
+        }
+
         if (xmlCubeDimension.source != null) {
             if (xmlCubeDimension.key != null) {
                 getHandler().warning(
@@ -2304,12 +2377,9 @@ public class RolapSchemaLoader {
                     "source");
                 return null;
             }
-            dimensionName =
-                first(xmlCubeDimension.name, xmlCubeDimension.source);
             dimensionSource = xmlCubeDimension.source;
         } else {
             xmlDimension = xmlCubeDimension;
-            dimensionName = xmlDimension.name;
             dimensionSource = null;
         }
         final org.olap4j.metadata.Dimension.Type dimensionType =
@@ -2339,7 +2409,11 @@ public class RolapSchemaLoader {
         for (MondrianDef.Attribute xmlAttribute : xmlDimension.getAttributes())
         {
             RolapAttribute attribute =
-                createAttribute(xmlAttribute, dimensionRelation, dimension);
+                createAttribute(
+                    xmlAttribute, null, dimensionRelation, dimension);
+            if (attribute == null) {
+                continue;
+            }
             RolapAttribute put =
                 dimension.attributeMap.put(attribute.getName(), attribute);
             assert put == null : "validation rule should have caught dup attr";
@@ -2361,10 +2435,6 @@ public class RolapSchemaLoader {
                         xmlAttribute,
                         "parent");
                 }
-            }
-
-            if (toBoolean(xmlAttribute.hasHierarchy, false)) {
-                ++attributeHierarchyCount;
             }
 
             createProperties(
@@ -2434,6 +2504,7 @@ public class RolapSchemaLoader {
                     xmlHierarchy.description,
                     toBoolean(xmlHierarchy.hasAll, true),
                     null,
+                    null,
                     createAnnotationMap(xmlHierarchy.getAnnotations()));
             validator.putXml(hierarchy, xmlHierarchy);
             dimension.addHierarchy(hierarchy);
@@ -2449,19 +2520,14 @@ public class RolapSchemaLoader {
                 throw MondrianResource.instance().HierarchyHasNoLevels.ex(
                     hierarchy.getUniqueName());
             }
-            Set<String> levelNameSet = new HashSet<String>();
             for (MondrianDef.Level xmlLevel : xmlHierarchy.getLevels()) {
-                String name = first(xmlLevel.name, xmlLevel.attribute);
-                if (!levelNameSet.add(name)) {
-                    throw MondrianResource.instance()
-                        .HierarchyLevelNamesNotUnique.ex(
-                            hierarchy.getUniqueName(), name);
-                }
-            }
-            for (MondrianDef.Level xmlLevel : xmlHierarchy.getLevels()) {
-                hierarchy.levelList.add(
+                RolapLevel level =
                     createLevel(
-                        hierarchy, hierarchy.levelList.size(), xmlLevel));
+                        hierarchy, hierarchy.levelList.size(), xmlLevel);
+                if (level == null) {
+                    continue;
+                }
+                hierarchy.levelList.add(level);
             }
             hierarchy.init2(
                 this,
@@ -2476,8 +2542,7 @@ public class RolapSchemaLoader {
                     countHierarchies(
                         dimension.getHierarchyList(), attribute) == 0))
             {
-                if (((NamedList<RolapHierarchy>)dimension.getHierarchyList())
-                        .get(xmlAttribute.name) != null)
+                if (dimension.getHierarchyList().get(xmlAttribute.name) != null)
                 {
                     handler.error(
                         "Cannot create hierarchy for attribute '"
@@ -2487,6 +2552,7 @@ public class RolapSchemaLoader {
                         "name");
                     continue;
                 }
+                ++attributeHierarchyCount;
                 // Create attribute hierarchy.
                 final String uniqueName =
                     Util.makeFqName(dimension, xmlAttribute.name);
@@ -2496,10 +2562,13 @@ public class RolapSchemaLoader {
                         xmlAttribute.name,
                         uniqueName,
                         toBoolean(xmlAttribute.visible, true),
-                        xmlAttribute.caption,
+                        first(
+                            xmlAttribute.hierarchyCaption,
+                            xmlAttribute.caption),
                         xmlAttribute.description,
                         toBoolean(xmlAttribute.hierarchyHasAll, true),
                         null,
+                        attribute,
                         Collections.<String, Annotation>emptyMap());
                 dimension.addHierarchy(hierarchy);
                 dimension.attributeMap.put(
@@ -2511,7 +2580,9 @@ public class RolapSchemaLoader {
                         ? xmlAttribute.hierarchyAllLevelName
                         : null,
                     hierarchy.hasAll()
-                        ? xmlAttribute.hierarchyAllMemberName
+                        ? first(
+                            xmlAttribute.hierarchyAllMemberName,
+                            "All " + xmlAttribute.name)
                         : null,
                     hierarchy.hasAll()
                         ? xmlAttribute.hierarchyAllMemberCaption
@@ -2533,7 +2604,7 @@ public class RolapSchemaLoader {
                         Collections.<String, Annotation>emptyMap()));
                 hierarchy.init2(
                     this,
-                    null);
+                    xmlAttribute.hierarchyDefaultMember);
             }
         }
 
@@ -2680,11 +2751,12 @@ public class RolapSchemaLoader {
                 if (!level.getLevelType().isTime()
                     && !level.isAll()
                     && dimension.getDimensionType()
-                    == org.olap4j.metadata.Dimension.Type.TIME)
+                    == org.olap4j.metadata.Dimension.Type.TIME
+                    && false)
                 {
                     getHandler().error(
                         MondrianResource.instance().NonTimeLevelInTimeHierarchy
-                            .ex(dimension.getUniqueName()),
+                            .ex(level.getUniqueName()),
                         validator.getXmls(level, hierarchy, dimension),
                         null);
                 }
@@ -2718,20 +2790,18 @@ public class RolapSchemaLoader {
 
     RolapAttribute createAttribute(
         MondrianDef.Attribute xmlAttribute,
-        RolapSchema.PhysRelation sourceRelation,
-        final RolapDimension dimension)
-    {
-        return
-            this.createAttribute(
-                xmlAttribute, null, sourceRelation, dimension);
-    }
-
-    RolapAttribute createAttribute(
-        MondrianDef.Attribute xmlAttribute,
         RolapSchema.PhysRelation closureRelation,
         RolapSchema.PhysRelation sourceRelation,
         final RolapDimension dimension)
     {
+        if (dimension.attributeMap.get(xmlAttribute.name) != null) {
+            getHandler().error(
+                "Duplicate attribute '" + xmlAttribute.name + "' in dimension '"
+                + dimension.getName() + "'",
+                xmlAttribute,
+                null);
+            return null;
+        }
         final RolapSchema.PhysRelation relation =
             last(
                 sourceRelation, xmlAttribute.table, xmlAttribute, "table");
@@ -2751,6 +2821,7 @@ public class RolapSchemaLoader {
                 null);
             return null;
         }
+        final boolean nameSpecified;
         RolapSchema.PhysColumn nameExpr =
             createColumn(
                 xmlAttribute,
@@ -2761,6 +2832,7 @@ public class RolapSchemaLoader {
                 xmlAttribute.nameColumn,
                 xmlAttribute.getName_());
         if (nameExpr == null) {
+            nameSpecified = false;
             if (keyList.size() == 1) {
                 nameExpr = keyList.get(0);
             } else {
@@ -2771,6 +2843,8 @@ public class RolapSchemaLoader {
                     null);
                 return null;
             }
+        } else {
+            nameSpecified = true;
         }
         RolapSchema.PhysColumn captionExpr =
             createColumn(
@@ -2795,7 +2869,11 @@ public class RolapSchemaLoader {
                 xmlAttribute.orderByColumn,
                 xmlAttribute.getOrderBy());
         if (orderByList.isEmpty()) {
-            orderByList = keyList;
+            if (nameSpecified) {
+                orderByList = Collections.singletonList(nameExpr);
+            } else {
+                orderByList = keyList;
+            }
         }
 
         final int approxRowCount =
@@ -2959,6 +3037,7 @@ public class RolapSchemaLoader {
                     closureDim.getDescription(),
                     true,
                     null, // Not so sure about this.
+                    null,
                     Collections.<String, Annotation>emptyMap());
 
             // Create two levels, for parent & child each.
@@ -3081,6 +3160,15 @@ public class RolapSchemaLoader {
         int depth,
         MondrianDef.Level xmlLevel)
     {
+        final String levelName = first(xmlLevel.name, xmlLevel.attribute);
+        if (hierarchy.levelList.get(levelName) != null) {
+            getHandler().error(
+                MondrianResource.instance().HierarchyLevelNamesNotUnique.ex(
+                    hierarchy.getUniqueName(), levelName),
+                xmlLevel,
+                null);
+        }
+
         if (xmlLevel.attribute == null) {
             getHandler().error(
                 "Attribute 'attribute' is required",
@@ -3116,7 +3204,7 @@ public class RolapSchemaLoader {
         final RolapLevel level =
             new RolapLevel(
                 hierarchy,
-                first(xmlLevel.name, xmlLevel.attribute),
+                levelName,
                 toBoolean(xmlLevel.visible, true),
                 xmlLevel.caption,
                 xmlLevel.description,
@@ -4323,7 +4411,7 @@ public class RolapSchemaLoader {
     /**
      * Handler for errors that arise while loading a schema.
      */
-    interface Handler {
+    interface Handler extends MondrianDef.Handler {
 
         /**
          * Returns the location of an element or attribute in an XML document.

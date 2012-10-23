@@ -178,19 +178,19 @@ FNR < headerCount {
         gsub(/:}/, "}", s);
         gsub(/:/, " : ", s);
     }
-    if (inComment && $0 ~ /\*\//) {
+    if (inComment && s ~ /\*\//) {
         # end of multiline comment "*/"
         inComment = 0;
         gsub(/^.*\*\//, "/* comment */", s);
     } else if (inComment) {
         s = "/* comment */";
-    } else if ($0 ~ /\/\*/ && $0 !~ /\/\*.*\*\//) {
+    } else if (s ~ /\/\*/ && s !~ /\/\*.*\*\//) {
         # beginning of multiline comment "/*"
         inComment = 1;
-        gsub(/\/\*.*$/, "/* comment */", s);
-        if (strict > 1 && FNR > 1 && $0 !~ /\/\*\*/ && $0 !~ /^\/\*/) {
-            error(fname, FNR, "Multi-line c-style comment not allowed");
+        if (strict > 1 && FNR > 1 && s !~ /\/\*\*/ && s !~ /^\/\*/) {
+            error(fname, FNR, "Multi-line c-style comment not allowed" s);
         }
+        gsub(/\/\*.*$/, "/* comment */", s);
     } else {
         # mask out /* */ comments
         gsub(/\/\*.*\*\//, "/* comment */", s);

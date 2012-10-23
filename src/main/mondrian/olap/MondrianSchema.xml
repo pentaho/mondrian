@@ -347,40 +347,36 @@ version 3.x schemas.</p>
 
         private static <T> T only(Object[] os, Class<T> clazz) {
             T t = null;
-            int count = 0;
             for (Object o : os) {
                 if (clazz.isInstance(o)) {
+                    if (t != null) {
+                        Handler.THREAD_LOCAL.get().error(
+                            "More than one " + clazz.getSimpleName()
+                            + " element found; ignoring all but first",
+                            (NodeDef) o,
+                            null);
+                    }
                     t = clazz.cast(o);
-                    ++count;
                 }
             }
-            switch (count) {
-            case 0:
-                return null;
-            case 1:
-                return t;
-            default:
-                throw new RuntimeException(); // TODO: user error
-            }
+            return t;
         }
 
         private static <T extends Holder> T onlyDeflt(Object[] os, Class<T> clazz, T dflt) {
             T t = null;
-            int count = 0;
             for (Object o : os) {
                 if (clazz.isInstance(o)) {
+                    if (t != null) {
+                        Handler.THREAD_LOCAL.get().error(
+                            "More than one " + clazz.getSimpleName()
+                                + " element found; ignoring all but first",
+                            (NodeDef) o,
+                            null);
+                    }
                     t = clazz.cast(o);
-                    ++count;
                 }
             }
-            switch (count) {
-            case 0:
-                return (T) dflt.copy();
-            case 1:
-                return t;
-            default:
-                throw new RuntimeException(); // TODO: user error
-            }
+            return t == null ? (T) dflt.copy() : t;
         }
 
         private static <T> List<T> list(Object[] os, Class<T> clazz) {
@@ -548,6 +544,32 @@ version 3.x schemas.</p>
             public void add(int index, T element) {
                 list.add(index, element);
             }
+        }
+
+        /**
+         * Handler for errors that arise while loading a schema.
+         */
+        public interface Handler {
+            ThreadLocal<Handler> THREAD_LOCAL = new ThreadLocal<Handler>();
+
+            /**
+             * Reports a non-fatal error. Schema validation can continue, but
+             * the schema will not be viable to run queries. Adds the error to
+             * the list of warnings that will be returned after validation.
+             *
+             * <p>If we are not tolerant of warnings and errors
+             * (see {@link mondrian.rolap.RolapConnectionProperties#Ignore}),
+             * throws immediately. A thrown exception will typically
+             * abort the attempt to create the schema.
+             *
+             * @param message Message
+             * @param node XML element that is the location of this exception
+             * @param attributeName Name of XML attribute; null for whole node
+             */
+            void error(
+                String message,
+                NodeDef node,
+                String attributeName);
         }
 
         private static class _Dummy {
@@ -943,7 +965,7 @@ version 3.x schemas.</p>
                 The estimated number of values of this attribute.
                 Setting this property improves the performance of
                 MDSCHEMA_LEVELS, MDSCHEMA_HIERARCHIES and
-                MDSCHEMA_DIMENSIONS XMLA requests
+                MDSCHEMA_DIMENSIONS XMLA requests.
             </Doc>
         </Attribute>
         <Attribute name="table" required="false">
@@ -1010,17 +1032,25 @@ version 3.x schemas.</p>
             <Value>Time</Value>
             <Value>Timestamp</Value>
         </Attribute>
-        <Attribute name="hasHierarchy" type="Boolean" required="false" default="false">
+        <Attribute name="hasHierarchy" type="Boolean" required="false" default="true">
             <Doc>
                 Whether this attribute has its own hierarchy. The hierarchy
                 has the same name as the attribute, a single level with the
-                same name as the attribute.
+                same name as the attribute. Default is <code>true</code>.
             </Doc>
         </Attribute>
         <Attribute name="hierarchyHasAll" type="Boolean" required="false" default="true">
             <Doc>
                 Whether the attribute hierarchy has an 'all' member.
                 Ignored if <code>hasHierarchy</code> is <code>false</code>.
+            </Doc>
+        </Attribute>
+        <Attribute name="hierarchyCaption" required="false">
+            <Doc>
+                Caption of the attribute hierarchy.
+                Ignored if <code>hasHierarchy</code> is <code>false</code>.
+                If this attribute is not specified,
+                the caption is the same as the caption of the attribute.
             </Doc>
         </Attribute>
         <Attribute name="hierarchyAllMemberName" required="false">
@@ -1999,6 +2029,12 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
                 name, but in any case, must be unique within the
                 schema. (You can use the same table in different
                 hierarchies, but it must have different aliases.)
+            </Doc>
+        </Attribute>
+        <Attribute name="keyColumn">
+            <Doc>
+                Name of the column that forms this table's key.
+                Equivalent to a Key child containing a single Column.
             </Doc>
         </Attribute>
         <Array name="childArray" type="TableElement">
@@ -3434,7 +3470,7 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
     <Element type="ReferenceLink" class="DimensionLink">
         <Doc>
             Dimension that is linked into a measure group via another dimension.
-            Its key does not join to the fact table, as in a RegularLink, but
+            Its key does not join to the fact table, as in a ForeignKeyLink, but
             instead joins to the key of a given attribute of a given dimension.
         </Doc>
         <Attribute name="viaAttribute"/>

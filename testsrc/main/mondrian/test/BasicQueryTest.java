@@ -1696,7 +1696,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         assertQueryReturns(
             // Note that Unit Sales is independent of Warehouse.
             "select CrossJoin(\n"
-            + "  {[Warehouse].DefaultMember, [Warehouse].[USA].children},\n"
+            + "  {[Warehouse].[Warehouses].DefaultMember, [Warehouse].[Warehouses].[USA].children},\n"
             + "  {[Measures].[Unit Sales], [Measures].[Store Sales], [Measures].[Units Shipped]}) on columns,\n"
             + " [Time].[Time].children on rows\n"
             + "from [Warehouse and Sales]",
@@ -5365,14 +5365,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "    </Dimension>\n"
             + "    <Dimension name='Gender' table='customer' key='Name'>\n"
             + "      <Attributes>\n"
-            + "        <Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='full_name'/>\n"
-            + "        <Attribute name='Gender' keyColumn='gender'/>\n"
+            + "        <Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='full_name' hasHierarchy='false'/>\n"
+            + "        <Attribute name='Gender' keyColumn='gender' hierarchyHasAll='false'/>\n"
             + "      </Attributes>\n"
-            + "      <Hierarchies>\n"
-            + "        <Hierarchy name='Gender' allMemberName='All Gender' hasAll='false'>\n"
-            + "          <Level attribute='Gender'/>\n"
-            + "        </Hierarchy>\n"
-            + "      </Hierarchies>\n"
             + "    </Dimension>\n"
             + "  </Dimensions>\n"
             + "  <MeasureGroups>\n"
@@ -5398,7 +5393,8 @@ public class BasicQueryTest extends FoodMartTestCase {
                 .withCube("Sales_DimWithoutAll");
         // the default member of the Gender dimension is the first member
         testContext.assertExprReturns("[Gender].CurrentMember.Name", "F");
-        testContext.assertExprReturns("[Product].CurrentMember.Name", "Drink");
+        testContext.assertExprReturns(
+            "[Product].[Products].CurrentMember.Name", "Drink");
         // There is no all member.
         testContext.assertExprThrows(
             "([Gender].[All Gender], [Measures].[Unit Sales])",

@@ -433,7 +433,7 @@ public class XmlaSupport {
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(
-                    "XmlaSupport.getSoapFaultXPath: xpath="+ xpath);
+                    "XmlaSupport.getSoapFaultXPath: xpath=" + xpath);
             }
         }
         return XmlaSupport.soapFaultXPath;
@@ -451,7 +451,7 @@ public class XmlaSupport {
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(
-                    "XmlaSupport.getSoapHeaderAndBodyXPath: xpath="+ xpath);
+                    "XmlaSupport.getSoapHeaderAndBodyXPath: xpath=" + xpath);
             }
         }
         return XmlaSupport.soapHeaderAndBodyXPath;
@@ -470,7 +470,7 @@ public class XmlaSupport {
             XmlaSupport.soapBodyXPath = xpath;
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("XmlaSupport.getSoapBodyXPath: xpath="+ xpath);
+                LOGGER.debug("XmlaSupport.getSoapBodyXPath: xpath=" + xpath);
             }
         }
         return XmlaSupport.soapBodyXPath;
@@ -495,7 +495,8 @@ public class XmlaSupport {
             XmlaSupport.soapXmlaRootXPath = xpath;
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("XmlaSupport.getSoapXmlaRootXPath: xpath="+ xpath);
+                LOGGER.debug(
+                    "XmlaSupport.getSoapXmlaRootXPath: xpath=" + xpath);
             }
         }
         return XmlaSupport.soapXmlaRootXPath;
@@ -514,7 +515,7 @@ public class XmlaSupport {
             XmlaSupport.xmlaRootXPath = xpath;
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("XmlaSupport.getXmlaRootXPath: xpath="+ xpath);
+                LOGGER.debug("XmlaSupport.getXmlaRootXPath: xpath=" + xpath);
             }
         }
         return XmlaSupport.xmlaRootXPath;
@@ -534,10 +535,10 @@ public class XmlaSupport {
         String xpath = getSoapXmlaRootXPath(xmlaPrefix);
 
         // Note that this is SOAP 1.1 version uri
-        String[][] nsArray = new String[][] {
+        String[][] nsArray = {
              { SOAP_PREFIX, XmlaConstants.NS_SOAP_ENV_1_1 },
              { xmlaPrefix, XmlaConstants.NS_XMLA },
-             { ROW_SET_PREFIX, XmlaConstants.NS_XMLA_ROWSET }
+             { ROW_SET_PREFIX, XmlaConstants.NS_XMLA_ROWSET },
         };
 
         return extractNodes(doc, xpath, nsArray);
@@ -556,22 +557,24 @@ public class XmlaSupport {
         final String xmlaPrefix = "xmla";
         String xpath = getXmlaRootXPath(xmlaPrefix);
 
-        String[][] nsArray = new String[][] {
-             {xmlaPrefix, XmlaConstants.NS_XMLA },
-             { ROW_SET_PREFIX, XmlaConstants.NS_XMLA_ROWSET }
+        String[][] nsArray = {
+             { xmlaPrefix, XmlaConstants.NS_XMLA },
+             { ROW_SET_PREFIX, XmlaConstants.NS_XMLA_ROWSET },
         };
 
         return extractNodes(doc, xpath, nsArray);
     }
 
     public static Node[] extractFaultNodesFromSoap(byte[] bytes)
-            throws SAXException, IOException {
+        throws SAXException, IOException
+    {
         Document doc = XmlUtil.parse(bytes);
         return extractFaultNodesFromSoap(doc);
     }
 
     public static Node[] extractFaultNodesFromSoap(Document doc)
-            throws SAXException, IOException {
+        throws SAXException, IOException
+    {
         String xpath = getSoapFaultXPath();
 
         String[][] nsArray = {
@@ -582,13 +585,15 @@ public class XmlaSupport {
     }
 
     public static Node[] extractHeaderAndBodyFromSoap(byte[] bytes)
-            throws SAXException, IOException {
+        throws SAXException, IOException
+    {
         Document doc = XmlUtil.parse(bytes);
         return extractHeaderAndBodyFromSoap(doc);
     }
 
     public static Node[] extractHeaderAndBodyFromSoap(Document doc)
-            throws SAXException, IOException {
+        throws SAXException, IOException
+    {
         String xpath = getSoapHeaderAndBodyXPath();
 
         String[][] nsArray = {
@@ -599,7 +604,8 @@ public class XmlaSupport {
     }
 
     public static Document extractBodyFromSoap(Document doc)
-            throws SAXException, IOException {
+        throws SAXException, IOException
+    {
         String xpath = getSoapBodyXPath();
 
         String[][] nsArray = new String[][] {
@@ -863,11 +869,10 @@ public class XmlaSupport {
 
 
     /**
-     * Check is a byte array containing a SOAP-XMLA response method is valid.
+     * Checks whether a byte array containing a SOAP-XMLA response is valid.
      * Schema validation occurs if the XMLA response contains both a content
      * and schmema section. This includes both the SOAP elements and the
      * SOAP body content, the XMLA response.
-     *
      */
     public static boolean validateSchemaSoapXmla(byte[] bytes)
         throws SAXException, IOException,

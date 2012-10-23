@@ -12,6 +12,7 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 
+import org.olap4j.metadata.*;
 import org.olap4j.metadata.Dimension;
 
 import java.util.*;
@@ -110,8 +111,9 @@ public class RolapCubeDimension extends RolapDimension {
     }
 
     @Override
-    public List<? extends RolapCubeHierarchy> getHierarchyList() {
-        return Util.cast(hierarchyList);
+    public NamedList<? extends RolapCubeHierarchy> getHierarchyList() {
+        //noinspection unchecked
+        return (NamedList) hierarchyList;
     }
 
     // this method should eventually replace the call below

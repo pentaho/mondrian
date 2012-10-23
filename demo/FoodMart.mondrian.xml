@@ -171,13 +171,13 @@
 
     <Dimension name='Store' table='store' key='Store Id'>
         <Attributes>
-            <Attribute name='Store Country'>
+            <Attribute name='Store Country' hasHierarchy='false'>
                 <Key>
                     <Column name='store_country'/>
                 </Key>
             </Attribute>
-            <Attribute name='Store State' keyColumn='store_state'/>
-            <Attribute name='Store City'>
+            <Attribute name='Store State' keyColumn='store_state' hasHierarchy='false'/>
+            <Attribute name='Store City' hasHierarchy='false'>
                 <Key>
                     <Column name='store_state'/>
                     <Column name='store_city'/>
@@ -186,8 +186,8 @@
                     <Column name='store_city'/>
                 </Name>
             </Attribute>
-            <Attribute name='Store Id' keyColumn='store_id'/>
-            <Attribute name='Store Name' keyColumn='store_name'>
+            <Attribute name='Store Id' keyColumn='store_id' hasHierarchy='false'/>
+            <Attribute name='Store Name' keyColumn='store_name' hasHierarchy='false'>
                 <Property attribute='Store Type'/>
                 <Property attribute='Store Manager'/>
                 <Property attribute='Store Sqft'/>
@@ -197,14 +197,14 @@
                 <Property attribute='Has coffee bar'/>
                 <Property attribute='Street address'/>
             </Attribute>
-            <Attribute name='Store Type' keyColumn='store_type' hasHierarchy='true'/>
-            <Attribute name='Store Manager' keyColumn='store_manager'/>
+            <Attribute name='Store Type' keyColumn='store_type' hierarchyAllMemberName='All Store Types'/>
+            <Attribute name='Store Manager' keyColumn='store_manager' hasHierarchy='false'/>
             <Attribute name='Store Sqft' keyColumn='store_sqft' hasHierarchy='false'/>
-            <Attribute name='Grocery Sqft' keyColumn='grocery_sqft'/>
-            <Attribute name='Frozen Sqft' keyColumn='frozen_sqft'/>
-            <Attribute name='Meat Sqft' keyColumn='meat_sqft'/>
-            <Attribute name='Has coffee bar' keyColumn='coffee_bar'/>
-            <Attribute name='Street address' keyColumn='store_street_address'/>
+            <Attribute name='Grocery Sqft' keyColumn='grocery_sqft' hasHierarchy='false'/>
+            <Attribute name='Frozen Sqft' keyColumn='frozen_sqft' hasHierarchy='false'/>
+            <Attribute name='Meat Sqft' keyColumn='meat_sqft' hasHierarchy='false'/>
+            <Attribute name='Has coffee bar' keyColumn='coffee_bar' hasHierarchy='false'/>
+            <Attribute name='Street address' keyColumn='store_street_address' hasHierarchy='false'/>
         </Attributes>
 
         <Hierarchies>
@@ -222,8 +222,8 @@
 
     <Dimension name='Time' table='time_by_day' type='TIME' key='Time Id'>
         <Attributes>
-            <Attribute name='Year' keyColumn='the_year' levelType='TimeYears'/>
-            <Attribute name='Quarter' levelType='TimeQuarters'>
+            <Attribute name='Year' keyColumn='the_year' levelType='TimeYears' hasHierarchy='false'/>
+            <Attribute name='Quarter' levelType='TimeQuarters' hasHierarchy='false'>
                 <Key>
                     <Column name='the_year'/>
                     <Column name='quarter'/>
@@ -232,7 +232,7 @@
                     <Column name='quarter'/>
                 </Name>
             </Attribute>
-            <Attribute name='Month' levelType='TimeMonths'>
+            <Attribute name='Month' levelType='TimeMonths' hasHierarchy='false'>
                 <Key>
                     <Column name='the_year'/>
                     <Column name='month_of_year'/>
@@ -241,7 +241,7 @@
                     <Column name='month_of_year'/>
                 </Name>
             </Attribute>
-            <Attribute name='Week' levelType='TimeWeeks'>
+            <Attribute name='Week' levelType='TimeWeeks' hasHierarchy='false'>
                 <Key>
                     <Column name='the_year'/>
                     <Column name='week_of_year'/>
@@ -250,15 +250,18 @@
                     <Column name='week_of_year'/>
                 </Name>
             </Attribute>
-            <Attribute name='Day' levelType='TimeDays'>
+            <Attribute name='Day' levelType='TimeDays' hasHierarchy='false'>
                 <Key>
                     <Column name='time_id'/>
                 </Key>
                 <Name>
                     <Column name='day_of_month'/>
                 </Name>
+                <OrderBy>
+                    <Column name='time_id'/>
+                </OrderBy>
             </Attribute>
-            <Attribute name='Month Name'>
+            <Attribute name='Month Name' hasHierarchy='false'>
                 <Key>
                     <Column name='the_year'/>
                     <Column name='month_of_year'/>
@@ -267,8 +270,8 @@
                     <Column name='the_month'/>
                 </Name>
             </Attribute>
-            <Attribute name='Date' keyColumn='the_date'/>
-            <Attribute name='Time Id' keyColumn='time_id'/>
+            <Attribute name='Date' keyColumn='the_date' hasHierarchy='false'/>
+            <Attribute name='Time Id' keyColumn='time_id' hasHierarchy='false'/>
         </Attributes>
 
         <Hierarchies>
@@ -287,8 +290,8 @@
 
     <Dimension name='Product' key='Product Id'>
         <Attributes>
-            <Attribute name='Product Family' table='product_class' keyColumn='product_family'/>
-            <Attribute name='Product Department' table='product_class'>
+            <Attribute name='Product Family' table='product_class' keyColumn='product_family' hasHierarchy='false'/>
+            <Attribute name='Product Department' table='product_class' hasHierarchy='false'>
                 <Key>
                     <Column name='product_family'/>
                     <Column name='product_department'/>
@@ -297,7 +300,7 @@
                     <Column name='product_department'/>
                 </Name>
             </Attribute>
-            <Attribute name='Product Category' table='product_class'>
+            <Attribute name='Product Category' table='product_class' hasHierarchy='false'>
                 <Key>
                     <Column name='product_family'/>
                     <Column name='product_department'/>
@@ -307,7 +310,7 @@
                     <Column name='product_category'/>
                 </Name>
             </Attribute>
-            <Attribute name='Product Subcategory' table='product_class'>
+            <Attribute name='Product Subcategory' table='product_class' hasHierarchy='false'>
                 <Key>
                     <Column name='product_family'/>
                     <Column name='product_department'/>
@@ -318,7 +321,7 @@
                     <Column name='product_subcategory'/>
                 </Name>
             </Attribute>
-            <Attribute name='Brand Name' table='product'>
+            <Attribute name='Brand Name' table='product' hasHierarchy='false'>
                 <Key>
                     <Column table='product_class' name='product_family'/>
                     <Column table='product_class' name='product_department'/>
@@ -330,9 +333,9 @@
                     <Column name='brand_name'/>
                 </Name>
             </Attribute>
-            <Attribute name='Product Name' table='product'
+            <Attribute name='Product Name' table='product' hasHierarchy='false'
                 keyColumn='product_id' nameColumn='product_name'/>
-            <Attribute name='Product Id' table='product' keyColumn='product_id'/>
+            <Attribute name='Product Id' table='product' keyColumn='product_id' hasHierarchy='false'/>
         </Attributes>
 
         <Hierarchies>
@@ -349,9 +352,9 @@
 
     <Dimension name='Warehouse' table='warehouse' key='Warehouse Id'>
         <Attributes>
-            <Attribute name='Country' keyColumn='warehouse_country'/>
-            <Attribute name='State Province' keyColumn='warehouse_state_province'/>
-            <Attribute name='City'>
+            <Attribute name='Country' keyColumn='warehouse_country' hasHierarchy='false'/>
+            <Attribute name='State Province' keyColumn='warehouse_state_province' hasHierarchy='false'/>
+            <Attribute name='City' hasHierarchy='false'>
                 <Key>
                     <Column name='warehouse_state_province'/>
                     <Column name='warehouse_city'/>
@@ -360,8 +363,8 @@
                     <Column name='warehouse_city'/>
                 </Name>
             </Attribute>
-            <Attribute name='Warehouse Name' keyColumn='warehouse_name'/>
-            <Attribute name='Warehouse Id' keyColumn='warehouse_id'/>
+            <Attribute name='Warehouse Name' keyColumn='warehouse_name' hasHierarchy='false'/>
+            <Attribute name='Warehouse Id' keyColumn='warehouse_id' hasHierarchy='false'/>
         </Attributes>
 
         <Hierarchies>
@@ -397,9 +400,9 @@
 
             <Dimension name='Promotion' table='promotion' key='Promotion Id'>
                 <Attributes>
-                    <Attribute name='Promotion Id' keyColumn='promotion_id'/>
-                    <Attribute name='Media Type' keyColumn='media_type'/>
-                    <Attribute name='Promotion Name' keyColumn='promotion_name'/>
+                    <Attribute name='Promotion Id' keyColumn='promotion_id' hasHierarchy='false'/>
+                    <Attribute name='Promotion Name' keyColumn='promotion_name' hasHierarchy='false'/>
+                    <Attribute name='Media Type' keyColumn='media_type' hierarchyAllMemberName='All Media' hasHierarchy='false'/>
                 </Attributes>
                 <Hierarchies>
                     <Hierarchy name='Media Type' allMemberName='All Media'>
@@ -413,8 +416,8 @@
 
             <Dimension name='Customer' table='customer' key='Name'>
                 <Attributes>
-                    <Attribute name='Country' keyColumn='country'/>
-                    <Attribute name='State Province'>
+                    <Attribute name='Country' keyColumn='country' hasHierarchy='false'/>
+                    <Attribute name='State Province' hasHierarchy='false'>
                         <Key>
                             <Column name='country'/>
                             <Column name='state_province'/>
@@ -423,7 +426,7 @@
                             <Column name='state_province'/>
                         </Name>
                     </Attribute>
-                    <Attribute name='City'>
+                    <Attribute name='City' hasHierarchy='false'>
                         <Key>
                             <Column name='country'/>
                             <Column name='state_province'/>
@@ -433,11 +436,11 @@
                             <Column name='city'/>
                         </Name>
                     </Attribute>
-                    <Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='full_name'/>
+                    <Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='full_name' hasHierarchy='false'/>
                     <Attribute name='Gender' keyColumn='gender'/>
                     <Attribute name='Marital Status' keyColumn='marital_status' approxRowCount='111'/>
-                    <Attribute name='Education' keyColumn='education'/>
-                    <Attribute name='Yearly Income' keyColumn='yearly_income'/>
+                    <Attribute name='Education' keyColumn='education' hasHierarchy='false'/>
+                    <Attribute name='Yearly Income' keyColumn='yearly_income' hierarchyAllMemberName='All Yearly Incomes'/>
                 </Attributes>
 
                 <Hierarchies>
@@ -449,15 +452,6 @@
                     </Hierarchy>
                     <Hierarchy name='Education Level'>
                         <Level attribute='Education' name='Education Level'/>
-                    </Hierarchy>
-                    <Hierarchy name='Gender' allMemberName='All Gender'>
-                        <Level attribute='Gender'/>
-                    </Hierarchy>
-                    <Hierarchy name='Marital Status' allMemberName='All Marital Status'>
-                        <Level attribute='Marital Status'/>
-                    </Hierarchy>
-                    <Hierarchy name='Yearly Income'>
-                        <Level attribute='Yearly Income'/>
                     </Hierarchy>
                 </Hierarchies>
             </Dimension>
@@ -591,11 +585,6 @@
                     <Attribute name='Gender' keyColumn='gender'/>
                     <Attribute name='Id' keyColumn='customer_id'/>
                 </Attributes>
-                <Hierarchies>
-                    <Hierarchy name='Gender' allMemberName='All Gender'>
-                        <Level attribute='Gender'/>
-                    </Hierarchy>
-                </Hierarchies>
             </Dimension>
         </Dimensions>
         <MeasureGroups>
@@ -649,14 +638,11 @@
 
             <Dimension name='Promotion' table='promotion' key='Promotion Id'>
                 <Attributes>
-                    <Attribute name='Promotion Id' keyColumn='promotion_id'/>
-                    <Attribute name='Media Type' keyColumn='media_type'/>
-                    <Attribute name='Promotion Name' keyColumn='promotion_name'/>
+                    <Attribute name='Promotion Id' keyColumn='promotion_id' hasHierarchy='false'/>
+                    <Attribute name='Media Type' keyColumn='media_type' hierarchyAllMemberName='All Media'/>
+                    <Attribute name='Promotion Name' keyColumn='promotion_name' hasHierarchy='false'/>
                 </Attributes>
                 <Hierarchies>
-                    <Hierarchy name='Media Type' allMemberName='All Media'>
-                        <Level attribute='Media Type'/>
-                    </Hierarchy>
                     <Hierarchy name='Promotions' allMemberName='All Promotions'>
                         <Level attribute='Promotion Name'/>
                     </Hierarchy>
@@ -680,7 +666,7 @@
                     <Attribute name='Gender' keyColumn='gender'/>
                     <Attribute name='Marital Status' keyColumn='marital_status'/>
                     <Attribute name='Education' keyColumn='education'/>
-                    <Attribute name='Yearly Income' keyColumn='yearly_income'/>
+                    <Attribute name='Yearly Income' keyColumn='yearly_income' hierarchyAllMemberName='All Yearly Incomes'/>
                 </Attributes>
 
                 <Hierarchies>
@@ -692,15 +678,6 @@
                     </Hierarchy>
                     <Hierarchy name='Education Level'>
                         <Level attribute='Education' name='Education Level'/>
-                    </Hierarchy>
-                    <Hierarchy name='Gender' allMemberName='All Gender'>
-                        <Level attribute='Gender'/>
-                    </Hierarchy>
-                    <Hierarchy name='Marital Status' allMemberName='All Marital Status'>
-                        <Level attribute='Marital Status'/>
-                    </Hierarchy>
-                    <Hierarchy name='Yearly Income'>
-                        <Level attribute='Yearly Income'/>
                     </Hierarchy>
                 </Hierarchies>
             </Dimension>
@@ -794,12 +771,12 @@
             <Dimension name='Employee' key='Employee Id'>
                 <Attributes>
                     <Attribute name='Manager Id' table='employee' keyColumn='supervisor_id'/>
-                    <Attribute name='Employee Id' table='employee' keyColumn='employee_id' nameColumn='full_name' parent='Manager Id' nullParentValue='0'>
+                    <Attribute name='Employee Id' table='employee' keyColumn='employee_id' nameColumn='full_name' orderByColumn='employee_id' parent='Manager Id' nullParentValue='0'>
                         <Closure table='employee_closure' parentColumn='supervisor_id' childColumn='employee_id'/>
                     </Attribute>
                     <Attribute name='Store Id' table='employee' keyColumn='store_id'/>
-                    <Attribute name='Store Type' table='store' keyColumn='store_type'/>
-                    <Attribute name='Pay Type' table='position' keyColumn='pay_type'/>
+                    <Attribute name='Store Type' table='store' keyColumn='store_type' hierarchyAllMemberName='All Store Types'/>
+                    <Attribute name='Pay Type' table='position' keyColumn='pay_type' hierarchyAllMemberName='All Pay Types'/>
                     <Attribute name='Management Role' table='position' keyColumn='management_role'/>
                     <Attribute name='Position Title' table='position'>
                         <Key>
@@ -825,12 +802,6 @@
                     <Hierarchy name='Position' allMemberName='All Position'>
                         <Level attribute='Management Role'/>
                         <Level attribute='Position Title'/>
-                    </Hierarchy>
-                    <Hierarchy name='Store Type'>
-                        <Level attribute='Store Type'/>
-                    </Hierarchy>
-                    <Hierarchy name='Pay Type'>
-                        <Level attribute='Pay Type'/>
                     </Hierarchy>
                 </Hierarchies>
             </Dimension>
@@ -967,15 +938,13 @@
     <Role name='California manager'>
         <SchemaGrant access='none'>
             <CubeGrant cube='Sales' access='all'>
-                <HierarchyGrant hierarchy='[Stores]' access='custom'
-                                topLevel='[Stores].[Store Country]'>
-                    <MemberGrant member='[Stores].[USA].[CA]' access='all'/>
-                    <MemberGrant member='[Stores].[USA].[CA].[Los Angeles]' access='none'/>
+                <HierarchyGrant hierarchy='[Store].[Stores]' access='custom' topLevel='[Store].[Stores].[Store Country]'>
+                    <MemberGrant member='[Store].[Stores].[USA].[CA]' access='all'/>
+                    <MemberGrant member='[Store].[Stores].[USA].[CA].[Los Angeles]' access='none'/>
                 </HierarchyGrant>
-                <HierarchyGrant hierarchy='[Customers]' access='custom'
-                                topLevel='[Customers].[State Province]' bottomLevel='[Customers].[City]'>
-                    <MemberGrant member='[Customers].[USA].[CA]' access='all'/>
-                    <MemberGrant member='[Customers].[USA].[CA].[Los Angeles]' access='none'/>
+                <HierarchyGrant hierarchy='[Customer].[Customers]' access='custom' topLevel='[Customer].[Customers].[State Province]' bottomLevel='[Customer].[Customers].[City]'>
+                    <MemberGrant member='[Customer].[Customers].[USA].[CA]' access='all'/>
+                    <MemberGrant member='[Customer].[Customers].[USA].[CA].[Los Angeles]' access='none'/>
                 </HierarchyGrant>
                 <HierarchyGrant hierarchy='[Gender]' access='none'/>
             </CubeGrant>

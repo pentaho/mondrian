@@ -9,8 +9,6 @@
 */
 package mondrian.test;
 
-import mondrian.util.Bug;
-
 import org.olap4j.*;
 import org.olap4j.impl.ArrayMap;
 
@@ -363,11 +361,6 @@ public class ScenarioTest extends FoodMartTestCase {
             + "  <Attributes>\n"
             + "    <Attribute name='Scenario' keyColumn='bar'/>\n"
             + "  </Attributes>\n"
-            + "  <Hierarchies>\n"
-            + "    <Hierarchy name='Scenario'>\n"
-            + "      <Level attribute='Scenario'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Hierarchies>\n"
             + "</Dimension>",
             null,
             "<Measure name='Atomic Cell Count' aggregator='count'/>",

@@ -28,8 +28,9 @@ import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.*;
 
-import org.olap4j.impl.UnmodifiableArrayList;
+import org.olap4j.impl.*;
 import org.olap4j.mdx.IdentifierSegment;
+import org.olap4j.metadata.NamedList;
 
 import java.lang.reflect.*;
 import java.sql.*;
@@ -476,8 +477,8 @@ public class RolapSchema extends OlapElementBase implements Schema {
         return cubes.toArray(new RolapCube[cubes.size()]);
     }
 
-    public List<RolapCube> getCubeList() {
-        return new ArrayList<RolapCube>(mapNameToCube.values());
+    public NamedList<RolapCube> getCubeList() {
+        return new NamedListImpl<RolapCube>(mapNameToCube.values());
     }
 
     public Hierarchy[] getSharedHierarchies() {

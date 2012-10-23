@@ -14,6 +14,9 @@ import mondrian.util.Pair;
 
 import org.apache.commons.collections.iterators.FilterIterator;
 
+import org.olap4j.impl.NamedListImpl;
+import org.olap4j.metadata.NamedList;
+
 import java.util.*;
 
 /**
@@ -37,8 +40,8 @@ public class RolapMeasureGroup {
     public final boolean ignoreUnrelatedDimensions;
     private final RolapStar star;
     final boolean aggregate;
-    final List<RolapStoredMeasure> measureList =
-        new ArrayList<RolapStoredMeasure>();
+    final NamedList<RolapStoredMeasure> measureList =
+        new NamedListImpl<RolapStoredMeasure>();
     final List<RolapMeasureRef> measureRefList;
     private final Map<RolapDimension, RolapSchema.PhysPath> dimensionMap =
         new HashMap<RolapDimension, RolapSchema.PhysPath>();

@@ -15,6 +15,8 @@ import mondrian.util.Lazy;
 
 import org.apache.log4j.Logger;
 
+import org.olap4j.metadata.NamedList;
+
 import java.util.*;
 
 /**
@@ -103,8 +105,9 @@ class RolapDimension extends DimensionBase {
         return hierarchyList.toArray(new RolapHierarchy[hierarchyList.size()]);
     }
 
-    public List<? extends RolapHierarchy> getHierarchyList() {
-        return Util.cast(hierarchyList);
+    public NamedList<? extends RolapHierarchy> getHierarchyList() {
+        //noinspection unchecked
+        return (NamedList) hierarchyList;
     }
 
     public RolapSchema getSchema() {

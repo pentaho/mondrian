@@ -2838,16 +2838,24 @@ public class TestContext {
         public boolean foo(
             Exception exception,
             RolapSchema.XmlLocation xmlLocation,
-            StringWriter sw, TestContext testContext)
+            StringWriter sw,
+            TestContext testContext)
         {
             String expected2 = expected;
             final int posPos = expected.indexOf("${pos}");
-            if (posPos >= 0 && xmlLocation != null) {
-                String pos = xmlLocation.toString();
-                expected2 =
-                    expected.substring(0, posPos)
-                    + pos
-                    + expected.substring(posPos + "${pos}".length());
+            if (posPos >= 0) {
+                if (xmlLocation != null) {
+                    String pos = xmlLocation.toString();
+                    expected2 =
+                        expected.substring(0, posPos)
+                        + pos
+                        + expected.substring(posPos + "${pos}".length());
+                } else {
+                    throw new AssertionError(
+                        "Message contains '${pos}' but exception contains no "
+                        + "location",
+                        exception);
+                }
             }
             final String message = exception.getMessage();
             if (message == null || !message.matches(expected2)) {

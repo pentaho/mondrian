@@ -76,6 +76,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             description,
             rolapHierarchy.hasAll(),
             null,
+            rolapHierarchy.attribute,
             rolapHierarchy.getAnnotationMap());
         this.ordinal = ordinal;
         this.rolapHierarchy = rolapHierarchy;
