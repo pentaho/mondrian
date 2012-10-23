@@ -1026,6 +1026,9 @@ public class RolapResult extends ResultBase {
                 } catch (ResultLimitExceededException e) {
                     // Do NOT ignore a ResultLimitExceededException!!!
                     throw e;
+                } catch (CellRequestQuantumExceededException e) {
+                    // We need to throw this so another phase happens.
+                    throw e;
                 } catch (MondrianEvaluationException e) {
                     // ignore but warn
                     LOGGER.warn("Mondrian: exception in executeStripe.", e);

@@ -1,3 +1,74 @@
+Mondrian 3.5.0-GA production release notes
+=============================================
+
+Introduction
+------------
+
+Mondrian 3.5.0 is a bugfix release based off the previous 3.4.1 version.
+It includes many enhancements and performance fixes as well as better
+native support for native resolution of tuples when access controls
+are added.
+
+We have also significantly improved the performance when dealing with
+levels of high cardinality as well as enabled Mondrian to run into
+a real-time mode where nothing gets cached and the data it returns
+is always the latest from the source.
+
+To find out more about Mondrian, go to http://mondrian.pentaho.com.
+
+Contents
+--------
+
+As usual, there are two distributions for this release:
+ * mondrian-<version>.zip contains the FoodMart dataset in
+   SQL and Access format
+ * mondrian-<version>-derby.zip contains the FoodMart
+   dataset as an Apache Derby database
+
+Each distribution contains the full mondrian source code, as
+mondrian-<version>-src.zip, documentation including
+generated API documentation, and a web archive mondrian.war.
+This web archive contains all classes and libraries (jars)
+necessary to run mondrian.
+
+For further installation instructions, see
+http://mondrian.pentaho.com/documentation/installation.php
+or the included file doc/installation.html.
+
+Main functionality in this release
+----------------------------------
+ - Tuples evaluation now push down natively the constraints
+   imposed by roles.
+ - Fixes some issues in the way Mondrian was splitting segments
+   across multiple sub-segments.
+ - Resolving tuples only joins to the fact table if absolutely
+   necessary.
+ - Improved processing of large volumes of data when a member grant
+   is used with a partial rollup policy.
+ - Enables a mode in which nothing gets cached and the data returned
+   is always the latest available from the database.
+ - Allows more than one measure to be included in the RETURN clause
+   of a DRILLTHROUGH statement.
+ - Added support for native evaluation of regular expressions with
+   Netezza.
+ - Upgraded Apache Xerces.
+
+API changes from 3.4.1 to 3.5.0
+---------------------------
+ - Changes to the effects of the property 'mondrian.rolap.DisableCache'
+ - Introduces a new property to disable the default in-memory cache
+   for segments.
+ - Added a new method to specify the roles for a connection to allow
+   the presence of commas in role names.
+ - Allows to specify a minimum TTL value for schemas in the pool through
+   connection properties.
+ - Allows to specify a unique connection UUID to force the usage of a
+   specific schema in the pool through connection properties.
+
+See CHANGES.txt for a list of all source code changes
+since the previous release.
+
+
 Mondrian 3.4.0-GA production release notes
 =============================================
 
