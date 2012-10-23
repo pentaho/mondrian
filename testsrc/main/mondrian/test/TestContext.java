@@ -2851,7 +2851,7 @@ public class TestContext {
                         + pos
                         + expected.substring(posPos + "${pos}".length());
                 } else {
-                    throw new AssertionError(
+                    throw new RuntimeException(
                         "Message contains '${pos}' but exception contains no "
                         + "location",
                         exception);
