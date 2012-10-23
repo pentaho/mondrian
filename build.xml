@@ -1044,7 +1044,7 @@ ${doc.dir}/api/src-html/**/*"/>
   <target name="doczip"
       depends="javadoc-with-ydoc, xml_schema"
       description="Builds a zipfile of the documentation, which can then be
-                   deployed to sf.net. See also doc/deployDoc.sh.">
+                   deployed to sf.net. See also doc/doc2web.sh.">
     <mkdir dir="${dist.dir}" />
     <tar
         destfile="${dist.doc.file}"
@@ -1199,10 +1199,10 @@ clean against JDK 1.6.">
            scope="constructors,methods,types"/>
       <link href="http://java.sun.com/javase/7/docs/api/"/>
       <link href="http://www.olap4j.org/api/"/>
-      <link href="http://junit.sourceforge.net/javadoc"/>
+      <link href="http://www.junit.org/junit/javadoc/3.8.1/"/>
       <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
-      <link href="http://eigenbase.sourceforge.net/resgen/api/"/>
-      <link href="http://farrago.sourceforge.net/api/"/>
+      <link href="http://www.hydromatic.net/xom/apidocs/"/>
+      <link href="http://www.hydromatic.net/resgen/apidocs/"/>
     </javadoc>
     <copy file="${java.dir}/mondrian/olap/MondrianSchema.xml"
         todir="${javadoc.dir}/mondrian/olap"/>
