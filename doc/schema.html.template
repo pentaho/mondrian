@@ -77,6 +77,7 @@
     <li><a href="#Physical_schemas">Physical schemas</a>
         <ol>
             <li><a href="#Table">Table</a></li>
+            <li><a href="#Column">Columns and calculated columns</a></li>
             <li><a href="#InlineTable">Inline table</a></li>
             <li><a href="#Query">Query</a></li>
             <li><a href="#Link">Link</a></li>
@@ -586,6 +587,17 @@ and <code>[Time]</code> dimensions, respectively.</p>
 "distinct-count" are also allowed; "distinct-count" has some limitations if your cube contains a
 <a href="#Parent_child_hierarchies">parent-child hierarchy</a>.</p>
 
+<p>The optional <code>datatype</code> attribute
+specifies how cell values are represented in Mondrian's cache, and how
+they are returned via XML for Analysis. The <code>datatype</code>
+attribute can have values "<code>String</code>",
+"<code>Integer</code>", "<code>Numeric</code>",
+&quot;<code>Boolean</code>&quot;, &quot;<code>Date</code>&quot;,
+&quot;<code>Time</code>&quot;, and &quot;<code>Timestamp</code>&quot;.
+The default is "<code>Numeric</code>", except for "<code>count</code>"
+and "<code>distinct-count</code>" measures, which are
+"<code>Integer</code>".</p>
+
 <p>An optional <code>formatString</code> attribute specifies how the value is to be printed.
 Here, we have chosen to output unit sales with no decimal places (since it is an integer), and store sales
 with two decimal places (since it is a currency value). The ',' and '.' symbols are locale-sensitive, so if
@@ -983,8 +995,12 @@ attributes, so that the correspondence is clear to your end-users.</p>
 read and written by both humans and machines. You can hand-write a
 schema in emacs, vi or notepad, or you can write one in a modeling
 tool. However, XML can be verbose. This is less of a problem for tools
-than for humans typing every character. Simple things should look
-simple, and not require a lot of typing.</p>
+than for humans typing every character.</p>
+
+<p>Therefore Mondrian provides various short cuts. These are
+alternative ways of specifying constructs that are less verbose. They
+reduce the amount of typing, and make sure that simple things look
+simple, without reducing the power of Mondrian's schema language.</p>
 
 <h2>Attribute as shorthand for a singleton nested collection</h2>
 
@@ -1117,6 +1133,8 @@ a <a href="#Shared_dimensions">shared dimension</a>.</p>
 
 <!-- ############################################################# -->
 <h1>3.6 More about dimensions<a name="More_about_dimensions">&nbsp;</a></h1> 
+
+<p>This section contains various topics about dimensions.</p>
 
 <h1>3.6.1 The <code>Measures</code> dimension<a name="The_Measures_dimension">&nbsp;</a></h1> 
 
@@ -1728,17 +1746,32 @@ need to be migrated to the new syntax as part of upgrading to Mondrian 4.0.</p>
 
 <!--
 #############################
-##  x. Physical schemas #####
+##  4. Physical schemas #####
 ############################# -->
-<h3>x. Physical schemas<a name="Physical_schemas">&nbsp;</a></h3>
+<h3>4. Physical schemas<a name="Physical_schemas">&nbsp;</a></h3>
+
+<p>A physical schema defines a set of tables, columns and
+relationships between them. The relationships are
+called <dfn>links</dfn>.</p>
+
+<p>The goal of the physical schema is to isolate the logical schema
+(cubes, dimensions, measures and so forth) from the actual
+database. For example, a measure can be based upon a column and does
+not need to know whether it is a real column or a column calculated
+using a SQL expression.</p>
+
+<p>Because the isolation layer exists, you can change the
+implementation. For example, you could change a calculated column into
+a real column, or change a query or inline table into a real table,
+without changing the logical schema.</p>
 
 <!--
 ###################
-##  x.1 Table #####
+##  4.1 Table #####
 ################### -->
-<h1>x.1 Table<a name="Table">&nbsp;</a></h1>
+<h1>4.1 Table<a name="Table">&nbsp;</a></h1>
 
-<p>TODO</p>
+<p>A table is a named use of a database table.</p>
 
 <p>Tables are declared using
 the {@element Table} element. If
@@ -1749,25 +1782,76 @@ explicit schema using the "schema" attribute; for example:</p>
 <Table schema="Foodmart" name="sales_fact_1997"/>
 }
 
-<p>[In a Column element,] the optional <code>datatype</code> attribute
-specifies how cell values are represented in Mondrian's cache, and how
-they are returned via XML for Analysis. The <code>datatype</code>
-attribute can have values "<code>String</code>",
-"<code>Integer</code>", "<code>Numeric</code>",
-&quot;<code>Boolean</code>&quot;, &quot;<code>Date</code>&quot;,
-&quot;<code>Time</code>&quot;, and &quot;<code>Timestamp</code>&quot;.
-The default is "<code>Numeric</code>", except for "<code>count</code>"
-and "<code>distinct-count</code>" measures, which are
-"<code>Integer</code>".</p>
+
+<h1>4.2 Columns and calculated columns<a name="Column">&nbsp;</a></h1>
+
+<p>Inside a table, you can optionally define {@element Column}
+elements. For example:</p>
+
+{@xml
+<Table name='customer'>
+  <ColumnDefs>
+    <ColumnDef name='customer_id' type='Integer' internalType='int'/>
+    <ColumnDef name='fname'/>
+    <ColumnDef name='lname'/>
+    <CalculatedColumnDef name='full_name' type='String'>
+      <ExpressionView>
+        <SQL dialect='mysql'>
+          CONCAT(<Column name='fname'/>, ' ', <Column name='lname'/>)
+        </SQL>
+        <SQL dialect='generic'>
+          <Column name='fullname'/>
+        </SQL>
+      </ExpressionView>
+    </CalculatedColumnDef>
+  </ColumnDefs>
+</Table>
+}
+
+<p>If you do not include a {@element ColumnDefs} section, Mondrian
+will read column definitions from JDBC. Such single-line table
+definitions are adequate for most purposes.</p>
+
+<p>The
+{@element ColumnDef name='customer_id' type='Integer' internalType='int'}
+declares that the <code>customer</code> table has
+a <code>customer_id</code> column and that we want to use it as an
+integer. This affects how the column is sorted, and affects the MDX
+type of expressions built from this column.  The underlying column
+might have a different type such as <code>FLOAT</code>
+or <code>VARCHAR(20)</code>.</p>
+
+<p>The attribute <code>internalType='int'</code> tells Mondrian how to
+represent the value internally. The value <code>int</code> means that
+Mondrian will use <code>getInt</code> JDBC calls to access the values,
+and store them using Java <code>int</code> values.</p>
+
+<p>The next two {@element ColumnDef} elements just make explicit the
+fact that we expect the <code>fname</code> and <code>lname</code>
+columns to exist.</p>
+
+<p>The {@element CalculatedColumnDef} defines a column using a SQL
+expression. Note that you can include SQL for multiple
+dialects. Mondrian will choose the right SQL expression for the
+current backend database. (This is very useful when defining a
+packaged application that needs to run unchanged on multiple backend
+databases.)</p>
+
+<p>The SQL can include embedded {@element Column} elements. Mondrian
+replaces these with references to columns, qualifying with a table
+alias and quoting identifiers appropriately for the current SQL
+dialect. (This might become <code>`customer`.`customer_id`</code> on
+MySQL, or <code>&quot;customer&quot;.&quot;customer_id&quot;</code> on
+Oracle.</p>
 
 <p>You can also use the {@element Query}
 construct to build more complicated SQL statements.</p>
 
 <!--
 ##########################
-##  4.2 Inline table #####
+##  4.3 Inline table #####
 ########################## -->
-<h1>4.2 Inline table<a name="Inline_table">&nbsp;</a></h1>
+<h1>4.3 Inline table<a name="Inline_table">&nbsp;</a></h1>
 
 <p>The {@element InlineTable} construct allows
 you to define a dataset in the schema file. You must declare the names of the columns, the column types
@@ -1844,25 +1928,91 @@ for that column, and the column's value will default to NULL.</p>
 
 <!--
 ###################
-##  4.3 Query #####
+##  4.4 Query #####
 ################### -->
-<h1>4.3 Query<a name="Query">&nbsp;</a></h1>
+<h1>4.4 Query<a name="Query">&nbsp;</a></h1>
 
-<p>TODO</p>
+<p>A {@element Query} element defines a table by executing a SQL
+statement. It is similar to a view definition in an RDBMS. As for
+{@element CalculatedColumnDef}, you can provide a different SQL
+expression for different SQL dialects.</p>
+
+<p>Example:</p>
+
+{@xml
+<Query name='american_customers'>
+  <ExpressionView>
+    <SQL dialect='generic'>
+      SELECT * FROM customer WHERE country = 'USA'
+    </SQL>
+  </ExpressionView>
+</Query>
+}
 
 <!--
 ##################
-##  4.4 Link #####
+##  4.5 Link #####
 ################## -->
-<h1>4.4 Link<a name="Link">&nbsp;</a></h1>
+<h1>4.5 Link<a name="Link">&nbsp;</a></h1>
 
-<p>TODO</p>
+<p>A {@element Link} defines a relationship between two tables. The
+relationship is directed, in the same sense as a foreign key. It is
+used as an automatic join path when the tables are used in
+a <a href="#Star_and_snowflake_dimensions">snowflake
+dimension</a>.</p>
+
+<p>Here is how to define a link between the infamous <code>emp</code>
+and <code>dept</code> tables.</p>
+
+{@xml
+<Table name='emp'>
+  <Key>
+    <Column name='empno'/>
+  </Key>
+</Table>
+<Table name='dept'>
+  <Key>
+    <Column name='deptno'/>
+  </Key>
+</Table>
+<Link target='emp' source='dept'>
+  <ForeignKey>
+    <Column name='deptno'/>
+  </ForeignKey>
+</Link>
+}
+
+<p>And here is a shorter, equivalent, version
+using <code>keyColumn</code> and <code>foreignKeyColumn</code>
+attributes. These <a href="#Schema_short_cuts">short cuts</a> are
+possible because the keys are not composite.</p>
+
+{@xml
+<Table name='emp' keyColumn='empno'/>
+<Table name='dept' keyColumn='deptno'/>
+<Link target='emp' source='dept' foreignKeyColumn='deptno'/>
+}
+
+<p>Some other table-to-table connections in Mondrian schemas do not
+automatically use links. For instance, you need to provide an explicit
+{@element ForeignKeyLink} to connect the <code>sales_fact_1997</code>
+fact table to the <code>customer</code> dimension table.</p>
+
+<p>(Rationale as follows. If we used links for purposes such as
+connecting fact to dimension tables, many schemas would become cyclic
+or ambiguous (there might be multiple paths between various
+tables). But we still think it is useful to be able define links in a
+diagram, as a guideline for what join paths make sense. After all,
+doesn't everyone wish there were a schema diagram for every schema?  A
+schema modeler would, we hope, include a diagramming tool, and if
+links are present, it would suggest that they are used when defining
+connections in the schema.)</p>
 
 <!--
 ####################################################
-##  4.5 Table Hints #####
+##  4.6 Table Hints #####
 #################################################### -->
-<h1>4.5 Table Hints<a name="Table_hints">&nbsp;</a></h1>
+<h1>4.6 Table Hints<a name="Table_hints">&nbsp;</a></h1>
 
 <p>Mondrian supports a limited set of database-specific hints for the
 {@element Table} element, which will then be
@@ -3928,61 +4078,98 @@ Schema.lookupRole(String)</a>.</li>
         <td>Link between two tables.</td>
     </tr>
     <tr>
+        <td><code>&lt;<a name="XML_ColumnDefs" href="xml_schema.html#ColumnDefs">ColumnDefs</a>&gt;</code></td>
+        <td>Holder for <code>&lt;ColumnDef&gt;</code> elements.</td>
+    </tr>
+    <tr>
+        <td><code>&lt;<a name="XML_ColumnDef" href="xml_schema.html#ColumnDef">ColumnDef</a>&gt;</code></td>
+        <td>Definition of a column in an <code>&lt;InlineTable&gt;</code> dataset.</td>
+    </tr>
+    <tr>
+        <td><code>&lt;<a name="XML_ExpressionView" href="xml_schema.html#ExpressionView">ExpressionView</a>&gt;</code></td>
+
+        <td>Collection of SQL expressions for a {@element CalculatedColumnDef}
+          or {@element Query}, one for each supported dialect.</td>
+    </tr>
+    <tr>
+        <td><code>&lt;<a name="XML_Column" href="xml_schema.html#Column">Column</a>&gt;</code></td>
+        <td>Reference to a column in a SQL expression (inside a
+          {@element SQL} element) or in a key structure ({@element Key},
+          {@element ForeignKey}, {@element Name}, {@element Caption},
+          {@element OrderBy}).</td>
+    </tr>
+    <tr>
+        <td><code>&lt;<a name="XML_SQL" href="xml_schema.html#SQL">SQL</a>&gt;</code></td>
+        <td>The SQL expression for a particular database dialect.</td>
+    </tr>
+    <tr>
+        <td><code>&lt;<a name="XML_Rows" href="xml_schema.html#Rows">Rows</a>&gt;</code></td>
+        <td>Holder for {@element Row} elements.</td>
+    </tr>
+    <tr>
+        <td><code>&lt;<a name="XML_Row" href="xml_schema.html#Row">Row</a>&gt;</code></td>
+        <td>Row in an {@element InlineTable} dataset.</td>
+    </tr>
+    <tr>
+        <td><code>&lt;<a name="XML_Value" href="xml_schema.html#Value">Value</a>&gt;</code></td>
+        <td>Value of a column in an {@element InlineTable} dataset.</td>
+    </tr>
+    <tr>
         <td colspan="2"><i><br/>Logical elements</i></td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Cube" href="xml_schema.html#Cube">Cube</a>&gt;</code></td>
-        <td>A collection of dimensions and measures.</td>
+        <td>The main business view for an analysis, a cube is a collection of dimensions and measures.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Dimensions" href="xml_schema.html#Dimensions">Dimensions</a>&gt;</code></td>
-        <td>Collection of Dimension elements.</td>
+        <td>Collection of {@element Dimension} elements.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Dimension" href="xml_schema.html#Dimension">Dimension</a>&gt;</code></td>
-        <td>A collection of attributes that may be used to subdivide a
+        <td>A collection of {@element Attribute}s that may be used to subdivide a
         multidimensional data set, some of them organized into
-        hierarchies.</td>
+        {@element Hierarchy} structures.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Attributes" href="xml_schema.html#Attributes">Attributes</a>&gt;</code></td>
-        <td>Collection of Attribute elements.</td>
+        <td>Collection of {@element Attribute} elements.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Attribute" href="xml_schema.html#Attribute">Attribute</a>&gt;</code></td>
-        <td>Data item in a Dimension.</td>
+        <td>Data item in a {@element Dimension}.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Hierarchies" href="xml_schema.html#Hierarchies">Hierarchies</a>&gt;</code></td>
-        <td>Collection of Hierarchy elements.</td>
+        <td>Collection of {@element Hierarchy} elements.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Hierarchy" href="xml_schema.html#Hierarchy">Hierarchy</a>&gt;</code></td>
-        <td>Collection of Attributes organized into Levels.</td>
+        <td>Collection of {@element Attributes} organized into {@element Levels}.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Levels" href="xml_schema.html#Levels">Levels</a>&gt;</code></td>
-        <td>Collection of Level elements.</td>
+        <td>Collection of {@element Level} elements.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Level" href="xml_schema.html#Level">Level</a>&gt;</code></td>
-        <td>Level of a hierarchy.</td>
+        <td>Level of a {@element Hierarchy}.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Key" href="xml_schema.html#Key">Key</a>&gt;</code></td>
-        <td>Column or columns that are the key of an attribute, in lieu of <code>Attribute.keyColumn</code>.</td>
+        <td>Column or columns that are the key of an {@element Attribute}, in lieu of <code>Attribute.keyColumn</code>.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Name" href="xml_schema.html#Name">Name</a>&gt;</code></td>
-        <td>Column that holds the name of an attribute, in lieu of <code>Attribute.nameColumn</code>.</td>
+        <td>Column that holds the name of an {@element Attribute}, in lieu of <code>Attribute.nameColumn</code>.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Caption" href="xml_schema.html#Caption">Caption</a>&gt;</code></td>
-        <td>Column that holds the caption of an attribute, in lieu of <code>Attribute.captionColumn</code>.</td>
+        <td>Column that holds the caption of an {@element Attribute}, in lieu of <code>Attribute.captionColumn</code>.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_OrderBy" href="xml_schema.html#OrderBy">OrderBy</a>&gt;</code></td>
-        <td>Column or columns that used to sort members of an attribute, in lieu of <code>Attribute.orderByColumn</code>.</td>
+        <td>Column or columns that used to sort members of an {@element Attribute}, in lieu of <code>Attribute.orderByColumn</code>.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Property"  href="xml_schema.html#Property">Property</a>&gt;</code></td>
@@ -3990,15 +4177,15 @@ Schema.lookupRole(String)</a>.</li>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_MeasureGroups" href="xml_schema.html#MeasureGroups">MeasureGroups</a>&gt;</code></td>
-        <td>Collection of MeasureGroup elements.</td>
+        <td>Collection of {@element MeasureGroup} elements.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_MeasureGroup" href="xml_schema.html#MeasureGroup">MeasureGroup</a>&gt;</code></td>
-        <td>MeasureGroup.</td>
+        <td>Collection of {@element Measure}s that are stored in the same fact table.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Measures" href="xml_schema.html#Measures">Measures</a>&gt;</code></td>
-        <td>Collection of Measure elements.</td>
+        <td>Collection of {@element Measure} elements.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_Measure" href="xml_schema.html#Measure">Measure</a>&gt;</code></td>
@@ -4006,11 +4193,11 @@ Schema.lookupRole(String)</a>.</li>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_DimensionLinks" href="xml_schema.html#DimensionLinks">DimensionLinks</a>&gt;</code></td>
-        <td>Collection of links between a measure group and the dimensions of the cube.</td>
+        <td>Collection of links between a {@element MeasureGroup} and the {@element Dimension}s of the {@element Cube}.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_ForeignKeyLink" href="xml_schema.html#ForeignKeyLink">ForeignKeyLink</a>&gt;</code></td>
-        <td>Links a Dimension to a MeasureGroup using a foreign key
+        <td>Links a {@element Dimension} to a {@element MeasureGroup} using a foreign key
         from the fact table to the dimension table.</td>
     </tr>
     <tr>
@@ -4029,11 +4216,11 @@ Schema.lookupRole(String)</a>.</li>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_NoLink" href="xml_schema.html#NoLink">NoLink</a>&gt;</code></td>
-        <td>Documents that a Dimension is not linked to the current MeasureGroup.</td>
+        <td>Documents that a {@element Dimension} is not linked to the current {@element MeasureGroup}.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_CalculatedMembers" href="xml_schema.html#CalculatedMembers">CalculatedMembers</a>&gt;</code></td>
-        <td>Collection of CalculatedMember elements.</td>
+        <td>Collection of {@element CalculatedMember} elements.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_CalculatedMember" href="xml_schema.html#CalculatedMember">CalculatedMember</a>&gt;</code></td>
@@ -4041,7 +4228,7 @@ Schema.lookupRole(String)</a>.</li>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_NamedSets" href="xml_schema.html#NamedSets">NamedSets</a>&gt;</code></td>
-        <td>Collection of NamedSet elements.</td>
+        <td>Collection of {@element NamedSet} elements.</td>
     </tr>
     <tr>
         <td><code>&lt;<a name="XML_NamedSet" href="xml_schema.html#NamedSet">NamedSet</a>&gt;</code></td>
@@ -4068,19 +4255,19 @@ Schema.lookupRole(String)</a>.</li>
     </tr>
     <tr>
         <td><code>&lt;<a href="xml_schema.html#HierarchyGrant" name="XML_HierarchyGrant">HierarchyGrant</a>&gt;</code></td>
-        <td>A set of rights to a hierarchy and levels within that hierarchy.</td>
+        <td>A set of rights to a {@element Hierarchy} and {@element Level}s within that Hierarchy.</td>
     </tr>
     <tr>
         <td><code>&lt;<a href="xml_schema.html#MemberGrant" name="XML_MemberGrant">MemberGrant</a>&gt;</code></td>
-        <td>A set of rights to a member and its children.</td>
+        <td>A set of rights to a {@element Member} and its children.</td>
     </tr>
     <tr>
         <td><code>&lt;<a href="xml_schema.html#Union" name="XML_Union">Union</a>&gt;</code></td>
-        <td>Definition of a set of rights as the union of a set of roles.</td>
+        <td>Definition of a set of rights as the union of a set of {@element Role}s.</td>
     </tr>
     <tr>
         <td><code>&lt;<a href="xml_schema.html#RoleUsage" name="XML_RoleUsage">RoleUsage</a>&gt;</code></td>
-        <td>A reference to a Role.</td>
+        <td>A reference to a {@element Role}.</td>
     </tr>
     <tr>
         <td colspan="2"><i><br/>Extensions</i></td>
@@ -4130,32 +4317,8 @@ Schema.lookupRole(String)</a>.</li>
         <td>Holds the formula text within a <code>&lt;NamedSet&gt;</code> or <code>&lt;CalculatedMember&gt;</code>.</td>
     </tr>
     <tr>
-        <td><code>&lt;<a name="XML_ColumnDefs" href="xml_schema.html#ColumnDefs">ColumnDefs</a>&gt;</code></td>
-        <td>Holder for <code>&lt;ColumnDef&gt;</code> elements.</td>
-    </tr>
-    <tr>
-        <td><code>&lt;<a name="XML_ColumnDef" href="xml_schema.html#ColumnDef">ColumnDef</a>&gt;</code></td>
-        <td>Definition of a column in an <code>&lt;InlineTable&gt;</code> dataset.</td>
-    </tr>
-    <tr>
-        <td><code>&lt;<a name="XML_Rows" href="xml_schema.html#Rows">Rows</a>&gt;</code></td>
-        <td>Holder for <code>&lt;Row&gt;</code> elements.</td>
-    </tr>
-    <tr>
-        <td><code>&lt;<a name="XML_Row" href="xml_schema.html#Row">Row</a>&gt;</code></td>
-        <td>Row in an <code>&lt;InlineTable&gt;</code> dataset.</td>
-    </tr>
-    <tr>
-        <td><code>&lt;<a name="XML_Value" href="xml_schema.html#Value">Value</a>&gt;</code></td>
-        <td>Value of a column in an <code>&lt;InlineTable&gt;</code> dataset.</td>
-    </tr>
-    <tr>
         <td><code>&lt;<a name="XML_MeasureExpression" href="xml_schema.html#MeasureExpression">MeasureExpression</a>&gt;</code></td>
         <td>SQL expression used to compute a measure, in lieu of <code>Measure.column</code>.</td>
-    </tr>
-    <tr>
-        <td><code>&lt;<a name="XML_SQL" href="xml_schema.html#SQL">SQL</a>&gt;</code></td>
-        <td>The SQL expression for a particular database dialect.</td>
     </tr>
 </table>
 <br />
