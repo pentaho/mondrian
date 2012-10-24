@@ -103,6 +103,32 @@ public class VisualTotalsTest extends TestCase {
         assertNotNull(resultSet);
         resultSet.close();
     }
+    
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-1279">
+     * MONDRIAN-1279, "VisualTotals name only applies to member name not caption"</a>.
+     *
+     * @throws java.sql.SQLException on error
+     */
+    public void testVisualTotalCaptionBug() throws SQLException {
+        CellSet cellSet =
+            TestContext.instance().executeOlap4jQuery(
+                "select {[Measures].[Unit Sales]} on columns, "
+                + "VisualTotals("
+                + "    {[Product].[Food].[Baked Goods].[Bread],"
+                + "     [Product].[Food].[Baked Goods].[Bread].[Bagels],"
+                + "     [Product].[Food].[Baked Goods].[Bread].[Muffins]},"
+                + "     \"**Subtotal - *\") on rows "
+                + "from [Sales]");
+        List<Position> positions = cellSet.getAxes().get(1).getPositions();
+        Cell cell;
+        Member member;
+
+        cell = cellSet.getCell(Arrays.asList(0, 0));
+        member = positions.get(0).getMembers().get(0);
+        assertEquals("*Subtotal - Bread", member.getName());
+        assertEquals("*Subtotal - Bread", member.getCaption());
+    }
 }
 
 // End VisualTotalsTest.java
