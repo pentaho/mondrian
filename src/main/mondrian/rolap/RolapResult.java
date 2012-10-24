@@ -917,9 +917,11 @@ public class RolapResult extends ResultBase {
 
                 evaluator.setCellReader(batchingReader);
                 Object preliminaryValue = calc.evaluate(evaluator);
-                if (preliminaryValue instanceof TupleIterable
-                    && !(preliminaryValue instanceof TupleList))
-                {
+
+                if (preliminaryValue instanceof TupleIterable) {
+                    // During the preliminary phase, we have to materialize the
+                    // tuple lists or the evaluation lower down won't take into
+                    // account all the tuples.
                     TupleIterable iterable = (TupleIterable) preliminaryValue;
                     final TupleCursor cursor = iterable.tupleCursor();
                     while (cursor.forward()) {
