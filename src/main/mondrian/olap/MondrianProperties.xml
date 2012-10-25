@@ -522,6 +522,18 @@ found will not be used.</p>
         <Default>false</Default>
     </PropertyDefinition>
     <PropertyDefinition>
+        <Name>IgnoreLegacyCollapsedAggregated</Name>
+        <Path>mondrian.rolap.aggregates.IgnoreLegacyCollapsedAggregated</Path>
+        <Category>Aggregate tables</Category>
+        <Description>
+<p>Boolean property that controls whether a non collapsed aggregate can be
+used as a stand alone level in an aggregate table. This exists for legacy
+reasons.</p>
+        </Description>
+        <Type>boolean</Type>
+        <Default>false</Default>
+    </PropertyDefinition>
+    <PropertyDefinition>
         <Name>ChooseAggregateByVolume</Name>
         <Path>mondrian.rolap.aggregates.ChooseByVolume</Path>
         <Category>Aggregate tables</Category>

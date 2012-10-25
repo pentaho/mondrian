@@ -347,14 +347,19 @@ class ExplicitRecognizer extends Recognizer {
                     && pair.left.getDepth() > 1
                     && aggLevels.get(levelMatches.indexOf(pair)).isCollapsed())
                 {
-                    msgRecorder.reportError(
+                    final String message =
                         "The aggregate table "
                         + aggTable.getName()
                         + " contains the column "
                         + pair.right.getName()
                         + " which maps to the level "
                         + pair.left.getUniqueName()
-                        + " but its parent level is not part of that aggregation and this level is marked as collapsed.");
+                        + " but its parent level is not part of that aggregation and this level is marked as collapsed.";
+                    if (MondrianProperties.instance().IgnoreLegacyCollapsedAggregated.get()) {
+                        msgRecorder.reportWarning(message);
+                    } else {
+                        msgRecorder.reportError(message);
+                    }
                 }
                 // Fail if the level is non-collapsed but its members
                 // are not unique.

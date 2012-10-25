@@ -1264,6 +1264,13 @@ public class SqlTupleReader implements TupleReader {
                 if (column != null) {
                     levelBitKey.set(column.getBitPosition());
                 }
+                RolapLevel pLevel = (RolapLevel) level.getParentLevel();
+                while (pLevel != null && !pLevel.isAll()) {
+                    RolapStar.Column pColumn =
+                        ((RolapCubeLevel)pLevel).getBaseStarKeyColumn(baseCube);
+                    levelBitKey.set(pColumn.getBitPosition());
+                    pLevel = (RolapLevel) pLevel.getParentLevel();
+                }
             }
         }
 

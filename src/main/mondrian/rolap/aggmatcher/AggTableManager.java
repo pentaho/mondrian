@@ -251,6 +251,7 @@ public class AggTableManager {
                             ExplicitRules.getIncludeByTableDef(name, aggGroups);
 
                         boolean makeAggStar = false;
+
                         int approxRowCount = Integer.MIN_VALUE;
                         // Is it handled by the ExplicitRules
                         if (tableDef != null) {
@@ -312,7 +313,10 @@ public class AggTableManager {
             msgRecorder.logInfoMessage(getLogger());
             msgRecorder.logWarningMessage(getLogger());
             msgRecorder.logErrorMessage(getLogger());
-            if (msgRecorder.hasErrors()) {
+            if (msgRecorder.hasErrors()
+                && !MondrianProperties.instance()
+                    .IgnoreLegacyCollapsedAggregated.get())
+            {
                 throw mres.AggLoadingExceededErrorCount.ex(
                     msgRecorder.getErrorCount());
             }
