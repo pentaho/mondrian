@@ -859,19 +859,20 @@ public class CompoundSlicerTest extends FoodMartTestCase {
     }
 
     /**
-     * Test case for the support of native top count with aggregated measures
+     * Test case for the support of native top count with aggregated measures.
+     * This version puts the range in a calculated member.
      */
 
-    public void testTopCountWithAggregatedMember() {
+    public void testTopCountWithAggregatedMemberCMRange() {
         assertQueryReturns(
-            "with set a as '([Time].[1997].[Q1] : [Time].[1997].[Q2])' "
-            + "member Time.x as Aggregate(a,[Measures].[Store Sales]) "
-            + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
-            + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
-            + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
-            + " SELECT NON EMPTY products ON 1, "
-            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
-            + " FROM [Sales] where Time.x",
+            "with set TO_AGGREGATE as '([Time].[1997].[Q1] : [Time].[1997].[Q2])'\n"
+                + "member Time.x as Aggregate(TO_AGGREGATE, [Measures].[Store Sales])\n"
+                + "member Measures.x1 as ([Time].[1997].[Q1], [Measures].[Store Sales])\n"
+                + "member Measures.x2 as ([Time].[1997].[Q2], [Measures].[Store Sales])\n"
+                + " set products as TopCount(Product.[Product Name].Members, 2, Measures.[Store Sales])\n"
+                + " SELECT NON EMPTY products ON 1,\n"
+                + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0\n"
+                + " FROM [Sales] where Time.x",
             "Axis #0:\n"
             + "{[Time].[x]}\n"
             + "Axis #1:\n"
@@ -889,22 +890,19 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "Row #1: 236.64\n");
     }
 
-
-
      /**
      * Test case for the support of native top count with aggregated measures
-     * using a different format, same results
+     * feeding the range directly to aggregate.
      */
-
     public void testTopCountWithAggregatedMember2() {
         assertQueryReturns(
-            "with "
-            + "member Time.x as Aggregate([Time].[1997].[Q1] : [Time].[1997].[Q2],[Measures].[Store Sales]) "
-            + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
-            + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
-            + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
-            + " SELECT NON EMPTY products ON 1, "
-            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
+            "with\n"
+            + "member Time.x as Aggregate([Time].[1997].[Q1] : [Time].[1997].[Q2], [Measures].[Store Sales])\n"
+            + "member Measures.x1 as ([Time].[1997].[Q1], [Measures].[Store Sales])\n"
+            + "member Measures.x2 as ([Time].[1997].[Q2], [Measures].[Store Sales])\n"
+            + " set products as TopCount(Product.[Product Name].Members, 2, Measures.[Store Sales])\n"
+            + " SELECT NON EMPTY products ON 1,\n"
+            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0\n"
             + "FROM [Sales] where Time.x",
             "Axis #0:\n"
             + "{[Time].[x]}\n"
@@ -925,16 +923,17 @@ public class CompoundSlicerTest extends FoodMartTestCase {
 
      /**
      * Test case for the support of native top count with aggregated measures
+     * using enumerated members in a calculated member.
      */
-    public void testTopCountWithAggregatedMember3() {
+    public void testTopCountWithAggregatedMemberEnumCMSet() {
         assertQueryReturns(
-            "with set a as '{[Time].[1997].[Q1] , [Time].[1997].[Q2]}' "
-            + "member Time.x as Aggregate(a,[Measures].[Store Sales]) "
-            + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
-            + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
-            + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
-            + " SELECT NON EMPTY products ON 1, "
-            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
+            "with set TO_AGGREGATE as '{[Time].[1997].[Q1] , [Time].[1997].[Q2]}'\n"
+            + "member Time.x as Aggregate(TO_AGGREGATE, [Measures].[Store Sales])\n"
+            + "member Measures.x1 as ([Time].[1997].[Q1], [Measures].[Store Sales])\n"
+            + "member Measures.x2 as ([Time].[1997].[Q2], [Measures].[Store Sales])\n"
+            + " set products as TopCount(Product.[Product Name].Members, 2, Measures.[Store Sales])\n"
+            + " SELECT NON EMPTY products ON 1,\n"
+            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0\n"
             + " FROM [Sales] where Time.x",
             "Axis #0:\n"
             + "{[Time].[x]}\n"
@@ -955,17 +954,17 @@ public class CompoundSlicerTest extends FoodMartTestCase {
 
      /**
      * Test case for the support of native top count with aggregated measures
-     * using a different format, same results
+     * using enumerated members.
      */
-    public void testTopCountWithAggregatedMember4() {
+    public void testTopCountWithAggregatedMemberEnumSet() {
         assertQueryReturns(
-            "with "
-            + "member Time.x as Aggregate({[Time].[1997].[Q1] , [Time].[1997].[Q2]},[Measures].[Store Sales]) "
-            + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
-            + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
-            + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
-            + " SELECT NON EMPTY products ON 1, "
-            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
+            "with\n"
+            + "member Time.x as Aggregate({[Time].[1997].[Q1] , [Time].[1997].[Q2]}, [Measures].[Store Sales])\n"
+            + "member Measures.x1 as ([Time].[1997].[Q1], [Measures].[Store Sales])\n"
+            + "member Measures.x2 as ([Time].[1997].[Q2], [Measures].[Store Sales])\n"
+            + " set products as TopCount(Product.[Product Name].Members, 2, Measures.[Store Sales])\n"
+            + " SELECT NON EMPTY products ON 1,\n"
+            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0\n"
             + "FROM [Sales] where Time.x",
             "Axis #0:\n"
             + "{[Time].[x]}\n"
@@ -991,12 +990,12 @@ public class CompoundSlicerTest extends FoodMartTestCase {
     public void testTopCountWithAggregatedMember5() {
         assertQueryReturns(
             "with\n"
-            + "member Time.x as Aggregate([Time].[1997].[Q1] : [Time].[1997].[Q2],[Measures].[Store Sales]) \n"
-            + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) \n"
-            + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) \n"
+            + "member Time.x as Aggregate([Time].[1997].[Q1] : [Time].[1997].[Q2], [Measures].[Store Sales])\n"
+            + "member Measures.x1 as ([Time].[1997].[Q1], [Measures].[Store Sales])\n"
+            + "member Measures.x2 as ([Time].[1997].[Q2], [Measures].[Store Sales])\n"
             + " set products as TopCount(Product.[Product Name].Members,2,(Measures.[Store Sales],Time.x))\n"
-            + " SELECT NON EMPTY products ON 1, \n"
-            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 \n"
+            + " SELECT NON EMPTY products ON 1,\n"
+            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0\n"
             + "FROM [Sales]",
             "Axis #0:\n"
             + "{}\n"
@@ -1023,13 +1022,13 @@ public class CompoundSlicerTest extends FoodMartTestCase {
      */
     public void testTopCountWithAggregatedMemberCacheKey() {
         assertQueryReturns(
-            "with "
-            + "member Time.x as Aggregate({[Time].[1997].[Q1] , [Time].[1997].[Q2]},[Measures].[Store Sales]) "
-            + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
-            + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
-            + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
-            + " SELECT NON EMPTY products ON 1, "
-            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
+            "with\n"
+            + "member Time.x as Aggregate({[Time].[1997].[Q1] , [Time].[1997].[Q2]}, [Measures].[Store Sales])\n"
+            + "member Measures.x1 as ([Time].[1997].[Q1], [Measures].[Store Sales])\n"
+            + "member Measures.x2 as ([Time].[1997].[Q2], [Measures].[Store Sales])\n"
+            + " set products as TopCount(Product.[Product Name].Members, 2, Measures.[Store Sales])\n"
+            + " SELECT NON EMPTY products ON 1,\n"
+            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0\n"
             + "FROM [Sales] where Time.x",
             "Axis #0:\n"
             + "{[Time].[x]}\n"
@@ -1046,7 +1045,6 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "Row #1: 462.84\n"
             + "Row #1: 226.20\n"
             + "Row #1: 236.64\n");
-
 
         assertQueryReturns(
             "with\n"
