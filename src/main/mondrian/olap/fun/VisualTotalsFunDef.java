@@ -91,12 +91,16 @@ public class VisualTotalsFunDef extends FunDefBase {
                 Member member = list.get(i);
                 if (i + 1 < memberCount) {
                     Member nextMember = resultList.get(i + 1);
-                    if (nextMember != member
-                        && nextMember.isChildOrEqualTo(member))
-                    {
-                        resultList.set(
-                            i,
-                            createMember(member, i, resultList, evaluator));
+                    if (nextMember != member) {
+                    	if (nextMember.isChildOrEqualTo(member)) {
+                            resultList.set(
+                                    i,
+                                    createMember(member, i, resultList, evaluator));
+                    	} else if (member.isChildOrEqualTo(nextMember)) {
+                    		resultList.set(
+                                    i + 1,
+                                    createMember(nextMember, i + 1, resultList, evaluator));
+                    	}
                     }
                 }
             }
@@ -117,58 +121,54 @@ public class VisualTotalsFunDef extends FunDefBase {
                 name = member.getName();
             }
             final List<Member> childMemberList =
-                followingDescendants(member, i + 1, list);
+                findDescendants(member, i, list);
             final Exp exp = makeExpr(childMemberList);
             final Validator validator = evaluator.getQuery().createValidator();
             final Exp validatedExp = exp.accept(validator);
             return new VisualTotalMember(member, name, validatedExp);
         }
 
-        private List<Member> followingDescendants(
+        private List<Member> findDescendants(
             Member member, int i, final List<Member> list)
         {
-            List<Member> childMemberList = new ArrayList<Member>();
-            while (i < list.size()) {
-                Member descendant = list.get(i);
-                if (descendant.equals(member)) {
-                    // strict descendants only
-                    break;
-                }
-                if (!descendant.isChildOrEqualTo(member)) {
-                    break;
-                }
-                if (descendant instanceof VisualTotalMember) {
-                    // Add the visual total member, but skip over its children.
-                    VisualTotalMember visualTotalMember =
-                            (VisualTotalMember) descendant;
-                    childMemberList.add(visualTotalMember);
-                    i = lastChildIndex(visualTotalMember.member, i, list);
-                    continue;
-                }
-                childMemberList.add(descendant);
-                ++i;
-            }
+        	List<Member> childMemberList = new ArrayList<Member>();
+        	List<Integer> ignoreMembers = new ArrayList<Integer>();
+        	ignoreMembers.add(i);
+        	for (int k = 0; k < list.size(); k++) {
+        		Member descendant = list.get(k);
+        		if (!descendant.equals(member)) {
+        			if (descendant.isChildOrEqualTo(member)) {
+        				childMemberList.add(descendant);
+        				ignoreMembers.add(k);
+        			}
+        			if (descendant instanceof VisualTotalMember) {
+        				// 	Add the visual total member, but skip over its children.
+        				VisualTotalMember visualTotalMember =
+        					(VisualTotalMember) descendant;
+        				childMemberList.add(visualTotalMember);
+        				ignoreChildren(visualTotalMember.member, list, ignoreMembers);
+        			}
+
+        		}
+        	}
             return childMemberList;
         }
 
-        private int lastChildIndex(Member member, int start, List list) {
-            int i = start;
-            while (true) {
-                ++i;
-                if (i >= list.size()) {
-                    break;
-                }
-                Member descendant = (Member) list.get(i);
-                if (descendant.equals(member)) {
-                    // strict descendants only
-                    break;
-                }
-                if (!descendant.isChildOrEqualTo(member)) {
-                    break;
-                }
-            }
-            return i;
+        private void ignoreChildren(
+        		Member member, 
+        		List<Member> list, 
+        		List<Integer> ignoreList)
+        {
+        	for(int i = 0; i < list.size(); i++) {
+        		if (!ignoreList.contains(i)) {
+            		Member nextMember = list.get(i);
+            		if (nextMember.isChildOrEqualTo(member)) {
+            			ignoreList.add(i);
+            		}
+        		}
+        	}
         }
+
 
         private Exp makeExpr(final List childMemberList) {
             Exp[] memberExprs = new Exp[childMemberList.size()];
