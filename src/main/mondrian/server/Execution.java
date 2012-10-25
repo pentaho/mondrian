@@ -209,13 +209,27 @@ public class Execution {
      * <p>It won't throw anything if the query has successfully completed.
      * @throws MondrianException The exception encountered.
      */
-    public void checkCancelOrTimeout() throws MondrianException {
+    public synchronized void checkCancelOrTimeout() throws MondrianException {
         if (parent != null) {
             parent.checkCancelOrTimeout();
         }
+        boolean needInterrupt = false;
         switch (this.state) {
         case CANCELED:
-            fireExecutionEndEvent();
+            try {
+                if (Thread.interrupted()) {
+                    // Checking the state of the thread will clear the
+                    // interrupted flag so we can send an event out.
+                    // After that, we make sure that we set it again
+                    // so the thread state remains consistent.
+                    needInterrupt = true;
+                }
+                fireExecutionEndEvent();
+            } finally {
+                if (needInterrupt) {
+                    Thread.currentThread().interrupt();
+                }
+            }
             throw MondrianResource.instance().QueryCanceled.ex();
         case RUNNING:
             if (timeoutTimeMillis > 0) {
@@ -229,7 +243,20 @@ public class Execution {
             }
             break;
         case ERROR:
-            fireExecutionEndEvent();
+            try {
+                if (Thread.interrupted()) {
+                    // Checking the state of the thread will clear the
+                    // interrupted flag so we can send an event out.
+                    // After that, we make sure that we set it again
+                    // so the thread state remains consistent.
+                    needInterrupt = true;
+                }
+                fireExecutionEndEvent();
+            } finally {
+                if (needInterrupt) {
+                    Thread.currentThread().interrupt();
+                }
+            }
             throw new MemoryLimitExceededException(outOfMemoryMsg);
         }
     }
