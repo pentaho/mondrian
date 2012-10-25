@@ -103,6 +103,109 @@ public class VisualTotalsTest extends TestCase {
         assertNotNull(resultSet);
         resultSet.close();
     }
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-1280">
+     * MONDRIAN-1280, "VisualTotals doesn't work with Hierarchize POST"</a>.
+     *
+     * @throws java.sql.SQLException on error
+     */
+    public void testVisualTotalsHierarchizeBug() throws SQLException {
+    	// Let's test with Hierarchize PRE first
+    	CellSet cellSet =
+    		TestContext.instance().executeOlap4jQuery(
+    				"select {[Measures].[Unit Sales]} on columns, "
+    				+ "{VisualTotals("
+    				+ "Hierarchize("
+    				+ "    {[Product].[Product Family].Members,"
+    				+ "    [Product].[Drink].[Beverages],"
+    				+ "    [Product].[Drink].[Dairy]}"
+    				+ ", PRE),"
+    				+ "     \"**Subtotal - *\")}"
+    				+ "                           on rows "
+    				+ "from [Sales]");
+
+    	String s = TestContext.toString(cellSet);
+    	TestContext.assertEqualsVerbose(
+    			"Axis #0:\n"
+    			+ "{}\n"
+    			+ "Axis #1:\n"
+    			+ "{[Measures].[Unit Sales]}\n"
+    			+ "Axis #2:\n"
+    			+ "{[Product].[*Subtotal - Drink]}\n"
+    			+ "{[Product].[Drink].[Beverages]}\n"
+    			+ "{[Product].[Drink].[Dairy]}\n"
+    			+ "{[Product].[Food]}\n"
+    			+ "{[Product].[Non-Consumable]}\n"
+    			+ "Row #0: 17,759\n"
+    			+ "Row #1: 13,573\n"
+    			+ "Row #2: 4,186\n"
+    			+ "Row #3: 191,940\n"
+    			+ "Row #4: 50,236\n"
+    			,s);
+
+
+    	cellSet = TestContext.instance().executeOlap4jQuery(
+    			"select {[Measures].[Unit Sales]} on columns, "
+    			+ "{VisualTotals("
+    			+ "Hierarchize("
+    			+ "    {[Product].[Drink].[Beverages],"
+    			+ "    [Product].[Product Family].Members,"
+    			+ "    [Product].[Drink].[Dairy]}"
+    			+ ", POST),"
+    			+ "     \"**Subtotal - *\")}"
+    			+ "                           on rows "
+    			+ "from [Sales]");
+
+    	s = TestContext.toString(cellSet);
+    	TestContext.assertEqualsVerbose(
+    			"Axis #0:\n"
+    			+ "{}\n"
+    			+ "Axis #1:\n"
+    			+ "{[Measures].[Unit Sales]}\n"
+    			+ "Axis #2:\n"
+    			+ "{[Product].[Drink].[Beverages]}\n"
+    			+ "{[Product].[Drink].[Dairy]}\n"
+    			+ "{[Product].[*Subtotal - Drink]}\n"
+    			+ "{[Product].[Food]}\n"
+    			+ "{[Product].[Non-Consumable]}\n"
+    			+ "Row #0: 13,573\n"
+    			+ "Row #1: 4,186\n"
+    			+ "Row #2: 17,759\n"
+    			+ "Row #3: 191,940\n"
+    			+ "Row #4: 50,236\n"
+    			,s);
+    	
+    	// Now let's test without an order too
+    	cellSet = TestContext.instance().executeOlap4jQuery(
+    			"select {[Measures].[Unit Sales]} on columns, "
+    			+ "{VisualTotals("
+    			+ "    {[Product].[Drink].[Beverages],"
+    			+ "    [Product].[Product Family].Members,"
+    			+ "    [Product].[Drink].[Dairy]}"
+    			+ ", \"**Subtotal - *\")}"
+    			+ "                           on rows "
+    			+ "from [Sales]");
+
+    	s = TestContext.toString(cellSet);
+    	TestContext.assertEqualsVerbose(
+    			"Axis #0:\n"
+    			+ "{}\n"
+    			+ "Axis #1:\n"
+    			+ "{[Measures].[Unit Sales]}\n"
+    			+ "Axis #2:\n"
+    			+ "{[Product].[Drink].[Beverages]}\n"
+    			+ "{[Product].[*Subtotal - Drink]}\n"
+    			+ "{[Product].[Food]}\n"
+    			+ "{[Product].[Non-Consumable]}\n"
+    			+ "{[Product].[Drink].[Dairy]}\n"
+    			+ "Row #0: 13,573\n"
+    			+ "Row #1: 17,759\n"
+    			+ "Row #2: 191,940\n"
+    			+ "Row #3: 50,236\n"
+    			+ "Row #4: 4,186\n"
+    			,s);
+    }
 }
 
 // End VisualTotalsTest.java
