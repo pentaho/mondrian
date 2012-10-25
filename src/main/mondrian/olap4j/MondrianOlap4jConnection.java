@@ -14,6 +14,7 @@ import mondrian.olap.*;
 import mondrian.olap.Member;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.rolap.*;
+import mondrian.util.Bug;
 import mondrian.xmla.XmlaHandler;
 
 import org.olap4j.Axis;
@@ -45,10 +46,22 @@ import java.util.*;
  * it is instantiated using
  * {@link Factory#newConnection(MondrianOlap4jDriver, String, java.util.Properties)}.</p>
  *
+ * <p>This class is public, to allow access to the
+ * {@link #setRoleNames(java.util.List)} method before it is added to olap4j
+ * version 2.0. <b>This may change without notice</b>. Code should not rely on
+ * this class being public.</p>
+ *
  * @author jhyde
  * @since May 23, 2007
  */
-abstract class MondrianOlap4jConnection implements OlapConnection {
+public abstract class MondrianOlap4jConnection implements OlapConnection {
+    static {
+        Bug.olap4jUpgrade(
+            "Make this class package-protected when we upgrade to olap4j 2.0. "
+            + "The setRoleNames method will then be available through the "
+            + "olap4j API");
+    }
+
     /**
      * Handler for errors.
      */
