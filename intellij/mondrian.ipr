@@ -279,6 +279,13 @@
   <component name="ProjectDetails">
     <option name="projectName" value="mondrian" />
   </component>
+  <component name="ProjectDictionaryState">
+    <dictionary name="jhyde">
+      <words>
+        <w>hierarchize</w>
+      </words>
+    </dictionary>
+  </component>
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/mondrian.iml" filepath="$PROJECT_DIR$/mondrian.iml" />

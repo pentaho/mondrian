@@ -1205,8 +1205,18 @@ public class TestContext {
      * Executes a query and checks that the result is a given string.
      */
     public void assertQueryReturns(String query, String desiredResult) {
-        Result result = executeQuery(query);
-        String resultString = toString(result);
+        String resultString;
+        if (isPreferOlap4j()) {
+            try {
+                CellSet cellSet = executeOlap4jQuery(query);
+                resultString = toString(cellSet);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            Result result = executeQuery(query);
+            resultString = toString(result);
+        }
         if (desiredResult != null) {
             assertEqualsVerbose(
                 upgradeExpected(desiredResult),
@@ -1600,6 +1610,19 @@ public class TestContext {
      */
     public Object getFlag(Flag flag) {
         return null;
+    }
+
+    /** Returns a test context that prefers to use olap4j for executing
+     * queries. */
+    public TestContext withOlap4j() {
+        return withFlag(Flag.PREFER_OLAP4J, true);
+    }
+
+    /** Returns whether this test context prefers to use olap4j for executing
+     * queries. */
+    public boolean isPreferOlap4j() {
+        Boolean b = (Boolean) getFlag(Flag.PREFER_OLAP4J);
+        return b != null && b;
     }
 
     private TestContext withPropertiesReplace(
@@ -2811,7 +2834,8 @@ public class TestContext {
      * Definition of property that affects the behavior of this TestContext.
      */
     enum Flag {
-        AUTO_MISSING_LINK
+        AUTO_MISSING_LINK,
+        PREFER_OLAP4J,
     }
 
     interface Predicate {
