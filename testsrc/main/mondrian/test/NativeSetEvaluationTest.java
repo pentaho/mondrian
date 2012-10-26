@@ -218,6 +218,71 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "Row #2: 703.80\n"
             + "Row #3: 718.08\n");
    }
-    
+
+    /**
+     * Check if getSlicerMembers in native evaluation context
+     * doesn't break the results as in MONDRIAN-1187
+     */
+    public void testSlicerTuplesPartialCrossJoin() {
+        final String mdx = 
+            "with\n"
+            + "set TSET as {NonEmptyCrossJoin({[Time].[1997].[Q1], [Time].[1997].[Q2]}, {[Store Type].[Supermarket]}),\n"
+            + " NonEmptyCrossJoin({[Time].[1997].[Q1]}, {[Store Type].[Deluxe Supermarket], [Store Type].[Gourmet Supermarket]}) }\n"
+            + " set products as TopCount(Product.[Product Name].Members, 2, Measures.[Store Sales])\n"
+            + " SELECT NON EMPTY products ON 1,\n"
+            + "NON EMPTY {[Measures].[Store Sales]} ON 0\n"
+            + " FROM [Sales]\n"
+            + "where TSET";
+      
+        final String result = 
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1], [Store Type].[Supermarket]}\n"
+            + "{[Time].[1997].[Q2], [Store Type].[Supermarket]}\n"
+            + "{[Time].[1997].[Q1], [Store Type].[Deluxe Supermarket]}\n"
+            + "{[Time].[1997].[Q1], [Store Type].[Gourmet Supermarket]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
+            + "{[Product].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Hermanos].[Hermanos Green Pepper]}\n"
+            + "Row #0: 332.86\n"
+            + "Row #1: 343.54\n";
+
+        assertQueryReturns(mdx, result );
+    }
+
+    /**
+     * Same as before but without combinations missing in the crossjoin
+     */
+    public void testSlicerTuplesFullCrossJoin() {
+
+        final String mdx = 
+            "with\n"
+            + "set TSET as NonEmptyCrossJoin({[Time].[1997].[Q1], [Time].[1997].[Q2]}, {[Store Type].[Supermarket], [Store Type].[Deluxe Supermarket], [Store Type].[Gourmet Supermarket]})\n"
+            + " set products as TopCount(Product.[Product Name].Members, 2, Measures.[Store Sales])\n"
+            + " SELECT NON EMPTY products ON 1,\n"
+            + "NON EMPTY {[Measures].[Store Sales]} ON 0\n"
+            + " FROM [Sales]\n"
+            + "where TSET";
+
+        
+        String result = 
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1], [Store Type].[Deluxe Supermarket]}\n"
+            + "{[Time].[1997].[Q1], [Store Type].[Gourmet Supermarket]}\n"
+            + "{[Time].[1997].[Q1], [Store Type].[Supermarket]}\n"
+            + "{[Time].[1997].[Q2], [Store Type].[Deluxe Supermarket]}\n"
+            + "{[Time].[1997].[Q2], [Store Type].[Gourmet Supermarket]}\n"
+            + "{[Time].[1997].[Q2], [Store Type].[Supermarket]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
+            + "{[Product].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Hermanos].[Hermanos Green Pepper]}\n"
+            + "Row #0: 460.02\n"
+            + "Row #1: 420.74\n";
+
+        assertQueryReturns(mdx, result );
+    }
 
 }
