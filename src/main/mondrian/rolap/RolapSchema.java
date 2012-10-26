@@ -323,63 +323,6 @@ public class RolapSchema extends OlapElementBase implements Schema {
         return DialectManager.createDialect(dataSource, null);
     }
 
-    void resolve(
-        RolapSchemaLoader loader,
-        PhysSchema physSchema,
-        UnresolvedColumn unresolvedColumn)
-    {
-        try {
-            if (unresolvedColumn.state == UnresolvedColumn.State.ACTIVE) {
-                loader.getHandler().warning(
-                    "Calculated column '" + unresolvedColumn.name
-                    + "' in table '" + unresolvedColumn.tableName
-                    + "' has cyclic expression", unresolvedColumn.xml, null);
-                return;
-            }
-            unresolvedColumn.state = UnresolvedColumn.State.ACTIVE;
-            final PhysRelation table =
-                physSchema.tablesByName.get(unresolvedColumn.tableName);
-            if (table == null) {
-                loader.getHandler().warning(
-                    "Unknown table '" + unresolvedColumn.tableName + "'"
-                    + unresolvedColumn.getContext() + ".",
-                    unresolvedColumn.xml,
-                    null);
-                return;
-            }
-            final PhysColumn column =
-                table.getColumn(
-                    unresolvedColumn.name, false);
-            if (column == null) {
-                loader.getHandler().warning(
-                    "Reference to unknown column '" + unresolvedColumn.name
-                    + "' in table '" + unresolvedColumn.tableName + "'"
-                    + unresolvedColumn.getContext() + ".",
-                    unresolvedColumn.xml,
-                    null);
-            } else {
-                if (column instanceof PhysCalcColumn) {
-                    PhysCalcColumn physCalcColumn =
-                        (PhysCalcColumn) column;
-                    for (Object o : physCalcColumn.list) {
-                        if (o instanceof UnresolvedColumn) {
-                            resolve(
-                                loader,
-                                physSchema,
-                                (UnresolvedColumn) o);
-                        }
-                    }
-                }
-                unresolvedColumn.state = UnresolvedColumn.State.RESOLVED;
-                unresolvedColumn.onResolve(column);
-            }
-        } finally {
-            if (unresolvedColumn.state == UnresolvedColumn.State.ACTIVE) {
-                unresolvedColumn.state = UnresolvedColumn.State.ERROR;
-            }
-        }
-    }
-
     public Dimension createDimension(Cube cube, String xml) {
         return new RolapSchemaLoader(this).createDimension(
             (RolapCube) cube, xml, Collections.<String, String>emptyMap());
@@ -2253,7 +2196,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
     public static final class PhysCalcColumn extends PhysColumn {
         private RolapSchemaLoader loader; // cleared once compute succeeds
         private NodeDef xmlNode; // cleared once compute succeeds
-        private List<RolapSchema.PhysExpr> list;
+        final List<RolapSchema.PhysExpr> list;
         private String sql;
 
         PhysCalcColumn(
@@ -2374,9 +2317,9 @@ public class RolapSchema extends OlapElementBase implements Schema {
 
     public static abstract class UnresolvedColumn extends PhysColumn {
         State state = State.UNRESOLVED;
-        private final String tableName;
-        private final String name;
-        private final ElementDef xml;
+        final String tableName;
+        final String name;
+        final ElementDef xml;
 
         public UnresolvedColumn(
             PhysRelation relation,

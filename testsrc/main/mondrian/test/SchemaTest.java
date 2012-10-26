@@ -273,9 +273,10 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "      dimension='Measures'>\n"
             + "    <Formula>[Measures].[Store Sales] / [Measures].[Store Cost]</Formula>\n"
             + "    <CalculatedMemberProperty name='FORMAT_STRING' value='$#,##0.00'/>\n"
-            + "  </CalculatedMember>, <CalculatedMember\n"
+            + "  </CalculatedMember>\n"
+            + "<CalculatedMember\n"
             + "      name='foo'\n"
-            + "      dimension='Gender'>\n"
+            + "      hierarchy='Gender'>\n"
             + "    <Formula>Sum(Gender.Members)</Formula>\n"
             + "    <CalculatedMemberProperty name='FORMAT_STRING' value='$#,##0.00'/>\n"
             + "    <CalculatedMemberProperty name='SOLVE_ORDER' value=\'2000\'/>\n"
@@ -293,6 +294,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     public void testHierarchyDefaultMember() {
+        if (false)
         checkHierarchyDefaultMember(
             "[Promotion with default].[Media Type].[All Media Types].[TV]")
             .assertQueryReturns(
@@ -317,7 +319,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "<Dimension name='Promotion with default' table='promotion' key='Promotion Id'>\n"
             + "    <Attributes>\n"
             + "        <Attribute name='Promotion Id' keyColumn='promotion_id'/>\n"
-            + "        <Attribute name='Media Type' keyColumn='media_type'/>\n"
+            + "        <Attribute name='Media Type' keyColumn='media_type' hasHierarchy='false'/>\n"
             + "        <Attribute name='Promotion Name' keyColumn='promotion_name'/>\n"
             + "    </Attributes>\n"
             + "    <Hierarchies>\n"
@@ -5518,6 +5520,83 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     /**
+     * Various tests concerning the Link element inside PhysicalSchema.
+     * Tests equivalence of Link/ForeignKey/Column and Link.foreignKeyColumn.
+     */
+    public void testPhysicalSchemaLink() {
+        String catalog =
+            "<Schema name='foo' metamodelVersion='4.0'>\n"
+            + "<PhysicalSchema>\n"
+            + "  <Table name='sales_fact_1997' />\n"
+            + "  <Table name='customer'/>\n"
+            + "  <Table name='product' keyColumn='product_id'/>\n"
+            + "  <Table name='product_class' keyColumn='product_class_id'/>\n"
+            + "  <Link source='product_class' target='product' foreignKeyColumn='product_class_id'/>\n"
+            + "</PhysicalSchema>\n"
+            + MINIMAL_SALES_CUBE
+            + "</Schema>";
+        final TestContext testContext =
+            TestContext.instance().withSchema(catalog);
+        testContext.assertSimpleQuery();
+
+        // Bad column in Table.
+        getTestContext().withSchema(
+            catalog.replace(
+                "<Table name='product_class' keyColumn='product_class_id'/>",
+                "<Table name='product_class' keyColumn='product_class_idz'/>"))
+            .assertSchemaError(
+                "Reference to unknown column 'product_class_idz' in table "
+                + "'product_class', in key of table 'product_class'. "
+                + "\\(in Table\\) \\(at ${pos}\\)",
+                "<Table name='product_class' keyColumn='product_class_idz'/>");
+
+        // Bad column in Link.
+        getTestContext().withSchema(
+            catalog.replace(
+                "<Link source='product_class' target='product' foreignKeyColumn='product_class_id'/>",
+                "<Link source='product_class' target='product' foreignKeyColumn='product_class_idz'/>"))
+            .assertSchemaError(
+                "Column 'product_class_idz' not found in relation 'product' "
+                + "\\(in Link\\) \\(at ${pos}\\)",
+                "<Link source='product_class' target='product' foreignKeyColumn='product_class_idz'/>");
+
+        // Bad column in Link (nested).
+        getTestContext().withSchema(
+            catalog.replace(
+                "<Link source='product_class' target='product' foreignKeyColumn='product_class_id'/>",
+                "<Link source='product_class' target='product'>\n"
+                + "  <ForeignKey>\n"
+                + "    <Column name='product_class_idz'/>\n"
+                + "  </ForeignKey>\n"
+                + "</Link>"))
+            .assertSchemaError(
+                "Column 'product_class_idz' not found in relation 'product' "
+                + "\\(in Column\\) \\(at ${pos}\\)",
+                "<Column name='product_class_idz'/>");
+
+        // Remove table's key. Is a problem because it is referenced from a
+        // link.
+        getTestContext().withSchema(
+            catalog.replace(
+                "<Table name='product_class' keyColumn='product_class_id'/>",
+                "<Table name='product_class'/>"))
+            .assertSchemaError(
+                "Source table 'product_class' of link has no key named 'primary'. \\(in Link\\) \\(at ${pos}\\)",
+                "<Link source='product_class' target='product' foreignKeyColumn='product_class_id'/>");
+
+        // Switch from Table.keyColumn to Table/Key/Column. Should work fine.
+        getTestContext().withSchema(
+            catalog.replace(
+                "<Table name='product_class' keyColumn='product_class_id'/>",
+                "<Table name='product_class'>\n"
+                + "  <Key>\n"
+                + "    <Column name='product_class_id'/>\n"
+                + "  </Key>\n"
+                + "</Table>"))
+            .assertSimpleQuery();
+    }
+
+    /**
      * Various positive and negative tests for columns and calculated
      * columns in a physical schema.
      */
@@ -5728,56 +5807,78 @@ Test that get error if a dimension has more than one hierarchy with same name.
         final String physSchema =
             "<PhysicalSchema>"
             + "  <Table name='sales_fact_1997'/>\n"
-            + "  <Table name='customer'>\n"
-            + "    <ColumnDefs>\n"
-            + "      <ColumnDef name='customer_id'/>\n"
-            + "      <ColumnDef name='state_province'/>\n"
-            + "      <ColumnDef name='country'/>\n"
-            + "    </ColumnDefs>\n"
-            + "  </Table>\n"
+            + "  <Table name='time_by_day'/>\n"
             + "</PhysicalSchema>";
+        final String cube =
+            "<Cube name='SalesPhys'>\n"
+            + "  <Dimensions>\n"
+            + "    <Dimension name='Time' type='TIME' key='Id'>\n"
+            + "      <Attributes>\n"
+            + "        <Attribute name='Id' table='time_by_day' keyColumn='time_id'/>\n"
+            + "        <Attribute name='Year' levelType='TimeYears'>\n"
+            + "          <Key>\n"
+            + "            <Column name='the_year'/>\n"
+            + "          </Key>\n"
+            + "        </Attribute>\n"
+            + "      </Attributes>\n"
+            + "    </Dimension>\n"
+            + "  </Dimensions>\n"
+            + "  <MeasureGroups>\n"
+            + "    <MeasureGroup table='sales_fact_1997'>\n"
+            + "      <Measures>\n"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum'/>\n"
+            + "      </Measures>\n"
+            + "      <DimensionLinks>\n"
+            + "        <ForeignKeyLink dimension='Time' foreignKeyColumn='time_id'/>\n"
+            + "      </DimensionLinks>\n"
+            + "    </MeasureGroup>\n"
+            + "  </MeasureGroups>\n"
+            + "</Cube>\n";
         TestContext testContext =
             getTestContext().withSchema(
-                "<Schema name='x'>\n"
+                "<Schema metamodelVersion='4.0' name='x'>\n"
                 + physSchema
-                + "<Cube name='SalesPhys' factTable='foo'>\n"
-                + "  <Dimension name='Time'>\n"
-                + "    <Hierarchy hasAll='false'>\n"
-                + "      <Level name='Year' uniqueMembers='true' levelType='TimeYears'>\n"
-                + "        <KeyExpression>\n"
-                + "          <SQL dialect='generic'>\n"
-                + "            <Column name='the_year'/>\n"
-                + "          </SQL>\n"
-                + "        </KeyExpression>\n"
-                + "      </Level>\n"
-                + "    </Hierarchy>\n"
-                + "  </Dimension>\n"
-                + "\n"
-                + "</Cube>\n"
+                + cube
                 + "</Schema>");
         List<Exception> list = testContext.getSchemaWarnings();
         testContext.assertContains(
-            list, "Column must specify table");
+            list,
+            "Table required. No table is specified or inherited when resolving "
+            + "column 'the_year' \\(in Column\\) \\(at ${pos}\\)",
+            "<Column name='the_year'/>");
 
-        // As above, except level has table specified, is OK.
+        // As above, except attribute has table specified, is OK.
         testContext =
             getTestContext().withSchema(
-                "<Schema name='x'>\n"
+                "<Schema metamodelVersion='4.0' name='x'>\n"
                 + physSchema
-                + "<Cube name='SalesPhys' factTable='foo'>\n"
-                + "  <Dimension name='Time'>\n"
-                + "    <Hierarchy hasAll='false'>\n"
-                + "      <Level name='Year' uniqueMembers='true' levelType='TimeYears'>\n"
-                + "        <KeyExpression>\n"
-                + "          <SQL dialect='generic'>\n"
-                + "            <Column name='the_year'/>\n"
-                + "          </SQL>\n"
-                + "        </KeyExpression>\n"
-                + "      </Level>\n"
-                + "    </Hierarchy>\n"
-                + "  </Dimension>\n"
-                + "\n"
-                + "</Cube>\n"
+                + cube.replace(
+                    "<Column name='the_year'/>",
+                    "<Column name='the_year' table='time_by_day'/>")
+                + "</Schema>");
+        list = testContext.getSchemaWarnings();
+        assertTrue(list.toString(), list.isEmpty());
+
+        // As above, but specify table in Attribute
+        testContext =
+            getTestContext().withSchema(
+                "<Schema metamodelVersion='4.0' name='x'>\n"
+                + physSchema
+                + cube.replace(
+                    "<Attribute name='Year' ",
+                    "<Attribute name='Year' table='time_by_day' ")
+                + "</Schema>");
+        list = testContext.getSchemaWarnings();
+        assertTrue(list.toString(), list.isEmpty());
+
+        // As above, but specify table in Dimension
+        testContext =
+            getTestContext().withSchema(
+                "<Schema metamodelVersion='4.0' name='x'>\n"
+                + physSchema
+                + cube.replace(
+                    "<Dimension name='Time' ",
+                    "<Dimension name='Time' table='time_by_day' ")
                 + "</Schema>");
         list = testContext.getSchemaWarnings();
         assertTrue(list.toString(), list.isEmpty());
@@ -7072,11 +7173,6 @@ Test that get error if a dimension has more than one hierarchy with same name.
         assertNull(
             hierarchy.getDefaultMember().getParentMember());
     }
-
-    // TODO: test Link.foreignKeyColumn
-
-    // TODO: implement and test Table.keyColumn, equivalent to
-    // Table/Key/Column.name
 
     // TODO: test that there is an error if we try to define a property
     // that is not functionally dependent on the attribute (e.g. define week as
