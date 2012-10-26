@@ -1546,13 +1546,13 @@ public class RolapSchema extends OlapElementBase implements Schema {
         /**
          * Creates a view.
          *
-         * @param alias Alias
          * @param physSchema Schema
+         * @param alias Alias
          * @param sqlString SQL string
          */
         PhysView(
-            String alias,
             PhysSchema physSchema,
+            String alias,
             String sqlString)
         {
             super(physSchema, alias);

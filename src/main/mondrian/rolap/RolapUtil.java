@@ -53,7 +53,7 @@ public class RolapUtil {
      */
     public static final Object valueNotReadyException = new Double(0);
 
-    /*
+    /**
      * Hook to run when a query is executed. This should not be
      * used at runtime but only for testing.
      */
@@ -586,8 +586,8 @@ public class RolapUtil {
                 columnTypes,
                 inlineTable.rowList);
         return new RolapSchema.PhysView(
-            inlineTable.alias,
             inlineTable.physSchema,
+            inlineTable.alias,
             sql);
     }
 

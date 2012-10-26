@@ -568,6 +568,19 @@ public class RolapSchemaLoader {
                         unresolvedColumnList,
                         alias,
                         inlineTable);
+            } else if (relation instanceof MondrianDef.Query) {
+                MondrianDef.Query inlineTable =
+                    (MondrianDef.Query) relation;
+                physTable =
+                    registerView(
+                        handler,
+                        dialect,
+                        schema,
+                        physSchema,
+                        skip,
+                        unresolvedColumnList,
+                        alias,
+                        inlineTable);
             } else {
                 handler.warning(
                     "Invalid element '" + relation.getName()
@@ -767,14 +780,14 @@ public class RolapSchemaLoader {
         Set<ElementDef> skip,
         List<RolapSchema.UnresolvedColumn> unresolvedColumnList,
         String alias,
-        MondrianDef.InlineTable inlineTable)
+        MondrianDef.InlineTable xmlInlineTable)
     {
         RolapSchema.PhysInlineTable physInlineTable =
             new RolapSchema.PhysInlineTable(
                 physSchema,
                 alias);
         for (MondrianDef.RealOrCalcColumnDef column
-            : inlineTable.getColumnDefs())
+            : xmlInlineTable.getColumnDefs())
         {
             registerColumn(
                 handler,
@@ -783,18 +796,18 @@ public class RolapSchemaLoader {
                 unresolvedColumnList,
                 alias,
                 physInlineTable,
-                inlineTable,
+                xmlInlineTable,
                 column);
         }
         registerKey(
-            handler, inlineTable, null, inlineTable.getKey(),
+            handler, xmlInlineTable, null, xmlInlineTable.getKey(),
             unresolvedColumnList, physInlineTable);
-        for (MondrianDef.Row row : inlineTable.getRows()) {
-            assert row.values.length == inlineTable.getColumnDefs().size();
+        for (MondrianDef.Row row : xmlInlineTable.getRows()) {
+            assert row.values.length == xmlInlineTable.getColumnDefs().size();
             List<String> newRow = new ArrayList<String>();
             for (int i = 0; i < row.values.length; i++) {
                 RealOrCalcColumnDef colDef =
-                    inlineTable.getColumnDefs().get(i);
+                    xmlInlineTable.getColumnDefs().get(i);
                 assert colDef.name.equals(row.values[i].column);
                 newRow.add(row.values[i].cdata);
             }
@@ -802,6 +815,45 @@ public class RolapSchemaLoader {
                 newRow.toArray(new String[newRow.size()]));
         }
         return physInlineTable;
+    }
+
+    private RolapSchema.PhysView registerView(
+        Handler handler,
+        Dialect dialect,
+        RolapSchema schema,
+        RolapSchema.PhysSchema physSchema,
+        Set<ElementDef> skip,
+        List<RolapSchema.UnresolvedColumn> unresolvedColumnList,
+        String alias,
+        MondrianDef.Query xmlQuery)
+    {
+        final MondrianDef.SQL xmlSql;
+        try {
+            xmlSql = MondrianDef.SQL.choose(
+                xmlQuery.getExpressionView().expressions,
+                dialect);
+        } catch (MondrianDef.Missing missing) {
+            // No ExpressionView element. Error has already been posted.
+            return null;
+        }
+        RolapSchema.PhysView physView =
+            new RolapSchema.PhysView(
+                physSchema,
+                alias,
+                getText(xmlSql));
+
+        // Read columns from JDBC.
+        physView.ensurePopulated(this, xmlQuery);
+
+        registerKey(
+            handler, xmlQuery, xmlQuery.keyColumn, null, unresolvedColumnList,
+            physView);
+        for (MondrianDef.Key key : xmlQuery.getKeys()) {
+            registerKey(
+                handler, xmlQuery, null, key, unresolvedColumnList,
+                physView);
+        }
+        return physView;
     }
 
     private RolapSchema.PhysTable registerTable(
@@ -4516,6 +4568,17 @@ public class RolapSchemaLoader {
                 + VALUES.keySet());
         }
         return type;
+    }
+
+    static String getText(MondrianDef.SQL sql) {
+        final StringBuilder buf = new StringBuilder();
+        for (NodeDef child : sql.children) {
+            if (child instanceof TextDef) {
+                TextDef textDef = (TextDef) child;
+                buf.append(textDef.s);
+            }
+        }
+        return buf.toString();
     }
 
     /**

@@ -59,16 +59,8 @@
                 <Column name='store_id'/>
             </ForeignKey>
         </Link>
-        <Table name='product'>
-            <Key>
-                <Column name='product_id'/>
-            </Key>
-        </Table>
-        <Table name='product_class'>
-            <Key>
-                <Column name='product_class_id'/>
-            </Key>
-        </Table>
+        <Table name='product' keyColumn='product_id'/>
+        <Table name='product_class' keyColumn='product_class_id'/>
         <Link target='product' source='product_class'>
             <ForeignKey>
                 <Column name='product_class_id'/>

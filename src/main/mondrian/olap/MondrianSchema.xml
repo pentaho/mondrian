@@ -442,6 +442,18 @@ version 3.x schemas.</p>
                 return MondrianDef.only(getArray(), clazz);
             }
 
+            <T2> T2 requiredSingleton(ElementDef xml, Class<T2> clazz) throws Missing {
+                T2 t2 = MondrianDef.only(getArray(), clazz);
+                if (t2 != null) {
+                    return t2;
+                }
+                Handler.THREAD_LOCAL.get().error(
+                    "Missing required child element " + clazz.getSimpleName(),
+                    xml,
+                    null);
+                throw Missing.INSTANCE;
+            }
+
             <T2 extends Holder> T2 only(T2 empty) {
                 return MondrianDef.onlyDeflt(getArray(), (Class<T2>) empty.getClass(), empty);
             }
@@ -470,6 +482,15 @@ version 3.x schemas.</p>
                 add((T) holder);
                 return holder;
             }
+        }
+
+        /** Thrown to signal that a mandatory element is missing. An error will
+          * already have been posted. Client code should handle the exception
+          * and carry on. */
+        public static class Missing extends Exception {
+            private Missing() {
+            }
+            private static final Missing INSTANCE = new Missing();
         }
 
         protected static abstract class MutableArrayList<T> extends AbstractList<T> {
@@ -1910,14 +1931,63 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
         <Doc>
             Relation defined by a SQL statement.
         </Doc>
-        <Attribute name="alias" required="true"/>
-        <Array name="selects" type="SQL" min="1"/>
-        <Code>
-        public String getAlias() {
-            return alias;
-        }
+        <Attribute name="alias" required="true">
+            <Doc>
+                Alias to be used with this SQL expression when it is used to
+                form queries. Must be specified.
+            </Doc>
+        </Attribute>
+        <Attribute name="keyColumn">
+            <Doc>
+                Name of the column that forms this query's key.
+                Equivalent to a Key child containing a single Column.
+            </Doc>
+        </Attribute>
+        <Array name="childArray" type="QueryElement">
+            <Doc>
+                Child elements.
+                Key can occur multiple times.
+                Annotations can each occur at most once.
+                ExpressionView must occur once.
+            </Doc>
+        </Array>
+        <Code><![CDATA[
+            public String getAlias() {
+                return alias;
+            }
+            private static final QueryElement[] EMPTY = {};
+            public final Children<QueryElement> children =
+                new Children<QueryElement>(
+                    QueryElement.class,
+                    Key.class,
+                    ExpressionView.class,
+                    Annotations.class)
+                {
+                    QueryElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(QueryElement[] ts) {
+                        childArray = ts;
+                    }
+                };
+            public List<Key> getKeys() {
+                return children.filter(Key.class);
+            }
+            public ExpressionView getExpressionView() throws Missing {
+                return children.requiredSingleton(this, ExpressionView.class);
+            }
+            public NamedList<Annotation> getAnnotations() {
+                return children.only(Annotations.EMPTY).list();
+            }
+        ]]>
         </Code>
     </Element>
+
+    <Class class="QueryElement">
+        <Doc>
+            Child element of a Query.
+        </Doc>
+    </Class>
 
     <Element type="SQL" contentModel="mixed">
         <Attribute name="dialect" required="true" default="generic">
@@ -2590,7 +2660,7 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
         </Code>
     </Element>
 
-    <Element type="Key" class="Columns,TableElement,InlineTableElement,AttributeElement">
+    <Element type="Key" class="Columns,TableElement,InlineTableElement,AttributeElement,QueryElement">
         <Doc>
             Definition of the key of a dimension or table.
 
@@ -2687,7 +2757,7 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
         </Code>
     </Element>
 
-    <Element type="ExpressionView" class="Expression">
+    <Element type="ExpressionView" class="Expression,QueryElement">
         <Doc>
             A collection of SQL expressions, one per dialect.
         </Doc>
@@ -2982,7 +3052,7 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
         </Code>
     </Element>
 
-    <Element type="Annotations" class="Holder,SchemaElement,CubeElement,DimensionElement,HierarchyElement,LevelElement,AttributeElement,MeasureElement,CalculatedMemberElement,RoleElement">
+    <Element type="Annotations" class="Holder,SchemaElement,CubeElement,DimensionElement,HierarchyElement,LevelElement,AttributeElement,MeasureElement,QueryElement,CalculatedMemberElement,RoleElement">
         <Doc>Holder for an array of Annotation elements</Doc>
         <Array name="array" type="Annotation"/>
         <Code>

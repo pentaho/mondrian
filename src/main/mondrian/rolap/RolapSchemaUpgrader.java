@@ -1752,7 +1752,7 @@ public class RolapSchemaUpgrader {
                         schema.getDialect());
                 final RolapSchema.PhysView physView =
                     new RolapSchema.PhysView(
-                        alias, physSchema, getText(sql));
+                        physSchema, alias, getText(sql));
                 physView.ensurePopulated(
                     loader,
                     xmlView);
@@ -1768,7 +1768,7 @@ public class RolapSchemaUpgrader {
         return physRelation;
     }
 
-    String getText(Mondrian3Def.SQL sql) {
+    static String getText(Mondrian3Def.SQL sql) {
         final StringBuilder buf = new StringBuilder();
         for (NodeDef child : sql.children) {
             if (child instanceof TextDef) {
@@ -1887,8 +1887,8 @@ public class RolapSchemaUpgrader {
                         loader.schema.getDialect());
                 final RolapSchema.PhysView physView =
                     new RolapSchema.PhysView(
-                        alias,
                         physSchemaConverter.physSchema,
+                        alias,
                         getText(sql));
                 physView.ensurePopulated(
                     loader,
@@ -1897,7 +1897,10 @@ public class RolapSchemaUpgrader {
 
                 MondrianDef.Query xmlQuery = new MondrianDef.Query();
                 xmlQuery.alias = alias;
-                xmlQuery.selects = convert(xmlView.selects);
+                MondrianDef.ExpressionView xmlExpressionView =
+                    new MondrianDef.ExpressionView();
+                xmlExpressionView.expressions = convert(xmlView.selects);
+                xmlQuery.children.add(xmlExpressionView);
                 xmlRelation = xmlQuery;
             } else {
                 throw Util.needToImplement(

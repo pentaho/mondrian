@@ -5520,6 +5520,111 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     /**
+     * Tests a physical schema with a simple Query element.
+     */
+    public void testPhysicalSchemaQuery() {
+        final TestContext testContext0 = getTestContext();
+        final String catalogContent0 = testContext0.getRawSchema();
+        final TestContext testContext =
+            testContext0.withSchema(
+                "<Schema name='foo' metamodelVersion='4.0'>\n"
+                + "<PhysicalSchema>\n"
+                + "  <Table name='sales_fact_1997' />\n"
+                + "  <Query alias='customer'>\n"
+                + "    <ExpressionView>\n"
+                + "    <SQL dialect='mysql'>\n"
+                + "      SELECT * FROM `customer`\n"
+                + "    </SQL>\n"
+                + "    </ExpressionView>\n"
+                + "  </Query>\n"
+                + "</PhysicalSchema>\n"
+                + MINIMAL_SALES_CUBE
+                + "</Schema>");
+        testContext.assertSimpleQuery();
+
+        // Replace the product_class table with an equivalent query.
+        final String catalogContent1 =
+            catalogContent0.replace(
+                "<Table name='product_class' keyColumn='product_class_id'/>",
+                "<Query alias='product_class' keyColumn='product_class_id'>\n"
+                + "  <ExpressionView>\n"
+                + "    <SQL dialect='mysql'>\n"
+                + "      SELECT * FROM `product_class`\n"
+                + "    </SQL>\n"
+                + "  </ExpressionView>\n"
+                + "</Query>\n");
+        assertNotSame(catalogContent0, catalogContent1);
+        simpleProductQuery(testContext0.withSchema(catalogContent1));
+
+        // Now using an embedded Key element
+        final String catalogContent2 =
+            catalogContent0.replace(
+                "<Table name='product_class' keyColumn='product_class_id'/>",
+                "<Query alias='product_class'>\n"
+                + "  <Key><Column name='product_class_id'/></Key>\n"
+                + "  <ExpressionView>\n"
+                + "    <SQL dialect='mysql'>\n"
+                + "      SELECT * FROM `product_class`\n"
+                + "    </SQL>\n"
+                + "  </ExpressionView>\n"
+                + "</Query>\n");
+        assertNotSame(catalogContent0, catalogContent2);
+        simpleProductQuery(testContext0.withSchema(catalogContent2));
+
+        // If neither keyColumn nor Key, get error
+        final String catalogContent3 =
+            catalogContent0.replace(
+                "<Table name='product_class' keyColumn='product_class_id'/>",
+                "<Query alias='product_class'>\n"
+                + "  <ExpressionView>\n"
+                + "    <SQL dialect='mysql'>\n"
+                + "      SELECT * FROM `product_class`\n"
+                + "    </SQL>\n"
+                + "  </ExpressionView>\n"
+                + "</Query>\n");
+        assertNotSame(catalogContent0, catalogContent3);
+        testContext0.withSchema(catalogContent3)
+            .assertSchemaError(
+                "Source table 'product_class' of link has no key named 'primary'. \\(in Link\\) \\(at ${pos}\\)",
+                "<Link target='product' source='product_class'>");
+    }
+
+    private void simpleProductQuery(TestContext testContext) {
+        testContext
+            .assertQueryReturns(
+                "select [Product].[Products].Children on 0 from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Product].[Products].[Drink]}\n"
+                + "{[Product].[Products].[Food]}\n"
+                + "{[Product].[Products].[Non-Consumable]}\n"
+                + "Row #0: 24,597\n"
+                + "Row #0: 191,940\n"
+                + "Row #0: 50,236\n");
+    }
+
+    /** Query that is missing an ExpressionView child. */
+    public void testPhysicalSchemaQueryMissingExpressionView() {
+        final TestContext testContext =
+            TestContext.instance().withSchema(
+                "<Schema name='foo' metamodelVersion='4.0'>\n"
+                + "<PhysicalSchema>\n"
+                + "  <Table name='sales_fact_1997' />\n"
+                + "  <Query alias='customer'>\n"
+                + "    <SQL dialect='mysql'>\n"
+                + "      SELECT * FROM `customer`\n"
+                + "    </SQL>\n"
+                + "  </Query>\n"
+                + "</PhysicalSchema>\n"
+                + MINIMAL_SALES_CUBE
+                + "</Schema>");
+        testContext.assertSchemaError(
+            "Missing required child element ExpressionView \\(in Query\\) \\(at ${pos}\\)",
+            "<Query alias='customer'>");
+    }
+
+    /**
      * Various tests concerning the Link element inside PhysicalSchema.
      * Tests equivalence of Link/ForeignKey/Column and Link.foreignKeyColumn.
      */
@@ -7177,6 +7282,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
     // TODO: test that there is an error if we try to define a property
     // that is not functionally dependent on the attribute (e.g. define week as
     // a property of month).
+
+    // TODO: Test that get error if Query element has no child for current
+    // SQL dialect, and no generic SQL element.
 }
 
 // End SchemaTest.java
