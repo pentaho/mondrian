@@ -15,6 +15,8 @@ import mondrian.util.Bug;
 
 import junit.framework.Assert;
 
+import org.olap4j.mdx.IdentifierNode;
+
 import java.util.List;
 
 /**
@@ -602,13 +604,14 @@ public class AccessControlTest extends FoodMartTestCase {
      * Test context where the [Store] hierarchy has restricted access
      * and cell values are rolled up with 'partial' policy.
      */
-    private final TestContext rollupTestContext =
-        TestContext.instance().create(
+    private TestContext getRollupTestContext() {
+        return getTestContext().create(
             null, null, null, null, null,
             "<Role name='Role1'>\n"
             + "  <SchemaGrant access='none'>\n"
             + "    <CubeGrant cube='Sales' access='custom'>\n"
             + "      <DimensionGrant dimension='[Measures]' access='all'/>\n"
+            + "      <DimensionGrant dimension='[Customer]' access='all'/>\n"
             + "      <HierarchyGrant hierarchy='[Store].[Stores]' access='custom' rollupPolicy='partial'>\n"
             + "        <MemberGrant member='[Store].[USA]' access='all'/>\n"
             + "        <MemberGrant member='[Store].[USA].[CA]' access='none'/>\n"
@@ -617,13 +620,14 @@ public class AccessControlTest extends FoodMartTestCase {
             + "  </SchemaGrant>\n"
             + "</Role>")
             .withRole("Role1");
+    }
 
     /**
      * Basic test of partial rollup policy. [USA] = [OR] + [WA], not
      * the usual [CA] + [OR] + [WA].
      */
     public void testRollupPolicyBasic() {
-        rollupTestContext.assertQueryReturns(
+        getRollupTestContext().assertQueryReturns(
             "select {[Stores].[USA], [Stores].[USA].Children} on 0\n"
             + "from [Sales]",
             "Axis #0:\n"
@@ -643,7 +647,7 @@ public class AccessControlTest extends FoodMartTestCase {
      * Normally the total is 266,773.
      */
     public void testRollupPolicyAll() {
-        rollupTestContext.assertExprReturns(
+        getRollupTestContext().assertExprReturns(
             "([Store].[All Stores])",
             "192,025");
     }
@@ -653,6 +657,7 @@ public class AccessControlTest extends FoodMartTestCase {
      * of the [Stores] hierarchy.
      */
     public void testRollupPolicyAllAsDefault() {
+        TestContext rollupTestContext = getRollupTestContext();
         rollupTestContext.assertExprReturns(
             "([Store].[Stores])",
             "192,025");
@@ -675,9 +680,37 @@ public class AccessControlTest extends FoodMartTestCase {
      * that this doesn't circumvent access control).
      */
     public void testRollupPolicyAllAsParent() {
-        rollupTestContext.assertExprReturns(
+        getRollupTestContext().assertExprReturns(
             "([Store].[USA].Parent)",
             "192,025");
+    }
+
+    /**
+     * Tests that an access-controlled dimension affects results even if not
+     * used in the query. Unit test for
+     * <a href="http://jira.pentaho.com/browse/mondrian-1283">MONDRIAN-1283,
+     * "Mondrian doesn't restrict dimension members when dimension isn't
+     * included"</a>.
+     */
+    public void testUnusedAccessControlledDimension() {
+        getRollupTestContext().assertQueryReturns(
+            "select [Gender].Children on 0 from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Customer].[Gender].[F]}\n"
+            + "{[Customer].[Gender].[M]}\n"
+            + "Row #0: 94,799\n"
+            + "Row #0: 97,226\n");
+        getTestContext().assertQueryReturns(
+            "select [Gender].Children on 0 from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Customer].[Gender].[F]}\n"
+            + "{[Customer].[Gender].[M]}\n"
+            + "Row #0: 131,558\n"
+            + "Row #0: 135,215\n");
     }
 
     /**
@@ -2573,6 +2606,143 @@ public class AccessControlTest extends FoodMartTestCase {
             .assertQueryThrows(
                 "select from [Sales]",
                 "Hierarchy '[Measures]' has no accessible members.");
+    }
+
+    public void testMondrian1091() throws Exception {
+        final TestContext testContext = TestContext.instance().create(
+            null, null, null, null, null,
+            "<Role name='Role1'>\n"
+            + "  <SchemaGrant access='none'>\n"
+            + "    <CubeGrant cube='Sales' access='all'>\n"
+            + "      <HierarchyGrant hierarchy='[Store].[Stores]' access='custom' rollupPolicy='partial'>\n"
+            + "        <MemberGrant member='[Store].[USA].[CA]' access='all'/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>")
+            .withRole("Role1");
+        testContext.assertQueryReturns(
+            "select {[Stores].Members} on columns from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[Stores].[All Stores]}\n"
+            + "{[Store].[Stores].[USA]}\n"
+            + "{[Store].[Stores].[USA].[CA]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Alameda]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Alameda].[HQ]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: 21,333\n"
+            + "Row #0: 21,333\n"
+            + "Row #0: 25,663\n"
+            + "Row #0: 25,663\n"
+            + "Row #0: 25,635\n"
+            + "Row #0: 25,635\n"
+            + "Row #0: 2,117\n"
+            + "Row #0: 2,117\n");
+        org.olap4j.metadata.Cube cube =
+            testContext.getOlap4jConnection()
+                .getOlapSchema().getCubes().get("Sales");
+        org.olap4j.metadata.Member allMember =
+            cube.lookupMember(
+                IdentifierNode.parseIdentifier("[Store].[All Stores]")
+                    .getSegmentList());
+        assertNotNull(allMember);
+        assertEquals(1, allMember.getHierarchy().getRootMembers().size());
+        assertEquals(
+            "[Store].[Stores].[All Stores]",
+            allMember.getHierarchy().getRootMembers().get(0).getUniqueName());
+    }
+
+    /**
+     * Unit test for
+     * <a href="http://jira.pentaho.com/browse/mondrian-1259">MONDRIAN-1259,
+     * "Mondrian security: access leaks from one user to another"</a>.
+     *
+     * <p>Enhancements made to the SmartRestrictedMemberReader were causing
+     * security leaks between roles and potential class cast exceptions.
+     */
+    public void testMondrian1259() throws Exception {
+        final String mdx =
+            "select non empty {[Store].[Stores].Members} on columns from [Sales]";
+        final TestContext testContext = TestContext.instance().create(
+            null, null, null, null, null,
+            "<Role name='Role1'>\n"
+            + "  <SchemaGrant access='none'>\n"
+            + "    <CubeGrant cube='Sales' access='all'>\n"
+            + "      <HierarchyGrant hierarchy='[Store].[Stores]' access='custom' rollupPolicy='partial'>\n"
+            + "        <MemberGrant member='[Stores].[USA].[CA]' access='all'/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>"
+            + "<Role name='Role2'>\n"
+            + "  <SchemaGrant access='none'>\n"
+            + "    <CubeGrant cube='Sales' access='all'>\n"
+            + "      <HierarchyGrant hierarchy='[Store].[Stores]' access='custom' rollupPolicy='partial'>\n"
+            + "        <MemberGrant member='[Stores].[USA].[OR]' access='all'/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>");
+        testContext.withRole("Role1").assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[Stores].[All Stores]}\n"
+            + "{[Store].[Stores].[USA]}\n"
+            + "{[Store].[Stores].[USA].[CA]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 21,333\n"
+            + "Row #0: 21,333\n"
+            + "Row #0: 25,663\n"
+            + "Row #0: 25,663\n"
+            + "Row #0: 25,635\n"
+            + "Row #0: 25,635\n"
+            + "Row #0: 2,117\n"
+            + "Row #0: 2,117\n");
+        testContext.withRole("Role2").assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[Stores].[All Stores]}\n"
+            + "{[Store].[Stores].[USA]}\n"
+            + "{[Store].[Stores].[USA].[OR]}\n"
+            + "{[Store].[Stores].[USA].[OR].[Portland]}\n"
+            + "{[Store].[Stores].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Store].[Stores].[USA].[OR].[Salem]}\n"
+            + "{[Store].[Stores].[USA].[OR].[Salem].[Store 13]}\n"
+            + "Row #0: 67,659\n"
+            + "Row #0: 67,659\n"
+            + "Row #0: 67,659\n"
+            + "Row #0: 26,079\n"
+            + "Row #0: 26,079\n"
+            + "Row #0: 41,580\n"
+            + "Row #0: 41,580\n");
     }
 }
 
