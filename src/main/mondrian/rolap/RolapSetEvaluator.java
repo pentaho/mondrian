@@ -91,7 +91,7 @@ class RolapSetEvaluator
             TupleIterable iterable =
                     (TupleIterable) rrer.result.evaluateExp(
                         calc,
-                        rrer.result.slicerEvaluator);
+                        rrer.result.slicerEvaluator, null);
 
             // Axes can be in two forms: list or iterable. If iterable, we
             // need to materialize it, to ensure that all cell values are in

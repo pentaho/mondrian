@@ -255,23 +255,25 @@ public class SqlConstraintUtils {
         Map<RelationOrJoin, Set<RolapMember>> mapOfSlicerMembers =
             new HashMap<RelationOrJoin, Set<RolapMember>>();
 
-        Member[] expandedSlicers =
-            expandSupportedCalculatedMembers(
-                ((RolapEvaluator)evaluator).getSlicerMembers(),
-                evaluator.push());
-
-        if (hasMultiPositionSlicer(expandedSlicers)) {
-            for (Member slicerMember : expandedSlicers) {
-                if (slicerMember.isMeasure()) {
-                    continue;
+        if(evaluator.isEvalAxes()) {
+            Member[] expandedSlicers =
+                expandSupportedCalculatedMembers(
+                    ((RolapEvaluator)evaluator).getSlicerMembers(),
+                    evaluator.push());
+    
+            if (hasMultiPositionSlicer(expandedSlicers)) {
+                for (Member slicerMember : expandedSlicers) {
+                    if (slicerMember.isMeasure()) {
+                        continue;
+                    }
+                    RelationOrJoin rel =
+                            ((RolapCubeHierarchy)slicerMember.getHierarchy())
+                            .getRelation();
+                    if (!mapOfSlicerMembers.containsKey(rel)) {
+                        mapOfSlicerMembers.put(rel, new HashSet<RolapMember>());
+                    }
+                    mapOfSlicerMembers.get(rel).add((RolapMember)slicerMember);
                 }
-                RelationOrJoin rel =
-                        ((RolapCubeHierarchy)slicerMember.getHierarchy())
-                        .getRelation();
-                if (!mapOfSlicerMembers.containsKey(rel)) {
-                    mapOfSlicerMembers.put(rel, new HashSet<RolapMember>());
-                }
-                mapOfSlicerMembers.get(rel).add((RolapMember)slicerMember);
             }
         }
         return mapOfSlicerMembers;

@@ -906,11 +906,20 @@ public class RolapResult extends ResultBase {
      * <p>Does not modify the contents of the evaluator.
      *
      * @param calc Compiled expression
-     * @param evaluator Evaluation context
+     * @param slicerEvaluator Evaluation context for slicers
+     * @param contextEvaluator Evaluation context (optional)
      * @return Result
      */
-    Object evaluateExp(Calc calc, RolapEvaluator evaluator) {
+    Object evaluateExp(Calc calc, RolapEvaluator slicerEvaluator, Evaluator contextEvaluator) {
         int attempt = 0;
+        RolapEvaluator evaluator = slicerEvaluator;// contextEvaluator == null ? slicerEvaluator : slicerEvaluator.push();// (slicerEvaluator.isEvalAxes() == contextEvaluator.isEvalAxis) ? slicerEvaluator : slicerEvaluator.push();
+        if (contextEvaluator != null && contextEvaluator.isEvalAxes()) {
+            evaluator = slicerEvaluator.push();
+            evaluator.setEvalAxes(contextEvaluator.isEvalAxes());
+            evaluator.setContext(contextEvaluator.getMembers());
+            //overrideContext(evaluator, contextEvaluator);
+        }
+
         final int savepoint = evaluator.savepoint();
         boolean dirty = batchingReader.isDirty();
         try {
@@ -959,6 +968,19 @@ public class RolapResult extends ResultBase {
         } finally {
             evaluator.restore(savepoint);
         }
+    }
+
+    private void overrideContext(Evaluator evaluator, Evaluator contextEvaluator) {
+        Member[] evalMembers = evaluator.getMembers();
+        Member[] contextMembers = contextEvaluator.getMembers();
+        
+        //members of the same hierarchy will have same position
+        for(int i = 0; i < evalMembers.length && i < contextMembers.length; i++) {
+            if(!evalMembers[i].equals(contextMembers[i])) {
+              evaluator.setContext(contextMembers[i]);
+            }
+        }
+      
     }
 
     private void executeStripe(
@@ -1579,7 +1601,7 @@ public class RolapResult extends ResultBase {
             slot.setCachedDefaultValue(CycleSentinel);
             value =
                 result.evaluateExp(
-                    slot.getDefaultValueCalc(), result.slicerEvaluator);
+                    slot.getDefaultValueCalc(), result.slicerEvaluator, null);
             if (value == null) {
                 liftedValue = NullSentinel;
             } else {

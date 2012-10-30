@@ -60,8 +60,8 @@ class RolapNamedSetEvaluator
         this.namedSet = namedSet;
     }
 
-    public TupleIterable evaluateTupleIterable() {
-        ensureList();
+    public TupleIterable evaluateTupleIterable(Evaluator evaluator) {
+        ensureList(evaluator);
         return list;
     }
 
@@ -69,7 +69,7 @@ class RolapNamedSetEvaluator
      * Evaluates and saves the value of this named set, if it has not been
      * evaluated already.
      */
-    private void ensureList() {
+    private void ensureList(Evaluator evaluator) {
         if (list != null) {
             if (list == DUMMY_LIST) {
                 recursionCount ++;
@@ -95,7 +95,8 @@ class RolapNamedSetEvaluator
                 (TupleIterable)
                     rrer.result.evaluateExp(
                         calc,
-                        rrer.result.slicerEvaluator);
+                        rrer.result.slicerEvaluator,
+                        evaluator);
 
             // Axes can be in two forms: list or iterable. If iterable, we
             // need to materialize it, to ensure that all cell values are in
