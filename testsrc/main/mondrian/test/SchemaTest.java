@@ -294,7 +294,6 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     public void testHierarchyDefaultMember() {
-        if (false)
         checkHierarchyDefaultMember(
             "[Promotion with default].[Media Type].[All Media Types].[TV]")
             .assertQueryReturns(
@@ -309,7 +308,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "[Promotion with default].[Media Type].[All Media Type].[TV]")
             .assertSchemaError(
                 TestContext.fragment(
-                    "Can not find Default Member with name \"[Promotion with default].[Media Type].[All Media Type].[TV]\" in Hierarchy \"Media Type\"",
+                    "Mondrian Error:Internal error: Can not find Default Member with name \"\\[Promotion with default\\].\\[Media Type\\].\\[All Media Type\\].\\[TV\\]\" in Hierarchy \"Media Type\"",
                     "<Hierarchy name='Media Type' "));
     }
 
@@ -570,28 +569,34 @@ Test that get error if a dimension has more than one hierarchy with same name.
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
             "  <Dimension name='Gender no levels' foreignKey='customer_id'>\n"
-            + "    <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
+            + "  <Hierarchies>    "
+            + "    <Hierarchy name=\"Gender\" hasAll='true' primaryKey='customer_id'>\n"
             + "      <Table name='customer'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>");
+            + "    </Hierarchy>"
+            + "  </Hierarchies>\n"
+            + "</Dimension>");
         testContext.assertQueryThrows(
             "select {[Gender no levels]} on columns from [Sales]",
-            "Hierarchy '[Gender no levels]' must have at least one level.");
+            "Hierarchy '[Gender no levels].[Gender]' must have at least one level.");
     }
 
     public void testHierarchyNonUniqueLevelsFails() {
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
-            "  <Dimension name='Gender dup levels' foreignKey='customer_id'>\n"
-            + "    <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
-            + "      <Table name='customer'/>\n"
-            + "      <Level name='Gender' column='gender' uniqueMembers='true' />\n"
-            + "      <Level name='Gender' column='gender' uniqueMembers='true' />\n"
+            "  <Dimension name='Gender dup levels' foreignKey='customer_id' table='customer'>\n"
+            + "  <Attributes>"
+            + "    <Attribute name='Gender' keyColumn='gender'/>"
+            + "  </Attributes>"
+            + "  <Hierarchies>    "
+            + "    <Hierarchy hasAll='true' primaryKey='customer_id' name=\"Gender\">\n"
+            + "      <Level attribute=\"Gender\"/>\n"
+            + "      <Level attribute=\"Gender\"/>\n"
             + "    </Hierarchy>\n"
-            + "  </Dimension>");
+            + "  </Hierarchies>"
+            + "</Dimension>");
         testContext.assertQueryThrows(
             "select {[Gender dup levels]} on columns from [Sales]",
-            "Level names within hierarchy '[Gender dup levels]' are not unique; there is more than one level with name 'Gender'.");
+            "Level names within hierarchy '[Gender dup levels].[Gender]' are not unique; there is more than one level with name 'Gender'.");
     }
 
     /**
@@ -601,7 +606,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
             null,
-            "<Measure name='Fact Count' aggregator='count'/>\n");
+            "<Measure name='Fact Count' aggregator='count'/>\n", null, null);
         testContext.assertQueryReturns(
             "select {[Measures].[Fact Count], [Measures].[Unit Sales]} on 0,\n"
             + "[Gender].members on 1\n"
@@ -644,22 +649,14 @@ Test that get error if a dimension has more than one hierarchy with same name.
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
             null,
-            "<Measure name='Bad Measure' aggregator='sum' formatString='Standard'>\n"
-            + "  <MeasureExpression>\n"
+            "<Measure name='Bad Measure' column='unit_sales' aggregator='sum' formatString='Standard'>\n"
             + "  <Arguments>\n"
             + "    <Column name='unit_sales'/>\n"
-            + "  </Arguments>\n"
-            + "</Measure>");
-        Throwable throwable = null;
-        try {
-            testContext.assertSimpleQuery();
-        } catch (Throwable e) {
-            throwable = e;
-        }
-        // both a source column and source expression specified
-        TestContext.checkThrowable(
-            throwable,
-            "must contain either a source column or a source expression, but not both");
+            + "  </Arguments>"
+            + "</Measure>", null, null);
+        testContext.assertSchemaError(
+            "must not specify both column and Arguments \\(in Arguments\\) \\(at ${pos}\\)",
+            "<Arguments>");
     }
 
     /**
@@ -669,29 +666,27 @@ Test that get error if a dimension has more than one hierarchy with same name.
     public void testHierarchyTableNotFound() {
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
-            "<Dimension name='Yearly Income3' foreignKey='product_id'>\n"
-            + "  <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
-            + "    <Table name='customer_not_found'/>\n"
-            + "    <Level name='Yearly Income' column='yearly_income' uniqueMembers='true'/>\n"
-            + "  </Hierarchy>\n"
+            "<Dimension name='Yearly Income3' foreignKey='product_id' table='customer_not_found'>\n"
+            + "  <Attributes>"
+            + "    <Attribute name='Yearly Income' keyColumn='yearly_income'/>"
+            + "  </Attributes>"
             + "</Dimension>");
         testContext.assertQueryThrows(
             "select from [Sales]",
-            "Table 'customer_not_found' does not exist in database");
+            "table 'customer_not_found' not found (in Dimension 'Yearly Income3')");
     }
 
-    public void testPrimaryKeyTableNotFound() {
+    public void testAttributeTableNotFound() {
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
-            "<Dimension name='Yearly Income4' foreignKey='product_id'>\n"
-            + "  <Hierarchy hasAll='true' primaryKey='customer_id' primaryKeyTable='customer_not_found'>\n"
-            + "    <Table name='customer'/>\n"
-            + "    <Level name='Yearly Income' column='yearly_income' uniqueMembers='true'/>\n"
-            + "  </Hierarchy>\n"
+            "<Dimension name='Yearly Income4' foreignKey='product_id' table='customer'>\n"
+            + "  <Attributes>"
+            + "    <Attribute name='Yearly Income' keyColumn='yearly_income' table='customer_not_found'/>"
+            + "  </Attributes>"
             + "</Dimension>");
         testContext.assertSchemaError(
-            "Table 'customer_not_found' not found \\(at ${pos}\\)",
-            "<Hierarchy hasAll='true' primaryKey='customer_id' primaryKeyTable='customer_not_found'>");
+            "table 'customer_not_found' not found \\(in Attribute 'Yearly Income'\\) \\(at ${pos}\\)",
+            "<Attribute name='Yearly Income' keyColumn='yearly_income' table='customer_not_found'/>");
     }
 
     public void testLevelTableNotFound() {
@@ -703,23 +698,6 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "    <Level name='Yearly Income' table='customer_not_found' column='yearly_income' uniqueMembers='true'/>\n"
             + "  </Hierarchy>\n"
             + "</Dimension>");
-        testContext.assertQueryThrows(
-            "select from [Sales]",
-            "Table 'customer_not_found' not found");
-    }
-
-    public void testHierarchyBadDefaultMember() {
-        TestContext testContext = getTestContext().createSubstitutingCube(
-            "Sales",
-            "  <Dimension name='Gender with default' foreignKey='customer_id'>\n"
-            + "    <Hierarchy hasAll='true' "
-            + "primaryKey='customer_id' "
-            // Default member unique name does not include 'All'.
-            + "defaultMember='[Gender with default].[Non].[Existent]' >\n"
-            + "      <Table name='customer'/>\n"
-            + "      <Level name='Gender' column='gender' uniqueMembers='true' />\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>");
         testContext.assertQueryThrows(
             "select {[Gender with default]} on columns from [Sales]",
             "Can not find Default Member with name '[Gender with default].[Non].[Existent]' in Hierarchy 'Gender with default'");

@@ -2180,6 +2180,9 @@ public class RolapSchemaUpgrader {
         convertAnnotations(
             xmlSchema.children,
             xmlLegacySchema.annotations);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(xmlSchema.toXML());
+        }
         return xmlSchema;
     }
 

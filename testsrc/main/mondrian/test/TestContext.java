@@ -500,7 +500,7 @@ public class TestContext {
 
         // Add measure definitions, if specified.
         if (measureDefs != null) {
-            int i = s.indexOf("<Measure", h);
+            int i = s.indexOf("<Measure ", h);
             if (i < 0 || i > end) {
                 i = end;
             }
@@ -2886,11 +2886,13 @@ public class TestContext {
                 return false;
             }
             if (xmlLocation == null) {
-                Assert.fail(
-                    "Actual message matched expected message, '"
-                    + message
-                    + "'; but we expected an error location and actual "
-                    + "exception had no location");
+                if (posPos >= 0) {
+                    Assert.fail(
+                        "Actual message matched expected message, '"
+                        + message
+                        + "'; but we expected an error location and actual "
+                        + "exception had no location");
+                }
                 return true;
             }
             if (errorLoc == null && testContext.errorStart != -1) {

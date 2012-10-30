@@ -94,10 +94,10 @@ public class LegacySchemaTest extends FoodMartTestCase {
             return;
         }
         testContext.assertAxisReturns(
-            "[Gender2].members",
-            "[Gender2].[All Gender]\n"
-            + "[Gender2].[F]\n"
-            + "[Gender2].[M]");
+            "[Gender2].[Gender2].members",
+            "[Gender2].[Gender2].[All Gender]\n"
+            + "[Gender2].[Gender2].[F]\n"
+            + "[Gender2].[Gender2].[M]");
     }
 
     /**
@@ -227,37 +227,6 @@ public class LegacySchemaTest extends FoodMartTestCase {
             throwable = e;
         }
         // neither a source column or source expression specified
-        TestContext.checkThrowable(
-            throwable,
-            "must contain either a source column or a source expression, but not both");
-    }
-
-    public void testBadMeasure2() {
-        final TestContext testContext = TestContext.instance().legacy().create(
-            null,
-            "<Cube name=\"SalesWithBadMeasure2\">\n"
-            + "  <Table name=\"sales_fact_1997\"/>\n"
-            + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
-            + "  <Measure name=\"Bad Measure\" column=\"unit_sales\" aggregator=\"sum\"\n"
-            + "      formatString=\"Standard\">\n"
-            + "    <MeasureExpression>\n"
-            + "       <SQL dialect=\"generic\">\n"
-            + "         unit_sales\n"
-            + "       </SQL>\n"
-            + "    </MeasureExpression>\n"
-            + "  </Measure>\n"
-            + "</Cube>",
-            null,
-            null,
-            null,
-            null);
-        Throwable throwable = null;
-        try {
-            testContext.assertSimpleQuery();
-        } catch (Throwable e) {
-            throwable = e;
-        }
-        // both a source column and source expression specified
         TestContext.checkThrowable(
             throwable,
             "must contain either a source column or a source expression, but not both");
@@ -456,16 +425,12 @@ public class LegacySchemaTest extends FoodMartTestCase {
             .assertSimpleQuery();
         createLevelUniqueMembersTestContext(" uniqueMembers='true'")
             .assertSimpleQuery();
-        createLevelUniqueMembersTestContext(" uniqueMembers='false'")
-            .assertSchemaError(
-                "First level of a hierarchy must have unique members \\(at ${pos}\\)",
-                "<Level name='Store Country' column='store_country' uniqueMembers='false'/>");
     }
 
     private TestContext createLevelUniqueMembersTestContext(final String s) {
         return TestContext.instance().legacy().createSubstitutingCube(
             "Sales",
-            "    <Dimension name='Store' foreignKey='store_id'>\n"
+            "    <Dimension name='Store2' foreignKey='store_id'>\n"
             + "    <Hierarchy hasAll='true' primaryKey='store_id'>\n"
             + "      <Table name='store'/>\n"
             + "      <Level name='Store Country' column='store_country'"
