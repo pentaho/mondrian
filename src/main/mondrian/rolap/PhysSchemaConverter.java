@@ -129,8 +129,22 @@ class PhysSchemaConverter extends RolapSchemaLoader.PhysSchemaBuilder {
     private MondrianDef.Relation toDef(
         RolapSchema.PhysView physView)
     {
-        Util.deprecated("TODO implement", true);
         MondrianDef.Query xmlQuery = new MondrianDef.Query();
+        xmlQuery.alias = physView.getAlias();
+//        Iterator<PhysKey> keyIterator = physView.getKeyList().iterator();
+//        if(keyIterator.hasNext()) {
+//            List<PhysColumn> columnList = keyIterator.next().columnList;
+//            if(!columnList.isEmpty()) {
+//                xmlQuery.keyColumn = columnList.get(0).name;
+//            }
+//        }
+        MondrianDef.ExpressionView expressionView =
+            new MondrianDef.ExpressionView();
+        MondrianDef.SQL sql = new MondrianDef.SQL();
+        sql.children = new NodeDef[]{new TextDef(physView.getSqlString())};
+        sql.dialect = physView.physSchema.dialect.toString();
+        expressionView.expressions = new MondrianDef.SQL[]{sql};
+        xmlQuery.children.add(expressionView);
         xmlTables.put(physView.getAlias(), xmlQuery);
         return xmlQuery;
     }

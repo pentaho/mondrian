@@ -1884,7 +1884,7 @@ public class RolapSchemaUpgrader {
                 final Mondrian3Def.SQL sql =
                     Mondrian3Def.SQL.choose(
                         xmlView.selects,
-                        loader.schema.getDialect());
+                        schema.getDialect());
                 final RolapSchema.PhysView physView =
                     new RolapSchema.PhysView(
                         physSchemaConverter.physSchema,
