@@ -882,13 +882,14 @@ public class AccessControlTest extends FoodMartTestCase {
      * Test context where the [Store] hierarchy has restricted access
      * and cell values are rolled up with 'partial' policy.
      */
-    private final TestContext rollupTestContext =
-        TestContext.instance().create(
+    private TestContext getRollupTestContext() {
+        return getTestContext().create(
             null, null, null, null, null,
             "<Role name=\"Role1\">\n"
             + "  <SchemaGrant access=\"none\">\n"
             + "    <CubeGrant cube=\"Sales\" access=\"custom\">\n"
             + "      <DimensionGrant dimension=\"[Measures]\" access=\"all\"/>\n"
+            + "      <DimensionGrant dimension=\"[Gender]\" access=\"all\"/>\n"
             + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"partial\">\n"
             + "        <MemberGrant member=\"[Store].[USA]\" access=\"all\"/>\n"
             + "        <MemberGrant member=\"[Store].[USA].[CA]\" access=\"none\"/>\n"
@@ -897,13 +898,14 @@ public class AccessControlTest extends FoodMartTestCase {
             + "  </SchemaGrant>\n"
             + "</Role>")
             .withRole("Role1");
+    }
 
     /**
      * Basic test of partial rollup policy. [USA] = [OR] + [WA], not
      * the usual [CA] + [OR] + [WA].
      */
     public void testRollupPolicyBasic() {
-        rollupTestContext.assertQueryReturns(
+        getRollupTestContext().assertQueryReturns(
             "select {[Store].[USA], [Store].[USA].Children} on 0\n"
             + "from [Sales]",
             "Axis #0:\n"
@@ -923,7 +925,7 @@ public class AccessControlTest extends FoodMartTestCase {
      * Normally the total is 266,773.
      */
     public void testRollupPolicyAll() {
-        rollupTestContext.assertExprReturns(
+        getRollupTestContext().assertExprReturns(
             "([Store].[All Stores])",
             "192,025");
     }
@@ -933,7 +935,7 @@ public class AccessControlTest extends FoodMartTestCase {
      * of the [Stores] hierarchy.
      */
     public void testRollupPolicyAllAsDefault() {
-        rollupTestContext.assertExprReturns(
+        getRollupTestContext().assertExprReturns(
             "([Store])",
             "192,025");
     }
@@ -943,9 +945,37 @@ public class AccessControlTest extends FoodMartTestCase {
      * that this doesn't circumvent access control).
      */
     public void testRollupPolicyAllAsParent() {
-        rollupTestContext.assertExprReturns(
+        getRollupTestContext().assertExprReturns(
             "([Store].[USA].Parent)",
             "192,025");
+    }
+
+    /**
+     * Tests that an access-controlled dimension affects results even if not
+     * used in the query. Unit test for
+     * <a href="http://jira.pentaho.com/browse/mondrian-1283">MONDRIAN-1283,
+     * "Mondrian doesn't restrict dimension members when dimension isn't
+     * included"</a>.
+     */
+    public void testUnusedAccessControlledDimension() {
+        getRollupTestContext().assertQueryReturns(
+            "select [Gender].Children on 0 from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[F]}\n"
+            + "{[Gender].[M]}\n"
+            + "Row #0: 94,799\n"
+            + "Row #0: 97,226\n");
+        getTestContext().assertQueryReturns(
+            "select [Gender].Children on 0 from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[F]}\n"
+            + "{[Gender].[M]}\n"
+            + "Row #0: 131,558\n"
+            + "Row #0: 135,215\n");
     }
 
     /**
@@ -1237,7 +1267,7 @@ public class AccessControlTest extends FoodMartTestCase {
             Role.RollupPolicy.PARTIAL,
             hierarchyAccess.getRollupPolicy());
         // One of the roles is restricting the levels, so we
-        //expect only the levels from 2 to 4 to be available.
+        // expect only the levels from 2 to 4 to be available.
         assertEquals(2, hierarchyAccess.getTopLevelDepth());
         assertEquals(4, hierarchyAccess.getBottomLevelDepth());
 
@@ -2857,11 +2887,12 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
     /**
-     * This is a test for
-     * <a href="http://jira.pentaho.com/browse/mondrian-1259">MONDRIAN-1259</a>
+     * Unit test for
+     * <a href="http://jira.pentaho.com/browse/mondrian-1259">MONDRIAN-1259,
+     * "Mondrian security: access leaks from one user to another"</a>.
      *
      * <p>Enhancements made to the SmartRestrictedMemberReader were causing
-     * security leaks between roles and potantial class cast exceptions.
+     * security leaks between roles and potential class cast exceptions.
      */
     public void testMondrian1259() throws Exception {
         final String mdx =
