@@ -545,23 +545,26 @@ Test that get error if a dimension has more than one hierarchy with same name.
     public void testHierarchyAbbreviatedDefaultMember() {
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
-            "  <Dimension name='Gender with default' foreignKey='customer_id'>\n"
-            + "    <Hierarchy hasAll='true' "
-            + "primaryKey='customer_id' "
-            // Default member unique name does not include 'All'.
-            + "defaultMember='[Gender with default].[F]' >\n"
-            + "      <Table name='customer'/>\n"
-            + "      <Level name='Gender' column='gender' uniqueMembers='true' />\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>");
+            "  <Dimension name='Gender with default' table='customer' key='Id'>\n"
+            + "  <Attributes>\n"
+            + "    <Attribute name='Gender' keyColumn='gender' hierarchyDefaultMember='F'/>\n"
+            + "    <Attribute name='Id' keyColumn='customer_id'/>\n"
+            + "  </Attributes>\n"
+            + "</Dimension>",
+            null,
+            null,
+            null,
+            ArrayMap.of(
+            "Sales",
+            "<ForeignKeyLink dimension='Gender with default' foreignKeyColumn='customer_id'/>"));
         testContext.assertQueryReturns(
-            "select {[Gender with default]} on columns from [Sales]",
+            "select {[Gender with default].[Gender]} on columns from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
             // Note that the 'all' member is named according to the rule
             // '[<hierarchy>].[All <hierarchy>s]'.
-            + "{[Gender with default].[F]}\n"
+            + "{[Gender with default].[Gender].[F]}\n"
             + "Row #0: 131,558\n");
     }
 
@@ -632,7 +635,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
             null,
-            "<Measure name='Bad Measure' aggregator='sum' formatString='Standard'/>\n");
+            "<Measure name='Bad Measure' aggregator='sum' formatString='Standard'/>\n",
+            null, null);
         Throwable throwable = null;
         try {
             testContext.assertSimpleQuery();
@@ -687,20 +691,6 @@ Test that get error if a dimension has more than one hierarchy with same name.
         testContext.assertSchemaError(
             "table 'customer_not_found' not found \\(in Attribute 'Yearly Income'\\) \\(at ${pos}\\)",
             "<Attribute name='Yearly Income' keyColumn='yearly_income' table='customer_not_found'/>");
-    }
-
-    public void testLevelTableNotFound() {
-        TestContext testContext = getTestContext().createSubstitutingCube(
-            "Sales",
-            "<Dimension name='Yearly Income5' foreignKey='product_id'>\n"
-            + "  <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
-            + "    <Table name='customer'/>\n"
-            + "    <Level name='Yearly Income' table='customer_not_found' column='yearly_income' uniqueMembers='true'/>\n"
-            + "  </Hierarchy>\n"
-            + "</Dimension>");
-        testContext.assertQueryThrows(
-            "select {[Gender with default]} on columns from [Sales]",
-            "Can not find Default Member with name '[Gender with default].[Non].[Existent]' in Hierarchy 'Gender with default'");
     }
 
     /**
@@ -1558,15 +1548,23 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * Test DimensionUsage level attribute
      */
     public void testDimensionUsageLevel() {
-        final TestContext testContext = getTestContext().legacy().create(
+        final TestContext testContext = getTestContext().create(
             null,
-
-            "<Cube name='Customer Usage Level'>\n"
-            + "  <Table name='customer'/>\n"
-            // + alias='sales_fact_1997_multi'/>\n"
-            + "  <DimensionUsage name='Store' source='Store' level='Store State' foreignKey='state_province'/>\n"
-            + "  <Measure name='Cars' column='num_cars_owned' aggregator='sum'/>\n"
-            + "  <Measure name='Children' column='total_children' aggregator='sum'/>\n"
+            "  <Cube name='Customer Usage Level'>"
+            + "  <Dimensions>"
+            + "    <Dimension source='Store'/>"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup name='Customer Usage Level' table='customer'>"
+            + "        <Measures>"
+            + "          <Measure name='Cars' column='num_cars_owned' aggregator='sum'/>"
+            + "          <Measure name='Children' column='total_children' aggregator='sum'/>"
+            + "        </Measures>"
+            + "        <DimensionLinks>\n"
+            + "          <ForeignKeyLink dimension='Store' attribute='Store State' foreignKeyColumn='state_province'/>\n"
+            + "        </DimensionLinks>"
+            + "     </MeasureGroup>"
+            + "  </MeasureGroups>"
             + "</Cube>", null, null, null, null);
 
         testContext.assertQueryReturns(
@@ -1576,16 +1574,16 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[Store].[Canada].[BC]}\n"
-            + "{[Store].[Store].[Mexico].[DF]}\n"
-            + "{[Store].[Store].[Mexico].[Guerrero]}\n"
-            + "{[Store].[Store].[Mexico].[Jalisco]}\n"
-            + "{[Store].[Store].[Mexico].[Veracruz]}\n"
-            + "{[Store].[Store].[Mexico].[Yucatan]}\n"
-            + "{[Store].[Store].[Mexico].[Zacatecas]}\n"
-            + "{[Store].[Store].[USA].[CA]}\n"
-            + "{[Store].[Store].[USA].[OR]}\n"
-            + "{[Store].[Store].[USA].[WA]}\n"
+            + "{[Store].[Stores].[Canada].[BC]}\n"
+            + "{[Store].[Stores].[Mexico].[DF]}\n"
+            + "{[Store].[Stores].[Mexico].[Guerrero]}\n"
+            + "{[Store].[Stores].[Mexico].[Jalisco]}\n"
+            + "{[Store].[Stores].[Mexico].[Veracruz]}\n"
+            + "{[Store].[Stores].[Mexico].[Yucatan]}\n"
+            + "{[Store].[Stores].[Mexico].[Zacatecas]}\n"
+            + "{[Store].[Stores].[USA].[CA]}\n"
+            + "{[Store].[Stores].[USA].[OR]}\n"
+            + "{[Store].[Stores].[USA].[WA]}\n"
             + "Row #0: 7,700\n"
             + "Row #0: 1,492\n"
             + "Row #0: 228\n"
