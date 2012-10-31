@@ -507,7 +507,7 @@ public interface Evaluator {
          * <p>The iterator from this iterable maintains the current ordinal
          * property required for the methods {@link #currentOrdinal()} and
          * {@link #currentTuple()}.
-         * 
+         *
          * @param eval Evaluator for current context
          *
          * @return Iterable over the tuples of the set

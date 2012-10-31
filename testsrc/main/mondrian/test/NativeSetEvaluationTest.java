@@ -1,6 +1,14 @@
+/*
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2012 Pentaho and others
+// All Rights Reserved.
+*/
 package mondrian.test;
 
-import junit.framework.Assert;
 import mondrian.rolap.BatchTestCase;
 import mondrian.spi.Dialect.DatabaseProduct;
 
@@ -8,6 +16,21 @@ import mondrian.spi.Dialect.DatabaseProduct;
  * Test native evaluation of supported set operations.
  */
 public class NativeSetEvaluationTest extends BatchTestCase {
+
+    /**
+     * Checks that a given MDX query results in a particular SQL statement
+     * being generated.
+     *
+     * @param mdxQuery MDX query
+     * @param patterns Set of patterns for expected SQL statements
+     */
+    protected void assertQuerySql(
+        String mdxQuery,
+        SqlPattern[] patterns)
+    {
+        assertQuerySqlOrNot(
+            getTestContext(), mdxQuery, patterns, false, true, true);
+    }
 
     /**
      *  we'll reuse this in a few variations
@@ -35,7 +58,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
             //aggregate set
             + "and\n"
-            + "    (`time_by_day`.`quarter`, `time_by_day`.`the_year`) in (('Q1', 1997), ('Q2', 1997), ('Q3', 1997))\n"
+            + "    `time_by_day`.`quarter` in ('Q3', 'Q1', 'Q2') and `time_by_day`.`the_year` = 1997\n"
             + "group by\n"
             + "    `product_class`.`product_family`,\n"
             + "    `product_class`.`product_department`,\n"
@@ -85,7 +108,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
           + "member Measures.x3 as ([Time].[1997].[Q3], [Measures].[Store Sales])\n"
           + " set products as TopCount(Product.[Product Name].Members, 2, Measures.[Store Sales])\n"
           + " SELECT NON EMPTY products ON 1,\n"
-          + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0\n"
+          + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2, Measures.x3} ON 0\n"
           + "FROM [Sales] where Time.x";
       propSaver.set(propSaver.properties.GenerateFormattedSql, true);
       SqlPattern mysqlPattern =
@@ -109,16 +132,9 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "member Measures.x3 as ([Time].[1997].[Q3], [Measures].[Store Sales])\n"
             + " set products as TopCount(Product.[Product Name].Members, 2, Measures.[Store Sales])\n"
             + " SELECT NON EMPTY products ON 1,\n"
-            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0\n"
+            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2, Measures.x3} ON 0\n"
             + "FROM [Sales] where Time.x";
 
-        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
-        SqlPattern mysqlPattern =
-            new SqlPattern(
-                DatabaseProduct.MYSQL,
-                NativeTopCountWithAgg.mysql,
-                NativeTopCountWithAgg.mysql.indexOf("from"));
-        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
         assertQueryReturns(mdx, NativeTopCountWithAgg.result);
     }
 
@@ -134,7 +150,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "member Measures.x3 as ([Time].[1997].[Q3], [Measures].[Store Sales])\n"
             + " set products as TopCount(Product.[Product Name].Members, 2, Measures.[Store Sales])\n"
             + " SELECT NON EMPTY products ON 1,\n"
-            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0\n"
+            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2, Measures.x3} ON 0\n"
             + " FROM [Sales] where Time.x";
 
           propSaver.set(propSaver.properties.GenerateFormattedSql, true);
@@ -177,7 +193,8 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "and\n"
             + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
             + "and\n"
-            + "    (`time_by_day`.`quarter`, `time_by_day`.`the_year`) in (('Q4', 1997), ('Q3', 1997), ('Q1', 1997), ('Q2', 1997))\n"//slicer
+            + "    `time_by_day`.`quarter` in ('Q4', 'Q3', 'Q1', 'Q2')"
+            + " and `time_by_day`.`the_year` = 1997\n"//slicer
             + "and\n"
             + "    (`product`.`brand_name` = 'Hermanos' and `product_class`.`product_subcategory` = 'Fresh Vegetables' and `product_class`.`product_category` = 'Vegetables' and `product_class`.`product_department` = 'Produce' and `product_class`.`product_family` = 'Food')\n"
             + "group by\n"
@@ -196,7 +213,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "    ISNULL(`product_class`.`product_subcategory`) ASC, `product_class`.`product_subcategory` ASC,\n"
             + "    ISNULL(`product`.`brand_name`) ASC, `product`.`brand_name` ASC,\n"
             + "    ISNULL(`product`.`product_name`) ASC, `product`.`product_name` ASC";
-            
+
         propSaver.set(propSaver.properties.GenerateFormattedSql, true);
         SqlPattern mysqlPattern =
             new SqlPattern(
@@ -204,7 +221,8 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                 mysqlQuery,
                 mysqlQuery.indexOf("from"));
         assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
-        assertQueryReturns(mdx,
+        assertQueryReturns(
+            mdx,
             "Axis #0:\n"
             + "{[Time].[x]}\n"
             + "Axis #1:\n"
@@ -227,13 +245,14 @@ public class NativeSetEvaluationTest extends BatchTestCase {
         propSaver.set(propSaver.properties.GenerateFormattedSql, true);
         final String mdx =
             "WITH\n"
-                + "  SET TC AS 'TopCount([Product].[Drink].[Alcoholic Beverages].Children, 3)'\n"
-                + "  MEMBER [Store Type].[Store Type].[Slicer] as Aggregate([Store Type].[Store Type].Members)\n"
-                + "\n"
-                + "  SELECT NON EMPTY [Measures].[Unit Sales] on 0,\n"
-                + "    TC ON 1 \n"
-                + "  FROM [Sales] WHERE [Store Type].[Slicer]\n";
-        assertQueryReturns(mdx,
+            + "  SET TC AS 'TopCount([Product].[Drink].[Alcoholic Beverages].Children, 3)'\n"
+            + "  MEMBER [Store Type].[Store Type].[Slicer] as Aggregate([Store Type].[Store Type].Members)\n"
+            + "\n"
+            + "  SELECT NON EMPTY [Measures].[Unit Sales] on 0,\n"
+            + "    TC ON 1 \n"
+            + "  FROM [Sales] WHERE [Store Type].[Slicer]\n";
+        assertQueryReturns(
+            mdx,
             "Axis #0:\n"
             + "{[Store Type].[Slicer]}\n"
             + "Axis #1:\n"
@@ -243,72 +262,11 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "Row #0: 6,838\n");
     }
 
-//    /**
-//     * Test TopCount with CurrentMember //works when enabled, but postponed
-//     */
-//    public void testCurrentMemberTopCountWithSlicer() {
-//        String mdx = " WITH\n"
-//            + " SET ST AS 'TopCount([Store Type].[Store Type].CurrentMember, 5)'\n"
-//            + " SET TOP_BEV AS 'TopCount([Product].[Drink].Children, 3, [Measures].[Unit Sales])'\n"
-//            + " SET GEN AS Generate([Time].[Year].Members, TopCount(NonEmptyCrossJoin([Time].CurrentMember, TOP_BEV), 2, [Measures].[Unit Sales]))\n"
-//            + " SET TOP_COUNTRY AS 'TopCount([Customers].[Country].Members, 1, [Measures].[Unit Sales])'\n"
-//            + "SELECT NON EMPTY [Measures].[Unit Sales] on 0,\n"
-//            + "  NON EMPTY GEN ON 1 \n"
-//            + "FROM [Sales] WHERE TOP_COUNTRY";
-//        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
-//        assertQueryReturns(mdx,
-//            "Axis #0:\n"
-//            + "{[Customers].[USA]}\n"
-//            + "Axis #1:\n"
-//            + "{[Measures].[Unit Sales]}\n"
-//            + "Axis #2:\n"
-//            + "{[Time].[1997], [Product].[Drink].[Beverages]}\n"
-//            + "{[Time].[1997], [Product].[Drink].[Alcoholic Beverages]}\n"
-//            + "Row #0: 13,573\n"
-//            + "Row #1: 6,838\n");
-//
-//        //NonEmptyCrossJoin([Time].CurrentMember, TOP_BEV), 2, [Measures].[Unit Sales])
-//        String sqlTopCountCJCurrMember = 
-//            "select\n"
-//                + "    `product_class`.`product_family` as `c0`,\n"
-//                + "    `product_class`.`product_department` as `c1`,\n"
-//                + "    sum(`sales_fact_1997`.`unit_sales`) as `c2`\n"
-//                + "from\n"
-//                + "    `product` as `product`,\n"
-//                + "    `product_class` as `product_class`,\n"
-//                + "    `sales_fact_1997` as `sales_fact_1997`,\n"
-//                + "    `time_by_day` as `time_by_day`,\n"
-//                + "    `customer` as `customer`\n"
-//                + "where\n"
-//                + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
-//                + "and\n"
-//                + "    `sales_fact_1997`.`product_id` = `product`.`product_id`\n"
-//                + "and\n"
-//                + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
-//                + "and\n"
-//                + "    `time_by_day`.`the_year` = 1997\n"
-//                + "and\n"
-//                + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
-//                + "and\n"
-//                + "    `customer`.`country` = 'USA'\n"
-//                + "and\n"
-//                + "    (`product_class`.`product_family` = 'Drink')\n"
-//                + "group by\n"
-//                + "    `product_class`.`product_family`,\n"
-//                + "    `product_class`.`product_department`\n"
-//                + "order by\n"
-//                + "    `c2` DESC,\n"
-//                + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC,\n"
-//                + "    ISNULL(`product_class`.`product_department`) ASC, `product_class`.`product_department` ASC";
-//        SqlPattern mysqlPattern =
-//            new SqlPattern(
-//                DatabaseProduct.MYSQL,
-//                sqlTopCountCJCurrMember,
-//                sqlTopCountCJCurrMember.indexOf("from"));
-//        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
-//    }
-
-    public void testGenerateAggregation() {
+    /**
+     * Crossjoin that uses same dimension as slicer but is independent from it,
+     * evaluated via a named set. No loop should happen here.
+     */
+    public void testCJSameDimAsSlicerNamedSet() {
       String mdx = "WITH\n"
           + "SET ST AS 'TopCount([Store Type].[Store Type].CurrentMember, 5)'\n"
           + "SET TOP_BEV AS 'TopCount([Product].[Drink].Children, 3, [Measures].[Unit Sales])'\n"
@@ -318,19 +276,10 @@ public class NativeSetEvaluationTest extends BatchTestCase {
           + "SELECT NON EMPTY [Measures].[Unit Sales] on 0,\n"
           + "  NON EMPTY TOP_COUNTRY ON 1 \n"
           + "FROM [Sales] WHERE [Product].[Top Drinks]";
-      
-//          String mdx = 
-//              "WITH\n"
-//              + "SET ST AS 'TopCount([Store Type].[Store Type].CurrentMember, 5)'\n"
-//              + "SET TOP_BEV AS 'TopCount([Product].[Drink].Children, 3, [Measures].[Unit Sales])'\n"
-//              + "SET GEN AS Generate([Time].[Year].Members, TopCount(NonEmptyCrossJoin([Time].CurrentMember, TOP_BEV), 2, [Measures].[Unit Sales]))\n"
-//              + "MEMBER [Product].[Top Drinks] as Aggregate(GEN, [Measures].[Unit Sales]) \n"
-//              + "SET TOP_COUNTRY AS 'TopCount([Customers].[Country].Members, 1, [Measures].[Unit Sales])'\n"
-//              + "SELECT NON EMPTY [Measures].[Unit Sales] on 0,\n"
-//              + "  NON EMPTY TOP_COUNTRY ON 1 \n"
-//              + "FROM [Sales] WHERE [Product].[Top Drinks]";
-//          propSaver.set(propSaver.properties.GenerateFormattedSql, true);
-          assertQueryReturns(mdx, "Axis #0:\n"
+
+          assertQueryReturns(
+              mdx,
+              "Axis #0:\n"
               + "{[Product].[Top Drinks]}\n"
               + "Axis #1:\n"
               + "{[Measures].[Unit Sales]}\n"
@@ -340,19 +289,20 @@ public class NativeSetEvaluationTest extends BatchTestCase {
     }
 
     /**
-     * Test evaluation loop detection still works after changes to make it more permissable.
+     * Test evaluation loop detection still works after changes to
+     * make it more permissable.
      */
     public void testLoopDetection() {
         final String mdx =
             "WITH\n"
-                + "  SET CJ AS NonEmptyCrossJoin([Store Type].[Store Type].Members, {[Measures].[Unit Sales]})\n"
-                + "  SET TC AS 'TopCount([Store Type].[Store Type].Members, 10, [Measures].[Unit Sales])'\n"
-                + "  SET TIME_DEP AS 'Generate(CJ, {[Time].[Time].CurrentMember})' \n"
-                + "  MEMBER [Time].[Time].[Slicer] as Aggregate(TIME_DEP)\n"
-                + "\n"
-                + "  SELECT NON EMPTY [Measures].[Unit Sales] on 0,\n"
-                + "    TC ON 1 \n"
-                + "  FROM [Sales] where [Time].[Slicer]\n";
+            + "  SET CJ AS NonEmptyCrossJoin([Store Type].[Store Type].Members, {[Measures].[Unit Sales]})\n"
+            + "  SET TC AS 'TopCount([Store Type].[Store Type].Members, 10, [Measures].[Unit Sales])'\n"
+            + "  SET TIME_DEP AS 'Generate(CJ, {[Time].[Time].CurrentMember})' \n"
+            + "  MEMBER [Time].[Time].[Slicer] as Aggregate(TIME_DEP)\n"
+            + "\n"
+            + "  SELECT NON EMPTY [Measures].[Unit Sales] on 0,\n"
+            + "    TC ON 1 \n"
+            + "  FROM [Sales] where [Time].[Slicer]\n";
         assertQueryThrows(mdx, "evaluating itself");
     }
 
@@ -361,7 +311,6 @@ public class NativeSetEvaluationTest extends BatchTestCase {
      * doesn't break the results as in MONDRIAN-1187
      */
     public void testSlicerTuplesPartialCrossJoin() {
-
         final String mdx =
             "with\n"
             + "set TSET as {NonEmptyCrossJoin({[Time].[1997].[Q1], [Time].[1997].[Q2]}, {[Store Type].[Supermarket]}),\n"
@@ -371,7 +320,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "NON EMPTY {[Measures].[Store Sales]} ON 0\n"
             + " FROM [Sales]\n"
             + "where TSET";
-      
+
         final String result =
             "Axis #0:\n"
             + "{[Time].[1997].[Q1], [Store Type].[Supermarket]}\n"
@@ -386,15 +335,14 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "Row #0: 332.86\n"
             + "Row #1: 343.54\n";
 
-        assertQueryReturns(mdx, result );
+        assertQueryReturns(mdx, result);
     }
 
     /**
      * Same as before but without combinations missing in the crossjoin
      */
     public void testSlicerTuplesFullCrossJoin() {
-
-        final String mdx = 
+        final String mdx =
             "with\n"
             + "set TSET as NonEmptyCrossJoin({[Time].[1997].[Q1], [Time].[1997].[Q2]}, {[Store Type].[Supermarket], [Store Type].[Deluxe Supermarket], [Store Type].[Gourmet Supermarket]})\n"
             + " set products as TopCount(Product.[Product Name].Members, 2, Measures.[Store Sales])\n"
@@ -403,8 +351,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + " FROM [Sales]\n"
             + "where TSET";
 
-        
-        String result = 
+        String result =
             "Axis #0:\n"
             + "{[Time].[1997].[Q1], [Store Type].[Deluxe Supermarket]}\n"
             + "{[Time].[1997].[Q1], [Store Type].[Gourmet Supermarket]}\n"
@@ -420,9 +367,8 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "Row #0: 460.02\n"
             + "Row #1: 420.74\n";
 
-        assertQueryReturns(mdx, result );
+        assertQueryReturns(mdx, result);
     }
 
-    
-
 }
+// End NativeSetEvaluationTest.java

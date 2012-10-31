@@ -230,7 +230,8 @@ public class SqlConstraintUtils {
                                 sqlQuery, baseCube,
                                 aggStar, slicerMembers,
                                 (RolapCubeLevel) affectedLevel,
-                                restrictMemberTypes,false);
+                                restrictMemberTypes,
+                                false);
                         whereClausesForRoleConstraints.put(
                             (RolapCubeLevel) affectedLevel, where);
                     }
@@ -255,12 +256,12 @@ public class SqlConstraintUtils {
         Map<RelationOrJoin, Set<RolapMember>> mapOfSlicerMembers =
             new HashMap<RelationOrJoin, Set<RolapMember>>();
 
-        if(evaluator.isEvalAxes()) {
+        if (evaluator.isEvalAxes()) {
             Member[] expandedSlicers =
                 expandSupportedCalculatedMembers(
                     ((RolapEvaluator)evaluator).getSlicerMembers(),
                     evaluator.push());
-    
+
             if (hasMultiPositionSlicer(expandedSlicers)) {
                 for (Member slicerMember : expandedSlicers) {
                     if (slicerMember.isMeasure()) {
