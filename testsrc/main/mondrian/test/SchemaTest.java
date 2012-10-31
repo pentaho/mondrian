@@ -555,8 +555,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
             null,
             null,
             ArrayMap.of(
-            "Sales",
-            "<ForeignKeyLink dimension='Gender with default' foreignKeyColumn='customer_id'/>"));
+                "Sales",
+                "<ForeignKeyLink dimension='Gender with default' foreignKeyColumn='customer_id'/>"));
         testContext.assertQueryReturns(
             "select {[Gender with default].[Gender]} on columns from [Sales]",
             "Axis #0:\n"
