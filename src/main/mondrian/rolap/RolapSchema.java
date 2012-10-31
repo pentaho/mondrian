@@ -324,8 +324,8 @@ public class RolapSchema extends OlapElementBase implements Schema {
     }
 
     public Dimension createDimension(Cube cube, String xml) {
-        return new RolapSchemaLoader(this).createDimension(
-            (RolapCube) cube, xml, Collections.<String, String>emptyMap());
+        throw new UnsupportedOperationException(
+            "Support for Schema.createDimension has been removed in Mondrian 4.0");
     }
 
     public Cube createCube(String xml) {

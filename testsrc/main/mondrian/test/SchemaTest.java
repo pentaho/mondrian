@@ -1497,54 +1497,6 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
 
     /**
-     * This test verifies that the createDimension() API call is working
-     * correctly.
-     */
-    public void testDimensionCreation() {
-        final TestContext testContext = getTestContext().create(
-            null,
-
-            "<Cube name='Sales Create Dimension'>\n"
-            + "  <Table name='sales_fact_1997'/>\n"
-            + "  <DimensionUsage name='Store' source='Store' foreignKey='store_id'/>\n"
-            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
-            + "   formatString='Standard'/>\n"
-            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'"
-            + "   formatString='#,###.00'/>\n"
-            + "</Cube>", null, null, null, null);
-        Cube cube = testContext.getConnection().getSchema().lookupCube(
-            "Sales Create Dimension", true);
-
-        testContext.assertQueryReturns(
-            "select\n"
-            + "NON EMPTY {[Store].[All Stores].children} on columns \n"
-            + "From [Sales Create Dimension]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Store].[USA]}\n"
-            + "Row #0: 266,773\n");
-
-        String dimension =
-            "<DimensionUsage name='Time' source='Time' foreignKey='time_id'/>";
-        testContext.getConnection().getSchema().createDimension(
-            cube, dimension);
-
-        testContext.assertQueryReturns(
-            "select\n"
-            + "NON EMPTY {[Store].[All Stores].children} on columns, \n"
-            + "{[Time].[1997].[Q1]} on rows \n"
-            + "From [Sales Create Dimension]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Store].[USA]}\n"
-            + "Axis #2:\n"
-            + "{[Time].[Time].[1997].[Q1]}\n"
-            + "Row #0: 66,291\n");
-    }
-
-    /**
      * Test DimensionUsage level attribute
      */
     public void testDimensionUsageLevel() {
@@ -4710,28 +4662,38 @@ Test that get error if a dimension has more than one hierarchy with same name.
         for (Boolean testValue : new Boolean[] {true, false}) {
             String cubeDef =
                 "<Cube name='Foo'>\n"
-                + "  <Table name='store'/>\n"
-                + "  <Dimension name='Bacon'>\n"
-                + "    <Hierarchy hasAll='true'>\n"
-                + "      <Level name='Store Type' column='store_type' uniqueMembers='true'/>\n"
-                + "    </Hierarchy>\n"
-                + "  </Dimension>\n"
-                + "  <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
-                + "      formatString='#,###'/>\n"
+                + "  <Dimensions>"
+                + "    <Dimension name='Bar' table='store' key='Store Id' visible='@REPLACE_ME@'>\n"
+                + "      <Attributes>"
+                + "        <Attribute name='Store Id' keyColumn='store_id'/>"
+                + "       </Attributes>"
+                + "     </Dimension>"
+                + "  </Dimensions>\n"
+                + "  <MeasureGroups>"
+                + "    <MeasureGroup name='Foo' table='store'>"
+                + "      <Measures>"
+                + "        <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
+                + "         formatString='#,###'/>"
+                + "      </Measures>"
+                + "      <DimensionLinks>\n"
+                + "        <ForeignKeyLink dimension='Bar' foreignKeyColumn='store_id'/>\n"
+                + "      </DimensionLinks>\n"
+                + "    </MeasureGroup>"
+                + "  </MeasureGroups>\n"
                 + "</Cube>\n";
+            String replaced =
+                cubeDef.replace("@REPLACE_ME@", String.valueOf(testValue));
             final TestContext context =
-                getTestContext().legacy().create(
-                    null, cubeDef, null, null, null, null);
+                getTestContext().create(
+                    null,
+                    replaced,
+                    null,
+                    null,
+                    null,
+                    null);
             final Cube cube =
                 context.getConnection().getSchema()
                     .lookupCube("Foo", true);
-            String dimensionDef =
-                "<DimensionUsage name='Bar' source='Time' foreignKey='time_id' visible='@REPLACE_ME@'/>";
-            dimensionDef = dimensionDef.replace(
-                "@REPLACE_ME@",
-                String.valueOf(testValue));
-            context.getConnection().getSchema().createDimension(
-                cube, dimensionDef);
             Dimension dim = null;
             for (Dimension dimCheck : cube.getDimensionList()) {
                 if (dimCheck.getName().equals("Bar")) {
