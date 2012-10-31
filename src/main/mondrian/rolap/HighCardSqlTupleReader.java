@@ -59,6 +59,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
         String message = "Populating member cache with members for " + targets;
         SqlStatement stmt = null;
         boolean execQuery = (partialResult == null);
+        boolean success = false;
         try {
             if (execQuery) {
                 // we're only reading tuples from the targets that are
@@ -110,6 +111,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
             // source as having "no more rows")
             readNextTuple();
             readNextTuple();
+            success = true;
         } catch (SQLException sqle) {
             if (stmt != null) {
                 throw stmt.handle(sqle);
@@ -117,7 +119,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
                 throw Util.newError(sqle, message);
             }
         } finally {
-            if (!moreRows) {
+            if (!moreRows || !success) {
                 if (stmt != null) {
                     stmt.close();
                 }
