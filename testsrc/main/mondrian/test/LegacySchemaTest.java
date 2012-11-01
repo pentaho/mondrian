@@ -456,6 +456,62 @@ public class LegacySchemaTest extends FoodMartTestCase {
             "Dimension or DimensionUsage must have foreignKey \\(in Dimension\\) \\(at ${pos}\\)",
             "<Dimension name='Store'>");
     }
+
+    public void testDimensionUsageWithInvalidForeignKey() {
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+            "<Cube name='Sales77'>\n"
+            + "  <Table name='sales_fact_1997'/>\n"
+            + "  <DimensionUsage name='Time2' source='Time' foreignKey='time_id'/>\n"
+            + "  <DimensionUsage name='Store' source='Store' foreignKey='invalid_column'/>\n"
+            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
+            + "   formatString='Standard'/>\n"
+            + "</Cube>", null, null, null, null);
+        testContext.assertSchemaError(
+            ".*Relation sales_fact_1997 does not contain column invalid_column",
+            "");
+    }
+
+    /**
+     * Test Multiple DimensionUsages on same Dimension.
+     * Alias the fact table to avoid issues with aggregation rules
+     * and multiple column names
+     */
+    public void testMultipleDimensionHierarchyCaptionUsages() {
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+            "<Cube name='Sales Two Dimensions'>\n"
+            + "  <Table name='sales_fact_1997' alias='sales_fact_1997_mdu'/>\n"
+            + "  <DimensionUsage name='Time' caption='TimeOne' source='Time' foreignKey='time_id'/>\n"
+            + "  <DimensionUsage name='Time2' caption='TimeTwo' source='Time' foreignKey='product_id'/>\n"
+            + "  <DimensionUsage name='Store' source='Store' foreignKey='store_id'/>\n"
+            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
+            + "   formatString='Standard'/>\n"
+            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'"
+            + "   formatString='#,###.00'/>\n"
+            + "</Cube>", null, null, null, null);
+
+        String query =
+            "select\n"
+            + " {[Time2].[1997]} on columns,\n"
+            + " {[Time].[1997].[Q3]} on rows\n"
+            + "From [Sales Two Dimensions]";
+
+        Result result = testContext.executeQuery(query);
+
+        // Time2.1997 Member
+        Member member1 =
+            result.getAxes()[0].getPositions().iterator().next().iterator()
+                .next();
+
+        // NOTE: The caption is modified at the dimension, not the hierarchy
+        assertEquals("TimeTwo", member1.getLevel().getDimension().getCaption());
+
+        Member member2 =
+            result.getAxes()[1].getPositions().iterator().next().iterator()
+                .next();
+        assertEquals("TimeOne", member2.getLevel().getDimension().getCaption());
+    }
 }
 
 // End LegacySchemaTest.java

@@ -1469,14 +1469,26 @@ Test that get error if a dimension has more than one hierarchy with same name.
             null,
 
             "<Cube name='Sales Two Dimensions'>\n"
-            + "  <Table name='sales_fact_1997' alias='sales_fact_1997_mdu'/>\n"
-            + "  <DimensionUsage name='Time' caption='TimeOne' source='Time' foreignKey='time_id'/>\n"
-            + "  <DimensionUsage name='Time2' caption='TimeTwo' source='Time' foreignKey='product_id'/>\n"
-            + "  <DimensionUsage name='Store' source='Store' foreignKey='store_id'/>\n"
-            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
-            + "   formatString='Standard'/>\n"
-            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'"
-            + "   formatString='#,###.00'/>\n"
+            + "  <Dimensions>"
+            + "    <Dimension name='Store' source='Store' caption='First Store'/>\n"
+            + "    <Dimension name='Time' source='Time' caption='TimeOne'/>\n"
+            + "    <Dimension name='Time2' source='Time' caption='TimeTwo'/>\n"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup name='Sales Two Dimensions' table='sales_fact_1997' alias='sales_fact_1997_mdu'>"
+            + "      <Measures>"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
+            + "         formatString='Standard'/>\n"
+            + "        <Measure name='Store Cost' column='store_cost' aggregator='sum'"
+            + "         formatString='#,###.00'/>\n"
+            + "      </Measures>"
+            + "      <DimensionLinks>\n"
+            + "        <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>"
+            + "        <ForeignKeyLink dimension='Time' foreignKeyColumn='time_id'/>"
+            + "        <ForeignKeyLink dimension='Time2' foreignKeyColumn='product_id'/>"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
             + "</Cube>", null, null, null, null);
 
         String query =
@@ -1574,13 +1586,24 @@ Test that get error if a dimension has more than one hierarchy with same name.
         final TestContext testContext = getTestContext().create(
             null,
             "<Cube name='Sales Two Sales Dimensions'>\n"
-            + "  <Table name='sales_fact_1997'/>\n"
-            + "  <DimensionUsage name='Store' caption='First Store' source='Store' foreignKey='store_id'/>\n"
-            + "  <DimensionUsage name='Store2' caption='Second Store' source='Store' foreignKey='product_id'/>\n"
-            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
-            + "   formatString='Standard'/>\n"
-            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'"
-            + "   formatString='#,###.00'/>\n"
+            + "  <Dimensions>"
+            + "    <Dimension name='Store' source='Store' caption='First Store'/>\n"
+            + "    <Dimension name='Store2' source='Store' caption='Second Store'/>\n"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup name='Sales Two Dimensions' table='sales_fact_1997'>"
+            + "      <Measures>"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
+            + "         formatString='Standard'/>\n"
+            + "        <Measure name='Store Cost' column='store_cost' aggregator='sum'"
+            + "         formatString='#,###.00'/>\n"
+            + "      </Measures>"
+            + "      <DimensionLinks>\n"
+            + "        <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>"
+            + "        <ForeignKeyLink dimension='Store2' foreignKeyColumn='product_id'/>"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
             + "</Cube>",
             null,
             null,
@@ -1600,15 +1623,15 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 : "[Store2].[All Store2s]";
         testContext.assertQueryReturns(
             "select\n"
-            + " {[Store].[Store].[All Stores]} on columns,\n"
+            + " {[Store].[Stores].[All Stores]} on columns,\n"
             + " {" + store2AllMember + "} on rows\n"
             + "From [Sales Two Sales Dimensions]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[All Stores]}\n"
+            + "{[Store].[Stores].[All Stores]}\n"
             + "Axis #2:\n"
-            + "{[Store2].[Store].[All Stores]}\n"
+            + "{[Store2].[Stores].[All Stores]}\n"
             + "Row #0: 266,773\n");
 
         final Result result = testContext.executeQuery(
@@ -1631,13 +1654,24 @@ Test that get error if a dimension has more than one hierarchy with same name.
             null,
 
             "<Cube name='Sales Two Dimensions'>\n"
-            + "  <Table name='sales_fact_1997'/>\n"
-            + "  <DimensionUsage name='Time2' source='Time' foreignKey='time_id'/>\n"
-            + "  <DimensionUsage name='Store' source='Store' foreignKey='store_id'/>\n"
-            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
-            + "   formatString='Standard'/>\n"
-            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'"
-            + "   formatString='#,###.00'/>\n"
+            + "  <Dimensions>"
+            + "    <Dimension name='Time2' source='Time'/>\n"
+            + "    <Dimension name='Store' source='Store'/>\n"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup name='Sales Two Dimensions' table='sales_fact_1997'>"
+            + "      <Measures>"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
+            + "         formatString='Standard'/>\n"
+            + "        <Measure name='Store Cost' column='store_cost' aggregator='sum'"
+            + "         formatString='#,###.00'/>\n"
+            + "      </Measures>"
+            + "      <DimensionLinks>\n"
+            + "        <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>"
+            + "        <ForeignKeyLink dimension='Time2' foreignKeyColumn='time_id'/>"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
             + "</Cube>", null, null, null, null);
 
         final String query = "select\n"
@@ -1661,18 +1695,29 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     public void testDimensionUsageWithInvalidForeignKey() {
-        final TestContext testContext = getTestContext().legacy().create(
+        final TestContext testContext = getTestContext().create(
             null,
             "<Cube name='Sales77'>\n"
-            + "  <Table name='sales_fact_1997'/>\n"
-            + "  <DimensionUsage name='Time2' source='Time' foreignKey='time_id'/>\n"
-            + "  <DimensionUsage name='Store' source='Store' foreignKey='invalid_column'/>\n"
-            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
-            + "   formatString='Standard'/>\n"
+            + "  <Dimensions>"
+            + "    <Dimension source='Time'/>"
+            + "    <Dimension source='Store'/>"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup name='Sales77' table='sales_fact_1997'>"
+            + "      <Measures>"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
+            + "         formatString='Standard'/>\n"
+            + "      </Measures>"
+            + "      <DimensionLinks>\n"
+            + "        <ForeignKeyLink dimension='Store' foreignKeyColumn='invalid_column'/>"
+            + "        <ForeignKeyLink dimension='Time' foreignKeyColumn='time_id'/>"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
             + "</Cube>", null, null, null, null);
         testContext.assertSchemaError(
-            "Relation sales_fact_1997 does not contain column invalid_column",
-            "xxxxx");
+            "Column 'invalid_column' not found in relation 'sales_fact_1997' \\(in ForeignKeyLink\\) \\(at ${pos}\\)",
+            "<ForeignKeyLink dimension='Store' foreignKeyColumn='invalid_column'/>");
     }
 
     /**
@@ -6580,7 +6625,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
         } catch (RuntimeException e) {
             TestContext.checkThrowable(
                 e,
-                "hierarchies in same dimension with different priamry key");
+                "hierarchies in same dimension with different primary key");
         }
     }
 
