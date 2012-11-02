@@ -2102,51 +2102,62 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     public void testDegenerateDimension() {
-        final String cubeName = "Store_NullsCollation";
         TestContext testContext = getTestContext().create(
             null,
-            "<Cube name='" + cubeName + "'>\n"
-            + "  <Table name='store'/>\n"
-            + "  <Dimension name='Store' foreignKey='store_id'>\n"
-            + "    <Hierarchy hasAll='true' primaryKey='store_id'>\n"
-            + "      <Level name='Store Name' column='store_name'  uniqueMembers='true'>\n"
-            + "        <Property name='Store Sqft' column='store_sqft' type='Numeric'/>\n"
-            + "      </Level>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
-            + "  <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
-            + "      formatString='#,###'/>\n"
+            "<Cube name='Store with Degenerate'>\n"
+            + "  <Dimensions>"
+            + "    <Dimension name='store' table='store' key='country'>"
+            + "      <Attributes> "
+            + "        <Attribute name='country' keyColumn='store_country'/>"
+            + "        </Attributes>"
+            + "    </Dimension>"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup name='store' table='store'>"
+            + "      <Measures>"
+            + "        <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
+            + "         formatString='#,###'/>\n"
+            + "      </Measures>"
+            + "      <DimensionLinks>"
+            + "        <FactLink dimension='store' foreignKeyColumn='store_id'/>"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
             + "</Cube>",
             null,
             null,
             null,
             null);
-        final List<Exception> exceptionList = testContext.getSchemaWarnings();
-        testContext.assertContains(
-            exceptionList,
-            "Degenerate dimension must not have foreign key",
-            "<Dimension name='Store' ...");
-        testContext.assertContains(
-            exceptionList,
-            "Hierarchy in degenerate dimension not have primary key",
-            "<Hierarchy name='Store' ...");
+        testContext.assertQueryReturns(
+            "select [store].[country].members on 0 from [Store with Degenerate]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[store].[country].[All country]}\n"
+            + "{[store].[country].[Canada]}\n"
+            + "{[store].[country].[Mexico]}\n"
+            + "{[store].[country].[USA]}\n"
+            + "Row #0: 571,596\n"
+            + "Row #0: 57,564\n"
+            + "Row #0: 243,012\n"
+            + "Row #0: 271,020\n");
     }
 
     public void testPropertyFormatter() {
         final TestContext testContext =
             getTestContext().createSubstitutingCube(
                 "Sales",
-                "  <Dimension name='Store2' foreignKey='store_id'>\n"
-                + "    <Hierarchy name='Store2' hasAll='true' allMemberName='All Stores' primaryKey='store_id'>\n"
-                + "      <Table name='store_ragged'/>\n"
-                + "      <Level name='Store2' table='store_ragged' column='store_id' captionColumn='store_name' uniqueMembers='true'>\n"
-                + "           <Property name='Store Type' column='store_type' formatter='"
-                + DummyPropertyFormatter.class.getName()
+                "<Dimension name='Store2' table='store' key='Store Type'>\n"
+                + "  <Attributes>"
+                + "    <Attribute name='Store Type' keyColumn='store_id'>"
+                + "      <Property name='Store Type' attribute='Store Type' column='store_type' formatter='"
+                +         DummyPropertyFormatter.class.getName()
                 + "'/>"
-                + "           <Property name='Store Manager' column='store_manager'/>"
-                + "     </Level>"
-                + "    </Hierarchy>\n"
-                + "  </Dimension>\n");
+                + "      <Property attribute='Store Manager' column='store_manager'/>"
+                + "    </Attribute>"
+                + "    <Attribute name='id' keyColumn='store_id'/>"
+                + "  </Attributes>"
+                + "</Dimension>\n");
         try {
             testContext.assertSimpleQuery();
             fail("expected exception");
