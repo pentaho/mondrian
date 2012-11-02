@@ -2465,7 +2465,7 @@ public class RolapSchemaLoader {
                 schema,
                 xmlDimension.name,
                 toBoolean(xmlDimension.visible, true),
-                determineCaption(xmlDimension, xmlCubeDimension),
+                xmlDimension.caption,
                 xmlDimension.description,
                 dimensionType,
                 Collections.<String, Annotation>emptyMap());
@@ -2705,7 +2705,7 @@ public class RolapSchemaLoader {
             dimension,
             dimensionName,
             dimensionSource,
-            determineCaption(xmlCubeDimension, xmlDimension),
+            first(xmlCubeDimension.caption, xmlDimension.caption),
             xmlDimension.description,
             dimensionOrdinal,
             cubeHierarchyList,
@@ -2717,14 +2717,6 @@ public class RolapSchemaLoader {
         cubeDimension.attributeMap.putAll(dimension.attributeMap);
 
         return cubeDimension;
-    }
-
-    private String determineCaption(
-        MondrianDef.Dimension xmlCubeDimension,
-        MondrianDef.Dimension xmlDimension)
-    {
-        return (xmlCubeDimension.caption == null)
-            ? xmlDimension.caption : xmlCubeDimension.caption;
     }
 
     public static boolean toBoolean(Boolean aBoolean, boolean dflt) {

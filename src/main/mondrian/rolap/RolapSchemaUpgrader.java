@@ -738,8 +738,7 @@ public class RolapSchemaUpgrader {
         MondrianDef.Dimension xmlDimension)
     {
         xmlDimension.caption =
-            (xmlLegacyCubeDimension.caption == null)
-                ? xmlLegacyDimension.caption : xmlLegacyCubeDimension.caption;
+            first(xmlLegacyCubeDimension.caption, xmlLegacyDimension.caption);
     }
 
     /**
