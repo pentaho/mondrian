@@ -2320,9 +2320,10 @@ public class TestContext {
         final String namedSetDefs,
         Map<String, String> dimensionLinks)
     {
+        final String rawSchema = getRawSchema();
         final String schema =
             substituteSchema(
-                getRawSchema(),
+                rawSchema,
                 cubeName,
                 dimensionDefs,
                 measureDefs,

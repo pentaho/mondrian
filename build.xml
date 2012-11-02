@@ -857,11 +857,23 @@ in {mondrian.foodmart.jdbcURL}."
   </target>
 
   <target name="version">
+    <exec executable="git" outputproperty="git.commit">
+      <arg line="log -n 1 --format=format:%H"/>
+    </exec>
+    <tstamp>
+      <format property="build.time" timezone="UTC" pattern="yyyy/MM/dd HH:mm:ss z"/>
+    </tstamp>
     <echo file="VERSION.txt">Title: ${name}
 Version: ${project.revision}
 VersionMajor: ${project.revision.major}
 VersionMinor: ${project.revision.minor}
 Vendor: ${vendor}
+Git-Latest-Commit: ${git.commit}
+Ant-Version: ${ant.version}
+Created-By: ${java.version} (${java.vendor})
+Built-On: ${build.time}
+Built-By: ${user.name}
+Built-In: ${user.dir}
 </echo>
    <echo file="${java.dir}/mondrian/olap4j/MondrianOlap4jDriverVersion.java">/*
  * Project version information. Generated - do not modify.
@@ -875,6 +887,7 @@ class MondrianOlap4jDriverVersion {
     static final String VERSION = "${driver.version}";
     static final int MAJOR_VERSION = ${driver.version.major};
     static final int MINOR_VERSION = ${driver.version.minor};
+    static final String GIT_LATEST_COMMIT = "${git.commit}";
 }
 
 // End MondrianOlap4jDriverVersion.java</echo>
