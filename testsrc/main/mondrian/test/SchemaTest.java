@@ -294,7 +294,6 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     public void testHierarchyDefaultMember() {
-        if (false)
         checkHierarchyDefaultMember(
             "[Promotion with default].[Media Type].[All Media Types].[TV]")
             .assertQueryReturns(
@@ -309,7 +308,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "[Promotion with default].[Media Type].[All Media Type].[TV]")
             .assertSchemaError(
                 TestContext.fragment(
-                    "Can not find Default Member with name \"[Promotion with default].[Media Type].[All Media Type].[TV]\" in Hierarchy \"Media Type\"",
+                    "Mondrian Error:Internal error: Can not find Default Member with name \"\\[Promotion with default\\].\\[Media Type\\].\\[All Media Type\\].\\[TV\\]\" in Hierarchy \"Media Type\"",
                     "<Hierarchy name='Media Type' "));
     }
 
@@ -546,23 +545,26 @@ Test that get error if a dimension has more than one hierarchy with same name.
     public void testHierarchyAbbreviatedDefaultMember() {
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
-            "  <Dimension name='Gender with default' foreignKey='customer_id'>\n"
-            + "    <Hierarchy hasAll='true' "
-            + "primaryKey='customer_id' "
-            // Default member unique name does not include 'All'.
-            + "defaultMember='[Gender with default].[F]' >\n"
-            + "      <Table name='customer'/>\n"
-            + "      <Level name='Gender' column='gender' uniqueMembers='true' />\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>");
+            "  <Dimension name='Gender with default' table='customer' key='Id'>\n"
+            + "  <Attributes>\n"
+            + "    <Attribute name='Gender' keyColumn='gender' hierarchyDefaultMember='F'/>\n"
+            + "    <Attribute name='Id' keyColumn='customer_id'/>\n"
+            + "  </Attributes>\n"
+            + "</Dimension>",
+            null,
+            null,
+            null,
+            ArrayMap.of(
+                "Sales",
+                "<ForeignKeyLink dimension='Gender with default' foreignKeyColumn='customer_id'/>"));
         testContext.assertQueryReturns(
-            "select {[Gender with default]} on columns from [Sales]",
+            "select {[Gender with default].[Gender]} on columns from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
             // Note that the 'all' member is named according to the rule
             // '[<hierarchy>].[All <hierarchy>s]'.
-            + "{[Gender with default].[F]}\n"
+            + "{[Gender with default].[Gender].[F]}\n"
             + "Row #0: 131,558\n");
     }
 
@@ -570,28 +572,34 @@ Test that get error if a dimension has more than one hierarchy with same name.
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
             "  <Dimension name='Gender no levels' foreignKey='customer_id'>\n"
-            + "    <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
+            + "  <Hierarchies>    "
+            + "    <Hierarchy name=\"Gender\" hasAll='true' primaryKey='customer_id'>\n"
             + "      <Table name='customer'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>");
+            + "    </Hierarchy>"
+            + "  </Hierarchies>\n"
+            + "</Dimension>");
         testContext.assertQueryThrows(
             "select {[Gender no levels]} on columns from [Sales]",
-            "Hierarchy '[Gender no levels]' must have at least one level.");
+            "Hierarchy '[Gender no levels].[Gender]' must have at least one level.");
     }
 
     public void testHierarchyNonUniqueLevelsFails() {
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
-            "  <Dimension name='Gender dup levels' foreignKey='customer_id'>\n"
-            + "    <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
-            + "      <Table name='customer'/>\n"
-            + "      <Level name='Gender' column='gender' uniqueMembers='true' />\n"
-            + "      <Level name='Gender' column='gender' uniqueMembers='true' />\n"
+            "  <Dimension name='Gender dup levels' foreignKey='customer_id' table='customer'>\n"
+            + "  <Attributes>"
+            + "    <Attribute name='Gender' keyColumn='gender'/>"
+            + "  </Attributes>"
+            + "  <Hierarchies>    "
+            + "    <Hierarchy hasAll='true' primaryKey='customer_id' name=\"Gender\">\n"
+            + "      <Level attribute=\"Gender\"/>\n"
+            + "      <Level attribute=\"Gender\"/>\n"
             + "    </Hierarchy>\n"
-            + "  </Dimension>");
+            + "  </Hierarchies>"
+            + "</Dimension>");
         testContext.assertQueryThrows(
             "select {[Gender dup levels]} on columns from [Sales]",
-            "Level names within hierarchy '[Gender dup levels]' are not unique; there is more than one level with name 'Gender'.");
+            "Level names within hierarchy '[Gender dup levels].[Gender]' are not unique; there is more than one level with name 'Gender'.");
     }
 
     /**
@@ -601,7 +609,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
             null,
-            "<Measure name='Fact Count' aggregator='count'/>\n");
+            "<Measure name='Fact Count' aggregator='count'/>\n", null, null);
         testContext.assertQueryReturns(
             "select {[Measures].[Fact Count], [Measures].[Unit Sales]} on 0,\n"
             + "[Gender].members on 1\n"
@@ -627,7 +635,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
             null,
-            "<Measure name='Bad Measure' aggregator='sum' formatString='Standard'/>\n");
+            "<Measure name='Bad Measure' aggregator='sum' formatString='Standard'/>\n",
+            null, null);
         Throwable throwable = null;
         try {
             testContext.assertSimpleQuery();
@@ -644,22 +653,14 @@ Test that get error if a dimension has more than one hierarchy with same name.
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
             null,
-            "<Measure name='Bad Measure' aggregator='sum' formatString='Standard'>\n"
-            + "  <MeasureExpression>\n"
+            "<Measure name='Bad Measure' column='unit_sales' aggregator='sum' formatString='Standard'>\n"
             + "  <Arguments>\n"
             + "    <Column name='unit_sales'/>\n"
-            + "  </Arguments>\n"
-            + "</Measure>");
-        Throwable throwable = null;
-        try {
-            testContext.assertSimpleQuery();
-        } catch (Throwable e) {
-            throwable = e;
-        }
-        // both a source column and source expression specified
-        TestContext.checkThrowable(
-            throwable,
-            "must contain either a source column or a source expression, but not both");
+            + "  </Arguments>"
+            + "</Measure>", null, null);
+        testContext.assertSchemaError(
+            "must not specify both column and Arguments \\(in Arguments\\) \\(at ${pos}\\)",
+            "<Arguments>");
     }
 
     /**
@@ -669,60 +670,27 @@ Test that get error if a dimension has more than one hierarchy with same name.
     public void testHierarchyTableNotFound() {
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
-            "<Dimension name='Yearly Income3' foreignKey='product_id'>\n"
-            + "  <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
-            + "    <Table name='customer_not_found'/>\n"
-            + "    <Level name='Yearly Income' column='yearly_income' uniqueMembers='true'/>\n"
-            + "  </Hierarchy>\n"
+            "<Dimension name='Yearly Income3' foreignKey='product_id' table='customer_not_found'>\n"
+            + "  <Attributes>"
+            + "    <Attribute name='Yearly Income' keyColumn='yearly_income'/>"
+            + "  </Attributes>"
             + "</Dimension>");
         testContext.assertQueryThrows(
             "select from [Sales]",
-            "Table 'customer_not_found' does not exist in database");
+            "table 'customer_not_found' not found (in Dimension 'Yearly Income3')");
     }
 
-    public void testPrimaryKeyTableNotFound() {
+    public void testAttributeTableNotFound() {
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
-            "<Dimension name='Yearly Income4' foreignKey='product_id'>\n"
-            + "  <Hierarchy hasAll='true' primaryKey='customer_id' primaryKeyTable='customer_not_found'>\n"
-            + "    <Table name='customer'/>\n"
-            + "    <Level name='Yearly Income' column='yearly_income' uniqueMembers='true'/>\n"
-            + "  </Hierarchy>\n"
+            "<Dimension name='Yearly Income4' foreignKey='product_id' table='customer'>\n"
+            + "  <Attributes>"
+            + "    <Attribute name='Yearly Income' keyColumn='yearly_income' table='customer_not_found'/>"
+            + "  </Attributes>"
             + "</Dimension>");
         testContext.assertSchemaError(
-            "Table 'customer_not_found' not found \\(at ${pos}\\)",
-            "<Hierarchy hasAll='true' primaryKey='customer_id' primaryKeyTable='customer_not_found'>");
-    }
-
-    public void testLevelTableNotFound() {
-        TestContext testContext = getTestContext().createSubstitutingCube(
-            "Sales",
-            "<Dimension name='Yearly Income5' foreignKey='product_id'>\n"
-            + "  <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
-            + "    <Table name='customer'/>\n"
-            + "    <Level name='Yearly Income' table='customer_not_found' column='yearly_income' uniqueMembers='true'/>\n"
-            + "  </Hierarchy>\n"
-            + "</Dimension>");
-        testContext.assertQueryThrows(
-            "select from [Sales]",
-            "Table 'customer_not_found' not found");
-    }
-
-    public void testHierarchyBadDefaultMember() {
-        TestContext testContext = getTestContext().createSubstitutingCube(
-            "Sales",
-            "  <Dimension name='Gender with default' foreignKey='customer_id'>\n"
-            + "    <Hierarchy hasAll='true' "
-            + "primaryKey='customer_id' "
-            // Default member unique name does not include 'All'.
-            + "defaultMember='[Gender with default].[Non].[Existent]' >\n"
-            + "      <Table name='customer'/>\n"
-            + "      <Level name='Gender' column='gender' uniqueMembers='true' />\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>");
-        testContext.assertQueryThrows(
-            "select {[Gender with default]} on columns from [Sales]",
-            "Can not find Default Member with name '[Gender with default].[Non].[Existent]' in Hierarchy 'Gender with default'");
+            "table 'customer_not_found' not found \\(in Attribute 'Yearly Income'\\) \\(at ${pos}\\)",
+            "<Attribute name='Yearly Income' keyColumn='yearly_income' table='customer_not_found'/>");
     }
 
     /**
@@ -738,11 +706,11 @@ Test that get error if a dimension has more than one hierarchy with same name.
     public void testDuplicateTableAlias() {
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
-            "<Dimension name='Yearly Income2' foreignKey='product_id'>\n"
-            + "  <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
-            + "    <Table name='customer'/>\n"
-            + "    <Level name='Yearly Income' column='yearly_income' uniqueMembers='true'/>\n"
-            + "  </Hierarchy>\n"
+            "<Dimension name='Yearly Income2' table='customer' key='Name'>\n"
+            + "  <Attributes>"
+            + "    <Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='full_name' hasHierarchy='false'/>"
+            + "    <Attribute name='Yearly Income' keyColumn='yearly_income' hierarchyAllMemberName='All Yearly Incomes'/>\n"
+            + "  </Attributes>"
             + "</Dimension>");
 
         testContext.assertQueryReturns(
@@ -750,7 +718,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Yearly Income2].[All Yearly Income2s]}\n"
+            + "{[Yearly Income2].[Yearly Income].[All Yearly Incomes]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Row #0: 266,773\n");
@@ -825,70 +793,70 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$10K - $30K]}\n"
-            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$110K - $130K]}\n"
-            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$130K - $150K]}\n"
-            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$150K +]}\n"
-            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$30K - $50K]}\n"
-            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$50K - $70K]}\n"
-            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$70K - $90K]}\n"
-            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$90K - $110K]}\n"
-            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$10K - $30K]}\n"
-            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$110K - $130K]}\n"
-            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$130K - $150K]}\n"
-            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$150K +]}\n"
-            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$30K - $50K]}\n"
-            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$50K - $70K]}\n"
-            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$70K - $90K]}\n"
-            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$90K - $110K]}\n"
-            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$10K - $30K]}\n"
-            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$110K - $130K]}\n"
-            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$130K - $150K]}\n"
-            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$150K +]}\n"
-            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$30K - $50K]}\n"
-            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$50K - $70K]}\n"
-            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$70K - $90K]}\n"
-            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$90K - $110K]}\n"
-            + "{[Yearly Income].[$150K +], [Yearly Income2].[$10K - $30K]}\n"
-            + "{[Yearly Income].[$150K +], [Yearly Income2].[$110K - $130K]}\n"
-            + "{[Yearly Income].[$150K +], [Yearly Income2].[$130K - $150K]}\n"
-            + "{[Yearly Income].[$150K +], [Yearly Income2].[$150K +]}\n"
-            + "{[Yearly Income].[$150K +], [Yearly Income2].[$30K - $50K]}\n"
-            + "{[Yearly Income].[$150K +], [Yearly Income2].[$50K - $70K]}\n"
-            + "{[Yearly Income].[$150K +], [Yearly Income2].[$70K - $90K]}\n"
-            + "{[Yearly Income].[$150K +], [Yearly Income2].[$90K - $110K]}\n"
-            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$10K - $30K]}\n"
-            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$110K - $130K]}\n"
-            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$130K - $150K]}\n"
-            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$150K +]}\n"
-            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$30K - $50K]}\n"
-            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$50K - $70K]}\n"
-            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$70K - $90K]}\n"
-            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$90K - $110K]}\n"
-            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$10K - $30K]}\n"
-            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$110K - $130K]}\n"
-            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$130K - $150K]}\n"
-            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$150K +]}\n"
-            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$30K - $50K]}\n"
-            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$50K - $70K]}\n"
-            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$70K - $90K]}\n"
-            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$90K - $110K]}\n"
-            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$10K - $30K]}\n"
-            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$110K - $130K]}\n"
-            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$130K - $150K]}\n"
-            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$150K +]}\n"
-            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$30K - $50K]}\n"
-            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$50K - $70K]}\n"
-            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$70K - $90K]}\n"
-            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$90K - $110K]}\n"
-            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$10K - $30K]}\n"
-            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$110K - $130K]}\n"
-            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$130K - $150K]}\n"
-            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$150K +]}\n"
-            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$30K - $50K]}\n"
-            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$50K - $70K]}\n"
-            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$70K - $90K]}\n"
-            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$10K - $30K], [Yearly Income2].[Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$10K - $30K], [Yearly Income2].[Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$10K - $30K], [Yearly Income2].[Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$10K - $30K], [Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[Yearly Income].[$10K - $30K], [Yearly Income2].[Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$10K - $30K], [Yearly Income2].[Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$10K - $30K], [Yearly Income2].[Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$10K - $30K], [Yearly Income2].[Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$110K - $130K], [Yearly Income2].[Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$110K - $130K], [Yearly Income2].[Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$110K - $130K], [Yearly Income2].[Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$110K - $130K], [Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[Yearly Income].[$110K - $130K], [Yearly Income2].[Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$110K - $130K], [Yearly Income2].[Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$110K - $130K], [Yearly Income2].[Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$110K - $130K], [Yearly Income2].[Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$130K - $150K], [Yearly Income2].[Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$130K - $150K], [Yearly Income2].[Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$130K - $150K], [Yearly Income2].[Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$130K - $150K], [Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[Yearly Income].[$130K - $150K], [Yearly Income2].[Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$130K - $150K], [Yearly Income2].[Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$130K - $150K], [Yearly Income2].[Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$130K - $150K], [Yearly Income2].[Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$150K +], [Yearly Income2].[Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$150K +], [Yearly Income2].[Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$150K +], [Yearly Income2].[Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$150K +], [Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[Yearly Income].[$150K +], [Yearly Income2].[Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$150K +], [Yearly Income2].[Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$150K +], [Yearly Income2].[Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$150K +], [Yearly Income2].[Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$30K - $50K], [Yearly Income2].[Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$30K - $50K], [Yearly Income2].[Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$30K - $50K], [Yearly Income2].[Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$30K - $50K], [Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[Yearly Income].[$30K - $50K], [Yearly Income2].[Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$30K - $50K], [Yearly Income2].[Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$30K - $50K], [Yearly Income2].[Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$30K - $50K], [Yearly Income2].[Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$50K - $70K], [Yearly Income2].[Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$50K - $70K], [Yearly Income2].[Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$50K - $70K], [Yearly Income2].[Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$50K - $70K], [Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[Yearly Income].[$50K - $70K], [Yearly Income2].[Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$50K - $70K], [Yearly Income2].[Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$50K - $70K], [Yearly Income2].[Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$50K - $70K], [Yearly Income2].[Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$70K - $90K], [Yearly Income2].[Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$70K - $90K], [Yearly Income2].[Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$70K - $90K], [Yearly Income2].[Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$70K - $90K], [Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[Yearly Income].[$70K - $90K], [Yearly Income2].[Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$70K - $90K], [Yearly Income2].[Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$70K - $90K], [Yearly Income2].[Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$70K - $90K], [Yearly Income2].[Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$90K - $110K], [Yearly Income2].[Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$90K - $110K], [Yearly Income2].[Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$90K - $110K], [Yearly Income2].[Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$90K - $110K], [Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[Yearly Income].[$90K - $110K], [Yearly Income2].[Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$90K - $110K], [Yearly Income2].[Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$90K - $110K], [Yearly Income2].[Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$90K - $110K], [Yearly Income2].[Yearly Income2].[$90K - $110K]}\n"
             + "Row #0: 12,824\n"
             + "Row #1: 2,822\n"
             + "Row #2: 2,933\n"
@@ -991,12 +959,18 @@ Test that get error if a dimension has more than one hierarchy with same name.
     public void testDimensionsShareTableSameForeignKeys() {
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
-            "<Dimension name='Yearly Income2' foreignKey='customer_id'>\n"
-            + "  <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
-            + "    <Table name='customer' alias='customerx' />\n"
-            + "    <Level name='Yearly Income' column='yearly_income' uniqueMembers='true'/>\n"
-            + "  </Hierarchy>\n"
-            + "</Dimension>");
+            "<Dimension name='Yearly Income2' table='customer' alias='customerx' key='Name'>\n"
+            + "  <Attributes>"
+            + "    <Attribute name='Yearly Income2' keyColumn='yearly_income' uniqueMembers='true'/>"
+            + "    <Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='full_name' hasHierarchy='false'/>"
+            + "  </Attributes>"
+            + "</Dimension>",
+            null,
+            null,
+            null,
+            ArrayMap.of(
+                "Sales",
+                "<ForeignKeyLink dimension='Yearly Income2' foreignKeyColumn='customer_id'/>"));
 
         testContext.assertQueryReturns(
             "select {[Yearly Income].[$10K - $30K]} on columns,"
@@ -1004,29 +978,29 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Yearly Income].[$10K - $30K]}\n"
+            + "{[Customer].[Yearly Income].[$10K - $30K]}\n"
             + "Axis #2:\n"
-            + "{[Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income2].[Yearly Income2].[$150K +]}\n"
             + "Row #0: \n");
 
         testContext.assertQueryReturns(
             "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS,\n"
             + "NON EMPTY Crossjoin({[Yearly Income].[All Yearly Incomes].Children},\n"
-            + "                     [Yearly Income2].[All Yearly Income2s].Children) ON ROWS\n"
+            + "                     [Yearly Income2].[All Yearly Income2].Children) ON ROWS\n"
             + "from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Yearly Income].[$10K - $30K], [Yearly Income2].[$10K - $30K]}\n"
-            + "{[Yearly Income].[$110K - $130K], [Yearly Income2].[$110K - $130K]}\n"
-            + "{[Yearly Income].[$130K - $150K], [Yearly Income2].[$130K - $150K]}\n"
-            + "{[Yearly Income].[$150K +], [Yearly Income2].[$150K +]}\n"
-            + "{[Yearly Income].[$30K - $50K], [Yearly Income2].[$30K - $50K]}\n"
-            + "{[Yearly Income].[$50K - $70K], [Yearly Income2].[$50K - $70K]}\n"
-            + "{[Yearly Income].[$70K - $90K], [Yearly Income2].[$70K - $90K]}\n"
-            + "{[Yearly Income].[$90K - $110K], [Yearly Income2].[$90K - $110K]}\n"
+            + "{[Customer].[Yearly Income].[$10K - $30K], [Yearly Income2].[Yearly Income2].[$10K - $30K]}\n"
+            + "{[Customer].[Yearly Income].[$110K - $130K], [Yearly Income2].[Yearly Income2].[$110K - $130K]}\n"
+            + "{[Customer].[Yearly Income].[$130K - $150K], [Yearly Income2].[Yearly Income2].[$130K - $150K]}\n"
+            + "{[Customer].[Yearly Income].[$150K +], [Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "{[Customer].[Yearly Income].[$30K - $50K], [Yearly Income2].[Yearly Income2].[$30K - $50K]}\n"
+            + "{[Customer].[Yearly Income].[$50K - $70K], [Yearly Income2].[Yearly Income2].[$50K - $70K]}\n"
+            + "{[Customer].[Yearly Income].[$70K - $90K], [Yearly Income2].[Yearly Income2].[$70K - $90K]}\n"
+            + "{[Customer].[Yearly Income].[$90K - $110K], [Yearly Income2].[Yearly Income2].[$90K - $110K]}\n"
             + "Row #0: 57,950\n"
             + "Row #1: 11,561\n"
             + "Row #2: 14,392\n"
@@ -1495,14 +1469,26 @@ Test that get error if a dimension has more than one hierarchy with same name.
             null,
 
             "<Cube name='Sales Two Dimensions'>\n"
-            + "  <Table name='sales_fact_1997' alias='sales_fact_1997_mdu'/>\n"
-            + "  <DimensionUsage name='Time' caption='TimeOne' source='Time' foreignKey='time_id'/>\n"
-            + "  <DimensionUsage name='Time2' caption='TimeTwo' source='Time' foreignKey='product_id'/>\n"
-            + "  <DimensionUsage name='Store' source='Store' foreignKey='store_id'/>\n"
-            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
-            + "   formatString='Standard'/>\n"
-            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'"
-            + "   formatString='#,###.00'/>\n"
+            + "  <Dimensions>"
+            + "    <Dimension name='Store' source='Store' caption='First Store'/>\n"
+            + "    <Dimension name='Time' source='Time' caption='TimeOne'/>\n"
+            + "    <Dimension name='Time2' source='Time' caption='TimeTwo'/>\n"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup name='Sales Two Dimensions' table='sales_fact_1997' alias='sales_fact_1997_mdu'>"
+            + "      <Measures>"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
+            + "         formatString='Standard'/>\n"
+            + "        <Measure name='Store Cost' column='store_cost' aggregator='sum'"
+            + "         formatString='#,###.00'/>\n"
+            + "      </Measures>"
+            + "      <DimensionLinks>\n"
+            + "        <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>"
+            + "        <ForeignKeyLink dimension='Time' foreignKeyColumn='time_id'/>"
+            + "        <ForeignKeyLink dimension='Time2' foreignKeyColumn='product_id'/>"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
             + "</Cube>", null, null, null, null);
 
         String query =
@@ -1529,66 +1515,26 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
 
     /**
-     * This test verifies that the createDimension() API call is working
-     * correctly.
-     */
-    public void testDimensionCreation() {
-        final TestContext testContext = getTestContext().create(
-            null,
-
-            "<Cube name='Sales Create Dimension'>\n"
-            + "  <Table name='sales_fact_1997'/>\n"
-            + "  <DimensionUsage name='Store' source='Store' foreignKey='store_id'/>\n"
-            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
-            + "   formatString='Standard'/>\n"
-            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'"
-            + "   formatString='#,###.00'/>\n"
-            + "</Cube>", null, null, null, null);
-        Cube cube = testContext.getConnection().getSchema().lookupCube(
-            "Sales Create Dimension", true);
-
-        testContext.assertQueryReturns(
-            "select\n"
-            + "NON EMPTY {[Store].[All Stores].children} on columns \n"
-            + "From [Sales Create Dimension]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Store].[USA]}\n"
-            + "Row #0: 266,773\n");
-
-        String dimension =
-            "<DimensionUsage name='Time' source='Time' foreignKey='time_id'/>";
-        testContext.getConnection().getSchema().createDimension(
-            cube, dimension);
-
-        testContext.assertQueryReturns(
-            "select\n"
-            + "NON EMPTY {[Store].[All Stores].children} on columns, \n"
-            + "{[Time].[1997].[Q1]} on rows \n"
-            + "From [Sales Create Dimension]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Store].[USA]}\n"
-            + "Axis #2:\n"
-            + "{[Time].[Time].[1997].[Q1]}\n"
-            + "Row #0: 66,291\n");
-    }
-
-    /**
      * Test DimensionUsage level attribute
      */
     public void testDimensionUsageLevel() {
-        final TestContext testContext = getTestContext().legacy().create(
+        final TestContext testContext = getTestContext().create(
             null,
-
-            "<Cube name='Customer Usage Level'>\n"
-            + "  <Table name='customer'/>\n"
-            // + alias='sales_fact_1997_multi'/>\n"
-            + "  <DimensionUsage name='Store' source='Store' level='Store State' foreignKey='state_province'/>\n"
-            + "  <Measure name='Cars' column='num_cars_owned' aggregator='sum'/>\n"
-            + "  <Measure name='Children' column='total_children' aggregator='sum'/>\n"
+            "  <Cube name='Customer Usage Level'>"
+            + "  <Dimensions>"
+            + "    <Dimension source='Store'/>"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup name='Customer Usage Level' table='customer'>"
+            + "        <Measures>"
+            + "          <Measure name='Cars' column='num_cars_owned' aggregator='sum'/>"
+            + "          <Measure name='Children' column='total_children' aggregator='sum'/>"
+            + "        </Measures>"
+            + "        <DimensionLinks>\n"
+            + "          <ForeignKeyLink dimension='Store' attribute='Store State' foreignKeyColumn='state_province'/>\n"
+            + "        </DimensionLinks>"
+            + "     </MeasureGroup>"
+            + "  </MeasureGroups>"
             + "</Cube>", null, null, null, null);
 
         testContext.assertQueryReturns(
@@ -1598,16 +1544,16 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[Store].[Canada].[BC]}\n"
-            + "{[Store].[Store].[Mexico].[DF]}\n"
-            + "{[Store].[Store].[Mexico].[Guerrero]}\n"
-            + "{[Store].[Store].[Mexico].[Jalisco]}\n"
-            + "{[Store].[Store].[Mexico].[Veracruz]}\n"
-            + "{[Store].[Store].[Mexico].[Yucatan]}\n"
-            + "{[Store].[Store].[Mexico].[Zacatecas]}\n"
-            + "{[Store].[Store].[USA].[CA]}\n"
-            + "{[Store].[Store].[USA].[OR]}\n"
-            + "{[Store].[Store].[USA].[WA]}\n"
+            + "{[Store].[Stores].[Canada].[BC]}\n"
+            + "{[Store].[Stores].[Mexico].[DF]}\n"
+            + "{[Store].[Stores].[Mexico].[Guerrero]}\n"
+            + "{[Store].[Stores].[Mexico].[Jalisco]}\n"
+            + "{[Store].[Stores].[Mexico].[Veracruz]}\n"
+            + "{[Store].[Stores].[Mexico].[Yucatan]}\n"
+            + "{[Store].[Stores].[Mexico].[Zacatecas]}\n"
+            + "{[Store].[Stores].[USA].[CA]}\n"
+            + "{[Store].[Stores].[USA].[OR]}\n"
+            + "{[Store].[Stores].[USA].[WA]}\n"
             + "Row #0: 7,700\n"
             + "Row #0: 1,492\n"
             + "Row #0: 228\n"
@@ -1640,13 +1586,24 @@ Test that get error if a dimension has more than one hierarchy with same name.
         final TestContext testContext = getTestContext().create(
             null,
             "<Cube name='Sales Two Sales Dimensions'>\n"
-            + "  <Table name='sales_fact_1997'/>\n"
-            + "  <DimensionUsage name='Store' caption='First Store' source='Store' foreignKey='store_id'/>\n"
-            + "  <DimensionUsage name='Store2' caption='Second Store' source='Store' foreignKey='product_id'/>\n"
-            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
-            + "   formatString='Standard'/>\n"
-            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'"
-            + "   formatString='#,###.00'/>\n"
+            + "  <Dimensions>"
+            + "    <Dimension name='Store' source='Store' caption='First Store'/>\n"
+            + "    <Dimension name='Store2' source='Store' caption='Second Store'/>\n"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup name='Sales Two Dimensions' table='sales_fact_1997'>"
+            + "      <Measures>"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
+            + "         formatString='Standard'/>\n"
+            + "        <Measure name='Store Cost' column='store_cost' aggregator='sum'"
+            + "         formatString='#,###.00'/>\n"
+            + "      </Measures>"
+            + "      <DimensionLinks>\n"
+            + "        <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>"
+            + "        <ForeignKeyLink dimension='Store2' foreignKeyColumn='product_id'/>"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
             + "</Cube>",
             null,
             null,
@@ -1666,15 +1623,15 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 : "[Store2].[All Store2s]";
         testContext.assertQueryReturns(
             "select\n"
-            + " {[Store].[Store].[All Stores]} on columns,\n"
+            + " {[Store].[Stores].[All Stores]} on columns,\n"
             + " {" + store2AllMember + "} on rows\n"
             + "From [Sales Two Sales Dimensions]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[All Stores]}\n"
+            + "{[Store].[Stores].[All Stores]}\n"
             + "Axis #2:\n"
-            + "{[Store2].[Store].[All Stores]}\n"
+            + "{[Store2].[Stores].[All Stores]}\n"
             + "Row #0: 266,773\n");
 
         final Result result = testContext.executeQuery(
@@ -1697,13 +1654,24 @@ Test that get error if a dimension has more than one hierarchy with same name.
             null,
 
             "<Cube name='Sales Two Dimensions'>\n"
-            + "  <Table name='sales_fact_1997'/>\n"
-            + "  <DimensionUsage name='Time2' source='Time' foreignKey='time_id'/>\n"
-            + "  <DimensionUsage name='Store' source='Store' foreignKey='store_id'/>\n"
-            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
-            + "   formatString='Standard'/>\n"
-            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'"
-            + "   formatString='#,###.00'/>\n"
+            + "  <Dimensions>"
+            + "    <Dimension name='Time2' source='Time'/>\n"
+            + "    <Dimension name='Store' source='Store'/>\n"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup name='Sales Two Dimensions' table='sales_fact_1997'>"
+            + "      <Measures>"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
+            + "         formatString='Standard'/>\n"
+            + "        <Measure name='Store Cost' column='store_cost' aggregator='sum'"
+            + "         formatString='#,###.00'/>\n"
+            + "      </Measures>"
+            + "      <DimensionLinks>\n"
+            + "        <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>"
+            + "        <ForeignKeyLink dimension='Time2' foreignKeyColumn='time_id'/>"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
             + "</Cube>", null, null, null, null);
 
         final String query = "select\n"
@@ -1727,18 +1695,29 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     public void testDimensionUsageWithInvalidForeignKey() {
-        final TestContext testContext = getTestContext().legacy().create(
+        final TestContext testContext = getTestContext().create(
             null,
             "<Cube name='Sales77'>\n"
-            + "  <Table name='sales_fact_1997'/>\n"
-            + "  <DimensionUsage name='Time2' source='Time' foreignKey='time_id'/>\n"
-            + "  <DimensionUsage name='Store' source='Store' foreignKey='invalid_column'/>\n"
-            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
-            + "   formatString='Standard'/>\n"
+            + "  <Dimensions>"
+            + "    <Dimension source='Time'/>"
+            + "    <Dimension source='Store'/>"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup name='Sales77' table='sales_fact_1997'>"
+            + "      <Measures>"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
+            + "         formatString='Standard'/>\n"
+            + "      </Measures>"
+            + "      <DimensionLinks>\n"
+            + "        <ForeignKeyLink dimension='Store' foreignKeyColumn='invalid_column'/>"
+            + "        <ForeignKeyLink dimension='Time' foreignKeyColumn='time_id'/>"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
             + "</Cube>", null, null, null, null);
         testContext.assertSchemaError(
-            "Relation sales_fact_1997 does not contain column invalid_column",
-            "xxxxx");
+            "Column 'invalid_column' not found in relation 'sales_fact_1997' \\(in ForeignKeyLink\\) \\(at ${pos}\\)",
+            "<ForeignKeyLink dimension='Store' foreignKeyColumn='invalid_column'/>");
     }
 
     /**
@@ -2123,51 +2102,62 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     public void testDegenerateDimension() {
-        final String cubeName = "Store_NullsCollation";
         TestContext testContext = getTestContext().create(
             null,
-            "<Cube name='" + cubeName + "'>\n"
-            + "  <Table name='store'/>\n"
-            + "  <Dimension name='Store' foreignKey='store_id'>\n"
-            + "    <Hierarchy hasAll='true' primaryKey='store_id'>\n"
-            + "      <Level name='Store Name' column='store_name'  uniqueMembers='true'>\n"
-            + "        <Property name='Store Sqft' column='store_sqft' type='Numeric'/>\n"
-            + "      </Level>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
-            + "  <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
-            + "      formatString='#,###'/>\n"
+            "<Cube name='Store with Degenerate'>\n"
+            + "  <Dimensions>"
+            + "    <Dimension name='store' table='store' key='country'>"
+            + "      <Attributes> "
+            + "        <Attribute name='country' keyColumn='store_country'/>"
+            + "        </Attributes>"
+            + "    </Dimension>"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup name='store' table='store'>"
+            + "      <Measures>"
+            + "        <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
+            + "         formatString='#,###'/>\n"
+            + "      </Measures>"
+            + "      <DimensionLinks>"
+            + "        <FactLink dimension='store' foreignKeyColumn='store_id'/>"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
             + "</Cube>",
             null,
             null,
             null,
             null);
-        final List<Exception> exceptionList = testContext.getSchemaWarnings();
-        testContext.assertContains(
-            exceptionList,
-            "Degenerate dimension must not have foreign key",
-            "<Dimension name='Store' ...");
-        testContext.assertContains(
-            exceptionList,
-            "Hierarchy in degenerate dimension not have primary key",
-            "<Hierarchy name='Store' ...");
+        testContext.assertQueryReturns(
+            "select [store].[country].members on 0 from [Store with Degenerate]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[store].[country].[All country]}\n"
+            + "{[store].[country].[Canada]}\n"
+            + "{[store].[country].[Mexico]}\n"
+            + "{[store].[country].[USA]}\n"
+            + "Row #0: 571,596\n"
+            + "Row #0: 57,564\n"
+            + "Row #0: 243,012\n"
+            + "Row #0: 271,020\n");
     }
 
     public void testPropertyFormatter() {
         final TestContext testContext =
             getTestContext().createSubstitutingCube(
                 "Sales",
-                "  <Dimension name='Store2' foreignKey='store_id'>\n"
-                + "    <Hierarchy name='Store2' hasAll='true' allMemberName='All Stores' primaryKey='store_id'>\n"
-                + "      <Table name='store_ragged'/>\n"
-                + "      <Level name='Store2' table='store_ragged' column='store_id' captionColumn='store_name' uniqueMembers='true'>\n"
-                + "           <Property name='Store Type' column='store_type' formatter='"
-                + DummyPropertyFormatter.class.getName()
+                "<Dimension name='Store2' table='store' key='Store Type'>\n"
+                + "  <Attributes>"
+                + "    <Attribute name='Store Type' keyColumn='store_id'>"
+                + "      <Property name='Store Type' attribute='Store Type' column='store_type' formatter='"
+                +         DummyPropertyFormatter.class.getName()
                 + "'/>"
-                + "           <Property name='Store Manager' column='store_manager'/>"
-                + "     </Level>"
-                + "    </Hierarchy>\n"
-                + "  </Dimension>\n");
+                + "      <Property attribute='Store Manager' column='store_manager'/>"
+                + "    </Attribute>"
+                + "    <Attribute name='id' keyColumn='store_id'/>"
+                + "  </Attributes>"
+                + "</Dimension>\n");
         try {
             testContext.assertSimpleQuery();
             fail("expected exception");
@@ -2194,15 +2184,25 @@ Test that get error if a dimension has more than one hierarchy with same name.
         final TestContext testContext =
             getTestContext().create(
                 null,
-                "<Cube name='Sales2' defaultMeasure='Unit Sales'>"
-                + "  <Table name='sales_fact_1997'>\n"
-                + "  </Table>\n"
-                + "  <DimensionUsage name='Time' source='Time' foreignKey='time_id'/>\n"
-                + "  <DimensionUsage name='Product' source='Product' foreignKey='product_id'/>\n"
-                + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
-                + "      formatString='Standard'/>\n"
-                + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'\n"
-                + "      formatString='#,###.00'/>\n"
+                "  <Cube name='Sales2' defaultMeasure='Unit Sales'>"
+                + "  <Dimensions>"
+                + "    <Dimension source='Time' foreignKey='time_id'/>\n"
+                + "    <Dimension source='Product' foreignKey='product_id'/>"
+                + "  </Dimensions>\n"
+                + "  <MeasureGroups>"
+                + "    <MeasureGroup name='Sales2' table='sales_fact_1997'>"
+                + "      <Measures>"
+                + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
+                + "         formatString='Standard'/>\n"
+                + "        <Measure name='Store Cost' column='store_cost' aggregator='sum'\n"
+                + "         formatString='#,###.00'/>"
+                + "      </Measures>"
+                + "      <DimensionLinks>\n"
+                + "        <ForeignKeyLink dimension='Product' foreignKeyColumn='product_id'/>"
+                + "        <ForeignKeyLink dimension='Time' foreignKeyColumn='time_id'/>"
+                + "        </DimensionLinks>"
+                + "    </MeasureGroup>"
+                + "  </MeasureGroups>\n"
                 + "</Cube>",
                 null,
                 null,
@@ -2305,15 +2305,25 @@ Test that get error if a dimension has more than one hierarchy with same name.
         final TestContext testContext = getTestContext().create(
             null,
             "<Cube name='OneDim' defaultMeasure='Unit Sales'>\n"
-            + "  <Table name='sales_fact_1997'/>\n"
-            + "  <Dimension name='Promotion Media' foreignKey='promotion_id'>\n"
-            + "    <Hierarchy hasAll='true' allMemberName='All Media' primaryKey='promotion_id' defaultMember='All Media'>\n"
-            + "      <Table name='promotion'/>\n"
-            + "      <Level name='Media Type' column='media_type' uniqueMembers='true'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
-            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
-            + "      formatString='Standard'/>\n"
+            + "  <Dimensions>"
+            + "    <Dimension name='Promotion' table = 'promotion' key='Promotion Id'>\n"
+            + "      <Attributes>"
+            + "        <Attribute name='Media Type' keyColumn='media_type' hierarchyAllMemberName='All Media'/>"
+            + "        <Attribute name='Promotion Id' keyColumn='promotion_id'/>"
+            + "      </Attributes>"
+            + "    </Dimension>"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup name='OneDim' table='sales_fact_1997'>"
+            + "      <Measures>"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
+            + "         formatString='Standard'/>"
+            + "      </Measures>"
+            + "      <DimensionLinks>\n"
+            + "        <ForeignKeyLink dimension='Promotion' foreignKeyColumn='promotion_id'/>"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>\n"
             + "</Cube>",
             null,
             null,
@@ -4734,28 +4744,38 @@ Test that get error if a dimension has more than one hierarchy with same name.
         for (Boolean testValue : new Boolean[] {true, false}) {
             String cubeDef =
                 "<Cube name='Foo'>\n"
-                + "  <Table name='store'/>\n"
-                + "  <Dimension name='Bacon'>\n"
-                + "    <Hierarchy hasAll='true'>\n"
-                + "      <Level name='Store Type' column='store_type' uniqueMembers='true'/>\n"
-                + "    </Hierarchy>\n"
-                + "  </Dimension>\n"
-                + "  <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
-                + "      formatString='#,###'/>\n"
+                + "  <Dimensions>"
+                + "    <Dimension name='Bar' table='store' key='Store Id' visible='@REPLACE_ME@'>\n"
+                + "      <Attributes>"
+                + "        <Attribute name='Store Id' keyColumn='store_id'/>"
+                + "       </Attributes>"
+                + "     </Dimension>"
+                + "  </Dimensions>\n"
+                + "  <MeasureGroups>"
+                + "    <MeasureGroup name='Foo' table='store'>"
+                + "      <Measures>"
+                + "        <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
+                + "         formatString='#,###'/>"
+                + "      </Measures>"
+                + "      <DimensionLinks>\n"
+                + "        <ForeignKeyLink dimension='Bar' foreignKeyColumn='store_id'/>\n"
+                + "      </DimensionLinks>\n"
+                + "    </MeasureGroup>"
+                + "  </MeasureGroups>\n"
                 + "</Cube>\n";
+            String replaced =
+                cubeDef.replace("@REPLACE_ME@", String.valueOf(testValue));
             final TestContext context =
-                getTestContext().legacy().create(
-                    null, cubeDef, null, null, null, null);
+                getTestContext().create(
+                    null,
+                    replaced,
+                    null,
+                    null,
+                    null,
+                    null);
             final Cube cube =
                 context.getConnection().getSchema()
                     .lookupCube("Foo", true);
-            String dimensionDef =
-                "<DimensionUsage name='Bar' source='Time' foreignKey='time_id' visible='@REPLACE_ME@'/>";
-            dimensionDef = dimensionDef.replace(
-                "@REPLACE_ME@",
-                String.valueOf(testValue));
-            context.getConnection().getSchema().createDimension(
-                cube, dimensionDef);
             Dimension dim = null;
             for (Dimension dimCheck : cube.getDimensionList()) {
                 if (dimCheck.getName().equals("Bar")) {
@@ -6616,7 +6636,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
         } catch (RuntimeException e) {
             TestContext.checkThrowable(
                 e,
-                "hierarchies in same dimension with different priamry key");
+                "hierarchies in same dimension with different primary key");
         }
     }
 

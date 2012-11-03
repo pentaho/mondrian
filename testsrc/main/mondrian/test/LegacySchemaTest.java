@@ -55,48 +55,49 @@ public class LegacySchemaTest extends FoodMartTestCase {
         if (MondrianProperties.instance().ReadAggregates.get()) {
             return;
         }
-        TestContext testContext = TestContext.instance().createSubstitutingCube(
-            "Sales",
-            "<Dimension name=\"Gender2\" foreignKey=\"customer_id\">\n"
-            + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "    <View alias=\"gender2\">\n"
-            + "      <SQL dialect=\"generic\">\n"
-            + "        <![CDATA[SELECT * FROM customer]]>\n"
-            + "      </SQL>\n"
-            + "      <SQL dialect=\"oracle\">\n"
-            + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
-            + "      </SQL>\n"
-            + "      <SQL dialect=\"hsqldb\">\n"
-            + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
-            + "      </SQL>\n"
-            + "      <SQL dialect=\"derby\">\n"
-            + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
-            + "      </SQL>\n"
-            + "      <SQL dialect=\"luciddb\">\n"
-            + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
-            + "      </SQL>\n"
-            + "      <SQL dialect=\"db2\">\n"
-            + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
-            + "      </SQL>\n"
-            + "      <SQL dialect=\"neoview\">\n"
-            + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
-            + "      </SQL>\n"
-            + "      <SQL dialect=\"netezza\">\n"
-            + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
-            + "      </SQL>\n"
-            + "    </View>\n"
-            + "    <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "  </Hierarchy>\n"
-            + "</Dimension>",
-            null);
+        TestContext testContext =
+            TestContext.instance().legacy().createSubstitutingCube(
+                "Sales",
+                "<Dimension name=\"Gender2\" foreignKey=\"customer_id\">\n"
+                + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
+                + "    <View alias=\"gender2\">\n"
+                + "      <SQL dialect=\"generic\">\n"
+                + "        <![CDATA[SELECT * FROM customer]]>\n"
+                + "      </SQL>\n"
+                + "      <SQL dialect=\"oracle\">\n"
+                + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
+                + "      </SQL>\n"
+                + "      <SQL dialect=\"hsqldb\">\n"
+                + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
+                + "      </SQL>\n"
+                + "      <SQL dialect=\"derby\">\n"
+                + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
+                + "      </SQL>\n"
+                + "      <SQL dialect=\"luciddb\">\n"
+                + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
+                + "      </SQL>\n"
+                + "      <SQL dialect=\"db2\">\n"
+                + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
+                + "      </SQL>\n"
+                + "      <SQL dialect=\"neoview\">\n"
+                + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
+                + "      </SQL>\n"
+                + "      <SQL dialect=\"netezza\">\n"
+                + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
+                + "      </SQL>\n"
+                + "    </View>\n"
+                + "    <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
+                + "  </Hierarchy>"
+                + "</Dimension>",
+                null);
         if (!testContext.getDialect().allowsFromQuery()) {
             return;
         }
         testContext.assertAxisReturns(
-            "[Gender2].members",
-            "[Gender2].[All Gender]\n"
-            + "[Gender2].[F]\n"
-            + "[Gender2].[M]");
+            "[Gender2].[Gender2].members",
+            "[Gender2].[Gender2].[All Gender]\n"
+            + "[Gender2].[Gender2].[F]\n"
+            + "[Gender2].[Gender2].[M]");
     }
 
     /**
@@ -207,7 +208,7 @@ public class LegacySchemaTest extends FoodMartTestCase {
     }
 
     public void testBadMeasure1() {
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = TestContext.instance().legacy().create(
             null,
             "<Cube name=\"SalesWithBadMeasure\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -231,37 +232,6 @@ public class LegacySchemaTest extends FoodMartTestCase {
             "must contain either a source column or a source expression, but not both");
     }
 
-    public void testBadMeasure2() {
-        final TestContext testContext = TestContext.instance().create(
-            null,
-            "<Cube name=\"SalesWithBadMeasure2\">\n"
-            + "  <Table name=\"sales_fact_1997\"/>\n"
-            + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
-            + "  <Measure name=\"Bad Measure\" column=\"unit_sales\" aggregator=\"sum\"\n"
-            + "      formatString=\"Standard\">\n"
-            + "    <MeasureExpression>\n"
-            + "       <SQL dialect=\"generic\">\n"
-            + "         unit_sales\n"
-            + "       </SQL>\n"
-            + "    </MeasureExpression>\n"
-            + "  </Measure>\n"
-            + "</Cube>",
-            null,
-            null,
-            null,
-            null);
-        Throwable throwable = null;
-        try {
-            testContext.assertSimpleQuery();
-        } catch (Throwable e) {
-            throwable = e;
-        }
-        // both a source column and source expression specified
-        TestContext.checkThrowable(
-            throwable,
-            "must contain either a source column or a source expression, but not both");
-    }
-
     /**
      * Tests bug
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-105">MONDRIAN-105,
@@ -271,7 +241,7 @@ public class LegacySchemaTest extends FoodMartTestCase {
     public void testDimWithoutAll() {
         // Create a test context with a new ""Sales_DimWithoutAll" cube, and
         // which evaluates expressions against that cube.
-        final String schema = TestContext.instance().getSchema(
+        final String schema = TestContext.instance().legacy().getSchema(
             null,
             "<Cube name='Sales_DimWithoutAll'>\n"
             + "  <Table name='sales_fact_1997'/>\n"
@@ -311,6 +281,7 @@ public class LegacySchemaTest extends FoodMartTestCase {
             null);
         TestContext testContext =
             TestContext.instance()
+                .legacy()
                 .withSchema(schema)
                 .withCube("Sales_DimWithoutAll");
         // the default member of the Gender dimension is the first member
@@ -350,7 +321,7 @@ public class LegacySchemaTest extends FoodMartTestCase {
      */
     public void testMultipleConstraintsOnSameColumn() {
         final String cubeName = "Sales_withCities";
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = TestContext.instance().legacy().create(
             null,
             "<Cube name='" + cubeName + "'>\n"
             + "  <Table name='sales_fact_1997'/>\n"
@@ -404,14 +375,14 @@ public class LegacySchemaTest extends FoodMartTestCase {
             + "] \n"
             + "where ([Cities].[All Cities].[Burbank], [Measures].[Store Sales])",
             "Axis #0:\n"
-            + "{[Cities].[Burbank], [Measures].[Store Sales]}\n"
+            + "{[Cities].[Cities].[Burbank], [Measures].[Store Sales]}\n"
             + "Axis #1:\n"
-            + "{[Customer].[Customers].[USA]}\n"
-            + "{[Customer].[Customers].[USA].[OR]}\n"
-            + "{[Customer].[Customers].[USA].[CA]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Altadena]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Burbank]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Burbank].[Alma Son]}\n"
+            + "{[Customers].[Customers].[USA]}\n"
+            + "{[Customers].[Customers].[USA].[OR]}\n"
+            + "{[Customers].[Customers].[USA].[CA]}\n"
+            + "{[Customers].[Customers].[USA].[CA].[Altadena]}\n"
+            + "{[Customers].[Customers].[USA].[CA].[Burbank]}\n"
+            + "{[Customers].[Customers].[USA].[CA].[Burbank].[Alma Son]}\n"
             + "Row #0: 6,577.33\n"
             + "Row #0: \n"
             + "Row #0: 6,577.33\n"
@@ -425,24 +396,25 @@ public class LegacySchemaTest extends FoodMartTestCase {
 
 
     public void testHierarchyDefaultMember() {
-        TestContext testContext = getTestContext().createSubstitutingCube(
-            "Sales",
-            "  <Dimension name=\"Gender with default\" foreignKey=\"customer_id\">\n"
-            + "    <Hierarchy hasAll=\"true\" "
-            + "primaryKey=\"customer_id\" "
-            // Define a default member's whose unique name includes the
-            // 'all' member.
-            + "defaultMember=\"[Gender with default].[All Gender with defaults].[M]\" >\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\" />\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>");
+        TestContext testContext =
+            getTestContext().legacy().createSubstitutingCube(
+                "Sales",
+                "  <Dimension name=\"Gender with default\" foreignKey=\"customer_id\">\n"
+                + "    <Hierarchy hasAll=\"true\" "
+                + "primaryKey=\"customer_id\" "
+                // Define a default member's whose unique name includes the
+                // 'all' member.
+                + "defaultMember=\"[Gender with default].[All Gender with defaults].[M]\" >\n"
+                + "      <Table name=\"customer\"/>\n"
+                + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\" />\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>");
         testContext.assertQueryReturns(
             "select {[Gender with default]} on columns from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender with default].[M]}\n"
+            + "{[Gender with default].[Gender with default].[M]}\n"
             + "Row #0: 135,215\n");
     }
 
@@ -453,16 +425,12 @@ public class LegacySchemaTest extends FoodMartTestCase {
             .assertSimpleQuery();
         createLevelUniqueMembersTestContext(" uniqueMembers='true'")
             .assertSimpleQuery();
-        createLevelUniqueMembersTestContext(" uniqueMembers='false'")
-            .assertSchemaError(
-                "First level of a hierarchy must have unique members \\(at ${pos}\\)",
-                "<Level name='Store Country' column='store_country' uniqueMembers='false'/>");
     }
 
     private TestContext createLevelUniqueMembersTestContext(final String s) {
-        return TestContext.instance().createSubstitutingCube(
+        return TestContext.instance().legacy().createSubstitutingCube(
             "Sales",
-            "    <Dimension name='Store' foreignKey='store_id'>\n"
+            "    <Dimension name='Store2' foreignKey='store_id'>\n"
             + "    <Hierarchy hasAll='true' primaryKey='store_id'>\n"
             + "      <Table name='store'/>\n"
             + "      <Level name='Store Country' column='store_country'"
@@ -475,7 +443,7 @@ public class LegacySchemaTest extends FoodMartTestCase {
 
     public void testDimensionRequiresForeignKey() {
         final TestContext testContext =
-            getTestContext().createSubstitutingCube(
+            getTestContext().legacy().createSubstitutingCube(
                 "Sales",
                 "    <Dimension name='Store'>\n"
                 + "    <Hierarchy hasAll='true' primaryKey='store_id'>\n"
@@ -485,8 +453,64 @@ public class LegacySchemaTest extends FoodMartTestCase {
                 + "    </Hierarchy>\n"
                 + "</Dimension>");
         testContext.assertSchemaError(
-            "Dimension or DimensionUsage must have foreignKey \\(at ${pos}\\)",
+            "Dimension or DimensionUsage must have foreignKey \\(in Dimension\\) \\(at ${pos}\\)",
             "<Dimension name='Store'>");
+    }
+
+    public void testDimensionUsageWithInvalidForeignKey() {
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+            "<Cube name='Sales77'>\n"
+            + "  <Table name='sales_fact_1997'/>\n"
+            + "  <DimensionUsage name='Time2' source='Time' foreignKey='time_id'/>\n"
+            + "  <DimensionUsage name='Store' source='Store' foreignKey='invalid_column'/>\n"
+            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
+            + "   formatString='Standard'/>\n"
+            + "</Cube>", null, null, null, null);
+        testContext.assertSchemaError(
+            ".*Relation sales_fact_1997 does not contain column invalid_column",
+            "");
+    }
+
+    /**
+     * Test Multiple DimensionUsages on same Dimension.
+     * Alias the fact table to avoid issues with aggregation rules
+     * and multiple column names
+     */
+    public void testMultipleDimensionHierarchyCaptionUsages() {
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+            "<Cube name='Sales Two Dimensions'>\n"
+            + "  <Table name='sales_fact_1997' alias='sales_fact_1997_mdu'/>\n"
+            + "  <DimensionUsage name='Time' caption='TimeOne' source='Time' foreignKey='time_id'/>\n"
+            + "  <DimensionUsage name='Time2' caption='TimeTwo' source='Time' foreignKey='product_id'/>\n"
+            + "  <DimensionUsage name='Store' source='Store' foreignKey='store_id'/>\n"
+            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
+            + "   formatString='Standard'/>\n"
+            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'"
+            + "   formatString='#,###.00'/>\n"
+            + "</Cube>", null, null, null, null);
+
+        String query =
+            "select\n"
+            + " {[Time2].[1997]} on columns,\n"
+            + " {[Time].[1997].[Q3]} on rows\n"
+            + "From [Sales Two Dimensions]";
+
+        Result result = testContext.executeQuery(query);
+
+        // Time2.1997 Member
+        Member member1 =
+            result.getAxes()[0].getPositions().iterator().next().iterator()
+                .next();
+
+        // NOTE: The caption is modified at the dimension, not the hierarchy
+        assertEquals("TimeTwo", member1.getLevel().getDimension().getCaption());
+
+        Member member2 =
+            result.getAxes()[1].getPositions().iterator().next().iterator()
+                .next();
+        assertEquals("TimeOne", member2.getLevel().getDimension().getCaption());
     }
 }
 

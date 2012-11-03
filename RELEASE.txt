@@ -71,6 +71,7 @@ API and MDX language changes from 3.x to 4.0
  - The following deprecated APIs have been removed:
   -- mondrian.olap.DimensionType
   -- mondrian.olap.LevelType
+- createDimension has been removed from the API mondrian.olap.Schema
  - TODO
 
 Other changes from 3.x to 4.0

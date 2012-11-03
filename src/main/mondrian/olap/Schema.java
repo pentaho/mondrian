@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2010 Pentaho
+// Copyright (C) 2006-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -52,6 +52,7 @@ public interface Schema extends Annotated {
      * Creates a dimension in the given cube by parsing an XML string. The XML
      * string must be either a &lt;Dimension&gt; or a &lt;DimensionUsage&gt;.
      * Returns the dimension created.
+     * * @deprecated This method is not implemented in Mondrian 4.0
      */
     Dimension createDimension(Cube cube, String xml);
 

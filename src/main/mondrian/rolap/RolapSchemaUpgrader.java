@@ -727,7 +727,18 @@ public class RolapSchemaUpgrader {
         convertAnnotations(
             xmlDimension.children,
             xmlLegacyCubeDimension.annotations);
+        convertCaption(
+            xmlLegacyCubeDimension, xmlLegacyDimension, xmlDimension);
         return xmlDimension;
+    }
+
+    private void convertCaption(
+        Mondrian3Def.CubeDimension xmlLegacyCubeDimension,
+        Mondrian3Def.Dimension xmlLegacyDimension,
+        MondrianDef.Dimension xmlDimension)
+    {
+        xmlDimension.caption =
+            first(xmlLegacyCubeDimension.caption, xmlLegacyDimension.caption);
     }
 
     /**
@@ -1884,7 +1895,7 @@ public class RolapSchemaUpgrader {
                 final Mondrian3Def.SQL sql =
                     Mondrian3Def.SQL.choose(
                         xmlView.selects,
-                        loader.schema.getDialect());
+                        schema.getDialect());
                 final RolapSchema.PhysView physView =
                     new RolapSchema.PhysView(
                         physSchemaConverter.physSchema,
@@ -2180,6 +2191,9 @@ public class RolapSchemaUpgrader {
         convertAnnotations(
             xmlSchema.children,
             xmlLegacySchema.annotations);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(xmlSchema.toXML());
+        }
         return xmlSchema;
     }
 

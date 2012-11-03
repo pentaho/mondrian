@@ -2394,70 +2394,6 @@ public class RolapSchemaLoader {
     }
 
     /**
-     * Adds a dimension to an existing cube.
-     *
-     * @param cube Cube
-     * @param xml XML for dimension
-     * @param xmlDimensionLinks For each measure group, XML linking measure
-     *     group to dimension
-     * @return New dimension
-     */
-    public RolapDimension createDimension(
-        RolapCube cube,
-        String xml,
-        Map<String, String> xmlDimensionLinks)
-    {
-        MondrianDef.Dimension xmlDimension;
-        try {
-            final Parser xmlParser = XOMUtil.createDefaultParser();
-            final DOMWrapper def = xmlParser.parse(xml);
-                xmlDimension = new MondrianDef.Dimension(def);
-        } catch (XOMException e) {
-            throw Util.newError(
-                e,
-                "Error while adding dimension to cube '" + cube
-                + "' from XML [" + xml + "]");
-        }
-        return createDimension(cube, xmlDimension, null);
-    }
-
-    /**
-     * Creates a dimension.
-     *
-     * @param cube Cube
-     * @param xmlCubeDimension Cube dimension XML element
-     * @param xmlSchema Schema XML element
-     * @return Dimension; or null on error
-     */
-    RolapCubeDimension createDimension(
-        RolapCube cube,
-        MondrianDef.Dimension xmlCubeDimension,
-        MondrianDef.Schema xmlSchema)
-    {
-        RolapCubeDimension dimension =
-            getOrCreateDimension(
-                cube,
-                xmlCubeDimension,
-                schema,
-                xmlSchema,
-                cube.getDimensionList().size(),
-                cube.hierarchyList,
-                createAnnotationMap(
-                    xmlCubeDimension.getAnnotations()));
-
-        if (dimension == null) {
-            return null;
-        }
-
-        // add to dimensions array
-        cube.addDimension(dimension);
-
-        initDimension(dimension);
-
-        return dimension;
-    }
-
-    /**
      * Creates a dimension from its XML definition. If the XML definition's
      * 'source' attribute is set, and the shared dimension is cached in the
      * schema, returns that.
@@ -2769,7 +2705,7 @@ public class RolapSchemaLoader {
             dimension,
             dimensionName,
             dimensionSource,
-            xmlDimension.caption,
+            first(xmlCubeDimension.caption, xmlDimension.caption),
             xmlDimension.description,
             dimensionOrdinal,
             cubeHierarchyList,
