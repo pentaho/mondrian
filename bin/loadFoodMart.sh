@@ -15,7 +15,7 @@ Linux|Darwin) PS=: ;;
 *) PS=\; ;;
 esac
 
-outputQuoted=false
+outputQuoted=true
 
 export CP="lib/mondrian.jar"
 export CP="${CP}${PS}lib/olap4j.jar"

@@ -301,8 +301,8 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
 
     public void testMondrianBug476_770_957() throws Exception {
         final TestContext context =
-            SteelWheelsTestCase.createContext(
-                TestContext.instance(),
+            TestContext.instance().with(
+                TestContext.DataSet.STEELWHEELS,
                 "<Schema name=\"test_namecolumn\">"
                 + "<Dimension type=\"StandardDimension\" highCardinality=\"false\" name=\"Markets\">"
                 + "<Hierarchy hasAll=\"true\" allMemberName=\"All Markets\" primaryKey=\"CUSTOMERNUMBER\">"
@@ -517,8 +517,8 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             return;
         }
         TestContext context =
-            createContext(
-                getTestContext(),
+            getTestContext().with(
+                TestContext.DataSet.STEELWHEELS,
                 "<Schema name=\"FooBar\">\n"
                 + "    <Cube name=\"Foo\">\n"
                 + "        <Table name=\"orderfact\"></Table>\n"

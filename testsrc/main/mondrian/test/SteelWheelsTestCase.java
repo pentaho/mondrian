@@ -10,9 +10,6 @@
 package mondrian.test;
 
 
-import mondrian.olap.Util;
-import mondrian.rolap.RolapConnectionProperties;
-
 import junit.framework.TestCase;
 
 /**
@@ -27,57 +24,8 @@ import junit.framework.TestCase;
  */
 public class SteelWheelsTestCase extends TestCase {
 
-    /**
-     * Creates a SteelwheelsTestCase.
-     *
-     * @param name Test case name (usually method name)
-     */
-    public SteelWheelsTestCase(String name) {
-        super(name);
-    }
-
-    /**
-     * Creates a SteelwheelsTestCase.
-     */
+    /** Creates a SteelWheelsTestCase. */
     public SteelWheelsTestCase() {
-    }
-
-    /**
-     * Creates a TestContext which contains the given schema text.
-     *
-     * @param context Base test context
-     * @param schema A XML schema, or null
-     * Used for testing if the connection is valid.
-     * @return TestContext which contains the given schema
-     */
-    public static TestContext createContext(
-        TestContext context,
-        final String schema)
-    {
-        final Util.PropertyList properties =
-            context.getConnectionProperties().clone();
-        final String jdbc = properties.get(
-            RolapConnectionProperties.Jdbc.name());
-        properties.put(
-            RolapConnectionProperties.Jdbc.name(),
-            Util.replace(jdbc, "/foodmart", "/steelwheels"));
-        if (schema != null) {
-            properties.put(
-                RolapConnectionProperties.CatalogContent.name(),
-                schema);
-            properties.remove(
-                RolapConnectionProperties.Catalog.name());
-        } else {
-            final String catalog =
-                properties.get(RolapConnectionProperties.Catalog.name());
-            properties.put(
-                RolapConnectionProperties.Catalog.name(),
-                Util.replace(
-                    catalog,
-                    "FoodMart.mondrian.xml",
-                    "SteelWheels.mondrian.xml"));
-        }
-        return context.withProperties(properties);
     }
 
     /**
@@ -85,7 +33,7 @@ public class SteelWheelsTestCase extends TestCase {
      * different source for your SteelWheels connection.
      */
     public TestContext getTestContext() {
-        return createContext(TestContext.instance(), null)
+        return TestContext.instance().with(TestContext.DataSet.STEELWHEELS)
             .withCube("SteelWheelsSales");
     }
 }

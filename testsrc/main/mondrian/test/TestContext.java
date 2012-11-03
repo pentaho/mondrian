@@ -158,6 +158,40 @@ public class TestContext {
         };
     }
 
+    static Util.PropertyList replaceProperties(
+        TestContext context,
+        String catalogContent,
+        String schema0,
+        String schema1,
+        String catalog0,
+        String catalog1)
+    {
+        final Util.PropertyList properties =
+            context.getConnectionProperties().clone();
+        final String jdbc = properties.get(
+            RolapConnectionProperties.Jdbc.name());
+        properties.put(
+            RolapConnectionProperties.Jdbc.name(),
+            Util.replace(jdbc, "/" + schema0, "/" + schema1));
+        if (catalogContent != null) {
+            properties.put(
+                RolapConnectionProperties.CatalogContent.name(),
+                catalogContent);
+            properties.remove(
+                RolapConnectionProperties.Catalog.name());
+        } else {
+            final String catalog =
+                properties.get(RolapConnectionProperties.Catalog.name());
+            properties.put(
+                RolapConnectionProperties.Catalog.name(),
+                Util.replace(
+                    catalog,
+                    catalog0 + ".mondrian.xml",
+                    catalog1 + ".mondrian.xml"));
+        }
+        return properties;
+    }
+
     /**
      * Returns the connect string by which the unit tests can talk to the
      * FoodMart database.
@@ -1561,6 +1595,17 @@ public class TestContext {
      * @return Test context based on given data set
      */
     public TestContext with(DataSet dataSet) {
+        return with(dataSet, null);
+    }
+
+    /**
+     * Returns a test context based on a particular data set.
+     *
+     * @param dataSet Data set
+     * @return Test context based on given data set
+     */
+    public TestContext with(DataSet dataSet, String catalogContents) {
+        final Util.PropertyList properties;
         switch (dataSet) {
         case FOODMART:
             return withPropertiesReplace(
@@ -1573,7 +1618,19 @@ public class TestContext {
                 "FoodMart.mondrian.xml",
                 "FoodMart3.mondrian.xml");
         case STEELWHEELS:
-            return SteelWheelsTestCase.createContext(this, null);
+            properties =
+                replaceProperties(
+                    this, catalogContents,
+                    "foodmart", "steelwheels",
+                    "FoodMart", "SteelWheels");
+            return withProperties(properties);
+        case ADVENTURE_WORKS_DW:
+            properties =
+                TestContext.replaceProperties(
+                    this, catalogContents,
+                    "foodmart", "adventureworks_dw",
+                    "FoodMart", "AdventureWorks");
+            return withProperties(properties);
         default:
             throw Util.unexpected(dataSet);
         }
@@ -2671,7 +2728,8 @@ public class TestContext {
     enum DataSet {
         FOODMART,
         STEELWHEELS,
-        LEGACY_FOODMART
+        LEGACY_FOODMART,
+        ADVENTURE_WORKS_DW,
     }
 
     /**

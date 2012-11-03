@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2011 Pentaho
+// Copyright (C) 2009-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -35,7 +35,7 @@ public class SteelWheelsPerformanceTest extends TestCase {
      * different source for your FoodMart connection.
      */
     public TestContext getTestContext() {
-        return SteelWheelsTestCase.createContext(TestContext.instance(), null);
+        return TestContext.instance().with(TestContext.DataSet.STEELWHEELS);
     }
 
     /**
