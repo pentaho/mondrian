@@ -1,0 +1,226 @@
+<?xml version="1.0"?>
+<Schema name="Adventure Works" caption="Adventure Works" description="Knowledge to optimize Adventure Works" metamodelVersion="4.0" measuresCaption="Measures" missingLink="warning">
+  <PhysicalSchema>
+    <Table name="dim_date">
+      <Key>
+        <Column name="DateKey"/>
+      </Key>
+    </Table>
+    <Table name="internet_sales"/>
+    <Table name="dim_sales_reason">
+      <Key>
+        <Column name="SalesReasonKey"/>
+      </Key>
+    </Table>
+    <Table name="dim_customer">
+      <Key>
+        <Column name="CustomerKey"/>
+      </Key>
+    </Table>
+    <Table name="dim_sales_territory">
+      <Key>
+        <Column name="SalesTerritoryKey"/>
+      </Key>
+    </Table>
+    <Table name="dim_promotion">
+      <Key>
+        <Column name="PromotionKey"/>
+      </Key>
+    </Table>
+    <Table name="dim_product">
+      <Key>
+        <Column name="ProductKey"/>
+      </Key>
+    </Table>
+    <Query alias="query_customer_geography" keyColumn="CustomerKey">
+        <ExpressionView>
+          <SQL dialect="generic"><![CDATA[
+select c.CustomerKey, g.CountryRegionCode, g.StateProvinceName, g.City from dim_customer as c inner join dim_geography as g on c.GeographyKey = g.GeographyKey;
+          ]]></SQL>
+        </ExpressionView>
+    </Query>
+  </PhysicalSchema>
+  <Dimension name="Date" table="dim_date" key="DateKey" type="TIME">
+    <Attributes>
+      <Attribute name="DateKey" keyColumn="DateKey"/>
+      <Attribute name="Year" keyColumn="CalendarYear" levelType="TimeYears"/>
+      <Attribute name="Quarter" levelType="TimeQuarters">
+        <Key>
+          <Column name="CalendarYear"/>
+          <Column name="CalendarQuarter"/>
+        </Key>
+        <Name>
+          <Column name="CalendarQuarter"/>
+        </Name>
+      </Attribute>
+      <Attribute name="Month" levelType="TimeMonths">
+        <Key>
+          <Column name="CalendarYear"/>
+          <Column name="MonthNumberOfYear"/>
+        </Key>
+        <Name>
+          <Column name="EnglishMonthName"/>
+        </Name>
+      </Attribute>
+      <Attribute name="Week" levelType="TimeWeeks">
+        <Key>
+          <Column name="CalendarYear"/>
+          <Column name="WeekNumberOfYear"/>
+        </Key>
+        <Name>
+          <Column name="WeekNumberOfYear"/>
+        </Name>
+      </Attribute>
+      <Attribute name="Day of Month" levelType="TimeDays">
+        <Key>
+          <Column name="DayNumberOfMonth"/>
+        </Key>
+        <Name>
+          <Column name="DayNumberOfMonth"/>
+        </Name>
+      </Attribute>
+      <Attribute name="Date Id" keyColumn="DateKey"/>
+    </Attributes>
+    <Hierarchies>
+      <Hierarchy name="Monthly" hasAll="true">
+        <Level attribute="Year"/>
+        <Level attribute="Quarter"/>
+        <Level attribute="Month"/>
+        <Level attribute="Day of Month"/>
+      </Hierarchy>
+    </Hierarchies>
+  </Dimension>
+  <Dimension name="Sales Reason" table="dim_sales_reason" key="SalesReasonKey">
+    <Attributes>
+      <Attribute name="SalesReasonKey" keyColumn="SalesReasonKey"/>
+      <Attribute name="Reason Type" keyColumn="SalesReasonReasonType" hasHierarchy="true"/>
+      <Attribute name="Reason Name" keyColumn="SalesReasonName" hasHierarchy="true"/>
+    </Attributes>
+  </Dimension>
+  <Dimension name="Customer" table="dim_customer" key="Customer Key">
+    <Attributes>
+      <Attribute name="Customer Key" keyColumn="CustomerKey"/>
+      <Attribute name="First Name" keyColumn="FirstName"/>
+      <Attribute name="Last Name" keyColumn="LastName"/>
+      <Attribute name="Gender" keyColumn="Gender" hasHierarchy="true"/>
+      <Attribute name="Marital Status" keyColumn="MaritalStatus" hasHierarchy="true"/>
+      <Attribute name="Education Level" keyColumn="EnglishEducation" hasHierarchy="true"/>
+    </Attributes>
+  </Dimension>
+  <Dimension name="Customer Geography" table="query_customer_geography" key="CustomerKey">
+    <Attributes>
+      <Attribute name="CustomerKey" keyColumn="CustomerKey"/>
+      <Attribute name="Country" keyColumn="CountryRegionCode"/>
+      <Attribute name="State" keyColumn="StateProvinceName" />
+      <Attribute name="City" keyColumn="City"/>
+    </Attributes>
+    <Hierarchies>
+      <Hierarchy name="Geography" hasAll="true">
+        <Level attribute="Country"/>
+        <Level attribute="State"/>
+        <Level attribute="City"/>
+      </Hierarchy>
+    </Hierarchies>
+  </Dimension>
+  <Dimension name="Sales Territory" table="dim_sales_territory" key="SalesTerritoryKey">
+    <Attributes>
+      <Attribute name="SalesTerritoryKey" keyColumn="SalesTerritoryKey"/>
+      <Attribute name="Group" keyColumn="SalesTerritoryGroup"/>
+      <Attribute name="Country" keyColumn="SalesTerritoryCountry"/>
+      <Attribute name="Region" keyColumn="SalesTerritoryRegion"/>
+    </Attributes>
+    <Hierarchies>
+      <Hierarchy name="Sales Territory" hasAll="true">
+        <Level attribute="Group"/>
+        <Level attribute="Country"/>
+        <Level attribute="Region"/>
+      </Hierarchy>
+    </Hierarchies>
+  </Dimension>
+  <Dimension name="Promotion" table="dim_promotion" key="PromotionKey">
+    <Attributes>
+      <Attribute name="PromotionKey" keyColumn="PromotionKey"/>
+      <Attribute name="Promotion Category" keyColumn="EnglishPromotionCategory"/>
+      <Attribute name="Promotion Type" keyColumn="EnglishPromotionType"/>
+      <Attribute name="Promotion Name" keyColumn="EnglishPromotionName">
+        <Property attribute="Promotion Name"/>
+        <Property attribute="Discount Percent"/>
+        <Property attribute="Start Date"/>
+        <Property attribute="End Date"/>
+        <Property attribute="Min Quantity"/>
+        <Property attribute="Max Quantity"/>
+      </Attribute>
+      <Attribute name="Discount Percent" keyColumn="DiscountPct"/>
+      <Attribute name="Start Date"   keyColumn="StartDate"/>
+      <Attribute name="End Date"     keyColumn="EndDate"/>
+      <Attribute name="Min Quantity" keyColumn="MinQty"/>
+      <Attribute name="Max Quantity" keyColumn="MaxQty"/>
+    </Attributes>
+    <Hierarchies>
+      <Hierarchy name="Promotions" hasAll="true">
+        <Level attribute="Promotion Category"/>
+        <Level attribute="Promotion Type"/>
+        <Level attribute="Promotion Name"/>
+      </Hierarchy>
+    </Hierarchies>
+  </Dimension>
+  <Dimension name="Product" table="dim_product" key="ProductKey"><!-- TODO add product category. -->
+    <Attributes>
+      <Attribute name="ProductKey" keyColumn="ProductKey"/>
+      <Attribute name="Product Name" keyColumn="EnglishProductName"/>
+    </Attributes>
+    <Hierarchies>
+      <Hierarchy name="Product" hasAll="true">
+        <Level attribute="Product Name"/>
+      </Hierarchy>
+    </Hierarchies>
+  </Dimension>
+  <Cube name="Internet Sales">
+    <Dimensions>
+      <Dimension source="Date" name="Order Date"/>
+<!--
+      <Dimension source="Date" name="Due Date"/>
+      <Dimension source="Date" name="Ship Date"/>
+-->
+      <Dimension source="Customer"/>
+      <Dimension source="Promotion"/>
+      <Dimension source="Product"/>
+      <Dimension source="Sales Territory"/>
+        <!--
+      <Dimension source="Customer Geography"/>
+      -->
+    </Dimensions>
+    <MeasureGroups>
+      <MeasureGroup name="Internet Sales" table="internet_sales">
+        <Measures>
+          <Measure name="Qty Ordered" column="OrderQuantity" aggregator="sum" formatString="#,###"/>
+          <Measure name="Unit Price" column="UnitPrice" aggregator="sum" formatString="$#,##0.00"/>
+          <Measure name="Average Unit Price" column="UnitPrice" aggregator="avg" formatString="$#,##0.00"/>
+        </Measures>
+        <DimensionLinks>
+          <ForeignKeyLink dimension="Order Date" foreignKeyColumn="OrderDateKey" attribute="DateKey"/>
+          <!--
+          <ForeignKeyLink dimension="Due Date" foreignKeyColumn="DueDateKey" attribute="DateKey"/>
+          <ForeignKeyLink dimension="Ship Date" foreignKeyColumn="ShipDateKey" attribute="DateKey"/>
+        -->
+          <ForeignKeyLink dimension="Customer" foreignKeyColumn="CustomerKey"/>
+          <ForeignKeyLink dimension="Promotion" foreignKeyColumn="PromotionKey"/>
+          <ForeignKeyLink dimension="Product" foreignKeyColumn="ProductKey"/>
+          <ForeignKeyLink dimension="Sales Territory" foreignKeyColumn="SalesTerritoryKey"/>
+        </DimensionLinks>
+      </MeasureGroup>
+    </MeasureGroups>
+    <CalculatedMembers>
+      <CalculatedMember name="Total Sales" dimension="Measures">
+        <Formula>[Measures].[Qty Ordered] * [Measures].[Unit Price]</Formula>
+        <CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
+      </CalculatedMember>
+    </CalculatedMembers>
+  </Cube>
+<!--
+  <Role name="Inventory Manager">
+    <SchemaGrant access="none">
+    </SchemaGrant>
+  </Role>
+-->
+</Schema>
