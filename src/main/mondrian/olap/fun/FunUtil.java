@@ -2278,7 +2278,26 @@ public class FunUtil extends Util {
     /**
      * Stable partial sort of a list. Returns the desired head of the list.
      */
-    static <T> List<T> stablePartialSort(
+    public static <T> List<T> stablePartialSort(
+        final List<T> list, final Comparator<T> comp, int limit)
+    {
+        switch (2) {
+        case 0:
+            return stablePartialSortOriginal(list, comp, limit);
+        case 1:
+            return stablePartialSortPedro(list, comp, limit);
+        case 2:
+            return stablePartialSortJulian(list, comp, limit);
+        default:
+            throw new RuntimeException();
+        }
+    }
+
+    /**
+     * Original algorithm for stable partial sort of a list.
+     * Now superseded by {@link #stablePartialSortJulian}.
+     */
+    public static <T> List<T> stablePartialSortOriginal(
         final List<T> list, final Comparator<T> comp, int limit)
     {
         assert limit >= 0;
@@ -2326,6 +2345,141 @@ public class FunUtil extends Util {
                 return length;
             }
         };
+    }
+
+    /**
+     * Pedro's algorithm for stably sorting the top {@code limit} items in
+     * a list.
+     */
+    public static <T> List<T> stablePartialSortPedro(
+        final List<T> list, final Comparator<T> comp, int limit)
+    {
+        final ObjIntPair<T>[] pairs = new ObjIntPair[limit];
+        Comparator<ObjIntPair<T>> pairComp =
+            new Comparator<ObjIntPair<T>>() {
+                public int compare(ObjIntPair<T> x, ObjIntPair<T> y) {
+                    int val = comp.compare(x.t, y.t);
+                    if (val == 0) {
+                        val = x.i - y.i;
+                    }
+                    return val;
+                }
+            };
+
+        int filled = 0;
+        T maximum = null;
+        int maximumIndex = 0;
+        int originalIndex = 0;
+        for (T item : list) { // O(n) to scan list
+            switch (filled) {
+            case 0:
+                maximum = item;
+                pairs[0] = new ObjIntPair<T>(item, originalIndex);
+                filled++;
+                break;
+            default:
+                if (filled < limit) {
+                    pairs[filled] = new ObjIntPair<T>(item, originalIndex);
+
+                    if (comp.compare(item, maximum) > 0) {
+                        maximum = item;
+                        maximumIndex = filled;
+                    }
+                    filled++;
+                } else {
+                    if (comp.compare(item, maximum) < 0) {
+                        pairs[maximumIndex] =
+                            new ObjIntPair<T>(item, originalIndex);
+                        maximum = pairs[0].t;
+                        maximumIndex = 0;
+                        for (int i = 0; i < filled; i++) {
+                            if (comp.compare(pairs[i].t, maximum) > 0) {
+                                maximum = pairs[i].t;
+                                maximumIndex = i;
+                            }
+                        }
+                    }
+                }
+            }
+            originalIndex++;
+        }
+
+        Arrays.sort(pairs, pairComp);
+
+        for (int i = 0; i < limit; i++) {
+            T item = pairs[i].t;
+            T originalItem = list.get(i);
+            int itemIndex = pairs[i].i;
+            if (itemIndex < i) {
+                if (pairs[itemIndex].i > i) {
+                    list.set(pairs[itemIndex].i, originalItem);
+                }
+            } else {
+                list.set(itemIndex, originalItem);
+            }
+            list.set(i, item);
+        }
+
+        List<T> result = new ArrayList<T>(limit);
+        for (int i = 0; i < limit; i++) {
+            result.add(pairs[i].t);
+        }
+        return result;
+    }
+
+    /**
+     * Julian's algorithm for stable partial sort. Improves Pedro's algorithm
+     * by using a heap (priority queue) for the top {@code limit} items seen.
+     * The items on the priority queue have an ordinal field, so the queue
+     * can be used to generate a list of stably sorted items. (Heap sort is
+     * not normally stable.)
+     *
+     * @param list List to sort
+     * @param comp Comparator
+     * @param limit Maximum number of items to return
+     * @param <T> Element type
+     * @return Sorted list, containing at most limit items
+     */
+    public static <T> List<T> stablePartialSortJulian(
+        final List<T> list, final Comparator<T> comp, int limit)
+    {
+        final Comparator<ObjIntPair<T>> comp2 =
+            new Comparator<ObjIntPair<T>>() {
+                public int compare(ObjIntPair<T> o1, ObjIntPair<T> o2) {
+                    int c = comp.compare(o1.t, o2.t);
+                    if (c == 0) {
+                        c = Util.compare(o1.i, o2.i);
+                    }
+                    return -c;
+                }
+            };
+        int filled = 0;
+        final PriorityQueue<ObjIntPair<T>> queue =
+            new PriorityQueue<ObjIntPair<T>>(limit, comp2);
+        for (T element : list) {
+            if (filled < limit) {
+                queue.offer(new ObjIntPair<T>(element, filled++));
+            } else {
+                ObjIntPair<T> head = queue.element();
+                if (comp.compare(element, head.t) <= 0) {
+                    ObjIntPair<T> item = new ObjIntPair<T>(element, filled++);
+                    if (comp2.compare(item, head) >= 0) {
+                        ObjIntPair poll = queue.remove();
+                        Util.discard(poll);
+                        queue.offer(item);
+                    }
+                }
+            }
+        }
+
+        int n = queue.size();
+        final Object[] elements = new Object[n];
+        while (n > 0) {
+            elements[--n] = queue.poll().t;
+        }
+        assert queue.isEmpty();
+        //noinspection unchecked
+        return Arrays.asList((T[]) elements);
     }
 
     static TupleList parseTupleList(
@@ -3420,8 +3574,8 @@ public class FunUtil extends Util {
      * {@code int} to {@link Integer}.
      */
     public static class ObjIntPair<T> {
-        T t;
-        int i;
+        final T t;
+        final int i;
 
         public ObjIntPair(T t, int i) {
             this.t = t;
@@ -3433,7 +3587,8 @@ public class FunUtil extends Util {
         }
 
         public boolean equals(Object obj) {
-            return obj instanceof ObjIntPair
+            return this == obj
+                || obj instanceof ObjIntPair
                 && this.i == ((ObjIntPair) obj).i
                 && Util.equals(this.t, ((ObjIntPair) obj).t);
         }

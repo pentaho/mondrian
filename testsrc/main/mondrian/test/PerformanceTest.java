@@ -10,6 +10,7 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.olap.fun.FunUtil;
 import mondrian.olap.type.*;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.util.Bug;
@@ -622,6 +623,134 @@ public class PerformanceTest extends FoodMartTestCase {
     }
 
     /**
+     * Tests performance of
+     * {@link mondrian.olap.fun.FunUtil#stablePartialSort}.
+     *
+     * <p>"Pedro's algorithm" was supplied as
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1288">MONDRIAN-1288,
+     * "Optimize stable partial sort when dataset is huge and limit is
+     * small"</a>.</p>
+     *
+     * <p>Parameters: N (number of elements in list), L (limit; number of
+     * elements to return)</p>
+     *
+     * <p>Conclusions:</p>
+     * <ul>
+     * <li>Array sort is better when L is almost as large as N</li>
+     * <li>If L is small, Pedro's algorithm is best; but it grows
+     *     with O(L^2) and is unusable for L &gt; 10,000</li>
+     * <li>If L is less than N / 20, Julian's algorithm is best</li>
+     * <li>For L larger than N / 20, array sort is best</li>
+     * <li>Each algorithm improves number of comparisons: Julian's algorithm
+     *     is the best, with N + L log L + comparisons</li>
+     * </ul>
+     */
+    public void testStablePartialSort() {
+        final int N = 1000000; // should be 1M in checked-in code
+        final int limit = 10;  // should be 10 in checked-in code
+        final int runCount = 10;
+
+        final List<Integer> originals = new ArrayList<Integer>(N);
+        Random random = new Random(1235);
+        for (int i = 0; i < N; i++) {
+            originals.add(random.nextInt(N));
+        }
+
+        for (StableSortAlgorithm algorithm : StableSortAlgorithm.values()) {
+            algorithm.foo(runCount, originals, limit);
+        }
+    }
+
+    private enum StableSortAlgorithm {
+        // First, regular array sort.
+        // N=1M, L=10: 338 first; 247.4 +- 0.8; 246 min; 251 max
+        // N=10M, L=10: 3988 first; 3934 +- 10; 3923 min; 4705 max
+        // N=10M, L=10K: 4037 first; 3974 +- 51; 3878 min; 4848 max
+        // N=10M, L=1M: 4006 first; 3919 +- 39; 3868 min; 4774 max
+        // N=50M, L=2.5M: 36350 first; 27977 +- 446; 27603 min; 29452 max
+        ARRAY(18640353) {
+            <T extends Comparable<T>> List<T> sort(
+                List<T> list, Comparator<T> comp, int limit)
+            {
+                Collections.sort(list, comp);
+                return list.subList(0, limit);
+            }
+        },
+
+        // Second, use partial sort algorithm
+        // N=1M, L=10: 194 first; 53.0 +- 1.8; 50 min; 73 max
+        // N=10M, L=10: 2998 first; 622 +- 83; 465 min; 1843 max
+        // N=10M, L=10K: 867 first; 608 +- 38; 558 min; 706 max
+        // N=10M, L=1M: 3179 first; 1357 +- 77; 1227 min; 1479 max
+        ORIGINAL(2153571) {
+            <T extends Comparable<T>> List<T> sort(
+                List<T> list, Comparator<T> comp, int limit)
+            {
+                return FunUtil.stablePartialSortOriginal(list, comp, limit);
+            }
+        },
+
+        // Third, new partial sort algorithm
+        // N=1M, L=10: 22 first; 11.4 +- 0.4; 10 min; 13 max
+        // N=10M, L=10: 102 first; 79.0 +- 0.0; 78 min; 80 max
+        // N=10M, L=10K: 5974 first; 5358 +- 18; 5329 min; 5391 max
+        // N=10M, L=1M: too long
+        PEDRO(1001252) {
+            <T extends Comparable<T>> List<T> sort(
+                List<T> list, Comparator<T> comp, int limit)
+            {
+                return FunUtil.stablePartialSortPedro(list, comp, limit);
+            }
+        },
+
+        // Fourth, improved partial sort
+        // N=1M, L=10: 88 first; 6.0 +- 0.0; 6 min; 7 max
+        // N=10M, L=10: 71 first; 92.6 +- 0.4898979485566356; 92 min; 93 max
+        // N=10M, L=10K: 158 first; 133.6 +- 0.8; 132 min; 137 max
+        // N=10M, L=1M: 6896 first; 6896 +- 85; 6806 min; 7233 max
+        // N=10M, L=500K: 6896 first; 6896 +- 85; 6806 min; 7233 max
+        JULIAN(1000919) {
+            <T extends Comparable<T>> List<T> sort(
+                List<T> list, Comparator<T> comp, int limit)
+            {
+                return FunUtil.stablePartialSortJulian(list, comp, limit);
+            }
+        };
+
+        /** Comparison count for N=1M and L=10K. Note that N log N is
+         * 19,931,568; array sort does slightly better than that, and each
+         * successive algorithm does better still. */
+        private final int compCount;
+
+        StableSortAlgorithm(int compCount) {
+            this.compCount = compCount;
+        }
+
+        abstract <T extends Comparable<T>> List<T> sort(
+            List<T> list, Comparator<T> comp, int limit);
+
+        void foo(int runCount, List<Integer> list, int limit) {
+            Statistician statistician = new Statistician(name());
+            final CountingComparator<Integer> comp =
+                new CountingComparator<Integer>();
+
+            for (int i = 0; i < runCount; i++) {
+                comp.count = 0;
+                List<Integer> copy = new ArrayList<Integer>(list);
+                final long start = System.currentTimeMillis();
+                List<Integer> x = sort(copy, comp, limit);
+                statistician.record(start);
+                if (limit == 10 && list.size() == 1000000) {
+                    assertEquals(
+                        name(), "[0, 1, 1, 2, 3, 5, 5, 5, 6, 9]", x.toString());
+                    //assertEquals(name(), compCount, comp.count);
+                }
+            }
+            statistician.printDurations();
+        }
+    }
+
+    /**
      * Collects statistics for a test that is run multiple times.
      */
     static class Statistician {
@@ -674,12 +803,14 @@ public class PerformanceTest extends FoodMartTestCase {
             final double stddev = Math.sqrt(y / count);
             LOGGER.debug(
                 desc + ": "
-                + durations.get(0) + " first; "
-                + avg + " +- "
-                + stddev + "; "
-                + coreDurations.get(0) + " min; "
-                + coreDurations.get(coreDurations.size() - 1) + " max; "
-                + durationsString + " millis");
+                + (durations.size() == 0
+                    ? "no runs"
+                    : durations.get(0) + " first; "
+                    + avg + " +- "
+                    + stddev + "; "
+                    + coreDurations.get(0) + " min; "
+                    + coreDurations.get(coreDurations.size() - 1) + " max; "
+                    + durationsString + " millis"));
         }
     }
 
@@ -713,6 +844,17 @@ public class PerformanceTest extends FoodMartTestCase {
 
         public String[] getReservedWords() {
             return null;
+        }
+    }
+
+    private static class CountingComparator<T extends Comparable<T>>
+        implements Comparator<T>
+    {
+        int count;
+
+        public int compare(T e0, T e1) {
+            ++count;
+            return e0.compareTo(e1);
         }
     }
 }
