@@ -2210,7 +2210,26 @@ public class FunUtil extends Util {
     /**
      * Stable partial sort of a list. Returns the desired head of the list.
      */
-    static <T> List<T> stablePartialSort(
+    public static <T> List<T> stablePartialSort(
+        final List<T> list, final Comparator<T> comp, int limit)
+    {
+        switch (2) {
+        case 0:
+            return stablePartialSortOriginal(list, comp, limit);
+        case 1:
+            return stablePartialSortPedro(list, comp, limit);
+        case 2:
+            return stablePartialSortJulian(list, comp, limit);
+        default:
+            throw new RuntimeException();
+        }
+    }
+
+    /**
+     * Original algorithm for stable partial sort of a list.
+     * Now superseded by {@link #stablePartialSortJulian}.
+     */
+    public static <T> List<T> stablePartialSortOriginal(
         final List<T> list, final Comparator<T> comp, int limit)
     {
         assert limit >= 0;
@@ -2258,6 +2277,151 @@ public class FunUtil extends Util {
                 return length;
             }
         };
+    }
+
+    /**
+     * Pedro's algorithm for stably sorting the top {@code limit} items in
+     * a list.
+     */
+    public static <T> List<T> stablePartialSortPedro(
+        final List<T> list, final Comparator<T> comp, int limit)
+    {
+        final ObjIntPair<T>[] pairs = new ObjIntPair[limit];
+        Comparator<ObjIntPair<T>> pairComp =
+            new Comparator<ObjIntPair<T>>() {
+                public int compare(ObjIntPair<T> x, ObjIntPair<T> y) {
+                    int val = comp.compare(x.t, y.t);
+                    if (val == 0) {
+                        val = x.i - y.i;
+                    }
+                    return val;
+                }
+            };
+
+        int filled = 0;
+        T maximum = null;
+        int maximumIndex = 0;
+        int originalIndex = 0;
+        for (T item : list) { // O(n) to scan list
+            switch (filled) {
+            case 0:
+                maximum = item;
+                pairs[0] = new ObjIntPair<T>(item, originalIndex);
+                filled++;
+                break;
+            default:
+                if (filled < limit) {
+                    pairs[filled] = new ObjIntPair<T>(item, originalIndex);
+
+                    if (comp.compare(item, maximum) > 0) {
+                        maximum = item;
+                        maximumIndex = filled;
+                    }
+                    filled++;
+                } else {
+                    if (comp.compare(item, maximum) < 0) {
+                        pairs[maximumIndex] =
+                            new ObjIntPair<T>(item, originalIndex);
+                        maximum = pairs[0].t;
+                        maximumIndex = 0;
+                        for (int i = 0; i < filled; i++) {
+                            if (comp.compare(pairs[i].t, maximum) > 0) {
+                                maximum = pairs[i].t;
+                                maximumIndex = i;
+                            }
+                        }
+                    }
+                }
+            }
+            originalIndex++;
+        }
+
+        Arrays.sort(pairs, pairComp);
+
+        for (int i = 0; i < limit; i++) {
+            T item = pairs[i].t;
+            T originalItem = list.get(i);
+            int itemIndex = pairs[i].i;
+            if (itemIndex < i) {
+                if (pairs[itemIndex].i > i) {
+                    list.set(pairs[itemIndex].i, originalItem);
+                }
+            } else {
+                list.set(itemIndex, originalItem);
+            }
+            list.set(i, item);
+        }
+
+        List<T> result = new ArrayList<T>(limit);
+        for (int i = 0; i < limit; i++) {
+            result.add(pairs[i].t);
+        }
+        return result;
+    }
+
+    /**
+     * Julian's algorithm for stable partial sort. Improves Pedro's algorithm
+     * by using a heap (priority queue) for the top {@code limit} items seen.
+     * The items on the priority queue have an ordinal field, so the queue
+     * can be used to generate a list of stably sorted items. (Heap sort is
+     * not normally stable.)
+     *
+     * @param list List to sort
+     * @param comp Comparator
+     * @param limit Maximum number of items to return
+     * @param <T> Element type
+     * @return Sorted list, containing at most limit items
+     */
+    public static <T> List<T> stablePartialSortJulian(
+        final List<T> list, final Comparator<T> comp, int limit)
+    {
+        class Item implements Comparable<Item> {
+            final T t;
+            final int ordinal;
+
+            public Item(T t, int ordinal) {
+                this.ordinal = ordinal;
+                this.t = t;
+            }
+
+            public int compareTo(Item o) {
+                int c = comp.compare(t, o.t);
+                if (c == 0) {
+                    c = Integer.compare(ordinal, o.ordinal);
+                }
+                return -c;
+            }
+
+            public String toString() {
+                return ordinal + ":" + t;
+            }
+        }
+        int filled = 0;
+        final PriorityQueue<Item> queue = new PriorityQueue<Item>(limit);
+        for (T element : list) {
+            if (filled < limit) {
+                queue.offer(new Item(element, filled++));
+            } else {
+                Item head = queue.element();
+                if (comp.compare(element, head.t) <= 0) {
+                    Item item = new Item(element, filled++);
+                    if (item.compareTo(head) >= 0) {
+                        Item poll = queue.remove();
+                        Util.discard(poll);
+                        queue.offer(item);
+                    }
+                }
+            }
+        }
+
+        int n = queue.size();
+        final Object[] elements = new Object[n];
+        while (n > 0) {
+            elements[--n] = queue.poll().t;
+        }
+        assert queue.isEmpty();
+        //noinspection unchecked
+        return Arrays.asList((T[]) elements);
     }
 
     static TupleList parseTupleList(
