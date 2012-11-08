@@ -367,6 +367,13 @@ doTest2() {
   fi
 }
 
+myReadlink() {
+  case $(uname) in
+  (Darwin) readlink "$@";;
+  (*) readlink -f "$@";;
+  esac
+}
+
 # Echoes a value for ANT_HOME consistent with the JDK.
 # JDK 1.4 can't run modern versions of ant (because junit requires annotations)
 # but retroweaver cannot run on old versions of ant.
@@ -374,10 +381,10 @@ chooseAntHome() {
   jdk=$1
   case $jdk in
   (jdk1.4)
-    readlink -f /usr/local/apache-ant-1.6.0
+    myReadlink /usr/local/apache-ant-1.6.0
     ;;
   (*)
-    dirname $(dirname $(readlink -f $(which ant)))
+    dirname $(dirname $(myReadlink $(which ant)))
     ;;
   esac
 }
