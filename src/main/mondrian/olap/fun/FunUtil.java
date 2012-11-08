@@ -2281,23 +2281,61 @@ public class FunUtil extends Util {
     public static <T> List<T> stablePartialSort(
         final List<T> list, final Comparator<T> comp, int limit)
     {
-        switch (2) {
-        case 0:
-            return stablePartialSortOriginal(list, comp, limit);
-        case 1:
-            return stablePartialSortPedro(list, comp, limit);
-        case 2:
-            return stablePartialSortJulian(list, comp, limit);
-        default:
-            throw new RuntimeException();
+        return stablePartialSort(list, comp, limit, 0);
+    }
+
+    /**
+     * Stable partial sort of a list, using a specified algorithm.
+     */
+    public static <T> List<T> stablePartialSort(
+        final List<T> list, final Comparator<T> comp, int limit, int algorithm)
+    {
+        assert limit <= list.size();
+        assert list.size() > 0;
+        for (;;) {
+            switch (algorithm) {
+            case 0:
+                float ratio = (float) limit / (float) list.size();
+                if (ratio <= .05) {
+                    algorithm = 4; // julian's algorithm
+                } else if (ratio <= .35) {
+                    algorithm = 2; // marc's algorithm
+                } else {
+                    algorithm = 1; // array sort
+                }
+                break;
+            case 1:
+                return stablePartialSortArray(list, comp, limit);
+            case 2:
+                return stablePartialSortMarc(list, comp, limit);
+            case 3:
+                return stablePartialSortPedro(list, comp, limit);
+            case 4:
+                return stablePartialSortJulian(list, comp, limit);
+            default:
+                throw new RuntimeException();
+            }
         }
     }
 
     /**
-     * Original algorithm for stable partial sort of a list.
+     * Partial sort an array by sorting it and returning the first {@code limit}
+     * elements. Fastest approach if limit is a significant fraction of the
+     * list.
+     */
+    public static <T> List<T> stablePartialSortArray(
+        final List<T> list, final Comparator<T> comp, int limit)
+    {
+        ArrayList<T> list2 = new ArrayList<T>(list);
+        Collections.sort(list2, comp);
+        return list2.subList(0, limit);
+    }
+
+    /**
+     * Marc's original algorithm for stable partial sort of a list.
      * Now superseded by {@link #stablePartialSortJulian}.
      */
-    public static <T> List<T> stablePartialSortOriginal(
+    public static <T> List<T> stablePartialSortMarc(
         final List<T> list, final Comparator<T> comp, int limit)
     {
         assert limit >= 0;
@@ -2406,6 +2444,7 @@ public class FunUtil extends Util {
 
         Arrays.sort(pairs, pairComp);
 
+        if (false)
         for (int i = 0; i < limit; i++) {
             T item = pairs[i].t;
             T originalItem = list.get(i);
@@ -2422,7 +2461,7 @@ public class FunUtil extends Util {
 
         List<T> result = new ArrayList<T>(limit);
         for (int i = 0; i < limit; i++) {
-            result.add(pairs[i].t);
+            result.add(list.get(pairs[i].i));
         }
         return result;
     }

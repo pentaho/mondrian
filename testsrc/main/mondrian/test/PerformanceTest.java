@@ -15,6 +15,7 @@ import mondrian.olap.type.*;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.util.Bug;
 
+import org.apache.commons.collections.ComparatorUtils;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -672,25 +673,24 @@ public class PerformanceTest extends FoodMartTestCase {
             <T extends Comparable<T>> List<T> sort(
                 List<T> list, Comparator<T> comp, int limit)
             {
-                Collections.sort(list, comp);
-                return list.subList(0, limit);
+                return FunUtil.stablePartialSortArray(list, comp, limit);
             }
         },
 
-        // Second, use partial sort algorithm
+        // Marc's original partial sort algorithm based on Quicksort.
         // N=1M, L=10: 194 first; 53.0 +- 1.8; 50 min; 73 max
         // N=10M, L=10: 2998 first; 622 +- 83; 465 min; 1843 max
         // N=10M, L=10K: 867 first; 608 +- 38; 558 min; 706 max
         // N=10M, L=1M: 3179 first; 1357 +- 77; 1227 min; 1479 max
-        ORIGINAL(2153571) {
+        MARC(2153571) {
             <T extends Comparable<T>> List<T> sort(
                 List<T> list, Comparator<T> comp, int limit)
             {
-                return FunUtil.stablePartialSortOriginal(list, comp, limit);
+                return FunUtil.stablePartialSortMarc(list, comp, limit);
             }
         },
 
-        // Third, new partial sort algorithm
+        // Pedro's partial sort algorithm based on selection.
         // N=1M, L=10: 22 first; 11.4 +- 0.4; 10 min; 13 max
         // N=10M, L=10: 102 first; 79.0 +- 0.0; 78 min; 80 max
         // N=10M, L=10K: 5974 first; 5358 +- 18; 5329 min; 5391 max
@@ -703,7 +703,7 @@ public class PerformanceTest extends FoodMartTestCase {
             }
         },
 
-        // Fourth, improved partial sort
+        // Julian's improved partial sort based on a heap.
         // N=1M, L=10: 88 first; 6.0 +- 0.0; 6 min; 7 max
         // N=10M, L=10: 71 first; 92.6 +- 0.4898979485566356; 92 min; 93 max
         // N=10M, L=10K: 158 first; 133.6 +- 0.8; 132 min; 137 max
@@ -731,21 +731,42 @@ public class PerformanceTest extends FoodMartTestCase {
 
         void foo(int runCount, List<Integer> list, int limit) {
             Statistician statistician = new Statistician(name());
-            final CountingComparator<Integer> comp =
-                new CountingComparator<Integer>();
+            Integer first = list.get(0);
 
             for (int i = 0; i < runCount; i++) {
-                comp.count = 0;
-                List<Integer> copy = new ArrayList<Integer>(list);
+                switch (this) {
+                case PEDRO:
+                    if (limit > 10000) {
+                        continue;
+                    }
+                }
+                @SuppressWarnings("unchecked")
+                final Comparator<Integer> comp =
+                    ComparatorUtils.naturalComparator();
                 final long start = System.currentTimeMillis();
-                List<Integer> x = sort(copy, comp, limit);
+                List<Integer> x = sort(list, comp, limit);
                 statistician.record(start);
+                assertEquals("non-destructive", first, list.get(0));
                 if (limit == 10 && list.size() == 1000000) {
                     assertEquals(
                         name(), "[0, 1, 1, 2, 3, 5, 5, 5, 6, 9]", x.toString());
-                    //assertEquals(name(), compCount, comp.count);
                 }
             }
+
+            switch (this) {
+            case PEDRO:
+                if (limit > 10000) {
+                    break;
+                }
+            default:
+                final CountingComparator<Integer> comp =
+                    new CountingComparator<Integer>();
+                List<Integer> x = sort(list, comp, limit);
+                if (limit == 10 && list.size() == 1000000 && false) {
+                    assertEquals(name(), compCount, comp.count);
+                }
+            }
+
             statistician.printDurations();
         }
     }
