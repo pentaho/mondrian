@@ -2443,38 +2443,28 @@ public class FunUtil extends Util {
     public static <T> List<T> stablePartialSortJulian(
         final List<T> list, final Comparator<T> comp, int limit)
     {
-        class Item implements Comparable<Item> {
-            final T t;
-            final int ordinal;
-
-            public Item(T t, int ordinal) {
-                this.ordinal = ordinal;
-                this.t = t;
-            }
-
-            public int compareTo(Item o) {
-                int c = comp.compare(t, o.t);
-                if (c == 0) {
-                    c = Util.compare(ordinal, o.ordinal);
+        final Comparator<ObjIntPair<T>> comp2 =
+            new Comparator<ObjIntPair<T>>() {
+                public int compare(ObjIntPair<T> o1, ObjIntPair<T> o2) {
+                    int c = comp.compare(o1.t, o2.t);
+                    if (c == 0) {
+                        c = Util.compare(o1.i, o2.i);
+                    }
+                    return -c;
                 }
-                return -c;
-            }
-
-            public String toString() {
-                return ordinal + ":" + t;
-            }
-        }
+            };
         int filled = 0;
-        final PriorityQueue<Item> queue = new PriorityQueue<Item>(limit);
+        final PriorityQueue<ObjIntPair<T>> queue =
+            new PriorityQueue<ObjIntPair<T>>(limit, comp2);
         for (T element : list) {
             if (filled < limit) {
-                queue.offer(new Item(element, filled++));
+                queue.offer(new ObjIntPair<T>(element, filled++));
             } else {
-                Item head = queue.element();
+                ObjIntPair<T> head = queue.element();
                 if (comp.compare(element, head.t) <= 0) {
-                    Item item = new Item(element, filled++);
-                    if (item.compareTo(head) >= 0) {
-                        Item poll = queue.remove();
+                    ObjIntPair<T> item = new ObjIntPair<T>(element, filled++);
+                    if (comp2.compare(item, head) >= 0) {
+                        ObjIntPair poll = queue.remove();
                         Util.discard(poll);
                         queue.offer(item);
                     }
@@ -3584,8 +3574,8 @@ public class FunUtil extends Util {
      * {@code int} to {@link Integer}.
      */
     public static class ObjIntPair<T> {
-        T t;
-        int i;
+        final T t;
+        final int i;
 
         public ObjIntPair(T t, int i) {
             this.t = t;
@@ -3597,7 +3587,8 @@ public class FunUtil extends Util {
         }
 
         public boolean equals(Object obj) {
-            return obj instanceof ObjIntPair
+            return this == obj
+                || obj instanceof ObjIntPair
                 && this.i == ((ObjIntPair) obj).i
                 && Util.equals(this.t, ((ObjIntPair) obj).t);
         }
