@@ -1995,6 +1995,12 @@ public class RolapSchema extends OlapElementBase implements Schema {
     }
 
     public static abstract class PhysExpr {
+        /**
+         * Returns the SQL string for this expression.
+         *
+         * <p>The expression is used as a key for cell requests, so this method
+         * must be fast. Preferably return a pre-computed result.</p>
+         */
         public abstract String toSql();
 
         /**
