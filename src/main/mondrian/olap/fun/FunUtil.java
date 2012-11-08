@@ -2387,7 +2387,7 @@ public class FunUtil extends Util {
             public int compareTo(Item o) {
                 int c = comp.compare(t, o.t);
                 if (c == 0) {
-                    c = Integer.compare(ordinal, o.ordinal);
+                    c = Util.compare(ordinal, o.ordinal);
                 }
                 return -c;
             }
