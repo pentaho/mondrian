@@ -688,7 +688,9 @@ public class FunUtil extends Util {
      *
      * <p>Avoids sorting the whole list, finds only the <i>n</i>top (or bottom)
      * valued Members, and returns them as a new List. Helper function for MDX
-     * functions TopCount and BottomCount.
+     * functions TopCount and BottomCount.</p>
+     *
+     * <p>NOTE: Does not preserve the contents of the validator.</p>
      *
      * @param list a list of members
      * @param exp a Calc applied to each member to find its sort-key
@@ -697,7 +699,6 @@ public class FunUtil extends Util {
      * @param desc true to sort descending (and find TopCount), false to sort
      *   ascending (and find BottomCount).
      * @return the top or bottom members, as a new list.
-     * <p>NOTE: Does not preserve the contents of the validator.
      */
     public static  List<Member> partiallySortMembers(
         Evaluator evaluator,
@@ -706,6 +707,8 @@ public class FunUtil extends Util {
         int limit,
         boolean desc)
     {
+        assert list.size() > 0;
+        assert limit <= list.size();
         evaluator.getTiming().markStart(SORT_EVAL_TIMING_NAME);
         boolean timingEval = true;
         boolean timingSort = false;
@@ -804,7 +807,7 @@ public class FunUtil extends Util {
      *
      * @param evaluator Evaluator
      * @param list a list of tuples
-     * @param exp a Calc applied to each tple to find its sort-key
+     * @param exp a Calc applied to each tuple to find its sort-key
      * @param limit maximum count of tuples to return.
      * @param desc true to sort descending (and find TopCount),
      *  false to sort ascending (and find BottomCount).
@@ -817,6 +820,8 @@ public class FunUtil extends Util {
         int limit,
         boolean desc)
     {
+        assert list.size() > 0;
+        assert limit <= list.size();
         Comparator<List<Member>> comp =
             new BreakTupleComparator(evaluator, exp, list.getArity());
         if (desc) {
