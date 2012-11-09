@@ -56,6 +56,16 @@ public class MonetDbDialect extends JdbcDialectImpl {
     public boolean requiresAliasForFromQuery() {
     	return true;
     }
+    
+    @Override
+    public boolean allowsCompoundCountDistinct() {
+    	return false;
+    }
+    
+    @Override
+    public boolean supportsGroupByExpressions() {
+    	return false;
+    }
 }
 
 // End LucidDbDialect.java
