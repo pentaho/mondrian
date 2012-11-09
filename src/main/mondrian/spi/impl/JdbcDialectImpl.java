@@ -1013,6 +1013,8 @@ public class JdbcDialectImpl implements Dialect {
             return DatabaseProduct.INFOBRIGHT;
         } else if (upperProductName.equals("MYSQL")) {
             return DatabaseProduct.MYSQL;
+        } else if (upperProductName.equals("MONETDB")) {
+            return DatabaseProduct.MONETDB;
         } else if (upperProductName.equals("VERTICA")
             || upperProductName.equals("VERTICA DATABASE"))
         {
