@@ -1921,12 +1921,15 @@ Revision is $Id$
             </Doc>
         </Attribute>
         <Code><![CDATA[
+            private String genericExpression;
+
             /** Convenience constructor. */
             public Column(String table, String name) {
                 this();
                 Util.assertTrue(name != null);
                 this.table = table;
                 this.name = name;
+                this.genericExpression = table == null ? name : (table + "." + name);
             }
 
             public String getExpression(SqlQuery query) {
@@ -1934,11 +1937,7 @@ Revision is $Id$
             }
 
             public String getGenericExpression() {
-                if (table == null) {
-                    return name;
-                } else {
-                    return table + "." + name;
-                }
+                return genericExpression;
             }
 
             public String getColumnName() {
