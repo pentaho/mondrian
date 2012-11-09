@@ -67,10 +67,8 @@
 
   <property name="log4j.configuration" value="log4j.properties" />
 
-  <property name="mondrian.webapp.deploy" value="${env.JBOSS_HOME}/server/default/deploy"/>
   <property name="mondrian.retroweave" value="false"
       description="Tells mondrian to use retroweaver even if the JDK is later than 1.4"/>
-  <property name="unix.script" value="${basedir}/buildOnJdk.sh"/>
   <!--
     Set properties that are needed for the retroweaver tasks
     to run correctly under CruiseControl.
@@ -123,6 +121,7 @@ ${java.dir}/mondrian/olap/MondrianProperties.java,
 ${java.dir}/mondrian/resource/MondrianResource*.java,
 ${java.dir}/mondrian/xmla/DataSourcesConfig*.java,
 ${etc.dir}/mondrian/web/jsp/**/*.java"/>
+
   <property name="generated.lib.files" value="
 ${lib.dir}/mondrian.jar,
 ${jar-jdk14.file},
@@ -134,6 +133,12 @@ ${lib.dir}/*.dtd,
 VERSION.txt,
 ${doc.dir}/properties.html,
 mondrian.properties.template"/>
+
+  <property name="obsolete.java.files" value="
+mondrian/rolap/RolapSchemaUpgrader.java,
+mondrian/rolap/PhysSchemaConverter.java,
+mondrian/rolap/HierarchyUsage.java,
+mondrian/rolap/RolapCubeUsages.java"/>
 
   <path id="project.classpath">
     <pathelement location="${lib.dir}/servlet-api.jar"/>
@@ -198,6 +203,14 @@ mondrian.properties.template"/>
     <pathelement path="${basedir}"/>
   </path>
 
+  <path id="project.bootclasspath.jdk15">
+      <pathelement location="${lib.dir}/rt-jdk1.5.jar"/>
+  </path>
+
+  <path id="project.bootclasspath.jdk16">
+      <pathelement location="${lib.dir}/rt-java6.jar"/>
+  </path>
+
   <condition property="jdk" id="jdk" value="jdk14">
     <or>
       <contains string="${java.version}" substring="1.4." />
@@ -242,15 +255,6 @@ mondrian.properties.template"/>
     <not>
       <contains string="${java.version}" substring="1.7." />
     </not>
-  </condition>
-
-  <condition property="java.version.matches.requested">
-    <or>
-      <not>
-        <isset property="requested.java.version"/>
-      </not>
-      <matches pattern="^${requested.java.version}.*" string="jdk${java.runtime.version}" />
-    </or>
   </condition>
 
   <path id="project.test.classpath" refid="project.test.classpath-${jdk}"/>
@@ -457,7 +461,8 @@ generate.properties,
 def,
 compileJdk15,
 compileJdk16,
-compileJdk17"/>
+compileJdk17,
+copy"/>
 
   <target name="generate.resources" depends="define-tasks">
 
@@ -509,32 +514,7 @@ compileJdk17"/>
         fork="no"/>
   </target>
 
-  <target name="apologise" unless="java.version.matches.requested">
-    <echo>Actual JVM Version (${java.runtime.version}) does not match
-requested (${requested.java.version}); skipping compile for this JDK.
-If you wish to build for this JDK, modify ${unix.script}.
-    </echo>
-  </target>
-
-  <target name="compile.java" depends="apologise" if="java.version.matches.requested">
-    <echo>Compiling on JVM Version: ${java.runtime.version}</echo>
-    <javac
-        srcdir="${java.dir}"
-        destdir="${classes.dir}"
-        debug="${project.build.debug}"
-        classpathref="project.build.classpath"
-        includeantruntime="false">
-      <include name="mondrian/**/*.java"/>
-      <exclude name="mondrian/olap4j/FactoryJdbc3Impl.java" if="jdk15.not.present"/>
-      <exclude name="mondrian/olap4j/FactoryJdbc4Impl.java" if="jdk16.not.present"/>
-      <exclude name="mondrian/olap4j/FactoryJdbc4Plus.java" if="jdk16.not.present"/>
-      <exclude name="mondrian/olap4j/FactoryJdbc41Impl.java" if="jdk17.not.present"/>
-      <exclude name="mondrian/util/UtilCompatibleJdk16.java" if="jdk15.present"/>
-      <exclude name="mondrian/rolap/RolapSchemaUpgrader.java"/>
-      <exclude name="mondrian/rolap/PhysSchemaConverter.java"/>
-      <exclude name="mondrian/rolap/HierarchyUsage.java"/>
-      <exclude name="mondrian/rolap/RolapCubeUsages.java"/>
-    </javac>
+  <target name="copy">
     <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml"
         todir="${classes.dir}"/>
     <copy file="VERSION.txt"
@@ -966,13 +946,6 @@ doc/deployDoc.sh" />
           dir="."
           includes="mondrian.properties.template"
           fullpath="${dist.name}/mondrian.properties" />
-      <zipfileset
-          dir="."
-          prefix="${dist.name}"
-          filemode="755"
-          includes="
-buildOnJdk.bat,
-buildOnJdk.sh" />
     </zip>
   </target>
 
@@ -1019,7 +992,7 @@ buildOnJdk.sh" />
   </target>
 
   <target name="binzip"
-      depends="version,checkIsJdk15,jar,srczip,javadoc,xml_schema,retroweave">
+      depends="version,checkJdkVersion,jar,srczip,javadoc,xml_schema,retroweave">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
     <zip zipfile="${dist.bin.file}">
@@ -1080,36 +1053,68 @@ doc/**/*.xml"
     </tar>
   </target>
 
-  <target name="checkIsJdk15" if="jdk15.not.present">
+  <target name="checkJdkVersion" if="jdk17.not.present">
     <fail message="The 'jar' target (and dependent targets 'release', 'binzip')
-must be run under JDK 1.5." />
+must be run under JDK 1.7." />
   </target>
 
   <target name="compileJdk15">
-    <exec osfamily="unix" executable="${unix.script}">
-      <arg line="jdk1.5 -Dskip.download=true compile.java"/>
-    </exec>
-    <exec osfamily="windows" dir="." executable="cmd">
-      <arg line="/c .\buildOnJdk.bat jdk1.5 -Dskip.download=true compile.java"/>
-    </exec>
+    <javac
+        srcdir="${java.dir}"
+        destdir="${classes.dir}"
+        debug="${project.build.debug}"
+        classpathref="project.build.classpath"
+        bootclasspathref="project.bootclasspath.jdk15"
+        source="1.5"
+        target="1.5"
+        includeantruntime="false">
+      <include name="mondrian/**/*.java"/>
+      <exclude name="mondrian/olap4j/FactoryJdbc4Impl.java"/>
+      <exclude name="mondrian/olap4j/FactoryJdbc4Plus.java"/>
+      <exclude name="mondrian/olap4j/FactoryJdbc41Impl.java"/>
+      <exclude name="mondrian/util/UtilCompatibleJdk16.java"/>
+      <exclude name="${obsolete.java.files}"/>
+    </javac>
   </target>
 
   <target name="compileJdk16">
-    <exec osfamily="unix" executable="${unix.script}">
-      <arg line="jdk1.6 -Dskip.download=true compile.java"/>
-    </exec>
-    <exec osfamily="windows" dir="." executable="cmd">
-      <arg line="/c .\buildOnJdk.bat jdk1.6 -Dskip.download=true compile.java"/>
-    </exec>
+      <javac
+        srcdir="${java.dir}"
+        destdir="${classes.dir}"
+        debug="${project.build.debug}"
+        classpathref="project.build.classpath"
+        bootclasspathref="project.bootclasspath.jdk16"
+        source="1.6"
+        target="1.6"
+        includeantruntime="false">
+      <include name="mondrian/**/*.java"/>
+      <exclude name="mondrian/olap4j/FactoryJdbc3Impl.java"/>
+      <exclude name="mondrian/olap4j/FactoryJdbc41Impl.java"/>
+      <exclude name="mondrian/rolap/RolapSchemaUpgrader.java"/>
+      <exclude name="mondrian/rolap/PhysSchemaConverter.java"/>
+      <exclude name="mondrian/rolap/HierarchyUsage.java"/>
+      <exclude name="mondrian/rolap/RolapCubeUsages.java"/>
+    </javac>
   </target>
 
   <target name="compileJdk17">
-    <exec osfamily="unix" executable="${unix.script}">
-      <arg line="jdk1.7 -Dskip.download=true compile.java"/>
-    </exec>
-    <exec osfamily="windows" dir="." executable="cmd">
-      <arg line="/c .\buildOnJdk.bat jdk1.7 -Dskip.download=true compile.java"/>
-    </exec>
+      <javac
+        srcdir="${java.dir}"
+        destdir="${classes.dir}"
+        debug="${project.build.debug}"
+        classpathref="project.build.classpath"
+        source="1.7"
+        target="1.7"
+        includeantruntime="false">
+      <include name="mondrian/**/*.java"/>
+      <exclude name="mondrian/olap4j/FactoryJdbc3Impl.java"/>
+      <exclude name="mondrian/olap4j/FactoryJdbc4Impl.java"/>
+      <exclude name="mondrian/olap4j/FactoryJdbc4Plus.java"/>
+      <exclude name="mondrian/rolap/RolapSchemaUpgrader.java"/>
+      <exclude name="mondrian/rolap/PhysSchemaConverter.java"/>
+      <exclude name="mondrian/rolap/HierarchyUsage.java"/>
+      <exclude name="mondrian/rolap/RolapCubeUsages.java"/>
+    </javac>
   </target>
 
   <target name="jar" depends="version,compile,compile.tests">
