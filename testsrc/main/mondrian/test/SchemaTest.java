@@ -1433,14 +1433,26 @@ Test that get error if a dimension has more than one hierarchy with same name.
             null,
 
             "<Cube name='Sales Two Dimensions'>\n"
-            + "  <Table name='sales_fact_1997' alias='sales_fact_1997_mdu'/>\n"
-            + "  <DimensionUsage name='Time' source='Time' foreignKey='time_id'/>\n"
-            + "  <DimensionUsage name='Time2' source='Time' foreignKey='product_id'/>\n"
-            + "  <DimensionUsage name='Store' source='Store' foreignKey='store_id'/>\n"
-            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
-            + "   formatString='Standard'/>\n"
-            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'"
-            + "   formatString='#,###.00'/>\n"
+            + "  <Dimensions>"
+            + "    <Dimension name='Time' source='Time'/>\n"
+            + "    <Dimension name='Time2' source='Time'/>\n"
+            + "    <Dimension name='Store' source='Store'/>\n"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup name='Sales Two Dimensions' table='sales_fact_1997'>"
+            + "      <Measures>"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
+            + "         formatString='Standard'/>\n"
+            + "        <Measure name='Store Cost' column='store_cost' aggregator='sum'"
+            + "         formatString='#,###.00'/>\n"
+            + "      </Measures>"
+            + "      <DimensionLinks>\n"
+            + "        <ForeignKeyLink dimension='Time' foreignKeyColumn='time_id'/>\n"
+            + "        <ForeignKeyLink dimension='Time2' foreignKeyColumn='product_id'/>\n"
+            + "        <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>\n"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
             + "</Cube>", null, null, null, null);
 
         testContext.assertQueryReturns(
@@ -1880,13 +1892,13 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "Sales",
             null,
             "  <Measure name='Customer Count2' column='customer_id'\n"
-            + "      aggregator='distinct count' formatString='#,###'/>\n"
-            + "  <CalculatedMember\n"
+            + "      aggregator='distinct count' formatString='#,###'/>\n",
+            "  <CalculatedMember\n"
             + "      name='Half Customer Count'\n"
             + "      dimension='Measures'\n"
             + "      visible='false'\n"
             + "      formula='[Measures].[Customer Count2] / 2'>\n"
-            + "  </CalculatedMember>");
+            + "  </CalculatedMember>", null);
         testContext.assertQueryReturns(
             "select {[Measures].[Unit Sales],"
             + "    [Measures].[Customer Count], "
@@ -1903,9 +1915,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "{[Measures].[Customer Count2]}\n"
             + "{[Measures].[Half Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Store].[USA].[CA]}\n"
-            + "{[Store].[USA].[OR]}\n"
-            + "{[Store].[USA].[WA]}\n"
+            + "{[Store].[Stores].[USA].[CA]}\n"
+            + "{[Store].[Stores].[USA].[OR]}\n"
+            + "{[Store].[Stores].[USA].[WA]}\n"
             + "Row #0: 37,989\n"
             + "Row #0: 1,389\n"
             + "Row #0: 1,389\n"
@@ -1934,7 +1946,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "      dimension='Measures'\n"
             + "      visible='false'\n"
             + "      formula='[Measures].[Customer Count2] / 2'>\n"
-            + "  </CalculatedMember>");
+            + "  </CalculatedMember>", null, null);
         testContext.assertQueryThrows(
             "select from [Sales]",
             "Unknown aggregator 'invalidAggregator'; valid aggregators are: 'sum', 'count', 'min', 'max', 'avg', 'distinct-count'");

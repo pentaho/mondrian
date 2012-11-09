@@ -512,6 +512,140 @@ public class LegacySchemaTest extends FoodMartTestCase {
                 .next();
         assertEquals("TimeOne", member2.getLevel().getDimension().getCaption());
     }
+
+    public void testPropertyFormatter() {
+        final TestContext testContext =
+            getTestContext().legacy().createSubstitutingCube(
+                "Sales",
+                "  <Dimension name='Store2' foreignKey='store_id'>\n"
+                + "    <Hierarchy name='Store2' hasAll='true' allMemberName='All Stores' primaryKey='store_id'>\n"
+                + "      <Table name='store_ragged'/>\n"
+                + "      <Level name='Store2' table='store_ragged' column='store_id' captionColumn='store_name' uniqueMembers='true'>\n"
+                + "           <Property name='Store Type' column='store_type' formatter='"
+                + SchemaTest.DummyPropertyFormatter.class.getName()
+                + "'/>"
+                + "           <Property name='Store Manager' column='store_manager'/>"
+                + "     </Level>"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n");
+        try {
+            testContext.assertSimpleQuery();
+            fail("expected exception");
+        } catch (RuntimeException e) {
+            TestContext.checkThrowable(
+                e,
+                "Failed to load formatter class 'mondrian.test.SchemaTest$DummyPropertyFormatter' for property 'Store Type'.");
+        }
+    }
+
+    /**
+     * Tests that an invalid aggregator causes an error.
+     */
+    public void testInvalidAggregator() {
+        TestContext testContext =
+            getTestContext().legacy().createSubstitutingCube(
+                "Sales",
+                null,
+                "  <Measure name='Customer Count3' column='customer_id'\n"
+                + "      aggregator='invalidAggregator' formatString='#,###'/>\n"
+                + "  <CalculatedMember\n"
+                + "      name='Half Customer Count'\n"
+                + "      dimension='Measures'\n"
+                + "      visible='false'\n"
+                + "      formula='[Measures].[Customer Count2] / 2'>\n"
+                + "  </CalculatedMember>");
+        testContext.assertQueryThrows(
+            "select from [Sales]",
+            "Unknown aggregator 'invalidAggregator'; valid aggregators are: 'sum', 'count', 'min', 'max', 'avg', 'distinct-count'");
+    }
+
+    /**
+     * Tests that the deprecated "distinct count" value for the
+     * Measure@aggregator attribute still works. The preferred value these days
+     * is "distinct-count".
+     */
+    public void testDeprecatedDistinctCountAggregator() {
+        TestContext testContext =
+            getTestContext().legacy().createSubstitutingCube(
+                "Sales",
+                null,
+                "  <Measure name='Customer Count2' column='customer_id'\n"
+                + "      aggregator='distinct count' formatString='#,###'/>\n"
+                + "  <CalculatedMember\n"
+                + "      name='Half Customer Count'\n"
+                + "      dimension='Measures'\n"
+                + "      visible='false'\n"
+                + "      formula='[Measures].[Customer Count2] / 2'>\n"
+                + "  </CalculatedMember>");
+        testContext.assertQueryReturns(
+            "select {[Measures].[Unit Sales],"
+            + "    [Measures].[Customer Count], "
+            + "    [Measures].[Customer Count2], "
+            + "    [Measures].[Half Customer Count]} on 0,\n"
+            + " {[Store].[USA].Children} ON 1\n"
+            + "FROM [Sales]\n"
+            + "WHERE ([Gender].[M])",
+            "Axis #0:\n"
+            + "{[Gender].[Gender].[M]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "{[Measures].[Customer Count2]}\n"
+            + "{[Measures].[Half Customer Count]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[Store].[USA].[CA]}\n"
+            + "{[Store].[Store].[USA].[OR]}\n"
+            + "{[Store].[Store].[USA].[WA]}\n"
+            + "Row #0: 37,989\n"
+            + "Row #0: 1,389\n"
+            + "Row #0: 1,389\n"
+            + "Row #0: 695\n"
+            + "Row #1: 34,623\n"
+            + "Row #1: 536\n"
+            + "Row #1: 536\n"
+            + "Row #1: 268\n"
+            + "Row #2: 62,603\n"
+            + "Row #2: 901\n"
+            + "Row #2: 901\n"
+            + "Row #2: 451\n");
+    }
+
+    /**
+     * Test Multiple DimensionUsages on same Dimension.
+     * Alias the fact table to avoid issues with aggregation rules
+     * and multiple column names
+     */
+    public void testMultipleDimensionUsages() {
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+
+            "<Cube name='Sales Two Dimensions'>\n"
+            + "  <Table name='sales_fact_1997' alias='sales_fact_1997_mdu'/>\n"
+            + "  <DimensionUsage name='Time' source='Time' foreignKey='time_id'/>\n"
+            + "  <DimensionUsage name='Time2' source='Time' foreignKey='product_id'/>\n"
+            + "  <DimensionUsage name='Store' source='Store' foreignKey='store_id'/>\n"
+            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
+            + "   formatString='Standard'/>\n"
+            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'"
+            + "   formatString='#,###.00'/>\n"
+            + "</Cube>", null, null, null, null);
+
+        testContext.assertQueryReturns(
+            "select\n"
+            + " {[Time2].[Time2].[1997]} on columns,\n"
+            + " {[Time].[Time].[1997].[Q3]} on rows\n"
+            + "From [Sales Two Dimensions]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + (MondrianProperties.instance().SsasCompatibleNaming.get()
+                ? "{[Time2].[Time].[1997]}\n"
+                : "{[Time2].[1997]}\n")
+            + "Axis #2:\n"
+            + "{[Time].[Time].[1997].[Q3]}\n"
+            + "Row #0: 16,266\n");
+    }
+
 }
 
 // End LegacySchemaTest.java
