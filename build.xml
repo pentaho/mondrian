@@ -231,30 +231,19 @@ mondrian/rolap/RolapCubeUsages.java"/>
     <contains string="${java.version}" substring="1.5." />
   </condition>
 
-  <condition property="jdk15.not.present">
-    <not>
-      <contains string="${java.version}" substring="1.5." />
-    </not>
-  </condition>
-
   <condition property="jdk16.present">
     <contains string="${java.version}" substring="1.6." />
   </condition>
 
-  <condition property="jdk16.not.present">
-    <not>
+  <condition property="jdk16.or.later.present">
+    <or>
       <contains string="${java.version}" substring="1.6." />
-    </not>
+      <contains string="${java.version}" substring="1.7." />
+    </or>
   </condition>
 
   <condition property="jdk17.present">
     <contains string="${java.version}" substring="1.7." />
-  </condition>
-
-  <condition property="jdk17.not.present">
-    <not>
-      <contains string="${java.version}" substring="1.7." />
-    </not>
   </condition>
 
   <path id="project.test.classpath" refid="project.test.classpath-${jdk}"/>
@@ -474,6 +463,7 @@ copy"/>
         debug="${project.build.debug}"
         classpathref="project.build.classpath"
         includeantruntime="false"
+        bootclasspathref="project.bootclasspath.jdk15"
         source="1.5"
         target="1.5">
       <include name="mondrian/olap/MondrianException.java" />
@@ -504,6 +494,7 @@ copy"/>
         debug="${project.build.debug}"
         classpathref="project.build.classpath"
         includeantruntime="false"
+        bootclasspathref="project.bootclasspath.jdk15"
         source="1.5"
         target="1.5">
       <include name="mondrian/util/PropertyUtil.java" />
@@ -536,6 +527,7 @@ META-INF/**"/>
         debug="${project.build.debug}"
         classpathref="project.test.classpath"
         includeantruntime="false"
+        bootclasspathref="project.bootclasspath.jdk15"
         source="1.5"
         target="1.5">
         <include name="mondrian/**/*.java"/>
@@ -1053,7 +1045,7 @@ doc/**/*.xml"
     </tar>
   </target>
 
-  <target name="checkJdkVersion" if="jdk17.not.present">
+  <target name="checkJdkVersion" unless="jdk17.present">
     <fail message="The 'jar' target (and dependent targets 'release', 'binzip')
 must be run under JDK 1.7." />
   </target>
@@ -1069,15 +1061,16 @@ must be run under JDK 1.7." />
         target="1.5"
         includeantruntime="false">
       <include name="mondrian/**/*.java"/>
+      <exclude name="${obsolete.java.files}"/>
+      <!-- the following files need to be built under JDK 1.6 or 1.7 -->
       <exclude name="mondrian/olap4j/FactoryJdbc4Impl.java"/>
       <exclude name="mondrian/olap4j/FactoryJdbc4Plus.java"/>
       <exclude name="mondrian/olap4j/FactoryJdbc41Impl.java"/>
       <exclude name="mondrian/util/UtilCompatibleJdk16.java"/>
-      <exclude name="${obsolete.java.files}"/>
     </javac>
   </target>
 
-  <target name="compileJdk16">
+  <target name="compileJdk16" if="jdk16.or.later.present">
       <javac
         srcdir="${java.dir}"
         destdir="${classes.dir}"
@@ -1087,17 +1080,13 @@ must be run under JDK 1.7." />
         source="1.6"
         target="1.6"
         includeantruntime="false">
-      <include name="mondrian/**/*.java"/>
-      <exclude name="mondrian/olap4j/FactoryJdbc3Impl.java"/>
-      <exclude name="mondrian/olap4j/FactoryJdbc41Impl.java"/>
-      <exclude name="mondrian/rolap/RolapSchemaUpgrader.java"/>
-      <exclude name="mondrian/rolap/PhysSchemaConverter.java"/>
-      <exclude name="mondrian/rolap/HierarchyUsage.java"/>
-      <exclude name="mondrian/rolap/RolapCubeUsages.java"/>
+      <include name="mondrian/olap4j/FactoryJdbc4Impl.java"/>
+      <include name="mondrian/olap4j/FactoryJdbc4Plus.java"/>
+      <include name="mondrian/util/UtilCompatibleJdk16.java"/>
     </javac>
   </target>
 
-  <target name="compileJdk17">
+  <target name="compileJdk17" if="jdk17.present">
       <javac
         srcdir="${java.dir}"
         destdir="${classes.dir}"
@@ -1106,14 +1095,7 @@ must be run under JDK 1.7." />
         source="1.7"
         target="1.7"
         includeantruntime="false">
-      <include name="mondrian/**/*.java"/>
-      <exclude name="mondrian/olap4j/FactoryJdbc3Impl.java"/>
-      <exclude name="mondrian/olap4j/FactoryJdbc4Impl.java"/>
-      <exclude name="mondrian/olap4j/FactoryJdbc4Plus.java"/>
-      <exclude name="mondrian/rolap/RolapSchemaUpgrader.java"/>
-      <exclude name="mondrian/rolap/PhysSchemaConverter.java"/>
-      <exclude name="mondrian/rolap/HierarchyUsage.java"/>
-      <exclude name="mondrian/rolap/RolapCubeUsages.java"/>
+      <include name="mondrian/olap4j/FactoryJdbc41Impl.java"/>
     </javac>
   </target>
 
