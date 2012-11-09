@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -97,7 +97,8 @@ class TopBottomCountFunDef extends FunDefBase {
                 }
 
                 if (orderCalc == null) {
-                    if (list instanceof AbstractList && list.size() < n) {
+                    // REVIEW: Why require "instanceof AbstractList"?
+                    if (list instanceof AbstractList && list.size() <= n) {
                         return list;
                     } else {
                         return list.subList(0, n);
@@ -105,7 +106,8 @@ class TopBottomCountFunDef extends FunDefBase {
                 }
 
                 return partiallySortList(
-                    evaluator, list, hasHighCardDimension(list), n);
+                    evaluator, list, hasHighCardDimension(list),
+                    Math.min(n, list.size()));
             }
 
             private TupleList partiallySortList(
@@ -114,6 +116,8 @@ class TopBottomCountFunDef extends FunDefBase {
                 boolean highCard,
                 int n)
             {
+                assert list.size() > 0;
+                assert n <= list.size();
                 if (highCard) {
                     // sort list in chunks, collect the results
                     final int chunkSize = 6400; // what is this really?
