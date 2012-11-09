@@ -58,7 +58,7 @@ class AsFunDef extends FunDefBase {
             {
                 final Evaluator.NamedSetEvaluator namedSetEvaluator =
                     evaluator.getNamedSetEvaluator(scopedNamedSet, false);
-                return namedSetEvaluator.evaluateTupleIterable();
+                return namedSetEvaluator.evaluateTupleIterable(evaluator);
             }
         };
     }

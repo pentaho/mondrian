@@ -1009,6 +1009,13 @@ public class RolapEvaluator implements Evaluator {
         return root.evaluateNamedSet(namedSet, create);
     }
 
+    public final SetEvaluator getSetEvaluator(
+        Exp exp,
+        boolean create)
+    {
+        return root.evaluateSet(exp, create);
+    }
+
     public final int getMissCount() {
         return cellReader.getMissCount();
     }

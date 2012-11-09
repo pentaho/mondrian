@@ -17,6 +17,7 @@ import mondrian.olap.*;
 import mondrian.olap.fun.*;
 import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
 import mondrian.olap.type.ScalarType;
+import mondrian.olap.type.SetType;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequestQuantumExceededException;
@@ -28,6 +29,7 @@ import mondrian.util.*;
 import org.apache.log4j.Logger;
 
 import java.util.*;
+
 
 /**
  * A <code>RolapResult</code> is the result of running a query.
@@ -904,11 +906,24 @@ public class RolapResult extends ResultBase {
      * <p>Does not modify the contents of the evaluator.
      *
      * @param calc Compiled expression
-     * @param evaluator Evaluation context
+     * @param slicerEvaluator Evaluation context for slicers
+     * @param contextEvaluator Evaluation context (optional)
      * @return Result
      */
-    Object evaluateExp(Calc calc, RolapEvaluator evaluator) {
+    Object evaluateExp(
+        Calc calc,
+        RolapEvaluator slicerEvaluator,
+        Evaluator contextEvaluator)
+    {
         int attempt = 0;
+        RolapEvaluator evaluator = slicerEvaluator;
+        if (contextEvaluator != null && contextEvaluator.isEvalAxes()) {
+            evaluator = slicerEvaluator.push();
+            evaluator.setEvalAxes(contextEvaluator.isEvalAxes());
+            evaluator.setContext(contextEvaluator.getMembers());
+            //overrideContext(evaluator, contextEvaluator);
+        }
+
         final int savepoint = evaluator.savepoint();
         boolean dirty = batchingReader.isDirty();
         try {
@@ -958,6 +973,24 @@ public class RolapResult extends ResultBase {
             return o;
         } finally {
             evaluator.restore(savepoint);
+        }
+    }
+
+    private void overrideContext(
+        Evaluator evaluator,
+        Evaluator contextEvaluator)
+    {
+        Member[] evalMembers = evaluator.getMembers();
+        Member[] contextMembers = contextEvaluator.getMembers();
+
+        //members of the same hierarchy will have same position
+        for (int i = 0;
+            i < evalMembers.length && i < contextMembers.length;
+            i++)
+        {
+            if (!evalMembers[i].equals(contextMembers[i])) {
+              evaluator.setContext(contextMembers[i]);
+            }
         }
     }
 
@@ -1456,7 +1489,7 @@ public class RolapResult extends ResultBase {
 
     /**
      * Extension to {@link RolapEvaluatorRoot} which is capable
-     * of evaluating named sets.<p/>
+     * of evaluating sets and named sets.<p/>
      *
      * A given set is only evaluated once each time a query is executed; the
      * result is added to the {@link #namedSetEvaluators} cache on first execution
@@ -1470,6 +1503,8 @@ public class RolapResult extends ResultBase {
         /**
          * Maps the names of sets to their values. Populated on demand.
          */
+        private final Map<String, RolapSetEvaluator> setEvaluators =
+                new HashMap<String, RolapSetEvaluator>();
         private final Map<String, RolapNamedSetEvaluator> namedSetEvaluators =
             new HashMap<String, RolapNamedSetEvaluator>();
 
@@ -1496,6 +1531,37 @@ public class RolapResult extends ResultBase {
             if (value == null) {
                 value = new RolapNamedSetEvaluator(this, namedSet);
                 namedSetEvaluators.put(name, value);
+            }
+            return value;
+        }
+
+        protected Evaluator.SetEvaluator evaluateSet(
+            final Exp exp,
+            boolean create)
+        {
+            // Sanity check: This expression HAS to return a set.
+            if (! (exp.getType() instanceof SetType)) {
+                throw Util.newInternal(
+                    "Trying to evaluate set but expression does not return a set");
+            }
+
+
+            // Should be acceptable to use the string representation of the
+            // expression as the name
+            final String name = exp.toString();
+            RolapSetEvaluator value;
+
+            // pedro, 20120914 - I don't quite understand the !create, I was
+            // kind'a expecting the opposite here. But I'll maintain the same
+            // logic
+            if (!create) {
+                value = null;
+            } else {
+                value = setEvaluators.get(name);
+            }
+            if (value == null) {
+                value = new RolapSetEvaluator(this, exp);
+                setEvaluators.put(name, value);
             }
             return value;
         }
@@ -1549,7 +1615,7 @@ public class RolapResult extends ResultBase {
             slot.setCachedDefaultValue(CycleSentinel);
             value =
                 result.evaluateExp(
-                    slot.getDefaultValueCalc(), result.slicerEvaluator);
+                    slot.getDefaultValueCalc(), result.slicerEvaluator, null);
             if (value == null) {
                 liftedValue = NullSentinel;
             } else {

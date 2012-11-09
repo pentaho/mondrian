@@ -196,11 +196,12 @@ public class RolapNativeFilter extends RolapNativeSet {
             return null;
         }
 
-        // Check to see if evaluator contains a calculated member.  This is
-        // necessary due to the SqlConstraintsUtils.addContextConstraint()
+        // Check to see if evaluator contains a calculated member that can't be
+        // expanded.  This is necessary due to the SqlConstraintsUtils.
+        // addContextConstraint()
         // method which gets called when generating the native SQL.
         if (SqlConstraintUtils.containsCalculatedMember(
-                evaluator.getNonAllMembers()))
+                evaluator.getNonAllMembers(), true))
         {
             return null;
         }

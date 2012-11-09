@@ -1,48 +1,48 @@
 /*
-// This software is subject to the terms of the Eclipse Public License v1.0
-// Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// You must accept the terms of that agreement to use this software.
-//
-// Copyright (C) 2008-2011 Pentaho and others
-// All Rights Reserved.
-*/
+ // This software is subject to the terms of the Eclipse Public License v1.0
+ // Agreement, available at the following URL:
+ // http://www.eclipse.org/legal/epl-v10.html.
+ // You must accept the terms of that agreement to use this software.
+ //
+ // Copyright (C) 2008-2011 Pentaho and others
+ // All Rights Reserved.
+ */
 package mondrian.rolap;
 
 import mondrian.calc.*;
 import mondrian.olap.*;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.List;
 
 /**
- * Evaluation context for a particular named set.
+ * Evaluation context to be able to expand a generic expression that returns a
+ * set
  *
- * @author jhyde
- * @since November 11, 2008
+ * @author pedro alves
+ * @since September 14, 2012
  */
-class RolapNamedSetEvaluator
-    implements Evaluator.NamedSetEvaluator, TupleList.PositionCallback
-{
+class RolapSetEvaluator
+        implements Evaluator.SetEvaluator, TupleList.PositionCallback
+    {
+
     private final RolapResult.RolapResultEvaluatorRoot rrer;
-    private final NamedSet namedSet;
-
-    private static final int RECURSION_TOLERANCE = 3;
-    private int recursionCount;
-
-    /** Value of this named set; set on first use. */
+    private final Exp exp;
+    /**
+     * Value of this named set; set on first use.
+     */
     private TupleList list;
-
     /**
      * Dummy list used as a marker to detect re-entrant calls to
      * {@link #ensureList}.
      */
     private static final TupleList DUMMY_LIST =
-        TupleCollections.createList(1);
-
+            TupleCollections.createList(1);
     /**
-     * Ordinal of current iteration through the named set. Used to implement
-     * the &lt;Named Set&gt;.CurrentOrdinal and &lt;Named Set&gt;.Current
-     * functions.
+     * Ordinal of current iteration through the named set. Used to implement the
+     * &lt;Named Set&gt;.CurrentOrdinal and &lt;Named Set&gt;.Current functions.
      */
     private int currentOrdinal;
 
@@ -50,18 +50,18 @@ class RolapNamedSetEvaluator
      * Creates a RolapNamedSetEvaluator.
      *
      * @param rrer Evaluation root context
-     * @param namedSet Named set
+     * @param exp Expression
      */
-    public RolapNamedSetEvaluator(
+    public RolapSetEvaluator(
         RolapResult.RolapResultEvaluatorRoot rrer,
-        NamedSet namedSet)
+        Exp exp)
     {
         this.rrer = rrer;
-        this.namedSet = namedSet;
+        this.exp = exp;
     }
 
-    public TupleIterable evaluateTupleIterable(Evaluator evaluator) {
-        ensureList(evaluator);
+    public TupleIterable evaluateTupleIterable() {
+        ensureList();
         return list;
     }
 
@@ -69,34 +69,29 @@ class RolapNamedSetEvaluator
      * Evaluates and saves the value of this named set, if it has not been
      * evaluated already.
      */
-    private void ensureList(Evaluator evaluator) {
+    private void ensureList() {
         if (list != null) {
             if (list == DUMMY_LIST) {
-                recursionCount ++;
-                if (recursionCount > RECURSION_TOLERANCE) {
-                    throw rrer.result.slicerEvaluator.newEvalException(
-                        null,
-                        "Illegal attempt to reference value of named set '"
-                        + namedSet.getName() + "' while evaluating itself");
-                }
+                throw rrer.result.slicerEvaluator.newEvalException(
+                    null,
+                    "Illegal attempt to reference value of a set '"
+                    + getExpression() + "' while evaluating itself");
             }
             return;
         }
         if (RolapResult.LOGGER.isDebugEnabled()) {
             RolapResult.LOGGER.debug(
-                "Named set " + namedSet.getName() + ": starting evaluation");
+                "Set " + exp + ": starting evaluation");
         }
         list = DUMMY_LIST; // recursion detection
         try {
             final Calc calc =
                 rrer.getCompiled(
-                    namedSet.getExp(), false, ResultStyle.ITERABLE);
+                    exp, false, ResultStyle.ITERABLE);
             TupleIterable iterable =
-                (TupleIterable)
-                    rrer.result.evaluateExp(
+                    (TupleIterable) rrer.result.evaluateExp(
                         calc,
-                        rrer.result.slicerEvaluator,
-                        evaluator);
+                        rrer.result.slicerEvaluator, null);
 
             // Axes can be in two forms: list or iterable. If iterable, we
             // need to materialize it, to ensure that all cell values are in
@@ -122,7 +117,6 @@ class RolapNamedSetEvaluator
             if (this.list == DUMMY_LIST) {
                 this.list = null;
             }
-            recursionCount = 0;//TODO:REMOVE
         }
     }
 
@@ -130,8 +124,8 @@ class RolapNamedSetEvaluator
         final StringBuilder buf = new StringBuilder();
         buf.append(this);
         buf.append(": ");
-        buf.append("Named set ");
-        buf.append(namedSet.getName());
+        buf.append("Set expression ");
+        buf.append(getExpression());
         buf.append(" evaluated to:");
         buf.append(Util.nl);
         int arity = calc.getType().getArity();
@@ -167,6 +161,13 @@ class RolapNamedSetEvaluator
         return buf.toString();
     }
 
+    private String getExpression() {
+        final Writer result = new StringWriter();
+        final PrintWriter printWriter = new PrintWriter(result);
+        exp.unparse(printWriter);
+        return result.toString();
+    }
+
     public int currentOrdinal() {
         return currentOrdinal;
     }
@@ -185,4 +186,4 @@ class RolapNamedSetEvaluator
     }
 }
 
-// End RolapNamedSetEvaluator.java
+// End RolapSetEvaluator.java

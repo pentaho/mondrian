@@ -218,6 +218,24 @@ class RolapEvaluatorRoot {
         throw new UnsupportedOperationException();
     }
 
+
+    /**
+     * Evaluates a named set represented by an expression.
+     *
+     * <p>The default implementation throws
+     * {@link UnsupportedOperationException}.
+     *
+     * @param exp Expression
+     * @param create Whether to create named set evaluator if not found
+     */
+    protected Evaluator.SetEvaluator evaluateSet(
+        Exp exp,
+        boolean create)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+
     /**
      * Returns the value of a parameter, evaluating its default expression
      * if necessary.
