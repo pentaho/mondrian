@@ -51,6 +51,11 @@ public class MonetDbDialect extends JdbcDialectImpl {
 //    public boolean supportsMultiValueInExpr() {
 //        return true;
 //    }
+    
+    @Override
+    public boolean requiresAliasForFromQuery() {
+    	return true;
+    }
 }
 
 // End LucidDbDialect.java
