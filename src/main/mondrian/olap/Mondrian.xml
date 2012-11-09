@@ -1933,11 +1933,16 @@ Revision is $Id$
                 return query.getDialect().quoteIdentifier(table, name);
             }
 
+
+            private String expression = null;
+
             public String getGenericExpression() {
                 if (table == null) {
                     return name;
                 } else {
-                    return table + "." + name;
+                    if (expression == null)
+                        expression = table + "." + name;
+                    return expression;
                 }
             }
 
