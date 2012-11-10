@@ -35,22 +35,16 @@ public class MonetDbDialect extends JdbcDialectImpl {
     public MonetDbDialect(Connection connection) throws SQLException {
         super(connection);
     }
-//
-//    public boolean allowsMultipleDistinctSqlMeasures() {
-//        return false;
-//    }
-//
-//    public boolean needsExponent(Object value, String valueString) {
-//        return value instanceof Double && !valueString.contains("E");
-//    }
-//
-//    public boolean supportsUnlimitedValueList() {
-//        return true;
-//    }
-//
-//    public boolean supportsMultiValueInExpr() {
-//        return true;
-//    }
+
+    @Override
+    public boolean allowsMultipleDistinctSqlMeasures() {
+        return false;
+    }
+    
+    @Override
+    public boolean allowsCountDistinct() {
+    	return false;
+    }
     
     @Override
     public boolean requiresAliasForFromQuery() {

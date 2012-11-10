@@ -369,13 +369,13 @@ public class SqlStatement {
                 && scale == 0
                 && precision == 0)
         {
-            // MonetDB marks doesnt return precision and scale for decimal data types
-        	// So we'll assume its a double
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug(
-                        "Using type DOUBLE for MonetDB scale 0 and precision 0.");
-                }
-                return Type.DOUBLE;
+            // MonetDB marks doesn't return precision and scale for 
+            // aggregated decimal data types, so we'll assume its a double
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "Using type DOUBLE for MonetDB scale 0 and precision 0.");
+            }
+            return Type.DOUBLE;
         } else if ((scale == 0 || scale == -127)
             && (precision <= 9 || precision == 38))
         {
