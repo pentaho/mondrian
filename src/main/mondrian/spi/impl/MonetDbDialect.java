@@ -13,10 +13,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * Implementation of {@link mondrian.spi.Dialect} for the LucidDB database.
+ * Implementation of {@link mondrian.spi.Dialect} for the MonetDB database.
  *
- * @author jhyde
- * @since Nov 23, 2008
+ * @author pstoellberger
+ * @since Nov 10, 2012
  */
 public class MonetDbDialect extends JdbcDialectImpl {
 
