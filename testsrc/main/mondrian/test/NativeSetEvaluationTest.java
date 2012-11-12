@@ -60,7 +60,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
             // aggregate set
             + "and\n"
-            + "    `time_by_day`.`quarter` in ('Q3', 'Q1', 'Q2') and `time_by_day`.`the_year` = 1997\n"
+            + "    `time_by_day`.`quarter` in ('Q1', 'Q2', 'Q3') and `time_by_day`.`the_year` = 1997\n"
             + "group by\n"
             + "    `product_class`.`product_family`,\n"
             + "    `product_class`.`product_department`,\n"
@@ -202,7 +202,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "and\n"
             + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
             + "and\n"
-            + "    `time_by_day`.`quarter` in ('Q4', 'Q3', 'Q1', 'Q2')"
+            + "    `time_by_day`.`quarter` in ('Q1', 'Q2', 'Q3', 'Q4')"
             + " and `time_by_day`.`the_year` = 1997\n" // slicer
             + "and\n"
             + "    (`product`.`brand_name` = 'Hermanos' and `product_class`.`product_subcategory` = 'Fresh Vegetables' and `product_class`.`product_category` = 'Vegetables' and `product_class`.`product_department` = 'Produce' and `product_class`.`product_family` = 'Food')\n"
@@ -420,7 +420,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "and\n"
             + "    `agg_pl_01_sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
             + "and\n"
-            + "    `time_by_day`.`week_of_year` in (50, 31, 21, 3, 40, 48, 38, 14, 41, 18, 28, 7, 24, 45, 51, 37, 32, 22, 4, 47, 13, 42, 17, 27, 52, 23, 46, 8, 33, 36, 1, 9, 10, 16, 5, 12, 26, 43, 39, 49, 34, 35, 2, 30, 19, 20, 11, 6, 25, 15, 44, 29) and `time_by_day`.`the_year` = 1997\n"
+            + "    `time_by_day`.`week_of_year` in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52) and `time_by_day`.`the_year` = 1997\n"
             + "group by\n"
             + "    `product_class`.`product_family`,\n"
             + "    `product_class`.`product_department`\n"

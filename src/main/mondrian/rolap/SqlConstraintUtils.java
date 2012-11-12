@@ -279,10 +279,11 @@ public class SqlConstraintUtils {
                         continue;
                     }
                     RelationOrJoin rel =
-                            ((RolapCubeHierarchy)slicerMember.getHierarchy())
+                        ((RolapCubeHierarchy)slicerMember.getHierarchy())
                             .getRelation();
                     if (!mapOfSlicerMembers.containsKey(rel)) {
-                        mapOfSlicerMembers.put(rel, new HashSet<RolapMember>());
+                        mapOfSlicerMembers.put(
+                            rel, new LinkedHashSet<RolapMember>());
                     }
                     mapOfSlicerMembers.get(rel).add((RolapMember)slicerMember);
                 }
