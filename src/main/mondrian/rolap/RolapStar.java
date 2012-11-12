@@ -905,6 +905,8 @@ public class RolapStar {
             this.name = name;
             this.table = table;
             this.expression = expression;
+            assert expression == null
+                || expression.getGenericExpression() != null;
             this.datatype = datatype;
             this.internalType = internalType;
             this.bitPosition = bitPosition;

@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2011 Pentaho and others
+// Copyright (C) 2008-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -512,10 +512,9 @@ public class PartialSortTest extends TestCase
         // random input, 3 copies
         // repeated keys
         Integer[] vec1 = newRandomIntegers(length, 0, length / 5);
-        Integer[] vec2 = new Integer[length];
-        Integer[] vec3 = new Integer[length];
-        System.arraycopy(vec1, 0, vec2, 0, length);
-        System.arraycopy(vec1, 0, vec3, 0, length);
+        Integer[] vec2 = vec1.clone();
+        Integer[] vec3 = vec1.clone();
+        Integer[] vec4 = vec1.clone();
 
         // full sort vec1
         long now = System.currentTimeMillis();
@@ -529,15 +528,23 @@ public class PartialSortTest extends TestCase
         dt = System.currentTimeMillis() - now;
         logger.debug(" partial quicksort took " + dt + " msecs");
 
-        // stable partial sort vec3
+        // marc's stable partial quicksort vec3
         @SuppressWarnings({"unchecked"})
         Comparator<Integer> comp =
             new ReverseComparator(ComparatorUtils.naturalComparator());
         List<Integer> vec3List = Arrays.asList(vec3);
         now = System.currentTimeMillis();
-        FunUtil.stablePartialSort(vec3List, comp, limit);
+        FunUtil.stablePartialSort(vec3List, comp, limit, 2);
         dt = System.currentTimeMillis() - now;
-        logger.debug(" stable partial quicksort took " + dt + " msecs");
+        logger.debug(" marc's stable partial quicksort took " + dt + " msecs");
+
+        // julian's algorithm stable partial sort vec4
+        @SuppressWarnings({"unchecked"})
+        List<Integer> vec4List = Arrays.asList(vec4);
+        now = System.currentTimeMillis();
+        FunUtil.stablePartialSort(vec4List, comp, limit, 4);
+        dt = System.currentTimeMillis() - now;
+        logger.debug(" julian's stable partial sort took " + dt + " msecs");
     }
 
     // compare speed on different sizes of input
@@ -552,7 +559,9 @@ public class PartialSortTest extends TestCase
         speedTest(PerformanceTest.LOGGER, 16000, 4);            // medium
         speedTest(PerformanceTest.LOGGER, 16000, 160);
         speedTest(PerformanceTest.LOGGER, 1000000, 4);          // large
-        speedTest(PerformanceTest.LOGGER, 1000000, 400);          // large
+        speedTest(PerformanceTest.LOGGER, 1000000, 400);
+        speedTest(PerformanceTest.LOGGER, 1000000, 4000);
+        speedTest(PerformanceTest.LOGGER, 1000000, 40000);
 
         // very large; needs bigger heap
         //speedTest(PerformanceTest.LOGGER, 1600 * 1600, 4);
