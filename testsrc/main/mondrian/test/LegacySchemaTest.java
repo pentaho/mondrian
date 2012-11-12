@@ -646,6 +646,120 @@ public class LegacySchemaTest extends FoodMartTestCase {
             + "Row #0: 16,266\n");
     }
 
+    /**
+     * Tests two dimensions using same table with same foreign key.
+     * both using a table alias.
+     */
+    public void testTwoAliasesDimensionsShareTableSameForeignKeys() {
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+            "<Cube name='AliasedDimensionsTesting' defaultMeasure='Supply Time'>\n"
+            + "  <Table name='inventory_fact_1997'/>\n"
+            + "  <Dimension name='StoreA' foreignKey='store_id'>"
+            + "    <Hierarchy hasAll='true' primaryKey='store_id'>"
+            + "      <Table name='store' alias='storea'/>"
+            + "      <Level name='Store Country' column='store_country' uniqueMembers='true'/>"
+            + "      <Level name='Store Name' column='store_name' uniqueMembers='true'/>"
+            + "    </Hierarchy>"
+            + "  </Dimension>"
+            + "  <Dimension name='StoreB' foreignKey='store_id'>"
+            + "    <Hierarchy hasAll='true' primaryKey='store_id'>"
+            + "      <Table name='store'  alias='storeb'/>"
+            + "      <Level name='Store Country' column='store_country' uniqueMembers='true'/>"
+            + "      <Level name='Store Name' column='store_name' uniqueMembers='true'/>"
+            + "    </Hierarchy>"
+            + "  </Dimension>"
+            + "  <Measure name='Store Invoice' column='store_invoice' "
+            + "aggregator='sum'/>\n"
+            + "  <Measure name='Supply Time' column='supply_time' "
+            + "aggregator='sum'/>\n"
+            + "  <Measure name='Warehouse Cost' column='warehouse_cost' "
+            + "aggregator='sum'/>\n"
+            + "</Cube>",
+            null,
+            null,
+            null,
+            null);
+
+        testContext.assertQueryReturns(
+            "select {[StoreA].[USA]} on rows,"
+            + "{[StoreB].[USA]} on columns"
+            + " from "
+            + "AliasedDimensionsTesting",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[StoreB].[StoreB].[USA]}\n"
+            + "Axis #2:\n"
+            + "{[StoreA].[StoreA].[USA]}\n"
+            + "Row #0: 10,425\n");
+    }
+
+    public void testCubeWithNoDimensions() {
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+            "<Cube name='NoDim' defaultMeasure='Unit Sales'>\n"
+            + "  <Table name='sales_fact_1997'/>\n"
+            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
+            + "      formatString='Standard'/>\n"
+            + "</Cube>",
+            null,
+            null,
+            null,
+            null);
+        testContext.assertQueryReturns(
+            "select {[Measures].[Unit Sales]} on columns from [NoDim]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Row #0: 266,773\n");
+    }
+
+    public void testAllMemberNoStringReplace() {
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+            "<Cube name='Sales Special Time'>\n"
+            + "  <Table name='sales_fact_1997'/>\n"
+            + "<Dimension name='TIME' foreignKey='time_id' type='TimeDimension'>"
+            + "<Hierarchy name='CALENDAR' hasAll='true' allMemberName='All TIME(CALENDAR)' primaryKey='time_id'>"
+            + "  <Table name='time_by_day'/>"
+            + "  <Level name='Years' column='the_year' uniqueMembers='true' levelType='TimeYears'/>"
+            + "  <Level name='Quarters' column='quarter' uniqueMembers='false' levelType='TimeQuarters'/>"
+            + "  <Level name='Months' column='month_of_year' uniqueMembers='false' levelType='TimeMonths'/>"
+            + "</Hierarchy>"
+            + "</Dimension>"
+            + "  <DimensionUsage name='Store' source='Store' foreignKey='store_id'/>\n"
+            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
+            + "   formatString='Standard'/>\n"
+            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'"
+            + "   formatString='#,###.00'/>\n"
+            + "</Cube>",
+            null,
+            null,
+            null,
+            null);
+
+        testContext.assertQueryReturns(
+            "select [TIME.CALENDAR].[All TIME(CALENDAR)] on columns\n"
+            + "from [Sales Special Time]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[TIME].[CALENDAR].[All TIME(CALENDAR)]}\n"
+            + "Row #0: 266,773\n");
+    }
+
+    public void testCubeHasFact() {
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+            "<Cube name='Cube with caption' caption='Cube with name'/>\n",
+            null, null, null, null);
+        testContext.assertSchemaError(
+            "Cube 'Cube with caption' requires fact table \\(in Cube\\) \\(at ${pos}\\)",
+            "<Cube name='Cube with caption' caption='Cube with name'/>");
+    }
+
 }
 
 // End LegacySchemaTest.java
