@@ -25,8 +25,8 @@ import java.util.List;
  * @since September 14, 2012
  */
 class RolapSetEvaluator
-        implements Evaluator.SetEvaluator, TupleList.PositionCallback
-    {
+    implements Evaluator.SetEvaluator, TupleList.PositionCallback
+{
 
     private final RolapResult.RolapResultEvaluatorRoot rrer;
     private final Exp exp;

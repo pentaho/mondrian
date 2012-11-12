@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012 Pentaho and others
+// Copyright (C) 2012-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -14,6 +14,8 @@ import mondrian.spi.Dialect.DatabaseProduct;
 
 /**
  * Test native evaluation of supported set operations.
+ *
+ * <p>
  */
 public class NativeSetEvaluationTest extends BatchTestCase {
 
@@ -36,7 +38,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
      *  we'll reuse this in a few variations
      */
     private static final class NativeTopCountWithAgg {
-        final static String mysql =
+        static final String mysql =
             "select\n"
             + "    `product_class`.`product_family` as `c0`,\n"
             + "    `product_class`.`product_department` as `c1`,\n"
@@ -56,7 +58,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "    `sales_fact_1997`.`product_id` = `product`.`product_id`\n"
             + "and\n"
             + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
-            //aggregate set
+            // aggregate set
             + "and\n"
             + "    `time_by_day`.`quarter` in ('Q3', 'Q1', 'Q2') and `time_by_day`.`the_year` = 1997\n"
             + "group by\n"
@@ -67,7 +69,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "    `product`.`brand_name`,\n"
             + "    `product`.`product_name`\n"
             + "order by\n"
-            //top count Measures.[Store Sales]
+            // top count Measures.[Store Sales]
             + "    `c6` DESC,\n"
             + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC,\n"
             + "    ISNULL(`product_class`.`product_department`) ASC, `product_class`.`product_department` ASC,\n"
@@ -75,7 +77,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "    ISNULL(`product_class`.`product_subcategory`) ASC, `product_class`.`product_subcategory` ASC,\n"
             + "    ISNULL(`product`.`brand_name`) ASC, `product`.`brand_name` ASC,\n"
             + "    ISNULL(`product`.`product_name`) ASC, `product`.`product_name` ASC";
-        final static String result =
+        static final String result =
             "Axis #0:\n"
             + "{[Time].[x]}\n"
             + "Axis #1:\n"
@@ -115,7 +117,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
           new SqlPattern(
               DatabaseProduct.MYSQL,
               NativeTopCountWithAgg.mysql,
-              NativeTopCountWithAgg.mysql.indexOf("from"));
+              NativeTopCountWithAgg.mysql);
       assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
       assertQueryReturns(mdx, NativeTopCountWithAgg.result);
     }
@@ -135,6 +137,13 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2, Measures.x3} ON 0\n"
             + "FROM [Sales] where Time.x";
 
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+        SqlPattern mysqlPattern =
+            new SqlPattern(
+                DatabaseProduct.MYSQL,
+                NativeTopCountWithAgg.mysql,
+                NativeTopCountWithAgg.mysql);
+        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
         assertQueryReturns(mdx, NativeTopCountWithAgg.result);
     }
 
@@ -158,7 +167,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
               new SqlPattern(
                   DatabaseProduct.MYSQL,
                   NativeTopCountWithAgg.mysql,
-                  NativeTopCountWithAgg.mysql.indexOf("from"));
+                  NativeTopCountWithAgg.mysql);
           assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
           assertQueryReturns(mdx, NativeTopCountWithAgg.result);
     }
@@ -194,7 +203,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
             + "and\n"
             + "    `time_by_day`.`quarter` in ('Q4', 'Q3', 'Q1', 'Q2')"
-            + " and `time_by_day`.`the_year` = 1997\n"//slicer
+            + " and `time_by_day`.`the_year` = 1997\n" // slicer
             + "and\n"
             + "    (`product`.`brand_name` = 'Hermanos' and `product_class`.`product_subcategory` = 'Fresh Vegetables' and `product_class`.`product_category` = 'Vegetables' and `product_class`.`product_department` = 'Produce' and `product_class`.`product_family` = 'Food')\n"
             + "group by\n"
@@ -205,7 +214,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "    `product`.`brand_name`,\n"
             + "    `product`.`product_name`\n"
             + "having\n"
-            + "    (sum(`sales_fact_1997`.`store_sales`) > 700)\n"//filter exp
+            + "    (sum(`sales_fact_1997`.`store_sales`) > 700)\n" // filter exp
             + "order by\n"
             + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC,\n"
             + "    ISNULL(`product_class`.`product_department`) ASC, `product_class`.`product_department` ASC,\n"
@@ -219,7 +228,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             new SqlPattern(
                 DatabaseProduct.MYSQL,
                 mysqlQuery,
-                mysqlQuery.indexOf("from"));
+                mysqlQuery);
         assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
         assertQueryReturns(
             mdx,
@@ -267,25 +276,25 @@ public class NativeSetEvaluationTest extends BatchTestCase {
      * evaluated via a named set. No loop should happen here.
      */
     public void testCJSameDimAsSlicerNamedSet() {
-      String mdx = "WITH\n"
-          + "SET ST AS 'TopCount([Store Type].[Store Type].CurrentMember, 5)'\n"
-          + "SET TOP_BEV AS 'TopCount([Product].[Drink].Children, 3, [Measures].[Unit Sales])'\n"
-          + "SET TC AS TopCount(NonEmptyCrossJoin([Time].[Year].Members, TOP_BEV), 2, [Measures].[Unit Sales])\n"
-          + "MEMBER [Product].[Top Drinks] as Aggregate(TC, [Measures].[Unit Sales]) \n"
-          + "SET TOP_COUNTRY AS 'TopCount([Customers].[Country].Members, 1, [Measures].[Unit Sales])'\n"
-          + "SELECT NON EMPTY [Measures].[Unit Sales] on 0,\n"
-          + "  NON EMPTY TOP_COUNTRY ON 1 \n"
-          + "FROM [Sales] WHERE [Product].[Top Drinks]";
-
-          assertQueryReturns(
-              mdx,
-              "Axis #0:\n"
-              + "{[Product].[Top Drinks]}\n"
-              + "Axis #1:\n"
-              + "{[Measures].[Unit Sales]}\n"
-              + "Axis #2:\n"
-              + "{[Customers].[USA]}\n"
-              + "Row #0: 20,411\n");
+        String mdx =
+            "WITH\n"
+            + "SET ST AS 'TopCount([Store Type].[Store Type].CurrentMember, 5)'\n"
+            + "SET TOP_BEV AS 'TopCount([Product].[Drink].Children, 3, [Measures].[Unit Sales])'\n"
+            + "SET TC AS TopCount(NonEmptyCrossJoin([Time].[Year].Members, TOP_BEV), 2, [Measures].[Unit Sales])\n"
+            + "MEMBER [Product].[Top Drinks] as Aggregate(TC, [Measures].[Unit Sales]) \n"
+            + "SET TOP_COUNTRY AS 'TopCount([Customers].[Country].Members, 1, [Measures].[Unit Sales])'\n"
+            + "SELECT NON EMPTY [Measures].[Unit Sales] on 0,\n"
+            + "  NON EMPTY TOP_COUNTRY ON 1 \n"
+            + "FROM [Sales] WHERE [Product].[Top Drinks]";
+        assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{[Product].[Top Drinks]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[USA]}\n"
+            + "Row #0: 20,411\n");
     }
 
     /**
@@ -370,5 +379,75 @@ public class NativeSetEvaluationTest extends BatchTestCase {
         assertQueryReturns(mdx, result);
     }
 
+    /**
+     * Now that some native evaluation is supporting aggregated members, we
+     * need to push that logic down to the AggStar selection
+     */
+    public void testTopCountWithAggregatedMemberAggStar() {
+        propSaver.set(
+            propSaver.properties.UseAggregates,
+            true);
+        propSaver.set(
+            propSaver.properties.ReadAggregates,
+            true);
+        propSaver.set(
+            propSaver.properties.GenerateFormattedSql,
+            true);
+
+        final String mdx =
+            "with member [Time.Weekly].x as Aggregate([Time.Weekly].[1997].Children) "
+            + "set products as "
+            + "'TopCount([Product].[Product Department].Members, 2, "
+            + "[Measures].[Store Sales])' "
+            + "select NON EMPTY {[Measures].[Store Sales]} ON COLUMNS, "
+            + "NON EMPTY [products] ON ROWS "
+            + " from [Sales] where [Time.Weekly].[x]";
+
+        final String mysql =
+            "select\n"
+            + "    `product_class`.`product_family` as `c0`,\n"
+            + "    `product_class`.`product_department` as `c1`,\n"
+            + "    sum(`agg_pl_01_sales_fact_1997`.`store_sales_sum`) as `c2`\n"
+            + "from\n"
+            + "    `product` as `product`,\n"
+            + "    `product_class` as `product_class`,\n"
+            + "    `agg_pl_01_sales_fact_1997` as `agg_pl_01_sales_fact_1997`,\n"
+            + "    `time_by_day` as `time_by_day`\n"
+            + "where\n"
+            + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+            + "and\n"
+            + "    `agg_pl_01_sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+            + "and\n"
+            + "    `agg_pl_01_sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `time_by_day`.`week_of_year` in (50, 31, 21, 3, 40, 48, 38, 14, 41, 18, 28, 7, 24, 45, 51, 37, 32, 22, 4, 47, 13, 42, 17, 27, 52, 23, 46, 8, 33, 36, 1, 9, 10, 16, 5, 12, 26, 43, 39, 49, 34, 35, 2, 30, 19, 20, 11, 6, 25, 15, 44, 29) and `time_by_day`.`the_year` = 1997\n"
+            + "group by\n"
+            + "    `product_class`.`product_family`,\n"
+            + "    `product_class`.`product_department`\n"
+            + "order by\n"
+            + "    `c2` DESC,\n"
+            + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC,\n"
+            + "    ISNULL(`product_class`.`product_department`) ASC, `product_class`.`product_department` ASC";
+
+        SqlPattern mysqlPattern =
+            new SqlPattern(
+                DatabaseProduct.MYSQL,
+                mysql,
+                mysql);
+
+        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+
+        assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{[Time].[Weekly].[x]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Food].[Produce]}\n"
+            + "{[Product].[Food].[Snack Foods]}\n"
+            + "Row #0: 82,248.42\n"
+            + "Row #1: 67,609.82\n");
+    }
 }
 // End NativeSetEvaluationTest.java

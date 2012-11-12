@@ -2265,9 +2265,12 @@ public class TestAggregationManager extends BatchTestCase {
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-1271">MONDRIAN-1271</a>
      *
      * When a non-collapsed AggLevel was used, Mondrian would join on the
-     * key column of the lowest level isntead of the one it should have.
+     * key column of the lowest level instead of the one it should have.
      */
     public void testMondrian1271() {
+        if (!propSaver.properties.EnableNativeCrossJoin.get()) {
+            return;
+        }
         propSaver.set(
             MondrianProperties.instance().UseAggregates,
             true);

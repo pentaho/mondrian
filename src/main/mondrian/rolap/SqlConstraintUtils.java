@@ -13,6 +13,7 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.olap.MondrianDef.RelationOrJoin;
+import mondrian.olap.fun.AggregateFunDef;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
@@ -20,10 +21,20 @@ import mondrian.spi.Dialect;
 import mondrian.util.FilteredIterableList;
 
 import mondrian.calc.TupleIterable;
+import mondrian.mdx.DimensionExpr;
+import mondrian.mdx.HierarchyExpr;
+import mondrian.mdx.LevelExpr;
+import mondrian.mdx.MdxVisitor;
+import mondrian.mdx.MdxVisitorImpl;
+import mondrian.mdx.MemberExpr;
+import mondrian.mdx.NamedSetExpr;
+import mondrian.mdx.ParameterExpr;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.mdx.UnresolvedFunCall;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -145,7 +156,7 @@ public class SqlConstraintUtils {
                         List<RolapMember> slicerMembers =
                                 new ArrayList<RolapMember>(slicerMembersSet);
 
-                        //search and destroy [all]
+                        // search and destroy [all]
                         RolapMember allMember = null;
                         for (RolapMember slicerMember : slicerMembers) {
                             if (slicerMember.isAll()) {
@@ -252,7 +263,7 @@ public class SqlConstraintUtils {
 
     public static Map<RelationOrJoin, Set<RolapMember>> getSlicerMemberMap(
         Evaluator evaluator)
-        {
+    {
         Map<RelationOrJoin, Set<RolapMember>> mapOfSlicerMembers =
             new HashMap<RelationOrJoin, Set<RolapMember>>();
 
@@ -333,85 +344,67 @@ public class SqlConstraintUtils {
         ArrayList<Member> listOfMembers = new ArrayList<Member>();
 
         for (Member member : members) {
-                if (member.isCalculated()
-                    && isSupportedCalculatedMember(member))
-                {
-                    // Extract the list of members
-                    List<Member> evaluatedSet =
-                            getSetFromCalculatedMember(evaluator, member);
-                    listOfMembers.addAll(evaluatedSet);
-                } else {
-                    // just add the member
-                    listOfMembers.add(member);
+            if (member.isCalculated()
+                && isSupportedCalculatedMember(member))
+            {
+                // Extract the list of members
+                Iterator<Member> evaluatedSet =
+                    getSetFromCalculatedMember(evaluator, member);
+                while (evaluatedSet.hasNext()) {
+                    listOfMembers.add(evaluatedSet.next());
                 }
+            } else {
+                // just add the member
+                listOfMembers.add(member);
+            }
         }
         members = listOfMembers.toArray(new Member[listOfMembers.size()]);
         return members;
     }
 
     /**
-     *
      * Check to see if this is in a list of supported calculated members.
-     * Currently, only the Aggregate function is supported
+     * Currently, only the Aggregate function is supported.
      *
-     * @param member
      * @return <i>true</i> if the calculated member is supported for native
-     * evaluation
+     *         evaluation
      */
-    public static boolean isSupportedCalculatedMember(Member member) {
+    public static boolean isSupportedCalculatedMember(final Member member) {
         // Is it a supported function?
         if (member.getExpression() instanceof ResolvedFunCall) {
             ResolvedFunCall fun = (ResolvedFunCall) member.getExpression();
-            if (fun.getFunName().equalsIgnoreCase("Aggregate")) {
-                // We can only deal with Aggregates
+
+            // We can only deal with Aggregates.
+            if (fun.getFunDef() instanceof AggregateFunDef) {
                 return true;
             }
         }
         return false;
     }
 
-    public static List<Member> getSetFromCalculatedMember(
+    public static Iterator<Member> getSetFromCalculatedMember(
         Evaluator evaluator,
         Member member)
     {
-        // sanity check - is theis a supported one?
-        if (!isSupportedCalculatedMember(member)) {
-            return null;
-        }
-
-        if (!(member.getExpression() instanceof ResolvedFunCall)) {
-            // dunno what to do
-            return null;
-        }
+        assert member.getExpression() instanceof ResolvedFunCall;
 
         ResolvedFunCall fun = (ResolvedFunCall) member.getExpression();
-        String funName = fun.getFunName();
-        if (funName.equalsIgnoreCase("Aggregate")) {
-            // Calling the main set evaluator to extend this.
-            Exp exp = fun.getArg(0);
-            TupleIterable tupleIterable =
-                    evaluator.getSetEvaluator(
-                        exp, true).evaluateTupleIterable();
-            Iterable<Member> iterable = tupleIterable.slice(0);
 
-            ArrayList<Member> list = new ArrayList<Member>();
-            for (Iterator<Member> it = iterable.iterator(); it.hasNext();) {
-                Member m = it.next();
-                list.add(m);
-            }
-            return list;
-        }
-        return null;
+        // Calling the main set evaluator to extend this.
+        Exp exp = fun.getArg(0);
+        TupleIterable tupleIterable =
+            evaluator.getSetEvaluator(
+                exp, true).evaluateTupleIterable();
+        Iterable<Member> iterable = tupleIterable.slice(0);
+        return iterable.iterator();
     }
 
     /**
      * Gets a list of unique ordinal cube members to make sure our
      * cell request isn't unsatisfiable, following the same logic
      * as RolapEvaluator
-     * @param members
      * @return Unique ordinal cube members
      */
-
     protected static Member[] getUniqueOrdinalMembers(Member[] members) {
         ArrayList<Integer> currentOrdinals = new ArrayList<Integer>();
         ArrayList<Member> uniqueMembers = new ArrayList<Member>();

@@ -5297,7 +5297,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "where\n"
             + "    \"agg_c_14_sales_fact_1997\".\"store_id\" = \"store\".\"store_id\"\n"
             + "and\n"
-            + "    \"agg_c_14_sales_fact_1997\".\"the_year\" in 1997\n"
+            + "    \"agg_c_14_sales_fact_1997\".\"the_year\" = 1997\n"
             + "and\n"
             + "    \"agg_c_14_sales_fact_1997\".\"quarter\" in ('Q1', 'Q2', 'Q3', 'Q4')\n"
             + "and\n"

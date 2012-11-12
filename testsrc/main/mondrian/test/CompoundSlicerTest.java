@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2011 Pentaho and others
+// Copyright (C) 2009-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -1072,33 +1072,6 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "Row #1: 235.62\n"
             + "Row #1: 261.80\n");
     }
-
-
-     /**
-     * Now that some native evaluation is supporting aggregated members, we
-     * need to push that logic down to the AggStar selection
-     */
-    public void testTopCountWithAggregatedMemberAggStar() {
-        assertQueryReturns(
-            "with member [Time.Weekly].x as Aggregate([Time.Weekly].[1997].Children) "
-            + "set products as "
-            + "'TopCount([Product].[Product Department].Members, 2, "
-            + "[Measures].[Store Sales])' "
-            + "select NON EMPTY {[Measures].[Store Sales]} ON COLUMNS, "
-            + "NON EMPTY [products] ON ROWS "
-            + " from [Sales] where [Time.Weekly].[x]",
-            "Axis #0:\n"
-            + "{[Time].[Weekly].[x]}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Store Sales]}\n"
-            + "Axis #2:\n"
-            + "{[Product].[Food].[Produce]}\n"
-            + "{[Product].[Food].[Snack Foods]}\n"
-            + "Row #0: 82,248.42\n"
-            + "Row #1: 67,609.82\n");
-    }
-
-
 
     /**
      * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-900">

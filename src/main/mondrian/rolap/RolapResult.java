@@ -916,12 +916,11 @@ public class RolapResult extends ResultBase {
         Evaluator contextEvaluator)
     {
         int attempt = 0;
-        RolapEvaluator evaluator = slicerEvaluator;
+
+        RolapEvaluator evaluator = slicerEvaluator.push();
         if (contextEvaluator != null && contextEvaluator.isEvalAxes()) {
-            evaluator = slicerEvaluator.push();
-            evaluator.setEvalAxes(contextEvaluator.isEvalAxes());
+            evaluator.setEvalAxes(true);
             evaluator.setContext(contextEvaluator.getMembers());
-            //overrideContext(evaluator, contextEvaluator);
         }
 
         final int savepoint = evaluator.savepoint();
@@ -973,24 +972,6 @@ public class RolapResult extends ResultBase {
             return o;
         } finally {
             evaluator.restore(savepoint);
-        }
-    }
-
-    private void overrideContext(
-        Evaluator evaluator,
-        Evaluator contextEvaluator)
-    {
-        Member[] evalMembers = evaluator.getMembers();
-        Member[] contextMembers = contextEvaluator.getMembers();
-
-        //members of the same hierarchy will have same position
-        for (int i = 0;
-            i < evalMembers.length && i < contextMembers.length;
-            i++)
-        {
-            if (!evalMembers[i].equals(contextMembers[i])) {
-              evaluator.setContext(contextMembers[i]);
-            }
         }
     }
 
@@ -1504,7 +1485,7 @@ public class RolapResult extends ResultBase {
          * Maps the names of sets to their values. Populated on demand.
          */
         private final Map<String, RolapSetEvaluator> setEvaluators =
-                new HashMap<String, RolapSetEvaluator>();
+            new HashMap<String, RolapSetEvaluator>();
         private final Map<String, RolapNamedSetEvaluator> namedSetEvaluators =
             new HashMap<String, RolapNamedSetEvaluator>();
 

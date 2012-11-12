@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2011 Pentaho and others
+// Copyright (C) 2008-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -26,7 +26,9 @@ class RolapNamedSetEvaluator
     private final RolapResult.RolapResultEvaluatorRoot rrer;
     private final NamedSet namedSet;
 
-    private static final int RECURSION_TOLERANCE = 3;
+    private final int RECURSION_TOLERANCE =
+        MondrianProperties.instance().IterationLimit.get();
+
     private int recursionCount;
 
     /** Value of this named set; set on first use. */
@@ -73,7 +75,9 @@ class RolapNamedSetEvaluator
         if (list != null) {
             if (list == DUMMY_LIST) {
                 recursionCount ++;
-                if (recursionCount > RECURSION_TOLERANCE) {
+                if (RECURSION_TOLERANCE > 0
+                    && recursionCount > RECURSION_TOLERANCE)
+                {
                     throw rrer.result.slicerEvaluator.newEvalException(
                         null,
                         "Illegal attempt to reference value of named set '"
@@ -122,7 +126,7 @@ class RolapNamedSetEvaluator
             if (this.list == DUMMY_LIST) {
                 this.list = null;
             }
-            recursionCount = 0;//TODO:REMOVE
+            recursionCount = 0;
         }
     }
 
