@@ -2378,14 +2378,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
             null,
             "<Cube name='Cube with caption' caption='Cube with name'/>\n",
             null, null, null, null);
-        Throwable throwable = null;
-        try {
-            testContext.assertSimpleQuery();
-        } catch (Throwable e) {
-            throwable = e;
-        }
-        TestContext.checkThrowable(
-            throwable, "Must specify fact table of cube 'Cube with caption'");
+            testContext.assertSchemaError(
+                "Cube definition must contain a MeasureGroups element, and at least one MeasureGroup \\(in Cube 'Cube with caption'\\) \\(at ${pos}\\)",
+                "<Cube name='Cube with caption' caption='Cube with name'/>");
     }
 
     public void testCubeCaption() throws SQLException {
@@ -2413,9 +2408,14 @@ Test that get error if a dimension has more than one hierarchy with same name.
         final TestContext testContext = getTestContext().create(
             null,
             "<Cube name='NoDim' defaultMeasure='Unit Sales'>\n"
-            + "  <Table name='sales_fact_1997'/>\n"
-            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
-            + "      formatString='Standard'/>\n"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup table='sales_fact_1997'>"
+            + "      <Measures>"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
+            + "         formatString='Standard'/>\n"
+            + "      </Measures>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
             + "</Cube>",
             null,
             null,
@@ -2843,20 +2843,38 @@ Test that get error if a dimension has more than one hierarchy with same name.
         final TestContext testContext = getTestContext().create(
             null,
             "<Cube name='Sales Special Time'>\n"
-            + "  <Table name='sales_fact_1997'/>\n"
-            + "<Dimension name='TIME' foreignKey='time_id' type='TimeDimension'>"
-            + "<Hierarchy name='CALENDAR' hasAll='true' allMemberName='All TIME(CALENDAR)' primaryKey='time_id'>"
-            + "  <Table name='time_by_day'/>"
-            + "  <Level name='Years' column='the_year' uniqueMembers='true' levelType='TimeYears'/>"
-            + "  <Level name='Quarters' column='quarter' uniqueMembers='false' levelType='TimeQuarters'/>"
-            + "  <Level name='Months' column='month_of_year' uniqueMembers='false' levelType='TimeMonths'/>"
-            + "</Hierarchy>"
-            + "</Dimension>"
-            + "  <DimensionUsage name='Store' source='Store' foreignKey='store_id'/>\n"
-            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
-            + "   formatString='Standard'/>\n"
-            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'"
-            + "   formatString='#,###.00'/>\n"
+            + "  <Dimensions>"
+            + "    <Dimension name='TIME' key='Id' type='TIME' table='time_by_day'>"
+            + "      <Attributes>"
+            + "         <Attribute name='Years' keyColumn='the_year'/>"
+            + "         <Attribute name='Quarters' keyColumn='quarter'/>"
+            + "         <Attribute name='Months' keyColumn='month_of_year'/>"
+            + "         <Attribute name='Id' keyColumn='time_id'/>"
+            + "       </Attributes>"
+            + "       <Hierarchies>"
+            + "         <Hierarchy name='CALENDAR' hasAll='true' allMemberName='All TIME(CALENDAR)' primaryKey='time_id'>"
+            + "           <Level attribute='Years'/>"
+            + "           <Level attribute='Quarters'/>"
+            + "           <Level attribute='Months'/>"
+            + "         </Hierarchy>"
+            + "       </Hierarchies>"
+            + "     </Dimension>"
+            + "     <Dimension name='Store' source='Store' foreignKey='store_id'/>\n"
+            + "   </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup table='sales_fact_1997'>"
+            + "      <Measures>"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
+            + "         formatString='Standard'/>\n"
+            + "        <Measure name='Store Cost' column='store_cost' aggregator='sum'"
+            + "         formatString='#,###.00'/>\n"
+            + "      </Measures>"
+            + "      <DimensionLinks>\n"
+            + "        <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>\n"
+            + "        <ForeignKeyLink dimension='TIME' foreignKeyColumn='time_id'/>\n"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
             + "</Cube>",
             null,
             null,
