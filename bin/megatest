@@ -321,41 +321,24 @@ doTest2() {
   echo "Running test with JDK=$jdk retroweave=$retroweave database=$database props={$props}"
   if [ "$build" ]; then
     echo build=${build}
-    if [ "$retroweave" ]; then
-      case $jdk in
-      jdk1.4)
-        # Cannot build or retroweave under 1.4, so switch JDK briefly
-        (
-          export JAVA_HOME=$(chooseJavaHome jdk1.5)
-          export PATH="$JAVA_HOME/bin:$PATH"
-          export ANT_HOME=$(chooseAntHome jdk1.5)
-          $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} all retroweave
-        )
-        export JAVA_HOME=$(chooseJavaHome jdk1.4)
-        export PATH=$JAVA_HOME/bin:$PATH
-        ;;
-      *)
+    # Switch to JDK 1.7 to build
+    (
+      export JAVA_HOME=$(chooseJavaHome jdk1.7)
+      export PATH="$JAVA_HOME/bin:$PATH"
+      export ANT_HOME=$(chooseAntHome jdk1.7)
+      if [ "$retroweave" ]; then
         $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} all retroweave
-        ;;
-      esac
-      if [ "$mondrian" ]; then
-        $ANT_HOME/bin/ant $ANT_FLAGS -Dmondrian.retroweave=true test-nobuild
-      fi
-    else
-      export ANT_HOME=$(chooseAntHome $jdk)
-      if [ "$mondrian" ]; then
-        TEST_TARGET=test-nobuild
       else
-        TEST_TARGET=
+        $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} compile compile.tests
       fi
-      case $database in
-      (derby|access)
-        $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} compile compile.tests unzip-databases ${TEST_TARGET}
-        ;;
-      (*)
-        $ANT_HOME/bin/ant $ANT_FLAGS ${CLEAN} compile compile.tests ${TEST_TARGET}
-        ;;
-      esac
+    )
+    if [ "$mondrian" ]; then
+      (
+        export JAVA_HOME=$(chooseJavaHome $jdk)
+        export PATH="$JAVA_HOME/bin:$PATH"
+        export ANT_HOME=$(chooseAntHome $jdk)
+        $ANT_HOME/bin/ant $ANT_FLAGS test-nobuild
+      )
     fi
   fi
 
