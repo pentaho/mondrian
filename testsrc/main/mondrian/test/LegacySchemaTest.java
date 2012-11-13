@@ -760,6 +760,157 @@ public class LegacySchemaTest extends FoodMartTestCase {
             "<Cube name='Cube with caption' caption='Cube with name'/>");
     }
 
+    /**
+     * This result is somewhat peculiar. If two dimensions share a foreign key,
+     * what is the expected result?  Also, in this case, they share the same
+     * table without an alias, and the system doesn't complain.
+     */
+    public void testDuplicateTableAliasSameForeignKey() {
+        TestContext testContext =
+            getTestContext().legacy().createSubstitutingCube(
+                "Sales",
+                "<Dimension name='Yearly Income2' foreignKey='customer_id'>\n"
+                + "  <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
+                + "    <Table name='customer'/>\n"
+                + "    <Level name='Yearly Income' column='yearly_income' uniqueMembers='true'/>\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>");
+        testContext.assertQueryReturns(
+            "select from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "266,773");
+
+        // NonEmptyCrossJoin Fails
+        if (false) {
+            testContext.assertQueryReturns(
+                "select NonEmptyCrossJoin({[Yearly Income2].[All Yearly Income2s]},{[Customers].[All Customers]}) on rows,"
+                + "NON EMPTY {[Measures].[Unit Sales]} on columns"
+                + " from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "266,773");
+        }
+    }
+
+    /**
+     * Tests a cube whose fact table is a &lt;View&gt; element.
+     */
+    public void testViewFactTable() {
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+            // Warehouse cube where the default member in the Warehouse
+            // dimension is USA.
+            "<Cube name='Warehouse (based on view)'>\n"
+            + "  <View alias='FACT'>\n"
+            + "    <SQL dialect='generic'>\n"
+            + "     <![CDATA[select * from 'inventory_fact_1997' as 'FOOBAR']]>\n"
+            + "    </SQL>\n"
+            + "    <SQL dialect='oracle'>\n"
+            + "     <![CDATA[select * from 'inventory_fact_1997' 'FOOBAR']]>\n"
+            + "    </SQL>\n"
+            + "    <SQL dialect='mysql'>\n"
+            + "     <![CDATA[select * from `inventory_fact_1997` as `FOOBAR`]]>\n"
+            + "    </SQL>\n"
+            + "    <SQL dialect='infobright'>\n"
+            + "     <![CDATA[select * from `inventory_fact_1997` as `FOOBAR`]]>\n"
+            + "    </SQL>\n"
+            + "  </View>\n"
+            + "  <DimensionUsage name='Time' source='Time' foreignKey='time_id'/>\n"
+            + "  <DimensionUsage name='Product' source='Product' foreignKey='product_id'/>\n"
+            + "  <DimensionUsage name='Store' source='Store' foreignKey='store_id'/>\n"
+            + "  <Dimension name='Warehouse' foreignKey='warehouse_id'>\n"
+            + "    <Hierarchy hasAll='false' defaultMember='[USA]' primaryKey='warehouse_id'> \n"
+            + "      <Table name='warehouse'/>\n"
+            + "      <Level name='Country' column='warehouse_country' uniqueMembers='true'/>\n"
+            + "      <Level name='State Province' column='warehouse_state_province'\n"
+            + "          uniqueMembers='true'/>\n"
+            + "      <Level name='City' column='warehouse_city' uniqueMembers='false'/>\n"
+            + "      <Level name='Warehouse Name' column='warehouse_name' uniqueMembers='true'/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Measure name='Warehouse Cost' column='warehouse_cost' aggregator='sum'/>\n"
+            + "  <Measure name='Warehouse Sales' column='warehouse_sales' aggregator='sum'/>\n"
+            + "</Cube>", null, null, null, null);
+
+        testContext.assertQueryReturns(
+            "select\n"
+            + " {[Time].[1997], [Time].[1997].[Q3]} on columns,\n"
+            + " {[Store].[USA].Children} on rows\n"
+            + "From [Warehouse (based on view)]\n"
+            + "where [Warehouse].[USA]",
+            "Axis #0:\n"
+            + "{[Warehouse].[Warehouses].[USA]}\n"
+            + "Axis #1:\n"
+            + "{[Time].[Time].[1997]}\n"
+            + "{[Time].[Time].[1997].[Q3]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[WA]}\n"
+            + "Row #0: 25,789.086\n"
+            + "Row #0: 8,624.791\n"
+            + "Row #1: 17,606.904\n"
+            + "Row #1: 3,812.023\n"
+            + "Row #2: 45,647.262\n"
+            + "Row #2: 12,664.162\n");
+    }
+
+    /**
+     * Tests a cube whose fact table is a &lt;View&gt; element, and which
+     * has dimensions based on the fact table.
+     */
+    public void testViewFactTable2() {
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+            // Similar to "Store" cube in FoodMart.mondrian.xml.
+            "<Cube name='Store2'>\n"
+            + "  <View alias='FACT'>\n"
+            + "    <SQL dialect='generic'>\n"
+            + "     <![CDATA[select * from 'store' as 'FOOBAR']]>\n"
+            + "    </SQL>\n"
+            + "    <SQL dialect='oracle'>\n"
+            + "     <![CDATA[select * from 'store' 'FOOBAR']]>\n"
+            + "    </SQL>\n"
+            + "    <SQL dialect='mysql'>\n"
+            + "     <![CDATA[select * from `store` as `FOOBAR`]]>\n"
+            + "    </SQL>\n"
+            + "    <SQL dialect='infobright'>\n"
+            + "     <![CDATA[select * from `store` as `FOOBAR`]]>\n"
+            + "    </SQL>\n"
+            + "  </View>\n"
+            + "  <!-- We could have used the shared dimension 'Store Type', but we\n"
+            + "     want to test private dimensions without primary key. -->\n"
+            + "  <Dimension name='Store Type'>\n"
+            + "    <Hierarchy hasAll='true'>\n"
+            + "      <Level name='Store Type' column='store_type' uniqueMembers='true'/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "\n"
+            + "  <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
+            + "      formatString='#,###'/>\n"
+            + "  <Measure name='Grocery Sqft' column='grocery_sqft' aggregator='sum'\n"
+            + "      formatString='#,###'/>\n"
+            + "\n"
+            + "</Cube>", null, null, null, null);
+        testContext.assertQueryReturns(
+            "select {[Store Type].Children} on columns from [Store2]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[Store Type].[Deluxe Supermarket]}\n"
+            + "{[Store].[Store Type].[Gourmet Supermarket]}\n"
+            + "{[Store].[Store Type].[HeadQuarters]}\n"
+            + "{[Store].[Store Type].[Mid-Size Grocery]}\n"
+            + "{[Store].[Store Type].[Small Grocery]}\n"
+            + "{[Store].[Store Type].[Supermarket]}\n"
+            + "Row #0: 146,045\n"
+            + "Row #0: 47,447\n"
+            + "Row #0: \n"
+            + "Row #0: 109,343\n"
+            + "Row #0: 75,281\n"
+            + "Row #0: 193,480\n");
+    }
 }
 
 // End LegacySchemaTest.java

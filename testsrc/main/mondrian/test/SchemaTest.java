@@ -37,6 +37,8 @@ import java.sql.*;
 import java.sql.Connection;
 import java.util.*;
 
+import static mondrian.test.SchemaSubstitution.*;
+
 /**
  * Unit tests for various schema features.
  *
@@ -732,12 +734,18 @@ Test that get error if a dimension has more than one hierarchy with same name.
     public void testDuplicateTableAliasSameForeignKey() {
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
-            "<Dimension name='Yearly Income2' foreignKey='customer_id'>\n"
-            + "  <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
-            + "    <Table name='customer'/>\n"
-            + "    <Level name='Yearly Income' column='yearly_income' uniqueMembers='true'/>\n"
-            + "  </Hierarchy>\n"
-            + "</Dimension>");
+            "<Dimension name='Yearly Income2' table='customer' key='Id'>\n"
+            + "  <Attributes>"
+            + "    <Attribute name='Yearly Income' keyColumn='yearly_income'/>"
+            + "    <Attribute name='Id' keyColumn='customer_id'/>"
+            + "  </Attributes>"
+            + "</Dimension>",
+            null,
+            null,
+            null,
+            ArrayMap.of(
+                "Sales",
+                "<ForeignKeyLink dimension='Yearly Income2' foreignKeyColumn='customer_id'/>"));
         testContext.assertQueryReturns(
             "select from [Sales]",
             "Axis #0:\n"
@@ -747,7 +755,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
         // NonEmptyCrossJoin Fails
         if (false) {
             testContext.assertQueryReturns(
-                "select NonEmptyCrossJoin({[Yearly Income2].[All Yearly Income2s]},{[Customers].[All Customers]}) on rows,"
+                "select NonEmptyCrossJoin({[Yearly Income2].[Yearly Income].[All Yearly Income]},{[Customers].[All Customers]}) on rows,"
                 + "NON EMPTY {[Measures].[Unit Sales]} on columns"
                 + " from [Sales]",
                 "Axis #0:\n"
@@ -1736,42 +1744,55 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * Tests a cube whose fact table is a &lt;View&gt; element.
      */
     public void testViewFactTable() {
-        final TestContext testContext = getTestContext().create(
-            null,
-
-            // Warehouse cube where the default member in the Warehouse
-            // dimension is USA.
-            "<Cube name='Warehouse (based on view)'>\n"
-            + "  <View alias='FACT'>\n"
-            + "    <SQL dialect='generic'>\n"
-            + "     <![CDATA[select * from 'inventory_fact_1997' as 'FOOBAR']]>\n"
-            + "    </SQL>\n"
-            + "    <SQL dialect='oracle'>\n"
-            + "     <![CDATA[select * from 'inventory_fact_1997' 'FOOBAR']]>\n"
-            + "    </SQL>\n"
-            + "    <SQL dialect='mysql'>\n"
-            + "     <![CDATA[select * from `inventory_fact_1997` as `FOOBAR`]]>\n"
-            + "    </SQL>\n"
-            + "    <SQL dialect='infobright'>\n"
-            + "     <![CDATA[select * from `inventory_fact_1997` as `FOOBAR`]]>\n"
-            + "    </SQL>\n"
-            + "  </View>\n"
-            + "  <DimensionUsage name='Time' source='Time' foreignKey='time_id'/>\n"
-            + "  <DimensionUsage name='Product' source='Product' foreignKey='product_id'/>\n"
-            + "  <DimensionUsage name='Store' source='Store' foreignKey='store_id'/>\n"
-            + "  <Dimension name='Warehouse' foreignKey='warehouse_id'>\n"
-            + "    <Hierarchy hasAll='false' defaultMember='[USA]' primaryKey='warehouse_id'> \n"
-            + "      <Table name='warehouse'/>\n"
-            + "      <Level name='Country' column='warehouse_country' uniqueMembers='true'/>\n"
-            + "      <Level name='State Province' column='warehouse_state_province'\n"
-            + "          uniqueMembers='true'/>\n"
-            + "      <Level name='City' column='warehouse_city' uniqueMembers='false'/>\n"
-            + "      <Level name='Warehouse Name' column='warehouse_name' uniqueMembers='true'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
-            + "  <Measure name='Warehouse Cost' column='warehouse_cost' aggregator='sum'/>\n"
-            + "  <Measure name='Warehouse Sales' column='warehouse_sales' aggregator='sum'/>\n"
-            + "</Cube>", null, null, null, null);
+        final TestContext testContext = getTestContext()
+            .withSubstitution(insertCube(
+                "<Cube name='Warehouse (based on view)'>\n"
+                + "  <Dimensions>"
+                + "    <Dimension name='Time' source='Time'/>\n"
+                + "    <Dimension name='Product' source='Product'/>\n"
+                + "    <Dimension name='Store' source='Store'/>\n"
+                + "    <Dimension name='Warehouse' table='warehouse' key='Id'>\n"
+                + "      <Attributes>"
+                + "        <Attribute name='Country' keyColumn='warehouse_country'/>"
+                + "        <Attribute name='State Province' keyColumn='warehouse_state_province'/>"
+                + "        <Attribute name='City' keyColumn='warehouse_city'/>"
+                + "        <Attribute name='Warehouse Name' keyColumn='warehouse_name'/>"
+                + "        <Attribute name='Id' keyColumn='warehouse_id'/>"
+                + "      </Attributes>"
+                + "    </Dimension>\n"
+                + "  </Dimensions>"
+                + "  <MeasureGroups>"
+                + "    <MeasureGroup table='FACT'>"
+                + "      <Measures>"
+                + "        <Measure name='Warehouse Cost' column='warehouse_cost' aggregator='sum'/>\n"
+                + "        <Measure name='Warehouse Sales' column='warehouse_sales' aggregator='sum'/>\n"
+                + "      </Measures>"
+                + "      <DimensionLinks>\n"
+                + "        <ForeignKeyLink dimension='Time' foreignKeyColumn='time_id'/>"
+                + "        <ForeignKeyLink dimension='Product' foreignKeyColumn='product_id'/>"
+                + "        <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>"
+                + "        <ForeignKeyLink dimension='Warehouse' foreignKeyColumn='warehouse_id'/>"
+                + "      </DimensionLinks>"
+                + "    </MeasureGroup>"
+                + "  </MeasureGroups>"
+                + "</Cube>"))
+            .withSubstitution(insertPhysTable(
+                "<Query name='FACT' alias='FACT'>\n"
+                + "  <ExpressionView>\n"
+                + "    <SQL dialect='generic'>\n"
+                + "     <![CDATA[select * from 'inventory_fact_1997' as 'FOOBAR']]>\n"
+                + "    </SQL>\n"
+                + "    <SQL dialect='oracle'>\n"
+                + "     <![CDATA[select * from 'inventory_fact_1997' 'FOOBAR']]>\n"
+                + "    </SQL>\n"
+                + "    <SQL dialect='mysql'>\n"
+                + "     <![CDATA[select * from `inventory_fact_1997` as `FOOBAR`]]>\n"
+                + "    </SQL>\n"
+                + "    <SQL dialect='infobright'>\n"
+                + "     <![CDATA[select * from `inventory_fact_1997` as `FOOBAR`]]>\n"
+                + "    </SQL>\n"
+                + "  </ExpressionView>\n"
+                + "</Query>"));
 
         testContext.assertQueryReturns(
             "select\n"
@@ -1780,14 +1801,14 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "From [Warehouse (based on view)]\n"
             + "where [Warehouse].[USA]",
             "Axis #0:\n"
-            + "{[Warehouse].[Warehouses].[USA]}\n"
+            + "{[Warehouse].[Country].[USA]}\n"
             + "Axis #1:\n"
             + "{[Time].[Time].[1997]}\n"
             + "{[Time].[Time].[1997].[Q3]}\n"
             + "Axis #2:\n"
-            + "{[Store].[USA].[CA]}\n"
-            + "{[Store].[USA].[OR]}\n"
-            + "{[Store].[USA].[WA]}\n"
+            + "{[Store].[Stores].[USA].[CA]}\n"
+            + "{[Store].[Stores].[USA].[OR]}\n"
+            + "{[Store].[Stores].[USA].[WA]}\n"
             + "Row #0: 25,789.086\n"
             + "Row #0: 8,624.791\n"
             + "Row #1: 17,606.904\n"
@@ -1801,11 +1822,35 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * has dimensions based on the fact table.
      */
     public void testViewFactTable2() {
-        final TestContext testContext = getTestContext().create(
-            null,
-            // Similar to "Store" cube in FoodMart.mondrian.xml.
+        String cubeDefs =
             "<Cube name='Store2'>\n"
-            + "  <View alias='FACT'>\n"
+            + "  <!-- We could have used the shared dimension 'Store Type', but we\n"
+            + "     want to test private dimensions without primary key. -->\n"
+            + "  <Dimensions>"
+            + "    <Dimension name='Store' table='store' key='Id'>\n"
+            + "      <Attributes>"
+            + "        <Attribute name='Store Type' keyColumn='store_type'/>"
+            + "        <Attribute name='Id' keyColumn='store_id'/>"
+            + "      </Attributes>"
+            + "    </Dimension>\n"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup table='FACT'>"
+            + "      <Measures>"
+            + "        <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
+            + "         formatString='#,###'/>\n"
+            + "        <Measure name='Grocery Sqft' column='grocery_sqft' aggregator='sum'\n"
+            + "         formatString='#,###'/>\n"
+            + "      </Measures>"
+            + "      <DimensionLinks>"
+            + "        <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
+            + "</Cube>";
+        String tableDef =
+            "<Query name='FACT' alias='FACT'>\n"
+            + "  <ExpressionView>\n"
             + "    <SQL dialect='generic'>\n"
             + "     <![CDATA[select * from 'store' as 'FOOBAR']]>\n"
             + "    </SQL>\n"
@@ -1818,23 +1863,13 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "    <SQL dialect='infobright'>\n"
             + "     <![CDATA[select * from `store` as `FOOBAR`]]>\n"
             + "    </SQL>\n"
-            + "  </View>\n"
-            + "  <!-- We could have used the shared dimension 'Store Type', but we\n"
-            + "     want to test private dimensions without primary key. -->\n"
-            + "  <Dimension name='Store Type'>\n"
-            + "    <Hierarchy hasAll='true'>\n"
-            + "      <Level name='Store Type' column='store_type' uniqueMembers='true'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
-            + "\n"
-            + "  <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
-            + "      formatString='#,###'/>\n"
-            + "  <Measure name='Grocery Sqft' column='grocery_sqft' aggregator='sum'\n"
-            + "      formatString='#,###'/>\n"
-            + "\n"
-            + "</Cube>", null, null, null, null);
+            + "  </ExpressionView>\n"
+            + "</Query>";
+        final TestContext testContext = getTestContext()
+            .withSubstitution(insertCube(cubeDefs))
+            .withSubstitution(insertPhysTable(tableDef));
         testContext.assertQueryReturns(
-            "select {[Store Type].Children} on columns from [Store2]",
+            "select {[Store].[Store Type].Children} on columns from [Store2]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
