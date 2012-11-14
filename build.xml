@@ -984,7 +984,7 @@ doc/deployDoc.sh" />
   </target>
 
   <target name="binzip"
-      depends="version,checkJdkVersion,jar,srczip,javadoc,xml_schema,retroweave">
+      depends="jar,srczip,javadoc,xml_schema,retroweave">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
     <zip zipfile="${dist.bin.file}">
@@ -1099,7 +1099,7 @@ must be run under JDK 1.7." />
     </javac>
   </target>
 
-  <target name="jar" depends="version,compile,compile.tests">
+  <target name="jar" depends="version,checkJdkVersion,compile,compile.tests">
     <mkdir dir="${lib.dir}" />
     <jar
         destfile="${jar.file}"
