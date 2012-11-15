@@ -47,7 +47,7 @@ public class SchemaSubstitution {
     }
 
     public static Util.Function1<String, String> insertDimension(
-        final String cubeName, final String dimensionDefs)
+        final String cubeName, final String dimDefs)
     {
         return new Util.Function1<String, String>() {
             public String apply(String schema) {
@@ -59,13 +59,13 @@ public class SchemaSubstitution {
 
                 int i = schema.indexOf("<Dimension ", h);
                 return schema.substring(0, i)
-                       + dimensionDefs
+                       + dimDefs
                        + schema.substring(i);
             }
         };
     }
 
-    public static Util.Function1<String, String> insertDimensionLink(
+    public static Util.Function1<String, String> insertDimensionLinks(
         final String cubeName, final Map<String, String> dimLinks)
     {
         return new Util.Function1<String, String>() {

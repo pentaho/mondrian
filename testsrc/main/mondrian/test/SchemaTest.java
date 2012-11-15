@@ -1745,7 +1745,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
      */
     public void testViewFactTable() {
         final TestContext testContext = getTestContext()
-            .withSubstitution(insertCube(
+            .insertCube(
                 "<Cube name='Warehouse (based on view)'>\n"
                 + "  <Dimensions>"
                 + "    <Dimension name='Time' source='Time'/>\n"
@@ -1775,8 +1775,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "      </DimensionLinks>"
                 + "    </MeasureGroup>"
                 + "  </MeasureGroups>"
-                + "</Cube>"))
-            .withSubstitution(insertPhysTable(
+                + "</Cube>")
+            .insertPhysTable(
                 "<Query name='FACT' alias='FACT'>\n"
                 + "  <ExpressionView>\n"
                 + "    <SQL dialect='generic'>\n"
@@ -1792,7 +1792,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "     <![CDATA[select * from `inventory_fact_1997` as `FOOBAR`]]>\n"
                 + "    </SQL>\n"
                 + "  </ExpressionView>\n"
-                + "</Query>"));
+                + "</Query>");
 
         testContext.assertQueryReturns(
             "select\n"
@@ -1866,8 +1866,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "  </ExpressionView>\n"
             + "</Query>";
         final TestContext testContext = getTestContext()
-            .withSubstitution(insertCube(cubeDefs))
-            .withSubstitution(insertPhysTable(tableDef));
+            .insertCube(cubeDefs)
+            .insertPhysTable(tableDef);
         testContext.assertQueryReturns(
             "select {[Store].[Store Type].Children} on columns from [Store2]",
             "Axis #0:\n"
@@ -1919,8 +1919,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "  </ExpressionView>\n"
             + "</Query>";
         TestContext testContext = getTestContext()
-            .withSubstitution(insertCube(cubeDefs))
-            .withSubstitution(insertPhysTable(tableDef));
+            .insertCube(cubeDefs)
+            .insertPhysTable(tableDef);
         testContext.assertQueryThrows(
             "select {[Store Type].Children} on columns from [Store2]",
             "View is invalid: ");
@@ -2306,9 +2306,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
         TestContext testContext =
             getTestContext()
-                .withSubstitution(insertDimension("Sales", dimDef))
-                .withSubstitution(insertDimensionLink("Sales", dimLinks))
-                .withSubstitution(ignoreMissingLink());
+                .insertDimension("Sales", dimDef)
+                .insertDimensionLinks("Sales", dimLinks)
+                .ignoreMissingLink();
 
         // In the query below Mondrian (prior to the fix) would
         // return the store name instead of the store type.
