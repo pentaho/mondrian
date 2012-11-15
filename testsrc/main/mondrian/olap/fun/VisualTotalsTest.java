@@ -129,6 +129,34 @@ public class VisualTotalsTest extends TestCase {
         assertEquals("*Subtotal - Bread", member.getName());
         assertEquals("*Subtotal - Bread", member.getCaption());
     }
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-1294">
+     * MONDRIAN-1294, "VisualTotals throws error on calculated members"</a>.
+     *
+     * @throws java.sql.SQLException on error
+     */
+    public void testVisualTotalCMBug() throws SQLException {
+        CellSet cellSet =
+            TestContext.instance().executeOlap4jQuery(
+                "with member Product.Aggregated as "
+                + "Aggregate({[Product].[Food].[Baked Goods].[Bread],"
+                + "     [Product].[Food].[Baked Goods].[Bread].[Bagels],"
+                + "     [Product].[Food].[Baked Goods].[Bread].[Muffins]})\n "
+                + "select {[Measures].[Profit]} on columns, \n"
+                + "{VisualTotals("
+                + "    {[Product].[Food].[Baked Goods].[Bread],"
+                + "     [Product].[Food].[Baked Goods].[Bread].[Bagels],"
+                + "     [Product].[Food].[Baked Goods].[Bread].[Muffins]},"
+                + "     \"**Subtotal - *\"), Product.Aggregated } on rows \n"
+                + "from [Sales]");
+
+        String error = cellSet.getCell(0).getErrorText();
+        assertEquals(null, error);
+        String visualtotal = cellSet.getCell(0).getFormattedValue();
+        String aggregated = cellSet.getCell(3).getFormattedValue();
+        assertEquals(aggregated, visualtotal);
+    }
 }
 
 // End VisualTotalsTest.java
