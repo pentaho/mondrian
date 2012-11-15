@@ -562,15 +562,19 @@ public class SqlConstraintUtils {
         RolapCubeLevel level)
     {
         RolapStar.Column starColumn = level.getBaseStarKeyColumn(baseCube);
-        if (aggStar != null) {
-            int bitPos = starColumn.getBitPosition();
-            AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
-            AggStar.Table table = aggColumn.getTable();
-            table.addToFrom(sqlQuery, false, true);
+        if (starColumn != null) {
+            if (aggStar != null) {
+                int bitPos = starColumn.getBitPosition();
+                AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+                AggStar.Table table = aggColumn.getTable();
+                table.addToFrom(sqlQuery, false, true);
+            } else {
+                RolapStar.Table table = starColumn.getTable();
+                assert table != null;
+                table.addToFrom(sqlQuery, false, true);
+            }
         } else {
-            RolapStar.Table table = starColumn.getTable();
-            assert table != null;
-            table.addToFrom(sqlQuery, false, true);
+            level.getHierarchy().addToFrom(sqlQuery, level.getKeyExp());
         }
     }
 
