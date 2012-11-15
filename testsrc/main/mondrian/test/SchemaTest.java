@@ -1892,26 +1892,35 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * has dimensions based on the fact table.
      */
     public void testViewFactTableInvalid() {
-        TestContext testContext = getTestContext().create(
-            null,
-            // Similar to "Store" cube in FoodMart.mondrian.xml.
+        String cubeDefs =
             "<Cube name='Store2'>\n"
-            + "  <View alias='FACT'>\n"
+            + "  <Dimensions>"
+            + "    <Dimension name='Store Type'>\n"
+            + "      <Attributes>"
+            + "        <Attribute name='Store Type' column='store_type'/>"
+            + "      </Attributes>"
+            + "    </Dimension>\n"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup name='Store2' table='FACT'>"
+            + "      <Measures>"
+            + "        <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
+            + "         formatString='#,###'/>\n"
+            + "      </Measures>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
+            + "</Cube>";
+        String tableDef =
+            "<Query name='FACT' alias='FACT'>\n"
+            + "  <ExpressionView>\n"
             + "    <SQL dialect='generic'>\n"
             + "     <![CDATA[select wrong from wronger]]>\n"
             + "    </SQL>\n"
-            + "  </View>\n"
-            + "  <Dimension name='Store Type'>\n"
-            + "    <Hierarchy hasAll='true'>\n"
-            + "      <Level name='Store Type' column='store_type' uniqueMembers='true'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
-            + "\n"
-            + "  <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
-            + "      formatString='#,###'/>\n"
-            + "\n"
-            + "</Cube>",
-            null, null, null, null);
+            + "  </ExpressionView>\n"
+            + "</Query>";
+        TestContext testContext = getTestContext()
+            .withSubstitution(insertCube(cubeDefs))
+            .withSubstitution(insertPhysTable(tableDef));
         testContext.assertQueryThrows(
             "select {[Store Type].Children} on columns from [Store2]",
             "View is invalid: ");
@@ -2279,26 +2288,36 @@ Test that get error if a dimension has more than one hierarchy with same name.
     public void testBugMondrian303() {
         // In order to reproduce the problem a dimension specifying
         // captionColumn and Properties were required.
-        TestContext testContext = getTestContext().createSubstitutingCube(
+        String dimDef =
+            "<Dimension name='Store2' table='store' key='Store Id'>\n"
+            + "  <Attributes>"
+            + "    <Attribute name='Store Type' keyColumn='store_type'/>"
+            + "    <Attribute name='Store Manager' keyColumn='store_manager'/>"
+            + "    <Attribute name='Store Id' keyColumn='store_id' captionColumn='store_name'>"
+            + "      <Property attribute='Store Type'/>"
+            + "      <Property attribute='Store Manager'/>"
+            + "    </Attribute>"
+            + "  </Attributes>"
+            + "</Dimension>\n";
+        Map<String, String> dimLinks = ArrayMap.of(
             "Sales",
-            "  <Dimension name='Store2' foreignKey='store_id'>\n"
-            + "    <Hierarchy name='Store2' hasAll='true' allMemberName='All Stores' primaryKey='store_id'>\n"
-            + "      <Table name='store_ragged'/>\n"
-            + "      <Level name='Store2' table='store_ragged' column='store_id' captionColumn='store_name' uniqueMembers='true'>\n"
-            + "           <Property name='Store Type' column='store_type'/>"
-            + "           <Property name='Store Manager' column='store_manager'/>"
-            + "     </Level>"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n");
+            "<ForeignKeyLink dimension='Store2' "
+            + "foreignKeyColumn='store_id'/>");
+
+        TestContext testContext =
+            getTestContext()
+                .withSubstitution(insertDimension("Sales", dimDef))
+                .withSubstitution(insertDimensionLink("Sales", dimLinks))
+                .withSubstitution(ignoreMissingLink());
 
         // In the query below Mondrian (prior to the fix) would
         // return the store name instead of the store type.
         testContext.assertQueryReturns(
             "WITH\n"
             + "   MEMBER [Measures].[StoreType] AS \n"
-            + "   '[Store2].CurrentMember.Properties('Store Type')'\n"
+            + "   '[Store2].[Store Id].CurrentMember.Properties(\"Store Type\")'\n"
             + "SELECT\n"
-            + "   NonEmptyCrossJoin({[Store2].[All Stores].children}, {[Product].[All Products]}) ON ROWS,\n"
+            + "   NonEmptyCrossJoin({[Store2].[Store Id].[All Store Id].children}, {[Product].[All Products]}) ON ROWS,\n"
             + "   { [Measures].[Store Sales], [Measures].[StoreType]} ON COLUMNS\n"
             + "FROM Sales",
             "Axis #0:\n"
@@ -2307,19 +2326,19 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "{[Measures].[Store Sales]}\n"
             + "{[Measures].[StoreType]}\n"
             + "Axis #2:\n"
-            + "{[Store2].[2], [Product].[Products].[All Products]}\n"
-            + "{[Store2].[3], [Product].[Products].[All Products]}\n"
-            + "{[Store2].[6], [Product].[Products].[All Products]}\n"
-            + "{[Store2].[7], [Product].[Products].[All Products]}\n"
-            + "{[Store2].[11], [Product].[Products].[All Products]}\n"
-            + "{[Store2].[13], [Product].[Products].[All Products]}\n"
-            + "{[Store2].[14], [Product].[Products].[All Products]}\n"
-            + "{[Store2].[15], [Product].[Products].[All Products]}\n"
-            + "{[Store2].[16], [Product].[Products].[All Products]}\n"
-            + "{[Store2].[17], [Product].[Products].[All Products]}\n"
-            + "{[Store2].[22], [Product].[Products].[All Products]}\n"
-            + "{[Store2].[23], [Product].[Products].[All Products]}\n"
-            + "{[Store2].[24], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[Store Id].[2], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[Store Id].[3], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[Store Id].[6], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[Store Id].[7], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[Store Id].[11], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[Store Id].[13], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[Store Id].[14], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[Store Id].[15], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[Store Id].[16], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[Store Id].[17], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[Store Id].[22], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[Store Id].[23], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[Store Id].[24], [Product].[Products].[All Products]}\n"
             + "Row #0: 4,739.23\n"
             + "Row #0: Small Grocery\n"
             + "Row #1: 52,896.30\n"
