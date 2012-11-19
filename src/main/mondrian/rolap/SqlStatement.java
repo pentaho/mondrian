@@ -364,6 +364,18 @@ public class SqlStatement {
                     "Using type DOUBLE for Neteeza scale 0 and precision 38.");
             }
             return Type.DOUBLE;
+        } else if (dialect != null
+                && dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MONETDB
+                && scale == 0
+                && precision == 0)
+        {
+            // MonetDB marks doesn't return precision and scale for 
+            // aggregated decimal data types, so we'll assume its a double
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "Using type DOUBLE for MonetDB scale 0 and precision 0.");
+            }
+            return Type.DOUBLE;
         } else if ((scale == 0 || scale == -127)
             && (precision <= 9 || precision == 38))
         {
