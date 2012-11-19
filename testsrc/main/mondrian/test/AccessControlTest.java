@@ -2964,6 +2964,71 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Row #0: 41,580\n"
             + "Row #0: 41,580\n");
     }
+
+    public void testMondrian1295() throws Exception {
+        final String mdx =
+            "With\n"
+            + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Time],[*BASE_MEMBERS_Product])'\n"
+            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].CurrentMember, [Time].[Year]).OrderKey,BASC,Ancestor([Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,[Time].CurrentMember.OrderKey,BASC,[Product].CurrentMember.OrderKey,BASC)'\n"
+            + "Set [*BASE_MEMBERS_Product] as '{[Product].[All Products]}'\n"
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].currentMember,[Product].currentMember)})'\n"
+            + "Set [*BASE_MEMBERS_Time] as '[Time].[Year].Members'\n"
+            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'\n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', SOLVE_ORDER=400\n"
+            + "Select\n"
+            + "[*BASE_MEMBERS_Measures] on columns,\n"
+            + "Non Empty [*SORTED_ROW_AXIS] on rows\n"
+            + "From [Sales]\n";
+
+        final TestContext context =
+            getTestContext().create(
+                null, null, null, null, null,
+                "<Role name=\"Admin\">\n"
+                + "  <SchemaGrant access=\"none\">\n"
+                + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                + "      <HierarchyGrant hierarchy=\"[Store]\" rollupPolicy=\"partial\" access=\"custom\">\n"
+                + "        <MemberGrant member=\"[Store].[USA].[CA]\" access=\"all\">\n"
+                + "        </MemberGrant>\n"
+                + "      </HierarchyGrant>\n"
+                + "      <HierarchyGrant hierarchy=\"[Customers]\" rollupPolicy=\"partial\" access=\"custom\">\n"
+                + "        <MemberGrant member=\"[Customers].[USA].[CA]\" access=\"all\">\n"
+                + "        </MemberGrant>\n"
+                + "      </HierarchyGrant>\n"
+                + "    </CubeGrant>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role> \n");
+
+        // Control
+        context
+            .assertQueryReturns(
+                "select {[Measures].[Unit Sales]} on columns from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Row #0: 266,773\n");
+        context.withRole("Admin")
+            .assertQueryReturns(
+                "select {[Measures].[Unit Sales]} on columns from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Row #0: 74,748\n");
+
+        // Test
+        context.withRole("Admin")
+            .assertQueryReturns(
+                mdx,
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+                + "Axis #2:\n"
+                + "{[Time].[1997], [Product].[All Products]}\n"
+                + "Row #0: 74,748\n");
+    }
 }
 
 // End AccessControlTest.java

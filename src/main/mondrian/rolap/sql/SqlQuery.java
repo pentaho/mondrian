@@ -563,11 +563,13 @@ public class SqlQuery {
 
     public void addWhere(final String expression)
     {
+        assert expression != null && !expression.equals("");
         where.add(expression);
     }
 
     public void addGroupBy(final String expression)
     {
+        assert expression != null && !expression.equals("");
         groupBy.add(expression);
     }
 
@@ -581,6 +583,7 @@ public class SqlQuery {
 
     public void addHaving(final String expression)
     {
+        assert expression != null && !expression.equals("");
         having.add(expression);
     }
 
