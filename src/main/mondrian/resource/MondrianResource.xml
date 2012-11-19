@@ -864,6 +864,12 @@
     </text>
 </exception>
 
+<message id="8000104" name="NativeSqlInClauseTooLarge">
+    <text>
+        Cannot use native aggregation constraints for level ''{0}'' because the number of members is larger than the value of ''mondrian.rolap.maxConstraints'' ({1})
+    </text>
+</message>
+
 <!-- ====================================================================== -->
 <!-- Execution -->
 <exception id="8500001" name="ExecutionStatementCleanupException">

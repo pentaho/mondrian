@@ -13,6 +13,9 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.olap.MondrianDef.RelationOrJoin;
+
+import mondrian.resource.MondrianResource;
+
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
@@ -22,6 +25,9 @@ import mondrian.util.FilteredIterableList;
 import java.util.*;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
+
+
 /**
  * Utility class used by implementations of {@link mondrian.rolap.sql.SqlConstraint},
  * used to generate constraints into {@link mondrian.rolap.sql.SqlQuery}.
@@ -30,6 +36,9 @@ import java.util.Map.Entry;
  * @since Nov 21, 2005
  */
 public class SqlConstraintUtils {
+
+    private static final Logger LOG =
+        Logger.getLogger(SqlConstraintUtils.class);
 
     /** Utility class */
     private SqlConstraintUtils() {
@@ -166,7 +175,12 @@ public class SqlConstraintUtils {
                                         aggStar, slicerMembers,
                                         levelForWhere,
                                         restrictMemberTypes, false);
-                            sqlQuery.addWhere(where);
+                            if (!where.equals("")) {
+                                // The where clause might be null because if the
+                                // list of members is greater than the limit
+                                // permitted, we won't constraint.
+                                sqlQuery.addWhere(where);
+                            }
                         } else {
                             // No extra slicers.... just use the = method
                             final StringBuilder buf = new StringBuilder();
@@ -225,9 +239,15 @@ public class SqlConstraintUtils {
                                 sqlQuery, baseCube,
                                 aggStar, slicerMembers,
                                 (RolapCubeLevel) affectedLevel,
-                                restrictMemberTypes,false);
-                        whereClausesForRoleConstraints.put(
-                            (RolapCubeLevel) affectedLevel, where);
+                                restrictMemberTypes,
+                                false);
+                        if (!where.equals("")) {
+                            // The where clause might be null because if the
+                            // list of members is greater than the limit
+                            // permitted, we won't constraint.
+                            whereClausesForRoleConstraints.put(
+                                (RolapCubeLevel) affectedLevel, where);
+                        }
                     }
                 }
             }
@@ -1381,6 +1401,11 @@ public class SqlConstraintUtils {
                 // Simply get them all, do not create where-clause.
                 // Below are two alternative approaches (and code). They
                 // both have problems.
+                LOG.debug(
+                    MondrianResource.instance()
+                        .NativeSqlInClauseTooLarge.str(
+                            level.getUniqueName(),
+                            maxConstraints + ""));
             } else {
                 String where =
                     RolapStar.Column.createInExpr(
