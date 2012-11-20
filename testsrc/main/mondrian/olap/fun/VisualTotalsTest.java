@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho and others
+// Copyright (C) 2006-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -103,10 +103,11 @@ public class VisualTotalsTest extends TestCase {
         assertNotNull(resultSet);
         resultSet.close();
     }
-    
+
     /**
      * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-1279">
-     * MONDRIAN-1279, "VisualTotals name only applies to member name not caption"</a>.
+     * MONDRIAN-1279, "VisualTotals name only applies to member name not
+     * caption"</a>.
      *
      * @throws java.sql.SQLException on error
      */

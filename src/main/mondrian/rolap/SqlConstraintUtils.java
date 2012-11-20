@@ -24,11 +24,11 @@ import mondrian.util.FilteredIterableList;
 import mondrian.calc.*;
 import mondrian.mdx.*;
 
+import org.apache.log4j.Logger;
+
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.log4j.Logger;
 
 
 /**

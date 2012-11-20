@@ -5,7 +5,7 @@
 # http://www.eclipse.org/legal/epl-v10.html.
 # You must accept the terms of that agreement to use this software.
 #
-# Copyright (C) 2008-2011 Pentaho and others
+# Copyright (C) 2008-2012 Pentaho and others
 # All Rights Reserved.
 #
 # Sample scripts to load Mondrian's database for various databases.
@@ -14,6 +14,8 @@ case $(uname) in
 Linux|Darwin) PS=: ;;
 *) PS=\; ;;
 esac
+
+outputQuoted=true
 
 export CP="lib/mondrian.jar"
 export CP="${CP}${PS}lib/olap4j.jar"
@@ -152,6 +154,49 @@ luciddb() {
         -outputJdbcPassword="foodmart"
 }
 
+# Load monetdb
+#
+# 1. Build from source (because required patches are not in a release
+# yet).
+#
+# sudo apt-get install libssl-dev pkg-config libpcre* libxml2-dev
+# curl -O http://monetdb.cwi.nl/testweb/web/45868:949c8b8db28d/MonetDB-11.13.4.tar.bz2
+# tar xvfj MonetDB-11.13.4.tar.bz2
+# cd MonetDB-11.13.4
+# ./configure
+# make
+# sudo make install
+#
+# 2. Download JDBC driver
+#
+# Download
+# http://dev.monetdb.org/downloads/Java/Latest/monetdb-jdbc-2.6.jar
+# and save in /usr/local/lib.
+#
+# 3. Create and start database.
+#
+# sudo mkdir /var/local/monetdb
+# sudo chown ${USER} /var/local/monetdb
+# monetdbd create /var/local/monetdb
+# monetdbd start /var/local/monetdb
+# monetdb create foodmart
+# monetdb start foodmart
+# monetdb release foodmart
+monetdb() {
+    java -ea -esa -cp "${CP}${PS}/usr/local/lib/monetdb-jdbc-2.6.jar" \
+        mondrian.test.loader.MondrianFoodMartLoader \
+        -verbose -tables -data -indexes \
+        -dataset=${dataset} \
+        -jdbcDrivers=nl.cwi.monetdb.jdbc.MonetDriver \
+        -inputFile="$inputFile" \
+        -afterFile="$afterFile" \
+        -outputQuoted=${outputQuoted} \
+        -outputJdbcBatchSize=1 \
+        -outputJdbcURL="jdbc:monetdb://localhost/${dataset}" \
+        -outputJdbcUser="monetdb" \
+        -outputJdbcPassword="monetdb"
+}
+
 # Load Teradata.
 # You'll have to download drivers and put them into the drivers folder.
 # Note that we do not use '-aggregates'; we plan to use aggregate
@@ -186,6 +231,7 @@ farrago \
 hsqldb \
 infobright \
 luciddb \
+monetdb \
 mysql \
 oracle \
 oracleTrickle \
@@ -209,6 +255,7 @@ case "$db" in
 (hsqldb) hsqldb;;
 (infobright) infobright;;
 (luciddb) luciddb;;
+(monetdb) monetdb;;
 (mysql) mysql;;
 (oracle) oracle;;
 (oracleTrickle) oracleTrickle;;
