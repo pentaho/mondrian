@@ -19,7 +19,15 @@ import mondrian.spi.Dialect;
 import mondrian.util.FilteredIterableList;
 import mondrian.util.Pair;
 
+import org.apache.log4j.Logger;
+
 import java.util.*;
+<<<<<<< HEAD
+=======
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+>>>>>>> 3b01032... More MonetDB support, in particular loading instructions in loadFoodMart.sh. I needed to re-organize classpaths in build.xml because MonetDB's JDBC driver is built under JDK 1.7 yet we compile under JDK 1.5.
 
 /**
  * Utility class used by implementations of {@link mondrian.rolap.sql.SqlConstraint},

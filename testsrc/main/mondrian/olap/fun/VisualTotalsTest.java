@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho and others
+// Copyright (C) 2006-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -103,6 +103,36 @@ public class VisualTotalsTest extends TestCase {
         assertNotNull(resultSet);
         resultSet.close();
     }
+<<<<<<< HEAD
+=======
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-1279">
+     * MONDRIAN-1279, "VisualTotals name only applies to member name not
+     * caption"</a>.
+     *
+     * @throws java.sql.SQLException on error
+     */
+    public void testVisualTotalCaptionBug() throws SQLException {
+        CellSet cellSet =
+            TestContext.instance().executeOlap4jQuery(
+                "select {[Measures].[Unit Sales]} on columns, "
+                + "VisualTotals("
+                + "    {[Product].[Food].[Baked Goods].[Bread],"
+                + "     [Product].[Food].[Baked Goods].[Bread].[Bagels],"
+                + "     [Product].[Food].[Baked Goods].[Bread].[Muffins]},"
+                + "     \"**Subtotal - *\") on rows "
+                + "from [Sales]");
+        List<Position> positions = cellSet.getAxes().get(1).getPositions();
+        Cell cell;
+        Member member;
+
+        cell = cellSet.getCell(Arrays.asList(0, 0));
+        member = positions.get(0).getMembers().get(0);
+        assertEquals("*Subtotal - Bread", member.getName());
+        assertEquals("*Subtotal - Bread", member.getCaption());
+    }
+>>>>>>> 3b01032... More MonetDB support, in particular loading instructions in loadFoodMart.sh. I needed to re-organize classpaths in build.xml because MonetDB's JDBC driver is built under JDK 1.7 yet we compile under JDK 1.5.
 }
 
 // End VisualTotalsTest.java
