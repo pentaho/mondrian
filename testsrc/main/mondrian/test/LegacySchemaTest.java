@@ -911,6 +911,113 @@ public class LegacySchemaTest extends FoodMartTestCase {
             + "Row #0: 75,281\n"
             + "Row #0: 193,480\n");
     }
+
+    /**
+     * Tests a cube whose fact table is a &lt;View&gt; element, and which
+     * has dimensions based on the fact table.
+     */
+    public void testViewFactTableInvalid() {
+        TestContext testContext = getTestContext().legacy().create(
+            null,
+            // Similar to "Store" cube in FoodMart.mondrian.xml.
+            "<Cube name='Store2'>\n"
+            + "  <View alias='FACT'>\n"
+            + "    <SQL dialect='generic'>\n"
+            + "     <![CDATA[select wrong from wronger]]>\n"
+            + "    </SQL>\n"
+            + "  </View>\n"
+            + "  <Dimension name='Store Type'>\n"
+            + "    <Hierarchy hasAll='true'>\n"
+            + "      <Level name='Store Type' column='store_type' uniqueMembers='true'/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "\n"
+            + "  <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
+            + "      formatString='#,###'/>\n"
+            + "\n"
+            + "</Cube>",
+            null, null, null, null);
+        testContext.assertQueryThrows(
+            "select {[Store Type].Children} on columns from [Store2]",
+            "View is invalid: ");
+    }
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-303">
+     * MONDRIAN-303, "Property column shifting when use captionColumn"</a>.
+     */
+    public void testBugMondrian303() {
+        // In order to reproduce the problem a dimension specifying
+        // captionColumn and Properties were required.
+        TestContext testContext =
+            getTestContext().legacy().createSubstitutingCube(
+                "Sales",
+                "  <Dimension name='Store2' foreignKey='store_id'>\n"
+                + "    <Hierarchy name='Store2' hasAll='true' allMemberName='All Stores' primaryKey='store_id'>\n"
+                + "      <Table name='store_ragged'/>\n"
+                + "      <Level name='Store2' table='store_ragged' column='store_id' captionColumn='store_name' uniqueMembers='true'>\n"
+                + "           <Property name='Store Type' column='store_type'/>"
+                + "           <Property name='Store Manager' column='store_manager'/>"
+                + "     </Level>"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n");
+
+        // In the query below Mondrian (prior to the fix) would
+        // return the store name instead of the store type.
+        testContext.assertQueryReturns(
+            "WITH\n"
+            + "   MEMBER [Measures].[StoreType] AS \n"
+            + "   '[Store2].CurrentMember.Properties(\"Store Type\")'\n"
+            + "SELECT\n"
+            + "   NonEmptyCrossJoin({[Store2].[All Stores].children}, {[Product].[All Products]}) ON ROWS,\n"
+            + "   { [Measures].[Store Sales], [Measures].[StoreType]} ON COLUMNS\n"
+            + "FROM Sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "{[Measures].[StoreType]}\n"
+            + "Axis #2:\n"
+            + "{[Store2].[Store2].[2], [Product].[Product].[All Products]}\n"
+            + "{[Store2].[Store2].[3], [Product].[Product].[All Products]}\n"
+            + "{[Store2].[Store2].[6], [Product].[Product].[All Products]}\n"
+            + "{[Store2].[Store2].[7], [Product].[Product].[All Products]}\n"
+            + "{[Store2].[Store2].[11], [Product].[Product].[All Products]}\n"
+            + "{[Store2].[Store2].[13], [Product].[Product].[All Products]}\n"
+            + "{[Store2].[Store2].[14], [Product].[Product].[All Products]}\n"
+            + "{[Store2].[Store2].[15], [Product].[Product].[All Products]}\n"
+            + "{[Store2].[Store2].[16], [Product].[Product].[All Products]}\n"
+            + "{[Store2].[Store2].[17], [Product].[Product].[All Products]}\n"
+            + "{[Store2].[Store2].[22], [Product].[Product].[All Products]}\n"
+            + "{[Store2].[Store2].[23], [Product].[Product].[All Products]}\n"
+            + "{[Store2].[Store2].[24], [Product].[Product].[All Products]}\n"
+            + "Row #0: 4,739.23\n"
+            + "Row #0: Small Grocery\n"
+            + "Row #1: 52,896.30\n"
+            + "Row #1: Supermarket\n"
+            + "Row #2: 45,750.24\n"
+            + "Row #2: Gourmet Supermarket\n"
+            + "Row #3: 54,545.28\n"
+            + "Row #3: Supermarket\n"
+            + "Row #4: 55,058.79\n"
+            + "Row #4: Supermarket\n"
+            + "Row #5: 87,218.28\n"
+            + "Row #5: Deluxe Supermarket\n"
+            + "Row #6: 4,441.18\n"
+            + "Row #6: Small Grocery\n"
+            + "Row #7: 52,644.07\n"
+            + "Row #7: Supermarket\n"
+            + "Row #8: 49,634.46\n"
+            + "Row #8: Supermarket\n"
+            + "Row #9: 74,843.96\n"
+            + "Row #9: Deluxe Supermarket\n"
+            + "Row #10: 4,705.97\n"
+            + "Row #10: Small Grocery\n"
+            + "Row #11: 24,329.23\n"
+            + "Row #11: Mid-Size Grocery\n"
+            + "Row #12: 54,431.14\n"
+            + "Row #12: Supermarket\n");
+    }
 }
 
 // End LegacySchemaTest.java

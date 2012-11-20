@@ -2998,6 +2998,32 @@ public class TestContext {
                 + sw);
         }
     }
+
+    public final TestContext insertCube(final String cubeDef) {
+        return withSubstitution(SchemaSubstitution.insertCube(cubeDef));
+    }
+
+    public final TestContext insertPhysTable(final String tableDef) {
+        return withSubstitution(SchemaSubstitution.insertPhysTable(tableDef));
+    }
+
+    public final TestContext insertDimension(
+        final String cubeName, final String dimDefs)
+    {
+        return withSubstitution(
+            SchemaSubstitution.insertDimension(cubeName, dimDefs));
+    }
+
+    public final TestContext insertDimensionLinks(
+        final String cubeName, final Map<String, String> dimLinks)
+    {
+        return withSubstitution(
+            SchemaSubstitution.insertDimensionLinks(cubeName, dimLinks));
+    }
+
+    public final TestContext ignoreMissingLink() {
+        return withSubstitution(SchemaSubstitution.ignoreMissingLink());
+    }
 }
 
 // End TestContext.java
