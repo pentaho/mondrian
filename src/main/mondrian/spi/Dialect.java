@@ -313,7 +313,7 @@ public interface Dialect {
 
     /**
      * Returns whether this Dialect allows multiple arguments to the
-     * <code>COUNT(DISTINCT ...) aggregate function, for example
+     * <code>COUNT(DISTINCT ...)</code> aggregate function, for example
      *
      * <blockquote><code>SELECT COUNT(DISTINCT x, y) FROM t</code></blockquote>
      *
