@@ -191,7 +191,7 @@ monetdb() {
         -inputFile="$inputFile" \
         -afterFile="$afterFile" \
         -outputQuoted=${outputQuoted} \
-        -outputJdbcBatchSize=1 \
+        -outputJdbcBatchSize=1000 \
         -outputJdbcURL="jdbc:monetdb://localhost/${dataset}" \
         -outputJdbcUser="monetdb" \
         -outputJdbcPassword="monetdb"
