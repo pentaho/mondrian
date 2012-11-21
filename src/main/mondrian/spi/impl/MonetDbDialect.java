@@ -42,25 +42,25 @@ public class MonetDbDialect extends JdbcDialectImpl {
     public boolean allowsMultipleDistinctSqlMeasures() {
         return false;
     }
-    
+
     @Override
     public boolean allowsCountDistinct() {
-    	return false;
+        return false;
     }
-    
+
     @Override
     public boolean requiresAliasForFromQuery() {
-    	return true;
+        return true;
     }
-    
+
     @Override
     public boolean allowsCompoundCountDistinct() {
-    	return false;
+        return false;
     }
-    
+
     @Override
     public boolean supportsGroupByExpressions() {
-    	return false;
+        return false;
     }
 
     @Override

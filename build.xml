@@ -875,7 +875,8 @@ class MondrianOlap4jDriverVersion {
     static final String VERSION = "${driver.version}";
     static final int MAJOR_VERSION = ${driver.version.major};
     static final int MINOR_VERSION = ${driver.version.minor};
-    static final String GIT_LATEST_COMMIT = "${git.commit}";
+    static final String GIT_LATEST_COMMIT =
+        "${git.commit}";
 }
 
 // End MondrianOlap4jDriverVersion.java</echo>
