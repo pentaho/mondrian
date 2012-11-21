@@ -1437,9 +1437,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * and multiple column names
      */
     public void testMultipleDimensionUsages() {
-        final TestContext testContext = getTestContext().create(
-            null,
-
+        final TestContext testContext = getTestContext().insertCube(
             "<Cube name='Sales Two Dimensions'>\n"
             + "  <Dimensions>"
             + "    <Dimension name='Time' source='Time'/>\n"
@@ -1461,7 +1459,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "      </DimensionLinks>"
             + "    </MeasureGroup>"
             + "  </MeasureGroups>"
-            + "</Cube>", null, null, null, null);
+            + "</Cube>");
 
         testContext.assertQueryReturns(
             "select\n"

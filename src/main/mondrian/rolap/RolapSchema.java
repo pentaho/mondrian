@@ -1377,6 +1377,8 @@ public class RolapSchema extends OlapElementBase implements Schema {
         int getRowCount();
 
         void addColumn(PhysColumn column);
+
+        PhysRelation cloneWithAlias(String newAlias);
     }
 
     static abstract class PhysRelationImpl implements PhysRelation {
@@ -1398,12 +1400,32 @@ public class RolapSchema extends OlapElementBase implements Schema {
             this.physSchema = physSchema;
         }
 
+        LinkedHashMap<String, PhysColumn> getColumnsByName() {
+            return columnsByName;
+        }
+
+        void setPopulated(boolean populated) {
+            this.populated = populated;
+        }
+
         public abstract int hashCode();
 
         public abstract boolean equals(Object obj);
 
         public PhysSchema getSchema() {
             return physSchema;
+        }
+
+        void addAllColumns(PhysRelationImpl relation) {
+            for (PhysColumn column : relation.getColumnsByName().values()) {
+                addColumn(column.cloneWithAlias(this));
+            }
+        }
+
+        void addAllKeys(PhysRelationImpl relation) {
+            for (PhysKey physKey : relation.getKeyList()) {
+                addKey(physKey.name, physKey.columnList);
+            }
         }
 
         public PhysColumn getColumn(String columnName, boolean fail) {
@@ -1561,6 +1583,14 @@ public class RolapSchema extends OlapElementBase implements Schema {
             assert sqlString != null && sqlString.length() > 0 : sqlString;
         }
 
+        public PhysRelation cloneWithAlias(String newAlias) {
+            PhysView physView = new PhysView(physSchema, newAlias, sqlString);
+            physView.addAllColumns(this);
+            physView.addAllKeys(this);
+            physView.setPopulated(true);
+            return physView;
+        }
+
         /**
          * Returns the SQL query that defines this view in the current dialect.
          *
@@ -1653,6 +1683,20 @@ public class RolapSchema extends OlapElementBase implements Schema {
             assert alias != null;
         }
 
+        public PhysRelation cloneWithAlias(String newAlias) {
+            PhysInlineTable physInlineTable =
+                new PhysInlineTable(this.physSchema, newAlias);
+            physInlineTable.addAllColumns(this);
+            physInlineTable.addAllKeys(this);
+            physInlineTable.setPopulated(true);
+            physInlineTable.setRowList(rowList);
+            return physInlineTable;
+        }
+
+        private void setRowList(List<String[]> rowList) {
+            this.rowList.addAll(rowList);
+        }
+
         @Override
         public String toString() {
             return alias;
@@ -1724,6 +1768,20 @@ public class RolapSchema extends OlapElementBase implements Schema {
             this.hintMap = hintMap;
             assert name != null;
             assert alias != null;
+        }
+
+        public PhysRelation cloneWithAlias(String newAlias) {
+            PhysTable physTable = new PhysTable(
+                physSchema, schemaName, name, newAlias, hintMap);
+            physTable.addAllColumns(this);
+            physTable.addAllKeys(this);
+            physTable.setPopulated(true);
+            physTable.setRowCount(this.getRowCount());
+            return physTable;
+        }
+
+        private void setRowCount(int rowCount) {
+            this.rowCount = rowCount;
         }
 
         public String toString() {
@@ -2098,7 +2156,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
         Dialect.Datatype datatype; // may be null, temporarily
         protected final int columnSize;
         private final int ordinal;
-        private SqlStatement.Type internalType; // may be null
+        SqlStatement.Type internalType; // may be null
 
         public PhysColumn(
             PhysRelation relation,
@@ -2156,6 +2214,10 @@ public class RolapSchema extends OlapElementBase implements Schema {
         public void setInternalType(SqlStatement.Type internalType) {
             this.internalType = internalType;
         }
+
+        PhysColumn cloneWithAlias(PhysRelation newRelation) {
+            return this;
+        }
     }
 
     public static final class PhysRealColumn extends PhysColumn {
@@ -2170,6 +2232,12 @@ public class RolapSchema extends OlapElementBase implements Schema {
         {
             super(relation, name, columnSize, datatype, internalType);
             this.sql = deriveSql();
+        }
+
+        @Override
+        PhysColumn cloneWithAlias(PhysRelation newRelation) {
+            return new PhysRealColumn(
+                newRelation, name, datatype, internalType, columnSize);
         }
 
         protected String deriveSql() {
