@@ -6575,26 +6575,28 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
     public void testStoredMeasureMustHaveColumns() {
         // Old style cube
-        final TestContext testContext = getTestContext().create(
-            null,
+        final TestContext testContext = getTestContext().insertCube(
             "<Cube name='Warehouse-old'>\n"
-            + "  <Table name='inventory_fact_1997'/>\n"
-            + "  <DimensionUsage name='Time' source='Time' foreignKey='time_id'/>\n"
-            + "  <DimensionUsage name='Product' source='Product' foreignKey='product_id'/>\n"
-            + "  <DimensionUsage name='Warehouse' source='Warehouse' foreignKey='warehouse_id'/>\n"
-            + "  <Measure name='Units Ordered' column='units_ordered' aggregator='sum' formatString='#.0'/>\n"
-            + "  <Measure name='Warehouse Profit' aggregator='sum'>\n"
-            + "    <MeasureExpression>\n"
-            + "      <SQL dialect='generic'>\n"
-            + "&quot;warehouse_sales&quot; - &quot;inventory_fact_1997&quot;.&quot;warehouse_cost&quot;\n"
-            + "      </SQL>\n"
-            + "    </MeasureExpression>\n"
-            + "  </Measure>\n"
-            + "</Cube>",
-            null,
-            null,
-            null,
-            null);
+            + "  <Dimensions>"
+            + "    <Dimension source='Time'/>\n"
+            + "    <Dimension source='Product'/>\n"
+            + "    <Dimension source='Warehouse'/>\n"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup table='inventory_fact_1997'>"
+            + "      <Measures>"
+            + "        <Measure name='Units Ordered' column='units_ordered' aggregator='sum' formatString='#.0'/>\n"
+            + "        <Measure name='Warehouse Profit' aggregator='sum'>\n"
+            + "          <MeasureExpression>\n"
+            + "            <SQL dialect='generic'>\n"
+            + "             &quot;warehouse_sales&quot; - &quot;inventory_fact_1997&quot;.&quot;warehouse_cost&quot;\n"
+            + "            </SQL>\n"
+            + "          </MeasureExpression>\n"
+            + "        </Measure>\n"
+            + "      </Measures>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
+            + "</Cube>");
         Throwable throwable = null;
         try {
             testContext.assertSimpleQuery();
@@ -6603,82 +6605,64 @@ Test that get error if a dimension has more than one hierarchy with same name.
         }
         TestContext.checkThrowable(
             throwable,
-            "Expression must belong to one and only one relation (at line 177, column 8)");
-    }
-
-    public void testVirtualCubeDimensionMustJoinToAtLeastOneCube() {
-        TestContext testContext = getTestContext().create(
-            null,
-            null,
-            "<VirtualCube name='Sales vs HR'>\n"
-            + "<VirtualCubeDimension name='Store'/>\n"
-            + "<VirtualCubeDimension cubeName='HR' name='Position'/>\n"
-            + "<VirtualCubeMeasure cubeName='HR' name='[Measures].[Org Salary]'/>\n"
-            + "</VirtualCube>",
-            null,
-            null,
-            null);
-        RuntimeException throwable = null;
-        try {
-            testContext.assertSimpleQuery();
-        } catch (RuntimeException e) {
-            throwable = e;
-        }
-        TestContext.checkThrowable(
-            throwable,
-            "Virtual cube dimension must join to at least one cube: dimension 'Store' in cube 'Sales vs HR'");
+            "Measure 'Warehouse Profit' must contain either a source column or a source expression, but not both");
     }
 
     public void testInvalidInlineTable() {
+        String tblDef =
+            "<InlineTable alias='foo2'>\n"
+            + "  <ColumnDefs>\n"
+            + "    <ColumnDef name='foo' type='Numeric'/>\n"
+            + "  </ColumnDefs>\n"
+            + "  <Rows/>\n"
+            + "</InlineTable>\n";
+        String cubeDef =
+            "<Dimension name='Scenario' table='foo2' key='id'>\n"
+            + "  <Attributes>"
+            + "    <Attribute name='Scenario' keyColumn='foo'/>"
+            + "    <Attribute name='id' keyColumn='time_id'/>"
+            + "  </Attributes>"
+            + "</Dimension>";
         final TestContext testContext =
-            getTestContext().createSubstitutingCube(
-                "Sales",
-                "<Dimension name='Scenario' foreignKey='time_id'>\n"
-                + "  <Hierarchy primaryKey='time_id' hasAll='true'>\n"
-                + "    <InlineTable alias='foo'>\n"
-                + "      <ColumnDefs>\n"
-                + "        <ColumnDef name='foo' type='Numeric'/>\n"
-                + "      </ColumnDefs>\n"
-                + "      <Rows/>\n"
-                + "    </InlineTable>\n"
-                + "    <Level name='Scenario' column='foo'/>\n"
-                + "  </Hierarchy>\n"
-                + "</Dimension>",
-                "<Measure name='Atomic Cell Count' aggregator='count'/>");
-        try {
-            testContext.assertSimpleQuery();
-        } catch (RuntimeException e) {
-            TestContext.checkThrowable(
-                e,
-                "Unknown column 'time_id'");
-        }
+            getTestContext()
+                .insertPhysTable(tblDef)
+                .insertDimension("Sales", cubeDef);
+            testContext.assertSchemaError(
+                "Column 'time_id' not found in relation 'foo2' \\(in Attribute 'id'\\) \\(at ${pos}\\)",
+                "<Attribute name='id' keyColumn='time_id'/>");
     }
 
     public void testHierarchiesWithDifferentPrimaryKeysThrows() {
         final TestContext testContext =
-            getTestContext().createSubstitutingCube(
+            getTestContext().insertDimension(
                 "Sales",
-                "  <Dimension name='Time' type='TimeDimension'>\n"
-                + "    <Hierarchy hasAll='false' primaryKey='time_id'>\n"
-                + "      <Table name='time_by_day'/>\n"
-                + "      <Level name='Year' column='the_year' type='Numeric' uniqueMembers='true'\n"
-                + "          levelType='TimeYears'/>\n"
-                + "      <Level name='Quarter' column='quarter' uniqueMembers='false'\n"
-                + "          levelType='TimeQuarters'/>\n"
-                + "      <Level name='Month' column='month_of_year' uniqueMembers='false' type='Numeric'\n"
-                + "          levelType='TimeMonths'/>\n"
+                "<Dimension name='Time2' table='time_by_day' type='TIME' key='id'>\n"
+                + "  <Attributes>"
+                + "    <Attribute name='Year' keyColumn='the_year' type='Numeric' levelType='TimeYears'/>"
+                + "    <Attribute name='Quarter' keyColumn='quarter' type='Numeric' levelType='TimeQuarters'/>"
+                + "    <Attribute name='Month' keyColumn='month_of_year' type='Numeric' levelType='TimeMonths'/>"
+                + "    <Attribute name='Week' keyColumn='week_of_year' type='Numeric' levelType='TimeWeeks'/>"
+                + "    <Attribute name='Day' keyColumn='day_of_month' type='Numeric' levelType='TimeDays'/>"
+                + "    <Attribute name='id' keyColumn='time_id'/>"
+                + "  </Attributes>"
+                + "  <Hierarchy hasAll='false' primaryKey='time_id'>\n"
+                + "      <Level attribute='Year'/>\n"
+                + "      <Level attribute='Quarter'/>\n"
+                + "      <Level attribute='Month'/>\n"
                 + "    </Hierarchy>\n"
                 + "    <Hierarchy hasAll='true' name='Weekly' primaryKey='store_id'>\n"
-                + "      <Table name='time_by_day'/>\n"
-                + "      <Level name='Year' column='the_year' type='Numeric' uniqueMembers='true'\n"
-                + "          levelType='TimeYears'/>\n"
-                + "      <Level name='Week' column='week_of_year' type='Numeric' uniqueMembers='false'\n"
-                + "          levelType='TimeWeeks'/>\n"
-                + "      <Level name='Day' column='day_of_month' uniqueMembers='false' type='Numeric'\n"
-                + "          levelType='TimeDays'/>\n"
+                + "      <Level attribute='Year'/>\n"
+                + "      <Level attribute='Week'/>\n"
+                + "      <Level attribute='Day'/>\n"
                 + "    </Hierarchy>\n"
-                + "  </Dimension>",
-                null);
+                + "  </Dimension>")
+                .insertDimensionLinks(
+                    "Sales",
+                    ArrayMap.of(
+                        "Sales",
+                        "<ForeignKeyLink dimension='Time2' "
+                        + "foreignKeyColumn='time_id'/>"))
+                .ignoreMissingLink();
         try {
             testContext.assertSimpleQuery();
         } catch (RuntimeException e) {

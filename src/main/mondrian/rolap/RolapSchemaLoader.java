@@ -2455,6 +2455,10 @@ public class RolapSchemaLoader {
                     "source");
                 return null;
             }
+            // this section of code handles the case where the schema uses the
+            // same shared dimension multiple times.  The SQL generated uses
+            // the phys schema objects so we need to create copies of those
+            // objects with a different alias
             MondrianDef.Dimension clonedDim = null;
             if (cubeToDimMap.containsKey(cube)
                 && cubeToDimMap.getCollection(cube).contains(sharedDimension))
@@ -2474,9 +2478,7 @@ public class RolapSchemaLoader {
                         clonedDim.table = newAlias;
                     }
                 } catch (XOMException e) {
-                    // should never get here because we have already created a
-                    // Dimension with the same _def.
-                    LOGGER.warn(e);
+                    throw new MondrianException(e);
                 }
             }
             cubeToDimMap.put(cube, sharedDimension);
