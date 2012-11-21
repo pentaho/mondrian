@@ -103,8 +103,6 @@ public class VisualTotalsTest extends TestCase {
         assertNotNull(resultSet);
         resultSet.close();
     }
-<<<<<<< HEAD
-=======
 
     /**
      * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-1279">
@@ -132,7 +130,6 @@ public class VisualTotalsTest extends TestCase {
         assertEquals("*Subtotal - Bread", member.getName());
         assertEquals("*Subtotal - Bread", member.getCaption());
     }
->>>>>>> 3b01032... More MonetDB support, in particular loading instructions in loadFoodMart.sh. I needed to re-organize classpaths in build.xml because MonetDB's JDBC driver is built under JDK 1.7 yet we compile under JDK 1.5.
 }
 
 // End VisualTotalsTest.java

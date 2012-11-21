@@ -369,11 +369,7 @@ public class SqlStatement {
             return Type.DOUBLE;
         } else if (dialect != null
                 && dialect.getDatabaseProduct()
-<<<<<<< HEAD
                     == Dialect.DatabaseProduct.MONETDB
-=======
-                   == Dialect.DatabaseProduct.MONETDB
->>>>>>> 3b01032... More MonetDB support, in particular loading instructions in loadFoodMart.sh. I needed to re-organize classpaths in build.xml because MonetDB's JDBC driver is built under JDK 1.7 yet we compile under JDK 1.5.
                 && scale == 0
                 && precision == 0)
         {

@@ -1053,7 +1053,8 @@ public class RolapSchema extends OlapElementBase implements Schema {
                 return columnInfoList;
             } catch (SQLException e) {
                 loader.getHandler().warning(
-                    "View is invalid: " + e.getMessage(), xmlNode, null, e);
+                    "View is invalid: " + e.getMessage() + "\nSQL: " + sql,
+                    xmlNode, null, e);
                 return null;
             } finally {
                 //noinspection ThrowableResultOfMethodCallIgnored

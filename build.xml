@@ -259,7 +259,8 @@ mondrian/rolap/RolapCubeUsages.java"/>
     </or>
   </condition>
 
-  <path id="project.test.classpath" refid="project.test.classpath-${jdk}"/>
+  <path id="project.build.test.classpath"
+      refid="project.build.test.classpath-${jdk}"/>
 
   <path id="project.test.classpath">
     <path refid="project.build.test.classpath"/>
