@@ -13,7 +13,10 @@ import mondrian.olap.Util;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.monitor.*;
+import mondrian.spi.Dialect;
 import mondrian.util.*;
+
+import org.apache.log4j.Logger;
 
 import java.lang.reflect.Proxy;
 import java.sql.*;
@@ -52,6 +55,7 @@ import javax.sql.DataSource;
  * @since 2.3
  */
 public class SqlStatement {
+    private static final Logger LOG = Logger.getLogger(SqlStatement.class);
     private static final String TIMING_NAME = "SqlStatement-";
 
     // used for SQL logging, allows for a SQL Statement UID
@@ -343,9 +347,40 @@ public class SqlStatement {
         return runtimeException;
     }
 
-    private static Type getDecimalType(int precision, int scale)
+    private static Type getDecimalType(
+        int precision,
+        int scale,
+        Dialect dialect)
     {
-        if ((scale == 0 || scale == -127)
+        // Dialect might be null. This can happen when Mondrian issues a first
+        // query and tries to figure out what dialect to use. Watch out
+        // for NPEs.
+        if (dialect != null
+            && dialect.getDatabaseProduct() == Dialect.DatabaseProduct.NETEZZA
+            && scale == 0
+            && precision == 38)
+        {
+            // Netezza marks longs as scale 0 and precision 38.
+            // An int would overflow.
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "Using type DOUBLE for Neteeza scale 0 and precision 38.");
+            }
+            return Type.DOUBLE;
+        } else if (dialect != null
+                && dialect.getDatabaseProduct()
+                    == Dialect.DatabaseProduct.MONETDB
+                && scale == 0
+                && precision == 0)
+        {
+            // MonetDB marks doesn't return precision and scale for aggregated
+            // decimal data types, so we'll assume it's a double.
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "Using type DOUBLE for MonetDB scale 0 and precision 0.");
+            }
+            return Type.DOUBLE;
+        } else if ((scale == 0 || scale == -127)
             && (precision <= 9 || precision == 38))
         {
             // An int (up to 2^31 = 2.1B) can hold any NUMBER(10, 0) value
@@ -371,13 +406,15 @@ public class SqlStatement {
      * @param suggestedType Type suggested by Level.internalType attribute
      * @param metaData Result set metadata
      * @param i Column ordinal (0-based)
+     * @param dialect Dialect, or null
      * @return Best client type
      * @throws SQLException on error
      */
     public static Type guessType(
         Type suggestedType,
         ResultSetMetaData metaData,
-        int i)
+        int i,
+        Dialect dialect)
         throws SQLException
     {
         if (suggestedType != null) {
@@ -418,11 +455,11 @@ public class SqlStatement {
                     return Type.INT;
                 }
             }
-            return getDecimalType(precision, scale);
+            return getDecimalType(precision, scale, dialect);
         case Types.DECIMAL:
             precision = metaData.getPrecision(i + 1);
             scale = metaData.getScale(i + 1);
-            return getDecimalType(precision, scale);
+            return getDecimalType(precision, scale, dialect);
         case Types.DOUBLE:
         case Types.FLOAT:
             return Type.DOUBLE;
@@ -518,7 +555,15 @@ public class SqlStatement {
         for (int i = 0; i < columnCount; i++) {
             final Type suggestedType =
                 this.types == null ? null : this.types.get(i);
-            types.add(guessType(suggestedType, metaData, i));
+            // There might not be a schema constructed yet,
+            // so watch out here for NPEs.
+            RolapSchema schema = locus.execution.getMondrianStatement()
+                .getMondrianConnection()
+                .getSchema();
+            types.add(
+                guessType(
+                    suggestedType, metaData, i,
+                    schema != null ? schema.getDialect() : null));
         }
         return types;
     }

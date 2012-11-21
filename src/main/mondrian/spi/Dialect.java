@@ -928,6 +928,7 @@ public interface Dialect {
         INTERBASE,
         LUCIDDB,
         MSSQL,
+        MONETDB,
         NETEZZA,
         NEOVIEW,
         ORACLE,
