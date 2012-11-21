@@ -9,6 +9,8 @@
 */
 package mondrian.spi.impl;
 
+import mondrian.olap.Util;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -26,7 +28,7 @@ public class MonetDbDialect extends JdbcDialectImpl {
             DatabaseProduct.MONETDB);
 
     /**
-     * Creates a LucidDbDialect.
+     * Creates a MonetDbDialect.
      *
      * @param connection Connection
      *
@@ -59,6 +61,16 @@ public class MonetDbDialect extends JdbcDialectImpl {
     @Override
     public boolean supportsGroupByExpressions() {
     	return false;
+    }
+
+    @Override
+    public void quoteStringLiteral(StringBuilder buf, String s) {
+        // Go beyond Util.singleQuoteString; also quote backslash, like MySQL.
+        buf.append('\'');
+        String s0 = Util.replace(s, "'", "''");
+        String s1 = Util.replace(s0, "\\", "\\\\");
+        buf.append(s1);
+        buf.append('\'');
     }
 }
 
