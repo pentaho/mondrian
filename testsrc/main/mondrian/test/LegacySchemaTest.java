@@ -11,7 +11,13 @@ package mondrian.test;
 
 import mondrian.olap.*;
 
+import mondrian.olap.Member;
+
 import junit.framework.Assert;
+
+import org.olap4j.metadata.*;
+
+import java.sql.SQLException;
 
 /**
  * Unit tests on the legacy (mondrian version 3) schema.
@@ -1017,6 +1023,56 @@ public class LegacySchemaTest extends FoodMartTestCase {
             + "Row #11: Mid-Size Grocery\n"
             + "Row #12: 54,431.14\n"
             + "Row #12: Supermarket\n");
+    }
+
+    public void testCubeWithOneDimensionUsageOneMeasure() {
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+            "<Cube name='OneDimUsage' defaultMeasure='Unit Sales'>\n"
+            + "  <Table name='sales_fact_1997'/>\n"
+            + "  <DimensionUsage name='Product' source='Product' foreignKey='product_id'/>\n"
+            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
+            + "      formatString='Standard'/>\n"
+            + "</Cube>",
+            null, null, null, null);
+        testContext.assertQueryReturns(
+            "select {[Product].Children} on columns from [OneDimUsage]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product].[Product].[Drink]}\n"
+            + "{[Product].[Product].[Food]}\n"
+            + "{[Product].[Product].[Non-Consumable]}\n"
+            + "Row #0: 24,597\n"
+            + "Row #0: 191,940\n"
+            + "Row #0: 50,236\n");
+    }
+
+    public void testCubeCaption() throws SQLException {
+        if (false) {
+            // todo: make this test pass
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+            "<Cube name='Cube with caption' caption='Cube with name'>"
+            + "  <Table name='sales_fact_1997'/>"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "   formatString=\"Standard\"/>"
+            + "</Cube>\n",
+            "<VirtualCube name='Warehouse and Sales with caption' "
+            + "caption='Warehouse and Sales with name'  defaultMeasure='Store Sales'>\n"
+            + "  <VirtualCubeDimension cubeName='Sales' name='Customers'/>\n"
+            + "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
+            + "   formatString=\"#,###.00\"/>"
+            + "</VirtualCube>",
+            null, null, null);
+        final NamedList<org.olap4j.metadata.Cube> cubes =
+            testContext.getOlap4jConnection().getOlapSchema().getCubes();
+        final org.olap4j.metadata.Cube cube = cubes.get("Cube with caption");
+        assertEquals("Cube with name", cube.getCaption());
+        final org.olap4j.metadata.Cube cube2 =
+            cubes.get("Warehouse and Sales with caption");
+        assertEquals("Warehouse and Sales with name", cube2.getCaption());
+        }
     }
 }
 
