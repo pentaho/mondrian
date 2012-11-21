@@ -167,13 +167,7 @@ luciddb() {
 # make
 # sudo make install
 #
-# 2. Download JDBC driver
-#
-# Download
-# http://dev.monetdb.org/downloads/Java/Latest/monetdb-jdbc-2.6.jar
-# and save in /usr/local/lib.
-#
-# 3. Create and start database.
+# 2. Create and start database.
 #
 # sudo mkdir /var/local/monetdb
 # sudo chown ${USER} /var/local/monetdb
@@ -183,7 +177,7 @@ luciddb() {
 # monetdb start foodmart
 # monetdb release foodmart
 monetdb() {
-    java -ea -esa -cp "${CP}${PS}/usr/local/lib/monetdb-jdbc-2.6.jar" \
+    java -ea -esa -cp "${CP}${PS}lib/monetdb-jdbc.jar" \
         mondrian.test.loader.MondrianFoodMartLoader \
         -verbose -tables -data -indexes \
         -dataset=${dataset} \

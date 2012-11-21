@@ -217,7 +217,7 @@ doTest2() {
     (
       jdbcURL="jdbc:monetdb://localhost/FOODMART"
       jdbcDrivers=nl.cwi.monetdb.jdbc.MonetDriver
-      echo driver.classpath=/usr/local/lib/monetdb-jdbc-2.6.jar
+      echo driver.classpath=lib/monetdb-jdbc.jar
       echo mondrian.foodmart.jdbcURL=${jdbcURL}
       echo mondrian.jdbcDrivers=${jdbcDrivers}
       echo "mondrian.test.connectString=Provider=mondrian;Jdbc='${jdbcURL}';JdbcUser=monetdb;JdbcPassword=monetdb;Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
