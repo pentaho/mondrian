@@ -2260,6 +2260,7 @@ public class TestContext {
                     catalogContent = context.getRawSchema();
                 }
                 String catalogContent2 = substitution.apply(catalogContent);
+                schema = catalogContent2;
                 Util.PropertyList propertyList2 = propertyList.clone();
                 propertyList2.put(
                     RolapConnectionProperties.CatalogContent.name(),
