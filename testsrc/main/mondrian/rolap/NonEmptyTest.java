@@ -44,7 +44,6 @@ import java.util.List;
 public class NonEmptyTest extends BatchTestCase {
     private static Logger logger = Logger.getLogger(NonEmptyTest.class);
     SqlConstraintFactory scf = SqlConstraintFactory.instance();
-    TestContext localTestContext;
 
     private static final String STORE_TYPE_LEVEL =
         TestContext.levelName("Store Type", "Store Type", "Store Type");
@@ -57,6 +56,7 @@ public class NonEmptyTest extends BatchTestCase {
         super();
     }
 
+    @SuppressWarnings("UnusedDeclaration")
     public NonEmptyTest(String name) {
         super(name);
     }
@@ -73,17 +73,11 @@ public class NonEmptyTest extends BatchTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        localTestContext = null; // allow gc
     }
 
     @Override
     public TestContext getTestContext() {
-        return localTestContext != null
-            ? localTestContext : super.getTestContext();
-    }
-
-    public void setTestContext(TestContext testContext) {
-        localTestContext = testContext;
+        return super.getTestContext().withLogger(logger);
     }
 
     public void testBugMondrian584EnumOrder() {
@@ -94,6 +88,7 @@ public class NonEmptyTest extends BatchTestCase {
         //
         if (Bug.BugMondrian584Fixed) {
             checkNative(
+                getTestContext(),
                 4,
                 4,
                 "SELECT non empty { CrossJoin( "
@@ -104,8 +99,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testBugCantRestrictSlicerToCalcMember() throws Exception {
-        TestContext ctx = getTestContext();
-        ctx.assertQueryReturns(
+        final TestContext testContext = getTestContext();
+        testContext.assertQueryReturns(
             "WITH Member [Time].[Time].[Aggr] AS 'Aggregate({[Time].[1998].[Q1], [Time].[1998].[Q2]})' "
             + "SELECT {[Measures].[Store Sales]} ON COLUMNS, "
             + "NON EMPTY Order(TopCount([Customers].[Name].Members,3,[Measures].[Store Sales]),[Measures].[Store Sales],BASC) ON ROWS "
@@ -571,8 +566,8 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testTopCountWithCalcMemberInSlicer() {
         // Internal error: can not restrict SQL to calculated Members
-        TestContext ctx = getTestContext();
-        ctx.assertQueryReturns(
+        final TestContext testContext = getTestContext();
+        testContext.assertQueryReturns(
             "with member [Time].[Time].[First Term] as 'Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})' "
             + "select {[Measures].[Unit Sales]} ON COLUMNS, "
             + "TopCount([Product].[Product Subcategory].Members, 3, [Measures].[Unit Sales]) ON ROWS "
@@ -592,13 +587,11 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testTopCountCacheKeyMustIncludeCount() {
-        /**
-         * When caching topcount results, the number of elements must
-         * be part of the cache key
-         */
-        TestContext ctx = getTestContext();
+        // When caching topcount results, the number of elements must
+        // be part of the cache key.
+        final TestContext testContext = getTestContext();
         // fill cache
-        ctx.assertQueryReturns(
+        testContext.assertQueryReturns(
             "select {[Measures].[Unit Sales]} ON COLUMNS, "
             + "TopCount([Product].[Product Subcategory].Members, 2, [Measures].[Unit Sales]) ON ROWS "
             + "from [Sales]",
@@ -612,7 +605,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #0: 20,739\n"
             + "Row #1: 11,767\n");
         // run again with different count
-        ctx.assertQueryReturns(
+        testContext.assertQueryReturns(
             "select {[Measures].[Unit Sales]} ON COLUMNS, "
             + "TopCount([Product].[Product Subcategory].Members, 3, [Measures].[Unit Sales]) ON ROWS "
             + "from [Sales]",
@@ -741,6 +734,7 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
         LimitedQuery c = new LimitedQuery(
+            getTestContext(),
             99,
             3,
             "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Warehouse Sales]} ON COLUMNS, "
@@ -755,6 +749,7 @@ public class NonEmptyTest extends BatchTestCase {
         }
         // ok to use native sql optimization for members on a virtual cube
         LimitedQuery c = new LimitedQuery(
+            getTestContext(),
             6,
             3,
             "select NON EMPTY {[Measures].[Unit Sales], [Measures].[Warehouse Sales]} ON COLUMNS, "
@@ -776,6 +771,7 @@ public class NonEmptyTest extends BatchTestCase {
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
         checkNative(
+            getTestContext(),
             0,
             20,
             "select non empty {CrossJoin({[Store].[Store Name].members}, "
@@ -806,6 +802,7 @@ public class NonEmptyTest extends BatchTestCase {
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
         checkNative(
+            getTestContext(),
             0,
             2,
             "select "
@@ -836,7 +833,9 @@ public class NonEmptyTest extends BatchTestCase {
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
         checkNative(
-            0, 1,
+            getTestContext(),
+            0,
+            1,
             "With "
             + "Set [*Filtered_Set] as Filter([Product].[Product Name].Members, [Product].CurrentMember IS [Product].[Product Name].[Fast Raisins]) "
             + "Set [*NECJ_Set] as NonEmptyCrossJoin([Store].[Store Country].Members, [*Filtered_Set]) "
@@ -885,12 +884,14 @@ public class NonEmptyTest extends BatchTestCase {
         propSaver.set(
             MondrianProperties.instance().EnableNativeCrossJoin, true);
         checkNotNative(
-            1, "select NON EMPTY {[Time].[1997]} ON COLUMNS,\n"
-               + "       NON EMPTY Crossjoin(Hierarchize(Union({[Store].[All Stores]},\n"
-               + "           [Store].[USA].[CA].[San Francisco].[Store 14].Children)), {[Product].[All Products]}) \n"
-               + "           ON ROWS\n"
-               + "    from [Sales]\n"
-               + "    where [Measures].[Unit Sales]",
+            getTestContext(),
+            1,
+            "select NON EMPTY {[Time].[1997]} ON COLUMNS,\n"
+            + "       NON EMPTY Crossjoin(Hierarchize(Union({[Store].[All Stores]},\n"
+            + "           [Store].[USA].[CA].[San Francisco].[Store 14].Children)), {[Product].[All Products]}) \n"
+            + "           ON ROWS\n"
+            + "    from [Sales]\n"
+            + "    where [Measures].[Unit Sales]",
             "Axis #0:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #1:\n"
@@ -912,6 +913,7 @@ public class NonEmptyTest extends BatchTestCase {
         propSaver.set(
             MondrianProperties.instance().EnableNativeCrossJoin, true);
         checkNotNative(
+            getTestContext(),
             1,
             "With "
             + "Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Product Family].Members})' "
@@ -936,6 +938,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testExpandCalcMemberInputNECJ() {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         checkNotNative(
+            getTestContext(),
             1,
             "With \n"
             + "Member [Product].[All Products].[Food].[CalcSum] as \n"
@@ -961,6 +964,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testExpandCalcMembers() {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         checkNotNative(
+            getTestContext(),
             9,
             "with "
             + "member [Store Type].[All Store Types].[S] as sum({[Store Type].[All Store Types]}) "
@@ -1007,6 +1011,7 @@ public class NonEmptyTest extends BatchTestCase {
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
         checkNative(
+            getTestContext(),
             0,
             6,
             "select "
@@ -1040,6 +1045,7 @@ public class NonEmptyTest extends BatchTestCase {
         propSaver.set(MondrianProperties.instance().MaxConstraints, 2);
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         checkNotNative(
+            getTestContext(),
             12,
             "select NonEmptyCrossJoin("
             + "    Filter([Store Type].Children, [Measures].[Unit Sales] > 10000), "
@@ -1081,6 +1087,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testExpandDifferentLevels() {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         checkNotNative(
+            getTestContext(),
             278,
             "select NonEmptyCrossJoin("
             + "    Descendants([Customers].[All Customers].[USA].[WA].[Yakima]), "
@@ -1096,6 +1103,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testExpandTupleInputs1() {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         checkNotNative(
+            getTestContext(),
             1,
             "with "
             + "set [Tuple Set] as {([Store Type].[All Store Types].[HeadQuarters], [Product].[All Products].[Drink]), ([Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food])} "
@@ -1116,6 +1124,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testExpandTupleInputs2() {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         checkNotNative(
+            getTestContext(),
             1,
             "with "
             + "set [Tuple Set] as {([Store Type].[All Store Types].[HeadQuarters], [Product].[All Products].[Drink]), ([Store Type].[All Store Types].[Supermarket], [Product].[All Products].[Food])} "
@@ -1138,6 +1147,7 @@ public class NonEmptyTest extends BatchTestCase {
         boolean requestFreshConnection = true;
         // Query should return empty result.
         checkNative(
+            getTestContext(),
             0,
             0,
             "With "
@@ -1165,6 +1175,7 @@ public class NonEmptyTest extends BatchTestCase {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         // Query should return empty result.
         checkNotNative(
+            getTestContext(),
             0,
             "With "
             + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Gender],[*BASE_MEMBERS_Product])' "
@@ -1193,6 +1204,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testEnumLowMaxConstraints() {
         propSaver.set(MondrianProperties.instance().MaxConstraints, 2);
         checkNotNative(
+            getTestContext(),
             12,
             "with "
             + "set [All Store Types] as {"
@@ -1248,6 +1260,7 @@ public class NonEmptyTest extends BatchTestCase {
         propSaver.set(
             MondrianProperties.instance().EnableNativeCrossJoin, true);
         checkNotNative(
+            getTestContext(),
             1,
             "select "
             + "NonEmptyCrossJoin({[Store].[All Stores]}, {[Product].[All Products]}) on columns "
@@ -1278,6 +1291,7 @@ public class NonEmptyTest extends BatchTestCase {
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
         checkNative(
+            getTestContext(),
             0,
             3,
             "select "
@@ -1300,6 +1314,7 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testAllLevelMembers() {
         checkNative(
+            getTestContext(),
             14,
             14,
             "select {[Measures].[Store Sales]} ON COLUMNS, "
@@ -1312,6 +1327,7 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testCjDescendantsEnumAllOnly() {
         checkNative(
+            getTestContext(),
             9,
             9,
             "select {[Measures].[Unit Sales]} ON COLUMNS, "
@@ -1327,6 +1343,7 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testResultIsModifyableCopy() {
         checkNative(
+            getTestContext(),
             3,
             3,
             "select {[Measures].[Store Sales]} on columns,"
@@ -1342,7 +1359,8 @@ public class NonEmptyTest extends BatchTestCase {
      * Checks that TopCount is executed natively unless disabled.
      */
     public void testNativeTopCount() {
-        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        final TestContext testContext = getTestContext();
+        switch (testContext.getDialect().getDatabaseProduct()) {
         case INFOBRIGHT:
             // Hits same Infobright bug as NamedSetTest.testNamedSetOnMember.
             return;
@@ -1362,14 +1380,16 @@ public class NonEmptyTest extends BatchTestCase {
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
-        checkNative(3, 3, query, null, requestFreshConnection);
+        checkNative(
+            testContext, 3, 3, query, null, requestFreshConnection);
     }
 
     /**
      * Checks that TopCount is executed natively with calculated member.
      */
     public void testCmNativeTopCount() {
-        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        final TestContext testContext = getTestContext();
+        switch (testContext.getDialect().getDatabaseProduct()) {
         case INFOBRIGHT:
             // Hits same Infobright bug as NamedSetTest.testNamedSetOnMember.
             return;
@@ -1387,7 +1407,8 @@ public class NonEmptyTest extends BatchTestCase {
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
-        checkNative(3, 3, query, null, requestFreshConnection);
+        checkNative(
+            testContext, 3, 3, query, null, requestFreshConnection);
     }
 
     public void testMeasureAndAggregateInSlicer() {
@@ -1444,6 +1465,7 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testCmInTopCount() {
         checkNotNative(
+            getTestContext(),
             1,
             "with member [Time].[Time].[Jan] as  "
             + "'Aggregate({[Time].[1998].[Q1].[1], [Time].[1997].[Q1].[1]})'  "
@@ -1456,6 +1478,7 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testCmInSlicer() {
         checkNotNative(
+            getTestContext(),
             3,
             "with member [Time].[Time].[Jan] as  "
             + "'Aggregate({[Time].[1998].[Q1].[1], [Time].[1997].[Q1].[1]})'  "
@@ -1466,6 +1489,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjMembersMembersMembers() {
         checkNative(
+            getTestContext(),
             67,
             67,
             "select {[Measures].[Store Sales]} on columns,"
@@ -1480,21 +1504,23 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfBlankLeafAndNoAll() {
-        setTestContext(TestContext.instance().createSubstitutingCube(
-            "Sales",
-            "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
-            + "  <Hierarchy hasAll=\"false\" primaryKey=\"product_id\">\n"
-            + "    <Table name=\"product\"/>\n"
-            + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
-            + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
-            + "        hideMemberIf=\"IfBlankName\""
-            + "        />\n"
-            + "  </Hierarchy>\n"
-            + "</Dimension>"));
+        final TestContext testContext =
+            getTestContext().createSubstitutingCube(
+                "Sales",
+                "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
+                + "  <Hierarchy hasAll=\"false\" primaryKey=\"product_id\">\n"
+                + "    <Table name=\"product\"/>\n"
+                + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+                + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
+                + "        hideMemberIf=\"IfBlankName\""
+                + "        />\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>");
 
         // No 'all' level, and ragged because [Product Name] is hidden if
         // blank.  Native evaluation should be able to handle this query.
         checkNative(
+            testContext,
             9999,  // Don't know why resultLimit needs to be so high.
             67,
             "select {[Measures].[Store Sales]} on columns,"
@@ -1509,21 +1535,23 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfBlankLeaf() {
-        setTestContext(TestContext.instance().createSubstitutingCube(
-            "Sales",
-            "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
-            + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
-            + "    <Table name=\"product\"/>\n"
-            + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
-            + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
-            + "        hideMemberIf=\"IfBlankName\""
-            + "        />\n"
-            + "  </Hierarchy>\n"
-            + "</Dimension>"));
+        final TestContext testContext =
+            getTestContext().createSubstitutingCube(
+                "Sales",
+                "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
+                + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
+                + "    <Table name=\"product\"/>\n"
+                + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+                + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
+                + "        hideMemberIf=\"IfBlankName\""
+                + "        />\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>");
 
         // [Product Name] can be hidden if it is blank, but native evaluation
         // should be able to handle the query.
         checkNative(
+            testContext,
             67,
             67,
             "select {[Measures].[Store Sales]} on columns,"
@@ -1538,21 +1566,23 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfParentsNameLeaf() {
-        setTestContext(TestContext.instance().createSubstitutingCube(
-            "Sales",
-            "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
-            + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
-            + "    <Table name=\"product\"/>\n"
-            + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
-            + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
-            + "        hideMemberIf=\"IfParentsName\""
-            + "        />\n"
-            + "  </Hierarchy>\n"
-            + "</Dimension>"));
+        final TestContext testContext =
+            getTestContext().createSubstitutingCube(
+                "Sales",
+                "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
+                + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
+                + "    <Table name=\"product\"/>\n"
+                + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+                + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
+                + "        hideMemberIf=\"IfParentsName\""
+                + "        />\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>");
 
         // [Product Name] can be hidden if it it matches its parent name, so
         // native evaluation can not handle this query.
         checkNotNative(
+            testContext,
             67,
             "select {[Measures].[Store Sales]} on columns,"
             + "  NON EMPTY Crossjoin("
@@ -1566,21 +1596,23 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfBlankNameAncestor() {
-        setTestContext(TestContext.instance().createSubstitutingCube(
-            "Sales",
-            "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
-            + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
-            + "    <Table name=\"product\"/>\n"
-            + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\""
-            + "        hideMemberIf=\"IfBlankName\""
-            + "        />\n"
-            + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n uniqueMembers=\"true\"/>\n"
-            + "  </Hierarchy>\n"
-            + "</Dimension>"));
+        final TestContext testContext =
+            getTestContext().createSubstitutingCube(
+                "Sales",
+                "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
+                + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
+                + "    <Table name=\"product\"/>\n"
+                + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\""
+                + "        hideMemberIf=\"IfBlankName\""
+                + "        />\n"
+                + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n uniqueMembers=\"true\"/>\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>");
 
         // Since the parent of [Product Name] can be hidden, native evaluation
         // can't handle the query.
         checkNative(
+            testContext,
             67,
             67,
             "select {[Measures].[Store Sales]} on columns,"
@@ -1595,21 +1627,23 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfParentsNameAncestor() {
-        setTestContext(TestContext.instance().createSubstitutingCube(
-            "Sales",
-            "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
-            + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
-            + "    <Table name=\"product\"/>\n"
-            + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\""
-            + "        hideMemberIf=\"IfParentsName\""
-            + "        />\n"
-            + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n uniqueMembers=\"true\"/>\n"
-            + "  </Hierarchy>\n"
-            + "</Dimension>"));
+        final TestContext testContext =
+            getTestContext().createSubstitutingCube(
+                "Sales",
+                "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
+                + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
+                + "    <Table name=\"product\"/>\n"
+                + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\""
+                + "        hideMemberIf=\"IfParentsName\""
+                + "        />\n"
+                + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n uniqueMembers=\"true\"/>\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>");
 
         // Since the parent of [Product Name] can be hidden, native evaluation
         // can't handle the query.
         checkNative(
+            testContext,
             67,
             67,
             "select {[Measures].[Store Sales]} on columns,"
@@ -1624,17 +1658,18 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjEnumWithHideIfBlankLeaf() {
-        setTestContext(TestContext.instance().createSubstitutingCube(
-            "Sales",
-            "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
-            + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
-            + "    <Table name=\"product\"/>\n"
-            + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
-            + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
-            + "        hideMemberIf=\"IfBlankName\""
-            + "        />\n"
-            + "  </Hierarchy>\n"
-            + "</Dimension>"));
+        final TestContext testContext =
+            getTestContext().createSubstitutingCube(
+                "Sales",
+                "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
+                + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
+                + "    <Table name=\"product\"/>\n"
+                + "    <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+                + "    <Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\"\n"
+                + "        hideMemberIf=\"IfBlankName\""
+                + "        />\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>");
 
         // [Product Name] can be hidden if it is blank, but native evaluation
         // should be able to handle the query.
@@ -1643,6 +1678,7 @@ public class NonEmptyTest extends BatchTestCase {
         // avoids this bug by explicitly lilsting [High Top Cauliflower]
         // before [Sphinx Bagels].
         checkNative(
+            testContext,
             999,
             7,
             "select {[Measures].[Store Sales]} on columns,"
@@ -1675,6 +1711,7 @@ public class NonEmptyTest extends BatchTestCase {
                 MondrianProperties.instance().MaxConstraints, minConstraints);
         }
         checkNative(
+            getTestContext(),
             4,
             4,
             "select {[Measures].[Unit Sales]} ON COLUMNS, "
@@ -1690,6 +1727,7 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().IgnoreInvalidMembersDuringQuery,
             true);
         checkNative(
+            getTestContext(),
             20,
             0,
             "select {[Measures].[Unit Sales]} ON COLUMNS, "
@@ -1703,6 +1741,7 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testCjDescendantsEnumAll() {
         checkNotNative(
+            getTestContext(),
             13,
             "select {[Measures].[Unit Sales]} ON COLUMNS, "
             + "NON EMPTY Crossjoin("
@@ -1723,6 +1762,7 @@ public class NonEmptyTest extends BatchTestCase {
                 minConstraints);
         }
         checkNative(
+            getTestContext(),
             11,
             11,
             "select {[Measures].[Unit Sales]} ON COLUMNS, "
@@ -1745,6 +1785,7 @@ public class NonEmptyTest extends BatchTestCase {
                 minConstraints);
         }
         checkNative(
+            getTestContext(),
             3,
             3,
             "select {[Measures].[Unit Sales]} ON COLUMNS, "
@@ -1768,6 +1809,7 @@ public class NonEmptyTest extends BatchTestCase {
         }
 
         LimitedQuery c = new LimitedQuery(
+            getTestContext(),
             8,
             5,
             "select {[Measures].[Unit Sales]} ON COLUMNS, "
@@ -1781,6 +1823,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjDescendantsMembers() {
         checkNative(
+            getTestContext(),
             67,
             67,
             "select {[Measures].[Store Sales]} on columns,"
@@ -1794,6 +1837,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjMembersDescendants() {
         checkNative(
+            getTestContext(),
             67,
             67,
             "select {[Measures].[Store Sales]} on columns,"
@@ -1808,6 +1852,7 @@ public class NonEmptyTest extends BatchTestCase {
     // testcase for bug MONDRIAN-506
     public void testCjMembersDescendantsWithNumericArgument() {
         checkNative(
+            getTestContext(),
             67,
             67,
             "select {[Measures].[Store Sales]} on columns,"
@@ -1821,6 +1866,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjChildrenMembers() {
         checkNative(
+            getTestContext(),
             67,
             67,
             "select {[Measures].[Store Sales]} on columns,"
@@ -1833,6 +1879,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjMembersChildren() {
         checkNative(
+            getTestContext(),
             67,
             67,
             "select {[Measures].[Store Sales]} on columns,"
@@ -1845,6 +1892,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjMembersMembers() {
         checkNative(
+            getTestContext(),
             67,
             67,
             "select {[Measures].[Store Sales]} on columns,"
@@ -1857,6 +1905,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjChildrenChildren() {
         checkNative(
+            getTestContext(),
             3,
             3,
             "select {[Measures].[Store Sales]} on columns, "
@@ -1974,7 +2023,7 @@ public class NonEmptyTest extends BatchTestCase {
                 Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
         };
 
-        assertQuerySql(query, patterns);
+        assertQuerySql(getTestContext(), query, patterns);
     }
 
     /**
@@ -2342,8 +2391,6 @@ public class NonEmptyTest extends BatchTestCase {
     public void testNonEmptyCrossJoinList() {
         propSaver.set(
             MondrianProperties.instance().EnableNativeCrossJoin, false);
-        boolean oldEnableNativeNonEmpty =
-            MondrianProperties.instance().EnableNativeNonEmpty.get();
         propSaver.set(
             MondrianProperties.instance().EnableNativeNonEmpty, false);
 
@@ -2403,6 +2450,7 @@ public class NonEmptyTest extends BatchTestCase {
         clearAndHardenCache(ssmrch);
 
         LimitedQuery c = new LimitedQuery(
+            getTestContext(),
             100,
             21,
             "select \n"
@@ -2518,6 +2566,7 @@ public class NonEmptyTest extends BatchTestCase {
         // 1 row at nation level, 1 at state level, 20 at city level, and 11
         // at customers level = 34.)
         LimitedQuery c = new LimitedQuery(
+            getTestContext(),
             34,
             34,
             "select \n"
@@ -2533,6 +2582,7 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testMemberChildrenOfRolapMember() {
         LimitedQuery c = new LimitedQuery(
+            getTestContext(),
             50,
             4,
             "select \n"
@@ -2548,6 +2598,7 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testMemberChildrenOfAllMember() {
         LimitedQuery c = new LimitedQuery(
+            getTestContext(),
             50,
             14,
             "select {[Measures].[Unit Sales]} ON columns,\n"
@@ -2580,6 +2631,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         LimitedQuery c =
             new LimitedQuery(
+                getTestContext(),
                 50,
                 48,
                 "select {[Measures].[Unit Sales]} ON columns,\n"
@@ -2599,6 +2651,7 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
         LimitedQuery c = new LimitedQuery(
+            getTestContext(),
             3,
             1,
             "select "
@@ -2626,6 +2679,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         LimitedQuery c =
             new LimitedQuery(
+                getTestContext(),
                 45,
                 4,
                 "select \n"
@@ -2733,6 +2787,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testVirtualCubeCrossJoin() {
         checkNative(
+            getTestContext(),
             18,
             3,
             "select "
@@ -2744,6 +2799,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testVirtualCubeNonEmptyCrossJoin() {
         checkNative(
+            getTestContext(),
             18,
             3,
             "select "
@@ -2755,6 +2811,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testVirtualCubeNonEmptyCrossJoin3Args() {
         checkNative(
+            getTestContext(),
             3,
             3,
             "select "
@@ -2766,7 +2823,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testNotNativeVirtualCubeCrossJoin1() {
-        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        final TestContext testContext = getTestContext();
+        switch (testContext.getDialect().getDatabaseProduct()) {
         case INFOBRIGHT:
             // Hits same Infobright bug as NamedSetTest.testNamedSetOnMember.
             return;
@@ -2779,6 +2837,7 @@ public class NonEmptyTest extends BatchTestCase {
             "ERROR");
         // native cross join cannot be used due to AllMembers
         checkNotNative(
+            testContext,
             3,
             "select "
             + "{[Measures].AllMembers} on columns, "
@@ -2790,6 +2849,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testNotNativeVirtualCubeCrossJoin2() {
         // native cross join cannot be used due to the range operator
         checkNotNative(
+            getTestContext(),
             3,
             "select "
             + "{[Measures].[Sales Count] : [Measures].[Unit Sales]} on columns, "
@@ -2799,7 +2859,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testNotNativeVirtualCubeCrossJoinUnsupported() {
-        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        final TestContext testContext = getTestContext();
+        switch (testContext.getDialect().getDatabaseProduct()) {
         case INFOBRIGHT:
             // Hits same Infobright bug as NamedSetTest.testNamedSetOnMember.
             return;
@@ -2846,7 +2907,7 @@ public class NonEmptyTest extends BatchTestCase {
         propSaver.set(
             alertProperty, org.apache.log4j.Level.ERROR.toString());
         try {
-            checkNotNative(3, mdx);
+            checkNotNative(testContext, 3, mdx);
             fail("Expected NativeEvaluationUnsupportedException");
         } catch (Exception ex) {
             Throwable t = ex;
@@ -2873,7 +2934,7 @@ public class NonEmptyTest extends BatchTestCase {
         propSaver.set(
             alertProperty, org.apache.log4j.Level.WARN.toString());
         try {
-            checkNotNative(3, mdx);
+            checkNotNative(testContext, 3, mdx);
         } finally {
             propSaver.reset();
             propSaver.setAtLeast(rolapUtilLogger, org.apache.log4j.Level.WARN);
@@ -2892,7 +2953,7 @@ public class NonEmptyTest extends BatchTestCase {
         propSaver.set(
             enableProperty, false);
         try {
-            checkNotNative(3, mdx);
+            checkNotNative(testContext, 3, mdx);
         } finally {
             propSaver.reset();
             propSaver.setAtLeast(rolapUtilLogger, org.apache.log4j.Level.WARN);
@@ -2930,6 +2991,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testVirtualCubeCrossJoinCalculatedMember1() {
         // calculated member appears in query
         checkNative(
+            getTestContext(),
             18,
             3,
             "WITH MEMBER [Measures].[Total Cost] as "
@@ -2944,6 +3006,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testVirtualCubeCrossJoinCalculatedMember2() {
         // calculated member defined in schema
         checkNative(
+            getTestContext(),
             18,
             3,
             "select "
@@ -2957,6 +3020,7 @@ public class NonEmptyTest extends BatchTestCase {
         // native cross join cannot be used due to CurrentMember in the
         // calculated member
         checkNotNative(
+            getTestContext(),
             3,
             "WITH MEMBER [Measures].[CurrMember] as "
             + "'[Measures].CurrentMember' "
@@ -2972,6 +3036,7 @@ public class NonEmptyTest extends BatchTestCase {
         // enumerated sets with calculated members
         // should be non-native due to the fix to testCjEnumCalcMembersBug()
         checkNotNative(
+            getTestContext(),
             30,
             "with "
             + "member [Product].[All Products].[Drink].[*SUBTOTAL_MEMBER_SEL~SUM] as "
@@ -3009,6 +3074,7 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().EnableNativeCrossJoin, true);
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         checkNotNative(
+            getTestContext(),
             9,
             "with "
             + "member [Store Type].[All Store Types].[S] as sum({[Store Type].[All Store Types]}) "
@@ -3057,6 +3123,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         // enumerated list of calculated members results in some empty cells
         checkNotNative(
+            getTestContext(),
             5,
             "with "
             + "member [Customers].[All Customers].[USA].[*SUBTOTAL_MEMBER_SEL~SUM] as "
@@ -3080,6 +3147,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testCjUnionEnumCalcMembers() {
         // non-native due to the fix to testCjEnumCalcMembersBug()
         checkNotNative(
+            getTestContext(),
             46,
             "with "
             + "member [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM] as "
@@ -3147,6 +3215,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCrossJoinNamedSets1() {
         checkNative(
+            getTestContext(),
             3,
             3,
             "with "
@@ -3168,7 +3237,9 @@ public class NonEmptyTest extends BatchTestCase {
         }
 
         checkNative(
-            3, 3,
+            getTestContext(),
+            3,
+            3,
             "with "
             + "SET [ProductChildren] as '{[Product].[All Products].[Drink], "
             + "[Product].[Products].[Food], "
@@ -3184,6 +3255,7 @@ public class NonEmptyTest extends BatchTestCase {
         // are returned.  Note that different members are referenced in
         // each level in the time dimension.
         checkNative(
+            getTestContext(),
             5,
             5,
             "select "
@@ -3204,7 +3276,9 @@ public class NonEmptyTest extends BatchTestCase {
 
         // members in set are a cross product of (1997, 1998) and (Q1, Q2, Q3)
         checkNative(
-            50, 15,
+            getTestContext(),
+            50,
+            15,
             "select "
             + "{[Measures].[Unit Sales]} on columns, "
             + "NonEmptyCrossJoin(" + EDUCATION_LEVEL_LEVEL + ".Members, "
@@ -3225,7 +3299,9 @@ public class NonEmptyTest extends BatchTestCase {
 
         // members in set have the same parent
         checkNative(
-            10, 10,
+            getTestContext(),
+            10,
+            10,
             "select "
             + "{[Measures].[Unit Sales]} on columns, "
             + "NonEmptyCrossJoin(" + EDUCATION_LEVEL_LEVEL + ".Members, "
@@ -3246,7 +3322,9 @@ public class NonEmptyTest extends BatchTestCase {
 
         // members in set have different parents but there is a unique level
         checkNative(
-            10, 10,
+            getTestContext(),
+            10,
+            10,
             "select "
             + "{[Measures].[Unit Sales]} on columns, "
             + "NonEmptyCrossJoin(" + EDUCATION_LEVEL_LEVEL + ".Members, "
@@ -3257,6 +3335,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCrossJoinMultiInExprAllMember() {
         checkNative(
+            getTestContext(),
             10,
             10,
             "select "
@@ -3434,6 +3513,7 @@ public class NonEmptyTest extends BatchTestCase {
         // The reference to [Store Sales] inside the topPercent function
         // should not prevent native cross joins from being used
         checkNative(
+            getTestContext(),
             92,
             1,
             "select {topPercent(nonemptycrossjoin([Product].[Product Department].members, "
@@ -3446,6 +3526,7 @@ public class NonEmptyTest extends BatchTestCase {
         // [Customers].[Name] is an ordinal expression.  Make sure ordering
         // is done on the column corresponding to that expression.
         checkNative(
+            getTestContext(),
             67,
             67,
             "select {[Measures].[Store Sales]} on columns,"
@@ -3462,6 +3543,7 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testNonEmptyWithCalcMeasure() {
         checkNative(
+            getTestContext(),
             15,
             6,
             "With "
@@ -3497,10 +3579,11 @@ public class NonEmptyTest extends BatchTestCase {
         // because emptiness check depends on a calculated slicer member
         // which references the non-empty set being computed.
         //
-        // Bcause native evaluation already ignores calculated members on
+        // Because native evaluation already ignores calculated members on
         // the slicer, both native and non-native evaluation should return
         // the same result.
         checkNative(
+            getTestContext(),
             20,
             1,
             "With "
@@ -4069,7 +4152,11 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testLeafMembersOfParentChildDimensionAreNativelyEvaluated() {
-        final String query = "SELECT"
+        checkNative(
+            getTestContext(),
+            50,
+            5,
+            "SELECT"
             + " NON EMPTY "
             + "Crossjoin("
             + "{"
@@ -4080,12 +4167,14 @@ public class NonEmptyTest extends BatchTestCase {
             + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Elizabeth Horne]"
             + "},"
             + "[Store].[Store Name].members"
-            + ") on 0 from hr";
-        checkNative(50, 5, query);
+            + ") on 0 from hr");
     }
 
     public void testNonLeafMembersOfPCDimensionAreNotNativelyEvaluated() {
-        final String query = "SELECT"
+        checkNotNative(
+            getTestContext(),
+            9,
+            "SELECT"
             + " NON EMPTY "
             + "Crossjoin("
             + "{"
@@ -4097,8 +4186,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Pat Chin].[Elizabeth Horne]"
             + "},"
             + "[Store].[Store Name].members"
-            + ") on 0 from hr";
-        checkNotNative(9, query);
+            + ") on 0 from hr");
     }
 
     public void testNativeWithOverriddenNullMemberRepAndNullConstraint() {
@@ -4153,7 +4241,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testNativeCrossjoinWillConstrainUsingArgsFromAllAxes() {
-        String mdx = "select "
+        String mdx =
+            "select "
             + "non empty Crossjoin({[Gender].[Gender].[F]},{[Measures].[Unit Sales]}) on 0,"
             + "non empty Crossjoin({[Time].[1997]},{[Promotions].[All Promotions].[Bag Stuffers],[Promotions].[All Promotions].[Best Savings]}) on 1"
             + " from [Warehouse and Sales]";
@@ -4192,7 +4281,10 @@ public class NonEmptyTest extends BatchTestCase {
             + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
             + "order by 1 ASC, 2 ASC",
             611);
-        assertQuerySql(mdx, new SqlPattern[]{oraclePattern, accessPattern});
+        assertQuerySql(
+            getTestContext(),
+            mdx,
+            new SqlPattern[]{oraclePattern, accessPattern});
     }
 
     public void testLevelMembersWillConstrainUsingArgsFromAllAxes() {
@@ -4224,7 +4316,10 @@ public class NonEmptyTest extends BatchTestCase {
                 + "group by \"promotion\".\"promotion_name\" "
                 + "order by 1 ASC",
                 347);
-            assertQuerySql(mdx, new SqlPattern[]{oraclePattern, accessPattern});
+            assertQuerySql(
+                getTestContext(),
+                mdx,
+                new SqlPattern[]{oraclePattern, accessPattern});
         }
 
 
@@ -4250,7 +4345,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
             + "order by 1 ASC, 2 ASC",
             611);
-        assertQuerySql(mdx, new SqlPattern[]{pattern});
+        assertQuerySql(getTestContext(), mdx, new SqlPattern[]{pattern});
     }
 
     public void testNativeCrossjoinWillExpandLagInNamedSet() {
@@ -4277,7 +4372,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
             + "order by 1 ASC, 2 ASC",
             611);
-        assertQuerySql(mdx, new SqlPattern[]{pattern});
+        assertQuerySql(getTestContext(), mdx, new SqlPattern[]{pattern});
     }
 
     public void testConstrainedMeasureGetsOptimized() {
@@ -4298,6 +4393,7 @@ public class NonEmptyTest extends BatchTestCase {
                 : "select \"customer\".\"country\" as \"c0\","
                     + " \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and (\"customer\".\"gender\" in ('M', 'F')) group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" order by \"customer\".\"country\" ASC NULLS LAST, \"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, \"fname\" || ' ' || \"lname\" ASC NULLS LAST";
         assertQuerySql(
+            getTestContext(),
             mdx,
             new SqlPattern[]{
                 new SqlPattern(
@@ -4350,7 +4446,7 @@ public class NonEmptyTest extends BatchTestCase {
             Dialect.DatabaseProduct.ORACLE,
             sqlOracle,
             sqlOracle.length());
-        assertQuerySql(mdx, new SqlPattern[]{pattern});
+        assertQuerySql(getTestContext(), mdx, new SqlPattern[]{pattern});
     }
 
     public void testNonUniformNestedMeasureConstraintsGetOptimized() {
@@ -4396,7 +4492,7 @@ public class NonEmptyTest extends BatchTestCase {
             + " \"customer\".\"city\" ASC NULLS LAST, "
             + "\"fname\" || ' ' || \"lname\" ASC NULLS LAST",
             852);
-        assertQuerySql(mdx, new SqlPattern[]{pattern});
+        assertQuerySql(getTestContext(), mdx, new SqlPattern[]{pattern});
     }
 
     public void testNonUniformConstraintsAreNotUsedForOptimization() {
@@ -4626,6 +4722,7 @@ public class NonEmptyTest extends BatchTestCase {
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         checkNative(
+            getTestContext(),
             0,
             5,
             mdx,

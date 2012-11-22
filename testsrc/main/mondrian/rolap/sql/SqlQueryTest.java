@@ -268,7 +268,8 @@ public class SqlQueryTest extends BatchTestCase {
             + "ALL"
             + ") DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON AXIS(0) \n"
             + "FROM [HR]  CELL PROPERTIES VALUE, FORMAT_STRING";
-        assertQuerySql(mdx, Dialect.DatabaseProduct.ACCESS, sql);
+        assertQuerySql(
+            getTestContext(), mdx, Dialect.DatabaseProduct.ACCESS, sql);
     }
 
     public void testPredicatesAreNotOptimizedWhenPropertyIsFalse() {
@@ -377,7 +378,7 @@ public class SqlQueryTest extends BatchTestCase {
 
         try {
             prop.OptimizePredicates.set(optimizePredicatesValue);
-            assertQuerySql(inputMdx, sqlPatterns);
+            assertQuerySql(getTestContext(), inputMdx, sqlPatterns);
         } finally {
             prop.OptimizePredicates.set(intialValueOptimize);
         }
@@ -614,6 +615,7 @@ public class SqlQueryTest extends BatchTestCase {
         };
 
         assertNoQuerySql(
+            getTestContext(),
             "select {[Time.Weekly].[All Time.Weeklys]} ON COLUMNS from [Sales]",
             patterns);
     }

@@ -1448,8 +1448,9 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "\"fname\" || ' ' || \"lname\" ASC NULLS LAST";
         SqlPattern oraclePattern =
             new SqlPattern(Dialect.DatabaseProduct.ORACLE, sql, sql.length());
-        assertQuerySql(mdx1, new SqlPattern[]{oraclePattern});
-        assertQuerySql(mdx2, new SqlPattern[]{oraclePattern});
+        TestContext testContext = getTestContext();
+        assertQuerySql(testContext, mdx1, new SqlPattern[]{oraclePattern});
+        assertQuerySql(testContext, mdx2, new SqlPattern[]{oraclePattern});
     }
 
     // ~ ====== Helper methods =================================================

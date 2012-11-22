@@ -220,11 +220,7 @@ public class RolapStar {
     }
 
     private final ThreadLocal<Bar> localBars =
-        new ThreadLocal<Bar>() {
-            protected Bar initialValue() {
-                return new Bar();
-            }
-        };
+        new BarThreadLocal();
 
     /**
      * Returns the column of this RolapStar that holds a given expression.
@@ -480,11 +476,11 @@ public class RolapStar {
     /**
      * Used by test code only. (Not safe in general.)
      */
-    public BitKey getBitKey(String[] tableAlias, String[] columnName) {
+    public BitKey getBitKey(List<String> tableAlias, List<String> columnName) {
         BitKey bitKey = BitKey.Factory.makeBitKey(getColumnCount());
         Column starColumn;
-        for (int i = 0; i < tableAlias.length; i ++) {
-            starColumn = lookupColumn(tableAlias[i], columnName[i]);
+        for (int i = 0; i < tableAlias.size(); i ++) {
+            starColumn = lookupColumn(tableAlias.get(i), columnName.get(i));
             if (starColumn != null) {
                 bitKey.set(starColumn.getBitPosition());
             }
@@ -1500,6 +1496,14 @@ public class RolapStar {
 
         public int compare(Column o1, Column o2) {
             return o1.getName().compareTo(o2.getName());
+        }
+    }
+
+    // Use a static inner class rather than a (non-static) anonymous class
+    // to prevent a reference to RolapStar that would prevent gc.
+    private static class BarThreadLocal extends ThreadLocal<Bar> {
+        protected Bar initialValue() {
+            return new Bar();
         }
     }
 }

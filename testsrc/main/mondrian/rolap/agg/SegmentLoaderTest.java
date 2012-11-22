@@ -15,7 +15,7 @@ import mondrian.rolap.*;
 import mondrian.server.*;
 import mondrian.server.Statement;
 import mondrian.spi.Dialect;
-import mondrian.test.SqlPattern;
+import mondrian.test.*;
 import mondrian.util.DelegatingInvocationHandler;
 
 import java.io.PrintWriter;
@@ -407,13 +407,13 @@ public class SegmentLoaderTest extends BatchTestCase {
     private GroupingSet getGroupingSetRollupOnGender() {
         return
             getGroupingSet(
-                new String[]{tableTime, tableProductClass, tableProductClass},
-                new String[]{
-                    fieldYear, fieldProductFamily, fieldProductDepartment},
-                new String[][]{
+                getTestContext(),
+                list(tableTime, tableProductClass, tableProductClass),
+                list(fieldYear, fieldProductFamily, fieldProductDepartment),
+                list(
                     fieldValuesYear,
                     fieldValuesProductFamily,
-                    fieldValueProductDepartment},
+                    fieldValueProductDepartment),
                 cubeNameSales,
                 measureUnitSales);
     }
@@ -649,19 +649,21 @@ public class SegmentLoaderTest extends BatchTestCase {
         assertTrue(
             new GroupingSetsList(
                 new ArrayList<GroupingSet>())
-            .getRollupColumnsBitKeyList().isEmpty());
+                .getRollupColumnsBitKeyList().isEmpty());
     }
 
     private GroupingSet getGroupingSetRollupOnGenderAndProductFamily() {
         return getGroupingSet(
-            new String[]{tableTime, tableProductClass},
-            new String[]{fieldYear, fieldProductDepartment},
-            new String[][]{fieldValuesYear, fieldValueProductDepartment},
+            getTestContext(),
+            list(tableTime, tableProductClass),
+            list(fieldYear, fieldProductDepartment),
+            list(fieldValuesYear, fieldValueProductDepartment),
             cubeNameSales, measureUnitSales);
     }
 
     public void testGroupingSetsUtilSetsDetailForRollupColumns() {
-        RolapStar.Measure measure = getMeasure(cubeNameSales, measureUnitSales);
+        RolapStar.Measure measure =
+            getMeasure(getTestContext(), cubeNameSales, measureUnitSales);
         RolapStar star = measure.getStar();
         RolapStar.Column year = star.lookupColumn(tableTime, fieldYear);
         RolapStar.Column productFamily =
@@ -707,9 +709,10 @@ public class SegmentLoaderTest extends BatchTestCase {
 
     private GroupingSet getGroupingSetRollupOnGenderAndProductDepartment() {
         return getGroupingSet(
-            new String[]{tableProductClass, tableTime},
-            new String[]{fieldProductFamily, fieldYear},
-            new String[][]{fieldValuesProductFamily, fieldValuesYear},
+            getTestContext(),
+            list(tableProductClass, tableTime),
+            list(fieldProductFamily, fieldYear),
+            list(fieldValuesProductFamily, fieldValuesYear),
             cubeNameSales,
             measureUnitSales);
     }
@@ -718,9 +721,10 @@ public class SegmentLoaderTest extends BatchTestCase {
         getGroupingSetRollupOnProductFamilyAndProductDepartment()
     {
         return getGroupingSet(
-            new String[]{tableCustomer, tableTime},
-            new String[]{fieldGender, fieldYear},
-            new String[][]{fieldValuesGender, fieldValuesYear},
+            getTestContext(),
+            list(tableCustomer, tableTime),
+            list(fieldGender, fieldYear),
+            list(fieldValuesGender, fieldValuesYear),
             cubeNameSales,
             measureUnitSales);
     }
@@ -729,25 +733,29 @@ public class SegmentLoaderTest extends BatchTestCase {
         getGroupingSetRollupOnGenderAndProductDepartmentAndYear()
     {
         return getGroupingSet(
-            new String[]{tableProductClass},
-            new String[]{fieldProductFamily},
-            new String[][]{fieldValuesProductFamily},
+            getTestContext(),
+            list(tableProductClass),
+            list(fieldProductFamily),
+            list(fieldValuesProductFamily),
             cubeNameSales,
             measureUnitSales);
     }
 
     private GroupingSet getGroupingSetRollupOnProductDepartment() {
         return getGroupingSet(
-            new String[]{tableCustomer, tableProductClass, tableTime},
-            new String[]{fieldGender, fieldProductFamily, fieldYear},
-            new String[][]{
-                fieldValuesGender, fieldValuesProductFamily, fieldValuesYear},
+            getTestContext(),
+            list(tableCustomer, tableProductClass, tableTime),
+            list(fieldGender, fieldProductFamily, fieldYear),
+            list(
+                fieldValuesGender, fieldValuesProductFamily, fieldValuesYear),
             cubeNameSales,
             measureUnitSales);
     }
 
     public void testGroupingSetsUtilSetsForDetailForRollupColumns() {
-        RolapStar.Measure measure = getMeasure(cubeNameSales, measureUnitSales);
+        final TestContext testContext = getTestContext();
+        RolapStar.Measure measure =
+            getMeasure(testContext, cubeNameSales, measureUnitSales);
         RolapStar star = measure.getStar();
         RolapStar.Column year = star.lookupColumn(tableTime, fieldYear);
         RolapStar.Column productFamily =
@@ -843,12 +851,15 @@ public class SegmentLoaderTest extends BatchTestCase {
 
     private GroupingSet getDefaultGroupingSet() {
         return getGroupingSet(
-            new String[]{tableCustomer, tableProductClass,
-                tableProductClass, tableTime},
-            new String[]{fieldGender, fieldProductDepartment,
-                fieldProductFamily, fieldYear},
-            new String[][]{fieldValuesGender, fieldValueProductDepartment,
-                fieldValuesProductFamily, fieldValuesYear},
+            getTestContext(),
+            list(
+                tableCustomer, tableProductClass, tableProductClass, tableTime),
+            list(
+                fieldGender, fieldProductDepartment, fieldProductFamily,
+                fieldYear),
+            list(
+                fieldValuesGender, fieldValueProductDepartment,
+                fieldValuesProductFamily, fieldValuesYear),
             cubeNameSales,
             measureUnitSales);
     }

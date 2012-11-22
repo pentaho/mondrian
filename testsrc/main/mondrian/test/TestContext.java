@@ -28,6 +28,8 @@ import mondrian.util.Pair;
 import junit.framework.*;
 import junit.framework.Test;
 
+import org.apache.log4j.Logger;
+
 import org.olap4j.*;
 import org.olap4j.impl.CoordinateIterator;
 import org.olap4j.layout.TraditionalCellSetFormatter;
@@ -1716,6 +1718,25 @@ public class TestContext {
 
     public String getCatalogContent() {
         return schema;
+    }
+
+    public Logger getLogger() {
+        return Logger.getLogger(FoodMartTestCase.class);
+    }
+
+    /**
+     * Returns a TestContext similar to this one, but using the given
+     * {@link Logger}.
+     *
+     * @param logger Logger
+     * @return Test context with the given logger
+     */
+    public TestContext withLogger(final Logger logger) {
+        return new DelegatingTestContext(this) {
+            public Logger getLogger() {
+                return logger;
+            }
+        };
     }
 
     /**

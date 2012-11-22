@@ -9,7 +9,6 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.Connection;
 import mondrian.olap.MondrianProperties;
 import mondrian.rolap.sql.MemberListCrossJoinArg;
 import mondrian.spi.Dialect;
@@ -58,7 +57,8 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(100, 45, query, null, requestFreshConnection);
+        checkNative(
+            getTestContext(), 100, 45, query, null, requestFreshConnection);
     }
 
     public void testNotInFilterSimple() throws Exception {
@@ -80,7 +80,8 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(100, 66, query, null, requestFreshConnection);
+        checkNative(
+            getTestContext(), 100, 66, query, null, requestFreshConnection);
     }
 
     public void testInFilterAND() throws Exception {
@@ -104,7 +105,8 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(200, 88, query, null, requestFreshConnection);
+        checkNative(
+            getTestContext(), 200, 88, query, null, requestFreshConnection);
     }
 
     public void testIsFilterSimple() throws Exception {
@@ -126,7 +128,8 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(100, 45, query, null, requestFreshConnection);
+        checkNative(
+            getTestContext(), 100, 45, query, null, requestFreshConnection);
     }
 
     public void testNotIsFilterSimple() throws Exception {
@@ -148,7 +151,8 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(100, 66, query, null, requestFreshConnection);
+        checkNative(
+            getTestContext(), 100, 66, query, null, requestFreshConnection);
     }
 
     public void testMixedInIsFilters() throws Exception {
@@ -172,7 +176,8 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(200, 88, query, null, requestFreshConnection);
+        checkNative(
+            getTestContext(), 200, 88, query, null, requestFreshConnection);
     }
 
     /**
@@ -200,7 +205,7 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNotNative(45, query);
+        checkNotNative(getTestContext(), 45, query);
     }
 
     public void testTopCountOverInFilter() throws Exception {
@@ -222,7 +227,8 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(100, 3, query, null, requestFreshConnection);
+        checkNative(
+            getTestContext(), 100, 3, query, null, requestFreshConnection);
     }
 
     /**
@@ -278,7 +284,8 @@ public class FilterTest extends BatchTestCase {
             + "Row #8: 84\n"
             + "Row #9: 278\n";
 
-        checkNative(0, 10, query, result, requestFreshConnection);
+        checkNative(
+            getTestContext(), 0, 10, query, result, requestFreshConnection);
     }
 
     /**
@@ -333,7 +340,8 @@ public class FilterTest extends BatchTestCase {
             + "Row #7: 84\n"
             + "Row #8: 278\n";
 
-        checkNative(0, 9, query, result, requestFreshConnection);
+        checkNative(
+            getTestContext(), 0, 9, query, result, requestFreshConnection);
     }
 
     /**
@@ -399,7 +407,7 @@ public class FilterTest extends BatchTestCase {
                 Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
         };
 
-        assertQuerySql(query, patterns);
+        assertQuerySql(getTestContext(), query, patterns);
     }
 
     /**
@@ -476,7 +484,7 @@ public class FilterTest extends BatchTestCase {
                 Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
         };
 
-        assertQuerySql(query, patterns);
+        assertQuerySql(getTestContext(), query, patterns);
     }
 
     /**
@@ -716,7 +724,8 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(100, 45, query1, null, requestFreshConnection);
+        checkNative(
+            getTestContext(), 100, 45, query1, null, requestFreshConnection);
 
         // query2 has different filters; it should not reuse the result from
         // query1.
@@ -731,7 +740,8 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(100, 11, query2, null, requestFreshConnection);
+        checkNative(
+            getTestContext(), 100, 11, query2, null, requestFreshConnection);
     }
 
     public void testNativeFilter() {
@@ -742,6 +752,7 @@ public class FilterTest extends BatchTestCase {
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
         checkNative(
+            getTestContext(),
             32,
             18,
             "select {[Measures].[Store Sales]} ON COLUMNS, "
@@ -763,6 +774,7 @@ public class FilterTest extends BatchTestCase {
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
         checkNative(
+            getTestContext(),
             0,
             8,
             "with member [Measures].[Rendite] as '([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]' "
@@ -828,6 +840,7 @@ public class FilterTest extends BatchTestCase {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
         propSaver.set(MondrianProperties.instance().EnableNativeFilter, false);
         checkNotNative(
+            getTestContext(),
             9,
             "select Filter([Store].[Store Name].members, "
             + "              Not ([Measures].[Store Sqft] - [Measures].[Grocery Sqft] < 10000)) on rows, "
@@ -908,6 +921,7 @@ public class FilterTest extends BatchTestCase {
         propSaver.set(MondrianProperties.instance().EnableNativeFilter, false);
         propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
         checkNotNative(
+            getTestContext(),
             3,
             "with\n"
             + "member [Time].[Time].[Date Range] as 'Aggregate({[Time].[1997].[Q1]:[Time].[1997].[Q4]})'\n"
@@ -944,6 +958,7 @@ public class FilterTest extends BatchTestCase {
         // is not refreshed for this parameter.
         boolean requestFreshConnection = true;
         checkNative(
+            getTestContext(),
             0,
             20,
             "select Filter(CrossJoin([Store].[Store Name].members, "

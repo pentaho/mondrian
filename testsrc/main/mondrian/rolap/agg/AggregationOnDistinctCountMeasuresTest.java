@@ -169,7 +169,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 Dialect.DatabaseProduct.TERADATA, oraTeraSql, oraTeraSql),
         };
 
-        assertQuerySql(query, patterns);
+        assertQuerySql(getTestContext(), query, patterns);
     }
 
     public void testCrossJoinMembersWithSetOfMembers() {
@@ -238,7 +238,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 Dialect.DatabaseProduct.TERADATA, oraTeraSql, oraTeraSql),
         };
 
-        assertQuerySql(query, patterns);
+        assertQuerySql(getTestContext(), query, patterns);
     }
 
     public void testCrossJoinParticularMembersFromTwoDimensions() {
@@ -719,6 +719,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 Dialect.DatabaseProduct.TERADATA, oraTeraSql, oraTeraSql),
         };
         assertQuerySql(
+            getTestContext(),
             "WITH \n"
             + "SET [COG_OQP_INT_s2] AS 'CROSSJOIN({[Store].[Stores].MEMBERS}, "
             + "{{[Gender].[Gender].MEMBERS}, "
@@ -809,7 +810,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         };
 
         assertQueryReturns(mdxQueryWithFewMembers, desiredResult);
-        assertQuerySql(mdxQueryWithFewMembers, patterns);
+        assertQuerySql(getTestContext(), mdxQueryWithFewMembers, patterns);
     }
 
 
@@ -889,7 +890,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         };
 
         assertQueryReturns(mdxQueryWithFewMembers, desiredResult);
-        assertQuerySql(mdxQueryWithFewMembers, patterns);
+        assertQuerySql(getTestContext(), mdxQueryWithFewMembers, patterns);
     }
 
     public void testAggregationOfMembersAndDefaultMemberWithoutGroupingSets() {
@@ -946,9 +947,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         };
 
         assertQueryReturns(mdxQueryWithMembers, desiredResult);
-        assertQuerySql(mdxQueryWithMembers, patterns);
+        assertQuerySql(getTestContext(), mdxQueryWithMembers, patterns);
         assertQueryReturns(mdxQueryWithDefaultMember, desiredResult);
-        assertQuerySql(mdxQueryWithDefaultMember, patterns);
+        assertQuerySql(getTestContext(), mdxQueryWithDefaultMember, patterns);
     }
 
     public void testOptimizeChildren() {
@@ -1001,7 +1002,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 Dialect.DatabaseProduct.LUCIDDB, luciddbSql, luciddbSql),
         };
 
-        assertQuerySql(query, patterns);
+        assertQuerySql(getTestContext(), query, patterns);
     }
 
     public void testOptimizeListWhenTuplesAreFormedWithDifferentLevels() {
@@ -1062,7 +1063,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "group by\n"
             + "    `time_by_day`.`the_year`";
 
-        assertQuerySql(query, Dialect.DatabaseProduct.MYSQL, mysqlSql);
+        assertQuerySql(
+            getTestContext(), query, Dialect.DatabaseProduct.MYSQL, mysqlSql);
     }
 
     public void testOptimizeListWithTuplesOfLength3() {
