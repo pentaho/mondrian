@@ -33,6 +33,7 @@ import mondrian.util.*;
 
 import mondrian.rolap.RolapSchema.UnresolvedColumn;
 
+import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.*;
@@ -124,6 +125,8 @@ public class RolapSchemaLoader {
      */
     private final SimpleDateFormat SIMPLE_DATE_FORMAT =
         new SimpleDateFormat("yyyy-MM-dd");
+
+    private final MultiValueMap cubeToDimMap = new MultiValueMap();
 
     /**
      * Creates a RolapSchemaLoader.
@@ -2438,9 +2441,10 @@ public class RolapSchemaLoader {
                     xmlCubeDimension,
                     "source");
             }
-            xmlDimension =
+
+            MondrianDef.Dimension sharedDimension =
                 xmlSchema.getDimensions().get(xmlCubeDimension.source);
-            if (xmlDimension == null) {
+            if (sharedDimension == null) {
                 getHandler().error(
                     "Unknown shared dimension '"
                     + xmlCubeDimension.source
@@ -2450,6 +2454,38 @@ public class RolapSchemaLoader {
                         xmlCubeDimension,
                     "source");
                 return null;
+            }
+            // this section of code handles the case where the schema uses the
+            // same shared dimension multiple times.  The SQL generated uses
+            // the phys schema objects so we need to create copies of those
+            // objects with a different alias
+            MondrianDef.Dimension clonedDim = null;
+            if (cubeToDimMap.containsKey(cube)
+                && cubeToDimMap.getCollection(cube).contains(sharedDimension))
+            {
+                try {
+                    LinkedHashMap<String, RolapSchema.PhysRelation> tbls =
+                        schema.getPhysicalSchema().tablesByName;
+                    RolapSchema.PhysRelation physRelation =
+                        tbls.get(sharedDimension.table);
+                    if (physRelation != null) {
+                        String newAlias = newTableAlias(physRelation, tbls);
+                        RolapSchema.PhysRelation clonedRelation =
+                            physRelation.cloneWithAlias(newAlias);
+                        tbls.put(newAlias, clonedRelation);
+                        clonedDim =
+                            new MondrianDef.Dimension(sharedDimension._def);
+                        clonedDim.table = newAlias;
+                    }
+                } catch (XOMException e) {
+                    throw new MondrianException(e);
+                }
+            }
+            cubeToDimMap.put(cube, sharedDimension);
+            if (clonedDim != null) {
+                xmlDimension = clonedDim;
+            } else {
+                xmlDimension = sharedDimension;
             }
             dimensionSource = xmlCubeDimension.source;
         } else {
@@ -2717,6 +2753,21 @@ public class RolapSchemaLoader {
         cubeDimension.attributeMap.putAll(dimension.attributeMap);
 
         return cubeDimension;
+    }
+
+    private String newTableAlias(
+        RolapSchema.PhysRelation physRelation,
+        LinkedHashMap<String, RolapSchema.PhysRelation> tbls)
+    {
+        String alias = physRelation.getAlias();
+        int i = 1;
+        while (true) {
+            String candidateAlias = alias + "_" + i;
+            if (!tbls.containsKey(candidateAlias)) {
+                return candidateAlias;
+            }
+            i++;
+        }
     }
 
     public static boolean toBoolean(Boolean aBoolean, boolean dflt) {

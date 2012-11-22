@@ -21,6 +21,7 @@ import mondrian.util.Pair;
 
 import java.util.*;
 
+
 /**
  * Utility class used by implementations of {@link mondrian.rolap.sql.SqlConstraint},
  * used to generate constraints into {@link mondrian.rolap.sql.SqlQuery}.

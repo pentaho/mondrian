@@ -74,10 +74,15 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     public void testFemaleUnitSales() {
+        final TestContext testContext = getTestContext();
         final FastBatchingCellReader fbcr =
-            new FastBatchingCellReader(execution, getCube("Sales"), aggMgr);
-        CellRequest request = createRequest(
-            "Sales", "[Measures].[Unit Sales]", "customer", "gender", "F");
+            new FastBatchingCellReader(
+                execution, getCube(testContext, "Sales"), aggMgr);
+        CellRequest request =
+            createRequest(
+                testContext,
+                "Sales", "[Measures].[Unit Sales]",
+                "customer", "gender", "F");
         Object value = aggMgr.getCellFromCache(request);
         assertNull(value); // before load, the cell is not found
         fbcr.recordCellRequest(request);
@@ -88,10 +93,13 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     public void testFemaleCustomerCount() {
+        final TestContext testContext = getTestContext();
         final FastBatchingCellReader fbcr =
-            new FastBatchingCellReader(execution, getCube("Sales"), aggMgr);
+            new FastBatchingCellReader(
+                execution, getCube(testContext, "Sales"), aggMgr);
         CellRequest request =
             createRequest(
+                testContext,
                 "Sales", "[Measures].[Customer Count]",
                 "customer", "gender", "F");
         Object value = aggMgr.getCellFromCache(request);
@@ -104,36 +112,41 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     public void testFemaleCustomerCountWithConstraints() {
-        List<String[]> Q1M1 = new ArrayList<String[]> ();
-        Q1M1.add(new String[] {"1997", "Q1", "1"});
+        final TestContext testContext = getTestContext();
 
-        List<String[]> Q2M5 = new ArrayList<String[]> ();
-        Q2M5.add(new String[] {"1997", "Q2", "5"});
+        List<List<String>> Q1M1 = list(list("1997", "Q1", "1"));
 
-        List<String[]> Q1M1Q2M5 = new ArrayList<String[]> ();
-        Q1M1Q2M5.add(new String[] {"1997", "Q1", "1"});
-        Q1M1Q2M5.add(new String[] {"1997", "Q2", "5"});
+        List<List<String>> Q2M5 = list(list("1997", "Q2", "5"));
+
+        List<List<String>> Q1M1Q2M5 =
+            list(
+                list("1997", "Q1", "1"),
+                list("1997", "Q2", "5"));
 
         CellRequest request1 =
             createRequest(
+                testContext,
                 "Sales", "[Measures].[Customer Count]",
                 "customer", "gender", "F",
                 makeConstraintYearQuarterMonth(Q1M1));
 
         CellRequest request2 =
             createRequest(
+                testContext,
                 "Sales", "[Measures].[Customer Count]",
                 "customer", "gender", "F",
                 makeConstraintYearQuarterMonth(Q2M5));
 
         CellRequest request3 =
             createRequest(
+                testContext,
                 "Sales", "[Measures].[Customer Count]",
                 "customer", "gender", "F",
                 makeConstraintYearQuarterMonth(Q1M1Q2M5));
 
         FastBatchingCellReader fbcr =
-            new FastBatchingCellReader(execution, getCube("Sales"), aggMgr);
+            new FastBatchingCellReader(
+                execution, getCube(testContext, "Sales"), aggMgr);
 
         Object value = aggMgr.getCellFromCache(request1);
         assertNull(value); // before load, the cell is not found
@@ -167,8 +180,11 @@ public class TestAggregationManager extends BatchTestCase {
         {
             return;
         }
-        CellRequest request = createRequest(
-            "Sales", "[Measures].[Unit Sales]", "customer", "gender", "F");
+        final TestContext testContext = getTestContext();
+        CellRequest request =
+            createRequest(
+                testContext,
+                "Sales", "[Measures].[Unit Sales]", "customer", "gender", "F");
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -185,7 +201,10 @@ public class TestAggregationManager extends BatchTestCase {
                 26)
         };
 
-        assertRequestSql(new CellRequest[]{request}, patterns);
+        assertRequestSql(
+            testContext,
+            new CellRequest[]{request},
+            patterns);
     }
 
     /**
@@ -195,7 +214,9 @@ public class TestAggregationManager extends BatchTestCase {
      * TODO: Enable this test.
      */
     private void _testFemaleUnitSalesSql_withAggs() {
+        final TestContext testContext = getTestContext();
         CellRequest request = createRequest(
+            testContext,
             "Sales", "[Measures].[Unit Sales]", "customer", "gender", "F");
 
         SqlPattern[] patterns = {
@@ -211,7 +232,10 @@ public class TestAggregationManager extends BatchTestCase {
                 26)
         };
 
-        assertRequestSql(new CellRequest[]{request}, patterns);
+        assertRequestSql(
+            testContext,
+            new CellRequest[]{request},
+            patterns);
     }
 
     /**
@@ -227,23 +251,29 @@ public class TestAggregationManager extends BatchTestCase {
             return;
         }
 
-        CellRequest[] requests = new CellRequest[] {
+        final TestContext testContext = getTestContext();
+        CellRequest[] requests = {
             createRequest(
+                testContext,
                 "Sales",
                 "[Measures].[Unit Sales]",
-                new String[] {"customer", "store"},
-                new String[] {"gender", "store_state"},
-                new String[] {"F", "CA"}),
+                list("customer", "store"),
+                list("gender", "store_state"),
+                list("F", "CA")),
             createRequest(
-                "Sales", "[Measures].[Store Sales]",
-                new String[] {"customer", "store"},
-                new String[] {"gender", "store_state"},
-                new String[] {"M", "CA"}),
+                testContext,
+                "Sales",
+                "[Measures].[Store Sales]",
+                list("customer", "store"),
+                list("gender", "store_state"),
+                list("M", "CA")),
             createRequest(
-                "Sales", "[Measures].[Unit Sales]",
-                new String[] {"customer", "store"},
-                new String[] {"gender", "store_state"},
-                new String[] {"F", "OR"})};
+                testContext,
+                "Sales",
+                "[Measures].[Unit Sales]",
+                list("customer", "store"),
+                list("gender", "store_state"),
+                list("F", "OR"))};
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -269,7 +299,7 @@ public class TestAggregationManager extends BatchTestCase {
                 29)
         };
 
-        assertRequestSql(requests, patterns);
+        assertRequestSql(testContext, requests, patterns);
     }
 
     /**
@@ -279,25 +309,29 @@ public class TestAggregationManager extends BatchTestCase {
      * TODO: Enable this test.
      */
     private void _testMultipleMeasures_withAgg() {
-        CellRequest[] requests = new CellRequest[] {
+        final TestContext testContext = getTestContext();
+        CellRequest[] requests = {
             createRequest(
+                testContext,
                 "Sales",
                 "[Measures].[Unit Sales]",
-                new String[] {"customer", "store"},
-                new String[] {"gender", "store_state"},
-                new String[] {"F", "CA"}),
+                list("customer", "store"),
+                list("gender", "store_state"),
+                list("F", "CA")),
             createRequest(
+                testContext,
                 "Sales",
                 "[Measures].[Store Sales]",
-                new String[] {"customer", "store"},
-                new String[] {"gender", "store_state"},
-                new String[] {"M", "CA"}),
+                list("customer", "store"),
+                list("gender", "store_state"),
+                list("M", "CA")),
             createRequest(
+                testContext,
                 "Sales",
                 "[Measures].[Unit Sales]",
-                new String[] {"customer", "store"},
-                new String[] {"gender", "store_state"},
-                new String[] {"F", "OR"})};
+                list("customer", "store"),
+                list("gender", "store_state"),
+                list("F", "OR"))};
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -316,7 +350,7 @@ public class TestAggregationManager extends BatchTestCase {
                 26)
         };
 
-        assertRequestSql(requests, patterns);
+        assertRequestSql(testContext, requests, patterns);
     }
 
     /**
@@ -460,7 +494,7 @@ public class TestAggregationManager extends BatchTestCase {
                     Dialect.DatabaseProduct.DERBY, derbySql, derbySql)
             };
         }
-        assertQuerySql(mdxQuery, patterns);
+        assertQuerySql(getTestContext(), mdxQuery, patterns);
     }
 
     /**
@@ -472,7 +506,8 @@ public class TestAggregationManager extends BatchTestCase {
     public void testNonEmptyCrossJoinLoneAxis() {
         // Not sure what this test is checking.
         // For now, only run it for derby.
-        final Dialect dialect = getTestContext().getDialect();
+        final TestContext testContext = getTestContext();
+        final Dialect dialect = testContext.getDialect();
         if (dialect.getDatabaseProduct() != Dialect.DatabaseProduct.DERBY) {
             return;
         }
@@ -523,19 +558,22 @@ public class TestAggregationManager extends BatchTestCase {
         // test fails if the non-empty crossjoin optimizer is used.
         // With it on one gets a recursive call coming through the
         //  RolapEvaluator.getCachedResult.
-        assertNoQuerySql(mdxQuery, patterns);
+        assertNoQuerySql(testContext, mdxQuery, patterns);
     }
 
     /**
      * If a hierarchy lives in the fact table, we should not generate a join.
      */
     public void testHierarchyInFactTable() {
-        CellRequest request = createRequest(
-            "Store",
-            "[Measures].[Store Sqft]",
-            "store",
-            "store_type",
-            "Supermarket");
+        final TestContext testContext = getTestContext();
+        CellRequest request =
+            createRequest(
+                testContext,
+                "Store",
+                "[Measures].[Store Sqft]",
+                "store",
+                "store_type",
+                "Supermarket");
 
         String accessMysqlSql =
             "select\n"
@@ -565,16 +603,22 @@ public class TestAggregationManager extends BatchTestCase {
             new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql)
         };
 
-        assertRequestSql(new CellRequest[]{request}, patterns);
+        assertRequestSql(
+            testContext,
+            new CellRequest[]{request},
+            patterns);
     }
 
     public void testCountDistinctAggMiss() {
-        CellRequest request = createRequest(
-            "Sales",
-            "[Measures].[Customer Count]",
-            new String[]{"time_by_day", "time_by_day"},
-            new String[]{"the_year", "quarter"},
-            new String[]{"1997", "Q1"});
+        final TestContext testContext = getTestContext();
+        CellRequest request =
+            createRequest(
+                testContext,
+                "Sales",
+                "[Measures].[Customer Count]",
+                list("time_by_day", "time_by_day"),
+                list("the_year", "quarter"),
+                list("1997", "Q1"));
 
         String accessSql =
             "select"
@@ -633,7 +677,10 @@ public class TestAggregationManager extends BatchTestCase {
             new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql)
         };
 
-        assertRequestSql(new CellRequest[]{request}, patterns);
+        assertRequestSql(
+            testContext,
+            new CellRequest[]{request},
+            patterns);
     }
 
     public void testCountDistinctAggMatch() {
@@ -642,11 +689,15 @@ public class TestAggregationManager extends BatchTestCase {
         {
             return;
         }
-        CellRequest request = createRequest(
-            "Sales", "[Measures].[Customer Count]",
-            new String[] { "time_by_day", "time_by_day", "time_by_day" },
-            new String[] { "the_year", "quarter", "month_of_year" },
-            new String[] { "1997", "Q1", "1" });
+        final TestContext testContext = getTestContext();
+        CellRequest request =
+            createRequest(
+                testContext,
+                "Sales",
+                "[Measures].[Customer Count]",
+                list("time_by_day", "time_by_day", "time_by_day"),
+                list("the_year", "quarter", "month_of_year"),
+                list("1997", "Q1", "1"));
 
         String accessSql =
             "select "
@@ -664,18 +715,25 @@ public class TestAggregationManager extends BatchTestCase {
         SqlPattern[] patterns = {
             new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, 26)};
 
-        assertRequestSql(new CellRequest[]{request}, patterns);
+        assertRequestSql(
+            testContext,
+            new CellRequest[]{request},
+            patterns);
     }
 
     public void testCountDistinctCannotRollup() {
         // Summary "agg_g_ms_pcat_sales_fact_1997" doesn't match,
         // because we'd need to roll-up the distinct-count measure over
         // "month_of_year".
-        CellRequest request = createRequest(
-            "Sales", "[Measures].[Customer Count]",
-            new String[] { "time_by_day", "time_by_day", "product_class" },
-            new String[] { "the_year", "quarter", "product_family" },
-            new String[] { "1997", "Q1", "Food" });
+        final TestContext testContext = getTestContext();
+        CellRequest request =
+            createRequest(
+                testContext,
+                "Sales",
+                "[Measures].[Customer Count]",
+                list("time_by_day", "time_by_day", "product_class"),
+                list("the_year", "quarter", "product_family"),
+                list("1997", "Q1", "Food"));
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -752,7 +810,10 @@ public class TestAggregationManager extends BatchTestCase {
                  23)
         };
 
-        assertRequestSql(new CellRequest[]{request}, patterns);
+        assertRequestSql(
+            testContext,
+            new CellRequest[]{request},
+            patterns);
     }
 
     /**
@@ -781,15 +842,19 @@ public class TestAggregationManager extends BatchTestCase {
         //
         // Because [Gender] and [Marital Status] come from the [Customer]
         // table (the same as the distinct-count measure), we can roll up.
-        CellRequest request = createRequest(
-            "Sales", "[Measures].[Customer Count]",
-            new String[] {
-                "time_by_day", "time_by_day", "time_by_day",
-                "product_class", "product_class", "product_class" },
-            new String[] {
-                "the_year", "quarter", "month_of_year",
-                "product_family", "product_department", "product_category" },
-            new String[] { "1997", "Q1", "1", "Food", "Deli", "Meat" });
+        final TestContext testContext = getTestContext();
+        CellRequest request =
+            createRequest(
+                testContext,
+                "Sales",
+                "[Measures].[Customer Count]",
+                list(
+                    "time_by_day", "time_by_day", "time_by_day",
+                    "product_class", "product_class", "product_class"),
+                list(
+                    "the_year", "quarter", "month_of_year",
+                    "product_family", "product_department", "product_category"),
+                list("1997", "Q1", "1", "Food", "Deli", "Meat"));
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -826,7 +891,10 @@ public class TestAggregationManager extends BatchTestCase {
                 58)
         };
 
-        assertRequestSql(new CellRequest[]{request}, patterns);
+        assertRequestSql(
+            testContext,
+            new CellRequest[]{request},
+            patterns);
     }
 
     /**
@@ -839,15 +907,20 @@ public class TestAggregationManager extends BatchTestCase {
         {
             return;
         }
-        CellRequest request = createRequest(
-            "Sales", "[Measures].[Customer Count]",
-            new String[] {
-                "time_by_day", "time_by_day", "time_by_day",
-                "product_class", "product_class", "product_class", "customer" },
-            new String[] {
-                "the_year", "quarter", "month_of_year", "product_family",
-                "product_department", "product_category", "gender" },
-            new String[] { "1997", "Q1", "1", "Food", "Deli", "Meat", "F" });
+        final TestContext testContext = getTestContext();
+        CellRequest request =
+            createRequest(
+                testContext,
+                "Sales", "[Measures].[Customer Count]",
+                list(
+                    "time_by_day", "time_by_day", "time_by_day",
+                    "product_class", "product_class", "product_class",
+                    "customer"),
+                list(
+                    "the_year", "quarter", "month_of_year", "product_family",
+                    "product_department", "product_category", "gender"),
+                list(
+                    "1997", "Q1", "1", "Food", "Deli", "Meat", "F"));
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -888,7 +961,10 @@ public class TestAggregationManager extends BatchTestCase {
                 58)
         };
 
-        assertRequestSql(new CellRequest[]{request}, patterns);
+        assertRequestSql(
+            testContext,
+            new CellRequest[]{request},
+            patterns);
     }
 
     /**
@@ -900,26 +976,33 @@ public class TestAggregationManager extends BatchTestCase {
      * <pre>{[1997].[Q1].[1], [1997].[Q3].[7]}</pre>
      */
     public void testCountDistinctBatchLoading() {
-        List<String[]> compoundMembers = new ArrayList<String[]>();
-        compoundMembers.add(new String[] {"1997", "Q1", "1"});
-        compoundMembers.add(new String[] {"1997", "Q3", "7"});
+        final TestContext testContext = getTestContext();
+        List<List<String>> compoundMembers = list(
+            list("1997", "Q1", "1"),
+            list("1997", "Q3", "7"));
 
         CellRequestConstraint aggConstraint =
             makeConstraintYearQuarterMonth(compoundMembers);
 
-        CellRequest request1 = createRequest(
-            "Sales", "[Measures].[Customer Count]",
-            new String[] {"product_class"},
-            new String[] {"product_family"},
-            new String[] {"Food"},
-            aggConstraint);
+        CellRequest request1 =
+            createRequest(
+                testContext,
+                "Sales",
+                "[Measures].[Customer Count]",
+                list("product_class"),
+                list("product_family"),
+                list("Food"),
+                aggConstraint);
 
-        CellRequest request2 = createRequest(
-            "Sales", "[Measures].[Customer Count]",
-            new String[] {"product_class"},
-            new String[] {"product_family"},
-            new String[] {"Drink"},
-            aggConstraint);
+        CellRequest request2 =
+            createRequest(
+                testContext,
+                "Sales",
+                "[Measures].[Customer Count]",
+                list("product_class"),
+                list("product_family"),
+                list("Drink"),
+                aggConstraint);
 
         String mysqlSql =
             "select `product_class`.`product_family` as `c0`, "
@@ -950,7 +1033,10 @@ public class TestAggregationManager extends BatchTestCase {
             new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql)
         };
 
-        assertRequestSql(new CellRequest[]{request1, request2}, patterns);
+        assertRequestSql(
+            testContext,
+            new CellRequest[]{request1, request2},
+            patterns);
     }
 
     /**
@@ -999,6 +1085,7 @@ public class TestAggregationManager extends BatchTestCase {
                 26)};
 
         assertQuerySql(
+            getTestContext(),
             "select NON EMPTY {[Customers].[USA]} ON COLUMNS,\n"
             + "       NON EMPTY Crossjoin(Hierarchize(Union({[Store].[All Stores]},\n"
             + "           [Store].[All Stores].Children)), {[Product].[All Products]}) \n"
@@ -1264,16 +1351,19 @@ public class TestAggregationManager extends BatchTestCase {
         // separate out the compound constraint from the "regular" constraints
         // and Aggregate tables can still be used.
 
-        List<String[]> compoundMembers = new ArrayList<String[]> ();
-        compoundMembers.add(new String[] {"1997", "Q1", "1"});
+        final TestContext testContext = getTestContext();
+        List<List<String>> compoundMembers = list(list("1997", "Q1", "1"));
 
-        CellRequest request = createRequest(
-            "Sales", "[Measures].[Customer Count]",
-            new String[] { "product_class", "product_class", "product_class" },
-            new String[] {
-                "product_family", "product_department", "product_category" },
-            new String[] { "Food", "Deli", "Meat" },
-            makeConstraintYearQuarterMonth(compoundMembers));
+        CellRequest request =
+            createRequest(
+                testContext,
+                "Sales",
+                "[Measures].[Customer Count]",
+                list("product_class", "product_class", "product_class"),
+                list(
+                    "product_family", "product_department", "product_category"),
+                list("Food", "Deli", "Meat"),
+                makeConstraintYearQuarterMonth(compoundMembers));
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -1301,7 +1391,10 @@ public class TestAggregationManager extends BatchTestCase {
                 58)
         };
 
-        assertRequestSql(new CellRequest[]{request}, patterns);
+        assertRequestSql(
+            testContext,
+            new CellRequest[]{request},
+            patterns);
     }
 
     /**
@@ -1466,8 +1559,9 @@ public class TestAggregationManager extends BatchTestCase {
         };
 
         propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
+        final TestContext testContext = getTestContext();
         assertQuerySqlOrNot(
-            getTestContext(), query, patterns, false, false, false);
+            testContext, query, patterns, false, false, false);
 
         assertQueryReturns(
             query,
@@ -1511,7 +1605,7 @@ public class TestAggregationManager extends BatchTestCase {
         };
 
         assertQuerySqlOrNot(
-            getTestContext(), query2, patterns2, false, false, false);
+            testContext, query2, patterns2, false, false, false);
 
         assertQueryReturns(
             query2,
@@ -1561,8 +1655,9 @@ public class TestAggregationManager extends BatchTestCase {
             "select non empty [Gender].Children on columns\n"
             + "from [Sales]";
 
+        final TestContext testContext = getTestContext();
         assertQuerySqlOrNot(
-            getTestContext(), query, patterns, false, false, false);
+            testContext, query, patterns, false, false, false);
 
         assertQueryReturns(
             query,
@@ -1585,7 +1680,9 @@ public class TestAggregationManager extends BatchTestCase {
      */
     public void testLevelKeyAsSqlExpWithAgg() {
         final boolean p;
-        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        final TestContext testContext0 = getTestContext();
+        final Dialect dialect = testContext0.getDialect();
+        switch (dialect.getDatabaseProduct()) {
         case POSTGRESQL:
             // Results are slightly different order on Postgres. It collates
             // "Sale Winners" before "Sales Days", because " " < "A".
@@ -1603,9 +1700,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "from [Sales] "
             + "where {[Measures].[Unit Sales]}";
         // Provoke an error in the key resolution to prove it uses it.
-        final String colName =
-            TestContext.instance().getDialect()
-                .quoteIdentifier("promotion_name");
+        final String colName = dialect.quoteIdentifier("promotion_name");
         TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Promotions\" foreignKey=\"promotion_id\">\n"

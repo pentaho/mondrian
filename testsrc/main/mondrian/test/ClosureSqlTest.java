@@ -36,7 +36,8 @@ public class ClosureSqlTest extends BatchTestCase {
             + "group by\n"
             + "    `employee_closure`.`employee_id`,\n"
             + "    `employee`.`full_name`";
-        assertQuerySql(mdx, Dialect.DatabaseProduct.MYSQL, mySql);
+        assertQuerySql(
+            getTestContext(), mdx, Dialect.DatabaseProduct.MYSQL, mySql);
     }
 
 }

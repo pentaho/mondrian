@@ -169,7 +169,7 @@ mondrian/rolap/RolapCubeUsages.java"/>
     <path refid="project.classpath"/>
   </path>
 
-  <path id="project.test.classpath-jdk15">
+  <path id="project.build.test.classpath-jdk15">
     <pathelement location="${classes.dir}"/>
     <path refid="project.classpath"/>
     <pathelement location="${testclasses.dir}"/>
@@ -179,12 +179,11 @@ mondrian/rolap/RolapCubeUsages.java"/>
       <include name="xmlunit.jar"/>
       <include name="junit.jar"/>
     </fileset>
-    <pathelement path="${driver.classpath}"/>
     <!-- this picks up the default log4j.properties -->
     <pathelement path="${basedir}"/>
   </path>
 
-  <path id="project.test.classpath-jdk14">
+  <path id="project.build.test.classpath-jdk14">
     <pathelement location="${jar-jdk14.file}"/>
     <pathelement location="${lib.dir}/olap4j-jdk14.jar"/>
     <path refid="project.classpath"/>
@@ -198,7 +197,6 @@ mondrian/rolap/RolapCubeUsages.java"/>
     </fileset>
     <pathelement location="${lib.dir}/retroweaver-rt.jar" />
     <pathelement location="${lib.dir}/backport-util-concurrent.jar" />
-    <pathelement path="${driver.classpath}"/>
     <!-- this picks up the default log4j.properties -->
     <pathelement path="${basedir}"/>
   </path>
@@ -246,10 +244,28 @@ mondrian/rolap/RolapCubeUsages.java"/>
     <contains string="${java.version}" substring="1.7." />
   </condition>
 
-  <path id="project.test.classpath" refid="project.test.classpath-${jdk}"/>
+  <condition property="jdk17.not.present">
+    <not>
+      <contains string="${java.version}" substring="1.7." />
+    </not>
+  </condition>
 
-  <available classname="${mondrian.jdbcDrivers}"
-           classpathref="project.test.classpath" property="driver.present"/>
+  <condition property="java.version.matches.requested">
+    <or>
+      <not>
+        <isset property="requested.java.version"/>
+      </not>
+      <matches pattern="^${requested.java.version}.*" string="jdk${java.runtime.version}" />
+    </or>
+  </condition>
+
+  <path id="project.build.test.classpath"
+      refid="project.build.test.classpath-${jdk}"/>
+
+  <path id="project.test.classpath">
+    <path refid="project.build.test.classpath"/>
+    <pathelement path="${driver.classpath}"/>
+  </path>
 
   <target name="define-tasks"> <!-- depends="prepare" -->
     <taskdef name="xomgen" classname="org.eigenbase.xom.XOMGenTask">
@@ -525,7 +541,7 @@ META-INF/**"/>
         srcdir="${javatest.dir}"
         destdir="${testclasses.dir}"
         debug="${project.build.debug}"
-        classpathref="project.test.classpath"
+        classpathref="project.build.test.classpath"
         includeantruntime="false"
         bootclasspathref="project.bootclasspath.jdk15"
         source="1.5"
@@ -859,7 +875,8 @@ class MondrianOlap4jDriverVersion {
     static final String VERSION = "${driver.version}";
     static final int MAJOR_VERSION = ${driver.version.major};
     static final int MINOR_VERSION = ${driver.version.minor};
-    static final String GIT_LATEST_COMMIT = "${git.commit}";
+    static final String GIT_LATEST_COMMIT =
+        "${git.commit}";
 }
 
 // End MondrianOlap4jDriverVersion.java</echo>
@@ -1180,7 +1197,7 @@ clean against JDK 1.6.">
     <javadoc
         sourcepath="${java.dir}${ps}${javatest.dir}"
         maxmemory="1024m"
-        classpathref="project.test.classpath"
+        classpathref="project.build.test.classpath"
         destdir="${javadoc.dir}"
         packagenames="mondrian.*"
         overview="${java.dir}/overview.html"
@@ -1227,7 +1244,7 @@ diagrams and hyperlinks to source code">
     <javadoc
         sourcepath="${java.dir}"
         maxmemory="1024m"
-        classpathref="project.test.classpath"
+        classpathref="project.build.test.classpath"
         destdir="${javadoc.dir}"
         packagenames="mondrian.*"
         overview="${java.dir}/overview.html"

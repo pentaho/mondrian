@@ -179,6 +179,8 @@ public class DialectTest extends TestCase {
                 "ERROR: function count\\(int, int\\) does not exist, or permission is denied for count\\(int, int\\)",
                 // postgres
                 "(?s).*ERROR: function count\\(integer, integer\\) does not exist.*",
+                // monetdb
+                "syntax error, unexpected ',', expecting '\\)' in: \"select count\\(distinct \"customer_id\",\""
             };
             assertQueryFails(sql, errs);
         }
@@ -319,6 +321,8 @@ public class DialectTest extends TestCase {
                 NEOVIEW_SYNTAX_ERROR,
                 // netezza
                 "(?s).*ERROR:  sub-SELECT in FROM must have an alias.*",
+                // monetdb
+                "subquery table reference needs alias, use AS xxx in:.*"
             };
             assertQueryFails(sql, errs);
         } else {
@@ -426,6 +430,8 @@ public class DialectTest extends TestCase {
                 "'sum\\(`unit_sales` \\+ 3\\) \\+ 8' isn't in GROUP BY",
                 // neoview
                 ".* ERROR\\[4197\\] This expression cannot be used in the GROUP BY clause\\. .*",
+                // monetdb
+                "syntax error, unexpected '\\+', expecting SCOLON in: \"select sum\\(\"unit_sales\" \\+ 3\\) \\+ 8"
             };
             assertQueryFails(sql, errs);
         }
@@ -472,6 +478,8 @@ public class DialectTest extends TestCase {
                 "(?s).*found \"SETS\" \\(at char 135\\) expecting `EXCEPT' or `FOR' or `INTERSECT' or `ORDER' or `UNION'.*",
                 // Vertica
                 "line 3, There is no such function as \\'grouping\\'\\.",
+                // monetdb
+                "syntax error, unexpected IDENT, expecting SCOLON in: \"select \"customer_id\","
             };
             assertQueryFails(sql, errs);
         }
@@ -504,6 +512,8 @@ public class DialectTest extends TestCase {
                 ".*Syntax error, expected something like a 'SELECT' keyword or '\\(' between '\\(' and the integer '1'\\.",
                 // netezza
                 "(?s).*found \"1\" \\(at char 81\\) expecting `SELECT' or `'\\(''.*",
+                // monetdb
+                "syntax error, unexpected ',', expecting '\\)' in: \"select \"unit_sales\""
             };
             assertQueryFails(sql, errs);
         }
@@ -885,7 +895,9 @@ public class DialectTest extends TestCase {
                 "(?s).*ERROR: column \"time_by_day.the_month\" must appear in "
                 + "the GROUP BY clause or be used in an aggregate function.*",
                 // Vectorwise
-                "line 1, The columns in the SELECT clause must be contained in the GROUP BY clause\\."
+                "line 1, The columns in the SELECT clause must be contained in the GROUP BY clause\\.",
+                // MonetDB
+                "SELECT: cannot use non GROUP BY column 'the_month' in query results without an aggregate function"
             };
             assertQueryFails(sql, errs);
         }

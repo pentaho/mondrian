@@ -28,6 +28,8 @@ import mondrian.util.Pair;
 import junit.framework.*;
 import junit.framework.Test;
 
+import org.apache.log4j.Logger;
+
 import org.olap4j.*;
 import org.olap4j.impl.CoordinateIterator;
 import org.olap4j.layout.TraditionalCellSetFormatter;
@@ -1718,6 +1720,25 @@ public class TestContext {
         return schema;
     }
 
+    public Logger getLogger() {
+        return Logger.getLogger(FoodMartTestCase.class);
+    }
+
+    /**
+     * Returns a TestContext similar to this one, but using the given
+     * {@link Logger}.
+     *
+     * @param logger Logger
+     * @return Test context with the given logger
+     */
+    public TestContext withLogger(final Logger logger) {
+        return new DelegatingTestContext(this) {
+            public Logger getLogger() {
+                return logger;
+            }
+        };
+    }
+
     /**
      * Wrapper around a string that indicates that all line endings have been
      * converted to platform-specific line endings.
@@ -2239,6 +2260,7 @@ public class TestContext {
                     catalogContent = context.getRawSchema();
                 }
                 String catalogContent2 = substitution.apply(catalogContent);
+                schema = catalogContent2;
                 Util.PropertyList propertyList2 = propertyList.clone();
                 propertyList2.put(
                     RolapConnectionProperties.CatalogContent.name(),

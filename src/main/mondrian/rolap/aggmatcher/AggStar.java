@@ -139,7 +139,7 @@ public class AggStar extends RolapStar {
      * @param aggTable Fact or dimension table which is the start point for
      *   the navigation
      * @param column Foreign-key column which constraints which dimension
-     * @param table
+     * @param table Table
      */
     private static void setLevelBits(
         final BitKey bitKey,
@@ -269,7 +269,7 @@ public class AggStar extends RolapStar {
      * Is this AggStar's BitKey a super set (proper or not) of the BitKey
      * parameter.
      *
-     * @param bitKey
+     * @param bitKey Bit key
      * @return true if it is a super set
      */
     public boolean superSetMatch(final BitKey bitKey) {
@@ -373,7 +373,7 @@ public class AggStar extends RolapStar {
      * the array of columns.
      * Nor is there a check that the column type at that position is a Measure.
      *
-     * @param bitPos
+     * @param bitPos Bit position
      * @return A Measure or null.
      */
     public AggStar.FactTable.Measure lookupMeasure(final int bitPos) {
@@ -388,7 +388,7 @@ public class AggStar extends RolapStar {
      * the array of columns.
      * Nor is there a check that the column type at that position is a Level.
      *
-     * @param bitPos
+     * @param bitPos Bit position
      * @return A Level or null.
      */
     public AggStar.Table.Level lookupLevel(final int bitPos) {
@@ -413,7 +413,7 @@ public class AggStar extends RolapStar {
     /**
      * This is called by within the Column constructor.
      *
-     * @param column
+     * @param column Column
      */
     private void addColumn(final AggStar.Table.Column column) {
         columns[column.getBitPosition()] = column;
@@ -502,9 +502,11 @@ public class AggStar extends RolapStar {
 
                 pw.print(subprefix);
                 pw.print("left=");
-                mondrian.rolap.RolapStar.Column col = null /*
+                mondrian.rolap.RolapStar.Column col = null;
+/*
                     getTable().getAggStar().getStar().getFactTable()
-                        .lookupColumn(left.name) */;
+                        .lookupColumn(left.name);
+*/
                 if (col != null) {
                     pw.print(" (");
                     pw.print(col.getBitPosition());
@@ -731,7 +733,7 @@ public class AggStar extends RolapStar {
         /**
          * Add a Level column.
          *
-         * @param level
+         * @param level Level
          */
         protected void addLevel(final AggStar.Table.Level level) {
             this.levels.add(level);
@@ -754,7 +756,7 @@ public class AggStar extends RolapStar {
         /**
          * Add a child DimTable table.
          *
-         * @param child
+         * @param child Child
          */
         protected void addTable(final DimTable child) {
             if (children == Collections.EMPTY_LIST) {
@@ -846,9 +848,9 @@ public class AggStar extends RolapStar {
             // method).
             mondrian.rolap.RolapStar.Column col =
                 null
-                /*
+/*
                 getAggStar().getStar().getFactTable().lookupColumn(left.name)
-                */;
+*/;
             if (col != null) {
                 getAggStar().setForeignKey(col.getBitPosition());
             }
@@ -866,7 +868,7 @@ public class AggStar extends RolapStar {
          * Convert a RolapStar.Table table's columns into
          * AggStar.Table.Level columns.
          *
-         * @param rTable
+         * @param rTable Table
          */
         protected void convertColumns(final RolapStar.Table rTable) {
             // add level columns
@@ -889,7 +891,7 @@ public class AggStar extends RolapStar {
          * Convert the child tables of a RolapStar.Table into
          * child AggStar.DimTable tables.
          *
-         * @param rTable
+         * @param rTable Table
          */
         protected void convertChildren(final RolapStar.Table rTable) {
             // add children tables
@@ -904,9 +906,9 @@ public class AggStar extends RolapStar {
          * This is a copy of the code found in RolapStar used to generate an SQL
          * query.
          *
-         * @param query
-         * @param failIfExists
-         * @param joinToParent
+         * @param query Query
+         * @param failIfExists Fail if exists
+         * @param joinToParent Join to parent
          */
         public void addToFrom(
             final SqlQuery query,
@@ -1117,7 +1119,7 @@ public class AggStar extends RolapStar {
         /**
          * This is for testing ONLY.
          *
-         * @param numberOfRows
+         * @param numberOfRows Number of rows
          */
         void setNumberOfRows(int numberOfRows) {
             this.numberOfRows = numberOfRows;
@@ -1153,7 +1155,7 @@ public class AggStar extends RolapStar {
         /**
          * For a foreign key usage create a child DimTable table.
          *
-         * @param usage
+         * @param usage Usage
          */
         private void loadForeignKey(final JdbcSchema.Table.Column.Usage usage) {
             if (usage.rTable != null) {
@@ -1196,7 +1198,7 @@ public class AggStar extends RolapStar {
         /**
          * Given a usage of type measure, create a Measure column.
          *
-         * @param usage
+         * @param usage Usage
          */
         private void loadMeasure(final JdbcSchema.Table.Column.Usage usage) {
             final JdbcSchema.Table.Column column = usage.getColumn();
@@ -1248,7 +1250,7 @@ public class AggStar extends RolapStar {
         /**
          * Create a fact_count column for a usage of type fact count.
          *
-         * @param usage
+         * @param usage Usage
          */
         private void loadFactCount(final JdbcSchema.Table.Column.Usage usage) {
             String name = usage.getColumn().getName();
@@ -1275,7 +1277,7 @@ public class AggStar extends RolapStar {
         /**
          * Given a usage of type level, create a Level column.
          *
-         * @param usage
+         * @param usage Usage
          */
         private void loadLevel(final JdbcSchema.Table.Column.Usage usage) {
             String name = usage.getSymbolicName();
@@ -1292,50 +1294,45 @@ public class AggStar extends RolapStar {
                     usage.rColumn,
                     usage.collapsed);
             addLevel(level);
-            /*
-             * If we are dealing with a non-collapsed level, we have to
-             * modify the bit key of the AggStar and create a column
-             * object for each parent level so that the AggQuerySpec
-             * can correctly link up to the other tables.
-             */
+
+            // If we are dealing with a non-collapsed level, we have to
+            // modify the bit key of the AggStar and create a column
+            // object for each parent level so that the AggQuerySpec
+            // can correctly link up to the other tables.
             if (!usage.collapsed) {
                 // We must also update the bit key with
                 // the parent levels of any non-collapsed level.
                 RolapLevel parentLevel = usage.level.getParentLevel();
                 while (!parentLevel.isAll()) {
-                    /*
-                     * Find the bit for this AggStar's bit key for each parent
-                     * level. There is no need to modify the AggStar's bit key
-                     * directly here, because the constructor of Column
-                     * will do that for us later on.
-                     */
+                    // Find the bit for this AggStar's bit key for each parent
+                    // level. There is no need to modify the AggStar's bit key
+                    // directly here, because the constructor of Column
+                    // will do that for us later on.
                     final RolapSchema.PhysColumn key0 =
                         parentLevel.getAttribute().getKeyList().get(0);
                     final BitKey bk = AggStar.this.star.getBitKey(
-                        new String[] {key0.relation.getAlias()},
-                        new String[] {key0.name});
+                        Collections.singletonList(key0.relation.getAlias()),
+                        Collections.singletonList(key0.name));
                     final int bitPos = bk.nextSetBit(0);
                     if (bitPos == -1) {
                         throw new MondrianException(
                             "Failed to match non-collapsed aggregate level with a column from the RolapStar.");
                     }
-                    /*
-                     * Now we will create the Column object to return to the
-                     * AggQuerySpec. We will use the convertTable() method
-                     * because it is convenient and it is capable to convert
-                     * our base table into a series of parent-child tables
-                     * with their join paths figured out.
-                     */
+
+                    // Now we will create the Column object to return to the
+                    // AggQuerySpec. We will use the convertTable() method
+                    // because it is convenient and it is capable to convert
+                    // our base table into a series of parent-child tables
+                    // with their join paths figured out.
                     DimTable columnTable =
                         convertTable(
                             AggStar.this.star.getColumn(bitPosition)
                                 .getTable(),
                             null);
-                    /*
-                     * Make sure to return the last child table, since
-                     * AggQuerySpec will take care of going up the
-                     * parent-child hierarchy and do all the work for us.
-                     */
+
+                    // Make sure to return the last child table, since
+                    // AggQuerySpec will take care of going up the
+                    // parent-child hierarchy and do all the work for us.
                     while (columnTable.getChildTables().size() > 0) {
                         columnTable = columnTable.getChildTables().get(0);
                     }
@@ -1482,7 +1479,7 @@ public class AggStar extends RolapStar {
          * Add all of this Table's columns to the list parameter and then add
          * all child table columns.
          *
-         * @param list
+         * @param list Column list
          */
         public void addColumnsToList(final List<Column> list) {
             list.addAll(levels);
@@ -1534,8 +1531,8 @@ public class AggStar extends RolapStar {
     /**
      * Print this AggStar.
      *
-     * @param pw
-     * @param prefix
+     * @param pw Writer
+     * @param prefix Prefix
      */
     public void print(final PrintWriter pw, final String prefix) {
         pw.print(prefix);

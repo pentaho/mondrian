@@ -1007,12 +1007,12 @@ public class VirtualCubeTest extends BatchTestCase {
 
         // Run query 1 with cleared cache;
         // Make sure NECJ 1 is evaluated natively.
-        assertQuerySql(query1, patterns1, true);
+        assertQuerySql(getTestContext(), query1, patterns1, true);
 
         // Now run query 2 with warm cache;
         // Make sure NECJ 2 does not reuse the cache result from NECJ 1, and
         // NECJ 2 is evaluated natively.
-        assertQuerySql(query2, patterns2, false);
+        assertQuerySql(getTestContext(), query2, patterns2, false);
     }
 
     /**
@@ -1035,18 +1035,16 @@ public class VirtualCubeTest extends BatchTestCase {
             null,
             null);
 
-        /*
-         * This test case does not actually reject the dimension constraint from
-         * an unrelated base cube. The reason is that the constraint contains an
-         * AllLevel member. Even though semantically constraining Cells using an
-         * non-existent dimension perhaps does not make sense; however, in the
-         * case where the constraint contains AllLevel member, the constraint
-         * can be considered "always true".
-         *
-         * See the next test case for a constraint that does not contain
-         * AllLevel member and hence cannot be satisfied. The cell should be
-         * empty.
-         */
+        // This test case does not actually reject the dimension constraint from
+        // an unrelated base cube. The reason is that the constraint contains an
+        // AllLevel member. Even though semantically constraining Cells using an
+        // non-existent dimension perhaps does not make sense; however, in the
+        // case where the constraint contains AllLevel member, the constraint
+        // can be considered "always true".
+        //
+        // See the next test case for a constraint that does not contain
+        // AllLevel member and hence cannot be satisfied. The cell should be
+        // empty.
         testContext.assertQueryReturns(
             "with member [Warehouse].[x] as 'Aggregate([Warehouse].members)'\n"
             + "member [Measures].[foo] AS '([Warehouse].[x],[Measures].[Customer Count])'\n"
@@ -1303,7 +1301,7 @@ public class VirtualCubeTest extends BatchTestCase {
             + "Row #11: 9,705.561\n"
             + "Row #11: 41,484.40\n";
 
-        assertQuerySql(query, mysqlPattern, true);
+        assertQuerySql(getTestContext(), query, mysqlPattern, true);
         assertQueryReturns(query, result);
     }
 
@@ -1377,7 +1375,7 @@ public class VirtualCubeTest extends BatchTestCase {
                 Dialect.DatabaseProduct.DERBY, derbySQL, derbySQL)
         };
 
-        assertQuerySql(query, mysqlPattern, true);
+        assertQuerySql(getTestContext(), query, mysqlPattern, true);
         assertQueryReturns(query, result);
     }
 

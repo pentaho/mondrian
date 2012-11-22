@@ -11,7 +11,13 @@ package mondrian.test;
 
 import mondrian.olap.*;
 
+import mondrian.olap.Member;
+
 import junit.framework.Assert;
+
+import org.olap4j.metadata.*;
+
+import java.sql.SQLException;
 
 /**
  * Unit tests on the legacy (mondrian version 3) schema.
@@ -618,7 +624,6 @@ public class LegacySchemaTest extends FoodMartTestCase {
     public void testMultipleDimensionUsages() {
         final TestContext testContext = getTestContext().legacy().create(
             null,
-
             "<Cube name='Sales Two Dimensions'>\n"
             + "  <Table name='sales_fact_1997' alias='sales_fact_1997_mdu'/>\n"
             + "  <DimensionUsage name='Time' source='Time' foreignKey='time_id'/>\n"
@@ -1017,6 +1022,142 @@ public class LegacySchemaTest extends FoodMartTestCase {
             + "Row #11: Mid-Size Grocery\n"
             + "Row #12: 54,431.14\n"
             + "Row #12: Supermarket\n");
+    }
+
+    public void testCubeWithOneDimensionUsageOneMeasure() {
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+            "<Cube name='OneDimUsage' defaultMeasure='Unit Sales'>\n"
+            + "  <Table name='sales_fact_1997'/>\n"
+            + "  <DimensionUsage name='Product' source='Product' foreignKey='product_id'/>\n"
+            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
+            + "      formatString='Standard'/>\n"
+            + "</Cube>",
+            null, null, null, null);
+        testContext.assertQueryReturns(
+            "select {[Product].Children} on columns from [OneDimUsage]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product].[Product].[Drink]}\n"
+            + "{[Product].[Product].[Food]}\n"
+            + "{[Product].[Product].[Non-Consumable]}\n"
+            + "Row #0: 24,597\n"
+            + "Row #0: 191,940\n"
+            + "Row #0: 50,236\n");
+    }
+
+    public void testCubeCaption() throws SQLException {
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+            "<Cube name='Cube with caption' caption='Cube with name'>"
+            + "  <Table name='sales_fact_1997'/>"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "   formatString=\"Standard\"/>"
+            + "</Cube>\n",
+            "<VirtualCube name='Warehouse and Sales with caption' "
+            + "caption='Warehouse and Sales with name'  defaultMeasure='Store Sales'>\n"
+            + "  <VirtualCubeDimension cubeName='Sales' name='Customers'/>\n"
+            + "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
+            + "   formatString=\"#,###.00\"/>"
+            + "</VirtualCube>",
+            null, null, null);
+        final NamedList<org.olap4j.metadata.Cube> cubes =
+            testContext.getOlap4jConnection().getOlapSchema().getCubes();
+        final org.olap4j.metadata.Cube cube = cubes.get("Cube with caption");
+        assertEquals("Cube with name", cube.getCaption());
+        final org.olap4j.metadata.Cube cube2 =
+            cubes.get("Warehouse and Sales with caption");
+        assertEquals("Warehouse and Sales with name", cube2.getCaption());
+    }
+
+    public void testHierarchiesWithDifferentPrimaryKeysThrows() {
+        final TestContext testContext =
+            getTestContext().legacy().createSubstitutingCube(
+                "Sales",
+                "  <Dimension name='Time' type='TimeDimension' foreignKey='time_id'>\n"
+                + "    <Hierarchy hasAll='false' primaryKey='time_id'>\n"
+                + "      <Table name='time_by_day'/>\n"
+                + "      <Level name='Year' column='the_year' type='Numeric' uniqueMembers='true'\n"
+                + "          levelType='TimeYears'/>\n"
+                + "      <Level name='Quarter' column='quarter' uniqueMembers='false'\n"
+                + "          levelType='TimeQuarters'/>\n"
+                + "      <Level name='Month' column='month_of_year' uniqueMembers='false' type='Numeric'\n"
+                + "          levelType='TimeMonths'/>\n"
+                + "    </Hierarchy>\n"
+                + "    <Hierarchy hasAll='true' name='Weekly' primaryKey='store_id'>\n"
+                + "      <Table name='time_by_day'/>\n"
+                + "      <Level name='Year' column='the_year' type='Numeric' uniqueMembers='true'\n"
+                + "          levelType='TimeYears'/>\n"
+                + "      <Level name='Week' column='week_of_year' type='Numeric' uniqueMembers='false'\n"
+                + "          levelType='TimeWeeks'/>\n"
+                + "      <Level name='Day' column='day_of_month' uniqueMembers='false' type='Numeric'\n"
+                + "          levelType='TimeDays'/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>",
+                null);
+        try {
+            testContext.assertSimpleQuery();
+        } catch (RuntimeException e) {
+            TestContext.checkThrowable(
+                e,
+                "Cannot convert schema: hierarchies in dimension 'Time' do not have consistent primary keys");
+        }
+    }
+
+    public void testVirtualCubeDimensionMustJoinToAtLeastOneCube() {
+        TestContext testContext = getTestContext().legacy().create(
+            null,
+            null,
+            "<VirtualCube name='Sales vs HR'>\n"
+            + "<VirtualCubeDimension name='Store'/>\n"
+            + "<VirtualCubeDimension cubeName='HR' name='Position'/>\n"
+            + "<VirtualCubeMeasure cubeName='HR' name='[Measures].[Org Salary]'/>\n"
+            + "</VirtualCube>",
+            null,
+            null,
+            null);
+        RuntimeException throwable = null;
+        try {
+            testContext.assertSimpleQuery();
+        } catch (RuntimeException e) {
+            throwable = e;
+        }
+        TestContext.checkThrowable(
+            throwable,
+            "Virtual cube dimension must join to at least one cube: dimension 'Store' in cube 'Sales vs HR'");
+    }
+
+    public void testStoredMeasureMustHaveColumns() {
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+            "<Cube name='Warehouse-old'>\n"
+            + "  <Table name='inventory_fact_1997'/>\n"
+            + "  <DimensionUsage name='Time' source='Time' foreignKey='time_id'/>\n"
+            + "  <DimensionUsage name='Product' source='Product' foreignKey='product_id'/>\n"
+            + "  <DimensionUsage name='Warehouse' source='Warehouse' foreignKey='warehouse_id'/>\n"
+            + "  <Measure name='Units Ordered' column='units_ordered' aggregator='sum' formatString='#.0'/>\n"
+            + "  <Measure name='Warehouse Profit' aggregator='sum'>\n"
+            + "    <MeasureExpression>\n"
+            + "      <SQL dialect='generic'>\n"
+            + "       &quot;warehouse_sales&quot; - &quot;inventory_fact_1997&quot;.&quot;warehouse_cost&quot;\n"
+            + "      </SQL>\n"
+            + "    </MeasureExpression>\n"
+            + "  </Measure>\n"
+            + "</Cube>",
+            null,
+            null,
+            null,
+            null);
+        Throwable throwable = null;
+        try {
+            testContext.assertSimpleQuery();
+        } catch (RuntimeException e) {
+            throwable = e;
+        }
+        TestContext.checkThrowable(
+            throwable,
+            "Expression must belong to one and only one relation (at line 177, column 8)");
     }
 }
 

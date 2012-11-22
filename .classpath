@@ -19,11 +19,13 @@
 	<classpathentry kind="lib" path="lib/eigenbase-properties.jar"/>
 	<classpathentry kind="lib" path="lib/servlet-api.jar"/>
 	<classpathentry kind="lib" path="lib/commons-math.jar"/>
-	<classpathentry kind="lib" path="lib/derby.jar"/>
 	<classpathentry kind="lib" path="lib/xmlunit.jar"/>
 	<classpathentry kind="lib" path="lib/commons-vfs.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging.jar"/>
 	<classpathentry kind="lib" path="lib/olap4j.jar"/>
 	<classpathentry kind="lib" path="lib/olap4j-xmlaserver.jar"/>
+	<classpathentry kind="lib" path="lib/commons-vfs2.jar"/>
+	<classpathentry kind="lib" path="lib/olap4j-tck.jar"/>
+	<classpathentry kind="lib" path="lib/olap4j-xmla.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
