@@ -51,7 +51,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     private static final String EDUCATION_LEVEL_LEVEL =
         TestContext.levelName(
-            "Education Level", "Education Level", "Education Level");
+            "Customer", "Education Level", "Education Level");
 
     public NonEmptyTest() {
         super();
@@ -630,7 +630,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testStrMeasure() {
-        TestContext ctx = TestContext.instance().create(
+        TestContext ctx = TestContext.instance().legacy().create(
             null,
             "<Cube name=\"StrMeasure\"> \n"
             + "  <Table name=\"promotion\"/> \n"
@@ -656,7 +656,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testBug1515302() {
-        TestContext ctx = TestContext.instance().create(
+        TestContext ctx = TestContext.instance().legacy().create(
             null,
             "<Cube name=\"Bug1515302\"> \n"
             + "  <Table name=\"sales_fact_1997\"/> \n"
@@ -693,24 +693,24 @@ public class NonEmptyTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA]}\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA].[WA]}\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA].[WA].[Anacortes]}\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA].[WA].[Ballard]}\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA].[WA].[Bellingham]}\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA].[WA].[Burien]}\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA].[WA].[Everett]}\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA].[WA].[Issaquah]}\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA].[WA].[Kirkland]}\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA].[WA].[Lynnwood]}\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA].[WA].[Marysville]}\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA].[WA].[Olympia]}\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA].[WA].[Puyallup]}\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA].[WA].[Redmond]}\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA].[WA].[Renton]}\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA].[WA].[Seattle]}\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA].[WA].[Sedro Woolley]}\n"
-            + "{[Promotions].[Big Promo], [Customer].[Customers].[USA].[WA].[Tacoma]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA].[WA]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA].[WA].[Anacortes]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA].[WA].[Ballard]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA].[WA].[Bellingham]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA].[WA].[Burien]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA].[WA].[Everett]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA].[WA].[Issaquah]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA].[WA].[Kirkland]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA].[WA].[Lynnwood]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA].[WA].[Marysville]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA].[WA].[Olympia]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA].[WA].[Puyallup]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA].[WA].[Redmond]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA].[WA].[Renton]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA].[WA].[Seattle]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA].[WA].[Sedro Woolley]}\n"
+            + "{[Promotions].[Promotions].[Big Promo], [Customers].[Customers].[USA].[WA].[Tacoma]}\n"
             + "Row #0: 1,789\n"
             + "Row #1: 1,789\n"
             + "Row #2: 20\n"
@@ -1509,7 +1509,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfBlankLeaf() {
-        setTestContext(TestContext.instance().createSubstitutingCube(
+        setTestContext(TestContext.instance().legacy().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
@@ -1566,7 +1566,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfBlankNameAncestor() {
-        setTestContext(TestContext.instance().createSubstitutingCube(
+        setTestContext(TestContext.instance().legacy().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
@@ -1595,7 +1595,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfParentsNameAncestor() {
-        setTestContext(TestContext.instance().createSubstitutingCube(
+        setTestContext(TestContext.instance().legacy().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
@@ -1624,7 +1624,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjEnumWithHideIfBlankLeaf() {
-        setTestContext(TestContext.instance().createSubstitutingCube(
+        setTestContext(TestContext.instance().legacy().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
@@ -2358,7 +2358,7 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testLookupMember2() {
         // ok if no exception occurs
-        executeQuery(
+        getTestContext().legacy().executeQuery(
             "select {[Store].[USA].[Washington]} on columns from [Sales Ragged]");
     }
 
@@ -2594,7 +2594,7 @@ public class NonEmptyTest extends BatchTestCase {
      * rather than name column.
      */
     public void testMemberChildrenNameCol() {
-        // Expression dependency testing casues false negatives.
+        // Expression dependency testing causes false negatives.
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
             return;
         }
@@ -2603,7 +2603,7 @@ public class NonEmptyTest extends BatchTestCase {
             1,
             "select "
             + " {[Measures].[Count]} ON columns,"
-            + " {[Time].[1997].[Q2].[April]} on rows "
+            + " {[Time].[1997].[Q2].[4]} on rows "
             + "from [HR]");
         c.run();
     }
@@ -3283,7 +3283,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "'Order([*GENERATED_MEMBERS_Store], ([Measures].[Unit Sales], "
             + "[Product].[Products].[*TOP_BOTTOM_MEMBER]), BDESC)' "
             + "Set [*BASE_MEMBERS_Store] as '[Store].[Stores].members' "
-            + "Set [*GENERATED_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' "
+            + "Set [*GENERATED_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].[Stores].CurrentMember})' "
             + "Set [*BASE_MEMBERS_Products] as "
             + "'{[Product].[All Products].[Food], [Product].[All Products].[Drink], "
             + "[Product].[Products].[Non-Consumable]}' "
@@ -3291,11 +3291,11 @@ public class NonEmptyTest extends BatchTestCase {
             + "'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' "
             + "Member [Product].[All Products].[*TOP_BOTTOM_MEMBER] as "
             + "'Aggregate([*GENERATED_MEMBERS_Products])'"
-            + "Member [Measures].[*TOP_BOTTOM_MEMBER] as 'Rank([Store].CurrentMember,[*TOP_BOTTOM_SET])' "
+            + "Member [Measures].[*TOP_BOTTOM_MEMBER] as 'Rank([Store].[Stores].CurrentMember,[*TOP_BOTTOM_SET])' "
             + "Member [Store].[Stores].[All Stores].[*SUBTOTAL_MEMBER_SEL~SUM] as "
             + "'sum(Filter([*GENERATED_MEMBERS_Store], [Measures].[*TOP_BOTTOM_MEMBER] <= 10))'"
             + "Select {[Measures].[Store Cost]} on columns, "
-            + "Non Empty Filter(Generate([*NATIVE_CJ_SET], {([Store].CurrentMember)}), "
+            + "Non Empty Filter(Generate([*NATIVE_CJ_SET], {([Store].[Stores].CurrentMember)}), "
             + "[Measures].[*TOP_BOTTOM_MEMBER] <= 10) on rows From [Sales]",
 
             "Axis #0:\n"
@@ -3303,7 +3303,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Store Cost]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores]}\n"
+            + "{[Store].[Stores].[All Stores]}\n"
             + "{[Store].[Stores].[USA]}\n"
             + "{[Store].[Stores].[USA].[CA]}\n"
             + "{[Store].[Stores].[USA].[OR]}\n"
@@ -3337,45 +3337,45 @@ public class NonEmptyTest extends BatchTestCase {
 
         // calculated measure contains a calculated member
         assertQueryReturns(
-            "With Set [*NATIVE_CJ_SET] as "
-            + "'NonEmptyCrossJoin([*BASE_MEMBERS_Dates], [*BASE_MEMBERS_Stores])' "
-            + "Set [*BASE_MEMBERS_Dates] as '{[Time].[1997].[Q1], [Time].[1997].[Q2]}' "
-            + "Set [*GENERATED_MEMBERS_Dates] as "
-            + "'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})' "
-            + "Set [*GENERATED_MEMBERS_Measures] as '{[Measures].[*SUMMARY_METRIC_0]}' "
-            + "Set [*BASE_MEMBERS_Stores] as '{[Store].[USA].[CA], [Store].[USA].[WA]}' "
-            + "Set [*GENERATED_MEMBERS_Stores] as "
-            + "'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' "
-            + "Member [Time].[Time].[*SM_CTX_SEL] as 'Aggregate([*GENERATED_MEMBERS_Dates])' "
-            + "Member [Measures].[*SUMMARY_METRIC_0] as "
-            + "'[Measures].[Unit Sales]/([Measures].[Unit Sales],[Time].[*SM_CTX_SEL])', "
-            + "FORMAT_STRING = '0.00%' "
-            + "Member [Time].[Time].[*SUBTOTAL_MEMBER_SEL~SUM] as 'sum([*GENERATED_MEMBERS_Dates])' "
-            + "Member [Store].[Stores].[*SUBTOTAL_MEMBER_SEL~SUM] as "
-            + "'sum(Filter([*GENERATED_MEMBERS_Stores], "
-            + "([Measures].[Unit Sales], [Time].[*SUBTOTAL_MEMBER_SEL~SUM]) > 0.0))' "
-            + "Select Union "
-            + "(CrossJoin "
-            + "(Filter "
-            + "(Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember)}), "
-            + "Not IsEmpty ([Measures].[Unit Sales])), "
-            + "[*GENERATED_MEMBERS_Measures]), "
-            + "CrossJoin "
-            + "(Filter "
-            + "({[Time].[*SUBTOTAL_MEMBER_SEL~SUM]}, "
-            + "Not IsEmpty ([Measures].[Unit Sales])), "
-            + "[*GENERATED_MEMBERS_Measures])) on columns, "
-            + "Non Empty Union "
-            + "(Filter "
-            + "(Filter "
-            + "(Generate([*NATIVE_CJ_SET], "
-            + "{([Store].CurrentMember)}), "
-            + "([Measures].[Unit Sales], "
-            + "[Time].[*SUBTOTAL_MEMBER_SEL~SUM]) > 0.0), "
-            + "Not IsEmpty ([Measures].[Unit Sales])), "
-            + "Filter("
-            + "{[Store].[*SUBTOTAL_MEMBER_SEL~SUM]}, "
-            + "Not IsEmpty ([Measures].[Unit Sales]))) on rows "
+            "With Set [*NATIVE_CJ_SET] as \n"
+            + "'NonEmptyCrossJoin([*BASE_MEMBERS_Dates], [*BASE_MEMBERS_Stores])' \n"
+            + "Set [*BASE_MEMBERS_Dates] as '{[Time].[1997].[Q1], [Time].[1997].[Q2]}' \n"
+            + "Set [*GENERATED_MEMBERS_Dates] as \n"
+            + "'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})' \n"
+            + "Set [*GENERATED_MEMBERS_Measures] as '{[Measures].[*SUMMARY_METRIC_0]}' \n"
+            + "Set [*BASE_MEMBERS_Stores] as '{[Store].[Stores].[USA].[CA], [Store].[USA].[WA]}' \n"
+            + "Set [*GENERATED_MEMBERS_Stores] as \n"
+            + "'Generate([*NATIVE_CJ_SET], {[Store].[Stores].CurrentMember})' \n"
+            + "Member [Time].[Time].[*SM_CTX_SEL] as 'Aggregate([*GENERATED_MEMBERS_Dates])' \n"
+            + "Member [Measures].[*SUMMARY_METRIC_0] as \n"
+            + "'[Measures].[Unit Sales]/([Measures].[Unit Sales],[Time].[*SM_CTX_SEL])', \n"
+            + "FORMAT_STRING = '0.00%' \n"
+            + "Member [Time].[Time].[*SUBTOTAL_MEMBER_SEL~SUM] as 'sum([*GENERATED_MEMBERS_Dates])' \n"
+            + "Member [Store].[Stores].[*SUBTOTAL_MEMBER_SEL~SUM] as \n"
+            + "'sum(Filter([*GENERATED_MEMBERS_Stores], \n"
+            + "([Measures].[Unit Sales], [Time].[*SUBTOTAL_MEMBER_SEL~SUM]) > 0.0))' \n"
+            + "Select Union \n"
+            + "(CrossJoin \n"
+            + "(Filter \n"
+            + "(Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember)}), \n"
+            + "Not IsEmpty ([Measures].[Unit Sales])), \n"
+            + "[*GENERATED_MEMBERS_Measures]), \n"
+            + "CrossJoin \n"
+            + "(Filter \n"
+            + "({[Time].[*SUBTOTAL_MEMBER_SEL~SUM]}, \n"
+            + "Not IsEmpty ([Measures].[Unit Sales])), \n"
+            + "[*GENERATED_MEMBERS_Measures])) on columns, \n"
+            + "Non Empty Union \n"
+            + "(Filter \n"
+            + "(Filter \n"
+            + "(Generate([*NATIVE_CJ_SET], \n"
+            + "{([Store].[Stores].CurrentMember)}), \n"
+            + "([Measures].[Unit Sales], \n"
+            + "[Time].[Time].[*SUBTOTAL_MEMBER_SEL~SUM]) > 0.0), \n"
+            + "Not IsEmpty ([Measures].[Unit Sales])), \n"
+            + "Filter(\n"
+            + "{[Store].[Stores].[*SUBTOTAL_MEMBER_SEL~SUM]}, \n"
+            + "Not IsEmpty ([Measures].[Unit Sales]))) on rows \n"
             + "From [Sales]",
             "Axis #0:\n"
             + "{}\n"
@@ -3468,8 +3468,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Store],NonEmptyCrossJoin([*BASE_MEMBERS_Education Level],[*BASE_MEMBERS_Product]))' "
             + "Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*Store Sales_SEL~SUM] > 50000.0 And [Measures].[*Unit Sales_SEL~MAX] > 50000.0)' "
             + "Set [*BASE_MEMBERS_Store] as '[Store].[Store Country].Members' "
-            + "Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' "
-            + "Set [*METRIC_MEMBERS_Store] as 'Generate([*METRIC_CJ_SET], {[Store].CurrentMember})' "
+            + "Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].[Stores].CurrentMember})' "
+            + "Set [*METRIC_MEMBERS_Store] as 'Generate([*METRIC_CJ_SET], {[Store].[Stores].CurrentMember})' "
             + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[Store Sales],[Measures].[Unit Sales]}' "
             + "Set [*BASE_MEMBERS_Education Level] as '" + EDUCATION_LEVEL_LEVEL
             + ".Members' "
@@ -3479,13 +3479,13 @@ public class NonEmptyTest extends BatchTestCase {
             + "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' "
             + "Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})' "
             + "Member [Product].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})' "
-            + "Member [Store].[Stores].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum({[Store].[All Stores]})' "
-            + "Member [Measures].[*Store Sales_SEL~SUM] as '([Measures].[Store Sales],[Education Level].CurrentMember,[Product].[*CTX_METRIC_MEMBER_SEL~SUM],[Store].[*CTX_METRIC_MEMBER_SEL~SUM])' "
+            + "Member [Store].[Stores].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum({[Store].[Stores].[All Stores]})' "
+            + "Member [Measures].[*Store Sales_SEL~SUM] as '([Measures].[Store Sales],[Education Level].CurrentMember,[Product].[*CTX_METRIC_MEMBER_SEL~SUM],[Store].[Stores].[*CTX_METRIC_MEMBER_SEL~SUM])' "
             + "Member [Product].[*CTX_METRIC_MEMBER_SEL~MAX] as 'Max([*NATIVE_MEMBERS_Product])' "
             + "Member [Store].[Stores].[*CTX_METRIC_MEMBER_SEL~MAX] as 'Max([*NATIVE_MEMBERS_Store])' "
-            + "Member [Measures].[*Unit Sales_SEL~MAX] as '([Measures].[Unit Sales],[Education Level].CurrentMember,[Product].[*CTX_METRIC_MEMBER_SEL~MAX],[Store].[*CTX_METRIC_MEMBER_SEL~MAX])' "
+            + "Member [Measures].[*Unit Sales_SEL~MAX] as '([Measures].[Unit Sales],[Education Level].CurrentMember,[Product].[*CTX_METRIC_MEMBER_SEL~MAX],[Store].[Stores].[*CTX_METRIC_MEMBER_SEL~MAX])' "
             + "Select "
-            + "CrossJoin(Generate([*METRIC_CJ_SET], {([Store].CurrentMember)}),[*BASE_MEMBERS_Measures]) on columns, "
+            + "CrossJoin(Generate([*METRIC_CJ_SET], {([Store].[Stores].CurrentMember)}),[*BASE_MEMBERS_Measures]) on columns, "
             + "Non Empty Generate([*METRIC_CJ_SET], {([Education Level].CurrentMember,[Product].CurrentMember)}) on rows "
             + "From [Sales]");
     }
@@ -4448,7 +4448,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testContextAtAllWorksWithConstraint() {
-        TestContext ctx = TestContext.instance().create(
+        TestContext ctx = TestContext.instance().legacy().create(
             null,
             "<Cube name=\"onlyGender\"> \n"
             + "  <Table name=\"sales_fact_1997\"/> \n"
@@ -4477,8 +4477,10 @@ public class NonEmptyTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Customer].[Gender].[F]}\n"
-            + "{[Customer].[Gender].[M]}\n"
+            // + "{[Gender].[Gender].[All Gender]}\n"
+            + "{[Gender].[Gender].[F]}\n"
+            + "{[Gender].[Gender].[M]}\n"
+            // + "Row #0: 266,773\n"
             + "Row #0: 131,558\n"
             + "Row #1: 135,215\n");
     }
@@ -4537,9 +4539,9 @@ public class NonEmptyTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[Stores].[USA].[CA]}\n"
-            + "{[Store].[Stores].[USA].[OR]}\n"
-            + "{[Store].[Stores].[USA].[WA]}\n"
+            + "{[Store].[Store].[USA].[CA]}\n"
+            + "{[Store].[Store].[USA].[OR]}\n"
+            + "{[Store].[Store].[USA].[WA]}\n"
             + "Row #0: 74,748\n"
             + "Row #1: 67,659\n"
             + "Row #2: 124,366\n");
@@ -4590,18 +4592,18 @@ public class NonEmptyTest extends BatchTestCase {
             + "where ({[Product].[Drink]} * {[Time].[1997].[Q1], [Time].[1997].[Q2]})";
         final String expected =
             "Axis #0:\n"
-            + "{[Product].[Products].[Drink], [Time].[Time].[1997].[Q1]}\n"
-            + "{[Product].[Products].[Drink], [Time].[Time].[1997].[Q2]}\n"
+            + "{[Product].[Product].[Drink], [Time].[Time].[1997].[Q1]}\n"
+            + "{[Product].[Product].[Drink], [Time].[Time].[1997].[Q2]}\n"
             + "Axis #1:\n"
-            + "{[Measures].[Sales Count], [Store].[USA].[CA]}\n"
-            + "{[Measures].[Sales Count], [Store].[USA].[USA].[Washington]}\n"
-            + "{[Measures].[Sales Count], [Store].[USA].[WA]}\n"
+            + "{[Measures].[Sales Count], [Store].[Store].[USA].[CA]}\n"
+            + "{[Measures].[Sales Count], [Store].[Store].[USA].[USA].[Washington]}\n"
+            + "{[Measures].[Sales Count], [Store].[Store].[USA].[WA]}\n"
             + "Axis #2:\n"
-            + "{[Customer].[Customers].[All Customers], [Promotions].[Bag Stuffers]}\n"
-            + "{[Customer].[Customers].[All Customers], [Promotions].[Best Savings]}\n"
-            + "{[Customer].[Customers].[All Customers], [Promotions].[Big Promo]}\n"
-            + "{[Customer].[Customers].[All Customers], [Promotions].[Big Time Savings]}\n"
-            + "{[Customer].[Customers].[All Customers], [Promotions].[Bye Bye Baby]}\n"
+            + "{[Customers].[Customers].[All Customers], [Promotions].[Promotions].[Bag Stuffers]}\n"
+            + "{[Customers].[Customers].[All Customers], [Promotions].[Promotions].[Best Savings]}\n"
+            + "{[Customers].[Customers].[All Customers], [Promotions].[Promotions].[Big Promo]}\n"
+            + "{[Customers].[Customers].[All Customers], [Promotions].[Promotions].[Big Time Savings]}\n"
+            + "{[Customers].[Customers].[All Customers], [Promotions].[Promotions].[Bye Bye Baby]}\n"
             + "Row #0: \n"
             + "Row #0: \n"
             + "Row #0: 2\n"
@@ -4630,6 +4632,7 @@ public class NonEmptyTest extends BatchTestCase {
             5,
             mdx,
             expected,
+            true,
             true);
     }
 

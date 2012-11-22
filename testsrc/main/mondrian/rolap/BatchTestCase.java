@@ -864,6 +864,45 @@ public class BatchTestCase extends FoodMartTestCase {
         String expectedResult,
         boolean freshConnection)
     {
+        checkNative(
+            resultLimit,
+            rowCount,
+            mdx,
+            expectedResult,
+            freshConnection,
+            false);
+    }
+
+    /**
+     * Runs a query twice, with native crossjoin optimization enabled and
+     * disabled. If both results are equal,and both aggree with the expected
+     * result, it is considered correct.
+     *
+     * <p>Optionally the query can be run with
+     * fresh connection. This is useful if the test case sets its certain
+     * mondrian properties, e.g. native properties like:
+     * mondrian.native.filter.enable
+     *
+     * @param resultLimit     Maximum result size of all the MDX operations in
+     *                        this query. This might be hard to estimate as it
+     *                        is usually larger than the rowCount of the final
+     *                        result. Setting it to 0 will cause this limit to
+     *                        be ignored.
+     * @param rowCount        Number of rows returned. (That is, the number
+     *                        of positions on the last axis of the query.)
+     * @param mdx             Query
+     * @param expectedResult  Expected result string
+     * @param freshConnection Whether fresh connection is required
+     * @param freshConnection Whether to use legacy schema
+     */
+    protected void checkNative(
+        int resultLimit,
+        int rowCount,
+        String mdx,
+        String expectedResult,
+        boolean freshConnection,
+        boolean legacyMode)
+    {
         // Don't run the test if we're testing expression dependencies.
         // Expression dependencies cause spurious interval calls to
         // 'level.getMembers()' which create false negatives in this test.
@@ -875,8 +914,12 @@ public class BatchTestCase extends FoodMartTestCase {
         try {
             Logger.getLogger(getClass()).debug("*** Native: " + mdx);
             boolean reuseConnection = !freshConnection;
+            TestContext testContext =
+                legacyMode ?
+                    getTestContext().legacy() :
+                    getTestContext();
             Connection con =
-                getTestContext()
+                testContext
                     .withSchemaPool(reuseConnection)
                     .getConnection();
             RolapNativeRegistry reg = getRegistry(con);
@@ -908,7 +951,7 @@ public class BatchTestCase extends FoodMartTestCase {
             Logger.getLogger(getClass()).debug("*** Interpreter: " + mdx);
 
             getConnection().getCacheControl(null).flushSchemaCache();
-            con = getTestContext().withSchemaPool(false).getConnection();
+            con = testContext.withSchemaPool(false).getConnection();
             reg = getRegistry(con);
             listener.setFoundEvaluator(false);
             reg.setListener(listener);
