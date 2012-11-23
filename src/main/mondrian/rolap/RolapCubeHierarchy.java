@@ -1141,7 +1141,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
 
     public static class RolapCubeCalculatedMeasure
         extends RolapCubeMember
-        implements RolapMeasure
+        implements RolapMeasure, CalculatedMember
     {
         private final RolapCalculatedMeasure calculatedMeasure;
 
