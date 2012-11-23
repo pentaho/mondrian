@@ -110,5 +110,34 @@ public class SchemaSubstitution {
             }
         };
     }
+
+    public static Util.Function1<String, String> insertCalculatedMembers(
+        final String cubeName, final String memberDefs)
+    {
+        return new Util.Function1<String, String>() {
+            public String apply(String schema) {
+                int h = schema.indexOf("<Cube name='" + cubeName + "'");
+                int i = schema.indexOf("<CalculatedMembers>", h);
+                if (i >= 0) {
+                    i += "<CalculatedMembers>".length();
+                    schema = schema.substring(0, i)
+                             + memberDefs
+                             + schema.substring(i);
+                } else {
+                    int end = schema.indexOf("</Cube>", h);
+                    i = schema.indexOf("<CalculatedMember", h);
+                    if (i < 0 || i > end) {
+                        i = end;
+                    }
+                    schema = schema.substring(0, i)
+                             + "<CalculatedMembers>"
+                             + memberDefs
+                             + "</CalculatedMembers>"
+                             + schema.substring(i);
+                }
+                return schema;
+            }
+        };
+    }
 }
 // End SchemaSubstitution.java
