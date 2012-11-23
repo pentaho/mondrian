@@ -11,6 +11,9 @@ package mondrian.test;
 
 import mondrian.olap.*;
 
+import mondrian.olap.Cube;
+import mondrian.olap.Dimension;
+import mondrian.olap.Hierarchy;
 import mondrian.olap.Member;
 
 import junit.framework.Assert;
@@ -1159,6 +1162,75 @@ public class LegacySchemaTest extends FoodMartTestCase {
             throwable,
             "Expression must belong to one and only one relation (at line 177, column 8)");
     }
+
+    public void testCubesVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<Cube name='Foo' visible='@REPLACE_ME@'>\n"
+                + "  <Table name='store'/>\n"
+                + "  <Dimension name='Store Type'>\n"
+                + "    <Hierarchy hasAll='true'>\n"
+                + "      <Level name='Store Type' column='store_type' uniqueMembers='true'/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
+                + "      formatString='#,###'/>\n"
+                + "</Cube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                getTestContext().legacy().create(
+                    null, cubeDef, null, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            assertTrue(testValue.equals(cube.isVisible()));
+        }
+    }
+
+    public void testLevelVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<Cube name='Foo'>\n"
+                + "  <Table name='store'/>\n"
+                + "  <Dimension name='Bar'>\n"
+                + "    <Hierarchy name='Bacon' hasAll='false'>\n"
+                + "      <Level name='Samosa' column='store_type' uniqueMembers='true' visible='@REPLACE_ME@'/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
+                + "      formatString='#,###'/>\n"
+                + "</Cube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                getTestContext().legacy().create(
+                    null, cubeDef, null, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            Dimension dim = null;
+            for (Dimension dimCheck : cube.getDimensionList()) {
+                if (dimCheck.getName().equals("Bar")) {
+                    dim = dimCheck;
+                }
+            }
+            assertNotNull(dim);
+            final Hierarchy hier = dim.getHierarchy();
+            assertNotNull(hier);
+            assertEquals(
+                MondrianProperties.instance().SsasCompatibleNaming.get()
+                    ? "Bacon"
+                    : "Bar.Bacon",
+                hier.getName());
+            final mondrian.olap.Level level = hier.getLevelList().get(0);
+            assertEquals("Samosa", level.getName());
+            assertTrue(testValue.equals(level.isVisible()));
+        }
+    }
+
 }
 
 // End LegacySchemaTest.java
