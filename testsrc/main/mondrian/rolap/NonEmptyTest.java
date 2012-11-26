@@ -1567,7 +1567,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjMembersWithHideIfParentsNameLeaf() {
         final TestContext testContext =
-            getTestContext().createSubstitutingCube(
+            getTestContext().legacy().createSubstitutingCube(
                 "Sales",
                 "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
                 + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
@@ -2036,6 +2036,7 @@ public class NonEmptyTest extends BatchTestCase {
      * level.
      */
     public void testMultiLevelMemberConstraintNullParent() {
+        //TODO: fails due to getBaseStarKeyColumn
         if (!isDefaultNullMemberRepresentation()) {
             return;
         }
@@ -2126,6 +2127,7 @@ public class NonEmptyTest extends BatchTestCase {
      * and non NULL parent levels.
      */
     public void testMultiLevelMemberConstraintMixedNullNonNullParent() {
+        //TODO: fails due to getBaseStarKeyColumn
         if (!isDefaultNullMemberRepresentation()) {
             return;
         }
@@ -2253,7 +2255,7 @@ public class NonEmptyTest extends BatchTestCase {
             + " [Warehouse2].[#null].[#null].[971-555-6213]} "
             + "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) "
             + "select [NECJ] on columns from [Warehouse2]";
-
+        //TODO: UPDATE DERBY SQL
         String necjSqlDerby =
             "select \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"warehouse_fax\", \"product_class\".\"product_family\" "
             + "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\", \"product\" as \"product\", \"product_class\" as \"product_class\" "
@@ -2266,19 +2268,36 @@ public class NonEmptyTest extends BatchTestCase {
             + "order by CASE WHEN \"warehouse\".\"wa_address3\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address3\" ASC, CASE WHEN \"warehouse\".\"wa_address2\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address2\" ASC, CASE WHEN \"warehouse\".\"warehouse_fax\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"warehouse_fax\" ASC, CASE WHEN \"product_class\".\"product_family\" IS NULL THEN 1 ELSE 0 END, \"product_class\".\"product_family\" ASC";
 
         String necjSqlMySql =
-            "select `warehouse`.`wa_address3` as `c0`, `warehouse`.`wa_address2` as `c1`, `warehouse`.`warehouse_fax` as `c2`, "
-            + "`product_class`.`product_family` as `c3` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997`, "
-            + "`product` as `product`, `product_class` as `product_class` "
-            + "where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and `product`.`product_class_id` = `product_class`.`product_class_id` and "
-            + "`inventory_fact_1997`.`product_id` = `product`.`product_id` and "
-            + "((`warehouse`.`warehouse_fax` = '971-555-6213' or `warehouse`.`warehouse_fax` is null) and "
-            + "`warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null) and "
-            + "(`product_class`.`product_family` = 'Food') "
-            + "group by `warehouse`.`wa_address3`, `warehouse`.`wa_address2`, `warehouse`.`warehouse_fax`, "
-            + "`product_class`.`product_family` "
-            + "order by ISNULL(`warehouse`.`wa_address3`) ASC, `warehouse`.`wa_address3` ASC, ISNULL(`warehouse`.`wa_address2`) ASC, "
-            + "`warehouse`.`wa_address2` ASC, ISNULL(`warehouse`.`warehouse_fax`) ASC, `warehouse`.`warehouse_fax` ASC, "
-            + "ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
+            "select\n"
+            + "    `product_class`.`product_family` as `c0`,\n"
+            + "    `warehouse`.`wa_address3` as `c1`,\n"
+            + "    `warehouse`.`wa_address2` as `c2`,\n"
+            + "    `warehouse`.`warehouse_fax` as `c3`,\n"
+            + "    sum(`inventory_fact_1997`.`warehouse_cost`) as `m0`\n"
+            + "from\n"
+            + "    `product_class` as `product_class`,\n"
+            + "    `product` as `product`,\n"
+            + "    `inventory_fact_1997` as `inventory_fact_1997`,\n"
+            + "    `warehouse` as `warehouse`\n"
+            + "where\n"
+            + "    `inventory_fact_1997`.`product_id` = `product`.`product_id`\n"
+            + "and\n"
+            + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+            + "and\n"
+            + "    `product_class`.`product_family` = 'Food'\n"
+            + "and\n"
+            + "    `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id`\n"
+            + "and\n"
+            + "    `warehouse`.`wa_address3` is null\n"
+            + "and\n"
+            + "    `warehouse`.`wa_address2` is null\n"
+            + "and\n"
+            + "    `warehouse`.`warehouse_fax` = '971-555-6213'\n"
+            + "group by\n"
+            + "    `product_class`.`product_family`,\n"
+            + "    `warehouse`.`wa_address3`,\n"
+            + "    `warehouse`.`wa_address2`,\n"
+            + "    `warehouse`.`warehouse_fax`";
 
         TestContext testContext =
             getTestContext().legacy().create(
@@ -2295,7 +2314,7 @@ public class NonEmptyTest extends BatchTestCase {
             new SqlPattern(
                 Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
         };
-
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
         assertQuerySql(testContext, query, patterns);
     }
 
@@ -2656,7 +2675,7 @@ public class NonEmptyTest extends BatchTestCase {
             1,
             "select "
             + " {[Measures].[Count]} ON columns,"
-            + " {[Time].[1997].[Q2].[4]} on rows "
+            + " {[Time].[1997].[Q2].[April]} on rows "
             + "from [HR]");
         c.run();
     }
@@ -2836,6 +2855,7 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().AlertNativeEvaluationUnsupported,
             "ERROR");
         // native cross join cannot be used due to AllMembers
+        //TODO: this query appears to be supported in native
         checkNotNative(
             testContext,
             3,
@@ -2848,6 +2868,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testNotNativeVirtualCubeCrossJoin2() {
         // native cross join cannot be used due to the range operator
+        //TODO: this query appears to be supported in native
         checkNotNative(
             getTestContext(),
             3,
@@ -2859,6 +2880,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testNotNativeVirtualCubeCrossJoinUnsupported() {
+        //TODO: test appears to be supported in native
         final TestContext testContext = getTestContext();
         switch (testContext.getDialect().getDatabaseProduct()) {
         case INFOBRIGHT:
@@ -2939,7 +2961,6 @@ public class NonEmptyTest extends BatchTestCase {
             propSaver.reset();
             propSaver.setAtLeast(rolapUtilLogger, org.apache.log4j.Level.WARN);
         }
-
         // should have gotten one WARN
         nEvents = countFilteredEvents(
             events, org.apache.log4j.Level.WARN, expectedMessage);
@@ -4152,6 +4173,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testLeafMembersOfParentChildDimensionAreNativelyEvaluated() {
+        //TODO: ReferenceLink element not implemented (RolapSchemaLoader)
+        //      fails with NPE
         checkNative(
             getTestContext(),
             50,
@@ -4219,6 +4242,7 @@ public class NonEmptyTest extends BatchTestCase {
      * EnableNativeNonEmpty=true"</a>.
      */
     public void testBugMondrian321() {
+        //TODO actual results look right
         assertQueryReturns(
             "WITH SET [#DataSet#] AS 'Crossjoin({Descendants([Customers].[All Customers], 2)}, {[Product].[All Products]})' \n"
             + "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns, \n"
