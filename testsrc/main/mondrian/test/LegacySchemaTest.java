@@ -15,6 +15,8 @@ import mondrian.olap.Cube;
 import mondrian.olap.Dimension;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Member;
+import mondrian.spi.Dialect;
+import mondrian.util.Bug;
 
 import junit.framework.Assert;
 
@@ -1052,6 +1054,9 @@ public class LegacySchemaTest extends FoodMartTestCase {
     }
 
     public void testCubeCaption() throws SQLException {
+        if (!Bug.VirtualCubeConversionMissesHiddenFixed) {
+            return;
+        }
         final TestContext testContext = getTestContext().legacy().create(
             null,
             "<Cube name='Cube with caption' caption='Cube with name'>"
@@ -1110,26 +1115,28 @@ public class LegacySchemaTest extends FoodMartTestCase {
     }
 
     public void testVirtualCubeDimensionMustJoinToAtLeastOneCube() {
-        TestContext testContext = getTestContext().legacy().create(
-            null,
-            null,
-            "<VirtualCube name='Sales vs HR'>\n"
-            + "<VirtualCubeDimension name='Store'/>\n"
-            + "<VirtualCubeDimension cubeName='HR' name='Position'/>\n"
-            + "<VirtualCubeMeasure cubeName='HR' name='[Measures].[Org Salary]'/>\n"
-            + "</VirtualCube>",
-            null,
-            null,
-            null);
-        RuntimeException throwable = null;
-        try {
-            testContext.assertSimpleQuery();
-        } catch (RuntimeException e) {
-            throwable = e;
+        if (Bug.VirtualCubeConversionMissesHiddenFixed) {
+            TestContext testContext = getTestContext().legacy().create(
+                null,
+                null,
+                "<VirtualCube name='Sales vs HR'>\n"
+                + "<VirtualCubeDimension name='Store'/>\n"
+                + "<VirtualCubeDimension cubeName='HR' name='Position'/>\n"
+                + "<VirtualCubeMeasure cubeName='HR' name='[Measures].[Org Salary]'/>\n"
+                + "</VirtualCube>",
+                null,
+                null,
+                null);
+            RuntimeException throwable = null;
+            try {
+                testContext.assertSimpleQuery();
+            } catch (RuntimeException e) {
+                throwable = e;
+            }
+            TestContext.checkThrowable(
+                throwable,
+                "Virtual cube dimension must join to at least one cube: dimension 'Store' in cube 'Sales vs HR'");
         }
-        TestContext.checkThrowable(
-            throwable,
-            "Virtual cube dimension must join to at least one cube: dimension 'Store' in cube 'Sales vs HR'");
     }
 
     public void testStoredMeasureMustHaveColumns() {
@@ -1496,6 +1503,499 @@ public class LegacySchemaTest extends FoodMartTestCase {
         testContext.assertQueryThrows(
             "select {[Big numbers].members} on 0 from [Sales]",
             "In Schema: In Cube: In Dimension: In Hierarchy: In Level: Value 'char' of attribute 'internalType' has illegal value 'char'.  Legal values: {int, long, Object, String}");
+    }
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-482">
+     * MONDRIAN-482, "ClassCastException when obtaining RolapCubeLevel"</a>.
+     */
+    public void testBugMondrian482() {
+        // until bug MONDRIAN-495, "Table filter concept does not support
+        // dialects." is fixed, this test case only works on MySQL
+        if (!Bug.BugMondrian495Fixed
+            && getTestContext().getDialect().getDatabaseProduct()
+               != Dialect.DatabaseProduct.MYSQL)
+        {
+            return;
+        }
+
+        // skip this test if using aggregates, the agg tables do not
+        // enforce the SQL element in the fact table
+        if (MondrianProperties.instance().UseAggregates.booleanValue()) {
+            return;
+        }
+
+        // In order to reproduce the problem it was necessary to only have one
+        // non empty member under USA. In the cube definition below we create a
+        // cube with only CA data to achieve this.
+        String salesCube1 =
+            "<Cube name='Sales2' defaultMeasure='Unit Sales'>\n"
+            + "  <Table name='sales_fact_1997' >\n"
+            + "    <SQL dialect='default'>\n"
+            + "     <![CDATA[`sales_fact_1997`.`store_id` in (select distinct `store_id` from `store` where `store`.`store_state` = 'CA')]]>\n"
+            + "    </SQL>\n"
+            + "  </Table>\n"
+            + "  <DimensionUsage name='Store' source='Store' foreignKey='store_id'/>\n"
+            + "  <DimensionUsage name='Product' source='Product' foreignKey='product_id'/>\n"
+            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' formatString='Standard'/>\n"
+            + "  <Measure name='Store Sales' column='store_sales' aggregator='sum' formatString='Standard'/>\n"
+            + "</Cube>\n";
+
+        final TestContext testContext = getTestContext().create(
+            null,
+            salesCube1,
+            null,
+            null,
+            null,
+            null);
+
+        // First query all children of the USA. This should only return CA since
+        // all the other states were filtered out. CA will be put in the member
+        // cache
+        String query1 =
+            "WITH SET [#DataSet#] as "
+            + "'NonEmptyCrossjoin({[Product].[All Products]}, {[Store].[All Stores].[USA].Children})' "
+            + "SELECT {[Measures].[Unit Sales]} on columns, "
+            + "NON EMPTY Hierarchize({[#DataSet#]}) on rows FROM [Sales2]";
+
+        testContext.assertQueryReturns(
+            query1,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Products].[All Products], [Store].[USA].[CA]}\n"
+            + "Row #0: 74,748\n");
+
+        // Now query the children of CA using the descendants function
+        // This is where the ClassCastException occurs
+        String query2 =
+            "WITH SET [#DataSet#] as "
+            + "'{Descendants([Store].[All Stores], 3)}' "
+            + "SELECT {[Measures].[Unit Sales]} on columns, "
+            + "NON EMPTY Hierarchize({[#DataSet#]}) on rows FROM [Sales2]";
+
+        testContext.assertQueryReturns(
+            query2,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[USA].[CA].[San Francisco]}\n"
+            + "Row #0: 21,333\n"
+            + "Row #1: 25,663\n"
+            + "Row #2: 25,635\n"
+            + "Row #3: 2,117\n");
+    }
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-355">Bug MONDRIAN-355,
+     * "adding hours/mins as levelType for level of type Dimension"</a>.
+     */
+    public void testBugMondrian355() {
+//        checkBugMondrian355("TimeHalfYears");
+
+        // make sure that the deprecated name still works
+        checkBugMondrian355("TimeHalfYear");
+    }
+
+    public void checkBugMondrian355(String timeHalfYear) {
+        final String xml =
+            "<Dimension name='Time2' foreignKey='time_id' type='TimeDimension'>\n"
+            + "<Hierarchy hasAll='true' primaryKey='time_id'>\n"
+            + "  <Table name='time_by_day'/>\n"
+            + "  <Level name='Years' column='the_year' uniqueMembers='true' type='Numeric' levelType='TimeYears'/>\n"
+            + "  <Level name='Half year' column='quarter' uniqueMembers='false' levelType='"
+            + timeHalfYear
+            + "'/>\n"
+            + "  <Level name='Hours' column='month_of_year' uniqueMembers='false' type='Numeric' levelType='TimeHours'/>\n"
+            + "  <Level name='Quarter hours' column='time_id' uniqueMembers='false' type='Numeric' levelType='TimeUndefined'/>\n"
+            + "</Hierarchy>\n"
+            + "</Dimension>";
+        TestContext testContext = getTestContext().createSubstitutingCube(
+            "Sales", xml);
+
+        testContext.assertQueryReturns(
+            "select Head([Time2].[Quarter hours].Members, 3) on columns\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time2].[1997].[Q1].[1].[367]}\n"
+            + "{[Time2].[1997].[Q1].[1].[368]}\n"
+            + "{[Time2].[1997].[Q1].[1].[369]}\n"
+            + "Row #0: 348\n"
+            + "Row #0: 635\n"
+            + "Row #0: 589\n");
+
+        // Check that can apply ParallelPeriod to a TimeUndefined level.
+        testContext.assertAxisReturns(
+            "PeriodsToDate([Time2].[Quarter hours], [Time2].[1997].[Q1].[1].[368])",
+            "[Time2].[1997].[Q1].[1].[368]");
+
+        testContext.assertAxisReturns(
+            "PeriodsToDate([Time2].[Half year], [Time2].[1997].[Q1].[1].[368])",
+            "[Time2].[1997].[Q1].[1].[367]\n"
+            + "[Time2].[1997].[Q1].[1].[368]");
+
+        // Check that get an error if give invalid level type
+        try {
+            getTestContext()
+                .createSubstitutingCube(
+                    "Sales",
+                    Util.replace(xml, "TimeUndefined", "TimeUnspecified"))
+                .assertSimpleQuery();
+            fail("expected error");
+        } catch (Throwable e) {
+            TestContext.checkThrowable(
+                e,
+                "Value 'TimeUnspecified' of attribute 'levelType' has illegal value 'TimeUnspecified'.  Legal values: {Regular, TimeYears, ");
+        }
+    }
+
+    /**
+     * Unit test for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-463">
+     * MONDRIAN-463, "Snowflake dimension with 3-way join."</a>.
+     */
+    public void testBugMondrian463() {
+        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
+            .get())
+        {
+            // Similar to aggregates. If we turn off filtering,
+            // we get wild stuff because of referential integrity.
+            return;
+        }
+        // To build a dimension that is a 3-way snowflake, take the 2-way
+        // product -> product_class join and convert to product -> store ->
+        // product_class.
+        //
+        // It works because product_class_id covers the range 1 .. 110;
+        // store_id covers every value in 0 .. 24;
+        // region_id has 24 distinct values in the range 0 .. 106 (region_id 25
+        // occurs twice).
+        // Therefore in store, store_id -> region_id is a 25 to 24 mapping.
+        checkBugMondrian463(
+            getTestContext().createSubstitutingCube(
+                "Sales",
+                "<Dimension name='Product3' foreignKey='product_id'>\n"
+                + "  <Hierarchy hasAll='true' primaryKey='product_id' primaryKeyTable='product'>\n"
+                + "    <Join leftKey='product_class_id' rightKey='store_id'>\n"
+                + "      <Table name='product'/>\n"
+                + "      <Join leftKey='region_id' rightKey='product_class_id'>\n"
+                + "        <Table name='store'/>\n"
+                + "        <Table name='product_class'/>\n"
+                + "      </Join>\n"
+                + "    </Join>\n"
+                + "    <Level name='Product Family' table='product_class' column='product_family' uniqueMembers='true'/>\n"
+                + "    <Level name='Product Department' table='product_class' column='product_department' uniqueMembers='false'/>\n"
+                + "    <Level name='Product Category' table='product_class' column='product_category' uniqueMembers='false'/>\n"
+                + "    <Level name='Product Subcategory' table='product_class' column='product_subcategory' uniqueMembers='false'/>\n"
+                + "    <Level name='Product Class' table='store' column='store_id' type='Numeric' uniqueMembers='true'/>\n"
+                + "    <Level name='Brand Name' table='product' column='brand_name' uniqueMembers='false'/>\n"
+                + "    <Level name='Product Name' table='product' column='product_name' uniqueMembers='true'/>\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>"));
+
+        // As above, but using shared dimension.
+        if (MondrianProperties.instance().ReadAggregates.get()
+            && MondrianProperties.instance().UseAggregates.get())
+        {
+            // With aggregates enabled, query gives different answer. This is
+            // expected because some of the foreign keys have referential
+            // integrity problems.
+            return;
+        }
+        checkBugMondrian463(
+            getTestContext().withSchema(
+                "<?xml version='1.0'?>\n"
+                + "<Schema name='FoodMart'>\n"
+                + "<Dimension name='Product3'>\n"
+                + "  <Hierarchy hasAll='true' primaryKey='product_id' primaryKeyTable='product'>\n"
+                + "    <Join leftKey='product_class_id' rightKey='store_id'>\n"
+                + "      <Table name='product'/>\n"
+                + "      <Join leftKey='region_id' rightKey='product_class_id'>\n"
+                + "        <Table name='store'/>\n"
+                + "        <Table name='product_class'/>\n"
+                + "      </Join>\n"
+                + "    </Join>\n"
+                + "    <Level name='Product Family' table='product_class' column='product_family' uniqueMembers='true'/>\n"
+                + "    <Level name='Product Department' table='product_class' column='product_department' uniqueMembers='false'/>\n"
+                + "    <Level name='Product Category' table='product_class' column='product_category' uniqueMembers='false'/>\n"
+                + "    <Level name='Product Subcategory' table='product_class' column='product_subcategory' uniqueMembers='false'/>\n"
+                + "    <Level name='Product Class' table='store' column='store_id' type='Numeric' uniqueMembers='true'/>\n"
+                + "    <Level name='Brand Name' table='product' column='brand_name' uniqueMembers='false'/>\n"
+                + "    <Level name='Product Name' table='product' column='product_name' uniqueMembers='true'/>\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>\n"
+                + "<Cube name='Sales'>\n"
+                + "  <Table name='sales_fact_1997'/>\n"
+                + "  <Dimension name='Time' type='TimeDimension' foreignKey='time_id'>\n"
+                + "    <Hierarchy hasAll='false' primaryKey='time_id'>\n"
+                + "      <Table name='time_by_day'/>\n"
+                + "      <Level name='Year' column='the_year' type='Numeric' uniqueMembers='true'\n"
+                + "          levelType='TimeYears'/>\n"
+                + "      <Level name='Quarter' column='quarter' uniqueMembers='false'\n"
+                + "          levelType='TimeQuarters'/>\n"
+                + "      <Level name='Month' column='month_of_year' uniqueMembers='false' type='Numeric'\n"
+                + "          levelType='TimeMonths'/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <DimensionUsage source='Product3' name='Product3' foreignKey='product_id'/>\n"
+                + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
+                + "      formatString='#,###'/>\n"
+                + "</Cube>\n"
+                + "</Schema>"));
+    }
+
+    private void checkBugMondrian463(TestContext testContext) {
+        testContext.assertQueryReturns(
+            "select [Measures] on 0,\n"
+            + " head([Product3].members, 10) on 1\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product3].[All Product3s]}\n"
+            + "{[Product3].[Drink]}\n"
+            + "{[Product3].[Drink].[Baking Goods]}\n"
+            + "{[Product3].[Drink].[Baking Goods].[Dry Goods]}\n"
+            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee]}\n"
+            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24]}\n"
+            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24].[Amigo]}\n"
+            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24].[Amigo].[Amigo Lox]}\n"
+            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24].[Curlew]}\n"
+            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24].[Curlew].[Curlew Lox]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #1: 2,647\n"
+            + "Row #2: 835\n"
+            + "Row #3: 835\n"
+            + "Row #4: 835\n"
+            + "Row #5: 835\n"
+            + "Row #6: 175\n"
+            + "Row #7: 175\n"
+            + "Row #8: 186\n"
+            + "Row #9: 186\n");
+    }
+
+    public void testVirtualCubesVisibility() throws Exception {
+        if (!Bug.VirtualCubeConversionMissesHiddenFixed) {
+            return;
+        }
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<VirtualCube name='Foo' defaultMeasure='Store Sales' visible='@REPLACE_ME@'>\n"
+                + "  <VirtualCubeDimension cubeName='Sales' name='Customers'/>\n"
+                + "  <VirtualCubeMeasure cubeName='Sales' name='[Measures].[Store Sales]'/>\n"
+                + "</VirtualCube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                getTestContext().create(
+                    null, null, cubeDef, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            assertTrue(testValue.equals(cube.isVisible()));
+        }
+    }
+
+    public void testVirtualDimensionVisibility() throws Exception {
+        if (Bug.VirtualCubeConversionMissesHiddenFixed) {
+            for (Boolean testValue : new Boolean[] {true, false}) {
+                String cubeDef =
+                    "<VirtualCube name='Foo' defaultMeasure='Store Sales'>\n"
+                    + "  <VirtualCubeDimension cubeName='Sales' name='Customers' visible='@REPLACE_ME@'/>\n"
+                    + "  <VirtualCubeMeasure cubeName='Sales' name='[Measures].[Store Sales]'/>\n"
+                    + "</VirtualCube>\n";
+                cubeDef = cubeDef.replace(
+                    "@REPLACE_ME@",
+                    String.valueOf(testValue));
+                final TestContext context =
+                    getTestContext().create(
+                        null, null, cubeDef, null, null, null);
+                final Cube cube =
+                    context.getConnection().getSchema()
+                        .lookupCube("Foo", true);
+                Dimension dim = null;
+                for (Dimension dimCheck : cube.getDimensionList()) {
+                    if (dimCheck.getName().equals("Customers")) {
+                        dim = dimCheck;
+                    }
+                }
+                assertNotNull(dim);
+                assertTrue(testValue.equals(dim.isVisible()));
+            }
+        }
+    }
+
+    public void testDimensionVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<Cube name='Foo'>\n"
+                + "  <Table name='store'/>\n"
+                + "  <Dimension name='Bar' visible='@REPLACE_ME@'>\n"
+                + "    <Hierarchy hasAll='true'>\n"
+                + "      <Level name='Store Type' column='store_type' uniqueMembers='true'/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
+                + "      formatString='#,###'/>\n"
+                + "</Cube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                getTestContext().create(
+                    null, cubeDef, null, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            Dimension dim = null;
+            for (Dimension dimCheck : cube.getDimensionList()) {
+                if (dimCheck.getName().equals("Bar")) {
+                    dim = dimCheck;
+                }
+            }
+            assertNotNull(dim);
+            assertTrue(testValue.equals(dim.isVisible()));
+        }
+    }
+
+    /**
+     * Test for MONDRIAN-943 and MONDRIAN-465.
+     */
+    public void testCaptionWithOrdinalColumn() {
+        final TestContext tc =
+            getTestContext().createSubstitutingCube(
+                "HR",
+                "<Dimension name='Position2' foreignKey='employee_id'>\n"
+                + "  <Hierarchy hasAll='true' allMemberName='All Position' primaryKey='employee_id'>\n"
+                + "    <Table name='employee'/>\n"
+                + "    <Level name='Management Role' uniqueMembers='true' column='management_role'/>\n"
+                + "    <Level name='Position Title' uniqueMembers='false' column='position_title' ordinalColumn='position_id' captionColumn='position_title'/>\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>\n");
+        String mdxQuery =
+            "WITH SET [#DataSet#] as '{Descendants([Position2].[All Position], 2)}' "
+            + "SELECT {[Measures].[Org Salary]} on columns, "
+            + "NON EMPTY Hierarchize({[#DataSet#]}) on rows FROM [HR]";
+        Result result = tc.executeQuery(mdxQuery);
+        Axis[] axes = result.getAxes();
+        List<Position> positions = axes[1].getPositions();
+        Member mall = positions.get(0).get(0);
+        String caption = mall.getHierarchy().getCaption();
+        assertEquals("Position2", caption);
+        String captionValue = mall.getCaption();
+        assertEquals("HQ Information Systems", captionValue);
+        mall = positions.get(14).get(0);
+        captionValue = mall.getCaption();
+        assertEquals("Store Manager", captionValue);
+        mall = positions.get(15).get(0);
+        captionValue = mall.getCaption();
+        assertEquals("Store Assistant Manager", captionValue);
+    }
+
+
+    public void testHierarchyVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<Cube name='Foo'>\n"
+                + "  <Table name='store'/>\n"
+                + "  <Dimension name='Bar'>\n"
+                + "    <Hierarchy name='Bacon' hasAll='true' visible='@REPLACE_ME@'>\n"
+                + "      <Level name='Store Type' column='store_type' uniqueMembers='true'/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
+                + "      formatString='#,###'/>\n"
+                + "</Cube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                getTestContext().create(
+                    null, cubeDef, null, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            Dimension dim = null;
+            for (Dimension dimCheck : cube.getDimensionList()) {
+                if (dimCheck.getName().equals("Bar")) {
+                    dim = dimCheck;
+                }
+            }
+            assertNotNull(dim);
+            final Hierarchy hier = dim.getHierarchy();
+            assertNotNull(hier);
+            assertEquals(
+                MondrianProperties.instance().SsasCompatibleNaming.get()
+                    ? "Bacon"
+                    : "Bar.Bacon",
+                hier.getName());
+            assertTrue(testValue.equals(hier.isVisible()));
+        }
+    }
+
+    /**
+     * This is a test case for bug Mondrian-923. When a virtual cube included
+     * calculated members in its schema, they were not included in the list of
+     * existing measures because of an override of the hierarchy schema reader
+     * which was done at cube init time when resolving the calculated members
+     * of the base cubes.
+     */
+    public void testBugMondrian923() throws Exception {
+        if (!Bug.VirtualCubeConversionMissesHiddenFixed) {
+            return;
+        }
+        TestContext context =
+            getTestContext().createSubstitutingCube(
+                "Warehouse and Sales",
+                null,
+                null,
+                "<CalculatedMember name='Image Unit Sales' dimension='Measures'><Formula>[Measures].[Unit Sales]</Formula><CalculatedMemberProperty name='FORMAT_STRING' value='|$#,###.00|image=icon_chart\\.gif|link=http://www\\.pentaho\\.com'/></CalculatedMember>"
+                + "<CalculatedMember name='Arrow Unit Sales' dimension='Measures'><Formula>[Measures].[Unit Sales]</Formula><CalculatedMemberProperty name='FORMAT_STRING' expression='IIf([Measures].[Unit Sales] > 10000,'|#,###|arrow=up',IIf([Measures].[Unit Sales] > 5000,'|#,###|arrow=down','|#,###|arrow=none'))'/></CalculatedMember>"
+                + "<CalculatedMember name='Style Unit Sales' dimension='Measures'><Formula>[Measures].[Unit Sales]</Formula><CalculatedMemberProperty name='FORMAT_STRING' expression='IIf([Measures].[Unit Sales] > 100000,'|#,###|style=green',IIf([Measures].[Unit Sales] > 50000,'|#,###|style=yellow','|#,###|style=red'))'/></CalculatedMember>",
+                null);
+        for (Cube cube : context.getConnection().getSchemaReader().getCubes()) {
+            if (cube.getName().equals("Warehouse and Sales")) {
+                for (Dimension dim : cube.getDimensionList()) {
+                    if (dim.isMeasures()) {
+                        List<Member> members =
+                            context.getConnection()
+                                .getSchemaReader().getLevelMembers(
+                                    dim.getHierarchy().getLevelList().get(0),
+                                true);
+                        assertTrue(
+                            members.toString().contains(
+                                "[Measures].[Profit Per Unit Shipped]"));
+                        assertTrue(
+                            members.toString().contains(
+                                "[Measures].[Image Unit Sales]"));
+                        assertTrue(
+                            members.toString().contains(
+                                "[Measures].[Arrow Unit Sales]"));
+                        assertTrue(
+                            members.toString().contains(
+                                "[Measures].[Style Unit Sales]"));
+                        assertTrue(
+                            members.toString().contains(
+                                "[Measures].[Average Warehouse Sale]"));
+                        return;
+                    }
+                }
+            }
+        }
+        fail("Didn't find measures in sales cube.");
     }
 }
 
