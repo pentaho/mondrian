@@ -184,9 +184,9 @@ public class CrossJoinArgFactory {
             return false;
         }
         Member member = ((MemberExpr) arg).getMember();
-        if (member instanceof RolapCalculatedMember) {
+        if (member instanceof CalculatedMember) {
             Exp calcExp =
-                ((RolapCalculatedMember) member).getFormula().getExpression();
+                ((CalculatedMember) member).getFormula().getExpression();
             return ((calcExp instanceof ResolvedFunCall
                 && ((ResolvedFunCall) calcExp).getFunDef()
                 instanceof TupleFunDef))
@@ -225,9 +225,9 @@ public class CrossJoinArgFactory {
     private Exp[] getCalculatedTupleArgs(Exp arg) {
         if (arg instanceof MemberExpr) {
             Member member = ((MemberExpr) arg).getMember();
-            if (member instanceof RolapCalculatedMember) {
+            if (member instanceof CalculatedMember) {
                 Exp formulaExp =
-                    ((RolapCalculatedMember) member)
+                    ((CalculatedMember) member)
                         .getFormula().getExpression();
                 if (formulaExp instanceof ResolvedFunCall) {
                     return ((ResolvedFunCall) formulaExp).getArgs();

@@ -10,6 +10,10 @@
 */
 package mondrian.olap;
 
+/**
+ * A <code>CalculatedMember</code> is a member based upon a
+ * {@link Formula}.
+ **/
 public interface CalculatedMember extends Member {
     Formula getFormula();
 }

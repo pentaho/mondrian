@@ -13,8 +13,6 @@ package mondrian.olap;
 import mondrian.mdx.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.RolapCalculatedMember;
-import mondrian.rolap.RolapCubeHierarchy;
 
 import java.io.PrintWriter;
 import java.util.*;
