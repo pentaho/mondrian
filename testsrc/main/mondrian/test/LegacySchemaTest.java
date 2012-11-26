@@ -11,6 +11,9 @@ package mondrian.test;
 
 import mondrian.olap.*;
 
+import mondrian.olap.Cube;
+import mondrian.olap.Dimension;
+import mondrian.olap.Hierarchy;
 import mondrian.olap.Member;
 
 import junit.framework.Assert;
@@ -18,6 +21,7 @@ import junit.framework.Assert;
 import org.olap4j.metadata.*;
 
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Unit tests on the legacy (mondrian version 3) schema.
@@ -1158,6 +1162,340 @@ public class LegacySchemaTest extends FoodMartTestCase {
         TestContext.checkThrowable(
             throwable,
             "Expression must belong to one and only one relation (at line 177, column 8)");
+    }
+
+    public void testCubesVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<Cube name='Foo' visible='@REPLACE_ME@'>\n"
+                + "  <Table name='store'/>\n"
+                + "  <Dimension name='Store Type'>\n"
+                + "    <Hierarchy hasAll='true'>\n"
+                + "      <Level name='Store Type' column='store_type' uniqueMembers='true'/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
+                + "      formatString='#,###'/>\n"
+                + "</Cube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                getTestContext().legacy().create(
+                    null, cubeDef, null, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            assertTrue(testValue.equals(cube.isVisible()));
+        }
+    }
+
+    public void testLevelVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<Cube name='Foo'>\n"
+                + "  <Table name='store'/>\n"
+                + "  <Dimension name='Bar'>\n"
+                + "    <Hierarchy name='Bacon' hasAll='false'>\n"
+                + "      <Level name='Samosa' column='store_type' uniqueMembers='true' visible='@REPLACE_ME@'/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
+                + "      formatString='#,###'/>\n"
+                + "</Cube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                getTestContext().legacy().create(
+                    null, cubeDef, null, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            Dimension dim = null;
+            for (Dimension dimCheck : cube.getDimensionList()) {
+                if (dimCheck.getName().equals("Bar")) {
+                    dim = dimCheck;
+                }
+            }
+            assertNotNull(dim);
+            final Hierarchy hier = dim.getHierarchy();
+            assertNotNull(hier);
+            assertEquals(
+                MondrianProperties.instance().SsasCompatibleNaming.get()
+                    ? "Bacon"
+                    : "Bar.Bacon",
+                hier.getName());
+            final mondrian.olap.Level level = hier.getLevelList().get(0);
+            assertEquals("Samosa", level.getName());
+            assertTrue(testValue.equals(level.isVisible()));
+        }
+    }
+
+    public void testInvalidRoleError() {
+        String schema =
+            TestContext.getRawSchema(TestContext.DataSet.LEGACY_FOODMART);
+        schema =
+            schema.replaceFirst(
+                "<Schema name=\"FoodMart\"",
+                "<Schema name='FoodMart' defaultRole='Unknown'");
+        final TestContext testContext =
+            getTestContext().withSchema(schema);
+        final List<Exception> exceptionList = testContext.getSchemaWarnings();
+        testContext.assertContains(
+            exceptionList,
+            "Role 'Unknown' not found \\(in Schema 'FoodMart'\\) \\(at ${pos}\\)",
+            "<Schema name='FoodMart' defaultRole='Unknown'>");
+    }
+
+    public void testVirtualCubeNamedSetSupportInSchema() {
+        TestContext testContext = getTestContext().createSubstitutingCube(
+            "Warehouse and Sales",
+            null,
+            null,
+            null,
+            "<NamedSet name='Non CA State Stores' "
+            + "formula='EXCEPT({[Store].[Store Country].[USA].children},{[Store].[Store Country].[USA].[CA]})'/>");
+        testContext.assertQueryReturns(
+            "WITH "
+            + "SET [Non CA State Stores] AS 'EXCEPT({[Store].[Store Country].[USA].children},"
+            + "{[Store].[Store Country].[USA].[CA]})'\n"
+            + "MEMBER "
+            + "[Store].[Total Non CA State] AS \n"
+            + "'SUM({[Non CA State Stores]})'\n"
+            + "SELECT {[Store].[Store Country].[USA],[Store].[Total Non CA State]} ON 0,"
+            + "{[Measures].[Unit Sales]} ON 1 FROM [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[Store].[USA]}\n"
+            + "{[Store].[Store].[Total Non CA State]}\n"
+            + "Axis #2:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: 192,025\n");
+
+        testContext.assertQueryReturns(
+            "WITH "
+            + "MEMBER "
+            + "[Store].[Total Non CA State] AS \n"
+            + "'SUM({[Non CA State Stores]})'\n"
+            + "SELECT {[Store].[Store Country].[USA],[Store].[Total Non CA State]} ON 0,"
+            + "{[Measures].[Unit Sales]} ON 1 FROM [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[Store].[USA]}\n"
+            + "{[Store].[Store].[Total Non CA State]}\n"
+            + "Axis #2:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: 192,025\n");
+    }
+
+    public void testVirtualCubeNamedSetSupportInSchemaError() {
+        TestContext testContext = getTestContext().createSubstitutingCube(
+            "Warehouse and Sales",
+            null,
+            null,
+            null,
+            "<NamedSet name='Non CA State Stores' "
+            + "formula='EXCEPT({[Store].[Store State].[USA].children},{[Store].[Store Country].[USA].[CA]})'/>");
+        try {
+            testContext.assertQueryReturns(
+                "WITH "
+                + "SET [Non CA State Stores] AS 'EXCEPT({[Store].[Store Country].[USA].children},"
+                + "{[Store].[Store Country].[USA].[CA]})'\n"
+                + "MEMBER "
+                + "[Store].[Total Non CA State] AS \n"
+                + "'SUM({[Non CA State Stores]})'\n"
+                + "SELECT {[Store].[Store Country].[USA],[Store].[Total Non CA State]} ON 0,"
+                + "{[Measures].[Unit Sales]} ON 1 FROM [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Store].[USA]}\n"
+                + "{[Store].[Total Non CA State]}\n"
+                + "Axis #2:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Row #0: 266,773\n"
+                + "Row #0: 192,025\n");
+            fail();
+        } catch (MondrianException e) {
+            assertTrue(e.getMessage().indexOf("bad formula") >= 0);
+        }
+    }
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-413">
+     * MONDRIAN-413, "RolapMember causes ClassCastException in compare()"</a>,
+     * caused by binary column value.
+     */
+    public void testBinaryLevelKey() {
+        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        case DERBY:
+        case MYSQL:
+            break;
+        default:
+            // Not all databases support binary literals (e.g. X'AB01'). Only
+            // Derby returns them as byte[] values from its JDBC driver and
+            // therefore experiences bug MONDRIAN-413.
+            return;
+        }
+        TestContext testContext = getTestContext().createSubstitutingCube(
+            "Sales",
+            "  <Dimension name='Binary' foreignKey='promotion_id'>\n"
+            + "    <Hierarchy hasAll='false' primaryKey='id'>\n"
+            + "      <InlineTable alias='binary'>\n"
+            + "        <ColumnDefs>\n"
+            + "          <ColumnDef name='id' type='Integer'/>\n"
+            + "          <ColumnDef name='bin' type='Integer'/>\n"
+            + "          <ColumnDef name='name' type='String'/>\n"
+            + "        </ColumnDefs>\n"
+            + "        <Rows>\n"
+            + "          <Row>\n"
+            + "            <Value column='id'>2</Value>\n"
+            + "            <Value column='bin'>X'4546'</Value>\n"
+            + "            <Value column='name'>Ben</Value>\n"
+            + "          </Row>\n"
+            + "          <Row>\n"
+            + "            <Value column='id'>3</Value>\n"
+            + "            <Value column='bin'>X'424344'</Value>\n"
+            + "            <Value column='name'>Bill</Value>\n"
+            + "          </Row>\n"
+            + "          <Row>\n"
+            + "            <Value column='id'>4</Value>\n"
+            + "            <Value column='bin'>X'424344'</Value>\n"
+            + "            <Value column='name'>Bill</Value>\n"
+            + "          </Row>\n"
+            + "        </Rows>\n"
+            + "      </InlineTable>\n"
+            + "      <Level name='Level1' column='bin' nameColumn='name' ordinalColumn='name' />\n"
+            + "      <Level name='Level2' column='id'/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n");
+        testContext.assertQueryReturns(
+            "select {[Binary].members} on 0 from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Binary].[Ben]}\n"
+            + "{[Binary].[Ben].[2]}\n"
+            + "{[Binary].[Bill]}\n"
+            + "{[Binary].[Bill].[3]}\n"
+            + "{[Binary].[Bill].[4]}\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n");
+        testContext.assertQueryReturns(
+            "select hierarchize({[Binary].members}) on 0 from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Binary].[Ben]}\n"
+            + "{[Binary].[Ben].[2]}\n"
+            + "{[Binary].[Bill]}\n"
+            + "{[Binary].[Bill].[3]}\n"
+            + "{[Binary].[Bill].[4]}\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n");
+    }
+
+    public void testCubeRequiresFactTable() {
+        final TestContext testContext =
+            getTestContext().create(
+                null, "<Cube name='cube without fact table'/>",
+                null, null, null, null);
+        testContext.assertSchemaError(
+            "Cube 'cube without fact table' requires fact table \\(in Cube\\) \\(at ${pos}\\)",
+            "<Cube name='cube without fact table'/>");
+    }
+
+    /**
+     * Test case for the Level@internalType attribute.
+     *
+     * <p>See bug <a href="http://jira.pentaho.com/browse/MONDRIAN-896">
+     * MONDRIAN-896, "Oracle integer columns overflow if value &gt;>2^31"</a>.
+     */
+    public void testLevelInternalType() {
+        // One of the keys is larger than Integer.MAX_VALUE (2 billion), so
+        // will only work if we use long values.
+        TestContext testContext = getTestContext().createSubstitutingCube(
+            "Sales",
+            "  <Dimension name='Big numbers' foreignKey='promotion_id'>\n"
+            + "    <Hierarchy hasAll='false' primaryKey='id'>\n"
+            + "      <InlineTable alias='t'>\n"
+            + "        <ColumnDefs>\n"
+            + "          <ColumnDef name='id' type='Integer'/>\n"
+            + "          <ColumnDef name='big_num' type='Integer'/>\n"
+            + "          <ColumnDef name='name' type='String'/>\n"
+            + "        </ColumnDefs>\n"
+            + "        <Rows>\n"
+            + "          <Row>\n"
+            + "            <Value column='id'>0</Value>\n"
+            + "            <Value column='big_num'>1234</Value>\n"
+            + "            <Value column='name'>Ben</Value>\n"
+            + "          </Row>\n"
+            + "          <Row>\n"
+            + "            <Value column='id'>519</Value>\n"
+            + "            <Value column='big_num'>1234567890123</Value>\n"
+            + "            <Value column='name'>Bill</Value>\n"
+            + "          </Row>\n"
+            + "        </Rows>\n"
+            + "      </InlineTable>\n"
+            + "      <Level name='Level1' column='big_num' internalType='long'/>\n"
+            + "      <Level name='Level2' column='id'/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n");
+        testContext.assertQueryReturns(
+            "select {[Big numbers].members} on 0 from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Big numbers].[Big numbers].[1234]}\n"
+            + "{[Big numbers].[Big numbers].[1234].[0]}\n"
+            + "{[Big numbers].[Big numbers].[1234567890123]}\n"
+            + "{[Big numbers].[Big numbers].[1234567890123].[519]}\n"
+            + "Row #0: 195,448\n"
+            + "Row #0: 195,448\n"
+            + "Row #0: 739\n"
+            + "Row #0: 739\n");
+    }
+
+    /**
+     * Negative test for Level@internalType attribute.
+     */
+    public void testLevelInternalTypeErr() {
+        TestContext testContext = getTestContext().createSubstitutingCube(
+            "Sales",
+            "  <Dimension name='Big numbers' foreignKey='promotion_id'>\n"
+            + "    <Hierarchy hasAll='false' primaryKey='id'>\n"
+            + "      <InlineTable alias='t'>\n"
+            + "        <ColumnDefs>\n"
+            + "          <ColumnDef name='id' type='Integer'/>\n"
+            + "          <ColumnDef name='big_num' type='Integer'/>\n"
+            + "          <ColumnDef name='name' type='String'/>\n"
+            + "        </ColumnDefs>\n"
+            + "        <Rows>\n"
+            + "          <Row>\n"
+            + "            <Value column='id'>0</Value>\n"
+            + "            <Value column='big_num'>1234</Value>\n"
+            + "            <Value column='name'>Ben</Value>\n"
+            + "          </Row>\n"
+            + "        </Rows>\n"
+            + "      </InlineTable>\n"
+            + "      <Level name='Level1' column='big_num' type='Integer' internalType='char'/>\n"
+            + "      <Level name='Level2' column='id'/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n");
+        testContext.assertQueryThrows(
+            "select {[Big numbers].members} on 0 from [Sales]",
+            "In Schema: In Cube: In Dimension: In Hierarchy: In Level: Value 'char' of attribute 'internalType' has illegal value 'char'.  Legal values: {int, long, Object, String}");
     }
 }
 

@@ -2450,26 +2450,31 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     public void testCubeWithOneCalcMeasure() {
-        final TestContext testContext = getTestContext().create(
-            null,
-            "<Cube name='OneCalcMeasure'>\n"
-            + "  <Table name='sales_fact_1997'/>\n"
-            + "  <Dimension name='Promotion Media' foreignKey='promotion_id'>\n"
-            + "    <Hierarchy hasAll='true' allMemberName='All Media' primaryKey='promotion_id' defaultMember='All Media'>\n"
-            + "      <Table name='promotion'/>\n"
-            + "      <Level name='Media Type' column='media_type' uniqueMembers='true'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
-            + "  <CalculatedMember\n"
-            + "      name='One'\n"
-            + "      dimension='Measures'\n"
-            + "      formula='1'/>\n"
-            + "</Cube>",
-            null, null, null, null);
+        final TestContext testContext = getTestContext().insertCube(
+            "<Cube name='OneCalcMeasure' defaultMeasure='[Measures].[Fact Count]'>\n"
+            + "  <Dimensions>"
+            + "    <Dimension name='Promotion' table='promotion' key='id'>\n"
+            + "      <Attributes>"
+            + "        <Attribute name='Media Type' keyColumn='media_type' uniqueMembers='true'/>"
+            + "        <Attribute name='id' keyColumn='promotion_id'/>"
+            + "      </Attributes>"
+            + "    </Dimension>\n"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup table='sales_fact_1997'>"
+            + "      <Measures>"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' formatString='Standard'/>\n"
+            + "      </Measures>"
+            + "      <DimensionLinks>\n"
+            + "        <ForeignKeyLink dimension='Promotion' foreignKeyColumn='promotion_id'/>\n"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
+            + "  <CalculatedMembers>"
+            + "    <CalculatedMember name='One' dimension='Measures' formula='1'/>\n"
+            + "  </CalculatedMembers>"
+            + "</Cube>");
 
-        // Because there are no explicit stored measures, the default measure is
-        // the implicit stored measure, [Fact Count]. Stored measures, even
-        // non-visible ones, come before calculated measures.
         testContext.assertQueryReturns(
             "select {[Measures]} on columns from [OneCalcMeasure]\n"
             + "where [Promotion].[Media Type].[TV]",
@@ -2488,20 +2493,17 @@ Test that get error if a dimension has more than one hierarchy with same name.
      */
     public void testCalcMemberInCube() {
         final TestContext testContext =
-            getTestContext().createSubstitutingCube(
+            getTestContext().insertCalculatedMembers(
                 "Sales",
-                null,
-                null,
                 "<CalculatedMember\n"
                 + "      name='SF and LA'\n"
-                + "      hierarchy='[Store]'\n"
+                + "      hierarchy='[Store].[Stores]'\n"
                 + "      parent='[Store].[USA].[CA]'>\n"
                 + "  <Formula>\n"
                 + "    [Store].[USA].[CA].[San Francisco]\n"
                 + "    + [Store].[USA].[CA].[Los Angeles]\n"
                 + "  </Formula>\n"
-                + "</CalculatedMember>",
-                null);
+                + "</CalculatedMember>");
 
         // Because there are no explicit stored measures, the default measure is
         // the implicit stored measure, [Fact Count]. Stored measures, even
@@ -2511,7 +2513,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[USA].[CA].[SF and LA]}\n"
+            + "{[Store].[Stores].[USA].[CA].[SF and LA]}\n"
             + "Row #0: 27,780\n");
 
         // Now access the same member using a path that is not its unique name.
@@ -2522,28 +2524,25 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 "Axis #0:\n"
                 + "{}\n"
                 + "Axis #1:\n"
-                + "{[Store].[USA].[CA].[SF and LA]}\n"
+                + "{[Store].[Stores].[USA].[CA].[SF and LA]}\n"
                 + "Row #0: 27,780\n");
         }
 
         // Test where hierarchy & dimension both specified. should fail
         try {
             final TestContext testContextFail1 =
-                getTestContext().createSubstitutingCube(
+                getTestContext().insertCalculatedMembers(
                     "Sales",
-                    null,
-                    null,
                     "<CalculatedMember\n"
                     + "      name='SF and LA'\n"
-                    + "      hierarchy='[Store]'\n"
+                    + "      hierarchy='[Store].[Stores]'\n"
                     + "      dimension='[Store]'\n"
                     + "      parent='[Store].[USA].[CA]'>\n"
                     + "  <Formula>\n"
                     + "    [Store].[USA].[CA].[San Francisco]\n"
                     + "    + [Store].[USA].[CA].[Los Angeles]\n"
                     + "  </Formula>\n"
-                    + "</CalculatedMember>",
-                    null);
+                    + "</CalculatedMember>");
             testContextFail1.assertQueryReturns(
                 "select {[Store].[All Stores].[USA].[CA].[SF and LA]} on columns from [Sales]",
                 "Axis #0:\n"
@@ -2562,10 +2561,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
         // test where hierarchy is not uname of valid hierarchy. should fail
         try {
             final TestContext testContextFail1 =
-                getTestContext().createSubstitutingCube(
+                getTestContext().insertCalculatedMembers(
                     "Sales",
-                    null,
-                    null,
                     "<CalculatedMember\n"
                     + "      name='SF and LA'\n"
                     + "      hierarchy='[Bacon]'\n"
@@ -2574,8 +2571,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                     + "    [Store].[USA].[CA].[San Francisco]\n"
                     + "    + [Store].[USA].[CA].[Los Angeles]\n"
                     + "  </Formula>\n"
-                    + "</CalculatedMember>",
-                    null);
+                    + "</CalculatedMember>");
             testContextFail1.assertQueryReturns(
                 "select {[Store].[All Stores].[USA].[CA].[SF and LA]} on columns from [Sales]",
                 "Axis #0:\n"
@@ -2594,19 +2590,16 @@ Test that get error if a dimension has more than one hierarchy with same name.
         // test where formula is invalid. should fail
         try {
             final TestContext testContextFail1 =
-                getTestContext().createSubstitutingCube(
+                getTestContext().insertCalculatedMembers(
                     "Sales",
-                    null,
-                    null,
                     "<CalculatedMember\n"
                     + "      name='SF and LA'\n"
-                    + "      hierarchy='[Store]'\n"
+                    + "      hierarchy='[Store].[Stores]'\n"
                     + "      parent='[Store].[USA].[CA]'>\n"
                     + "  <Formula>\n"
                     + "    Baconating!\n"
                     + "  </Formula>\n"
-                    + "</CalculatedMember>",
-                    null);
+                    + "</CalculatedMember>");
             testContextFail1.assertQueryReturns(
                 "select {[Store].[All Stores].[USA].[CA].[SF and LA]} on columns from [Sales]",
                 "Axis #0:\n"
@@ -2624,22 +2617,19 @@ Test that get error if a dimension has more than one hierarchy with same name.
         // Test where parent is invalid. should fail
         try {
             final TestContext testContextFail1 =
-                getTestContext().createSubstitutingCube(
+                getTestContext().insertCalculatedMembers(
                     "Sales",
-                    null,
-                    null,
                     "<CalculatedMember\n"
                     + "      name='SF and LA'\n"
-                    + "      hierarchy='[Store]'\n"
+                    + "      hierarchy='[Store].[Stores]'\n"
                     + "      parent='[Store].[USA].[CA].[Baconville]'>\n"
                     + "  <Formula>\n"
                     + "    [Store].[USA].[CA].[San Francisco]\n"
                     + "    + [Store].[USA].[CA].[Los Angeles]\n"
                     + "  </Formula>\n"
-                    + "</CalculatedMember>",
-                    null);
+                    + "</CalculatedMember>");
             testContextFail1.assertQueryReturns(
-                "select {[Store].[All Stores].[USA].[CA].[SF and LA]} on columns from [Sales]",
+                "select {[Store].[Stores].[All Stores].[USA].[CA].[SF and LA]} on columns from [Sales]",
                 "Axis #0:\n"
                 + "{}\n"
                 + "Axis #1:\n"
@@ -2657,20 +2647,17 @@ Test that get error if a dimension has more than one hierarchy with same name.
         // test where parent is not in same hierarchy as hierarchy. should fail
         try {
             final TestContext testContextFail1 =
-                getTestContext().createSubstitutingCube(
+                getTestContext().insertCalculatedMembers(
                     "Sales",
-                    null,
-                    null,
                     "<CalculatedMember\n"
                     + "      name='SF and LA'\n"
-                    + "      hierarchy='[Store Type]'\n"
+                    + "      hierarchy='[Store].[Store Type]'\n"
                     + "      parent='[Store].[USA].[CA]'>\n"
                     + "  <Formula>\n"
                     + "    [Store].[USA].[CA].[San Francisco]\n"
                     + "    + [Store].[USA].[CA].[Los Angeles]\n"
                     + "  </Formula>\n"
-                    + "</CalculatedMember>",
-                    null);
+                    + "</CalculatedMember>");
             testContextFail1.assertQueryReturns(
                 "select {[Store].[All Stores].[USA].[CA].[SF and LA]} on columns from [Sales]",
                 "Axis #0:\n"
@@ -2683,7 +2670,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             assertTrue(
                 e.getMessage().contains(
                     "The calculated member 'SF and LA' in cube 'Sales'"
-                    + " is defined for hierarchy '[Store Type]' but its"
+                    + " is defined for hierarchy '[Store].[Store Type]' but its"
                     + " parent member is not part of that hierarchy"));
         }
 
@@ -2691,18 +2678,15 @@ Test that get error if a dimension has more than one hierarchy with same name.
         //   embedded element); should fail
         try {
             final TestContext testContextFail1 =
-                getTestContext().createSubstitutingCube(
+                getTestContext().insertCalculatedMembers(
                     "Sales",
-                    null,
-                    null,
                     "<CalculatedMember\n"
                     + "      name='SF and LA'\n"
-                    + "      hierarchy='[Store]'\n"
+                    + "      hierarchy='[Store].[Stores]'\n"
                     + "      parent='[Store].[USA].[CA]'>\n"
                     + "  <Formula>\n"
                     + "  </Formula>\n"
-                    + "</CalculatedMember>",
-                    null);
+                    + "</CalculatedMember>");
             testContextFail1.assertQueryReturns(
                 "select {[Store].[All Stores].[USA].[CA].[SF and LA]} on columns from [Sales]",
                 "Axis #0:\n"
@@ -3025,84 +3009,6 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "<Role name='Role3'>");
     }
 
-    public void testVirtualCubeNamedSetSupportInSchema() {
-        TestContext testContext = getTestContext().createSubstitutingCube(
-            "Warehouse and Sales",
-            null,
-            null,
-            null,
-            "<NamedSet name='Non CA State Stores' "
-            + "formula='EXCEPT({[Store].[Store Country].[USA].children},{[Store].[Store Country].[USA].[CA]})'/>");
-        testContext.assertQueryReturns(
-            "WITH "
-            + "SET [Non CA State Stores] AS 'EXCEPT({[Store].[Store Country].[USA].children},"
-            + "{[Store].[Store Country].[USA].[CA]})'\n"
-            + "MEMBER "
-            + "[Store].[Total Non CA State] AS \n"
-            + "'SUM({[Non CA State Stores]})'\n"
-            + "SELECT {[Store].[Store Country].[USA],[Store].[Total Non CA State]} ON 0,"
-            + "{[Measures].[Unit Sales]} ON 1 FROM [Sales]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Store].[USA]}\n"
-            + "{[Store].[Total Non CA State]}\n"
-            + "Axis #2:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "Row #0: 266,773\n"
-            + "Row #0: 192,025\n");
-
-        testContext.assertQueryReturns(
-            "WITH "
-            + "MEMBER "
-            + "[Store].[Total Non CA State] AS \n"
-            + "'SUM({[Non CA State Stores]})'\n"
-            + "SELECT {[Store].[Store Country].[USA],[Store].[Total Non CA State]} ON 0,"
-            + "{[Measures].[Unit Sales]} ON 1 FROM [Warehouse and Sales]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Store].[USA]}\n"
-            + "{[Store].[Total Non CA State]}\n"
-            + "Axis #2:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "Row #0: 266,773\n"
-            + "Row #0: 192,025\n");
-    }
-
-    public void testVirtualCubeNamedSetSupportInSchemaError() {
-        TestContext testContext = getTestContext().createSubstitutingCube(
-            "Warehouse and Sales",
-            null,
-            null,
-            null,
-            "<NamedSet name='Non CA State Stores' "
-            + "formula='EXCEPT({[Store].[Store State].[USA].children},{[Store].[Store Country].[USA].[CA]})'/>");
-        try {
-            testContext.assertQueryReturns(
-                "WITH "
-                + "SET [Non CA State Stores] AS 'EXCEPT({[Store].[Store Country].[USA].children},"
-                + "{[Store].[Store Country].[USA].[CA]})'\n"
-                + "MEMBER "
-                + "[Store].[Total Non CA State] AS \n"
-                + "'SUM({[Non CA State Stores]})'\n"
-                + "SELECT {[Store].[Store Country].[USA],[Store].[Total Non CA State]} ON 0,"
-                + "{[Measures].[Unit Sales]} ON 1 FROM [Sales]",
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Store].[USA]}\n"
-                + "{[Store].[Total Non CA State]}\n"
-                + "Axis #2:\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Row #0: 266,773\n"
-                + "Row #0: 192,025\n");
-            fail();
-        } catch (MondrianException e) {
-            assertTrue(e.getMessage().indexOf("bad formula") >= 0);
-        }
-    }
-
     public void _testValidatorFindsNumericLevel() {
         // In the real foodmart, the level has type="Numeric"
         final TestContext testContext =
@@ -3129,7 +3035,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
             getTestContext().withSchema(schema);
         final List<Exception> exceptionList = testContext.getSchemaWarnings();
         testContext.assertContains(
-            exceptionList, "Role 'Unknown' not found");
+            exceptionList,
+            "Role 'Unknown' not found \\(in Schema 'FoodMart'\\) \\(at ${pos}\\)",
+            "<Schema name='FoodMart' defaultRole='Unknown' metamodelVersion='4.0'>");
     }
 
     /**
@@ -3148,40 +3056,56 @@ Test that get error if a dimension has more than one hierarchy with same name.
             // therefore experiences bug MONDRIAN-413.
             return;
         }
-        TestContext testContext = getTestContext().createSubstitutingCube(
-            "Sales",
-            "  <Dimension name='Binary' foreignKey='promotion_id'>\n"
-            + "    <Hierarchy hasAll='false' primaryKey='id'>\n"
-            + "      <InlineTable alias='binary'>\n"
-            + "        <ColumnDefs>\n"
-            + "          <ColumnDef name='id' type='Integer'/>\n"
-            + "          <ColumnDef name='bin' type='Integer'/>\n"
-            + "          <ColumnDef name='name' type='String'/>\n"
-            + "        </ColumnDefs>\n"
-            + "        <Rows>\n"
-            + "          <Row>\n"
-            + "            <Value column='id'>2</Value>\n"
-            + "            <Value column='bin'>X'4546'</Value>\n"
-            + "            <Value column='name'>Ben</Value>\n"
-            + "          </Row>\n"
-            + "          <Row>\n"
-            + "            <Value column='id'>3</Value>\n"
-            + "            <Value column='bin'>X'424344'</Value>\n"
-            + "            <Value column='name'>Bill</Value>\n"
-            + "          </Row>\n"
-            + "          <Row>\n"
-            + "            <Value column='id'>4</Value>\n"
-            + "            <Value column='bin'>X'424344'</Value>\n"
-            + "            <Value column='name'>Bill</Value>\n"
-            + "          </Row>\n"
-            + "        </Rows>\n"
-            + "      </InlineTable>\n"
-            + "      <Level name='Level1' column='bin' nameColumn='name' ordinalColumn='name' />\n"
-            + "      <Level name='Level2' column='id'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n");
+        String tableDef =
+            "<InlineTable alias='binary'>\n"
+            + "  <ColumnDefs>\n"
+            + "    <ColumnDef name='id' type='Integer'/>\n"
+            + "    <ColumnDef name='bin' type='Numeric'/>\n"
+            + "    <ColumnDef name='name' type='String'/>\n"
+            + "  </ColumnDefs>\n"
+            + "  <Rows>\n"
+            + "    <Row>\n"
+            + "      <Value column='id'>2</Value>\n"
+            + "      <Value column='bin'>X'4546'</Value>\n"
+            + "      <Value column='name'>Ben</Value>\n"
+            + "    </Row>\n"
+            + "    <Row>\n"
+            + "      <Value column='id'>3</Value>\n"
+            + "      <Value column='bin'>X'424344'</Value>\n"
+            + "      <Value column='name'>Bill</Value>\n"
+            + "    </Row>\n"
+            + "    <Row>\n"
+            + "      <Value column='id'>4</Value>\n"
+            + "      <Value column='bin'>X'424344'</Value>\n"
+            + "      <Value column='name'>Bill</Value>\n"
+            + "    </Row>\n"
+            + "  </Rows>\n"
+            + "</InlineTable>\n";
+        TestContext testContext = getTestContext()
+            .insertDimension(
+                "Sales",
+                "<Dimension name='Binary' key='Level2' table='binary'>\n"
+                + "  <Attributes>"
+                + "    <Attribute name='Level1' keyColumn='bin' nameColumn='name' ordinalColumn='name'/>"
+                + "    <Attribute name='Level2' keyColumn='id'/>"
+                + "  </Attributes>"
+                + "  <Hierarchies>"
+                + "    <Hierarchy name='foo' hasAll='false' primaryKey='id'>"
+                + "      <Level attribute='Level1'/>"
+                + "      <Level attribute='Level2'/>"
+                + "    </Hierarchy>"
+                + "  </Hierarchies>"
+                + "</Dimension>\n")
+            .insertDimensionLinks(
+                "Sales",
+                ArrayMap.of(
+                    "Sales",
+                    "<ForeignKeyLink dimension='Binary' "
+                    + "foreignKeyColumn='promotion_id'/>"))
+            .insertPhysTable(tableDef)
+            .ignoreMissingLink();
         testContext.assertQueryReturns(
-            "select {[Binary].members} on 0 from [Sales]",
+            "select {[Binary].[foo].members} on 0 from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -3221,42 +3145,57 @@ Test that get error if a dimension has more than one hierarchy with same name.
     public void testLevelInternalType() {
         // One of the keys is larger than Integer.MAX_VALUE (2 billion), so
         // will only work if we use long values.
-        TestContext testContext = getTestContext().createSubstitutingCube(
+        String tableDef =
+            "<InlineTable alias='t'>\n"
+            + "  <ColumnDefs>\n"
+            + "    <ColumnDef name='id' type='Integer'/>\n"
+            + "    <ColumnDef name='big_num' type='Integer'/>\n"
+            + "    <ColumnDef name='name' type='String'/>\n"
+            + "  </ColumnDefs>\n"
+            + "  <Rows>\n"
+            + "    <Row>\n"
+            + "      <Value column='id'>0</Value>\n"
+            + "      <Value column='big_num'>1234</Value>\n"
+            + "      <Value column='name'>Ben</Value>\n"
+            + "    </Row>\n"
+            + "    <Row>\n"
+            + "      <Value column='id'>519</Value>\n"
+            + "      <Value column='big_num'>1234567890123</Value>\n"
+            + "      <Value column='name'>Bill</Value>\n"
+            + "    </Row>\n"
+            + "  </Rows>\n"
+            + "</InlineTable>\n";
+        String dimDef =
+            "<Dimension name='Big numbers' foreignKey='promotion_id' table='t' key='Level2'>\n"
+            + "  <Attributes>"
+            + "    <Attribute name='Level1' keyColumn='big_num' internalType='long'/>\n"
+            + "    <Attribute name='Level2' keyColumn='id'/>\n"
+            + "  </Attributes>"
+            + "  <Hierarchies>"
+            + "    <Hierarchy name='foo' hasAll='false' primaryKey='id'>"
+            + "       <Level attribute='Level1'/>"
+            + "       <Level attribute='Level2'/>"
+            + "     </Hierarchy>"
+            + "   </Hierarchies>"
+            + "</Dimension>\n";
+        Map<String, String> dimLInks = ArrayMap.of(
             "Sales",
-            "  <Dimension name='Big numbers' foreignKey='promotion_id'>\n"
-            + "    <Hierarchy hasAll='false' primaryKey='id'>\n"
-            + "      <InlineTable alias='t'>\n"
-            + "        <ColumnDefs>\n"
-            + "          <ColumnDef name='id' type='Integer'/>\n"
-            + "          <ColumnDef name='big_num' type='Integer'/>\n"
-            + "          <ColumnDef name='name' type='String'/>\n"
-            + "        </ColumnDefs>\n"
-            + "        <Rows>\n"
-            + "          <Row>\n"
-            + "            <Value column='id'>0</Value>\n"
-            + "            <Value column='big_num'>1234</Value>\n"
-            + "            <Value column='name'>Ben</Value>\n"
-            + "          </Row>\n"
-            + "          <Row>\n"
-            + "            <Value column='id'>519</Value>\n"
-            + "            <Value column='big_num'>1234567890123</Value>\n"
-            + "            <Value column='name'>Bill</Value>\n"
-            + "          </Row>\n"
-            + "        </Rows>\n"
-            + "      </InlineTable>\n"
-            + "      <Level name='Level1' column='big_num' internalType='long'/>\n"
-            + "      <Level name='Level2' column='id'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n");
+            "<ForeignKeyLink dimension='Big numbers' "
+            + "foreignKeyColumn='promotion_id'/>");
+        TestContext testContext = getTestContext()
+            .insertPhysTable(tableDef)
+            .insertDimension("Sales", dimDef)
+            .insertDimensionLinks("Sales", dimLInks)
+            .ignoreMissingLink();
         testContext.assertQueryReturns(
-            "select {[Big numbers].members} on 0 from [Sales]",
+            "select {[Big numbers].[foo].members} on 0 from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Big numbers].[1234]}\n"
-            + "{[Big numbers].[1234].[0]}\n"
-            + "{[Big numbers].[1234567890123]}\n"
-            + "{[Big numbers].[1234567890123].[519]}\n"
+            + "{[Big numbers].[foo].[1234]}\n"
+            + "{[Big numbers].[foo].[1234].[0]}\n"
+            + "{[Big numbers].[foo].[1234567890123]}\n"
+            + "{[Big numbers].[foo].[1234567890123].[519]}\n"
             + "Row #0: 195,448\n"
             + "Row #0: 195,448\n"
             + "Row #0: 739\n"
@@ -3267,31 +3206,46 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * Negative test for Level@internalType attribute.
      */
     public void testLevelInternalTypeErr() {
-        TestContext testContext = getTestContext().createSubstitutingCube(
+        String tableDef =
+            "<InlineTable alias='t'>\n"
+            + "  <ColumnDefs>\n"
+            + "    <ColumnDef name='id' type='Integer'/>\n"
+            + "    <ColumnDef name='big_num' internalType='char' type='Integer'/>\n"
+            + "    <ColumnDef name='name' type='String'/>\n"
+            + "  </ColumnDefs>\n"
+            + "  <Rows>\n"
+            + "    <Row>\n"
+            + "      <Value column='id'>0</Value>\n"
+            + "      <Value column='big_num'>1234</Value>\n"
+            + "      <Value column='name'>Ben</Value>\n"
+            + "    </Row>\n"
+            + "  </Rows>\n"
+            + "</InlineTable>\n";
+        Map<String, String> dimLInks = ArrayMap.of(
             "Sales",
-            "  <Dimension name='Big numbers' foreignKey='promotion_id'>\n"
-            + "    <Hierarchy hasAll='false' primaryKey='id'>\n"
-            + "      <InlineTable alias='t'>\n"
-            + "        <ColumnDefs>\n"
-            + "          <ColumnDef name='id' type='Integer'/>\n"
-            + "          <ColumnDef name='big_num' type='Integer'/>\n"
-            + "          <ColumnDef name='name' type='String'/>\n"
-            + "        </ColumnDefs>\n"
-            + "        <Rows>\n"
-            + "          <Row>\n"
-            + "            <Value column='id'>0</Value>\n"
-            + "            <Value column='big_num'>1234</Value>\n"
-            + "            <Value column='name'>Ben</Value>\n"
-            + "          </Row>\n"
-            + "        </Rows>\n"
-            + "      </InlineTable>\n"
-            + "      <Level name='Level1' column='big_num' type='Integer' internalType='char'/>\n"
-            + "      <Level name='Level2' column='id'/>\n"
+            "<ForeignKeyLink dimension='Big numbers' "
+            + "foreignKeyColumn='promotion_id'/>");
+        String dimDef =
+            "<Dimension name='Big numbers' foreignKey='promotion_id' table='t' key='Level2'>\n"
+            + "  <Attributes>"
+            + "    <Attribute name='Level1' keyColumn='big_num' type='Integer'/>"
+            + "    <Attribute name='Level2' keyColumn='id'/>"
+            + "  </Attributes>"
+            + "  <Hierarchies>"
+            + "    <Hierarchy name='foo' hasAll='false' primaryKey='id'>\n"
+            + "      <Level attribute='Level1'/>\n"
+            + "      <Level attribute='Level2'/>\n"
             + "    </Hierarchy>\n"
-            + "  </Dimension>\n");
+            + "  </Hierarchies>"
+            + "</Dimension>\n";
+        TestContext testContext = getTestContext()
+            .insertPhysTable(tableDef)
+            .insertDimension("Sales", dimDef)
+            .insertDimensionLinks("Sales", dimLInks)
+            .ignoreMissingLink();
         testContext.assertQueryThrows(
             "select {[Big numbers].members} on 0 from [Sales]",
-            "In Schema: In Cube: In Dimension: In Hierarchy: In Level: Value 'char' of attribute 'internalType' has illegal value 'char'.  Legal values: {int, long, Object, String}");
+            "Invalid value 'char' for attribute 'internalType' of element 'Level'. Valid values are: [int, double, Object, String, long]");
     }
 
     public void testAllLevelName() {
@@ -4686,14 +4640,25 @@ Test that get error if a dimension has more than one hierarchy with same name.
         for (Boolean testValue : new Boolean[] {true, false}) {
             String cubeDef =
                 "<Cube name='Foo' visible='@REPLACE_ME@'>\n"
-                + "  <Table name='store'/>\n"
-                + "  <Dimension name='Store Type'>\n"
-                + "    <Hierarchy hasAll='true'>\n"
-                + "      <Level name='Store Type' column='store_type' uniqueMembers='true'/>\n"
-                + "    </Hierarchy>\n"
-                + "  </Dimension>\n"
-                + "  <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
-                + "      formatString='#,###'/>\n"
+                + "  <Dimensions>"
+                + "    <Dimension name='Store Type' key='id' table='store'>\n"
+                + "      <Attributes>"
+                + "        <Attribute name='Store Type' keyColumn='store_type' uniqueMembers='true'/>"
+                + "        <Attribute name='id' keyColumn='store_id'/>"
+                + "      </Attributes>"
+                + "    </Dimension>\n"
+                + "  </Dimensions>"
+                + "  <MeasureGroups>"
+                + "    <MeasureGroup table='store'>"
+                + "      <Measures>"
+                + "        <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
+                + "         formatString='#,###'/>\n"
+                + "      </Measures>"
+                + "      <DimensionLinks>\n"
+                + "        <ForeignKeyLink dimension='Store Type' foreignKeyColumn='store_id'/>\n"
+                + "      </DimensionLinks>\n"
+                + "    </MeasureGroup>"
+                + "  </MeasureGroups>"
                 + "</Cube>\n";
             cubeDef = cubeDef.replace(
                 "@REPLACE_ME@",
@@ -4879,14 +4844,30 @@ Test that get error if a dimension has more than one hierarchy with same name.
         for (Boolean testValue : new Boolean[] {true, false}) {
             String cubeDef =
                 "<Cube name='Foo'>\n"
-                + "  <Table name='store'/>\n"
-                + "  <Dimension name='Bar'>\n"
-                + "    <Hierarchy name='Bacon' hasAll='false'>\n"
-                + "      <Level name='Samosa' column='store_type' uniqueMembers='true' visible='@REPLACE_ME@'/>\n"
-                + "    </Hierarchy>\n"
-                + "  </Dimension>\n"
-                + "  <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
-                + "      formatString='#,###'/>\n"
+                + "  <Dimensions>"
+                + "    <Dimension name='Bar' key='id'>\n"
+                + "      <Attributes>"
+                + "        <Attribute name='Samosa' table='store' keyColumn='store_type' uniqueMembers='true' visible='@REPLACE_ME@'/>"
+                + "        <Attribute name='id' table='store' keyColumn='store_id'/>"
+                + "      </Attributes>"
+                + "      <Hierarchies>"
+                + "        <Hierarchy name='Bacon' hasAll='false'>\n"
+                + "          <Level attribute='Samosa' visible='@REPLACE_ME@'/>\n"
+                + "        </Hierarchy>"
+                + "      </Hierarchies>\n"
+                + "    </Dimension>\n"
+                + "  </Dimensions>"
+                + "  <MeasureGroups>"
+                + "    <MeasureGroup table='store'>"
+                + "      <Measures>"
+                + "        <Measure name='Store Sqft' column='store_sqft' aggregator='sum'\n"
+                + "         formatString='#,###'/>\n"
+                + "      </Measures>"
+                + "      <DimensionLinks>\n"
+                + "        <ForeignKeyLink dimension='Bar' foreignKeyColumn='store_id'/>\n"
+                + "      </DimensionLinks>\n"
+                + "    </MeasureGroup>"
+                + "  </MeasureGroups>"
                 + "</Cube>\n";
             cubeDef = cubeDef.replace(
                 "@REPLACE_ME@",
@@ -5525,13 +5506,12 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
     public void testCubeRequiresFactTable() {
         final TestContext testContext =
-            getTestContext().create(
-                null, "<Cube name='cube without fact table'/>",
-                null, null, null, null);
-        final List<Exception> list = testContext.getSchemaWarnings();
-        testContext.assertContains(
-            list,
-            "Cube 'cube without fact table' requires fact table");
+            getTestContext().insertCube(
+                "<Cube name='cube without fact table'/>");
+        testContext.assertSchemaError(
+            "Cube definition must contain a MeasureGroups element, and at least "
+            + "one MeasureGroup \\(in Cube 'cube without fact table'\\) \\(at ${pos}\\)",
+            "<Cube name='cube without fact table'/>");
     }
 
     public void testPhysicalSchema() {
