@@ -12,6 +12,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.rolap.RolapSchema.PhysSchemaException;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
@@ -112,10 +113,10 @@ public class SqlConstraintUtils {
                 expr = aggColumn.generateExprString(sqlQuery);
             } else {
 */
-                RolapStar.Table table = column.getTable();
-                table.addToFrom(sqlQuery, false, true);
 
-                expr = column.getExpression().toSql();
+            addToFrom(sqlQuery, column, starSet);
+
+            expr = column.getExpression().toSql();
 /*
             }
 */
@@ -139,6 +140,34 @@ public class SqlConstraintUtils {
             }
             sqlQuery.addWhere(buf.toString());
         }
+    }
+
+
+    private static void addToFrom(
+        SqlQuery sqlQuery,
+        RolapStar.Column column,
+        RolapStarSet starSet)
+    {
+        //not using a path may not work so well in virtual cubes
+        if (column.getExpression() instanceof RolapSchema.PhysColumn) {
+            RolapSchema.PhysColumn physColumn =
+                (RolapSchema.PhysColumn) column.getExpression();
+            RolapSchema.PhysRelation columnRelation = physColumn.relation;
+            RolapSchema.PhysRelation factRelation =
+                starSet.getStar().getFactTable().getRelation();
+            try {
+                RolapSchema.PhysPath path =
+                starSet.getStar().getSchema().getPhysicalSchema().getGraph()
+                    .findPath(factRelation, columnRelation);
+                path.addToFrom(sqlQuery, false);
+                return;
+            } catch (PhysSchemaException e) {
+                //TODO:
+            }
+        }
+        //fallback
+        RolapStar.Table table = column.getTable();
+        table.addToFrom(sqlQuery, false, true);
     }
 
     /**
