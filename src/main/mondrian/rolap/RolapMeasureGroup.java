@@ -173,6 +173,7 @@ public class RolapMeasureGroup {
             RolapCubeDimension rolapCubeDimension =
                 (RolapCubeDimension) dimension;
             dimension = rolapCubeDimension.rolapDimension;
+            return dimensionMap2.containsKey(dimension);
         }
         return dimensionMap.containsKey(dimension);
     }

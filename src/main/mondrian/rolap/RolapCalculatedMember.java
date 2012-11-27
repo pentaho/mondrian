@@ -25,7 +25,10 @@ import java.util.Map;
  * @author jhyde
  * @since 26 August, 2001
  */
-public class RolapCalculatedMember extends RolapMemberBase {
+public class RolapCalculatedMember
+    extends RolapMemberBase
+    implements CalculatedMember
+{
     private final Formula formula;
     private Map<String, Annotation> annotationMap;
 

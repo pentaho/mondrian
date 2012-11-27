@@ -754,6 +754,7 @@ public class SqlTupleReader implements TupleReader {
 //          Member originalMeasure = constraint.getEvaluator().getMembers()[0];
             StringBuilder buf = new StringBuilder();
             List<SqlStatement.Type> types = null;
+            boolean useParens = joiningMeasureGroupList.size() > 1;
             for (int i = 0; i < joiningMeasureGroupList.size(); i++) {
                 final RolapMeasureGroup measureGroup =
                     joiningMeasureGroupList.get(i);
@@ -779,7 +780,11 @@ public class SqlTupleReader implements TupleReader {
                     generateSelectForLevels(
                         dialect, null,
                         measureGroup, i, measureGroupList.size());
-                buf.append(pair.left);
+                if (useParens) {
+                    buf.append("(").append(pair.left).append(")");
+                } else {
+                    buf.append(pair.left);
+                }
                 types = pair.right;
             }
 

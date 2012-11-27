@@ -13,8 +13,6 @@ package mondrian.olap;
 import mondrian.mdx.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.RolapCalculatedMember;
-import mondrian.rolap.RolapCubeHierarchy;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -558,14 +556,8 @@ public class Formula extends QueryPart {
             xxx:
             if (!hasCyclicReference(memberExpr) && member.isCalculated()) {
                 Formula formula;
-                if (member instanceof RolapCalculatedMember) {
-                    formula = ((RolapCalculatedMember) member).getFormula();
-                } else if (member instanceof
-                        RolapCubeHierarchy.RolapCubeCalculatedMeasure)
-                {
-                    formula =
-                        ((RolapCubeHierarchy.RolapCubeCalculatedMeasure) member)
-                            .getFormula();
+                if (member instanceof CalculatedMember) {
+                    formula = ((CalculatedMember) member).getFormula();
                 } else {
                     break xxx;
                 }
@@ -595,9 +587,9 @@ public class Formula extends QueryPart {
                 }
                 expList.add(memberExpr);
                 Member member = memberExpr.getMember();
-                if (member instanceof RolapCalculatedMember) {
-                    RolapCalculatedMember calculatedMember =
-                        (RolapCalculatedMember) member;
+                if (member instanceof CalculatedMember) {
+                    CalculatedMember calculatedMember =
+                        (CalculatedMember) member;
                     Exp exp1 =
                         calculatedMember.getExpression().accept(validator);
                     return hasCyclicReference(exp1, expList);
