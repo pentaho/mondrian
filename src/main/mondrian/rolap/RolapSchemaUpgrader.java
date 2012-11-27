@@ -2722,6 +2722,7 @@ public class RolapSchemaUpgrader {
         xmlHierarchy.allMemberName = xmlLegacyHierarchy.allMemberName;
         xmlHierarchy.defaultMember = xmlLegacyHierarchy.defaultMember;
         xmlHierarchy.hasAll = xmlLegacyHierarchy.hasAll;
+        xmlHierarchy.visible = xmlLegacyHierarchy.visible;
         if (xmlLegacyHierarchy.name == null) {
             // Inherit name, caption, description from dimension only if
             // hierarchy name is null.

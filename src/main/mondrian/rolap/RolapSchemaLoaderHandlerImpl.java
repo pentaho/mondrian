@@ -44,6 +44,9 @@ abstract class RolapSchemaLoaderHandlerImpl
     }
 
     public RolapSchema.XmlLocation locate(NodeDef node, String attributeName) {
+        if (node == null) {
+            return null;
+        }
         final Location location = node.getLocation();
         if (location == null) {
             return null;

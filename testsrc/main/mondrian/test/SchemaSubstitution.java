@@ -110,5 +110,49 @@ public class SchemaSubstitution {
             }
         };
     }
+
+    public static Util.Function1<String, String> insertCalculatedMembers(
+        final String cubeName, final String memberDefs)
+    {
+        return new Util.Function1<String, String>() {
+            public String apply(String schema) {
+                int h = schema.indexOf("<Cube name='" + cubeName + "'");
+                int i = schema.indexOf("<CalculatedMembers>", h);
+                if (i >= 0) {
+                    i += "<CalculatedMembers>".length();
+                    schema = schema.substring(0, i)
+                             + memberDefs
+                             + schema.substring(i);
+                } else {
+                    int end = schema.indexOf("</Cube>", h);
+                    i = schema.indexOf("<CalculatedMember", h);
+                    if (i < 0 || i > end) {
+                        i = end;
+                    }
+                    schema = schema.substring(0, i)
+                             + "<CalculatedMembers>"
+                             + memberDefs
+                             + "</CalculatedMembers>"
+                             + schema.substring(i);
+                }
+                return schema;
+            }
+        };
+    }
+
+    public static Util.Function1<String, String> replacePhysSchema(
+        final String physSchema)
+    {
+        return  new Util.Function1<String, String>() {
+            public String apply(String schema) {
+                final int start = schema.indexOf("<PhysicalSchema");
+                final int end = schema.indexOf(
+                    "</PhysicalSchema>") + "</PhysicalSchema>".length();
+                return schema.substring(0, start)
+                    + physSchema
+                    + schema.substring(end);
+            }
+        };
+    }
 }
 // End SchemaSubstitution.java

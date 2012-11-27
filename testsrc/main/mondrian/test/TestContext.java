@@ -3046,6 +3046,18 @@ public class TestContext {
     public final TestContext ignoreMissingLink() {
         return withSubstitution(SchemaSubstitution.ignoreMissingLink());
     }
+
+    public final TestContext insertCalculatedMembers(
+        final String cubeName, final String memberDefs)
+    {
+        return withSubstitution(
+            SchemaSubstitution.insertCalculatedMembers(cubeName, memberDefs));
+    }
+
+    public final TestContext replacePhysSchema(final String physSchema) {
+        return withSubstitution(
+            SchemaSubstitution.replacePhysSchema(physSchema));
+    }
 }
 
 // End TestContext.java
