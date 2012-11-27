@@ -157,7 +157,7 @@ public class SqlContextConstraint
             if (member instanceof RolapStoredMeasure) {
                 addMeasure(
                     (RolapStoredMeasure) member, baseCubes, measureGroupSet);
-            } else if (member instanceof RolapCalculatedMember) {
+            } else if (member instanceof CalculatedMember) {
                 findMeasures(
                     member.getExpression(), baseCubes, measureGroupSet);
             }
@@ -203,7 +203,7 @@ public class SqlContextConstraint
             if (member instanceof RolapStoredMeasure) {
                 addMeasure(
                     (RolapStoredMeasure) member, baseCubes, measureGroupSet);
-            } else if (member instanceof RolapCalculatedMember) {
+            } else if (member instanceof CalculatedMember) {
                 findMeasures(
                     member.getExpression(), baseCubes, measureGroupSet);
             }

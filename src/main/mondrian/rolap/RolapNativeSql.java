@@ -369,7 +369,7 @@ public class RolapNativeSql {
                 return null;
             }
             final Member member = ((MemberExpr) exp).getMember();
-            if (!(member instanceof RolapCalculatedMember)) {
+            if (!(member instanceof CalculatedMember)) {
                 return null;
             }
             exp = member.getExpression();
