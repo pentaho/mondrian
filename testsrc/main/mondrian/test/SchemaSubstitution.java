@@ -139,5 +139,20 @@ public class SchemaSubstitution {
             }
         };
     }
+
+    public static Util.Function1<String, String> replacePhysSchema(
+        final String physSchema)
+    {
+        return  new Util.Function1<String, String>() {
+            public String apply(String schema) {
+                final int start = schema.indexOf("<PhysicalSchema");
+                final int end = schema.indexOf(
+                    "</PhysicalSchema>") + "</PhysicalSchema>".length();
+                return schema.substring(0, start)
+                    + physSchema
+                    + schema.substring(end);
+            }
+        };
+    }
 }
 // End SchemaSubstitution.java

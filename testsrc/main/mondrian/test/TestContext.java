@@ -3053,6 +3053,11 @@ public class TestContext {
         return withSubstitution(
             SchemaSubstitution.insertCalculatedMembers(cubeName, memberDefs));
     }
+
+    public final TestContext replacePhysSchema(final String physSchema) {
+        return withSubstitution(
+            SchemaSubstitution.replacePhysSchema(physSchema));
+    }
 }
 
 // End TestContext.java

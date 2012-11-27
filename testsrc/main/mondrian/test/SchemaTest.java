@@ -3900,23 +3900,6 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "\n"
             + "  <Measure name='Units Shipped' column='units_shipped' aggregator='sum' formatString='#.0'/>\n"
             + "</Cube>\n"
-            + "<VirtualCube name='" + virtualCubeName + "'\n"
-            + "    caption='Virtual cube caption'\n"
-            + "    description='Virtual cube description'>\n"
-            + "  <Annotations><Annotation name='a'>Virtual cube</Annotation></Annotations>\n"
-            + "  <VirtualCubeDimension name='Time'/>\n"
-            + "  <VirtualCubeDimension cubeName='" + warehouseCubeName
-            + "' name='Warehouse'/>\n"
-            + "  <VirtualCubeMeasure cubeName='" + salesCubeName
-            + "' name='[Measures].[Unit Sales]'>\n"
-            + "    <Annotations><Annotation name='a'>Virtual cube measure</Annotation></Annotations>\n"
-            + "  </VirtualCubeMeasure>\n"
-            + "  <VirtualCubeMeasure cubeName='" + warehouseCubeName
-            + "' name='[Measures].[Units Shipped]'/>\n"
-            + "  <CalculatedMember name='Profit Per Unit Shipped' dimension='Measures'>\n"
-            + "    <Formula>1 / [Measures].[Units Shipped]</Formula>\n"
-            + "  </CalculatedMember>\n"
-            + "</VirtualCube>"
             + "</Schema>");
         final Result result =
             testContext.executeQuery("select from [" + salesCubeName + "]");
@@ -5267,15 +5250,12 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 "HR",
                 TestContext.repeatString(
                     100,
-                    "<Dimension name='Position %1$d' foreignKey='employee_id'>\n"
-                    + "  <Hierarchy hasAll='true' allMemberName='All Position' primaryKey='employee_id'>\n"
-                    + "    <Table name='employee'/>\n"
-                    + "    <Level name='Position Title' uniqueMembers='false' ordinalColumn='position_id'>\n"
-                    + "      <KeyExpression><SQL dialect='generic'>`position_title` + %1$d</SQL></KeyExpression>\n"
-                    + "    </Level>\n"
-                    + "  </Hierarchy>\n"
-                    + "</Dimension>"),
-                null);
+                    "<Dimension name='Position %1$d' key='id' table='employee'>"
+                    + "  <Attributes>"
+                    + "    <Attribute name='id' keyColumn='employee_id' hasHierarchy='false'/>"
+                    + "    <Attribute name='Position Title' keyColumn='position_title' ordinalColumn='position_id'/>"
+                    + "  </Attributes>"
+                    + "</Dimension>"));
         testContext.assertQueryReturns(
             "select from [HR]",
             "Axis #0:\n"
@@ -5364,12 +5344,18 @@ Test that get error if a dimension has more than one hierarchy with same name.
     /**
      * Tests that it is OK for a physical schema to have no tables.
      */
-    public void testEmptyPhysicalSchema() {
+    public void testEmptyPhysicalSchema() throws SQLException {
         // Empty physical schema is OK.
         final TestContext testContext =
-            getTestContext().create(
-                "<PhysicalSchema/>", null, null, null, null, null);
-        testContext.assertSimpleQuery();
+            getTestContext().withSchema(
+                "<Schema metamodelVersion='4.0' name='foo' >"
+                + "<PhysicalSchema/>"
+                + "</Schema>");
+        assertEquals(0, testContext.getSchemaWarnings().size());
+        final org.olap4j.metadata.Schema olapSchema =
+            testContext.getOlap4jConnection().getOlapSchema();
+        assertEquals("foo", olapSchema.getName());
+        assertEquals(0, olapSchema.getCubes().size());
     }
 
     /**
@@ -5378,10 +5364,10 @@ Test that get error if a dimension has more than one hierarchy with same name.
      */
     public void testPhysicalSchemaRequired() {
         final TestContext testContext =
-            getTestContext().create(
-                null,
-                "<Cube name='SalesPhys'/>",
-                null, null, null, null);
+            getTestContext().withSchema(
+                "<Schema metamodelVersion='4.0' name='foo' >"
+                + "<Cube name='SalesPhys'/>"
+                + "</Schema>");
         final List<Exception> list = testContext.getSchemaWarnings();
         testContext.assertContains(
             list, "Physical schema required");
@@ -6719,7 +6705,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
     private static final String SALES_GEN_CUBE =
         "<Cube name='Sales Gen' factTable='sales_fact_1997'>\n"
         + "  <Dimensions>\n"
-        + "    <Dimension name='Time' table='time_by_day_generated' type='TimeDimension' key='Time Id'>\n"
+        + "    <Dimension name='Time' table='time_by_day_generated' type='TIME' key='Time Id'>\n"
         + "        <Attributes>\n"
         + "            <Attribute name='Year' keyColumn='the_year' levelType='TimeYears'/>\n"
         + "            <Attribute name='Quarter' levelType='TimeQuarters'>\n"
