@@ -2374,6 +2374,40 @@ public class LegacySchemaTest extends FoodMartTestCase {
         }
     }
 
+    public void testCaptionExpression() {
+        TestContext testContext = getTestContext().createSubstitutingCube(
+            "Sales",
+            "  <Dimension name='Gender2' foreignKey='customer_id'>\n"
+            + "    <Hierarchy hasAll='true' primaryKey='customer_id' >\n"
+            + "      <Table name='customer'/>\n"
+            + "      <Level name='Gender' column='gender' uniqueMembers='true' >\n"
+            + "        <CaptionExpression>\n"
+            + "          <SQL dialect='generic'>'foobar'</SQL>\n"
+            + "        </CaptionExpression>\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>");
+        switch (testContext.getDialect().getDatabaseProduct()) {
+        case POSTGRESQL:
+            // Postgres fails with:
+            //   Internal error: while building member cache; sql=[select
+            //     "customer"."gender" as "c0", 'foobar' as "c1" from "customer"
+            //     as "customer" group by "customer"."gender", 'foobar' order by
+            //     "customer"."\ gender" ASC NULLS LAST]
+            //   Caused by: org.postgresql.util.PSQLException: ERROR:
+            //     non-integer constant in GROUP BY
+            //
+            // It's difficult for mondrian to spot that it's been given a
+            // constant expression. We can live with this bug. Postgres
+            // shouldn't be so picky, and people shouldn't be so daft.
+            return;
+        }
+        Result result = testContext.executeQuery(
+            "select {[Gender2].Children} on columns from [Sales]");
+        assertEquals(
+            "foobar",
+            result.getAxes()[0].getPositions().get(0).get(0).getCaption());
+    }
 
 }
 

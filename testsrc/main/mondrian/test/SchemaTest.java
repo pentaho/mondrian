@@ -4112,19 +4112,35 @@ Test that get error if a dimension has more than one hierarchy with same name.
         }
     }
 
-    public void testCaption() {
-        TestContext testContext = getTestContext().createSubstitutingCube(
-            "Sales",
-            "  <Dimension name='Gender2' foreignKey='customer_id'>\n"
-            + "    <Hierarchy hasAll='true' primaryKey='customer_id' >\n"
-            + "      <Table name='customer'/>\n"
-            + "      <Level name='Gender' column='gender' uniqueMembers='true' >\n"
-            + "        <CaptionExpression>\n"
-            + "          <SQL dialect='generic'>'foobar'</SQL>\n"
-            + "        </CaptionExpression>\n"
-            + "      </Level>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>");
+    public void testCaptionExpression() {
+        TestContext testContext = getTestContext()
+            .insertPhysTable(
+                "<Table name='customer' alias='customer2'>\n"
+                + "  <Key>\n"
+                + "    <Column name='customer_id'/>\n"
+                + "  </Key>\n"
+                + "  <ColumnDefs>\n"
+                + "    <CalculatedColumnDef name='foo' type='String'>\n"
+                + "      <ExpressionView>\n"
+                + "        <SQL dialect='generic'> 'foobar'</SQL>\n"
+                + "      </ExpressionView>\n"
+                + "    </CalculatedColumnDef>\n"
+                + "  </ColumnDefs>\n"
+                + "</Table>")
+            .insertDimension(
+                "Sales",
+                "<Dimension name='Gender2' table='customer2' key='id'>\n"
+                + "  <Attributes>"
+                + "    <Attribute name='Gender' keyColumn='gender' captionColumn='foo'/>"
+                + "    <Attribute name='id' keyColumn='customer_id' hasHierarchy='false'/>"
+                + "  </Attributes>"
+                + "</Dimension>")
+            .insertDimensionLinks(
+                "Sales",
+                ArrayMap.of(
+                    "Sales",
+                    "<ForeignKeyLink dimension='Gender2' foreignKeyColumn='customer_id'/>"))
+            .ignoreMissingLink();
         switch (testContext.getDialect().getDatabaseProduct()) {
         case POSTGRESQL:
             // Postgres fails with:
@@ -6215,11 +6231,11 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "{}\n"
             + "Axis #1:\n"
             + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo]}\n"
             + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges]}\n"
+            + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo]}\n"
             + "Row #0: $10,256.30\n"
-            + "Row #0: $29,121.55\n"
-            + "Row #0: $35,487.69\n");
+            + "Row #0: $35,487.69\n"
+            + "Row #0: $29,121.55\n");
     }
 
     public void testClosureWithDistanceColumn() {
@@ -6298,11 +6314,11 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "{}\n"
             + "Axis #1:\n"
             + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo]}\n"
             + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges]}\n"
+            + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo]}\n"
             + "Row #0: $10,256.30\n"
-            + "Row #0: $29,121.55\n"
-            + "Row #0: $35,487.69\n");
+            + "Row #0: $35,487.69\n"
+            + "Row #0: $29,121.55\n");
     }
 
     public void testClosureWithNonExistingDistanceColumn() {
@@ -6977,7 +6993,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
      */
     public void testForeignKeyColumnCountMatch() {
         final TestContext testContext =
-            getTestContext().createSubstitutingCube(
+            getTestContext().insertDimension(
                 "Sales",
                 "<Dimension name='Product with no all' key='Product Id'>"
                 + "    <Attributes>\n"
@@ -7015,14 +7031,15 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "            <Level attribute='Product Name'/>\n"
                 + "        </Hierarchy>\n"
                 + "    </Hierarchies>\n"
-                + "</Dimension>\n",
-                null,
-                null,
-                null,
+                + "</Dimension>\n")
+            .insertDimensionLinks(
+                "Sales",
                 ArrayMap.of(
                     "Sales",
                     "<ForeignKeyLink dimension='Product with no all' "
-                    + "foreignKeyColumn='product_id'/>"));
+                    + "foreignKeyColumn='product_id'/>"))
+            .ignoreMissingLink();
+
         testContext.assertSchemaError(
             "xxx",
             "Xx");
