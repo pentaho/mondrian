@@ -4,7 +4,8 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2010 Pentaho and others
+// Copyright (C) 2001-2005 Julian Hyde
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -22,7 +23,7 @@ import java.util.Map;
  * @since Mar 16, 2010
  */
 public class DelegatingRolapMember extends RolapMemberBase {
-    protected final RolapMember member;
+    public final RolapMember member;
 
     protected DelegatingRolapMember(RolapMember member) {
         super();

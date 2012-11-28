@@ -94,7 +94,7 @@ public class RolapCubeLevel extends RolapLevel {
                     getCube().hierarchyList,
                     getDimension().isHighCardinality());
 
-            //RME HACK
+            // RME HACK
             //  WG: Note that the reason for registering this usage is so that
             //  when registerDimension is called, the hierarchy is registered
             //  successfully to the star.  This type of hack will go away once
@@ -350,7 +350,8 @@ public class RolapCubeLevel extends RolapLevel {
             CellRequest request)
         {
             assert member.getLevel() == cubeLevel;
-            if (member.getKey() == null) {
+            Object memberKey = member.member.getKey();
+            if (memberKey == null) {
                 if (member == member.getHierarchy().getNullMember()) {
                     // cannot form a request if one of the members is null
                     return true;
@@ -370,11 +371,13 @@ public class RolapCubeLevel extends RolapLevel {
                     || cubeLevel.hierarchy.hasAll();
             }
 
+            boolean isMemberCalculated = member.member.isCalculated();
+
             final StarColumnPredicate predicate;
-            if (member.isCalculated() && !member.isParentChildLeaf()) {
+            if (isMemberCalculated && !member.isParentChildLeaf()) {
                 predicate = null;
             } else {
-                predicate = new ValueColumnPredicate(column, member.getKey());
+                predicate = new ValueColumnPredicate(column, memberKey);
             }
 
             // use the member as constraint; this will give us some
@@ -390,7 +393,7 @@ public class RolapCubeLevel extends RolapLevel {
                 request.addConstrainedColumn(nameColumn, null);
             }
 
-            if (member.isCalculated()) {
+            if (isMemberCalculated) {
                 return false;
             }
 
