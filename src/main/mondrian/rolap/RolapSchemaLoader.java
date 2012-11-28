@@ -530,7 +530,10 @@ public class RolapSchemaLoader {
         final Dialect dialect,
         final RolapSchema schema)
     {
-        assert xmlPhysicalSchema != null;
+        if (xmlPhysicalSchema == null) {
+            handler.error("Physical schema required", null, null);
+            return null;
+        }
         final RolapSchema.PhysSchema physSchema =
             createSyntheticPhysicalSchema();
         this.physSchemaBuilder = new PhysSchemaBuilder(null, physSchema);

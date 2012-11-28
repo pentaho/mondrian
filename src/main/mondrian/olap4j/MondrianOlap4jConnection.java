@@ -839,11 +839,7 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
             String msg, Throwable cause)
         {
             String sqlState = deduceSqlState(cause);
-            assert !mondrian.util.Bug.olap4jUpgrade(
-                "use OlapException(String, String, Throwable) ctor");
-            final OlapException e = new OlapException(msg, sqlState);
-            e.initCause(cause);
-            return e;
+            return new OlapException(msg, sqlState, cause);
         }
 
         private String deduceSqlState(Throwable cause) {

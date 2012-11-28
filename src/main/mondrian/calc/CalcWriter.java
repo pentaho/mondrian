@@ -4,10 +4,13 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.calc;
+
+import mondrian.olap.Util;
+import mondrian.util.Bug;
 
 import org.apache.commons.collections.map.CompositeMap;
 
@@ -104,6 +107,12 @@ public class CalcWriter {
      */
     private static synchronized String spaces(int n)
     {
+        // This optimization relies on String.substring returning a string
+        // with the same backing array. This is no longer the case after
+        // JDK 1.7.0_u7. After upgrading to olap4j 553 or later, we should use
+        // org.olap4j.impl.Spacer, as ParseTreeWriter does.
+        Util.discard(Bug.olap4jUpgrade("1.0.1.553"));
+
         while (n > BIG_STRING.length()) {
             BIG_STRING = BIG_STRING + BIG_STRING;
         }

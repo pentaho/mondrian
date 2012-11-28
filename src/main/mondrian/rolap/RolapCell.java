@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 
 import org.olap4j.AllocationPolicy;
 import org.olap4j.Scenario;
+import org.olap4j.metadata.XmlaConstants;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,12 +35,6 @@ import java.util.*;
  * {@link RolapResult}.
  */
 public class RolapCell implements Cell {
-    /**
-     * @see mondrian.util.Bug#olap4jUpgrade Use
-     * {@link mondrian.xmla.XmlaConstants}.ActionType.DRILLTHROUGH when present
-     */
-    private static final int MDACTION_TYPE_DRILLTHROUGH = 0x100;
-
     private final RolapResult result;
     protected final int[] pos;
     protected RolapResult.CellInfo ci;
@@ -533,7 +528,9 @@ public class RolapCell implements Cell {
                 defaultValue = 0;
                 break;
             case Property.ACTION_TYPE_ORDINAL:
-                return canDrillThrough() ? MDACTION_TYPE_DRILLTHROUGH : 0;
+                return canDrillThrough()
+                    ? XmlaConstants.ActionType.DRILLTHROUGH.xmlaOrdinal()
+                    : 0;
             case Property.DRILLTHROUGH_COUNT_ORDINAL:
                 return canDrillThrough() ? getDrillThroughCount() : -1;
             default:
