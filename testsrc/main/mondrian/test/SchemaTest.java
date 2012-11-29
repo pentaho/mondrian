@@ -1034,58 +1034,76 @@ Test that get error if a dimension has more than one hierarchy with same name.
             return;
         }
 
-        final String cubeName = "AliasedDimensionsTesting";
-        final TestContext testContext = getTestContext().create(
-            null,
-            "<Cube name='" + cubeName + "' defaultMeasure='Supply Time'>\n"
-            + "  <Table name='sales_fact_1997'/>\n"
-            + "  <Dimension name='Store' foreignKey='store_id'>\n"
-            + "    <Hierarchy hasAll='true' primaryKeyTable='store' primaryKey='store_id'>\n"
-            + "      <Join leftKey='region_id' rightKey='region_id'>\n"
-            + "        <Table name='store'/>\n"
-            + "        <Join leftKey='sales_district_id' rightKey='promotion_id'>\n"
-            + "          <Table name='region'/>\n"
-            + "          <Table name='promotion'/>\n"
-            + "        </Join>\n"
-            + "      </Join>\n"
-            + "      <Level name='Store Region' table='region' column='sales_region' uniqueMembers='true' />\n"
-            + "      <Level name='Store Country' table='store' column='store_country' />\n"
-            + "      <Level name='Store Name' table='store' column='store_name' />\n"
-            + "    </Hierarchy>\n"
-            + "    <Hierarchy name='MyHierarchy' hasAll='true' primaryKeyTable='customer' primaryKey='customer_id'>\n"
-            + "      <Join leftKey='customer_region_id' rightKey='region_id'>\n"
-            + "        <Table name='customer'/>\n"
-            + "        <Table name='region'/>\n"
-            + "      </Join>\n"
-            + "      <Level name='Country' table='customer' column='country' uniqueMembers='true'/>\n"
-            + "      <Level name='Region' table='region' column='sales_region' uniqueMembers='true'/>\n"
-            + "      <Level name='City' table='customer' column='city' uniqueMembers='false'/>\n"
-            + "      <Level name='Name' table='customer' column='customer_id' type='Numeric' uniqueMembers='true'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
-            + "  <Dimension name='Customers' foreignKey='customer_id'>\n"
-            + "    <Hierarchy hasAll='true' allMemberName='All Customers' primaryKeyTable='customer' primaryKey='customer_id'>\n"
-            + "      <Join leftKey='customer_region_id' rightKey='region_id'>\n"
-            + "        <Table name='customer'/>\n"
-            + "        <Table name='region'/>\n"
-            + "      </Join>\n"
-            + "      <Level name='Country' table='customer' column='country' uniqueMembers='true'/>\n"
-            + "      <Level name='Region' table='region' column='sales_region' uniqueMembers='true'/>\n"
-            + "      <Level name='City' table='customer' column='city' uniqueMembers='false'/>\n"
-            + "      <Level name='Name' table='customer' column='customer_id' type='Numeric' uniqueMembers='true'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
-            + "<Measure name='Unit Sales' column='unit_sales' aggregator='sum' formatString='Standard'/>\n"
-            + "</Cube>",
-            null,
-            null,
-            null,
-            null);
+        final String cubeDef =
+            "<Cube name='AliasedDimensionsTesting' defaultMeasure='Supply Time'>\n"
+            + "  <Dimensions>"
+            + "    <Dimension name='Store' key='store_id'>\n"
+            + "      <Attributes>"
+            + "        <Attribute name='Store Region' table='region' keyColumn='sales_region' hasHierarchy='false'/>"
+            + "        <Attribute name='Store Country' table='store' keyColumn='store_country' hasHierarchy='false'/>"
+            + "        <Attribute name='Store Name' table='store' keyColumn='store_name' hasHierarchy='false'/>"
+            + "        <Attribute name='store_id' table='store' keyColumn='store_id' hasHierarchy='false'/>"
+            + "        <Attribute name='Country' table='customer' keyColumn='country' hasHierarchy='false'/>"
+            + "        <Attribute name='Region' table='region' keyColumn='sales_region' hasHierarchy='false'/>"
+            + "        <Attribute name='City' table='customer' keyColumn='city' hasHierarchy='false'/>"
+            + "        <Attribute name='Name' table='customer' keyColumn='customer_id' hasHierarchy='false'/>"
+            + "      </Attributes>"
+            + "      <Hierarchies>"
+            + "        <Hierarchy name='Store' hasAll='true'>\n"
+            + "          <Level attribute='Store Region'/>\n"
+            + "          <Level attribute='Store Country'/>\n"
+            + "          <Level attribute='Store Name'/>\n"
+            + "        </Hierarchy>\n"
+            + "        <Hierarchy name='MyHierarchy' hasAll='true'>\n"
+            + "          <Level attribute='Country'/>\n"
+            + "          <Level attribute='Region'/>\n"
+            + "          <Level attribute='City'/>\n"
+            + "          <Level attribute='Name'/>\n"
+            + "        </Hierarchy>\n"
+            + "      </Hierarchies>"
+            + "    </Dimension>\n"
+            + "    <Dimension name='Customers' key='Name'>\n"
+            + "      <Attributes>"
+            + "        <Attribute name='Country' table='customer' keyColumn='country'/>"
+            + "        <Attribute name='Region' table='region' keyColumn='sales_region'/>"
+            + "        <Attribute name='City' table='customer' keyColumn='city'/>"
+            + "        <Attribute name='Name' table='customer' keyColumn='customer_id'/>"
+            + "      </Attributes>"
+            + "      <Hierarchies>"
+            + "        <Hierarchy name='Customers' hasAll='true' allMemberName='All Customers'>\n"
+            + "          <Level attribute='Country'/>\n"
+            + "          <Level attribute='Region'/>\n"
+            + "          <Level attribute='City'/>\n"
+            + "          <Level attribute='Name'/>\n"
+            + "        </Hierarchy>\n"
+            + "      </Hierarchies>"
+            + "    </Dimension>\n"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup table='sales_fact_1997'>"
+            + "      <Measures>"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' formatString='Standard'/>\n"
+            + "      </Measures>"
+            + "      <DimensionLinks>"
+            + "        <ForeignKeyLink dimension='Customers' foreignKeyColumn='customer_id'/>"
+            + "        <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>"
+            + "        <ForeignKeyLink dimension='Store' foreignKeyColumn='customer_id' attribute='Name'/>"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
+            + "</Cube>";
+        final String tableDefs =
+            "<Table name='region' keyColumn='region_id'/>"
+            + "<Link target='store' source='region' foreignKeyColumn='region_id'/>"
+            + "<Link target='customer' source='region' foreignKeyColumn='customer_region_id'/>";
+        final TestContext testContext = getTestContext()
+            .insertCube(cubeDef)
+            .insertPhysTable(tableDefs);
 
         testContext.assertQueryReturns(
             "select  {[Store.MyHierarchy].[Mexico]} on rows,"
             + "{[Customers].[USA].[South West]} on columns"
-            + " from " + cubeName,
+            + " from AliasedDimensionsTesting",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -1168,42 +1186,61 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * both using a table alias.
      */
     public void testDimensionsShareJoinTable() {
-        final TestContext testContext = getTestContext().legacy().create(
-            null,
-            "<Cube name='AliasedDimensionsTesting' defaultMeasure='Supply Time'>\n"
-            + "  <Table name='sales_fact_1997'>\n"
-            + "    <AggExclude pattern='agg_lc_06_sales_fact_1997'/>\n"
-            + "  </Table>"
-            + "<Dimension name='Store' foreignKey='store_id'>\n"
-            + "<Hierarchy hasAll='true' primaryKeyTable='store' primaryKey='store_id'>\n"
-            + "    <Join leftKey='region_id' rightKey='region_id'>\n"
-            + "      <Table name='store'/>\n"
-            + "      <Table name='region'/>\n"
-            + "    </Join>\n"
-            + " <Level name='Store Country' table='store'  column='store_country' uniqueMembers='true'/>\n"
-            + " <Level name='Store Region'  table='region' column='sales_region'  uniqueMembers='true'/>\n"
-            + " <Level name='Store Name'    table='store'  column='store_name'    uniqueMembers='true'/>\n"
-            + "</Hierarchy>\n"
-            + "</Dimension>\n"
-            + "<Dimension name='Customers' foreignKey='customer_id'>\n"
-            + "<Hierarchy hasAll='true' allMemberName='All Customers' primaryKeyTable='customer' primaryKey='customer_id'>\n"
-            + "    <Join leftKey='customer_region_id' rightKey='region_id'>\n"
-            + "      <Table name='customer'/>\n"
-            + "      <Table name='region'/>\n"
-            + "    </Join>\n"
-            + "  <Level name='Country' table='customer' column='country'                      uniqueMembers='true'/>\n"
-            + "  <Level name='Region'  table='region'   column='sales_region'                 uniqueMembers='true'/>\n"
-            + "  <Level name='City'    table='customer' column='city'                         uniqueMembers='false'/>\n"
-            + "  <Level name='Name'    table='customer' column='customer_id' type='Numeric' uniqueMembers='true'/>\n"
-            + "</Hierarchy>\n"
-            + "</Dimension>\n"
-            + "<Measure name='Unit Sales' column='unit_sales' aggregator='sum' formatString='Standard'/>\n"
-            + "<Measure name='Store Sales' column='store_sales' aggregator='sum' formatString='#,###.00'/>\n"
-            + "</Cube>",
-            null,
-            null,
-            null,
-            null);
+        final String tableDefs =
+            "<Table name='region' keyColumn='region_id'/>"
+            + "<Link target='store' source='region' foreignKeyColumn='region_id'/>"
+            + "<Link target='customer' source='region' foreignKeyColumn='customer_region_id'/>";
+        final String cubeDef =
+            "<Cube name='AliasedDimensionsTesting' defaultMeasure='Unit Sales'>\n"
+            + "  <Dimensions>"
+            + "    <Dimension name='Store' key='store_id'>"
+            + "      <Attributes>\n"
+            + "        <Attribute name='Store Country' table='store' keyColumn='store_country' hasHierarchy='false'/>"
+            + "        <Attribute name='Store Region' table='region' keyColumn='sales_region' hasHierarchy='false'/>"
+            + "        <Attribute name='Store Name' table='store' keyColumn='store_name' hasHierarchy='false'/>"
+            + "        <Attribute name='store_id' table='store' keyColumn='store_id' hasHierarchy='false'/>"
+            + "      </Attributes>"
+            + "      <Hierarchies>"
+            + "        <Hierarchy name='Store' hasAll='true' primaryKeyTable='store' primaryKey='store_id'>\n"
+            + "          <Level attribute='Store Country'/>\n"
+            + "          <Level attribute='Store Region'/>\n"
+            + "          <Level attribute='Store Name'/>\n"
+            + "        </Hierarchy>"
+            + "      </Hierarchies>\n"
+            + "    </Dimension>\n"
+            + "    <Dimension name='Customers' key='Name'>"
+            + "      <Attributes>"
+            + "        <Attribute name='Country' table='customer' keyColumn='country'/>\n"
+            + "        <Attribute name='Region'  table='region'   keyColumn='sales_region'/>\n"
+            + "        <Attribute name='City'    table='customer' keyColumn='city'/>\n"
+            + "        <Attribute name='Name'    table='customer' keyColumn='customer_id'/>"
+            + "      </Attributes>\n"
+            + "      <Hierarchies>"
+            + "        <Hierarchy name='Customers' hasAll='true' allMemberName='All Customers' primaryKeyTable='customer' primaryKey='customer_id'>\n"
+            + "          <Level attribute='Country'/>\n"
+            + "          <Level attribute='Region'/>\n"
+            + "          <Level attribute='City'/>\n"
+            + "          <Level attribute='Name'/>\n"
+            + "        </Hierarchy>\n"
+            + "      </Hierarchies>"
+            + "    </Dimension>\n"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup table='sales_fact_1997'>"
+            + "      <Measures>"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' formatString='Standard'/>\n"
+            + "        <Measure name='Store Sales' column='store_sales' aggregator='sum' formatString='#,###.00'/>\n"
+            + "      </Measures>"
+            + "      <DimensionLinks>"
+            + "        <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>"
+            + "        <ForeignKeyLink dimension='Customers' foreignKeyColumn='customer_id'/>"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
+            + "</Cube>";
+        final TestContext testContext = getTestContext()
+            .insertCube(cubeDef)
+            .insertPhysTable(tableDefs);
 
         testContext.assertQueryReturns(
             "select  {[Store].[USA].[South West]} on rows,"
@@ -3799,108 +3836,379 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * elements.
      */
     public void testCaptionDescriptionAndAnnotation() {
-        final String schemaName = "Description schema";
         final String salesCubeName = "DescSales";
-        final String virtualCubeName = "DescWarehouseAndSales";
-        final String warehouseCubeName = "Warehouse";
         final TestContext testContext = getTestContext().withSchema(
-            "<Schema name='" + schemaName + "'\n"
-            + " description='Schema to test descriptions and captions'>\n"
-            + "  <Annotations>\n"
-            + "    <Annotation name='a'>Schema</Annotation>\n"
-            + "    <Annotation name='b'>Xyz</Annotation>\n"
-            + "  </Annotations>\n"
-            + "  <Dimension name='Time' type='TimeDimension'\n"
-            + "      caption='Time shared caption'\n"
-            + "      description='Time shared description'>\n"
-            + "    <Annotations><Annotation name='a'>Time shared</Annotation></Annotations>\n"
-            + "    <Hierarchy hasAll='false' primaryKey='time_id'\n"
-            + "        caption='Time shared hierarchy caption'\n"
-            + "        description='Time shared hierarchy description'>\n"
-            + "      <Table name='time_by_day'/>\n"
-            + "      <Level name='Year' column='the_year' type='Numeric' uniqueMembers='true'\n"
-            + "          levelType='TimeYears'/>\n"
-            + "      <Level name='Quarter' column='quarter' uniqueMembers='false'\n"
-            + "          levelType='TimeQuarters'/>\n"
-            + "      <Level name='Month' column='month_of_year' uniqueMembers='false' type='Numeric'\n"
-            + "          levelType='TimeMonths'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
-            + "  <Dimension name='Warehouse'>\n"
-            + "    <Hierarchy hasAll='true' primaryKey='warehouse_id'>\n"
-            + "      <Table name='warehouse'/>\n"
-            + "      <Level name='Country' column='warehouse_country' uniqueMembers='true'/>\n"
-            + "      <Level name='State Province' column='warehouse_state_province'\n"
-            + "          uniqueMembers='true'/>\n"
-            + "      <Level name='City' column='warehouse_city' uniqueMembers='false'/>\n"
-            + "      <Level name='Warehouse Name' column='warehouse_name' uniqueMembers='true'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
-            + "  <Cube name='" + salesCubeName + "'\n"
-            + "    description='Cube description'>\n"
-            + "  <Annotations><Annotation name='a'>Cube</Annotation></Annotations>\n"
-            + "  <Table name='sales_fact_1997'/>\n"
-            + "  <Dimension name='Store' foreignKey='store_id'\n"
-            + "      caption='Dimension caption'\n"
-            + "      description='Dimension description'>\n"
-            + "    <Annotations><Annotation name='a'>Dimension</Annotation></Annotations>\n"
-            + "    <Hierarchy hasAll='true' primaryKeyTable='store' primaryKey='store_id'\n"
-            + "        caption='Hierarchy caption'\n"
-            + "        description='Hierarchy description'>\n"
-            + "      <Annotations><Annotation name='a'>Hierarchy</Annotation></Annotations>\n"
-            + "      <Join leftKey='region_id' rightKey='region_id'>\n"
-            + "        <Table name='store'/>\n"
-            + "        <Join leftKey='sales_district_id' rightKey='promotion_id'>\n"
-            + "          <Table name='region'/>\n"
-            + "          <Table name='promotion'/>\n"
-            + "        </Join>\n"
-            + "      </Join>\n"
-            + "      <Level name='Store Country' table='store' column='store_country'\n"
-            + "          description='Level description'"
-            + "          caption='Level caption'>\n"
-            + "        <Annotations><Annotation name='a'>Level</Annotation></Annotations>\n"
-            + "      </Level>\n"
-            + "      <Level name='Store Region' table='region' column='sales_region' />\n"
-            + "      <Level name='Store Name' table='store' column='store_name' />\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
-            + "  <DimensionUsage name='Time1'\n"
-            + "    caption='Time usage caption'\n"
-            + "    description='Time usage description'\n"
-            + "    source='Time' foreignKey='time_id'>\n"
-            + "    <Annotations><Annotation name='a'>Time usage</Annotation></Annotations>\n"
-            + "  </DimensionUsage>\n"
-            + "  <DimensionUsage name='Time2'\n"
-            + "    source='Time' foreignKey='time_id'/>\n"
-            + "<Measure name='Unit Sales' column='unit_sales'\n"
-            + "    aggregator='sum' formatString='Standard'\n"
-            + "    caption='Measure caption'\n"
-            + "    description='Measure description'>\n"
-            + "  <Annotations><Annotation name='a'>Measure</Annotation></Annotations>\n"
-            + "</Measure>\n"
-            + "<CalculatedMember name='Foo' dimension='Measures' \n"
-            + "    caption='Calc member caption'\n"
-            + "    description='Calc member description'>\n"
-            + "    <Annotations><Annotation name='a'>Calc member</Annotation></Annotations>\n"
-            + "    <Formula>[Measures].[Unit Sales] + 1</Formula>\n"
-            + "    <CalculatedMemberProperty name='FORMAT_STRING' value='$#,##0.00'/>\n"
-            + "  </CalculatedMember>\n"
-            + "  <NamedSet name='Top Periods'\n"
-            + "      caption='Named set caption'\n"
-            + "      description='Named set description'>\n"
-            + "    <Annotations><Annotation name='a'>Named set</Annotation></Annotations>\n"
-            + "    <Formula>TopCount([Time1].MEMBERS, 5, [Measures].[Foo])</Formula>\n"
-            + "  </NamedSet>\n"
-            + "</Cube>\n"
-            + "<Cube name='" + warehouseCubeName + "'>\n"
-            + "  <Table name='inventory_fact_1997'/>\n"
-            + "\n"
-            + "  <DimensionUsage name='Time' source='Time' foreignKey='time_id'/>\n"
-            + "  <DimensionUsage name='Warehouse' source='Warehouse' foreignKey='warehouse_id'/>\n"
-            + "\n"
-            + "  <Measure name='Units Shipped' column='units_shipped' aggregator='sum' formatString='#.0'/>\n"
-            + "</Cube>\n"
+            "<Schema name='Description schema' missingLink='ignore' metamodelVersion='4.0'>"
+            + " <PhysicalSchema>"
+            + "  <Table name='time_by_day' alias='time_by_day' keyColumn='time_id'/>"
+            + "  <Table name='warehouse' alias='warehouse' keyColumn='warehouse_id'/>"
+            + "  <Table name='sales_fact_1997' alias='sales_fact_1997'/>"
+            + "  <Table name='store' alias='store' keyColumn='store_id'/>"
+            + "  <Table name='region' alias='region' keyColumn='region_id'/>"
+            + "  <Table name='promotion' alias='promotion' keyColumn='promotion_id'/>"
+            + "  <Table name='inventory_fact_1997' alias='inventory_fact_1997'/>"
+            + "  <Link source='promotion' target='region' foreignKeyColumn='sales_district_id'/>"
+            + "  <Link source='region' target='store' foreignKeyColumn='region_id'/>"
+            + " </PhysicalSchema>"
+            + " <Dimension name='Time' visible='true' caption='Time shared caption' description='Time shared description' type='TIME' key='$Id'>"
+            + "  <Hierarchies>"
+            + "   <Hierarchy name='Time' visible='true' hasAll='false' caption='Time shared hierarchy caption' description='Time shared hierarchy description'>"
+            + "    <Level name='Year' visible='true' attribute='Year' hideMemberIf='Never'>"
+            + "    </Level>"
+            + "    <Level name='Quarter' visible='true' attribute='Quarter' hideMemberIf='Never'>"
+            + "    </Level>"
+            + "    <Level name='Month' visible='true' attribute='Month' hideMemberIf='Never'>"
+            + "    </Level>"
+            + "   </Hierarchy>"
+            + "  </Hierarchies>"
+            + "  <Attributes>"
+            + "   <Attribute name='Year' levelType='TimeYears' table='time_by_day' datatype='Numeric' hasHierarchy='false'>"
+            + "    <Key>"
+            + "     <Column table='time_by_day' name='the_year'>"
+            + "     </Column>"
+            + "    </Key>"
+            + "   </Attribute>"
+            + "   <Attribute name='Quarter' levelType='TimeQuarters' table='time_by_day' datatype='String' hasHierarchy='false'>"
+            + "    <Key>"
+            + "     <Column table='time_by_day' name='the_year'>"
+            + "     </Column>"
+            + "     <Column table='time_by_day' name='quarter'>"
+            + "     </Column>"
+            + "    </Key>"
+            + "    <Name>"
+            + "     <Column table='time_by_day' name='quarter'>"
+            + "     </Column>"
+            + "    </Name>"
+            + "   </Attribute>"
+            + "   <Attribute name='Month' levelType='TimeMonths' table='time_by_day' datatype='Numeric' hasHierarchy='false'>"
+            + "    <Key>"
+            + "     <Column table='time_by_day' name='the_year'>"
+            + "     </Column>"
+            + "     <Column table='time_by_day' name='quarter'>"
+            + "     </Column>"
+            + "     <Column table='time_by_day' name='month_of_year'>"
+            + "     </Column>"
+            + "    </Key>"
+            + "    <Name>"
+            + "     <Column table='time_by_day' name='month_of_year'>"
+            + "     </Column>"
+            + "    </Name>"
+            + "   </Attribute>"
+            + "   <Attribute name='$Id' levelType='Regular' table='time_by_day' keyColumn='time_id' hasHierarchy='false'>"
+            + "   </Attribute>"
+            + "  </Attributes>"
+            + " </Dimension>"
+            + " <Dimension name='Warehouse' visible='true' key='$Id'>"
+            + "  <Hierarchies>"
+            + "   <Hierarchy name='Warehouse' visible='true' hasAll='true'>"
+            + "    <Level name='Country' visible='true' attribute='Country' hideMemberIf='Never'>"
+            + "    </Level>"
+            + "    <Level name='State Province' visible='true' attribute='State Province' hideMemberIf='Never'>"
+            + "    </Level>"
+            + "    <Level name='City' visible='true' attribute='City' hideMemberIf='Never'>"
+            + "    </Level>"
+            + "    <Level name='Warehouse Name' visible='true' attribute='Warehouse Name' hideMemberIf='Never'>"
+            + "    </Level>"
+            + "   </Hierarchy>"
+            + "  </Hierarchies>"
+            + "  <Attributes>"
+            + "   <Attribute name='Country' levelType='Regular' table='warehouse' datatype='String' hasHierarchy='false'>"
+            + "    <Key>"
+            + "     <Column table='warehouse' name='warehouse_country'>"
+            + "     </Column>"
+            + "    </Key>"
+            + "   </Attribute>"
+            + "   <Attribute name='State Province' levelType='Regular' table='warehouse' datatype='String' hasHierarchy='false'>"
+            + "    <Key>"
+            + "     <Column table='warehouse' name='warehouse_state_province'>"
+            + "     </Column>"
+            + "    </Key>"
+            + "   </Attribute>"
+            + "   <Attribute name='City' levelType='Regular' table='warehouse' datatype='String' hasHierarchy='false'>"
+            + "    <Key>"
+            + "     <Column table='warehouse' name='warehouse_state_province'>"
+            + "     </Column>"
+            + "     <Column table='warehouse' name='warehouse_city'>"
+            + "     </Column>"
+            + "    </Key>"
+            + "    <Name>"
+            + "     <Column table='warehouse' name='warehouse_city'>"
+            + "     </Column>"
+            + "    </Name>"
+            + "   </Attribute>"
+            + "   <Attribute name='Warehouse Name' levelType='Regular' table='warehouse' datatype='String' hasHierarchy='false'>"
+            + "    <Key>"
+            + "     <Column table='warehouse' name='warehouse_name'>"
+            + "     </Column>"
+            + "    </Key>"
+            + "   </Attribute>"
+            + "   <Attribute name='$Id' levelType='Regular' table='warehouse' keyColumn='warehouse_id' hasHierarchy='false'>"
+            + "   </Attribute>"
+            + "  </Attributes>"
+            + " </Dimension>"
+            + " <Cube name='DescSales' visible='true' description='Cube description' cache='true' enabled='true'>"
+            + "  <Dimensions>"
+            + "   <Dimension name='Store' visible='true' caption='Dimension caption' description='Dimension description' key='$Id'>"
+            + "    <Hierarchies>"
+            + "     <Hierarchy name='Store' visible='true' hasAll='true' caption='Hierarchy caption' description='Hierarchy description'>"
+            + "      <Annotations>"
+            + "       <Annotation name='a'>"
+            + "        Hierarchy       </Annotation>"
+            + "      </Annotations>"
+            + "      <Level name='Store Country' visible='true' attribute='Store Country' hideMemberIf='Never' description='Level description' caption='Level caption'>"
+            + "       <Annotations>"
+            + "        <Annotation name='a'>"
+            + "         Level        </Annotation>"
+            + "       </Annotations>"
+            + "      </Level>"
+            + "      <Level name='Store Region' visible='true' attribute='Store Region' hideMemberIf='Never'>"
+            + "      </Level>"
+            + "      <Level name='Store Name' visible='true' attribute='Store Name' hideMemberIf='Never'>"
+            + "      </Level>"
+            + "     </Hierarchy>"
+            + "    </Hierarchies>"
+            + "    <Attributes>"
+            + "     <Attribute name='Store Country' levelType='Regular' table='store' datatype='String' hasHierarchy='false'>"
+            + "      <Key>"
+            + "       <Column table='store' name='store_country'>"
+            + "       </Column>"
+            + "      </Key>"
+            + "     </Attribute>"
+            + "     <Attribute name='Store Region' levelType='Regular' table='region' datatype='String' hasHierarchy='false'>"
+            + "      <Key>"
+            + "       <Column table='store' name='store_country'>"
+            + "       </Column>"
+            + "       <Column table='region' name='sales_region'>"
+            + "       </Column>"
+            + "      </Key>"
+            + "      <Name>"
+            + "       <Column table='region' name='sales_region'>"
+            + "       </Column>"
+            + "      </Name>"
+            + "     </Attribute>"
+            + "     <Attribute name='Store Name' levelType='Regular' table='store' datatype='String' hasHierarchy='false'>"
+            + "      <Key>"
+            + "       <Column table='store' name='store_country'>"
+            + "       </Column>"
+            + "       <Column table='region' name='sales_region'>"
+            + "       </Column>"
+            + "       <Column table='store' name='store_name'>"
+            + "       </Column>"
+            + "      </Key>"
+            + "      <Name>"
+            + "       <Column table='store' name='store_name'>"
+            + "       </Column>"
+            + "      </Name>"
+            + "     </Attribute>"
+            + "     <Attribute name='$Id' levelType='Regular' table='store' keyColumn='store_id' hasHierarchy='false'>"
+            + "     </Attribute>"
+            + "    </Attributes>"
+            + "    <Annotations>"
+            + "     <Annotation name='a'>Dimension</Annotation>"
+            + "    </Annotations>"
+            + "   </Dimension>"
+            + "   <Dimension name='Time1' source='Time' description='Time usage description' caption='Time usage caption'>"
+            + "    <Annotations>"
+            + "     <Annotation name='a'>Time usage</Annotation>"
+            + "    </Annotations>"
+            + "   </Dimension>"
+            + "   <Dimension name='Time2' source='Time'/>"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "   <MeasureGroup name='DescSales' type='fact' table='sales_fact_1997'>"
+            + "    <Measures>"
+            + "     <Measure name='Unit Sales' formatString='Standard' aggregator='sum' caption='Measure caption' description='Measure description'>"
+            + "      <Annotations>"
+            + "       <Annotation name='a'>"
+            + "        Measure       </Annotation>"
+            + "      </Annotations>"
+            + "      <Arguments>"
+            + "       <Column table='sales_fact_1997' name='unit_sales'>"
+            + "       </Column>"
+            + "      </Arguments>"
+            + "     </Measure>"
+            + "    </Measures>"
+            + "    <DimensionLinks>"
+            + "     <ForeignKeyLink dimension='Store'>"
+            + "      <ForeignKey>"
+            + "       <Column table='sales_fact_1997' name='store_id'>"
+            + "       </Column>"
+            + "      </ForeignKey>"
+            + "     </ForeignKeyLink>"
+            + "     <ForeignKeyLink dimension='Time1'>"
+            + "      <ForeignKey>"
+            + "       <Column table='sales_fact_1997' name='time_id'>"
+            + "       </Column>"
+            + "      </ForeignKey>"
+            + "     </ForeignKeyLink>"
+            + "     <ForeignKeyLink dimension='Time2'>"
+            + "      <ForeignKey>"
+            + "       <Column table='sales_fact_1997' name='time_id'>"
+            + "       </Column>"
+            + "      </ForeignKey>"
+            + "     </ForeignKeyLink>"
+            + "    </DimensionLinks>"
+            + "   </MeasureGroup>"
+            + "  </MeasureGroups>"
+            + "  <CalculatedMembers>"
+            + "   <CalculatedMember name='Foo' caption='Calc member caption' description='Calc member description' dimension='Measures'>"
+            + "    <Formula>"
+            + "     [Measures].[Unit Sales] + 1    </Formula>"
+            + "    <Annotations>"
+            + "     <Annotation name='a'>"
+            + "      Calc member     </Annotation>"
+            + "    </Annotations>"
+            + "    <CalculatedMemberProperty name='FORMAT_STRING' value='$#,##0.00'>"
+            + "    </CalculatedMemberProperty>"
+            + "   </CalculatedMember>"
+            + "  </CalculatedMembers>"
+            + "  <NamedSets>"
+            + "   <NamedSet name='Top Periods' caption='Named set caption' description='Named set description'>"
+            + "    <Formula>"
+            + "     TopCount([Time1].MEMBERS, 5, [Measures].[Foo])    </Formula>"
+            + "    <Annotations>"
+            + "     <Annotation name='a'>"
+            + "      Named set     </Annotation>"
+            + "    </Annotations>"
+            + "   </NamedSet>"
+            + "  </NamedSets>"
+            + "  <Annotations>"
+            + "   <Annotation name='a'>"
+            + "    Cube   </Annotation>"
+            + "  </Annotations>"
+            + " </Cube>"
+            + " <Cube name='Warehouse' visible='true' cache='true' enabled='true'>"
+            + "  <Dimensions>"
+            + "   <Dimension name='Time' visible='true' caption='Time shared caption' type='TIME' key='$Id'>"
+            + "    <Hierarchies>"
+            + "     <Hierarchy name='Time' visible='true' hasAll='false' caption='Time shared hierarchy caption' description='Time shared hierarchy description'>"
+            + "      <Level name='Year' visible='true' attribute='Year' hideMemberIf='Never'>"
+            + "      </Level>"
+            + "      <Level name='Quarter' visible='true' attribute='Quarter' hideMemberIf='Never'>"
+            + "      </Level>"
+            + "      <Level name='Month' visible='true' attribute='Month' hideMemberIf='Never'>"
+            + "      </Level>"
+            + "     </Hierarchy>"
+            + "    </Hierarchies>"
+            + "    <Attributes>"
+            + "     <Attribute name='Year' levelType='TimeYears' table='time_by_day' datatype='Numeric' hasHierarchy='false'>"
+            + "      <Key>"
+            + "       <Column table='time_by_day' name='the_year'>"
+            + "       </Column>"
+            + "      </Key>"
+            + "     </Attribute>"
+            + "     <Attribute name='Quarter' levelType='TimeQuarters' table='time_by_day' datatype='String' hasHierarchy='false'>"
+            + "      <Key>"
+            + "       <Column table='time_by_day' name='the_year'>"
+            + "       </Column>"
+            + "       <Column table='time_by_day' name='quarter'>"
+            + "       </Column>"
+            + "      </Key>"
+            + "      <Name>"
+            + "       <Column table='time_by_day' name='quarter'>"
+            + "       </Column>"
+            + "      </Name>"
+            + "     </Attribute>"
+            + "     <Attribute name='Month' levelType='TimeMonths' table='time_by_day' datatype='Numeric' hasHierarchy='false'>"
+            + "      <Key>"
+            + "       <Column table='time_by_day' name='the_year'>"
+            + "       </Column>"
+            + "       <Column table='time_by_day' name='quarter'>"
+            + "       </Column>"
+            + "       <Column table='time_by_day' name='month_of_year'>"
+            + "       </Column>"
+            + "      </Key>"
+            + "      <Name>"
+            + "       <Column table='time_by_day' name='month_of_year'>"
+            + "       </Column>"
+            + "      </Name>"
+            + "     </Attribute>"
+            + "     <Attribute name='$Id' levelType='Regular' table='time_by_day' keyColumn='time_id' hasHierarchy='false'>"
+            + "     </Attribute>"
+            + "    </Attributes>"
+            + "   </Dimension>"
+            + "   <Dimension name='Warehouse' visible='true' key='$Id'>"
+            + "    <Hierarchies>"
+            + "     <Hierarchy name='Warehouse' visible='true' hasAll='true'>"
+            + "      <Level name='Country' visible='true' attribute='Country' hideMemberIf='Never'>"
+            + "      </Level>"
+            + "      <Level name='State Province' visible='true' attribute='State Province' hideMemberIf='Never'>"
+            + "      </Level>"
+            + "      <Level name='City' visible='true' attribute='City' hideMemberIf='Never'>"
+            + "      </Level>"
+            + "      <Level name='Warehouse Name' visible='true' attribute='Warehouse Name' hideMemberIf='Never'>"
+            + "      </Level>"
+            + "     </Hierarchy>"
+            + "    </Hierarchies>"
+            + "    <Attributes>"
+            + "     <Attribute name='Country' levelType='Regular' table='warehouse' datatype='String' hasHierarchy='false'>"
+            + "      <Key>"
+            + "       <Column table='warehouse' name='warehouse_country'>"
+            + "       </Column>"
+            + "      </Key>"
+            + "     </Attribute>"
+            + "     <Attribute name='State Province' levelType='Regular' table='warehouse' datatype='String' hasHierarchy='false'>"
+            + "      <Key>"
+            + "       <Column table='warehouse' name='warehouse_state_province'>"
+            + "       </Column>"
+            + "      </Key>"
+            + "     </Attribute>"
+            + "     <Attribute name='City' levelType='Regular' table='warehouse' datatype='String' hasHierarchy='false'>"
+            + "      <Key>"
+            + "       <Column table='warehouse' name='warehouse_state_province'>"
+            + "       </Column>"
+            + "       <Column table='warehouse' name='warehouse_city'>"
+            + "       </Column>"
+            + "      </Key>"
+            + "      <Name>"
+            + "       <Column table='warehouse' name='warehouse_city'>"
+            + "       </Column>"
+            + "      </Name>"
+            + "     </Attribute>"
+            + "     <Attribute name='Warehouse Name' levelType='Regular' table='warehouse' datatype='String' hasHierarchy='false'>"
+            + "      <Key>"
+            + "       <Column table='warehouse' name='warehouse_name'>"
+            + "       </Column>"
+            + "      </Key>"
+            + "     </Attribute>"
+            + "     <Attribute name='$Id' levelType='Regular' table='warehouse' keyColumn='warehouse_id' hasHierarchy='false'>"
+            + "     </Attribute>"
+            + "    </Attributes>"
+            + "   </Dimension>"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "   <MeasureGroup name='Warehouse' type='fact' table='inventory_fact_1997'>"
+            + "    <Measures>"
+            + "     <Measure name='Units Shipped' formatString='#.0' aggregator='sum'>"
+            + "      <Arguments>"
+            + "       <Column table='inventory_fact_1997' name='units_shipped'>"
+            + "       </Column>"
+            + "      </Arguments>"
+            + "     </Measure>"
+            + "    </Measures>"
+            + "    <DimensionLinks>"
+            + "     <ForeignKeyLink dimension='Time'>"
+            + "      <ForeignKey>"
+            + "       <Column table='inventory_fact_1997' name='time_id'>"
+            + "       </Column>"
+            + "      </ForeignKey>"
+            + "     </ForeignKeyLink>"
+            + "     <ForeignKeyLink dimension='Warehouse'>"
+            + "      <ForeignKey>"
+            + "       <Column table='inventory_fact_1997' name='warehouse_id'>"
+            + "       </Column>"
+            + "      </ForeignKey>"
+            + "     </ForeignKeyLink>"
+            + "    </DimensionLinks>"
+            + "   </MeasureGroup>"
+            + "  </MeasureGroups>"
+            + " </Cube>"
+            + " <Annotations>"
+            + "  <Annotation name='a'>Schema</Annotation>"
+            + "  <Annotation name='b'>Xyz</Annotation>"
+            + " </Annotations>"
             + "</Schema>");
+
         final Result result =
             testContext.executeQuery("select from [" + salesCubeName + "]");
         final Cube cube = result.getQuery().getCube();
@@ -3975,7 +4283,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
         }
         // The description is prefixed by the dimension usage name.
         assertEquals(
-            "Time usage caption.Time shared hierarchy description",
+            "Time usage description.Time shared hierarchy description",
             timeHierarchy.getDescription());
         // The hierarchy caption is prefixed by the caption of the dimension
         // usage.
@@ -4006,12 +4314,12 @@ Test that get error if a dimension has more than one hierarchy with same name.
         // The description is prefixed by the dimension usage name (because
         // dimension usage has no caption).
         assertEquals(
-            "Time2.Time shared hierarchy description",
+            "Time shared description.Time shared hierarchy description",
             time2Hierarchy.getDescription());
         // The hierarchy caption is prefixed by the dimension usage name
         // (because the dimension usage has no caption.
         assertEquals(
-            "Time2.Time shared hierarchy caption",
+            "Time shared caption.Time shared hierarchy caption",
             time2Hierarchy.getCaption());
         // No annotations.
         checkAnnotations(time2Hierarchy.getAnnotationMap());
@@ -4066,36 +4374,6 @@ Test that get error if a dimension has more than one hierarchy with same name.
         assertEquals("Named set caption", namedSet.getCaption());
         assertEquals("Named set description", namedSet.getDescription());
         checkAnnotations(namedSet.getAnnotationMap(), "a", "Named set");
-
-        final Result result2 =
-            testContext.executeQuery("select from [" + virtualCubeName + "]");
-        final Cube cube2 = result2.getQuery().getCube();
-        assertEquals("Virtual cube description", cube2.getDescription());
-        checkAnnotations(cube2.getAnnotationMap(), "a", "Virtual cube");
-
-        final SchemaReader schemaReader2 = cube2.getSchemaReader(null);
-        final Dimension measuresDimension2 = cube2.getDimensionList().get(0);
-        final Hierarchy measuresHierarchy2 =
-            measuresDimension2.getHierarchyList().get(0);
-        final mondrian.olap.Level measuresLevel2 =
-            measuresHierarchy2.getLevelList().get(0);
-        final List<Member> measures2 =
-            schemaReader2.getLevelMembers(measuresLevel2, true);
-        final Member measure2 = measures2.get(0);
-        assertEquals("Unit Sales", measure2.getName());
-        assertEquals("Measure caption", measure2.getCaption());
-        assertEquals("Measure description", measure2.getDescription());
-        assertEquals(
-            measure2.getDescription(),
-            measure2.getPropertyValue(Property.DESCRIPTION.name));
-        assertEquals(
-            measure2.getCaption(),
-            measure2.getPropertyValue(Property.CAPTION.name));
-        assertEquals(
-            measure2.getCaption(),
-            measure2.getPropertyValue(Property.MEMBER_CAPTION.name));
-        checkAnnotations(
-            measure2.getAnnotationMap(), "a", "Virtual cube measure");
     }
 
     private static void checkAnnotations(
@@ -4112,19 +4390,35 @@ Test that get error if a dimension has more than one hierarchy with same name.
         }
     }
 
-    public void testCaption() {
-        TestContext testContext = getTestContext().createSubstitutingCube(
-            "Sales",
-            "  <Dimension name='Gender2' foreignKey='customer_id'>\n"
-            + "    <Hierarchy hasAll='true' primaryKey='customer_id' >\n"
-            + "      <Table name='customer'/>\n"
-            + "      <Level name='Gender' column='gender' uniqueMembers='true' >\n"
-            + "        <CaptionExpression>\n"
-            + "          <SQL dialect='generic'>'foobar'</SQL>\n"
-            + "        </CaptionExpression>\n"
-            + "      </Level>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>");
+    public void testCaptionExpression() {
+        TestContext testContext = getTestContext()
+            .insertPhysTable(
+                "<Table name='customer' alias='customer2'>\n"
+                + "  <Key>\n"
+                + "    <Column name='customer_id'/>\n"
+                + "  </Key>\n"
+                + "  <ColumnDefs>\n"
+                + "    <CalculatedColumnDef name='foo' type='String'>\n"
+                + "      <ExpressionView>\n"
+                + "        <SQL dialect='generic'> 'foobar'</SQL>\n"
+                + "      </ExpressionView>\n"
+                + "    </CalculatedColumnDef>\n"
+                + "  </ColumnDefs>\n"
+                + "</Table>")
+            .insertDimension(
+                "Sales",
+                "<Dimension name='Gender2' table='customer2' key='id'>\n"
+                + "  <Attributes>"
+                + "    <Attribute name='Gender' keyColumn='gender' captionColumn='foo'/>"
+                + "    <Attribute name='id' keyColumn='customer_id' hasHierarchy='false'/>"
+                + "  </Attributes>"
+                + "</Dimension>")
+            .insertDimensionLinks(
+                "Sales",
+                ArrayMap.of(
+                    "Sales",
+                    "<ForeignKeyLink dimension='Gender2' foreignKeyColumn='customer_id'/>"))
+            .ignoreMissingLink();
         switch (testContext.getDialect().getDatabaseProduct()) {
         case POSTGRESQL:
             // Postgres fails with:
@@ -6043,33 +6337,64 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * <p>NOTE: bug is not marked fixed yet.</p>
      */
     public void testSnowFlakeNameExpressions() {
-        final TestContext testContext =
-            getTestContext().createSubstitutingCube(
+        final TestContext testContext = getTestContext()
+            .replace(
+                "<Table name='product' keyColumn='product_id'/>",
+                "<Table name='product' keyColumn='product_id'>"
+                + "  <ColumnDefs>\n"
+                + "    <CalculatedColumnDef name='product_name_exp' type='String'>\n"
+                + "      <ExpressionView>\n"
+                + "        <SQL dialect='oracle'><Column name='product_name'/>  || '_bar'</SQL>"
+                + "        <SQL dialect='mysql'>CONCAT(<Column name='product_name'/>, '_bar')</SQL>"
+                + "      </ExpressionView>\n"
+                + "    </CalculatedColumnDef>\n"
+                + "  </ColumnDefs>"
+                + "</Table>")
+            .insertDimension(
                 "Sales",
-                "<Dimension name='Product with inline' foreignKey='product_id'>"
-                + "<Hierarchy hasAll='true' primaryKey='product_id' primaryKeyTable='product'>"
-                + "<Join leftKey='product_class_id' rightKey='product_class_id'>"
-                + "<Table name='product'/>"
-                + "<Table name='product_class'/>"
-                + "</Join>"
-                + "<Level name='Product Family' table='product_class' column='product_family' uniqueMembers='true'/>"
-                + "<Level name='Product Department' table='product_class' column='product_department' uniqueMembers='false'/>"
-                + "<Level name='Product Category' table='product_class' column='product_category' uniqueMembers='false'/>"
-                + "<Level name='Product Subcategory' table='product_class' column='product_subcategory' uniqueMembers='false'/>"
-                + "<Level name='Brand Name' table='product' column='brand_name' uniqueMembers='false'/>"
-                + "<Level name='Product Name' table='product' column='product_name' uniqueMembers='true'>"
-                + "<NameExpression><SQL dialect='mysql'>`product_name`</SQL>"
-                + "</NameExpression>"
-                + "</Level>"
-                + "</Hierarchy>"
-                + "</Dimension>");
+                "<Dimension name='Product with inline' key='product_id'>"
+                + "  <Attributes>"
+                + "    <Attribute name='Product Family' table='product_class' keyColumn='product_family' uniqueMembers='true'/>"
+                + "    <Attribute name='Product Department' table='product_class' keyColumn='product_department' uniqueMembers='false'/>"
+                + "    <Attribute name='Product Category' table='product_class' keyColumn='product_category' uniqueMembers='false'/>"
+                + "    <Attribute name='Product Subcategory' table='product_class' keyColumn='product_subcategory' uniqueMembers='false'/>"
+                + "    <Attribute name='Brand Name' table='product' keyColumn='brand_name' uniqueMembers='false'/>"
+                + "    <Attribute name='Product Name' table='product' keyColumn='product_name_exp' uniqueMembers='true'/>"
+                + "    <Attribute name='product_id' table='product' keyColumn='product_id' hasHierarchy='false'/>"
+                + "  </Attributes>"
+                + "  <Hierarchies>"
+                + "    <Hierarchy hasAll='true' name='Product' allMemberName='All Product'>"
+                + "      <Level attribute='Product Family'/>"
+                + "      <Level attribute='Product Department'/>"
+                + "      <Level attribute='Product Category'/>"
+                + "      <Level attribute='Product Subcategory'/>"
+                + "      <Level attribute='Brand Name'/>"
+                + "      <Level attribute='Product Name'>"
+                + "      </Level>"
+                + "    </Hierarchy>"
+                + "  </Hierarchies>"
+                + "</Dimension>")
+            .insertDimensionLinks(
+                "Sales",
+                ArrayMap.of(
+                    "Sales",
+                    "<ForeignKeyLink dimension='Product with inline' foreignKeyColumn='product_id'/>"))
+            .ignoreMissingLink();
         testContext.assertQueryReturns(
-            "select {[Product with inline].[All Product with inlines].[Drink].[Dairy].[Dairy].[Milk].[Club].Children} on columns from [Sales]",
+            "select {[Product with inline].[Product].[Drink].[Dairy].[Dairy].[Milk].[Club].Children} on columns from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Product with inline].[All Product with inlines]}\n"
-            + "Row #0: 266,773\n");
+            + "{[Product with inline].[Product].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club 1% Milk_bar]}\n"
+            + "{[Product with inline].[Product].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club 2% Milk_bar]}\n"
+            + "{[Product with inline].[Product].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club Buttermilk_bar]}\n"
+            + "{[Product with inline].[Product].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club Chocolate Milk_bar]}\n"
+            + "{[Product with inline].[Product].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club Whole Milk_bar]}\n"
+            + "Row #0: 155\n"
+            + "Row #0: 145\n"
+            + "Row #0: 140\n"
+            + "Row #0: 159\n"
+            + "Row #0: 168\n");
     }
 
     /** Error if Schema has 2 PhysicalSchema children. */
@@ -6215,11 +6540,11 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "{}\n"
             + "Axis #1:\n"
             + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo]}\n"
             + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges]}\n"
+            + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo]}\n"
             + "Row #0: $10,256.30\n"
-            + "Row #0: $29,121.55\n"
-            + "Row #0: $35,487.69\n");
+            + "Row #0: $35,487.69\n"
+            + "Row #0: $29,121.55\n");
     }
 
     public void testClosureWithDistanceColumn() {
@@ -6298,11 +6623,11 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "{}\n"
             + "Axis #1:\n"
             + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]}\n"
-            + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo]}\n"
             + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges]}\n"
+            + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo]}\n"
             + "Row #0: $10,256.30\n"
-            + "Row #0: $29,121.55\n"
-            + "Row #0: $35,487.69\n");
+            + "Row #0: $35,487.69\n"
+            + "Row #0: $29,121.55\n");
     }
 
     public void testClosureWithNonExistingDistanceColumn() {
@@ -6703,7 +7028,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     private static final String SALES_GEN_CUBE =
-        "<Cube name='Sales Gen' factTable='sales_fact_1997'>\n"
+        "<Cube name='Sales' factTable='sales_fact_1997'>\n"
         + "  <Dimensions>\n"
         + "    <Dimension name='Time' table='time_by_day_generated' type='TIME' key='Time Id'>\n"
         + "        <Attributes>\n"
@@ -6786,25 +7111,30 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "<PhysicalSchema>"
             + "  <AutoGeneratedDateTable name='time_by_day_generated' startDate='2011-12-30' endDate='2012-03-31'>\n"
             + "    <ColumnDefs>\n"
-            + "      <ColumnDef name='the_year' role='BAD_ROLE'/>\n"
+            + "      <ColumnDef name='the_year'>"
+            + "          <TimeDomain role='BAD_ROLE'/>"
+            + "        </ColumnDef>\n"
             + "    </ColumnDefs>\n"
             + "  </AutoGeneratedDateTable>\n"
             + "  <Table name='sales_fact_1997'/>\n"
             + "</PhysicalSchema>");
         testContext.assertSchemaError(
-            "Bad role 'BAD_ROLE', in column 'the_year'. Allowable roles are "
-            + "\\[JULIAN, DATE, DAY_OF_WEEK_NAME, MONTH_NAME, YEAR, "
-            + "DAY_OF_MONTH, WEEK_OF_YEAR, MONTH, QUARTER\\] "
-            + "\\(in ColumnDef\\) \\(at ${pos}\\)",
-            "<ColumnDef name='the_year' role='BAD_ROLE'/>");
+            "Bad role 'TimeDomain\n"
+            + "   role = \"BAD_ROLE\"\n"
+            + "   epoch = null\n"
+            + "', in column 'the_year'. Allowable roles are "
+            + "\\[JULIAN, YYMMDD, YYYYMMDD, DATE, DAY_OF_WEEK_NAME, MONTH_NAME, "
+            + "YEAR, DAY_OF_MONTH, WEEK_OF_YEAR, MONTH, QUARTER\\]"
+            + " \\(in ColumnDef\\) \\(at ${pos}\\)",
+            "<ColumnDef name='the_year'>");
     }
 
-    private TestContext genTableSchema(String xx) throws SQLException {
+    private TestContext genTableSchema(String physSchema) throws SQLException {
         TestContext testContext = getTestContext();
         doSql(testContext, "drop table time_by_day_generated");
         return testContext.withSchema(
             "<Schema name='FoodMart' metamodelVersion='4.0'>\n"
-            + xx
+            + physSchema
             + SALES_GEN_CUBE
             + "</Schema>");
     }
@@ -6812,20 +7142,16 @@ Test that get error if a dimension has more than one hierarchy with same name.
     public void testAutogeneratedDateTableDefaultColumns() throws SQLException {
         final TestContext testContext = genTableSchema(
             "<PhysicalSchema>"
-            + "  <AutoGeneratedDateTable name='time_by_day_generated' startDate='2011-12-30' endDate='2012-03-31'/>\n"
+            + "  <AutoGeneratedDateTable name='time_by_day_generated' startDate='2011-09-30' endDate='2012-03-31'/>\n"
             + "  <Table name='sales_fact_1997'/>\n"
             + "</PhysicalSchema>");
         testContext.assertQueryReturns(
-            "select [Time].[Time].Children on 0 from [Sales Gen]",
+            "select [Time].[Time].Children on 0 from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Time].[Time].[2011].[Q1]}\n"
-            + "{[Time].[Time].[2011].[Q2]}\n"
             + "{[Time].[Time].[2011].[Q3]}\n"
             + "{[Time].[Time].[2011].[Q4]}\n"
-            + "Row #0: \n"
-            + "Row #0: \n"
             + "Row #0: \n"
             + "Row #0: \n");
     }
@@ -6874,7 +7200,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
         // Note that [2001].[Q1] is missing, because date generation starts
         // in Q2 (June 28).
         testContext.assertQueryReturns(
-            "select [Time].[Time].Children on 0 from [Sales Gen]",
+            "select [Time].[Time].Children on 0 from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -6977,7 +7303,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
      */
     public void testForeignKeyColumnCountMatch() {
         final TestContext testContext =
-            getTestContext().createSubstitutingCube(
+            getTestContext().insertDimension(
                 "Sales",
                 "<Dimension name='Product with no all' key='Product Id'>"
                 + "    <Attributes>\n"
@@ -7015,14 +7341,15 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "            <Level attribute='Product Name'/>\n"
                 + "        </Hierarchy>\n"
                 + "    </Hierarchies>\n"
-                + "</Dimension>\n",
-                null,
-                null,
-                null,
+                + "</Dimension>\n")
+            .insertDimensionLinks(
+                "Sales",
                 ArrayMap.of(
                     "Sales",
                     "<ForeignKeyLink dimension='Product with no all' "
-                    + "foreignKeyColumn='product_id'/>"));
+                    + "foreignKeyColumn='product_id'/>"))
+            .ignoreMissingLink();
+
         testContext.assertSchemaError(
             "xxx",
             "Xx");

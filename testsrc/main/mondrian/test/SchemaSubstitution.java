@@ -154,5 +154,19 @@ public class SchemaSubstitution {
             }
         };
     }
+
+    public static Util.Function1<String, String> replace(
+        final String search, final String substitution)
+    {
+        return new Util.Function1<String, String>() {
+            public String apply(String schema) {
+                final int start = schema.indexOf(search);
+                final int end = start + search.length();
+                return schema.substring(0, start)
+                    + substitution
+                    + schema.substring(end);
+            }
+        };
+    }
 }
 // End SchemaSubstitution.java
