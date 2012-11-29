@@ -3058,6 +3058,13 @@ public class TestContext {
         return withSubstitution(
             SchemaSubstitution.replacePhysSchema(physSchema));
     }
+
+    public final TestContext replace(
+        final String search, final String substitution)
+    {
+        return withSubstitution(
+            SchemaSubstitution.replace(search, substitution));
+    }
 }
 
 // End TestContext.java

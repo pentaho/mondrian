@@ -4348,13 +4348,13 @@ Test that get error if a dimension has more than one hierarchy with same name.
         checkAnnotations(measure.getAnnotationMap(), "a", "Measure");
 
         // The implicitly created [Fact Count] measure
-//        final Member factCountMeasure = measures.get(1);
-//        assertEquals("Fact Count", factCountMeasure.getName());
-//        assertEquals(
-//            false,
-//            factCountMeasure.getPropertyValue(Property.VISIBLE.name));
+        final Member factCountMeasure = measures.get(1);
+        assertEquals("Fact Count", factCountMeasure.getName());
+        assertEquals(
+            false,
+            factCountMeasure.getPropertyValue(Property.VISIBLE.name));
 
-        final Member calcMeasure = measures.get(1);
+        final Member calcMeasure = measures.get(2);
         assertEquals("Foo", calcMeasure.getName());
         assertEquals("Calc member caption", calcMeasure.getCaption());
         assertEquals("Calc member description", calcMeasure.getDescription());
@@ -6337,33 +6337,64 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * <p>NOTE: bug is not marked fixed yet.</p>
      */
     public void testSnowFlakeNameExpressions() {
-        final TestContext testContext =
-            getTestContext().createSubstitutingCube(
+        final TestContext testContext = getTestContext()
+            .replace(
+                "<Table name='product' keyColumn='product_id'/>",
+                "<Table name='product' keyColumn='product_id'>"
+                + "  <ColumnDefs>\n"
+                + "    <CalculatedColumnDef name='product_name_exp' type='String'>\n"
+                + "      <ExpressionView>\n"
+                + "        <SQL dialect='oracle'><Column name='product_name'/>  || '_bar'</SQL>"
+                + "        <SQL dialect='mysql'>CONCAT(<Column name='product_name'/>, '_bar')</SQL>"
+                + "      </ExpressionView>\n"
+                + "    </CalculatedColumnDef>\n"
+                + "  </ColumnDefs>"
+                + "</Table>")
+            .insertDimension(
                 "Sales",
-                "<Dimension name='Product with inline' foreignKey='product_id'>"
-                + "<Hierarchy hasAll='true' primaryKey='product_id' primaryKeyTable='product'>"
-                + "<Join leftKey='product_class_id' rightKey='product_class_id'>"
-                + "<Table name='product'/>"
-                + "<Table name='product_class'/>"
-                + "</Join>"
-                + "<Level name='Product Family' table='product_class' column='product_family' uniqueMembers='true'/>"
-                + "<Level name='Product Department' table='product_class' column='product_department' uniqueMembers='false'/>"
-                + "<Level name='Product Category' table='product_class' column='product_category' uniqueMembers='false'/>"
-                + "<Level name='Product Subcategory' table='product_class' column='product_subcategory' uniqueMembers='false'/>"
-                + "<Level name='Brand Name' table='product' column='brand_name' uniqueMembers='false'/>"
-                + "<Level name='Product Name' table='product' column='product_name' uniqueMembers='true'>"
-                + "<NameExpression><SQL dialect='mysql'>`product_name`</SQL>"
-                + "</NameExpression>"
-                + "</Level>"
-                + "</Hierarchy>"
-                + "</Dimension>");
+                "<Dimension name='Product with inline' key='product_id'>"
+                + "  <Attributes>"
+                + "    <Attribute name='Product Family' table='product_class' keyColumn='product_family' uniqueMembers='true'/>"
+                + "    <Attribute name='Product Department' table='product_class' keyColumn='product_department' uniqueMembers='false'/>"
+                + "    <Attribute name='Product Category' table='product_class' keyColumn='product_category' uniqueMembers='false'/>"
+                + "    <Attribute name='Product Subcategory' table='product_class' keyColumn='product_subcategory' uniqueMembers='false'/>"
+                + "    <Attribute name='Brand Name' table='product' keyColumn='brand_name' uniqueMembers='false'/>"
+                + "    <Attribute name='Product Name' table='product' keyColumn='product_name_exp' uniqueMembers='true'/>"
+                + "    <Attribute name='product_id' table='product' keyColumn='product_id' hasHierarchy='false'/>"
+                + "  </Attributes>"
+                + "  <Hierarchies>"
+                + "    <Hierarchy hasAll='true' name='Product' allMemberName='All Product'>"
+                + "      <Level attribute='Product Family'/>"
+                + "      <Level attribute='Product Department'/>"
+                + "      <Level attribute='Product Category'/>"
+                + "      <Level attribute='Product Subcategory'/>"
+                + "      <Level attribute='Brand Name'/>"
+                + "      <Level attribute='Product Name'>"
+                + "      </Level>"
+                + "    </Hierarchy>"
+                + "  </Hierarchies>"
+                + "</Dimension>")
+            .insertDimensionLinks(
+                "Sales",
+                ArrayMap.of(
+                    "Sales",
+                    "<ForeignKeyLink dimension='Product with inline' foreignKeyColumn='product_id'/>"))
+            .ignoreMissingLink();
         testContext.assertQueryReturns(
-            "select {[Product with inline].[All Product with inlines].[Drink].[Dairy].[Dairy].[Milk].[Club].Children} on columns from [Sales]",
+            "select {[Product with inline].[Product].[Drink].[Dairy].[Dairy].[Milk].[Club].Children} on columns from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Product with inline].[All Product with inlines]}\n"
-            + "Row #0: 266,773\n");
+            + "{[Product with inline].[Product].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club 1% Milk_bar]}\n"
+            + "{[Product with inline].[Product].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club 2% Milk_bar]}\n"
+            + "{[Product with inline].[Product].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club Buttermilk_bar]}\n"
+            + "{[Product with inline].[Product].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club Chocolate Milk_bar]}\n"
+            + "{[Product with inline].[Product].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club Whole Milk_bar]}\n"
+            + "Row #0: 155\n"
+            + "Row #0: 145\n"
+            + "Row #0: 140\n"
+            + "Row #0: 159\n"
+            + "Row #0: 168\n");
     }
 
     /** Error if Schema has 2 PhysicalSchema children. */
@@ -6997,7 +7028,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     private static final String SALES_GEN_CUBE =
-        "<Cube name='Sales Gen' factTable='sales_fact_1997'>\n"
+        "<Cube name='Sales' factTable='sales_fact_1997'>\n"
         + "  <Dimensions>\n"
         + "    <Dimension name='Time' table='time_by_day_generated' type='TIME' key='Time Id'>\n"
         + "        <Attributes>\n"
@@ -7080,25 +7111,30 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "<PhysicalSchema>"
             + "  <AutoGeneratedDateTable name='time_by_day_generated' startDate='2011-12-30' endDate='2012-03-31'>\n"
             + "    <ColumnDefs>\n"
-            + "      <ColumnDef name='the_year' role='BAD_ROLE'/>\n"
+            + "      <ColumnDef name='the_year'>"
+            + "          <TimeDomain role='BAD_ROLE'/>"
+            + "        </ColumnDef>\n"
             + "    </ColumnDefs>\n"
             + "  </AutoGeneratedDateTable>\n"
             + "  <Table name='sales_fact_1997'/>\n"
             + "</PhysicalSchema>");
         testContext.assertSchemaError(
-            "Bad role 'BAD_ROLE', in column 'the_year'. Allowable roles are "
-            + "\\[JULIAN, DATE, DAY_OF_WEEK_NAME, MONTH_NAME, YEAR, "
-            + "DAY_OF_MONTH, WEEK_OF_YEAR, MONTH, QUARTER\\] "
-            + "\\(in ColumnDef\\) \\(at ${pos}\\)",
-            "<ColumnDef name='the_year' role='BAD_ROLE'/>");
+            "Bad role 'TimeDomain\n"
+            + "   role = \"BAD_ROLE\"\n"
+            + "   epoch = null\n"
+            + "', in column 'the_year'. Allowable roles are "
+            + "\\[JULIAN, YYMMDD, YYYYMMDD, DATE, DAY_OF_WEEK_NAME, MONTH_NAME, "
+            + "YEAR, DAY_OF_MONTH, WEEK_OF_YEAR, MONTH, QUARTER\\]"
+            + " \\(in ColumnDef\\) \\(at ${pos}\\)",
+            "<ColumnDef name='the_year'>");
     }
 
-    private TestContext genTableSchema(String xx) throws SQLException {
+    private TestContext genTableSchema(String physSchema) throws SQLException {
         TestContext testContext = getTestContext();
         doSql(testContext, "drop table time_by_day_generated");
         return testContext.withSchema(
             "<Schema name='FoodMart' metamodelVersion='4.0'>\n"
-            + xx
+            + physSchema
             + SALES_GEN_CUBE
             + "</Schema>");
     }
@@ -7106,20 +7142,16 @@ Test that get error if a dimension has more than one hierarchy with same name.
     public void testAutogeneratedDateTableDefaultColumns() throws SQLException {
         final TestContext testContext = genTableSchema(
             "<PhysicalSchema>"
-            + "  <AutoGeneratedDateTable name='time_by_day_generated' startDate='2011-12-30' endDate='2012-03-31'/>\n"
+            + "  <AutoGeneratedDateTable name='time_by_day_generated' startDate='2011-09-30' endDate='2012-03-31'/>\n"
             + "  <Table name='sales_fact_1997'/>\n"
             + "</PhysicalSchema>");
         testContext.assertQueryReturns(
-            "select [Time].[Time].Children on 0 from [Sales Gen]",
+            "select [Time].[Time].Children on 0 from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Time].[Time].[2011].[Q1]}\n"
-            + "{[Time].[Time].[2011].[Q2]}\n"
             + "{[Time].[Time].[2011].[Q3]}\n"
             + "{[Time].[Time].[2011].[Q4]}\n"
-            + "Row #0: \n"
-            + "Row #0: \n"
             + "Row #0: \n"
             + "Row #0: \n");
     }
@@ -7168,7 +7200,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
         // Note that [2001].[Q1] is missing, because date generation starts
         // in Q2 (June 28).
         testContext.assertQueryReturns(
-            "select [Time].[Time].Children on 0 from [Sales Gen]",
+            "select [Time].[Time].Children on 0 from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"

@@ -2644,6 +2644,55 @@ public class LegacySchemaTest extends FoodMartTestCase {
             + "{[Store].[USA].[South West]}\n"
             + "Row #0: 72,631\n");
     }
+
+    /**
+     * Unit test for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-661">
+     * MONDRIAN-661, "Name expressions in snowflake hierarchies do not work,
+     * unfriendly exception occurs"</a>.
+     *
+     * <p>NOTE: bug is not marked fixed yet.</p>
+     */
+    public void testSnowFlakeNameExpressions() {
+        final TestContext testContext =
+            getTestContext().createSubstitutingCube(
+                "Sales",
+                "<Dimension name='Product with inline' foreignKey='product_id'>"
+                + "  <Hierarchy hasAll='true' primaryKey='product_id' primaryKeyTable='product'>"
+                + "    <Join leftKey='product_class_id' rightKey='product_class_id'>"
+                + "      <Table name='product'/>"
+                + "      <Table name='product_class'/>"
+                + "    </Join>"
+                + "    <Level name='Product Family' table='product_class' column='product_family' uniqueMembers='true'/>"
+                + "    <Level name='Product Department' table='product_class' column='product_department' uniqueMembers='false'/>"
+                + "    <Level name='Product Category' table='product_class' column='product_category' uniqueMembers='false'/>"
+                + "    <Level name='Product Subcategory' table='product_class' column='product_subcategory' uniqueMembers='false'/>"
+                + "    <Level name='Brand Name' table='product' column='brand_name' uniqueMembers='false'/>"
+                + "    <Level name='Product Name' table='product' column='product_name' uniqueMembers='true'>"
+                + "      <NameExpression>"
+                + "        <SQL dialect='mysql'>concat(`product_name`,'_bar')</SQL>"
+                + "        <SQL dialect='oracle'>`product_name` || '_bar'</SQL>"
+                + "      </NameExpression>"
+                + "    </Level>"
+                + "  </Hierarchy>"
+                + "</Dimension>");
+        testContext.assertQueryReturns(
+            "select {[Product with inline].[All Product with inlines].[Drink].[Dairy].[Dairy].[Milk].[Club].Children} "
+            + "on columns from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product with inline].[Product with inline].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club 1% Milk_bar]}\n"
+            + "{[Product with inline].[Product with inline].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club 2% Milk_bar]}\n"
+            + "{[Product with inline].[Product with inline].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club Buttermilk_bar]}\n"
+            + "{[Product with inline].[Product with inline].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club Chocolate Milk_bar]}\n"
+            + "{[Product with inline].[Product with inline].[Drink].[Dairy].[Dairy].[Milk].[Club].[Club Whole Milk_bar]}\n"
+            + "Row #0: 155\n"
+            + "Row #0: 145\n"
+            + "Row #0: 140\n"
+            + "Row #0: 159\n"
+            + "Row #0: 168\n");
+    }
 }
 
 // End LegacySchemaTest.java
