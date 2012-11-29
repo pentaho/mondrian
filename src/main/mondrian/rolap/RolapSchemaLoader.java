@@ -2745,7 +2745,7 @@ public class RolapSchemaLoader {
             dimensionName,
             dimensionSource,
             first(xmlCubeDimension.caption, xmlDimension.caption),
-            xmlDimension.description,
+            first(xmlCubeDimension.description, xmlDimension.description),
             dimensionOrdinal,
             cubeHierarchyList,
             annotationMap);
