@@ -250,15 +250,6 @@ mondrian/rolap/RolapCubeUsages.java"/>
     </not>
   </condition>
 
-  <condition property="java.version.matches.requested">
-    <or>
-      <not>
-        <isset property="requested.java.version"/>
-      </not>
-      <matches pattern="^${requested.java.version}.*" string="jdk${java.runtime.version}" />
-    </or>
-  </condition>
-
   <path id="project.build.test.classpath"
       refid="project.build.test.classpath-${jdk}"/>
 
