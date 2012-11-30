@@ -473,6 +473,13 @@ version 3.x schemas.</p>
                 setArray(t2s);
             }
 
+            public void addAll(Iterable<? extends T> ts) {
+                // TODO: tune: just resize array once
+                for (T t : ts) {
+                    add(t);
+                }
+            }
+
             public <T1 extends Holder> T1 holder(T1 holder) {
                 for (T t : getArray()) {
                     if (t.getClass() == holder.getClass()) {
@@ -994,19 +1001,6 @@ version 3.x schemas.</p>
                 Default table for Column objects nested within this Attribute.
             </Doc>
         </Attribute>
-        <Attribute name="parent" required="false">
-            <Doc>
-                The name of the Attribute that references the ID of the parent
-                member in a parent-child hierarchy.
-            </Doc>
-        </Attribute>
-        <Attribute name="nullParentValue" required="false">
-            <Doc>
-                Value which identifies null members of this Attribute.
-                Used when defining a parent-child attribute.
-                Typical values are 'NULL' and '0'.
-            </Doc>
-        </Attribute>
         <Attribute name="keyColumn">
             <Doc>
                 The name of the column that holds the unique identifier of
@@ -1113,7 +1107,7 @@ version 3.x schemas.</p>
         </Attribute>
         <Array name="childArray" type="AttributeElement">
             <Doc>
-                Child elements. Key, Name, OrderBy, Caption, Closure,
+                Child elements. Key, Name, OrderBy, Caption,
                 MemberFormatter, Annotations can each occur at most once;
                 Property can occur multiple times.
             </Doc>
@@ -1130,7 +1124,6 @@ version 3.x schemas.</p>
                     Name.class,
                     OrderBy.class,
                     Caption.class,
-                    Closure.class,
                     Property.class,
                     MemberFormatter.class,
                     Annotations.class)
@@ -1156,9 +1149,6 @@ version 3.x schemas.</p>
             }
             public Caption getCaption() {
                 return children.singleton(Caption.class);
-            }
-            public Closure getClosure() {
-                return children.singleton(Closure.class);
             }
             public MemberFormatter getMemberFormatter() {
                 return children.singleton(MemberFormatter.class);
@@ -1301,6 +1291,19 @@ version 3.x schemas.</p>
                 in this Dimension.
             </Doc>
         </Attribute>
+        <Attribute name="parentAttribute" required="false">
+            <Doc>
+                The name of the Attribute that references the ID of the parent
+                member in a parent-child hierarchy.
+            </Doc>
+        </Attribute>
+        <Attribute name="nullParentValue" required="false">
+            <Doc>
+                Value which identifies null members of this Attribute.
+                Used when defining a parent-child attribute.
+                Typical values are 'NULL' and '0'.
+            </Doc>
+        </Attribute>
         <Attribute name="hideMemberIf" default="Never">
             <Doc>
                 Condition which determines whether a member of this level
@@ -1344,8 +1347,9 @@ version 3.x schemas.</p>
         </Attribute>
         <Array name="childArray" type="LevelElement">
             <Doc>
-                Child elements of a Level. Annotations can
-                appear at most once.
+                Child elements of a Level.
+                Closure can appear at most once.
+                Annotations can appear at most once.
             </Doc>
         </Array>
         <Code>
@@ -1357,6 +1361,7 @@ version 3.x schemas.</p>
             public final Children<LevelElement> children =
                 new Children<LevelElement>(
                     LevelElement.class,
+                    Closure.class,
                     Annotations.class)
                 {
                     LevelElement[] getArray() {
@@ -1366,6 +1371,9 @@ version 3.x schemas.</p>
                         childArray = ts;
                     }
                 };
+            public Closure getClosure() {
+                return children.singleton(Closure.class);
+            }
             public NamedList<Annotation> getAnnotations() {
                 return children.only(Annotations.EMPTY).list();
             }
@@ -1373,7 +1381,7 @@ version 3.x schemas.</p>
         </Code>
     </Element>
 
-    <Element type="Closure" class="AttributeElement">
+    <Element type="Closure" class="LevelElement">
         <Doc>
             <p>Specifies the transitive closure of a parent-child hierarchy.
             Optional, but recommended for better performance.
@@ -2656,6 +2664,11 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
                     }
                 };
             }
+            protected static Column[] foo(String column, String table, Columns columns) {
+                return columns != null ? columns.array.clone()
+                    : column != null ? new Column[] {new Column(table, column)}
+                    : null;
+            }
             ]]>
         </Code>
     </Element>
@@ -2679,24 +2692,63 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
     </Element>
 
     <Element type="Name" class="Columns,AttributeElement">
-        <doc>
+        <Doc>
             Column that holds the name of an attribute.
             See also <code>Attribute.nameColumn</code>.
-        </doc>
+        </Doc>
+        <Code>
+            <![CDATA[
+            public static Name of(String column, String table, Name name) {
+                Column[] columns = foo(column, table, name);
+                if (columns == null) {
+                    return null;
+                }
+                Name copy = new Name();
+                copy.array = columns;
+                return copy;
+            }
+            ]]>
+        </Code>
     </Element>
 
     <Element type="OrderBy" class="Columns,AttributeElement">
-        <doc>
+        <Doc>
             Column(s) that define the order of members of an attribute.
             See also <code>Attribute.orderByColumn</code>.
-        </doc>
+        </Doc>
+        <Code>
+            <![CDATA[
+            public static OrderBy of(String column, String table, OrderBy orderBy) {
+                Column[] columns = foo(column, table, orderBy);
+                if (columns == null) {
+                    return null;
+                }
+                OrderBy copy = new OrderBy();
+                copy.array = columns;
+                return copy;
+            }
+            ]]>
+        </Code>
     </Element>
 
     <Element type="Caption" class="Columns,AttributeElement">
-        <doc>
+        <Doc>
             Column that holds the caption of an attribute.
             See also <code>Attribute.captionColumn</code>.
-        </doc>
+        </Doc>
+        <Code>
+            <![CDATA[
+            public static Caption of(String column, String table, Caption caption) {
+                Column[] columns = foo(column, table, caption);
+                if (columns == null) {
+                    return null;
+                }
+                Caption copy = new Caption();
+                copy.array = columns;
+                return copy;
+            }
+            ]]>
+        </Code>
     </Element>
 
     <Element type="ForeignKey" class="Columns">

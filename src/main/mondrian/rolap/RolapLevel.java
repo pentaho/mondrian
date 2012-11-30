@@ -36,8 +36,14 @@ public class RolapLevel extends LevelBase {
 
     private RolapProperty[] inheritedProperties;
 
-    /** Condition under which members are hidden. */
+    /** Condition under which members are hidden. (For ragged hierarchies.) */
     private final HideMemberCondition hideMemberCondition;
+
+    /** Condition under which parent key is considered null. (For parent-child
+     * hierarchies.) */
+    final String nullParentValue;
+    final RolapClosure closure;
+    final RolapAttribute parentAttribute;
     private final Map<String, Annotation> annotationMap;
 
     private final List<RolapSchema.PhysColumn> orderByList;
@@ -66,6 +72,9 @@ public class RolapLevel extends LevelBase {
     /**
      * Creates a level.
      *
+     * @param nullParentValue Value used to represent null, e.g. "#null"
+     * @param closure Closure table
+     *
      * @pre parentExp != null || nullParentValue == null
      * @pre properties != null
      * @pre hideMemberCondition != null
@@ -78,7 +87,10 @@ public class RolapLevel extends LevelBase {
         String description,
         int depth,
         RolapAttribute attribute,
+        RolapAttribute parentAttribute,
         List<RolapSchema.PhysColumn> orderByList,
+        String nullParentValue,
+        RolapClosure closure,
         HideMemberCondition hideMemberCondition,
         Map<String, Annotation> annotationMap)
     {
@@ -86,6 +98,9 @@ public class RolapLevel extends LevelBase {
         this.annotationMap = annotationMap;
         this.attribute = attribute;
         this.orderByList = orderByList;
+        this.parentAttribute = parentAttribute;
+        this.nullParentValue = nullParentValue;
+        this.closure = closure;
         this.hideMemberCondition = hideMemberCondition;
 
         assert annotationMap != null;
@@ -131,6 +146,18 @@ public class RolapLevel extends LevelBase {
         return attribute;
     }
 
+    /**
+     * Value that indicates a null parent in a parent-child hierarchy. Typical
+     * values are {@code null} and the string {@code "0"}.
+     */
+    public String getNullParentValue() {
+        return nullParentValue;
+    }
+
+    public RolapClosure getClosure() {
+        return closure;
+    }
+
     HideMemberCondition getHideMemberCondition() {
         return hideMemberCondition;
     }
@@ -143,11 +170,15 @@ public class RolapLevel extends LevelBase {
         return orderByList.size();
     }
 
+    public RolapAttribute getParentAttribute() {
+        return parentAttribute;
+    }
+
     /**
      * Returns whether this level is parent-child.
      */
     public boolean isParentChild() {
-        return attribute.getParentAttribute() != null;
+        return parentAttribute != null;
     }
 
     private Property lookupProperty(
@@ -190,8 +221,7 @@ public class RolapLevel extends LevelBase {
                 }
             }
             if (level.isParentChild()) {
-                closedPeerLevel =
-                    (RolapLevel) level.attribute.getClosure().closedPeerLevel;
+                closedPeerLevel = level.getClosure().closedPeerLevel;
             }
         }
         this.inheritedProperties = list.toArray(new RolapProperty[list.size()]);

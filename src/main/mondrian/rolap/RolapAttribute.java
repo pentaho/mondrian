@@ -73,19 +73,9 @@ public interface RolapAttribute extends OlapElement {
      */
     List<RolapSchema.PhysColumn> getOrderByList();
 
-    RolapAttribute getParentAttribute();
-
     Level.Type getLevelType();
 
     MemberFormatter getMemberFormatter();
-
-    /**
-     * Value that indicates a null parent in a parent-child hierarchy. Typical
-     * values are {@code null} and the string {@code "0"}.
-     */
-    String getNullValue();
-
-    RolapClosure getClosure();
 }
 
 // End RolapAttribute.java

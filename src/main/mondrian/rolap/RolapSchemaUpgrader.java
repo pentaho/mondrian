@@ -3177,8 +3177,8 @@ public class RolapSchemaUpgrader {
                 levelUniqueName,
                 MondrianDef.Key.class,
                 xmlParentAttribute.children);
-            xmlAttribute.parent = xmlParentAttribute.name;
-            xmlAttribute.nullParentValue = xmlLegacyLevel.nullParentValue;
+            xmlLevel.parentAttribute = xmlParentAttribute.name;
+            xmlLevel.nullParentValue = xmlLegacyLevel.nullParentValue;
             xmlParentAttribute.hasHierarchy = false;
 
             // Register closure table in physical schema, and link to fact
@@ -3219,8 +3219,8 @@ public class RolapSchemaUpgrader {
                 physSchemaConverter
                     .legacyMap.put(closure, xmlLegacyLevel.closure);
 
-                // Now add the closure to the attribute.
-                xmlAttribute.children.add(closure);
+                // Now add the closure to the level.
+                xmlLevel.children.add(closure);
             }
         }
 
