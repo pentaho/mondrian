@@ -2646,6 +2646,119 @@ public class LegacySchemaTest extends FoodMartTestCase {
     }
 
     /**
+     * Tests two dimensions using same table (via different join paths).
+     * both using a table alias.
+     */
+    public void testDimensionsShareJoinTableOneAlias() {
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+            "<Cube name='AliasedDimensionsTesting' defaultMeasure='Unit Sales'>\n"
+            + "  <Table name='sales_fact_1997'>\n"
+            + "    <AggExclude pattern='agg_lc_06_sales_fact_1997'/>\n"
+            + "  </Table>"
+            + "<Dimension name='Store' foreignKey='store_id'>\n"
+            + "<Hierarchy hasAll='true' primaryKeyTable='store' primaryKey='store_id'>\n"
+            + "    <Join leftKey='region_id' rightKey='region_id'>\n"
+            + "      <Table name='store'/>\n"
+            + "      <Table name='region'/>\n"
+            + "    </Join>\n"
+            + " <Level name='Store Country' table='store'  column='store_country' uniqueMembers='true'/>\n"
+            + " <Level name='Store Region'  table='region' column='sales_region'  uniqueMembers='true'/>\n"
+            + " <Level name='Store Name'    table='store'  column='store_name'    uniqueMembers='true'/>\n"
+            + "</Hierarchy>\n"
+            + "</Dimension>\n"
+            + "<Dimension name='Customers' foreignKey='customer_id'>\n"
+            + "<Hierarchy hasAll='true' allMemberName='All Customers' primaryKeyTable='customer' primaryKey='customer_id'>\n"
+            + "    <Join leftKey='customer_region_id' rightKey='region_id'>\n"
+            + "      <Table name='customer'/>\n"
+            + "      <Table name='region' alias='customer_region'/>\n"
+            + "    </Join>\n"
+            + "  <Level name='Country' table='customer' column='country'                      uniqueMembers='true'/>\n"
+            + "  <Level name='Region'  table='customer_region'   column='sales_region'                 uniqueMembers='true'/>\n"
+            + "  <Level name='City'    table='customer' column='city'                         uniqueMembers='false'/>\n"
+            + "  <Level name='Name'    table='customer' column='customer_id' type='Numeric' uniqueMembers='true'/>\n"
+            + "</Hierarchy>\n"
+            + "</Dimension>\n"
+            + "<Measure name='Unit Sales' column='unit_sales' aggregator='sum' formatString='Standard'/>\n"
+            + "<Measure name='Store Sales' column='store_sales' aggregator='sum' formatString='#,###.00'/>\n"
+            + "</Cube>",
+            null,
+            null,
+            null,
+            null);
+
+        testContext.assertQueryReturns(
+            "select  {[Store].[USA].[South West]} on rows,"
+            + "{[Customers].[USA].[South West]} on columns"
+            + " from "
+            + "AliasedDimensionsTesting",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Customers].[Customers].[USA].[South West]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[Store].[USA].[South West]}\n"
+            + "Row #0: 72,631\n");
+    }
+
+    /**
+     * Tests two dimensions using same table (via different join paths).
+     * both using a table alias.
+     */
+    public void testDimensionsShareJoinTableTwoAliases() {
+        final TestContext testContext = getTestContext().legacy().create(
+            null,
+            "<Cube name='AliasedDimensionsTesting' defaultMeasure='Unit Sales'>\n"
+            + "  <Table name='sales_fact_1997'>\n"
+            + "    <AggExclude pattern='agg_lc_06_sales_fact_1997'/>\n"
+            + "  </Table>"
+            + "<Dimension name='Store' foreignKey='store_id'>\n"
+            + "<Hierarchy hasAll='true' primaryKeyTable='store' primaryKey='store_id'>\n"
+            + "    <Join leftKey='region_id' rightKey='region_id'>\n"
+            + "      <Table name='store'/>\n"
+            + "      <Table name='region' alias='store_region'/>\n"
+            + "    </Join>\n"
+            + " <Level name='Store Country' table='store'  column='store_country' uniqueMembers='true'/>\n"
+            + " <Level name='Store Region'  table='store_region' column='sales_region'  uniqueMembers='true'/>\n"
+            + " <Level name='Store Name'    table='store'  column='store_name'    uniqueMembers='true'/>\n"
+            + "</Hierarchy>\n"
+            + "</Dimension>\n"
+            + "<Dimension name='Customers' foreignKey='customer_id'>\n"
+            + "<Hierarchy hasAll='true' allMemberName='All Customers' primaryKeyTable='customer' primaryKey='customer_id'>\n"
+            + "    <Join leftKey='customer_region_id' rightKey='region_id'>\n"
+            + "      <Table name='customer'/>\n"
+            + "      <Table name='region' alias='customer_region'/>\n"
+            + "    </Join>\n"
+            + "  <Level name='Country' table='customer' column='country'                      uniqueMembers='true'/>\n"
+            + "  <Level name='Region'  table='customer_region'   column='sales_region'                 uniqueMembers='true'/>\n"
+            + "  <Level name='City'    table='customer' column='city'                         uniqueMembers='false'/>\n"
+            + "  <Level name='Name'    table='customer' column='customer_id' type='Numeric' uniqueMembers='true'/>\n"
+            + "</Hierarchy>\n"
+            + "</Dimension>\n"
+            + "<Measure name='Unit Sales' column='unit_sales' aggregator='sum' formatString='Standard'/>\n"
+            + "<Measure name='Store Sales' column='store_sales' aggregator='sum' formatString='#,###.00'/>\n"
+            + "</Cube>",
+            null,
+            null,
+            null,
+            null);
+
+        testContext.assertQueryReturns(
+            "select  {[Store].[USA].[South West]} on rows,"
+            + "{[Customers].[USA].[South West]} on columns"
+            + " from "
+            + "AliasedDimensionsTesting",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Customers].[Customers].[USA].[South West]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[Store].[USA].[South West]}\n"
+            + "Row #0: 72,631\n");
+    }
+
+
+    /**
      * Unit test for bug
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-661">
      * MONDRIAN-661, "Name expressions in snowflake hierarchies do not work,
