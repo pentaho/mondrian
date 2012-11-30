@@ -171,7 +171,7 @@ public class SqlTupleReader implements TupleReader {
                                 // value for uniformity in hashmaps.
                                 break pc;
                             } else if (value.toString().equals(
-                                    childLevel.attribute.getNullValue()))
+                                    childLevel.getNullParentValue()))
                             {
                                 // member is at top of hierarchy; its parent is
                                 // the 'all' member
@@ -1070,9 +1070,9 @@ Util.deprecated("obsolete basecube parameter", false);
             }
             final RolapAttribute attribute = currLevel.getAttribute();
 
-            if (attribute.getParentAttribute() != null) {
+            if (currLevel.getParentAttribute() != null) {
                 List<RolapSchema.PhysColumn> parentExps =
-                    attribute.getParentAttribute().getKeyList();
+                    currLevel.getParentAttribute().getKeyList();
                 SqlMemberSource.Sgo sgo =
                     selectOrdinal == selectCount - 1
                         ? SqlMemberSource.Sgo.SELECT_GROUP_ORDER

@@ -39,15 +39,12 @@ public class RolapSharedAttribute extends RolapAttributeImpl {
         RolapSchema.PhysColumn captionExp,
         List<RolapSchema.PhysColumn> orderByList,
         MemberFormatter memberFormatter,
-        String nullValue,
         Level.Type levelType,
-        RolapClosure closure,
         int approxRowCount)
     {
         super(
             name, visible, caption, description, keyList, nameExp, captionExp,
-            orderByList, memberFormatter, nullValue, levelType,
-            closure, approxRowCount);
+            orderByList, memberFormatter, levelType, approxRowCount);
     }
 
     /**
@@ -154,24 +151,12 @@ public class RolapSharedAttribute extends RolapAttributeImpl {
             return delegate.getOrderByList();
         }
 
-        public RolapAttribute getParentAttribute() {
-            return delegate.getParentAttribute();
-        }
-
         public Level.Type getLevelType() {
             return delegate.getLevelType();
         }
 
         public MemberFormatter getMemberFormatter() {
             return delegate.getMemberFormatter();
-        }
-
-        public String getNullValue() {
-            return delegate.getNullValue();
-        }
-
-        public RolapClosure getClosure() {
-            return delegate.getClosure();
         }
     }
 

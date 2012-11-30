@@ -88,7 +88,7 @@ public class RolapCubeDimension extends RolapDimension {
                         dimSource, name, caption),
                     applyPrefix(
                         rolapHierarchy.getDescription(),
-                        dimSource, name, caption));
+                        dimSource, name, description));
             hierarchyList.add(hierarchy);
         }
         this.hierarchyList.addAll(
@@ -191,7 +191,7 @@ public class RolapCubeDimension extends RolapDimension {
             && name != null
             && !source.equals(name))
         {
-            return first(dimCaption, name) + caption;
+            return first(dimCaption, name) + "." + caption;
         }
         return caption;
     }
