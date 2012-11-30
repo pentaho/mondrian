@@ -1069,11 +1069,10 @@ class SqlMemberSource
             final SqlTupleReader.LevelColumnLayout layout =
                 parentChild
                 && !parentMember.isAll()
-                && childLevel.attribute
-                    .getParentAttribute() != null
-                && childLevel.attribute.getClosure() != null
+                && childLevel.getParentAttribute() != null
+                && childLevel.getClosure() != null
                     ? fullLayout.levelLayoutMap.get(
-                        childLevel.attribute.getClosure().closedPeerLevel)
+                        childLevel.getClosure().closedPeerLevel)
                     : fullLayout.levelLayoutMap.get(
                         childLevel);
             assert layout != null
@@ -1343,14 +1342,13 @@ class SqlMemberSource
 
         StringBuilder condition = new StringBuilder(64);
         for (RolapSchema.PhysColumn parentKey
-            : level.attribute.getParentAttribute().getKeyList())
+            : level.getParentAttribute().getKeyList())
         {
             queryBuilder.addToFrom(parentKey);
             String parentId = parentKey.toSql();
             condition.append(parentId);
         }
-        final String nullParentValue =
-            level.attribute.getNullValue();
+        final String nullParentValue = level.getNullParentValue();
         if (nullParentValue == null
             || nullParentValue.equalsIgnoreCase("NULL"))
         {
@@ -1398,7 +1396,7 @@ class SqlMemberSource
             new RolapSchema.SqlQueryBuilder(sqlQuery, layoutBuilder);
         RolapLevel level = member.getLevel();
 
-        final RolapClosure closure = level.attribute.getClosure();
+        final RolapClosure closure = level.getClosure();
         if (level.isParentChild() && closure != null) {
             level =
                 Util.first(
@@ -1410,7 +1408,7 @@ class SqlMemberSource
 
         for (Pair<RolapSchema.PhysColumn, Comparable> pair
             : Pair.iterate(
-                level.getAttribute().getParentAttribute().getKeyList(),
+                level.getParentAttribute().getKeyList(),
                 member.getKeyAsList()))
         {
             RolapSchema.PhysColumn parentKey = pair.left;

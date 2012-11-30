@@ -763,9 +763,7 @@
             <Dimension name='Employee' key='Employee Id'>
                 <Attributes>
                     <Attribute name='Manager Id' table='employee' keyColumn='supervisor_id'/>
-                    <Attribute name='Employee Id' table='employee' keyColumn='employee_id' nameColumn='full_name' orderByColumn='employee_id' parent='Manager Id' nullParentValue='0'>
-                        <Closure table='employee_closure' parentColumn='supervisor_id' childColumn='employee_id'/>
-                    </Attribute>
+                    <Attribute name='Employee Id' table='employee' keyColumn='employee_id' nameColumn='full_name' orderByColumn='employee_id'/>
                     <Attribute name='Store Id' table='employee' keyColumn='store_id'/>
                     <Attribute name='Store Type' table='store' keyColumn='store_type' hierarchyAllMemberName='All Store Types'/>
                     <Attribute name='Pay Type' table='position' keyColumn='pay_type' hierarchyAllMemberName='All Pay Types'/>
@@ -789,7 +787,9 @@
                 </Attributes>
                 <Hierarchies>
                     <Hierarchy name='Employees' allMemberName='All Employees'>
-                        <Level attribute='Employee Id'/>
+                        <Level attribute='Employee Id' parentAttribute='Manager Id' nullParentValue='0'>
+                            <Closure table='employee_closure' parentColumn='supervisor_id' childColumn='employee_id'/>
+                        </Level>
                     </Hierarchy>
                     <Hierarchy name='Position' allMemberName='All Position'>
                         <Level attribute='Management Role'/>

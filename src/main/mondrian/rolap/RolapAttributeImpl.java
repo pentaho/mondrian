@@ -48,16 +48,10 @@ public abstract class RolapAttributeImpl
     private final List<RolapProperty> properties =
         new ArrayList<RolapProperty>();
 
-    final String nullValue;
-
-    RolapAttribute parentAttribute;
-
     final Level.Type levelType;
     private final int approxRowCount;
 
     final MemberFormatter memberFormatter;
-
-    private final RolapClosure closure;
 
     /**
      * Creates an attribute.
@@ -78,7 +72,6 @@ public abstract class RolapAttributeImpl
      * @param captionExp Caption column
      * @param orderByList Ordering columns
      * @param memberFormatter Formatter
-     * @param nullValue Value used to represent null, e.g. "#null"
      * @param levelType Level type
      * @param approxRowCount Approximate number of instances of this attribute
      */
@@ -92,15 +85,12 @@ public abstract class RolapAttributeImpl
         RolapSchema.PhysColumn captionExp,
         List<RolapSchema.PhysColumn> orderByList,
         MemberFormatter memberFormatter,
-        String nullValue,
         Level.Type levelType,
-        RolapClosure closure,
         int approxRowCount)
     {
         this.visible = visible;
         this.caption = caption;
         this.description = description;
-        this.closure = closure;
         assert levelType != null;
         assert name != null;
         switch (levelType)  {
@@ -118,7 +108,6 @@ public abstract class RolapAttributeImpl
         this.nameExp = nameExp;
         this.captionExp = captionExp;
         this.memberFormatter = memberFormatter;
-        this.nullValue = nullValue;
         this.levelType = levelType;
         this.approxRowCount = approxRowCount;
         this.orderByList = orderByList;
@@ -147,20 +136,12 @@ public abstract class RolapAttributeImpl
         return orderByList;
     }
 
-    public RolapAttribute getParentAttribute() {
-        return parentAttribute;
-    }
-
     public Level.Type getLevelType() {
         return levelType;
     }
 
     public MemberFormatter getMemberFormatter() {
         return memberFormatter;
-    }
-
-    public String getNullValue() {
-        return nullValue;
     }
 
     protected Logger getLogger() {
@@ -218,10 +199,6 @@ public abstract class RolapAttributeImpl
 
     public int getApproxRowCount() {
         return approxRowCount;
-    }
-
-    public RolapClosure getClosure() {
-        return closure;
     }
 }
 
