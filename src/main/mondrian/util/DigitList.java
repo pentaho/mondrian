@@ -84,7 +84,7 @@ final class DigitList {
     public int count = 0;
     public byte[] digits = new byte[MAX_LONG_DIGITS];
 
-    private final void ensureCapacity(int digitCapacity, int digitsToCopy) {
+    private void ensureCapacity(int digitCapacity, int digitsToCopy) {
         if (digitCapacity > digits.length) {
             byte[] newDigits = new byte[digitCapacity * 2];
             System.arraycopy(digits, 0, newDigits, 0, digitsToCopy);
@@ -185,7 +185,7 @@ final class DigitList {
                 if (rep.charAt(i) == '+') {
                     ++i;
                 }
-                exponent = Integer.valueOf(rep.substring(i)).intValue();
+                exponent = Integer.parseInt(rep.substring(i));
                 break;
             } else if (count < maxCount) {
                 if (!nonZeroDigitSeen) {
