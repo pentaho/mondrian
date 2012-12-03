@@ -5635,16 +5635,26 @@ Test that get error if a dimension has more than one hierarchy with same name.
      */
     public void testCubeReferencesObscuredTable() {
         final TestContext testContext =
-            getTestContext().create(
-                "<PhysicalSchema>"
-                + "  <Table name='sales_fact_1997' alias='foo'/>\n"
-                + "</PhysicalSchema>",
-                "<Cube name='SalesPhys' factTable='sales_fact_1997'/>",
-                null, null, null, null);
+            getTestContext().withSchema(
+                "<Schema name='FoodMart' metamodelVersion='4.0'>"
+                + "  <PhysicalSchema>"
+                + "    <Table name='sales_fact_1997' alias='foo'/>\n"
+                + "  </PhysicalSchema>"
+                + "  <Cube name='SalesPhys'>"
+                + "    <MeasureGroups>"
+                + "      <MeasureGroup table='sales_fact_1997'>"
+                + "        <Measures>"
+                + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
+                + "         formatString='Standard'/>\n"
+                + "        </Measures>"
+                + "      </MeasureGroup>"
+                + "    </MeasureGroups>"
+                + "  </Cube>"
+                + "</Schema>");
         final List<Exception> list = testContext.getSchemaWarnings();
         testContext.assertContains(
             list,
-            "Unknown table usage 'sales_fact_1997'");
+            "Unknown fact table 'sales_fact_1997'.*");
     }
 
     public void testJoinInvalidInPhysicalSchema() {
@@ -6101,27 +6111,6 @@ Test that get error if a dimension has more than one hierarchy with same name.
         testContext.assertContains(
             list,
             "Key must not contain calculated column; calculated column 'cidPlusOne' in table 'calcColumnInKeyNotSupported'.");
-        testContext.assertContains(
-            list,
-            "Key references column in other table; key column 'xxx' in table 'yyy' references table 'zzz'.*");
-        testContext.assertContains(
-            list,
-            "No path from table 'xxx' to table 'yyy', when resolving calculated column 'ccc' in context 'dddd'");
-        testContext.assertContains(
-            list,
-            "Multiple paths from table 'xxx' to table 'yyy', when resolving calculated column 'ccc' in context 'dddd'; paths are xxxx, xxxx, xxxx.");
-        testContext.assertContains(
-            list,
-            "calc column 'err4' references unknown table 'unknownTable'");
-        testContext.assertContains(
-            list,
-            "calc column 'err5' references unknown column 'unknownColumn' in table 'myfact'");
-        testContext.assertContains(
-            list,
-            "cannot use join in physical schema");
-        testContext.assertContains(
-            list,
-            "Calculated column 'xxx' in table 'yyy' has cyclic expression");
     }
 
     public void testPhysicalSchemaColumnRequiresTable() {
