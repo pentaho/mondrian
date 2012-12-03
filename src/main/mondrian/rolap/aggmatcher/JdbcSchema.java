@@ -481,7 +481,7 @@ public class JdbcSchema {
             /**
              * Sets the {@link java.sql.Types} enum of the column.
              *
-             * @param type
+             * @param type the type
              */
             private void setType(final int type) {
                 this.type = type;
@@ -497,7 +497,7 @@ public class JdbcSchema {
             /**
              * Sets the type name (per {@link java.sql.Types}) of the column.
              *
-             * @param typeName
+             * @param typeName the typeName
              */
             private void setTypeName(final String typeName) {
                 this.typeName = typeName;
@@ -901,7 +901,7 @@ public class JdbcSchema {
         /**
          * Sets the table usage (fact, aggregate or other).
          *
-         * @param tableUsageType
+         * @param tableUsageType the tableUsageType
          */
         public void setTableUsageType(final TableUsageType tableUsageType) {
             // if usageIter has already been set, then usageIter can NOT be
@@ -1023,7 +1023,7 @@ public class JdbcSchema {
                     try {
                         conn.close();
                     } catch (SQLException e) {
-                        //ignore
+                        // ignore
                     }
                 }
 
@@ -1270,6 +1270,7 @@ public class JdbcSchema {
     }
 
     public static synchronized void clearAllDBs() {
+        dbMap.clear();
         factory = null;
         makeFactory();
     }

@@ -17,7 +17,7 @@ import mondrian.olap.Member;
 import mondrian.olap.NamedSet;
 import mondrian.olap.Property;
 import mondrian.olap.Schema;
-import mondrian.rolap.aggmatcher.AggTableManager;
+import mondrian.rolap.aggmatcher.*;
 import mondrian.spi.Dialect;
 import mondrian.spi.PropertyFormatter;
 import mondrian.util.Bug;
@@ -7080,6 +7080,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
     private TestContext genTableSchema(String physSchema) throws SQLException {
         TestContext testContext = getTestContext();
         doSql(testContext, "drop table time_by_day_generated");
+        JdbcSchema.clearAllDBs();
         return testContext.withSchema(
             "<Schema name='FoodMart' metamodelVersion='4.0'>\n"
             + physSchema
