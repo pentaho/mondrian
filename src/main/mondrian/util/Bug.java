@@ -335,6 +335,14 @@ public class Bug {
      * base cube that are not exposed in the virtual cube.
      */
     public static final boolean VirtualCubeConversionMissesHiddenFixed = false;
+
+    /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1324">bug MONDRIAN-1324,
+     * Using the same table in multiple dimensions yields incorrect results
+     * </a> is fixed.
+     */
+    public static final boolean BugMondrian1324Fixed = false;
 }
 
 // End Bug.java
