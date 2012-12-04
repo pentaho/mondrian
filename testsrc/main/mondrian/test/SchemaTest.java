@@ -3053,6 +3053,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * caused by binary column value.
      */
     public void testBinaryLevelKey() {
+        if (!Bug.BugMondrian1330Fixed) {
+            return;
+        }
         switch (getTestContext().getDialect().getDatabaseProduct()) {
         case DERBY:
         case MYSQL:
@@ -3741,6 +3744,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * "adding hours/mins as levelType for level of type Dimension"</a>.
      */
     public void testBugMondrian355() {
+        if (!Bug.BugMondrian1329Fixed) {
+            return;
+        }
         checkBugMondrian355("TimeHalfYears");
 
         // make sure that the deprecated name still works
@@ -4323,14 +4329,17 @@ Test that get error if a dimension has more than one hierarchy with same name.
             measure.getPropertyValue(Property.MEMBER_CAPTION.name));
         checkAnnotations(measure.getAnnotationMap(), "a", "Measure");
 
-        // The implicitly created [Fact Count] measure
-        final Member factCountMeasure = measures.get(1);
-        assertEquals("Fact Count", factCountMeasure.getName());
-        assertEquals(
-            false,
-            factCountMeasure.getPropertyValue(Property.VISIBLE.name));
+        if (Bug.BugMondrian1332Fixed) {
+            // The implicitly created [Fact Count] measure
+            final Member factCountMeasure = measures.get(1);
+            assertEquals("Fact Count", factCountMeasure.getName());
+            assertEquals(
+                false,
+                factCountMeasure.getPropertyValue(Property.VISIBLE.name));
+        }
 
-        final Member calcMeasure = measures.get(2);
+        final int fooIndex = Bug.BugMondrian1332Fixed ? 2 : 1;
+        final Member calcMeasure = measures.get(fooIndex);
         assertEquals("Foo", calcMeasure.getName());
         assertEquals("Calc member caption", calcMeasure.getCaption());
         assertEquals("Calc member description", calcMeasure.getDescription());

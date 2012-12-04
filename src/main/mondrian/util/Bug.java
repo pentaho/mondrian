@@ -343,6 +343,30 @@ public class Bug {
      * </a> is fixed.
      */
     public static final boolean BugMondrian1324Fixed = false;
+
+    /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1329">bug MONDRIAN-1329,
+     * Level Types for TimeHalfYears do not work
+     * </a> is fixed.
+     */
+    public static final boolean BugMondrian1329Fixed = false;
+
+    /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1330">bug MONDRIAN-1330,
+     * NumberFormatException when using ColumnDef with binary value
+     * </a> is fixed.
+     */
+    public static final boolean BugMondrian1330Fixed = false;
+
+    /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1332">bug MONDRIAN-1332,
+     * Missing Fact Count Measure
+     * </a> is fixed.
+     */
+    public static final boolean BugMondrian1332Fixed = false;
 }
 
 // End Bug.java
