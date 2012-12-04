@@ -7263,7 +7263,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
         final TestContext testContext =
             getTestContext().insertDimension(
                 "Sales",
-                "<Dimension name='Product with no all' key='Product Id'>"
+                "<Dimension name='Product with no all' key='Product Subcategory'>"
                 + "    <Attributes>\n"
                 + "        <Attribute name='Product Subcategory' table='product_class'>\n"
                 + "            <Key>\n"
@@ -7309,8 +7309,10 @@ Test that get error if a dimension has more than one hierarchy with same name.
             .ignoreMissingLink();
 
         testContext.assertSchemaError(
-            "xxx",
-            "Xx");
+            "Number of foreign key columns 1 does not match number of key columns "
+            + "4 \\(in ForeignKeyLink\\) \\(at ${pos}\\)",
+            "<ForeignKeyLink dimension='Product with no all' "
+            + "foreignKeyColumn='product_id'/>");
     }
 
     // TODO: implement check on data types of columns in ForeignKeyLink,
