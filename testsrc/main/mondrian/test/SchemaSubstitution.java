@@ -168,5 +168,17 @@ public class SchemaSubstitution {
             }
         };
     }
+
+    public static Util.Function1<String, String> remove(
+        final String xml)
+    {
+        return new Util.Function1<String, String>() {
+            public String apply(String schema) {
+                final int start = schema.indexOf(xml);
+                return schema.substring(0, start)
+                    + schema.substring(start + xml.length());
+            }
+        };
+    }
 }
 // End SchemaSubstitution.java
