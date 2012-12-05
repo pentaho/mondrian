@@ -4670,6 +4670,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * MONDRIAN-463, "Snowflake dimension with 3-way join."</a>.
      */
     public void testBugMondrian463() {
+        if (!Bug.BugMondrian1335Fixed) {
+            return;
+        }
         if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
             .get())
         {
@@ -4695,7 +4698,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "    <Attribute name='Product Department' table='product_class' keyColumn='product_department' hasHierarchy='false'/>\n"
                 + "    <Attribute name='Product Category' table='product_class' keyColumn='product_category' hasHierarchy='false'/>\n"
                 + "    <Attribute name='Product Subcategory' table='product_class' keyColumn='product_subcategory' hasHierarchy='false'/>\n"
-                + "    <Attribute name='Product Class' table='store' keyColumn='store_id' type='Numeric' hasHierarchy='false'/>\n"
+                + "    <Attribute name='Product Class' table='store' keyColumn='store_id' datatype='Numeric' hasHierarchy='false'/>\n"
                 + "    <Attribute name='Brand Name' table='product' keyColumn='brand_name' hasHierarchy='false'/>\n"
                 + "    <Attribute name='Product Name' table='product' keyColumn='product_name' hasHierarchy='false'/>"
                 + "    <Attribute name='id' table='product' keyColumn='product_id' hasHierarchy='false'/>"

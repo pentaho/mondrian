@@ -1393,6 +1393,9 @@ public class LegacySchemaTest extends FoodMartTestCase {
      * caused by binary column value.
      */
     public void testBinaryLevelKey() {
+        if (!Bug.BugMondrian1330Fixed) {
+            return;
+        }
         switch (getTestContext().getDialect().getDatabaseProduct()) {
         case DERBY:
         case MYSQL:
@@ -1695,7 +1698,10 @@ public class LegacySchemaTest extends FoodMartTestCase {
      * "adding hours/mins as levelType for level of type Dimension"</a>.
      */
     public void testBugMondrian355() {
-//        checkBugMondrian355("TimeHalfYears");
+        if (!Bug.BugMondrian1329Fixed) {
+            return;
+        }
+        checkBugMondrian355("TimeHalfYears");
 
         // make sure that the deprecated name still works
         checkBugMondrian355("TimeHalfYear");
@@ -1761,6 +1767,9 @@ public class LegacySchemaTest extends FoodMartTestCase {
      * MONDRIAN-463, "Snowflake dimension with 3-way join."</a>.
      */
     public void testBugMondrian463() {
+        if (!Bug.BugMondrian1335Fixed) {
+            return;
+        }
         if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
             .get())
         {
