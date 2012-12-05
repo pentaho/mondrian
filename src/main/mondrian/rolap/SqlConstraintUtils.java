@@ -556,8 +556,6 @@ public class SqlConstraintUtils {
                     condition.append(strip(")\n    or "));
                     generateMultiValueIsNullExprs(
                         condition,
-                        queryBuilder,
-                        measureGroup,
                         members.get(0),
                         fromLevel);
                 }
@@ -750,8 +748,6 @@ public class SqlConstraintUtils {
             condition.append(strip(")\n       or ("));
             generateMultiValueIsNullExprs(
                 condition,
-                queryBuilder,
-                measureGroup,
                 members.get(0),
                 fromLevel);
             condition.append(" and not(");
@@ -1097,15 +1093,11 @@ public class SqlConstraintUtils {
      * per level in a RolapMember.
      *
      * @param buf Buffer to which to append condition
-     * @param queryBuilder query corresponding to the expression
-     * @param measureGroup Measure group
      * @param member the RolapMember
      * @param fromLevel lowest parent level that is unique
      */
     private static void generateMultiValueIsNullExprs(
         StringBuilder buf,
-        RolapSchema.SqlQueryBuilder queryBuilder,
-        RolapMeasureGroup measureGroup,
         RolapMember member,
         RolapLevel fromLevel)
     {
@@ -1117,36 +1109,12 @@ public class SqlConstraintUtils {
             if (m.isAll()) {
                 continue;
             }
-            RolapLevel level = m.getLevel();
-
-            // this method can be called within the context of shared members,
-            // outside of the normal rolap star, therefore we need to
-            // check the level to see if it is a shared or cube level.
-
-            final RolapStar.Column column;
-            if (level instanceof RolapCubeLevel) {
-                column =
-                    ((RolapCubeLevel) level).getBaseStarKeyColumn(measureGroup);
-            } else {
-                column = null;
-            }
-
-            String columnString;
-            if (column != null) {
-                RolapStar.Column nameColumn = column.getNameColumn();
-                if (nameColumn == null) {
-                    nameColumn = column;
-                }
-                columnString = nameColumn.getExpression().toSql();
-            } else {
-                columnString = level.getAttribute().getNameExp().toSql();
-            }
 
             if (levelInMultiple++ > 0) {
-                buf.append(" or ");
+                buf.append(strip("\n        or "));
             }
 
-            buf.append(columnString)
+            buf.append(m.getLevel().getAttribute().getNameExp().toSql())
                 .append(" is null");
 
             // Only needs to compare up to the first(lowest) unique level.
@@ -1310,8 +1278,8 @@ public class SqlConstraintUtils {
                                 // or
                                 // (not (quarter in ('Q1','Q3'))
                                 //    or quarter is null)
-                                where = "(" + where
-                                    + "\n    or (" + q + " is null))";
+                                where = "(" + where + strip("\n        or (")
+                                    + q + " is null))";
                             }
                         }
                         buf.append(where);
