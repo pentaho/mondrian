@@ -20,6 +20,7 @@ import mondrian.util.FilteredIterableList;
 import mondrian.util.Pair;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 
 /**
@@ -30,6 +31,9 @@ import java.util.*;
  * @since Nov 21, 2005
  */
 public class SqlConstraintUtils {
+
+    private static final Pattern MULTIPLE_WHITESPACE_PATTERN =
+        Pattern.compile("[\n ]+");
 
     /** Utility class */
     private SqlConstraintUtils() {
@@ -549,8 +553,7 @@ public class SqlConstraintUtils {
                     // If there are no NULL values in the member levels, then
                     // we're done except we need to also explicitly include
                     // members containing nulls across all levels.
-                    condition.append(")");
-                    condition.append(" or ");
+                    condition.append(strip(")\n    or "));
                     generateMultiValueIsNullExprs(
                         condition,
                         queryBuilder,
@@ -597,14 +600,12 @@ public class SqlConstraintUtils {
 
         // Note that NULLs are not used to enforce uniqueness
         // so we ignore the fromLevel here.
-        boolean firstParent = true;
         StringBuilder condition2 = new StringBuilder();
 
         if (condition1.length() > 0) {
             // Some members have already been translated into IN list.
-            firstParent = false;
             condition.append(condition1.toString());
-            condition.append(" or ");
+            condition.append(strip("\n    or "));
         }
 
         RolapLevel memberLevel = members.get(0).getLevel();
@@ -613,8 +614,8 @@ public class SqlConstraintUtils {
         // should not contain null.
         for (RolapMember p : parentChildrenMap.keySet()) {
             assert p != null;
-            if (condition2.toString().length() > 0) {
-                condition2.append(" or ");
+            if (condition2.length() > 0) {
+                condition2.append(strip("\n    or "));
             }
 
             condition2.append("(");
@@ -630,10 +631,12 @@ public class SqlConstraintUtils {
             if (p instanceof RolapCubeMember) {
                 RolapCubeMember cubeMember = (RolapCubeMember) p;
                 final RolapAttribute attribute = p.getLevel().getAttribute();
-                final List<Comparable> keyList = cubeMember.getKeyAsList();
-                int j = 0;
-                for (RolapSchema.PhysColumn physColumn : attribute.getKeyList())
+                for (Pair<RolapSchema.PhysColumn, Comparable> pair
+                    : Pair.iterate(
+                        attribute.getKeyList(), cubeMember.getKeyAsList()))
                 {
+                    final RolapSchema.PhysColumn physColumn = pair.left;
+                    final Comparable o = pair.right;
                     final RolapStar.Column column =
                         measureGroup.getRolapStarColumn(
                             cubeMember.getDimension(), physColumn);
@@ -659,20 +662,17 @@ public class SqlConstraintUtils {
                         // level.getKeyExp().addToFrom(sqlQuery, star);
                     }
 
-                    if (levelCount > 0) {
-                        condition2.append(" and ");
+                    if (levelCount++ > 0) {
+                        condition2.append(strip("\n    and "));
                     }
-                    ++levelCount;
 
                     Util.deprecated("obsolete", false);
                     condition2.append(
                         constrainLevel(
-                            p.getLevel(),
-                            queryBuilder.sqlQuery,
-                            measureGroup,
-                            aggStar,
+                            physColumn,
+                            queryBuilder.getDialect(),
                             getColumnValue(
-                                keyList.get(j),
+                                o,
                                 queryBuilder.getDialect(),
                                 physColumn.getDatatype()),
                             false));
@@ -682,11 +682,8 @@ public class SqlConstraintUtils {
 //                        SQL is completely generated for this parent
 //                        break;
 //                    }
-
-                    ++j;
                 }
             }
-            firstParent = false;
 
             // Next, generate children for this parent-children group
             List<RolapMember> children = parentChildrenMap.get(p);
@@ -697,7 +694,7 @@ public class SqlConstraintUtils {
                     new HashMap<RolapMember, List<RolapMember>>();
 
                 if (levelCount > 0) {
-                    condition2.append(" and ");
+                    condition2.append(strip("\n    and "));
                 }
                 RolapLevel childrenLevel = p.getLevel().getChildLevel();
 
@@ -750,7 +747,7 @@ public class SqlConstraintUtils {
         // in the multi-value IN case, since we have a map of the null values.
         condition.append(condition2.toString());
         if (exclude) {
-            condition.append(") or (");
+            condition.append(strip(")\n       or ("));
             generateMultiValueIsNullExprs(
                 condition,
                 queryBuilder,
@@ -816,22 +813,19 @@ public class SqlConstraintUtils {
     }
 
     /**
-     * Generates a SQL expression constraining a level by some value.
+     * Generates a SQL expression constraining a level's key by some value.
      *
-     * @param level the level
-     * @param query the query that the sql expression will be added to
-     * @param measureGroup Measure group
-     * @param aggStar aggregate star if available
+     *
+     * @param exp Column to constrain
+     * @param dialect SQL dialect
      * @param columnValue value constraining the level
      * @param caseSensitive if true, need to handle case sensitivity of the
      *                      member value
      * @return generated string corresponding to the expression
      */
     public static String constrainLevel(
-        RolapLevel level,
-        SqlQuery query,
-        RolapMeasureGroup measureGroup,
-        AggStar aggStar,
+        RolapSchema.PhysColumn exp,
+        Dialect dialect,
         String columnValue,
         boolean caseSensitive)
     {
@@ -842,43 +836,10 @@ public class SqlConstraintUtils {
         Util.deprecated(
             "TODO unify inside-star and outside-star code paths",
             false);
-        RolapStar.Column column;
-        if (level instanceof RolapCubeLevel) {
-            column = ((RolapCubeLevel)level).getBaseStarKeyColumn(measureGroup);
-        } else {
-            column = null;
-        }
-
-        String columnString;
-        Dialect.Datatype datatype;
-        if (column != null) {
-            if (column.getNameColumn() == null) {
-                Util.deprecated("obsolete", false);
-                datatype = level.attribute.getDatatype();
-            } else {
-                column = column.getNameColumn();
-                // The schema doesn't specify the datatype of the name column,
-                // but we presume that it is a string.
-                datatype = Dialect.Datatype.String;
-            }
-            if (aggStar != null) {
-                // this makes the assumption that the name column is the same
-                // as the key column
-                int bitPos = column.getBitPosition();
-                AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
-                columnString = aggColumn.generateExprString(query);
-            } else {
-                columnString = column.getExpression().toSql();
-            }
-        } else {
-            assert aggStar == null;
-            RolapSchema.PhysExpr exp = level.getAttribute().getNameExp();
-            datatype = exp.getDatatype();
-            columnString = exp.toSql();
-        }
+        Dialect.Datatype datatype = exp.getDatatype();
+        String columnString = exp.toSql();
 
         String constraint;
-
         if (RolapUtil.mdxNullLiteral().equalsIgnoreCase(columnValue)) {
             constraint = columnString + " is null";
         } else {
@@ -903,7 +864,7 @@ public class SqlConstraintUtils {
                 }
             }
             final StringBuilder buf = new StringBuilder();
-            query.getDialect().quote(buf, columnValue, datatype);
+            dialect.quote(buf, columnValue, datatype);
             String value = buf.toString();
             if (caseSensitive && datatype == Dialect.Datatype.String) {
                 // Some databases (like DB2) compare case-sensitive. We convert
@@ -911,8 +872,8 @@ public class SqlConstraintUtils {
                 // rather than in Java (e.g. 'FOO') in case the DBMS is running
                 // a different locale.
                 if (!MondrianProperties.instance().CaseSensitive.get()) {
-                    columnString = query.getDialect().toUpper(columnString);
-                    value = query.getDialect().toUpper(value);
+                    columnString = dialect.toUpper(columnString);
+                    value = dialect.toUpper(value);
                 }
             }
 
@@ -1071,6 +1032,7 @@ public class SqlConstraintUtils {
             memberBuf.setLength(0);
             memberBuf.append("(");
 
+            boolean containsNull = false;
             for (Pair<RolapSchema.PhysColumn, Comparable> pair
                 : Pair.iterate(level.attribute.getKeyList(), m.getKeyAsList()))
             {
@@ -1094,6 +1056,7 @@ public class SqlConstraintUtils {
                     }
 
                     // Skip generating condition for this parent
+                    containsNull = true;
                     break;
                 }
 
@@ -1103,16 +1066,18 @@ public class SqlConstraintUtils {
 
                 queryBuilder.getDialect().quote(
                     memberBuf, value, datatype);
+            }
 
-                // Now check if sql string is successfully generated for this
-                // member.  If parent levels do not contain NULL then SQL must
-                // have been generated successfully.
+            // Now check if SQL string is successfully generated for this
+            // member.  If parent levels do not contain NULL then SQL must
+            // have been generated successfully.
+            if (!containsNull) {
+                memberBuf.append(")");
+                if (memberOrdinal++ > 0) {
+                    valueBuf.append(", ");
+                }
+                valueBuf.append(memberBuf);
             }
-            memberBuf.append(")");
-            if (memberOrdinal++ > 0) {
-                valueBuf.append(", ");
-            }
-            valueBuf.append(memberBuf);
         }
 
         StringBuilder condition = new StringBuilder();
@@ -1226,7 +1191,7 @@ public class SqlConstraintUtils {
             MondrianProperties.instance().MaxConstraints.get();
         final Dialect dialect = queryBuilder.getDialect();
 
-        boolean firstLevel = true;
+        int levelCount = 0;
         for (Collection<RolapMember> members2 = members;
             !members2.isEmpty();
             members2 = getUniqueParentMembers(members2))
@@ -1324,10 +1289,9 @@ public class SqlConstraintUtils {
                     Util.deprecated("obsolete", false);
                     String where = Predicates.toSql(cc, dialect);
                     if (!where.equals("true")) {
-                        if (!firstLevel) {
-                            buf.append(exclude ? " or " : " and ");
-                        } else {
-                            firstLevel = false;
+                        if (levelCount++ > 0) {
+                            buf.append(
+                                strip(exclude ? "\n    or " : "\n    and "));
                         }
                         if (exclude) {
                             where = "not (" + where + ")";
@@ -1346,8 +1310,8 @@ public class SqlConstraintUtils {
                                 // or
                                 // (not (quarter in ('Q1','Q3'))
                                 //    or quarter is null)
-                                where = "(" + where + " or " + "(" + q
-                                        + " is null))";
+                                where = "(" + where
+                                    + "\n    or (" + q + " is null))";
                             }
                         }
                         buf.append(where);
@@ -1361,6 +1325,19 @@ public class SqlConstraintUtils {
                 break; // no further qualification needed
             }
         }
+    }
+
+    /**
+     * Converts multiple whitespace and linefeeds to a single space, if
+     * {@link MondrianProperties#GenerateFormattedSql} is false. This method
+     * is a convenient way to generate the right amount of formatting with one
+     * call.
+     */
+    private static String strip(String s) {
+        if (!MondrianProperties.instance().GenerateFormattedSql.get()) {
+            s = MULTIPLE_WHITESPACE_PATTERN.matcher(s).replaceAll(" ");
+        }
+        return s;
     }
 }
 

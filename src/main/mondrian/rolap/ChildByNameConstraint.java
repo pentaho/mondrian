@@ -57,8 +57,8 @@ class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
         super.addLevelConstraint(query, starSet, level);
         query.addWhere(
             SqlConstraintUtils.constrainLevel(
-                level, query, starSet.getMeasureGroup(), starSet.getAggStar(),
-                childName, true));
+                level.attribute.getNameExp(), query.getDialect(), childName,
+                true));
     }
 
     public String toString() {

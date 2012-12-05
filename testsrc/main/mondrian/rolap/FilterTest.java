@@ -434,20 +434,6 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*ORDERED_CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        String necjSqlDerby =
-            "select \"customer\".\"country\", \"time_by_day\".\"the_year\", "
-            + "\"time_by_day\".\"quarter\" from \"customer\" as \"customer\", "
-            + "\"sales_fact_1997\" as \"sales_fact_1997\", \"time_by_day\" as "
-            + "\"time_by_day\" where \"sales_fact_1997\".\"customer_id\" = "
-            + "\"customer\".\"customer_id\" and \"sales_fact_1997\".\"time_id\" = "
-            + "\"time_by_day\".\"time_id\" and (\"customer\".\"country\" = 'USA') and "
-            + "((not (\"time_by_day\".\"quarter\" in ('Q1', 'Q3')) or "
-            + "(\"time_by_day\".\"quarter\" is null)) or (not "
-            + "(\"time_by_day\".\"the_year\" = 1997) or (\"time_by_day\".\"the_year\" is "
-            + "null))) group by \"customer\".\"country\", \"time_by_day\".\"the_year\", "
-            + "\"time_by_day\".\"quarter\" "
-            + "order by CASE WHEN \"customer\".\"country\" IS NULL THEN 1 ELSE 0 END, \"customer\".\"country\" ASC, CASE WHEN \"time_by_day\".\"the_year\" IS NULL THEN 1 ELSE 0 END, \"time_by_day\".\"the_year\" ASC, CASE WHEN \"time_by_day\".\"quarter\" IS NULL THEN 1 ELSE 0 END, \"time_by_day\".\"quarter\" ASC";
-
         String necjSqlMySql =
             "select\n"
             + "    `time_by_day`.`the_year` as `c0`,\n"
@@ -478,8 +464,6 @@ public class FilterTest extends BatchTestCase {
             + "    `time_by_day`.`quarter` ASC";
 
         SqlPattern[] patterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
             new SqlPattern(
                 Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
         };
