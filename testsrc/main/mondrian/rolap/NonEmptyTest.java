@@ -2036,7 +2036,6 @@ public class NonEmptyTest extends BatchTestCase {
      * level.
      */
     public void testMultiLevelMemberConstraintNullParent() {
-        //TODO: fails due to getBaseStarKeyColumn
         if (!isDefaultNullMemberRepresentation()) {
             return;
         }
@@ -2073,28 +2072,45 @@ public class NonEmptyTest extends BatchTestCase {
             + "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) "
             + "select [NECJ] on columns from [Warehouse2]";
 
-        String necjSqlDerby =
-            "select \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" "
-            + "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\", \"product\" as \"product\", \"product_class\" as \"product_class\" "
-            + "where \"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" "
-            + "and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" and "
-            + "((\"warehouse\".\"wa_address1\" = '5617 Saclan Terrace' and \"warehouse\".\"wa_address2\" is null and \"warehouse\".\"warehouse_name\" = 'Arnold and Sons') "
-            + "or (\"warehouse\".\"wa_address1\" = '3377 Coachman Place' and \"warehouse\".\"wa_address2\" is null and \"warehouse\".\"warehouse_name\" = 'Jones International')) "
-            + "and (\"product_class\".\"product_family\" = 'Food') group by \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"wa_address1\", "
-            + "\"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" "
-            + "order by CASE WHEN \"warehouse\".\"wa_address3\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address3\" ASC, CASE WHEN \"warehouse\".\"wa_address2\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address2\" ASC, CASE WHEN \"warehouse\".\"wa_address1\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address1\" ASC, CASE WHEN \"warehouse\".\"warehouse_name\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"warehouse_name\" ASC, CASE WHEN \"product_class\".\"product_family\" IS NULL THEN 1 ELSE 0 END, \"product_class\".\"product_family\" ASC";
-
         String necjSqlMySql =
-            "select `warehouse`.`wa_address3` as `c0`, `warehouse`.`wa_address2` as `c1`, `warehouse`.`wa_address1` as `c2`, `warehouse`.`warehouse_name` as `c3`, "
-            + "`product_class`.`product_family` as `c4` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997`, `product` as `product`, "
-            + "`product_class` as `product_class` where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and "
-            + "`product`.`product_class_id` = `product_class`.`product_class_id` and `inventory_fact_1997`.`product_id` = `product`.`product_id` and "
-            + "((`warehouse`.`wa_address2` is null and (`warehouse`.`warehouse_name`, `warehouse`.`wa_address1`) in (('Arnold and Sons', '5617 Saclan Terrace'), "
-            + "('Jones International', '3377 Coachman Place')))) and (`product_class`.`product_family` = 'Food') group by `warehouse`.`wa_address3`, "
-            + "`warehouse`.`wa_address2`, `warehouse`.`wa_address1`, `warehouse`.`warehouse_name`, `product_class`.`product_family` "
-            + "order by ISNULL(`warehouse`.`wa_address3`) ASC, `warehouse`.`wa_address3` ASC, ISNULL(`warehouse`.`wa_address2`) ASC, `warehouse`.`wa_address2` ASC, "
-            + "ISNULL(`warehouse`.`wa_address1`) ASC, `warehouse`.`wa_address1` ASC, ISNULL(`warehouse`.`warehouse_name`) ASC, `warehouse`.`warehouse_name` ASC, "
-            + "ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
+            "select\n"
+            + "    `warehouse`.`wa_address3` as `c0`,\n"
+            + "    `warehouse`.`wa_address2` as `c1`,\n"
+            + "    `warehouse`.`wa_address1` as `c2`,\n"
+            + "    `warehouse`.`warehouse_name` as `c3`,\n"
+            + "    `product_class`.`product_family` as `c4`\n"
+            + "from\n"
+            + "    `inventory_fact_1997` as `inventory_fact_1997`,\n"
+            + "    `warehouse` as `warehouse`,\n"
+            + "    `product` as `product`,\n"
+            + "    `product_class` as `product_class`\n"
+            + "where\n"
+            + "    `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id`\n"
+            + "and\n"
+            + "    `inventory_fact_1997`.`product_id` = `product`.`product_id`\n"
+            + "and\n"
+            + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+            + "and\n"
+            + "    ((`warehouse`.`wa_address2` is null\n"
+            + "    and `warehouse`.`wa_address1` = '5617 Saclan Terrace'\n"
+            + "    and `warehouse`.`warehouse_name` = 'Arnold and Sons')\n"
+            + "    or (`warehouse`.`wa_address2` is null\n"
+            + "    and `warehouse`.`wa_address1` = '3377 Coachman Place'\n"
+            + "    and `warehouse`.`warehouse_name` = 'Jones International'))\n"
+            + "and\n"
+            + "    (`product_class`.`product_family` = 'Food')\n"
+            + "group by\n"
+            + "    `warehouse`.`wa_address3`,\n"
+            + "    `warehouse`.`wa_address2`,\n"
+            + "    `warehouse`.`wa_address1`,\n"
+            + "    `warehouse`.`warehouse_name`,\n"
+            + "    `product_class`.`product_family`\n"
+            + "order by\n"
+            + "    ISNULL(`warehouse`.`wa_address3`) ASC, `warehouse`.`wa_address3` ASC,\n"
+            + "    ISNULL(`warehouse`.`wa_address2`) ASC, `warehouse`.`wa_address2` ASC,\n"
+            + "    ISNULL(`warehouse`.`wa_address1`) ASC, `warehouse`.`wa_address1` ASC,\n"
+            + "    ISNULL(`warehouse`.`warehouse_name`) ASC, `warehouse`.`warehouse_name` ASC,\n"
+            + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
 
         TestContext testContext =
             getTestContext().legacy().create(
@@ -2106,8 +2122,6 @@ public class NonEmptyTest extends BatchTestCase {
                 null);
 
         SqlPattern[] patterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
             new SqlPattern(
                 Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
         };
@@ -2121,13 +2135,12 @@ public class NonEmptyTest extends BatchTestCase {
      * (1) Use IN list if possible(not possible if there are null values because
      *     NULLs in IN lists do not match)
      * (2) Group members sharing the same parent, including parents with NULLs.
-     * (3) If parent levels include NULLs, comparision includes any unique
+     * (3) If parent levels include NULLs, comparison includes any unique
      *     level.
      * (4) Can handle predicates correctly if the member list contains both NULL
      * and non NULL parent levels.
      */
     public void testMultiLevelMemberConstraintMixedNullNonNullParent() {
-        //TODO: fails due to getBaseStarKeyColumn
         if (!isDefaultNullMemberRepresentation()) {
             return;
         }
@@ -2163,33 +2176,40 @@ public class NonEmptyTest extends BatchTestCase {
             + "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) "
             + "select [NECJ] on columns from [Warehouse2]";
 
-        String necjSqlDerby =
-            "select \"warehouse\".\"warehouse_fax\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" "
-            + "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\", \"product\" as \"product\", \"product_class\" as \"product_class\" "
-            + "where \"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" "
-            + "and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" and "
-            + "((\"warehouse\".\"wa_address1\" = '234 West Covina Pkwy' and \"warehouse\".\"warehouse_fax\" is null and \"warehouse\".\"warehouse_name\" = 'Freeman And Co') "
-            + "or (\"warehouse\".\"wa_address1\" = '3377 Coachman Place' and \"warehouse\".\"warehouse_fax\" = '971-555-6213' and \"warehouse\".\"warehouse_name\" = 'Jones International')) "
-            + "and (\"product_class\".\"product_family\" = 'Food') "
-            + "group by \"warehouse\".\"warehouse_fax\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" "
-            + "order by CASE WHEN \"warehouse\".\"warehouse_fax\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"warehouse_fax\" ASC, CASE WHEN \"warehouse\".\"wa_address1\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address1\" ASC, CASE WHEN \"warehouse\".\"warehouse_name\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"warehouse_name\" ASC, CASE WHEN \"product_class\".\"product_family\" IS NULL THEN 1 ELSE 0 END, \"product_class\".\"product_family\" ASC";
-
         String necjSqlMySql =
-            "select `warehouse`.`warehouse_fax` as `c0`, `warehouse`.`wa_address1` as `c1`, "
-            + "`warehouse`.`warehouse_name` as `c2`, `product_class`.`product_family` as `c3` "
-            + "from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997`, "
-            + "`product` as `product`, `product_class` as `product_class` "
-            + "where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and "
-            + "`product`.`product_class_id` = `product_class`.`product_class_id` and "
-            + "`inventory_fact_1997`.`product_id` = `product`.`product_id` and "
-            + "((`warehouse`.`warehouse_name`, `warehouse`.`wa_address1`, `warehouse`.`warehouse_fax`) in (('Jones International', '3377 Coachman Place', '971-555-6213')) "
-            + "or (`warehouse`.`warehouse_fax` is null and "
-            + "(`warehouse`.`warehouse_name`, `warehouse`.`wa_address1`) in (('Freeman And Co', '234 West Covina Pkwy')))) "
-            + "and (`product_class`.`product_family` = 'Food') "
-            + "group by `warehouse`.`warehouse_fax`, `warehouse`.`wa_address1`, `warehouse`.`warehouse_name`, `product_class`.`product_family` "
-            + "order by ISNULL(`warehouse`.`warehouse_fax`) ASC, `warehouse`.`warehouse_fax` ASC, "
-            + "ISNULL(`warehouse`.`wa_address1`) ASC, `warehouse`.`wa_address1` ASC, ISNULL(`warehouse`.`warehouse_name`) ASC, "
-            + "`warehouse`.`warehouse_name` ASC, ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
+            "select\n"
+            + "    `warehouse`.`warehouse_fax` as `c0`,\n"
+            + "    `warehouse`.`wa_address1` as `c1`,\n"
+            + "    `warehouse`.`warehouse_name` as `c2`,\n"
+            + "    `product_class`.`product_family` as `c3`\n"
+            + "from\n"
+            + "    `inventory_fact_1997` as `inventory_fact_1997`,\n"
+            + "    `warehouse` as `warehouse`,\n"
+            + "    `product` as `product`,\n"
+            + "    `product_class` as `product_class`\n"
+            + "where\n"
+            + "    `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id`\n"
+            + "and\n"
+            + "    `inventory_fact_1997`.`product_id` = `product`.`product_id`\n"
+            + "and\n"
+            + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+            + "and\n"
+            + "    ((`warehouse`.`warehouse_fax`, `warehouse`.`wa_address1`, `warehouse`.`warehouse_name`) in (('971-555-6213', '3377 Coachman Place', 'Jones International'))\n"
+            + "    or (`warehouse`.`warehouse_fax` is null\n"
+            + "    and `warehouse`.`wa_address1` = '234 West Covina Pkwy'\n"
+            + "    and `warehouse`.`warehouse_name` = 'Freeman And Co'))\n"
+            + "and\n"
+            + "    (`product_class`.`product_family` = 'Food')\n"
+            + "group by\n"
+            + "    `warehouse`.`warehouse_fax`,\n"
+            + "    `warehouse`.`wa_address1`,\n"
+            + "    `warehouse`.`warehouse_name`,\n"
+            + "    `product_class`.`product_family`\n"
+            + "order by\n"
+            + "    ISNULL(`warehouse`.`warehouse_fax`) ASC, `warehouse`.`warehouse_fax` ASC,\n"
+            + "    ISNULL(`warehouse`.`wa_address1`) ASC, `warehouse`.`wa_address1` ASC,\n"
+            + "    ISNULL(`warehouse`.`warehouse_name`) ASC, `warehouse`.`warehouse_name` ASC,\n"
+            + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
 
         TestContext testContext =
             getTestContext().legacy().create(
@@ -2201,8 +2221,6 @@ public class NonEmptyTest extends BatchTestCase {
                 null);
 
         SqlPattern[] patterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
             new SqlPattern(
                 Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
         };
@@ -2255,17 +2273,6 @@ public class NonEmptyTest extends BatchTestCase {
             + " [Warehouse2].[#null].[#null].[971-555-6213]} "
             + "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) "
             + "select [NECJ] on columns from [Warehouse2]";
-        //TODO: UPDATE DERBY SQL
-        String necjSqlDerby =
-            "select \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"warehouse_fax\", \"product_class\".\"product_family\" "
-            + "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as \"inventory_fact_1997\", \"product\" as \"product\", \"product_class\" as \"product_class\" "
-            + "where \"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" and "
-            + "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" "
-            + "and ((\"warehouse\".\"warehouse_fax\" = '971-555-6213' or \"warehouse\".\"warehouse_fax\" is null) and "
-            + "\"warehouse\".\"wa_address2\" is null and \"warehouse\".\"wa_address3\" is null) and "
-            + "(\"product_class\".\"product_family\" = 'Food') "
-            + "group by \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"warehouse_fax\", \"product_class\".\"product_family\" "
-            + "order by CASE WHEN \"warehouse\".\"wa_address3\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address3\" ASC, CASE WHEN \"warehouse\".\"wa_address2\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address2\" ASC, CASE WHEN \"warehouse\".\"warehouse_fax\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"warehouse_fax\" ASC, CASE WHEN \"product_class\".\"product_family\" IS NULL THEN 1 ELSE 0 END, \"product_class\".\"product_family\" ASC";
 
         String necjSqlMySql =
             "select\n"
@@ -2310,11 +2317,8 @@ public class NonEmptyTest extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
-            new SqlPattern(
                 Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
         };
-        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
         assertQuerySql(testContext, query, patterns);
     }
 
@@ -2855,7 +2859,7 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().AlertNativeEvaluationUnsupported,
             "ERROR");
         // native cross join cannot be used due to AllMembers
-        //TODO: this query appears to be supported in native
+        // TODO: this query appears to be supported in native
         checkNotNative(
             testContext,
             3,
@@ -2868,7 +2872,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testNotNativeVirtualCubeCrossJoin2() {
         // native cross join cannot be used due to the range operator
-        //TODO: this query appears to be supported in native
+        // TODO: this query appears to be supported in native
         checkNotNative(
             getTestContext(),
             3,
@@ -2880,7 +2884,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testNotNativeVirtualCubeCrossJoinUnsupported() {
-        //TODO: test appears to be supported in native
+        // TODO: test appears to be supported in native
         final TestContext testContext = getTestContext();
         switch (testContext.getDialect().getDatabaseProduct()) {
         case INFOBRIGHT:
@@ -4173,7 +4177,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testLeafMembersOfParentChildDimensionAreNativelyEvaluated() {
-        //TODO: ReferenceLink element not implemented (RolapSchemaLoader)
+        // TODO: ReferenceLink element not implemented (RolapSchemaLoader)
         //      fails with NPE
         checkNative(
             getTestContext(),
@@ -4242,7 +4246,7 @@ public class NonEmptyTest extends BatchTestCase {
      * EnableNativeNonEmpty=true"</a>.
      */
     public void testBugMondrian321() {
-        //TODO actual results look right
+        // TODO actual results look right
         assertQueryReturns(
             "WITH SET [#DataSet#] AS 'Crossjoin({Descendants([Customers].[All Customers], 2)}, {[Product].[All Products]})' \n"
             + "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns, \n"

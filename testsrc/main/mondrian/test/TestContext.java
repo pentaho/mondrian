@@ -3065,6 +3065,12 @@ public class TestContext {
         return withSubstitution(
             SchemaSubstitution.replace(search, substitution));
     }
+
+    public final TestContext remove(
+        final String xml)
+    {
+        return withSubstitution(SchemaSubstitution.remove(xml));
+    }
 }
 
 // End TestContext.java

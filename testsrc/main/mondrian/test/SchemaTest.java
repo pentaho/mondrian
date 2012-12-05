@@ -4691,15 +4691,26 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 "Sales",
                 "<Dimension name='Product3' key='id'>"
                 + "  <Attributes>\n"
-                + "    <Attribute name='Product Family' table='product_class' keyColumn='product_family'/>\n"
-                + "    <Attribute name='Product Department' table='product_class' keyColumn='product_department'/>\n"
-                + "    <Attribute name='Product Category' table='product_class' keyColumn='product_category'/>\n"
-                + "    <Attribute name='Product Subcategory' table='product_class' keyColumn='product_subcategory'/>\n"
-                + "    <Attribute name='Product Class' table='store' keyColumn='store_id' type='Numeric'/>\n"
-                + "    <Attribute name='Brand Name' table='product' keyColumn='brand_name'/>\n"
-                + "    <Attribute name='Product Name' table='product' keyColumn='product_name'/>"
+                + "    <Attribute name='Product Family' table='product_class' keyColumn='product_family' hasHierarchy='false'/>\n"
+                + "    <Attribute name='Product Department' table='product_class' keyColumn='product_department' hasHierarchy='false'/>\n"
+                + "    <Attribute name='Product Category' table='product_class' keyColumn='product_category' hasHierarchy='false'/>\n"
+                + "    <Attribute name='Product Subcategory' table='product_class' keyColumn='product_subcategory' hasHierarchy='false'/>\n"
+                + "    <Attribute name='Product Class' table='store' keyColumn='store_id' type='Numeric' hasHierarchy='false'/>\n"
+                + "    <Attribute name='Brand Name' table='product' keyColumn='brand_name' hasHierarchy='false'/>\n"
+                + "    <Attribute name='Product Name' table='product' keyColumn='product_name' hasHierarchy='false'/>"
                 + "    <Attribute name='id' table='product' keyColumn='product_id' hasHierarchy='false'/>"
-                + "  </Attributes>\n"
+                + "  </Attributes>"
+                + "  <Hierarchies>"
+                + "    <Hierarchy hasAll='true' name='Product'>\n"
+                + "      <Level attribute='Product Family'/>\n"
+                + "      <Level attribute='Product Department'/>\n"
+                + "      <Level attribute='Product Category'/>\n"
+                + "      <Level attribute='Product Subcategory'/>\n"
+                + "      <Level attribute='Product Class'/>\n"
+                + "      <Level attribute='Brand Name'/>\n"
+                + "      <Level attribute='Product Name'/>\n"
+                + "  </Hierarchy>\n"
+                + "</Hierarchies>"
                 + "</Dimension>")
                 .insertDimensionLinks(
                     "Sales",
@@ -4709,7 +4720,13 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 .insertPhysTable(
                     "<Link target='product' source='store' foreignKeyColumn='product_class_id'/>"
                     + "<Link target='store' source='product_class' foreignKeyColumn='region_id'/>")
-                .ignoreMissingLink());
+                .ignoreMissingLink()
+                .remove(
+                    "<Link target='product' source='product_class'>\n"
+                    + "            <ForeignKey>\n"
+                    + "                <Column name='product_class_id'/>\n"
+                    + "            </ForeignKey>\n"
+                    + "        </Link>"));
 
         // As above, but using shared dimension.
         if (MondrianProperties.instance().ReadAggregates.get()
@@ -4723,41 +4740,69 @@ Test that get error if a dimension has more than one hierarchy with same name.
         checkBugMondrian463(
             getTestContext().withSchema(
                 "<?xml version='1.0'?>\n"
-                + "<Schema name='FoodMart'>\n"
-                + "<Dimension name='Product3'>\n"
-                + "  <Hierarchy hasAll='true' primaryKey='product_id' primaryKeyTable='product'>\n"
-                + "    <Join leftKey='product_class_id' rightKey='store_id'>\n"
-                + "      <Table name='product'/>\n"
-                + "      <Join leftKey='region_id' rightKey='product_class_id'>\n"
-                + "        <Table name='store'/>\n"
-                + "        <Table name='product_class'/>\n"
-                + "      </Join>\n"
-                + "    </Join>\n"
-                + "    <Level name='Product Family' table='product_class' column='product_family' uniqueMembers='true'/>\n"
-                + "    <Level name='Product Department' table='product_class' column='product_department' uniqueMembers='false'/>\n"
-                + "    <Level name='Product Category' table='product_class' column='product_category' uniqueMembers='false'/>\n"
-                + "    <Level name='Product Subcategory' table='product_class' column='product_subcategory' uniqueMembers='false'/>\n"
-                + "    <Level name='Product Class' table='store' column='store_id' type='Numeric' uniqueMembers='true'/>\n"
-                + "    <Level name='Brand Name' table='product' column='brand_name' uniqueMembers='false'/>\n"
-                + "    <Level name='Product Name' table='product' column='product_name' uniqueMembers='true'/>\n"
-                + "  </Hierarchy>\n"
+                + "<Schema name='FoodMart' metamodelVersion='4.0'>"
+                + "<PhysicalSchema>"
+                + "  <Table name='product' keyColumn='product_id'/>"
+                + "  <Table name='product_class' keyColumn='product_class_id'/>"
+                + "  <Table name='time_by_day' keyColumn='time_id'/>"
+                + "  <Table name='store' keyColumn='store_id'/>"
+                + "  <Table name='sales_fact_1997'/>"
+                + "  <Link target='product' source='store' foreignKeyColumn='product_class_id'/>"
+                + "  <Link target='store' source='product_class' foreignKeyColumn='region_id'/>"
+                + "</PhysicalSchema>"
+                + "<Dimension name='Product3' key='id'>"
+                + "  <Attributes>"
+                + "    <Attribute name='Product Family' table='product_class' keyColumn='product_family' hasHierarchy='false'/>\n"
+                + "    <Attribute name='Product Department' table='product_class' keyColumn='product_department' hasHierarchy='false'/>\n"
+                + "    <Attribute name='Product Category' table='product_class' keyColumn='product_category' hasHierarchy='false'/>\n"
+                + "    <Attribute name='Product Subcategory' table='product_class' keyColumn='product_subcategory' hasHierarchy='false'/>\n"
+                + "    <Attribute name='Product Class' table='store' keyColumn='store_id' type='Numeric' hasHierarchy='false'/>\n"
+                + "    <Attribute name='Brand Name' table='product' keyColumn='brand_name' hasHierarchy='false'/>\n"
+                + "    <Attribute name='Product Name' table='product' keyColumn='product_name' hasHierarchy='false'/>\n"
+                + "    <Attribute name='id' table='product' keyColumn='product_id' hasHierarchy='false'/>\n"
+                + "  </Attributes>"
+                + "  <Hierarchies>"
+                + "    <Hierarchy hasAll='true' name='Product'>\n"
+                + "      <Level attribute='Product Family'/>\n"
+                + "      <Level attribute='Product Department'/>\n"
+                + "      <Level attribute='Product Category'/>\n"
+                + "      <Level attribute='Product Subcategory'/>\n"
+                + "      <Level attribute='Product Class'/>\n"
+                + "      <Level attribute='Brand Name'/>\n"
+                + "      <Level attribute='Product Name'/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Hierarchies>"
                 + "</Dimension>\n"
                 + "<Cube name='Sales'>\n"
-                + "  <Table name='sales_fact_1997'/>\n"
-                + "  <Dimension name='Time' type='TimeDimension' foreignKey='time_id'>\n"
-                + "    <Hierarchy hasAll='false' primaryKey='time_id'>\n"
-                + "      <Table name='time_by_day'/>\n"
-                + "      <Level name='Year' column='the_year' type='Numeric' uniqueMembers='true'\n"
-                + "          levelType='TimeYears'/>\n"
-                + "      <Level name='Quarter' column='quarter' uniqueMembers='false'\n"
-                + "          levelType='TimeQuarters'/>\n"
-                + "      <Level name='Month' column='month_of_year' uniqueMembers='false' type='Numeric'\n"
-                + "          levelType='TimeMonths'/>\n"
-                + "    </Hierarchy>\n"
-                + "  </Dimension>\n"
-                + "  <DimensionUsage source='Product3' name='Product3' foreignKey='product_id'/>\n"
-                + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
-                + "      formatString='#,###'/>\n"
+                + "  <Dimensions>"
+                + "    <Dimension name='Time' type='TIME' table='time_by_day' key='id'>\n"
+                + "      <Attributes>"
+                + "        <Attribute name='Year' keyColumn='the_year' type='Numeric' levelType='TimeYears'/>\n"
+                + "        <Attribute name='Quarter' keyColumn='quarter' levelType='TimeQuarters'/>\n"
+                + "        <Attribute name='Month' keyColumn='month_of_year' type='Numeric' levelType='TimeMonths'/>\n"
+                + "        <Attribute name='id' keyColumn='time_id'/>\n"
+                + "      </Attributes>"
+                + "      <Hierarchies>"
+                + "        <Hierarchy hasAll='false' name='Time'>\n"
+                + "          <Level attribute='Year'/>\n"
+                + "          <Level attribute='Quarter'/>\n"
+                + "          <Level attribute='Month'/>\n"
+                + "        </Hierarchy>\n"
+                + "      </Hierarchies>"
+                + "    </Dimension>\n"
+                + "    <Dimension source='Product3'/>\n"
+                + "  </Dimensions>"
+                + "  <MeasureGroups>"
+                + "    <MeasureGroup table='sales_fact_1997'>"
+                + "      <Measures>"
+                + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' formatString='#,###'/>\n"
+                + "      </Measures>"
+                + "      <DimensionLinks>"
+                + "        <ForeignKeyLink dimension='Product3' foreignKeyColumn='product_id'/>"
+                + "        <ForeignKeyLink dimension='Time' foreignKeyColumn='time_id'/>"
+                + "      </DimensionLinks>"
+                + "    </MeasureGroup>"
+                + "  </MeasureGroups>"
                 + "</Cube>\n"
                 + "</Schema>"));
     }
@@ -4772,16 +4817,16 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product3].[All Product3s]}\n"
-            + "{[Product3].[Drink]}\n"
-            + "{[Product3].[Drink].[Baking Goods]}\n"
-            + "{[Product3].[Drink].[Baking Goods].[Dry Goods]}\n"
-            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee]}\n"
-            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24]}\n"
-            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24].[Amigo]}\n"
-            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24].[Amigo].[Amigo Lox]}\n"
-            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24].[Curlew]}\n"
-            + "{[Product3].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24].[Curlew].[Curlew Lox]}\n"
+            + "{[Product3].[Product].[All Product3s]}\n"
+            + "{[Product3].[Product].[Drink]}\n"
+            + "{[Product3].[Product].[Drink].[Baking Goods]}\n"
+            + "{[Product3].[Product].[Drink].[Baking Goods].[Dry Goods]}\n"
+            + "{[Product3].[Product].[Drink].[Baking Goods].[Dry Goods].[Coffee]}\n"
+            + "{[Product3].[Product].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24]}\n"
+            + "{[Product3].[Product].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24].[Amigo]}\n"
+            + "{[Product3].[Product].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24].[Amigo].[Amigo Lox]}\n"
+            + "{[Product3].[Product].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24].[Curlew]}\n"
+            + "{[Product3].[Product].[Drink].[Baking Goods].[Dry Goods].[Coffee].[24].[Curlew].[Curlew Lox]}\n"
             + "Row #0: 266,773\n"
             + "Row #1: 2,647\n"
             + "Row #2: 835\n"
@@ -6239,6 +6284,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * dependent on the level immediately below it.
      */
     public void testSnowflakeNotFunctionallyDependent() {
+        if (!Bug.BugMondrian1333Fixed) {
+            return;
+        }
         final String tableDefs =
             "<Table name='region' keyColumn='region_id'/>"
             + "<Link target='store' source='region' foreignKeyColumn='region_id'/>"
@@ -6249,6 +6297,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "    <Dimension name='Store' key='id'>\n"
             + "      <Attributes>"
             + "        <Attribute name='Store Country' table='store' keyColumn='store_country' hasHierarchy='false'/>"
+            + "        <Attribute name='Store State' table='store' keyColumn='store_state' hasHierarchy='false'/>"
             + "        <Attribute name='Store Region' table='region' keyColumn='sales_region' hasHierarchy='false'/>"
             + "        <Attribute name='Store Name' table='store' keyColumn='store_name' hasHierarchy='false'/>"
             + "        <Attribute name='id' table='store' keyColumn='store_id' hasHierarchy='false'/>"
@@ -6257,6 +6306,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "        <Hierarchy hasAll='true' name='Store'>\n"
             + "          <Level attribute='Store Country'/>\n"
             + "          <Level attribute='Store Region'/>\n"
+            + "          <Level attribute='Store State'/>\n"
             + "          <Level attribute='Store Name'/>\n"
             + "        </Hierarchy>"
             + "      </Hierarchies>"
@@ -7263,7 +7313,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
         final TestContext testContext =
             getTestContext().insertDimension(
                 "Sales",
-                "<Dimension name='Product with no all' key='Product Id'>"
+                "<Dimension name='Product with no all' key='Product Subcategory'>"
                 + "    <Attributes>\n"
                 + "        <Attribute name='Product Subcategory' table='product_class'>\n"
                 + "            <Key>\n"
@@ -7309,8 +7359,10 @@ Test that get error if a dimension has more than one hierarchy with same name.
             .ignoreMissingLink();
 
         testContext.assertSchemaError(
-            "xxx",
-            "Xx");
+            "Number of foreign key columns 1 does not match number of key columns "
+            + "4 \\(in ForeignKeyLink\\) \\(at ${pos}\\)",
+            "<ForeignKeyLink dimension='Product with no all' "
+            + "foreignKeyColumn='product_id'/>");
     }
 
     // TODO: implement check on data types of columns in ForeignKeyLink,

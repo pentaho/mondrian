@@ -367,6 +367,14 @@ public class Bug {
      * </a> is fixed.
      */
     public static final boolean BugMondrian1332Fixed = false;
+
+    /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1332">bug MONDRIAN-1333,
+     * Levels should be functionally dependent on the level immediately below
+     * </a> is fixed.
+     */
+    public static final boolean BugMondrian1333Fixed = false;
 }
 
 // End Bug.java

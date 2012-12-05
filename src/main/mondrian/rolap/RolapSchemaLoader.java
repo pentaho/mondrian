@@ -1970,7 +1970,7 @@ public class RolapSchemaLoader {
         } catch (RolapSchema.PhysSchemaException e) {
             // TODO: user error
             throw Util.newInternal(
-                "Could not find path to " + expr.relation);
+                e, "Could not find path to " + expr.relation);
         }
         final RolapStar star = measureGroup.getStar();
         RolapStar.Table starTable = star.getFactTable();
