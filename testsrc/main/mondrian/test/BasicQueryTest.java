@@ -60,8 +60,6 @@ public class BasicQueryTest extends FoodMartTestCase {
     private static final String timeWeekly =
         TestContext.hierarchyName("Time", "Weekly");
 
-    private MondrianProperties props = MondrianProperties.instance();
-
     public BasicQueryTest() {
         super();
     }
@@ -506,9 +504,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testSample5Snowflake() {
-        propSaver.set(
-            MondrianProperties.instance().FilterChildlessSnowflakeMembers,
-            false);
+        propSaver.set(propSaver.props.FilterChildlessSnowflakeMembers, false);
         final TestContext context = getTestContext().withFreshConnection();
         try {
             context.assertQueryReturns(
@@ -1192,7 +1188,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "from Sales");
         final int rowCount = result.getAxes()[1].getPositions().size();
         assertEquals(
-            MondrianProperties.instance().FilterChildlessSnowflakeMembers.get()
+            propSaver.props.FilterChildlessSnowflakeMembers.get()
                 ? 2256
                 : 2266,
             rowCount);
@@ -1209,7 +1205,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * method.
      */
     public void testGetContext() {
-        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+        if (!propSaver.props.SsasCompatibleNaming.get()) {
             return;
         }
         Result result =
@@ -2689,7 +2685,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * "Small negative numbers cause exceptions w 2-section format".
      */
     public void testFormatOfNil() {
-        if (props.CaseSensitive.get()) {
+        if (propSaver.props.CaseSensitive.get()) {
             return;
         }
         assertQueryReturns(
@@ -3081,7 +3077,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * the validation time was <code>O(2 ^ depth)</code>.)
      */
     public void _testBug793616() {
-        if (props.TestExpDependencies.get() > 0) {
+        if (propSaver.props.TestExpDependencies.get() > 0) {
             // Don't run this test if dependency-checking is enabled.
             // Dependency checking will hugely slow down evaluation, and give
             // the false impression that the validation performance bug has
@@ -3232,10 +3228,10 @@ public class BasicQueryTest extends FoodMartTestCase {
      */
     public void testCountDistinctAgg() {
         // turn off caching
-        propSaver.set(props.DisableCaching, true);
+        propSaver.set(propSaver.props.DisableCaching, true);
 
         for (boolean b : new boolean[]{false, true}) {
-            propSaver.set(props.UseAggregates, b);
+            propSaver.set(propSaver.props.UseAggregates, b);
             assertQueryReturns(
                 "select {[Measures].[Unit Sales], [Measures].[Customer Count]} on rows,\n"
                 + "NON EMPTY {[Time].[1997].[Q1].[1]} ON COLUMNS\n"
@@ -3378,9 +3374,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * "NPE in Query with Crossjoin Descendants of Unknown Member"</a>.
      */
     public void testCrossjoinWithDescendantsAndUnknownMember() {
-        propSaver.set(
-            MondrianProperties.instance().IgnoreInvalidMembersDuringQuery,
-            true);
+        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, true);
         assertQueryReturns(
             "select {[Measures].[Unit Sales]} on columns,\n"
             + "NON EMPTY CrossJoin(\n"
@@ -3721,7 +3715,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * "Problem with the MID function getting last character in a string."</a>.
      */
     public void testMid() {
-        if (props.CaseSensitive.get()) {
+        if (propSaver.props.CaseSensitive.get()) {
             return;
         }
         assertQueryReturns(
@@ -4982,7 +4976,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * we can push down evaluation to SQL.
      */
     public void testNonEmptyCrossJoin() {
-        if (!props.EnableNativeCrossJoin.get()) {
+        if (!propSaver.props.EnableNativeCrossJoin.get()) {
             // If we try to evaluate the crossjoin in memory we run out of
             // memory.
             return;
@@ -5566,7 +5560,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testOverrideDimension() {
-        if (props.CaseSensitive.get()) {
+        if (propSaver.props.CaseSensitive.get()) {
             return;
         }
         assertQueryReturns(
@@ -5621,9 +5615,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
         // Now set property
 
-        propSaver.set(
-            props.IgnoreInvalidMembersDuringQuery,
-            true);
+        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, true);
 
         assertQueryReturns(
             mdx,
@@ -5647,7 +5639,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         // usage of native NECJ (LER-5165).
 
         propSaver.set(
-            props.AlertNativeEvaluationUnsupported,
+            propSaver.props.AlertNativeEvaluationUnsupported,
             "ERROR");
 
         assertQueryReturns(
@@ -5672,7 +5664,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * "MEMBER_ORDINAL property incompatible with native filtering"</a>.
      */
     public void testMemberOrdinalCaching() {
-        propSaver.set(props.CompareSiblingsByOrderKey, true);
+        propSaver.set(propSaver.props.CompareSiblingsByOrderKey, true);
         // Use a fresh connection to make sure bad member ordinals haven't
         // been assigned by previous tests.
         final TestContext context = getTestContext().withFreshConnection();
@@ -5841,7 +5833,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "  {[Product].members} ON ROWS\n"
             + "FROM [Sales]";
         Throwable throwable = null;
-        propSaver.set(props.QueryTimeout, 2);
+        propSaver.set(propSaver.props.QueryTimeout, 2);
         try {
             tc.executeQuery(query);
         } catch (Throwable ex) {
@@ -5852,7 +5844,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testFormatInheritance() {
-        if (props.CaseSensitive.get()) {
+        if (propSaver.props.CaseSensitive.get()) {
             return;
         }
         assertQueryReturns(
@@ -5867,7 +5859,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testFormatInheritanceWithIIF() {
-        if (props.CaseSensitive.get()) {
+        if (propSaver.props.CaseSensitive.get()) {
             return;
         }
         assertQueryReturns(
@@ -5886,7 +5878,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * neither [unit sales] nor [customer count] format is used.
      */
     public void testFormatInheritanceWorksWithFirstFormatItFinds() {
-        if (props.CaseSensitive.get()) {
+        if (propSaver.props.CaseSensitive.get()) {
             return;
         }
         assertQueryReturns(
@@ -5957,7 +5949,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * "Avg - cast problem in Mondrian 2.1.1"</a>.
      */
     public void testAvgCastProblem() {
-        if (props.CaseSensitive.get()) {
+        if (propSaver.props.CaseSensitive.get()) {
             return;
         }
         assertQueryReturns(
@@ -5989,7 +5981,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * first does not have one.
      */
     public void testFormatInheritanceUseSecondIfFirstHasNoFormat() {
-        if (props.CaseSensitive.get()) {
+        if (propSaver.props.CaseSensitive.get()) {
             return;
         }
         assertQueryReturns(
@@ -6007,7 +5999,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * format of the first member that has a valid format is used.
      */
     public void testFormatInheritanceUseFirstValid() {
-        if (props.CaseSensitive.get()) {
+        if (propSaver.props.CaseSensitive.get()) {
             return;
         }
         assertQueryReturns(
@@ -6048,7 +6040,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "select crossjoin({[Time].[*SUBTOTAL_MEMBER_SEL~SUM]}, {[Store].[*SUBTOTAL_MEMBER_SEL~SUM]}) "
             + "on columns from [Sales]";
 
-        propSaver.set(props.IterationLimit, 11);
+        propSaver.set(propSaver.props.IterationLimit, 11);
 
         Throwable throwable = null;
         try {
@@ -6069,7 +6061,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testGetCaptionUsingMemberDotCaption() {
-        if (props.CaseSensitive.get()) {
+        if (propSaver.props.CaseSensitive.get()) {
             return;
         }
         assertQueryReturns(
@@ -6083,7 +6075,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testGetCaptionUsingMemberDotPropertiesCaption() {
-        if (props.CaseSensitive.get()) {
+        if (propSaver.props.CaseSensitive.get()) {
             return;
         }
         assertQueryReturns(
@@ -6126,7 +6118,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testDefaultMeasureInCube() {
-        if (props.CaseSensitive.get()) {
+        if (propSaver.props.CaseSensitive.get()) {
             return;
         }
         TestContext testContext = defaultMeasureContext("Supply Time");
@@ -6160,7 +6152,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         String queryWithDefaultMeasureFilter =
             "select stores.members on 0 "
             + "from DefaultMeasureTesting where [measures].[Supply Time]";
-        if (props.CaseSensitive.get()) {
+        if (propSaver.props.CaseSensitive.get()) {
             assertQueriesReturnSimilarResults(
                 queryWithoutFilter, queryWithFirstMeasure, testContext);
         } else {
@@ -6644,10 +6636,11 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testEmptyAggregationListDueToFilterDoesNotThrowException() {
-        if (props.CaseSensitive.get()) {
+        if (propSaver.props.CaseSensitive.get()) {
             return;
         }
-        propSaver.set(props.IgnoreMeasureForNonJoiningDimension, true);
+        propSaver.set(
+            propSaver.props.IgnoreMeasureForNonJoiningDimension, true);
         assertQueryReturns(
             "WITH \n"
             + "MEMBER [GENDER].[AGG] "
@@ -6768,7 +6761,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * Tests hierarchies of the same dimension on different axes.
      */
     public void testHierarchiesOfSameDimensionOnDifferentAxes() {
-        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+        if (!propSaver.props.SsasCompatibleNaming.get()) {
             return;
         }
         assertQueryReturns(
@@ -7305,8 +7298,8 @@ public class BasicQueryTest extends FoodMartTestCase {
             getTestContext().getDialect().getDatabaseProduct().name();
         propSaver.set(
             new StringProperty(
-                MondrianProperties.instance(),
-                MondrianProperties.instance().StatisticsProviders.getPath()
+                propSaver.props,
+                propSaver.props.StatisticsProviders.getPath()
                 + "."
                 + product,
                 null),
@@ -7365,15 +7358,11 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testResultLimit() throws Exception {
-        propSaver.set(
-            MondrianProperties.instance().ResultLimit,
-            1000);
+        propSaver.set(propSaver.props.ResultLimit, 1000);
         assertAxisThrows(
             "CrossJoin([Product].[Brand Name].Members, [Gender].[Gender].Members)",
             "Mondrian Error:Number of cell results to be read exceeded limit of (1,000)");
-        propSaver.set(
-            MondrianProperties.instance().ResultLimit,
-            5000);
+        propSaver.set(propSaver.props.ResultLimit, 5000);
         executeQuery(
             "select CrossJoin([Product].[Brand Name].Members, [Gender].[Gender].Members) on columns from [Sales]");
     }

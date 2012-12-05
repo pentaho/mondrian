@@ -230,7 +230,7 @@ public class BatchTestCase extends FoodMartTestCase {
         CellRequest[] requests,
         SqlPattern[] patterns)
     {
-        propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
+        propSaver.set(propSaver.props.GenerateFormattedSql, true);
         assertRequestSql(testContext, requests, patterns, false);
     }
 
@@ -370,21 +370,20 @@ public class BatchTestCase extends FoodMartTestCase {
 
     /**
      * Checks that a given MDX query results in a particular SQL statement
-     * being generated, for a single database dialect.
+     * being generated, in the
+     * {@link mondrian.spi.Dialect.DatabaseProduct#MYSQL} dialect.
      *
      * @param testContext Test context
      * @param mdx MDX query
-     * @param databaseProduct Database product to run for (usually MySQL)
      * @param sql Expected SQL statement
      */
     protected void assertQuerySql(
         TestContext testContext,
         String mdx,
-        Dialect.DatabaseProduct databaseProduct,
         String sql)
     {
         SqlPattern[] patterns = {
-            new SqlPattern(databaseProduct, sql, sql)
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, sql, sql)
         };
         assertQuerySql(testContext, mdx, patterns);
     }
@@ -402,7 +401,7 @@ public class BatchTestCase extends FoodMartTestCase {
         String mdxQuery,
         SqlPattern[] patterns)
     {
-        propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
+        propSaver.set(propSaver.props.GenerateFormattedSql, true);
         assertQuerySqlOrNot(
             testContext, mdxQuery, patterns, false, false, true);
     }

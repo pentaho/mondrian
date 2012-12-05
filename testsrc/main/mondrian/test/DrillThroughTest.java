@@ -36,9 +36,7 @@ public class DrillThroughTest extends FoodMartTestCase {
     private String getDrillThroughSql(
         Cell cell, boolean extendedContext, boolean formatted)
     {
-        propSaver.set(
-            MondrianProperties.instance().GenerateFormattedSql,
-            formatted);
+        propSaver.set(propSaver.props.GenerateFormattedSql, formatted);
         return cell.getDrillThroughSQL(extendedContext);
     }
 
@@ -697,9 +695,7 @@ public class DrillThroughTest extends FoodMartTestCase {
     }
 
     public void testDrillthroughDisable() {
-        propSaver.set(
-            MondrianProperties.instance().EnableDrillThrough,
-            true);
+        propSaver.set(propSaver.props.EnableDrillThrough, true);
         Result result =
             executeQuery(
                 "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
@@ -709,9 +705,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         Cell cell = result.getCell(new int[]{0, 0});
         assertTrue(cell.canDrillThrough());
 
-        propSaver.set(
-            MondrianProperties.instance().EnableDrillThrough,
-            false);
+        propSaver.set(propSaver.props.EnableDrillThrough, false);
         result =
             executeQuery(
                 "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"

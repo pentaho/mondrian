@@ -155,34 +155,26 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testShouldUseGroupingFunctionOnPropertyTrueAndOnSupportedDB() {
-        propSaver.set(
-            MondrianProperties.instance().EnableGroupingSets,
-            true);
+        propSaver.set(propSaver.props.EnableGroupingSets, true);
         BatchLoader fbcr = createFbcr(true, salesCube);
         assertTrue(fbcr.shouldUseGroupingFunction());
     }
 
     public void testShouldUseGroupingFunctionOnPropertyTrueAndOnNonSupportedDB()
     {
-        propSaver.set(
-            MondrianProperties.instance().EnableGroupingSets,
-            true);
+        propSaver.set(propSaver.props.EnableGroupingSets, true);
         BatchLoader fbcr = createFbcr(false, salesCube);
         assertFalse(fbcr.shouldUseGroupingFunction());
     }
 
     public void testShouldUseGroupingFunctionOnPropertyFalseOnSupportedDB() {
-        propSaver.set(
-            MondrianProperties.instance().EnableGroupingSets,
-            false);
+        propSaver.set(propSaver.props.EnableGroupingSets, false);
         BatchLoader fbcr = createFbcr(true, salesCube);
         assertFalse(fbcr.shouldUseGroupingFunction());
     }
 
     public void testShouldUseGroupingFunctionOnPropertyFalseOnNonSupportedDB() {
-        propSaver.set(
-            MondrianProperties.instance().EnableGroupingSets,
-            false);
+        propSaver.set(propSaver.props.EnableGroupingSets, false);
         BatchLoader fbcr = createFbcr(false, salesCube);
         assertFalse(fbcr.shouldUseGroupingFunction());
     }
@@ -1810,7 +1802,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     /**
-     * Fix a problem when genergating predicates for distinct count aggregate
+     * Fix a problem when generating predicates for distinct count aggregate
      * loading and using the aggregate function in the slicer.
      */
     public void testAggregateDistinctCount5() {
@@ -1828,18 +1820,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "From [Sales] "
             + "Where ([Product].[Selected Products])";
 
-        String derbySql =
-            "select \"store\".\"store_state\" as \"c0\", "
-            + "\"time_by_day\".\"the_year\" as \"c1\", "
-            + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
-            + "from \"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\", "
-            + "\"time_by_day\" as \"time_by_day\" "
-            + "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" "
-            + "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
-            + "and \"time_by_day\".\"the_year\" = 1997 "
-            + "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
-
-        String mysqlSql =
+        String sql =
             "select\n"
             + "    `store`.`store_state` as `c0`,\n"
             + "    `time_by_day`.`the_year` as `c1`,\n"
@@ -1858,12 +1839,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "    `store`.`store_state`,\n"
             + "    `time_by_day`.`the_year`";
 
-        SqlPattern[] patterns = {
-            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql),
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
-
         final TestContext testContext = getTestContext();
-        assertQuerySql(testContext, query, patterns);
+        assertQuerySql(testContext, query, sql);
     }
 
     /**
@@ -2047,7 +2024,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "Row #0: 131,558\n"
             + "Row #0: 135,215\n");
 
-        String mysqlSql =
+        String sql =
             "select\n"
             + "    `time_by_day`.`the_year` as `c0`,\n"
             + "    count(distinct `sales_fact_1997`.`customer_id`) as `m0`\n"
@@ -2061,36 +2038,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "group by\n"
             + "    `time_by_day`.`the_year`";
 
-        String accessSql =
-            "select `d0` as `c0`,"
-            + " count(`m0`) as `c1` "
-            + "from (select distinct `time_by_day`.`the_year` as `d0`,"
-            + " `sales_fact_1997`.`customer_id` as `m0` "
-            + "from `time_by_day` as `time_by_day`, "
-            + "`sales_fact_1997` as `sales_fact_1997` "
-            + "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` "
-            + "and `time_by_day`.`the_year` = 1997) as `dummyname` group by `d0`";
-
-        String derbySql =
-            "select "
-            + "\"time_by_day\".\"the_year\" as \"c0\", "
-            + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
-            + "from "
-            + "\"time_by_day\" as \"time_by_day\", "
-            + "\"sales_fact_1997\" as \"sales_fact_1997\" "
-            + "where "
-            + "\"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
-            + "and \"time_by_day\".\"the_year\" = 1997 "
-            + "group by \"time_by_day\".\"the_year\"";
-
-        SqlPattern[] patterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
-            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql),
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
-
         final TestContext testContext = getTestContext();
-        assertQuerySql(testContext, query, patterns);
+        assertQuerySql(testContext, query, sql);
     }
 
     public void testAggregateDistinctCountInDimensionFilter() {
@@ -2117,7 +2066,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "Row #0: 2,692\n"
             + "Row #1: 1,036\n");
 
-        String mysqlSql =
+        String sql =
             "select\n"
             + "    `store`.`store_state` as `c0`,\n"
             + "    `time_by_day`.`the_year` as `c1`,\n"
@@ -2146,31 +2095,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "    `store`.`store_state`,\n"
             + "    `time_by_day`.`the_year`";
 
-        String derbySql =
-            "select "
-            + "\"store\".\"store_state\" as \"c0\", \"time_by_day\".\"the_year\" as \"c1\", "
-            + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
-            + "from "
-            + "\"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\", "
-            + "\"time_by_day\" as \"time_by_day\", \"product_class\" as \"product_class\", "
-            + "\"product\" as \"product\" "
-            + "where "
-            + "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and "
-            + "\"store\".\"store_state\" in ('CA', 'OR') and "
-            + "\"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and "
-            + "\"time_by_day\".\"the_year\" = 1997 and "
-            + "\"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" and "
-            + "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and "
-            + "\"product_class\".\"product_family\" in ('Drink', 'Food') "
-            + "group by "
-            + "\"store\".\"store_state\", \"time_by_day\".\"the_year\"";
-
-        SqlPattern[] patterns = {
-            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql),
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
-
         final TestContext testContext = getTestContext();
-        assertQuerySql(testContext, query, patterns);
+        assertQuerySql(testContext, query, sql);
     }
 
     public static class MyDelegatingInvocationHandler

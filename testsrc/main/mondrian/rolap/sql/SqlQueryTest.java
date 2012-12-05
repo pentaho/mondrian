@@ -25,31 +25,24 @@ import java.util.*;
  * @since 06-Jun-2007
  */
 public class SqlQueryTest extends BatchTestCase {
-    private String origWarnIfNoPatternForDialect;
-
-    private MondrianProperties prop = MondrianProperties.instance();
+    private final MondrianProperties prop = propSaver.props;
 
     protected void setUp() throws Exception {
         super.setUp();
-        origWarnIfNoPatternForDialect = prop.WarnIfNoPatternForDialect.get();
 
         // This test warns of missing sql patterns for MYSQL.
         final Dialect dialect = getTestContext().getDialect();
         if (prop.WarnIfNoPatternForDialect.get().equals("ANY")
             || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MYSQL)
         {
-            prop.WarnIfNoPatternForDialect.set(
+            propSaver.set(
+                propSaver.props.WarnIfNoPatternForDialect,
                 dialect.getDatabaseProduct().toString());
         } else {
             // Do not warn unless the dialect is "MYSQL", or
             // if the test chooses to warn regardless of the dialect.
-            prop.WarnIfNoPatternForDialect.set("NONE");
+            propSaver.set(propSaver.props.WarnIfNoPatternForDialect, "NONE");
         }
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        prop.WarnIfNoPatternForDialect.set(origWarnIfNoPatternForDialect);
     }
 
     public void testToStringForSingleGroupingSetSql() {
@@ -239,22 +232,18 @@ public class SqlQueryTest extends BatchTestCase {
 
     public void testTableNameIsIncludedWithParentChildQuery() {
         String sql =
-            "select `employee`.`employee_id` as `c0`, "
-            + "`employee`.`full_name` as `c1`, "
-            + "`employee`.`marital_status` as `c2`, "
-            + "`employee`.`position_title` as `c3`, "
-            + "`employee`.`gender` as `c4`, "
-            + "`employee`.`salary` as `c5`, "
-            + "`employee`.`education_level` as `c6`, "
-            + "`employee`.`management_role` as `c7` "
-            + "from `employee` as `employee` "
-            + "where `employee`.`supervisor_id` = 0 "
-            + "group by `employee`.`employee_id`, `employee`.`full_name`, "
-            + "`employee`.`marital_status`, `employee`.`position_title`, "
-            + "`employee`.`gender`, `employee`.`salary`,"
-            + " `employee`.`education_level`, `employee`.`management_role`"
-            + " order by Iif(`employee`.`employee_id` IS NULL, 1, 0),"
-            + " `employee`.`employee_id` ASC";
+            "select\n"
+            + "    `employee`.`employee_id` as `c0`,\n"
+            + "    `employee`.`full_name` as `c1`\n"
+            + "from\n"
+            + "    `employee` as `employee`\n"
+            + "where\n"
+            + "    `employee`.`supervisor_id` = 0\n"
+            + "group by\n"
+            + "    `employee`.`employee_id`,\n"
+            + "    `employee`.`full_name`\n"
+            + "order by\n"
+            + "    ISNULL(`employee`.`employee_id`) ASC, `employee`.`employee_id` ASC";
 
         final String mdx =
             "SELECT "
@@ -268,8 +257,7 @@ public class SqlQueryTest extends BatchTestCase {
             + "ALL"
             + ") DIMENSION PROPERTIES PARENT_LEVEL, CHILDREN_CARDINALITY, PARENT_UNIQUE_NAME ON AXIS(0) \n"
             + "FROM [HR]  CELL PROPERTIES VALUE, FORMAT_STRING";
-        assertQuerySql(
-            getTestContext(), mdx, Dialect.DatabaseProduct.ACCESS, sql);
+        assertQuerySql(getTestContext().withFreshConnection(), mdx, sql);
     }
 
     public void testPredicatesAreNotOptimizedWhenPropertyIsFalse() {
@@ -373,15 +361,8 @@ public class SqlQueryTest extends BatchTestCase {
         String inputMdx,
         SqlPattern[] sqlPatterns)
     {
-        boolean intialValueOptimize =
-            prop.OptimizePredicates.get();
-
-        try {
-            prop.OptimizePredicates.set(optimizePredicatesValue);
-            assertQuerySql(getTestContext(), inputMdx, sqlPatterns);
-        } finally {
-            prop.OptimizePredicates.set(intialValueOptimize);
-        }
+        propSaver.props.OptimizePredicates.set(optimizePredicatesValue);
+        assertQuerySql(getTestContext(), inputMdx, sqlPatterns);
     }
 
     public void testToStringForGroupingSetSqlWithEmptyGroup() {
@@ -503,8 +484,8 @@ public class SqlQueryTest extends BatchTestCase {
             return;
         }
 
-        propSaver.set(prop.IgnoreInvalidMembers, true);
-        propSaver.set(prop.IgnoreInvalidMembersDuringQuery, true);
+        propSaver.set(propSaver.props.IgnoreInvalidMembers, true);
+        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, true);
 
         // assertQuerySql(testContext, query, patterns);
 

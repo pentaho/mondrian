@@ -1310,9 +1310,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "[Time].[Time2].[Quarter].&Q3&[1997] on 1\n"
             + "from [Warehouse and Sales]");
 
-        propSaver.set(
-            MondrianProperties.instance().IgnoreInvalidMembersDuringQuery,
-            true);
+        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, true);
         // SSAS gives 0 rows
         assertQueryReturns(
             "select [Measures].[Unit Sales] on 0,\n"
@@ -1324,9 +1322,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n");
 
-        propSaver.set(
-            MondrianProperties.instance().IgnoreInvalidMembersDuringQuery,
-            false);
+        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, false);
         assertQueryThrows(
             "select [Measures].[Unit Sales] on 0,\n"
             + "[Time].[Time2].[Quarter].&Q5&[1997] on 1\n"

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -26,12 +26,9 @@ public class IgnoreMeasureForNonJoiningDimensionInAggregationTest
 {
     protected void setUp() throws Exception {
         super.setUp();
+        propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, true);
         propSaver.set(
-            MondrianProperties.instance().EnableNonEmptyOnAllAxis,
-            true);
-        propSaver.set(
-            MondrianProperties.instance().IgnoreMeasureForNonJoiningDimension,
-            true);
+            propSaver.props.IgnoreMeasureForNonJoiningDimension, true);
         getTestContext().getConnection().getCacheControl(null)
             .flushSchemaCache();
     }
@@ -85,8 +82,7 @@ public class IgnoreMeasureForNonJoiningDimensionInAggregationTest
             + "Row #0: 196,770.89\n"
             + "Row #1: 196,770.89\n");
         propSaver.set(
-            MondrianProperties.instance().IgnoreMeasureForNonJoiningDimension,
-            false);
+            propSaver.props.IgnoreMeasureForNonJoiningDimension, false);
         assertQueryReturns(
             query,
             "Axis #0:\n"

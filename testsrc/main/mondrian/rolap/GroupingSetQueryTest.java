@@ -10,7 +10,6 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.spi.Dialect;
 import mondrian.test.*;
@@ -27,18 +26,12 @@ import java.util.*;
  * @since 08-Jun-2007
  */
 public class GroupingSetQueryTest extends BatchTestCase {
-
-    private MondrianProperties prop = MondrianProperties.instance();
-
     private static final String cubeNameSales2 = "Sales 2";
     private static final String measureStoreSales = "[Measures].[Store Sales]";
     private static final String fieldNameMaritalStatus = "marital_status";
     private static final String measureCustomerCount =
         "[Measures].[Customer Count]";
 
-    private boolean useGroupingSets;
-    private boolean formattedSql;
-    private String origWarnIfNoPatternForDialect;
     private static final Set<Dialect.DatabaseProduct> ORACLE_TERADATA =
         Olap4jUtil.enumSetOf(
             Dialect.DatabaseProduct.ORACLE,
@@ -46,41 +39,31 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        useGroupingSets = prop.EnableGroupingSets.get();
-        formattedSql = prop.GenerateFormattedSql.get();
-        origWarnIfNoPatternForDialect = prop.WarnIfNoPatternForDialect.get();
 
-        prop.GenerateFormattedSql.set(false);
+        propSaver.props.GenerateFormattedSql.set(false);
 
         // This test warns of missing sql patterns for
         //
         // ACCESS
         // ORACLE
         final Dialect dialect = getTestContext().getDialect();
-        if (prop.WarnIfNoPatternForDialect.get().equals("ANY")
+        if (propSaver.props.WarnIfNoPatternForDialect.get().equals("ANY")
             || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS
             || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE)
         {
-            prop.WarnIfNoPatternForDialect.set(
+            propSaver.props.WarnIfNoPatternForDialect.set(
                 dialect.getDatabaseProduct().toString());
         } else {
             // Do not warn unless the dialect is "ACCESS" or "ORACLE", or
             // if the test chooses to warn regardless of the dialect.
-            prop.WarnIfNoPatternForDialect.set("NONE");
+            propSaver.props.WarnIfNoPatternForDialect.set("NONE");
         }
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        prop.EnableGroupingSets.set(useGroupingSets);
-        prop.GenerateFormattedSql.set(formattedSql);
-        prop.WarnIfNoPatternForDialect.set(origWarnIfNoPatternForDialect);
     }
 
     public void testGroupingSetsWithAggregateOverDefaultMember() {
         // testcase for MONDRIAN-705
         if (getTestContext().getDialect().supportsGroupingSets()) {
-            propSaver.set(prop.EnableGroupingSets, true);
+            propSaver.set(propSaver.props.EnableGroupingSets, true);
         }
         assertQueryReturns(
             "with member [Gender].[agg] as ' "
@@ -104,7 +87,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
     public void testGroupingSetForSingleColumnConstraint() {
         final TestContext testContext = getTestContext();
-        propSaver.set(prop.DisableCaching, false);
+        propSaver.set(propSaver.props.DisableCaching, false);
 
         CellRequest request1 =
             createRequest(
@@ -168,9 +151,11 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 26)
         };
 
-        propSaver.set(prop.EnableGroupingSets, true);
+        propSaver.set(propSaver.props.EnableGroupingSets, true);
 
-        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
+        if (propSaver.props.ReadAggregates.get()
+            && propSaver.props.UseAggregates.get())
+        {
             assertRequestSql(
                 testContext,
                 new CellRequest[] {request3, request1, request2},
@@ -182,9 +167,11 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 patternsWithGsets);
         }
 
-        propSaver.set(prop.EnableGroupingSets, false);
+        propSaver.set(propSaver.props.EnableGroupingSets, false);
 
-        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
+        if (propSaver.props.ReadAggregates.get()
+            && propSaver.props.UseAggregates.get())
+        {
             assertRequestSql(
                 testContext,
                 new CellRequest[] {request3, request1, request2},
@@ -197,8 +184,8 @@ public class GroupingSetQueryTest extends BatchTestCase {
         }
     }
     public void testNotUsingGroupingSetWhenGroupUsesDifferentAggregateTable() {
-        if (!(prop.UseAggregates.get()
-              && prop.ReadAggregates.get()))
+        if (!(propSaver.props.UseAggregates.get()
+              && propSaver.props.ReadAggregates.get()))
         {
             return;
         }
@@ -222,7 +209,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 cubeNameSales,
                 measureUnitSales, null, "", "");
 
-        propSaver.set(prop.EnableGroupingSets, true);
+        propSaver.set(propSaver.props.EnableGroupingSets, true);
 
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
@@ -247,10 +234,12 @@ public class GroupingSetQueryTest extends BatchTestCase {
     }
 
     public void testNotUsingGroupingSet() {
-        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
+        if (propSaver.props.ReadAggregates.get()
+            && propSaver.props.UseAggregates.get())
+        {
             return;
         }
-        propSaver.set(prop.EnableGroupingSets, true);
+        propSaver.set(propSaver.props.EnableGroupingSets, true);
         final TestContext testContext = getTestContext();
         CellRequest request1 =
             createRequest(
@@ -277,7 +266,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
             new CellRequest[] {request1, request2},
             patternsWithGsets);
 
-        propSaver.set(prop.EnableGroupingSets, false);
+        propSaver.set(propSaver.props.EnableGroupingSets, false);
 
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
@@ -300,10 +289,12 @@ public class GroupingSetQueryTest extends BatchTestCase {
     }
 
     public void testGroupingSetForMultipleMeasureAndSingleConstraint() {
-        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
+        if (propSaver.props.ReadAggregates.get()
+            && propSaver.props.UseAggregates.get())
+        {
             return;
         }
-        propSaver.set(prop.EnableGroupingSets, true);
+        propSaver.set(propSaver.props.EnableGroupingSets, true);
         final TestContext testContext = getTestContext();
 
         CellRequest request1 =
@@ -353,7 +344,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 request1, request2, request3, request4, request5, request6},
             patternsWithGsets);
 
-        propSaver.set(prop.EnableGroupingSets, false);
+        propSaver.set(propSaver.props.EnableGroupingSets, false);
 
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
@@ -379,10 +370,12 @@ public class GroupingSetQueryTest extends BatchTestCase {
     }
 
     public void testGroupingSetForASummaryCanBeGroupedWith2DetailBatch() {
-        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
+        if (propSaver.props.ReadAggregates.get()
+            && propSaver.props.UseAggregates.get())
+        {
             return;
         }
-        propSaver.set(prop.EnableGroupingSets, true);
+        propSaver.set(propSaver.props.EnableGroupingSets, true);
         final TestContext testContext = getTestContext();
         CellRequest request1 =
             createRequest(
@@ -440,7 +433,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 request1, request2, request3, request4, request5, request6},
             patternWithGsets);
 
-        propSaver.set(prop.EnableGroupingSets, false);
+        propSaver.set(propSaver.props.EnableGroupingSets, false);
 
         SqlPattern[] patternWithoutGsets = {
             new SqlPattern(
@@ -463,10 +456,12 @@ public class GroupingSetQueryTest extends BatchTestCase {
     }
 
     public void testGroupingSetForMultipleColumnConstraint() {
-        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
+        if (propSaver.props.ReadAggregates.get()
+            && propSaver.props.UseAggregates.get())
+        {
             return;
         }
-        propSaver.set(prop.EnableGroupingSets, true);
+        propSaver.set(propSaver.props.EnableGroupingSets, true);
         final TestContext testContext = getTestContext();
         CellRequest request1 =
             createRequest(
@@ -518,7 +513,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
             new CellRequest[] {request3, request1, request2},
             patternsWithGsets);
 
-        propSaver.set(prop.EnableGroupingSets, false);
+        propSaver.set(propSaver.props.EnableGroupingSets, false);
 
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
@@ -553,7 +548,9 @@ public class GroupingSetQueryTest extends BatchTestCase {
     public void
         testGroupingSetForMultipleColumnConstraintAndCompoundConstraint()
     {
-        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
+        if (propSaver.props.ReadAggregates.get()
+            && propSaver.props.UseAggregates.get())
+        {
             return;
         }
         final TestContext testContext = getTestContext();
@@ -608,14 +605,14 @@ public class GroupingSetQueryTest extends BatchTestCase {
         // related to it (2207515)
         SqlPattern[] patternsGSEnabled = patternsGSDisabled;
 
-        propSaver.set(prop.EnableGroupingSets, true);
+        propSaver.set(propSaver.props.EnableGroupingSets, true);
 
         assertRequestSql(
             testContext,
             new CellRequest[] {request3, request1, request2},
             patternsGSEnabled);
 
-        propSaver.set(prop.EnableGroupingSets, false);
+        propSaver.set(propSaver.props.EnableGroupingSets, false);
 
         assertRequestSql(
             testContext,

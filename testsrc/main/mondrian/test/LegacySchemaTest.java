@@ -1770,9 +1770,7 @@ public class LegacySchemaTest extends FoodMartTestCase {
         if (!Bug.BugMondrian1335Fixed) {
             return;
         }
-        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
-            .get())
-        {
+        if (!propSaver.props.FilterChildlessSnowflakeMembers.get()) {
             // Similar to aggregates. If we turn off filtering,
             // we get wild stuff because of referential integrity.
             return;

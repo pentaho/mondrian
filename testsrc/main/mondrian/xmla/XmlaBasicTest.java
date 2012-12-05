@@ -964,13 +964,9 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
     {
         String requestType = "EXECUTE";
         Properties props = getDefaultRequestProperties(requestType);
-        propSaver.set(
-            MondrianProperties.instance().EnableRolapCubeMemberCache,
-            false);
+        propSaver.set(propSaver.props.EnableRolapCubeMemberCache, false);
         doTest(requestType, props, getTestContext());
-        propSaver.set(
-            MondrianProperties.instance().EnableRolapCubeMemberCache,
-            true);
+        propSaver.set(propSaver.props.EnableRolapCubeMemberCache, true);
     }
 
     public void doTestRT(String requestType, TestContext testContext)

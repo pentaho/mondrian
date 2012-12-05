@@ -60,8 +60,6 @@ public class SchemaTest extends FoodMartTestCase {
         + "  <Dimensions/>\n"
         + "</Cube>\n";
 
-    private final MondrianProperties props = MondrianProperties.instance();
-
     public SchemaTest(String name) {
         super(name);
     }
@@ -2766,12 +2764,12 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "Row #0: 16,266\n");
 
         // turn off caching
-        propSaver.set(props.DisableCaching, true);
+        propSaver.set(propSaver.props.DisableCaching, true);
 
         // re-read aggregates
-        propSaver.set(props.UseAggregates, true);
-        propSaver.set(props.ReadAggregates, false);
-        propSaver.set(props.ReadAggregates, true);
+        propSaver.set(propSaver.props.UseAggregates, true);
+        propSaver.set(propSaver.props.ReadAggregates, false);
+        propSaver.set(propSaver.props.ReadAggregates, true);
     }
 
     /**
@@ -5209,8 +5207,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
     public void testNonCollapsedAggregateOnNonUniqueLevelFails()
         throws Exception
     {
-        if (MondrianProperties.instance().UseAggregates.get() == false
-            && MondrianProperties.instance().ReadAggregates.get() == false)
+        if (!MondrianProperties.instance().UseAggregates.get()
+            && !MondrianProperties.instance().ReadAggregates.get())
         {
             return;
         }
@@ -5265,8 +5263,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     public void testTwoNonCollapsedAggregate() throws Exception {
-        if (MondrianProperties.instance().UseAggregates.get() == false
-            && MondrianProperties.instance().ReadAggregates.get() == false)
+        if (!MondrianProperties.instance().UseAggregates.get()
+            && !MondrianProperties.instance().ReadAggregates.get())
         {
             return;
         }

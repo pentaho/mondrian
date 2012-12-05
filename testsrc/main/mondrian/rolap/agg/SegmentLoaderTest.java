@@ -77,12 +77,8 @@ public class SegmentLoaderTest extends BatchTestCase {
             PrintWriter pw = new PrintWriter(System.out);
             getConnection().getCacheControl(pw).flushSchemaCache();
             pw.flush();
-            propSaver.set(
-                MondrianProperties.instance().DisableCaching,
-                true);
-            propSaver.set(
-                MondrianProperties.instance().EnableInMemoryRollup,
-                rollup);
+            propSaver.set(propSaver.props.DisableCaching, true);
+            propSaver.set(propSaver.props.EnableInMemoryRollup, rollup);
             final String queryOracle =
                 "select \"time_by_day\".\"the_year\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" from \"time_by_day\" \"time_by_day\", \"sales_fact_1997\" \"sales_fact_1997\" where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" group by \"time_by_day\".\"the_year\"";
             final String queryMySQL =

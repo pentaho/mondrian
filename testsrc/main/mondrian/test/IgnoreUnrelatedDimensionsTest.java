@@ -22,8 +22,6 @@ import mondrian.olap.MondrianProperties;
  */
 public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
 
-    // TODO: use propSaver to restore property values
-    boolean originalNonEmptyFlag;
     private final MondrianProperties prop = MondrianProperties.instance();
 
     private static final String cubeSales3 =
@@ -59,13 +57,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        originalNonEmptyFlag = prop.EnableNonEmptyOnAllAxis.get();
-        prop.EnableNonEmptyOnAllAxis.set(true);
-    }
-
-    protected void tearDown() throws Exception {
-        prop.EnableNonEmptyOnAllAxis.set(originalNonEmptyFlag);
-        super.tearDown();
+        propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, true);
     }
 
     public TestContext getTestContext() {
@@ -327,9 +319,8 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
     }
 
     public void testUnrelatedDimPropOverridesIgnoreMeasure() {
-        boolean origIgnoreMeasure =
-            prop.IgnoreMeasureForNonJoiningDimension.get();
-        prop.IgnoreMeasureForNonJoiningDimension.set(true);
+        propSaver.set(
+            propSaver.props.IgnoreMeasureForNonJoiningDimension, true);
         assertQueryReturns(
             "WITH\n"
             + "MEMBER [Measures].[Total Sales] AS '[Measures].[Store Sales] + "
@@ -357,9 +348,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "{[Product].[Product].[AggSP1_2]}\n"
             + "Row #0: 762,009.02\n"
             + "Row #1: 762,009.02\n");
-        prop.IgnoreMeasureForNonJoiningDimension.set(origIgnoreMeasure);
     }
-
 }
 
 // End IgnoreUnrelatedDimensionsTest.java

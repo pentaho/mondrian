@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -166,9 +166,8 @@ public class NonCollapsedAggTest extends AggTableTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        final MondrianProperties props = MondrianProperties.instance();
-        propSaver.set(props.UseAggregates, true);
-        propSaver.set(props.ReadAggregates, true);
+        propSaver.set(propSaver.props.UseAggregates, true);
+        propSaver.set(propSaver.props.ReadAggregates, true);
         super.getConnection().getCacheControl(null).flushSchemaCache();
     }
 

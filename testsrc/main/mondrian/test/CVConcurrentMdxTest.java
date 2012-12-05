@@ -5,12 +5,11 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.test.clearview.*;
 
@@ -31,20 +30,14 @@ import java.util.*;
  * @author Khanh Vu
  */
 public class CVConcurrentMdxTest extends FoodMartTestCase {
-    private final MondrianProperties props = MondrianProperties.instance();
-
     public CVConcurrentMdxTest() {
         super();
     }
 
-    public CVConcurrentMdxTest(String name) {
-        super(name);
-    }
-
     public void testConcurrentQueriesInRandomOrder() throws Exception {
-        propSaver.set(props.DisableCaching, false);
-        propSaver.set(props.UseAggregates, false);
-        propSaver.set(props.ReadAggregates, false);
+        propSaver.set(propSaver.props.DisableCaching, false);
+        propSaver.set(propSaver.props.UseAggregates, false);
+        propSaver.set(propSaver.props.ReadAggregates, false);
 
         // test partially filled aggregation cache
         // add test classes
@@ -75,9 +68,9 @@ public class CVConcurrentMdxTest extends FoodMartTestCase {
     public void testConcurrentQueriesInRandomOrderOnVirtualCube()
         throws Exception
     {
-        propSaver.set(props.DisableCaching, false);
-        propSaver.set(props.UseAggregates, false);
-        propSaver.set(props.ReadAggregates, false);
+        propSaver.set(propSaver.props.DisableCaching, false);
+        propSaver.set(propSaver.props.UseAggregates, false);
+        propSaver.set(propSaver.props.ReadAggregates, false);
 
         // test partially filled aggregation cache
         // add test classes
@@ -106,9 +99,9 @@ public class CVConcurrentMdxTest extends FoodMartTestCase {
     }
 
     public void testConcurrentCVQueriesInRandomOrder() throws Exception {
-        propSaver.set(props.DisableCaching, false);
-        propSaver.set(props.UseAggregates, false);
-        propSaver.set(props.ReadAggregates, false);
+        propSaver.set(propSaver.props.DisableCaching, false);
+        propSaver.set(propSaver.props.UseAggregates, false);
+        propSaver.set(propSaver.props.ReadAggregates, false);
 
         // test partially filled aggregation cache
         // add test classes
