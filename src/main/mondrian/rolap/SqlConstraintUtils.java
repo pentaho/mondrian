@@ -73,6 +73,10 @@ public class SqlConstraintUtils {
             members = removeMultiPositionSlicerMembers(members, evaluator);
         }
 
+        // make sure the columns we need to constrain can be referenced
+        addConstrainedMembersToFrom(sqlQuery, starSet, members);
+
+        // get the constrained columns and their values
         final CellRequest request =
             RolapAggregationManager.makeRequest(members);
         if (request == null) {
@@ -85,7 +89,6 @@ public class SqlConstraintUtils {
         }
         RolapStar.Column[] columns = request.getConstrainedColumns();
         Object[] values = request.getSingleValues();
-        int arity = columns.length;
 
         if (starSet.getAggMeasureGroup() != null) {
             RolapGalaxy galaxy = ((RolapCube) evaluator.getCube()).galaxy;
@@ -99,53 +102,98 @@ public class SqlConstraintUtils {
             columns = starConverter.convertColumnArray(columns);
         }
 
-        // following code is similar to
-        // AbstractQuerySpec#nonDistinctGenerateSQL()
-        final StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < arity; i++) {
-            RolapStar.Column column = columns[i];
-
-            String expr;
-/*
-            if (starSet.getAggMeasureGroup() != null) {
-                int bitPos = column.getBitPosition();
-                AggStar.Table.Column aggColumn =
-                    starSet.getAggMeasureGroup().lookupColumn(bitPos);
-                AggStar.Table table = aggColumn.getTable();
-                table.addToFrom(sqlQuery, false, true);
-
-                expr = aggColumn.generateExprString(sqlQuery);
-            } else {
-*/
-
-            addToFrom(sqlQuery, column, starSet);
-
-            expr = column.getExpression().toSql();
-/*
-            }
-*/
-
-            final String value = String.valueOf(values[i]);
-            buf.setLength(0);
-            if ((RolapUtil.mdxNullLiteral().equalsIgnoreCase(value))
-                || (value.equalsIgnoreCase(RolapUtil.sqlNullValue.toString())))
-            {
-                buf.append(expr).append(" is null");
-            } else {
-                final Dialect dialect = sqlQuery.getDialect();
-                try {
-                    buf.append(expr)
-                        .append(" = ");
-                    dialect.quote(buf, value, column.getDatatype());
-                } catch (NumberFormatException e) {
-                    buf.setLength(0);
-                    dialect.quoteBooleanLiteral(buf, false);
-                }
-            }
-            sqlQuery.addWhere(buf.toString());
-        }
+        // add constraints to where
+        addColumnValueConstraints(sqlQuery, columns, values);
     }
 
+
+    private static void addColumnValueConstraints(
+        SqlQuery sqlQuery,
+        RolapStar.Column[] columns,
+        Object[] values)
+    {
+      // following code is similar to
+      // AbstractQuerySpec#nonDistinctGenerateSQL()
+      final StringBuilder buf = new StringBuilder();
+      for (int i = 0; i < columns.length; i++) {
+          RolapStar.Column column = columns[i];
+
+          String expr;
+/*
+          if (starSet.getAggMeasureGroup() != null) {
+              int bitPos = column.getBitPosition();
+              AggStar.Table.Column aggColumn =
+                  starSet.getAggMeasureGroup().lookupColumn(bitPos);
+              AggStar.Table table = aggColumn.getTable();
+              table.addToFrom(sqlQuery, false, true);
+
+              expr = aggColumn.generateExprString(sqlQuery);
+          } else {
+*/
+
+         // using new addToFrom(...members)
+         // addToFrom(sqlQuery, column, starSet);
+
+          expr = column.getExpression().toSql();
+/*
+          }
+*/
+
+          final String value = String.valueOf(values[i]);
+          buf.setLength(0);
+          if ((RolapUtil.mdxNullLiteral().equalsIgnoreCase(value))
+              || (value.equalsIgnoreCase(RolapUtil.sqlNullValue.toString())))
+          {
+              buf.append(expr).append(" is null");
+          } else {
+              final Dialect dialect = sqlQuery.getDialect();
+              try {
+                  buf.append(expr)
+                      .append(" = ");
+                  dialect.quote(buf, value, column.getDatatype());
+              } catch (NumberFormatException e) {
+                  buf.setLength(0);
+                  dialect.quoteBooleanLiteral(buf, false);
+              }
+          }
+          sqlQuery.addWhere(buf.toString());
+      }
+    }
+
+    private static void addConstrainedMembersToFrom(
+        SqlQuery sqlQuery,
+        RolapStarSet starSet,
+        Member[] members)
+    {
+        for (Member member : members) {
+            if (member.isMeasure()
+                || member.getLevel().isAll()
+                || !(member.getLevel() instanceof RolapLevel))
+            {
+                //only looking for constrained members
+                continue;
+            }
+            RolapLevel level = (RolapLevel) member.getLevel();
+
+            RolapDimension dim = level.getDimension();
+            for (RolapSchema.PhysColumn column
+                : level.attribute.getKeyList())
+            {
+                final RolapSchema.PhysPath keyPath =
+                    level.getDimension().getKeyPath(column);
+                keyPath.addToFrom(sqlQuery, false);
+            }
+            if (starSet.getMeasureGroup() != null) {
+                RolapSchema.PhysPath path;
+                if (starSet.getAggMeasureGroup() != null) {
+                    path = starSet.getAggMeasureGroup().getPath(dim);
+                } else {
+                    path = starSet.getMeasureGroup().getPath(dim);
+                }
+                path.addToFrom(sqlQuery, false);
+            }
+        }
+    }
 
     private static void addToFrom(
         SqlQuery sqlQuery,
@@ -166,7 +214,7 @@ public class SqlConstraintUtils {
                 path.addToFrom(sqlQuery, false);
                 return;
             } catch (PhysSchemaException e) {
-                //TODO:
+                throw new MondrianException(e);
             }
         }
         //fallback
