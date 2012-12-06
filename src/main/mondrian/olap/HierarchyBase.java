@@ -26,20 +26,6 @@ public abstract class HierarchyBase
 {
 
     protected final Dimension dimension;
-    /**
-     * <code>name</code> and <code>subName</code> are the name of the
-     * hierarchy, respectively containing and not containing dimension
-     * name. For example:
-     * <table>
-     * <tr> <th>uniqueName</th>    <th>name</th>        <th>subName</th></tr>
-     * <tr> <td>[Time.Weekly]</td> <td>Time.Weekly</td> <td>Weekly</td></tr>
-     * <tr> <td>[Customers]</td>   <td>Customers</td>   <td>null</td></tr>
-     * </table>
-     *
-     * <p>If {@link mondrian.olap.MondrianProperties#SsasCompatibleNaming} is
-     * true, name and subName have the same value.
-     */
-    protected final String subName;
     protected final String name;
     protected final String uniqueName;
     protected String description;
@@ -67,48 +53,9 @@ public abstract class HierarchyBase
         this.description = description;
         this.visible = visible;
 
-        String name = dimension.getName();
-        if (true || MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            if (subName == null) {
-                // e.g. "Time"
-                subName = name;
-            }
-            this.subName = subName;
-            this.name = subName;
-            // e.g. "[Time].[Weekly]" for dimension "Time", hierarchy "Weekly";
-            // "[Time]" for dimension "Time", hierarchy "Time".
-//            this.uniqueName =
-//                subName.equals(name) && false
-//                    ? dimension.getUniqueName()
-//                    : Util.makeFqName(dimension, this.name);
-        } else {
-            this.subName = subName;
-            if (this.subName != null) {
-                // e.g. "Time.Weekly"
-                this.name = name + "." + subName;
-//                if (this.subName.equals(name)) {
-//                    this.uniqueName = dimension.getUniqueName();
-//                } else {
-                    // e.g. "[Time.Weekly]"
-//                    this.uniqueName = Util.makeFqName(this.name);
-//                }
-            } else {
-                // e.g. "Time"
-                this.name = name;
-                // e.g. "[Time]"
-//                this.uniqueName = dimension.getUniqueName();
-            }
-        }
+        assert subName != null;
+        this.name = subName;
         this.uniqueName = uniqueName;
-    }
-
-    /**
-     * Returns the name of the hierarchy sans dimension name.
-     *
-     * @return name of hierarchy sans dimension name
-     */
-    public String getSubName() {
-        return subName;
     }
 
     // implement MdxElement

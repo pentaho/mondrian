@@ -131,11 +131,6 @@ public class RolapHierarchy extends HierarchyBase {
         // we need to set allMemberName and allLevelName.
         if (allMemberName != null) {
             this.allMemberName = allMemberName;
-        } else if (subName != null
-            && (MondrianProperties.instance().SsasCompatibleNaming.get()
-                || name.equals(subName + "." + subName)))
-        {
-            this.allMemberName = "All " + subName + "s";
         } else {
             this.allMemberName = "All " + name + "s";
         }
@@ -720,8 +715,8 @@ public class RolapHierarchy extends HierarchyBase {
         RolapHierarchy peerHier =
             new RolapHierarchy(
                 peerDimension,
-                null,
-                peerDimension.getUniqueName(),
+                peerDimension.getName(),
+                Util.makeFqName(peerDimension, peerDimension.getName()),
                 peerDimension.isVisible(),
                 peerDimension.getCaption(),
                 peerDimension.getDescription(),
@@ -1061,14 +1056,6 @@ public class RolapHierarchy extends HierarchyBase {
 
             if (Util.equalName(nameSegment.name, dimension.getName())) {
                 return dimension;
-            }
-            // Archaic form <dimension>.<hierarchy>, e.g. [Time.Weekly].[1997]
-            if (!MondrianProperties.instance().SsasCompatibleNaming.get()
-                && Util.equalName(
-                    nameSegment.name,
-                    dimension.getName() + "." + subName))
-            {
-                return RolapHierarchy.this;
             }
             return null;
         }

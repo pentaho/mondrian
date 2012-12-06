@@ -129,7 +129,7 @@ public class RolapCube extends CubeBase {
         RolapHierarchy measuresHierarchy =
             new RolapHierarchy(
                 measuresDimension,
-                null,
+                measuresDimension.getName(),
                 Util.quoteMdxIdentifier(Dimension.MEASURES_NAME),
                 measuresDimension.isVisible(),
                 measuresDimension.getCaption(),
