@@ -10,6 +10,7 @@
 package mondrian.util;
 
 import mondrian.olap.MondrianProperties;
+import mondrian.rolap.RolapSchemaLoader;
 import mondrian.spi.Dialect;
 
 import org.apache.log4j.Logger;
@@ -375,6 +376,23 @@ public class Bug {
      * </a> is fixed.
      */
     public static final boolean BugMondrian1333Fixed = false;
+
+    /**
+     * Mondrian isn't optimizing member fetching according to query constraints.
+     */
+    public static final boolean FetchMembersOptimizationFixed = Enable;
+
+    /**
+     * Handling of ReferenceLink schema elements is not yet implemented
+     * in {@link RolapSchemaLoader}
+     */
+    public static final boolean ReferenceLinkNotImplementedFixed = Enable;
+
+    /**
+     * Childless snowflake members are always being filtered irregardless of
+     * FilterChildlessSnowflakeMembers's value
+     */
+    public static final boolean ShowChildlessSnowflakeMembersFixed = Enable;
 }
 
 // End Bug.java
