@@ -357,7 +357,7 @@ public class ScenarioTest extends FoodMartTestCase {
     public TestContext getTestContext2() {
         return TestContext.instance().createSubstitutingCube(
             "Sales",
-            "<Dimension name='Scenario' table='foo' key='Scenario'>\n"
+            "<Dimension name='Scenario' table='foo' key='Scenario' type='SCENARIO'>\n"
             + "  <Attributes>\n"
             + "    <Attribute name='Scenario' keyColumn='bar'/>\n"
             + "  </Attributes>\n"

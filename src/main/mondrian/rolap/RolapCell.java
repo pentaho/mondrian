@@ -564,11 +564,11 @@ public class RolapCell implements Cell {
         }
         final RolapMember[] members = result.getCellMembers(pos);
         for (int i = 0; i < members.length; i++) {
-            Member member = members[i];
-            if (ScenarioImpl.isScenario(member.getHierarchy())) {
+            RolapMember member = members[i];
+            if (member.getHierarchy().isScenario) {
                 scenario =
                     (Scenario) member.getPropertyValue(Property.SCENARIO.name);
-                members[i] = (RolapMember) member.getHierarchy().getAllMember();
+                members[i] = member.getHierarchy().getAllMember();
             } else if (member.isCalculated()) {
                 throw Util.newError(
                     "Cannot write to cell: one of the coordinates ("

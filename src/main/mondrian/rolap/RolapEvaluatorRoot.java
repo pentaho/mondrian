@@ -94,7 +94,7 @@ class RolapEvaluatorRoot {
             assert defaultMember != null;
             assert hierarchy.getOrdinalInCube() == list.size();
 
-            if (ScenarioImpl.isScenario(hierarchy)
+            if (hierarchy.isScenario
                 && connection.getScenario() != null)
             {
                 defaultMember =

@@ -82,6 +82,9 @@ public class RolapHierarchy extends HierarchyBase {
 
     final NamedList<RolapLevel> levelList = new NamedListImpl<RolapLevel>();
 
+    /** Whether this hierarchy is the Scenario hierarchy of its cube. */
+    final boolean isScenario;
+
     /**
      * Creates a RolapHierarchy.
      *
@@ -110,6 +113,10 @@ public class RolapHierarchy extends HierarchyBase {
         this.attribute = attribute;
         this.annotationMap = annotationMap;
         this.closureFor = closureFor;
+        this.isScenario = subName != null && subName.equals("Scenario");
+        assert !isScenario
+            || dimension.getDimensionType()
+            == org.olap4j.metadata.Dimension.Type.SCENARIO;
     }
 
     void initHierarchy(

@@ -6879,7 +6879,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "  <Rows/>\n"
             + "</InlineTable>\n";
         String cubeDef =
-            "<Dimension name='Scenario' table='foo2' key='id'>\n"
+            "<Dimension name='Scenario' table='foo2' key='id' type='SCENARIO'>\n"
             + "  <Attributes>"
             + "    <Attribute name='Scenario' keyColumn='foo'/>"
             + "    <Attribute name='id' keyColumn='time_id'/>"

@@ -1584,9 +1584,7 @@ public class RolapSchemaLoader {
             for (RolapCubeDimension dimension : unlinkedDimensions) {
                 // Ignore the system "Scenario" dimension.
                 // TODO: We could safely ignore all other "hanger" dimensions.
-                if (ScenarioImpl.isScenario(
-                        dimension.getHierarchyList().get(0)))
-                {
+                if (dimension.getHierarchyList().get(0).isScenario) {
                     continue;
                 }
                 missingLinkAction.handle(

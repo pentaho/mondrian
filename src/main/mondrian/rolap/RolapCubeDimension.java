@@ -90,6 +90,10 @@ public class RolapCubeDimension extends RolapDimension {
                         rolapHierarchy.getDescription(),
                         dimSource, name, description));
             hierarchyList.add(hierarchy);
+            if (hierarchy.isScenario) {
+                assert cube.scenarioHierarchy == null;
+                cube.scenarioHierarchy = hierarchy;
+            }
         }
         this.hierarchyList.addAll(
             hierarchyList.subList(originalSize, hierarchyList.size()));

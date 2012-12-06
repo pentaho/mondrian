@@ -183,7 +183,7 @@ public final class ScenarioImpl implements Scenario {
     }
 
     /**
-     * Registers this Scenario with a Schema, creating a calulated member
+     * Registers this Scenario with a Schema, creating a calculated member
      * [Scenario].[{id}] for each cube that has writeback enabled. (Currently
      * a cube has writeback enabled iff it has a dimension called "Scenario".)
      *
@@ -193,29 +193,15 @@ public final class ScenarioImpl implements Scenario {
         // Add a value to the [Scenario] dimension of every cube that has
         // writeback enabled.
         for (RolapCube cube : schema.getCubeList()) {
-            for (RolapCubeHierarchy hierarchy : cube.getHierarchyList()) {
-                if (isScenario(hierarchy)) {
-                    member =
-                        cube.createCalculatedMember(
-                            hierarchy,
-                            getId() + "",
-                            new ScenarioCalc(this));
-                    assert member != null;
-                }
+            if (cube.scenarioHierarchy != null) {
+                member =
+                    cube.createCalculatedMember(
+                        cube.scenarioHierarchy,
+                        getId() + "",
+                        new ScenarioCalc(this));
+                assert member != null;
             }
         }
-    }
-
-    /**
-     * Returns whether a hierarchy is the [Scenario] hierarchy.
-     *
-     * <p>TODO: use a flag
-     *
-     * @param hierarchy Hierarchy
-     * @return Whether hierarchy is the scenario hierarchy
-     */
-    public static boolean isScenario(Hierarchy hierarchy) {
-        return hierarchy.getName().equals("Scenario");
     }
 
     /**
@@ -370,7 +356,7 @@ public final class ScenarioImpl implements Scenario {
                 memberList.toArray(new Member[memberList.size()]);
             for (RolapMember member : members) {
                 final RolapHierarchy hierarchy = member.getHierarchy();
-                if (isScenario(hierarchy)) {
+                if (hierarchy.isScenario) {
                     assert member.isAll();
                 }
                 final int ordinal = hierarchy.getOrdinalInCube();

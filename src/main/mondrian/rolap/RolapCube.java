@@ -89,6 +89,8 @@ public class RolapCube extends CubeBase {
     // set in init
     public RolapGalaxy galaxy;
 
+    RolapCubeHierarchy scenarioHierarchy;
+
     /**
      * Creates a <code>RolapCube</code> from a regular cube.
      *
@@ -183,18 +185,6 @@ public class RolapCube extends CubeBase {
         }
         return null;
     }
-
-    private boolean isWritebackEnabled() {
-        Util.deprecated("remove if not used", false);
-        boolean writebackEnabled = false;
-        for (RolapHierarchy hierarchy : hierarchyList) {
-            if (ScenarioImpl.isScenario(hierarchy)) {
-                writebackEnabled = true;
-            }
-        }
-        return writebackEnabled;
-    }
-
 
     /**
      * Makes sure that the schemaReader cache is invalidated.
