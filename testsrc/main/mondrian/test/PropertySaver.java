@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -30,7 +30,7 @@ import java.util.Map;
  */
 public class PropertySaver {
 
-    public final MondrianProperties properties =
+    public final MondrianProperties props =
         MondrianProperties.instance();
 
     private final Map<Property, String> originalValues =
@@ -53,8 +53,8 @@ public class PropertySaver {
     public void set(BooleanProperty property, boolean value) {
         if (!originalValues.containsKey(property)) {
             final String originalValue =
-                properties.containsKey(property.getPath())
-                    ? properties.getProperty(property.getPath())
+                props.containsKey(property.getPath())
+                    ? props.getProperty(property.getPath())
                     : NOT_SET;
             originalValues.put(
                 property,
@@ -72,8 +72,8 @@ public class PropertySaver {
     public void set(IntegerProperty property, int value) {
         if (!originalValues.containsKey(property)) {
             final String originalValue =
-                properties.containsKey(property.getPath())
-                    ? properties.getProperty(property.getPath())
+                props.containsKey(property.getPath())
+                    ? props.getProperty(property.getPath())
                     : NOT_SET;
             originalValues.put(
                 property,
@@ -91,8 +91,8 @@ public class PropertySaver {
     public void set(StringProperty property, String value) {
         if (!originalValues.containsKey(property)) {
             final String originalValue =
-                properties.containsKey(property.getPath())
-                    ? properties.getProperty(property.getPath())
+                props.containsKey(property.getPath())
+                    ? props.getProperty(property.getPath())
                     : NOT_SET;
             originalValues.put(
                 property,
@@ -110,8 +110,8 @@ public class PropertySaver {
     public void set(DoubleProperty property, Double value) {
         if (!originalValues.containsKey(property)) {
             final String originalValue =
-                properties.containsKey(property.getPath())
-                    ? properties.getProperty(property.getPath())
+                props.containsKey(property.getPath())
+                    ? props.getProperty(property.getPath())
                     : NOT_SET;
             originalValues.put(
                 property,
@@ -128,7 +128,7 @@ public class PropertySaver {
             final String value = entry.getValue();
             //noinspection StringEquality
             if (value == NOT_SET) {
-                properties.remove(entry.getKey().getPath());
+                props.remove(entry.getKey().getPath());
             } else {
                 entry.getKey().setString(value);
             }

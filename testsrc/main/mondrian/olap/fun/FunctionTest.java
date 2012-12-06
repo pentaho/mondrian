@@ -6399,35 +6399,27 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns(NullNumericExpr + " / - 2", "");
         assertExprReturns(NullNumericExpr + " / " + NullNumericExpr, "");
 
-        boolean origNullDenominatorProducesNull =
-            MondrianProperties.instance().NullDenominatorProducesNull.get();
-        try {
-            // default behavior
-            MondrianProperties.instance().NullDenominatorProducesNull.set(
-                false);
+        // default behavior
+        propSaver.set(propSaver.props.NullDenominatorProducesNull, false);
 
-            assertExprReturns("-2 / " + NullNumericExpr, "Infinity");
-            assertExprReturns("0 / 0", "NaN");
-            assertExprReturns("-3 / (2 - 2)", "-Infinity");
+        assertExprReturns("-2 / " + NullNumericExpr, "Infinity");
+        assertExprReturns("0 / 0", "NaN");
+        assertExprReturns("-3 / (2 - 2)", "-Infinity");
 
-            assertExprReturns("NULL/1", "");
-            assertExprReturns("NULL/NULL", "");
-            assertExprReturns("1/NULL", "Infinity");
+        assertExprReturns("NULL/1", "");
+        assertExprReturns("NULL/NULL", "");
+        assertExprReturns("1/NULL", "Infinity");
 
-            // when NullOrZeroDenominatorProducesNull is set to true
-            MondrianProperties.instance().NullDenominatorProducesNull.set(true);
+        // when NullOrZeroDenominatorProducesNull is set to true
+        propSaver.set(propSaver.props.NullDenominatorProducesNull, true);
 
-            assertExprReturns("-2 / " + NullNumericExpr, "");
-            assertExprReturns("0 / 0", "NaN");
-            assertExprReturns("-3 / (2 - 2)", "-Infinity");
+        assertExprReturns("-2 / " + NullNumericExpr, "");
+        assertExprReturns("0 / 0", "NaN");
+        assertExprReturns("-3 / (2 - 2)", "-Infinity");
 
-            assertExprReturns("NULL/1", "");
-            assertExprReturns("NULL/NULL", "");
-            assertExprReturns("1/NULL", "");
-        } finally {
-            MondrianProperties.instance().NullDenominatorProducesNull.set(
-                origNullDenominatorProducesNull);
-        }
+        assertExprReturns("NULL/1", "");
+        assertExprReturns("NULL/NULL", "");
+        assertExprReturns("1/NULL", "");
     }
 
     public void testDividePrecedence() {
@@ -7987,9 +7979,7 @@ public class FunctionTest extends FoodMartTestCase {
         if (!Bug.BugMondrian1173Fixed) {
             return;
         }
-        propSaver.set(
-            MondrianProperties.instance().CompareSiblingsByOrderKey,
-            true);
+        propSaver.set(propSaver.props.CompareSiblingsByOrderKey, true);
         // Use a fresh connection to make sure bad member ordinals haven't
         // been assigned by previous tests.
         final TestContext context = getTestContext().withFreshConnection();
@@ -8017,8 +8007,7 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testOrderMemberMemberValueExpNew1() {
         // sort by default measure
-        propSaver.set(
-            MondrianProperties.instance().CompareSiblingsByOrderKey, true);
+        propSaver.set(propSaver.props.CompareSiblingsByOrderKey, true);
         // Use a fresh connection to make sure bad member ordinals haven't
         // been assigned by previous tests.
         final TestContext context = getTestContext().withFreshConnection();
@@ -8126,8 +8115,7 @@ public class FunctionTest extends FoodMartTestCase {
         if (!Bug.BugMondrian1173Fixed) {
             return;
         }
-        propSaver.set(
-            MondrianProperties.instance().CompareSiblingsByOrderKey, true);
+        propSaver.set(propSaver.props.CompareSiblingsByOrderKey, true);
         // Use a fresh connection to make sure bad member ordinals haven't
         // been assigned by previous tests.
         final TestContext context = getTestContext().withFreshConnection();
@@ -8179,8 +8167,7 @@ public class FunctionTest extends FoodMartTestCase {
         if (!Bug.BugMondrian1173Fixed) {
             return;
         }
-        propSaver.set(
-            MondrianProperties.instance().CompareSiblingsByOrderKey, true);
+        propSaver.set(propSaver.props.CompareSiblingsByOrderKey, true);
         // Use a fresh connection to make sure bad member ordinals haven't
         // been assigned by previous tests.
         final TestContext context = getTestContext().withFreshConnection();
@@ -8213,8 +8200,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderTupleSingleKeysNew1() {
-        propSaver.set(
-            MondrianProperties.instance().CompareSiblingsByOrderKey, true);
+        propSaver.set(propSaver.props.CompareSiblingsByOrderKey, true);
         // Use a fresh connection to make sure bad member ordinals haven't
         // been assigned by previous tests.
         final TestContext context = getTestContext().withFreshConnection();
@@ -8328,8 +8314,7 @@ public class FunctionTest extends FoodMartTestCase {
             return;
         }
         // WA unit sales is greater than CA unit sales
-        propSaver.set(
-            MondrianProperties.instance().CompareSiblingsByOrderKey, true);
+        propSaver.set(propSaver.props.CompareSiblingsByOrderKey, true);
 
         // Use a fresh connection to make sure bad member ordinals haven't
         // been assigned by previous tests.
@@ -8960,8 +8945,7 @@ public class FunctionTest extends FoodMartTestCase {
      * option"</a>.
      */
     public void testStrToMemberIgnoreInvalidMembers() {
-        final MondrianProperties properties = MondrianProperties.instance();
-        propSaver.set(properties.IgnoreInvalidMembersDuringQuery, true);
+        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, true);
 
         // [Product].[Drugs] is invalid, becomes null member, and is dropped
         // from list
@@ -9013,7 +8997,7 @@ public class FunctionTest extends FoodMartTestCase {
             "StrToMember(\"\")",
             "MDX object '' not found in cube 'Sales'");
 
-        propSaver.set(properties.IgnoreInvalidMembersDuringQuery, false);
+        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, false);
         assertQueryThrows(
             "select \n"
             + "  {[Product].[Food],\n"
@@ -9041,8 +9025,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testStrToTupleIgnoreInvalidMembers() {
-        final MondrianProperties properties = MondrianProperties.instance();
-        propSaver.set(properties.IgnoreInvalidMembersDuringQuery, true);
+        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, true);
 
         // If any member is invalid, the whole tuple is null.
         assertAxisReturns(
@@ -9162,8 +9145,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testStrToSetIgnoreInvalidMembers() {
-        final MondrianProperties properties = MondrianProperties.instance();
-        propSaver.set(properties.IgnoreInvalidMembersDuringQuery, true);
+        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, true);
         assertAxisReturns(
             "StrToSet("
             + "\""
@@ -11320,8 +11302,7 @@ public class FunctionTest extends FoodMartTestCase {
         // make sure all aggregates referenced in the OR expression are
         // processed in a single load request by setting the eval depth to
         // a value smaller than the number of measures
-        int origDepth = MondrianProperties.instance().MaxEvalDepth.get();
-        MondrianProperties.instance().MaxEvalDepth.set(3);
+        propSaver.set(propSaver.props.MaxEvalDepth, 3);
         assertQueryReturns(
             "with set [*NATIVE_CJ_SET] as '[Store].[Store Country].members' "
             + "set [*GENERATED_MEMBERS_Measures] as "
@@ -11359,7 +11340,6 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #0: 86,837\n"
             + "Row #0: 5,581\n"
             + "Row #0: 151,211.21\n");
-        MondrianProperties.instance().MaxEvalDepth.set(origDepth);
     }
 
     public void testLeftFunctionWithValidArguments() {

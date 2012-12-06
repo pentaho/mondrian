@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2009 Pentaho and others
+// Copyright (C) 2006-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -62,7 +62,7 @@ public class Checkin_7634 extends CsvDBTestCase {
 
         // Execute query but do not used the CrossJoin nonEmptyList optimization
         propSaver.set(
-            MondrianProperties.instance().CrossJoinOptimizerSize,
+            propSaver.props.CrossJoinOptimizerSize,
             Integer.MAX_VALUE);
         Result result1 = getCubeTestContext().executeQuery(mdx);
         String resultString1 = TestContext.toString(result1);
@@ -70,7 +70,7 @@ public class Checkin_7634 extends CsvDBTestCase {
         // Execute query using the new version of the CrossJoin
         // nonEmptyList optimization
         propSaver.set(
-            MondrianProperties.instance().CrossJoinOptimizerSize,
+            propSaver.props.CrossJoinOptimizerSize,
             Integer.MAX_VALUE);
         Result result2 = getCubeTestContext().executeQuery(mdx);
         String resultString2 = TestContext.toString(result2);

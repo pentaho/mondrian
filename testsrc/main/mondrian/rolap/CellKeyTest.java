@@ -342,9 +342,7 @@ public class CellKeyTest extends FoodMartTestCase {
         // evaluated natively. For the given data set (which contains NULL
         // members), native evaluation produces results in a different order
         // from the non-native evaluation.
-        propSaver.set(
-            MondrianProperties.instance().ExpandNonNative,
-            false);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
 
         TestContext testContext =
             TestContext.instance().legacy().create(

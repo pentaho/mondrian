@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -36,14 +36,14 @@ public class BUG_1541077 extends AggTableTestCase {
         }
 
         // get value without aggregates
-        propSaver.set(propSaver.properties.UseAggregates, false);
+        propSaver.set(propSaver.props.UseAggregates, false);
 
         String mdx =
             "select {[Measures].[Store Count]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
-        propSaver.set(propSaver.properties.UseAggregates, true);
+        propSaver.set(propSaver.props.UseAggregates, true);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
@@ -57,14 +57,14 @@ public class BUG_1541077 extends AggTableTestCase {
         }
 
         // get value without aggregates
-        propSaver.set(propSaver.properties.UseAggregates, false);
+        propSaver.set(propSaver.props.UseAggregates, false);
 
         String mdx =
             "select {[Measures].[Sales Count]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
-        propSaver.set(propSaver.properties.UseAggregates, true);
+        propSaver.set(propSaver.props.UseAggregates, true);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
@@ -78,14 +78,14 @@ public class BUG_1541077 extends AggTableTestCase {
         }
 
         // get value without aggregates
-        propSaver.set(propSaver.properties.UseAggregates, false);
+        propSaver.set(propSaver.props.UseAggregates, false);
 
         String mdx =
             "select {[Measures].[Total Amount]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
-        propSaver.set(propSaver.properties.UseAggregates, true);
+        propSaver.set(propSaver.props.UseAggregates, true);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
@@ -99,7 +99,7 @@ public class BUG_1541077 extends AggTableTestCase {
         }
 
         // get value without aggregates
-        propSaver.set(propSaver.properties.UseAggregates, false);
+        propSaver.set(propSaver.props.UseAggregates, false);
 
         String mdx = "select {[Measures].[Avg Amount]} on columns from Cheques";
 
@@ -107,7 +107,7 @@ public class BUG_1541077 extends AggTableTestCase {
         Object v = result.getCell(new int[]{0}).getFormattedValue();
 
         // get value with aggregates
-        propSaver.set(propSaver.properties.UseAggregates, true);
+        propSaver.set(propSaver.props.UseAggregates, true);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getFormattedValue();
@@ -128,7 +128,7 @@ public class BUG_1541077 extends AggTableTestCase {
                + "<AggMeasure name='[Measures].[Avg Amount]'\n"
                + "   column='amount_AVG' />\n"
 
-               /*
+/*
             + "<AggLevel name='[Worker].[Worker]'\n"
             + "column='worker_worker_name'/>\n"
             + "<AggLevel name='[Discount Card].[Discount\n"
@@ -142,7 +142,7 @@ public class BUG_1541077 extends AggTableTestCase {
                + "</AggName>\n"
                + "</Table>\n"
 
-               /*
+/*
             + "<DimensionUsage name='Year' source='Year'\n"
             + "   foreignKey='year_id'/>\n"
             + "<DimensionUsage name='Quarter'\n"
@@ -164,7 +164,7 @@ public class BUG_1541077 extends AggTableTestCase {
             + "<DimensionUsage name='Department'\n"
             + "   source='Department' foreignKey='department_id'/>\n"
  */
-               /*
+/*
             + "<DimensionUsage name='Store' source='StoreX'\n"
             + "   foreignKey='store_id'/>\n"
             + "<DimensionUsage name='Product' source='ProductX'\n"

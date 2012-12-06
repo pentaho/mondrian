@@ -175,8 +175,8 @@ public class TestAggregationManager extends BatchTestCase {
      * generates the correct SQL.
      */
     public void testFemaleUnitSalesSql() {
-        if (!(MondrianProperties.instance().UseAggregates.get()
-              && MondrianProperties.instance().ReadAggregates.get()))
+        if (!(propSaver.props.UseAggregates.get()
+              && propSaver.props.ReadAggregates.get()))
         {
             return;
         }
@@ -245,8 +245,8 @@ public class TestAggregationManager extends BatchTestCase {
      *   (store_state=OR, gender=M, measure=[Unit Sales])
      */
     public void testMultipleMeasures() {
-        if (!(MondrianProperties.instance().UseAggregates.get()
-              && MondrianProperties.instance().ReadAggregates.get()))
+        if (!(propSaver.props.UseAggregates.get()
+              && propSaver.props.ReadAggregates.get()))
         {
             return;
         }
@@ -404,15 +404,14 @@ public class TestAggregationManager extends BatchTestCase {
             "select {[Measures].[Unit Sales]} on columns,"
             + " {[Store].[USA].[CA], [Store].[USA].[OR]} on rows "
             + "from [Sales]";
-        SqlPattern[] patterns;
-        String accessMysqlSql, derbySql;
+        String sql;
 
         // Note: the following aggregate loading SQL statements contain no
         // references to the parent level column "store_country".
-        if (MondrianProperties.instance().UseAggregates.get()
-            && MondrianProperties.instance().ReadAggregates.get())
+        if (propSaver.props.UseAggregates.get()
+            && propSaver.props.ReadAggregates.get())
         {
-            accessMysqlSql =
+            sql =
                 "select\n"
                 + "    `store`.`store_state` as `c0`,\n"
                 + "    `agg_c_14_sales_fact_1997`.`the_year` as `c1`,\n"
@@ -429,29 +428,8 @@ public class TestAggregationManager extends BatchTestCase {
                 + "group by\n"
                 + "    `store`.`store_state`,\n"
                 + "    `agg_c_14_sales_fact_1997`.`the_year`";
-
-            derbySql =
-                "select "
-                + "\"store\".\"store_state\" as \"c0\", \"agg_c_14_sales_fact_1997\".\"the_year\" as \"c1\", "
-                + "sum(\"agg_c_14_sales_fact_1997\".\"unit_sales\") as \"m0\" "
-                + "from "
-                + "\"store\" as \"store\", \"agg_c_14_sales_fact_1997\" as \"agg_c_14_sales_fact_1997\" "
-                + "where "
-                + "\"agg_c_14_sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and "
-                + "\"store\".\"store_state\" in ('CA', 'OR') and "
-                + "\"agg_c_14_sales_fact_1997\".\"the_year\" = 1997 "
-                + "group by "
-                + "\"store\".\"store_state\", \"agg_c_14_sales_fact_1997\".\"the_year\"";
-
-            patterns = new SqlPattern[] {
-                new SqlPattern(
-                    ACCESS_MYSQL,
-                    accessMysqlSql, 50),
-                new SqlPattern(
-                    Dialect.DatabaseProduct.DERBY, derbySql, derbySql)
-            };
         } else {
-            accessMysqlSql =
+            sql =
                 "select\n"
                 + "    `store`.`store_state` as `c0`,\n"
                 + "    `time_by_day`.`the_year` as `c1`,\n"
@@ -471,30 +449,8 @@ public class TestAggregationManager extends BatchTestCase {
                 + "group by\n"
                 + "    `store`.`store_state`,\n"
                 + "    `time_by_day`.`the_year`";
-
-            derbySql =
-                "select \"store\".\"store_state\" as \"c0\", \"time_by_day\".\"the_year\" as \"c1\", "
-                + "sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" "
-                + "from "
-                + "\"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\", "
-                + "\"time_by_day\" as \"time_by_day\" "
-                + "where "
-                + "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and "
-                + "\"store\".\"store_state\" in ('CA', 'OR') and "
-                + "\"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and "
-                + "\"time_by_day\".\"the_year\" = 1997 "
-                + "group by "
-                + "\"store\".\"store_state\", \"time_by_day\".\"the_year\"";
-
-            patterns = new SqlPattern[] {
-                new SqlPattern(
-                    ACCESS_MYSQL,
-                    accessMysqlSql, 50),
-                new SqlPattern(
-                    Dialect.DatabaseProduct.DERBY, derbySql, derbySql)
-            };
         }
-        assertQuerySql(getTestContext(), mdxQuery, patterns);
+        assertQuerySql(getTestContext(), mdxQuery, sql);
     }
 
     /**
@@ -684,8 +640,8 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     public void testCountDistinctAggMatch() {
-        if (!(MondrianProperties.instance().UseAggregates.get()
-              && MondrianProperties.instance().ReadAggregates.get()))
+        if (!(propSaver.props.UseAggregates.get()
+              && propSaver.props.ReadAggregates.get()))
         {
             return;
         }
@@ -823,8 +779,8 @@ public class TestAggregationManager extends BatchTestCase {
      * can only belong to one group.
      */
     public void testCountDistinctRollupAlongDim() {
-        if (!(MondrianProperties.instance().UseAggregates.get()
-              && MondrianProperties.instance().ReadAggregates.get()))
+        if (!(propSaver.props.UseAggregates.get()
+              && propSaver.props.ReadAggregates.get()))
         {
             return;
         }
@@ -902,8 +858,8 @@ public class TestAggregationManager extends BatchTestCase {
      * [Marital Status] but not [Gender].
      */
     public void testCountDistinctRollup2() {
-        if (!(MondrianProperties.instance().UseAggregates.get()
-              && MondrianProperties.instance().ReadAggregates.get()))
+        if (!(propSaver.props.UseAggregates.get()
+              && propSaver.props.ReadAggregates.get()))
         {
             return;
         }
@@ -1044,29 +1000,18 @@ public class TestAggregationManager extends BatchTestCase {
      * <code>&lt;Member&gt;.Children</code> expression.
      */
     public void testAggMembers() {
-        if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
+        if (propSaver.props.TestExpDependencies.get() > 0) {
             return;
         }
-        if (!(MondrianProperties.instance().UseAggregates.get()
-                && MondrianProperties.instance().ReadAggregates.get()))
+        if (!(propSaver.props.UseAggregates.get()
+                && propSaver.props.ReadAggregates.get()))
         {
             return;
         }
-        if (!(MondrianProperties.instance().EnableNativeCrossJoin.get())) {
+        if (!(propSaver.props.EnableNativeCrossJoin.get())) {
             return;
         }
         SqlPattern[] patterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.ACCESS,
-                "select `store`.`store_country` as `c0` "
-                + "from `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,"
-                + " `store` as `store` "
-                + "where `agg_c_14_sales_fact_1997`.`the_year` = 1998 "
-                + "and `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id` "
-                + "group by `store`.`store_country` "
-                + "order by Iif(`store`.`store_country` IS NULL, 1, 0),"
-                + " `store`.`store_country` ASC",
-                26),
             new SqlPattern(
                 Dialect.DatabaseProduct.MYSQL,
                 "select\n"
@@ -1321,8 +1266,8 @@ public class TestAggregationManager extends BatchTestCase {
      * Tests that using compound member constrant disables using AggregateTable.
      */
     public void testCountDistinctWithConstraintAggMiss() {
-        if (!(MondrianProperties.instance().UseAggregates.get()
-              && MondrianProperties.instance().ReadAggregates.get()))
+        if (!(propSaver.props.UseAggregates.get()
+              && propSaver.props.ReadAggregates.get()))
         {
             return;
         }
@@ -1406,12 +1351,12 @@ public class TestAggregationManager extends BatchTestCase {
     public void testOrdinalExprAggTuplesAndChildren() {
         // this verifies that we can load properties, ordinals, etc out of
         // agg tables in member lookups (tuples and children)
-        if (!(MondrianProperties.instance().UseAggregates.get()
-                && MondrianProperties.instance().ReadAggregates.get()))
+        if (!(propSaver.props.UseAggregates.get()
+                && propSaver.props.ReadAggregates.get()))
         {
             return;
         }
-        if (!(MondrianProperties.instance().EnableNativeCrossJoin.get())) {
+        if (!(propSaver.props.EnableNativeCrossJoin.get())) {
             return;
         }
         TestContext.instance().flushSchemaCache();
@@ -1514,12 +1459,12 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     public void testAggregatingTuples() {
-        if (!(MondrianProperties.instance().UseAggregates.get()
-                && MondrianProperties.instance().ReadAggregates.get()))
+        if (!(propSaver.props.UseAggregates.get()
+                && propSaver.props.ReadAggregates.get()))
         {
             return;
         }
-        if (!(MondrianProperties.instance().EnableNativeCrossJoin.get())) {
+        if (!(propSaver.props.EnableNativeCrossJoin.get())) {
             return;
         }
         // flush cache, to be sure sql is executed
@@ -1558,7 +1503,7 @@ public class TestAggregationManager extends BatchTestCase {
                 null)
         };
 
-        propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
+        propSaver.set(propSaver.props.GenerateFormattedSql, true);
         final TestContext testContext = getTestContext();
         assertQuerySqlOrNot(
             testContext, query, patterns, false, false, false);
@@ -1626,12 +1571,12 @@ public class TestAggregationManager extends BatchTestCase {
      * this test verifies the collapsed children code in SqlMemberSource
      */
     public void testCollapsedChildren() {
-        if (!(MondrianProperties.instance().UseAggregates.get()
-                && MondrianProperties.instance().ReadAggregates.get()))
+        if (!(propSaver.props.UseAggregates.get()
+                && propSaver.props.ReadAggregates.get()))
         {
             return;
         }
-        if (!(MondrianProperties.instance().EnableNativeCrossJoin.get())) {
+        if (!(propSaver.props.EnableNativeCrossJoin.get())) {
             return;
         }
         // flush cache to be sure sql is executed
@@ -1692,8 +1637,8 @@ public class TestAggregationManager extends BatchTestCase {
             p = false;
             break;
         }
-        propSaver.set(MondrianProperties.instance().UseAggregates, true);
-        propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        propSaver.set(propSaver.props.UseAggregates, true);
+        propSaver.set(propSaver.props.ReadAggregates, true);
         final String mdxQuery =
             "select non empty{[Promotions].[All Promotions].Children} ON rows, "
             + "non empty {[Store].[All Stores]} ON columns "
@@ -1849,8 +1794,8 @@ public class TestAggregationManager extends BatchTestCase {
      * having to issue a select count() query.
      */
     public void testAggNameApproxRowCountLegacy() {
-        propSaver.set(MondrianProperties.instance().UseAggregates, true);
-        propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        propSaver.set(propSaver.props.UseAggregates, true);
+        propSaver.set(propSaver.props.ReadAggregates, true);
         final TestContext context =
             TestContext.instance().withSchema(
                 "<schema name='FooSchema'><Cube name='Sales_Foo' defaultMeasure='Unit Sales'>\n"
@@ -2038,8 +1983,8 @@ public class TestAggregationManager extends BatchTestCase {
      * having to issue a select count() query.
      */
     public void testAggNameApproxRowCount() {
-        propSaver.set(MondrianProperties.instance().UseAggregates, true);
-        propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        propSaver.set(propSaver.props.UseAggregates, true);
+        propSaver.set(propSaver.props.ReadAggregates, true);
 
         final String measureGroup =
             "<MeasureGroup table='agg_pl_01_sales_fact_1997' approxRowCount='86000' type='aggregate'>\n"
@@ -2110,8 +2055,8 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     public void testNonCollapsedAggregate() throws Exception {
-        propSaver.set(MondrianProperties.instance().UseAggregates, true);
-        propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        propSaver.set(propSaver.props.UseAggregates, true);
+        propSaver.set(propSaver.props.ReadAggregates, true);
         final String cube =
             "<Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
             + "  <Table name=\"sales_fact_1997\">\n"
@@ -2180,8 +2125,8 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     public void testTwoNonCollapsedAggregate() throws Exception {
-        propSaver.set(MondrianProperties.instance().UseAggregates, true);
-        propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        propSaver.set(propSaver.props.UseAggregates, true);
+        propSaver.set(propSaver.props.ReadAggregates, true);
         final String cube =
             "<Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
             + "  <Table name=\"sales_fact_1997\">\n"
@@ -2264,7 +2209,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "group by\n"
             + "    `product_class`.`product_family`,\n"
             + "    `store`.`store_id`";
-        propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
+        propSaver.set(propSaver.props.GenerateFormattedSql, true);
         assertQuerySqlOrNot(
             context,
             mdx,
@@ -2298,25 +2243,22 @@ public class TestAggregationManager extends BatchTestCase {
                 + "  </Dimension>");
 
         // Note that query does not join in the "promotion" table.
-        SqlPattern[] patterns = {
-            new SqlPattern(
-                ACCESS_MYSQL,
-                "select `time_by_day`.`the_year` as `c0`,"
-                + " `sales_fact_1997`.`promotion_id` as `c1`,"
-                + " sum(`sales_fact_1997`.`unit_sales`) as `m0` "
-                + "from `time_by_day` as `time_by_day`,"
-                + " `sales_fact_1997` as `sales_fact_1997` "
-                + "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`"
-                + " and `time_by_day`.`the_year` = 1997"
-                + " and `sales_fact_1997`.`promotion_id` in (5, 49, 112, 123, 130, 150, 168, 196, 344, 393, 403, 601, 640, 683, 760, 831, 900, 914, 992, 1005, 1076, 1266, 1288, 1315, 1339, 1354, 1388, 1401, 1454, 1461, 1469, 1483, 1505, 1609, 1626, 1705, 1726, 1784, 1788, 1864) "
-                + "group by `time_by_day`.`the_year`, `sales_fact_1997`.`promotion_id`",
-                100)
-        };
+        String sql =
+            "select `time_by_day`.`the_year` as `c0`,"
+            + " `sales_fact_1997`.`promotion_id` as `c1`,"
+            + " sum(`sales_fact_1997`.`unit_sales`) as `m0` "
+            + "from `time_by_day` as `time_by_day`,"
+            + " `sales_fact_1997` as `sales_fact_1997` "
+            + "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`"
+            + " and `time_by_day`.`the_year` = 1997"
+            + " and `sales_fact_1997`.`promotion_id` in (5, 49, 112, 123, 130, 150, 168, 196, 344, 393, 403, 601, 640, 683, 760, 831, 900, 914, 992, 1005, 1076, 1266, 1288, 1315, 1339, 1354, 1388, 1401, 1454, 1461, 1469, 1483, 1505, 1609, 1626, 1705, 1726, 1784, 1788, 1864) "
+            + "group by `time_by_day`.`the_year`, `sales_fact_1997`.`promotion_id`";
+
         assertQuerySql(
             testContext,
             "select {[Promotion Plus].[Bag Stuffers].Children} on 0\n"
             + "from [Sales]",
-            patterns);
+            sql);
     }
 }
 

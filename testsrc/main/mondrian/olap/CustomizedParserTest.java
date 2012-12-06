@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -198,14 +198,8 @@ public class CustomizedParserTest extends FoodMartTestCase {
         CustomizedFunctionTable cftab =
             getCustomizedFunctionTable(functionNameSet);
 
-        MondrianProperties properties = MondrianProperties.instance();
-
-        propSaver.set(
-            properties.IgnoreInvalidMembers,
-            true);
-        propSaver.set(
-            properties.IgnoreInvalidMembersDuringQuery,
-            true);
+        propSaver.set(propSaver.props.IgnoreInvalidMembers, true);
+        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, true);
 
         try {
             Query q = getParsedQueryForExpr(

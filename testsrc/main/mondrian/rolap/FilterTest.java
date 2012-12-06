@@ -34,13 +34,12 @@ public class FilterTest extends BatchTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        propSaver.set(
-            MondrianProperties.instance().EnableNativeCrossJoin, true);
+        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
     }
 
     public void testInFilterSimple() throws Exception {
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -62,8 +61,8 @@ public class FilterTest extends BatchTestCase {
     }
 
     public void testNotInFilterSimple() throws Exception {
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -85,8 +84,8 @@ public class FilterTest extends BatchTestCase {
     }
 
     public void testInFilterAND() throws Exception {
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -110,8 +109,8 @@ public class FilterTest extends BatchTestCase {
     }
 
     public void testIsFilterSimple() throws Exception {
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -133,8 +132,8 @@ public class FilterTest extends BatchTestCase {
     }
 
     public void testNotIsFilterSimple() throws Exception {
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -156,8 +155,8 @@ public class FilterTest extends BatchTestCase {
     }
 
     public void testMixedInIsFilters() throws Exception {
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -191,8 +190,8 @@ public class FilterTest extends BatchTestCase {
      * @throws Exception
      */
     public void testInFilterNonNative() throws Exception {
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
 
         String query =
             "With "
@@ -209,9 +208,9 @@ public class FilterTest extends BatchTestCase {
     }
 
     public void testTopCountOverInFilter() throws Exception {
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
-        propSaver.set(MondrianProperties.instance().EnableNativeTopCount, true);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        propSaver.set(propSaver.props.EnableNativeTopCount, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -238,8 +237,8 @@ public class FilterTest extends BatchTestCase {
      * @throws Exception
      */
     public void testNotInFilterKeepNullMember() throws Exception {
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -295,8 +294,8 @@ public class FilterTest extends BatchTestCase {
      * @throws Exception on error
      */
     public void testNotInFilterExcludeNullMember() throws Exception {
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -349,7 +348,7 @@ public class FilterTest extends BatchTestCase {
      * that contain multiple levels, but none being null.
      */
     public void testNotInMultiLevelMemberConstraintNonNullParent() {
-        if (MondrianProperties.instance().ReadAggregates.get()) {
+        if (propSaver.props.ReadAggregates.get()) {
             // If aggregate tables are enabled, generates similar SQL involving
             // agg tables.
             return;
@@ -367,47 +366,35 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*ORDERED_CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        String necjSqlDerby =
-            "select \"customer\".\"country\", \"time_by_day\".\"the_year\", "
-            + "\"time_by_day\".\"quarter\" from \"customer\" as \"customer\", "
-            + "\"sales_fact_1997\" as \"sales_fact_1997\", \"time_by_day\" as "
-            + "\"time_by_day\" where \"sales_fact_1997\".\"customer_id\" = "
-            + "\"customer\".\"customer_id\" and \"sales_fact_1997\".\"time_id\" = "
-            + "\"time_by_day\".\"time_id\" and (\"customer\".\"country\" = 'USA') and "
-            + "(not ((\"time_by_day\".\"the_year\" = 1997 and \"time_by_day\".\"quarter\" "
-            + "= 'Q1') or (\"time_by_day\".\"the_year\" = 1998 and "
-            + "\"time_by_day\".\"quarter\" = 'Q3')) or ((\"time_by_day\".\"quarter\" is "
-            + "null or \"time_by_day\".\"the_year\" is null) and "
-            + "not((\"time_by_day\".\"the_year\" = 1997 and \"time_by_day\".\"quarter\" "
-            + "= 'Q1') or (\"time_by_day\".\"the_year\" = 1998 and "
-            + "\"time_by_day\".\"quarter\" = 'Q3')))) group by \"customer\".\"country\", "
-            + "\"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\" "
-            + "order by CASE WHEN \"customer\".\"country\" IS NULL THEN 1 ELSE 0 END, \"customer\".\"country\" ASC, CASE WHEN \"time_by_day\".\"the_year\" IS NULL THEN 1 ELSE 0 END, \"time_by_day\".\"the_year\" ASC, CASE WHEN \"time_by_day\".\"quarter\" IS NULL THEN 1 ELSE 0 END, \"time_by_day\".\"quarter\" ASC";
+        String sql =
+            "select\n"
+            + "    `customer`.`country` as `c0`,\n"
+            + "    `time_by_day`.`the_year` as `c1`,\n"
+            + "    `time_by_day`.`quarter` as `c2`\n"
+            + "from\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `customer` as `customer`,\n"
+            + "    `time_by_day` as `time_by_day`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    (`customer`.`country` = 'USA')\n"
+            + "and\n"
+            + "    (not ((`time_by_day`.`the_year`, `time_by_day`.`quarter`) in ((1997, 'Q1'), (1998, 'Q3')))\n"
+            + "    or (`time_by_day`.`quarter` is null\n"
+            + "        or `time_by_day`.`the_year` is null))\n"
+            + "group by\n"
+            + "    `customer`.`country`,\n"
+            + "    `time_by_day`.`the_year`,\n"
+            + "    `time_by_day`.`quarter`\n"
+            + "order by\n"
+            + "    ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC,\n"
+            + "    ISNULL(`time_by_day`.`the_year`) ASC, `time_by_day`.`the_year` ASC,\n"
+            + "    ISNULL(`time_by_day`.`quarter`) ASC, `time_by_day`.`quarter` ASC";
 
-        String necjSqlMySql =
-            "select `customer`.`country` as `c0`, `time_by_day`.`the_year` as `c1`, "
-            + "`time_by_day`.`quarter` as `c2` from `customer` as `customer`, "
-            + "`sales_fact_1997` as `sales_fact_1997`, `time_by_day` as `time_by_day` "
-            + "where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
-            + "and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and "
-            + "(`customer`.`country` = 'USA') and "
-            + "(not ((`time_by_day`.`quarter`, `time_by_day`.`the_year`) in "
-            + "(('Q1', 1997), ('Q3', 1998))) or (`time_by_day`.`quarter` is null or "
-            + "`time_by_day`.`the_year` is null)) "
-            + "group by `customer`.`country`, `time_by_day`.`the_year`, "
-            + "`time_by_day`.`quarter` order by ISNULL(`customer`.`country`) ASC, "
-            + "`customer`.`country` ASC, ISNULL(`time_by_day`.`the_year`) ASC, "
-            + "`time_by_day`.`the_year` ASC, ISNULL(`time_by_day`.`quarter`) ASC, "
-            + "`time_by_day`.`quarter` ASC";
-
-        SqlPattern[] patterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
-            new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
-        };
-
-        assertQuerySql(getTestContext(), query, patterns);
+        assertQuerySql(getTestContext(), query, sql);
     }
 
     /**
@@ -416,7 +403,7 @@ public class FilterTest extends BatchTestCase {
      * the same parent.
      */
     public void testNotInMultiLevelMemberConstraintNonNullSameParent() {
-        if (MondrianProperties.instance().ReadAggregates.get()) {
+        if (propSaver.props.ReadAggregates.get()) {
             // If aggregate tables are enabled, generates similar SQL involving
             // agg tables.
             return;
@@ -434,41 +421,38 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*ORDERED_CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        String necjSqlMySql =
+        String sql =
             "select\n"
-            + "    `time_by_day`.`the_year` as `c0`,\n"
-            + "    `time_by_day`.`quarter` as `c1`\n"
-            + "    `customer`.`country` as `c2`\n"
+            + "    `customer`.`country` as `c0`,\n"
+            + "    `time_by_day`.`the_year` as `c1`,\n"
+            + "    `time_by_day`.`quarter` as `c2`\n"
             + "from\n"
-            + "    `time_by_day` as `time_by_day`,\n"
             + "    `sales_fact_1997` as `sales_fact_1997`,\n"
-            + "    `customer` as `customer`\n"
+            + "    `customer` as `customer`,\n"
+            + "    `time_by_day` as `time_by_day`\n"
             + "where\n"
-            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
-            + "and\n"
             + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
             + "and\n"
             + "    (`customer`.`country` = 'USA')\n"
             + "and\n"
-            + "    ((not (`time_by_day`.`quarter` in ('Q1', 'Q3')) or (`time_by_day`.`quarter` is null)) or (not (`time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` is null)))\n"
+            + "    ((not (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' or `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q3')\n"
+            + "        or (`time_by_day`.`the_year` is null))\n"
+            + "    or (not (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' or `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q3')\n"
+            + "        or (`time_by_day`.`quarter` is null))\n"
+            + "    or (not (`time_by_day`.`the_year` = 1997)\n"
+            + "        or (`time_by_day`.`the_year` is null)))\n"
             + "group by\n"
+            + "    `customer`.`country`,\n"
             + "    `time_by_day`.`the_year`,\n"
-            + "    `time_by_day`.`quarter`,\n"
-            + "    `customer`.`country`\n"
+            + "    `time_by_day`.`quarter`\n"
             + "order by\n"
-            + "    ISNULL(`customer`.`country`) ASC,\n"
-            + "    `customer`.`country` ASC,\n"
-            + "    ISNULL(`time_by_day`.`the_year`) ASC,\n"
-            + "    `time_by_day`.`the_year` ASC,\n"
-            + "     ISNULL(`time_by_day`.`quarter`) ASC,\n"
-            + "    `time_by_day`.`quarter` ASC";
+            + "    ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC,\n"
+            + "    ISNULL(`time_by_day`.`the_year`) ASC, `time_by_day`.`the_year` ASC,\n"
+            + "    ISNULL(`time_by_day`.`quarter`) ASC, `time_by_day`.`quarter` ASC";
 
-        SqlPattern[] patterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
-        };
-
-        assertQuerySql(getTestContext(), query, patterns);
+        assertQuerySql(getTestContext(), query, sql);
     }
 
     /**
@@ -479,8 +463,7 @@ public class FilterTest extends BatchTestCase {
         if (!isDefaultNullMemberRepresentation()) {
             return;
         }
-        if (MondrianProperties.instance().FilterChildlessSnowflakeMembers.get())
-        {
+        if (propSaver.props.FilterChildlessSnowflakeMembers.get()) {
             return;
         }
 
@@ -511,37 +494,7 @@ public class FilterTest extends BatchTestCase {
             + "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) "
             + "select [NECJ] on 0 from [Warehouse2]";
 
-        String necjSqlDerby =
-            "select \"warehouse\".\"warehouse_fax\", \"warehouse\".\"wa_address1\", "
-            + "\"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" "
-            + "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as "
-            + "\"inventory_fact_1997\", \"product\" as \"product\", \"product_class\" as "
-            + "\"product_class\" where \"inventory_fact_1997\".\"warehouse_id\" = "
-            + "\"warehouse\".\"warehouse_id\" and \"product\".\"product_class_id\" = "
-            + "\"product_class\".\"product_class_id\" and "
-            + "\"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" and "
-            + "(\"product_class\".\"product_family\" = 'Food') and "
-            + "(not ((\"warehouse\".\"wa_address1\" = '234 West Covina Pkwy' and "
-            + "\"warehouse\".\"warehouse_fax\" is null and "
-            + "\"warehouse\".\"warehouse_name\" = 'Freeman And Co') or "
-            + "(\"warehouse\".\"wa_address1\" = '3377 Coachman Place' and "
-            + "\"warehouse\".\"warehouse_fax\" = '971-555-6213' and "
-            + "\"warehouse\".\"warehouse_name\" = 'Jones International')) or "
-            + "((\"warehouse\".\"warehouse_name\" is null or "
-            + "\"warehouse\".\"wa_address1\" is null or \"warehouse\".\"warehouse_fax\" "
-            + "is null) and not((\"warehouse\".\"wa_address1\" = "
-            + "'234 West Covina Pkwy' and \"warehouse\".\"warehouse_fax\" is null "
-            + "and \"warehouse\".\"warehouse_name\" = 'Freeman And Co') or "
-            + "(\"warehouse\".\"wa_address1\" = '3377 Coachman Place' and "
-            + "\"warehouse\".\"warehouse_fax\" = '971-555-6213' and "
-            + "\"warehouse\".\"warehouse_name\" = 'Jones International')))) "
-            + "group by \"warehouse\".\"warehouse_fax\", \"warehouse\".\"wa_address1\", "
-            + "\"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" "
-            + "order by \"warehouse\".\"warehouse_fax\" ASC, "
-            + "\"warehouse\".\"wa_address1\" ASC, \"warehouse\".\"warehouse_name\" ASC, "
-            + "\"product_class\".\"product_family\" ASC";
-
-        String necjSqlMySql =
+        String sql =
             "select `warehouse`.`warehouse_fax` as `c0`, `warehouse`.`wa_address1` as `c1`, "
             + "`warehouse`.`warehouse_name` as `c2`, `product_class`.`product_family` as `c3` "
             + "from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997`, "
@@ -565,13 +518,6 @@ public class FilterTest extends BatchTestCase {
             + "ISNULL(`warehouse`.`warehouse_name`), `warehouse`.`warehouse_name` ASC, "
             + "ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
 
-        SqlPattern[] patterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
-            new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
-        };
-
         TestContext testContext =
             TestContext.instance().create(
                 dimension,
@@ -581,7 +527,7 @@ public class FilterTest extends BatchTestCase {
                 null,
                 null);
 
-        assertQuerySql(testContext, query, patterns);
+        assertQuerySql(testContext, query, sql);
     }
 
     /**
@@ -592,8 +538,7 @@ public class FilterTest extends BatchTestCase {
         if (!isDefaultNullMemberRepresentation()) {
             return;
         }
-        if (MondrianProperties.instance().FilterChildlessSnowflakeMembers.get())
-        {
+        if (propSaver.props.FilterChildlessSnowflakeMembers.get()) {
             return;
         }
 
@@ -623,28 +568,7 @@ public class FilterTest extends BatchTestCase {
             + "set [NECJ] as NonEmptyCrossJoin([Filtered Warehouse Set], {[Product].[Product Family].Food}) "
             + "select [NECJ] on 0 from [Warehouse2]";
 
-        String necjSqlDerby =
-            "select \"warehouse\".\"warehouse_fax\", \"warehouse\".\"wa_address1\", "
-            + "\"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" "
-            + "from \"warehouse\" as \"warehouse\", \"inventory_fact_1997\" as "
-            + "\"inventory_fact_1997\", \"product\" as \"product\", \"product_class\" "
-            + "as \"product_class\" where \"inventory_fact_1997\".\"warehouse_id\" = "
-            + "\"warehouse\".\"warehouse_id\" and \"product\".\"product_class_id\" = "
-            + "\"product_class\".\"product_class_id\" and "
-            + "\"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\" and "
-            + "(\"product_class\".\"product_family\" = 'Food') and ((not "
-            + "(\"warehouse\".\"warehouse_name\" = 'Freeman And Co') or "
-            + "(\"warehouse\".\"warehouse_name\" is null)) or (not "
-            + "(\"warehouse\".\"wa_address1\" = '234 West Covina Pkwy') or "
-            + "(\"warehouse\".\"wa_address1\" is null)) or not "
-            + "(\"warehouse\".\"warehouse_fax\" is null)) group by "
-            + "\"warehouse\".\"warehouse_fax\", \"warehouse\".\"wa_address1\", "
-            + "\"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" "
-            + "order by \"warehouse\".\"warehouse_fax\" ASC, "
-            + "\"warehouse\".\"wa_address1\" ASC, \"warehouse\".\"warehouse_name\" ASC, "
-            + "\"product_class\".\"product_family\" ASC";
-
-        String necjSqlMySql =
+        String sql =
             "select `warehouse`.`warehouse_fax` as `c0`, "
             + "`warehouse`.`wa_address1` as `c1`, `warehouse`.`warehouse_name` "
             + "as `c2`, `product_class`.`product_family` as `c3` from "
@@ -670,13 +594,6 @@ public class FilterTest extends BatchTestCase {
             + "ISNULL(`product_class`.`product_family`), "
             + "`product_class`.`product_family` ASC";
 
-        SqlPattern[] patterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
-            new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
-        };
-
         TestContext testContext =
             TestContext.instance().create(
                 dimension,
@@ -686,12 +603,12 @@ public class FilterTest extends BatchTestCase {
                 null,
                 null);
 
-        assertQuerySql(testContext, query, patterns);
+        assertQuerySql(testContext, query, sql);
     }
 
     public void testCachedNativeSetUsingFilters() throws Exception {
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -729,8 +646,8 @@ public class FilterTest extends BatchTestCase {
     }
 
     public void testNativeFilter() {
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -751,8 +668,8 @@ public class FilterTest extends BatchTestCase {
      * Executes a Filter() whose condition contains a calculated member.
      */
     public void testCmNativeFilter() {
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -821,8 +738,8 @@ public class FilterTest extends BatchTestCase {
         if (!Bug.CubeStoreFeature) {
             return;
         }
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, false);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, false);
         checkNotNative(
             getTestContext(),
             9,
@@ -870,8 +787,8 @@ public class FilterTest extends BatchTestCase {
             return;
         }
         // Currently this behaves differently from the non-native evaluation.
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -902,8 +819,8 @@ public class FilterTest extends BatchTestCase {
 
     public void testNonNativeFilterWithCalcMember() {
         // Currently this query cannot run natively
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, false);
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, false);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
         checkNotNative(
             getTestContext(),
             3,
@@ -935,8 +852,8 @@ public class FilterTest extends BatchTestCase {
         if (!Bug.CubeStoreFeature) {
             return;
         }
-        propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
-        propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
+        propSaver.set(propSaver.props.ExpandNonNative, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -966,30 +883,14 @@ public class FilterTest extends BatchTestCase {
         if (!Bug.CubeStoreFeature) {
             return;
         }
-        propSaver.set(
-            MondrianProperties.instance().UseAggregates,
-            false);
-        propSaver.set(
-            MondrianProperties.instance().ReadAggregates,
-            false);
-        propSaver.set(
-            MondrianProperties.instance().DisableCaching,
-            false);
-        propSaver.set(
-            MondrianProperties.instance().EnableNativeNonEmpty,
-            true);
-        propSaver.set(
-            MondrianProperties.instance().CompareSiblingsByOrderKey,
-            true);
-        propSaver.set(
-            MondrianProperties.instance().NullDenominatorProducesNull,
-            true);
-        propSaver.set(
-            MondrianProperties.instance().ExpandNonNative,
-            true);
-        propSaver.set(
-            MondrianProperties.instance().EnableNativeFilter,
-            true);
+        propSaver.set(propSaver.props.UseAggregates, false);
+        propSaver.set(propSaver.props.ReadAggregates, false);
+        propSaver.set(propSaver.props.DisableCaching, false);
+        propSaver.set(propSaver.props.EnableNativeNonEmpty, true);
+        propSaver.set(propSaver.props.CompareSiblingsByOrderKey, true);
+        propSaver.set(propSaver.props.NullDenominatorProducesNull, true);
+        propSaver.set(propSaver.props.ExpandNonNative, true);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
         // With bug MONDRIAN-706, would generate
         //
         // ((`store`.`store_name`, `store`.`store_city`, `store`.`store_state`)

@@ -5,10 +5,8 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
-//
-// jhyde, Feb 14, 2003
 */
 package mondrian.test.clearview;
 
@@ -125,9 +123,7 @@ public abstract class ClearViewBase extends BatchTestCase {
 
         // Set some properties to match the way we configure them
         // for ClearView.
-        propSaver.set(
-            MondrianProperties.instance().ExpandNonNative,
-            true);
+        propSaver.set(propSaver.props.ExpandNonNative, true);
 
         String mdx = diffRepos.expand(null, "${mdx}");
         String result = Util.nl + TestContext.toString(
@@ -144,7 +140,7 @@ public abstract class ClearViewBase extends BatchTestCase {
             return;
         }
 
-        super.assertQuerySqlOrNot(
+        assertQuerySqlOrNot(
             getTestContext(),
             diffRepos.expand(null, "${mdx}"),
             buildSqlPatternArray(),

@@ -5,12 +5,10 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
-
-import mondrian.olap.MondrianProperties;
 
 /**
  * Runs specified set of MDX queries concurrently.
@@ -22,9 +20,8 @@ import mondrian.olap.MondrianProperties;
  * @author Thiyagu,Ajit
  */
 public class ConcurrentMdxTest extends FoodMartTestCase {
-    private final MondrianProperties props = MondrianProperties.instance();
 
-    static final QueryAndResult[] mdxQueries = new QueryAndResult[]{
+    static final QueryAndResult[] mdxQueries = {
         new QueryAndResult(
             "select {[Measures].[Sales Count]} on 0 from [Sales] ",
             "Axis #0:\n"
@@ -1235,16 +1232,16 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
     };
 
     public void testConcurrentValidatingQueriesInRandomOrder() {
-        propSaver.set(props.DisableCaching, false);
-        propSaver.set(props.UseAggregates, false);
-        propSaver.set(props.ReadAggregates, false);
+        propSaver.set(propSaver.props.DisableCaching, false);
+        propSaver.set(propSaver.props.UseAggregates, false);
+        propSaver.set(propSaver.props.ReadAggregates, false);
 
         FoodMartTestCase.QueryAndResult[] singleQuery = {mdxQueries[0]};
         assertTrue(
             ConcurrentValidatingQueryRunner.runTest(
                 1, 1, false, true, singleQuery)
             .size() == 0);
-        //ensures same global aggregation is used by 2 or more threads and
+        // ensures same global aggregation is used by 2 or more threads and
         // all of them load the same segment.
         FoodMartTestCase.QueryAndResult[] singleQueryFor2Threads = {
             mdxQueries[1]

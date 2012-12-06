@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -37,7 +37,7 @@ public abstract class AggTableTestCase extends CsvDBTestCase {
         super.setUp();
 
         // turn off caching
-        propSaver.set(propSaver.properties.DisableCaching, true);
+        propSaver.set(propSaver.props.DisableCaching, true);
     }
 
     protected String getDirectoryName() {

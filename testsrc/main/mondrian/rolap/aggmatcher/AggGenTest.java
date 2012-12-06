@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -30,8 +30,6 @@ import javax.sql.DataSource;
  * @author Sherman Wood
  */
 public class AggGenTest extends FoodMartTestCase {
-    private final MondrianProperties props = MondrianProperties.instance();
-
     public AggGenTest(String name) {
         super(name);
     }
@@ -50,10 +48,10 @@ public class AggGenTest extends FoodMartTestCase {
         // test run
 
         // If run in Ant and with mondrian.jar, please comment out this line:
-        propSaver.set(props.AggregateRules, "DefaultRules.xml");
-        propSaver.set(props.UseAggregates, true);
-        propSaver.set(props.ReadAggregates, true);
-        propSaver.set(props.GenerateAggregateSql, true);
+        propSaver.set(propSaver.props.AggregateRules, "DefaultRules.xml");
+        propSaver.set(propSaver.props.UseAggregates, true);
+        propSaver.set(propSaver.props.ReadAggregates, true);
+        propSaver.set(propSaver.props.GenerateAggregateSql, true);
 
         final RolapConnection rolapConn = (RolapConnection) getConnection();
         Query query =

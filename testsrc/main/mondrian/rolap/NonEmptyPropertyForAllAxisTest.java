@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2006 Thomson Medstat, Inc, Ann Arbor, MI.
-// Copyright (C) 2006-2011 Pentaho and others
+// Copyright (C) 2006-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -20,8 +20,7 @@ import mondrian.test.TestContext;
  */
 public class NonEmptyPropertyForAllAxisTest extends FoodMartTestCase {
     public void testNonEmptyForAllAxesWithPropertySet() {
-        propSaver.set(
-            MondrianProperties.instance().EnableNonEmptyOnAllAxis, true);
+        propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, true);
         assertQueryReturns(
             "select {[Country].[USA].[OR].Children} on 0,"
             + " {[Promotions].Members} on 1 "
@@ -189,8 +188,7 @@ public class NonEmptyPropertyForAllAxisTest extends FoodMartTestCase {
     }
 
     public void testSlicerAxisDoesNotGetNonEmptyApplied() {
-        propSaver.set(
-            MondrianProperties.instance().EnableNonEmptyOnAllAxis, true);
+        propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, true);
         String mdxQuery = "select from [Sales]\n"
             + "where [Time].[Time].[1997]\n";
         Query query = getConnection().parseQuery(mdxQuery);

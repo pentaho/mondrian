@@ -173,9 +173,7 @@ public class TestCalculatedMembers extends BatchTestCase {
         // should succeed if we switch the property to ignore invalid
         // members; the create will succeed and in the select, it will
         // return null for the member and therefore a 0 in the calculation
-        propSaver.set(
-            MondrianProperties.instance().IgnoreInvalidMembers,
-            true);
+        propSaver.set(propSaver.props.IgnoreInvalidMembers, true);
         salesCube.createCalculatedMember(
             "<CalculatedMember name='Profit4'"
             + "  dimension='Measures'"
@@ -258,7 +256,7 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     public void testQueryCalcMemberOverridesShallowerStoredMember() {
-        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+        if (!propSaver.props.SsasCompatibleNaming.get()) {
             // functionality requires new name resolver
             return;
         }
@@ -293,7 +291,7 @@ public class TestCalculatedMembers extends BatchTestCase {
      * chosen, even if it is not the best match.
      */
     public void testEarlierCalcMember() {
-        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+        if (!propSaver.props.SsasCompatibleNaming.get()) {
             // functionality requires new name resolver
             return;
         }
@@ -314,10 +312,7 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     public void _testWhole() {
-        /*
-         * "allmembers" tests compatibility with MSAS
-         */
-
+        // "allmembers" tests compatibility with MSAS
         executeQuery(
             "with\n"
             + "member [Measures].[Total Store Sales by Product Name] as\n"
@@ -464,7 +459,7 @@ public class TestCalculatedMembers extends BatchTestCase {
         // Dimension can be converted, if unambiguous.
         assertExprReturns("[Customers]", "266,773");
 
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+        if (propSaver.props.SsasCompatibleNaming.get()) {
             // SSAS 2005 does not have default hierarchies.
             assertExprThrows(
                 "[Time]",
@@ -1316,7 +1311,7 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     public void testCalculatedMemberMSASCompatibility() {
-        propSaver.set(MondrianProperties.instance().CaseSensitive, false);
+        propSaver.set(propSaver.props.CaseSensitive, false);
         assertQueryReturns(
             "with "
             + "member gender.calculated as 'gender.m' "
@@ -1593,7 +1588,7 @@ public class TestCalculatedMembers extends BatchTestCase {
      * look like two evaluation contexts were expanding the same member.
      */
     public void testCycleFalsePositive() {
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+        if (propSaver.props.SsasCompatibleNaming.get()) {
             // This test uses old-style [dimension.hierarchy] names.
             return;
         }

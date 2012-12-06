@@ -1393,6 +1393,9 @@ public class LegacySchemaTest extends FoodMartTestCase {
      * caused by binary column value.
      */
     public void testBinaryLevelKey() {
+        if (!Bug.BugMondrian1330Fixed) {
+            return;
+        }
         switch (getTestContext().getDialect().getDatabaseProduct()) {
         case DERBY:
         case MYSQL:
@@ -1695,7 +1698,10 @@ public class LegacySchemaTest extends FoodMartTestCase {
      * "adding hours/mins as levelType for level of type Dimension"</a>.
      */
     public void testBugMondrian355() {
-//        checkBugMondrian355("TimeHalfYears");
+        if (!Bug.BugMondrian1329Fixed) {
+            return;
+        }
+        checkBugMondrian355("TimeHalfYears");
 
         // make sure that the deprecated name still works
         checkBugMondrian355("TimeHalfYear");
@@ -1761,9 +1767,10 @@ public class LegacySchemaTest extends FoodMartTestCase {
      * MONDRIAN-463, "Snowflake dimension with 3-way join."</a>.
      */
     public void testBugMondrian463() {
-        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
-            .get())
-        {
+        if (!Bug.BugMondrian1335Fixed) {
+            return;
+        }
+        if (!propSaver.props.FilterChildlessSnowflakeMembers.get()) {
             // Similar to aggregates. If we turn off filtering,
             // we get wild stuff because of referential integrity.
             return;
@@ -2866,6 +2873,199 @@ public class LegacySchemaTest extends FoodMartTestCase {
         }
     }
 
+    /**
+     * Tests two dimensions using same table (via different join paths).
+     * native non empty cross join sql generation returns empty query.
+     * note that this works when native cross join is disabled
+     */
+    public void testDimensionsShareTableNativeNonEmptyCrossJoin() {
+        final TestContext testContext = getTestContext().createSubstitutingCube(
+            "Sales",
+            "<Dimension name='Yearly Income2' foreignKey='product_id'>\n"
+            + "  <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
+            + "    <Table name='customer' alias='customerx' />\n"
+            + "    <Level name='Yearly Income' column='yearly_income' uniqueMembers='true'/>\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>");
+
+        testContext.assertQueryReturns(
+            "select NonEmptyCrossJoin({[Yearly Income2].[All Yearly Income2s]},{[Customers].[All Customers]}) on rows,"
+            + "NON EMPTY {[Measures].[Unit Sales]} on columns"
+            + " from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Yearly Income2].[Yearly Income2].[All Yearly Income2s], [Customers].[Customers].[All Customers]}\n"
+            + "Row #0: 266,773\n");
+    }
+
+    /**
+     * Tests two dimensions using same table (via different join paths).
+     * Without the table alias, generates SQL which is missing a join condition.
+     */
+    public void testDimensionsShareTable() {
+        final TestContext legacy = getTestContext().legacy();
+        final TestContext testContext = legacy.createSubstitutingCube(
+            "Sales",
+            "<Dimension name='Yearly Income2' foreignKey='product_id'>\n"
+            + "  <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
+            + "    <Table name='customer' alias='customerx' />\n"
+            + "    <Level name='Yearly Income' column='yearly_income' uniqueMembers='true'/>\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>");
+
+        testContext.assertQueryReturns(
+            "select {[Yearly Income].[$10K - $30K]} on columns,"
+            + "{[Yearly Income2].[$150K +]} on rows from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Yearly Income].[Yearly Income].[$10K - $30K]}\n"
+            + "Axis #2:\n"
+            + "{[Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "Row #0: 918\n");
+
+        testContext.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS,\n"
+            + "NON EMPTY Crossjoin({[Yearly Income].[All Yearly Incomes].Children},\n"
+            + "                     [Yearly Income2].[All Yearly Income2s].Children) ON ROWS\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Yearly Income].[Yearly Income].[$10K - $30K], [Yearly Income2].[Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$10K - $30K], [Yearly Income2].[Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$10K - $30K], [Yearly Income2].[Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$10K - $30K], [Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[Yearly Income].[$10K - $30K], [Yearly Income2].[Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$10K - $30K], [Yearly Income2].[Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$10K - $30K], [Yearly Income2].[Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$10K - $30K], [Yearly Income2].[Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$110K - $130K], [Yearly Income2].[Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$110K - $130K], [Yearly Income2].[Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$110K - $130K], [Yearly Income2].[Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$110K - $130K], [Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[Yearly Income].[$110K - $130K], [Yearly Income2].[Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$110K - $130K], [Yearly Income2].[Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$110K - $130K], [Yearly Income2].[Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$110K - $130K], [Yearly Income2].[Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$130K - $150K], [Yearly Income2].[Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$130K - $150K], [Yearly Income2].[Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$130K - $150K], [Yearly Income2].[Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$130K - $150K], [Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[Yearly Income].[$130K - $150K], [Yearly Income2].[Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$130K - $150K], [Yearly Income2].[Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$130K - $150K], [Yearly Income2].[Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$130K - $150K], [Yearly Income2].[Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$150K +], [Yearly Income2].[Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$150K +], [Yearly Income2].[Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$150K +], [Yearly Income2].[Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$150K +], [Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[Yearly Income].[$150K +], [Yearly Income2].[Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$150K +], [Yearly Income2].[Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$150K +], [Yearly Income2].[Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$150K +], [Yearly Income2].[Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$30K - $50K], [Yearly Income2].[Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$30K - $50K], [Yearly Income2].[Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$30K - $50K], [Yearly Income2].[Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$30K - $50K], [Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[Yearly Income].[$30K - $50K], [Yearly Income2].[Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$30K - $50K], [Yearly Income2].[Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$30K - $50K], [Yearly Income2].[Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$30K - $50K], [Yearly Income2].[Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$50K - $70K], [Yearly Income2].[Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$50K - $70K], [Yearly Income2].[Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$50K - $70K], [Yearly Income2].[Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$50K - $70K], [Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[Yearly Income].[$50K - $70K], [Yearly Income2].[Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$50K - $70K], [Yearly Income2].[Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$50K - $70K], [Yearly Income2].[Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$50K - $70K], [Yearly Income2].[Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$70K - $90K], [Yearly Income2].[Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$70K - $90K], [Yearly Income2].[Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$70K - $90K], [Yearly Income2].[Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$70K - $90K], [Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[Yearly Income].[$70K - $90K], [Yearly Income2].[Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$70K - $90K], [Yearly Income2].[Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$70K - $90K], [Yearly Income2].[Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$70K - $90K], [Yearly Income2].[Yearly Income2].[$90K - $110K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$90K - $110K], [Yearly Income2].[Yearly Income2].[$10K - $30K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$90K - $110K], [Yearly Income2].[Yearly Income2].[$110K - $130K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$90K - $110K], [Yearly Income2].[Yearly Income2].[$130K - $150K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$90K - $110K], [Yearly Income2].[Yearly Income2].[$150K +]}\n"
+            + "{[Yearly Income].[Yearly Income].[$90K - $110K], [Yearly Income2].[Yearly Income2].[$30K - $50K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$90K - $110K], [Yearly Income2].[Yearly Income2].[$50K - $70K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$90K - $110K], [Yearly Income2].[Yearly Income2].[$70K - $90K]}\n"
+            + "{[Yearly Income].[Yearly Income].[$90K - $110K], [Yearly Income2].[Yearly Income2].[$90K - $110K]}\n"
+            + "Row #0: 12,824\n"
+            + "Row #1: 2,822\n"
+            + "Row #2: 2,933\n"
+            + "Row #3: 918\n"
+            + "Row #4: 18,381\n"
+            + "Row #5: 10,436\n"
+            + "Row #6: 6,777\n"
+            + "Row #7: 2,859\n"
+            + "Row #8: 2,432\n"
+            + "Row #9: 532\n"
+            + "Row #10: 566\n"
+            + "Row #11: 177\n"
+            + "Row #12: 3,877\n"
+            + "Row #13: 2,131\n"
+            + "Row #14: 1,319\n"
+            + "Row #15: 527\n"
+            + "Row #16: 3,331\n"
+            + "Row #17: 643\n"
+            + "Row #18: 703\n"
+            + "Row #19: 187\n"
+            + "Row #20: 4,497\n"
+            + "Row #21: 2,629\n"
+            + "Row #22: 1,681\n"
+            + "Row #23: 721\n"
+            + "Row #24: 1,123\n"
+            + "Row #25: 224\n"
+            + "Row #26: 257\n"
+            + "Row #27: 109\n"
+            + "Row #28: 1,924\n"
+            + "Row #29: 1,026\n"
+            + "Row #30: 675\n"
+            + "Row #31: 291\n"
+            + "Row #32: 19,067\n"
+            + "Row #33: 4,078\n"
+            + "Row #34: 4,235\n"
+            + "Row #35: 1,569\n"
+            + "Row #36: 28,160\n"
+            + "Row #37: 15,368\n"
+            + "Row #38: 10,329\n"
+            + "Row #39: 4,504\n"
+            + "Row #40: 9,708\n"
+            + "Row #41: 2,353\n"
+            + "Row #42: 2,243\n"
+            + "Row #43: 748\n"
+            + "Row #44: 14,469\n"
+            + "Row #45: 7,966\n"
+            + "Row #46: 5,272\n"
+            + "Row #47: 2,208\n"
+            + "Row #48: 7,320\n"
+            + "Row #49: 1,630\n"
+            + "Row #50: 1,602\n"
+            + "Row #51: 541\n"
+            + "Row #52: 10,550\n"
+            + "Row #53: 5,843\n"
+            + "Row #54: 3,997\n"
+            + "Row #55: 1,562\n"
+            + "Row #56: 2,722\n"
+            + "Row #57: 597\n"
+            + "Row #58: 568\n"
+            + "Row #59: 193\n"
+            + "Row #60: 3,800\n"
+            + "Row #61: 2,192\n"
+            + "Row #62: 1,324\n"
+            + "Row #63: 523\n");
+    }
 }
 
 // End LegacySchemaTest.java

@@ -11,7 +11,6 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.CacheControl;
 import mondrian.olap.Cube;
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianServer;
 import mondrian.spi.SegmentCache;
 import mondrian.spi.SegmentHeader;
@@ -32,9 +31,7 @@ public class SegmentCacheTest extends BasicQueryTest {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        propSaver.set(
-            MondrianProperties.instance().DisableCaching,
-            true);
+        propSaver.set(propSaver.props.DisableCaching, true);
         this.mockCache = new MockSegmentCache();
         this.testWorker = new SegmentCacheWorker(mockCache, null);
         MondrianServer.forConnection(getTestContext().getConnection())

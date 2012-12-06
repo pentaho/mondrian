@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -37,8 +37,8 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
         }
 
         // get value without aggregates
-        propSaver.set(propSaver.properties.UseAggregates, false);
-        propSaver.set(propSaver.properties.ReadAggregates, false);
+        propSaver.set(propSaver.props.UseAggregates, false);
+        propSaver.set(propSaver.props.ReadAggregates, false);
 
         String mdx =
             "select {[Measures].[Total]} on columns from [Fact]";
@@ -53,8 +53,8 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
 
         // unless there is a way to flush the cache,
         // I'm skeptical about these results
-        propSaver.set(propSaver.properties.UseAggregates, true);
-        propSaver.set(propSaver.properties.ReadAggregates, false);
+        propSaver.set(propSaver.props.UseAggregates, true);
+        propSaver.set(propSaver.props.ReadAggregates, false);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();

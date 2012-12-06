@@ -299,8 +299,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
     public void testDistinctCountOnTuplesWithSomeNonJoiningDimensions() {
         propSaver.set(
-            MondrianProperties.instance()
-                .IgnoreMeasureForNonJoiningDimension, false);
+            propSaver.props.IgnoreMeasureForNonJoiningDimension, false);
         String mdx =
             "WITH MEMBER WAREHOUSE.X as 'Aggregate({WAREHOUSE.[STATE PROVINCE].MEMBERS}*"
             + "{[Gender].Members})'"
@@ -317,8 +316,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Row #0: \n";
         assertQueryReturns(mdx, expectedResult);
         propSaver.set(
-            MondrianProperties.instance()
-                .IgnoreMeasureForNonJoiningDimension, true);
+            propSaver.props.IgnoreMeasureForNonJoiningDimension, true);
         assertQueryReturns(mdx, expectedResult);
     }
 
@@ -430,7 +428,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testAggregationOverLargeListGeneratesError() {
-        propSaver.set(MondrianProperties.instance().MaxConstraints, 7);
+        propSaver.set(propSaver.props.MaxConstraints, 7);
 
         String result;
         final Dialect dialect = getTestContext().getDialect();
@@ -481,7 +479,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
      * @see #testAggregationOverLargeListGeneratesError
      */
     public void testAggregateMaxConstraints() {
-        propSaver.set(MondrianProperties.instance().MaxConstraints, 5);
+        propSaver.set(propSaver.props.MaxConstraints, 5);
         TestContext.instance().assertQueryReturns(
             "SELECT\n"
             + "  Measures.[Unit Sales] on columns,\n"
@@ -543,19 +541,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "select {[Measures].[Cost Count]} on columns, {[Warehouse2].[TwoMembers]} on rows "
             + "from [Warehouse2]";
 
-        String necjSqlDerby =
-            "select count(distinct \"inventory_fact_1997\".\"warehouse_cost\") as \"m0\" "
-            + "from \"warehouse\" as \"warehouse\", "
-            + "\"inventory_fact_1997\" as \"inventory_fact_1997\" "
-            + "where \"inventory_fact_1997\".\"warehouse_id\" = \"warehouse\".\"warehouse_id\" "
-            + "and ((\"warehouse\".\"warehouse_name\" = 'Arnold and Sons' "
-            + "and \"warehouse\".\"wa_address1\" = '5617 Saclan Terrace' "
-            + "and \"warehouse\".\"wa_address2\" is null) "
-            + "or (\"warehouse\".\"warehouse_name\" = 'Jones International' "
-            + "and \"warehouse\".\"wa_address1\" = '3377 Coachman Place' "
-            + "and \"warehouse\".\"wa_address2\" is null))";
-
-        String necjSqlMySql =
+        String sql =
             "select\n"
             + "    count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0`\n"
             + "from\n"
@@ -575,14 +561,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 null,
                 null);
 
-        SqlPattern[] patterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.DERBY, necjSqlDerby, necjSqlDerby),
-            new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL, necjSqlMySql, necjSqlMySql)
-        };
-
-        assertQuerySql(testContext, query, patterns);
+        assertQuerySql(testContext, query, sql);
     }
 
     public void testMultiLevelMembersMixedNullNonNullParent() {
@@ -743,7 +722,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testCanNotBatchForDifferentCompoundPredicate() {
-        propSaver.set(MondrianProperties.instance().EnableGroupingSets, true);
+        propSaver.set(propSaver.props.EnableGroupingSets, true);
         String mdxQueryWithFewMembers =
             "WITH "
             + "MEMBER [Store].[Store].[COG_OQP_USR_Aggregate(Store)] AS "
@@ -819,7 +798,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
      * with mixed measures.
      */
     public void testDistinctCountInNonGroupingSetsQuery() {
-        propSaver.set(MondrianProperties.instance().EnableGroupingSets, true);
+        propSaver.set(propSaver.props.EnableGroupingSets, true);
         String mdxQueryWithFewMembers =
             "WITH "
             + "MEMBER [Store].[Store].[COG_OQP_USR_Aggregate(Store)] AS "
@@ -894,7 +873,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testAggregationOfMembersAndDefaultMemberWithoutGroupingSets() {
-        propSaver.set(MondrianProperties.instance().EnableGroupingSets, false);
+        propSaver.set(propSaver.props.EnableGroupingSets, false);
         String mdxQueryWithMembers =
             "WITH "
             + "MEMBER [Gender].[COG_OQP_USR_Aggregate(Gender)] AS "
@@ -1063,8 +1042,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "group by\n"
             + "    `time_by_day`.`the_year`";
 
-        assertQuerySql(
-            getTestContext(), query, Dialect.DatabaseProduct.MYSQL, mysqlSql);
+        assertQuerySql(getTestContext(), query, mysqlSql);
     }
 
     public void testOptimizeListWithTuplesOfLength3() {
@@ -1295,7 +1273,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testAggregatesAtTheSameLevelForNormalAndDistinctCountMeasure() {
-        propSaver.set(MondrianProperties.instance().EnableGroupingSets, true);
+        propSaver.set(propSaver.props.EnableGroupingSets, true);
         assertQueryReturns(
             "WITH "
             + "MEMBER GENDER.AGG AS 'AGGREGATE({ GENDER.[F] })' "
@@ -1319,7 +1297,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testDistinctCountForAggregatesAtTheSameLevel() {
-        propSaver.set(MondrianProperties.instance().EnableGroupingSets, true);
+        propSaver.set(propSaver.props.EnableGroupingSets, true);
         assertQueryReturns(
             "WITH "
             + "MEMBER GENDER.AGG AS 'AGGREGATE({ GENDER.[F], GENDER.[M] })' "

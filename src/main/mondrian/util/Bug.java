@@ -378,6 +378,14 @@ public class Bug {
     public static final boolean BugMondrian1333Fixed = false;
 
     /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1335">bug MONDRIAN-1335,
+     * 3-way snowflake yielding incorrect results
+     * </a> is fixed.
+     */
+    public static final boolean BugMondrian1335Fixed = false;
+
+    /**    
      * Mondrian isn't optimizing member fetching according to query constraints.
      */
     public static final boolean FetchMembersOptimizationFixed = Enable;

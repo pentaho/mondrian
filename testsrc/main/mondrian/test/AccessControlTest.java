@@ -1691,11 +1691,11 @@ public class AccessControlTest extends FoodMartTestCase {
      * UnsupportedOperationException"</a>.
      */
     public void testBugMondrian436() {
-        propSaver.set(propSaver.properties.EnableNativeCrossJoin, true);
-        propSaver.set(propSaver.properties.EnableNativeFilter, true);
-        propSaver.set(propSaver.properties.EnableNativeNonEmpty, true);
-        propSaver.set(propSaver.properties.EnableNativeTopCount, true);
-        propSaver.set(propSaver.properties.ExpandNonNative, true);
+        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        propSaver.set(propSaver.props.EnableNativeNonEmpty, true);
+        propSaver.set(propSaver.props.EnableNativeTopCount, true);
+        propSaver.set(propSaver.props.ExpandNonNative, true);
 
         // Run with native enabled, then with whatever properties are set for
         // this test run.
@@ -2044,9 +2044,7 @@ public class AccessControlTest extends FoodMartTestCase {
      * members"</a>.
      */
     public void testBugMondrian722() {
-        propSaver.set(
-            MondrianProperties.instance().IgnoreInvalidMembers,
-            true);
+        propSaver.set(MondrianProperties.instance().IgnoreInvalidMembers, true);
         TestContext.instance().create(
             null, null, null, null, null,
             "<Role name=\"CTO\">\n"

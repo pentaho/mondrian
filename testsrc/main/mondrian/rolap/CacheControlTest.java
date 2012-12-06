@@ -399,7 +399,7 @@ public class CacheControlTest extends FoodMartTestCase {
             + "Row #2: 16,284\n"
             + "Row #2: 27,038\n"
             + "Row #2: 4,294\n");
-        if (MondrianProperties.instance().DisableCaching.get()) {
+        if (propSaver.props.DisableCaching.get()) {
             return;
         }
 
@@ -409,12 +409,8 @@ public class CacheControlTest extends FoodMartTestCase {
         // Make sure MaxConstraint is high enough
         int minConstraints = 3;
 
-        if (MondrianProperties.instance().MaxConstraints.get()
-            < minConstraints)
-        {
-            propSaver.set(
-                MondrianProperties.instance().MaxConstraints,
-                minConstraints);
+        if (propSaver.props.MaxConstraints.get() < minConstraints) {
+            propSaver.set(propSaver.props.MaxConstraints, minConstraints);
         }
 
         // Execute a query, to bring data into the cache.
@@ -447,7 +443,7 @@ public class CacheControlTest extends FoodMartTestCase {
      * Creates a partial cell region, runs a query, then flushes the cache.
      */
     public void testPartialFlush() {
-        if (MondrianProperties.instance().DisableCaching.get()) {
+        if (propSaver.props.DisableCaching.get()) {
             return;
         }
 
@@ -514,7 +510,7 @@ public class CacheControlTest extends FoodMartTestCase {
      * header column values to those of the cache region.
      */
     public void testPartialFlush_2() throws Exception {
-        if (MondrianProperties.instance().DisableCaching.get()) {
+        if (propSaver.props.DisableCaching.get()) {
             return;
         }
 
@@ -550,7 +546,7 @@ public class CacheControlTest extends FoodMartTestCase {
      * the cache.
      */
     public void testPartialFlushRange() {
-        if (MondrianProperties.instance().DisableCaching.get()) {
+        if (propSaver.props.DisableCaching.get()) {
             return;
         }
 

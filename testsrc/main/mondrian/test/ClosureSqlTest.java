@@ -10,7 +10,6 @@
 package mondrian.test;
 
 import mondrian.rolap.BatchTestCase;
-import mondrian.spi.Dialect;
 
 public class ClosureSqlTest extends BatchTestCase {
     /**
@@ -36,8 +35,7 @@ public class ClosureSqlTest extends BatchTestCase {
             + "group by\n"
             + "    `employee_closure`.`employee_id`,\n"
             + "    `employee`.`full_name`";
-        assertQuerySql(
-            getTestContext(), mdx, Dialect.DatabaseProduct.MYSQL, mySql);
+        assertQuerySql(getTestContext(), mdx, mySql);
     }
 
 }

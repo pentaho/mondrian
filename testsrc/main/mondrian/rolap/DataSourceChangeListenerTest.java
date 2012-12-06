@@ -43,8 +43,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
      * to read the hierarchy and aggregates again.
      */
     public void testDataSourceChangeListenerPlugin() {
-        final MondrianProperties properties = MondrianProperties.instance();
-        if (properties.TestExpDependencies.get() > 0) {
+        if (propSaver.props.TestExpDependencies.get() > 0) {
             // Dependency testing produces side-effects in the cache.
             return;
         }
@@ -62,7 +61,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         cacheControl.flush(measuresRegion);
 
         // turn on caching
-        propSaver.set(properties.DisableCaching, false);
+        propSaver.set(propSaver.props.DisableCaching, false);
 
         cacheControl.flushSchemaCache();
 
