@@ -4349,26 +4349,33 @@ public class NonEmptyTest extends BatchTestCase {
         final String mysqlQuery =
             "select\n"
             + "    `customer`.`country` as `c0`,\n"
-            + "    `customer`.`state_province` as `c1`\n"
+            + "    `customer`.`state_province` as `c1`,\n"
+            + "    `customer`.`city` as `c2`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c3`,\n"
+            + "    `customer`.`customer_id` as `c4`,\n"
+            + "    `customer`.`gender` as `c5`,\n"
+            + "    `customer`.`marital_status` as `c6`,\n"
+            + "    `customer`.`education` as `c7`,\n"
+            + "    `customer`.`yearly_income` as `c8`\n"
             + "from\n"
-            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
-            + "    `time_by_day` as `time_by_day`,\n"
-            + "    `promotion` as `promotion`,\n"
-            + "    `customer` as `customer`\n"
+            + "    `customer` as `customer`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`\n"
             + "where\n"
-            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
-            + "and\n"
-            + "    `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`\n"
-            + "and\n"
             + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
             + "and\n"
             + "    (`customer`.`gender` = 'F' or `customer`.`gender` = 'M')\n"
             + "group by\n"
-            + "    `time_by_day`.`the_year`,\n"
-            + "    `promotion`.`promotion_name`\n"
+            + "    `customer`.`country`,\n"
+            + "    `customer`.`state_province`,\n"
+            + "    `customer`.`city`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`),\n"
+            + "    `customer`.`customer_id`\n"
             + "order by\n"
-            + "    ISNULL(`time_by_day`.`the_year`) ASC, `time_by_day`.`the_year` ASC,\n"
-            + "    ISNULL(`promotion`.`promotion_name`) ASC, `promotion`.`promotion_name` ASC";
+            + "    ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC,\n"
+            + "    ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC,\n"
+            + "    ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC,\n"
+            + "    ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC,\n"
+            + "    ISNULL(`customer`.`customer_id`) ASC, `customer`.`customer_id` ASC";
 
         assertQuerySql(
             getTestContext().legacy(),
@@ -4393,7 +4400,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "from Sales";
 
         final String mysqlQuery =
-            MondrianProperties.instance().UseAggregates.get()
+            propSaver.props.UseAggregates.get()
             ? "select\n"
             + "    `customer`.`country` as `c0`,\n"
             + "    `customer`.`state_province` as `c1`,\n"
@@ -4467,7 +4474,7 @@ public class NonEmptyTest extends BatchTestCase {
         if (!Bug.FetchMembersOptimizationFixed) {
             return;
         }
-
+        if (propSaver.props.UseAggregates.get()) {
             // This test can't work with aggregates becaused
             // the aggregate table doesn't include member properties.
             return;

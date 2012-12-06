@@ -1291,8 +1291,7 @@ public class VirtualCubeTest extends BatchTestCase {
             + "order by 1 ASC, 2 ASC, 3 ASC, 4 ASC";
 
         SqlPattern[] mysqlPattern = {
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSQL, mysqlSQL),
-            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySQL, derbySQL)
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSQL, mysqlSQL)
         };
 
         String result =
@@ -1338,7 +1337,7 @@ public class VirtualCubeTest extends BatchTestCase {
             + "Row #10: 38,709.15\n"
             + "Row #11: 9,705.561\n"
             + "Row #11: 41,484.40\n";
-        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+        propSaver.set(propSaver.props.GenerateFormattedSql, true);
         assertQuerySql(getTestContext(), query, mysqlPattern, true);
         assertQueryReturns(query, result);
     }
