@@ -1121,6 +1121,21 @@ Revision is $Id$
                     return formula;
                 }
             }
+            /**
+              * Returns the format string, looking for a property called
+              * "FORMAT_STRING" first, then looking for an attribute called
+              * "formatString".
+              */
+            public String getFormatString() {
+                for (CalculatedMemberProperty prop : memberProperties) {
+                    if (prop.name.equals(
+                        mondrian.olap.Property.FORMAT_STRING.name))
+                    {
+                        return prop.value;
+                    }
+                }
+                return formatString;
+            }
         </Code>
     </Element>
 

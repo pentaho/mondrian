@@ -1192,6 +1192,7 @@
                                 <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                                 <LEVELS_LIST>[Time].[Month],[Store].[Store Name],[Pay Type].[Pay Type],[Store Type].[Store Type],[Position].[Position Title],[Department].[Department Description],[Employees].[Employee Id]</LEVELS_LIST>
                                 <DESCRIPTION>HR Cube - Org Salary Member</DESCRIPTION>
+                                <DEFAULT_FORMAT_STRING>Currency</DEFAULT_FORMAT_STRING>
                             </row>
                             <row>
                                 <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1205,6 +1206,7 @@
                                 <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                                 <LEVELS_LIST>[Time].[Month],[Store].[Store Name],[Pay Type].[Pay Type],[Store Type].[Store Type],[Position].[Position Title],[Department].[Department Description],[Employees].[Employee Id]</LEVELS_LIST>
                                 <DESCRIPTION>HR Cube - Count Member</DESCRIPTION>
+                                <DEFAULT_FORMAT_STRING>#,#</DEFAULT_FORMAT_STRING>
                             </row>
                             <row>
                                 <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1218,6 +1220,7 @@
                                 <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                                 <LEVELS_LIST>[Time].[Month],[Store].[Store Name],[Pay Type].[Pay Type],[Store Type].[Store Type],[Position].[Position Title],[Department].[Department Description],[Employees].[Employee Id]</LEVELS_LIST>
                                 <DESCRIPTION>HR Cube - Number of Employees Member</DESCRIPTION>
+                                <DEFAULT_FORMAT_STRING>#,#</DEFAULT_FORMAT_STRING>
                             </row>
                             <row>
                                 <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1230,6 +1233,7 @@
                                 <DATA_TYPE>130</DATA_TYPE>
                                 <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                                 <DESCRIPTION>HR Cube - Employee Salary Member</DESCRIPTION>
+                                <DEFAULT_FORMAT_STRING>Currency</DEFAULT_FORMAT_STRING>
                             </row>
                             <row>
                                 <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1242,6 +1246,7 @@
                                 <DATA_TYPE>130</DATA_TYPE>
                                 <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                                 <DESCRIPTION>HR Cube - Avg Salary Member</DESCRIPTION>
+                                <DEFAULT_FORMAT_STRING>Currency</DEFAULT_FORMAT_STRING>
                             </row>
                         </MEASURES>
                     </row>
@@ -2012,7 +2017,8 @@
               "DATA_TYPE": 5,
               "MEASURE_IS_VISIBLE": true,
               "LEVELS_LIST": "[Time].[Month],[Store].[Store Name],[Pay Type].[Pay Type],[Store Type].[Store Type],[Position].[Position Title],[Department].[Department Description],[Employees].[Employee Id]",
-              "DESCRIPTION": "HR Cube - Org Salary Member"
+              "DESCRIPTION": "HR Cube - Org Salary Member",
+              "DEFAULT_FORMAT_STRING": "Currency"
             },
             {
               "CATALOG_NAME": "FoodMart",
@@ -2025,7 +2031,8 @@
               "DATA_TYPE": 3,
               "MEASURE_IS_VISIBLE": true,
               "LEVELS_LIST": "[Time].[Month],[Store].[Store Name],[Pay Type].[Pay Type],[Store Type].[Store Type],[Position].[Position Title],[Department].[Department Description],[Employees].[Employee Id]",
-              "DESCRIPTION": "HR Cube - Count Member"
+              "DESCRIPTION": "HR Cube - Count Member",
+              "DEFAULT_FORMAT_STRING": "#,#"
             },
             {
               "CATALOG_NAME": "FoodMart",
@@ -2038,7 +2045,8 @@
               "DATA_TYPE": 3,
               "MEASURE_IS_VISIBLE": true,
               "LEVELS_LIST": "[Time].[Month],[Store].[Store Name],[Pay Type].[Pay Type],[Store Type].[Store Type],[Position].[Position Title],[Department].[Department Description],[Employees].[Employee Id]",
-              "DESCRIPTION": "HR Cube - Number of Employees Member"
+              "DESCRIPTION": "HR Cube - Number of Employees Member",
+              "DEFAULT_FORMAT_STRING": "#,#"
             },
             {
               "CATALOG_NAME": "FoodMart",
@@ -2050,7 +2058,8 @@
               "MEASURE_AGGREGATOR": 127,
               "DATA_TYPE": 130,
               "MEASURE_IS_VISIBLE": true,
-              "DESCRIPTION": "HR Cube - Employee Salary Member"
+              "DESCRIPTION": "HR Cube - Employee Salary Member",
+              "DEFAULT_FORMAT_STRING": "Currency"
             },
             {
               "CATALOG_NAME": "FoodMart",
@@ -2062,7 +2071,8 @@
               "MEASURE_AGGREGATOR": 127,
               "DATA_TYPE": 130,
               "MEASURE_IS_VISIBLE": true,
-              "DESCRIPTION": "HR Cube - Avg Salary Member"
+              "DESCRIPTION": "HR Cube - Avg Salary Member",
+              "DEFAULT_FORMAT_STRING": "Currency"
             }
           ]
         }
@@ -10132,6 +10142,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Customer Count Member</DESCRIPTION>
+                        <DEFAULT_FORMAT_STRING>#,###</DEFAULT_FORMAT_STRING>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -10144,6 +10155,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <DATA_TYPE>130</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <DESCRIPTION>Sales Cube - Profit Member</DESCRIPTION>
+                        <DEFAULT_FORMAT_STRING>$#,##0.00</DEFAULT_FORMAT_STRING>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -10156,6 +10168,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <DATA_TYPE>130</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <DESCRIPTION>Sales Cube - Profit Growth Member</DESCRIPTION>
+                        <DEFAULT_FORMAT_STRING>0.0%</DEFAULT_FORMAT_STRING>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -10168,6 +10181,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <DATA_TYPE>130</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>false</MEASURE_IS_VISIBLE>
                         <DESCRIPTION>Sales Cube - Profit last Period Member</DESCRIPTION>
+                        <DEFAULT_FORMAT_STRING>$#,##0.00</DEFAULT_FORMAT_STRING>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -10181,6 +10195,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Promotion Sales Member</DESCRIPTION>
+                        <DEFAULT_FORMAT_STRING>#,###.00</DEFAULT_FORMAT_STRING>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -10194,6 +10209,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Sales Count Member</DESCRIPTION>
+                        <DEFAULT_FORMAT_STRING>#,###</DEFAULT_FORMAT_STRING>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -10207,6 +10223,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Store Cost Member</DESCRIPTION>
+                        <DEFAULT_FORMAT_STRING>#,###.00</DEFAULT_FORMAT_STRING>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -10220,6 +10237,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Store Sales Member</DESCRIPTION>
+                        <DEFAULT_FORMAT_STRING>#,###.00</DEFAULT_FORMAT_STRING>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -10233,6 +10251,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Unit Sales Member</DESCRIPTION>
+                        <DEFAULT_FORMAT_STRING>Standard</DEFAULT_FORMAT_STRING>
                     </row>
                 </root>
             </cxmla:return>

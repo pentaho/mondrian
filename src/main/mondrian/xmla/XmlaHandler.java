@@ -3067,6 +3067,28 @@ public class XmlaHandler {
         Map<String, Object> getAnnotationMap(MetadataElement element)
             throws SQLException;
 
+        /**
+         * Returns a boolean indicating if the specified
+         * cell can be drilled on.
+         */
+        boolean canDrillThrough(Cell cell);
+
+        /**
+         * Makes the connection send a command to the server
+         * to flush all caches.
+         */
+        void flushSchemaCache(OlapConnection conn) throws OlapException;
+
+        /**
+         * Returns the key for a given member.
+         */
+        Object getMemberKey(Member m) throws OlapException;
+
+        /**
+         * Returns the ordering key for a given member.
+         */
+        Object getOrderKey(Member m) throws OlapException;
+
         class FunctionDefinition {
             public final String functionName;
             public final String description;
@@ -3205,6 +3227,24 @@ public class XmlaHandler {
 
         public Map<String, Object> getAnnotationMap(MetadataElement element) {
             return Collections.emptyMap();
+        }
+
+        public boolean canDrillThrough(Cell cell) {
+            return false;
+        }
+
+        public void flushSchemaCache(OlapConnection conn) {
+            // no op.
+        }
+
+        public Object getMemberKey(Member m) throws OlapException {
+            return
+                m.getPropertyValue(
+                    Property.StandardMemberProperty.MEMBER_KEY);
+        }
+
+        public Object getOrderKey(Member m) throws OlapException {
+            return m.getOrdinal();
         }
     }
 

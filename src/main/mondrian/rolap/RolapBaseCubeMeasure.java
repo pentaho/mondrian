@@ -98,6 +98,10 @@ public class RolapBaseCubeMeasure
         }
         if (formatString == null) {
             formatString = "";
+        } else {
+            setProperty(
+                Property.FORMAT_STRING.name,
+                formatString);
         }
         setProperty(
             Property.FORMAT_EXP_PARSED.name,

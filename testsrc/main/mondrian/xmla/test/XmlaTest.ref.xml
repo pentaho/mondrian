@@ -1903,6 +1903,7 @@
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <DESCRIPTION>Sales Cube - Customer Count Member</DESCRIPTION>
+        <DEFAULT_FORMAT_STRING>#,###</DEFAULT_FORMAT_STRING>
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1915,6 +1916,7 @@
         <DATA_TYPE>130</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
         <DESCRIPTION>Sales Cube - Profit Member</DESCRIPTION>
+        <DEFAULT_FORMAT_STRING>$#,##0.00</DEFAULT_FORMAT_STRING>
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1927,6 +1929,7 @@
         <DATA_TYPE>130</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
         <DESCRIPTION>Sales Cube - Profit Growth Member</DESCRIPTION>
+        <DEFAULT_FORMAT_STRING>0.0%</DEFAULT_FORMAT_STRING>
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1940,6 +1943,7 @@
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <DESCRIPTION>Sales Cube - Promotion Sales Member</DESCRIPTION>
+        <DEFAULT_FORMAT_STRING>#,###.00</DEFAULT_FORMAT_STRING>
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1953,6 +1957,7 @@
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <DESCRIPTION>Sales Cube - Sales Count Member</DESCRIPTION>
+        <DEFAULT_FORMAT_STRING>#,###</DEFAULT_FORMAT_STRING>
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1966,6 +1971,7 @@
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <DESCRIPTION>Sales Cube - Store Cost Member</DESCRIPTION>
+        <DEFAULT_FORMAT_STRING>#,###.00</DEFAULT_FORMAT_STRING>
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1979,6 +1985,7 @@
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <DESCRIPTION>Sales Cube - Store Sales Member</DESCRIPTION>
+        <DEFAULT_FORMAT_STRING>#,###.00</DEFAULT_FORMAT_STRING>
       </row>
       <row>
         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1992,6 +1999,7 @@
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <DESCRIPTION>Sales Cube - Unit Sales Member</DESCRIPTION>
+        <DEFAULT_FORMAT_STRING>Standard</DEFAULT_FORMAT_STRING>
       </row>
     </root>
   </xmla:return>

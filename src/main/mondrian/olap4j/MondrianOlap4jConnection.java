@@ -855,6 +855,9 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
             if (cause instanceof MondrianEvaluationException) {
                 return "EvaluationException";
             }
+            if (cause instanceof QueryCanceledException) {
+                return "QueryCanceledException";
+            }
             return null;
         }
 

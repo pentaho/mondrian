@@ -17,6 +17,7 @@ import mondrian.xmla.RowsetDefinition;
 import mondrian.xmla.XmlaHandler;
 
 import org.olap4j.*;
+import org.olap4j.Cell;
 import org.olap4j.metadata.*;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Hierarchy;
@@ -300,6 +301,37 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
             }
         }
         return Collections.emptyMap();
+    }
+
+    public boolean canDrillThrough(Cell cell) {
+        return ((RolapCell)cell).canDrillThrough();
+    }
+
+    public void flushSchemaCache(OlapConnection conn) throws OlapException {
+        try {
+            conn.unwrap(Connection.class)
+                .getCacheControl(null).flushSchemaCache();
+        } catch (SQLException e) {
+            throw new OlapException(e);
+        }
+    }
+
+    public Object getMemberKey(Member m) throws OlapException {
+        try {
+            return ((MondrianOlap4jMember)m)
+                .unwrap(RolapMemberBase.class).getKey();
+        } catch (SQLException e) {
+            throw new OlapException(e);
+        }
+    }
+
+    public Object getOrderKey(Member m) throws OlapException {
+        try {
+            return ((MondrianOlap4jMember)m)
+                .unwrap(RolapMemberBase.class).getOrderKey();
+        } catch (SQLException e) {
+            throw new OlapException(e);
+        }
     }
 }
 

@@ -1014,6 +1014,13 @@ public class RolapCube extends CubeBase {
                 Property.DESCRIPTION.name, xmlCalcMember.description);
         }
 
+        if (xmlCalcMember.getFormatString() != null
+            && xmlCalcMember.getFormatString().length() > 0)
+        {
+            member.setProperty(
+                Property.FORMAT_STRING.name, xmlCalcMember.getFormatString());
+        }
+
         final RolapMember member1 = RolapUtil.strip(member);
         ((RolapCalculatedMember) member1).setAnnotationMap(
             RolapHierarchy.createAnnotationMap(xmlCalcMember.annotations));
