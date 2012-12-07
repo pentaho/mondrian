@@ -199,7 +199,7 @@ public class RolapSchemaUpgrader {
                     fact,
                     xmlFact,
                     xmlLegacyDimension,
-                    schema,
+                    xmlLegacyDimension.visible,
                     xmlLegacySchema,
                     levelList));
         }
@@ -594,7 +594,7 @@ public class RolapSchemaUpgrader {
         RolapSchema.PhysRelation fact,
         Mondrian3Def.RelationOrJoin xmlFact,
         Mondrian3Def.CubeDimension xmlLegacyCubeDimension,
-        RolapSchema schema,
+        Boolean visible,
         Mondrian3Def.Schema xmlLegacySchema,
         List<LevelInfo> levelList)
     {
@@ -723,6 +723,10 @@ public class RolapSchemaUpgrader {
                 xmlFact,
                 xmlLegacyDimension,
                 dimensionName,
+                visible,
+                first(
+                    xmlLegacyCubeDimension.description,
+                    xmlLegacyDimension.description),
                 levelList);
         convertAnnotations(
             xmlDimension.children,
@@ -2150,7 +2154,6 @@ public class RolapSchemaUpgrader {
         {
             xmlSchema.children.add(
                 convertSharedDimension(
-                    xmlLegacySchema,
                     xmlLegacyDimension,
                     levelList));
         }
@@ -2292,7 +2295,7 @@ public class RolapSchemaUpgrader {
                         cubeInfo.fact,
                         cubeInfo.xmlFact,
                         xmlLegacyCubeDimension,
-                        schema,
+                        xmlVirtualCubeDimension.visible,
                         xmlLegacySchema,
                         levelList);
                 cubeInfo.dimensionKeys.put(
@@ -2515,7 +2518,6 @@ public class RolapSchemaUpgrader {
     }
 
     private MondrianDef.Dimension convertSharedDimension(
-        Mondrian3Def.Schema xmlLegacySchema,
         Mondrian3Def.Dimension xmlLegacyDimension,
         List<LevelInfo> levelList)
     {
@@ -2525,6 +2527,8 @@ public class RolapSchemaUpgrader {
             null,
             xmlLegacyDimension,
             xmlLegacyDimension.name,
+            xmlLegacyDimension.visible,
+            xmlLegacyDimension.description,
             levelList);
     }
 
@@ -2637,6 +2641,8 @@ public class RolapSchemaUpgrader {
      * </pre>
      *
      *
+     *
+     *
      * @param links List of fact tables to link dimension to, or null if the
      *              dimension is shared and should not be linked to anything
      * @param xmlDimensionMap Holds names of dimensions already created
@@ -2645,6 +2651,8 @@ public class RolapSchemaUpgrader {
      * @param dimensionName Dimension name; equals xmlLegacyDimension.name
      *                      unless dimension is a DimensionUsage that has been
      *                      re-aliased
+     * @param visible whether the new dimension should be visible
+     * @param description the description
      * @return converted dimension
      */
     public MondrianDef.Dimension convertDimension(
@@ -2653,17 +2661,20 @@ public class RolapSchemaUpgrader {
         Mondrian3Def.RelationOrJoin xmlLegacyFact,
         Mondrian3Def.Dimension xmlLegacyDimension,
         String dimensionName,
+        Boolean visible,
+        String description,
         List<LevelInfo> levelList)
     {
         assert dimensionName != null;
         final MondrianDef.Dimension xmlDimension =
             new MondrianDef.Dimension();
         xmlDimension.name = dimensionName;
-        xmlDimension.visible = xmlLegacyDimension.visible;
+        xmlDimension.visible = visible;
         final List<MondrianDef.Hierarchy> hierarchyList =
             xmlDimension.children.holder(
                 new MondrianDef.Hierarchies()).list();
         xmlDimension.caption = xmlLegacyDimension.caption;
+        xmlDimension.description = description;
         Util.discard(xmlLegacyDimension.highCardinality);
         xmlDimension.type =
             xmlLegacyDimension.type == null
@@ -3069,6 +3080,8 @@ public class RolapSchemaUpgrader {
         xmlLevel.visible = xmlLegacyLevel.visible;
         xmlAttribute.table = relation == null ? null : relation.getAlias();
         xmlLevel.hideMemberIf = xmlLegacyLevel.hideMemberIf;
+        xmlLevel.description = xmlLegacyLevel.description;
+        xmlLevel.caption = xmlLegacyLevel.caption;
 
         convertAnnotations(
             xmlLevel.children,
