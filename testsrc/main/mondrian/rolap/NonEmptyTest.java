@@ -2276,12 +2276,12 @@ public class NonEmptyTest extends BatchTestCase {
 
         // there currently isn't a cube member to children cache, only
         // a shared cache so use the shared smart member reader
-        SmartMemberReader smr = getSmartMemberReader("Store");
+        SmartMemberReader smr = getSmartMemberReader("Stores");
         MemberCacheHelper smrch = smr.cacheHelper;
         MemberCacheHelper rcsmrch =
             ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader) smr)
             .getRolapCubeMemberCacheHelper();
-        SmartMemberReader ssmr = getSharedSmartMemberReader("Store");
+        SmartMemberReader ssmr = getSharedSmartMemberReader("Stores");
         MemberCacheHelper ssmrch = ssmr.cacheHelper;
         clearAndHardenCache(smrch);
         clearAndHardenCache(rcsmrch);
