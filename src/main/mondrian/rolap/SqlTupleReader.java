@@ -263,6 +263,7 @@ public class SqlTupleReader implements TupleReader {
                     }
 
                     final RolapMember prevMember = members.get(i);
+                    //TODO: is this block ever entered?
                     if (member != prevMember && prevMember != null) {
                         // Flush list we've been building.
                         List<RolapMember> children = siblings.get(i + 1);

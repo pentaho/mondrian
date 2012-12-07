@@ -112,52 +112,48 @@ public class SqlConstraintUtils {
         RolapStar.Column[] columns,
         Object[] values)
     {
-      // following code is similar to
-      // AbstractQuerySpec#nonDistinctGenerateSQL()
-      final StringBuilder buf = new StringBuilder();
-      for (int i = 0; i < columns.length; i++) {
-          RolapStar.Column column = columns[i];
+        // following code is similar to
+        // AbstractQuerySpec#nonDistinctGenerateSQL()
+        final StringBuilder buf = new StringBuilder();
+        for (int i = 0; i < columns.length; i++) {
+            RolapStar.Column column = columns[i];
+            String expr;
+  /*
+            if (starSet.getAggMeasureGroup() != null) {
+                int bitPos = column.getBitPosition();
+                AggStar.Table.Column aggColumn =
+                    starSet.getAggMeasureGroup().lookupColumn(bitPos);
+                AggStar.Table table = aggColumn.getTable();
+                table.addToFrom(sqlQuery, false, true);
+                expr = aggColumn.generateExprString(sqlQuery);
+            } else {
+  */
 
-          String expr;
-/*
-          if (starSet.getAggMeasureGroup() != null) {
-              int bitPos = column.getBitPosition();
-              AggStar.Table.Column aggColumn =
-                  starSet.getAggMeasureGroup().lookupColumn(bitPos);
-              AggStar.Table table = aggColumn.getTable();
-              table.addToFrom(sqlQuery, false, true);
-
-              expr = aggColumn.generateExprString(sqlQuery);
-          } else {
-*/
-
-         // using new addToFrom(...members)
-         // addToFrom(sqlQuery, column, starSet);
-
-          expr = column.getExpression().toSql();
-/*
-          }
-*/
-
-          final String value = String.valueOf(values[i]);
-          buf.setLength(0);
-          if ((RolapUtil.mdxNullLiteral().equalsIgnoreCase(value))
-              || (value.equalsIgnoreCase(RolapUtil.sqlNullValue.toString())))
-          {
-              buf.append(expr).append(" is null");
-          } else {
-              final Dialect dialect = sqlQuery.getDialect();
-              try {
-                  buf.append(expr)
-                      .append(" = ");
-                  dialect.quote(buf, value, column.getDatatype());
-              } catch (NumberFormatException e) {
-                  buf.setLength(0);
-                  dialect.quoteBooleanLiteral(buf, false);
-              }
-          }
-          sqlQuery.addWhere(buf.toString());
-      }
+           // using new addToFrom(...members)
+           // addToFrom(sqlQuery, column, starSet);
+            expr = column.getExpression().toSql();
+  /*
+            }
+  */
+            final String value = String.valueOf(values[i]);
+            buf.setLength(0);
+            if ((RolapUtil.mdxNullLiteral().equalsIgnoreCase(value))
+                || (value.equalsIgnoreCase(RolapUtil.sqlNullValue.toString())))
+            {
+                buf.append(expr).append(" is null");
+            } else {
+                final Dialect dialect = sqlQuery.getDialect();
+                try {
+                    buf.append(expr)
+                        .append(" = ");
+                    dialect.quote(buf, value, column.getDatatype());
+                } catch (NumberFormatException e) {
+                    buf.setLength(0);
+                    dialect.quoteBooleanLiteral(buf, false);
+                }
+            }
+            sqlQuery.addWhere(buf.toString());
+        }
     }
 
     private static void addConstrainedMembersToFrom(

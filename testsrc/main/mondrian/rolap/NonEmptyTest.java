@@ -2490,16 +2490,19 @@ public class NonEmptyTest extends BatchTestCase {
         parent = ((RolapCubeMember) parent).getRolapMember();
         member = ((RolapCubeMember) member).getRolapMember();
 
-        // lookup all children of [Burnaby] -> yes, found in cache
-        MemberChildrenConstraint mcc = scf.getMemberChildrenConstraint(null);
-        list = ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc);
-        assertNotNull(list);
-        assertTrue(list.contains(member));
+        if (Bug.PopulateChildrenCacheOnLevelMembersFixed) {
+            // lookup all children of [Burnaby] -> yes, found in cache
+            MemberChildrenConstraint mcc =
+                scf.getMemberChildrenConstraint(null);
+            list = ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc);
+            assertNotNull(list);
+            assertTrue(list.contains(member));
 
-        // lookup NON EMPTY children of [Burlingame] -> not in cache
-        mcc = scf.getMemberChildrenConstraint(context);
-        list = ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc);
-        assertNull(list);
+            // lookup NON EMPTY children of [Burlingame] -> not in cache
+            mcc = scf.getMemberChildrenConstraint(context);
+            list = ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc);
+            assertNull(list);
+        }
     }
 
     /**
@@ -4201,7 +4204,7 @@ public class NonEmptyTest extends BatchTestCase {
             Dialect.DatabaseProduct.MYSQL,
             mysqlQuery,
             mysqlQuery.indexOf("from\n"));
-        
+
         assertQuerySql(
             getTestContext(),
             mdx,
@@ -4235,11 +4238,11 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `promotion`.`promotion_name`\n"
             + "order by\n"
             + "    ISNULL(`promotion`.`promotion_name`) ASC, `promotion`.`promotion_name` ASC";
-            
+
        SqlPattern mysqlPattern = new SqlPattern(
-            Dialect.DatabaseProduct.MYSQL,
-            mysqlQuery,
-            mysqlQuery.length());
+           Dialect.DatabaseProduct.MYSQL,
+           mysqlQuery,
+           mysqlQuery.length());
 
         assertQuerySql(
             getTestContext().legacy(),
@@ -4324,7 +4327,6 @@ public class NonEmptyTest extends BatchTestCase {
             + "    ISNULL(`time_by_day`.`the_year`) ASC, `time_by_day`.`the_year` ASC,\n"
             + "    ISNULL(`promotion`.`promotion_name`) ASC, `promotion`.`promotion_name` ASC";
         final SqlPattern mysqlPattern = new SqlPattern(
-
             Dialect.DatabaseProduct.MYSQL,
             mysqlQuery,
             mysqlQuery.indexOf("from\n"));
@@ -4467,7 +4469,10 @@ public class NonEmptyTest extends BatchTestCase {
             Dialect.DatabaseProduct.MYSQL,
             mysqlQuery,
             mysqlQuery.length());
-        assertQuerySql(getTestContext().legacy(), mdx, new SqlPattern[]{pattern});
+        assertQuerySql(
+            getTestContext().legacy(),
+            mdx,
+            new SqlPattern[]{pattern});
     }
 
     public void testNonUniformNestedMeasureConstraintsGetOptimized() {
@@ -4526,7 +4531,10 @@ public class NonEmptyTest extends BatchTestCase {
             mysqlQuery,
             mysqlQuery.indexOf("from\n"));
 
-        assertQuerySql(getTestContext().legacy(), mdx, new SqlPattern[]{pattern});
+        assertQuerySql(
+            getTestContext().legacy(),
+            mdx,
+            new SqlPattern[]{pattern});
     }
 
     public void testNonUniformConstraintsAreNotUsedForOptimization() {
@@ -4544,7 +4552,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `customer`.`state_province` as `c1`,\n"
             + "    `customer`.`city` as `c2`,\n"
             + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c3`,\n"
-            + "    `customer`.`customer_id` as `c4`,\n"
+            + "    4534`customer`.`customer_id` as `c4`,\n"
             + "    `customer`.`gender` as `c5`,\n"
             + "    `customer`.`marital_status` as `c6`,\n"
             + "    `customer`.`education` as `c7`,\n"
@@ -4574,7 +4582,7 @@ public class NonEmptyTest extends BatchTestCase {
             Dialect.DatabaseProduct.MYSQL,
             mysqlQuery,
             mysqlQuery.length());
-        assertQuerySqlOrNot(//not
+        assertQuerySqlOrNot(
             getTestContext(), mdx, new SqlPattern[]{pattern},true, false, true);
     }
 
@@ -4865,7 +4873,6 @@ public class NonEmptyTest extends BatchTestCase {
         if (!Bug.ShowChildlessSnowflakeMembersFixed) {
             return;
         }
-      
         propSaver.set(propSaver.props.FilterChildlessSnowflakeMembers, false);
         final String sql =
             "select\n"
@@ -4876,7 +4883,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `product_class`.`product_family`\n"
             + "order by\n"
             + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
-        final TestContext context = getTestContext().legacy().withFreshConnection();
+        final TestContext context =
+            getTestContext().legacy().withFreshConnection();
         try {
             assertQuerySql(
                 context,
