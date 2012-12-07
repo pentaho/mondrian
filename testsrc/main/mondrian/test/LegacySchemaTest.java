@@ -1108,9 +1108,6 @@ public class LegacySchemaTest extends FoodMartTestCase {
     }
 
     public void testCubeCaption() throws SQLException {
-        if (!Bug.VirtualCubeConversionMissesHiddenFixed) {
-            return;
-        }
         final TestContext testContext = getTestContext().legacy().create(
             null,
             "<Cube name='Cube with caption' caption='Cube with name'>"
@@ -1121,6 +1118,7 @@ public class LegacySchemaTest extends FoodMartTestCase {
             "<VirtualCube name='Warehouse and Sales with caption' "
             + "caption='Warehouse and Sales with name'  defaultMeasure='Store Sales'>\n"
             + "  <VirtualCubeDimension cubeName='Sales' name='Customers'/>\n"
+            + "  <VirtualCubeDimension cubeName='Sales' name='Time'/>\n"
             + "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
             + "   formatString=\"#,###.00\"/>"
             + "</VirtualCube>",
@@ -1169,28 +1167,27 @@ public class LegacySchemaTest extends FoodMartTestCase {
     }
 
     public void testVirtualCubeDimensionMustJoinToAtLeastOneCube() {
-        if (Bug.VirtualCubeConversionMissesHiddenFixed) {
-            TestContext testContext = getTestContext().legacy().create(
-                null,
-                null,
-                "<VirtualCube name='Sales vs HR'>\n"
-                + "<VirtualCubeDimension name='Store'/>\n"
-                + "<VirtualCubeDimension cubeName='HR' name='Position'/>\n"
-                + "<VirtualCubeMeasure cubeName='HR' name='[Measures].[Org Salary]'/>\n"
-                + "</VirtualCube>",
-                null,
-                null,
-                null);
-            RuntimeException throwable = null;
-            try {
-                testContext.assertSimpleQuery();
-            } catch (RuntimeException e) {
-                throwable = e;
-            }
-            TestContext.checkThrowable(
-                throwable,
-                "Virtual cube dimension must join to at least one cube: dimension 'Store' in cube 'Sales vs HR'");
+        TestContext testContext = getTestContext().legacy().create(
+            null,
+            null,
+            "<VirtualCube name='Sales vs HR'>\n"
+            + "<VirtualCubeDimension name='Store'/>\n"
+            + "<VirtualCubeDimension cubeName='HR' name='Position'/>\n"
+            + "<VirtualCubeDimension cubeName='HR' name='Employees'/>\n"
+            + "<VirtualCubeMeasure cubeName='HR' name='[Measures].[Org Salary]'/>\n"
+            + "</VirtualCube>",
+            null,
+            null,
+            null);
+        RuntimeException throwable = null;
+        try {
+            testContext.assertSimpleQuery();
+        } catch (RuntimeException e) {
+            throwable = e;
         }
+        TestContext.checkThrowable(
+            throwable,
+            "Virtual cube dimension must join to at least one cube: dimension 'Store' in cube 'Sales vs HR'");
     }
 
     public void testStoredMeasureMustHaveColumns() {
@@ -1890,13 +1887,11 @@ public class LegacySchemaTest extends FoodMartTestCase {
     }
 
     public void testVirtualCubesVisibility() throws Exception {
-        if (!Bug.VirtualCubeConversionMissesHiddenFixed) {
-            return;
-        }
         for (Boolean testValue : new Boolean[] {true, false}) {
             String cubeDef =
                 "<VirtualCube name='Foo' defaultMeasure='Store Sales' visible='@REPLACE_ME@'>\n"
                 + "  <VirtualCubeDimension cubeName='Sales' name='Customers'/>\n"
+                + "  <VirtualCubeDimension cubeName='Sales' name='Time'/>\n"
                 + "  <VirtualCubeMeasure cubeName='Sales' name='[Measures].[Store Sales]'/>\n"
                 + "</VirtualCube>\n";
             cubeDef = cubeDef.replace(
@@ -1913,31 +1908,30 @@ public class LegacySchemaTest extends FoodMartTestCase {
     }
 
     public void testVirtualDimensionVisibility() throws Exception {
-        if (Bug.VirtualCubeConversionMissesHiddenFixed) {
-            for (Boolean testValue : new Boolean[] {true, false}) {
-                String cubeDef =
-                    "<VirtualCube name='Foo' defaultMeasure='Store Sales'>\n"
-                    + "  <VirtualCubeDimension cubeName='Sales' name='Customers' visible='@REPLACE_ME@'/>\n"
-                    + "  <VirtualCubeMeasure cubeName='Sales' name='[Measures].[Store Sales]'/>\n"
-                    + "</VirtualCube>\n";
-                cubeDef = cubeDef.replace(
-                    "@REPLACE_ME@",
-                    String.valueOf(testValue));
-                final TestContext context =
-                    getTestContext().create(
-                        null, null, cubeDef, null, null, null);
-                final Cube cube =
-                    context.getConnection().getSchema()
-                        .lookupCube("Foo", true);
-                Dimension dim = null;
-                for (Dimension dimCheck : cube.getDimensionList()) {
-                    if (dimCheck.getName().equals("Customers")) {
-                        dim = dimCheck;
-                    }
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<VirtualCube name='Foo' defaultMeasure='Store Sales'>\n"
+                + "  <VirtualCubeDimension cubeName='Sales' name='Customers' visible='@REPLACE_ME@'/>\n"
+                + "  <VirtualCubeDimension cubeName='Sales' name='Time'/>\n"
+                + "  <VirtualCubeMeasure cubeName='Sales' name='[Measures].[Store Sales]'/>\n"
+                + "</VirtualCube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                getTestContext().create(
+                    null, null, cubeDef, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            Dimension dim = null;
+            for (Dimension dimCheck : cube.getDimensionList()) {
+                if (dimCheck.getName().equals("Customers")) {
+                    dim = dimCheck;
                 }
-                assertNotNull(dim);
-                assertTrue(testValue.equals(dim.isVisible()));
             }
+            assertNotNull(dim);
+            assertTrue(testValue.equals(dim.isVisible()));
         }
     }
 
@@ -2065,9 +2059,22 @@ public class LegacySchemaTest extends FoodMartTestCase {
                 "Warehouse and Sales",
                 null,
                 null,
-                "<CalculatedMember name='Image Unit Sales' dimension='Measures'><Formula>[Measures].[Unit Sales]</Formula><CalculatedMemberProperty name='FORMAT_STRING' value='|$#,###.00|image=icon_chart\\.gif|link=http://www\\.pentaho\\.com'/></CalculatedMember>"
-                + "<CalculatedMember name='Arrow Unit Sales' dimension='Measures'><Formula>[Measures].[Unit Sales]</Formula><CalculatedMemberProperty name='FORMAT_STRING' expression='IIf([Measures].[Unit Sales] > 10000,'|#,###|arrow=up',IIf([Measures].[Unit Sales] > 5000,'|#,###|arrow=down','|#,###|arrow=none'))'/></CalculatedMember>"
-                + "<CalculatedMember name='Style Unit Sales' dimension='Measures'><Formula>[Measures].[Unit Sales]</Formula><CalculatedMemberProperty name='FORMAT_STRING' expression='IIf([Measures].[Unit Sales] > 100000,'|#,###|style=green',IIf([Measures].[Unit Sales] > 50000,'|#,###|style=yellow','|#,###|style=red'))'/></CalculatedMember>",
+                "<CalculatedMember name='Image Unit Sales' dimension='Measures'>"
+                + "  <Formula>[Measures].[Unit Sales]</Formula>"
+                + "  <CalculatedMemberProperty name='FORMAT_STRING' value='|$#,###.00|image=icon_chart\\.gif|link=http://www\\.pentaho\\.com'/>"
+                + "</CalculatedMember>"
+                + "<CalculatedMember name='Arrow Unit Sales' dimension='Measures'>"
+                + "  <Formula>[Measures].[Unit Sales]</Formula>"
+                + "  <CalculatedMemberProperty name='FORMAT_STRING' "
+                + "   expression='IIf([Measures].[Unit Sales] &gt; 10000,&apos;|#,###|arrow=up&apos;,"
+                + "               IIf([Measures].[Unit Sales] &gt; 5000,&apos;|#,###|arrow=down&apos;,&apos;|#,###|arrow=none&apos;))'/>"
+                + "</CalculatedMember>"
+                + "<CalculatedMember name='Style Unit Sales' dimension='Measures'>"
+                + "  <Formula>[Measures].[Unit Sales]</Formula>"
+                + "  <CalculatedMemberProperty name='FORMAT_STRING' "
+                + "   expression='IIf([Measures].[Unit Sales] &gt; 100000,&apos;|#,###|style=green&apos;,"
+                + "               IIf([Measures].[Unit Sales] &gt; 50000,&apos;|#,###|style=yellow&apos;,&apos;|#,###|style=red&apos;))'/>"
+                + "</CalculatedMember>",
                 null);
         for (Cube cube : context.getConnection().getSchemaReader().getCubes()) {
             if (cube.getName().equals("Warehouse and Sales")) {
@@ -2249,7 +2256,9 @@ public class LegacySchemaTest extends FoodMartTestCase {
             + "    caption='Virtual cube caption'\n"
             + "    description='Virtual cube description'>\n"
             + "  <Annotations><Annotation name='a'>Virtual cube</Annotation></Annotations>\n"
-            + "  <VirtualCubeDimension name='Time'/>\n"
+            + "  <VirtualCubeDimension name='Time1' cubeName='"
+            + salesCubeName
+            + "'/>\n"
             + "  <VirtualCubeDimension cubeName='" + warehouseCubeName
             + "' name='Warehouse'/>\n"
             + "  <VirtualCubeMeasure cubeName='" + salesCubeName
