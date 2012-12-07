@@ -78,10 +78,10 @@ public class RolapCubeDimension extends RolapDimension {
                     schemaLoader,
                     this,
                     rolapHierarchy,
-                    rolapHierarchy.getSubName(),
+                    rolapHierarchy.getName(),
                     rolapHierarchy.getDimension().isMeasures()
                         ? rolapHierarchy.getUniqueName()
-                        : Util.makeFqName(this, rolapHierarchy.getSubName()),
+                        : Util.makeFqName(this, rolapHierarchy.getName()),
                     hierarchyList.size(),
                     applyPrefix(
                         rolapHierarchy.getCaption(),
@@ -90,6 +90,10 @@ public class RolapCubeDimension extends RolapDimension {
                         rolapHierarchy.getDescription(),
                         dimSource, name, description));
             hierarchyList.add(hierarchy);
+            if (hierarchy.isScenario) {
+                assert cube.scenarioHierarchy == null;
+                cube.scenarioHierarchy = hierarchy;
+            }
         }
         this.hierarchyList.addAll(
             hierarchyList.subList(originalSize, hierarchyList.size()));
