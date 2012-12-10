@@ -572,6 +572,47 @@ version 3.x schemas.</p>
             public void add(int index, T element) {
                 list.add(index, element);
             }
+
+            public Map<String, T> asMap() {
+                return new AbstractMap<String, T>() {
+                    public Set<Entry<String, T>> entrySet() {
+                        return new AbstractSet<Entry<String, T>>() {
+                            public Iterator<Entry<String, T>> iterator() {
+                                return new Iterator<Entry<String, T>>() {
+                                    private int index = -1;
+                                    public boolean hasNext() {
+                                        return index < list.size();
+                                    }
+                                    public Entry<String, T> next() {
+                                        ++index;
+                                        return new Entry<String, T>() {
+                                            public String getKey() {
+                                                return list.get(index).getNameAttribute();
+                                            }
+                                            public T getValue() {
+                                                return list.get(index);
+                                            }
+                                            public T setValue(T value) {
+                                                throw new UnsupportedOperationException();
+                                            };
+                                        };
+                                    }
+                                    public void remove() {
+                                        throw new UnsupportedOperationException();
+                                    }
+                                };
+                            }
+                            public int size() {
+                                return list.size();
+                            }
+                        };
+                    }
+                };
+            }
+
+            public String getName(Object arg0) {
+                return ((T) arg0).getNameAttribute();
+            }
         }
 
         /**

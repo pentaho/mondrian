@@ -70,8 +70,8 @@ class MondrianOlap4jMember
                 .withLocus().getMemberChildren(
                     member);
         return new AbstractNamedList<MondrianOlap4jMember>() {
-            protected String getName(MondrianOlap4jMember member) {
-                return member.getName();
+            public String getName(Object member) {
+                return ((MondrianOlap4jMember)member).getName();
             }
 
             public MondrianOlap4jMember get(int index) {
