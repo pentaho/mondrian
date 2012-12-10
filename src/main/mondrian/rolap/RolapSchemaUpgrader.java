@@ -594,7 +594,7 @@ public class RolapSchemaUpgrader {
         RolapSchema.PhysRelation fact,
         Mondrian3Def.RelationOrJoin xmlFact,
         Mondrian3Def.CubeDimension xmlLegacyCubeDimension,
-        Boolean visible,
+        boolean visible,
         Mondrian3Def.Schema xmlLegacySchema,
         List<LevelInfo> levelList)
     {
@@ -2661,7 +2661,7 @@ public class RolapSchemaUpgrader {
         Mondrian3Def.RelationOrJoin xmlLegacyFact,
         Mondrian3Def.Dimension xmlLegacyDimension,
         String dimensionName,
-        Boolean visible,
+        boolean visible,
         String description,
         List<LevelInfo> levelList)
     {
