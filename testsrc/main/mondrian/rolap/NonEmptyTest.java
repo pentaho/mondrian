@@ -4100,6 +4100,9 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testNonLeafMembersOfPCDimensionAreNotNativelyEvaluated() {
+        if (!Bug.ReferenceLinkNotImplementedFixed) {
+            return;
+        }
         checkNotNative(
             getTestContext(),
             9,
