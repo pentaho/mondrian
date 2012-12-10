@@ -89,8 +89,8 @@ class MondrianOlap4jHierarchy
                     hierarchy.getLevelList().get(0), true);
 
         return new AbstractNamedList<Member>() {
-            protected String getName(Member member) {
-                return member.getName();
+            public String getName(Object member) {
+                return ((Member)member).getName();
             }
 
             public Member get(int index) {

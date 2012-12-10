@@ -627,8 +627,8 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
         final List<Member> memberList)
     {
         return new AbstractNamedList<MondrianOlap4jMember>() {
-            protected String getName(MondrianOlap4jMember olap4jMember) {
-                return olap4jMember.getName();
+            public String getName(Object olap4jMember) {
+                return ((MondrianOlap4jMember)olap4jMember).getName();
             }
 
             public MondrianOlap4jMember get(int index) {
