@@ -162,7 +162,10 @@ public class Util extends XOMUtil {
         }
         try {
             Class<UtilCompatible> clazz =
-                (Class<UtilCompatible>) Class.forName(className);
+                (Class<UtilCompatible>) Class.forName(
+                    className,
+                    true,
+                    Thread.currentThread().getContextClassLoader());
             compatible = clazz.newInstance();
         } catch (ClassNotFoundException e) {
             throw Util.newInternal(e, "Could not load '" + className + "'");

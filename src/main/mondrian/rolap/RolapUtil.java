@@ -392,7 +392,10 @@ public class RolapUtil {
             String jdbcDriver = tok.nextToken();
             if (loadedDrivers.add(jdbcDriver)) {
                 try {
-                    Class.forName(jdbcDriver);
+                    Class.forName(
+                        jdbcDriver,
+                        true,
+                        Thread.currentThread().getContextClassLoader());
                     LOGGER.info(
                         "Mondrian: JDBC driver "
                         + jdbcDriver + " loaded successfully");

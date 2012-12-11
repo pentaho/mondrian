@@ -886,7 +886,10 @@ public class JdbcDialectImpl implements Dialect {
             new ArrayList<StatisticsProvider>();
         for (String name : names) {
             try {
-                final Class<?> clazz = Class.forName(name);
+                final Class<?> clazz = Class.forName(
+                    name,
+                    true,
+                    Thread.currentThread().getContextClassLoader());
                 StatisticsProvider provider =
                     (StatisticsProvider) clazz.newInstance();
                 providerList.add(provider);

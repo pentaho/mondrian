@@ -302,7 +302,10 @@ class RolapSchemaPool {
             @SuppressWarnings("unchecked")
             final Class<DynamicSchemaProcessor> clazz =
                 (Class<DynamicSchemaProcessor>)
-                    Class.forName(dynProcName);
+                    Class.forName(
+                        dynProcName,
+                        true,
+                        Thread.currentThread().getContextClassLoader());
             final Constructor<DynamicSchemaProcessor> ctor =
                 clazz.getConstructor();
             final DynamicSchemaProcessor dynProc = ctor.newInstance();
