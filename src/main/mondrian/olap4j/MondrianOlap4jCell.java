@@ -34,7 +34,7 @@ import java.util.List;
 class MondrianOlap4jCell implements Cell {
     private final int[] coordinates;
     private final MondrianOlap4jCellSet olap4jCellSet;
-    private final RolapCell cell;
+    final RolapCell cell;
 
     /**
      * Creates a MondrianOlap4jCell.

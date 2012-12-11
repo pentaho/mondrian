@@ -304,7 +304,11 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
     }
 
     public boolean canDrillThrough(Cell cell) {
-        return ((RolapCell)cell).canDrillThrough();
+        return ((MondrianOlap4jCell)cell).cell.canDrillThrough();
+    }
+
+    public int getDrillThroughCount(Cell cell) {
+        return ((MondrianOlap4jCell)cell).cell.getDrillThroughCount();
     }
 
     public void flushSchemaCache(OlapConnection conn) throws OlapException {

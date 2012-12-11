@@ -3074,6 +3074,13 @@ public class XmlaHandler {
         boolean canDrillThrough(Cell cell);
 
         /**
+         * Returns the number of rows returned by a
+         * drillthrough on the specified cell. Will also
+         * return -1 if it cannot determine the cardinality.
+         */
+        int getDrillThroughCount(Cell cell);
+
+        /**
          * Makes the connection send a command to the server
          * to flush all caches.
          */
@@ -3231,6 +3238,10 @@ public class XmlaHandler {
 
         public boolean canDrillThrough(Cell cell) {
             return false;
+        }
+
+        public int getDrillThroughCount(Cell cell) {
+            return -1;
         }
 
         public void flushSchemaCache(OlapConnection conn) {
