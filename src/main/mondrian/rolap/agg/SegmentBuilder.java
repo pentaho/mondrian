@@ -383,10 +383,13 @@ public class SegmentBuilder {
                     final int offset =
                         CellKey.Generator.getOffset(
                             entry.getKey().getOrdinals(), axisMultipliers);
-                    ints[offset] =
-                        (Integer)rollupAggregator.aggregate(
+                    final Object value =
+                        rollupAggregator.aggregate(
                             entry.getValue(),
                             datatype);
+                    if (value != null) {
+                        ints[offset] = (Integer) value;
+                    }
                 }
                 body =
                     new DenseIntSegmentBody(
@@ -402,10 +405,13 @@ public class SegmentBuilder {
                     final int offset =
                         CellKey.Generator.getOffset(
                             entry.getKey().getOrdinals(), axisMultipliers);
-                    doubles[offset] =
-                        (Double)rollupAggregator.aggregate(
+                    final Object value =
+                        rollupAggregator.aggregate(
                             entry.getValue(),
                             datatype);
+                    if (value != null) {
+                        doubles[offset] = (Double) value;
+                    }
                 }
                 body =
                     new DenseDoubleSegmentBody(
@@ -422,7 +428,7 @@ public class SegmentBuilder {
                         CellKey.Generator.getOffset(
                             entry.getKey().getOrdinals(), axisMultipliers);
                     objects[offset] =
-                        (Object)rollupAggregator.aggregate(
+                        rollupAggregator.aggregate(
                             entry.getValue(),
                             datatype);
                 }
