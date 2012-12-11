@@ -6693,6 +6693,29 @@ public class FunctionTest extends FoodMartTestCase {
         assertBooleanExprReturns(" Gender.[M].dimension IS Store ", false);
     }
 
+    public void testIsWithMismatchedArguments() {
+        // Hierarchy is Member
+        assertBooleanExprReturns("Store.Stores IS Store.Stores.USA", false);
+        // Hierarchy is Level
+        assertBooleanExprReturns(
+            "Store.Stores IS Store.Stores.[Store Country]",
+            true);
+        assertBooleanExprReturns(
+            "Store.Stores IS Store.Stores.[Store City]",
+            true); // correct?
+        assertBooleanExprReturns(
+            "Product.Products IS Store.Stores.[Store City]",
+            false);
+        // Level is Hierarchy
+        assertBooleanExprReturns(
+            "Store.Stores.[Store Country] IS Store.Stores",
+            true);
+        // Dimension is Hierarchy
+        assertBooleanExprReturns(
+            "Store IS Store.Stores",
+            true);
+    }
+
     public void testStringEquals() {
         assertBooleanExprReturns(" \"foo\" = \"bar\" ", false);
     }
