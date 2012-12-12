@@ -2439,7 +2439,7 @@ public class TestContext {
      */
     public final TestContext withCube(String cubeName) {
         final String cubeNameRef =
-            cubeName.replaceAll("\\[", "");
+            cubeName.replaceAll("\\[|\\]", "");
         return new DelegatingTestContext(this) {
             public String getDefaultCubeName() {
                 return cubeNameRef;
