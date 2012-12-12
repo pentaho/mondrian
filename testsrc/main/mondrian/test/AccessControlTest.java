@@ -2114,7 +2114,7 @@ public class AccessControlTest extends FoodMartTestCase {
             return;
         }
         final TestContext testContext =
-            TestContext.instance().withSalesRagged().create(
+            TestContext.instance().create(
                 null, null, null, null, null,
                 "<Role name=\"Role1\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
@@ -2129,7 +2129,7 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "  <SchemaGrant access=\"none\">\n"
                 + "    <CubeGrant cube=\"Sales Ragged\" access=\"all\"/>\n"
                 + "  </SchemaGrant>\n"
-                + "</Role>");
+                + "</Role>").withSalesRagged();
 
         final TestContext testContextRole1 =
             testContext
