@@ -68,7 +68,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         // Use hard caching for testing. When using soft references, we can not
         // test caching because things may be garbage collected during the
         // tests.
-        SmartMemberReader smr = getSmartMemberReader("Store");
+        SmartMemberReader smr = getSmartMemberReader("Stores");
         MemberCacheHelper smrch = (MemberCacheHelper)smr.getMemberCache();
         smrch.mapLevelToMembers.setCache(
             new HardSmartCache<Pair<RolapLevel, Object>, List<RolapMember>>());
@@ -87,7 +87,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         rcsmrch.mapKeyToMember =
             new HardSmartCache<Pair<RolapLevel, Object>, RolapMember>();
 
-        SmartMemberReader ssmr = getSharedSmartMemberReader("Store");
+        SmartMemberReader ssmr = getSharedSmartMemberReader("Stores");
         MemberCacheHelper ssmrch = (MemberCacheHelper)ssmr.getMemberCache();
         ssmrch.mapLevelToMembers.setCache(
             new HardSmartCache<Pair<RolapLevel, Object>, List<RolapMember>>());

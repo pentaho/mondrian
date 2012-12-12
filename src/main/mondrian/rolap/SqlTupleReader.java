@@ -263,6 +263,7 @@ public class SqlTupleReader implements TupleReader {
                     }
 
                     final RolapMember prevMember = members.get(i);
+                    //TODO: is this block ever entered?
                     if (member != prevMember && prevMember != null) {
                         // Flush list we've been building.
                         List<RolapMember> children = siblings.get(i + 1);
@@ -754,7 +755,6 @@ public class SqlTupleReader implements TupleReader {
 //          Member originalMeasure = constraint.getEvaluator().getMembers()[0];
             StringBuilder buf = new StringBuilder();
             List<SqlStatement.Type> types = null;
-            boolean useParens = joiningMeasureGroupList.size() > 1;
             for (int i = 0; i < joiningMeasureGroupList.size(); i++) {
                 final RolapMeasureGroup measureGroup =
                     joiningMeasureGroupList.get(i);
@@ -780,11 +780,7 @@ public class SqlTupleReader implements TupleReader {
                     generateSelectForLevels(
                         dialect, null,
                         measureGroup, i, measureGroupList.size());
-                if (useParens) {
-                    buf.append("(").append(pair.left).append(")");
-                } else {
-                    buf.append(pair.left);
-                }
+                buf.append(pair.left);
                 types = pair.right;
             }
 
@@ -1035,6 +1031,7 @@ Util.deprecated("obsolete basecube parameter", false);
 
         boolean needsGroupBy =
             isGroupByNeeded(sqlQuery, hierarchy, levels, levelDepth);
+        boolean isUnion = selectCount > 1;
 
         final RolapMeasureGroup measureGroup = starSet.getMeasureGroup();
 
@@ -1097,7 +1094,9 @@ Util.deprecated("obsolete basecube parameter", false);
             }
 
             SqlMemberSource.Sgo sgo =
-                SqlMemberSource.Sgo.SELECT_ORDER.maybeGroup(needsGroupBy);
+                isUnion
+                    ? SqlMemberSource.Sgo.SELECT.maybeGroup(needsGroupBy)
+                    : SqlMemberSource.Sgo.SELECT_ORDER.maybeGroup(needsGroupBy);
 
             for (RolapSchema.PhysColumn column : currLevel.getOrderByList()) {
                 levelLayoutBuilder.orderByOrdinalList.add(
@@ -1164,26 +1163,8 @@ Util.deprecated("obsolete basecube parameter", false);
             // If this is a select on a virtual cube, the query will be
             // a union, so the order by columns need to be numbers,
             // not column name strings or expressions.
-            if (selectOrdinal == selectCount - 1 && selectCount > 1) {
-                boolean nullable = true;
-                final Dialect dialect = sqlQuery.getDialect();
-                if (dialect.requiresUnionOrderByExprToBeInSelectClause()
-                    || dialect.requiresUnionOrderByOrdinal())
-                {
-                    // If the expression is nullable and the dialect
-                    // sorts NULL values first, the dialect will try to
-                    // add an expression 'Iif(expr IS NULL, 1, 0)' into
-                    // the ORDER BY clause, and that is not allowed by this
-                    // dialect. So, pretend that the expression is not
-                    // nullable. NULL values, if present, will be sorted
-                    // wrong, but that's better than generating an invalid
-                    // query.
-                    nullable = false;
-                }
-                sqlQuery.addOrderBy(
-                    Integer.toString(
-                        sqlQuery.getCurrentSelectListSize()),
-                    true, false, nullable, false);
+            if (isUnion && selectOrdinal == selectCount - 1) {
+                addUnionOrderByOrdinal(sqlQuery);
             }
 
             if (selectOrdinal == 0 && selectCount == 1) {
@@ -1232,6 +1213,32 @@ Util.deprecated("obsolete basecube parameter", false);
                 keyPath.addToFrom(sqlQuery, false);
             }
         }
+    }
+
+    private static void addUnionOrderByOrdinal(final SqlQuery sqlQuery)
+    {
+        // If this is a select on a virtual cube, the query will be
+        // a union, so the order by columns need to be numbers,
+        // not column name strings or expressions.
+        boolean nullable = true;
+        final Dialect dialect = sqlQuery.getDialect();
+        if (dialect.requiresUnionOrderByExprToBeInSelectClause()
+            || dialect.requiresUnionOrderByOrdinal())
+        {
+            // If the expression is nullable and the dialect
+            // sorts NULL values first, the dialect will try to
+            // add an expression 'Iif(expr IS NULL, 1, 0)' into
+            // the ORDER BY clause, and that is not allowed by this
+            // dialect. So, pretend that the expression is not
+            // nullable. NULL values, if present, will be sorted
+            // wrong, but that's better than generating an invalid
+            // query.
+            nullable = false;
+        }
+        sqlQuery.addOrderBy(
+            Integer.toString(
+                sqlQuery.getCurrentSelectListSize()),
+            true, false, nullable, false);
     }
 
     /**
