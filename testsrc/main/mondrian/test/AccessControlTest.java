@@ -2114,7 +2114,7 @@ public class AccessControlTest extends FoodMartTestCase {
             return;
         }
         final TestContext testContext =
-            TestContext.instance().create(
+            TestContext.instance().withSalesRagged().create(
                 null, null, null, null, null,
                 "<Role name=\"Role1\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
