@@ -9,8 +9,9 @@
 */
 package mondrian.test;
 
+import mondrian.olap.Util;
+
 import org.olap4j.*;
-import org.olap4j.impl.ArrayMap;
 
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -188,11 +189,6 @@ public class ScenarioTest extends FoodMartTestCase {
     private void assertAllocation(
         final AllocationPolicy allocationPolicy) throws SQLException
     {
-        // TODO: Should not need to explicitly create a scenario. Add element
-        //  <Writeback enabled="true"/>
-        // to cube definition, and [Scenario] dimension will appear. Also, need
-        // more elegant way for users to create dimensions that only contain
-        // calculated members.
         final TestContext testContext = getTestContext2();
         final OlapConnection connection = testContext.getOlap4jConnection();
         final Scenario scenario = connection.getScenario();
@@ -355,24 +351,19 @@ public class ScenarioTest extends FoodMartTestCase {
     }
 
     public TestContext getTestContext2() {
-        return TestContext.instance().createSubstitutingCube(
-            "Sales",
-            "<Dimension name='Scenario' table='foo' key='Scenario' type='SCENARIO'>\n"
-            + "  <Attributes>\n"
-            + "    <Attribute name='Scenario' keyColumn='bar'/>\n"
-            + "  </Attributes>\n"
-            + "</Dimension>",
-            null,
-            "<Measure name='Atomic Cell Count' aggregator='count'/>",
-            null,
-            ArrayMap.of(
-                "Sales",
-                "<ForeignKeyLink dimension='Scenario' "
-                + "foreignKeyColumn='time_id'/>",
-                "Warehouse",
-                "<ForeignKeyLink dimension='Scenario' "
-                + "foreignKeyColumn='time_id'/>"))
-            .withCube("[Sales]")
+        return TestContext.instance().withSubstitution(
+            new Util.Function1<String, String>() {
+                public String apply(String param) {
+                    final String seek = "<Cube name='Sales' ";
+                    int i = param.indexOf(seek);
+                    if (i < 0) {
+                        throw new AssertionError();
+                    }
+                    return param.substring(0, i + seek.length())
+                        + "enableScenarios='true' "
+                        + param.substring(i + seek.length());
+                }
+            })
             .withScenario();
     }
 

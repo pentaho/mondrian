@@ -111,6 +111,43 @@ public class SchemaSubstitution {
         };
     }
 
+    public static Util.Function1<String, String> insertHierarchy(
+        final String cubeName,
+        final String dimensionName,
+        final String hierarchyDefs)
+    {
+        return new Util.Function1<String, String>() {
+            public String apply(String schema) {
+                int h = schema.indexOf("<Cube name='" + cubeName + "'");
+                if (h < 0) {
+                    throw new RuntimeException(
+                        "cube '" + cubeName + "' not found");
+                }
+                int hEnd = schema.indexOf("</Cube>", h);
+
+                int i =
+                    schema.indexOf(
+                        "<Dimension name='" + dimensionName + "'", h);
+                if (i < 0 || i >= hEnd) {
+                    throw new RuntimeException(
+                        "dimension '" + dimensionName + "' not found");
+                }
+                int iEnd = schema.indexOf("</Dimension>", i);
+
+                // Insert before first hierarchy. TOOD: handle if there are no
+                // hierarchies yet.
+                int j = schema.indexOf("<Hierarchy ", i);
+                if (j < 0 || j >= iEnd) {
+                    throw new RuntimeException("no hierarchy");
+                }
+
+                return schema.substring(0, j)
+                    + hierarchyDefs
+                    + schema.substring(j);
+            }
+        };
+    }
+
     public static Util.Function1<String, String> insertCalculatedMembers(
         final String cubeName, final String memberDefs)
     {

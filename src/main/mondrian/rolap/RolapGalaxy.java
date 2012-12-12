@@ -81,7 +81,7 @@ public class RolapGalaxy {
                     measureRef.aggColumn,
                     measureRef.measure.getStarMeasure());
             }
-            putMulti(stars, measureGroup.getStar(), measureGroup);
+            Util.putMulti(stars, measureGroup.getStar(), measureGroup);
         }
 
         for (Map.Entry<RolapStar, List<RolapMeasureGroup>> entry
@@ -138,28 +138,6 @@ public class RolapGalaxy {
 
         assert columnCount == columnMap.size();
         assert prototypeBitKey.isEmpty();
-    }
-
-    /**
-     * Adds a (key, value) pair to a multi-map represented as a map of lists.
-     * A "put" may add a new key, or it may add a new value to the list of an
-     * existing key.
-     *
-     * @param map Map
-     * @param k Key
-     * @param v Value
-     * @param <K> Key type
-     * @param <V> Value type
-     */
-    private static <K, V> void putMulti(Map<K, List<V>> map, K k, V v) {
-        List<V> list = map.put(k, Collections.singletonList(v));
-        if (list != null) {
-            if (list.size() == 1) {
-                list = new ArrayList<V>(list);
-            }
-            list.add(v);
-            map.put(k, list);
-        }
     }
 
     /**

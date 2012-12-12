@@ -277,6 +277,10 @@ public class RolapCubeLevel extends RolapLevel {
                 }
             }
 
+            if (member.getDimension().hanger) {
+                return false;
+            }
+
             int keyOrdinal = 0;
             for (RolapSchema.PhysColumn column
                 : cubeLevel.attribute.getKeyList())

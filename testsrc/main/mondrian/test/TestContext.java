@@ -3029,6 +3029,16 @@ public class TestContext {
         return withSubstitution(SchemaSubstitution.insertPhysTable(tableDef));
     }
 
+    public final TestContext insertHierarchy(
+        final String cubeName,
+        final String dimensionName,
+        final String hierarchyDefs)
+    {
+        return withSubstitution(
+            SchemaSubstitution.insertHierarchy(
+                cubeName, dimensionName, hierarchyDefs));
+    }
+
     public final TestContext insertDimension(
         final String cubeName, final String dimDefs)
     {

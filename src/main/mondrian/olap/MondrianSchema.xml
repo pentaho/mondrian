@@ -735,6 +735,22 @@ version 3.x schemas.</p>
                 dimension (that is, the 'source' attribute is set).
             </Doc>
         </Attribute>
+        <Attribute name="hanger" type="Boolean" required="false" default="false">
+            <Doc>
+                <p>Whether this is a hanger Dimension.</p>
+
+                <p>A hanger dimension has no table; the only members that can
+                exist are calculated. The purpose of a hanger dimension is to
+                add options that can be used in formulas. The Scenario dimension
+                (the system dimension that is created automatically for any
+                cube for which enableScenarios is true) is implemented as a
+                hanger dimension. </p>
+
+                <p>A Dimension that is declared hanger cannot have a table, nor
+                can any of its Attribute elements. The Attribute elements can
+                have no declared columns.</p>
+            </Doc>
+        </Attribute>
         <Array name="childArray" type="DimensionElement">
             <Doc>
                 Child elements of this Dimension: Attributes, Hierarchies,
@@ -857,6 +873,15 @@ version 3.x schemas.</p>
             <Doc>
                 Whether element is enabled - if true, then the Cube is
                 realized otherwise it is ignored.
+            </Doc>
+        </Attribute>
+        <Attribute name="enableScenarios" type="Boolean"
+                    required="false" default="false">
+            <Doc>
+                Whether to enable scenarios in this Cube.
+                If true, a Scenario dimension will automatically be added to
+                the cube. You can then call Cell.setValue to change the value
+                of a cell and see the changes propagate to dependent cells.
             </Doc>
         </Attribute>
         <Array name="childArray" type="CubeElement">

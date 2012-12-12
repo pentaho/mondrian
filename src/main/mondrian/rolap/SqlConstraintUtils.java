@@ -17,7 +17,6 @@ import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.Dialect;
-import mondrian.util.FilteredIterableList;
 import mondrian.util.Pair;
 
 import java.util.*;
@@ -117,24 +116,7 @@ public class SqlConstraintUtils {
         final StringBuilder buf = new StringBuilder();
         for (int i = 0; i < columns.length; i++) {
             RolapStar.Column column = columns[i];
-            String expr;
-  /*
-            if (starSet.getAggMeasureGroup() != null) {
-                int bitPos = column.getBitPosition();
-                AggStar.Table.Column aggColumn =
-                    starSet.getAggMeasureGroup().lookupColumn(bitPos);
-                AggStar.Table table = aggColumn.getTable();
-                table.addToFrom(sqlQuery, false, true);
-                expr = aggColumn.generateExprString(sqlQuery);
-            } else {
-  */
-
-           // using new addToFrom(...members)
-           // addToFrom(sqlQuery, column, starSet);
-            expr = column.getExpression().toSql();
-  /*
-            }
-  */
+            String expr = column.getExpression().toSql();
             final String value = String.valueOf(values[i]);
             buf.setLength(0);
             if ((RolapUtil.mdxNullLiteral().equalsIgnoreCase(value))
@@ -166,7 +148,7 @@ public class SqlConstraintUtils {
                 || member.getLevel().isAll()
                 || !(member.getLevel() instanceof RolapLevel))
             {
-                //only looking for constrained members
+                // only looking for constrained members
                 continue;
             }
             RolapLevel level = (RolapLevel) member.getLevel();
@@ -196,7 +178,7 @@ public class SqlConstraintUtils {
         RolapStar.Column column,
         RolapStarSet starSet)
     {
-        //not using a path may not work so well in virtual cubes
+        // not using a path may not work so well in virtual cubes
         if (column.getExpression() instanceof RolapSchema.PhysColumn) {
             RolapSchema.PhysColumn physColumn =
                 (RolapSchema.PhysColumn) column.getExpression();
@@ -213,7 +195,7 @@ public class SqlConstraintUtils {
                 throw new MondrianException(e);
             }
         }
-        //fallback
+        // fallback
         RolapStar.Table table = column.getTable();
         table.addToFrom(sqlQuery, false, true);
     }
@@ -331,11 +313,11 @@ public class SqlConstraintUtils {
     }
 
     static List<Member> removeCalculatedMembers(List<Member> members) {
-        return new FilteredIterableList<Member>(
+        return Util.copyWhere(
             members,
-            new FilteredIterableList.Filter<Member>() {
-                public boolean accept(final Member m) {
-                    return !m.isCalculated() || m.isParentChildLeaf();
+            new Util.Predicate1<Member>() {
+                public boolean test(Member member) {
+                    return !member.isCalculated() || member.isParentChildLeaf();
                 }
             });
     }

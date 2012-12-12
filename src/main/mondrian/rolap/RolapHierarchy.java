@@ -22,7 +22,6 @@ import mondrian.rolap.RestrictedMemberReader.MultiCardinalityDefaultMember;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.CellFormatter;
 import mondrian.spi.impl.Scripts;
-import mondrian.util.UnionIterator;
 
 import org.apache.log4j.Logger;
 
@@ -59,7 +58,7 @@ public class RolapHierarchy extends HierarchyBase {
      * {@link #createMemberReader(Role)}.
      */
     private MemberReader memberReader;
-    private Member defaultMember;
+    RolapMember defaultMember;
     private RolapNullMember nullMember;
 
     private Exp aggregateChildrenExpression;
@@ -243,66 +242,21 @@ public class RolapHierarchy extends HierarchyBase {
         String memberReaderClass)
     {
         Util.discard(schemaLoader); // may be needed in future
-
-        // first create memberReader
-        if (memberReader == null) {
-            memberReader =
-                getRolapSchema().createMemberReader(
-                    null, this, memberReaderClass);
-        }
     }
 
     /**
      * Initialize method, called after levels are initialized.
      *
      * @param schemaLoader Schema loader
-     * @param defaultMemberName Name of default member
      */
-    void init2(
-        RolapSchemaLoader schemaLoader,
-        String defaultMemberName)
-    {
+    void init2(RolapSchemaLoader schemaLoader) {
         Util.discard(schemaLoader); // may be needed in future
 
-        if (defaultMemberName != null) {
-            List<Id.Segment> uniqueNameParts;
-            if (defaultMemberName.contains("[")) {
-                uniqueNameParts = Util.parseIdentifier(defaultMemberName);
-            } else {
-                uniqueNameParts =
-                    Collections.<Id.Segment>singletonList(
-                        new Id.NameSegment(
-                            defaultMemberName,
-                            Id.Quoting.UNQUOTED));
-            }
-
-            // First look up from within this hierarchy. Works for unqualified
-            // names, e.g. [USA].[CA].
-            defaultMember = (Member) Util.lookupCompound(
-                getRolapSchema().getSchemaReader(),
-                this,
-                uniqueNameParts,
-                false,
-                Category.Member,
-                MatchType.EXACT);
-
-            // Next look up within global context. Works for qualified names,
-            // e.g. [Store].[USA].[CA] or [Time].[Weekly].[1997].[Q2].
-            if (defaultMember == null) {
-                defaultMember = (Member) Util.lookupCompound(
-                    getRolapSchema().getSchemaReader(),
-                    new DummyElement(),
-                    uniqueNameParts,
-                    false,
-                    Category.Member,
-                    MatchType.EXACT);
-            }
-            if (defaultMember == null) {
-                throw Util.newInternal(
-                    "Can not find Default Member with name \""
-                    + defaultMemberName + "\" in Hierarchy \""
-                    + getName() + "\"");
-            }
+        // first create memberReader
+        if (memberReader == null) {
+            memberReader =
+                getRolapSchema().createMemberReader(
+                    null, this, null);
         }
     }
 
@@ -327,34 +281,8 @@ public class RolapHierarchy extends HierarchyBase {
         return ((RolapDimension) dimension).schema;
     }
 
-    public Member getDefaultMember() {
-        // use lazy initialization to get around bootstrap issues
-        if (defaultMember == null) {
-            List<RolapMember> rootMembers = memberReader.getRootMembers();
-            final SchemaReader schemaReader =
-                getRolapSchema().getSchemaReader();
-            List<RolapMember> calcMemberList =
-                Util.cast(
-                    schemaReader.getCalculatedMembers(getLevelList().get(0)));
-            for (RolapMember rootMember
-                : UnionIterator.over(rootMembers, calcMemberList))
-            {
-                if (rootMember.isHidden()) {
-                    continue;
-                }
-                // Note: We require that the root member is not a hidden member
-                // of a ragged hierarchy, but we do not require that it is
-                // visible. In particular, if a cube contains no explicit
-                // measures, the default measure will be the implicitly defined
-                // [Fact Count] measure, which happens to be non-visible.
-                defaultMember = rootMember;
-                break;
-            }
-            if (defaultMember == null) {
-                throw MondrianResource.instance().InvalidHierarchyCondition.ex(
-                    this.getUniqueName());
-            }
-        }
+    public RolapMember getDefaultMember() {
+        assert defaultMember != null;
         return defaultMember;
     }
 
@@ -709,6 +637,7 @@ public class RolapHierarchy extends HierarchyBase {
             null,
             "Closure dimension for parent-child hierarchy " + getName(),
             org.olap4j.metadata.Dimension.Type.OTHER,
+            false,
             Collections.<String, Annotation>emptyMap());
 
         // Create a peer hierarchy.
@@ -775,11 +704,11 @@ public class RolapHierarchy extends HierarchyBase {
     /**
      * Sets default member of this Hierarchy.
      *
-     * @param defaultMember Default member
+     * @param member Default member
      */
-    public void setDefaultMember(Member defaultMember) {
-        if (defaultMember != null) {
-            this.defaultMember = defaultMember;
+    public void setDefaultMember(RolapMember member) {
+        if (member != null) {
+            this.defaultMember = member;
         }
     }
 
@@ -1031,7 +960,13 @@ public class RolapHierarchy extends HierarchyBase {
      * shared hierarchies. Acts like a cube that has a single child, the
      * hierarchy in question.
      */
-    private class DummyElement implements OlapElement {
+    static class DummyElement implements OlapElement {
+        private final RolapHierarchy hierarchy;
+
+        DummyElement(RolapHierarchy hierarchy) {
+            this.hierarchy = hierarchy;
+        }
+
         public String getUniqueName() {
             throw new UnsupportedOperationException();
         }
@@ -1054,8 +989,9 @@ public class RolapHierarchy extends HierarchyBase {
             }
             final Id.NameSegment nameSegment = (Id.NameSegment) s;
 
-            if (Util.equalName(nameSegment.name, dimension.getName())) {
-                return dimension;
+            if (Util.equalName(nameSegment.name, hierarchy.dimension.getName()))
+            {
+                return hierarchy.dimension;
             }
             return null;
         }

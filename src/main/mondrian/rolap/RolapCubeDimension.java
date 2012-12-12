@@ -64,6 +64,7 @@ public class RolapCubeDimension extends RolapDimension {
             first(caption, rolapDim.getCaption()),
             first(description, rolapDim.getDescription()),
             rolapDim.getDimensionType(),
+            rolapDim.hanger,
             annotationMap);
         this.rolapDimension = rolapDim;
         this.cubeOrdinal = cubeOrdinal;

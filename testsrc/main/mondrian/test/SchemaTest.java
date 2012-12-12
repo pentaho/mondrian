@@ -2727,6 +2727,39 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     /**
+     * Tests a hierarchy whose default member is a calculated member.
+     * (Difficult to bootstrap, since calculated members are validated by
+     * running a query, which naturally happens AFTER calculated members have
+     * been assigned.)
+     */
+    public void testCalculatedMemberAsDefaultMember() {
+        final TestContext testContext = getTestContext()
+            .insertHierarchy(
+                "Sales",
+                "Customer",
+                "<Hierarchy name='Customer with default member' defaultMember='[Customer].[Customer with default member].[USA].[CA].[SF and LA]'>\n"
+                + "  <Level attribute='Country'/>\n"
+                + "  <Level attribute='State Province'/>\n"
+                + "  <Level attribute='City'/>\n"
+                + "  <Level attribute='Name'/>\n"
+                + "</Hierarchy>\n")
+            .insertCalculatedMembers(
+                "Sales",
+                "<CalculatedMember\n"
+                + "      name='SF and LA'\n"
+                + "      hierarchy='[Customer].[Customer with default member]'\n"
+                + "      parent='[Customer].[Customer with default member].[USA].[CA]'>\n"
+                + "  <Formula>\n"
+                + "    [Customer].[Customer with default member].[USA].[CA].[San Francisco]\n"
+                + "    + [Customer].[Customer with default member].[USA].[CA].[Los Angeles]\n"
+                + "  </Formula>\n"
+                + "</CalculatedMember>");
+        testContext.assertAxisReturns(
+            "[Customer].[Customer with default member]",
+            "[Customer].[Customer with default member].[USA].[CA].[SF and LA]");
+    }
+
+    /**
      * this test triggers an exception out of the aggregate table manager
      */
     public void testAggTableSupportOfSharedDims() {
@@ -6973,6 +7006,28 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     /**
+     * Tests that it is not an error if no key attribute is specified
+     * for a dimension. (It is only an error if that dimension links to
+     * measure groups and they do not specify an explicit key.)
+     */
+    public void testKeyAttributeMissing() {
+        getTestContext().insertDimension(
+            "Sales",
+            "<Dimension name='Customer3' table='customer'>\n"
+            + "  <Attributes>\n"
+            + "    <Attribute name='State' keyColumn='state_province'/>\n"
+            + "  </Attributes>\n"
+            + "</Dimension>\n")
+            .insertDimensionLinks(
+                "Sales",
+                ArrayMap.of(
+                    "Sales",
+                    "<NoLink dimension='Customer3'/>"))
+            .ignoreMissingLink()
+            .assertSimpleQuery();
+    }
+
+    /**
      * Tests that mondrian gives error if an attribute hierarchy has the
      * same name as another hierarchy in the dimension. (This would typically
      * occur if an attribute has hasHierarchy=true and there is an explicit
@@ -7436,9 +7491,48 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
     // TODO: default value for MeasureGroup.name is .table.
 
-    // TODO: test cube where Cube.defaultMeasure is non-existent
+    /** Test cube where Cube.defaultMeasure is non-existent. */
+    public void testBadDefaultMeasure() {
+        getTestContext()
+            .withSubstitution(
+                new Util.Function1<String, String>() {
+                    public String apply(String param) {
+                        return param.replace(
+                            "<Cube name='Sales' defaultMeasure='Unit Sales'>",
+                            "<Cube name='Sales' defaultMeasure='Bad Unit Sales'>");
+                    }
+                })
+            .assertSchemaError(
+                "Default measure 'Bad Unit Sales' not found \\(in Cube 'Sales'\\) \\(at ${pos}\\)",
+                "<Cube name='Sales' defaultMeasure='Bad Unit Sales'>");
+    }
 
-    // TODO: test cube where Cube.defaultMeasure is a calculated member
+    /** Test cube where Cube.defaultMeasure is a calculated member. */
+    public void testDefaultMeasureIsCalculated() {
+        getTestContext()
+            .withSubstitution(
+                new Util.Function1<String, String>() {
+                    public String apply(String param) {
+                        return param.replace(
+                            "<Cube name='Sales' defaultMeasure='Unit Sales'>",
+                            "<Cube name='Sales' defaultMeasure='Profit'>");
+                    }
+                })
+            .assertQueryReturns(
+                "select [Measures] on 0, [Product].Children on 1\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Profit]}\n"
+                + "Axis #2:\n"
+                + "{[Product].[Products].[Drink]}\n"
+                + "{[Product].[Products].[Food]}\n"
+                + "{[Product].[Products].[Non-Consumable]}\n"
+                + "Row #0: \n"
+                + "Row #1: \n"
+                + "Row #2: \n");
+    }
 
     // TODO: document NoLink
 
@@ -7598,12 +7692,109 @@ Test that get error if a dimension has more than one hierarchy with same name.
             hierarchy.getDefaultMember().getParentMember());
     }
 
+    /** Unit test for a simple hanger dimension with values true and false. */
+    public void testHangerDimension() {
+        getTestContext()
+            .insertDimension(
+                "Sales",
+                "<Dimension name='Boolean' hanger='true' key='Boolean'>\n"
+                + "  <Attributes>\n"
+                + "    <Attribute name='Boolean'/>\n"
+                + "  </Attributes>\n"
+                + "</Dimension>")
+            .insertCalculatedMembers(
+                "Sales",
+                "<CalculatedMember name='False' hierarchy='[Boolean].[Boolean]' formula='[Marital Status]'/>\n"
+                + "<CalculatedMember name='True' hierarchy='[Boolean].[Boolean]' formula='[Marital Status]'/>\n")
+            .assertQueryReturns(
+                "with member [Measures].[Store Sales2] as\n"
+                + "   Iif([Boolean].[Boolean].CurrentMember is [Boolean].[Boolean].[True],\n"
+                + "       ([Boolean].[All Boolean], [Measures].[Store Sales]),"
+                + "       ([Boolean].[All Boolean], [Measures].[Store Sales]) - ([Boolean].[All Boolean], [Measures].[Store Cost]))\n"
+                + "select [Measures].[Store Sales2] on columns,\n"
+                + " [Boolean].[Boolean].AllMembers * [Gender].Children on rows\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Store Sales2]}\n"
+                + "Axis #2:\n"
+                + "{[Boolean].[Boolean].[All Boolean], [Customer].[Gender].[F]}\n"
+                + "{[Boolean].[Boolean].[All Boolean], [Customer].[Gender].[M]}\n"
+                + "{[Boolean].[Boolean].[False], [Customer].[Gender].[F]}\n"
+                + "{[Boolean].[Boolean].[False], [Customer].[Gender].[M]}\n"
+                + "{[Boolean].[Boolean].[True], [Customer].[Gender].[F]}\n"
+                + "{[Boolean].[Boolean].[True], [Customer].[Gender].[M]}\n"
+                + "Row #0: 168,448.73\n"
+                + "Row #1: 171,162.17\n"
+                + "Row #2: 168,448.73\n"
+                + "Row #3: 171,162.17\n"
+                + "Row #4: 280,226.21\n"
+                + "Row #5: 285,011.92\n");
+    }
+
+    /** Unit test that if a hierarchy has no real members, only calculated
+     * members, then the default member is the first calculated member. */
+    public void testHangerDimensionImplicitCalculatedDefaultMember() {
+        getTestContext()
+            .insertDimension(
+                "Sales",
+                "<Dimension name='Boolean' hanger='true' key='Boolean'>\n"
+                + "  <Attributes>\n"
+                + "    <Attribute name='Boolean' hierarchyHasAll='false'/>\n"
+                + "  </Attributes>\n"
+                + "</Dimension>")
+            .insertCalculatedMembers(
+                "Sales",
+                "<CalculatedMember name='False' hierarchy='[Boolean].[Boolean]' formula='[Marital Status]'/>\n"
+                + "<CalculatedMember name='True' hierarchy='[Boolean].[Boolean]' formula='[Marital Status]'/>\n")
+            .assertAxisReturns(
+                "[Boolean].[Boolean]",
+                "[Boolean].[Boolean].[False]");
+    }
+
+    /** Tests that it is an error if an attribute has no members.
+     * (No all member, no real members, no calculated members.) */
+    public void testHangerDimensionEmptyIsError() {
+        getTestContext()
+            .insertDimension(
+                "Sales",
+                "<Dimension name='Boolean' hanger='true' key='Boolean'>\n"
+                + "  <Attributes>\n"
+                + "    <Attribute name='Boolean' hierarchyHasAll='false'/>\n"
+                + "  </Attributes>\n"
+                + "</Dimension>")
+            .assertSchemaError(
+                "mondrian.olap.InvalidHierarchyException: Mondrian Error:Hierarchy '\\[Boolean\\].\\[Boolean\\]' is invalid \\(has no members\\) \\(in Attribute 'Boolean'\\) \\(at ${pos}\\).*",
+                "<Attribute name='Boolean' hierarchyHasAll='false'/>");
+    }
+
+    /** Tests that it is an error if an attribute in a hanger dimension has a
+     * keyColumn specified. (All other mappings to columns, e.g. nameColumn
+     * or included Key element, are illegal too.) */
+    public void testHangerDimensionKeyColumnNotAllowed() {
+        getTestContext()
+            .insertDimension(
+                "Sales",
+                "<Dimension name='Boolean' hanger='true' key='Boolean'>\n"
+                + "  <Attributes>\n"
+                + "    <Attribute name='Boolean' keyColumn='xxx'/>\n"
+                + "  </Attributes>\n"
+                + "</Dimension>")
+            .assertSchemaError(
+                "Attribute 'Boolean' in hanger dimension must not map to column \\(in Attribute 'Boolean'\\) \\(at ${pos}\\)",
+                "<Attribute name='Boolean' keyColumn='xxx'/>");
+    }
+
     // TODO: test that there is an error if we try to define a property
     // that is not functionally dependent on the attribute (e.g. define week as
     // a property of month).
 
     // TODO: Test that get error if Query element has no child for current
     // SQL dialect, and no generic SQL element.
+
+    // TODO: ForeignKeyLink with attribute and composite key. (E.g. reference
+    // to the month attribute, requires a composite key.)
 }
 
 // End SchemaTest.java

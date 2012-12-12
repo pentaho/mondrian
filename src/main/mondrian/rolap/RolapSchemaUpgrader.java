@@ -182,6 +182,7 @@ public class RolapSchemaUpgrader {
         xmlCube.description = xmlLegacyCube.description;
         xmlCube.enabled = xmlLegacyCube.enabled;
         xmlCube.visible = xmlLegacyCube.visible;
+        xmlCube.enableScenarios = false;
         final NamedList<MondrianDef.Dimension> xmlDimensions =
             xmlCube.children.holder(
                 new MondrianDef.Dimensions()).list();
@@ -2223,6 +2224,7 @@ public class RolapSchemaUpgrader {
         xmlCube.defaultMeasure = xmlLegacyVirtualCube.defaultMeasure;
         xmlCube.description = xmlLegacyVirtualCube.description;
         xmlCube.enabled = xmlLegacyVirtualCube.enabled;
+        xmlCube.enableScenarios = false;
         xmlCube.visible = xmlLegacyVirtualCube.visible;
 
         convertAnnotations(
@@ -2683,6 +2685,7 @@ public class RolapSchemaUpgrader {
             : xmlLegacyDimension.type.equalsIgnoreCase("TimeDimension")
             ? "TIME"
             : xmlLegacyDimension.type;
+        xmlDimension.hanger = false;
         Util.discard(xmlLegacyDimension.usagePrefix);
 
         // Create key attribute with first hierarchy. Require that all

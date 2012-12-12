@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2011 Pentaho
+// Copyright (C) 2011-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -29,6 +29,51 @@ public abstract class Composite {
         List<? extends T>... lists)
     {
         return CompositeList.<T>of(lists);
+    }
+
+    /**
+     * Creates a composite list, inferring the element type from the arguments,
+     * and optimizing if any lists are empty.
+     *
+     * @param lists One or more lists
+     * @param <T> element type
+     * @return composite list
+     */
+    public static <T> List<T> optimalOf(
+        List<? extends T>... lists)
+    {
+        //noinspection unchecked
+        List<? extends T>[] lists2 = optimize(lists);
+        switch (lists2.length) {
+        case 0:
+            return Collections.emptyList();
+        case 1:
+            //noinspection unchecked
+            return (List) lists2[0];
+        default:
+            //noinspection unchecked
+            return of(lists2);
+        }
+    }
+
+    private static List[] optimize(List[] lists) {
+        int n = 0;
+        for (List list : lists) {
+            if (!list.isEmpty()) {
+                ++n;
+            }
+        }
+        if (n == lists.length) {
+            return lists;
+        }
+        final List[] result = new List[n];
+        int i = 0;
+        for (List list : lists) {
+            if (!list.isEmpty()) {
+                result[i++] = list;
+            }
+        }
+        return result;
     }
 
     /**
