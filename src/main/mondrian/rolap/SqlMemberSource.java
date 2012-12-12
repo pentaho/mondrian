@@ -626,6 +626,8 @@ class SqlMemberSource
         // the fact table (via the table containing the dimension's key, if
         // the dimension is a snowflake). Otherwise just add the path from the
         // dimension's key.
+        // TODO: always joining to dimension key table will automatically
+        // filter out childless snowflake members
         for (RolapSchema.PhysColumn column : level.attribute.getKeyList()) {
             final RolapSchema.PhysPath keyPath =
                 level.getDimension().getKeyPath(column);

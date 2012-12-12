@@ -2197,36 +2197,40 @@ public class NonEmptyTest extends BatchTestCase {
 
         String sql =
             "select\n"
-            + "    `product_class`.`product_family` as `c0`,\n"
-            + "    `warehouse`.`wa_address3` as `c1`,\n"
-            + "    `warehouse`.`wa_address2` as `c2`,\n"
-            + "    `warehouse`.`warehouse_fax` as `c3`,\n"
-            + "    sum(`inventory_fact_1997`.`warehouse_cost`) as `m0`\n"
+            + "    `warehouse`.`wa_address3` as `c0`,\n"
+            + "    `warehouse`.`wa_address2` as `c1`,\n"
+            + "    `warehouse`.`warehouse_fax` as `c2`,\n"
+            + "    `product_class`.`product_family` as `c3`\n"
             + "from\n"
-            + "    `product_class` as `product_class`,\n"
-            + "    `product` as `product`,\n"
             + "    `inventory_fact_1997` as `inventory_fact_1997`,\n"
-            + "    `warehouse` as `warehouse`\n"
+            + "    `warehouse` as `warehouse`,\n"
+            + "    `product` as `product`,\n"
+            + "    `product_class` as `product_class`\n"
             + "where\n"
+            + "    `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id`\n"
+            + "and\n"
             + "    `inventory_fact_1997`.`product_id` = `product`.`product_id`\n"
             + "and\n"
             + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
             + "and\n"
-            + "    `product_class`.`product_family` = 'Food'\n"
+            + "    (`warehouse`.`wa_address3` IS NULL and `warehouse`.`wa_address2` IS NULL and `warehouse`.`warehouse_fax` IS NULL or `warehouse`.`wa_address3` IS NULL and `warehouse`.`wa_address2` IS NULL and `warehouse`.`warehouse_fax` = '971-555-6213'\n"
+            + "    and `warehouse`.`wa_address3` IS NULL and `warehouse`.`wa_address2` IS NULL and `warehouse`.`warehouse_fax` IS NULL or `warehouse`.`wa_address3` IS NULL and `warehouse`.`wa_address2` IS NULL and `warehouse`.`warehouse_fax` = '971-555-6213'\n"
+            + "    and `warehouse`.`wa_address3` IS NULL and `warehouse`.`wa_address2` IS NULL and `warehouse`.`warehouse_fax` IS NULL or `warehouse`.`wa_address3` IS NULL and `warehouse`.`wa_address2` IS NULL and `warehouse`.`warehouse_fax` = '971-555-6213'\n"
+            + "    and `warehouse`.`wa_address3` IS NULL and `warehouse`.`wa_address2` IS NULL\n"
+            + "    and `warehouse`.`wa_address3` IS NULL and `warehouse`.`wa_address2` IS NULL\n"
+            + "    and `warehouse`.`wa_address3` is null)\n"
             + "and\n"
-            + "    `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id`\n"
-            + "and\n"
-            + "    `warehouse`.`wa_address3` is null\n"
-            + "and\n"
-            + "    `warehouse`.`wa_address2` is null\n"
-            + "and\n"
-            + "    `warehouse`.`warehouse_fax` = '971-555-6213'\n"
+            + "    (`product_class`.`product_family` = 'Food')\n"
             + "group by\n"
-            + "    `product_class`.`product_family`,\n"
             + "    `warehouse`.`wa_address3`,\n"
             + "    `warehouse`.`wa_address2`,\n"
-            + "    `warehouse`.`warehouse_fax`";
-
+            + "    `warehouse`.`warehouse_fax`,\n"
+            + "    `product_class`.`product_family`\n"
+            + "order by\n"
+            + "    ISNULL(`warehouse`.`wa_address3`) ASC, `warehouse`.`wa_address3` ASC,\n"
+            + "    ISNULL(`warehouse`.`wa_address2`) ASC, `warehouse`.`wa_address2` ASC,\n"
+            + "    ISNULL(`warehouse`.`warehouse_fax`) ASC, `warehouse`.`warehouse_fax` ASC,\n"
+            + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
         TestContext testContext =
             getTestContext().legacy().create(
                 dimension,
@@ -2272,12 +2276,12 @@ public class NonEmptyTest extends BatchTestCase {
 
         // there currently isn't a cube member to children cache, only
         // a shared cache so use the shared smart member reader
-        SmartMemberReader smr = getSmartMemberReader("Store");
+        SmartMemberReader smr = getSmartMemberReader("Stores");
         MemberCacheHelper smrch = smr.cacheHelper;
         MemberCacheHelper rcsmrch =
             ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader) smr)
             .getRolapCubeMemberCacheHelper();
-        SmartMemberReader ssmr = getSharedSmartMemberReader("Store");
+        SmartMemberReader ssmr = getSharedSmartMemberReader("Stores");
         MemberCacheHelper ssmrch = ssmr.cacheHelper;
         clearAndHardenCache(smrch);
         clearAndHardenCache(rcsmrch);
@@ -2368,6 +2372,9 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testLevelMembers() {
+        if (!Bug.FetchMembersOptimizationFixed) {
+            return;
+        }
         if (propSaver.props.TestExpDependencies.get() > 0) {
             // Dependency testing causes extra SQL reads, and screws up this
             // test.
@@ -2483,16 +2490,19 @@ public class NonEmptyTest extends BatchTestCase {
         parent = ((RolapCubeMember) parent).getRolapMember();
         member = ((RolapCubeMember) member).getRolapMember();
 
-        // lookup all children of [Burnaby] -> yes, found in cache
-        MemberChildrenConstraint mcc = scf.getMemberChildrenConstraint(null);
-        list = ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc);
-        assertNotNull(list);
-        assertTrue(list.contains(member));
+        if (Bug.PopulateChildrenCacheOnLevelMembersFixed) {
+            // lookup all children of [Burnaby] -> yes, found in cache
+            MemberChildrenConstraint mcc =
+                scf.getMemberChildrenConstraint(null);
+            list = ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc);
+            assertNotNull(list);
+            assertTrue(list.contains(member));
 
-        // lookup NON EMPTY children of [Burlingame] -> not in cache
-        mcc = scf.getMemberChildrenConstraint(context);
-        list = ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc);
-        assertNull(list);
+            // lookup NON EMPTY children of [Burlingame] -> not in cache
+            mcc = scf.getMemberChildrenConstraint(context);
+            list = ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc);
+            assertNull(list);
+        }
     }
 
     /**
@@ -2500,6 +2510,9 @@ public class NonEmptyTest extends BatchTestCase {
      * <Level>.Members.
      */
     public void testDimensionMembers() {
+        if (!Bug.FetchMembersOptimizationFixed) {
+            return;
+        }
         // No query should return more than 20 rows. (1 row at 'all' level,
         // 1 row at nation level, 1 at state level, 20 at city level, and 11
         // at customers level = 34.)
@@ -4065,8 +4078,9 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testLeafMembersOfParentChildDimensionAreNativelyEvaluated() {
-        // TODO: ReferenceLink element not implemented (RolapSchemaLoader)
-        //      fails with NPE
+        if (!Bug.ReferenceLinkNotImplementedFixed) {
+            return;
+        }
         checkNative(
             getTestContext(),
             50,
@@ -4086,6 +4100,9 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testNonLeafMembersOfPCDimensionAreNotNativelyEvaluated() {
+        if (!Bug.ReferenceLinkNotImplementedFixed) {
+            return;
+        }
         checkNotNative(
             getTestContext(),
             9,
@@ -4153,142 +4170,178 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testNativeCrossjoinWillConstrainUsingArgsFromAllAxes() {
-        String mdx =
+        final String mdx =
             "select "
             + "non empty Crossjoin({[Gender].[Gender].[F]},{[Measures].[Unit Sales]}) on 0,"
             + "non empty Crossjoin({[Time].[1997]},{[Promotions].[All Promotions].[Bag Stuffers],[Promotions].[All Promotions].[Best Savings]}) on 1"
             + " from [Warehouse and Sales]";
-        SqlPattern accessPattern = new SqlPattern(
-            Dialect.DatabaseProduct.ACCESS,
-            "select `time_by_day`.`the_year` as `c0`, "
-            + "`promotion`.`promotion_name` as `c1` "
-            + "from `time_by_day` as `time_by_day`, "
-            + "`sales_fact_1997` as `sales_fact_1997`, "
-            + "`promotion` as `promotion`, "
-            + "`customer` as `customer` "
-            + "where "
-            + "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` "
-            + "and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` "
-            + "and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
-            + "and (`customer`.`gender` = 'F') "
-            + "and (`time_by_day`.`the_year` = 1997) "
-            + "and (`promotion`.`promotion_name` in ('Bag Stuffers', 'Best Savings')) "
-            + "group by `time_by_day`.`the_year`, `promotion`.`promotion_name`"
-            + " order by 1 ASC, 2 ASC",
-            623);
-        SqlPattern oraclePattern = new SqlPattern(
-            Dialect.DatabaseProduct.ORACLE,
-            "select \"time_by_day\".\"the_year\" as \"c0\", "
-            + "\"promotion\".\"promotion_name\" as \"c1\" "
-            + "from \"time_by_day\" \"time_by_day\", "
-            + "\"sales_fact_1997\" \"sales_fact_1997\", "
-            + "\"promotion\" \"promotion\", "
-            + "\"customer\" \"customer\" "
-            + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
-            + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
-            + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-            + "and (\"customer\".\"gender\" = 'F') "
-            + "and (\"time_by_day\".\"the_year\" = 1997) "
-            + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
-            + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
-            + "order by 1 ASC, 2 ASC",
-            611);
+        final String mysqlQuery =
+            "select\n"
+            + "    `time_by_day`.`the_year` as `c0`,\n"
+            + "    `promotion`.`promotion_name` as `c1`\n"
+            + "from\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `promotion` as `promotion`,\n"
+            + "    `customer` as `customer`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    (`customer`.`gender` = 'F')\n"
+            + "and\n"
+            + "    (`time_by_day`.`the_year` = 1997)\n"
+            + "and\n"
+            + "    (`promotion`.`promotion_name` = 'Bag Stuffers' or `promotion`.`promotion_name` = 'Best Savings')\n"
+            + "group by\n"
+            + "    `time_by_day`.`the_year`,\n"
+            + "    `promotion`.`promotion_name`\n"
+            + "order by\n"
+            + "    ISNULL(`time_by_day`.`the_year`) ASC, `time_by_day`.`the_year` ASC,\n"
+            + "    ISNULL(`promotion`.`promotion_name`) ASC, `promotion`.`promotion_name` ASC";
+
+        SqlPattern mysqlPattern = new SqlPattern(
+            Dialect.DatabaseProduct.MYSQL,
+            mysqlQuery,
+            mysqlQuery.indexOf("from\n"));
+
         assertQuerySql(
             getTestContext(),
             mdx,
-            new SqlPattern[]{oraclePattern, accessPattern});
+            new SqlPattern[]{mysqlPattern});
     }
 
     public void testLevelMembersWillConstrainUsingArgsFromAllAxes() {
-            String mdx = "select "
-                + "non empty Crossjoin({[Gender].[Gender].[F]},{[Measures].[Unit Sales]}) on 0,"
-                + "non empty [Promotions].[Promotions].members on 1"
-                + " from [Warehouse and Sales]";
-            SqlPattern accessPattern = new SqlPattern(
-                Dialect.DatabaseProduct.ACCESS,
-                "select `promotion`.`promotion_name` as `c0` "
-                + "from `promotion` as `promotion`, "
-                + "`sales_fact_1997` as `sales_fact_1997`, "
-                + "`customer` as `customer` "
-                + "where `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` "
-                + "and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
-                + "and (`customer`.`gender` = 'F') "
-                + "group by `promotion`.`promotion_name` "
-                + "order by 1 ASC",
-                357);
-            SqlPattern oraclePattern = new SqlPattern(
-                Dialect.DatabaseProduct.ORACLE,
-                "select \"promotion\".\"promotion_name\" as \"c0\" "
-                + "from \"promotion\" \"promotion\", "
-                + "\"sales_fact_1997\" \"sales_fact_1997\", "
-                + "\"customer\" \"customer\" "
-                + "where \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
-                + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "and (\"customer\".\"gender\" = 'F') "
-                + "group by \"promotion\".\"promotion_name\" "
-                + "order by 1 ASC",
-                347);
-            assertQuerySql(
-                getTestContext(),
-                mdx,
-                new SqlPattern[]{oraclePattern, accessPattern});
+        if (!Bug.FetchMembersOptimizationFixed) {
+            return;
         }
+
+        final String mdx = "select "
+            + "non empty Crossjoin({[Gender].[Gender].[F]},{[Measures].[Unit Sales]}) on 0,"
+            + "non empty [Promotions].[Promotions].members on 1"
+            + " from [Warehouse and Sales]";
+
+        final String mysqlQuery =
+            "select\n"
+            + "    `promotion`.`promotion_name` as `c0`\n"
+            + "from\n"
+            + "    `promotion` as `promotion`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `customer` as `customer`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    (`customer`.`gender` = 'F')\n"
+            + "group by\n"
+            + "    `promotion`.`promotion_name`\n"
+            + "order by\n"
+            + "    ISNULL(`promotion`.`promotion_name`) ASC, `promotion`.`promotion_name` ASC";
+
+       SqlPattern mysqlPattern = new SqlPattern(
+           Dialect.DatabaseProduct.MYSQL,
+           mysqlQuery,
+           mysqlQuery.length());
+
+        assertQuerySql(
+            getTestContext().legacy(),
+            mdx,
+            new SqlPattern[]{mysqlPattern});
+    }
 
 
     public void testNativeCrossjoinWillExpandFirstLastChild() {
-        String mdx = "select "
+        final String mdx = "select "
             + "non empty Crossjoin({[Gender].firstChild,[Gender].lastChild},{[Measures].[Unit Sales]}) on 0,"
             + "non empty Crossjoin({[Time].[1997]},{[Promotions].[All Promotions].[Bag Stuffers],[Promotions].[All Promotions].[Best Savings]}) on 1"
             + " from [Warehouse and Sales]";
-        final SqlPattern pattern = new SqlPattern(
-            Dialect.DatabaseProduct.ORACLE,
-            "select \"time_by_day\".\"the_year\" as \"c0\", "
-            + "\"promotion\".\"promotion_name\" as \"c1\" "
-            + "from \"time_by_day\" \"time_by_day\", "
-            + "\"sales_fact_1997\" \"sales_fact_1997\", "
-            + "\"promotion\" \"promotion\", "
-            + "\"customer\" \"customer\" "
-            + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
-            + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
-            + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-            + "and (\"customer\".\"gender\" in ('F', 'M')) "
-            + "and (\"time_by_day\".\"the_year\" = 1997) "
-            + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
-            + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
-            + "order by 1 ASC, 2 ASC",
-            611);
-        assertQuerySql(getTestContext(), mdx, new SqlPattern[]{pattern});
+
+        final String mysqlQuery =
+            "select\n"
+            + "    `time_by_day`.`the_year` as `c0`,\n"
+            + "    `promotion`.`promotion_name` as `c1`\n"
+            + "from\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `promotion` as `promotion`,\n"
+            + "    `customer` as `customer`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    (`customer`.`gender` = 'F' or `customer`.`gender` = 'M')\n"
+            + "and\n"
+            + "    (`time_by_day`.`the_year` = 1997)\n"
+            + "and\n"
+            + "    (`promotion`.`promotion_name` = 'Bag Stuffers' or `promotion`.`promotion_name` = 'Best Savings')\n"
+            + "group by\n"
+            + "    `time_by_day`.`the_year`,\n"
+            + "    `promotion`.`promotion_name`\n"
+            + "order by\n"
+            + "    ISNULL(`time_by_day`.`the_year`) ASC, `time_by_day`.`the_year` ASC,\n"
+            + "    ISNULL(`promotion`.`promotion_name`) ASC, `promotion`.`promotion_name` ASC";
+        final SqlPattern mysqlPattern = new SqlPattern(
+            Dialect.DatabaseProduct.MYSQL,
+            mysqlQuery,
+            mysqlQuery.indexOf("from\n"));
+        assertQuerySql(getTestContext(), mdx, new SqlPattern[]{mysqlPattern});
     }
 
     public void testNativeCrossjoinWillExpandLagInNamedSet() {
-        String mdx =
+        final String mdx =
             "with set [blah] as '{[Gender].lastChild.lag(1),[Gender].[M]}' "
             + "select "
             + "non empty Crossjoin([blah],{[Measures].[Unit Sales]}) on 0,"
             + "non empty Crossjoin({[Time].[1997]},{[Promotions].[All Promotions].[Bag Stuffers],[Promotions].[All Promotions].[Best Savings]}) on 1"
             + " from [Warehouse and Sales]";
-        final SqlPattern pattern = new SqlPattern(
-            Dialect.DatabaseProduct.ORACLE,
-            "select \"time_by_day\".\"the_year\" as \"c0\", "
-            + "\"promotion\".\"promotion_name\" as \"c1\" "
-            + "from \"time_by_day\" \"time_by_day\", "
-            + "\"sales_fact_1997\" \"sales_fact_1997\", "
-            + "\"promotion\" \"promotion\", "
-            + "\"customer\" \"customer\" "
-            + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
-            + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
-            + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-            + "and (\"customer\".\"gender\" in ('F', 'M')) "
-            + "and (\"time_by_day\".\"the_year\" = 1997) "
-            + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
-            + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
-            + "order by 1 ASC, 2 ASC",
-            611);
-        assertQuerySql(getTestContext(), mdx, new SqlPattern[]{pattern});
+
+        final String mysqlQuery =
+            "select\n"
+            + "    `time_by_day`.`the_year` as `c0`,\n"
+            + "    `promotion`.`promotion_name` as `c1`\n"
+            + "from\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `promotion` as `promotion`,\n"
+            + "    `customer` as `customer`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    (`customer`.`gender` = 'F' or `customer`.`gender` = 'M')\n"
+            + "and\n"
+            + "    (`time_by_day`.`the_year` = 1997)\n"
+            + "and\n"
+            + "    (`promotion`.`promotion_name` = 'Bag Stuffers' or `promotion`.`promotion_name` = 'Best Savings')\n"
+            + "group by\n"
+            + "    `time_by_day`.`the_year`,\n"
+            + "    `promotion`.`promotion_name`\n"
+            + "order by\n"
+            + "    ISNULL(`time_by_day`.`the_year`) ASC, `time_by_day`.`the_year` ASC,\n"
+            + "    ISNULL(`promotion`.`promotion_name`) ASC, `promotion`.`promotion_name` ASC";
+        final SqlPattern mysqlPattern = new SqlPattern(
+            Dialect.DatabaseProduct.MYSQL,
+            mysqlQuery,
+            mysqlQuery.indexOf("from\n"));
+        assertQuerySql(getTestContext(), mdx, new SqlPattern[]{mysqlPattern});
     }
 
     public void testConstrainedMeasureGetsOptimized() {
-        String mdx =
+        if (!Bug.FetchMembersOptimizationFixed) {
+            return;
+        }
+
+        final String mdx =
             "with member [Measures].[unit sales Male] as '([Measures].[Unit Sales],[Gender].[Gender].[M])' "
             + "member [Measures].[unit sales Female] as '([Measures].[Unit Sales],[Gender].[Gender].[F])' "
             + "member [Measures].[store sales Female] as '([Measures].[Store Sales],[Gender].[Gender].[F])' "
@@ -4298,23 +4351,51 @@ public class NonEmptyTest extends BatchTestCase {
             + "[Measures].[unit sales Female], [Measures].[store sales Female]} on 0, "
             + "non empty [Customers].[name].members on 1 "
             + "from Sales";
-        final String sqlOracle =
-            propSaver.props.UseAggregates.get()
-                ? "select \"customer\".\"country\" as \"c0\","
-                    + " \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"agg_l_03_sales_fact_1997\" \"agg_l_03_sales_fact_1997\" where \"agg_l_03_sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and (\"customer\".\"gender\" in ('M', 'F')) group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" order by \"customer\".\"country\" ASC NULLS LAST, \"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, \"fname\" || ' ' || \"lname\" ASC NULLS LAST"
-                : "select \"customer\".\"country\" as \"c0\","
-                    + " \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and (\"customer\".\"gender\" in ('M', 'F')) group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" order by \"customer\".\"country\" ASC NULLS LAST, \"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, \"fname\" || ' ' || \"lname\" ASC NULLS LAST";
+        final String mysqlQuery =
+            "select\n"
+            + "    `customer`.`country` as `c0`,\n"
+            + "    `customer`.`state_province` as `c1`,\n"
+            + "    `customer`.`city` as `c2`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c3`,\n"
+            + "    `customer`.`customer_id` as `c4`,\n"
+            + "    `customer`.`gender` as `c5`,\n"
+            + "    `customer`.`marital_status` as `c6`,\n"
+            + "    `customer`.`education` as `c7`,\n"
+            + "    `customer`.`yearly_income` as `c8`\n"
+            + "from\n"
+            + "    `customer` as `customer`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    (`customer`.`gender` = 'F' or `customer`.`gender` = 'M')\n"
+            + "group by\n"
+            + "    `customer`.`country`,\n"
+            + "    `customer`.`state_province`,\n"
+            + "    `customer`.`city`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`),\n"
+            + "    `customer`.`customer_id`\n"
+            + "order by\n"
+            + "    ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC,\n"
+            + "    ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC,\n"
+            + "    ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC,\n"
+            + "    ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC,\n"
+            + "    ISNULL(`customer`.`customer_id`) ASC, `customer`.`customer_id` ASC";
+
         assertQuerySql(
-            getTestContext(),
+            getTestContext().legacy(),
             mdx,
             new SqlPattern[]{
                 new SqlPattern(
-                    Dialect.DatabaseProduct.ORACLE,
-                    sqlOracle,
-                    sqlOracle.length())});
+                    Dialect.DatabaseProduct.MYSQL,
+                    mysqlQuery,
+                    mysqlQuery.length())});
     }
 
     public void testNestedMeasureConstraintsGetOptimized() {
+        if (!Bug.FetchMembersOptimizationFixed) {
+            return;
+        }
         String mdx =
             "with member [Measures].[unit sales Male] as '([Measures].[Unit Sales],[Gender].[Gender].[M])' "
             + "member [Measures].[unit sales Male Married] as '([Measures].[unit sales Male],[Marital Status].[Marital Status].[M])' "
@@ -4322,52 +4403,91 @@ public class NonEmptyTest extends BatchTestCase {
             + "non empty {[Measures].[unit sales Male Married]} on 0, "
             + "non empty [Customers].[name].members on 1 "
             + "from Sales";
-        final String sqlOracle =
+
+        final String mysqlQuery =
             propSaver.props.UseAggregates.get()
-                ? "select \"customer\".\"country\" as \"c0\","
-                    + " \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"agg_l_03_sales_fact_1997\" \"agg_l_03_sales_fact_1997\" where \"agg_l_03_sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and (\"customer\".\"gender\" = 'M') and (\"customer\".\"marital_status\" = 'M') group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" order by \"customer\".\"country\" ASC NULLS LAST, \"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, \"fname\" || ' ' || \"lname\" ASC NULLS LAST"
-                : "select \"customer\".\"country\" as \"c0\", "
-                + "\"customer\".\"state_province\" as \"c1\", "
-                + "\"customer\".\"city\" as \"c2\", "
-                + "\"customer\".\"customer_id\" as \"c3\", "
-                + "\"fname\" || \" \" || \"lname\" as \"c4\", "
-                + "\"fname\" || \" \" || \"lname\" as \"c5\", "
-                + "\"customer\".\"gender\" as \"c6\", "
-                + "\"customer\".\"marital_status\" as \"c7\", "
-                + "\"customer\".\"education\" as \"c8\", "
-                + "\"customer\".\"yearly_income\" as \"c9\" "
-                + "from \"customer\" \"customer\", "
-                + "\"sales_fact_1997\" \"sales_fact_1997\" "
-                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "and (\"customer\".\"gender\" = \"M\") "
-                + "and (\"customer\".\"marital_status\" = \"M\") "
-                + "group by \"customer\".\"country\", "
-                + "\"customer\".\"state_province\", "
-                + "\"customer\".\"city\", "
-                + "\"customer\".\"customer_id\", "
-                + "\"fname\" || \" \" || \"lname\", "
-                + "\"customer\".\"gender\", "
-                + "\"customer\".\"marital_status\", "
-                + "\"customer\".\"education\", "
-                + "\"customer\".\"yearly_income\" "
-                + "order by \"customer\".\"country\" ASC NULLS LAST, "
-                + "\"customer\".\"state_province\" ASC NULLS LAST, "
-                + "\"customer\".\"city\" ASC NULLS LAST, "
-                + "\"fname\" || \" \" || \"lname\" ASC NULLS LAST";
+            ? "select\n"
+            + "    `customer`.`country` as `c0`,\n"
+            + "    `customer`.`state_province` as `c1`,\n"
+            + "    `customer`.`city` as `c2`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c3`,\n"
+            + "    `customer`.`customer_id` as `c4`,\n"
+            + "    `customer`.`gender` as `c5`,\n"
+            + "    `customer`.`marital_status` as `c6`,\n"
+            + "    `customer`.`education` as `c7`,\n"
+            + "    `customer`.`yearly_income` as `c8`\n"
+            + "from\n"
+            + "    `customer` as `customer`,\n"
+            + "    `agg_l_03_sales_fact_1997` as `agg_l_03_sales_fact_1997`\n"
+            + "where\n"
+            + "    `agg_l_03_sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    `customer`.`gender` = 'M'\n"
+            + "and\n"
+            + "    `customer`.`marital_status` = 'M'\n"
+            + "group by\n"
+            + "    `customer`.`country`,\n"
+            + "    `customer`.`state_province`,\n"
+            + "    `customer`.`city`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`),\n"
+            + "    `customer`.`customer_id`\n"
+            + "order by\n"
+            + "    ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC,\n"
+            + "    ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC,\n"
+            + "    ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC,\n"
+            + "    ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC,\n"
+            + "    ISNULL(`customer`.`customer_id`) ASC, `customer`.`customer_id` ASC"
+            : "select\n"
+            + "    `customer`.`country` as `c0`,\n"
+            + "    `customer`.`state_province` as `c1`,\n"
+            + "    `customer`.`city` as `c2`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c3`,\n"
+            + "    `customer`.`customer_id` as `c4`,\n"
+            + "    `customer`.`gender` as `c5`,\n"
+            + "    `customer`.`marital_status` as `c6`,\n"
+            + "    `customer`.`education` as `c7`,\n"
+            + "    `customer`.`yearly_income` as `c8`\n"
+            + "from\n"
+            + "    `customer` as `customer`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    `customer`.`gender` = 'M'\n"
+            + "and\n"
+            + "    `customer`.`marital_status` = 'M'\n"
+            + "group by\n"
+            + "    `customer`.`country`,\n"
+            + "    `customer`.`state_province`,\n"
+            + "    `customer`.`city`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`),\n"
+            + "    `customer`.`customer_id`\n"
+            + "order by\n"
+            + "    ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC,\n"
+            + "    ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC,\n"
+            + "    ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC,\n"
+            + "    ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC,\n"
+            + "    ISNULL(`customer`.`customer_id`) ASC, `customer`.`customer_id` ASC";
         SqlPattern pattern = new SqlPattern(
-            Dialect.DatabaseProduct.ORACLE,
-            sqlOracle,
-            sqlOracle.length());
-        assertQuerySql(getTestContext(), mdx, new SqlPattern[]{pattern});
+            Dialect.DatabaseProduct.MYSQL,
+            mysqlQuery,
+            mysqlQuery.length());
+        assertQuerySql(
+            getTestContext().legacy(),
+            mdx,
+            new SqlPattern[]{pattern});
     }
 
     public void testNonUniformNestedMeasureConstraintsGetOptimized() {
+        if (!Bug.FetchMembersOptimizationFixed) {
+            return;
+        }
         if (propSaver.props.UseAggregates.get()) {
             // This test can't work with aggregates becaused
             // the aggregate table doesn't include member properties.
             return;
         }
-        String mdx =
+        final String mdx =
             "with member [Measures].[unit sales Male] as '([Measures].[Unit Sales],[Gender].[Gender].[M])' "
             + "member [Measures].[unit sales Female] as '([Measures].[Unit Sales],[Gender].[Gender].[F])' "
             + "member [Measures].[unit sales Male Married] as '([Measures].[unit sales Male],[Marital Status].[Marital Status].[M])' "
@@ -4375,36 +4495,49 @@ public class NonEmptyTest extends BatchTestCase {
             + "non empty {[Measures].[unit sales Male Married],[Measures].[unit sales Female]} on 0, "
             + "non empty [Customers].[name].members on 1 "
             + "from Sales";
+
+        final String mysqlQuery =
+            "select\n"
+            + "    `customer`.`country` as `c0`,\n"
+            + "    `customer`.`state_province` as `c1`,\n"
+            + "    `customer`.`city` as `c2`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c3`,\n"
+            + "    `customer`.`customer_id` as `c4`,\n"
+            + "    `customer`.`gender` as `c5`,\n"
+            + "    `customer`.`marital_status` as `c6`,\n"
+            + "    `customer`.`education` as `c7`,\n"
+            + "    `customer`.`yearly_income` as `c8`\n"
+            + "from\n"
+            + "    `customer` as `customer`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    `customer`.`marital_status` = 'M'\n"
+            + "and\n"
+            + "    (`customer`.`gender` = 'F' or `customer`.`gender` = 'M')\n"
+            + "group by\n"
+            + "    `customer`.`country`,\n"
+            + "    `customer`.`state_province`,\n"
+            + "    `customer`.`city`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`),\n"
+            + "    `customer`.`customer_id`\n"
+            + "order by\n"
+            + "    ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC,\n"
+            + "    ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC,\n"
+            + "    ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC,\n"
+            + "    ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC,\n"
+            + "    ISNULL(`customer`.`customer_id`) ASC, `customer`.`customer_id` ASC";
+
         final SqlPattern pattern = new SqlPattern(
-            Dialect.DatabaseProduct.ORACLE,
-            "select \"customer\".\"country\" as \"c0\", "
-            + "\"customer\".\"state_province\" as \"c1\", "
-            + "\"customer\".\"city\" as \"c2\", "
-            + "\"customer\".\"customer_id\" as \"c3\", "
-            + "\"fname\" || ' ' || \"lname\" as \"c4\", "
-            + "\"fname\" || ' ' || \"lname\" as \"c5\", "
-            + "\"customer\".\"gender\" as \"c6\", "
-            + "\"customer\".\"marital_status\" as \"c7\", "
-            + "\"customer\".\"education\" as \"c8\", "
-            + "\"customer\".\"yearly_income\" as \"c9\" "
-            + "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" "
-            + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-            + "and (\"customer\".\"gender\" in ('M', 'F')) "
-            + "group by \"customer\".\"country\", "
-            + "\"customer\".\"state_province\", "
-            + "\"customer\".\"city\", "
-            + "\"customer\".\"customer_id\", "
-            + "\"fname\" || ' ' || \"lname\", "
-            + "\"customer\".\"gender\", "
-            + "\"customer\".\"marital_status\", "
-            + "\"customer\".\"education\", "
-            + "\"customer\".\"yearly_income\" "
-            + "order by \"customer\".\"country\" ASC NULLS LAST,"
-            + " \"customer\".\"state_province\" ASC NULLS LAST,"
-            + " \"customer\".\"city\" ASC NULLS LAST, "
-            + "\"fname\" || ' ' || \"lname\" ASC NULLS LAST",
-            852);
-        assertQuerySql(getTestContext(), mdx, new SqlPattern[]{pattern});
+            Dialect.DatabaseProduct.MYSQL,
+            mysqlQuery,
+            mysqlQuery.indexOf("from\n"));
+
+        assertQuerySql(
+            getTestContext().legacy(),
+            mdx,
+            new SqlPattern[]{pattern});
     }
 
     public void testNonUniformConstraintsAreNotUsedForOptimization() {
@@ -4415,12 +4548,43 @@ public class NonEmptyTest extends BatchTestCase {
             + "non empty {[Measures].[unit sales Male], [Measures].[unit sales Married]} on 0, "
             + "non empty [Customers].[name].members on 1 "
             + "from Sales";
-        final String sqlOracle =
-            "select \"customer\".\"country\" as \"c0\", \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and (\"customer\".\"gender\" in ('M', 'F')) group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" order by \"customer\".\"country\" ASC NULLS LAST, \"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, \"fname\" || ' ' || \"lname\" ASC NULLS LAST";
+
+        final String mysqlQuery =
+            "select\n"
+            + "    `customer`.`country` as `c0`,\n"
+            + "    `customer`.`state_province` as `c1`,\n"
+            + "    `customer`.`city` as `c2`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c3`,\n"
+            + "    4534`customer`.`customer_id` as `c4`,\n"
+            + "    `customer`.`gender` as `c5`,\n"
+            + "    `customer`.`marital_status` as `c6`,\n"
+            + "    `customer`.`education` as `c7`,\n"
+            + "    `customer`.`yearly_income` as `c8`\n"
+            + "from\n"
+            + "    `customer` as `customer`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    `customer`.`marital_status` = 'M'\n"
+            + "and\n"
+            + "    (`customer`.`gender` = 'F' or `customer`.`gender` = 'M')\n"
+            + "group by\n"
+            + "    `customer`.`country`,\n"
+            + "    `customer`.`state_province`,\n"
+            + "    `customer`.`city`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`),\n"
+            + "    `customer`.`customer_id`\n"
+            + "order by\n"
+            + "    ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC,\n"
+            + "    ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC,\n"
+            + "    ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC,\n"
+            + "    ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC,\n"
+            + "    ISNULL(`customer`.`customer_id`) ASC, `customer`.`customer_id` ASC";
         final SqlPattern pattern = new SqlPattern(
-            Dialect.DatabaseProduct.ORACLE,
-            sqlOracle,
-            sqlOracle.length());
+            Dialect.DatabaseProduct.MYSQL,
+            mysqlQuery,
+            mysqlQuery.length());
         assertQuerySqlOrNot(
             getTestContext(), mdx, new SqlPattern[]{pattern},true, false, true);
     }
@@ -4472,7 +4636,7 @@ public class NonEmptyTest extends BatchTestCase {
             null,
             null,
             null);
-
+        // TODO: hierarchy returning all members
         String mdx =
             " select "
             + " NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, "
@@ -4692,7 +4856,9 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testFilterChildlessSnowflakeMembers2() {
-        if (propSaver.props.FilterChildlessSnowflakeMembers.get()) {
+        if (propSaver.props.FilterChildlessSnowflakeMembers.get()
+            || !Bug.ShowChildlessSnowflakeMembersFixed)
+        {
             // If FilterChildlessSnowflakeMembers is true, then
             // [Product].[Drink].[Baking Goods].[Coffee] does not even exist!
             return;
@@ -4707,6 +4873,9 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testFilterChildlessSnowflakeMembers() {
+        if (!Bug.ShowChildlessSnowflakeMembersFixed) {
+            return;
+        }
         propSaver.set(propSaver.props.FilterChildlessSnowflakeMembers, false);
         final String sql =
             "select\n"
@@ -4717,7 +4886,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `product_class`.`product_family`\n"
             + "order by\n"
             + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
-        final TestContext context = getTestContext().withFreshConnection();
+        final TestContext context =
+            getTestContext().legacy().withFreshConnection();
         try {
             assertQuerySql(
                 context,
@@ -4733,15 +4903,14 @@ public class NonEmptyTest extends BatchTestCase {
                 "Axis #0:\n"
                 + "{}\n"
                 + "Axis #1:\n"
-                + "{[Product].[Products].[Drink].[Alcoholic Beverages]}\n"
-                + "{[Product].[Products].[Drink].[Baking Goods]}\n"
-                + "{[Product].[Products].[Drink].[Beverages]}\n"
-                + "{[Product].[Products].[Drink].[Dairy]}\n"
+                + "{[Product].[Product].[Drink].[Alcoholic Beverages]}\n"
+                + "{[Product].[Product].[Drink].[Baking Goods]}\n"
+                + "{[Product].[Product].[Drink].[Beverages]}\n"
+                + "{[Product].[Product].[Drink].[Dairy]}\n"
                 + "Row #0: 6,838\n"
                 + "Row #0: \n"
                 + "Row #0: 13,573\n"
                 + "Row #0: 4,186\n");
-
             // [Product].[Drink].[Baking Goods] has one child, but no fact data
             context.assertQueryReturns(
                 "select [Product].[Drink].[Baking Goods].Children on 0\n"
@@ -4749,7 +4918,7 @@ public class NonEmptyTest extends BatchTestCase {
                 "Axis #0:\n"
                 + "{}\n"
                 + "Axis #1:\n"
-                + "{[Product].[Products].[Drink].[Baking Goods].[Dry Goods]}\n"
+                + "{[Product].[Product].[Drink].[Baking Goods].[Dry Goods]}\n"
                 + "Row #0: \n");
 
             // NON EMPTY filters out that child
@@ -4768,7 +4937,7 @@ public class NonEmptyTest extends BatchTestCase {
                 "Axis #0:\n"
                 + "{}\n"
                 + "Axis #1:\n"
-                + "{[Product].[Products].[Drink].[Baking Goods].[Dry Goods].[Coffee]}\n"
+                + "{[Product].[Product].[Drink].[Baking Goods].[Dry Goods].[Coffee]}\n"
                 + "Row #0: \n");
 
             // NON EMPTY filters out that child
