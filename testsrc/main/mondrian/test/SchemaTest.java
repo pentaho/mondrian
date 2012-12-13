@@ -5521,8 +5521,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     public void testCollapsedError() throws Exception {
-        if (MondrianProperties.instance().UseAggregates.get() == false
-            && MondrianProperties.instance().ReadAggregates.get() == false)
+        if (!MondrianProperties.instance().UseAggregates.get()
+            && !MondrianProperties.instance().ReadAggregates.get())
         {
             return;
         }

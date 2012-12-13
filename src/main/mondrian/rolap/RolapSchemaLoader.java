@@ -2976,12 +2976,8 @@ public class RolapSchemaLoader {
         for (RolapCubeLevel level : hierarchy.getLevelList()) {
             level.initLevel(this, level.hasClosedPeer());
         }
-        final MondrianDef.Hierarchy xmlHierarchy =
-            (MondrianDef.Hierarchy) validator.getXml(
-                hierarchy.getRolapHierarchy(), false);
         hierarchy.init2(this);
-        Util.putMulti(
-            cubeHierMap, hierarchy.getRolapHierarchy(), hierarchy);
+        Util.putMulti(cubeHierMap, hierarchy.getRolapHierarchy(), hierarchy);
     }
 
     void deferAssignDefaultMember(
