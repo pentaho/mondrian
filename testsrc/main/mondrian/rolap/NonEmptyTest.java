@@ -1492,7 +1492,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjMembersWithHideIfBlankLeafAndNoAll() {
         final TestContext testContext =
-            getTestContext().createSubstitutingCube(
+            getTestContext().legacy().createSubstitutingCube(
                 "Sales",
                 "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
                 + "  <Hierarchy hasAll=\"false\" primaryKey=\"product_id\">\n"
@@ -2371,9 +2371,6 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testLevelMembers() {
-        if (!Bug.FetchMembersOptimizationFixed) {
-            return;
-        }
         if (propSaver.props.TestExpDependencies.get() > 0) {
             // Dependency testing causes extra SQL reads, and screws up this
             // test.
@@ -2432,6 +2429,10 @@ public class NonEmptyTest extends BatchTestCase {
         // lookup all children of [Burlingame] -> not in cache
         MemberChildrenConstraint mcc = scf.getMemberChildrenConstraint(null);
         assertNull(ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc));
+
+        if (!Bug.PopulateChildrenCacheOnLevelMembersFixed) {
+            return;
+        }
 
         // lookup NON EMPTY children of [Burlingame] -> yes these are in cache
         mcc = scf.getMemberChildrenConstraint(context);
@@ -2509,9 +2510,6 @@ public class NonEmptyTest extends BatchTestCase {
      * <Level>.Members.
      */
     public void testDimensionMembers() {
-        if (!Bug.FetchMembersOptimizationFixed) {
-            return;
-        }
         // No query should return more than 20 rows. (1 row at 'all' level,
         // 1 row at nation level, 1 at state level, 20 at city level, and 11
         // at customers level = 34.)
