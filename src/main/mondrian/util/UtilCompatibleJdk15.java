@@ -64,7 +64,10 @@ public class UtilCompatibleJdk15 implements UtilCompatible {
         try {
             Class<? extends Annotation> annotationClass =
                 (Class<? extends Annotation>)
-                    Class.forName(annotationClassName);
+                    Class.forName(
+                        annotationClassName,
+                        true,
+                        Thread.currentThread().getContextClassLoader());
             if (method.isAnnotationPresent(annotationClass)) {
                 final Annotation annotation =
                     method.getAnnotation(annotationClass);

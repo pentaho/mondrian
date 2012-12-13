@@ -91,7 +91,10 @@ public class JdbcSchema {
                 factory = new StdFactory();
             } else {
                 try {
-                    Class<?> clz = Class.forName(classname);
+                    Class<?> clz = Class.forName(
+                        classname,
+                        true,
+                        Thread.currentThread().getContextClassLoader());
                     factory = (Factory) clz.newInstance();
                 } catch (ClassNotFoundException ex) {
                     throw mres.BadJdbcFactoryClassName.ex(classname);

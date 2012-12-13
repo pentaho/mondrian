@@ -468,7 +468,10 @@ public class RolapConnection extends ConnectionBase {
                     JndiDataSourceResolver.class.getName());
             try {
                 final Class<?> clazz;
-                clazz = Class.forName(className);
+                clazz = Class.forName(
+                    className,
+                    true,
+                    Thread.currentThread().getContextClassLoader());
                 if (!DataSourceResolver.class.isAssignableFrom(clazz)) {
                     throw Util.newInternal(
                         "Plugin class specified by property "

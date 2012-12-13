@@ -95,7 +95,10 @@ public final class SegmentCacheWorker {
         try {
             LOGGER.debug("Starting cache instance: " + cacheName);
             Class<?> clazz =
-                Class.forName(cacheName);
+                Class.forName(
+                    cacheName,
+                    true,
+                    Thread.currentThread().getContextClassLoader());
             Object scObject = clazz.newInstance();
             if (!(scObject instanceof SegmentCache)) {
                 throw MondrianResource.instance()

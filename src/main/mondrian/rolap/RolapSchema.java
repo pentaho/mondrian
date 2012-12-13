@@ -489,7 +489,10 @@ public class RolapSchema extends OlapElementBase implements Schema {
             final Class<UserDefinedFunction> klass;
             try {
                 //noinspection unchecked
-                klass = (Class<UserDefinedFunction>) Class.forName(className);
+                klass = (Class<UserDefinedFunction>) Class.forName(
+                    className,
+                    true,
+                    Thread.currentThread().getContextClassLoader());
             } catch (ClassNotFoundException e) {
                 throw MondrianResource.instance().UdfClassNotFound.ex(
                     name,
@@ -600,7 +603,10 @@ public class RolapSchema extends OlapElementBase implements Schema {
             Exception e2;
             try {
                 Properties properties = null;
-                Class<?> clazz = Class.forName(memberReaderClass);
+                Class<?> clazz = Class.forName(
+                    memberReaderClass,
+                    true,
+                    Thread.currentThread().getContextClassLoader());
                 Constructor<?> constructor = clazz.getConstructor(
                     RolapHierarchy.class,
                     Properties.class);
@@ -677,7 +683,10 @@ public class RolapSchema extends OlapElementBase implements Schema {
 
         if (!Util.isEmpty(dataSourceChangeListenerStr)) {
             try {
-                Class<?> clazz = Class.forName(dataSourceChangeListenerStr);
+                Class<?> clazz = Class.forName(
+                    dataSourceChangeListenerStr,
+                    true,
+                    Thread.currentThread().getContextClassLoader());
                 Constructor<?> constructor = clazz.getConstructor();
                 changeListener =
                     (DataSourceChangeListener) constructor.newInstance();
