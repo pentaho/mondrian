@@ -10,7 +10,6 @@
 */
 package mondrian.test;
 
-import mondrian.spi.Dialect;
 
 /**
  * Unit test for ragged hierarchies.
@@ -399,14 +398,20 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
             + "Row #22: 0\n");
     }
 
+    /**
+     * Unit test for <a href="http://jira.pentaho.com/browse/MONDRIAN-642">
+     * MONDRIAN-642, "Treat members that have only whitespace as blanks"</a>.
+     */
     public void testHideIfBlankHidesWhitespace() {
-        if (TestContext.instance().getDialect().getDatabaseProduct()
-            != Dialect.DatabaseProduct.ORACLE)
-        {
+        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        case MYSQL:
+        case ORACLE:
+            break;
+        default:
             return;
         }
         final TestContext testContext =
-            TestContext.instance().createSubstitutingCube(
+            TestContext.instance().legacy().createSubstitutingCube(
                 "Sales",
                 "<Dimension name=\"Gender4\" foreignKey=\"customer_id\">\n"
                 + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
@@ -414,15 +419,15 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
                 + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\" hideMemberIf=\"IfBlankName\">\n"
                 + "         <NameExpression> "
                 + " <SQL dialect='generic'> "
-                    +           "case \"gender\" "
-                    +           "when 'F' then ' ' "
-                    +           "when 'M' then 'M' "
-                    + " end "
-                    + "</SQL> "
-                    + "</NameExpression>  "
-                    + "      </Level>"
-                    + "    </Hierarchy>\n"
-                    + "  </Dimension>");
+                + "case \"gender\" "
+                + "when 'F' then ' ' "
+                + "when 'M' then 'M' "
+                + " end "
+                + "</SQL> "
+                + "</NameExpression>  "
+                + "      </Level>"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>");
         testContext.assertQueryReturns(
             " select {[Gender4].[Gender].members} "
             + "on COLUMNS "

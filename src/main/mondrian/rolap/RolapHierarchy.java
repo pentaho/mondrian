@@ -59,7 +59,7 @@ public class RolapHierarchy extends HierarchyBase {
      */
     private MemberReader memberReader;
     RolapMember defaultMember;
-    private RolapNullMember nullMember;
+    protected RolapMember nullMember;
 
     private Exp aggregateChildrenExpression;
 
@@ -72,7 +72,7 @@ public class RolapHierarchy extends HierarchyBase {
      * The 'all' member of this hierarchy. This exists even if the hierarchy
      * does not officially have an 'all' member.
      */
-    private RolapMemberBase allMember;
+    protected RolapMemberBase allMember;
     private static final int ALL_LEVEL_CARDINALITY = 1;
     private static final int NULL_LEVEL_CARDINALITY = 1;
     final RolapAttribute attribute;
@@ -175,6 +175,8 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 RolapLevel.HideMemberCondition.Never,
                 Collections.<String, Annotation>emptyMap());
+
+        this.nullMember = new RolapNullMember(nullLevel);
 
         if (dimension.isMeasures()) {
             levelList.add(
@@ -286,11 +288,7 @@ public class RolapHierarchy extends HierarchyBase {
         return defaultMember;
     }
 
-    public Member getNullMember() {
-        // use lazy initialization to get around bootstrap issues
-        if (nullMember == null) {
-            nullMember = new RolapNullMember(nullLevel);
-        }
+    public RolapMember getNullMember() {
         return nullMember;
     }
 
