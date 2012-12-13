@@ -10,6 +10,7 @@
 package mondrian.spi;
 
 import mondrian.olap.*;
+import mondrian.util.ClassResolver;
 
 import org.apache.log4j.Logger;
 
@@ -50,28 +51,17 @@ public interface VirtualFileHandler {
                         + "standard implementations");
                 }
                 for (String className : classNames) {
-                    Exception exception = null;
                     try {
                         VirtualFileHandler vfh =
-                            (VirtualFileHandler)
-                                Class.forName(className).newInstance();
-                        if (vfh != null) {
-                            LOGGER.info(
-                                "VirtualFileHandler: Using " + className);
-                            return vfh;
-                        }
-                    } catch (InstantiationException e) {
-                        exception = e;
-                    } catch (IllegalAccessException e) {
-                        exception = e;
-                    } catch (ClassNotFoundException e) {
-                        exception = e;
-                    } catch (ClassCastException e) {
-                        exception = e;
+                            ClassResolver.INSTANCE.instantiateSafe(className);
+                        LOGGER.info(
+                            "VirtualFileHandler: Using " + className);
+                        return vfh;
+                    } catch (Exception e) {
+                        LOGGER.info(
+                            "Failed to instantiate " + className,
+                            e);
                     }
-                    LOGGER.info(
-                        "Failed to instantiate " + className,
-                        exception);
                 }
                 final RuntimeException e =
                     Util.newError(

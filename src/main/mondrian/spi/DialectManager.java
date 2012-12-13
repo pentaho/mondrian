@@ -12,7 +12,7 @@ package mondrian.spi;
 import mondrian.olap.Util;
 import mondrian.spi.impl.JdbcDialectFactory;
 import mondrian.spi.impl.JdbcDialectImpl;
-import mondrian.util.ServiceDiscovery;
+import mondrian.util.*;
 
 import java.lang.reflect.*;
 import java.sql.Connection;
@@ -269,13 +269,14 @@ public abstract class DialectManager {
             if (dialectClassName != null) {
                 // Instantiate explicit dialect class.
                 try {
-                    Class<?> dialectClass = Class.forName(dialectClassName);
-                    if (!Dialect.class.isAssignableFrom(dialectClass)) {
-                        throw new RuntimeException(
-                            "Dialect class " + dialectClass
-                            + " does not implement interface " + Dialect.class);
-                    }
-                    factory = createFactoryForDialect((Class) dialectClass);
+                    Class<? extends Dialect> dialectClass =
+                        ClassResolver.INSTANCE.forName(dialectClassName, true)
+                            .asSubclass(Dialect.class);
+                    factory = createFactoryForDialect(dialectClass);
+                } catch (ClassCastException e) {
+                    throw new RuntimeException(
+                        "Dialect class " + dialectClassName
+                        + " does not implement interface " + Dialect.class);
                 } catch (Exception e) {
                     throw new RuntimeException(
                         "Cannot instantiate dialect class '"

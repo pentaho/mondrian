@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho and others
+// Copyright (C) 2007-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -25,25 +25,28 @@ import java.util.Properties;
  * methods for producing implementation instances - the same method is
  * used both for test and non-test modes. There are two ways of
  * modifying the implementation returned to the application code.
- * The first is for the application to use Properties.
+ *
+ * <p>The first is for the application to use Properties.
  * The <code>ObjectFactory</code> implementation looks for a given
  * property (by default the name of the property is the class name
  * of the interfaceClass object) and if found uses it as the classname
- * to create.
- * A second approach is to use a ThreadLocal; if the ThreadLocal
- * is non-empty then use it as the classname.
- * <p>
- * When to use a Factory?
- * <p>
- * Everyone has an opinion. For me, there are two criteria: enabling
+ * to create.</p>
+ *
+ * <p>A second approach is to use a ThreadLocal; if the ThreadLocal
+ * is non-empty then use it as the class name.</p>
+ *
+ * <p>When to use a Factory?
+ *
+ * <p>Everyone has an opinion. For me, there are two criteria: enabling
  * unit testing and providing end-user/developer-customizer overriding.
- * <p>
- * If a method has side-effects, either its result depends upon
+ *
+ * <p>If a method has side-effects, either its result depends upon
  * a side-effect or calling it causes a side-effect, then the Object
  * hosting the method is a candidate for having a factory. Why?
  * Well, consider the case where a method returns the value of
  * a System property and the System property is determined only once
  * and set to a static final variable:
+ *
  * <pre>
  *      class OneValue {
  *          private static final boolean propValue;
@@ -56,73 +59,75 @@ import java.util.Properties;
  *          }
  *      }
  * </pre>
- * <p>
- * In this case, only one value is ever returned. If you have a
+ *
+ * <p>In this case, only one value is ever returned. If you have a
  * module, a client of the above code, that uses the value returned
  * by a call to the
  * <code>hasInfo()</code> method, how do you write a unit test of
  * your module that tests both possible return values?
  * You can not, its value is based upon a side-effect, an external
- * value that can not be controled by the unit test.
- * If the <code>OneValue</code> class was an interface and there was a factory,
- * then the unit test could arrange that its own version of the
+ * value that can not be controlled by the unit test.</p>
+ *
+ * <p>If the <code>OneValue</code> class was an interface and there was a
+ * factory, then the unit test could arrange that its own version of the
  * <code>OneValue</code>
  * interface was returned and in one test arrange that <code>true</code>
  * was returned and in a second test, arrange that <code>false</code>
- * was returned.
- * <p>
- * The above is a trivial example of code that disallows clients of the
- * code from being properly tested.
- * <p>
- * Another example might be a module that directly initializes a JMS
+ * was returned.</p>
+ *
+ * <p>The above is a trivial example of code that disallows clients of the
+ * code from being properly tested.</p>
+ *
+ * <p>Another example might be a module that directly initializes a JMS
  * queue and receives JMS message
  * from the JMS queue. This code can not be tested without having a live
  * JMS queue. On the other hand, if one defines an interface allowing
  * one to wrap access to the JMS queue and accesses the implementation
  * via a factory, then unit tests can be create that use a mock
- * JMS queue.
- * <p>
- * With regards to providing end-user/developer-customizer overriding,
+ * JMS queue.</p>
+ *
+ * <p>With regards to providing end-user/developer-customizer overriding,
  * its generally good to have a flexible application framework.
  * Experimental or just different implementations can be developed and
- * tested without having to touch a lot of the application code itself.
- * <p>
- * There is, of course, a trade-off between the use of a factory
- * and the size or simplicity of the object being created.
- * <p>
- * What are the requirements for a template ObjectFactory?
- * <p>
- * First, every implementation must support the writing of unit tests.
+ * tested without having to touch a lot of the application code itself.</p>
+ *
+ * <p>There is, of course, a trade-off between the use of a factory
+ * and the size or simplicity of the object being created.</p>
+ *
+ * <p>What are the requirements for a template ObjectFactory?</p>
+ *
+ * <p>First, every implementation must support the writing of unit tests.
  * What this means it that test cases can override what the factory
  * produces. The test cases can all use the same produced Object or
  * each can request an Object targeted to its particular test. All this
- * without changing the <code>default</code> behavior of the factory.
- * <p>
- * Next, it should be possible to create a factory from the template that
+ * without changing the <code>default</code> behavior of the factory.</p>
+ *
+ * <p>Next, it should be possible to create a factory from the template that
  * is intended to deliver the same Object each time it is called, a
  * different, new Object each time it is called, or, based on the
  * calling environment (parameters, properties, <code>ThreadLocal</code>,
  * etc.) one of a set of Objects. These are possible <code>default</code>
- * behaviors, but, again, they can be overridden for test purposes.
- * <p>
- * While a factory has a <code>default</code> behavior in an
+ * behaviors, but, again, they can be overridden for test purposes.</p>
+ *
+ * <p>While a factory has a <code>default</code> behavior in an
  * application, it must be possible for every factory's behavior
  * in that application to be globally overridden. What that means is
  * if the application designer has dictated a <code>default</code>, the
  * application user should be able to change the default. An example of
  * this is overriding what Object is returned based upon a
- * <code>System</code> property value.
- * <p>
- * Lastly, every factory is a singleton - if an interface with
+ * <code>System</code> property value.</p>
+ *
+ * <p>Lastly, every factory is a singleton - if an interface with
  * an implementation whose creation is mediated by a factory, then
  * there is a single factory that does that creating.
  * This does not mean that such a factory always return the same value,
- * rather that there is only one instance of the factory itself.
- * <p>
- * The following is an example class that generates a factory
+ * rather that there is only one instance of the factory itself.</p>
+ *
+ * <p>The following is an example class that generates a factory
  * singleton. In this case, the factory extends the
  * <code>ObjectFactory</code>
- * rather than the <code>ObjectFactory.Singleton</code>:
+ * rather than the <code>ObjectFactory.Singleton</code>:</p>
+ *
  * <pre>
  *
  *      public final class FooFactory extends ObjectFactory<Foo> {
@@ -142,9 +147,9 @@ import java.util.Properties;
  *      }
  *
  * </pre>
- * <p>
- * There are multiple ways of creating derived classes that have support
- * for unit testing. A very simple way is to use <code>ThreadLocal</code>s.
+ *
+ * <p>There are multiple ways of creating derived classes that have support
+ * for unit testing. A very simple way is to use <code>ThreadLocal</code>s.</p>
  *
  * <pre>
  *
@@ -164,17 +169,17 @@ import java.util.Properties;
  *          }
  *
  * </pre>
- * <p>
- * Here, the unit test will call the <code>setThreadLocalClassName</code>
- * method setting it with the class name of a specialized implemetation of
+ *
+ * <p>Here, the unit test will call the <code>setThreadLocalClassName</code>
+ * method setting it with the class name of a specialized implementation of
  * the template interface. In the <code>finally</code> clause of the
  * unit test, it is very important that there be a call to the
  * <code>clearThreadLocalClassName</code> method so that other
  * tests, etc. do not get an instance of the test-specific specialized
- * implementation.
- * <p>
- * The following is an example unit test that uses the factory's
- * <code>ThreadLocal</code> to override the implementation that is returned.
+ * implementation.</p>
+ *
+ * <p>The following is an example unit test that uses the factory's
+ * <code>ThreadLocal</code> to override the implementation that is returned.</p>
  *
  * <pre>
  *      interface Boo {
@@ -266,12 +271,12 @@ import java.util.Properties;
  *      }
  *
  * </pre>
- * <p>
- * While this is a very simple example, it shows how using such factories
+ *
+ * <p>While this is a very simple example, it shows how using such factories
  * can aid in creating testable code. The MyCode method is a client of
  * the Boo implementation. How to test the two different code branches the
  * method can take? Because the Boo object is generated by a factory,
- * one can override what object the factory returns.
+ * one can override what object the factory returns.</p>
  *
  * @author Richard M. Emberson
  * @since Feb 01 2007
@@ -413,10 +418,8 @@ public abstract class ObjectFactory<V> {
         try {
             // As a place to begin google:
             //   org.apache.cxf.BusFactoryHelper.java
-            final ClassLoader loader =
-                Thread.currentThread().getContextClassLoader();
             final Class<?> genericClass =
-                Class.forName(className, true, loader);
+                ClassResolver.INSTANCE.forName(className, true);
 
             // Are we creating a Proxy or an instance?
             if (InvocationHandler.class.isAssignableFrom(genericClass)) {
@@ -424,13 +427,14 @@ public abstract class ObjectFactory<V> {
                     genericClass.getConstructor(parameterTypes);
                 InvocationHandler handler = (InvocationHandler)
                     constructor.newInstance(parameterValues);
+                //noinspection unchecked
                 return (V) Proxy.newProxyInstance(
-                    loader,
+                    genericClass.getClassLoader(),
                     new Class[] { this.interfaceClass },
                     handler);
             } else {
                 final Class<? extends V> specificClass =
-                    asSubclass(this.interfaceClass, genericClass);
+                    genericClass.asSubclass(interfaceClass);
                 final Constructor<? extends V> constructor =
                     specificClass.getConstructor(parameterTypes);
 
@@ -441,28 +445,6 @@ public abstract class ObjectFactory<V> {
                 "Error creating object of type \""
                 + this.interfaceClass.getName() + "\"",
                 exc);
-        }
-    }
-
-    /**
-     * This is a back port of a 1.5 version Class method.
-     *
-     * @param clazz the base class which the genericClass will be case
-     * @param genericClass the class to be cast to the base clazz
-     * @return this <tt>Class</tt> object, cast to represent a subclass of
-     * the specified class object.
-     * @throws ClassCastException if this <tt>Class</tt> object does
-     * not represent a subclass of the specified class (here "subclass"
-     * includes the class itself).
-     */
-    private static <V> Class<? extends V> asSubclass(
-        final Class<V> clazz,
-        final Class<?> genericClass)
-    {
-        if (clazz.isAssignableFrom(genericClass)) {
-            return (Class<? extends V>) genericClass;
-        } else {
-            throw new ClassCastException(genericClass.toString());
         }
     }
 
@@ -522,29 +504,13 @@ public abstract class ObjectFactory<V> {
     protected abstract V getDefault(
         Class[] parameterTypes,
         Object[] parameterValues)
-    throws CreationException;
+        throws CreationException;
 
     /**
-     * Factory method which creates an exception to be thrown
-     * if an object can not be created.
+     * Gets the current override values in the opaque context object and
+     * clears those values within the Factory.
      *
-     * @return an exception to be thrown if an object can not be created
-     */
-    // REVIEW: jhyde, 2007/2/4: CreationException is superfluous, since it's
-    // unlikely that anyone will want to handle it. This code should wrap the
-    // error using Util.newError, just like elsewhere in mondrian.
-    protected CreationException defaultCreationException() {
-        return new CreationException(
-            "Error creating object of type \""
-            + this.interfaceClass.getName()
-            + "\"");
-    }
-
-    /**
-     * Get the current override values in the opaque context object and
-     * clear those values within the Factory.
-     * <p>
-     * This is used in testing.
+     * <p>This is used in testing.
      *
      * @return the test <code>Context</code> object.
      */
@@ -553,9 +519,9 @@ public abstract class ObjectFactory<V> {
     }
 
     /**
-     * Restore the context object resetting override values.
-     * <p>
-     * This is used in testing.
+     * Restores the context object resetting override values.
+     *
+     * <p>This is used in testing.
      *
      * @param context the context object to be restored.
      */

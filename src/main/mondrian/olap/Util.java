@@ -160,17 +160,7 @@ public class Util extends XOMUtil {
         } else {
             className = "mondrian.util.UtilCompatibleJdk16";
         }
-        try {
-            Class<UtilCompatible> clazz =
-                (Class<UtilCompatible>) Class.forName(className);
-            compatible = clazz.newInstance();
-        } catch (ClassNotFoundException e) {
-            throw Util.newInternal(e, "Could not load '" + className + "'");
-        } catch (InstantiationException e) {
-            throw Util.newInternal(e, "Could not load '" + className + "'");
-        } catch (IllegalAccessException e) {
-            throw Util.newInternal(e, "Could not load '" + className + "'");
-        }
+        compatible = ClassResolver.INSTANCE.instantiateSafe(className);
 
         // Figure out whether scripting is available.
         // We know that scripting only exists in JDK 1.6 and later.

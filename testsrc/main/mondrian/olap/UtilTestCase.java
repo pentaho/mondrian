@@ -1825,6 +1825,56 @@ public class UtilTestCase extends TestCase {
         }
     }
 
+    /** Unit test for {@link IteratorIterable}. */
+    public static void testIterableIterator() {
+        final List<String> list = Arrays.asList("a", "b", "c", "d");
+
+        // Full through.
+        final List<String> list2 = new ArrayList<String>();
+        for (String s : new IteratorIterable<String>(list.iterator())) {
+            list2.add(s);
+        }
+        assertEquals(list2, list);
+
+        // On empty list.
+        final IteratorIterable<Object> iterable =
+            new IteratorIterable<Object>(Collections.emptyIterator());
+        assertFalse(iterable.iterator().hasNext());
+        assertFalse(iterable.iterator().hasNext());
+
+        // Part way through.
+        final Iterable<String> iterable1 =
+            new IteratorIterable<String>(list.iterator());
+        final Iterator<String> iterator1 = iterable1.iterator();
+        assertTrue(iterator1.hasNext());
+        assertEquals("a", iterator1.next());
+        assertTrue(iterator1.hasNext());
+        assertEquals("b", iterator1.next());
+
+        final Iterator<String> iterator2 = iterable1.iterator();
+        assertTrue(iterator2.hasNext());
+        assertEquals("a", iterator2.next());
+
+        assertTrue(iterator1.hasNext());
+        assertEquals("c", iterator1.next());
+
+        assertTrue(iterator2.hasNext());
+        assertEquals("b", iterator2.next());
+        assertTrue(iterator2.hasNext());
+        assertEquals("c", iterator2.next());
+        assertTrue(iterator2.hasNext());
+        assertEquals("d", iterator2.next());
+        assertFalse(iterator2.hasNext());
+
+        assertTrue(iterator1.hasNext());
+        assertEquals("d", iterator1.next());
+        assertFalse(iterator1.hasNext());
+
+        final Iterator<String> iterator3 = iterable1.iterator();
+        assertTrue(iterator3.hasNext());
+        assertEquals("a", iterator3.next());
+    }
+
     /**
      * Simple implementation of {@link mondrian.util.DirectedGraph.Edge}.
      */
