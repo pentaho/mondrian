@@ -552,7 +552,7 @@ public class RolapSchemaReader
         final MemberReader memberReader =
             getMemberReader(level.getHierarchy());
         List<RolapMember> membersInLevel =
-            memberReader.getMembersInLevel(rolapLevel);
+            memberReader.getMembersInLevel(rolapLevel, constraint);
         return Util.cast(membersInLevel);
     }
 
