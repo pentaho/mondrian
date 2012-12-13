@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde and others
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -110,7 +110,7 @@ outer:
                 }
             }
             int returnType = decodeReturnCategory(signature);
-            FunDef dummy = createDummyFunDef(this, returnType, args);
+            FunDef dummy = createDummyFunDef(this, returnType, parameterTypes);
             return createFunDef(args, dummy);
         }
         return null;

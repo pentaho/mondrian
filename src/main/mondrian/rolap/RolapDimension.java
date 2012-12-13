@@ -73,6 +73,8 @@ class RolapDimension extends DimensionBase {
      */
     Lazy<RolapSchema.PhysKey> key;
 
+    final boolean hanger;
+
     RolapDimension(
         RolapSchema schema,
         String name,
@@ -80,6 +82,7 @@ class RolapDimension extends DimensionBase {
         String caption,
         String description,
         org.olap4j.metadata.Dimension.Type dimensionType,
+        boolean hanger,
         Map<String, Annotation> annotationMap)
     {
         // todo: recognition of a time dimension should be improved
@@ -93,6 +96,7 @@ class RolapDimension extends DimensionBase {
         assert annotationMap != null;
         assert schema != null;
         this.schema = schema;
+        this.hanger = hanger;
         this.annotationMap = annotationMap;
     }
 

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2010 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.type;
@@ -284,14 +284,14 @@ public class TypeUtil {
             case Category.Member:
             case Category.Tuple:
             case Category.Hierarchy:
-                // It is more difficult to convert dimension->hierarchy than
-                // hierarchy->dimension
-                conversions.add(new ConversionImpl(from, to, ordinal, 2, e));
+                // It is more difficult to convert dimension->hierarchy (cost=3)
+                // than hierarchy->dimension (cost=2)
+                conversions.add(new ConversionImpl(from, to, ordinal, 3, e));
                 return true;
             case Category.Level:
                 // It is more difficult to convert dimension->level than
                 // dimension->member or dimension->hierarchy->member.
-                conversions.add(new ConversionImpl(from, to, ordinal, 3, null));
+                conversions.add(new ConversionImpl(from, to, ordinal, 4, null));
                 return true;
             default:
                 return false;
@@ -303,6 +303,8 @@ public class TypeUtil {
             // '[Product].CurrentMember.PrevMember'.
             switch (to) {
             case Category.Dimension:
+                conversions.add(new ConversionImpl(from, to, ordinal, 2, null));
+                return true;
             case Category.Member:
             case Category.Tuple:
                 conversions.add(new ConversionImpl(from, to, ordinal, 1, null));
@@ -317,10 +319,10 @@ public class TypeUtil {
                 // hierarchy. For example, we want '[Store City].CurrentMember'
                 // to resolve to <Hierarchy>.CurrentMember rather than
                 // <Dimension>.CurrentMember.
-                conversions.add(new ConversionImpl(from, to, ordinal, 2, null));
+                conversions.add(new ConversionImpl(from, to, ordinal, 3, null));
                 return true;
             case Category.Hierarchy:
-                conversions.add(new ConversionImpl(from, to, ordinal, 1, null));
+                conversions.add(new ConversionImpl(from, to, ordinal, 2, null));
                 return true;
             default:
                 return false;
@@ -338,27 +340,27 @@ public class TypeUtil {
             case Category.Hierarchy:
             case Category.Level:
             case Category.Tuple:
-                conversions.add(new ConversionImpl(from, to, ordinal, 1, null));
+                conversions.add(new ConversionImpl(from, to, ordinal, 2, null));
                 return true;
             case Category.Set:
-                // It is more expensive to convert from Member->Set (cost=2)
+                // It is more expensive to convert from Member->Set (cost=3)
                 // than Member->Tuple (cost=1). In particular, m.Tuple(n) should
                 // resolve to <Tuple>.Item(<Numeric>) rather than
                 // <Set>.Item(<Numeric>).
-                conversions.add(new ConversionImpl(from, to, ordinal, 2, null));
+                conversions.add(new ConversionImpl(from, to, ordinal, 3, null));
                 return true;
             case Category.Numeric:
-                // It is more expensive to convert from Member->Scalar (cost=3)
-                // than Member->Set (cost=2). In particular, we want 'member *
+                // It is more expensive to convert from Member->Scalar (cost=4)
+                // than Member->Set (cost=3). In particular, we want 'member *
                 // set' to resolve to the crossjoin operator, '{m} * set'.
-                conversions.add(new ConversionImpl(from, to, ordinal, 3, null));
+                conversions.add(new ConversionImpl(from, to, ordinal, 4, null));
                 return true;
             case Category.Value:
             case Category.String:
                 // We assume that measures are numeric, so a cast to a string or
-                // general value expression is more expensive (cost=4) than a
-                // conversion to a numeric expression (cost=3).
-                conversions.add(new ConversionImpl(from, to, ordinal, 4, null));
+                // general value expression is more expensive (cost=5) than a
+                // conversion to a numeric expression (cost=4).
+                conversions.add(new ConversionImpl(from, to, ordinal, 5, null));
                 return true;
             default:
                 return false;
@@ -374,7 +376,7 @@ public class TypeUtil {
         case Category.Numeric:
             switch (to) {
             case Category.Logical:
-                conversions.add(new ConversionImpl(from, to, ordinal, 2, null));
+                conversions.add(new ConversionImpl(from, to, ordinal, 3, null));
                 return true;
             case Category.Value:
             case Category.Integer:
@@ -431,21 +433,21 @@ public class TypeUtil {
         case Category.Tuple:
             switch (to) {
             case Category.Set:
-                conversions.add(new ConversionImpl(from, to, ordinal, 2, null));
+                conversions.add(new ConversionImpl(from, to, ordinal, 3, null));
                 return true;
             case Category.Numeric:
-                // It is more expensive to convert from Tuple->Scalar (cost=4)
-                // than Tuple->Set (cost=3). In particular, we want 'tuple *
+                // It is more expensive to convert from Tuple->Scalar (cost=5)
+                // than Tuple->Set (cost=4). In particular, we want 'tuple *
                 // set' to resolve to the crossjoin operator, '{tuple} * set'.
                 // This is analogous to Member->Numeric conversion.
-                conversions.add(new ConversionImpl(from, to, ordinal, 3, null));
+                conversions.add(new ConversionImpl(from, to, ordinal, 4, null));
                 return true;
             case Category.String:
             case Category.Value:
                 // We assume that measures are numeric, so a cast to a string or
-                // general value expression is more expensive (cost=4) than a
-                // conversion to a numeric expression (cost=3).
-                conversions.add(new ConversionImpl(from, to, ordinal, 4, null));
+                // general value expression is more expensive (cost=5) than a
+                // conversion to a numeric expression (cost=4).
+                conversions.add(new ConversionImpl(from, to, ordinal, 5, null));
                 return true;
             default:
                 return false;
@@ -457,7 +459,7 @@ public class TypeUtil {
             case Category.String:
             case Category.Numeric:
             case Category.Logical:
-                conversions.add(new ConversionImpl(from, to, ordinal, 2, null));
+                conversions.add(new ConversionImpl(from, to, ordinal, 3, null));
                 return true;
             default:
                 return false;
@@ -470,7 +472,7 @@ public class TypeUtil {
             if (Category.isScalar(to)) {
                 return true;
             } else if (to == Category.Member) {
-                conversions.add(new ConversionImpl(from, to, ordinal, 2, null));
+                conversions.add(new ConversionImpl(from, to, ordinal, 3, null));
                 return true;
             } else {
                 return false;
@@ -481,13 +483,6 @@ public class TypeUtil {
             throw Util.newInternal(
                 "unknown category " + from + " for type " + fromType);
         }
-    }
-
-    static <T> T neq(T t1, T t2) {
-        return t1 == null  ? t2
-            : t2 == null ? t1
-                : t1.equals(t2) ? t1
-                    : null;
     }
 
     /**

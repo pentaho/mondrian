@@ -88,18 +88,28 @@ class RolapEvaluatorRoot {
         List<RolapMember> list = new ArrayList<RolapMember>();
         nonAllPositions = new int[cube.getHierarchyList().size()];
         nonAllPositionCount = 0;
+        final RolapSchema schema = schemaReader.getSchema();
         for (RolapCubeHierarchy hierarchy : cube.getHierarchyList()) {
-            RolapMember defaultMember =
-                (RolapMember) schemaReader.getHierarchyDefaultMember(hierarchy);
-            assert defaultMember != null;
-            assert hierarchy.getOrdinalInCube() == list.size();
-
-            if (hierarchy.isScenario
+            final RolapMember defaultMember;
+            if (schema.getSchemaLoadDate() == null) {
+                // Schema is still loading. This is a bootstrap query, to load
+                // calculated members and sets. Since we've not loaded
+                // calculated members, and this hierarchy's default member might
+                // be a calculated member, use the 'all' member, a safe
+                // approximation.
+                defaultMember = hierarchy.getAllMember();
+            } else if (hierarchy.isScenario
                 && connection.getScenario() != null)
             {
                 defaultMember =
                     ((ScenarioImpl) connection.getScenario()).getMember();
+            } else {
+                defaultMember =
+                    (RolapMember) schemaReader.getHierarchyDefaultMember(
+                        hierarchy);
             }
+            assert defaultMember != null;
+            assert hierarchy.getOrdinalInCube() == list.size();
 
             list.add(defaultMember);
             if (!defaultMember.isAll()) {
@@ -109,7 +119,7 @@ class RolapEvaluatorRoot {
             }
         }
         this.defaultMembers = list.toArray(new RolapMember[list.size()]);
-        this.dialect = schemaReader.getSchema().getDialect();
+        this.dialect = schema.getDialect();
 
         this.recursionCheckCommandCount = (defaultMembers.length << 4);
     }

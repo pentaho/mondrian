@@ -119,6 +119,9 @@ public class RolapSchema extends OlapElementBase implements Schema {
     final List<RolapSchemaParameter > parameterList =
         new ArrayList<RolapSchemaParameter >();
 
+    /** The date at which the schema was loaded. Set at the end of
+     * initialization; therefore this is null if and only if the schema is
+     * in bootstrap. */
     private Date schemaLoadDate;
 
     private DataSourceChangeListener dataSourceChangeListener;
@@ -625,6 +628,13 @@ public class RolapSchema extends OlapElementBase implements Schema {
             throw Util.newInternal(
                 e2,
                 "while instantiating member reader '" + memberReaderClass);
+        } else if (hierarchy.getDimension().hanger) {
+            final List<RolapMember> memberList = new ArrayList<RolapMember>();
+            if (hierarchy.hasAll()) {
+                memberList.add(hierarchy.getAllMember());
+            }
+            return new CacheMemberReader(
+                new HangerMemberSource(hierarchy, memberList));
         } else {
             SqlMemberSource source = new SqlMemberSource(hierarchy);
             if (hierarchy.getDimension().isHighCardinality()) {
@@ -725,6 +735,19 @@ public class RolapSchema extends OlapElementBase implements Schema {
     {
         funTable = new RolapSchemaFunctionTable(userDefinedFunctions);
         ((RolapSchemaFunctionTable) funTable).init();
+    }
+
+    /** Source of members for a hanger dimension. Often a hanger dimension is
+     * empty, or only has an 'all' member; the other members are all calculated.
+     */
+    private static class HangerMemberSource extends ArrayMemberSource {
+        /** Creates a HangerMemberSource. */
+        public HangerMemberSource(
+            RolapHierarchy hierarchy,
+            List<RolapMember> memberList)
+        {
+            super(hierarchy, memberList);
+        }
     }
 
     /**

@@ -536,8 +536,7 @@ public class SmartMemberReader implements MemberReader {
     }
 
     public RolapMember getDefaultMember() {
-        RolapMember defaultMember =
-            (RolapMember) getHierarchy().getDefaultMember();
+        RolapMember defaultMember = getHierarchy().getDefaultMember();
         if (defaultMember != null) {
             return defaultMember;
         }

@@ -231,12 +231,6 @@ public class RolapCubeHierarchy extends RolapHierarchy {
 
     // override with stricter return type; make final, important for performance
     public final RolapCubeMember getDefaultMember() {
-        if (currentDefaultMember == null) {
-            reader.getRootMembers();
-            currentDefaultMember =
-                bootstrapLookup(
-                    (RolapMember) rolapHierarchy.getDefaultMember());
-        }
         return currentDefaultMember;
     }
 
@@ -248,7 +242,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
      * @param rolapMember Member of underlying hierarchy
      * @return Member of this hierarchy
      */
-    private RolapCubeMember bootstrapLookup(RolapMember rolapMember) {
+    RolapCubeMember bootstrapLookup(RolapMember rolapMember) {
         RolapCubeMember parent =
             rolapMember.getParentMember() == null
                 ? null
@@ -272,38 +266,25 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         return currentNullMember;
     }
 
-    /**
-     * Returns the 'all' member.
-     */
     public RolapCubeMember getAllMember() {
         return currentAllMember;
     }
 
-//    @Override
-//    MemberReader createMemberReader(Role role) {
-//        MemberReader memberReader = rolapHierarchy.createMemberReader(role);
-//        if (memberReader == null) {
-//            memberReader = createMemberReader(this, role);
-//        }
-//        return memberReader;
-//    }
-
     void setMemberReader(MemberReader memberReader) {
-        Util.deprecated("not used?", true);
-        rolapHierarchy.setMemberReader(memberReader);
+        throw new UnsupportedOperationException();
     }
 
     MemberReader getMemberReader() {
         return reader;
     }
 
-    public void setDefaultMember(Member defaultMeasure) {
-        // refactor this!
-        rolapHierarchy.setDefaultMember(defaultMeasure);
-
-        currentDefaultMember =
-            lookup(
-                (RolapMember) rolapHierarchy.getDefaultMember());
+    public void setDefaultMember(RolapMember member) {
+        if (member instanceof RolapCubeMember) {
+            currentDefaultMember = (RolapCubeMember) member;
+        } else {
+            assert member instanceof RolapBaseCubeMeasure;
+            currentDefaultMember = lookup(member);
+        }
     }
 
     private RolapCubeMember lookup(RolapMember member) {
@@ -323,7 +304,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
      *
      * <p>For example, if the shared hierarchy is [Time].[Quarterly] and the
      * hierarchy usage is [Ship Time].[Quarterly], then [Time].[1997].[Q1] would
-     * be translated to [Ship Time].[Quarerly].[1997].[Q1].
+     * be translated to [Ship Time].[Quarterly].[1997].[Q1].
      *
      * @param memberUniqueName Unique name of member from underlying hierarchy
      * @return Translated unique name
@@ -906,63 +887,61 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             final RolapLevel level,
             TupleConstraint constraint)
         {
-                List<RolapMember> members = null;
+            // if a join is required, we need to pass in the RolapCubeLevel
+            // vs. the regular level
+            boolean joinReq =
+                (constraint instanceof SqlContextConstraint);
+            final List<RolapMember> list;
 
-                // if a join is required, we need to pass in the RolapCubeLevel
-                // vs. the regular level
-                boolean joinReq =
-                    (constraint instanceof SqlContextConstraint);
-                final List<RolapMember> list;
+            if (!joinReq) {
+                list =
+                    rolapHierarchy.getMemberReader().getMembersInLevel(
+                        ((RolapCubeLevel) level).getRolapLevel(),
+                        constraint);
+            } else {
+                list =
+                    super.getMembersInLevel(
+                        level, constraint);
+            }
 
-                if (!joinReq) {
-                    list =
-                        rolapHierarchy.getMemberReader().getMembersInLevel(
-                            ((RolapCubeLevel) level).getRolapLevel(),
-                            constraint);
-                } else {
-                    list =
-                        super.getMembersInLevel(
-                            level, constraint);
+            return new UnsupportedList<RolapMember>() {
+                public RolapMember get(final int index) {
+                    return mutate(list.get(index));
                 }
 
-                return new UnsupportedList<RolapMember>() {
-                    public RolapMember get(final int index) {
-                        return mutate(list.get(index));
-                    }
+                public int size() {
+                    return list.size();
+                }
 
-                    public int size() {
-                        return list.size();
-                    }
-
-                    public Iterator<RolapMember> iterator() {
-                        final Iterator<RolapMember> it = list.iterator();
-                        return new Iterator<RolapMember>() {
-                            public boolean hasNext() {
-                                return it.hasNext();
-                            }
-                            public RolapMember next() {
-                                return mutate(it.next());
-                            }
-
-                            public void remove() {
-                                throw new UnsupportedOperationException();
-                            }
-                        };
-                    }
-
-                    private RolapMember mutate(final RolapMember member) {
-                        RolapCubeMember parent = null;
-                        if (member.getParentMember() != null) {
-                            parent =
-                                createAncestorMembers(
-                                    NoCacheRolapCubeHierarchyMemberReader.this,
-                                    (RolapCubeLevel) level.getParentLevel(),
-                                    member.getParentMember());
+                public Iterator<RolapMember> iterator() {
+                    final Iterator<RolapMember> it = list.iterator();
+                    return new Iterator<RolapMember>() {
+                        public boolean hasNext() {
+                            return it.hasNext();
                         }
-                        return lookupCubeMember(
-                            parent, member, (RolapCubeLevel) level);
+                        public RolapMember next() {
+                            return mutate(it.next());
+                        }
+
+                        public void remove() {
+                            throw new UnsupportedOperationException();
+                        }
+                    };
+                }
+
+                private RolapMember mutate(final RolapMember member) {
+                    RolapCubeMember parent = null;
+                    if (member.getParentMember() != null) {
+                        parent =
+                            createAncestorMembers(
+                                NoCacheRolapCubeHierarchyMemberReader.this,
+                                (RolapCubeLevel) level.getParentLevel(),
+                                member.getParentMember());
                     }
-                };
+                    return lookupCubeMember(
+                        parent, member, (RolapCubeLevel) level);
+                }
+            };
         }
 
         public RolapCubeMember lookupCubeMember(
@@ -1000,7 +979,6 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             Util.deprecated("remove", false);
         }
     }
-
 
     /**
      * Implementation of {@link mondrian.rolap.SqlMemberSource} and

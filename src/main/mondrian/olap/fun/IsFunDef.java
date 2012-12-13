@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -22,20 +22,28 @@ import mondrian.olap.*;
  * @since Mar 23, 2006
  */
 class IsFunDef extends FunDefBase {
-    static final ReflectiveMultiResolver Resolver =
-        new ReflectiveMultiResolver(
-            "IS",
-            "<Expression> IS <Expression>",
-            "Returns whether two objects are the same",
-            new String[] {"ibmm", "ibll", "ibhh", "ibdd", "ibtt"},
-            IsFunDef.class);
+    private static final String[] SIGNATURES = {
+        "ibmm", "ibll", "ibhh", "ibdd", "ibtt"
+    };
+
+    public static void define(FunTable.Builder builder) {
+        for (String signature : SIGNATURES) {
+            builder.define(
+                new ReflectiveMultiResolver(
+                    "IS",
+                    "<Expression> IS <Expression>",
+                    "Returns whether two objects are the same",
+                    new String[]{signature},
+                    IsFunDef.class));
+        }
+    }
 
     public IsFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-        final int category = call.getArg(0).getCategory();
+        final int category = parameterCategories[0];
         switch (category) {
         case Category.Tuple:
             final TupleCalc tupleCalc0 = compiler.compileTuple(call.getArg(0));
@@ -50,9 +58,10 @@ class IsFunDef extends FunDefBase {
                 }
             };
         default:
-            assert category == call.getArg(1).getCategory();
-            final Calc calc0 = compiler.compile(call.getArg(0));
-            final Calc calc1 = compiler.compile(call.getArg(1));
+            final Calc calc0 =
+                compileCategory(compiler, category, call.getArg(0));
+            final Calc calc1 =
+                compileCategory(compiler, category, call.getArg(1));
             return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1}) {
                 public boolean evaluateBoolean(Evaluator evaluator) {
                     Object o0 = calc0.evaluate(evaluator);
@@ -60,6 +69,23 @@ class IsFunDef extends FunDefBase {
                     return o0.equals(o1);
                 }
             };
+        }
+    }
+
+    private static Calc compileCategory(
+        ExpCompiler compiler, int category, Exp exp)
+    {
+        switch (category) {
+        case Category.Member:
+            return compiler.compileMember(exp);
+        case Category.Level:
+            return compiler.compileLevel(exp);
+        case Category.Hierarchy:
+            return compiler.compileHierarchy(exp);
+        case Category.Dimension:
+            return compiler.compileDimension(exp);
+        default:
+            throw new AssertionError(category);
         }
     }
 }

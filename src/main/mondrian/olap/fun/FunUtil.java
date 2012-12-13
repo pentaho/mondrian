@@ -2102,7 +2102,15 @@ public class FunUtil extends Util {
         Exp[] args)
     {
         final int[] argCategories = ExpBase.getTypes(args);
-        return new FunDefBase(resolver, returnCategory, argCategories) {
+        return createDummyFunDef(resolver, returnCategory, argCategories);
+    }
+
+    static FunDef createDummyFunDef(
+        Resolver resolver,
+        int returnCategory,
+        int[] args)
+    {
+        return new FunDefBase(resolver, returnCategory, args) {
         };
     }
 

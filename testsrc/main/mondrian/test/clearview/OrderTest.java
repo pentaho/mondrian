@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2009 Pentaho and others
+// Copyright (C) 2007-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test.clearview;
@@ -15,15 +15,17 @@ import mondrian.util.Bug;
 import junit.framework.TestSuite;
 
 /**
- * <code>OrderTest</code> tests the extended syntax of Order
- * function. See { @link
- * http://pub.eigenbase.org/wiki/MondrianOrderFunctionExtension } for
- * syntax rules.
- * MDX queries and their expected results are maintained separately in
- * OrderTest.ref.xml file.If you would prefer to see them as inlined
+ * Test for the extended syntax of Order
+ * function. See
+ * <a href="http://pub.eigenbase.org/wiki/MondrianOrderFunctionExtension">
+ *     MondrianOrderFunctionExtension</a>
+ * for syntax rules.
+ *
+ * <p>MDX queries and their expected results are maintained separately in
+ * OrderTest.ref.xml file. If you would prefer to see them as inlined
  * Java string literals, run ant target "generateDiffRepositoryJUnit" and
  * then use file OrderTestJUnit.java which will be generated in
- * this directory.
+ * this directory.</p>
  *
  * @author Khanh Vu
  */

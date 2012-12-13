@@ -144,16 +144,6 @@
             </Key>
         </Table>
 
-        <!-- Dummy table for Scenario hanger dimension. -->
-        <InlineTable alias='foo'>
-          <ColumnDefs>
-            <ColumnDef name='bar' type='Numeric'/>
-          </ColumnDefs>
-          <Key>
-              <Column name='bar'/>
-          </Key>
-          <Rows/>
-        </InlineTable>
         <Table name='agg_c_special_sales_fact_1997'/>
         <Table name='agg_pl_01_sales_fact_1997'/>
         <Table name='agg_l_05_sales_fact_1997'/>

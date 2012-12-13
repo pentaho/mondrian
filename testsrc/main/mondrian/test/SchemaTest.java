@@ -42,6 +42,7 @@ import java.util.*;
  *
  * @see SchemaVersionTest
  * @see mondrian.rolap.SharedDimensionTest
+ * @see HangerDimensionTest
  *
  * @author jhyde
  * @since August 7, 2006
@@ -2724,6 +2725,39 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 e.getMessage().contains(
                     "Named set in cube 'Sales' has bad formula"));
         }
+    }
+
+    /**
+     * Tests a hierarchy whose default member is a calculated member.
+     * (Difficult to bootstrap, since calculated members are validated by
+     * running a query, which naturally happens AFTER calculated members have
+     * been assigned.)
+     */
+    public void testCalculatedMemberAsDefaultMember() {
+        final TestContext testContext = getTestContext()
+            .insertHierarchy(
+                "Sales",
+                "Customer",
+                "<Hierarchy name='Customer with default member' defaultMember='[Customer].[Customer with default member].[USA].[CA].[SF and LA]'>\n"
+                + "  <Level attribute='Country'/>\n"
+                + "  <Level attribute='State Province'/>\n"
+                + "  <Level attribute='City'/>\n"
+                + "  <Level attribute='Name'/>\n"
+                + "</Hierarchy>\n")
+            .insertCalculatedMembers(
+                "Sales",
+                "<CalculatedMember\n"
+                + "      name='SF and LA'\n"
+                + "      hierarchy='[Customer].[Customer with default member]'\n"
+                + "      parent='[Customer].[Customer with default member].[USA].[CA]'>\n"
+                + "  <Formula>\n"
+                + "    [Customer].[Customer with default member].[USA].[CA].[San Francisco]\n"
+                + "    + [Customer].[Customer with default member].[USA].[CA].[Los Angeles]\n"
+                + "  </Formula>\n"
+                + "</CalculatedMember>");
+        testContext.assertAxisReturns(
+            "[Customer].[Customer with default member]",
+            "[Customer].[Customer with default member].[USA].[CA].[SF and LA]");
     }
 
     /**
@@ -6973,6 +7007,28 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     /**
+     * Tests that it is not an error if no key attribute is specified
+     * for a dimension. (It is only an error if that dimension links to
+     * measure groups and they do not specify an explicit key.)
+     */
+    public void testKeyAttributeMissing() {
+        getTestContext().insertDimension(
+            "Sales",
+            "<Dimension name='Customer3' table='customer'>\n"
+            + "  <Attributes>\n"
+            + "    <Attribute name='State' keyColumn='state_province'/>\n"
+            + "  </Attributes>\n"
+            + "</Dimension>\n")
+            .insertDimensionLinks(
+                "Sales",
+                ArrayMap.of(
+                    "Sales",
+                    "<NoLink dimension='Customer3'/>"))
+            .ignoreMissingLink()
+            .assertSimpleQuery();
+    }
+
+    /**
      * Tests that mondrian gives error if an attribute hierarchy has the
      * same name as another hierarchy in the dimension. (This would typically
      * occur if an attribute has hasHierarchy=true and there is an explicit
@@ -7436,9 +7492,48 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
     // TODO: default value for MeasureGroup.name is .table.
 
-    // TODO: test cube where Cube.defaultMeasure is non-existent
+    /** Test cube where Cube.defaultMeasure is non-existent. */
+    public void testBadDefaultMeasure() {
+        getTestContext()
+            .withSubstitution(
+                new Util.Function1<String, String>() {
+                    public String apply(String param) {
+                        return param.replace(
+                            "<Cube name='Sales' defaultMeasure='Unit Sales'>",
+                            "<Cube name='Sales' defaultMeasure='Bad Unit Sales'>");
+                    }
+                })
+            .assertSchemaError(
+                "Default measure 'Bad Unit Sales' not found \\(in Cube 'Sales'\\) \\(at ${pos}\\)",
+                "<Cube name='Sales' defaultMeasure='Bad Unit Sales'>");
+    }
 
-    // TODO: test cube where Cube.defaultMeasure is a calculated member
+    /** Test cube where Cube.defaultMeasure is a calculated member. */
+    public void testDefaultMeasureIsCalculated() {
+        getTestContext()
+            .withSubstitution(
+                new Util.Function1<String, String>() {
+                    public String apply(String param) {
+                        return param.replace(
+                            "<Cube name='Sales' defaultMeasure='Unit Sales'>",
+                            "<Cube name='Sales' defaultMeasure='Profit'>");
+                    }
+                })
+            .assertQueryReturns(
+                "select [Measures] on 0, [Product].Children on 1\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Profit]}\n"
+                + "Axis #2:\n"
+                + "{[Product].[Products].[Drink]}\n"
+                + "{[Product].[Products].[Food]}\n"
+                + "{[Product].[Products].[Non-Consumable]}\n"
+                + "Row #0: \n"
+                + "Row #1: \n"
+                + "Row #2: \n");
+    }
 
     // TODO: document NoLink
 
@@ -7604,6 +7699,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
     // TODO: Test that get error if Query element has no child for current
     // SQL dialect, and no generic SQL element.
+
+    // TODO: ForeignKeyLink with attribute and composite key. (E.g. reference
+    // to the month attribute, requires a composite key.)
 }
 
 // End SchemaTest.java

@@ -457,7 +457,7 @@ public class Util extends XOMUtil {
                 && ((i + 1) < st.length())
                 && (st.charAt(i + 1) != '.'))
             {
-                retString.append(']'); //escaping character
+                retString.append(']'); // escaping character
             }
             retString.append(c);
         }
@@ -1554,21 +1554,8 @@ public class Util extends XOMUtil {
         List<Member> members)
     {
         List<Member> calcMembers =
-            reader.getCalculatedMembers(level.getHierarchy());
-        List<Member> calcMembersInThisLevel = new ArrayList<Member>();
-        for (Member calcMember : calcMembers) {
-            if (calcMember.getLevel().equals(level)) {
-                calcMembersInThisLevel.add(calcMember);
-            }
-        }
-        if (!calcMembersInThisLevel.isEmpty()) {
-            List<Member> newMemberList =
-                new ConcatenableList<Member>();
-            newMemberList.addAll(members);
-            newMemberList.addAll(calcMembersInThisLevel);
-            return newMemberList;
-        }
-        return members;
+            reader.getCalculatedMembers(level);
+        return Composite.optimalOf(members, calcMembers);
     }
 
     /**
@@ -2596,6 +2583,41 @@ public class Util extends XOMUtil {
             }
         }
         return firstException;
+    }
+
+    /**
+     * Adds a (key, value) pair to a multi-map represented as a map of lists.
+     * A "put" may add a new key, or it may add a new value to the list of an
+     * existing key.
+     *
+     * @param map Map
+     * @param k Key
+     * @param v Value
+     * @param <K> Key type
+     * @param <V> Value type
+     */
+    public static <K, V> void putMulti(Map<K, List<V>> map, K k, V v) {
+        List<V> list = map.put(k, Collections.singletonList(v));
+        if (list != null) {
+            if (list.size() == 1) {
+                list = new ArrayList<V>(list);
+            }
+            list.add(v);
+            map.put(k, list);
+        }
+    }
+
+    /** Returns a subset of a list whose elements pass a given predicate. */
+    public static <E> List<E> copyWhere(List<E> list, Predicate1<E> predicate) {
+        final int size = list.size();
+        List<E> result = new ArrayList<E>(size);
+        for (E e : list) {
+            if (predicate.apply(e)) {
+                result.add(e);
+            }
+        }
+        // Don't make a copy if all elements pass predicate.
+        return result.size() == size ? list : result;
     }
 
     public static class ErrorCellValue {

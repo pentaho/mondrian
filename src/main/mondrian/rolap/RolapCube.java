@@ -125,6 +125,7 @@ public class RolapCube extends CubeBase {
                 measuresCaption,
                 null,
                 org.olap4j.metadata.Dimension.Type.MEASURE,
+                false,
                 Collections.<String, Annotation>emptyMap());
         RolapHierarchy measuresHierarchy =
             new RolapHierarchy(
@@ -147,7 +148,7 @@ public class RolapCube extends CubeBase {
 
         final RolapCubeDimension measuresCubeDimension =
             new RolapCubeDimension(
-                null,
+                schemaLoader,
                 this,
                 measuresDimension,
                 measuresDimension.getName(),
@@ -226,17 +227,16 @@ public class RolapCube extends CubeBase {
      * Post-initialization, doing things which cannot be done in the
      * constructor.
      */
-    void init(final List<RolapMember> measureList, Member defaultMeasure)
-    {
+    void init(final List<RolapMember> measureList) {
         setMeasuresHierarchyMemberReader(
             new CacheMemberReader(
-                new MeasureMemberSource(measuresHierarchy, measureList)));
-
-        this.measuresHierarchy.setDefaultMember(defaultMeasure);
+                new MeasureMemberSource(
+                    measuresHierarchy,
+                    measureList)));
 
         // Initialize closure bit key only when we know how many columns are in
         // the star.
-        if (!isVirtual()) {
+        if (!isVirtual() && measureGroupList.size() > 0) {
             closureColumnBitKey =
                 BitKey.Factory.makeBitKey(
                     measureGroupList.get(0).getStar().getColumnCount());
@@ -521,7 +521,7 @@ public class RolapCube extends CubeBase {
     /**
      * Returns the the measures hierarchy.
      */
-    public RolapHierarchy getMeasuresHierarchy() {
+    public RolapCubeHierarchy getMeasuresHierarchy() {
         return measuresHierarchy;
     }
 
@@ -688,6 +688,13 @@ public class RolapCube extends CubeBase {
             for (Member member : getCalculatedMembers()) {
                 if (member.getLevel().equals(level)) {
                     list.add(member);
+                }
+                if (member instanceof RolapCubeMember) {
+                    final RolapMember rolapMember =
+                        ((RolapCubeMember) member).getRolapMember();
+                    if (rolapMember.getLevel().equals(level)) {
+                        list.add(rolapMember);
+                    }
                 }
             }
             return list;

@@ -13,63 +13,54 @@ import mondrian.olap.Connection;
 import mondrian.olap.Util;
 import mondrian.spi.DynamicSchemaProcessor;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 
 /**
- * Unit test DynamicSchemaProcessor. Tests availability of properties that DSP's
- * are called, and used to modify the resulting Mondrian schema
+ * Unit test for {@link DynamicSchemaProcessor}. Tests availability of
+ * properties that DSPs are called, and used to modify the resulting Mondrian
+ * schema.
  *
  * @author ngoodman
  */
 public class DynamicSchemaProcessorTest
     extends TestCase
 {
-
-    public static final String FRAGMENT_ONE =
-        "<?xml version=\"1.0\"?>\n"
-        + "<Schema name=\"";
-
-    public static final String FRAGMENT_TWO =
-        "\">\n"
-        + "<Cube name=\"Sales\">\n"
-        + " <Table name=\"sales_fact_1997\">"
-        + "   <AggExclude name=\"agg_pl_01_sales_fact_1997\" />"
-        + "   <AggExclude name=\"agg_ll_01_sales_fact_1997\" />"
-        + "   <AggExclude name=\"agg_lc_100_sales_fact_1997\" />"
-        + "   <AggExclude name=\"agg_lc_06_sales_fact_1997\" />"
-        + "   <AggExclude name=\"agg_l_04_sales_fact_1997\" />"
-        + "   <AggExclude name=\"agg_l_03_sales_fact_1997\" />"
-        + "   <AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\" />"
-        + "   <AggExclude name=\"agg_c_10_sales_fact_1997\" />"
-        + "</Table>"
-        + " <Dimension name=\"Fake\"><Hierarchy hasAll=\"true\">"
-        + "  <Level name=\"blah\" column=\"store_id\"/>"
-        + " </Hierarchy></Dimension>"
-        + " <Measure name=\"c\" column=\"store_id\" aggregator=\"count\"/>"
-        + "</Cube>\n" + "</Schema>\n";
-
-    public static final String TEMPLATE_SCHEMA =
-        FRAGMENT_ONE
-        + "REPLACEME"
-        + FRAGMENT_TWO;
+    private static String schema(String schemaName) {
+        return "<?xml version=\"1.0\"?>\n"
+            + "<Schema name=\""
+            + schemaName
+            + "\">\n"
+            + "<Cube name=\"Sales\">\n"
+            + " <Table name=\"sales_fact_1997\">"
+            + "   <AggExclude name=\"agg_pl_01_sales_fact_1997\" />"
+            + "   <AggExclude name=\"agg_ll_01_sales_fact_1997\" />"
+            + "   <AggExclude name=\"agg_lc_100_sales_fact_1997\" />"
+            + "   <AggExclude name=\"agg_lc_06_sales_fact_1997\" />"
+            + "   <AggExclude name=\"agg_l_04_sales_fact_1997\" />"
+            + "   <AggExclude name=\"agg_l_03_sales_fact_1997\" />"
+            + "   <AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\" />"
+            + "   <AggExclude name=\"agg_c_10_sales_fact_1997\" />"
+            + " </Table>"
+            + " <Dimension name=\"Fake\">"
+            + "   <Hierarchy hasAll=\"true\">"
+            + "     <Level name=\"blah\" column=\"store_id\"/>"
+            + "   </Hierarchy>"
+            + " </Dimension>"
+            + " <Measure name=\"c\" column=\"store_id\" aggregator=\"count\"/>"
+            + "</Cube>\n"
+            + "</Schema>\n";
+    }
 
     /**
      * Tests to make sure that our base DynamicSchemaProcessor works, with no
      * replacement. Does not test Mondrian is able to connect with the schema
      * definition.
      */
-    public void testDSPBasics() {
+    public void testDSPBasics() throws Exception {
         DynamicSchemaProcessor dsp = new BaseDsp();
         Util.PropertyList dummy = new Util.PropertyList();
-        String processedSchema = "";
-        try {
-            processedSchema = dsp.processSchema("", dummy);
-        } catch (Exception e) {
-            // TODO some other assert failure message
-            assertEquals(0, 1);
-        }
-        Assert.assertEquals(TEMPLATE_SCHEMA, processedSchema);
+        String processedSchema = dsp.processSchema("", dummy);
+        assertEquals(schema("REPLACEME"), processedSchema);
     }
 
     /**
@@ -86,8 +77,6 @@ public class DynamicSchemaProcessorTest
 
     /**
      * Our base, token replacing schema processor.
-     *
-     * @author ngoodman
      */
     public static class BaseDsp implements DynamicSchemaProcessor {
         // Determines the "cubeName"
@@ -104,10 +93,7 @@ public class DynamicSchemaProcessorTest
         }
 
         public String getSchema() throws Exception {
-            return
-                DynamicSchemaProcessorTest.TEMPLATE_SCHEMA.replaceAll(
-                    "REPLACEME",
-                    this.replaceToken);
+            return DynamicSchemaProcessorTest.schema(replaceToken);
         }
     }
 
@@ -125,9 +111,6 @@ public class DynamicSchemaProcessorTest
     /**
      * DSP that checks that replaces the Schema Name with the name of the
      * Provider property
-     *
-     * @author ngoodman
-     *
      */
     public static class ProviderTestDSP extends BaseDsp {
         public String processSchema(
@@ -156,8 +139,6 @@ public class DynamicSchemaProcessorTest
     /**
      * Checks to make sure our Catalog property contains our
      * <code>FoodMart.mondrian.xml</code> VFS URL.
-     *
-     * @author ngoodman
      */
     public static class FoodMartCatalogDsp extends BaseDsp {
         public String processSchema(
@@ -193,10 +174,7 @@ public class DynamicSchemaProcessorTest
     /**
      * Ensures we have access to the JDBC URL. Note, since Foodmart can run on
      * multiple databases all we check in schema name is the first four
-     * characters (JDBC)
-     *
-     * @author ngoodman
-     *
+     * characters (JDBC).
      */
     public static class CheckJdbcPropertyDsp extends BaseDsp {
         public static String RETURNTRUESTRING = "true";
@@ -207,11 +185,8 @@ public class DynamicSchemaProcessorTest
             Util.PropertyList connectInfo)
             throws Exception
         {
-            String dataSource = null;
-            String jdbc = null;
-
-            dataSource = connectInfo.get("DataSource");
-            jdbc = connectInfo.get("Jdbc");
+            String dataSource = connectInfo.get("DataSource");
+            String jdbc = connectInfo.get("Jdbc");
 
             // If we're using a DataSource we might not get a Jdbc= property
             // trivially return true.
@@ -232,6 +207,6 @@ public class DynamicSchemaProcessorTest
             }
         }
     }
-
 }
+
 // End DynamicSchemaProcessorTest.java
