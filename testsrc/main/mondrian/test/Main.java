@@ -217,7 +217,7 @@ public class Main extends TestSuite {
             addTest(suite, SegmentCacheTest.class);
             addTest(suite, CVBasicTest.class, "suite");
             addTest(suite, GrandTotalTest.class, "suite");
-            addTest(suite, HangerDimensionTest.class, "suite");
+            addTest(suite, HangerDimensionClearViewTest.class, "suite");
             addTest(suite, MetricFilterTest.class, "suite");
             addTest(suite, MiscTest.class, "suite");
             addTest(suite, PredicateFilterTest.class, "suite");
@@ -283,6 +283,7 @@ public class Main extends TestSuite {
             addTest(suite, ParallelTest.class);
             addTest(suite, SchemaVersionTest.class);
             addTest(suite, SchemaTest.class);
+            addTest(suite, HangerDimensionTest.class);
             addTest(suite, DateTableBuilderTest.class);
             addTest(suite, PerformanceTest.class);
             // GroupingSetQueryTest must be run before any test derived from

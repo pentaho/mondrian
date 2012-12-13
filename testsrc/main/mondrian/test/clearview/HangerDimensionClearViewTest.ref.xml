@@ -13,21 +13,16 @@ Sales
         </Resource>
         <Resource name="customDimensions">
             <![CDATA[
-<Dimension name="Le System-Trend Hanger" foreignKey="store_id">
-  <Hierarchy hasAll="true" primaryKey="HANGER_KEY">
-    <InlineTable alias="LE_SYSTEM_TREND_HANGER">
-      <ColumnDefs>
-        <ColumnDef name="HANGER_KEY" type="Numeric"/>
-      </ColumnDefs>
-      <Rows>
-        <Row>
-          <Value column="HANGER_KEY">1</Value>
-        </Row>
-      </Rows>
-    </InlineTable>
-    <Level name="Hanger Level" column="HANGER_KEY" uniqueMembers="true"/>
-  </Hierarchy>
+<Dimension name="Le System-Trend Hanger" hanger="true">
+  <Attributes>
+    <Attribute name="Le System-Trend Hanger"/>
+  </Attributes>
 </Dimension>
+]]>
+        </Resource>
+        <Resource name="calculatedMembers">
+            <![CDATA[
+<CalculatedMember name='1' hierarchy='[Le System-Trend Hanger].[Le System-Trend Hanger]' formula='1'/>
 ]]>
         </Resource>
         <Resource name="mdx">
@@ -165,21 +160,16 @@ Sales
         </Resource>
         <Resource name="customDimensions">
             <![CDATA[
-<Dimension name="Le System-Trend Hanger" foreignKey="store_id">
-  <Hierarchy hasAll="true" primaryKey="HANGER_KEY">
-    <InlineTable alias="LE_SYSTEM_TREND_HANGER">
-      <ColumnDefs>
-        <ColumnDef name="HANGER_KEY" type="Numeric"/>
-      </ColumnDefs>
-      <Rows>
-        <Row>
-          <Value column="HANGER_KEY">1</Value>
-        </Row>
-      </Rows>
-    </InlineTable>
-    <Level name="Hanger Level" column="HANGER_KEY" uniqueMembers="true"/>
-  </Hierarchy>
+<Dimension name="Le System-Trend Hanger" hanger="true">
+  <Attributes>
+    <Attribute name="Le System-Trend Hanger"/>
+  </Attributes>
 </Dimension>
+]]>
+        </Resource>
+        <Resource name="calculatedMembers">
+            <![CDATA[
+<CalculatedMember name='1' hierarchy='[Le System-Trend Hanger].[Le System-Trend Hanger]' formula='1'/>
 ]]>
         </Resource>
         <Resource name="mdx">
@@ -226,54 +216,54 @@ Axis #1:
 {[Measures].[*CALCULATED_MEASURE_2]}
 {[Measures].[*CALCULATED_MEASURE_3]}
 Axis #2:
-{[Customers].[USA].[CA], [Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
-{[Customers].[USA].[CA], [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
-{[Customers].[USA].[CA], [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
-{[Customers].[USA].[CA], [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
-{[Customers].[USA].[OR], [Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
-{[Customers].[USA].[OR], [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
-{[Customers].[USA].[OR], [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
-{[Customers].[USA].[OR], [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
-{[Customers].[USA].[WA], [Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
-{[Customers].[USA].[WA], [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
-{[Customers].[USA].[WA], [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
-{[Customers].[USA].[WA], [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
-{[Customers].[USA].[CA], [Time].[1997].[Q1].[1]}
-{[Customers].[USA].[CA], [Time].[1997].[Q1].[2]}
-{[Customers].[USA].[CA], [Time].[1997].[Q1].[3]}
-{[Customers].[USA].[CA], [Time].[1997].[Q2].[4]}
-{[Customers].[USA].[CA], [Time].[1997].[Q2].[5]}
-{[Customers].[USA].[CA], [Time].[1997].[Q2].[6]}
-{[Customers].[USA].[CA], [Time].[1997].[Q3].[7]}
-{[Customers].[USA].[CA], [Time].[1997].[Q3].[8]}
-{[Customers].[USA].[CA], [Time].[1997].[Q3].[9]}
-{[Customers].[USA].[CA], [Time].[1997].[Q4].[10]}
-{[Customers].[USA].[CA], [Time].[1997].[Q4].[11]}
-{[Customers].[USA].[CA], [Time].[1997].[Q4].[12]}
-{[Customers].[USA].[OR], [Time].[1997].[Q1].[1]}
-{[Customers].[USA].[OR], [Time].[1997].[Q1].[2]}
-{[Customers].[USA].[OR], [Time].[1997].[Q1].[3]}
-{[Customers].[USA].[OR], [Time].[1997].[Q2].[4]}
-{[Customers].[USA].[OR], [Time].[1997].[Q2].[5]}
-{[Customers].[USA].[OR], [Time].[1997].[Q2].[6]}
-{[Customers].[USA].[OR], [Time].[1997].[Q3].[7]}
-{[Customers].[USA].[OR], [Time].[1997].[Q3].[8]}
-{[Customers].[USA].[OR], [Time].[1997].[Q3].[9]}
-{[Customers].[USA].[OR], [Time].[1997].[Q4].[10]}
-{[Customers].[USA].[OR], [Time].[1997].[Q4].[11]}
-{[Customers].[USA].[OR], [Time].[1997].[Q4].[12]}
-{[Customers].[USA].[WA], [Time].[1997].[Q1].[1]}
-{[Customers].[USA].[WA], [Time].[1997].[Q1].[2]}
-{[Customers].[USA].[WA], [Time].[1997].[Q1].[3]}
-{[Customers].[USA].[WA], [Time].[1997].[Q2].[4]}
-{[Customers].[USA].[WA], [Time].[1997].[Q2].[5]}
-{[Customers].[USA].[WA], [Time].[1997].[Q2].[6]}
-{[Customers].[USA].[WA], [Time].[1997].[Q3].[7]}
-{[Customers].[USA].[WA], [Time].[1997].[Q3].[8]}
-{[Customers].[USA].[WA], [Time].[1997].[Q3].[9]}
-{[Customers].[USA].[WA], [Time].[1997].[Q4].[10]}
-{[Customers].[USA].[WA], [Time].[1997].[Q4].[11]}
-{[Customers].[USA].[WA], [Time].[1997].[Q4].[12]}
+{[Customer].[Customers].[USA].[CA], [Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customer].[Customers].[USA].[CA], [Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customer].[Customers].[USA].[CA], [Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customer].[Customers].[USA].[CA], [Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customer].[Customers].[USA].[OR], [Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customer].[Customers].[USA].[OR], [Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customer].[Customers].[USA].[OR], [Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customer].[Customers].[USA].[OR], [Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customer].[Customers].[USA].[WA], [Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customer].[Customers].[USA].[WA], [Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customer].[Customers].[USA].[WA], [Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customer].[Customers].[USA].[WA], [Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customer].[Customers].[USA].[CA], [Time].[Time].[1997].[Q1].[1]}
+{[Customer].[Customers].[USA].[CA], [Time].[Time].[1997].[Q1].[2]}
+{[Customer].[Customers].[USA].[CA], [Time].[Time].[1997].[Q1].[3]}
+{[Customer].[Customers].[USA].[CA], [Time].[Time].[1997].[Q2].[4]}
+{[Customer].[Customers].[USA].[CA], [Time].[Time].[1997].[Q2].[5]}
+{[Customer].[Customers].[USA].[CA], [Time].[Time].[1997].[Q2].[6]}
+{[Customer].[Customers].[USA].[CA], [Time].[Time].[1997].[Q3].[7]}
+{[Customer].[Customers].[USA].[CA], [Time].[Time].[1997].[Q3].[8]}
+{[Customer].[Customers].[USA].[CA], [Time].[Time].[1997].[Q3].[9]}
+{[Customer].[Customers].[USA].[CA], [Time].[Time].[1997].[Q4].[10]}
+{[Customer].[Customers].[USA].[CA], [Time].[Time].[1997].[Q4].[11]}
+{[Customer].[Customers].[USA].[CA], [Time].[Time].[1997].[Q4].[12]}
+{[Customer].[Customers].[USA].[OR], [Time].[Time].[1997].[Q1].[1]}
+{[Customer].[Customers].[USA].[OR], [Time].[Time].[1997].[Q1].[2]}
+{[Customer].[Customers].[USA].[OR], [Time].[Time].[1997].[Q1].[3]}
+{[Customer].[Customers].[USA].[OR], [Time].[Time].[1997].[Q2].[4]}
+{[Customer].[Customers].[USA].[OR], [Time].[Time].[1997].[Q2].[5]}
+{[Customer].[Customers].[USA].[OR], [Time].[Time].[1997].[Q2].[6]}
+{[Customer].[Customers].[USA].[OR], [Time].[Time].[1997].[Q3].[7]}
+{[Customer].[Customers].[USA].[OR], [Time].[Time].[1997].[Q3].[8]}
+{[Customer].[Customers].[USA].[OR], [Time].[Time].[1997].[Q3].[9]}
+{[Customer].[Customers].[USA].[OR], [Time].[Time].[1997].[Q4].[10]}
+{[Customer].[Customers].[USA].[OR], [Time].[Time].[1997].[Q4].[11]}
+{[Customer].[Customers].[USA].[OR], [Time].[Time].[1997].[Q4].[12]}
+{[Customer].[Customers].[USA].[WA], [Time].[Time].[1997].[Q1].[1]}
+{[Customer].[Customers].[USA].[WA], [Time].[Time].[1997].[Q1].[2]}
+{[Customer].[Customers].[USA].[WA], [Time].[Time].[1997].[Q1].[3]}
+{[Customer].[Customers].[USA].[WA], [Time].[Time].[1997].[Q2].[4]}
+{[Customer].[Customers].[USA].[WA], [Time].[Time].[1997].[Q2].[5]}
+{[Customer].[Customers].[USA].[WA], [Time].[Time].[1997].[Q2].[6]}
+{[Customer].[Customers].[USA].[WA], [Time].[Time].[1997].[Q3].[7]}
+{[Customer].[Customers].[USA].[WA], [Time].[Time].[1997].[Q3].[8]}
+{[Customer].[Customers].[USA].[WA], [Time].[Time].[1997].[Q3].[9]}
+{[Customer].[Customers].[USA].[WA], [Time].[Time].[1997].[Q4].[10]}
+{[Customer].[Customers].[USA].[WA], [Time].[Time].[1997].[Q4].[11]}
+{[Customer].[Customers].[USA].[WA], [Time].[Time].[1997].[Q4].[12]}
 Row #0: 14,431.09
 Row #0: 16,890
 Row #0: 8,544.16
@@ -530,21 +520,16 @@ Sales
         </Resource>
         <Resource name="customDimensions">
             <![CDATA[
-<Dimension name="Le System-Trend Hanger" foreignKey="store_id">
-  <Hierarchy hasAll="true" primaryKey="HANGER_KEY">
-    <InlineTable alias="LE_SYSTEM_TREND_HANGER">
-      <ColumnDefs>
-        <ColumnDef name="HANGER_KEY" type="Numeric"/>
-      </ColumnDefs>
-      <Rows>
-        <Row>
-          <Value column="HANGER_KEY">1</Value>
-        </Row>
-      </Rows>
-    </InlineTable>
-    <Level name="Hanger Level" column="HANGER_KEY" uniqueMembers="true"/>
-  </Hierarchy>
+<Dimension name="Le System-Trend Hanger" hanger="true">
+  <Attributes>
+    <Attribute name="Le System-Trend Hanger"/>
+  </Attributes>
 </Dimension>
+]]>
+        </Resource>
+        <Resource name="calculatedMembers">
+            <![CDATA[
+<CalculatedMember name='1' hierarchy='[Le System-Trend Hanger].[Le System-Trend Hanger]' formula='1'/>
 ]]>
         </Resource>
         <Resource name="mdx">
@@ -626,21 +611,16 @@ Sales
         </Resource>
         <Resource name="customDimensions">
             <![CDATA[
-<Dimension name="Le System-Trend Hanger" foreignKey="store_id">
-  <Hierarchy hasAll="true" primaryKey="HANGER_KEY">
-    <InlineTable alias="LE_SYSTEM_TREND_HANGER">
-      <ColumnDefs>
-        <ColumnDef name="HANGER_KEY" type="Numeric"/>
-      </ColumnDefs>
-      <Rows>
-        <Row>
-          <Value column="HANGER_KEY">1</Value>
-        </Row>
-      </Rows>
-    </InlineTable>
-    <Level name="Hanger Level" column="HANGER_KEY" uniqueMembers="true"/>
-  </Hierarchy>
+<Dimension name="Le System-Trend Hanger" hanger="true">
+  <Attributes>
+    <Attribute name="Le System-Trend Hanger"/>
+  </Attributes>
 </Dimension>
+]]>
+        </Resource>
+        <Resource name="calculatedMembers">
+            <![CDATA[
+<CalculatedMember name='1' hierarchy='[Le System-Trend Hanger].[Le System-Trend Hanger]' formula='1'/>
 ]]>
         </Resource>
         <Resource name="mdx">
@@ -801,21 +781,16 @@ Sales
         </Resource>
         <Resource name="customDimensions">
             <![CDATA[
-<Dimension name="Le System-Trend Hanger" foreignKey="store_id">
-  <Hierarchy hasAll="true" primaryKey="HANGER_KEY">
-    <InlineTable alias="LE_SYSTEM_TREND_HANGER">
-      <ColumnDefs>
-        <ColumnDef name="HANGER_KEY" type="Numeric"/>
-      </ColumnDefs>
-      <Rows>
-        <Row>
-          <Value column="HANGER_KEY">1</Value>
-        </Row>
-      </Rows>
-    </InlineTable>
-    <Level name="Hanger Level" column="HANGER_KEY" uniqueMembers="true"/>
-  </Hierarchy>
+<Dimension name="Le System-Trend Hanger" hanger="true">
+  <Attributes>
+    <Attribute name="Le System-Trend Hanger"/>
+  </Attributes>
 </Dimension>
+]]>
+        </Resource>
+        <Resource name="calculatedMembers">
+            <![CDATA[
+<CalculatedMember name='1' hierarchy='[Le System-Trend Hanger].[Le System-Trend Hanger]' formula='1'/>
 ]]>
         </Resource>
         <Resource name="mdx">
@@ -1059,21 +1034,16 @@ Sales
         </Resource>
         <Resource name="customDimensions">
             <![CDATA[
-<Dimension name="Le System-Trend Hanger" foreignKey="store_id">
-  <Hierarchy hasAll="true" primaryKey="HANGER_KEY">
-    <InlineTable alias="LE_SYSTEM_TREND_HANGER">
-      <ColumnDefs>
-        <ColumnDef name="HANGER_KEY" type="Numeric"/>
-      </ColumnDefs>
-      <Rows>
-        <Row>
-          <Value column="HANGER_KEY">1</Value>
-        </Row>
-      </Rows>
-    </InlineTable>
-    <Level name="Hanger Level" column="HANGER_KEY" uniqueMembers="true"/>
-  </Hierarchy>
+<Dimension name="Le System-Trend Hanger" hanger="true">
+  <Attributes>
+    <Attribute name="Le System-Trend Hanger"/>
+  </Attributes>
 </Dimension>
+]]>
+        </Resource>
+        <Resource name="calculatedMembers">
+            <![CDATA[
+<CalculatedMember name='1' hierarchy='[Le System-Trend Hanger].[Le System-Trend Hanger]' formula='1'/>
 ]]>
         </Resource>
         <Resource name="mdx">
@@ -1297,21 +1267,16 @@ Sales
         </Resource>
         <Resource name="customDimensions">
             <![CDATA[
-<Dimension name="Le System-Trend Hanger" foreignKey="store_id">
-  <Hierarchy hasAll="true" primaryKey="HANGER_KEY">
-    <InlineTable alias="LE_SYSTEM_TREND_HANGER">
-      <ColumnDefs>
-        <ColumnDef name="HANGER_KEY" type="Numeric"/>
-      </ColumnDefs>
-      <Rows>
-        <Row>
-          <Value column="HANGER_KEY">1</Value>
-        </Row>
-      </Rows>
-    </InlineTable>
-    <Level name="Hanger Level" column="HANGER_KEY" uniqueMembers="true"/>
-  </Hierarchy>
+<Dimension name="Le System-Trend Hanger" hanger="true">
+  <Attributes>
+    <Attribute name="Le System-Trend Hanger"/>
+  </Attributes>
 </Dimension>
+]]>
+        </Resource>
+        <Resource name="calculatedMembers">
+            <![CDATA[
+<CalculatedMember name='1' hierarchy='[Le System-Trend Hanger].[Le System-Trend Hanger]' formula='1'/>
 ]]>
         </Resource>
         <Resource name="mdx">
@@ -1470,21 +1435,16 @@ Sales
         </Resource>
         <Resource name="customDimensions">
             <![CDATA[
-<Dimension name="Le System-Trend Hanger" foreignKey="store_id">
-  <Hierarchy hasAll="true" primaryKey="HANGER_KEY">
-    <InlineTable alias="LE_SYSTEM_TREND_HANGER">
-      <ColumnDefs>
-        <ColumnDef name="HANGER_KEY" type="Numeric"/>
-      </ColumnDefs>
-      <Rows>
-        <Row>
-          <Value column="HANGER_KEY">1</Value>
-        </Row>
-      </Rows>
-    </InlineTable>
-    <Level name="Hanger Level" column="HANGER_KEY" uniqueMembers="true"/>
-  </Hierarchy>
+<Dimension name="Le System-Trend Hanger" hanger="true">
+  <Attributes>
+    <Attribute name="Le System-Trend Hanger"/>
+  </Attributes>
 </Dimension>
+]]>
+        </Resource>
+        <Resource name="calculatedMembers">
+            <![CDATA[
+<CalculatedMember name='1' hierarchy='[Le System-Trend Hanger].[Le System-Trend Hanger]' formula='1'/>
 ]]>
         </Resource>
         <Resource name="mdx">

@@ -9,8 +9,7 @@
 */
 package mondrian.util;
 
-import mondrian.olap.MondrianProperties;
-import mondrian.rolap.MemberCacheHelper;
+import mondrian.olap.*;
 import mondrian.rolap.RolapSchemaLoader;
 import mondrian.spi.Dialect;
 
@@ -67,6 +66,7 @@ public class Bug {
      * It will always return false.
      */
     public static boolean olap4jUpgrade(String reason) {
+        Util.discard(reason);
         return false;
     }
 
@@ -291,13 +291,6 @@ public class Bug {
     // Mondrian 4 tasks
 
     private static final boolean Enable = false;
-
-    /**
-     * Allow Dimension to have a PhysicalSchema. Graph used for that dimension
-     * will be union of that schema and the one in the schema. Otherwise it is
-     * not possible to define an InlineTable within a Dimension.
-     */
-    public static final boolean PhysSchemaInDimension = Enable;
 
     /**
      * Tests that call TestContext.createSubstitutingCube. 66 uses.
