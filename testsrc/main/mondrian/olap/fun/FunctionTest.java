@@ -23,6 +23,7 @@ import junit.framework.ComparisonFailure;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.StringEscaper;
+import org.olap4j.mdx.WithSetNode;
 
 import java.io.*;
 import java.util.*;
@@ -5894,19 +5895,21 @@ public class FunctionTest extends FoodMartTestCase {
     public void testPropertiesOnDimension() {
         // [Store] is a dimension. When called with a property like FirstChild,
         // it is implicitly converted to a member.
-        assertAxisReturns("[Store].FirstChild", "[Store].[Canada]");
+        // Store in sales cube now has two hierarchies, so using sales ragged.
+        getTestContext().withSalesRagged()
+            .assertAxisReturns("[Store].FirstChild", "[Store].[Stores].[Canada]");
 
         // The same should happen with the <Member>.Properties(<String>)
         // function; now the bug is fixed, it does. Dimension is implicitly
         // converted to member.
-        assertExprReturns(
+        getTestContext().withSalesRagged().assertExprReturns(
             "[Store].Properties('MEMBER_UNIQUE_NAME')",
-            "[Store].[All Stores]");
+            "[Store].[Stores].[All Stores]");
 
         // Hierarchy is implicitly converted to member.
-        assertExprReturns(
+        getTestContext().withSalesRagged().assertExprReturns(
             "[Store].[USA].Hierarchy.Properties('MEMBER_UNIQUE_NAME')",
-            "[Store].[All Stores]");
+            "[Store].[Stores].[All Stores]");
     }
 
     /**
