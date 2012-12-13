@@ -1503,7 +1503,6 @@ public class NonEmptyTest extends BatchTestCase {
                 + "        />\n"
                 + "  </Hierarchy>\n"
                 + "</Dimension>");
-
         // No 'all' level, and ragged because [Product Name] is hidden if
         // blank.  Native evaluation should be able to handle this query.
         checkNative(
@@ -1523,7 +1522,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjMembersWithHideIfBlankLeaf() {
         final TestContext testContext =
-            getTestContext().createSubstitutingCube(
+            getTestContext().legacy().createSubstitutingCube(
                 "Sales",
                 "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
                 + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
@@ -2347,7 +2346,7 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testLookupMember2() {
         // ok if no exception occurs
-        getTestContext().legacy().executeQuery(
+        getTestContext().withSalesRagged().executeQuery(
             "select {[Store].[USA].[Washington]} on columns from [Sales Ragged]");
     }
 
@@ -4636,11 +4635,11 @@ public class NonEmptyTest extends BatchTestCase {
             null,
             null,
             null);
-        // TODO: hierarchy returning all members
+
         String mdx =
             " select "
             + " NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, "
-            + " NON EMPTY {[Gender].[Gender].Members} ON ROWS "
+            + " NON EMPTY {[Gender].[Gender].[Gender].Members} ON ROWS "
             + " from [onlyGender] ";
         ctx.assertQueryReturns(
             mdx,
@@ -4649,10 +4648,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            // + "{[Gender].[Gender].[All Gender]}\n"
             + "{[Gender].[Gender].[F]}\n"
             + "{[Gender].[Gender].[M]}\n"
-            // + "Row #0: 266,773\n"
             + "Row #0: 131,558\n"
             + "Row #1: 135,215\n");
     }
