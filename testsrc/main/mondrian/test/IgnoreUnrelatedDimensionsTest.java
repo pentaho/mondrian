@@ -86,6 +86,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>\n"
             + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Profit]\"/>\n"
             + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Profit Growth]\"/>\n"
+            + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Profit last Period]\"/>\n"
             + "  <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Store Invoice]\"/>\n"
             + "  <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Supply Time]\"/>\n"
             + "  <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Units Ordered]\"/>\n"
