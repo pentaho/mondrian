@@ -2329,58 +2329,17 @@ public class RolapSchemaUpgrader {
                 xmlCube, measureNames, infoMap, xmlLegacyMeasure);
         }
 
-        // Convert all measures of underlying cubes. Any of them might be
-        // referenced in a calculated measure.
         for (Info info : infoMap.values()) {
-            for (Mondrian3Def.Measure xmlLegacyMeasure
-                : info.xmlLegacyCube.measures)
-            {
-                if (info.xmlMeasureGroup.getMeasures().get(
-                        xmlLegacyMeasure.name) == null)
-                {
-                    final MondrianDef.Measure xmlMeasure =
-                        convertMeasure(
-                            cubeInfoMap.get(info.cubeName).fact,
-                            xmlLegacyMeasure);
-                    info.xmlMeasureGroup.children
-                        .holder(new MondrianDef.Measures())
-                        .list()
-                        .add(xmlMeasure);
-                    measureNames.add(xmlLegacyMeasure.name);
-                }
-            }
-
             convertMeasureLinks(
                 info.xmlLegacyCube,
                 info.xmlMeasureGroup,
                 cubeInfoMap.get(info.cubeName).dimensionKeys);
         }
 
-        // Convert all calculated members and named sets of underlying cubes.
-        // Any of them might be referenced in a calculated measure.
         final NamedList<MondrianDef.CalculatedMember> xmlCalcMembers =
             xmlCube.children.holder(new MondrianDef.CalculatedMembers()).list();
         final NamedList<MondrianDef.NamedSet> xmlNamedSets =
             xmlCube.children.holder(new MondrianDef.NamedSets()).list();
-        final Set<String> setNames = new HashSet<String>();
-        for (Info info : infoMap.values()) {
-            for (Mondrian3Def.CalculatedMember xmlLegacyCalcMember
-                : info.xmlLegacyCube.calculatedMembers)
-            {
-                if (measureNames.add(xmlLegacyCalcMember.name)) {
-                    xmlCalcMembers.add(
-                        convertCalculatedMember(xmlLegacyCalcMember));
-                }
-            }
-            for (Mondrian3Def.NamedSet xmlLegacyNamedSet
-                : info.xmlLegacyCube.namedSets)
-            {
-                if (setNames.add(xmlLegacyNamedSet.name)) {
-                    xmlNamedSets.add(
-                        convertNamedSet(xmlLegacyNamedSet));
-                }
-            }
-        }
 
         // Convert calculated members and named sets defined in the virtual
         // cube.

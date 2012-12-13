@@ -73,6 +73,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "   <VirtualCubeDimension name=\"Product\"/>\n"
             + "   <VirtualCubeDimension cubeName=\"Warehouse\" name=\"Warehouse\"/>\n"
             + "   <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Customer Count]\"/>\n"
+            + "   <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Store Invoice]\"/>\n"
             + "</VirtualCube>",
             null,
             null,

@@ -79,6 +79,8 @@ public class VirtualCubeTest extends BatchTestCase {
             + "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n"
             + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>\n"
             + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Profit]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Cost]\"/>\n"
             + "</VirtualCube>",
             null,
             null,
@@ -102,6 +104,8 @@ public class VirtualCubeTest extends BatchTestCase {
             + "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n"
             + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>\n"
             + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Profit]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Cost]\"/>\n"
             + "</VirtualCube>",
             null,
             null,
@@ -142,6 +146,8 @@ public class VirtualCubeTest extends BatchTestCase {
             + "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n"
             + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>\n"
             + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Profit]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Cost]\"/>\n"
             + "</VirtualCube>",
             null,
             null,
@@ -212,7 +218,7 @@ public class VirtualCubeTest extends BatchTestCase {
         TestContext testContext = createContextWithNonDefaultAllMember();
 
         testContext.assertQueryReturns(
-            "select {[Warehouse].defaultMember} on columns, "
+            "select {[Warehouse].[Warehouse].defaultMember} on columns, "
             + "{[Measures].[Warehouse Cost]} on rows from [Warehouse (Default USA)]",
             "Axis #0:\n"
             + "{}\n"
@@ -225,7 +231,7 @@ public class VirtualCubeTest extends BatchTestCase {
         // There is a value for [USA] -- because it is the default member and
         // the hierarchy has no all member -- but not for [USA].[CA].
         testContext.assertQueryReturns(
-            "select {[Warehouse].defaultMember, [Warehouse].[USA].[CA]} on columns, "
+            "select {[Warehouse].[Warehouse].defaultMember, [Warehouse].[Warehouse].[USA].[CA]} on columns, "
             + "{[Measures].[Warehouse Cost], [Measures].[Sales Count]} on rows "
             + "from [Warehouse (Default USA) and Sales]",
             "Axis #0:\n"
@@ -776,6 +782,7 @@ public class VirtualCubeTest extends BatchTestCase {
             + "{[Measures].[Warehouse Sales]}\n"
             + "{[Measures].[Profit]}\n"
             + "{[Measures].[Profit Growth]}\n"
+            + "{[Measures].[Profit last Period]}\n"
             + "{[Measures].[Average Warehouse Sale]}\n"
             + "{[Measures].[Profit Per Unit Shipped]}\n"
             + "Row #0: 86,837\n"
@@ -791,6 +798,7 @@ public class VirtualCubeTest extends BatchTestCase {
             + "Row #0: 196,770.888\n"
             + "Row #0: $339,610.90\n"
             + "Row #0: 0.0%\n"
+            + "Row #0: $339,610.90\n"
             + "Row #0: $2.21\n"
             + "Row #0: $1.63\n");
     }
@@ -881,6 +889,8 @@ public class VirtualCubeTest extends BatchTestCase {
             + "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n"
             + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>\n"
             + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Profit]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Cost]\"/>\n"
             + "</VirtualCube>",
             null,
             null,
@@ -1269,7 +1279,7 @@ public class VirtualCubeTest extends BatchTestCase {
             + "    3 ASC,\n"
             + "    4 ASC";
 
-        //TODO: DERBY NEEDS UPDATE
+        // TODO: DERBY NEEDS UPDATE
         String derbySQL =
             "select "
             + "\"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\", \"time_by_day\".\"month_of_year\", \"store\".\"store_country\" "
@@ -1366,53 +1376,46 @@ public class VirtualCubeTest extends BatchTestCase {
         // "order by 1 ASC" and forego correct sorting of NULL values.
         String mysqlSQL =
             "select `product_class`.`product_family` as `c0` "
-            + "from `product` as `product`, `product_class` as `product_class`, `sales_fact_1997` as `sales_fact_1997`, `store` as `store` "
-            + "where `product`.`product_class_id` = `product_class`.`product_class_id` and `sales_fact_1997`.`product_id` = `product`.`product_id` and "
-            + "`sales_fact_1997`.`store_id` = `store`.`store_id` and `store`.`store_country` = 'USA' "
-            + "group by `product_class`.`product_family` "
-            + "union "
+            + "from `inventory_fact_1997` as `inventory_fact_1997`,"
+            + " `product` as `product`, "
+            + "`product_class` as `product_class`, "
+            + "`store` as `store` "
+            + "where `inventory_fact_1997`.`product_id` = `product`.`product_id` "
+            + "and `product`.`product_class_id` = `product_class`.`product_class_id` "
+            + "and `inventory_fact_1997`.`store_id` = `store`.`store_id` "
+            + "and `store`.`store_country` = 'USA' "
+            + "group by `product_class`.`product_family`\n"
+            + "union\n"
             + "select `product_class`.`product_family` as `c0` "
-            + "from `product` as `product`, `product_class` as `product_class`, `inventory_fact_1997` as `inventory_fact_1997`, `store` as `store` "
-            + "where `product`.`product_class_id` = `product_class`.`product_class_id` and `inventory_fact_1997`.`product_id` = `product`.`product_id` and "
-            + "`inventory_fact_1997`.`store_id` = `store`.`store_id` and `store`.`store_country` = 'USA' "
+            + "from `sales_fact_1997` as `sales_fact_1997`, "
+            + "`product` as `product`, "
+            + "`product_class` as `product_class`, "
+            + "`store` as `store` "
+            + "where `sales_fact_1997`.`product_id` = `product`.`product_id` "
+            + "and `product`.`product_class_id` = `product_class`.`product_class_id` "
+            + "and `sales_fact_1997`.`store_id` = `store`.`store_id` "
+            + "and `store`.`store_country` = 'USA' "
             + "group by `product_class`.`product_family` "
-            + "order by 1 ASC";
-
-        String derbySQL =
-            "select \"product_class\".\"product_family\" "
-            + "from \"product\" as \"product\", \"product_class\" as \"product_class\", \"sales_fact_1997\" as \"sales_fact_1997\", \"store\" as \"store\" "
-            + "where \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\""
-            + " and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and \"store\".\"store_country\" = 'USA' "
-            + "group by \"product_class\".\"product_family\" "
-            + "union "
-            + "select \"product_class\".\"product_family\" "
-            + "from \"product\" as \"product\", \"product_class\" as \"product_class\", \"inventory_fact_1997\" as \"inventory_fact_1997\", \"store\" as \"store\" "
-            + "where \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and \"inventory_fact_1997\".\"product_id\" = \"product\".\"product_id\""
-            + " and \"inventory_fact_1997\".\"store_id\" = \"store\".\"store_id\" and \"store\".\"store_country\" = 'USA' "
-            + "group by \"product_class\".\"product_family\" "
             + "order by 1 ASC";
 
         String result =
             "Axis #0:\n"
-            + "{[Store].[USA]}\n"
+            + "{[Store].[Store].[USA]}\n"
             + "Axis #1:\n"
             + "{[Measures].[CalcMeasure]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Products].[Drink]}\n"
-            + "{[Product].[Products].[Food]}\n"
-            + "{[Product].[Products].[Non-Consumable]}\n"
+            + "{[Product].[Product].[Drink]}\n"
+            + "{[Product].[Product].[Food]}\n"
+            + "{[Product].[Product].[Non-Consumable]}\n"
             + "Row #0: 0.369\n"
             + "Row #1: 0.345\n"
             + "Row #2: 0.35\n";
 
-        SqlPattern[] mysqlPattern = {
+        SqlPattern[] patterns = {
             new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL, mysqlSQL, mysqlSQL),
-            new SqlPattern(
-                Dialect.DatabaseProduct.DERBY, derbySQL, derbySQL)
-        };
+                Dialect.DatabaseProduct.MYSQL, mysqlSQL, mysqlSQL)};
 
-        assertQuerySql(getTestContext(), query, mysqlPattern, true);
+        assertQuerySql(getTestContext(), query, patterns, true);
         assertQueryReturns(query, result);
     }
 
@@ -1424,21 +1427,21 @@ public class VirtualCubeTest extends BatchTestCase {
         Result result = executeQuery(
             "SELECT\n"
             + "NON EMPTY CrossJoin(\n"
-            + "  [Education Level].[Education Level].Members,\n"
+            + "  [Education Level].[Education Level].[Education Level].Members,\n"
             + "  CrossJoin(\n"
             + "    [Product].[Product Family].Members,\n"
             + "    [Store].[Store State].Members)) ON COLUMNS,\n"
             + "NON EMPTY CrossJoin(\n"
             + "  [Promotions].[Promotion Name].Members,\n"
-            + "  [Marital Status].[Marital Status].Members) ON ROWS\n"
+            + "  [Marital Status].[Marital Status].[Marital Status].Members) ON ROWS\n"
             + "FROM [Warehouse and Sales]");
         assertEquals(
-            "[[Education Level].[Bachelors Degree], [Product].[Drink], [Store].[USA].[CA]]",
+            "[[Education Level].[Education Level].[Bachelors Degree], [Product].[Product].[Drink], [Store].[Store].[USA].[CA]]",
             result.getAxes()[0].getPositions().get(0).toString());
         assertEquals(45, result.getAxes()[0].getPositions().size());
         // With bug MONDRIAN-902, this gave the same result as for axis #0:
         assertEquals(
-            "[[Promotions].[Bag Stuffers], [Customer].[Marital Status].[M]]",
+            "[[Promotions].[Promotions].[Bag Stuffers], [Marital Status].[Marital Status].[M]]",
             result.getAxes()[1].getPositions().get(0).toString());
         assertEquals(96, result.getAxes()[1].getPositions().size());
     }
