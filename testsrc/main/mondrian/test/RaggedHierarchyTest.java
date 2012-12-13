@@ -418,8 +418,14 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
                 + "      <Table name=\"customer\"/>\n"
                 + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\" hideMemberIf=\"IfBlankName\">\n"
                 + "         <NameExpression> "
-                + " <SQL dialect='generic'> "
+                + " <SQL dialect='oracle'> "
                 + "case \"gender\" "
+                + "when 'F' then ' ' "
+                + "when 'M' then 'M' "
+                + " end "
+                + "</SQL> "
+                + " <SQL dialect='mysql'> "
+                + "case `gender` "
                 + "when 'F' then ' ' "
                 + "when 'M' then 'M' "
                 + " end "
@@ -435,7 +441,7 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender4].[M]}\n"
+            + "{[Gender4].[Gender4].[M]}\n"
             + "Row #0: 135,215\n");
     }
 }
