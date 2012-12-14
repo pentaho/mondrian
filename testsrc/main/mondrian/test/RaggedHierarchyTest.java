@@ -58,10 +58,10 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
     // disabled: (1) does not work with SmartMemberReader and
     // (2) test returns [null] member
     // Vatican's descendants at the province and city level are hidden
-    public void dont_testChildrenOfVatican() {
+    public void testChildrenOfVatican() {
         assertAxisReturns(
             "[Store].[Vatican].children",
-            "[Store].[Vatican].[Vatican].[null].[Store 17]");
+            "[Store].[Store].[Vatican].[Vatican].[#null].[Store 17]");
     }
 
     public void testParentOfHaifa() {
@@ -120,11 +120,11 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
 
     // disabled: (1) does not work with SmartMemberReader and (2) test returns
     // [null] member
-    public void dont_testDescendantsOfVatican() {
+    public void testDescendantsOfVatican() {
         assertAxisReturns(
             "Descendants([Store].[Vatican])",
-            "[Store].[Vatican]\n"
-            + "[Store].[Vatican].[Vatican].[null].[Store 17]");
+            "[Store].[Store].[Vatican]\n"
+            + "[Store].[Store].[Vatican].[Vatican].[#null].[Store 17]");
     }
 
     // The only child of Vatican at state level is hidden
@@ -225,7 +225,7 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
      */
     // disabled: (1) does not work with SmartMemberReader and (2) test returns
     // [null] member
-    public void dont_testMeasuresVatican() {
+    public void testMeasuresVatican() {
         assertQueryReturns(
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
             + " {Descendants([Store].[Vatican])} ON ROWS\n"
@@ -235,8 +235,8 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[Vatican]}\n"
-            + "{[Store].[Vatican].[Vatican].[null].[Store 17]}\n"
+            + "{[Store].[Store].[Vatican]}\n"
+            + "{[Store].[Store].[Vatican].[Vatican].[#null].[Store 17]}\n"
             + "Row #0: 35,257\n"
             + "Row #1: 35,257\n");
     }
@@ -246,7 +246,7 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
      * disabled: (1) does not work with SmartMemberReader and (2) test returns
      * [null] member?
      */
-    public void dont_testMeasures() {
+    public void testMeasures() {
         assertQueryReturns(
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
             + " NON EMPTY {Descendants([Store])} ON ROWS\n"
@@ -256,38 +256,38 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores]}\n"
-            + "{[Store].[Israel]}\n"
-            + "{[Store].[Israel].[Israel].[Haifa]}\n"
-            + "{[Store].[Israel].[Israel].[Haifa].[Store 22]}\n"
-            + "{[Store].[Israel].[Israel].[Tel Aviv]}\n"
-            + "{[Store].[Israel].[Israel].[Tel Aviv].[Store 23]}\n"
-            + "{[Store].[USA]}\n"
-            + "{[Store].[USA].[CA]}\n"
-            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
-            + "{[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n"
-            + "{[Store].[USA].[CA].[Los Angeles]}\n"
-            + "{[Store].[USA].[CA].[Los Angeles].[Store 7]}\n"
-            + "{[Store].[USA].[CA].[San Francisco]}\n"
-            + "{[Store].[USA].[CA].[San Francisco].[Store 14]}\n"
-            + "{[Store].[USA].[OR]}\n"
-            + "{[Store].[USA].[OR].[Portland]}\n"
-            + "{[Store].[USA].[OR].[Portland].[Store 11]}\n"
-            + "{[Store].[USA].[OR].[Salem]}\n"
-            + "{[Store].[USA].[OR].[Salem].[Store 13]}\n"
-            + "{[Store].[USA].[USA].[Washington]}\n"
-            + "{[Store].[USA].[USA].[Washington].[Store 24]}\n"
-            + "{[Store].[USA].[WA]}\n"
-            + "{[Store].[USA].[WA].[Bellingham]}\n"
-            + "{[Store].[USA].[WA].[Bellingham].[Store 2]}\n"
-            + "{[Store].[USA].[WA].[Bremerton]}\n"
-            + "{[Store].[USA].[WA].[Bremerton].[Store 3]}\n"
-            + "{[Store].[USA].[WA].[Seattle]}\n"
-            + "{[Store].[USA].[WA].[Seattle].[Store 15]}\n"
-            + "{[Store].[USA].[WA].[Spokane]}\n"
-            + "{[Store].[USA].[WA].[Spokane].[Store 16]}\n"
-            + "{[Store].[Vatican]}\n"
-            + "{[Store].[Vatican].[Vatican].[null].[Store 17]}\n"
+            + "{[Store].[Store].[All Stores]}\n"
+            + "{[Store].[Store].[Israel]}\n"
+            + "{[Store].[Store].[Israel].[Israel].[Haifa]}\n"
+            + "{[Store].[Store].[Israel].[Israel].[Haifa].[Store 22]}\n"
+            + "{[Store].[Store].[Israel].[Israel].[Tel Aviv]}\n"
+            + "{[Store].[Store].[Israel].[Israel].[Tel Aviv].[Store 23]}\n"
+            + "{[Store].[Store].[USA]}\n"
+            + "{[Store].[Store].[USA].[CA]}\n"
+            + "{[Store].[Store].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[Store].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[Store].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[Store].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "{[Store].[Store].[USA].[OR]}\n"
+            + "{[Store].[Store].[USA].[OR].[Portland]}\n"
+            + "{[Store].[Store].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Store].[Store].[USA].[OR].[Salem]}\n"
+            + "{[Store].[Store].[USA].[OR].[Salem].[Store 13]}\n"
+            + "{[Store].[Store].[USA].[USA].[Washington]}\n"
+            + "{[Store].[Store].[USA].[USA].[Washington].[Store 24]}\n"
+            + "{[Store].[Store].[USA].[WA]}\n"
+            + "{[Store].[Store].[USA].[WA].[Bellingham]}\n"
+            + "{[Store].[Store].[USA].[WA].[Bellingham].[Store 2]}\n"
+            + "{[Store].[Store].[USA].[WA].[Bremerton]}\n"
+            + "{[Store].[Store].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[Store].[USA].[WA].[Seattle]}\n"
+            + "{[Store].[Store].[USA].[WA].[Seattle].[Store 15]}\n"
+            + "{[Store].[Store].[USA].[WA].[Spokane]}\n"
+            + "{[Store].[Store].[USA].[WA].[Spokane].[Store 16]}\n"
+            + "{[Store].[Store].[Vatican]}\n"
+            + "{[Store].[Store].[Vatican].[Vatican].[#null].[Store 17]}\n"
             + "Row #0: 266,773\n"
             + "Row #1: 13,694\n"
             + "Row #2: 2,203\n"
