@@ -102,6 +102,14 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             }
             return null;
         }
+        /**
+         * {@inheritDoc}
+         * <p> Always returns <code>true</code> as this is only used
+         * in NON EMPTY contexts.
+         */
+        public boolean isJoinRequired() {
+            return true;
+        }
     }
 
     protected boolean restrictMemberTypes() {

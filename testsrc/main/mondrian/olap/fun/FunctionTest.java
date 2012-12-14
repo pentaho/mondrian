@@ -23,6 +23,7 @@ import junit.framework.ComparisonFailure;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.StringEscaper;
+import org.olap4j.mdx.WithSetNode;
 
 import java.io.*;
 import java.util.*;
@@ -969,7 +970,8 @@ public class FunctionTest extends FoodMartTestCase {
             return;
         }
         final TestContext testContext =
-            getTestContext().withCube("Sales Ragged");
+            getTestContext().withSalesRagged();
+
         Cell cell =
             testContext.executeExprRaw(
                 "[Store].[All Stores].[Vatican].ordinal");
@@ -1223,7 +1225,7 @@ public class FunctionTest extends FoodMartTestCase {
             getTestContext().legacy().withCube("[Sales Ragged]");
         testContext.assertAxisReturns(
             "ClosingPeriod([Store].[Store City], [Store].[All Stores].[Israel])",
-            "[Store].[Israel].[Israel].[Tel Aviv]");
+            "[Store].[Store].[Israel].[Israel].[Tel Aviv]");
 
         testContext.assertAxisReturns(
             "ClosingPeriod([Store].[Store State], [Store].[All Stores].[Israel])",
@@ -1233,7 +1235,7 @@ public class FunctionTest extends FoodMartTestCase {
             "ClosingPeriod([Time].[Year], [Store].[All Stores].[Israel])",
             "The <level> and <member> arguments to ClosingPeriod must be "
             + "from the same hierarchy. The level was from '[Time].[Time]' but "
-            + "the member was from '[Store]'.");
+            + "the member was from '[Store].[Store]'.");
     }
 
     public void testClosingPeriodBelow() {
@@ -4558,7 +4560,7 @@ public class FunctionTest extends FoodMartTestCase {
         }
         // no cities are at leaf level
         final TestContext raggedContext =
-            getTestContext().withCube("[Sales Ragged]");
+            getTestContext().withSalesRagged();
         raggedContext.assertAxisReturns(
             "Descendants([Store].[Israel], [Store].[Store City], leaves)",
             "");
@@ -4566,8 +4568,8 @@ public class FunctionTest extends FoodMartTestCase {
         // all cities are leaves
         raggedContext.assertAxisReturns(
             "Descendants([Geography].[Israel], [Geography].[City], leaves)",
-            "[Geography].[Israel].[Israel].[Haifa]\n"
-            + "[Geography].[Israel].[Israel].[Tel Aviv]");
+            "[Geography].[Geographies].[Israel].[Israel].[Haifa]\n"
+            + "[Geography].[Geographies].[Israel].[Israel].[Tel Aviv]");
 
         // No state is a leaf (not even Israel, which is both a country and a
         // a state, or Vatican, with is a country/state/city)
@@ -4579,7 +4581,7 @@ public class FunctionTest extends FoodMartTestCase {
         // you know).
         raggedContext.assertAxisReturns(
             "Descendants([Geography], [Geography].[Country], leaves)",
-            "[Geography].[Vatican]");
+            "[Geography].[Geographies].[Vatican]");
     }
 
     public void testDescendantsMNLeaves() {
@@ -5893,19 +5895,21 @@ public class FunctionTest extends FoodMartTestCase {
     public void testPropertiesOnDimension() {
         // [Store] is a dimension. When called with a property like FirstChild,
         // it is implicitly converted to a member.
-        assertAxisReturns("[Store].FirstChild", "[Store].[Canada]");
+        // Store in sales cube now has two hierarchies, so using sales ragged.
+        getTestContext().withSalesRagged()
+            .assertAxisReturns("[Store].FirstChild", "[Store].[Stores].[Canada]");
 
         // The same should happen with the <Member>.Properties(<String>)
         // function; now the bug is fixed, it does. Dimension is implicitly
         // converted to member.
-        assertExprReturns(
+        getTestContext().withSalesRagged().assertExprReturns(
             "[Store].Properties('MEMBER_UNIQUE_NAME')",
-            "[Store].[All Stores]");
+            "[Store].[Stores].[All Stores]");
 
         // Hierarchy is implicitly converted to member.
-        assertExprReturns(
+        getTestContext().withSalesRagged().assertExprReturns(
             "[Store].[USA].Hierarchy.Properties('MEMBER_UNIQUE_NAME')",
-            "[Store].[All Stores]");
+            "[Store].[Stores].[All Stores]");
     }
 
     /**
@@ -5998,7 +6002,7 @@ public class FunctionTest extends FoodMartTestCase {
             getTestContext().legacy().withCube("[Sales Ragged]");
         raggedContext.assertAxisReturns(
             "OpeningPeriod([Store].[Store City], [Store].[All Stores].[Israel])",
-            "[Store].[Israel].[Israel].[Haifa]");
+            "[Store].[Store].[Israel].[Israel].[Haifa]");
 
         raggedContext.assertAxisReturns(
             "OpeningPeriod([Store].[Store State], [Store].[All Stores].[Israel])",
@@ -6008,7 +6012,7 @@ public class FunctionTest extends FoodMartTestCase {
             "OpeningPeriod([Time].[Year], [Store].[All Stores].[Israel])",
             "The <level> and <member> arguments to OpeningPeriod must be "
             + "from the same hierarchy. The level was from '[Time].[Time]' but "
-            + "the member was from '[Store]'.");
+            + "the member was from '[Store].[Store]'.");
     }
 
     /**

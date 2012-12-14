@@ -2129,7 +2129,7 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "  <SchemaGrant access=\"none\">\n"
                 + "    <CubeGrant cube=\"Sales Ragged\" access=\"all\"/>\n"
                 + "  </SchemaGrant>\n"
-                + "</Role>");
+                + "</Role>").withSalesRagged();
 
         final TestContext testContextRole1 =
             testContext

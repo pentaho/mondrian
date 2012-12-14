@@ -779,7 +779,7 @@ public class SqlTupleReader implements TupleReader {
                 Pair<String, List<SqlStatement.Type>> pair =
                     generateSelectForLevels(
                         dialect, null,
-                        measureGroup, i, measureGroupList.size());
+                        measureGroup, i, joiningMeasureGroupList.size());
                 buf.append(pair.left);
                 types = pair.right;
             }
