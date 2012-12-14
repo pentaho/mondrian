@@ -4144,7 +4144,6 @@ public class NonEmptyTest extends BatchTestCase {
      * EnableNativeNonEmpty=true"</a>.
      */
     public void testBugMondrian321() {
-        // TODO actual results look right
         assertQueryReturns(
             "WITH SET [#DataSet#] AS 'Crossjoin({Descendants([Customers].[All Customers], 2)}, {[Product].[All Products]})' \n"
             + "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns, \n"
@@ -4155,15 +4154,45 @@ public class NonEmptyTest extends BatchTestCase {
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[Store Sales]}\n"
             + "Axis #2:\n"
+            + "{[Customer].[Customers].[Canada].[BC], [Product].[Products].[All Products]}\n"
+            + "{[Customer].[Customers].[Mexico].[DF], [Product].[Products].[All Products]}\n"
+            + "{[Customer].[Customers].[Mexico].[Guerrero], [Product].[Products].[All Products]}\n"
+            + "{[Customer].[Customers].[Mexico].[Jalisco], [Product].[Products].[All Products]}\n"
+            + "{[Customer].[Customers].[Mexico].[Mexico], [Product].[Products].[All Products]}\n"
+            + "{[Customer].[Customers].[Mexico].[Oaxaca], [Product].[Products].[All Products]}\n"
+            + "{[Customer].[Customers].[Mexico].[Sinaloa], [Product].[Products].[All Products]}\n"
+            + "{[Customer].[Customers].[Mexico].[Veracruz], [Product].[Products].[All Products]}\n"
+            + "{[Customer].[Customers].[Mexico].[Yucatan], [Product].[Products].[All Products]}\n"
+            + "{[Customer].[Customers].[Mexico].[Zacatecas], [Product].[Products].[All Products]}\n"
             + "{[Customer].[Customers].[USA].[CA], [Product].[Products].[All Products]}\n"
             + "{[Customer].[Customers].[USA].[OR], [Product].[Products].[All Products]}\n"
             + "{[Customer].[Customers].[USA].[WA], [Product].[Products].[All Products]}\n"
-            + "Row #0: 74,748\n"
-            + "Row #0: 159,167.84\n"
-            + "Row #1: 67,659\n"
-            + "Row #1: 142,277.07\n"
-            + "Row #2: 124,366\n"
-            + "Row #2: 263,793.22\n");
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #3: \n"
+            + "Row #3: \n"
+            + "Row #4: \n"
+            + "Row #4: \n"
+            + "Row #5: \n"
+            + "Row #5: \n"
+            + "Row #6: \n"
+            + "Row #6: \n"
+            + "Row #7: \n"
+            + "Row #7: \n"
+            + "Row #8: \n"
+            + "Row #8: \n"
+            + "Row #9: \n"
+            + "Row #9: \n"
+            + "Row #10: 74,748\n"
+            + "Row #10: 159,167.84\n"
+            + "Row #11: 67,659\n"
+            + "Row #11: 142,277.07\n"
+            + "Row #12: 124,366\n"
+            + "Row #12: 263,793.22\n");
     }
 
     public void testNativeCrossjoinWillConstrainUsingArgsFromAllAxes() {
