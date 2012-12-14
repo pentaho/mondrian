@@ -486,17 +486,17 @@ public class RolapSchema extends OlapElementBase implements Schema {
         final UdfResolver.UdfFactory udfFactory;
         if (className != null) {
             // Lookup class.
-            final Class<UserDefinedFunction> klass;
             try {
-                //noinspection unchecked
-                klass = (Class<UserDefinedFunction>) Class.forName(className);
+                final Class<UserDefinedFunction> klass =
+                    ClassResolver.INSTANCE.forName(className, true);
+
+                // Instantiate UDF by calling correct constructor.
+                udfFactory = new UdfResolver.ClassUdfFactory(klass, name);
             } catch (ClassNotFoundException e) {
                 throw MondrianResource.instance().UdfClassNotFound.ex(
                     name,
                     className);
             }
-            // Instantiate UDF by calling correct constructor.
-            udfFactory = new UdfResolver.ClassUdfFactory(klass, name);
         } else {
             udfFactory = new UdfResolver.UdfFactory() {
                 public UserDefinedFunction create() {
@@ -600,7 +600,9 @@ public class RolapSchema extends OlapElementBase implements Schema {
             Exception e2;
             try {
                 Properties properties = null;
-                Class<?> clazz = Class.forName(memberReaderClass);
+                Class<?> clazz = ClassResolver.INSTANCE.forName(
+                    memberReaderClass,
+                    true);
                 Constructor<?> constructor = clazz.getConstructor(
                     RolapHierarchy.class,
                     Properties.class);
@@ -677,10 +679,9 @@ public class RolapSchema extends OlapElementBase implements Schema {
 
         if (!Util.isEmpty(dataSourceChangeListenerStr)) {
             try {
-                Class<?> clazz = Class.forName(dataSourceChangeListenerStr);
-                Constructor<?> constructor = clazz.getConstructor();
                 changeListener =
-                    (DataSourceChangeListener) constructor.newInstance();
+                    ClassResolver.INSTANCE.instantiateSafe(
+                        dataSourceChangeListenerStr);
             } catch (Exception e) {
                 throw Util.newError(
                     e,

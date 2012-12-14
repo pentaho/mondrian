@@ -5,10 +5,12 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2007 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.web.taglib;
+
+import mondrian.util.ClassResolver;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -32,12 +34,13 @@ public class Listener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent event) {
         Class clazz;
         try {
-            clazz = Class.forName("mondrian.web.taglib.ApplResources");
+            clazz = ClassResolver.INSTANCE.forName(
+                "mondrian.web.taglib.ApplResources", true);
         } catch (ClassNotFoundException e) {
             throw new Error(
                 "Received [" + e.toString() + "] while initializing servlet");
         }
-        Object o = null;
+        Object o;
         try {
             o = clazz.newInstance();
         } catch (InstantiationException e) {

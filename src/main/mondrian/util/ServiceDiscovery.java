@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2010 Pentaho and others
+// Copyright (C) 2009-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -33,6 +33,7 @@ public class ServiceDiscovery<T> {
     private static final Log logger = LogFactory.getLog(ServiceDiscovery.class);
 
     private final Class<T> theInterface;
+    private final ClassResolver classResolver;
 
     /**
      * Creates a ServiceDiscovery.
@@ -42,17 +43,23 @@ public class ServiceDiscovery<T> {
      * @return ServiceDiscovery for finding instances of the given interface
      */
     public static <T> ServiceDiscovery<T> forClass(Class<T> theInterface) {
-        return new ServiceDiscovery<T>(theInterface);
+        return new ServiceDiscovery<T>(theInterface, ClassResolver.INSTANCE);
     }
 
     /**
      * Creates a ServiceDiscovery.
      *
      * @param theInterface Interface for service
+     * @param classResolver Class resolver
      */
-    private ServiceDiscovery(Class<T> theInterface) {
-        assert theInterface != null;
+    private ServiceDiscovery(
+        Class<T> theInterface,
+        ClassResolver classResolver)
+    {
         this.theInterface = theInterface;
+        this.classResolver = classResolver;
+        assert classResolver != null;
+        assert theInterface != null;
     }
 
     /**
@@ -65,32 +72,26 @@ public class ServiceDiscovery<T> {
         // in the order they were added.
         Set<Class<T>> uniqueClasses = new LinkedHashSet<Class<T>>();
 
-        ClassLoader cLoader = Thread.currentThread().getContextClassLoader();
-        if (cLoader == null) {
-            cLoader = this.getClass().getClassLoader();
-        }
         try {
             // Enumerate the files because I may have more than one .jar file
             // that contains an implementation for the interface, and therefore,
             // more than one list of entries.
             String lookupName = "META-INF/services/" + theInterface.getName();
-            Enumeration<URL> urlEnum = cLoader.getResources(lookupName);
-            while (urlEnum.hasMoreElements()) {
-                URL resourceURL = urlEnum.nextElement();
+            for (URL resourceUrl : classResolver.getResources(lookupName)) {
                 InputStream is = null;
                 try {
-                    is = resourceURL.openStream();
+                    is = resourceUrl.openStream();
                     BufferedReader reader =
                         new BufferedReader(new InputStreamReader(is));
 
                     // read each class and parse it
                     String clazz;
                     while ((clazz = reader.readLine()) != null) {
-                        parseImplementor(clazz, cLoader, uniqueClasses);
+                        parseImplementor(clazz, uniqueClasses);
                     }
                 } catch (IOException e) {
                     logger.warn(
-                        "Error while finding service file " + resourceURL
+                        "Error while finding service file " + resourceUrl
                         + " for " + theInterface,
                         e);
                 } finally {
@@ -113,12 +114,10 @@ public class ServiceDiscovery<T> {
      * Parses a list of classes that implement a service.
      *
      * @param clazz Class name (or list of class names)
-     * @param cLoader Class loader
      * @param uniqueClasses Set of classes (output)
      */
     protected void parseImplementor(
         String clazz,
-        ClassLoader cLoader,
         Set<Class<T>> uniqueClasses)
     {
         // Split should leave me with a class name in the first string
@@ -140,7 +139,7 @@ public class ServiceDiscovery<T> {
             // I want to look up the class but not cause the static
             // initializer to execute.
             Class interfaceImplementor =
-                Class.forName(theClass, false, cLoader);
+                classResolver.forName(theClass, false);
             if (theInterface.isAssignableFrom(interfaceImplementor)) {
                 //noinspection unchecked
                 uniqueClasses.add((Class<T>) interfaceImplementor);

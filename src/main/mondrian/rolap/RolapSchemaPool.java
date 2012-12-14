@@ -14,13 +14,12 @@ import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.spi.DynamicSchemaProcessor;
-import mondrian.util.ByteString;
+import mondrian.util.*;
 
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.lang.ref.*;
-import java.lang.reflect.Constructor;
 import java.util.*;
 import javax.sql.DataSource;
 
@@ -264,7 +263,7 @@ class RolapSchemaPool {
                         RolapConnectionProperties.Catalog.name(),
                         RolapConnectionProperties.CatalogContent.name());
             }
-            //check for a DynamicSchemaProcessor
+            // check for a DynamicSchemaProcessor
             String dynProcName = connectInfo.get(
                 RolapConnectionProperties.DynamicSchemaProcessor.name());
             if (!Util.isEmpty(dynProcName)) {
@@ -274,7 +273,7 @@ class RolapSchemaPool {
             }
 
             if (Util.isEmpty(catalogStr)) {
-                //read schema from file
+                // read schema from file
                 try {
                     catalogStr = Util.readVirtualFileAsString(catalogUrl);
                 } catch (IOException e) {
@@ -299,13 +298,8 @@ class RolapSchemaPool {
                 + "\" using dynamic processor");
         }
         try {
-            @SuppressWarnings("unchecked")
-            final Class<DynamicSchemaProcessor> clazz =
-                (Class<DynamicSchemaProcessor>)
-                    Class.forName(dynProcName);
-            final Constructor<DynamicSchemaProcessor> ctor =
-                clazz.getConstructor();
-            final DynamicSchemaProcessor dynProc = ctor.newInstance();
+            final DynamicSchemaProcessor dynProc =
+                ClassResolver.INSTANCE.instantiateSafe(dynProcName);
             return dynProc.processSchema(catalogUrl, connectInfo);
         } catch (Exception e) {
             throw Util.newError(

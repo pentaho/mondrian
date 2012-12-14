@@ -4640,10 +4640,7 @@ public class RolapSchemaLoader {
                 "Must not specify both className attribute and Script element");
         }
         if (className != null) {
-            @SuppressWarnings({"unchecked"})
-            Class<T> clazz = (Class<T>) Class.forName(className);
-            Constructor<T> ctor = clazz.getConstructor();
-            return ctor.newInstance();
+            return ClassResolver.INSTANCE.instantiateSafe(className);
         }
         if (iface == CellFormatter.class) {
             return iface.cast(Scripts.cellFormatter(script));

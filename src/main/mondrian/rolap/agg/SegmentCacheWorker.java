@@ -12,7 +12,7 @@ package mondrian.rolap.agg;
 import mondrian.olap.MondrianProperties;
 import mondrian.resource.MondrianResource;
 import mondrian.spi.*;
-import mondrian.util.ServiceDiscovery;
+import mondrian.util.*;
 
 import org.apache.log4j.Logger;
 
@@ -94,14 +94,10 @@ public final class SegmentCacheWorker {
     private static SegmentCache instantiateCache(String cacheName) {
         try {
             LOGGER.debug("Starting cache instance: " + cacheName);
-            Class<?> clazz =
-                Class.forName(cacheName);
-            Object scObject = clazz.newInstance();
-            if (!(scObject instanceof SegmentCache)) {
-                throw MondrianResource.instance()
-                    .SegmentCacheIsNotImplementingInterface.ex();
-            }
-            return (SegmentCache) scObject;
+            return ClassResolver.INSTANCE.instantiateSafe(cacheName);
+        } catch (ClassCastException e) {
+            throw MondrianResource.instance()
+                .SegmentCacheIsNotImplementingInterface.ex();
         } catch (Exception e) {
             LOGGER.error(
                 MondrianResource.instance()
