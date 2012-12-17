@@ -304,13 +304,8 @@ class RolapSchemaPool {
                 + "\" using dynamic processor");
         }
         try {
-            @SuppressWarnings("unchecked")
-            final Class<DynamicSchemaProcessor> clazz =
-                (Class<DynamicSchemaProcessor>)
-                    Class.forName(dynProcName);
-            final Constructor<DynamicSchemaProcessor> ctor =
-                clazz.getConstructor();
-            final DynamicSchemaProcessor dynProc = ctor.newInstance();
+            final DynamicSchemaProcessor dynProc =
+                ClassResolver.INSTANCE.instantiateSafe(dynProcName);
             return dynProc.processSchema(catalogUrl, connectInfo);
         } catch (Exception e) {
             throw Util.newError(

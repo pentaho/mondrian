@@ -151,17 +151,7 @@ public class Util extends XOMUtil {
         } else {
             className = "mondrian.util.UtilCompatibleJdk16";
         }
-        try {
-            Class<UtilCompatible> clazz =
-                (Class<UtilCompatible>) Class.forName(className);
-            compatible = clazz.newInstance();
-        } catch (ClassNotFoundException e) {
-            throw Util.newInternal(e, "Could not load '" + className + "'");
-        } catch (InstantiationException e) {
-            throw Util.newInternal(e, "Could not load '" + className + "'");
-        } catch (IllegalAccessException e) {
-            throw Util.newInternal(e, "Could not load '" + className + "'");
-        }
+        compatible = ClassResolver.INSTANCE.instantiateSafe(className);
     }
 
     public static boolean isNull(Object o) {
