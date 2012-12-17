@@ -13,6 +13,7 @@ import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.spi.Dialect;
 import mondrian.spi.StatisticsProvider;
+import mondrian.util.ClassResolver;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -899,30 +900,14 @@ public class JdbcDialectImpl implements Dialect {
             new ArrayList<StatisticsProvider>();
         for (String name : names) {
             try {
-                final Class<?> clazz = Class.forName(name);
                 StatisticsProvider provider =
-                    (StatisticsProvider) clazz.newInstance();
+                    ClassResolver.INSTANCE.instantiateSafe(name);
                 providerList.add(provider);
-            } catch (ClassNotFoundException e) {
+            } catch (Exception e) {
                 LOGGER.info(
                     "Error instantiating statistics provider (class=" + name
-                    + ")",
+                        + ")",
                     e);
-            } catch (InstantiationException e) {
-                LOGGER.info(
-                    "Error instantiating statistics provider (class=" + name
-                    + ")",
-                    e);
-            } catch (IllegalAccessException e) {
-                LOGGER.info(
-                    "Error instantiating statistics provider (class="
-                    + name
-                    + ")", e);
-            } catch (ClassCastException e) {
-                LOGGER.info(
-                    "Error instantiating statistics provider (class="
-                    + name
-                    + ")", e);
             }
         }
         return providerList;

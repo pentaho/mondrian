@@ -81,6 +81,9 @@ public class MondrianOlap4jDriver implements Driver {
     private static Factory createFactory() {
         final String factoryClassName = getFactoryClassName();
         try {
+
+            // Cannot use ClassResolver here, because factory's constructor has
+            // package access.
             final Class<?> clazz = Class.forName(factoryClassName);
             return (Factory) clazz.newInstance();
         } catch (ClassNotFoundException e) {

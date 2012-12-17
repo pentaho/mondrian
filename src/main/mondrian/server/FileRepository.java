@@ -157,7 +157,8 @@ public class FileRepository implements Repository {
         // Make sure we load the Mondrian driver into
         // the ClassLoader.
         try {
-            Class.forName(MondrianOlap4jDriver.class.getName());
+          ClassResolver.INSTANCE.forName(
+              MondrianOlap4jDriver.class.getName(), true);
         } catch (ClassNotFoundException e) {
             throw new OlapException("Cannot find mondrian olap4j driver.");
         }
