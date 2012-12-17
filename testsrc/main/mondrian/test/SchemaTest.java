@@ -7693,6 +7693,23 @@ Test that get error if a dimension has more than one hierarchy with same name.
             hierarchy.getDefaultMember().getParentMember());
     }
 
+    /**
+     * Check if Sales Ragged is being loaded ok.
+     */
+    public void testRaggedHierarchy() {
+        getTestContext().withSalesRagged().assertQueryReturns(
+            "select {} on 0, [Geography].[USA].Children on 1\n"
+            + "from [Sales Ragged]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "Axis #2:\n"
+            + "{[Geography].[Geographies].[USA].[CA]}\n"
+            + "{[Geography].[Geographies].[USA].[OR]}\n"
+            + "{[Geography].[Geographies].[USA].[USA].[Washington]}\n"
+            + "{[Geography].[Geographies].[USA].[WA]}\n");
+    }
+
     // TODO: test that there is an error if we try to define a property
     // that is not functionally dependent on the attribute (e.g. define week as
     // a property of month).

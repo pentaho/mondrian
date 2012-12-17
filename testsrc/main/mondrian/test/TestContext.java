@@ -103,6 +103,104 @@ public class TestContext {
     private static final Map<String, String> rawSchemas =
         new WeakMap<String, String>();
 
+    private static final String SALES_RAGGED_TABLE_DEF =
+        "<Table name='store_ragged'>\n"
+        + "    <Key>\n"
+        + "      <Column name='store_id'/>\n"
+        + "    </Key>\n"
+        + "</Table>";
+
+    private static final String SALES_RAGGED_CUBE_DEF =
+        "<Cube name='Sales Ragged' defaultMeasure='Unit Sales'>\n"
+        + "    <Dimensions>\n"
+        + "        <Dimension name='Store' table='store_ragged' key='Store Id' >\n"
+        + "            <Attributes>\n"
+        + "                <Attribute name='Store Id' keyColumn='store_id' hasHierarchy='false'/>\n"
+        + "                <Attribute name='Store Country' keyColumn='store_country' hasHierarchy='false'/>\n"
+        + "                <Attribute name='Store State' keyColumn='store_state' hasHierarchy='false'/>\n"
+        + "                <Attribute name='Store City' keyColumn='store_city' hasHierarchy='false'/>\n"
+        + "                <Attribute name='Store Name' keyColumn='store_name' hasHierarchy='false'>\n"
+        + "                    <Property attribute='Store Type'/>\n"
+        + "                    <Property attribute='Store Manager'/>\n"
+        + "                    <Property attribute='Store Sqft'/>\n"
+        + "                    <Property attribute='Grocery Sqft'/>\n"
+        + "                    <Property attribute='Frozen Sqft'/>\n"
+        + "                    <Property attribute='Meat Sqft'/>\n"
+        + "                    <Property attribute='Has coffee bar'/>\n"
+        + "                    <Property attribute='Street address'/>\n"
+        + "                </Attribute>\n"
+        + "                <Attribute name='Store Type' keyColumn='store_type' hierarchyAllMemberName='All Store Types' hasHierarchy='false'/>\n"
+        + "                <Attribute name='Store Manager' keyColumn='store_manager' hasHierarchy='false'/>\n"
+        + "                <Attribute name='Store Sqft' keyColumn='store_sqft' hasHierarchy='false'/>\n"
+        + "                <Attribute name='Grocery Sqft' keyColumn='grocery_sqft' hasHierarchy='false'/>\n"
+        + "                <Attribute name='Frozen Sqft' keyColumn='frozen_sqft' hasHierarchy='false'/>\n"
+        + "                <Attribute name='Meat Sqft' keyColumn='meat_sqft' hasHierarchy='false'/>\n"
+        + "                <Attribute name='Has coffee bar' keyColumn='coffee_bar' hasHierarchy='false'/>\n"
+        + "                <Attribute name='Street address' keyColumn='store_street_address' hasHierarchy='false'/>\n"
+        + "            </Attributes>\n"
+        + "            <Hierarchies>\n"
+        + "                <Hierarchy name='Stores' allMemberName='All Stores'>\n"
+        + "                    <Level attribute='Store Country' hideMemberIf='Never'/>\n"
+        + "                    <Level attribute='Store State' hideMemberIf='IfParentsName'/>\n"
+        + "                    <Level attribute='Store City' hideMemberIf='IfBlankName'/>\n"
+        + "                    <Level attribute='Store Name' hideMemberIf='Never'/>\n"
+        + "                </Hierarchy>\n"
+        + "            </Hierarchies>\n"
+        + "        </Dimension>\n"
+        + "        <Dimension name='Geography' table='store_ragged' key='Geography Id'>\n"
+        + "            <Attributes>\n"
+        + "                <Attribute name='Geography Id' keyColumn='store_id' hasHierarchy='false'/>\n"
+        + "                <Attribute name='Country' keyColumn='store_country' hasHierarchy='false'/>\n"
+        + "                <Attribute name='State' keyColumn='store_state' hasHierarchy='false'/>\n"
+        + "                <Attribute name='City' keyColumn='store_city' hasHierarchy='false'/>\n"
+        + "            </Attributes>\n"
+        + "            <Hierarchies>\n"
+        + "                <Hierarchy name='Geographies' hasAll='true'>\n"
+        + "                    <Level attribute='Country' hideMemberIf='Never'/>\n"
+        + "                    <Level attribute='State' hideMemberIf='IfParentsName'/>\n"
+        + "                    <Level attribute='City' hideMemberIf='IfBlankName'/>\n"
+        + "                </Hierarchy>\n"
+        + "            </Hierarchies>\n"
+        + "        </Dimension>\n"
+        + "        <Dimension source='Time'/>\n"
+        + "        <Dimension source='Product'/>\n"
+        + "        <Dimension name='Promotion' table='promotion' key='Promotion Id'>\n"
+        + "             <Attributes>\n"
+        + "                     <Attribute name='Promotion Id' keyColumn='promotion_id' hasHierarchy='false'/>\n"
+        + "                 <Attribute name='Promotion Name' keyColumn='promotion_name' hasHierarchy='false'/>\n"
+        + "                 <Attribute name='Media Type' keyColumn='media_type' hierarchyAllMemberName='All Media' hasHierarchy='false'/>\n"
+        + "             </Attributes>\n"
+        + "             <Hierarchies>\n"
+        + "                 <Hierarchy name='Media Type' allMemberName='All Media'>\n"
+        + "                     <Level attribute='Media Type'/>\n"
+        + "                 </Hierarchy>\n"
+        + "                 <Hierarchy name='Promotions' allMemberName='All Promotions'>\n"
+        + "                     <Level attribute='Promotion Name'/>\n"
+        + "                 </Hierarchy>\n"
+        + "             </Hierarchies>\n"
+        + "         </Dimension>\n"
+        + "    </Dimensions>\n"
+        + "    <MeasureGroups>\n"
+        + "        <MeasureGroup name='Sales' table='sales_fact_1997'>\n"
+        + "            <Measures>\n"
+        + "                <Measure name='Unit Sales' column='unit_sales' aggregator='sum' formatString='Standard'/>\n"
+        + "                <Measure name='Store Cost' column='store_cost' aggregator='sum' formatString='#,###.00'/>\n"
+        + "                <Measure name='Store Sales' column='store_sales' aggregator='sum' formatString='#,###.00'/>\n"
+        + "                <Measure name='Sales Count' column='product_id' aggregator='count' formatString='#,###'/>\n"
+        + "                <Measure name='Customer Count' column='customer_id' aggregator='distinct-count' formatString='#,###'/>\n"
+        + "                <Measure name='Promotion Sales' column='promotion_sales' aggregator='sum' formatString='#,###.00' datatype='Numeric'/>\n"
+        + "            </Measures>\n"
+        + "            <DimensionLinks>\n"
+        + "                <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>\n"
+        + "                <ForeignKeyLink dimension='Time' foreignKeyColumn='time_id'/>\n"
+        + "                <ForeignKeyLink dimension='Product' foreignKeyColumn='product_id'/>\n"
+        + "                <ForeignKeyLink dimension='Geography' foreignKeyColumn='store_id'/>\n"
+        + "                <ForeignKeyLink dimension='Promotion' foreignKeyColumn='promotion_id'/>\n"
+        + "            </DimensionLinks>\n"
+        + "        </MeasureGroup>\n"
+        + "    </MeasureGroups>\n"
+        + "</Cube>\n";
+
     /**
      * Retrieves the singleton (instantiating if necessary).
      */
@@ -2439,7 +2537,7 @@ public class TestContext {
      */
     public final TestContext withCube(String cubeName) {
         final String cubeNameRef =
-            cubeName.replaceAll("\\[", "");
+            cubeName.replaceAll("\\[|\\]", "");
         return new DelegatingTestContext(this) {
             public String getDefaultCubeName() {
                 return cubeNameRef;
@@ -3081,6 +3179,13 @@ public class TestContext {
     {
         return withSubstitution(SchemaSubstitution.remove(xml));
     }
+
+    public final TestContext withSalesRagged() {
+        return insertPhysTable(SALES_RAGGED_TABLE_DEF)
+            .insertCube(SALES_RAGGED_CUBE_DEF)
+            .withCube("Sales Ragged");
+    }
+
 }
 
 // End TestContext.java

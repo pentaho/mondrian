@@ -787,6 +787,7 @@
                     </Hierarchy>
                 </Hierarchies>
             </Dimension>
+
             <Dimension name='Department' table='department' key='Department Description'>
                 <Attributes>
                     <Attribute name='Department Description' keyColumn='department_id'/>
@@ -797,7 +798,44 @@
                     </Hierarchy>
                 </Hierarchies>
             </Dimension>
-            <Dimension source='Time'/>
+            <!-- Use private "Time" dimension because key is different than public
+                 "Time" dimension. -->
+            <Dimension name='Time' table='time_by_day' type='TIME' key='Time Id'>
+                <Attributes>
+                    <Attribute name='Year' keyColumn='the_year' levelType='TimeYears' hasHierarchy='false'/>
+                    <Attribute name='Quarter' levelType='TimeQuarters' hasHierarchy='false'>
+                        <Key>
+                            <Column name='the_year'/>
+                            <Column name='quarter'/>
+                        </Key>
+                        <Name>
+                            <Column name='quarter'/>
+                        </Name>
+                    </Attribute>
+                    <!-- Use the_month as source for the name, so members look like
+                        [Time].[1997].[Q1].[Jan] rather than [Time].[1997].[Q1].[1]. -->
+                    <Attribute name='Month' hasHierarchy='false'>
+                        <Key>
+                            <Column name='the_year'/>
+                            <Column name='month_of_year'/>
+                        </Key>
+                        <Name>
+                            <Column name='the_month'/>
+                        </Name>
+                    </Attribute>
+                    <Attribute name='Date' keyColumn='the_date' hasHierarchy='false'/>
+                    <Attribute name='Time Id' keyColumn='time_id' hasHierarchy='false'/>
+                </Attributes>
+
+                <Hierarchies>
+                    <Hierarchy name='Time' hasAll='false'>
+                        <Level attribute='Year'/>
+                        <Level attribute='Quarter'/>
+                        <Level attribute='Month'/>
+                    </Hierarchy>
+                </Hierarchies>
+            </Dimension>
+
             <Dimension source='Store'/>
         </Dimensions>
 
