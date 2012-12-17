@@ -995,14 +995,7 @@ public class RolapResult extends ResultBase {
                 } catch (MondrianEvaluationException e) {
                     // ignore but warn
                     LOGGER.warn("Mondrian: exception in executeStripe.", e);
-                } catch (Error e) {
-                    // Errors indicate fatal JVM problems; do not discard
-                    throw e;
-                } catch (Throwable e) {
-                    LOGGER.warn("Mondrian: exception in executeStripe.", e);
-                    Util.discard(e);
                 }
-
                 if (o != RolapUtil.valueNotReadyException) {
                     ci.value = o;
                 }

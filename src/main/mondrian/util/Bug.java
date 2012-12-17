@@ -329,7 +329,7 @@ public class Bug {
      * if calculated members or sets depend on dimensions and members in their
      * base cube that are not exposed in the virtual cube.
      */
-    public static final boolean VirtualCubeConversionMissesHiddenFixed = false;
+    public static final boolean VirtualCubeConversionMissesHiddenFixed = true;
 
     /**
      * Whether

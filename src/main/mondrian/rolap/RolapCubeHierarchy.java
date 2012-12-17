@@ -223,6 +223,9 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             return new RolapCubeCalculatedMeasure(
                 parent, (RolapCalculatedMeasure) member, level);
         }
+        if (member instanceof RolapCubeCalculatedMeasure) {
+            return ((RolapCubeCalculatedMeasure) member);
+        }
         return new RolapCubeMember(parent, member, level);
     }
 

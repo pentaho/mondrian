@@ -307,7 +307,7 @@ public class VirtualCubeTest extends BatchTestCase {
             + "  <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Supply Time]\"/>\n"
             + "  <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Units Ordered]\"/>\n"
             + "  <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Units Shipped]\"/>\n"
-            + "  <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Cost]\"/>\n"
+            + "  <VirtualCubeMeasure cubeName=\"Warehouse (Default USA)\" name=\"[Measures].[Warehouse Cost]\"/>\n"
             + "  <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n"
             + "</VirtualCube>",
             null, null, null);
