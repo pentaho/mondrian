@@ -29,8 +29,11 @@ public class RolapBaseCubeMeasure
     extends RolapMemberBase
     implements RolapStoredMeasure
 {
-    private static final List<String> datatypeList =
-        Arrays.asList("Integer", "Numeric", "String");
+    static enum DataType {
+        Integer,
+        Numeric,
+        String
+    }
 
     /**
      * For SQL generator. Column which holds the value of the measure.
@@ -95,6 +98,10 @@ public class RolapBaseCubeMeasure
         }
         if (formatString == null) {
             formatString = "";
+        } else {
+            setProperty(
+                Property.FORMAT_STRING.name,
+                formatString);
         }
         setProperty(
             Property.FORMAT_EXP_PARSED.name,
@@ -131,10 +138,9 @@ public class RolapBaseCubeMeasure
                 datatype = "Numeric";
             }
         }
-        // todo: End-user error.
-        Util.assertTrue(
-            RolapBaseCubeMeasure.datatypeList.contains(datatype),
-            "invalid datatype " + datatype);
+        if (RolapBaseCubeMeasure.DataType.valueOf(datatype) == null) {
+            throw MondrianResource.instance().CastInvalidType.ex(datatype);
+        }
         setProperty(Property.DATATYPE.name, datatype);
     }
 

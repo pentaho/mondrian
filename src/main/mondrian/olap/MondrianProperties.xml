@@ -108,7 +108,7 @@ in its entirety will be run.</p>
         <Path>mondrian.test.connectString</Path>
         <Category>Testing</Category>
         <Description>
-<p>Property containing the connect string which regresssion tests should
+<p>Property containing the connect string which regression tests should
 use to connect to the database.</p>
 
 <p>Format is specified in {@link Util#parseConnectString(String)}.</p>
@@ -138,7 +138,7 @@ The default value is to connect to an ODBC data source called
 <p>To run the test suite, first load the FoodMart data set into the
 database of your choice. Then set the driver.classpath,
 mondrian.foodmart.jdbcURL and mondrian.jdbcDrivers properties, by
-uncommenting and modifying one of the sections below.
+un-commenting and modifying one of the sections below.
 Put the JDBC driver jar into mondrian/testlib.</p>
 
 <p>Here are example property settings for various databases.</p>
@@ -260,7 +260,7 @@ mondrian.foodmart.jdbcPassword=<i>password</i><br/>
 mondrian.jdbcDrivers=com.vertica.Driver<br/>
 driver.classpath=/some/path/vertica.jar</code></blockquote>
 
-<h3>Vertorwise</h3>
+<h3>Vectorwise</h3>
 <blockquote><code>
 mondrian.foodmart.jdbcURL=jdbc:ingres://xxx.xxx.xxx.xxx<i>port</i>/<i>dbName</i><br/>
 mondrian.foodmart.jdbcUser=<i>user</i><br/>
@@ -460,9 +460,9 @@ mondrian-4.0.
         <Path>mondrian.test.WarnIfNoPatternForDialect</Path>
         <Category>Testing</Category>
         <Description>
-<p>Property that controls if warning messages should be printed if a sql
-comparison tests do not contain expected sqls for the specified
-dialect. The tests are skipped if no expected sqls are
+<p>Property that controls whether warning messages should be printed if a SQL
+comparison test does not contain expected SQL statements for the specified
+dialect. The tests are skipped if no expected SQL statements are
 found for the current dialect.</p>
 
 <p>Possible values are the following:</p>
@@ -855,7 +855,7 @@ limit on the number of rows returned by XML/A drill through request.
         <Description>
 <p>Max number of constraints in a single 'IN' SQL clause.</p>
 
-<p>This value may be variant among database prodcuts and their runtime
+<p>This value may be variant among database products and their runtime
 settings. Oracle, for example, gives the error "ORA-01795: maximum
 number of expressions in a list is 1000".</p>
 
@@ -944,7 +944,7 @@ the default implementation uses JNDI to perform resolution.</p>
         <Path>mondrian.rolap.queryTimeout</Path>
         <Description>
 <p>Property that defines the timeout value (in seconds) for queries. A
-value of 0 (the default), indicates no timeout.</p>
+value of 0 (the default) indicates no timeout.</p>
         </Description>
         <Type>int</Type>
         <Default>0</Default>
@@ -953,15 +953,17 @@ value of 0 (the default), indicates no timeout.</p>
         <Name>RolapConnectionShepherdThreadPollingInterval</Name>
         <Path>mondrian.rolap.shepherdThreadPollingInterval</Path>
         <Description>
-<p>Property that defines the interval value (in miliseconds) between
+<p>Property that defines the interval value between
 polling operations performed by the RolapConnection shepherd thread.
-This controls query timeouts and calcelation, so a small value
-(a few miliseconds) is best. Setting this to a value higher than
+This controls query timeouts and cancellation, so a small value
+(a few milliseconds) is best. Setting this to a value higher than
 mondrian.rolap.queryTimeout will result the timeout not being enforced
-as expected. Defaults to 1000ms.</p>
+as expected.</p>
+
+<p>Default value is "1000ms". Default time unit is "ms".</p>
         </Description>
-        <Type>int</Type>
-        <Default>1000</Default>
+        <Type>String</Type>
+        <Default>1000ms</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>RolapConnectionShepherdNbThreads</Name>
@@ -1092,7 +1094,7 @@ non-null, it is used by the <code>ExpCompiler.Factory</code>
 to create the implementation.</p>
 
 <p>To test that for all test MDX queries that all functions can
-handle requests for ITERABLE, LIST and MUTABLE_LIST evalutation
+handle requests for ITERABLE, LIST and MUTABLE_LIST evaluation
 results, use the following:</p>
 
 <blockquote><code>mondrian.calc.ExpCompiler.class=mondrian.olap.fun.ResultStyleCompiler</code></blockquote>
@@ -1158,12 +1160,12 @@ will never be applied.</p>
 the behavior of division if the denominator evaluates to zero.</p>
 
 <p>If false (the default), if a division has a non-null numerator and
-a null denominator, it evaluates to "Infinity", which conforms to MSAS
+a null denominator, it evaluates to "Infinity", which conforms to SSAS
 behavior.</p>
 
 <p>If true, the result is null if the denominator is null. Setting to
 true enables the old semantics of evaluating this to null; this does
-not conform to MSAS, but is useful in some applications.</p>
+not conform to SSAS, but is useful in some applications.</p>
         </Description>
         <Type>boolean</Type>
         <Default>false</Default>
@@ -1193,7 +1195,7 @@ dimension is in the tuple during aggregation.</p>
 
 <p>If there are unrelated dimensions to a measure in context during
 aggregation, the measure is ignored in the evaluation context. This
-behaviour kicks in only if the cubeusage for this measure has
+behaviour kicks in only if the CubeUsage for this measure has
 IgnoreUnrelatedDimensions attribute set to false.</p>
 
 <p>For example, Gender doesn't join with [Warehouse Sales] measure.</p>
@@ -1214,7 +1216,7 @@ SUM({Product.members * Gender.members})    9,290,730.03</code></blockquote>
 
 <p>On a report where Gender M, F and All members exist a user will see a
 large aggregated value compared to the aggregated value that can be
-arrived at by suming up values against Gender M and F. This can be
+arrived at by summing up values against Gender M and F. This can be
 confusing to the user. This feature can be used to eliminate such a
 situation.</p>
         </Description>
@@ -1342,7 +1344,7 @@ whether to enable new naming behavior.</p>
         <Name>XmlaSchemaRefreshInterval</Name>
         <Path>mondrian.xmla.SchemaRefreshInterval</Path>
         <Description>
-<p>Interval, in milliseconds, at which to refresh the
+<p>Interval at which to refresh the
 list of XML/A catalogs. (Usually known as the
 datasources.xml file.)</p>
 
@@ -1350,13 +1352,15 @@ datasources.xml file.)</p>
 serves as a rate limiter. The refresh process is triggered by requests
 to the doPost() servlet method.</p>
 
-<p>Default value is 3000 milliseconds (3 seconds).</p>
+<p>Values may have time unit suffixes such as 's' (second) or 'ms'
+(milliseconds). Default value is 3000 milliseconds (3 seconds).
+Default time unit is milliseconds.</p>
 
 <p>See also
 {@link mondrian.xmla.impl.DynamicDatasourceXmlaServlet}.</p>
         </Description>
-        <Type>int</Type>
-        <Default>3000</Default>
+        <Type>String</Type>
+        <Default>3000ms</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>FilterChildlessSnowflakeMembers</Name>

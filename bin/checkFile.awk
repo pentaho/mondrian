@@ -198,6 +198,12 @@ FNR < headerCount {
     if (mondrian && s ~ /\/\/\$NON-NLS/) {
         error(fname, FNR, "NON-NLS not allowed");
     }
+    if (s ~ /\/\/[A-Za-z]/ && strict > 1) {
+        if (s ~ /noinspection/) {} # e.g. '//noinspection unchecked'
+        else if (s ~ /;$/) {} # e.g. '//int dummy = 0;'
+        else if (s ~ /:\/\//) {} # e.g. '// http://'
+        else error(fname, FNR, "Need space after //");
+    }
     # mask out // comments
     gsub(/\/\/.*$/, "// comment", s);
     # line starts with string or plus?
@@ -668,11 +674,17 @@ s ~ / [])]/ {
 }
 s ~ /}/ {
     if (!matchFile) {}
-    else if (s !~ /}( |;|,|$|\))/) {
+    else if (s !~ /}( |;|,|$|\)|\.)/) {
         error(fname, FNR, "} must be followed by space");
     } else if (s !~ /(    )*}/) {
         error(fname, FNR, "} must be at start of line and correctly indented");
     }
+}
+$0 ~ /\* @param [A-Za-z0-9_]+$/ && strict > 1 {
+    error(fname, FNR, "Empty javadoc param");
+}
+$0 ~ /\* @return *$/ && strict > 1 {
+    error(fname, FNR, "Empty javadoc return");
 }
 s ~ /{/ {
     if (!matchFile) {}

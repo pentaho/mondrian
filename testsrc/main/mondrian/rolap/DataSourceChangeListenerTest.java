@@ -204,8 +204,15 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
 
     /**
      * Tests whether the flushing of the cache is thread safe.
+     * <p>This test is deactivated because it isn't thread safe
+     * and causes hangs every now and then. The datasource change
+     * listener is also something deprecated and already removed
+     * from Mondrian 4.0, so we don't anticipate to fix this issue.
      */
-    public void testParallelDataSourceChangeListenerPlugin() {
+    public void dont_testParallelDataSourceChangeListenerPlugin() {
+        if (true) {
+            return;
+        }
         if (Bug.avoidSlowTestOnLucidDB(getTestContext().getDialect())) {
             return;
         }

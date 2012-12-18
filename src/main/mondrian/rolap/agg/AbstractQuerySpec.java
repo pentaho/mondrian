@@ -11,6 +11,7 @@
 package mondrian.rolap.agg;
 
 import mondrian.olap.Exp;
+import mondrian.olap.MondrianException;
 import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
@@ -330,14 +331,17 @@ public abstract class AbstractQuerySpec implements QuerySpec {
 
             String alias = getMeasureAlias(i);
             String expr = measure.generateExprString(outerSqlQuery);
-            innerSqlQuery.addSelect(expr, null, alias);
+            innerSqlQuery.addSelect(
+                expr,
+                measure.getInternalType(),
+                alias);
             if (databaseProduct == Dialect.DatabaseProduct.GREENPLUM) {
                 innerSqlQuery.addGroupBy(expr, alias);
             }
             outerSqlQuery.addSelect(
                 measure.getAggregator().getNonDistinctAggregator()
                     .getExpression(dialect.quoteIdentifier(alias)),
-                null);
+                measure.getInternalType());
         }
         outerSqlQuery.addFrom(innerSqlQuery, "dummyname", true);
         return groupingSetsAliases;

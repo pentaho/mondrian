@@ -21,6 +21,7 @@ import mondrian.spi.UserDefinedFunction;
 import mondrian.spi.impl.JndiDataSourceResolver;
 import mondrian.util.*;
 
+import org.apache.commons.collections.keyvalue.AbstractMapEntry;
 import org.apache.commons.vfs.*;
 import org.apache.commons.vfs.provider.http.HttpFileObject;
 import org.apache.log4j.Logger;
@@ -28,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.eigenbase.util.property.StringProperty;
 import org.eigenbase.xom.XOMUtil;
 
+import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.mdx.*;
 
 import java.io.*;
@@ -40,6 +42,7 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.sql.Connection;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
@@ -78,6 +81,12 @@ public class Util extends XOMUtil {
      */
     private static final Random metaRandom =
             createRandom(MondrianProperties.instance().TestSeed.get());
+
+    /** Unique id for this JVM instance. Part of a key that ensures that if
+     * two JVMs in the same cluster have a data-source with the same
+     * identity-hash-code, they will be treated as different data-sources,
+     * and therefore caches will not be incorrectly shared. */
+    public static final UUID JVM_INSTANCE_UUID = UUID.randomUUID();
 
     /**
      * Whether we are running a version of Java before 1.5.
@@ -309,111 +318,9 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Creates an {@link ExecutorService} object backed by an expanding
-     * cached thread pool.
-     * @param name The name of the threads.
-     * @return An executor service preconfigured.
-     */
-    public static ExecutorService getExecutorService(
-        final String name)
-    {
-        return Executors.newCachedThreadPool(
-            new ThreadFactory() {
-                public Thread newThread(Runnable r) {
-                    final Thread thread =
-                        Executors.defaultThreadFactory().newThread(r);
-                    thread.setDaemon(true);
-                    thread.setName(name);
-                    return thread;
-                }
-            }
-        );
-    }
-
-    /**
-     * Distributes and executes a list of tasks via an executor
-     * service. This function will only return if one of the two
-     * following things occur:
-     * <ul>
-     * <li>all tasks have finished running</li>
-     * <li><code>breakAtFirstNonNull</code> is set to true and
-     * one of the tasks has returned a non null value.</li>
-     * </ul>
-     * @param <E>
-     * @param tasks List of tasks to run.
-     * @param executor The executor service to use.
-     * @param breakAtFirstNonNull Whether or not to stop executing
-     * the tasks if one of them returns a non null value. Useful
-     * when scanning a list of items for the first match found.
-     * @return If <code>breakAtFirstNonNull</code> is true, this
-     * function returns the first non null result given by the first
-     * task to complete. Returns null otherwise.
-     */
-    public static <E> E executeDistributedTasks(
-        List<Callable<E>> tasks,
-        ExecutorService executor,
-        boolean breakAtFirstNonNull)
-    {
-        final List<Future<E>> tasksList =
-            new ArrayList<Future<E>>();
-        final CountDownLatch latch =
-            new CountDownLatch(tasks.size());
-        try {
-            for (final Callable<E> call : tasks) {
-                tasksList.add(
-                    executor.submit(
-                        new Callable<E>() {
-                            public E call() throws Exception {
-                                E result = call.call();
-                                latch.countDown();
-                                return result;
-                            }
-                        }));
-            }
-
-            E result = null;
-            taskLoop:
-            while (true) {
-                if (breakAtFirstNonNull) {
-                    for (Future<E> task : tasksList) {
-                        if (task.isDone()) {
-                            E taskResult = null;
-                            try {
-                                taskResult = task.get();
-                            } catch (InterruptedException e) {
-                                throw new MondrianException(e);
-                            } catch (ExecutionException e) {
-                                throw new MondrianException(e);
-                            }
-                            if (taskResult != null) {
-                                result = taskResult;
-                                break taskLoop;
-                            }
-                        }
-                    }
-                }
-                // Break anyway if all tasks are completed.
-                if (latch.getCount() == 0) {
-                    break taskLoop;
-                }
-                // Sleep for some time as not all tasks seem completed.
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    throw new MondrianException(e);
-                }
-            }
-            return result;
-        } finally {
-            // Make double sure all tasks are killed
-            for (Future<E> task : tasksList) {
-                task.cancel(true);
-            }
-        }
-    }
-
-    /**
      * Encodes string for MDX (escapes ] as ]] inside a name).
+     *
+     * @deprecated Will be removed in 4.0
      */
     public static String mdxEncodeString(String st) {
         StringBuilder retString = new StringBuilder(st.length() + 20);
@@ -423,7 +330,7 @@ public class Util extends XOMUtil {
                 && ((i + 1) < st.length())
                 && (st.charAt(i + 1) != '.'))
             {
-                retString.append(']'); //escaping character
+                retString.append(']'); // escaping character
             }
             retString.append(c);
         }
@@ -1881,6 +1788,69 @@ public class Util extends XOMUtil {
         }
     }
 
+    private static final Map<String, String> TIME_UNITS =
+        Olap4jUtil.mapOf(
+            "ns", "NANOSECONDS",
+            "us", "MICROSECONDS",
+            "ms", "MILLISECONDS",
+            "s", "SECONDS",
+            "m", "MINUTES",
+            "h", "HOURS",
+            "d", "DAYS");
+
+    /**
+     * Parses an interval.
+     *
+     * <p>For example, "30s" becomes (30, {@link TimeUnit#SECONDS});
+     * "2us" becomes (2, {@link TimeUnit#MICROSECONDS}).</p>
+     *
+     * <p>Units m (minutes), h (hours) and d (days) are only available
+     * in JDK 1.6 or later, because the corresponding constants are missing
+     * from {@link TimeUnit} in JDK 1.5.</p>
+     *
+     * @param s String to parse
+     * @param unit Default time unit; may be null
+     *
+     * @return Pair of value and time unit. Neither pair or its components are
+     * null
+     *
+     * @throws NumberFormatException if unit is not present and there is no
+     * default, or if number is not valid
+     */
+    public static Pair<Long, TimeUnit> parseInterval(
+        String s,
+        TimeUnit unit)
+        throws NumberFormatException
+    {
+        final String original = s;
+        for (Map.Entry<String, String> entry : TIME_UNITS.entrySet()) {
+            final String abbrev = entry.getKey();
+            if (s.endsWith(abbrev)) {
+                final String full = entry.getValue();
+                try {
+                    unit = TimeUnit.valueOf(full);
+                    s = s.substring(0, s.length() - abbrev.length());
+                    break;
+                } catch (IllegalArgumentException e) {
+                    // ignore - MINUTES, HOURS, DAYS are not defined in JDK1.5
+                }
+            }
+        }
+        if (unit == null) {
+            throw new NumberFormatException(
+                "Invalid time interval '" + original + "'. Does not contain a "
+                + "time unit. (Suffix may be ns (nanoseconds), "
+                + "us (microseconds), ms (milliseconds), s (seconds), "
+                + "h (hours), d (days). For example, '20s' means 20 seconds.)");
+        }
+        try {
+            return Pair.of(new BigDecimal(s).longValue(), unit);
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException(
+                "Invalid time interval '" + original + "'");
+        }
+    }
+
     /**
      * Converts a list of olap4j-style segments to a list of mondrian-style
      * segments.
@@ -2343,36 +2313,48 @@ public class Util extends XOMUtil {
      * Closes a JDBC result set, statement, and connection, ignoring any errors.
      * If any of them are null, that's fine.
      *
+     * <p>If any of them throws a {@link SQLException}, returns the first
+     * such exception, but always executes all closes.</p>
+     *
      * @param resultSet Result set
      * @param statement Statement
      * @param connection Connection
      */
-    public static void close(
+    public static SQLException close(
         ResultSet resultSet,
         Statement statement,
-        java.sql.Connection connection)
+        Connection connection)
     {
+        SQLException firstException = null;
         if (resultSet != null) {
             try {
+                if (statement == null) {
+                    statement = resultSet.getStatement();
+                }
                 resultSet.close();
             } catch (SQLException e) {
-                // ignore
+                firstException = e;
             }
         }
         if (statement != null) {
             try {
                 statement.close();
             } catch (SQLException e) {
-                // ignore
+                if (firstException == null) {
+                    firstException = e;
+                }
             }
         }
         if (connection != null) {
             try {
                 connection.close();
             } catch (SQLException e) {
-                // ignore
+                if (firstException == null) {
+                    firstException = e;
+                }
             }
         }
+        return firstException;
     }
 
     public static class ErrorCellValue {
@@ -3328,7 +3310,7 @@ public class Util extends XOMUtil {
             url = url.substring("file:".length());
         }
 
-        //work around for VFS bug not closing http sockets
+        // work around for VFS bug not closing http sockets
         // (Mondrian-585)
         if (url.startsWith("http")) {
             try {
@@ -4409,6 +4391,118 @@ public class Util extends XOMUtil {
         }
     }
 
+    /**
+     * Transforms a list into a map for which all the keys return
+     * a null value associated to it.
+     *
+     * <p>The list passed as an argument will be used to back
+     * the map returned and as many methods are overridden as
+     * possible to make sure that we don't iterate over the backing
+     * list when creating it and when performing operations like
+     * .size(), entrySet() and contains().
+     *
+     * <p>The returned map is to be considered immutable. It will
+     * throw an {@link UnsupportedOperationException} if attempts to
+     * modify it are made.
+     */
+    public static <K, V> Map<K, V> toNullValuesMap(List<K> list) {
+        return new NullValuesMap<K, V>(list);
+    }
+
+    private static class NullValuesMap<K, V> extends AbstractMap<K, V> {
+        private final List<K> list;
+        private NullValuesMap(List<K> list) {
+            super();
+            this.list = Collections.unmodifiableList(list);
+        }
+        public Set<Entry<K, V>> entrySet() {
+            return new AbstractSet<Entry<K, V>>() {
+                public Iterator<Entry<K, V>>
+                    iterator()
+                {
+                    return new Iterator<Entry<K, V>>() {
+                        private int pt = -1;
+                        public void remove() {
+                            throw new UnsupportedOperationException();
+                        }
+                        @SuppressWarnings("unchecked")
+                        public Entry<K, V> next() {
+                            return new AbstractMapEntry(
+                                list.get(++pt), null) {};
+                        }
+                        public boolean hasNext() {
+                            return pt < list.size();
+                        }
+                    };
+                }
+                public int size() {
+                    return list.size();
+                }
+                public boolean contains(Object o) {
+                    if (o instanceof Entry) {
+                        if (list.contains(((Entry) o).getKey())) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            };
+        }
+        public Set<K> keySet() {
+            return new AbstractSet<K>() {
+                public Iterator<K> iterator() {
+                    return new Iterator<K>() {
+                        private int pt = -1;
+                        public void remove() {
+                            throw new UnsupportedOperationException();
+                        }
+                        public K next() {
+                            return list.get(++pt);
+                        }
+                        public boolean hasNext() {
+                            return pt < list.size();
+                        }
+                    };
+                }
+                public int size() {
+                    return list.size();
+                }
+                public boolean contains(Object o) {
+                    return list.contains(o);
+                }
+            };
+        }
+        public Collection<V> values() {
+            return new AbstractList<V>() {
+                public V get(int index) {
+                    return null;
+                }
+                public int size() {
+                    return list.size();
+                }
+                public boolean contains(Object o) {
+                    if (o == null && size() > 0) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            };
+        }
+        public V get(Object key) {
+            return null;
+        }
+        public boolean containsKey(Object key) {
+            return list.contains(key);
+        }
+        public boolean containsValue(Object o) {
+            if (o == null && size() > 0) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
 }
 
 // End Util.java

@@ -148,14 +148,14 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         getMemberChildren(parentMember, children, constraint);
     }
 
-    public void getMemberChildren(
+    public Map<? extends Member, Access> getMemberChildren(
         final RolapMember parentMember,
         final List<RolapMember> children,
         final MemberChildrenConstraint constraint)
     {
         List<RolapMember> parentMembers = new ArrayList<RolapMember>();
         parentMembers.add(parentMember);
-        getMemberChildren(parentMembers, children, constraint);
+        return getMemberChildren(parentMembers, children, constraint);
     }
 
     public void getMemberChildren(
@@ -167,14 +167,16 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         getMemberChildren(parentMembers, children, constraint);
     }
 
-    public void getMemberChildren(
+    public Map<? extends Member, Access> getMemberChildren(
         final List<RolapMember> parentMembers,
         final List<RolapMember> children,
         final MemberChildrenConstraint constraint)
     {
         assert (constraint != null);
         LOGGER.debug("Entering getMemberChildren");
-        source.getMemberChildren(parentMembers, children, constraint);
+        return
+            source.getMemberChildren(
+                parentMembers, children, constraint);
     }
 
     public RolapMember lookupMember(

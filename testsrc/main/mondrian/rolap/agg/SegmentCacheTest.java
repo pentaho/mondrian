@@ -13,6 +13,7 @@ import mondrian.olap.CacheControl;
 import mondrian.olap.Cube;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianServer;
+import mondrian.rolap.agg.SegmentCacheManager.CompositeSegmentCache;
 import mondrian.spi.SegmentCache;
 import mondrian.spi.SegmentHeader;
 import mondrian.test.BasicQueryTest;
@@ -27,34 +28,11 @@ import java.util.List;
  * @author LBoudreau
  */
 public class SegmentCacheTest extends BasicQueryTest {
-    private SegmentCache mockCache;
-    private SegmentCacheWorker testWorker;
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        propSaver.set(
-            MondrianProperties.instance().DisableCaching,
-            true);
-        this.mockCache = new MockSegmentCache();
-        this.testWorker = new SegmentCacheWorker(mockCache, null);
-        MondrianServer.forConnection(getTestContext().getConnection())
-            .getAggregationManager().cacheMgr.segmentCacheWorkers
-            .add(testWorker);
         getTestContext().getConnection().getCacheControl(null)
             .flushSchemaCache();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        propSaver.reset();
-        MondrianServer.forConnection(getTestContext().getConnection())
-            .getAggregationManager().cacheMgr.segmentCacheWorkers
-            .remove(testWorker);
-        getTestContext().getConnection().getCacheControl(null)
-            .flushSchemaCache();
-        this.mockCache = null;
-        this.testWorker = null;
-        super.tearDown();
     }
 
     public void testCompoundPredicatesCollision() {
@@ -85,6 +63,10 @@ public class SegmentCacheTest extends BasicQueryTest {
     }
 
     public void testSegmentCacheEvents() throws Exception {
+        SegmentCache mockCache = new MockSegmentCache();
+        SegmentCacheWorker testWorker =
+            new SegmentCacheWorker(mockCache, null);
+
         // Flush the cache before we start. Wait a second for the cache
         // flush to propagate.
         final CacheControl cc =
@@ -92,6 +74,10 @@ public class SegmentCacheTest extends BasicQueryTest {
         Cube salesCube = getCube("Sales");
         cc.flush(cc.createMeasuresRegion(salesCube));
         Thread.sleep(1000);
+
+        MondrianServer.forConnection(getTestContext().getConnection())
+            .getAggregationManager().cacheMgr.segmentCacheWorkers
+            .add(testWorker);
 
         final List<SegmentHeader> createdHeaders =
             new ArrayList<SegmentHeader>();
@@ -115,13 +101,16 @@ public class SegmentCacheTest extends BasicQueryTest {
 
         try {
             // Register our custom listener.
-            mockCache.addListener(listener);
+            ((CompositeSegmentCache)MondrianServer
+                .forConnection(getTestContext().getConnection())
+                .getAggregationManager().cacheMgr.compositeCache)
+                .addListener(listener);
             // Now execute a query and check the events
             executeQuery(
                 "select {[Measures].[Unit Sales]} on columns from [Sales]");
             // Wait for propagation.
             Thread.sleep(2000);
-            assertEquals(1, createdHeaders.size());
+            assertEquals(2, createdHeaders.size());
             assertEquals(0, deletedHeaders.size());
             assertEquals("Sales", createdHeaders.get(0).cubeName);
             assertEquals("FoodMart", createdHeaders.get(0).schemaName);
@@ -135,12 +124,18 @@ public class SegmentCacheTest extends BasicQueryTest {
             // Wait for propagation.
             Thread.sleep(2000);
             assertEquals(0, createdHeaders.size());
-            assertEquals(1, deletedHeaders.size());
+            assertEquals(2, deletedHeaders.size());
             assertEquals("Sales", deletedHeaders.get(0).cubeName);
             assertEquals("FoodMart", deletedHeaders.get(0).schemaName);
             assertEquals("Unit Sales", deletedHeaders.get(0).measureName);
         } finally {
-            mockCache.removeListener(listener);
+            ((CompositeSegmentCache)MondrianServer
+                .forConnection(getTestContext().getConnection())
+                .getAggregationManager().cacheMgr.compositeCache)
+                .removeListener(listener);
+            MondrianServer.forConnection(getTestContext().getConnection())
+                .getAggregationManager().cacheMgr.segmentCacheWorkers
+                .remove(testWorker);
         }
     }
 

@@ -1121,6 +1121,21 @@ Revision is $Id$
                     return formula;
                 }
             }
+            /**
+              * Returns the format string, looking for a property called
+              * "FORMAT_STRING" first, then looking for an attribute called
+              * "formatString".
+              */
+            public String getFormatString() {
+                for (CalculatedMemberProperty prop : memberProperties) {
+                    if (prop.name.equals(
+                        mondrian.olap.Property.FORMAT_STRING.name))
+                    {
+                        return prop.value;
+                    }
+                }
+                return formatString;
+            }
         </Code>
     </Element>
 
@@ -1509,6 +1524,20 @@ Revision is $Id$
                 this.alias = alias;
                 this.hintMap = buildHintMap(tablehints);
             }
+
+            public Table(Table tbl, String possibleName) {
+                this(tbl.schema, tbl.name, possibleName, tbl.tableHints);
+                
+                // Remake the filter with the new alias
+                if (tbl.filter != null) {
+                    this.filter = new SQL();
+                    this.filter.dialect = tbl.filter.dialect;
+                    if (tbl.filter.cdata != null)
+                        this.filter.cdata =
+                            tbl.filter.cdata.replace(tbl.alias, possibleName);
+                }
+            }
+            
             private java.util.Map<String,String> buildHintMap(Hint[] th) {
                 java.util.Map<String,String> h =
                     new java.util.HashMap<String,String>();
@@ -1907,12 +1936,15 @@ Revision is $Id$
             </Doc>
         </Attribute>
         <Code><![CDATA[
+            private String genericExpression;
+
             /** Convenience constructor. */
             public Column(String table, String name) {
                 this();
                 Util.assertTrue(name != null);
                 this.table = table;
                 this.name = name;
+                this.genericExpression = table == null ? name : (table + "." + name);
             }
 
             public String getExpression(SqlQuery query) {
@@ -1920,11 +1952,7 @@ Revision is $Id$
             }
 
             public String getGenericExpression() {
-                if (table == null) {
-                    return name;
-                } else {
-                    return table + "." + name;
-                }
+                return genericExpression;
             }
 
             public String getColumnName() {

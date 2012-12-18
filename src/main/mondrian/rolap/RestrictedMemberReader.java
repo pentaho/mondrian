@@ -30,6 +30,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
     private final boolean ragged;
     private final SqlConstraintFactory sqlConstraintFactory =
         SqlConstraintFactory.instance();
+    final Role role;
 
     /**
      * Creates a <code>RestrictedMemberReader</code>.
@@ -46,6 +47,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
      */
     RestrictedMemberReader(MemberReader memberReader, Role role) {
         super(memberReader);
+        this.role = role;
         RolapHierarchy hierarchy = memberReader.getHierarchy();
         ragged = hierarchy.isRagged();
         if (role.getAccessDetails(hierarchy) == null) {
@@ -89,23 +91,44 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         getMemberChildren(parentMember, children, constraint);
     }
 
-    public void getMemberChildren(
+    public Map<? extends Member, Access> getMemberChildren(
         RolapMember parentMember,
         List<RolapMember> children,
         MemberChildrenConstraint constraint)
     {
         List<RolapMember> fullChildren = new ArrayList<RolapMember>();
         memberReader.getMemberChildren(parentMember, fullChildren, constraint);
-        processMemberChildren(fullChildren, children, constraint);
+        return processMemberChildren(fullChildren, children, constraint);
     }
 
-    private void processMemberChildren(
+    public void getMemberChildren(
+        List<RolapMember> parentMembers,
+        List<RolapMember> children)
+    {
+        MemberChildrenConstraint constraint =
+            sqlConstraintFactory.getMemberChildrenConstraint(null);
+        getMemberChildren(parentMembers, children, constraint);
+    }
+
+    public Map<? extends Member, Access> getMemberChildren(
+        List<RolapMember> parentMembers,
+        List<RolapMember> children,
+        MemberChildrenConstraint constraint)
+    {
+        List<RolapMember> fullChildren = new ArrayList<RolapMember>();
+        memberReader.getMemberChildren(parentMembers, fullChildren, constraint);
+        return processMemberChildren(fullChildren, children, constraint);
+    }
+
+    private Map<RolapMember, Access> processMemberChildren(
         List<RolapMember> fullChildren,
         List<RolapMember> children,
         MemberChildrenConstraint constraint)
     {
         // todo: optimize if parentMember is beyond last level
         List<RolapMember> grandChildren = null;
+        Map<RolapMember, Access> memberToAccessMap =
+            new LinkedHashMap<RolapMember, Access>();
         for (int i = 0; i < fullChildren.size(); i++) {
             RolapMember member = fullChildren.get(i);
             // If a child is hidden (due to raggedness) include its children.
@@ -144,9 +167,11 @@ class RestrictedMemberReader extends DelegatingMemberReader {
                 break;
             default:
                 children.add(member);
+                memberToAccessMap.put(member,  access);
                 break;
             }
         }
+        return memberToAccessMap;
     }
 
     /**
@@ -174,29 +199,6 @@ class RestrictedMemberReader extends DelegatingMemberReader {
             return access != Access.NONE;
         }
         return true;
-    }
-
-    public void getMemberChildren(
-        List<RolapMember> parentMembers,
-        List<RolapMember> children)
-    {
-        MemberChildrenConstraint constraint =
-            sqlConstraintFactory.getMemberChildrenConstraint(null);
-        getMemberChildren(parentMembers, children, constraint);
-    }
-
-    public synchronized void getMemberChildren(
-        List<RolapMember> parentMembers,
-        List<RolapMember> children,
-        MemberChildrenConstraint constraint)
-    {
-//        for (Iterator i = parentMembers.iterator(); i.hasNext();) {
-//            RolapMember parentMember = (RolapMember) i.next();
-//            getMemberChildren(parentMember, children, constraint);
-//        }
-        List<RolapMember> fullChildren = new ArrayList<RolapMember>();
-        super.getMemberChildren(parentMembers, fullChildren, constraint);
-        processMemberChildren(fullChildren, children, constraint);
     }
 
     public List<RolapMember> getRootMembers() {

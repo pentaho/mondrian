@@ -45,6 +45,10 @@ public class MicrosoftSqlServerDialect extends JdbcDialectImpl {
         return generateInlineGeneric(
             columnNames, columnTypes, valueList, null, false);
     }
+
+    public boolean requiresAliasForFromQuery() {
+        return true;
+    };
 }
 
 // End MicrosoftSqlServerDialect.java

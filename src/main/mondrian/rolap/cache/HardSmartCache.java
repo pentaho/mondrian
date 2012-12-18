@@ -16,30 +16,30 @@ import java.util.*;
  * An implementation of {@link SmartCache} that uses hard
  * references. Used for testing.
  */
-public class HardSmartCache <K, V> implements SmartCache <K, V> {
+public class HardSmartCache <K, V> extends SmartCacheImpl<K, V> {
     Map<K, V> cache = new HashMap<K, V>();
 
-    public V put(K key, V value) {
+    public V putImpl(K key, V value) {
         return cache.put(key, value);
     }
 
-    public V get(K key) {
+    public V getImpl(K key) {
         return cache.get(key);
     }
 
-    public V remove(K key) {
+    public V removeImpl(K key) {
         return cache.remove(key);
     }
 
-    public void clear() {
+    public void clearImpl() {
         cache.clear();
     }
 
-    public int size() {
+    public int sizeImpl() {
         return cache.size();
     }
 
-    public Iterator<Map.Entry<K, V>> iterator() {
+    public Iterator<Map.Entry<K, V>> iteratorImpl() {
         return cache.entrySet().iterator();
     }
 }

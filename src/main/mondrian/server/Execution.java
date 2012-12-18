@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2011 Pentaho
+// Copyright (C) 2011-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server;
@@ -16,9 +16,7 @@ import mondrian.server.monitor.*;
 
 import org.apache.log4j.MDC;
 
-import java.util.EmptyStackException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -33,14 +31,14 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author jhyde
  */
 public class Execution {
-    /*
+    /**
      * Used for MDX logging, allows for a MDX Statement UID.
      */
     private static AtomicLong SEQ = new AtomicLong();
 
     final StatementImpl statement;
 
-    /*
+    /**
      * Holds a collection of the SqlStatements which were used by this
      * execution instance. All operations on the map must be synchronized
      * on it.
@@ -50,19 +48,14 @@ public class Execution {
 
     private State state = State.FRESH;
 
-    /*
-     * State of the SQL statements.
-     */
-    private SqlState sqlState = SqlState.CLEAN;
-
-    /*
-     * Lock monitor for SQL statements. All operations on the
-     * {@link Execution#sqlState} and {@link Execution#statements}
-     * need to be synchrinized on this.
+    /**
+     * Lock monitor for SQL statements. All operations on
+     * {@link Execution#statements}
+     * need to be synchronized on this.
      */
     private final Object sqlStateLock = new Object();
 
-    /*
+    /**
      * If not <code>null</code>, this query was notified that it
      * might cause an OutOfMemoryError.
      */
@@ -216,13 +209,27 @@ public class Execution {
      * <p>It won't throw anything if the query has successfully completed.
      * @throws MondrianException The exception encountered.
      */
-    public void checkCancelOrTimeout() throws MondrianException {
+    public synchronized void checkCancelOrTimeout() throws MondrianException {
         if (parent != null) {
             parent.checkCancelOrTimeout();
         }
+        boolean needInterrupt = false;
         switch (this.state) {
         case CANCELED:
-            fireExecutionEndEvent();
+            try {
+                if (Thread.interrupted()) {
+                    // Checking the state of the thread will clear the
+                    // interrupted flag so we can send an event out.
+                    // After that, we make sure that we set it again
+                    // so the thread state remains consistent.
+                    needInterrupt = true;
+                }
+                fireExecutionEndEvent();
+            } finally {
+                if (needInterrupt) {
+                    Thread.currentThread().interrupt();
+                }
+            }
             throw MondrianResource.instance().QueryCanceled.ex();
         case RUNNING:
             if (timeoutTimeMillis > 0) {
@@ -236,7 +243,20 @@ public class Execution {
             }
             break;
         case ERROR:
-            fireExecutionEndEvent();
+            try {
+                if (Thread.interrupted()) {
+                    // Checking the state of the thread will clear the
+                    // interrupted flag so we can send an event out.
+                    // After that, we make sure that we set it again
+                    // so the thread state remains consistent.
+                    needInterrupt = true;
+                }
+                fireExecutionEndEvent();
+            } finally {
+                if (needInterrupt) {
+                    Thread.currentThread().interrupt();
+                }
+            }
             throw new MemoryLimitExceededException(outOfMemoryMsg);
         }
     }
@@ -270,9 +290,11 @@ public class Execution {
      * has occurred or the execution has ended. Any currently running SQL
      * statements will be canceled. It should only be called if
      * {@link Execution#isCancelOrTimeout()} returns true.
+     *
      * <p>This method doesn't need to be called by a user. It will be called
      * internally by Mondrian when the system is ready to clean the remaining
      * resources.
+     *
      * <p>To check if this execution is failed, use
      * {@link Execution#isCancelOrTimeout()} instead.
      */
@@ -281,17 +303,19 @@ public class Execution {
             parent.cancelSqlStatements();
         }
         synchronized (sqlStateLock) {
-            if (sqlState == SqlState.CLEAN) {
-                return;
-            }
-            sqlState = SqlState.CLEAN;
-
-            for (Entry<Locus, java.sql.Statement> entry
-                : statements.entrySet())
+            for (Iterator<Entry<Locus, java.sql.Statement>> iterator =
+                     statements.entrySet().iterator();
+                 iterator.hasNext();)
             {
-                Util.cancelAndCloseStatement(entry.getValue());
+                // Remove entry from the map before trying to cancel the
+                // statement, so that if the cancel throws, we will not try to
+                // cancel again. It's possible that we will try to cancel the
+                // other statements later.
+                final Entry<Locus, java.sql.Statement> entry = iterator.next();
+                final java.sql.Statement statement1 = entry.getValue();
+                iterator.remove();
+                Util.cancelAndCloseStatement(statement1);
             }
-            statements.clear();
         }
     }
 
@@ -339,7 +363,6 @@ public class Execution {
                 start();
             }
             if (state == State.RUNNING) {
-                this.sqlState = SqlState.DIRTY;
                 this.statements.put(locus, statement);
             }
         }
@@ -392,22 +415,6 @@ public class Execution {
         CANCELED,
         TIMEOUT,
         DONE,
-    }
-
-    /**
-     * Enumeration of the possible states of the SQL statements
-     * associated to an Execution instance.
-     */
-    private enum SqlState {
-        /**
-         * Indicates that there might be SQL statements being
-         * run right now.
-         */
-        DIRTY,
-        /**
-         * Indicates that all SQL statements have been canceled.
-         */
-        CLEAN
     }
 }
 

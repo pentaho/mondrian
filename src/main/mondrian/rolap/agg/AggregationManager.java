@@ -374,7 +374,9 @@ public class AggregationManager extends RolapAggregationManager {
             // The AggStar has no "distinct count" measures so
             // we can use it without looking any further.
             if (!isDistinct) {
-                rollup[0] = !aggStar.getLevelBitKey().equals(levelBitKey);
+                rollup[0] =
+                    levelBitKey.isEmpty()
+                    || !aggStar.getLevelBitKey().equals(levelBitKey);
                 return aggStar;
             }
 
@@ -474,6 +476,14 @@ System.out.println(buf.toString());
                 continue;
             }
 
+            if (levelBitKey.isEmpty()) {
+                // We won't be able to resolve a distinct count measure like
+                // this. We need to resolve the distinct values but we don't
+                // have any levels for which we constraint on. This would
+                // result in either a bloated value (non-distinct) or
+                // only the first (non-rolled-up) to be returned.
+                continue;
+            }
             rollup[0] = !aggStar.getLevelBitKey().equals(levelBitKey);
             return aggStar;
         }

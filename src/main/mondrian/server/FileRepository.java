@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2011 Pentaho
+// Copyright (C) 2010-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server;
@@ -14,7 +14,7 @@ import mondrian.olap4j.MondrianOlap4jDriver;
 import mondrian.rolap.*;
 import mondrian.spi.CatalogLocator;
 import mondrian.tui.XmlaSupport;
-import mondrian.util.LockBox;
+import mondrian.util.*;
 import mondrian.xmla.DataSourcesConfig;
 
 import org.apache.log4j.Logger;
@@ -59,6 +59,12 @@ public class FileRepository implements Repository {
         this.repositoryContentFinder = repositoryContentFinder;
         this.locator = locator;
         assert repositoryContentFinder != null;
+        final Pair<Long, TimeUnit> interval =
+            Util.parseInterval(
+                String.valueOf(
+                    MondrianProperties.instance()
+                        .XmlaSchemaRefreshInterval.get()),
+                TimeUnit.MILLISECONDS);
         scheduledFuture = executorService.scheduleWithFixedDelay(
             new Runnable() {
                 public void run() {
@@ -68,8 +74,8 @@ public class FileRepository implements Repository {
                 }
             },
             0,
-            MondrianProperties.instance().XmlaSchemaRefreshInterval.get(),
-            TimeUnit.MILLISECONDS);
+            interval.left,
+            interval.right);
     }
 
     public List<Map<String, Object>> getDatabases(
@@ -162,7 +168,7 @@ public class FileRepository implements Repository {
     }
 
     public void shutdown() {
-        scheduledFuture.cancel(true);
+        scheduledFuture.cancel(false);
         repositoryContentFinder.shutdown();
     }
 

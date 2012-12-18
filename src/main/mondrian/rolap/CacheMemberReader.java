@@ -209,12 +209,13 @@ class CacheMemberReader implements MemberReader, MemberCache {
         }
     }
 
-    public void getMemberChildren(
+    public Map<? extends Member, Access> getMemberChildren(
         RolapMember member,
         List<RolapMember> children,
         MemberChildrenConstraint constraint)
     {
         getMemberChildren(member, children);
+        return Util.toNullValuesMap(children);
     }
 
     public void getMemberChildren(
@@ -228,12 +229,13 @@ class CacheMemberReader implements MemberReader, MemberCache {
         }
     }
 
-    public void getMemberChildren(
+    public Map<? extends Member, Access> getMemberChildren(
         List<RolapMember> parentMembers,
         List<RolapMember> children,
         MemberChildrenConstraint constraint)
     {
         getMemberChildren(parentMembers, children);
+        return Util.toNullValuesMap(children);
     }
 
     public RolapMember getLeadMember(RolapMember member, int n) {

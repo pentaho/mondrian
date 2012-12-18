@@ -414,9 +414,11 @@ abstract class MondrianOlap4jStatement
         try {
             openCellSet.execute();
         } catch (QueryCanceledException e) {
-            throw olap4jConnection.helper.createException("Query canceled");
+            throw olap4jConnection.helper.createException(
+                "Query canceled", e);
         } catch (QueryTimeoutException e) {
-            throw olap4jConnection.helper.createException(e.getMessage());
+            throw olap4jConnection.helper.createException(
+                e.getMessage(), e);
         } catch (MondrianException e) {
             throw olap4jConnection.helper.createException(
                 "mondrian gave exception while executing query", e);

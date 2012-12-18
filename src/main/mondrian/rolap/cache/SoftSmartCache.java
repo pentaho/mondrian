@@ -27,7 +27,7 @@ import java.util.*;
  * @author av
  * @since Nov 3, 2005
  */
-public class SoftSmartCache<K, V> implements SmartCache<K, V> {
+public class SoftSmartCache<K, V> extends SmartCacheImpl<K, V> {
 
     private final Map<K, CacheReference> cache =
         new HashMap<K, CacheReference>();
@@ -55,10 +55,7 @@ public class SoftSmartCache<K, V> implements SmartCache<K, V> {
         }
     }
 
-    /* (non-Javadoc)
-     * @see mondrian.rolap.cache.SmartCache#put(java.lang.Object, java.lang.Object)
-     */
-    public synchronized V put(K key, V value) {
+    public V putImpl(K key, V value) {
         // remove garbage collected entries from cache
         CacheReference ref;
         while ((ref = (CacheReference) queue.poll()) != null) {
@@ -74,7 +71,7 @@ public class SoftSmartCache<K, V> implements SmartCache<K, V> {
         return null;
     }
 
-    public synchronized V get(K key) {
+    public V getImpl(K key) {
         CacheReference ref = cache.get(key);
         if (ref == null) {
             return null;
@@ -86,20 +83,20 @@ public class SoftSmartCache<K, V> implements SmartCache<K, V> {
         return value;
     }
 
-    public V remove(K key) {
+    public V removeImpl(K key) {
         final CacheReference ref = cache.remove(key);
         return ref == null ? null : ref.get();
     }
 
-    public void clear() {
+    public void clearImpl() {
         cache.clear();
     }
 
-    public int size() {
+    public int sizeImpl() {
         return cache.size();
     }
 
-    public Iterator<Map.Entry<K, V>> iterator() {
+    public Iterator<Map.Entry<K, V>> iteratorImpl() {
         final Iterator<Map.Entry<K, CacheReference>> cacheIterator =
             cache.entrySet().iterator();
         return new Iterator<Map.Entry<K, V>>() {

@@ -53,8 +53,7 @@ public class CacheControlTest extends FoodMartTestCase {
      * @param testContext Test context
      */
     public static void flushCache(TestContext testContext) {
-        final CacheControl cacheControl =
-            testContext.getConnection().getCacheControl(null);
+        final CacheControl cacheControl = testContext.getCacheControl();
 
         // Flush the entire cache.
         CacheControl.CellRegion measuresRegion = null;
@@ -270,8 +269,7 @@ public class CacheControlTest extends FoodMartTestCase {
         // Execute a query.
         final TestContext testContext = getTestContext();
 
-        final CacheControl cacheControl =
-            testContext.getConnection().getCacheControl(null);
+        final CacheControl cacheControl = testContext.getCacheControl();
 
         final CacheControl.CellRegion region =
             createCellRegion(testContext, cacheControl);
@@ -877,8 +875,7 @@ public class CacheControlTest extends FoodMartTestCase {
         final Connection connection = testContext.getConnection();
         final Cube salesCube = connection.getSchema().lookupCube("Sales", true);
         final SchemaReader schemaReader = salesCube.getSchemaReader(null);
-        final CacheControl cacheControl =
-            new CacheControlImpl((RolapConnection) connection);
+        final CacheControl cacheControl = testContext.getCacheControl();
         final Member memberQ1 =
             schemaReader.withLocus().getMemberByUniqueName(
                 Id.Segment.toList("Time", "1997", "Q1"), true);
@@ -1022,8 +1019,7 @@ public class CacheControlTest extends FoodMartTestCase {
         final TestContext testContext = getTestContext();
         final Connection connection = testContext.getConnection();
         final Cube salesCube = connection.getSchema().lookupCube("Sales", true);
-        final CacheControl cacheControl =
-            new CacheControlImpl((RolapConnection) connection);
+        final CacheControl cacheControl = testContext.getCacheControl();
 
         // Region consists of [Time].[1997].[Q1] and its children, and products
         // [Beer] and [Dairy].
@@ -1118,8 +1114,7 @@ public class CacheControlTest extends FoodMartTestCase {
         final TestContext testContext = getTestContext();
         final Connection connection = testContext.getConnection();
         final Cube salesCube = connection.getSchema().lookupCube("Sales", true);
-        final CacheControl cacheControl =
-            new CacheControlImpl((RolapConnection) connection);
+        final CacheControl cacheControl = testContext.getCacheControl();
         final SchemaReader schemaReader =
             salesCube.getSchemaReader(null).withLocus();
         final Member member = schemaReader.getMemberByUniqueName(ids, true);
@@ -1203,8 +1198,7 @@ public class CacheControlTest extends FoodMartTestCase {
     public void testFlushNonPrimedContent() throws Exception {
         final TestContext testContext = getTestContext();
         flushCache(testContext);
-        final CacheControl cacheControl =
-            testContext.getConnection().getCacheControl(null);
+        final CacheControl cacheControl = testContext.getCacheControl();
         final Cube cube =
             testContext.getConnection()
                 .getSchema().lookupCube("Sales", true);

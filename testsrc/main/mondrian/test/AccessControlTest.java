@@ -18,7 +18,6 @@ import org.olap4j.mdx.IdentifierNode;
 
 import java.util.List;
 
-
 /**
  * <code>AccessControlTest</code> is a set of unit-tests for access-control.
  * For these tests, all of the roles are of type RoleImpl.
@@ -155,7 +154,7 @@ public class AccessControlTest extends FoodMartTestCase {
         final Connection connection = getRestrictedConnection();
         // because CA has access
         assertMemberAccess(connection, Access.CUSTOM, "[Store].[USA]");
-        assertMemberAccess(connection, Access.ALL, "[Store].[Mexico]");
+        assertMemberAccess(connection, Access.CUSTOM, "[Store].[Mexico]");
         assertMemberAccess(connection, Access.NONE, "[Store].[Mexico].[DF]");
         assertMemberAccess(
             connection, Access.NONE, "[Store].[Mexico].[DF].[Mexico City]");
@@ -871,8 +870,8 @@ public class AccessControlTest extends FoodMartTestCase {
         return connection;
     }
 
-    /* todo: test that access to restricted measure fails (will not work --
-    have not fixed Cube.getMeasures) */
+    // todo: test that access to restricted measure fails
+    // (will not work -- have not fixed Cube.getMeasures)
     private class RestrictedTestContext extends TestContext {
         public synchronized Connection getConnection() {
             return getRestrictedConnection(false);
@@ -883,13 +882,14 @@ public class AccessControlTest extends FoodMartTestCase {
      * Test context where the [Store] hierarchy has restricted access
      * and cell values are rolled up with 'partial' policy.
      */
-    private final TestContext rollupTestContext =
-        TestContext.instance().create(
+    private TestContext getRollupTestContext() {
+        return getTestContext().create(
             null, null, null, null, null,
             "<Role name=\"Role1\">\n"
             + "  <SchemaGrant access=\"none\">\n"
             + "    <CubeGrant cube=\"Sales\" access=\"custom\">\n"
             + "      <DimensionGrant dimension=\"[Measures]\" access=\"all\"/>\n"
+            + "      <DimensionGrant dimension=\"[Gender]\" access=\"all\"/>\n"
             + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"partial\">\n"
             + "        <MemberGrant member=\"[Store].[USA]\" access=\"all\"/>\n"
             + "        <MemberGrant member=\"[Store].[USA].[CA]\" access=\"none\"/>\n"
@@ -898,13 +898,14 @@ public class AccessControlTest extends FoodMartTestCase {
             + "  </SchemaGrant>\n"
             + "</Role>")
             .withRole("Role1");
+    }
 
     /**
      * Basic test of partial rollup policy. [USA] = [OR] + [WA], not
      * the usual [CA] + [OR] + [WA].
      */
     public void testRollupPolicyBasic() {
-        rollupTestContext.assertQueryReturns(
+        getRollupTestContext().assertQueryReturns(
             "select {[Store].[USA], [Store].[USA].Children} on 0\n"
             + "from [Sales]",
             "Axis #0:\n"
@@ -924,7 +925,7 @@ public class AccessControlTest extends FoodMartTestCase {
      * Normally the total is 266,773.
      */
     public void testRollupPolicyAll() {
-        rollupTestContext.assertExprReturns(
+        getRollupTestContext().assertExprReturns(
             "([Store].[All Stores])",
             "192,025");
     }
@@ -934,7 +935,7 @@ public class AccessControlTest extends FoodMartTestCase {
      * of the [Stores] hierarchy.
      */
     public void testRollupPolicyAllAsDefault() {
-        rollupTestContext.assertExprReturns(
+        getRollupTestContext().assertExprReturns(
             "([Store])",
             "192,025");
     }
@@ -944,9 +945,37 @@ public class AccessControlTest extends FoodMartTestCase {
      * that this doesn't circumvent access control).
      */
     public void testRollupPolicyAllAsParent() {
-        rollupTestContext.assertExprReturns(
+        getRollupTestContext().assertExprReturns(
             "([Store].[USA].Parent)",
             "192,025");
+    }
+
+    /**
+     * Tests that an access-controlled dimension affects results even if not
+     * used in the query. Unit test for
+     * <a href="http://jira.pentaho.com/browse/mondrian-1283">MONDRIAN-1283,
+     * "Mondrian doesn't restrict dimension members when dimension isn't
+     * included"</a>.
+     */
+    public void testUnusedAccessControlledDimension() {
+        getRollupTestContext().assertQueryReturns(
+            "select [Gender].Children on 0 from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[F]}\n"
+            + "{[Gender].[M]}\n"
+            + "Row #0: 94,799\n"
+            + "Row #0: 97,226\n");
+        getTestContext().assertQueryReturns(
+            "select [Gender].Children on 0 from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[F]}\n"
+            + "{[Gender].[M]}\n"
+            + "Row #0: 131,558\n"
+            + "Row #0: 135,215\n");
     }
 
     /**
@@ -1099,7 +1128,7 @@ public class AccessControlTest extends FoodMartTestCase {
      * Tests where two hierarchies are simultaneously access-controlled.
      */
     public void testRollupPolicySimultaneous() {
-        // note that v2 is different for full vs partial, v3 is the same
+//         note that v2 is different for full vs partial, v3 is the same
         rollupPolicySimultaneous(
             Role.RollupPolicy.FULL, "266,773", "74,748", "25,635");
         rollupPolicySimultaneous(
@@ -1238,15 +1267,15 @@ public class AccessControlTest extends FoodMartTestCase {
             Role.RollupPolicy.PARTIAL,
             hierarchyAccess.getRollupPolicy());
         // One of the roles is restricting the levels, so we
-        //expect only the levels from 2 to 4 to be available.
+        // expect only the levels from 2 to 4 to be available.
         assertEquals(2, hierarchyAccess.getTopLevelDepth());
         assertEquals(4, hierarchyAccess.getBottomLevelDepth());
 
         // Member access:
         // both can see [USA]
-        assertMemberAccess(connection, Access.ALL, "[Customers].[USA]");
+        assertMemberAccess(connection, Access.CUSTOM, "[Customers].[USA]");
         // Role1 can see [CA], Role2 cannot
-        assertMemberAccess(connection, Access.ALL, "[Customers].[USA].[CA]");
+        assertMemberAccess(connection, Access.CUSTOM, "[Customers].[USA].[CA]");
         // Role1 cannoy see [USA].[OR].[Portland], Role2 can
         assertMemberAccess(
             connection, Access.ALL, "[Customers].[USA].[OR].[Portland]");
@@ -1531,8 +1560,8 @@ public class AccessControlTest extends FoodMartTestCase {
             + "{[Store].[USA].[CA].[San Diego]}\n"
             + "{[Store].[USA].[CA].[San Francisco]}\n"
             + "{[Store].[USA].[OR]}\n"
-            + "Row #0: 74,748\n"
-            + "Row #1: 74,748\n"
+            + "Row #0: 100,827\n"
+            + "Row #1: 100,827\n"
             + "Row #2: 74,748\n"
             + "Row #3: \n"
             + "Row #4: 21,333\n"
@@ -2290,6 +2319,7 @@ public class AccessControlTest extends FoodMartTestCase {
             + "      <HierarchyGrant hierarchy=\"[Customers]\" access=\"custom\">\n"
             + "        <MemberGrant member=\"[Customers].[USA].[XX]\" access=\"none\"/>\n"
             + "        <MemberGrant member=\"[Customers].[USA].[XX].[Yyy Yyyyyyy]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Customers].[USA]\" access=\"none\"/>\n"
             + "        <MemberGrant member=\"[Customers].[USA].[CA]\" access=\"none\"/>\n"
             + "        <MemberGrant member=\"[Customers].[USA].[CA].[Los Angeles]\" access=\"all\"/>\n"
             + "        <MemberGrant member=\"[Customers].[USA].[CA].[Zzz Zzzz]\" access=\"none\"/>\n"
@@ -2854,6 +2884,150 @@ public class AccessControlTest extends FoodMartTestCase {
         assertEquals(
             "[Store].[All Stores]",
             allMember.getHierarchy().getRootMembers().get(0).getUniqueName());
+    }
+
+    /**
+     * Unit test for
+     * <a href="http://jira.pentaho.com/browse/mondrian-1259">MONDRIAN-1259,
+     * "Mondrian security: access leaks from one user to another"</a>.
+     *
+     * <p>Enhancements made to the SmartRestrictedMemberReader were causing
+     * security leaks between roles and potential class cast exceptions.
+     */
+    public void testMondrian1259() throws Exception {
+        final String mdx =
+            "select non empty {[Store].Members} on columns from [Sales]";
+        final TestContext testContext = TestContext.instance().create(
+            null, null, null, null, null,
+            "<Role name=\"Role1\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+            + "        <MemberGrant member=\"[Store].[USA].[CA]\" access=\"all\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>"
+            + "<Role name=\"Role2\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+            + "        <MemberGrant member=\"[Store].[USA].[OR]\" access=\"all\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>");
+        testContext.withRole("Role1").assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[USA]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 21,333\n"
+            + "Row #0: 21,333\n"
+            + "Row #0: 25,663\n"
+            + "Row #0: 25,663\n"
+            + "Row #0: 25,635\n"
+            + "Row #0: 25,635\n"
+            + "Row #0: 2,117\n"
+            + "Row #0: 2,117\n");
+        testContext.withRole("Role2").assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[USA]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[OR].[Portland]}\n"
+            + "{[Store].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Store].[USA].[OR].[Salem]}\n"
+            + "{[Store].[USA].[OR].[Salem].[Store 13]}\n"
+            + "Row #0: 67,659\n"
+            + "Row #0: 67,659\n"
+            + "Row #0: 67,659\n"
+            + "Row #0: 26,079\n"
+            + "Row #0: 26,079\n"
+            + "Row #0: 41,580\n"
+            + "Row #0: 41,580\n");
+    }
+
+    public void testMondrian1295() throws Exception {
+        final String mdx =
+            "With\n"
+            + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Time],[*BASE_MEMBERS_Product])'\n"
+            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].CurrentMember, [Time].[Year]).OrderKey,BASC,Ancestor([Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,[Time].CurrentMember.OrderKey,BASC,[Product].CurrentMember.OrderKey,BASC)'\n"
+            + "Set [*BASE_MEMBERS_Product] as '{[Product].[All Products]}'\n"
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].currentMember,[Product].currentMember)})'\n"
+            + "Set [*BASE_MEMBERS_Time] as '[Time].[Year].Members'\n"
+            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'\n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', SOLVE_ORDER=400\n"
+            + "Select\n"
+            + "[*BASE_MEMBERS_Measures] on columns,\n"
+            + "Non Empty [*SORTED_ROW_AXIS] on rows\n"
+            + "From [Sales]\n";
+
+        final TestContext context =
+            getTestContext().create(
+                null, null, null, null, null,
+                "<Role name=\"Admin\">\n"
+                + "  <SchemaGrant access=\"none\">\n"
+                + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                + "      <HierarchyGrant hierarchy=\"[Store]\" rollupPolicy=\"partial\" access=\"custom\">\n"
+                + "        <MemberGrant member=\"[Store].[USA].[CA]\" access=\"all\">\n"
+                + "        </MemberGrant>\n"
+                + "      </HierarchyGrant>\n"
+                + "      <HierarchyGrant hierarchy=\"[Customers]\" rollupPolicy=\"partial\" access=\"custom\">\n"
+                + "        <MemberGrant member=\"[Customers].[USA].[CA]\" access=\"all\">\n"
+                + "        </MemberGrant>\n"
+                + "      </HierarchyGrant>\n"
+                + "    </CubeGrant>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role> \n");
+
+        // Control
+        context
+            .assertQueryReturns(
+                "select {[Measures].[Unit Sales]} on columns from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Row #0: 266,773\n");
+        context.withRole("Admin")
+            .assertQueryReturns(
+                "select {[Measures].[Unit Sales]} on columns from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Row #0: 74,748\n");
+
+        // Test
+        context.withRole("Admin")
+            .assertQueryReturns(
+                mdx,
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+                + "Axis #2:\n"
+                + "{[Time].[1997], [Product].[All Products]}\n"
+                + "Row #0: 74,748\n");
     }
 }
 

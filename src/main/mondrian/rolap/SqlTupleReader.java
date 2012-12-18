@@ -17,6 +17,7 @@ import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.RolapHierarchy.LimitedRollupMember;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.aggmatcher.AggStar;
@@ -30,6 +31,7 @@ import org.apache.log4j.Logger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+
 import javax.sql.DataSource;
 
 /**
@@ -1191,7 +1193,7 @@ public class SqlTupleReader implements TupleReader {
      * Obtains the AggStar instance which corresponds to an aggregate table
      * which can be used to support the member constraint.
      *
-     * @param constraint
+     * @param constraint The tuple constraint to apply.
      * @param evaluator the current evaluator to obtain the cube and members to
      *        be queried  @return AggStar for aggregate table
      * @param baseCube The base cube from which to choose an aggregation star.
@@ -1227,7 +1229,14 @@ public class SqlTupleReader implements TupleReader {
         // Convert global ordinal to cube based ordinal (the 0th dimension
         // is always [Measures]). In the case of filter constraint this will
         // be the measure on which the filter will be done.
-        final Member[] members = evaluator.getNonAllMembers();
+
+        // Since we support aggregated members as arguments, we'll expand
+        // this too.
+        // Failing to do so could result in chosing the wrong aggstar, as the
+        // level would not be passed to the bitkeys
+        final Member[] members =
+          SqlConstraintUtils.expandSupportedCalculatedMembers(
+              evaluator.getNonAllMembers(), evaluator);
 
         // if measure is calculated, we can't continue
         if (!(members[0] instanceof RolapBaseCubeMeasure)) {
@@ -1262,6 +1271,27 @@ public class SqlTupleReader implements TupleReader {
                     ((RolapCubeLevel)level).getBaseStarKeyColumn(baseCube);
                 if (column != null) {
                     levelBitKey.set(column.getBitPosition());
+                }
+            }
+        }
+
+        for (Member member : evaluator.getMembers()) {
+            if (member instanceof LimitedRollupMember) {
+                List<Member> lowestMembers =
+                    ((RolapHierarchy)member.getHierarchy())
+                        .getLowestMembersForAccess(
+                            evaluator,
+                            ((LimitedRollupMember)member).hierarchyAccess,
+                            FunUtil.getNonEmptyMemberChildrenWithDetails(
+                                evaluator,
+                                member));
+                for (Member lowestMember : lowestMembers) {
+                    RolapStar.Column column =
+                        ((RolapCubeLevel)lowestMember.getLevel())
+                            .getBaseStarKeyColumn(baseCube);
+                    if (column != null) {
+                        levelBitKey.set(column.getBitPosition());
+                    }
                 }
             }
         }

@@ -853,6 +853,22 @@ public class FormatTest extends TestCase {
             "" + Format.intlCurrencySymbol + "#",
             "$1");
     }
+
+    public void testInfinity() {
+        String[] strings = {"#", "#.#", "#,###.0"};
+        for (String string : strings) {
+            checkFormat(
+                null,
+                Double.POSITIVE_INFINITY,
+                string,
+                "Infinity");
+            checkFormat(
+                null,
+                Double.NEGATIVE_INFINITY,
+                string,
+                "-Infinity");
+        }
+    }
 }
 
 // End FormatTest.java

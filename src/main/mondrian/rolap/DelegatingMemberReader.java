@@ -10,12 +10,15 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.Access;
 import mondrian.olap.Id;
+import mondrian.olap.Member;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * A <code>DelegatingMemberReader</code> is a {@link MemberReader} which
@@ -92,14 +95,33 @@ class DelegatingMemberReader implements MemberReader {
         RolapMember parentMember,
         List<RolapMember> children)
     {
-        memberReader.getMemberChildren(parentMember, children);
+        getMemberChildren(parentMember, children, null);
+    }
+
+    public Map<? extends Member, Access> getMemberChildren(
+        RolapMember parentMember,
+        List<RolapMember> children,
+        MemberChildrenConstraint constraint)
+    {
+        return memberReader.getMemberChildren(
+            parentMember, children, constraint);
     }
 
     public void getMemberChildren(
         List<RolapMember> parentMembers,
         List<RolapMember> children)
     {
-        memberReader.getMemberChildren(parentMembers, children);
+        memberReader.getMemberChildren(
+            parentMembers, children);
+    }
+
+    public Map<? extends Member, Access> getMemberChildren(
+        List<RolapMember> parentMembers,
+        List<RolapMember> children,
+        MemberChildrenConstraint constraint)
+    {
+        return memberReader.getMemberChildren(
+            parentMembers, children, constraint);
     }
 
     public int getMemberCount() {
@@ -111,22 +133,6 @@ class DelegatingMemberReader implements MemberReader {
         boolean failIfNotFound)
     {
         return memberReader.lookupMember(uniqueNameParts, failIfNotFound);
-    }
-
-    public void getMemberChildren(
-        RolapMember member,
-        List<RolapMember> children,
-        MemberChildrenConstraint constraint)
-    {
-        memberReader.getMemberChildren(member, children, constraint);
-    }
-
-    public void getMemberChildren(
-        List<RolapMember> parentMembers,
-        List<RolapMember> children,
-        MemberChildrenConstraint constraint)
-    {
-        memberReader.getMemberChildren(parentMembers, children, constraint);
     }
 
     public List<RolapMember> getMembersInLevel(

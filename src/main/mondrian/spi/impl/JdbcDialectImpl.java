@@ -999,7 +999,9 @@ public class JdbcDialectImpl implements Dialect {
             return DatabaseProduct.INGRES;
         } else if (productName.equals("Interbase")) {
             return DatabaseProduct.INTERBASE;
-        } else if (upperProductName.equals("LUCIDDB")) {
+        } else if (upperProductName.equals("LUCIDDB")
+            || upperProductName.equals("OPTIQ"))
+        {
             return DatabaseProduct.LUCIDDB;
         } else if (upperProductName.indexOf("SQL SERVER") >= 0) {
             return DatabaseProduct.MSSQL;
@@ -1013,6 +1015,8 @@ public class JdbcDialectImpl implements Dialect {
             return DatabaseProduct.INFOBRIGHT;
         } else if (upperProductName.equals("MYSQL")) {
             return DatabaseProduct.MYSQL;
+        } else if (upperProductName.equals("MONETDB")) {
+            return DatabaseProduct.MONETDB;
         } else if (upperProductName.equals("VERTICA")
             || upperProductName.equals("VERTICA DATABASE"))
         {

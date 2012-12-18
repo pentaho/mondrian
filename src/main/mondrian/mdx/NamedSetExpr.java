@@ -95,7 +95,7 @@ public class NamedSetExpr extends ExpBase implements Exp {
                 Evaluator evaluator)
             {
                 final Evaluator.NamedSetEvaluator eval = getEval(evaluator);
-                return eval.evaluateTupleIterable();
+                return eval.evaluateTupleIterable(evaluator);
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

@@ -188,7 +188,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <path refid="project.classpath"/>
   </path>
 
-  <path id="project.test.classpath-jdk15">
+  <path id="project.build.test.classpath-jdk15">
     <pathelement location="${classes.dir}"/>
     <path refid="project.classpath"/>
     <pathelement location="${testclasses.dir}"/>
@@ -199,12 +199,11 @@ demo/access/MondrianFoodMart.mdb"/>
       <include name="xmlunit.jar"/>
       <include name="junit.jar"/>
     </fileset>
-    <pathelement path="${driver.classpath}"/>
     <!-- this picks up the default log4j.properties -->
     <pathelement path="${basedir}"/>
   </path>
 
-  <path id="project.test.classpath-jdk14">
+  <path id="project.build.test.classpath-jdk14">
     <pathelement location="${jar-jdk14.file}"/>
     <pathelement location="${lib.dir}/olap4j-jdk14.jar"/>
     <path refid="project.classpath"/>
@@ -219,7 +218,6 @@ demo/access/MondrianFoodMart.mdb"/>
     </fileset>
     <pathelement location="${lib.dir}/retroweaver-rt.jar" />
     <pathelement location="${lib.dir}/backport-util-concurrent.jar" />
-    <pathelement path="${driver.classpath}"/>
     <!-- this picks up the default log4j.properties -->
     <pathelement path="${basedir}"/>
   </path>
@@ -279,10 +277,12 @@ demo/access/MondrianFoodMart.mdb"/>
     </or>
   </condition>
 
-  <path id="project.test.classpath" refid="project.test.classpath-${jdk}"/>
+  <path id="project.build.test.classpath" refid="project.build.test.classpath-${jdk}"/>
 
-  <available classname="${mondrian.jdbcDrivers}"
-           classpathref="project.test.classpath" property="driver.present"/>
+  <path id="project.test.classpath">
+    <path refid="project.build.test.classpath"/>
+    <pathelement path="${driver.classpath}"/>
+  </path>
 
   <target name="define-tasks" depends="prepare">
     <taskdef name="javacup" classname="java_cup.JavaCUPTask">
@@ -590,7 +590,7 @@ META-INF/**"/>
         srcdir="${javatest.dir}"
         destdir="${testclasses.dir}"
         debug="${project.build.debug}"
-        classpathref="project.test.classpath"
+        classpathref="project.build.test.classpath"
         includeantruntime="false"
         source="1.5"
         target="1.5">
@@ -902,6 +902,8 @@ in {mondrian.foodmart.jdbcURL}."
   <target name="version">
     <echo file="VERSION.txt">Title: ${name}
 Version: ${project.revision}
+VersionMajor: ${project.revision.major}
+VersionMinor: ${project.revision.minor}
 Vendor: ${vendor}
 </echo>
    <echo file="${java.dir}/mondrian/olap4j/MondrianOlap4jDriverVersion.java">/*
@@ -1352,7 +1354,7 @@ clean against JDK 1.6.">
     <javadoc
         sourcepath="${java.dir}${ps}${javatest.dir}"
         maxmemory="1024m"
-        classpathref="project.test.classpath"
+        classpathref="project.build.test.classpath"
         destdir="${javadoc.dir}"
         packagenames="mondrian.*"
         overview="${java.dir}/overview.html"
@@ -1399,7 +1401,7 @@ diagrams and hyperlinks to source code">
     <javadoc
         sourcepath="${java.dir}"
         maxmemory="1024m"
-        classpathref="project.test.classpath"
+        classpathref="project.build.test.classpath"
         destdir="${javadoc.dir}"
         packagenames="mondrian.*"
         overview="${java.dir}/overview.html"
@@ -1505,7 +1507,7 @@ diagrams and hyperlinks to source code">
   <target name="checkCodeFormatting">
     <!-- Only runs on unix currently, because it's a shell script.
          On Windows/cygwin, you can run bin/checkFile.sh manually. -->
-    <exec osfamily="unix" executable="${basedir}/bin/checkFile.sh">
+    <exec osfamily="unix" executable="${basedir}/bin/checkFile.sh" failonerror="true">
         <arg line="--under ."/>
     </exec>
   </target>

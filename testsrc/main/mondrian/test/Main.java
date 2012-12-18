@@ -55,7 +55,7 @@ import java.util.regex.Pattern;
  */
 public class Main extends TestSuite {
     private static final Logger logger = Logger.getLogger(Main.class);
-    /*
+    /**
      * Scratch area to store information on the emerging test suite.
      */
     private static Map<TestSuite, String> testSuiteInfo =
@@ -102,9 +102,7 @@ public class Main extends TestSuite {
         final MondrianProperties properties = MondrianProperties.instance();
         Test test = suite();
         if (args.length == 1 && args[0].equals("-l")) {
-            /*
-             * Only lists the tests to run if invoking ant test-nobuild next.
-             */
+            // Only lists the tests to run if invoking ant test-nobuild next.
             return;
         }
 
@@ -242,6 +240,7 @@ public class Main extends TestSuite {
             addTest(suite, ScheduleTest.class);
             addTest(suite, UtilTestCase.class);
             addTest(suite, PartiallyOrderedSetTest.class);
+            addTest(suite, ExpiringReferenceTest.class);
             addTest(suite, Olap4jTest.class);
             addTest(suite, SortTest.class);
             if (isRunOnce()) {
@@ -279,11 +278,13 @@ public class Main extends TestSuite {
             addTest(suite, UdfTest.class);
             addTest(suite, NullValueTest.class);
             addTest(suite, NamedSetTest.class);
+            addTest(suite, NativeSetEvaluationTest.class);
             addTest(suite, PropertiesTest.class);
             addTest(suite, MultipleHierarchyTest.class);
             addTest(suite, I18nTest.class);
             addTest(suite, FormatTest.class);
             addTest(suite, ParallelTest.class);
+            addTest(suite, SchemaVersionTest.class);
             addTest(suite, SchemaTest.class);
             addTest(suite, PerformanceTest.class);
             // GroupingSetQueryTest must be run before any test derived from
@@ -305,6 +306,8 @@ public class Main extends TestSuite {
             addTest(suite, QueryTest.class);
             addTest(suite, RolapSchemaReaderTest.class);
             addTest(suite, RolapCubeTest.class);
+            addTest(suite, RolapStarTest.class);
+            addTest(suite, RolapSchemaPoolTest.class);
             addTest(suite, NullMemberRepresentationTest.class);
             addTest(suite, IgnoreUnrelatedDimensionsTest.class);
             addTest(
@@ -345,6 +348,9 @@ public class Main extends TestSuite {
             } else {
                 logger.warn("skipping BatchedFillTests");
             }
+
+            // Must be the last test.
+            addTest(suite, TerminatorTest.class);
         }
 
         if (testName != null && !testName.equals("")) {
@@ -462,6 +468,24 @@ public class Main extends TestSuite {
             testInfo += newTestInfo;
         }
         testSuiteInfo.put(suite, testInfo);
+    }
+
+    /**
+     * Test that executes last. It can be used to check invariants.
+     */
+    public static class TerminatorTest extends TestCase {
+        public void testSqlStatementExecuteMatchesClose() {
+            // Number of successful calls to SqlStatement.execute
+            // should match number of calls to SqlStatement.close
+            // (excluding calls to close where close has already been called).
+            // If there is a mismatch, try debugging by adding SqlStatement.id
+            // values to a Set<Long>.
+            assertEquals(
+                "SqlStatement instances still open: "
+                + Counters.SQL_STATEMENT_EXECUTING_IDS,
+                Counters.SQL_STATEMENT_EXECUTE_COUNT.get(),
+                Counters.SQL_STATEMENT_CLOSE_COUNT.get());
+        }
     }
 }
 

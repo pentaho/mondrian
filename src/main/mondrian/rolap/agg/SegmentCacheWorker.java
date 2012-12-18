@@ -29,7 +29,7 @@ public final class SegmentCacheWorker {
     private static final Logger LOGGER =
         Logger.getLogger(SegmentCacheWorker.class);
 
-    private final SegmentCache cache;
+    final SegmentCache cache;
     private final Thread cacheMgrThread;
     private final boolean supportsRichIndex;
 

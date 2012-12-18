@@ -30,6 +30,9 @@ import java.util.Map;
 /**
  * Unit tests for various schema features.
  *
+ * @see SchemaVersionTest
+ * @see mondrian.rolap.SharedDimensionTest
+ *
  * @author jhyde
  * @since August 7, 2006
  */
@@ -3484,12 +3487,6 @@ public class SchemaTest extends FoodMartTestCase {
             + "Row #3: 135,318\n"
             + "Row #4: 870,562\n");
 
-        // No idea why, but this value comes out TOO LOW. FIXME.
-        final String y = !Bug.BugMondrian747Fixed
-            && MondrianProperties.instance().ReadAggregates.get()
-            && MondrianProperties.instance().UseAggregates.get()
-            ? "20,957"
-            : "266,773";
         testContext.assertQueryReturns(
             "select non empty {[Measures].[unitsales1]} on 0,\n"
             + " non empty [Store].members on 1\n"
@@ -3517,7 +3514,7 @@ public class SchemaTest extends FoodMartTestCase {
             + "{[Store].[USA].[WA].[Tacoma]}\n"
             + "{[Store].[USA].[WA].[Walla Walla]}\n"
             + "{[Store].[USA].[WA].[Yakima]}\n"
-            + "Row #0: " + y + "\n"
+            + "Row #0: 266,773\n"
             + "Row #1: 266,773\n"
             + "Row #2: 74,748\n"
             + "Row #3: 21,333\n"
@@ -3565,7 +3562,7 @@ public class SchemaTest extends FoodMartTestCase {
             + "{[Store].[USA].[WA].[Walla Walla]}\n"
             + "{[Store].[USA].[WA].[Yakima]}\n"
             + "Row #0: 266,773\n"
-            + "Row #0: " + y + "\n"
+            + "Row #0: 266,773\n"
             + "Row #1: 1,379,620\n"
             + "Row #1: 266,773\n"
             + "Row #2: 373,740\n"

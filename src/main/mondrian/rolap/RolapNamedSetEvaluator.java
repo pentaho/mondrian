@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2011 Pentaho and others
+// Copyright (C) 2008-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -25,6 +25,11 @@ class RolapNamedSetEvaluator
 {
     private final RolapResult.RolapResultEvaluatorRoot rrer;
     private final NamedSet namedSet;
+
+    private final int RECURSION_TOLERANCE =
+        MondrianProperties.instance().IterationLimit.get();
+
+    private int recursionCount;
 
     /** Value of this named set; set on first use. */
     private TupleList list;
@@ -57,8 +62,8 @@ class RolapNamedSetEvaluator
         this.namedSet = namedSet;
     }
 
-    public TupleIterable evaluateTupleIterable() {
-        ensureList();
+    public TupleIterable evaluateTupleIterable(Evaluator evaluator) {
+        ensureList(evaluator);
         return list;
     }
 
@@ -66,13 +71,18 @@ class RolapNamedSetEvaluator
      * Evaluates and saves the value of this named set, if it has not been
      * evaluated already.
      */
-    private void ensureList() {
+    private void ensureList(Evaluator evaluator) {
         if (list != null) {
             if (list == DUMMY_LIST) {
-                throw rrer.result.slicerEvaluator.newEvalException(
-                    null,
-                    "Illegal attempt to reference value of named set '"
-                    + namedSet.getName() + "' while evaluating itself");
+                recursionCount ++;
+                if (RECURSION_TOLERANCE > 0
+                    && recursionCount > RECURSION_TOLERANCE)
+                {
+                    throw rrer.result.slicerEvaluator.newEvalException(
+                        null,
+                        "Illegal attempt to reference value of named set '"
+                        + namedSet.getName() + "' while evaluating itself");
+                }
             }
             return;
         }
@@ -89,7 +99,8 @@ class RolapNamedSetEvaluator
                 (TupleIterable)
                     rrer.result.evaluateExp(
                         calc,
-                        rrer.result.slicerEvaluator);
+                        rrer.result.slicerEvaluator,
+                        evaluator);
 
             // Axes can be in two forms: list or iterable. If iterable, we
             // need to materialize it, to ensure that all cell values are in
@@ -115,6 +126,7 @@ class RolapNamedSetEvaluator
             if (this.list == DUMMY_LIST) {
                 this.list = null;
             }
+            recursionCount = 0;
         }
     }
 

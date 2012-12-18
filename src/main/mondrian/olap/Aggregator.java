@@ -50,7 +50,7 @@ public interface Aggregator {
      * Tells Mondrian if this aggregator can perform fast aggregation
      * using only the raw data of a given object type. This will
      * determine if Mondrian will attempt to perform in-memory rollups
-     * on raw segment data by invoking {@link #aggregate(java.util.List)}.
+     * on raw segment data by invoking {@link #aggregate}.
      *
      * <p>This is only invoked for rollup operations.
      *
@@ -73,7 +73,7 @@ public interface Aggregator {
      * @return A rolled up value of the raw data.
      * if the object type is not supported.
      */
-    Object aggregate(List<Object> rawData);
+    Object aggregate(List<Object> rawData, Datatype datatype);
 }
 
 // End Aggregator.java

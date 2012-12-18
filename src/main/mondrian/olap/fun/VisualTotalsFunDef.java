@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -110,18 +110,21 @@ public class VisualTotalsFunDef extends FunDefBase {
             Evaluator evaluator)
         {
             final String name;
+            final String caption;
             if (stringCalc != null) {
                 final String namePattern = stringCalc.evaluateString(evaluator);
                 name = substitute(namePattern, member.getName());
+                caption = name;
             } else {
                 name = member.getName();
+                caption = member.getCaption();
             }
             final List<Member> childMemberList =
                 followingDescendants(member, i + 1, list);
             final Exp exp = makeExpr(childMemberList);
             final Validator validator = evaluator.getQuery().createValidator();
             final Exp validatedExp = exp.accept(validator);
-            return new VisualTotalMember(member, name, validatedExp);
+            return new VisualTotalMember(member, name, caption, validatedExp);
         }
 
         private List<Member> followingDescendants(
@@ -200,17 +203,20 @@ public class VisualTotalsFunDef extends FunDefBase {
     public static class VisualTotalMember extends RolapMemberBase {
         private final Member member;
         private Exp exp;
+        private String caption;
 
         VisualTotalMember(
             Member member,
             String name,
+            String caption,
             final Exp exp)
         {
             super(
                 (RolapMember) member.getParentMember(),
                 (RolapLevel) member.getLevel(),
-                null, name, MemberType.FORMULA);
+                RolapUtil.sqlNullValue, name, MemberType.FORMULA);
             this.member = member;
+            this.caption = caption;
             this.exp = exp;
         }
 
@@ -244,7 +250,7 @@ public class VisualTotalsFunDef extends FunDefBase {
 
         @Override
         public String getCaption() {
-            return member.getCaption();
+            return caption;
         }
 
         protected boolean computeCalculated(final MemberType memberType) {

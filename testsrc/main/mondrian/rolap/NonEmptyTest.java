@@ -18,6 +18,7 @@ import mondrian.rolap.cache.HardSmartCache;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.spi.Dialect;
+import mondrian.spi.Dialect.DatabaseProduct;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
 import mondrian.util.Bug;
@@ -1462,6 +1463,45 @@ public class NonEmptyTest extends BatchTestCase {
             + "select NON EMPTY {[Measures].[Unit Sales]} ON columns,  "
             + "NON EMPTY [Product].Children ON rows from [Sales] "
             + "where ([Time].[Jan]) ");
+    }
+
+    public void testCmInSlicerResults() {
+        assertQueryReturns(
+            "with member [Time].[Time].[Jan] as  "
+            + "'Aggregate({[Time].[1998].[Q1].[1], [Time].[1997].[Q1].[1]})'  "
+            + "select NON EMPTY {[Measures].[Unit Sales]} ON columns,  "
+            + "NON EMPTY [Product].Children ON rows from [Sales] "
+            + "where ([Time].[Jan]) ",
+            "Axis #0:\n"
+            + "{[Time].[Jan]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "Row #0: 1,910\n"
+            + "Row #1: 15,604\n"
+            + "Row #2: 4,114\n");
+    }
+
+    public void testSetInSlicerResults() {
+        assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON columns,  "
+            + "NON EMPTY [Product].Children ON rows from [Sales] "
+            + "where {[Time].[1998].[Q1].[1], [Time].[1997].[Q1].[1]} ",
+            "Axis #0:\n"
+            + "{[Time].[1998].[Q1].[1]}\n"
+            + "{[Time].[1997].[Q1].[1]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "Row #0: 1,910\n"
+            + "Row #1: 15,604\n"
+            + "Row #2: 4,114\n");
     }
 
     public void testCjMembersMembersMembers() {
@@ -4155,32 +4195,56 @@ public class NonEmptyTest extends BatchTestCase {
             + " from [Warehouse and Sales]";
         SqlPattern oraclePattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
-            "select\n"
-            + "    \"time_by_day\".\"the_year\" as \"c0\",\n"
-            + "    \"promotion\".\"promotion_name\" as \"c1\"\n"
-            + "from\n"
-            + "    \"time_by_day\" \"time_by_day\",\n"
-            + "    \"sales_fact_1997\" \"sales_fact_1997\",\n"
-            + "    \"promotion\" \"promotion\",\n"
-            + "    \"customer\" \"customer\"\n"
-            + "where\n"
-            + "    \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\"\n"
-            + "and\n"
-            + "    \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\"\n"
-            + "and\n"
-            + "    \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\"\n"
-            + "and\n"
-            + "    (\"customer\".\"gender\" = 'F')\n"
-            + "and\n"
-            + "    (\"time_by_day\".\"the_year\" = 1997)\n"
-            + "and\n"
-            + "    (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings'))\n"
-            + "group by\n"
-            + "    \"time_by_day\".\"the_year\",\n"
-            + "    \"promotion\".\"promotion_name\"\n"
-            + "order by\n"
-            + "    \"time_by_day\".\"the_year\" ASC NULLS LAST,\n"
-            + "    \"promotion\".\"promotion_name\" ASC NULLS LAST",
+            propSaver.properties.UseAggregates.get()
+                ? "select\n"
+                + "    \"agg_c_14_sales_fact_1997\".\"the_year\" as \"c0\",\n"
+                + "    \"promotion\".\"promotion_name\" as \"c1\"\n"
+                + "from\n"
+                + "    \"agg_c_14_sales_fact_1997\" \"agg_c_14_sales_fact_1997\",\n"
+                + "    \"promotion\" \"promotion\",\n"
+                + "    \"customer\" \"customer\"\n"
+                + "where\n"
+                + "    \"agg_c_14_sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\"\n"
+                + "and\n"
+                + "    \"agg_c_14_sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\"\n"
+                + "and\n"
+                + "    (\"customer\".\"gender\" = 'F')\n"
+                + "and\n"
+                + "    (\"agg_c_14_sales_fact_1997\".\"the_year\" = 1997)\n"
+                + "and\n"
+                + "    (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings'))\n"
+                + "group by\n"
+                + "    \"agg_c_14_sales_fact_1997\".\"the_year\",\n"
+                + "    \"promotion\".\"promotion_name\"\n"
+                + "order by\n"
+                + "    \"agg_c_14_sales_fact_1997\".\"the_year\" ASC NULLS LAST,\n"
+                + "    \"promotion\".\"promotion_name\" ASC NULLS LAST"
+                : "select\n"
+                + "    \"time_by_day\".\"the_year\" as \"c0\",\n"
+                + "    \"promotion\".\"promotion_name\" as \"c1\"\n"
+                + "from\n"
+                + "    \"time_by_day\" \"time_by_day\",\n"
+                + "    \"sales_fact_1997\" \"sales_fact_1997\",\n"
+                + "    \"promotion\" \"promotion\",\n"
+                + "    \"customer\" \"customer\"\n"
+                + "where\n"
+                + "    \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\"\n"
+                + "and\n"
+                + "    \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\"\n"
+                + "and\n"
+                + "    \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\"\n"
+                + "and\n"
+                + "    (\"customer\".\"gender\" = 'F')\n"
+                + "and\n"
+                + "    (\"time_by_day\".\"the_year\" = 1997)\n"
+                + "and\n"
+                + "    (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings'))\n"
+                + "group by\n"
+                + "    \"time_by_day\".\"the_year\",\n"
+                + "    \"promotion\".\"promotion_name\"\n"
+                + "order by\n"
+                + "    \"time_by_day\".\"the_year\" ASC NULLS LAST,\n"
+                + "    \"promotion\".\"promotion_name\" ASC NULLS LAST",
             611);
         assertQuerySql(mdx, new SqlPattern[]{oraclePattern});
     }
@@ -4193,22 +4257,39 @@ public class NonEmptyTest extends BatchTestCase {
             + " from [Warehouse and Sales]";
         SqlPattern oraclePattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
-            "select\n"
-            + "    \"promotion\".\"promotion_name\" as \"c0\"\n"
-            + "from\n"
-            + "    \"promotion\" \"promotion\",\n"
-            + "    \"sales_fact_1997\" \"sales_fact_1997\",\n"
-            + "    \"customer\" \"customer\"\n"
-            + "where\n"
-            + "    \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\"\n"
-            + "and\n"
-            + "    \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\"\n"
-            + "and\n"
-            + "    (\"customer\".\"gender\" = 'F')\n"
-            + "group by\n"
-            + "    \"promotion\".\"promotion_name\"\n"
-            + "order by\n"
-            + "    \"promotion\".\"promotion_name\" ASC NULLS LAST",
+            propSaver.properties.UseAggregates.get()
+                ? "select\n"
+                + "    \"promotion\".\"promotion_name\" as \"c0\"\n"
+                + "from\n"
+                + "    \"promotion\" \"promotion\",\n"
+                + "    \"agg_c_14_sales_fact_1997\" \"agg_c_14_sales_fact_1997\",\n"
+                + "    \"customer\" \"customer\"\n"
+                + "where\n"
+                + "    \"agg_c_14_sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\"\n"
+                + "and\n"
+                + "    \"agg_c_14_sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\"\n"
+                + "and\n"
+                + "    (\"customer\".\"gender\" = 'F')\n"
+                + "group by\n"
+                + "    \"promotion\".\"promotion_name\"\n"
+                + "order by\n"
+                + "    \"promotion\".\"promotion_name\" ASC NULLS LAST"
+                : "select\n"
+                + "    \"promotion\".\"promotion_name\" as \"c0\"\n"
+                + "from\n"
+                + "    \"promotion\" \"promotion\",\n"
+                + "    \"sales_fact_1997\" \"sales_fact_1997\",\n"
+                + "    \"customer\" \"customer\"\n"
+                + "where\n"
+                + "    \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\"\n"
+                + "and\n"
+                + "    \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\"\n"
+                + "and\n"
+                + "    (\"customer\".\"gender\" = 'F')\n"
+                + "group by\n"
+                + "    \"promotion\".\"promotion_name\"\n"
+                + "order by\n"
+                + "    \"promotion\".\"promotion_name\" ASC NULLS LAST",
             347);
         assertQuerySql(mdx, new SqlPattern[]{oraclePattern});
     }
@@ -4221,32 +4302,56 @@ public class NonEmptyTest extends BatchTestCase {
             + " from [Warehouse and Sales]";
         final SqlPattern pattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
-            "select\n"
-            + "    \"time_by_day\".\"the_year\" as \"c0\",\n"
-            + "    \"promotion\".\"promotion_name\" as \"c1\"\n"
-            + "from\n"
-            + "    \"time_by_day\" \"time_by_day\",\n"
-            + "    \"sales_fact_1997\" \"sales_fact_1997\",\n"
-            + "    \"promotion\" \"promotion\",\n"
-            + "    \"customer\" \"customer\"\n"
-            + "where\n"
-            + "    \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\"\n"
-            + "and\n"
-            + "    \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\"\n"
-            + "and\n"
-            + "    \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\"\n"
-            + "and\n"
-            + "    (\"customer\".\"gender\" in ('F', 'M'))\n"
-            + "and\n"
-            + "    (\"time_by_day\".\"the_year\" = 1997)\n"
-            + "and\n"
-            + "    (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings'))\n"
-            + "group by\n"
-            + "    \"time_by_day\".\"the_year\",\n"
-            + "    \"promotion\".\"promotion_name\"\n"
-            + "order by\n"
-            + "    \"time_by_day\".\"the_year\" ASC NULLS LAST,\n"
-            + "    \"promotion\".\"promotion_name\" ASC NULLS LAST",
+            propSaver.properties.UseAggregates.get()
+                ? "select\n"
+                + "    \"agg_c_14_sales_fact_1997\".\"the_year\" as \"c0\",\n"
+                + "    \"promotion\".\"promotion_name\" as \"c1\"\n"
+                + "from\n"
+                + "    \"agg_c_14_sales_fact_1997\" \"agg_c_14_sales_fact_1997\",\n"
+                + "    \"promotion\" \"promotion\",\n"
+                + "    \"customer\" \"customer\"\n"
+                + "where\n"
+                + "    \"agg_c_14_sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\"\n"
+                + "and\n"
+                + "    \"agg_c_14_sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\"\n"
+                + "and\n"
+                + "    (\"customer\".\"gender\" in ('F', 'M'))\n"
+                + "and\n"
+                + "    (\"agg_c_14_sales_fact_1997\".\"the_year\" = 1997)\n"
+                + "and\n"
+                + "    (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings'))\n"
+                + "group by\n"
+                + "    \"agg_c_14_sales_fact_1997\".\"the_year\",\n"
+                + "    \"promotion\".\"promotion_name\"\n"
+                + "order by\n"
+                + "    \"agg_c_14_sales_fact_1997\".\"the_year\" ASC NULLS LAST,\n"
+                + "    \"promotion\".\"promotion_name\" ASC NULLS LAST"
+                : "select\n"
+                + "    \"time_by_day\".\"the_year\" as \"c0\",\n"
+                + "    \"promotion\".\"promotion_name\" as \"c1\"\n"
+                + "from\n"
+                + "    \"time_by_day\" \"time_by_day\",\n"
+                + "    \"sales_fact_1997\" \"sales_fact_1997\",\n"
+                + "    \"promotion\" \"promotion\",\n"
+                + "    \"customer\" \"customer\"\n"
+                + "where\n"
+                + "    \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\"\n"
+                + "and\n"
+                + "    \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\"\n"
+                + "and\n"
+                + "    \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\"\n"
+                + "and\n"
+                + "    (\"customer\".\"gender\" in ('F', 'M'))\n"
+                + "and\n"
+                + "    (\"time_by_day\".\"the_year\" = 1997)\n"
+                + "and\n"
+                + "    (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings'))\n"
+                + "group by\n"
+                + "    \"time_by_day\".\"the_year\",\n"
+                + "    \"promotion\".\"promotion_name\"\n"
+                + "order by\n"
+                + "    \"time_by_day\".\"the_year\" ASC NULLS LAST,\n"
+                + "    \"promotion\".\"promotion_name\" ASC NULLS LAST",
             611);
         assertQuerySql(mdx, new SqlPattern[]{pattern});
     }
@@ -4261,32 +4366,56 @@ public class NonEmptyTest extends BatchTestCase {
             + " from [Warehouse and Sales]";
         final SqlPattern pattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
-            "select\n"
-            + "    \"time_by_day\".\"the_year\" as \"c0\",\n"
-            + "    \"promotion\".\"promotion_name\" as \"c1\"\n"
-            + "from\n"
-            + "    \"time_by_day\" \"time_by_day\",\n"
-            + "    \"sales_fact_1997\" \"sales_fact_1997\",\n"
-            + "    \"promotion\" \"promotion\",\n"
-            + "    \"customer\" \"customer\"\n"
-            + "where\n"
-            + "    \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\"\n"
-            + "and\n"
-            + "    \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\"\n"
-            + "and\n"
-            + "    \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\"\n"
-            + "and\n"
-            + "    (\"customer\".\"gender\" in ('F', 'M'))\n"
-            + "and\n"
-            + "    (\"time_by_day\".\"the_year\" = 1997)\n"
-            + "and\n"
-            + "    (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings'))\n"
-            + "group by\n"
-            + "    \"time_by_day\".\"the_year\",\n"
-            + "    \"promotion\".\"promotion_name\"\n"
-            + "order by\n"
-            + "    \"time_by_day\".\"the_year\" ASC NULLS LAST,\n"
-            + "    \"promotion\".\"promotion_name\" ASC NULLS LAST",
+            propSaver.properties.UseAggregates.get()
+                ? "select\n"
+                + "    \"agg_c_14_sales_fact_1997\".\"the_year\" as \"c0\",\n"
+                + "    \"promotion\".\"promotion_name\" as \"c1\"\n"
+                + "from\n"
+                + "    \"agg_c_14_sales_fact_1997\" \"agg_c_14_sales_fact_1997\",\n"
+                + "    \"promotion\" \"promotion\",\n"
+                + "    \"customer\" \"customer\"\n"
+                + "where\n"
+                + "    \"agg_c_14_sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\"\n"
+                + "and\n"
+                + "    \"agg_c_14_sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\"\n"
+                + "and\n"
+                + "    (\"customer\".\"gender\" in ('F', 'M'))\n"
+                + "and\n"
+                + "    (\"agg_c_14_sales_fact_1997\".\"the_year\" = 1997)\n"
+                + "and\n"
+                + "    (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings'))\n"
+                + "group by\n"
+                + "    \"agg_c_14_sales_fact_1997\".\"the_year\",\n"
+                + "    \"promotion\".\"promotion_name\"\n"
+                + "order by\n"
+                + "    \"agg_c_14_sales_fact_1997\".\"the_year\" ASC NULLS LAST,\n"
+                + "    \"promotion\".\"promotion_name\" ASC NULLS LAST"
+                : "select\n"
+                + "    \"time_by_day\".\"the_year\" as \"c0\",\n"
+                + "    \"promotion\".\"promotion_name\" as \"c1\"\n"
+                + "from\n"
+                + "    \"time_by_day\" \"time_by_day\",\n"
+                + "    \"sales_fact_1997\" \"sales_fact_1997\",\n"
+                + "    \"promotion\" \"promotion\",\n"
+                + "    \"customer\" \"customer\"\n"
+                + "where\n"
+                + "    \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\"\n"
+                + "and\n"
+                + "    \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\"\n"
+                + "and\n"
+                + "    \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\"\n"
+                + "and\n"
+                + "    (\"customer\".\"gender\" in ('F', 'M'))\n"
+                + "and\n"
+                + "    (\"time_by_day\".\"the_year\" = 1997)\n"
+                + "and\n"
+                + "    (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings'))\n"
+                + "group by\n"
+                + "    \"time_by_day\".\"the_year\",\n"
+                + "    \"promotion\".\"promotion_name\"\n"
+                + "order by\n"
+                + "    \"time_by_day\".\"the_year\" ASC NULLS LAST,\n"
+                + "    \"promotion\".\"promotion_name\" ASC NULLS LAST",
             611);
         assertQuerySql(mdx, new SqlPattern[]{pattern});
     }
@@ -4328,7 +4457,7 @@ public class NonEmptyTest extends BatchTestCase {
         final String sqlOracle =
             MondrianProperties.instance().UseAggregates.get()
                 ? "select \"customer\".\"country\" as \"c0\","
-                    + " \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"agg_l_03_sales_fact_1997\" \"agg_l_03_sales_fact_1997\" where \"agg_l_03_sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and (\"customer\".\"gender\" = 'M') and (\"customer\".\"marital_status\" = 'M') group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" order by \"customer\".\"country\" ASC NULLS LAST, \"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, \"fname\" || ' ' || \"lname\" ASC NULLS LAST"
+                + " \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"agg_l_03_sales_fact_1997\" \"agg_l_03_sales_fact_1997\" where \"agg_l_03_sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and (\"customer\".\"gender\" = 'M') and (\"customer\".\"marital_status\" = 'M') group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" order by \"customer\".\"country\" ASC NULLS LAST, \"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, \"fname\" || ' ' || \"lname\" ASC NULLS LAST"
                 : "select \"customer\".\"country\" as \"c0\", "
                 + "\"customer\".\"state_province\" as \"c1\", "
                 + "\"customer\".\"city\" as \"c2\", "
@@ -4856,6 +4985,12 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testMondrian1133() {
         propSaver.set(
+            propSaver.properties.UseAggregates,
+            false);
+        propSaver.set(
+            propSaver.properties.ReadAggregates,
+            false);
+        propSaver.set(
             propSaver.properties.GenerateFormattedSql,
             true);
         final String schema =
@@ -4884,6 +5019,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "  </Dimension>\n"
             + "  <Cube name=\"Sales1\" defaultMeasure=\"Unit Sales\">\n"
             + "    <Table name=\"sales_fact_1997\">\n"
+            + "        <AggExclude name=\"agg_c_special_sales_fact_1997\" />"
             + "    </Table>\n"
             + "    <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
             + "    <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
@@ -4894,15 +5030,25 @@ public class NonEmptyTest extends BatchTestCase {
             + "    <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
             + "      formatString=\"#,###.00\"/>\n"
             + "  </Cube>\n"
+            + "<Role name=\"Role1\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales1\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Time]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+            + "        <MemberGrant member=\"[Time].[Year].[1997]\" access=\"all\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role> \n"
             + "</Schema>\n";
-        String query =
+
+        final String query =
             "With\n"
             + "Set [*BASE_MEMBERS_Product] as 'Filter([Store].[Store State].Members,[Store].CurrentMember.Caption Matches (\"(?i).*CA.*\"))'\n"
             + "Select\n"
             + "[*BASE_MEMBERS_Product] on columns\n"
             + "From [Sales1] \n";
 
-        String sql =
+        final String mysql =
             "select\n"
             + "    `store`.`store_country` as `c0`,\n"
             + "    `store`.`store_state` as `c1`\n"
@@ -4917,14 +5063,380 @@ public class NonEmptyTest extends BatchTestCase {
             + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
             + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
 
-        SqlPattern[] patterns = {
+        final String mysqlWithRoles =
+            "select\n"
+            + "    `store`.`store_country` as `c0`,\n"
+            + "    `store`.`store_state` as `c1`\n"
+            + "from\n"
+            + "    `store` as `store`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `time_by_day` as `time_by_day`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `time_by_day`.`the_year` = 1997\n"
+            + "and\n"
+            + "    `time_by_day`.`quarter` in ('Q1', 'Q2', 'Q3', 'Q4')\n"
+            + "and\n"
+            + "    `time_by_day`.`month_of_year` in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)\n"
+            + "group by\n"
+            + "    `store`.`store_country`,\n"
+            + "    `store`.`store_state`\n"
+            + "having\n"
+            + "    c1 REGEXP '.*CA.*'\n"
+            + "order by\n"
+            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
+            + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
+
+        final String oracle =
+            "select\n"
+            + "    \"store\".\"store_country\" as \"c0\",\n"
+            + "    \"store\".\"store_state\" as \"c1\"\n"
+            + "from\n"
+            + "    \"store\" \"store\"\n"
+            + "group by\n"
+            + "    \"store\".\"store_country\",\n"
+            + "    \"store\".\"store_state\"\n"
+            + "having\n"
+            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "order by\n"
+            + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
+            + "    \"store\".\"store_state\" ASC NULLS LAST";
+
+        final String oracleWithRoles =
+            "select\n"
+            + "    \"store\".\"store_country\" as \"c0\",\n"
+            + "    \"store\".\"store_state\" as \"c1\"\n"
+            + "from\n"
+            + "    \"store\" \"store\",\n"
+            + "    \"sales_fact_1997\" \"sales_fact_1997\",\n"
+            + "    \"time_by_day\" \"time_by_day\"\n"
+            + "where\n"
+            + "    \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\"\n"
+            + "and\n"
+            + "    \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\"\n"
+            + "and\n"
+            + "    \"time_by_day\".\"the_year\" = 1997\n"
+            + "and\n"
+            + "    \"time_by_day\".\"quarter\" in ('Q1', 'Q2', 'Q3', 'Q4')\n"
+            + "and\n"
+            + "    \"time_by_day\".\"month_of_year\" in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)\n"
+            + "group by\n"
+            + "    \"store\".\"store_country\",\n"
+            + "    \"store\".\"store_state\"\n"
+            + "having\n"
+            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "order by\n"
+            + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
+            + "    \"store\".\"store_state\" ASC NULLS LAST";
+
+        final SqlPattern[] patterns = {
             new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL, sql, sql)
+                Dialect.DatabaseProduct.MYSQL, mysql, mysql),
+            new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE, oracle, oracle)
+        };
+
+        final SqlPattern[] patternsWithRoles = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL,
+                mysqlWithRoles, mysqlWithRoles),
+            new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE,
+                oracleWithRoles, oracleWithRoles)
         };
 
         final TestContext context =
             TestContext.instance().withSchema(schema);
+
+        // Actual tests.
         assertQuerySql(context, query, patterns);
+
+        // Roles must join to the fact table or it will create
+        // a cross join.
+        assertQuerySql(context.withRole("Role1"), query, patternsWithRoles);
+    }
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1133">MONDRIAN-1133</a>
+     *
+     * <p>RolapNativeFilter would force the join to the fact table.
+     * Some queries don't need to be joined to it and gain in performance.
+     *
+     * <p>This one is for agg tables turned on.
+     */
+    public void testMondrian1133WithAggs() {
+        propSaver.set(
+            propSaver.properties.UseAggregates,
+            true);
+        propSaver.set(
+            propSaver.properties.ReadAggregates,
+            true);
+        propSaver.set(
+            propSaver.properties.GenerateFormattedSql,
+            true);
+        final String schema =
+            "<?xml version=\"1.0\"?>\n"
+            + "<Schema name=\"custom\">\n"
+            + "  <Dimension name=\"Store\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
+            + "      <Table name=\"store\"/>\n"
+            + "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Store State\" column=\"store_state\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Store City\" column=\"store_city\" uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\">\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Dimension name=\"Time\" type=\"TimeDimension\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"time_id\">\n"
+            + "      <Table name=\"time_by_day\"/>\n"
+            + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+            + "          levelType=\"TimeYears\"/>\n"
+            + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
+            + "          levelType=\"TimeQuarters\"/>\n"
+            + "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n"
+            + "          levelType=\"TimeMonths\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Cube name=\"Sales1\" defaultMeasure=\"Unit Sales\">\n"
+            + "    <Table name=\"sales_fact_1997\">\n"
+            + "        <AggExclude name=\"agg_c_special_sales_fact_1997\" />"
+            + "    </Table>\n"
+            + "    <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
+            + "    <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+            + "    <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "    <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###.00\"/>\n"
+            + "    <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###.00\"/>\n"
+            + "  </Cube>\n"
+            + "<Role name=\"Role1\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales1\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Time]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+            + "        <MemberGrant member=\"[Time].[Year].[1997]\" access=\"all\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role> \n"
+            + "</Schema>\n";
+
+        final String query =
+            "With\n"
+            + "Set [*BASE_MEMBERS_Product] as 'Filter([Store].[Store State].Members,[Store].CurrentMember.Caption Matches (\"(?i).*CA.*\"))'\n"
+            + "Select\n"
+            + "[*BASE_MEMBERS_Product] on columns\n"
+            + "From [Sales1] \n";
+
+        final String mysql =
+            "select\n"
+            + "    `store`.`store_country` as `c0`,\n"
+            + "    `store`.`store_state` as `c1`\n"
+            + "from\n"
+            + "    `store` as `store`\n"
+            + "group by\n"
+            + "    `store`.`store_country`,\n"
+            + "    `store`.`store_state`\n"
+            + "having\n"
+            + "    c1 REGEXP '.*CA.*'\n"
+            + "order by\n"
+            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
+            + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
+
+        final String mysqlWithRoles =
+            "select\n"
+            + "    `store`.`store_country` as `c0`,\n"
+            + "    `store`.`store_state` as `c1`\n"
+            + "from\n"
+            + "    `store` as `store`,\n"
+            + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`\n"
+            + "where\n"
+            + "    `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+            + "and\n"
+            + "    `agg_c_14_sales_fact_1997`.`the_year` = 1997\n"
+            + "and\n"
+            + "    `agg_c_14_sales_fact_1997`.`quarter` in ('Q1', 'Q2', 'Q3', 'Q4')\n"
+            + "and\n"
+            + "    `agg_c_14_sales_fact_1997`.`month_of_year` in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)\n"
+            + "group by\n"
+            + "    `store`.`store_country`,\n"
+            + "    `store`.`store_state`\n"
+            + "having\n"
+            + "    c1 REGEXP '.*CA.*'\n"
+            + "order by\n"
+            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
+            + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
+
+        final String oracle =
+            "select\n"
+            + "    \"store\".\"store_country\" as \"c0\",\n"
+            + "    \"store\".\"store_state\" as \"c1\"\n"
+            + "from\n"
+            + "    \"store\" \"store\"\n"
+            + "group by\n"
+            + "    \"store\".\"store_country\",\n"
+            + "    \"store\".\"store_state\"\n"
+            + "having\n"
+            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "order by\n"
+            + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
+            + "    \"store\".\"store_state\" ASC NULLS LAST";
+
+        final String oracleWithRoles =
+            "select\n"
+            + "    \"store\".\"store_country\" as \"c0\",\n"
+            + "    \"store\".\"store_state\" as \"c1\"\n"
+            + "from\n"
+            + "    \"store\" \"store\",\n"
+            + "    \"agg_c_14_sales_fact_1997\" \"agg_c_14_sales_fact_1997\"\n"
+            + "where\n"
+            + "    \"agg_c_14_sales_fact_1997\".\"store_id\" = \"store\".\"store_id\"\n"
+            + "and\n"
+            + "    \"agg_c_14_sales_fact_1997\".\"the_year\" = 1997\n"
+            + "and\n"
+            + "    \"agg_c_14_sales_fact_1997\".\"quarter\" in ('Q1', 'Q2', 'Q3', 'Q4')\n"
+            + "and\n"
+            + "    \"agg_c_14_sales_fact_1997\".\"month_of_year\" in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)\n"
+            + "group by\n"
+            + "    \"store\".\"store_country\",\n"
+            + "    \"store\".\"store_state\"\n"
+            + "having\n"
+            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "order by\n"
+            + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
+            + "    \"store\".\"store_state\" ASC NULLS LAST";
+
+        final SqlPattern[] patterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL, mysql, mysql),
+            new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE, oracle, oracle)
+        };
+
+        final SqlPattern[] patternsWithRoles = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL,
+                mysqlWithRoles, mysqlWithRoles),
+            new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE,
+                oracleWithRoles, oracleWithRoles)
+        };
+
+        final TestContext context =
+            TestContext.instance().withSchema(schema);
+
+        // Actual tests.
+        assertQuerySql(context, query, patterns);
+
+        // Roles must join to the fact table or it will create
+        // a cross join.
+        assertQuerySql(context.withRole("Role1"), query, patternsWithRoles);
+    }
+
+
+    /**
+     * Native CrossJoin with a ranged slicer.
+     */
+    public void testNonEmptyAggregateSlicerIsNative() {
+        final String mdx =
+            "select NON EMPTY\n"
+            + " Crossjoin([Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]\n"
+            + " , [Customers].[USA].[WA].[Puyallup].Children) ON COLUMNS\n"
+            + "from [Sales]\n"
+            + "where ([Time].[1997].[Q1].[2] : [Time].[1997].[Q2].[5])";
+
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+        final String mysqlNativeCrossJoinQuery =
+            "select\n"
+            + "    `time_by_day`.`the_year` as `c0`,\n"
+            + "    `time_by_day`.`quarter` as `c1`,\n"
+            + "    `time_by_day`.`month_of_year` as `c2`,\n"
+            + "    `product_class`.`product_family` as `c3`,\n"
+            + "    `product_class`.`product_department` as `c4`,\n"
+            + "    `product_class`.`product_category` as `c5`,\n"
+            + "    `product_class`.`product_subcategory` as `c6`,\n"
+            + "    `product`.`brand_name` as `c7`,\n"
+            + "    `customer`.`customer_id` as `c8`,\n"
+            + "    sum(`sales_fact_1997`.`unit_sales`) as `m0`\n"
+            + "from\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `product_class` as `product_class`,\n"
+            + "    `product` as `product`,\n"
+            + "    `customer` as `customer`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `time_by_day`.`the_year` = 1997\n"
+            + "and\n"
+            + "    `time_by_day`.`quarter` in ('Q1', 'Q2')\n"
+            + "and\n"
+            + "    `time_by_day`.`month_of_year` in (2, 3, 4, 5)\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+            + "and\n"
+            + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+            + "and\n"
+            + "    `product_class`.`product_family` = 'Drink'\n"
+            + "and\n"
+            + "    `product_class`.`product_department` = 'Alcoholic Beverages'\n"
+            + "and\n"
+            + "    `product_class`.`product_category` = 'Beer and Wine'\n"
+            + "and\n"
+            + "    `product_class`.`product_subcategory` = 'Beer'\n"
+            + "and\n"
+            + "    `product`.`brand_name` = 'Portsmouth'\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    `customer`.`customer_id` in (2295, 4099, 5219, 7100, 8617, 10250)\n"
+            + "group by\n"
+            + "    `time_by_day`.`the_year`,\n"
+            + "    `time_by_day`.`quarter`,\n"
+            + "    `time_by_day`.`month_of_year`,\n"
+            + "    `product_class`.`product_family`,\n"
+            + "    `product_class`.`product_department`,\n"
+            + "    `product_class`.`product_category`,\n"
+            + "    `product_class`.`product_subcategory`,\n"
+            + "    `product`.`brand_name`,\n"
+            + "    `customer`.`customer_id`";
+
+        final String triggerSql =
+            "select\n"
+            + "    `time_by_day`.`the_year` as `c0`,\n"
+            + "    `time_by_day`.`quarter` as `c1`,\n"
+            + "    `time_by_day`.`month_of_year` as `c2`,\n"
+            + "    `product_class`.`product_family` as `c3`,\n";
+        SqlPattern mysqlPattern =
+            new SqlPattern(
+                DatabaseProduct.MYSQL,
+                mysqlNativeCrossJoinQuery,
+                triggerSql);
+
+        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+
+        checkNative(
+            20,
+            1,
+            "select NON EMPTY\n"
+            + " Crossjoin([Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]\n"
+            + " , [Customers].[USA].[WA].[Puyallup].Children) ON COLUMNS\n"
+            + "from [Sales]\n"
+            + "where ([Time].[1997].[Q1].[2] : [Time].[1997].[Q2].[5])",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1].[2]}\n"
+            + "{[Time].[1997].[Q1].[3]}\n"
+            + "{[Time].[1997].[Q2].[4]}\n"
+            + "{[Time].[1997].[Q2].[5]}\n"
+            + "Axis #1:\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth], [Customers].[USA].[WA].[Puyallup].[Diane Biondo]}\n"
+            + "Row #0: 2\n",
+            true);
     }
 }
 

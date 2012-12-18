@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -73,6 +73,7 @@ public class RolapCubeLevel extends RolapLevel {
         captionExp = convertExpression(level.getCaptionExp(), hierarchyRel);
         ordinalExp = convertExpression(level.getOrdinalExp(), hierarchyRel);
         parentExp = convertExpression(level.getParentExp(), hierarchyRel);
+        properties = convertProperties(level.getProperties(), hierarchyRel);
     }
 
     void init(MondrianDef.CubeDimension xmlDimension) {
@@ -93,13 +94,11 @@ public class RolapCubeLevel extends RolapLevel {
                     getCube().hierarchyList,
                     getDimension().isHighCardinality());
 
-            /*
-            RME HACK
-              WG: Note that the reason for registering this usage is so that
-              when registerDimension is called, the hierarchy is registered
-              successfully to the star.  This type of hack will go away once
-              HierarchyUsage is phased out
-            */
+            // RME HACK
+            //  WG: Note that the reason for registering this usage is so that
+            //  when registerDimension is called, the hierarchy is registered
+            //  successfully to the star.  This type of hack will go away once
+            //  HierarchyUsage is phased out
             if (! getCube().isVirtual()) {
                 getCube().createUsage(
                     (RolapCubeHierarchy) cubeDimension.getHierarchies()[0],
@@ -119,6 +118,32 @@ public class RolapCubeLevel extends RolapLevel {
         } else {
             this.levelReader = new RegularLevelReader(this);
         }
+    }
+
+    private RolapProperty[] convertProperties(
+        RolapProperty[] properties,
+        MondrianDef.RelationOrJoin rel)
+    {
+        if (properties == null) {
+            return null;
+        }
+
+        RolapProperty[] convertedProperties =
+            new RolapProperty[properties.length];
+        for (int i = 0; i < properties.length; i++) {
+            RolapProperty old = properties[i];
+            convertedProperties[i] =
+                new RolapProperty(
+                    old.getName(),
+                    old.getType(),
+                    convertExpression(old.getExp(), rel),
+                    old.getFormatter(),
+                    old.getCaption(),
+                    old.dependsOnLevelValue(),
+                    old.isInternal(),
+                    old.getDescription());
+        }
+        return convertedProperties;
     }
 
     /**
@@ -325,7 +350,8 @@ public class RolapCubeLevel extends RolapLevel {
             CellRequest request)
         {
             assert member.getLevel() == cubeLevel;
-            if (member.getKey() == null) {
+            Object memberKey = member.member.getKey();
+            if (memberKey == null) {
                 if (member == member.getHierarchy().getNullMember()) {
                     // cannot form a request if one of the members is null
                     return true;
@@ -345,11 +371,13 @@ public class RolapCubeLevel extends RolapLevel {
                     || cubeLevel.hierarchy.hasAll();
             }
 
+            boolean isMemberCalculated = member.member.isCalculated();
+
             final StarColumnPredicate predicate;
-            if (member.isCalculated() && !member.isParentChildLeaf()) {
+            if (isMemberCalculated && !member.isParentChildLeaf()) {
                 predicate = null;
             } else {
-                predicate = new ValueColumnPredicate(column, member.getKey());
+                predicate = new ValueColumnPredicate(column, memberKey);
             }
 
             // use the member as constraint; this will give us some
@@ -365,7 +393,7 @@ public class RolapCubeLevel extends RolapLevel {
                 request.addConstrainedColumn(nameColumn, null);
             }
 
-            if (member.isCalculated()) {
+            if (isMemberCalculated) {
                 return false;
             }
 
@@ -418,6 +446,8 @@ public class RolapCubeLevel extends RolapLevel {
                 assert member.getLevel() == cubeLevel;
                 assert !member.isCalculated();
                 assert memberColumnPredicate.getMember().getKey() != null;
+                assert memberColumnPredicate.getMember().getKey()
+                    != RolapUtil.sqlNullValue;
                 assert !member.isNull();
 
                 // use the member as constraint, this will give us some

@@ -293,6 +293,12 @@ OLE DB connect string syntax specification</a>.</p>
         <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Locale.html#getDefault()">
         java.util.Locale#getDefault()</a>.</td>
     </tr>
+    <tr>
+        <td>JdbcConnectionUuid</td>
+        <td>No</td>
+        <td><p>A unique identifier for the connection. If this is set, Mondrian will look at this property and no other to determine whether two 
+data sources should be considered the same. You must ensure that connections will only share a JdbcConnectionUuid if they point to the same database.</p></td>
+    </tr>
 </table>
 <p>Connect string properties are also documented in the
 <a href="api/mondrian/rolap/RolapConnectionProperties.html">

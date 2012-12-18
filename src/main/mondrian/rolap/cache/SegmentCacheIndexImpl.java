@@ -135,7 +135,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
     {
         checkThread();
 
-        final HeaderInfo headerInfo = headerMap.get(header);
+        HeaderInfo headerInfo = headerMap.get(header);
         if (headerInfo != null) {
             if (loading && headerInfo.slot == null) {
                 headerInfo.slot = new SlotFuture<SegmentBody>();
@@ -144,12 +144,11 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
             }
             return false;
         }
-        headerMap.put(
-            header,
-            new HeaderInfo(
-                loading
-                    ? new SlotFuture<SegmentBody>()
-                    : null));
+        headerInfo = new HeaderInfo();
+        if (loading) {
+            headerInfo.slot = new SlotFuture<SegmentBody>();
+        }
+        headerMap.put(header, headerInfo);
 
         final List bitkeyKey = makeBitkeyKey(header);
         List<SegmentHeader> headerList = bitkeyMap.get(bitkeyKey);
@@ -216,7 +215,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         if (headerInfo == null) {
             return;
         }
-        if (headerInfo.slot != null) {
+        if (headerInfo.slot != null && !headerInfo.slot.isDone()) {
             // Cannot remove while load is pending; flag for removal after load
             headerInfo.removeAfterLoad = true;
         } else {
@@ -886,10 +885,6 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
     private static class HeaderInfo {
         private SlotFuture<SegmentBody> slot;
         private boolean removeAfterLoad;
-
-        HeaderInfo(SlotFuture<SegmentBody> slot) {
-            this.slot = slot;
-        }
     }
 }
 

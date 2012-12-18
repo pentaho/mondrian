@@ -1,8 +1,9 @@
-/testclasses
-/testlib
-/build
-/dev-lib
-/dist
+testclasses
+testlib
+build
+dev-lib
+dist
+doc/api
 
 *.jar
 *.log
@@ -18,6 +19,7 @@ lib/datasourcesconfig.dtd
 lib/jpivot.war
 lib/mondrian.dtd
 mondrian.properties.template
+functions.html
 src/main/mondrian/gui/MondrianGuiDef.java
 src/main/mondrian/gui/mondrian_SW.dtd
 src/main/mondrian/olap/MondrianDef.java
