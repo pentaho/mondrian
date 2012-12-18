@@ -928,6 +928,18 @@ the default implementation uses JNDI to perform resolution.</p>
         <Type>String</Type>
     </PropertyDefinition>
     <PropertyDefinition>
+        <Name>SchemaKeyProcessorClass</Name>
+        <Path>mondrian.spi.schemaKeyProcessorClass</Path>
+        <Category>Factories</Category>
+        <Description>
+<p>Property that defines the name of the plugin class that generates the schema key</p>
+<p>Example:</p>
+<blockquote><code>mondrian.spi.schemaKeyProcessorClass=mondrian.spi.impl.DefaultSchemaKeyProcessor</code></blockquote>
+        </Description>
+        <Type>String</Type>
+        <Default>mondrian.spi.impl.DefaultSchemaKeyProcessor</Default>
+    </PropertyDefinition>
+    <PropertyDefinition>
         <Name>QueryTimeout</Name>
         <Path>mondrian.rolap.queryTimeout</Path>
         <Description>

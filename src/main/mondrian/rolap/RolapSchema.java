@@ -898,6 +898,7 @@ public class RolapSchema implements Schema {
         return cube;
     }
 
+
     public static List<RolapSchema> getRolapSchemas() {
         return RolapSchemaPool.instance().getRolapSchemas();
     }
@@ -1351,6 +1352,10 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             if (star == null) {
                 star = makeRolapStar(fact);
                 stars.put(factTableName, star);
+                //let cache manager load pending segments
+                // from external cache if needed
+                MondrianServer.forConnection(internalConnection)
+                    .getAggregationManager().cacheMgr.loadCacheForStar(star);
             }
             return star;
         }

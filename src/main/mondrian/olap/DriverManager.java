@@ -89,6 +89,9 @@ public class DriverManager {
         CatalogLocator locator,
         DataSource dataSource)
     {
+      
+              properties.remove(RolapConnectionProperties.Instance.name());
+      
         String provider = properties.get("PROVIDER", "mondrian");
         if (!provider.equalsIgnoreCase("mondrian")) {
             throw Util.newError("Provider not recognized: " + provider);
@@ -102,6 +105,11 @@ public class DriverManager {
         if (locator == null) {
             locator = server.getCatalogLocator();
         }
+
+        
+
+        
+
         if (locator != null) {
             String catalog = properties.get(
                 RolapConnectionProperties.Catalog.name());
@@ -109,6 +117,9 @@ public class DriverManager {
                 RolapConnectionProperties.Catalog.name(),
                 locator.locate(catalog));
         }
+        
+       
+        
         final RolapConnection connection =
             new RolapConnection(server, properties, dataSource);
         server.addConnection(connection);

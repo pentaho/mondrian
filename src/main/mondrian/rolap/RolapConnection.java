@@ -461,31 +461,7 @@ public class RolapConnection extends ConnectionBase {
      */
     private static synchronized DataSourceResolver getDataSourceResolver() {
         if (dataSourceResolver == null) {
-            final StringProperty property =
-                MondrianProperties.instance().DataSourceResolverClass;
-            final String className =
-                property.get(
-                    JndiDataSourceResolver.class.getName());
-            try {
-                final Class<?> clazz;
-                clazz = Class.forName(className);
-                if (!DataSourceResolver.class.isAssignableFrom(clazz)) {
-                    throw Util.newInternal(
-                        "Plugin class specified by property "
-                        + property.getPath() + " must implement "
-                        + DataSourceResolver.class.getName());
-                }
-                dataSourceResolver = (DataSourceResolver) clazz.newInstance();
-            } catch (ClassNotFoundException e) {
-                throw Util.newInternal(
-                    e, "Error while loading plugin class '" + className + "'");
-            } catch (IllegalAccessException e) {
-                throw Util.newInternal(
-                    e, "Error while loading plugin class '" + className + "'");
-            } catch (InstantiationException e) {
-                throw Util.newInternal(
-                    e, "Error while loading plugin class '" + className + "'");
-            }
+            dataSourceResolver = Util.getDataSourceResolver();
         }
         return dataSourceResolver;
     }

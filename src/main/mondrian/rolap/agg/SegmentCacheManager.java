@@ -213,6 +213,8 @@ public class SegmentCacheManager {
     private final Actor ACTOR;
     public final Thread thread;
 
+    private Set<String> starFactTablesToSync;
+
     /**
      * Executor with which to send requests to external caches.
      */
@@ -299,6 +301,50 @@ public class SegmentCacheManager {
         }
 
         compositeCache = new CompositeSegmentCache(segmentCacheWorkers);
+
+        //sync elements already in external cache:
+        // we're not able to have indexes at this point,
+        // have to wait until the schema has been loaded
+        List<SegmentHeader> headers = compositeCache.getSegmentHeaders();
+        starFactTablesToSync = new HashSet<String>();
+        for (SegmentHeader header : headers) {
+          starFactTablesToSync.add(header.rolapStarFactTableName);
+        }
+    }
+
+    /**
+     * Load external cached elements for received star.
+     * Similar to {@link externalSegmentCreated} but the index is created if not there
+     * @param star
+     * @return If elements existed for this star.
+     */
+    public boolean loadCacheForStar(RolapStar star) {
+        String starFactTableAlias = star.getFactTable().getAlias();
+        if (starFactTablesToSync.contains(starFactTableAlias)) {
+            starFactTablesToSync.remove(starFactTableAlias);
+            //make sure the index is created, 
+            // using get with star instead of header
+            SegmentCacheIndex index = indexRegistry.getIndex(star);
+            for (SegmentHeader header : compositeCache.getSegmentHeaders()) {
+                if (header.rolapStarFactTableName.equals(starFactTableAlias)) {
+                    if (index != null) {
+                      index.add(header, false, null);
+                      server.getMonitor().sendEvent(
+                          new CellCacheSegmentCreateEvent(
+                              System.currentTimeMillis(),
+                              server.getId(),
+                              0,
+                              0,
+                              0,
+                              header.getConstrainedColumns().size(),
+                              0,
+                              CellCacheEvent.Source.EXTERNAL));
+                    }
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     public <T> T execute(Command<T> command) {
