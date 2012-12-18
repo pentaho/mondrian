@@ -67,19 +67,11 @@ public class RolapSchema extends OlapElementBase implements Schema {
         new HashMap<String, RolapCube>();
 
     /**
-     * Maps {@link String shared hierarchy name} to {@link MemberReader}.
-     * Shared between all statements which use this connection.
+     * Maps {@link String names of shared dimensions} to {@link
+     * RolapDimension the canonical instance of those dimensions}.
      */
-    private final Map<String, MemberReader> mapSharedHierarchyToReader =
-        new HashMap<String, MemberReader>();
-
-    /**
-     * Maps {@link String names of shared hierarchies} to {@link
-     * RolapHierarchy the canonical instance of those hierarchies}.
-     */
-    private final Map<String, RolapHierarchy> mapSharedHierarchyNameToHierarchy
-        =
-        new HashMap<String, RolapHierarchy>();
+    final Map<String, RolapDimension> mapSharedDimNameToDim =
+        new HashMap<String, RolapDimension>();
 
     /**
      * The default role for connections to this schema.
@@ -427,14 +419,14 @@ public class RolapSchema extends OlapElementBase implements Schema {
         return new NamedListImpl<RolapCube>(mapNameToCube.values());
     }
 
-    public Hierarchy[] getSharedHierarchies() {
-        Collection<RolapHierarchy> hierarchies =
-            mapSharedHierarchyNameToHierarchy.values();
-        return hierarchies.toArray(new RolapHierarchy[hierarchies.size()]);
+    public Dimension[] getSharedDimensions() {
+        Collection<RolapDimension> dimensions =
+            mapSharedDimNameToDim.values();
+        return dimensions.toArray(new RolapDimension[dimensions.size()]);
     }
 
-    RolapHierarchy getSharedHierarchy(final String name) {
-        return mapSharedHierarchyNameToHierarchy.get(name);
+    RolapDimension getSharedDimension(final String name) {
+        return mapSharedDimNameToDim.get(name);
     }
 
     public NamedSet getNamedSet(String name) {
@@ -561,38 +553,9 @@ public class RolapSchema extends OlapElementBase implements Schema {
     }
 
     /**
-     * Gets a {@link MemberReader} with which to read a hierarchy. If the
-     * hierarchy is shared (<code>sharedName</code> is not null), looks up
-     * a reader from a cache, or creates one if necessary.
-     *
-     * <p>Synchronization: thread safe
-     */
-    synchronized MemberReader createMemberReader(
-        final String sharedName,
-        final RolapHierarchy hierarchy,
-        final String memberReaderClass)
-    {
-        assert sharedName == null; // TODO: re-enable sharing
-        MemberReader reader;
-        if (sharedName != null) {
-            reader = mapSharedHierarchyToReader.get(sharedName);
-        } else {
-            reader = null;
-        }
-        if (reader == null) {
-            reader = createMemberReader(hierarchy, memberReaderClass);
-        }
-        if (sharedName != null) {
-            // share, for other uses of the same shared hierarchy
-            mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
-        }
-        return reader;
-    }
-
-    /**
      * Creates a {@link MemberReader} with which to Read a hierarchy.
      */
-    private MemberReader createMemberReader(
+    MemberReader createMemberReader(
         final RolapHierarchy hierarchy,
         final String memberReaderClass)
     {

@@ -364,12 +364,12 @@ public class StandAlone {
 
     private static void printSchema(Schema schema) {
         Cube[] cubes = schema.getCubes();
-        Hierarchy[] hierarchies = schema.getSharedHierarchies();
+        Dimension[] dimensions = schema.getSharedDimensions();
 
         System.out.println(
             "Schema: " + schema.getName() + " "
             + cubes.length + " cubes and "
-            + hierarchies.length + " shared hierarchies");
+            + dimensions.length + " shared hierarchies");
 
         System.out.println("---Cubes ");
         for (int idx = 0; idx < cubes.length; idx++) {
@@ -378,8 +378,8 @@ public class StandAlone {
         }
 
         System.out.println("---Shared hierarchies");
-        for (int idx = 0; idx < hierarchies.length; idx++) {
-            printHierarchy(0, hierarchies[idx]);
+        for (int idx = 0; idx < dimensions.length; idx++) {
+            printDimension(dimensions[idx]);
         }
     }
 

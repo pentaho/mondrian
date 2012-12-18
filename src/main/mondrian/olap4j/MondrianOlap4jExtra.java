@@ -64,14 +64,22 @@ class MondrianOlap4jExtra extends XmlaHandler.XmlaExtraImpl {
         if (level instanceof MondrianOlap4jLevel) {
             // Improved implementation if the provider is mondrian.
             final MondrianOlap4jLevel olap4jLevel = (MondrianOlap4jLevel) level;
-            final RolapCube cube =
-                ((RolapCubeLevel)olap4jLevel.level).getCube();
             final MondrianOlap4jConnection olapConnection =
                 (MondrianOlap4jConnection) olap4jLevel.olap4jSchema
                     .olap4jCatalog.olap4jDatabase.getOlapConnection();
-            final mondrian.olap.SchemaReader schemaReader =
-                cube.getSchemaReader(
-                    olapConnection.getMondrianConnection2().getRole());
+            final mondrian.olap.SchemaReader schemaReader;
+
+            if (olap4jLevel.level instanceof RolapCubeLevel) {
+                final RolapCube cube =
+                    ((RolapCubeLevel)olap4jLevel.level).getCube();
+                schemaReader =
+                    cube.getSchemaReader(
+                        olapConnection.getMondrianConnection2().getRole());
+            } else {
+                schemaReader =
+                    olapConnection.getMondrianConnection2().getSchemaReader();
+            }
+
             return schemaReader.getLevelCardinality(
                 olap4jLevel.level, true, true);
         } else {
@@ -200,14 +208,23 @@ class MondrianOlap4jExtra extends XmlaHandler.XmlaExtraImpl {
     {
         final MondrianOlap4jHierarchy olap4jHierarchy =
             (MondrianOlap4jHierarchy) hierarchy;
-        final RolapCube cube =
-            ((RolapCubeHierarchy)olap4jHierarchy.hierarchy).getCube();
+
         final MondrianOlap4jConnection olapConnection =
             (MondrianOlap4jConnection) olap4jHierarchy.olap4jSchema
                 .olap4jCatalog.olap4jDatabase.getOlapConnection();
-        final mondrian.olap.SchemaReader schemaReader =
-            cube.getSchemaReader(
-                olapConnection.getMondrianConnection2().getRole());
+
+        final mondrian.olap.SchemaReader schemaReader;
+        if (olap4jHierarchy.hierarchy instanceof RolapCubeHierarchy) {
+            final RolapCube cube =
+                ((RolapCubeHierarchy)olap4jHierarchy.hierarchy).getCube();
+            schemaReader =
+                cube.getSchemaReader(
+                    olapConnection.getMondrianConnection2().getRole());
+        } else {
+            schemaReader =
+                olapConnection.getMondrianConnection2().getSchemaReader();
+        }
+
         return RolapMemberBase.getHierarchyCardinality(
             schemaReader, olap4jHierarchy.hierarchy);
     }

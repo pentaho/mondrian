@@ -2516,6 +2516,15 @@ public class RolapSchemaLoader {
                 Collections.<String, Annotation>emptyMap());
         validator.putXml(dimension, xmlDimension);
 
+        if (xmlCubeDimension.source != null) {
+            // Must add this dimension to the map of shared dimensions.
+            // (it is bad practice to leak references to a constructed object
+            // within its constructor, so we do it here.)
+            this.schema.mapSharedDimNameToDim.put(
+                dimensionName,
+                dimension);
+        }
+
         // Load attributes before hierarchies, because levels refer to
         // attributes. Likewise create attributes before properties.
         final RolapSchema.PhysRelation dimensionRelation =

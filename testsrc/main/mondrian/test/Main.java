@@ -250,9 +250,7 @@ public class Main extends TestSuite {
             addTest(suite, SolveOrderScopeIsolationTest.class);
             addTest(suite, ParentChildHierarchyTest.class);
             addTest(suite, ClosureSqlTest.class);
-            if (Bug.BugMondrian1129Fixed) {
-                addTest(suite, Olap4jTckTest.class, "suite");
-            }
+            addTest(suite, Olap4jTckTest.class, "suite");
             addTest(suite, MondrianServerTest.class);
             addTest(suite, XmlaBasicTest.class);
             addTest(suite, XmlaErrorTest.class);
@@ -332,7 +330,7 @@ public class Main extends TestSuite {
             if (testNonEmpty) {
                 addTest(suite, NonEmptyTest.class);
                 addTest(suite, FilterTest.class);
-                if (Bug.BugMondrian1129Fixed) {
+                if (Bug.BugMondrian1315Fixed) {
                     addTest(suite, NativizeSetFunDefTest.class);
                 }
             } else {

@@ -82,7 +82,7 @@ public class RolapHierarchy extends HierarchyBase {
     final NamedList<RolapLevel> levelList = new NamedListImpl<RolapLevel>();
 
     /** Whether this hierarchy is the Scenario hierarchy of its cube. */
-    final boolean isScenario;
+    public final boolean isScenario;
 
     /**
      * Creates a RolapHierarchy.
@@ -258,7 +258,7 @@ public class RolapHierarchy extends HierarchyBase {
         if (memberReader == null) {
             memberReader =
                 getRolapSchema().createMemberReader(
-                    null, this, null);
+                    this, null);
         }
     }
 

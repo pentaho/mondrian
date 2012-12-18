@@ -111,10 +111,10 @@ class MondrianOlap4jSchema
                 }
             );
         final Role role = olap4jConnection.getMondrianConnection().getRole();
-        for (Hierarchy hierarchy : schema.getSharedHierarchies()) {
-            if (role.canAccess(hierarchy)) {
+        for (mondrian.olap.Dimension dim : schema.getSharedDimensions()) {
+            if (role.canAccess(dim)) {
                 dimensions.add(
-                    olap4jConnection.toOlap4j(hierarchy.getDimension()));
+                    olap4jConnection.toOlap4j(dim.getDimension()));
             }
         }
         NamedList<MondrianOlap4jDimension> list =

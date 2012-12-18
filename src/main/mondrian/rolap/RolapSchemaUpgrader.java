@@ -734,6 +734,11 @@ public class RolapSchemaUpgrader {
             xmlLegacyCubeDimension.annotations);
         convertCaption(
             xmlLegacyCubeDimension, xmlLegacyDimension, xmlDimension);
+        if (xmlLegacyCubeDimension instanceof Mondrian3Def.DimensionUsage) {
+            xmlDimension.source =
+                ((Mondrian3Def.DimensionUsage) xmlLegacyCubeDimension).source;
+            xmlDimension.key = null;
+        }
         return xmlDimension;
     }
 

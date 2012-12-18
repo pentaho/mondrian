@@ -46,7 +46,7 @@ public interface Schema extends Annotated {
     /**
      * Returns a list of shared dimensions in this schema.
      */
-    Hierarchy[] getSharedHierarchies();
+    Dimension[] getSharedDimensions();
 
     /**
      * Creates a dimension in the given cube by parsing an XML string. The XML
