@@ -18,6 +18,7 @@ import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapHierarchy;
+import mondrian.rolap.RolapUtil;
 import mondrian.util.*;
 
 import org.apache.commons.collections.ComparatorUtils;
@@ -228,8 +229,6 @@ public class FunUtil extends Util {
 
     /**
      * Throws an error if the expressions don't have the same hierarchy.
-     * @param left
-     * @param right
      * @throws MondrianEvaluationException if expressions don't have the same
      *     hierarchy
      */
@@ -960,8 +959,8 @@ public class FunUtil extends Util {
         if (value1 == null) {
             return 1;
         }
-        if (value0 instanceof RuntimeException
-            || value1 instanceof RuntimeException)
+        if (value0 == RolapUtil.valueNotReadyException
+            || value1 == RolapUtil.valueNotReadyException)
         {
             // one of the values is not in cache; continue as best as we can
             return 0;
@@ -1303,9 +1302,9 @@ public class FunUtil extends Util {
             if (size == 0) {
                 return Util.nullValue;
             } else {
-                Double min = (Double) sw.v.get(0);
+                Double min = ((Number) sw.v.get(0)).doubleValue();
                 for (int i = 1; i < size; i++) {
-                    Double iValue = (Double) sw.v.get(i);
+                    Double iValue = ((Number) sw.v.get(i)).doubleValue();
                     if (iValue < min) {
                         min = iValue;
                     }
@@ -1328,9 +1327,9 @@ public class FunUtil extends Util {
             if (size == 0) {
                 return Util.nullValue;
             } else {
-                Double max = (Double) sw.v.get(0);
+                Double max = ((Number) sw.v.get(0)).doubleValue();
                 for (int i = 1; i < size; i++) {
-                    Double iValue = (Double) sw.v.get(i);
+                    Double iValue = ((Number) sw.v.get(i)).doubleValue();
                     if (iValue > max) {
                         max = iValue;
                     }
@@ -1360,7 +1359,7 @@ public class FunUtil extends Util {
             double avg = _avg(sw);
             for (int i = 0; i < sw.v.size(); i++) {
                 stdev +=
-                    Math.pow((((Double) sw.v.get(i)).doubleValue() - avg), 2);
+                    Math.pow((((Number) sw.v.get(i)).doubleValue() - avg), 2);
             }
             int n = sw.v.size();
             if (!biased) {
@@ -1379,19 +1378,13 @@ public class FunUtil extends Util {
         SetWrapper sw1 = evaluateSet(evaluator, memberList, exp1);
         SetWrapper sw2 = evaluateSet(evaluator, memberList, exp2);
         Object covar = _covariance(sw1, sw2, false);
-        Object var1 = _var(sw1, false); //this should be false, yes?
+        Object var1 = _var(sw1, false); // this should be false, yes?
         Object var2 = _var(sw2, false);
-        if ((covar instanceof Double)
-            && (var1 instanceof Double)
-            && (var2 instanceof Double))
-        {
-            return ((Double) covar).doubleValue()
-                / Math.sqrt(
-                    ((Double) var1).doubleValue()
-                    * ((Double) var2).doubleValue());
-        } else {
-            return DoubleNull;
-        }
+
+        return ((Number) covar).doubleValue()
+            / Math.sqrt(
+                ((Number) var1).doubleValue()
+                * ((Number) var2).doubleValue());
     }
 
     static Object covariance(
@@ -1434,8 +1427,8 @@ public class FunUtil extends Util {
         for (int i = 0; i < sw1.v.size(); i++) {
             // all of this casting seems inefficient - can we make SetWrapper
             // contain an array of double instead?
-            double diff1 = (((Double) sw1.v.get(i)).doubleValue() - avg1);
-            double diff2 = (((Double) sw2.v.get(i)).doubleValue() - avg2);
+            double diff1 = (((Number) sw1.v.get(i)).doubleValue() - avg1);
+            double diff2 = (((Number) sw2.v.get(i)).doubleValue() - avg2);
             covar += (diff1 * diff2);
         }
         int n = sw1.v.size();
@@ -1453,7 +1446,7 @@ public class FunUtil extends Util {
     {
         Object o = var(evaluator, members, exp, biased);
         return (o instanceof Double)
-            ? new Double(Math.sqrt(((Double) o).doubleValue()))
+            ? new Double(Math.sqrt(((Number) o).doubleValue()))
             : o;
     }
 
@@ -1475,9 +1468,9 @@ public class FunUtil extends Util {
     private static double _avg(SetWrapper sw) {
         double sum = 0.0;
         for (int i = 0; i < sw.v.size(); i++) {
-            sum += ((Double) sw.v.get(i)).doubleValue();
+            sum += ((Number) sw.v.get(i)).doubleValue();
         }
-        //todo: should look at context and optionally include nulls
+        // TODO: should look at context and optionally include nulls
         return sum / (double) sw.v.size();
     }
 
@@ -1503,7 +1496,7 @@ public class FunUtil extends Util {
         } else {
             double sum = 0.0;
             for (int i = 0; i < sw.v.size(); i++) {
-                sum += ((Double) sw.v.get(i)).doubleValue();
+                sum += ((Number) sw.v.get(i)).doubleValue();
             }
             return sum;
         }
@@ -1522,7 +1515,7 @@ public class FunUtil extends Util {
         } else {
             double sum = 0.0;
             for (int i = 0; i < sw.v.size(); i++) {
-                sum += ((Double) sw.v.get(i)).doubleValue();
+                sum += ((Number) sw.v.get(i)).doubleValue();
             }
             return sum;
         }
@@ -1585,13 +1578,11 @@ public class FunUtil extends Util {
             Object o = calc.evaluate(evaluator);
             if (o == null || o == Util.nullValue) {
                 retval.nullCount++;
-            } else if (o instanceof Throwable) {
+            } else if (o == RolapUtil.valueNotReadyException) {
                 // Carry on summing, so that if we are running in a
                 // BatchingCellReader, we find out all the dependent cells we
                 // need
                 retval.errorCount++;
-            } else if (o instanceof Double) {
-                retval.v.add(o);
             } else if (o instanceof Number) {
                 retval.v.add(((Number) o).doubleValue());
             } else {
@@ -2269,7 +2260,6 @@ public class FunUtil extends Util {
     *
     * @param items will be partially-sorted in place
     * @param comp a Comparator; null means use natural comparison
-    * @param limit
     */
     static <T> void partialSort(T[] items, Comparator<T> comp, int limit)
     {
@@ -3332,17 +3322,17 @@ public class FunUtil extends Util {
         List v = new ArrayList();
         public int errorCount = 0, nullCount = 0;
 
-        //private double avg = Double.NaN;
-        //todo: parameterize inclusion of nulls
-        //by making this a method of the SetWrapper, we can cache the result
-        //this allows its reuse in Correlation
+        // private double avg = Double.NaN;
+        // TODO: parameterize inclusion of nulls
+        // by making this a method of the SetWrapper, we can cache the result
+        // this allows its reuse in Correlation
         // public double getAverage() {
         //     if (avg == Double.NaN) {
         //         double sum = 0.0;
         //         for (int i = 0; i < resolvers.size(); i++) {
-        //             sum += ((Double) resolvers.elementAt(i)).doubleValue();
+        //             sum += ((Number) resolvers.elementAt(i)).doubleValue();
         //         }
-        //         //todo: should look at context and optionally include nulls
+        //         // TODO: should look at context and optionally include nulls
         //         avg = sum / (double) resolvers.size();
         //     }
         //     return avg;
