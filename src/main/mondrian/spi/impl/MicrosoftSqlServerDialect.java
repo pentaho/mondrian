@@ -10,7 +10,11 @@
 package mondrian.spi.impl;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -21,6 +25,9 @@ import java.util.List;
  * @since Nov 23, 2008
  */
 public class MicrosoftSqlServerDialect extends JdbcDialectImpl {
+
+    private final DateFormat df =
+        new SimpleDateFormat("yyyyMMdd");
 
     public static final JdbcDialectFactory FACTORY =
         new JdbcDialectFactory(
@@ -52,6 +59,14 @@ public class MicrosoftSqlServerDialect extends JdbcDialectImpl {
 
     public boolean requiresUnionOrderByOrdinal() {
         return false;
+    };
+
+    protected void quoteDateLiteral(StringBuilder buf, String value, Date date) {
+        buf.append("CONVERT(DATE, '");
+        buf.append(df.format(date));
+        // Format 112 is equivalent to "yyyyMMdd" in Java.
+        // See http://msdn.microsoft.com/en-us/library/ms187928.aspx
+        buf.append("', 112)");
     }
 }
 
