@@ -1137,7 +1137,7 @@ buildOnJdk.sh" />
   </target>
 
   <target name="binzip"
-      depends="version,checkIsJdk15,war,srczip,javadoc,xml_schema,retroweave,unzip-FoodMartCreateData,unzip-FoodMartAccessDB">
+      depends="version,war,srczip,javadoc,xml_schema,retroweave,unzip-FoodMartCreateData,unzip-FoodMartAccessDB">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
     <zip zipfile="${dist.bin.file}">
@@ -1234,11 +1234,6 @@ doc/**/*.xml"
 **/*.psp,
 **/*.sh"/>
     </tar>
-  </target>
-
-  <target name="checkIsJdk15" if="jdk15.not.present">
-    <fail message="The 'jar' target (and dependent targets 'release', 'binzip')
-must be run under JDK 1.5." />
   </target>
 
   <target name="compileJdk15">
