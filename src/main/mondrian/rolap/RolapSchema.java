@@ -21,6 +21,7 @@ import mondrian.spi.MemberFormatter;
 import mondrian.spi.PropertyFormatter;
 import mondrian.spi.impl.Scripts;
 import mondrian.util.ByteString;
+import mondrian.util.ClassResolver;
 
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.log4j.Logger;
@@ -1070,17 +1071,17 @@ public class RolapSchema implements Schema {
         final UdfResolver.UdfFactory udfFactory;
         if (className != null) {
             // Lookup class.
-            final Class<UserDefinedFunction> klass;
-            try {
-                //noinspection unchecked
-                klass = (Class<UserDefinedFunction>) Class.forName(className);
-            } catch (ClassNotFoundException e) {
-                throw MondrianResource.instance().UdfClassNotFound.ex(
-                    name,
-                    className);
-            }
+          try {
+            final Class<UserDefinedFunction> klass =
+                ClassResolver.INSTANCE.forName(className, true);
+
             // Instantiate UDF by calling correct constructor.
             udfFactory = new UdfResolver.ClassUdfFactory(klass, name);
+          } catch (ClassNotFoundException e) {
+            throw MondrianResource.instance().UdfClassNotFound.ex(
+                name,
+                className);
+          }
         } else {
             udfFactory = new UdfResolver.UdfFactory() {
                 public UserDefinedFunction create() {
@@ -1213,7 +1214,9 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             Exception e2;
             try {
                 Properties properties = null;
-                Class<?> clazz = Class.forName(memberReaderClass);
+                Class<?> clazz = ClassResolver.INSTANCE.forName(
+                    memberReaderClass,
+                    true);
                 Constructor<?> constructor = clazz.getConstructor(
                     RolapHierarchy.class,
                     Properties.class);
@@ -1283,10 +1286,9 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
 
         if (!Util.isEmpty(dataSourceChangeListenerStr)) {
             try {
-                Class<?> clazz = Class.forName(dataSourceChangeListenerStr);
-                Constructor<?> constructor = clazz.getConstructor();
                 changeListener =
-                    (DataSourceChangeListener) constructor.newInstance();
+                    ClassResolver.INSTANCE.instantiateSafe(
+                        dataSourceChangeListenerStr);
             } catch (Exception e) {
                 throw Util.newError(
                     e,

@@ -19,6 +19,7 @@ import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
 import mondrian.server.*;
 import mondrian.spi.Dialect;
+import mondrian.util.ClassResolver;
 
 import org.apache.log4j.Logger;
 
@@ -385,7 +386,7 @@ public class RolapUtil {
             String jdbcDriver = tok.nextToken();
             if (loadedDrivers.add(jdbcDriver)) {
                 try {
-                    Class.forName(jdbcDriver);
+                    ClassResolver.INSTANCE.forName(jdbcDriver, true);
                     LOGGER.info(
                         "Mondrian: JDBC driver "
                         + jdbcDriver + " loaded successfully");

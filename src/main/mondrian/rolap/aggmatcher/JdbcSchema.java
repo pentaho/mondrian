@@ -18,6 +18,7 @@ import mondrian.rolap.RolapLevel;
 import mondrian.rolap.RolapStar;
 import mondrian.spi.Dialect;
 
+import mondrian.util.ClassResolver;
 import org.apache.log4j.Logger;
 
 import org.olap4j.impl.Olap4jUtil;
@@ -93,23 +94,25 @@ public class JdbcSchema {
 
     private static Factory factory;
 
-    private static void makeFactory() {
-        if (factory == null) {
-            String classname =
-                MondrianProperties.instance().JdbcFactoryClass.get();
-            if (classname == null) {
-                factory = new StdFactory();
-            } else {
-                try {
-                    Class<?> clz = Class.forName(classname);
-                    factory = (Factory) clz.newInstance();
-                } catch (ClassNotFoundException ex) {
-                    throw mres.BadJdbcFactoryClassName.ex(classname);
-                } catch (InstantiationException ex) {
-                    throw mres.BadJdbcFactoryInstantiation.ex(classname);
-                } catch (IllegalAccessException ex) {
-                    throw mres.BadJdbcFactoryAccess.ex(classname);
-                }
+    private synchronized static void makeFactory() {
+        if (factory != null) {
+            return;
+        }
+        String className =
+            MondrianProperties.instance().JdbcFactoryClass.get();
+        if (className == null) {
+            factory = new StdFactory();
+        } else {
+            try {
+                Class<?> clz =
+                    ClassResolver.INSTANCE.forName(className, true);
+                factory = (Factory) clz.newInstance();
+            } catch (ClassNotFoundException ex) {
+                throw mres.BadJdbcFactoryClassName.ex(className);
+            } catch (InstantiationException ex) {
+                throw mres.BadJdbcFactoryInstantiation.ex(className);
+            } catch (IllegalAccessException ex) {
+                throw mres.BadJdbcFactoryAccess.ex(className);
             }
         }
     }
