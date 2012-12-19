@@ -128,6 +128,13 @@ public class DialectTest extends TestCase {
                 databaseMetaData.getDatabaseProductName()
                     .indexOf("PostgreSQL") >= 0);
             break;
+        case MSSQL:
+            // Dialect has identified that it is MSSQL.
+            assertTrue(dialect instanceof MicrosoftSqlServerDialect);
+            assertTrue(
+                databaseMetaData.getDatabaseProductName()
+                    .contains("Microsoft"));
+            break;
         case NETEZZA:
             // Dialect has identified that it is Netezza and a sub class of
             // PostgreSql.
@@ -180,7 +187,9 @@ public class DialectTest extends TestCase {
                 // postgres
                 "(?s).*ERROR: function count\\(integer, integer\\) does not exist.*",
                 // monetdb
-                "syntax error, unexpected ',', expecting '\\)' in: \"select count\\(distinct \"customer_id\",\""
+                "syntax error, unexpected ',', expecting '\\)' in: \"select count\\(distinct \"customer_id\",\"",
+                // SQL server 2008
+                "Incorrect syntax near ','."
             };
             assertQueryFails(sql, errs);
         }
@@ -322,7 +331,9 @@ public class DialectTest extends TestCase {
                 // netezza
                 "(?s).*ERROR:  sub-SELECT in FROM must have an alias.*",
                 // monetdb
-                "subquery table reference needs alias, use AS xxx in:.*"
+                "subquery table reference needs alias, use AS xxx in:.*",
+                // SQL server 2008
+                "Incorrect syntax near \\'\\)\\'\\."
             };
             assertQueryFails(sql, errs);
         } else {
@@ -411,6 +422,8 @@ public class DialectTest extends TestCase {
                 "(?s)ERROR: invalid UNION/INTERSECT/EXCEPT ORDER BY clause.*",
                 // Vectorwise
                 "Parse error in StringBuffer at line 0, column 525\\: \\<missing\\>\\.",
+                // SQL server 2008
+                "ORDER BY items must appear in the select list if the statement contains a UNION, INTERSECT or EXCEPT operator."
             };
             assertQueryFails(sql, errs);
         }
@@ -513,7 +526,9 @@ public class DialectTest extends TestCase {
                 // netezza
                 "(?s).*found \"1\" \\(at char 81\\) expecting `SELECT' or `'\\(''.*",
                 // monetdb
-                "syntax error, unexpected ',', expecting '\\)' in: \"select \"unit_sales\""
+                "syntax error, unexpected ',', expecting '\\)' in: \"select \"unit_sales\"",
+                // SQL server 2008
+                "An expression of non-boolean type specified in a context where a condition is expected, near ','."
             };
             assertQueryFails(sql, errs);
         }
@@ -891,7 +906,9 @@ public class DialectTest extends TestCase {
                 // Vectorwise
                 "line 1, The columns in the SELECT clause must be contained in the GROUP BY clause\\.",
                 // MonetDB
-                "SELECT: cannot use non GROUP BY column 'the_month' in query results without an aggregate function"
+                "SELECT: cannot use non GROUP BY column 'the_month' in query results without an aggregate function",
+                // SQL Server 2008
+                "Column 'time_by_day.the_month' is invalid in the select list because it is not contained in either an aggregate function or the GROUP BY clause."
             };
             assertQueryFails(sql, errs);
         }

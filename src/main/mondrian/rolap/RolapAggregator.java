@@ -58,7 +58,7 @@ public abstract class RolapAggregator
                             if (sumInt == Integer.MIN_VALUE) {
                                 sumInt = 0;
                             }
-                            sumInt += (Integer)data;
+                            sumInt += (Integer) data;
                         }
                     }
                     return sumInt == Integer.MIN_VALUE
@@ -71,7 +71,7 @@ public abstract class RolapAggregator
                             if (sumDouble == Double.MIN_VALUE) {
                                 sumDouble = 0;
                             }
-                            sumDouble += (Double)data;
+                            sumDouble += ((Number) data).doubleValue();
                         }
                     }
                     return sumDouble == Double.MIN_VALUE
