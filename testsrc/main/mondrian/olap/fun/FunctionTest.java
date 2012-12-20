@@ -23,7 +23,6 @@ import junit.framework.ComparisonFailure;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.StringEscaper;
-import org.olap4j.mdx.WithSetNode;
 
 import java.io.*;
 import java.util.*;
@@ -5916,7 +5915,9 @@ public class FunctionTest extends FoodMartTestCase {
         // it is implicitly converted to a member.
         // Store in sales cube now has two hierarchies, so using sales ragged.
         getTestContext().withSalesRagged()
-            .assertAxisReturns("[Store].FirstChild", "[Store].[Stores].[Canada]");
+            .assertAxisReturns(
+                "[Store].FirstChild",
+                "[Store].[Stores].[Canada]");
 
         // The same should happen with the <Member>.Properties(<String>)
         // function; now the bug is fixed, it does. Dimension is implicitly
