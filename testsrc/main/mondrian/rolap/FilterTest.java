@@ -684,7 +684,7 @@ public class FilterTest extends BatchTestCase {
             + "from [Sales] "
             + "where ([Store].[All Stores].[USA].[CA], [Time].[1997])",
             "Axis #0:\n"
-            + "{[Store].[USA].[CA], [Time].[Time].[1997]}\n"
+            + "{[Store].[Stores].[USA].[CA], [Time].[Time].[1997]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[Store Cost]}\n"
