@@ -3390,17 +3390,36 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns(
             "Percentile({[Store].[All Stores].[USA].children}, [Measures].[Store Sales], 100)",
             "263,793.22");
-        // varying points between value #0 (0th percentile) and value #1 (50th
-        // percentile) of the 3 values
+
+        // check some real percentile cases
         assertExprReturns(
-            "Percentile({[Store].[All Stores].[USA].children}, [Measures].[Store Sales], 20)",
-            "152,411.53");
+            "Percentile({[Store].[All Stores].[USA].[WA].children}, [Measures].[Store Sales], 50)",
+            "49,634.46");
+        // lets return the second element of the 7 children 4,739.23
         assertExprReturns(
-            "Percentile({[Store].[All Stores].[USA].children}, [Measures].[Store Sales], 25)",
-            "154,945.15");
+            "Percentile({[Store].[All Stores].[USA].[WA].children}, [Measures].[Store Sales], 100/7*2)",
+            "4,739.23");
         assertExprReturns(
-            "Percentile({[Store].[All Stores].[USA].children}, [Measures].[Store Sales], 30)",
-            "157,478.76");
+            "Percentile({[Store].[All Stores].[USA].[WA].children}, [Measures].[Store Sales], 95)",
+            "67,162.28");
+    }
+
+    /**
+     * Testcase for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1045">MONDRIAN-1045,
+     * "When I use the Percentile function it cracks when there's only
+     * 1 register"</a>.
+     */
+    public void testPercentileBugMondrian1045() {
+        assertExprReturns(
+            "Percentile({[Store].[All Stores].[USA]}, [Measures].[Store Sales], 50)",
+            "282,619.07");
+        assertExprReturns(
+            "Percentile({[Store].[All Stores].[USA]}, [Measures].[Store Sales], 40)",
+            "226,095.25");
+        assertExprReturns(
+            "Percentile({[Store].[All Stores].[USA]}, [Measures].[Store Sales], 95)",
+            "536,976.22");
     }
 
     public void testMin() {
