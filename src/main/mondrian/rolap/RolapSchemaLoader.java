@@ -43,7 +43,6 @@ import org.olap4j.impl.*;
 import org.olap4j.metadata.*;
 
 import java.io.*;
-import java.lang.reflect.Constructor;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -451,9 +450,7 @@ public class RolapSchemaLoader {
 
         Role defaultRole = null;
         if (xmlSchema.defaultRole != null) {
-            // At this stage, the only roles in mapNameToRole are
-            // RoleImpl roles so it is safe to cast.
-            defaultRole = (RoleImpl) schema.lookupRole(xmlSchema.defaultRole);
+            defaultRole = schema.lookupRole(xmlSchema.defaultRole);
             if (defaultRole == null) {
                 handler.warning(
                     "Role '" + xmlSchema.defaultRole + "' not found",
@@ -4649,7 +4646,7 @@ public class RolapSchemaLoader {
                 "Must not specify both className attribute and Script element");
         }
         if (className != null) {
-            return ClassResolver.INSTANCE.instantiateSafe(className);
+            return ClassResolver.INSTANCE.<T>instantiateSafe(className);
         }
         if (iface == CellFormatter.class) {
             return iface.cast(Scripts.cellFormatter(script));
