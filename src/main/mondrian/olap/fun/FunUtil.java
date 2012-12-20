@@ -1223,8 +1223,13 @@ public class FunUtil extends Util {
         // arithmetic mean of the two numbers in the middle of the list, or
         // (entries[length/2 - 1] + entries[length/2]) / 2.
         int length = asArray.length;
-
-        if (p == 0.5) {
+        if (p <= 0.0) {
+            return asArray[0];
+        } else if (p >= 1.0) {
+            return asArray[length - 1];
+        } else if (length == 1) {
+        	return asArray[0] * p;
+        } else if (p == 0.5) {
             // Special case for median.
             if ((length & 1) == 1) {
                 // The length is odd. Note that length/2 is an integer
@@ -1233,19 +1238,14 @@ public class FunUtil extends Util {
             } else {
                 return (asArray[(length >> 1) - 1] + asArray[length >> 1])
                     / 2.0;
-            }
-        } else if (p <= 0.0) {
-            return asArray[0];
-        } else if (p >= 1.0) {
-            return asArray[length - 1];
+            } 
         } else {
             final double jD = Math.floor(length * p);
-            int j = (int) jD;
-            double alpha = (p - jD) * length;
+            int j = jD > 0 ? (int) jD - 1 : (int) jD;
+            double alpha = (p * length) - jD;
             assert alpha >= 0;
             assert alpha <= 1;
-            return asArray[j] * (1.0 - alpha)
-                + asArray[j + 1] * alpha;
+            return asArray[j] + ( (asArray[j+1] - asArray[j]) * alpha);
         }
     }
 
