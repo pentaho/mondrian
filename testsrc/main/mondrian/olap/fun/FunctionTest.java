@@ -140,7 +140,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "from [sales]");
     }
 
-    /*
+    /**
      * Tests that ParallelPeriod with Aggregate function works
      */
     public void testParallelPeriodWithSlicer() {
@@ -970,7 +970,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #0: 7\n");
         // test depth argument not a level
         assertAxisThrows(
-        "Ancestors([Store].[USA].[CA].[Los Angeles],[Store])",
+            "Ancestors([Store].[USA].[CA].[Los Angeles],[Store])",
             "Error while executing query");
     }
 
@@ -1779,8 +1779,8 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #3: 36,177\n"
             + "Row #3: 76,345.49\n");
         //----------------------------------------------------
-        //Calc member in dimension based on level included
-        //Calc members in measures in schema included
+        // Calc member in dimension based on level included
+        // Calc members in measures in schema included
         //----------------------------------------------------
         assertQueryReturns(
             "WITH MEMBER [Store].[USA].[CA plus OR] AS 'AGGREGATE({[Store].[USA].[CA], [Store].[USA].[OR]})' "
@@ -1822,7 +1822,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #3: $45,833.33\n"
             + "Row #3: 0.0%\n");
         //----------------------------------------------------
-        //Two dimensions
+        // Two dimensions
         //----------------------------------------------------
         assertQueryReturns(
             "SELECT AddCalculatedMembers({[Measures].[Unit Sales], [Measures].[Store Sales]}) ON COLUMNS,"
@@ -1845,7 +1845,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #0: $10,771.98\n"
             + "Row #0: 0.0%\n");
         //----------------------------------------------------
-        //Should throw more than one dimension error
+        // Should throw more than one dimension error
         //----------------------------------------------------
 
         assertAxisThrows(
@@ -1871,10 +1871,10 @@ public class FunctionTest extends FoodMartTestCase {
             "StripCalculatedMembers([Customers].CurrentMember.Children)",
             "{[Customers]}");
 
-        //----------------------------------------------------
-        //Calc members in dimension based on level stripped
-        //Actual members in measures left alone
-        //----------------------------------------------------
+        // ----------------------------------------------------
+        // Calc members in dimension based on level stripped
+        // Actual members in measures left alone
+        // ----------------------------------------------------
         assertQueryReturns(
             "WITH MEMBER [Store].[USA].[CA plus OR] AS "
             + "'AGGREGATE({[Store].[USA].[CA], [Store].[USA].[OR]})' "
@@ -3053,7 +3053,8 @@ public class FunctionTest extends FoodMartTestCase {
             "AVG({[Store].[All Stores].[USA].children},[Measures].[Store Sales])",
             "188,412.71");
     }
-    //todo: testAvgWithNulls
+
+    // todo: testAvgWithNulls
 
     public void testCorrelation() {
         assertExprReturns(
@@ -3217,7 +3218,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #0: 31\n");
     }
 
-    //todo: testCountNull, testCountNoExp
+    // todo: testCountNull, testCountNoExp
 
     public void testCovariance() {
         assertExprReturns(
@@ -3366,26 +3367,33 @@ public class FunctionTest extends FoodMartTestCase {
 
         // check some real percentile cases
         assertExprReturns(
-                "Percentile({[Store].[All Stores].[USA].[WA].children}, [Measures].[Store Sales], 50)",
-                "49,634.46");
+            "Percentile({[Store].[All Stores].[USA].[WA].children}, [Measures].[Store Sales], 50)",
+            "49,634.46");
         // lets return the second element of the 7 children 4,739.23
         assertExprReturns(
-                "Percentile({[Store].[All Stores].[USA].[WA].children}, [Measures].[Store Sales], 100/7*2)",
-                "4,739.23");
+            "Percentile({[Store].[All Stores].[USA].[WA].children}, [Measures].[Store Sales], 100/7*2)",
+            "4,739.23");
         assertExprReturns(
-                "Percentile({[Store].[All Stores].[USA].[WA].children}, [Measures].[Store Sales], 95)",
-                "67,162.28");
+            "Percentile({[Store].[All Stores].[USA].[WA].children}, [Measures].[Store Sales], 95)",
+            "67,162.28");
+    }
 
-        // check MONDRIAN-1045
+    /**
+     * Testcase for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1045">MONDRIAN-1045,
+     * "When I use the Percentile function it cracks when there's only
+     * 1 register"</a>.
+     */
+    public void testPercentileBugMondrian1045() {
         assertExprReturns(
-                "Percentile({[Store].[All Stores].[USA]}, [Measures].[Store Sales], 50)",
-                "282,619.07");
+            "Percentile({[Store].[All Stores].[USA]}, [Measures].[Store Sales], 50)",
+            "282,619.07");
         assertExprReturns(
-                "Percentile({[Store].[All Stores].[USA]}, [Measures].[Store Sales], 40)",
-                "226,095.25");
+            "Percentile({[Store].[All Stores].[USA]}, [Measures].[Store Sales], 40)",
+            "226,095.25");
         assertExprReturns(
-                "Percentile({[Store].[All Stores].[USA]}, [Measures].[Store Sales], 95)",
-                "536,976.22");
+            "Percentile({[Store].[All Stores].[USA]}, [Measures].[Store Sales], 95)",
+            "536,976.22");
     }
 
     public void testMin() {
@@ -3879,7 +3887,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "[Promotion Media].[Sunday Paper, Radio, TV]");
     }
 
-    //todo: test unordered
+    // todo: test unordered
 
     public void testBottomPercent() {
         assertAxisReturns(
@@ -3903,7 +3911,8 @@ public class FunctionTest extends FoodMartTestCase {
             "[Promotion Media].[Radio]\n"
             + "[Promotion Media].[Sunday Paper, Radio, TV]");
     }
-    //todo: test precision
+
+    // todo: test precision
 
     public void testBottomSum() {
         assertAxisReturns(
@@ -8241,7 +8250,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderConstant1() {
-        //sort by customerId (Abel = 7851, Adeline = 6442, Abe = 570)
+        // sort by customerId (Abel = 7851, Adeline = 6442, Abe = 570)
         assertQueryReturns(
             "select \n"
             + "  Order("
@@ -8611,7 +8620,7 @@ public class FunctionTest extends FoodMartTestCase {
             "[Promotion Media].[No Media]");
     }
 
-    //todo: test precision
+    // todo: test precision
 
     public void testTopSum() {
         assertAxisReturns(
