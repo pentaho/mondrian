@@ -1228,7 +1228,7 @@ public class FunUtil extends Util {
         } else if (p >= 1.0) {
             return asArray[length - 1];
         } else if (length == 1) {
-        	return asArray[0] * p;
+            return asArray[0] * p;
         } else if (p == 0.5) {
             // Special case for median.
             if ((length & 1) == 1) {
@@ -1238,14 +1238,14 @@ public class FunUtil extends Util {
             } else {
                 return (asArray[(length >> 1) - 1] + asArray[length >> 1])
                     / 2.0;
-            } 
+            }
         } else {
             final double jD = Math.floor(length * p);
             int j = jD > 0 ? (int) jD - 1 : (int) jD;
             double alpha = (p * length) - jD;
             assert alpha >= 0;
             assert alpha <= 1;
-            return asArray[j] + ( (asArray[j+1] - asArray[j]) * alpha);
+            return asArray[j] + ((asArray[j + 1] - asArray[j]) * alpha);
         }
     }
 
