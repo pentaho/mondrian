@@ -1510,11 +1510,9 @@ public class SegmentCacheManager {
                     if (star.getChangeListener() != null
                         && star.getChangeListener().isAggregationChanged(key))
                     {
-                        /*
-                         * We can't satisfy this request, and we must clear the
-                         * data from our cache. This must be in sync with the
-                         * actor thread to maintain consistency.
-                         */
+                         // We can't satisfy this request, and we must clear the
+                         // data from our cache. This must be in sync with the
+                         // actor thread to maintain consistency.
                         indexRegistry.getIndex(star).remove(header);
                         Util.safeGet(
                             cacheExecutor.submit(
@@ -1568,7 +1566,8 @@ public class SegmentCacheManager {
      */
     public class SegmentCacheIndexRegistry {
         private final Map<RolapStar, SegmentCacheIndex> indexes =
-            new WeakHashMap<RolapStar, SegmentCacheIndex>();
+            new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK);
+
         /**
          * Returns the {@link SegmentCacheIndex} for a given
          * {@link RolapStar}.
@@ -1603,7 +1602,7 @@ public class SegmentCacheManager {
                 }
                 return entry.getValue();
             }
-            //The index doesn't exist. Let's create it.
+            // The index doesn't exist. Let's create it.
             for (RolapSchema schema : RolapSchema.getRolapSchemas()) {
                 if (!schema.getChecksum().equals(header.schemaChecksum)) {
                     continue;
