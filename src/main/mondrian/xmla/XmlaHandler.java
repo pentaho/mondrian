@@ -3030,6 +3030,11 @@ public class XmlaHandler {
          */
         List<String> getSchemaRoleNames(Schema schema);
 
+        /**
+         * Returns the unique ID of a schema.
+         */
+        String getSchemaId(Schema schema);
+
         String getCubeType(Cube cube);
 
         boolean isLevelUnique(Level level);
@@ -3193,6 +3198,10 @@ public class XmlaHandler {
 
         public List<String> getSchemaRoleNames(Schema schema) {
             return Collections.emptyList();
+        }
+
+        public String getSchemaId(Schema schema) {
+            return schema.getName();
         }
 
         public String getCubeType(Cube cube) {
