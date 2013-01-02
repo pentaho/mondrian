@@ -1566,7 +1566,7 @@ public class SegmentCacheManager {
      */
     public class SegmentCacheIndexRegistry {
         private final Map<RolapStar, SegmentCacheIndex> indexes =
-            new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK);
+            new WeakHashMap<RolapStar, SegmentCacheIndex>();
 
         /**
          * Returns the {@link SegmentCacheIndex} for a given
@@ -1610,11 +1610,7 @@ public class SegmentCacheManager {
                 // We have a schema match.
                 RolapStar star =
                     schema.getStar(header.rolapStarFactTableName);
-                if (star != null) {
-                    // Found it.
-                    indexes.put(star, new SegmentCacheIndexImpl(thread));
-                }
-                return indexes.get(star);
+                return getIndex(star);
             }
             return null;
         }

@@ -22,6 +22,7 @@ import mondrian.spi.CatalogLocator;
 import mondrian.util.LockBox;
 import mondrian.xmla.*;
 
+import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.log4j.Logger;
 
 import org.olap4j.OlapConnection;
@@ -65,7 +66,10 @@ class MondrianServerImpl
      * may cause a connection to be removed earlier.
      */
     private final Map<Integer, RolapConnection> connectionMap =
-        new WeakHashMap<Integer, RolapConnection>();
+         // We use a reference map here because the value
+         // is what needs to be week, not the key, as it
+         // would be the case with a WeakHashMap.
+        new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
 
     /**
      * Map of open statements, by id. Statements are added just after
@@ -79,7 +83,11 @@ class MondrianServerImpl
      * statement.</p>
      */
     private final Map<Long, WeakReference<Statement>> statementMap =
-        new HashMap<Long, WeakReference<Statement>>();
+
+         // We use a reference map here because the value
+         // is what needs to be week, not the key, as it
+         // would be the case with a WeakHashMap.
+        new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
 
     private final MonitorImpl monitor = new MonitorImpl();
 
