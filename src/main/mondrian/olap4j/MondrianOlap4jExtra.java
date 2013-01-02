@@ -248,6 +248,10 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
             ((RolapSchema) olap4jSchema.schema).roleNames());
     }
 
+    public String getSchemaId(Schema schema) {
+        return ((MondrianOlap4jSchema)schema).schema.getId();
+    }
+
     public String getCubeType(Cube cube) {
         return
             (cube instanceof MondrianOlap4jCube)
