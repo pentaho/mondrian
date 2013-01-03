@@ -153,6 +153,7 @@ public class XmlaHandler {
                     .get(PropertyDefinition.Catalog.name());
 
         if (catalogName == null
+            && request.getMethod() == Method.DISCOVER
             && request.getRestrictions().containsKey(
                 Property.StandardMemberProperty
                     .CATALOG_NAME.name()))
