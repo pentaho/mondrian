@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -17,8 +17,8 @@ import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.RolapLevel;
 import mondrian.rolap.RolapStar;
 import mondrian.spi.Dialect;
-
 import mondrian.util.ClassResolver;
+
 import org.apache.log4j.Logger;
 
 import org.olap4j.impl.Olap4jUtil;
@@ -515,7 +515,7 @@ public class JdbcSchema {
             /**
              * Sets the columnIter java.sql.Type enun of the column.
              *
-             * @param type
+             * @param type Type
              */
             private void setType(final int type) {
                 this.type = type;
@@ -531,7 +531,7 @@ public class JdbcSchema {
             /**
              * Sets the columnIter java.sql.Type name.
              *
-             * @param typeName
+             * @param typeName Type name
              */
             private void setTypeName(final String typeName) {
                 this.typeName = typeName;
@@ -561,7 +561,7 @@ public class JdbcSchema {
             /**
              * Sets the size in bytes of the column in the database.
              *
-             * @param columnSize
+             * @param columnSize Column size
              */
             private void setColumnSize(final int columnSize) {
                 this.columnSize = columnSize;
@@ -578,7 +578,7 @@ public class JdbcSchema {
             /**
              * Sets number of fractional digits.
              *
-             * @param decimalDigits
+             * @param decimalDigits Number of fractional digits
              */
             private void setDecimalDigits(final int decimalDigits) {
                 this.decimalDigits = decimalDigits;
@@ -594,7 +594,7 @@ public class JdbcSchema {
             /**
              * Sets Radix (typically either 10 or 2).
              *
-             * @param numPrecRadix
+             * @param numPrecRadix Radix
              */
             private void setNumPrecRadix(final int numPrecRadix) {
                 this.numPrecRadix = numPrecRadix;
@@ -610,7 +610,7 @@ public class JdbcSchema {
             /**
              * For char types the maximum number of bytes in the column.
              *
-             * @param charOctetLength
+             * @param charOctetLength Octet length
              */
             private void setCharOctetLength(final int charOctetLength) {
                 this.charOctetLength = charOctetLength;
@@ -626,7 +626,7 @@ public class JdbcSchema {
             /**
              * False means the column definitely does not allow NULL values.
              *
-             * @param isNullable
+             * @param isNullable Whether column is nullable
              */
             private void setIsNullable(final boolean isNullable) {
                 this.isNullable = isNullable;
@@ -936,7 +936,7 @@ public class JdbcSchema {
         /**
          * Sets the table usage (fact, aggregate or other).
          *
-         * @param tableUsageType
+         * @param tableUsageType Usage type
          */
         public void setTableUsageType(final TableUsageType tableUsageType) {
             // if usageIter has already been set, then usageIter can NOT be
@@ -1058,7 +1058,7 @@ public class JdbcSchema {
                     try {
                         conn.close();
                     } catch (SQLException e) {
-                        //ignore
+                        // ignore
                     }
                 }
 

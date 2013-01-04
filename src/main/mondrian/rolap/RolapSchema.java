@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -1071,23 +1071,24 @@ public class RolapSchema implements Schema {
         final UdfResolver.UdfFactory udfFactory;
         if (className != null) {
             // Lookup class.
-          try {
-            final Class<UserDefinedFunction> klass =
-                ClassResolver.INSTANCE.forName(className, true);
+            try {
+                final Class<UserDefinedFunction> klass =
+                    ClassResolver.INSTANCE.forName(className, true);
 
-            // Instantiate UDF by calling correct constructor.
-            udfFactory = new UdfResolver.ClassUdfFactory(klass, name);
-          } catch (ClassNotFoundException e) {
-            throw MondrianResource.instance().UdfClassNotFound.ex(
-                name,
-                className);
-          }
+                // Instantiate UDF by calling correct constructor.
+                udfFactory = new UdfResolver.ClassUdfFactory(klass, name);
+            } catch (ClassNotFoundException e) {
+                throw MondrianResource.instance().UdfClassNotFound.ex(
+                    name,
+                    className);
+            }
         } else {
-            udfFactory = new UdfResolver.UdfFactory() {
-                public UserDefinedFunction create() {
-                    return Scripts.userDefinedFunction(script, name);
-                }
-            };
+            udfFactory =
+                new UdfResolver.UdfFactory() {
+                    public UserDefinedFunction create() {
+                        return Scripts.userDefinedFunction(script, name);
+                    }
+                };
         }
         // Validate function.
         validateFunction(udfFactory);

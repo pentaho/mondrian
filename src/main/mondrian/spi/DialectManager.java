@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2010 Pentaho
+// Copyright (C) 2009-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi;
@@ -12,8 +12,8 @@ package mondrian.spi;
 import mondrian.olap.Util;
 import mondrian.spi.impl.JdbcDialectFactory;
 import mondrian.spi.impl.JdbcDialectImpl;
-import mondrian.util.ServiceDiscovery;
 import mondrian.util.ClassResolver;
+import mondrian.util.ServiceDiscovery;
 
 import java.lang.reflect.*;
 import java.sql.Connection;
@@ -274,7 +274,7 @@ public abstract class DialectManager {
                 } catch (ClassCastException e) {
                     throw new RuntimeException(
                         "Dialect class " + dialectClassName
-                            + " does not implement interface " + Dialect.class);
+                        + " does not implement interface " + Dialect.class);
                 } catch (Exception e) {
                     throw new RuntimeException(
                         "Cannot instantiate dialect class '"

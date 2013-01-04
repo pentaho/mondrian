@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2009 Pentaho
+// Copyright (C) 2008-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -55,9 +55,10 @@ public class MicrosoftSqlServerDialect extends JdbcDialectImpl {
 
     public boolean requiresAliasForFromQuery() {
         return true;
-    };
+    }
 
-    protected void quoteDateLiteral(StringBuilder buf, String value, Date date) {
+    protected void quoteDateLiteral(StringBuilder buf, String value, Date date)
+    {
         buf.append("CONVERT(DATE, '");
         buf.append(df.format(date));
         // Format 112 is equivalent to "yyyyMMdd" in Java.

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -460,25 +460,25 @@ public class RolapConnection extends ConnectionBase {
      * @return data source resolver
      */
     private static synchronized DataSourceResolver getDataSourceResolver() {
-      if (dataSourceResolver == null) {
-        final StringProperty property =
-            MondrianProperties.instance().DataSourceResolverClass;
-        final String className =
-            property.get(
-                JndiDataSourceResolver.class.getName());
-        try {
-          dataSourceResolver =
-              ClassResolver.INSTANCE.instantiateSafe(className);
-        } catch (ClassCastException e) {
-          throw Util.newInternal(
-              e,
-              "Plugin class specified by property "
-                  + property.getPath()
-                  + " must implement "
-                  + DataSourceResolver.class.getName());
+        if (dataSourceResolver == null) {
+            final StringProperty property =
+                MondrianProperties.instance().DataSourceResolverClass;
+            final String className =
+                property.get(
+                    JndiDataSourceResolver.class.getName());
+            try {
+                dataSourceResolver =
+                    ClassResolver.INSTANCE.instantiateSafe(className);
+            } catch (ClassCastException e) {
+                throw Util.newInternal(
+                    e,
+                    "Plugin class specified by property "
+                    + property.getPath()
+                    + " must implement "
+                    + DataSourceResolver.class.getName());
+            }
         }
-      }
-      return dataSourceResolver;
+        return dataSourceResolver;
     }
 
     /**

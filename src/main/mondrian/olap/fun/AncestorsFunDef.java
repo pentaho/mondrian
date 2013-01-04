@@ -4,13 +4,10 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2012 Pentaho
+// Copyright (C) 2012-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
@@ -18,6 +15,10 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.LevelType;
 import mondrian.olap.type.Type;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Definition of the <code>Ancestors</code> MDX function.

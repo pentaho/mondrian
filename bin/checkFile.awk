@@ -323,7 +323,7 @@ FNR < headerCount {
 /^\/\/ Copyright .* Pentaho/ && strict > 1 {
     # We assume that '--strict' is only invoked on files currently being
     # edited. Therefore we would expect the copyright to be current.
-    if ($0 !~ /-2012/) {
+    if ($0 !~ /-2013/) {
         error(fname, FNR, "copyright is not current");
     }
 }

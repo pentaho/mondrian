@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2012 Pentaho
+// Copyright (C) 2008-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -906,7 +906,7 @@ public class JdbcDialectImpl implements Dialect {
             } catch (Exception e) {
                 LOGGER.info(
                     "Error instantiating statistics provider (class=" + name
-                        + ")",
+                    + ")",
                     e);
             }
         }
@@ -957,13 +957,13 @@ public class JdbcDialectImpl implements Dialect {
                 // this version cannot handle subqueries and is considered "old"
                 // DEUKA "05.01.0000 V5R1m0" is ok
                 String[] version_release = productVersion.split("\\.", 3);
-                /*
+/*
                 if (version_release.length > 2 &&
                     "04".compareTo(version_release[0]) > 0 ||
                     ("04".compareTo(version_release[0]) == 0
                     && "03".compareTo(version_release[1]) >= 0))
                     return true;
-                */
+*/
                 // assume, that version <= 04 is "old"
                 if ("04".compareTo(version_release[0]) >= 0) {
                     return DatabaseProduct.DB2_OLD_AS400;

@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -12,8 +12,8 @@ package mondrian.rolap.agg;
 import mondrian.olap.MondrianProperties;
 import mondrian.resource.MondrianResource;
 import mondrian.spi.*;
-import mondrian.util.ServiceDiscovery;
 import mondrian.util.ClassResolver;
+import mondrian.util.ServiceDiscovery;
 
 import org.apache.log4j.Logger;
 

@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
@@ -81,7 +81,6 @@ public class MondrianOlap4jDriver implements Driver {
     private static Factory createFactory() {
         final String factoryClassName = getFactoryClassName();
         try {
-
             // Cannot use ClassResolver here, because factory's constructor has
             // package access.
             final Class<?> clazz = Class.forName(factoryClassName);
