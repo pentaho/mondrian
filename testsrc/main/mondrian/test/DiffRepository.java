@@ -13,6 +13,8 @@ import mondrian.olap.Util;
 
 import junit.framework.*;
 
+import org.apache.commons.collections.map.ReferenceMap;
+
 import org.eigenbase.xom.XMLOutput;
 
 import org.w3c.dom.*;
@@ -134,7 +136,7 @@ public class DiffRepository
      * repos gets loaded once per testcase, then only one diff is recorded.
      */
     private static final Map<Class, DiffRepository> mapClassToRepos =
-        new HashMap<Class, DiffRepository>();
+        new ReferenceMap(ReferenceMap.SOFT, ReferenceMap.SOFT);
 
     /**
      * Default prefix directories.
