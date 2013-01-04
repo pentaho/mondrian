@@ -136,6 +136,13 @@ members.
 See CHANGES.txt for a list of all source code changes since the
 previous release.
 
+Upgrading from 3.x to 4.x
+---------------------------------------
+Mondrian 3 schemas will be automatically upgraded to Mondrian 4 
+schemas internally.  Set the log4j log level for 
+mondrian.rolap.RolapSchemaUpgrader to DEBUG to log the XML for the
+upgraded schema.
+
 Bugs and feature requests fixed for 4.0
 ---------------------------------------
 TODO
