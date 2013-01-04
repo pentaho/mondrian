@@ -966,6 +966,12 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         doTest(requestType, props, TestContext.instance());
     }
 
+    public void testExecuteBugMondrian1316() throws Exception {
+        String requestType = "EXECUTE";
+        Properties props = getDefaultRequestProperties(requestType);
+        doTest(requestType, props, TestContext.instance());
+    }
+
     public void doTestRT(String requestType, TestContext testContext)
         throws Exception
     {

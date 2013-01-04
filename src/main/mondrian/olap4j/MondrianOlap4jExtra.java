@@ -248,6 +248,10 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
             ((RolapSchema) olap4jSchema.schema).roleNames());
     }
 
+    public String getSchemaId(Schema schema) {
+        return ((MondrianOlap4jSchema)schema).schema.getId();
+    }
+
     public String getCubeType(Cube cube) {
         return
             (cube instanceof MondrianOlap4jCube)
@@ -313,7 +317,7 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
 
     public void flushSchemaCache(OlapConnection conn) throws OlapException {
         try {
-            conn.unwrap(Connection.class)
+            conn.unwrap(RolapConnection.class)
                 .getCacheControl(null).flushSchemaCache();
         } catch (SQLException e) {
             throw new OlapException(e);
