@@ -2889,11 +2889,24 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
             (or denials) for schema elements.
         </Doc>
         <Attribute name="name" required="true"/>
+        <Attribute name="className" required="false">
+            <Doc>
+                Name of the class which implements this role.
+                If specified, the class must implement either
+                <code>mondrian.spi.Role</code> or
+                <code>mondrian.spi.RoleGenerator</code>
+                interface.
+
+                <p>If specified, Role must not have Script, Union or SchemaGrant
+                    children.</p>
+            </Doc>
+        </Attribute>
         <Array name="childArray" type="RoleElement">
             <Doc>
                 Child elements of this Role.
+                Script,
                 Union (at most once),
-                SchemaElement,
+                SchemaGrant,
                 Annotations (at most once), in any order.
             </Doc>
         </Array>
@@ -2920,6 +2933,9 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
             }
             public Union getUnion() {
                 return children.singleton(Union.class);
+            }
+            public Script getScript() {
+                return children.singleton(Script.class);
             }
             public NamedList<Annotation> getAnnotations() {
                 return children.only(Annotations.EMPTY).list();
@@ -3100,9 +3116,13 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
         </Attribute>
         <Attribute name="className" required="false">
             <Doc>
-                Name of the class which implemenets this user-defined function.
-                Must implement the <code>mondrian.spi.UserDefinedFunction</code>
+                Name of the class which implements this user-defined function.
+                If specified, the class must implement the
+                <code>mondrian.spi.UserDefinedFunction</code>
                 interface.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
             </Doc>
         </Attribute>
         <Object name="script" required="false" type="Script">
@@ -3220,7 +3240,7 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
         </Code>
     </Element>
 
-    <Element type="Script">
+    <Element type="Script" class="RoleElement">
         <Doc>
             Script fragment to implement an SPI such as user-defined function,
             member formatter, cell formatter.

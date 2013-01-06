@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -134,7 +134,7 @@ public class RolapConnection extends ConnectionBase {
         StringBuilder buf = new StringBuilder();
         this.dataSource =
             createDataSource(dataSource, connectInfo, buf);
-        Role role = null;
+        RolapSchema.RoleFactory roleFactory = null;
 
         // Register this connection before we register its internal statement.
         server.addConnection(this);
@@ -182,38 +182,23 @@ public class RolapConnection extends ConnectionBase {
                 connectInfo.get(RolapConnectionProperties.Role.name());
             if (roleNameList != null) {
                 List<String> roleNames = Util.parseCommaList(roleNameList);
-                List<Role> roleList = new ArrayList<Role>();
+                List<RolapSchema.RoleFactory> roleList =
+                    new ArrayList<RolapSchema.RoleFactory>();
                 for (String roleName : roleNames) {
-                    final LockBox.Entry entry =
-                        server.getLockBox().get(roleName);
-                    Role role1;
-                    if (entry != null) {
-                        try {
-                            role1 = (Role) entry.getValue();
-                        } catch (ClassCastException e) {
-                            role1 = null;
-                        }
-                    } else {
-                        role1 = schema.lookupRole(roleName);
-                    }
-                    if (role1 == null) {
-                        throw Util.newError(
-                            "Role '" + roleName + "' not found");
-                    }
-                    roleList.add(role1);
+                    roleList.add(getRoleFactory(server, schema, roleName));
                 }
                 switch (roleList.size()) {
                 case 0:
                     // If they specify 'Role=;', the list of names will be
                     // empty, and the effect will be as if they did specify
                     // Role at all.
-                    role = null;
+                    roleFactory = null;
                     break;
                 case 1:
-                    role = roleList.get(0);
+                    roleFactory = roleList.get(0);
                     break;
                 default:
-                    role = RoleImpl.union(roleList);
+                    roleFactory = new RolapSchema.UnionRoleFactory(roleList);
                     break;
                 }
             }
@@ -263,8 +248,8 @@ public class RolapConnection extends ConnectionBase {
             }
         }
 
-        if (role == null) {
-            role = schema.getDefaultRole();
+        if (roleFactory == null) {
+            roleFactory = schema.getDefaultRole();
         }
 
         // Set the locale.
@@ -276,7 +261,49 @@ public class RolapConnection extends ConnectionBase {
         }
 
         this.schema = schema;
+        final Map<String, Object> context = new HashMap<String, Object>();
+        for (Pair<String, String> pair : connectInfo) {
+            if (pair.left.startsWith(
+                    RolapConnectionProperties.RolePropertyPrefix))
+            {
+                context.put(
+                    pair.left.substring(
+                        RolapConnectionProperties.RolePropertyPrefix.length()),
+                    pair.right);
+            }
+        }
+        Role role = roleFactory.create(context);
         setRole(role);
+    }
+
+    private RolapSchema.RoleFactory getRoleFactory(
+        MondrianServer server,
+        RolapSchema schema,
+        String roleName)
+    {
+        // First look in lock-box
+        final LockBox.Entry entry =
+            server.getLockBox().get(roleName);
+        if (entry != null) {
+            try {
+                final Object value = entry.getValue();
+                if (value instanceof RolapSchema.RoleFactory) {
+                    return (RolapSchema.RoleFactory) value;
+                } else {
+                    return new RolapSchema.ConstantRoleFactory((Role) value);
+                }
+            } catch (ClassCastException e) {
+                // ignore lock box
+            }
+        }
+
+        // Now look up role factory in schema
+        RolapSchema.RoleFactory factory =
+            schema.mapNameToRole.get(roleName);
+        if (factory != null) {
+            return factory;
+        }
+        throw Util.newError("Role '" + roleName + "' not found");
     }
 
     @Override

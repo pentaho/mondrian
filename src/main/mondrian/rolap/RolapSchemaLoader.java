@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2012 Pentaho and others
+// Copyright (C) 2010-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -22,16 +22,16 @@ import mondrian.olap.fun.UdfResolver;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapLevel.HideMemberCondition;
+import mondrian.rolap.RolapSchema.UnresolvedColumn;
 import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.server.Locus;
+import mondrian.spi.*;
 import mondrian.spi.CellFormatter;
-import mondrian.spi.Dialect;
 import mondrian.spi.MemberFormatter;
 import mondrian.spi.PropertyFormatter;
 import mondrian.spi.impl.Scripts;
 import mondrian.util.*;
-
-import mondrian.rolap.RolapSchema.UnresolvedColumn;
+import mondrian.util.Bug;
 
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.log4j.Logger;
@@ -88,7 +88,8 @@ public class RolapSchemaLoader {
      */
     static final String MEASURES_LEVEL_NAME = "MeasuresLevel";
 
-    private static final RoleImpl DUMMY_ROLE = new RoleImpl();
+    private static final RolapSchema.RoleFactory DUMMY_ROLE =
+        new RolapSchema.ConstantRoleFactory(new RoleImpl());
 
     static {
         for (Dialect.Datatype datatype : Dialect.Datatype.values()) {
@@ -409,7 +410,8 @@ public class RolapSchemaLoader {
         //
         // Union roles can depend on roles that occur later, so we iterate
         // until we reach a fixed point.
-        Map<String, Role> rolesByName = new LinkedHashMap<String, Role>();
+        Map<String, RolapSchema.RoleFactory> rolesByName =
+            new LinkedHashMap<String, RolapSchema.RoleFactory>();
         for (MondrianDef.Role xmlRole : xmlSchema.getRoles()) {
             if (rolesByName.containsKey(xmlRole.name)) {
                 handler.error(
@@ -427,7 +429,8 @@ public class RolapSchemaLoader {
                 if (rolesByName.get(xmlRole.name) != DUMMY_ROLE) {
                     continue;
                 }
-                final Role role = createRole(xmlRole, rolesByName);
+                final RolapSchema.RoleFactory role =
+                    createRole(xmlRole, rolesByName);
                 if (role == DUMMY_ROLE) {
                     // Dependencies not resolved; cannot make progress.
                     missed = xmlRole;
@@ -448,9 +451,9 @@ public class RolapSchemaLoader {
             }
         }
 
-        Role defaultRole = null;
+        RolapSchema.RoleFactory defaultRole = null;
         if (xmlSchema.defaultRole != null) {
-            defaultRole = schema.lookupRole(xmlSchema.defaultRole);
+            defaultRole = schema.mapNameToRole.get(xmlSchema.defaultRole);
             if (defaultRole == null) {
                 handler.warning(
                     "Role '" + xmlSchema.defaultRole + "' not found",
@@ -3960,32 +3963,97 @@ public class RolapSchemaLoader {
         return formula.getNamedSet();
     }
 
-    private Role createRole(
-        MondrianDef.Role xmlRole,
-        Map<String, Role> mapNameToRole)
-    {
-        final MondrianDef.Union xmlUnion = xmlRole.getUnion();
-        if (xmlUnion != null) {
-            if (xmlRole.getSchemaGrants().size() > 0) {
-                throw MondrianResource.instance().RoleUnionGrants.ex();
-            }
-            List<Role> roleList = new ArrayList<Role>();
-            for (MondrianDef.RoleUsage roleUsage : xmlUnion.list()) {
-                final Role role = mapNameToRole.get(roleUsage.roleName);
-                if (role == DUMMY_ROLE) {
-                    // dependency not resolved yet
-                    return DUMMY_ROLE;
-                }
-                if (role == null) {
-                    throw MondrianResource.instance().UnknownRole.ex(
-                        roleUsage.roleName);
-                }
-                roleList.add(role);
-            }
-            return RoleImpl.union(roleList);
+    /** Creates a role after a schema has been created. */
+    Pair<RolapSchema.RoleFactory, String> createRole(String role) {
+        final Parser xmlParser;
+        try {
+            xmlParser = XOMUtil.createDefaultParser();
+            xmlParser.setKeepPositions(true);
+            final DOMWrapper def = xmlParser.parse(role);
+            final MondrianDef.Role xmlRole = new MondrianDef.Role(def);
+            final RolapSchema.RoleFactory roleFactory =
+                createRole(xmlRole, schema.mapNameToRole);
+            return Pair.of(roleFactory, xmlRole.name);
+        } catch (XOMException e) {
+            // TODO: better error
+            throw new RuntimeException(
+                "while creating role from [" + role + "]", e);
         }
+    }
+
+    RolapSchema.RoleFactory createRole(
+        MondrianDef.Role xmlRole,
+        Map<String, RolapSchema.RoleFactory> mapNameToRole)
+    {
+        final int count =
+            (xmlRole.getUnion() == null ? 0 : 1)
+            + (xmlRole.getSchemaGrants().isEmpty() ? 0 : 1)
+            + (xmlRole.className == null ? 0 : 1)
+            + (xmlRole.getScript() == null ? 0 : 1);
+        if (count != 1) {
+            // TODO: better message, localized, with location
+            if (false) {
+                throw new AssertionError(
+                    "Role must have precisely one of: className attribute, or "
+                    + "Script, SchemaGrant, Union child elements");
+            }
+            throw MondrianResource.instance().RoleUnionGrants.ex();
+        }
+        if (xmlRole.getUnion() != null) {
+            return createUnionRole(mapNameToRole, xmlRole.getUnion());
+        } else if (xmlRole.getScript() != null) {
+            return createScriptRole(xmlRole.getScript());
+        } else if (xmlRole.className != null) {
+            return createClassRole(xmlRole.className);
+        } else {
+            return createGrantRole(xmlRole.getSchemaGrants());
+        }
+    }
+
+    private RolapSchema.RoleFactory createClassRole(String className) {
+        // Lookup class.
+        try {
+            final Class<?> clazz =
+                ClassResolver.INSTANCE.forName(className, true);
+            Object o = clazz.newInstance();
+
+            if (o instanceof Role) {
+                return new RolapSchema.ConstantRoleFactory((Role) o);
+            }
+            if (o instanceof RoleGenerator) {
+                return schema.new GeneratingRoleFactory((RoleGenerator) o);
+            }
+            // TODO: better message
+            Util.discard(Bug.BugMondrian1281Fixed);
+            throw new RuntimeException("neither role nor role generator");
+        } catch (ClassNotFoundException e) {
+            // TODO: better error
+            Util.discard(Bug.BugMondrian1281Fixed);
+            throw new RuntimeException("while creating role", e);
+        } catch (InstantiationException e) {
+            // TODO: better error
+            Util.discard(Bug.BugMondrian1281Fixed);
+            throw new RuntimeException("while creating role", e);
+        } catch (IllegalAccessException e) {
+            // TODO: better error
+            Util.discard(Bug.BugMondrian1281Fixed);
+            throw new RuntimeException("while creating role", e);
+        }
+    }
+
+    private RolapSchema.RoleFactory createScriptRole(
+        MondrianDef.Script xmlScript)
+    {
+        // TODO: implement
+        Util.discard(Bug.BugMondrian1281Fixed);
+        throw new UnsupportedOperationException();
+    }
+
+    private RolapSchema.RoleFactory createGrantRole(
+        List<MondrianDef.SchemaGrant> xmlSchemaGrants)
+    {
         RoleImpl role = new RoleImpl();
-        for (MondrianDef.SchemaGrant schemaGrant : xmlRole.getSchemaGrants()) {
+        for (MondrianDef.SchemaGrant schemaGrant : xmlSchemaGrants) {
             role.grant(schema, getAccess(schemaGrant.access, schemaAllowed));
             for (MondrianDef.CubeGrant cubeGrant : schemaGrant.cubeGrants) {
                 RolapCube cube = schema.lookupCube(cubeGrant.cube);
@@ -4098,7 +4166,29 @@ public class RolapSchemaLoader {
             }
         }
         role.makeImmutable();
-        return role;
+        return new RolapSchema.ConstantRoleFactory(role);
+    }
+
+    private RolapSchema.RoleFactory createUnionRole(
+        Map<String, RolapSchema.RoleFactory> mapNameToRole,
+        MondrianDef.Union xmlUnion)
+    {
+        List<RolapSchema.RoleFactory> roleList =
+            new ArrayList<RolapSchema.RoleFactory>();
+        for (MondrianDef.RoleUsage roleUsage : xmlUnion.list()) {
+            final RolapSchema.RoleFactory role =
+                mapNameToRole.get(roleUsage.roleName);
+            if (role == DUMMY_ROLE) {
+                // dependency not resolved yet
+                return DUMMY_ROLE;
+            }
+            if (role == null) {
+                throw MondrianResource.instance().UnknownRole.ex(
+                    roleUsage.roleName);
+            }
+            roleList.add(role);
+        }
+        return new RolapSchema.UnionRoleFactory(roleList);
     }
 
     private static Access getAccess(String accessString, Set<Access> allowed) {

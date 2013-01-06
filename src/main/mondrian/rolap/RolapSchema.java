@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -76,7 +76,12 @@ public class RolapSchema extends OlapElementBase implements Schema {
     /**
      * The default role for connections to this schema.
      */
-    private Role defaultRole;
+    private RoleFactory defaultRole;
+
+    /**
+     * Role without any access control.
+     */
+    final Role rootRole;
 
     ByteString md5Bytes;
 
@@ -92,9 +97,11 @@ public class RolapSchema extends OlapElementBase implements Schema {
     final SchemaKey key;
 
     /**
-     * Maps {@link String names of roles} to {@link Role roles with those names}.
+     * Maps {@link String names of roles} to
+     * {@link RoleFactory role factories with those names}.
      */
-    private final Map<String, Role> mapNameToRole = new HashMap<String, Role>();
+    final Map<String, RoleFactory> mapNameToRole =
+        new HashMap<String, RoleFactory>();
 
     /**
      * Maps {@link String names of sets} to {@link NamedSet named sets}.
@@ -178,7 +185,8 @@ public class RolapSchema extends OlapElementBase implements Schema {
         }
 
         // the order of the next two lines is important
-        this.defaultRole = Util.createRootRole(this);
+        this.rootRole = Util.createRootRole(this);
+        this.defaultRole = new ConstantRoleFactory(rootRole);
         final MondrianServer internalServer = MondrianServer.forId(null);
         this.internalConnection =
             new RolapConnection(internalServer, connectInfo, this, dataSource);
@@ -281,7 +289,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
         return Collections.unmodifiableList(Util.<Exception>cast(warningList));
     }
 
-    public Role getDefaultRole() {
+    public RoleFactory getDefaultRole() {
         return defaultRole;
     }
 
@@ -325,6 +333,12 @@ public class RolapSchema extends OlapElementBase implements Schema {
 
     public Cube createCube(String xml) {
         return new RolapSchemaLoader(this).createCube(xml);
+    }
+
+    // REVIEW: make public?
+    Pair<RoleFactory, String> createRole(String xml, NamePolicy namePolicy) {
+        // TODO:
+        return new RolapSchemaLoader(this).createRole(xml);
     }
 
     public PhysSchema getPhysicalSchema() {
@@ -434,7 +448,11 @@ public class RolapSchema extends OlapElementBase implements Schema {
     }
 
     public Role lookupRole(final String role) {
-        return mapNameToRole.get(role);
+        final RoleFactory roleFactory = mapNameToRole.get(role);
+        if (roleFactory instanceof ConstantRoleFactory) {
+            return ((ConstantRoleFactory) roleFactory).role;
+        }
+        return null;
     }
 
     public Set<String> roleNames() {
@@ -622,7 +640,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
     }
 
     public SchemaReader getSchemaReader() {
-        return new RolapSchemaReader(defaultRole, this).withLocus();
+        return new RolapSchemaReader(rootRole, this).withLocus();
     }
 
     /**
@@ -686,8 +704,11 @@ public class RolapSchema extends OlapElementBase implements Schema {
         return new RolapStar(this, dataSource, fact);
     }
 
-    void registerRoles(Map<String, Role> roles, Role defaultRole) {
-        for (Map.Entry<String, Role> entry : roles.entrySet()) {
+    void registerRoles(
+        Map<String, RoleFactory> roles,
+        RoleFactory defaultRole)
+    {
+        for (Map.Entry<String, RoleFactory> entry : roles.entrySet()) {
             mapNameToRole.put(entry.getKey(), entry.getValue());
         }
 
@@ -3121,6 +3142,76 @@ public class RolapSchema extends OlapElementBase implements Schema {
                 columnMap.put(key, rowCount);
             }
             return rowCount;
+        }
+    }
+
+    enum NamePolicy {
+        /** The user defining the role must supply a name. */
+        NAMED,
+
+        /** The system will generate a name for the role. */
+        SYSTEM_GENERATED,
+
+        /** The role will not have a name. */
+        NAMELESS,
+    }
+
+    /** Creates roles. Generally called when a connection is created. */
+    interface RoleFactory {
+        Role create(Map<String, Object> context);
+    }
+
+    /** Role factory that always returns the same role. */
+    static class ConstantRoleFactory implements RoleFactory {
+        private final Role role;
+
+        ConstantRoleFactory(Role role) {
+            this.role = role;
+        }
+
+        public Role create(Map<String, Object> context) {
+            return role;
+        }
+    }
+
+    /** Role factory that creates a union role, combining the role from each
+     * of a list of role factories. */
+    static class UnionRoleFactory implements RoleFactory {
+        private final List<RoleFactory> factories;
+
+        public UnionRoleFactory(List<RoleFactory> factories) {
+            this.factories = factories;
+        }
+
+        public Role create(final Map<String, Object> context) {
+            return RoleImpl.union(
+                new AbstractList<Role>() {
+                    public Role get(int index) {
+                        return factories.get(index).create(context);
+                    }
+
+                    public int size() {
+                        return factories.size();
+                    }
+                }
+            );
+        }
+    }
+
+    /** Role factory that calls an underlying {@link RoleGenerator}. */
+    class GeneratingRoleFactory implements RoleFactory {
+        private final RoleGenerator generator;
+
+        public GeneratingRoleFactory(RoleGenerator generator) {
+            super();
+            this.generator = generator;
+        }
+
+        public Role create(Map<String, Object> context) {
+            final String s = generator.asXml(context);
+            final Pair<RoleFactory, String> pair =
+                RolapSchema.this.createRole(s, NamePolicy.NAMELESS);
+            return pair.left.create(context);
         }
     }
 }

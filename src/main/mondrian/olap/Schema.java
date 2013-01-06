@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -76,6 +76,10 @@ public interface Schema extends Annotated {
     /**
      * Finds a role with a given name in the current catalog, or returns
      * <code>null</code> if no such role exists.
+     *
+     * @deprecated Does not tell the whole picture; roles which are really
+     * "role factories" (i.e. implement {@link mondrian.spi.RoleGenerator})
+     * do not appear.
      */
     Role lookupRole(String role);
 

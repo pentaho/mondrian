@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2012 Pentaho
+// Copyright (C) 2012-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -171,6 +171,23 @@ public class SchemaSubstitution {
                              + memberDefs
                              + "</CalculatedMembers>"
                              + schema.substring(i);
+                }
+                return schema;
+            }
+        };
+    }
+
+    public static Util.Function1<String, String> insertRole(
+        final String roleDef)
+    {
+        return new Util.Function1<String, String>() {
+            public String apply(String schema) {
+                // <Role> will be last element of the schema
+                int h = schema.indexOf("</Schema>");
+                if (h >= 0) {
+                    schema = schema.substring(0, h)
+                        + roleDef
+                        + schema.substring(h);
                 }
                 return schema;
             }

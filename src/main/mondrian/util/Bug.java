@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -369,6 +369,13 @@ public class Bug {
      * </a> is fixed.
      */
     public static final boolean BugMondrian1333Fixed = false;
+
+    /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1281">bug MONDRIAN-1281,
+     * "custom role injection" </a> is fixed.
+     */
+    public static final boolean BugMondrian1281Fixed = false;
 
     /**
      * Whether

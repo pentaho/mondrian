@@ -5,19 +5,20 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.spi.RoleGenerator;
 import mondrian.util.Bug;
 
 import junit.framework.Assert;
 
 import org.olap4j.mdx.IdentifierNode;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * <code>AccessControlTest</code> is a set of unit-tests for access-control.
@@ -2741,6 +2742,45 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Row #0: 26,079\n"
             + "Row #0: 41,580\n"
             + "Row #0: 41,580\n");
+    }
+
+    public void testRoleGenerator() {
+        final Util.PropertyList properties =
+            getTestContext().getConnectionProperties().clone();
+        properties.put("session.state", "CA");
+        getTestContext()
+            .withProperties(properties)
+            .insertRole(
+                "<Role name='state' className='"
+                + MyRoleGenerator.class.getName() + "'/>")
+            .withRole("state")
+            .assertQueryReturns(
+                "select Descendants([Store].[Stores], 2) on 0 from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Store].[Stores].[USA].[CA]}\n"
+                + "Row #0: 74,748\n");
+    }
+
+    public static class MyRoleGenerator implements RoleGenerator {
+        public String asXml(Map<String, Object> context) {
+            String state = (String) context.get("state");
+            return "<Role name='role_" + state + "'>\n"
+                + " <SchemaGrant access='none'>\n"
+                + "  <CubeGrant cube='Sales' access='all'>\n"
+                + "   <HierarchyGrant hierarchy='[Store].[Stores]' access='custom' rollupPolicy='partial'>\n"
+                + "    <MemberGrant member='[Store].[Stores].[USA]' access='none'/>\n"
+                + (state != null
+                   ? "    <MemberGrant member='[Store].[Stores].[USA].["
+                   + state
+                   + "]' access='all'/>\n"
+                   : "")
+                + "   </HierarchyGrant>\n"
+                + "  </CubeGrant>\n"
+                + " </SchemaGrant>\n"
+                + "</Role>\n";
+        }
     }
 }
 
