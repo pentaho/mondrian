@@ -32,6 +32,7 @@
 		<li><a href="#A_simple_example">A simple example</a></li>
         <li><a href="#More_about_cell_regions">More about cell regions</a></li>
         <li><a href="#Merging_and_truncating_segments">Merging and truncating segments</a></li>
+        <li><a href="#Accessing_the_CacheControl_API_through_olap4j">Accessing the CacheControl API through olap4j</a></li>
 	</ol>
         </li>
         <li><a href="#Other_cache_control_topics">Other cache control topics</a><ol>
@@ -304,6 +305,18 @@ encompasses the whole cube. To flush all cubes in the schema, use a loop:</p>
 
 <p>It might also be useful to be able to merge segments which have the same dimensionality, to reduce fragmentation if the cache is flushed repeatedly over slightly different bounds. There are some limitations on when this can be done, since predicates can only constrain one column: it would not be possible to merge the segments 
 <code>{(State=TX, Quarter=Q2)}</code> and <code>{(State=WA, Quarter=Q3)}</code> into a single segment, for example. An alternative solution to fragmentation would be to simply remove all segments of a particular dimensionality if fragmentation is detected.</p>
+
+<h4>3.4. Accessing the CacheControl API through olap4j<a name="Accessing_the_CacheControl_API_through_olap4j">&nbsp;</a></h4>
+
+<p>The CacheControl API is specific to Mondrian and is part of its private APIs. If your application was written at a higher abstraction level, say using olap4j,
+you will need to 'unwrap' the connection first and gain access to its private functions. With an olap4j connection, this can be done like so:</p>
+
+<blockquote><code>
+    OlapConnection olapConnection;<br/>
+    Connection privateConnection = olapConnection.unwrap(RolapConnection.class);<br/>
+    CacheControl cacheControl = privateConnection.getCacheControl(null);<br/>
+    </code></blockquote>
+
 <h3>4. Other cache control topics<a name="Other_cache_control_topics">&nbsp;</a></h3>
 
 <h4>4.1. Flushing the dimension cache<a name="Flushing_the_dimension_cache">&nbsp;</a></h4>
