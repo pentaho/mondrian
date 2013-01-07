@@ -10,19 +10,26 @@
 */
 package mondrian.rolap.aggmatcher;
 
-import mondrian.olap.*;
-import mondrian.recorder.*;
+import mondrian.olap.MondrianDef;
+import mondrian.olap.MondrianException;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
+import mondrian.recorder.ListRecorder;
+import mondrian.recorder.MessageRecorder;
+import mondrian.recorder.RecorderException;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.*;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapSchema;
+import mondrian.rolap.RolapStar;
 
 import org.apache.log4j.Logger;
 
-import org.eigenbase.util.property.Property;
-import org.eigenbase.util.property.Trigger;
+import javax.sql.DataSource;
 
 import java.sql.SQLException;
-import java.util.*;
-import javax.sql.DataSource;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Manages aggregate tables.
@@ -31,9 +38,6 @@ import javax.sql.DataSource;
  * <li>A {@link mondrian.rolap.RolapSchema} creates an {@link AggTableManager},
  *     and stores it in a member variable to ensure that it is not
  *     garbage-collected.
- * <li>The {@link AggTableManager} creates and registers
- *     {@link org.eigenbase.util.property.Trigger} objects, so that it is notified
- *     when properties pertinent to aggregate tables change.
  * <li>The {@link mondrian.rolap.RolapSchema} calls {@link #initialize()},
  *     which scans the JDBC catalog and identifies aggregate tables.
  * <li>For each aggregate table, it creates an {@link AggStar} and calls
@@ -49,12 +53,6 @@ public class AggTableManager {
 
     private static final MondrianResource mres = MondrianResource.instance();
 
-    /**
-     * This is used to create forward references to triggers (so they do not
-     * get reaped until the RolapSchema is reaped).
-     */
-    private Trigger[] triggers;
-
     public AggTableManager(final RolapSchema schema) {
         this.schema = schema;
     }
@@ -66,12 +64,11 @@ public class AggTableManager {
      */
     public void finalCleanUp() {
         removeJdbcSchema();
-        deregisterTriggers(MondrianProperties.instance());
 
         if (getLogger().isDebugEnabled()) {
             getLogger().debug(
                 "AggTableManager.finalCleanUp: schema="
-                + schema.getName());
+                    + schema.getName());
         }
     }
 
@@ -95,7 +92,6 @@ public class AggTableManager {
                 throw mres.AggLoadingError.ex(ex);
             }
         }
-        registerTriggers();
         printResults();
     }
 
@@ -136,32 +132,12 @@ public class AggTableManager {
         }
     }
 
-    private void reLoadRolapStarAggregates() {
-        if (MondrianProperties.instance().ReadAggregates.get()) {
-            try {
-                clearJdbcSchema();
-                loadRolapStarAggregates();
-                printResults();
-            } catch (SQLException ex) {
-                throw mres.AggLoadingError.ex(ex);
-            }
-        }
-    }
-
     private JdbcSchema getJdbcSchema() {
         DataSource dataSource = schema.getInternalConnection().getDataSource();
 
         // This actually just does a lookup or simple constructor invocation,
         // its not expected to fail
         return JdbcSchema.makeDB(dataSource);
-    }
-
-    /**
-     * Clear the possibly already loaded snapshot of what is in the database.
-     */
-    private void clearJdbcSchema() {
-        DataSource dataSource = schema.getInternalConnection().getDataSource();
-        JdbcSchema.clearDB(dataSource);
     }
 
     /**
@@ -319,116 +295,8 @@ public class AggTableManager {
         }
     }
 
-    private boolean runTrigger() {
-        if (RolapSchema.cacheContains(schema)) {
-            return true;
-        } else {
-            // must remove triggers
-            deregisterTriggers(MondrianProperties.instance());
-
-            return false;
-        }
-    }
-
-    /**
-     * Registers triggers for the following properties:
-     * <ul>
-     *      <li>{@link MondrianProperties#ChooseAggregateByVolume}
-     *      <li>{@link MondrianProperties#AggregateRules}
-     *      <li>{@link MondrianProperties#AggregateRuleTag}
-     *      <li>{@link MondrianProperties#ReadAggregates}
-     * </ul>
-     */
-    private void registerTriggers() {
-        final MondrianProperties properties = MondrianProperties.instance();
-        triggers = new Trigger[] {
-            // When the ordering AggStars property is changed, we must
-            // reorder them, so we create a trigger.
-            // There is no need to provide equals/hashCode methods for this
-            // Trigger since it is never explicitly removed.
-            new Trigger() {
-                public boolean isPersistent() {
-                    return false;
-                }
-                public int phase() {
-                    return Trigger.SECONDARY_PHASE;
-                }
-                public void execute(Property property, String value) {
-                    if (AggTableManager.this.runTrigger()) {
-                        reOrderAggStarList();
-                    }
-                }
-            },
-
-            // Register to know when the Default resource/url has changed
-            // so that the default aggregate table recognition rules can
-            // be re-loaded.
-            // There is no need to provide equals/hashCode methods for this
-            // Trigger since it is never explicitly removed.
-            new Trigger() {
-                public boolean isPersistent() {
-                    return false;
-                }
-                public int phase() {
-                    return Trigger.SECONDARY_PHASE;
-                }
-                public void execute(Property property, String value) {
-                    if (AggTableManager.this.runTrigger()) {
-                        reLoadRolapStarAggregates();
-                    }
-                }
-            },
-
-            // If the system started not using aggregates, i.e., the aggregate
-            // tables were not loaded, but then the property
-            // was changed to use aggregates, we must then load the aggregates
-            // if they were never loaded.
-            new Trigger() {
-                public boolean isPersistent() {
-                    return false;
-                }
-                public int phase() {
-                    return Trigger.SECONDARY_PHASE;
-                }
-                public void execute(Property property, String value) {
-                    if (AggTableManager.this.runTrigger()) {
-                        reLoadRolapStarAggregates();
-                    }
-                }
-            }
-        };
-
-        // Note that for each AggTableManager theses triggers are
-        // added to the properties object. Each trigger has just
-        // been created and "knows" its AggTableManager instance.
-        // The triggers' hashCode and equals methods (those provided
-        // by the Object class) are used when removing the trigger.
-        properties.ChooseAggregateByVolume.addTrigger(triggers[0]);
-        properties.AggregateRules.addTrigger(triggers[1]);
-        properties.AggregateRuleTag.addTrigger(triggers[1]);
-        properties.ReadAggregates.addTrigger(triggers[2]);
-    }
-
-    private void deregisterTriggers(final MondrianProperties properties) {
-        // Remove this AggTableManager's instance's triggers.
-        final Trigger[] triggers = this.triggers;
-        if (triggers == null) {
-            return;
-        }
-        properties.ChooseAggregateByVolume.removeTrigger(triggers[0]);
-        properties.AggregateRules.removeTrigger(triggers[1]);
-        properties.AggregateRuleTag.removeTrigger(triggers[1]);
-        properties.ReadAggregates.removeTrigger(triggers[2]);
-    }
-
     private Collection<RolapStar> getStars() {
         return schema.getStars();
-    }
-
-    private void reOrderAggStarList() {
-        for (RolapStar star : getStars()) {
-            star.reOrderAggStarList();
-        }
     }
 
     /**
