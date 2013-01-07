@@ -4044,9 +4044,9 @@ public class RolapSchemaLoader {
     private RolapSchema.RoleFactory createScriptRole(
         MondrianDef.Script xmlScript)
     {
-        // TODO: implement
-        Util.discard(Bug.BugMondrian1281Fixed);
-        throw new UnsupportedOperationException();
+        Scripts.ScriptDefinition script = toScriptDef(xmlScript);
+        RoleGenerator roleGenerator = Scripts.roleGenerator(script);
+        return schema.new GeneratingRoleFactory(roleGenerator);
     }
 
     private RolapSchema.RoleFactory createGrantRole(

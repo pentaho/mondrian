@@ -2763,6 +2763,44 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "Row #0: 74,748\n");
     }
 
+    public void testRoleGeneratorScript() {
+        final Util.PropertyList properties =
+            getTestContext().getConnectionProperties().clone();
+        properties.put("session.state", "CA");
+        getTestContext()
+            .withProperties(properties)
+            .insertRole(
+                "<Role name='state'>\n"
+                + "  <Script language='JavaScript'>\n"
+                + "<![CDATA["
+                + "    var state = context.get(\"state\");\n"
+                + "    return \"<Role name='role_\" + state + \"'>\"\n"
+                + "        + \" <SchemaGrant access='none'>\"\n"
+                + "        + \"  <CubeGrant cube='Sales' access='all'>\"\n"
+                + "        + \"   <HierarchyGrant hierarchy='[Store].[Stores]' access='custom' rollupPolicy='partial'>\"\n"
+                + "        + \"    <MemberGrant member='[Store].[Stores].[USA]' access='none'/>\"\n"
+                + "        + (state != null\n"
+                + "           ? \"    <MemberGrant member='[Store].[Stores].[USA].[\"\n"
+                + "           + state\n"
+                + "           + \"]' access='all'/>\"\n"
+                + "           : \"\")\n"
+                + "        + \"   </HierarchyGrant>\"\n"
+                + "        + \"  </CubeGrant>\"\n"
+                + "        + \" </SchemaGrant>\"\n"
+                + "        + \"</Role>\";\n"
+                + "]]>\n"
+                + "  </Script>\n"
+                + "</Role>\n")
+            .withRole("state")
+            .assertQueryReturns(
+                "select Descendants([Store].[Stores], 2) on 0 from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Store].[Stores].[USA].[CA]}\n"
+                + "Row #0: 74,748\n");
+    }
+
     public static class MyRoleGenerator implements RoleGenerator {
         public String asXml(Map<String, Object> context) {
             String state = (String) context.get("state");

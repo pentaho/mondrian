@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2011 Pentaho
+// Copyright (C) 2011-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -85,6 +85,22 @@ public class Scripts {
             script,
             CellFormatter.class,
             simple(script, "formatCell(value)"));
+    }
+
+    /**
+     * Creates an implementation of the {@link mondrian.spi.RoleGenerator} SPI
+     * based on a script.
+     *
+     * @param script Script
+     * @return role generator
+     */
+    public static RoleGenerator roleGenerator(
+        ScriptDefinition script)
+    {
+        return create(
+            script,
+            RoleGenerator.class,
+            simple(script, "asXml(context)"));
     }
 
     /**
