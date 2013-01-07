@@ -1,6 +1,6 @@
 @echo off
 rem $Id$
-
+echo %JAVA_HOME%
 rem **** This program takes 1 argument and a series of other arguments to pass to Ant.
 rem ****  - buildOnJdk.bat [jdk version] [ant arguments]
 
@@ -36,14 +36,19 @@ rem ======================================================
 rem ===== Don't touch anything below this line ===========
 
 if %1==jdk1.5 (
+  if  "%JAVA_HOME_15%"  NEQ "" (
 set JAVA_HOME=%JAVA_HOME_15%
-)
+))
+
 if %1==jdk1.6 (
+  if  "%JAVA_HOME_16%"  NEQ "" (
 set JAVA_HOME=%JAVA_HOME_16%
-)
+))
+
 if %1==jdk1.7 (
+  if  "%JAVA_HOME_17%"  NEQ "" (
 set JAVA_HOME=%JAVA_HOME_17%
-)
+))
 
 set ANT_ARGUMENTS=-Drequested.java.version=%1
 for %%A in (%*) do (
