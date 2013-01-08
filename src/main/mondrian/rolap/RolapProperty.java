@@ -5,12 +5,12 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
-import mondrian.olap.Property;
+import mondrian.olap.*;
 import mondrian.spi.PropertyFormatter;
 
 import org.apache.log4j.Logger;
@@ -25,7 +25,7 @@ class RolapProperty extends Property {
     private static final Logger LOGGER = Logger.getLogger(RolapProperty.class);
 
     private final PropertyFormatter formatter;
-    private final String caption;
+    private final Larder larder;
 
     final RolapAttribute owningAttribute;
     final RolapAttribute attribute;
@@ -41,7 +41,6 @@ class RolapProperty extends Property {
      *    an intrinsic property of a level, e.g. level name
      * @param type Datatype
      * @param formatter Formatter, or null
-     * @param caption Caption
      * @param internal Whether property is internal
      */
     RolapProperty(
@@ -50,15 +49,16 @@ class RolapProperty extends Property {
         RolapAttribute sourceAttribute,
         Datatype type,
         PropertyFormatter formatter,
-        String caption,
         boolean internal,
-        String description)
+        Larder larder)
     {
-        super(name, type, -1, internal, false, false, description);
+        super(
+            name, type, -1, internal, false, false,
+            Larders.getDescription(larder));
         this.owningAttribute = owningAttribute;
         this.attribute = sourceAttribute;
-        this.caption = caption;
         this.formatter = formatter;
+        this.larder = larder;
     }
 
     public PropertyFormatter getFormatter() {
@@ -69,10 +69,7 @@ class RolapProperty extends Property {
      * @return Returns the caption.
      */
     public String getCaption() {
-        if (caption == null) {
-            return getName();
-        }
-        return caption;
+        return Larders.getCaption(this, larder);
     }
 
     /**

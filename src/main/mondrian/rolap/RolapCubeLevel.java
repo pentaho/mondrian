@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -14,7 +14,6 @@ import mondrian.olap.*;
 import mondrian.rolap.agg.*;
 import mondrian.spi.MemberFormatter;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,8 +41,6 @@ public class RolapCubeLevel extends RolapLevel {
             cubeHierarchy,
             level.getName(),
             level.isVisible(),
-            level.getCaption(),
-            level.getDescription(),
             level.getDepth(),
             level.attribute,
             level.parentAttribute,
@@ -51,7 +48,7 @@ public class RolapCubeLevel extends RolapLevel {
             level.nullParentValue,
             level.closure,
             level.getHideMemberCondition(),
-            level.getAnnotationMap());
+            level.getLarder());
 
         this.rolapLevel = level;
         this.cubeHierarchy = cubeHierarchy;
@@ -84,11 +81,9 @@ public class RolapCubeLevel extends RolapLevel {
                     dimension,
                     getDimension().getName() + "$Closure",
                     null,
-                    null,
-                    null,
                     -1,
                     getCube().hierarchyList,
-                    Collections.<String, Annotation>emptyMap());
+                    Larders.EMPTY);
 
             schemaLoader.initDimension(cubeDimension);
             closedPeerCubeLevel =
@@ -173,12 +168,6 @@ public class RolapCubeLevel extends RolapLevel {
 
     public String getCaption() {
         return rolapLevel.getCaption();
-    }
-
-    public void setCaption(String caption) {
-        // Cannot set the caption on the underlying level; other cube levels
-        // might be using it.
-        throw new UnsupportedOperationException();
     }
 
     /**
@@ -418,7 +407,7 @@ public class RolapCubeLevel extends RolapLevel {
             // inline a bunch of fields for performance
             this.closedPeerCubeLevel = cubeLevel.closedPeerCubeLevel;
             this.closedPeerLevel = cubeLevel.rolapLevel.getClosedPeer();
-            this.wrappedAllMember = (RolapMember)
+            this.wrappedAllMember =
                 closedPeerLevel.getHierarchy().getDefaultMember();
             this.allMember =
                 closedPeerCubeLevel.getHierarchy().getDefaultMember();

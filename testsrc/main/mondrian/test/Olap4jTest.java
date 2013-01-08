@@ -4,14 +4,13 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
 
 import mondrian.olap.*;
 import mondrian.olap4j.MondrianOlap4jDriver;
-import mondrian.xmla.XmlaHandler;
 
 import org.olap4j.*;
 import org.olap4j.Cell;
@@ -137,12 +136,20 @@ public class Olap4jTest extends FoodMartTestCase {
         final Cube salesCube = metaData.getCube();
         Annotated annotated = ((OlapWrapper) salesCube).unwrap(Annotated.class);
         final Annotation annotation =
-            annotated.getAnnotationMap().get("caption.fr_FR");
+            annotated.getAnnotationMap().get("caption+fr_FR");
         assertEquals("Ventes", annotation.getValue());
+
+        // the annotation that indicated a localized resource has been removed
+        // from the annotation map
+        assertNull(annotated.getAnnotationMap().get("caption.fr_FR"));
+        assertEquals(
+            "Ventes",
+            ((OlapWrapper) salesCube).unwrap(OlapElement.class)
+                .getLocalized(LocalizedProperty.CAPTION, Locale.FRANCE));
 
         final Map<String, Object> map =
             MondrianOlap4jDriver.EXTRA.getAnnotationMap(salesCube);
-        assertEquals("Ventes", map.get("caption.fr_FR"));
+        assertEquals("Ventes", map.get("caption+fr_FR"));
     }
 
     public void testFormatString() throws SQLException {

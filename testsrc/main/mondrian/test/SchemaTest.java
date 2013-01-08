@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -307,8 +307,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "[Promotion with default].[Media Type].[All Media Type].[TV]")
             .assertSchemaError(
                 TestContext.fragment(
-                    "Mondrian Error:Internal error: Can not find Default Member with name \"\\[Promotion with default\\].\\[Media Type\\].\\[All Media Type\\].\\[TV\\]\" in Hierarchy \"Media Type\"",
-                    "<Hierarchy name='Media Type' "));
+                    "Can not find Default Member with name \"\\[Promotion with default\\].\\[Media Type\\].\\[All Media Type\\].\\[TV\\]\" \\(in Hierarchy 'Media Type'\\) \\(at ${pos}\\)",
+                    "<Hierarchy name='Media Type' defaultMember='[Promotion with default].[Media Type].[All Media Type].[TV]'>"));
     }
 
     private TestContext checkHierarchyDefaultMember(String s) {
@@ -3631,8 +3631,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
                             final String find = "<Schema ";
                             int i = schema.indexOf(find) + find.length();
                             return schema.substring(0, i)
-                                   + "missingLink='ignore' "
-                                   + schema.substring(i);
+                                + "missingLink='ignore' "
+                                + schema.substring(i);
                         }
                     });
         testContext.assertSimpleQuery();
@@ -4316,12 +4316,12 @@ Test that get error if a dimension has more than one hierarchy with same name.
         }
         // The description is prefixed by the dimension usage name.
         assertEquals(
-            "Time usage description.Time shared hierarchy description",
+            "Time1.Time shared hierarchy description",
             timeHierarchy.getDescription());
         // The hierarchy caption is prefixed by the caption of the dimension
         // usage.
         assertEquals(
-            "Time usage caption.Time shared hierarchy caption",
+            "Time1.Time shared hierarchy caption",
             timeHierarchy.getCaption());
         // No annotations.
         checkAnnotations(timeHierarchy.getAnnotationMap());
@@ -4347,12 +4347,12 @@ Test that get error if a dimension has more than one hierarchy with same name.
         // The description is prefixed by the dimension usage name (because
         // dimension usage has no caption).
         assertEquals(
-            "Time shared description.Time shared hierarchy description",
+            "Time2.Time shared hierarchy description",
             time2Hierarchy.getDescription());
         // The hierarchy caption is prefixed by the dimension usage name
         // (because the dimension usage has no caption.
         assertEquals(
-            "Time shared caption.Time shared hierarchy caption",
+            "Time2.Time shared hierarchy caption",
             time2Hierarchy.getCaption());
         // No annotations.
         checkAnnotations(time2Hierarchy.getAnnotationMap());
@@ -7530,9 +7530,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "{[Product].[Products].[Drink]}\n"
                 + "{[Product].[Products].[Food]}\n"
                 + "{[Product].[Products].[Non-Consumable]}\n"
-                + "Row #0: \n"
-                + "Row #1: \n"
-                + "Row #2: \n");
+                + "Row #0: $29,358.98\n"
+                + "Row #1: $245,764.87\n"
+                + "Row #2: $64,487.05\n");
     }
 
     // TODO: document NoLink

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -76,7 +76,7 @@ public class RolapHierarchy extends HierarchyBase {
     private static final int ALL_LEVEL_CARDINALITY = 1;
     private static final int NULL_LEVEL_CARDINALITY = 1;
     final RolapAttribute attribute;
-    private final Map<String, Annotation> annotationMap;
+    private final Larder larder;
     final RolapHierarchy closureFor;
 
     final NamedList<RolapLevel> levelList = new NamedListImpl<RolapLevel>();
@@ -99,18 +99,14 @@ public class RolapHierarchy extends HierarchyBase {
         String subName,
         String uniqueName,
         boolean visible,
-        String caption,
-        String description,
         boolean hasAll,
         RolapHierarchy closureFor,
         RolapAttribute attribute,
-        Map<String, Annotation> annotationMap)
+        Larder larder)
     {
-        super(
-            dimension, subName, uniqueName,
-            visible, caption, description, hasAll);
+        super(dimension, subName, uniqueName, visible, hasAll);
         this.attribute = attribute;
-        this.annotationMap = annotationMap;
+        this.larder = larder;
         this.closureFor = closureFor;
         this.isScenario = subName != null && subName.equals("Scenario");
         assert !isScenario
@@ -126,26 +122,13 @@ public class RolapHierarchy extends HierarchyBase {
     {
         assert !(this instanceof RolapCubeHierarchy);
 
-        // Even if !hasAll, there is still an invisible 'all' member, therefore
-        // we need to set allMemberName and allLevelName.
-        if (allMemberName != null) {
-            this.allMemberName = allMemberName;
-        } else {
-            this.allMemberName = "All " + name + "s";
-        }
-
         // Create an 'all' level even if the hierarchy does not officially
         // have one.
-        if (allLevelName == null) {
-            allLevelName = "(All)";
-        }
         final RolapLevel allLevel =
             new RolapLevel(
                 this,
-                allLevelName,
+                Util.first(allLevelName, "(All)"),
                 true,
-                null,
-                null,
                 0,
                 ALL_ATTRIBUTE.inDimension(getDimension()),
                 null,
@@ -153,7 +136,7 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 null,
                 RolapLevel.HideMemberCondition.Never,
-                Collections.<String, Annotation>emptyMap());
+                Larders.EMPTY);
         if (hasAll) {
             this.levelList.add(allLevel);
         }
@@ -163,10 +146,8 @@ public class RolapHierarchy extends HierarchyBase {
         this.nullLevel =
             new RolapLevel(
                 this,
-                allLevelName,
+                Util.first(allLevelName, "(All)"),
                 true,
-                null,
-                null,
                 0,
                 NULL_ATTRIBUTE.inDimension(getDimension()),
                 null,
@@ -174,7 +155,7 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 null,
                 RolapLevel.HideMemberCondition.Never,
-                Collections.<String, Annotation>emptyMap());
+                Larders.EMPTY);
 
         this.nullMember = new RolapNullMember(nullLevel);
 
@@ -184,8 +165,6 @@ public class RolapHierarchy extends HierarchyBase {
                     this,
                     RolapSchemaLoader.MEASURES_LEVEL_NAME,
                     true,
-                    null,
-                    null,
                     levelList.size(),
                     MEASURES_ATTRIBUTE.inDimension(getDimension()),
                     null,
@@ -193,7 +172,7 @@ public class RolapHierarchy extends HierarchyBase {
                     null,
                     null,
                     RolapLevel.HideMemberCondition.Never,
-                    Collections.<String, Annotation>emptyMap()));
+                    Larders.EMPTY));
         }
 
         if (this instanceof RolapCubeHierarchy) {
@@ -201,19 +180,15 @@ public class RolapHierarchy extends HierarchyBase {
             return;
         }
 
-        // Create an all member; assign caption if supplied.
+        // Create an all member.
         this.allMember =
             new RolapMemberBase(
                 null,
                 allLevel,
                 Util.COMPARABLE_EMPTY_LIST,
-                this.allMemberName,
-                Member.MemberType.ALL);
-        if (allMemberCaption != null
-            && allMemberCaption.length() > 0)
-        {
-            this.allMember.setCaption(allMemberCaption);
-        }
+                Util.first(allMemberName, "All " + name + "s"),
+                Member.MemberType.ALL,
+                allMemberCaption);
         this.allMember.setOrdinal(0);
     }
 
@@ -270,8 +245,8 @@ public class RolapHierarchy extends HierarchyBase {
         return memberReader;
     }
 
-    public Map<String, Annotation> getAnnotationMap() {
-        return annotationMap;
+    public Larder getLarder() {
+        return larder;
     }
 
     @Override
@@ -632,11 +607,11 @@ public class RolapHierarchy extends HierarchyBase {
             (RolapSchema) dimension.getSchema(),
             dimension.getName() + "$Closure",
             false,
-            null,
-            "Closure dimension for parent-child hierarchy " + getName(),
             org.olap4j.metadata.Dimension.Type.OTHER,
             false,
-            Collections.<String, Annotation>emptyMap());
+            Larders.create(
+                null,
+                "Closure dimension for parent-child hierarchy " + getName()));
 
         // Create a peer hierarchy.
         RolapHierarchy peerHier =
@@ -645,14 +620,13 @@ public class RolapHierarchy extends HierarchyBase {
                 peerDimension.getName(),
                 Util.makeFqName(peerDimension, peerDimension.getName()),
                 peerDimension.isVisible(),
-                peerDimension.getCaption(),
-                peerDimension.getDescription(),
                 true,
                 this,
                 null,
-                Collections.<String, Annotation>emptyMap());
+                Larders.create(
+                    peerDimension.getCaption(),
+                    peerDimension.getDescription()));
         peerDimension.addHierarchy(peerHier);
-        peerHier.allMemberName = getAllMemberName();
         peerHier.allMember = (RolapMemberBase) getAllMember();
 
         // Create the upper level.
@@ -663,8 +637,6 @@ public class RolapHierarchy extends HierarchyBase {
                 peerHier,
                 "Closure",
                 false,
-                caption,
-                description,
                 peerHier.levelList.size(),
                 src.getParentAttribute(),
                 null,
@@ -672,7 +644,7 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 null,
                 src.getHideMemberCondition(),
-                Collections.<String, Annotation>emptyMap());
+                Larders.EMPTY);
         peerHier.levelList.add(level);
 
         // Create lower level.
@@ -685,8 +657,6 @@ public class RolapHierarchy extends HierarchyBase {
                 peerHier,
                 "Item",
                 false,
-                null,
-                null,
                 peerHier.levelList.size(),
                 src.attribute, // TODO: new attr, also change its row count
                 null,
@@ -694,7 +664,7 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 null,
                 src.getHideMemberCondition(),
-                Collections.<String, Annotation>emptyMap());
+                Larders.EMPTY);
         peerHier.levelList.add(sublevel);
         return peerDimension;
     }
@@ -1023,8 +993,6 @@ public class RolapHierarchy extends HierarchyBase {
         new RolapSharedAttribute(
             "All",
             true,
-            null,
-            null,
             Collections.<RolapSchema.PhysColumn>emptyList(),
             null,
             null,
@@ -1037,8 +1005,6 @@ public class RolapHierarchy extends HierarchyBase {
         new RolapSharedAttribute(
             "Null",
             true,
-            null,
-            null,
             Collections.<RolapSchema.PhysColumn>emptyList(),
             null,
             null,
@@ -1051,8 +1017,6 @@ public class RolapHierarchy extends HierarchyBase {
         new RolapSharedAttribute(
             "Measures",
             true,
-            null,
-            null,
             Collections.<RolapSchema.PhysColumn>emptyList(),
             null,
             null,

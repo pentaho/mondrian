@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -29,7 +29,6 @@ public abstract class DimensionBase
 {
     protected final String name;
     protected final String uniqueName;
-    protected final String description;
     protected final NamedList<Hierarchy> hierarchyList =
         new NamedListImpl<Hierarchy>();
     protected final org.olap4j.metadata.Dimension.Type dimensionType;
@@ -43,15 +42,11 @@ public abstract class DimensionBase
     protected DimensionBase(
         String name,
         boolean visible,
-        String caption,
-        String description,
         org.olap4j.metadata.Dimension.Type dimensionType)
     {
         this.name = name;
-        this.caption = caption;
         this.visible = visible;
         this.uniqueName = Util.makeFqName(name);
-        this.description = description;
         this.dimensionType = dimensionType;
         assert dimensionType != null;
     }
@@ -65,7 +60,7 @@ public abstract class DimensionBase
     }
 
     public String getDescription() {
-        return description;
+        return Larders.getDescription(getLarder());
     }
 
     /**

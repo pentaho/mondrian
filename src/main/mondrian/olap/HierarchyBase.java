@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -24,33 +24,20 @@ public abstract class HierarchyBase
     extends OlapElementBase
     implements Hierarchy
 {
-
     protected final Dimension dimension;
     protected final String name;
     protected final String uniqueName;
-    protected String description;
     protected final boolean hasAll;
-    protected String allMemberName;
 
     protected HierarchyBase(
         Dimension dimension,
         String subName,
         String uniqueName,
         boolean visible,
-        String caption,
-        String description,
         boolean hasAll)
     {
         this.dimension = dimension;
         this.hasAll = hasAll;
-        if (caption != null && !caption.equals("")) {
-            this.caption = caption;
-        } else if (subName == null) {
-            this.caption = dimension.getCaption();
-        } else {
-            this.caption = subName;
-        }
-        this.description = description;
         this.visible = visible;
 
         assert subName != null;
@@ -79,7 +66,7 @@ public abstract class HierarchyBase
     public abstract boolean isRagged();
 
     public String getDescription() {
-        return description;
+        return Larders.getDescription(getLarder());
     }
 
     public Dimension getDimension() {
@@ -144,11 +131,6 @@ public abstract class HierarchyBase
         }
         return oe;
     }
-
-    public String getAllMemberName() {
-        return allMemberName;
-    }
-
 }
 
 // End HierarchyBase.java

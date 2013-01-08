@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1998-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -474,7 +474,7 @@ public class Query extends QueryPart {
      *   ResultStyle.LIST
      *   ResultStyle.MUTABLE_LIST
      *
-     * @param resultStyle
+     * @param resultStyle Result style
      */
     public void setResultStyle(ResultStyle resultStyle) {
         switch (resultStyle) {
@@ -1061,8 +1061,8 @@ public class Query extends QueryPart {
         Formula formula = findFormula(uniqueName);
         if (failIfUsedInQuery && formula != null) {
             OlapElement mdxElement = formula.getElement();
-            //search the query tree to see if this formula expression is used
-            //anywhere (on the axes or in another formula)
+            // search the query tree to see if this formula expression is used
+            // anywhere (on the axes or in another formula)
             Walker walker = new Walker(this);
             while (walker.hasMoreElements()) {
                 Object queryElement = walker.nextElement();
@@ -1929,7 +1929,11 @@ public class Query extends QueryPart {
         }
 
         public Map<String, Annotation> getAnnotationMap() {
-            return Collections.emptyMap();
+            return getLarder().getAnnotationMap();
+        }
+
+        public Larder getLarder() {
+            return Larders.EMPTY;
         }
 
         public NamedSet validate(Validator validator) {

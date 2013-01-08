@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -103,6 +103,28 @@ public class RolapMemberBase
         String name,
         MemberType memberType)
     {
+        this(parentMember, level, key, name, memberType, null);
+    }
+
+    /**
+     * Creates a RolapMemberBase with caption.
+     *
+     * @param parentMember Parent member
+     * @param level Level this member belongs to
+     * @param key Key to this member in the underlying RDBMS, per
+     *   {@link RolapMember.Key}
+     * @param name Name of this member
+     * @param memberType Type of member
+     * @param caption Caption
+     */
+    protected RolapMemberBase(
+        RolapMember parentMember,
+        RolapLevel level,
+        Comparable key,
+        String name,
+        MemberType memberType,
+        String caption)
+    {
         super(parentMember, level, memberType);
         assert !(parentMember instanceof RolapCubeMember)
             || this instanceof RolapCalculatedMember
@@ -121,6 +143,9 @@ public class RolapMemberBase
             setProperty(Property.NAME.name, name);
         } else if (key != null) {
             setUniqueName(key);
+        }
+        if (caption != null) {
+            setProperty(Property.CAPTION.name, caption);
         }
     }
 
@@ -147,8 +172,8 @@ public class RolapMemberBase
 
     // Regular members do not have annotations. Measures and calculated members
     // do, so they override this method.
-    public Map<String, Annotation> getAnnotationMap() {
-        return Collections.emptyMap();
+    public Larder getLarder() {
+        return Larders.ofProperties(mapPropertyNameToValue);
     }
 
     public int hashCode() {
@@ -282,11 +307,6 @@ public class RolapMemberBase
      * side-effects.
      */
     public synchronized void setProperty(String name, Object value) {
-        if (name.equals(Property.CAPTION.name)) {
-            setCaption((String)value);
-            return;
-        }
-
         if (mapPropertyNameToValue.isEmpty()) {
             // the empty map is shared and immutable; create our own
             PropertyValueMapFactory factory =
@@ -329,6 +349,9 @@ public class RolapMemberBase
 
             case Property.CAPTION_ORDINAL:
                 return getCaption();
+
+            case Property.DESCRIPTION_ORDINAL:
+                return getDescription();
 
             case Property.CONTRIBUTING_CHILDREN_ORDINAL:
                 list = new ArrayList<RolapMember>();

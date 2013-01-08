@@ -5,15 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.olap.*;
 
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * A <code>RolapCalculatedMember</code> is a member based upon a
@@ -30,7 +28,7 @@ public class RolapCalculatedMember
     implements CalculatedMember
 {
     private final Formula formula;
-    private Map<String, Annotation> annotationMap;
+    private Larder larder;
 
     /**
      * Creates a RolapCalculatedMember.
@@ -50,7 +48,7 @@ public class RolapCalculatedMember
         // overrides MEASURE.
         super(parentMember, level, null, name, MemberType.FORMULA);
         this.formula = formula;
-        this.annotationMap = Collections.emptyMap();
+        this.larder = Larders.EMPTY;
     }
 
     // override RolapMember
@@ -93,13 +91,13 @@ public class RolapCalculatedMember
     }
 
     @Override
-    public Map<String, Annotation> getAnnotationMap() {
-        return annotationMap;
+    public Larder getLarder() {
+        return larder;
     }
 
-    void setAnnotationMap(Map<String, Annotation> annotationMap) {
-        assert annotationMap != null;
-        this.annotationMap = annotationMap;
+    void setLarder(Larder larder) {
+        assert larder != null;
+        this.larder = larder;
     }
 }
 

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -17,7 +17,6 @@ import org.olap4j.metadata.Dimension;
 
 import java.util.*;
 
-import static mondrian.olap.Util.first;
 
 /**
  * RolapCubeDimension wraps a RolapDimension for a specific Cube.
@@ -39,11 +38,9 @@ public class RolapCubeDimension extends RolapDimension {
      * @param rolapDim Dimension wrapped by this dimension
      * @param name Name of dimension
      * @param dimSource Name of source dimension
-     * @param caption Caption
-     * @param description Description
      * @param cubeOrdinal Ordinal of dimension within cube
      * @param hierarchyList List of hierarchies in cube
-     * @param annotationMap Annotation map
+     * @param larder Larder
      */
     public RolapCubeDimension(
         RolapSchemaLoader schemaLoader,
@@ -51,21 +48,17 @@ public class RolapCubeDimension extends RolapDimension {
         RolapDimension rolapDim,
         String name,
         final String dimSource,
-        final String caption,
-        final String description,
         int cubeOrdinal,
         List<RolapCubeHierarchy> hierarchyList,
-        Map<String, Annotation> annotationMap)
+        Larder larder)
     {
         super(
             cube.getSchema(),
             name,
             rolapDim.isVisible(),
-            first(caption, rolapDim.getCaption()),
-            first(description, rolapDim.getDescription()),
             rolapDim.getDimensionType(),
             rolapDim.hanger,
-            annotationMap);
+            larder);
         this.rolapDimension = rolapDim;
         this.cubeOrdinal = cubeOrdinal;
         this.cube = cube;
@@ -84,12 +77,8 @@ public class RolapCubeDimension extends RolapDimension {
                         ? rolapHierarchy.getUniqueName()
                         : Util.makeFqName(this, rolapHierarchy.getName()),
                     hierarchyList.size(),
-                    applyPrefix(
-                        rolapHierarchy.getCaption(),
-                        dimSource, name, caption),
-                    applyPrefix(
-                        rolapHierarchy.getDescription(),
-                        dimSource, name, description));
+                    Larders.prefix(
+                        rolapHierarchy.getLarder(), dimSource, name));
             hierarchyList.add(hierarchy);
             if (hierarchy.isScenario) {
                 assert cube.scenarioHierarchy == null;
@@ -141,20 +130,6 @@ public class RolapCubeDimension extends RolapDimension {
         return getUniqueName().equals(that.getUniqueName());
     }
 
-    public String getCaption() {
-        if (caption != null) {
-            return caption;
-        }
-        return rolapDimension.getCaption();
-    }
-
-    public void setCaption(String caption) {
-        if (true) {
-            throw new UnsupportedOperationException();
-        }
-        rolapDimension.setCaption(caption);
-    }
-
     public Dimension.Type getDimensionType() {
         return rolapDimension.getDimensionType();
     }
@@ -162,43 +137,6 @@ public class RolapCubeDimension extends RolapDimension {
     @Override
     public RolapSchema.PhysPath getKeyPath(RolapSchema.PhysColumn column) {
         return rolapDimension.getKeyPath(column);
-    }
-
-    /**
-     * Applies a prefix to a caption or description of a hierarchy in a shared
-     * dimension. Ensures that if a dimension is used more than once in the same
-     * cube then the hierarchies are distinguishable.
-     *
-     * <p>For example, if the [Time] dimension is imported as [Order Time] and
-     * [Ship Time], then the [Time].[Weekly] hierarchy would have caption
-     * "Order Time.Weekly caption" and description "Order Time.Weekly
-     * description".
-     *
-     * <p>If the dimension usage has a caption, it overrides.
-     *
-     * <p>If the dimension usage has a null name, or the name is the same
-     * as the dimension, and no caption, then no prefix is applied.
-     *
-     * @param caption Caption or description
-     * @param source Name of source schema dimension
-     * @param name Name of dimension
-     * @param dimCaption Caption of dimension
-     * @return Caption or description, possibly prefixed by dimension role name
-     */
-    static String applyPrefix(
-        String caption,
-        final String source,
-        final String name,
-        final String dimCaption)
-    {
-        if (caption != null
-            && source != null
-            && name != null
-            && !source.equals(name))
-        {
-            return first(dimCaption, name) + "." + caption;
-        }
-        return caption;
     }
 }
 

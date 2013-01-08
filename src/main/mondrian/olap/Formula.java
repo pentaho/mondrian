@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2000-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -266,11 +266,9 @@ public class Formula extends QueryPart {
             mdxSet =
                 new SetBase(
                     ((Id.NameSegment) segment0).getName(),
-                    null,
-                    null,
                     exp,
                     false,
-                    Collections.<String, Annotation>emptyMap());
+                    Larders.EMPTY);
         }
     }
 
@@ -461,7 +459,8 @@ public class Formula extends QueryPart {
      * looks for properties called "format", "format_string", etc. Then it looks
      * inside the expression, and returns the formatting expression for the
      * first member it finds.
-     * @param validator
+     *
+     * @param validator Validator
      */
     private Exp getFormatExp(Validator validator) {
         // If they have specified a format string (which they can do under
@@ -569,10 +568,10 @@ public class Formula extends QueryPart {
         }
 
         /**
+         * This check is required to avoid infinite recursion.
          *
-         * @param expr
+         * @param expr Expression
          * @return true if there is cyclic reference in expression.
-         * This check is required to avoid infinite recursion
          */
         private boolean hasCyclicReference(Exp expr) {
             List<MemberExpr> expList = new ArrayList<MemberExpr>();

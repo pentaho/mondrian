@@ -5,17 +5,20 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.olap.Cube;
+import mondrian.olap.Dimension;
+import mondrian.olap.Schema;
 import mondrian.util.Lazy;
 
 import org.apache.log4j.Logger;
 
-import org.olap4j.metadata.NamedList;
+import org.olap4j.metadata.*;
 
 import java.util.*;
 
@@ -59,7 +62,7 @@ class RolapDimension extends DimensionBase {
     private static final Logger LOGGER = Logger.getLogger(RolapDimension.class);
 
     final RolapSchema schema;
-    private final Map<String, Annotation> annotationMap;
+    private final Larder larder;
     RolapAttribute keyAttribute;
     protected final Map<String, RolapAttribute> attributeMap =
         new HashMap<String, RolapAttribute>();
@@ -79,25 +82,21 @@ class RolapDimension extends DimensionBase {
         RolapSchema schema,
         String name,
         boolean visible,
-        String caption,
-        String description,
         org.olap4j.metadata.Dimension.Type dimensionType,
         boolean hanger,
-        Map<String, Annotation> annotationMap)
+        Larder larder)
     {
         // todo: recognition of a time dimension should be improved
         // allow multiple time dimensions
         super(
             name,
             visible,
-            caption,
-            description,
             dimensionType);
-        assert annotationMap != null;
+        assert larder != null;
         assert schema != null;
         this.schema = schema;
         this.hanger = hanger;
-        this.annotationMap = annotationMap;
+        this.larder = larder;
     }
 
     protected Logger getLogger() {
@@ -118,8 +117,8 @@ class RolapDimension extends DimensionBase {
         return schema;
     }
 
-    public Map<String, Annotation> getAnnotationMap() {
-        return annotationMap;
+    public Larder getLarder() {
+        return larder;
     }
 
     /**

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1998-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -39,6 +39,10 @@ public interface OlapElement extends Named {
      */
     String getQualifiedName();
 
+    /**
+     * Returns the display name of this catalog element.
+     * If no caption is defined, the name is returned.
+     */
     String getCaption();
 
     /**
@@ -93,10 +97,6 @@ public interface OlapElement extends Named {
      */
     boolean isVisible();
 
-    enum LocalizedProperty {
-        CAPTION,
-        DESCRIPTION
-    }
 }
 
 // End OlapElement.java

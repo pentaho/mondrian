@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -13,8 +13,12 @@ import mondrian.olap.*;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.util.Format;
 
-import java.util.Calendar;
-import java.util.Locale;
+import org.olap4j.OlapConnection;
+import org.olap4j.metadata.Cube;
+import org.olap4j.metadata.Schema;
+
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * Test suite for internalization and localization.
@@ -100,7 +104,123 @@ public class I18nTest extends FoodMartTestCase {
             + "Row #0: " + resultString + "\n",
             actual);
     }
+
+    /** Unit test for captions and descriptions defined using annotations. */
+    public void testSimple() throws SQLException {
+        final OlapConnection olapConnection =
+            getTestContext()
+                .insertCube(
+                    "<Localization>\n"
+                    + "  <Locales>\n"
+                    + "    <Locale locale='en'/>\n"
+                    + "    <Locale locale='fr'/>\n"
+                    + "    <Locale locale='fr-CA'/>\n"
+                    + "    <Locale locale='de-DE'/>\n"
+                    + "  </Locales>\n"
+                    + "</Localization>\n")
+                .getOlap4jConnection();
+
+        final Schema olapSchema = olapConnection.getOlapSchema();
+
+        final Set<String> localeNames = new TreeSet<String>();
+        for (Locale locale : olapSchema.getSupportedLocales()) {
+            localeNames.add(locale.toString());
+        }
+        assertEquals(
+            new HashSet<String>(Arrays.asList("en", "fr", "fr_CA", "de_DE")),
+            localeNames);
+
+        olapConnection.setLocale(Locale.US);
+        final Cube salesCubeUs = olapSchema.getCubes().get("Sales");
+        assertEquals("Sales", salesCubeUs.getCaption());
+
+        // Switch locales. Note that we have to re-read metadata from the
+        // root (getOlapSchema()).
+        olapConnection.setLocale(Locale.GERMANY);
+        final Cube salesCubeGerman = olapSchema.getCubes().get("Sales");
+        assertEquals("Verkaufen", salesCubeGerman.getCaption());
+        assertEquals("Cube Verkaufen", salesCubeGerman.getDescription());
+
+        olapConnection.setLocale(Locale.FRANCE);
+        final Cube salesCubeFrance = olapSchema.getCubes().get("Sales");
+        assertEquals("Ventes", salesCubeFrance.getCaption());
+        assertEquals("Cube des ventes", salesCubeFrance.getDescription());
+
+        // According to the olap4j spec,
+        // behavior is undefined (e.g. the US sales cube might be invalid).
+        // In the mondrian-olap4j driver, the cube object is the same under
+        // all locales, and switches based on the connection's locale.
+        assertEquals("Ventes", salesCubeUs.getCaption());
+
+        // Reset locale.
+        olapConnection.setLocale(Locale.US);
+    }
+
+    /** Unit test for captions and descriptions loaded from resource file. */
+    public void testFileMissing() throws SQLException {
+        getTestContext()
+            .insertCube(
+                "<Localization>\n"
+                + "  <Locales>\n"
+                + "    <Locale locale='en-US'/>\n"
+                + "    <Locale locale='fr'/>\n"
+                + "    <Locale locale='fr-CA'/>\n"
+                + "    <Locale locale='de-DE'/>\n"
+                + "  </Locales>\n"
+                + "  <Translations>\n"
+                + "    <Translation path='/home/jhyde/open1/mondrian/testsrc/main/mondrian/test/I18nTest_${locale}.properties'/>\n"
+                + "  </Translations>\n"
+                + "</Localization>\n")
+            .assertSchemaError(
+                "(?s).*Error reading resource file.*",
+                "<Translation path='/home/jhyde/open1/mondrian/testsrc/main/mondrian/test/I18nTest_${locale}.properties'/>");
+    }
+
+    /** Unit test for captions and descriptions loaded from resource file. */
+    public void testFromFile() throws SQLException {
+        final OlapConnection olapConnection =
+            getTestContext()
+                .insertCube(
+                    "<Localization>\n"
+                    + "  <Locales>\n"
+                    + "    <Locale locale='en-US'/>\n"
+                    + "    <Locale locale='fr'/>\n"
+                    + "    <Locale locale='fr-CA'/>\n"
+                    + "  </Locales>\n"
+                    + "  <Translations>\n"
+                    + "    <Translation path='/home/jhyde/open1/mondrian/testsrc/main/mondrian/test/I18nTest_${locale}.properties'/>\n"
+                    + "  </Translations>\n"
+                    + "</Localization>\n")
+                .getOlap4jConnection();
+
+        olapConnection.setLocale(Locale.US);
+        final Cube salesCubeUs =
+            olapConnection.getOlapSchema().getCubes().get("Sales");
+        assertEquals("Sales", salesCubeUs.getCaption());
+
+        // Switch locales. Note that we have to re-read metadata from the
+        // root (getOlapSchema()).
+        olapConnection.setLocale(Locale.GERMANY);
+        final Cube salesCubeGerman =
+            olapConnection.getOlapSchema().getCubes().get("Sales");
+        assertEquals("Verkaufen", salesCubeGerman.getCaption());
+        assertEquals("Cube Verkaufen", salesCubeGerman.getDescription());
+
+        olapConnection.setLocale(Locale.FRANCE);
+        final Cube salesCubeFrance =
+            olapConnection.getOlapSchema().getCubes().get("Sales");
+        assertEquals("Ventes", salesCubeFrance.getCaption());
+        assertEquals("Cube des ventes", salesCubeFrance.getDescription());
+
+        // According to the olap4j spec,
+        // behavior is undefined (e.g. the US sales cube might be invalid).
+        // In the mondrian-olap4j driver, the cube object is the same under
+        // all locales, and switches based on the connection's locale.
+        assertEquals("Ventes", salesCubeUs.getCaption());
+
+        // Reset locale.
+        olapConnection.setLocale(Locale.US);
+    }
 }
 
 // End I18nTest.java
-

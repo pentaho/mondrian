@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2012 Pentaho and others
+// Copyright (C) 2008-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -12,7 +12,6 @@ package mondrian.rolap;
 import mondrian.olap.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Implementation of {@link mondrian.rolap.RolapMember} that delegates all calls
@@ -176,16 +175,12 @@ public class DelegatingRolapMember extends RolapMemberBase {
         return member.lookupChild(schemaReader, s, matchType);
     }
 
-    public Map<String, Annotation> getAnnotationMap() {
-        return member.getAnnotationMap();
+    public Larder getLarder() {
+        return member.getLarder();
     }
 
     public String getQualifiedName() {
         return member.getQualifiedName();
-    }
-
-    public String getCaption() {
-        return member.getCaption();
     }
 
     public Dimension getDimension() {

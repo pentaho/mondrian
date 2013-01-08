@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
@@ -163,13 +163,13 @@ class MondrianOlap4jLevel
 
     public String getCaption() {
         return level.getLocalized(
-            OlapElement.LocalizedProperty.CAPTION,
+            LocalizedProperty.CAPTION,
             olap4jSchema.getLocale());
     }
 
     public String getDescription() {
         return level.getLocalized(
-            OlapElement.LocalizedProperty.DESCRIPTION,
+            LocalizedProperty.DESCRIPTION,
             olap4jSchema.getLocale());
     }
 

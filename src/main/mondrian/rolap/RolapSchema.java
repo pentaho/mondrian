@@ -134,7 +134,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
      */
     final List<MondrianSchemaException> warningList;
 
-    private final Map<String, Annotation> annotationMap;
+    private final Larder larder;
 
     /**
      * Unique schema instance id that will be used
@@ -144,7 +144,12 @@ public class RolapSchema extends OlapElementBase implements Schema {
      */
     private final String id;
 
-    private final String description;
+    final Set<Locale> locales = new HashSet<Locale>();
+
+    public final Set<Locale> unmodifiableLocales =
+        Collections.unmodifiableSet(locales);
+
+    final List<String> translations = new ArrayList<String>();
 
     /**
      * Creates a schema.
@@ -158,10 +163,8 @@ public class RolapSchema extends OlapElementBase implements Schema {
      * @param md5Bytes MD5 hash
      * @param useContentChecksum Whether to use content checksum
      * @param name Name
-     * @param caption Caption
-     * @param description Description
      * @param quoteSql Whether dialect should not quote SQL identifiers
-     * @param annotationMap Annotation map
+     * @param larder Annotation map
      */
     RolapSchema(
         final SchemaKey key,
@@ -170,14 +173,10 @@ public class RolapSchema extends OlapElementBase implements Schema {
         final ByteString md5Bytes,
         boolean useContentChecksum,
         String name,
-        String caption,
-        String description,
         boolean quoteSql,
-        Map<String, Annotation> annotationMap)
+        Larder larder)
     {
         this.id = Util.generateUuidString();
-        this.caption = caption;
-        this.description = description;
         this.key = key;
         this.md5Bytes = md5Bytes;
         if (useContentChecksum && md5Bytes == null) {
@@ -203,7 +202,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
         if (name == null || name.equals("")) {
             throw Util.newError("<Schema> name must be set");
         }
-        this.annotationMap = annotationMap;
+        this.larder = larder;
 
         if (getInternalConnection() != null
             && "true".equals(
@@ -221,7 +220,8 @@ public class RolapSchema extends OlapElementBase implements Schema {
     }
 
     public String getDescription() {
-        return description;
+        return larder.get(
+            LocalizedProperty.DESCRIPTION, Larders.DEFAULT_LOCALE);
     }
 
     public OlapElement lookupChild(
@@ -305,8 +305,8 @@ public class RolapSchema extends OlapElementBase implements Schema {
         return this.id;
     }
 
-    public Map<String, Annotation> getAnnotationMap() {
-        return annotationMap;
+    public Larder getLarder() {
+        return larder;
     }
 
     /**

@@ -4,17 +4,17 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
 
 import mondrian.olap.OlapElement;
+import mondrian.olap.LocalizedProperty;
 
 import org.olap4j.impl.Named;
 import org.olap4j.mdx.ParseTreeNode;
-import org.olap4j.metadata.Cube;
-import org.olap4j.metadata.NamedSet;
+import org.olap4j.metadata.*;
 
 /**
  * Implementation of {@link org.olap4j.metadata.NamedSet}
@@ -59,13 +59,13 @@ class MondrianOlap4jNamedSet
 
     public String getCaption() {
         return namedSet.getLocalized(
-            OlapElement.LocalizedProperty.CAPTION,
+            LocalizedProperty.CAPTION,
             olap4jCube.olap4jSchema.getLocale());
     }
 
     public String getDescription() {
         return namedSet.getLocalized(
-            OlapElement.LocalizedProperty.DESCRIPTION,
+            LocalizedProperty.DESCRIPTION,
             olap4jCube.olap4jSchema.getLocale());
     }
 

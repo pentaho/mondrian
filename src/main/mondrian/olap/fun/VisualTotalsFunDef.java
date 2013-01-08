@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -88,7 +88,7 @@ public class VisualTotalsFunDef extends FunDefBase {
             final List<Member> resultList = new ArrayList<Member>(list);
             final int memberCount = list.size();
             for (int i = memberCount - 1; i >= 0; --i) {
-                Member member = list.get(i);
+                RolapMember member = (RolapMember) list.get(i);
                 if (i + 1 < memberCount) {
                     Member nextMember = resultList.get(i + 1);
                     if (nextMember != member
@@ -104,7 +104,7 @@ public class VisualTotalsFunDef extends FunDefBase {
         }
 
         private VisualTotalMember createMember(
-            Member member,
+            RolapMember member,
             int i,
             final List<Member> list,
             Evaluator evaluator)
@@ -198,17 +198,17 @@ public class VisualTotalsFunDef extends FunDefBase {
      *     members which occur following it in the list</ul></p>
      */
     public static class VisualTotalMember extends RolapMemberBase {
-        private final Member member;
+        private final RolapMember member;
         private Exp exp;
 
         VisualTotalMember(
-            Member member,
+            RolapMember member,
             String name,
             final Exp exp)
         {
             super(
-                (RolapMember) member.getParentMember(),
-                (RolapLevel) member.getLevel(),
+                member.getParentMember(),
+                member.getLevel(),
                 null, name, MemberType.FORMULA);
             this.member = member;
             this.exp = exp;
@@ -231,8 +231,9 @@ public class VisualTotalsFunDef extends FunDefBase {
         }
 
         @Override
-        public String getCaption() {
-            return member.getCaption();
+        public Larder getLarder() {
+            // Use underlying member's larder, therefore use its caption.
+            return member.getLarder();
         }
 
         protected boolean computeCalculated(final MemberType memberType) {

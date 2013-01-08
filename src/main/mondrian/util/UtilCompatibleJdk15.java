@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -182,6 +182,10 @@ public class UtilCompatibleJdk15 implements UtilCompatible {
             Arrays.asList(ts).subList(start, end), t,
             RolapUtil.ROLAP_COMPARATOR);
         return (i < 0) ? (i - start) : (i + start);
+    }
+
+    public Locale localeForLanguageTag(String localeString) {
+        return null;
     }
 }
 

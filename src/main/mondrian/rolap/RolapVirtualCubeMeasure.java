@@ -4,23 +4,24 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.olap.*;
 
-import java.util.Map;
 
 /**
  * Measure which is defined in a virtual cube, and based on a stored measure
  * in one of the virtual cube's base cubes.
  *
+ * <p>Almost obsolete. Used only in {@link RolapSchemaUpgrader}.</p>
+ *
  * @author jhyde
  * @since Aug 18, 2006
  */
-public class RolapVirtualCubeMeasure
+class RolapVirtualCubeMeasure
     extends RolapMemberBase
     implements RolapStoredMeasure
 {
@@ -28,15 +29,15 @@ public class RolapVirtualCubeMeasure
      * The measure in the underlying cube.
      */
     private final RolapStoredMeasure cubeMeasure;
-    private final Map<String, Annotation> annotationMap;
+    private final Larder larder;
     private final RolapMeasureGroup measureGroup;
 
-    public RolapVirtualCubeMeasure(
+    RolapVirtualCubeMeasure(
         RolapMeasureGroup measureGroup,
         RolapMember parentMember,
         RolapLevel level,
         RolapStoredMeasure cubeMeasure,
-        Map<String, Annotation> annotationMap)
+        Larder larder)
     {
         super(
             parentMember, level, cubeMeasure.getName(),
@@ -46,7 +47,7 @@ public class RolapVirtualCubeMeasure
             "since all cubes are now virtual, is this class obsolete? we just need a way to clone RolapStoredMeasure in a different measure group",
             false);
         this.cubeMeasure = cubeMeasure;
-        this.annotationMap = annotationMap;
+        this.larder = larder;
     }
 
     public Object getPropertyValue(String propertyName, boolean matchCase) {
@@ -85,8 +86,8 @@ public class RolapVirtualCubeMeasure
         return cubeMeasure.getFormatter();
     }
 
-    public Map<String, Annotation> getAnnotationMap() {
-        return annotationMap;
+    public Larder getLarder() {
+        return larder;
     }
 }
 

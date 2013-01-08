@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -27,7 +27,6 @@ public abstract class LevelBase
     protected final Hierarchy hierarchy;
     protected final String name;
     protected final String uniqueName;
-    protected final String description;
     protected final int depth;
     protected int approxRowCount;
 
@@ -35,8 +34,6 @@ public abstract class LevelBase
         Hierarchy hierarchy,
         String name,
         boolean visible,
-        String caption,
-        String description,
         int depth)
     {
         assert hierarchy != null;
@@ -44,9 +41,7 @@ public abstract class LevelBase
         assert depth >= 0;
         this.hierarchy = hierarchy;
         this.name = name;
-        this.caption = caption;
         this.visible = visible;
-        this.description = description;
         this.uniqueName = Util.makeFqName(hierarchy, name);
         this.depth = depth;
     }
@@ -73,7 +68,7 @@ public abstract class LevelBase
     }
 
     public String getDescription() {
-        return description;
+        return Larders.getDescription(getLarder());
     }
 
     public Hierarchy getHierarchy() {

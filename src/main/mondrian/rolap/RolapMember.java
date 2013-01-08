@@ -5,13 +5,12 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
-import mondrian.olap.Member;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 
 import java.util.*;
 
@@ -79,6 +78,9 @@ public interface RolapMember extends Member, RolapCalculation {
 
     /** @deprecated will be removed in mondrian-4.0 */
     boolean isAllMember();
+
+    /** Returns the object that stores annotations and localized strings. */
+    Larder getLarder();
 
     /**
      * Collection of static methods to create and manipulate member key values.

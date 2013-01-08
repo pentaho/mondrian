@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -27,7 +27,6 @@ public abstract class MemberBase
     extends OlapElementBase
     implements Member
 {
-
     protected Member parentMember;
     protected final Level level;
     protected String uniqueName;
@@ -108,10 +107,7 @@ public abstract class MemberBase
         if (mf != null) {
             return mf.formatMember(this);
         }
-        final String caption = super.getCaption();
-        return (caption != null)
-            ? caption
-            : getName();
+        return super.getCaption();
     }
 
     public String getParentUniqueName() {
@@ -137,7 +133,7 @@ public abstract class MemberBase
     }
 
     public String getDescription() {
-        return (String) getPropertyValue(Property.DESCRIPTION.name);
+        return Larders.getDescription(getLarder());
     }
 
     public boolean isMeasure() {

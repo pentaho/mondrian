@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -3475,6 +3475,10 @@ public class FunUtil extends Util {
         }
 
         public Map<String, Annotation> getAnnotationMap() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Larder getLarder() {
             throw new UnsupportedOperationException();
         }
 

@@ -367,6 +367,7 @@
         <Annotations>
             <Annotation name='caption.de_DE'>Verkaufen</Annotation>
             <Annotation name='caption.fr_FR'>Ventes</Annotation>
+            <Annotation name='caption+fr_FR'>Ventes</Annotation>
             <Annotation name='description.fr_FR'>Cube des ventes</Annotation>
             <Annotation name='description.de'>Cube Verkaufen</Annotation>
             <Annotation name='description.de_AT'>Cube den Verkaufen</Annotation>

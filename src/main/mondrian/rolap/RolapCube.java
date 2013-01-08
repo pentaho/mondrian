@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -40,7 +40,7 @@ public class RolapCube extends CubeBase {
     private static final Logger LOGGER = Logger.getLogger(RolapCube.class);
 
     private final RolapSchema schema;
-    private final Map<String, Annotation> annotationMap;
+    private final Larder larder;
     private final RolapCubeHierarchy measuresHierarchy;
 
     /** Schema reader which can see this cube and nothing else. */
@@ -96,25 +96,20 @@ public class RolapCube extends CubeBase {
      *
      * @param schemaLoader Schema loader
      * @param name Name of cube
-     * @param caption Caption of cube
-     * @param description Description of cube
-     * @param annotationMap Annotations on cube
+     * @param larder Larder
      * @param measuresCaption Caption for measures dimension
      */
     RolapCube(
         RolapSchemaLoader schemaLoader,
         final String name,
         boolean visible,
-        final String caption,
-        final String description,
-        final Map<String, Annotation> annotationMap,
+        final Larder larder,
         final String measuresCaption)
     {
-        super(name, visible, caption, description);
+        super(name, visible);
 
-        assert annotationMap != null;
-        this.annotationMap = annotationMap;
-        this.caption = caption;
+        assert larder != null;
+        this.larder = larder;
         this.schema = schemaLoader.schema;
 
         RolapDimension measuresDimension =
@@ -122,23 +117,19 @@ public class RolapCube extends CubeBase {
                 schema,
                 Dimension.MEASURES_NAME,
                 true,
-                measuresCaption,
-                null,
                 org.olap4j.metadata.Dimension.Type.MEASURE,
                 false,
-                Collections.<String, Annotation>emptyMap());
+                Larders.ofCaption(measuresCaption));
         RolapHierarchy measuresHierarchy =
             new RolapHierarchy(
                 measuresDimension,
                 measuresDimension.getName(),
                 Util.quoteMdxIdentifier(Dimension.MEASURES_NAME),
                 measuresDimension.isVisible(),
-                measuresDimension.getCaption(),
-                measuresDimension.getDescription(),
                 false,
                 null,
                 null,
-                Collections.<String, Annotation>emptyMap());
+                measuresDimension.getLarder());
         measuresDimension.addHierarchy(measuresHierarchy);
         measuresHierarchy.initHierarchy(
             schemaLoader,
@@ -153,11 +144,9 @@ public class RolapCube extends CubeBase {
                 measuresDimension,
                 measuresDimension.getName(),
                 null,
-                measuresDimension.getCaption(),
-                measuresDimension.getDescription(),
                 0,
                 new ArrayList<RolapCubeHierarchy>(),
-                Collections.<String, Annotation>emptyMap());
+                measuresDimension.getLarder());
         schemaLoader.initDimension(measuresCubeDimension);
         dimensionList.add(measuresCubeDimension);
         this.measuresHierarchy =
@@ -207,8 +196,12 @@ public class RolapCube extends CubeBase {
         return LOGGER;
     }
 
-    public Map<String, Annotation> getAnnotationMap() {
-        return annotationMap;
+    public Larder getLarder() {
+        return larder;
+    }
+
+    public String getDescription() {
+        return Larders.getDescription(larder);
     }
 
     public boolean hasAggGroup() {

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -46,25 +46,18 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 
     protected final String name;
     private final String uniqueName;
-    private final String description;
 
     /**
      * Creates a CubeBase.
      *
      * @param name Name
-     * @param caption Caption
-     * @param description Description
      */
     protected CubeBase(
         String name,
-        boolean visible,
-        String caption,
-        String description)
+        boolean visible)
     {
         this.name = name;
-        this.caption = caption;
         this.visible = visible;
-        this.description = description;
         this.uniqueName = Util.quoteMdxIdentifier(name);
     }
 
@@ -88,10 +81,6 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 
     public Hierarchy getHierarchy() {
         return null;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public Hierarchy lookupHierarchy(Id.NameSegment s, boolean unique) {

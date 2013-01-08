@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -100,6 +100,13 @@ public class Util extends XOMUtil {
         || System.getProperty("java.version").startsWith("1.5");
 
     /**
+     * Whether we are running a version of Java before 1.7.
+     */
+    public static final boolean PreJdk17 =
+        PreJdk16
+        || System.getProperty("java.version").startsWith("1.6");
+
+    /**
      * Whether this is an IBM JVM.
      */
     public static final boolean IBM_JVM =
@@ -157,8 +164,10 @@ public class Util extends XOMUtil {
             className = "mondrian.util.UtilCompatibleJdk14";
         } else if (PreJdk16) {
             className = "mondrian.util.UtilCompatibleJdk15";
+        } else if (PreJdk17) {
+            className = "mondrian.util.UtilCompatibleJdk15";
         } else {
-            className = "mondrian.util.UtilCompatibleJdk16";
+            className = "mondrian.util.UtilCompatibleJdk17";
         }
         compatible = ClassResolver.INSTANCE.instantiateSafe(className);
 
@@ -1944,6 +1953,13 @@ public class Util extends XOMUtil {
      * @return Java locale object
      */
     public static Locale parseLocale(String localeString) {
+        if (localeString.contains("-")) {
+            // JDK 1.7 and later can parse BCP47 locales, e.g. "en-US".
+            Locale locale = compatible.localeForLanguageTag(localeString);
+            if (locale != null) {
+                return locale;
+            }
+        }
         String[] strings = localeString.split("_");
         switch (strings.length) {
         case 1:

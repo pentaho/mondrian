@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -13,16 +13,9 @@ import mondrian.olap.*;
 import mondrian.spi.CellFormatter;
 import mondrian.spi.Dialect;
 
-import java.util.*;
 
 /**
- * Measure which is computed from a SQL column (or expression) and which is
- * defined in a non-virtual cube.
- *
- * @see RolapVirtualCubeMeasure
- *
- * @author jhyde
- * @since 24 August, 2006
+ * Measure which is computed from a SQL column (or expression).
  */
 public class RolapBaseCubeMeasure
     extends RolapMemberBase
@@ -39,7 +32,7 @@ public class RolapBaseCubeMeasure
     private final RolapAggregator aggregator;
 
     private final RolapCube cube;
-    private final Map<String, Annotation> annotationMap;
+    private final Larder larder;
 
     /**
      * Holds the {@link mondrian.rolap.RolapStar.Measure} from which this
@@ -60,13 +53,11 @@ public class RolapBaseCubeMeasure
      * @param parentMember Parent member
      * @param level Level this member belongs to
      * @param name Name of this member
-     * @param caption Caption
-     * @param description Description
      * @param formatString Format string
      * @param expression Expression (or null if not calculated)
      * @param aggregator Aggregator
      * @param datatype Data type
-     * @param annotationMap Annotations
+     * @param larder Larder
      */
     RolapBaseCubeMeasure(
         RolapCube cube,
@@ -74,19 +65,16 @@ public class RolapBaseCubeMeasure
         RolapMember parentMember,
         RolapLevel level,
         String name,
-        String caption,
-        String description,
         String formatString,
         RolapSchema.PhysExpr expression,
         final RolapAggregator aggregator,
         Dialect.Datatype datatype,
-        Map<String, Annotation> annotationMap)
+        Larder larder)
     {
         super(parentMember, level, name, null, MemberType.MEASURE);
-        assert annotationMap != null;
+        assert larder != null;
         this.cube = cube;
-        this.annotationMap = annotationMap;
-        this.caption = caption;
+        this.larder = larder;
         this.measureGroup = measureGroup;
         assert measureGroup.getCube() == cube;
         RolapSchema.PhysRelation factRelation = measureGroup.getFactRelation();
@@ -95,11 +83,6 @@ public class RolapBaseCubeMeasure
             || (((RolapSchema.PhysColumn) expression).relation == factRelation)
             : "inconsistent fact: " + expression + " vs. " + factRelation;
         this.expression = expression;
-        if (description != null) {
-            setProperty(
-                Property.DESCRIPTION.name,
-                description);
-        }
         this.aggregator = aggregator;
         if (formatString == null) {
             formatString = "";
@@ -154,8 +137,8 @@ public class RolapBaseCubeMeasure
     }
 
     @Override
-    public Map<String, Annotation> getAnnotationMap() {
-        return annotationMap;
+    public Larder getLarder() {
+        return larder;
     }
 
     public Dialect.Datatype getDatatype() {

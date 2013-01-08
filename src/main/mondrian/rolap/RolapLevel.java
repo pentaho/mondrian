@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -44,30 +44,25 @@ public class RolapLevel extends LevelBase {
     final String nullParentValue;
     final RolapClosure closure;
     final RolapAttribute parentAttribute;
-    private final Map<String, Annotation> annotationMap;
+    private final Larder larder;
 
     private final List<RolapSchema.PhysColumn> orderByList;
 
     static final RolapProperty KEY_PROPERTY =
         new RolapProperty(
             Property.KEY.name, null, null, Property.Datatype.TYPE_STRING, null,
-            null, true, null);
+            true, Larders.EMPTY);
 
     static final RolapProperty NAME_PROPERTY =
         new RolapProperty(
             Property.NAME.name, null, null, Property.Datatype.TYPE_STRING, null,
-            null, true, null);
-
-    static final RolapProperty CAPTION_PROPERTY =
-        new RolapProperty(
-            Property.CAPTION.name, null, null, Property.Datatype.TYPE_STRING,
-            null, null, true, null);
+            true, Larders.EMPTY);
 
     // TODO: proper name
     static final RolapProperty ORDINAL_PROPERTY =
         new RolapProperty(
-            "$ordinal", null, null, Property.Datatype.TYPE_STRING, null, null,
-            true, null);
+            "$ordinal", null, null, Property.Datatype.TYPE_STRING, null,
+            true, Larders.EMPTY);
 
     /**
      * Creates a level.
@@ -83,8 +78,6 @@ public class RolapLevel extends LevelBase {
         RolapHierarchy hierarchy,
         String name,
         boolean visible,
-        String caption,
-        String description,
         int depth,
         RolapAttribute attribute,
         RolapAttribute parentAttribute,
@@ -92,10 +85,10 @@ public class RolapLevel extends LevelBase {
         String nullParentValue,
         RolapClosure closure,
         HideMemberCondition hideMemberCondition,
-        Map<String, Annotation> annotationMap)
+        Larder larder)
     {
-        super(hierarchy, name, visible, caption, description, depth);
-        this.annotationMap = annotationMap;
+        super(hierarchy, name, visible, depth);
+        this.larder = larder;
         this.attribute = attribute;
         this.orderByList = orderByList;
         this.parentAttribute = parentAttribute;
@@ -103,7 +96,7 @@ public class RolapLevel extends LevelBase {
         this.closure = closure;
         this.hideMemberCondition = hideMemberCondition;
 
-        assert annotationMap != null;
+        assert larder != null;
         assert orderByList != null;
         assert hideMemberCondition != null;
     }
@@ -116,8 +109,8 @@ public class RolapLevel extends LevelBase {
         return (RolapHierarchy) hierarchy;
     }
 
-    public Map<String, Annotation> getAnnotationMap() {
-        return annotationMap;
+    public Larder getLarder() {
+        return larder;
     }
 
     public MemberFormatter getMemberFormatter() {

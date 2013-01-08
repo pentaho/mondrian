@@ -1075,6 +1075,7 @@ must be run under JDK 1.7." />
       <exclude name="mondrian/olap4j/FactoryJdbc4Plus.java"/>
       <exclude name="mondrian/olap4j/FactoryJdbc41Impl.java"/>
       <exclude name="mondrian/util/UtilCompatibleJdk16.java"/>
+      <exclude name="mondrian/util/UtilCompatibleJdk17.java"/>
     </javac>
   </target>
 
@@ -1104,6 +1105,7 @@ must be run under JDK 1.7." />
         target="1.7"
         includeantruntime="false">
       <include name="mondrian/olap4j/FactoryJdbc41Impl.java"/>
+      <include name="mondrian/util/UtilCompatibleJdk17.java"/>
     </javac>
   </target>
 

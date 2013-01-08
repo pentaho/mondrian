@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2012 Pentaho
+// Copyright (C) 2012-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -32,8 +32,6 @@ public class RolapSharedAttribute extends RolapAttributeImpl {
     public RolapSharedAttribute(
         String name,
         boolean visible,
-        String caption,
-        String description,
         List<RolapSchema.PhysColumn> keyList,
         RolapSchema.PhysColumn nameExp,
         RolapSchema.PhysColumn captionExp,
@@ -43,8 +41,8 @@ public class RolapSharedAttribute extends RolapAttributeImpl {
         int approxRowCount)
     {
         super(
-            name, visible, caption, description, keyList, nameExp, captionExp,
-            orderByList, memberFormatter, levelType, approxRowCount);
+            name, visible, keyList, nameExp, captionExp, orderByList,
+            memberFormatter, levelType, approxRowCount, Larders.EMPTY);
     }
 
     /**

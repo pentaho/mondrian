@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -50,8 +50,6 @@ public class RolapCubeHierarchy extends RolapHierarchy {
      * @param subName Name of hierarchy within dimension
      * @param uniqueName Unique name of hierarchy
      * @param ordinal Ordinal of hierarchy within cube
-     * @param caption Caption
-     * @param description Description
      */
     public RolapCubeHierarchy(
         RolapSchemaLoader schemaLoader,
@@ -60,20 +58,17 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         String subName,
         String uniqueName,
         int ordinal,
-        final String caption,
-        final String description)
+        Larder larder)
     {
         super(
             cubeDimension,
             subName,
             uniqueName,
             rolapHierarchy.isVisible(),
-            caption,
-            description,
             rolapHierarchy.hasAll(),
             null,
             rolapHierarchy.attribute,
-            rolapHierarchy.getAnnotationMap());
+            larder);
         this.ordinal = ordinal;
         this.rolapHierarchy = rolapHierarchy;
         this.cubeDimension = cubeDimension;
@@ -81,8 +76,6 @@ public class RolapCubeHierarchy extends RolapHierarchy {
 
     @Override
     void init1(RolapSchemaLoader schemaLoader, String memberReaderClass) {
-        this.allMemberName = rolapHierarchy.getAllMemberName();
-
         // Compute whether the unique names of members of this hierarchy are
         // different from members of the underlying hierarchy. If so, compute
         // the length of the prefix to be removed before this hierarchy's unique
@@ -133,10 +126,6 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 (RolapCubeLevel) nullLevel);
 
         super.init1(schemaLoader, memberReaderClass);
-    }
-
-    public String getAllMemberName() {
-        return rolapHierarchy.getAllMemberName();
     }
 
     // override with stricter return type

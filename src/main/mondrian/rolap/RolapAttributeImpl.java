@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2012 Pentaho
+// Copyright (C) 2010-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -35,7 +35,7 @@ public abstract class RolapAttributeImpl
         Collections.emptyList();
 
     final String name;
-    final String description;
+    private final Larder larder;
 
     public final List<RolapSchema.PhysColumn> keyList;
 
@@ -65,8 +65,6 @@ public abstract class RolapAttributeImpl
      *
      * @param name Name
      * @param visible Whether visible in user-interface
-     * @param caption Caption
-     * @param description Description
      * @param keyList List of key columns
      * @param nameExp Name column
      * @param captionExp Caption column
@@ -74,23 +72,21 @@ public abstract class RolapAttributeImpl
      * @param memberFormatter Formatter
      * @param levelType Level type
      * @param approxRowCount Approximate number of instances of this attribute
+     * @param larder Larder
      */
     public RolapAttributeImpl(
         String name,
         boolean visible,
-        String caption,
-        String description,
         List<RolapSchema.PhysColumn> keyList,
         RolapSchema.PhysColumn nameExp,
         RolapSchema.PhysColumn captionExp,
         List<RolapSchema.PhysColumn> orderByList,
         MemberFormatter memberFormatter,
         Level.Type levelType,
-        int approxRowCount)
+        int approxRowCount,
+        Larder larder)
     {
         this.visible = visible;
-        this.caption = caption;
-        this.description = description;
         assert levelType != null;
         assert name != null;
         switch (levelType)  {
@@ -104,6 +100,7 @@ public abstract class RolapAttributeImpl
             }
         }
         this.name = name;
+        this.larder = larder;
         this.keyList = keyList;
         this.nameExp = nameExp;
         this.captionExp = captionExp;
@@ -159,7 +156,11 @@ public abstract class RolapAttributeImpl
     }
 
     public String getDescription() {
-        return description;
+        return Larders.getDescription(larder);
+    }
+
+    public Larder getLarder() {
+        return larder;
     }
 
     public OlapElement lookupChild(

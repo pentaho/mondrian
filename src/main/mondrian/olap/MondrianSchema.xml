@@ -8,7 +8,7 @@
   == You must accept the terms of that agreement to use this software.
   ==
   == Copyright (C) 2001-2005 Julian Hyde
-  == Copyright (C) 2005-2012 Pentaho and others
+  == Copyright (C) 2005-2013 Pentaho and others
   == All Rights Reserved.
   ==
   == Defines an XML model for a Mondrian schema.
@@ -154,6 +154,12 @@ version 3.x schemas.</p>
         </Doc>
     </Class>
 
+    <Class class="PropertyElement">
+        <Doc>
+            Child element of a Property.
+        </Doc>
+    </Class>
+
     <Class class="NamedElement">
         <Code><![CDATA[
         String getNameAttribute();
@@ -277,6 +283,20 @@ version 3.x schemas.</p>
                     once.</p>
             </Doc>
         </Attribute>
+        <Attribute name="locales" required="false">
+            <Doc>
+                <p>Comma-separated list of locales for which this schema is
+                localized. For example, 'en,en-GB,fr'.</p>
+
+                <p>This list tells the server which locales to attempt to
+                load.</p>
+
+                <p>It is legal to call {@link Connection#setLocale} with
+                any locale. If you supply a locale not supported by the server,
+                the server will not complain, but use the nearest. For
+                example, if you specify 'fr-CA' it will use 'fr'.</p>
+            </Doc>
+        </Attribute>
         <Array name="childArray" type="SchemaElement">
             <Doc>
                 Child elements of this Schema. PhysicalSchema (at most once),
@@ -327,6 +347,9 @@ version 3.x schemas.</p>
             }
             public PhysicalSchema getPhysicalSchema() {
                 return children.singleton(PhysicalSchema.class);
+            }
+            public Localization getLocalization() {
+                return children.singleton(Localization.class);
             }
             public NamedList<Annotation> getAnnotations() {
                 return children.only(Annotations.EMPTY).list();
@@ -1533,15 +1556,36 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
                 PropertyFormatter element.</p>
             </Doc>
         </Attribute>
-        <Object name="propertyFormatter" type="PropertyFormatter" required="false">
+        <Array name="childArray" type="PropertyElement">
             <Doc>
-                Property formatter.
+                Child elements of a Property. PropertyFormatter and Annotations
+                can appear at most once, in any order.
             </Doc>
-        </Object>
+        </Array>
         <Code>
             <![CDATA[
             public String getNameAttribute() {
                 return first(name, attribute);
+            }
+            private static final PropertyElement[] EMPTY = {};
+            public final Children<PropertyElement> children =
+                new Children<PropertyElement>(
+                    PropertyElement.class,
+                    PropertyFormatter.class,
+                    Annotations.class)
+                {
+                    PropertyElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(PropertyElement[] ts) {
+                        childArray = ts;
+                    }
+                };
+            public PropertyFormatter getFormatter() {
+                return children.singleton(PropertyFormatter.class);
+            }
+            public NamedList<Annotation> getAnnotations() {
+                return children.only(Annotations.EMPTY).list();
             }
             ]]>
         </Code>
@@ -3190,7 +3234,7 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
         </Code>
     </Element>
 
-    <Element type="Annotations" class="Holder,SchemaElement,CubeElement,DimensionElement,HierarchyElement,LevelElement,AttributeElement,MeasureElement,QueryElement,CalculatedMemberElement,RoleElement">
+    <Element type="Annotations" class="Holder,SchemaElement,CubeElement,DimensionElement,HierarchyElement,LevelElement,AttributeElement,MeasureElement,QueryElement,CalculatedMemberElement,RoleElement,PropertyElement">
         <Doc>Holder for an array of Annotation elements</Doc>
         <Array name="array" type="Annotation"/>
         <Code>
@@ -3312,7 +3356,7 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
         </Object>
     </Element>
 
-    <Element type="PropertyFormatter">
+    <Element type="PropertyFormatter" class="PropertyElement">
         <Doc>
             Plugin that formats properties.
             It must be implemented by a Java
@@ -3340,6 +3384,161 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
         </Object>
     </Element>
 
+    <Element type="Localization" class="SchemaElement">
+        <Doc>
+            Defines localization of this schema.
+        </Doc>
+        <Array name="childArray" type="LocalizationElement" required="false">
+            <Doc>
+                List of Locales and Translations.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            private static final LocalizationElement[] EMPTY = {};
+            public final Children<LocalizationElement> children =
+                new Children<LocalizationElement>(
+                    LocalizationElement.class,
+                    Locales.class,
+                    Translations.class)
+                {
+                    LocalizationElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(LocalizationElement[] ts) {
+                        childArray = ts;
+                    }
+                };
+            public List<Locale> getLocales() {
+                return children.only(Locales.EMPTY).list();
+            }
+            public List<Translation> getTranslations() {
+                return children.only(Translations.EMPTY).list();
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Class class="LocalizationElement">
+        <Doc>
+            An element that can occur in a Localization.
+        </Doc>
+    </Class>
+
+    <Element type="Locales" class="Holder,LocalizationElement">
+        <Doc>
+            Holder for one or more Locale elements.
+        </Doc>
+        <Array name="array" type="Locale">
+            <Doc>
+                Locales.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            private static final Locales EMPTY;
+            static {
+                EMPTY = new Locales();
+                EMPTY.array = new Locale[0];
+            }
+            public Locales copy() {
+                Locales c = new Locales();
+                c.array = array.clone();
+                return c;
+            }
+            public NamedList<Locale> list() {
+                return new NamedListImpl<Locale>(
+                    new MutableArrayList<Locale>() {
+                        protected Locale[] getArray() {
+                            return array == null ? EMPTY.array : array;
+                        }
+                        protected void setArray(Locale[] ts) {
+                            array = ts;
+                        }
+                    }
+                );
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Locale" class="NamedElement">
+        <Doc>
+            Describes a locale supported by this schema.
+        </Doc>
+        <Attribute name="locale" required="true">
+            <Doc>
+                IETF language tag, for example "en" for English, "pt-BR" for
+                Brazilian Portuguese, or "nan-Hant-TW" for Min Nan Chinese as
+                spoken in Taiwan using traditional Han characters.
+            </Doc>
+        </Attribute>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() { return locale; }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Translations" class="Holder,LocalizationElement">
+        <Doc>
+            Holder for one or more Translation elements.
+        </Doc>
+        <Array name="array" type="Translation">
+            <Doc>
+                Collection of Translation elements.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            private static final Translations EMPTY;
+            static {
+                EMPTY = new Translations();
+                EMPTY.array = new Translation[0];
+            }
+            public Translations copy() {
+                Translations c = new Translations();
+                c.array = array.clone();
+                return c;
+            }
+            public NamedList<Translation> list() {
+                return new NamedListImpl<Translation>(
+                    new MutableArrayList<Translation>() {
+                        protected Translation[] getArray() {
+                            return array == null ? EMPTY.array : array;
+                        }
+                        protected void setArray(Translation[] ts) {
+                            array = ts;
+                        }
+                    }
+                );
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Translation" class="NamedElement">
+        <Doc>
+            <p>Describes a Translation supported by this schema.
+            The resource file is substituted with the locale.</p>
+
+            <p>For example, given
+            <code>&lt;Translation path='sales_resource_${locale}.properties'/&gt;</code>,
+            if the current locale is 'fr-FR', Mondrian will look for a file
+            named 'sales_resource_fr_FR.properties'.</p>
+        </Doc>
+        <Attribute name="path" required="true">
+            <Doc>
+                Path of resource file.
+            </Doc>
+        </Attribute>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() { return path; }
+            ]]>
+        </Code>
+    </Element>
+
     <Element type="PhysicalSchema" class="SchemaElement">
         <Doc>
             Definition of the set of tables, columns, and relationships
@@ -3365,7 +3564,6 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
                         childArray = ts;
                     }
                 };
-
             ]]>
         </Code>
     </Element>

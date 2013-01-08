@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -1184,14 +1184,15 @@ class SqlMemberSource
         }
         RolapMemberBase member =
             new RolapMemberBase(
-                parentMember, rolapChildLevel, key,
-                nameValue, MemberType.REGULAR);
+                parentMember,
+                rolapChildLevel,
+                key,
+                nameValue,
+                MemberType.REGULAR,
+                captionValue != null ? captionValue.toString() : null);
         assert parentMember == null
             || parentMember.getLevel().getDepth() == childLevel.getDepth() - 1
             || childLevel.isParentChild();
-        if (captionValue != null) {
-            member.setCaption(captionValue.toString());
-        }
         if (parentChild) {
             // Create a 'public' and a 'data' member. The public member is
             // calculated, and its value is the aggregation of the data member

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -343,18 +343,6 @@ public class RolapCell implements Cell {
         Member[] currentMembers,
         RolapCube defaultCube)
     {
-        if (defaultCube != null && defaultCube.isVirtual()) {
-            List<RolapCube> cubes = new ArrayList<RolapCube>();
-            for (RolapMember member : defaultCube.getMeasuresMembers()) {
-                if (member instanceof RolapVirtualCubeMeasure) {
-                    RolapVirtualCubeMeasure measure =
-                        (RolapVirtualCubeMeasure) member;
-                    cubes.add(measure.getCube());
-                }
-            }
-            defaultCube = cubes.get(0);
-            assert !defaultCube.isVirtual();
-        }
         final DrillThroughVisitor visitor =
             new DrillThroughVisitor();
         try {

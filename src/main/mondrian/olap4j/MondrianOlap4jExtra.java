@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2012 Pentaho
+// Copyright (C) 2010-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
@@ -154,7 +154,7 @@ class MondrianOlap4jExtra extends XmlaHandler.XmlaExtraImpl {
                             fi.getName(),
                             description,
                             buf.toString(),
-                            //TODO: currently FunInfo can not tell us which
+                            // TODO: currently FunInfo can not tell us which
                             // functions are MDX and which are UDFs.
                             varType.ordinal(),
                             1,
@@ -268,7 +268,7 @@ class MondrianOlap4jExtra extends XmlaHandler.XmlaExtraImpl {
         } else if (agg == RolapAggregator.Avg) {
             return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_AVG;
         } else {
-            //TODO: what are VAR and STD
+            // TODO: what are VAR and STD
             return RowsetDefinition.MdschemaMeasuresRowset
                 .MDMEASURE_AGGR_UNKNOWN;
         }

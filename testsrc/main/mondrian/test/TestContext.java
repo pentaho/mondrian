@@ -3065,7 +3065,7 @@ public class TestContext {
                 return false;
             }
             if (xmlLocation == null) {
-                if (posPos >= 0) {
+                if (posPos >= 0 || errorLoc != null) {
                     Assert.fail(
                         "Actual message matched expected message, '"
                         + message

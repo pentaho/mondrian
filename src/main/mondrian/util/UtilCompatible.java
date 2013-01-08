@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -14,8 +14,7 @@ import mondrian.olap.Util;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Statement;
-import java.util.Set;
-import java.util.Timer;
+import java.util.*;
 
 /**
  * Interface containing methods which are implemented differently in different
@@ -109,6 +108,16 @@ public interface UtilCompatible {
      * @return timer
      */
     Timer newTimer(String name, boolean isDaemon);
+
+    /**
+     * Parses a locale from a BCP47 language tag (e.g. "en-US").
+     *
+     * <p>In JDK 1.6 and earlier, returns null.</p>
+     *
+     * @param localeString Language tag
+     * @return Locale, or null
+     */
+    Locale localeForLanguageTag(String localeString);
 }
 
 // End UtilCompatible.java

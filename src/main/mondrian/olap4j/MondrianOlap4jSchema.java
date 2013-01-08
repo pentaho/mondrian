@@ -4,12 +4,13 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
 
 import mondrian.olap.Hierarchy;
+import mondrian.olap.LocalizedProperty;
 import mondrian.olap.OlapElement;
 import mondrian.olap.Role;
 
@@ -68,13 +69,13 @@ class MondrianOlap4jSchema
 
     public String getCaption() {
         return schema.getLocalized(
-            OlapElement.LocalizedProperty.CAPTION,
+            LocalizedProperty.CAPTION,
             getLocale());
     }
 
     public String getDescription() {
         return schema.getLocalized(
-            OlapElement.LocalizedProperty.DESCRIPTION,
+            LocalizedProperty.DESCRIPTION,
             getLocale());
     }
 
@@ -123,8 +124,8 @@ class MondrianOlap4jSchema
         return Olap4jUtil.cast(list);
     }
 
-    public Collection<Locale> getSupportedLocales() throws OlapException {
-        return Collections.emptyList();
+    public Collection<Locale> getSupportedLocales() {
+        return schema.unmodifiableLocales;
     }
 
     public String getName() {

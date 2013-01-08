@@ -5,15 +5,14 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
 
 import org.apache.log4j.Logger;
 
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <code>OlapElementBase</code> is an abstract base class for implementations of
@@ -22,11 +21,7 @@ import java.util.Map;
  * @author jhyde
  * @since 6 August, 2001
  */
-public abstract class OlapElementBase
-    implements OlapElement
-{
-    public String caption = null;
-
+public abstract class OlapElementBase implements OlapElement {
     protected boolean visible = true;
 
     // cache hash-code because it is often used and elements are immutable
@@ -73,23 +68,8 @@ public abstract class OlapElementBase
         return this;
     }
 
-    /**
-     * Returns the display name of this catalog element.
-     * If no caption is defined, the name is returned.
-     */
     public String getCaption() {
-        if (caption != null) {
-            return caption;
-        } else {
-            return getName();
-        }
-    }
-
-    /**
-     * Sets the display name of this catalog element.
-     */
-    public void setCaption(String caption) {
-        this.caption = caption;
+        return Larders.getCaption(this, getLarder());
     }
 
     public boolean isVisible() {
@@ -97,43 +77,14 @@ public abstract class OlapElementBase
     }
 
     public String getLocalized(LocalizedProperty prop, Locale locale) {
-        if (this instanceof Annotated) {
-            Annotated annotated = (Annotated) this;
-            final Map<String, Annotation> annotationMap =
-                annotated.getAnnotationMap();
-            if (!annotationMap.isEmpty()) {
-                String seek = prop.name().toLowerCase() + "." + locale;
-                for (;;) {
-                    for (Map.Entry<String, Annotation> entry
-                        : annotationMap.entrySet())
-                    {
-                        if (entry.getKey().startsWith(seek)) {
-                            return entry.getValue().getValue().toString();
-                        }
-                    }
-
-                    // No match for locale. Is there a match for the parent
-                    // locale? For example, we've just looked for
-                    // 'caption.en_US', now look for 'caption.en'.
-                    final int underscore = seek.lastIndexOf('_');
-                    if (underscore < 0) {
-                        break;
-                    }
-                    seek = seek.substring(0, underscore - 1);
-                }
-            }
-        }
-
-        // No annotation. Fall back to the default caption/description.
-        switch (prop) {
-        case CAPTION:
-            return getCaption();
-        case DESCRIPTION:
-            return getDescription();
-        default:
-            throw Util.unexpected(prop);
-        }
+        return Larders.get(this, getLarder(), prop, locale);
     }
+
+    public Map<String, Annotation> getAnnotationMap() {
+        return getLarder().getAnnotationMap();
+    }
+
+    public abstract Larder getLarder();
 }
 
 // End OlapElementBase.java

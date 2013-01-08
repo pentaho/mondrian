@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2012 Pentaho and others
+// Copyright (C) 2010-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -105,10 +105,10 @@ public class RolapSchemaUpgrader {
                 md5Bytes,
                 useContentChecksum,
                 xmlLegacySchema.name,
-                xmlLegacySchema.name, // no caption available
-                xmlLegacySchema.description,
                 true,
-                Collections.<String, Annotation>emptyMap());
+                Larders.create(
+                    null, // no caption available
+                    xmlLegacySchema.description));
         tempSchema.physicalSchema =
             new RolapSchema.PhysSchema(
                 tempSchema.getDialect(),
@@ -3288,8 +3288,10 @@ public class RolapSchemaUpgrader {
             new MondrianDef.Property();
         xmlProperty.caption = xmlLegacyProperty.caption;
         xmlProperty.formatter = xmlLegacyProperty.formatter;
-        xmlProperty.propertyFormatter =
-            convertPropertyFormatter(xmlLegacyProperty.propertyFormatter);
+        if (xmlLegacyProperty.propertyFormatter != null) {
+            xmlProperty.children.add(
+                convertPropertyFormatter(xmlLegacyProperty.propertyFormatter));
+        }
         xmlProperty.name = xmlLegacyProperty.name;
         xmlProperty.description = xmlLegacyProperty.description;
         xmlProperty.caption = xmlLegacyProperty.caption;
@@ -3956,7 +3958,7 @@ public class RolapSchemaUpgrader {
                         null,
                         measuresLevel,
                         baseMeasure,
-                        Collections.<String, Annotation>emptyMap());
+                        Larders.EMPTY);
                 if (!measuresFound.contains(virtualCubeMeasure)) {
                     measuresFound.add(virtualCubeMeasure);
                 }

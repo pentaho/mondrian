@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 12 September, 2002
@@ -13,6 +13,8 @@
 package mondrian.olap;
 
 import mondrian.spi.PropertyFormatter;
+
+import org.olap4j.impl.Named;
 
 import java.util.*;
 
@@ -57,7 +59,7 @@ import java.util.*;
  *
  * @author jhyde
  */
-public class Property extends EnumeratedValues.BasicValue {
+public class Property extends EnumeratedValues.BasicValue implements Named {
 
     public enum Datatype {
         TYPE_STRING,

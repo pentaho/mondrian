@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -14,7 +14,6 @@ import mondrian.olap.type.*;
 
 import org.apache.log4j.Logger;
 
-import java.util.Map;
 
 /**
  * Skeleton implementation of {@link NamedSet} interface.
@@ -27,8 +26,7 @@ public class SetBase extends OlapElementBase implements NamedSet {
     private static final Logger LOGGER = Logger.getLogger(SetBase.class);
 
     private String name;
-    private Map<String, Annotation> annotationMap;
-    private String description;
+    private Larder larder;
     private final String uniqueName;
     private Exp exp;
     private boolean validated;
@@ -37,31 +35,25 @@ public class SetBase extends OlapElementBase implements NamedSet {
      * Creates a SetBase.
      *
      * @param name Name
-     * @param caption Caption
-     * @param description Description
      * @param exp Expression
      * @param validated Whether has been validated
-     * @param annotationMap Annotations
+     * @param larder Annotations
      */
     SetBase(
         String name,
-        String caption,
-        String description,
         Exp exp,
         boolean validated,
-        Map<String, Annotation> annotationMap)
+        Larder larder)
     {
         this.name = name;
-        this.annotationMap = annotationMap;
-        this.caption = caption;
-        this.description = description;
+        this.larder = larder;
         this.exp = exp;
         this.validated = validated;
         this.uniqueName = "[" + name + "]";
     }
 
-    public Map<String, Annotation> getAnnotationMap() {
-        return annotationMap;
+    public Larder getLarder() {
+        return larder;
     }
 
     public String getNameUniqueWithinQuery() {
@@ -73,8 +65,7 @@ public class SetBase extends OlapElementBase implements NamedSet {
     }
 
     public Object clone() {
-        return new SetBase(
-            name, caption, description, exp.clone(), validated, annotationMap);
+        return new SetBase(name, exp.clone(), validated, larder);
     }
 
     protected Logger getLogger() {
@@ -94,7 +85,7 @@ public class SetBase extends OlapElementBase implements NamedSet {
     }
 
     public String getDescription() {
-        return description;
+        return Larders.getDescription(larder);
     }
 
     public Hierarchy getHierarchy() {
@@ -115,12 +106,8 @@ public class SetBase extends OlapElementBase implements NamedSet {
         this.name = name;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setAnnotationMap(Map<String, Annotation> annotationMap) {
-        this.annotationMap = annotationMap;
+    public void setLarder(Larder larder) {
+        this.larder = larder;
     }
 
     public Exp getExp() {
