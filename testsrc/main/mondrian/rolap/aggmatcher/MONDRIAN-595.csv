@@ -1,0 +1,36 @@
+# MONDRIAN-595.csv
+# @version  $Id:$
+## TableName: cheques
+## ColumnNames: prod_id,store_id,amount
+## ColumnTypes: INTEGER,INTEGER,DECIMAL(10,2)
+## NosOfRows: 6
+1,10,6
+1,11,3
+1,12,2
+2,10,4
+2,11,2
+2,12,2
+# aggregate over prod_id
+## TableName: agg_lp_595_cheques
+## ColumnNames: firstprefix_value,secondprefix_value,amount,FACT_COUNT
+## ColumnTypes: VARCHAR(30),VARCHAR(30),DECIMAL(10,2),INTEGER
+## NosOfRows: 3
+store1,OtherStore1,5.0,2
+store2,OtherStore2,2.5,2
+store3,OtherStore3,2.0,2
+# store dimension
+## TableName: store_x
+## ColumnNames: store_id,value
+## ColumnTypes: INTEGER,VARCHAR(30)
+## NosOfRows: 3
+10,store1
+11,store2
+12,store3
+# store2 dimension
+## TableName: store_y
+## ColumnNames: store_id,value
+## ColumnTypes: INTEGER,VARCHAR(30)
+## NosOfRows: 3
+10,OtherStore1
+11,OtherStore2
+12,OtherStore3

@@ -576,12 +576,11 @@ abstract class Recognizer {
                     JdbcSchema.Table.Column.Usage aggUsage = uit.next();
 
                     MondrianDef.Relation rel = hierarchyUsage.getJoinTable();
-                    String cName = levelColumnName;
 
-                    if (! aggUsage.relation.equals(rel)
-                        || ! aggColumn.column.name.equalsIgnoreCase(cName))
+                    if (! aggUsageMatchesHierarchyUsage(aggUsage,
+                        hierarchyUsage, levelColumnName))
                     {
-                        // this is an error so return
+                        // Levels should have only one usage.
                         String msg = mres.DoubleMatchForLevel.str(
                             aggTable.getName(),
                             dbFactTable.getName(),
@@ -589,7 +588,7 @@ abstract class Recognizer {
                             aggUsage.relation.toString(),
                             aggColumn.column.name,
                             rel.toString(),
-                            cName);
+                            levelColumnName);
                         msgRecorder.reportError(msg);
 
                         returnValue = false;
@@ -639,10 +638,19 @@ abstract class Recognizer {
                     msgRecorder.throwRTException();
                 }
 
+
                 RolapStar.Column rc = descTable.lookupColumn(factColumnName);
+
 
                 if (rc == null) {
                     rc = lookupInChildren(descTable, factColumnName);
+                }
+
+                if (rc == null &&  hierarchyUsage.getUsagePrefix() != null) {
+                    // look for the name w/ usage prefix stripped off
+                    rc = descTable.lookupColumn(
+                        factColumnName.substring(
+                            hierarchyUsage.getUsagePrefix().length()));
                 }
                 if (rc == null) {
                     StringBuilder buf = new StringBuilder(256);
@@ -666,6 +674,41 @@ abstract class Recognizer {
         } finally {
             msgRecorder.popContextName();
         }
+    }
+
+    /**
+     * returns true if aggUsage matches the relation and
+     * column name of hiearchyUsage & levelColumnName.
+     * Adjusts aggUsage column name based on usagePrefix, if present.
+     */
+    private boolean aggUsageMatchesHierarchyUsage(
+        JdbcSchema.Table.Column.Usage aggUsage,
+        HierarchyUsage hierarchyUsage,
+        String levelColumnName)
+    {
+        MondrianDef.Relation rel = hierarchyUsage.getJoinTable();
+
+        JdbcSchema.Table.Column aggColumn = aggUsage.getColumn();
+        String aggColumnName = aggColumn.column.name;
+        String usagePrefix = hierarchyUsage.getUsagePrefix() == null
+            ? "" : hierarchyUsage.getUsagePrefix();
+
+
+        if (usagePrefix.length() > 0
+            && !usagePrefix.equals(
+                aggColumnName.substring(0, usagePrefix.length())))
+        {
+            throw new MondrianException(
+                "usagePrefix attribute "
+                + usagePrefix
+                + " was specified for " + hierarchyUsage.getHierarchyName()
+                + ", but found agg column without prefix:  " + aggColumnName);
+        }
+        String aggColumnWithoutPrefix = aggColumnName.substring(
+            usagePrefix.length());
+
+        return  aggUsage.relation.equals(rel)
+            && aggColumnWithoutPrefix.equalsIgnoreCase(levelColumnName);
     }
 
     protected RolapStar.Column lookupInChildren(

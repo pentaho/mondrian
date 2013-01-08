@@ -618,8 +618,34 @@ public class AggStar {
              * this: <code><i>tableName</i>.<i>columnName</i></code>.
              */
             public String generateExprString(final SqlQuery query) {
-                return getExpression().getExpression(query);
+                String usagePrefix = getUsagePrefix();
+                String exprString;
+
+                if (usagePrefix == null) {
+                    exprString = getExpression().getExpression(query);
+                } else {
+                    MondrianDef.Expression expression = getExpression();
+                    assert expression instanceof MondrianDef.Column;
+                    MondrianDef.Column columnExpr =
+                        (MondrianDef.Column)expression;
+                    String prefixedName = usagePrefix
+                        + columnExpr.getColumnName();
+                    String tableName = columnExpr.getTableAlias();
+                    exprString = query.getDialect().quoteIdentifier(
+                        tableName, prefixedName);
+                }
+                return exprString;
             }
+
+            private String getUsagePrefix() {
+                String usagePrefix = null;
+                if (this.getBitPosition() != -1) {
+                    usagePrefix = getStar().getColumn(this.getBitPosition())
+                        .getUsagePrefix();
+                }
+                return usagePrefix;
+            }
+
 
             public String toString() {
                 StringWriter sw = new StringWriter(256);
