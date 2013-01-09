@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -234,7 +234,7 @@ public class RankFunDef extends FunDefBase {
                 evaluator.restore(savepoint);
             }
 
-            if (value == RolapUtil.valueNotReadyException) {
+            if (valueNotReady(value)) {
                 // The value wasn't ready, so quit now... we'll be back.
                 return 0;
             }
@@ -243,6 +243,8 @@ public class RankFunDef extends FunDefBase {
             if (value == Util.nullValue || value == null) {
                 return sortResult.values.length + 1;
             }
+
+            value = coerceValue(sortResult.values, value);
 
             // Look for the ranked value in the array.
             int j = Arrays.binarySearch(
@@ -308,7 +310,7 @@ public class RankFunDef extends FunDefBase {
                 evaluator.restore(savepoint);
             }
 
-            if (value == RolapUtil.valueNotReadyException) {
+            if (valueNotReady(value)) {
                 // The value wasn't ready, so quit now... we'll be back.
                 return 0;
             }
@@ -317,6 +319,8 @@ public class RankFunDef extends FunDefBase {
             if (value == Util.nullValue || value == null) {
                 return sortResult.values.length + 1;
             }
+
+            value = coerceValue(sortResult.values, value);
 
             // Look for the ranked value in the array.
             int j = Arrays.binarySearch(
@@ -328,6 +332,21 @@ public class RankFunDef extends FunDefBase {
             }
             return j + 1; // 1-based
         }
+    }
+
+    private static Object coerceValue(Object[] values, Object value) {
+        if (values.length > 0) {
+            final Object firstValue = values[0];
+            if (firstValue instanceof Integer && value instanceof Double) {
+                return  ((Double) value).intValue();
+            }
+        }
+        return value;
+    }
+
+    private static boolean valueNotReady(Object value) {
+        return value == RolapUtil.valueNotReadyException
+            || value == new Double(Double.NaN);
     }
 
     /**
