@@ -1330,6 +1330,9 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
      * keys.
      */
     public void testBug1285() {
+        if (!getTestContext().databaseIsValid()) {
+            return;
+        }
         getTestContext().assertQueryReturns(
             "with set [*NATIVE_CJ_SET] as 'Filter(NonEmptyCrossJoin([*BASE_MEMBERS_Time], [*BASE_MEMBERS_Product]), (NOT IsEmpty([Measures].[Quantity])))'\n"
             + "  set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], [Product].CurrentMember.OrderKey, BASC)'\n"
@@ -1415,6 +1418,9 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
     }
 
     public void testDoubleValueCanBeRankedAmongIntegers() {
+        if (!getTestContext().databaseIsValid()) {
+            return;
+        }
         getTestContext().assertQueryReturns(
             "with \n"
             + "  member [Product].[agg] as \n"
