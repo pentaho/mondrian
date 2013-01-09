@@ -156,6 +156,10 @@ public class RolapSharedAttribute extends RolapAttributeImpl {
         public MemberFormatter getMemberFormatter() {
             return delegate.getMemberFormatter();
         }
+
+        public Larder getLarder() {
+            return delegate.getLarder();
+        }
     }
 
     private static class RolapCommonAttribute extends DelegatingAttribute {

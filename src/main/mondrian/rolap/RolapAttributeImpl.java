@@ -146,9 +146,7 @@ public abstract class RolapAttributeImpl
     }
 
     public String getUniqueName() {
-        // REVIEW: Do we need this method? Can't implement proper unique name
-        // unless attributes have a fixed dimension.
-        throw new UnsupportedOperationException();
+        return Util.makeFqName(getDimension(), name);
     }
 
     public String getName() {

@@ -15,12 +15,14 @@ import mondrian.spi.PropertyFormatter;
 
 import org.apache.log4j.Logger;
 
+import java.util.Map;
+
 /**
  * <code>RolapProperty</code> is the definition of a member property.
  *
  * @author jhyde
  */
-class RolapProperty extends Property {
+class RolapProperty extends Property implements Annotated {
 
     private static final Logger LOGGER = Logger.getLogger(RolapProperty.class);
 
@@ -63,6 +65,10 @@ class RolapProperty extends Property {
 
     public PropertyFormatter getFormatter() {
         return formatter;
+    }
+
+    public Map<String, Annotation> getAnnotationMap() {
+        return larder.getAnnotationMap();
     }
 
     /**

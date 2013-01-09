@@ -67,18 +67,28 @@ public class RolapCubeDimension extends RolapDimension {
 
         final int originalSize = hierarchyList.size();
         for (RolapHierarchy rolapHierarchy : rolapDim.getHierarchyList()) {
+            final String uniqueName =
+                rolapHierarchy.getDimension().isMeasures()
+                    ? rolapHierarchy.getUniqueName()
+                    : Util.makeFqName(this, rolapHierarchy.getName());
             final RolapCubeHierarchy hierarchy =
                 new RolapCubeHierarchy(
                     schemaLoader,
                     this,
                     rolapHierarchy,
                     rolapHierarchy.getName(),
-                    rolapHierarchy.getDimension().isMeasures()
-                        ? rolapHierarchy.getUniqueName()
-                        : Util.makeFqName(this, rolapHierarchy.getName()),
+                    uniqueName,
                     hierarchyList.size(),
-                    Larders.prefix(
-                        rolapHierarchy.getLarder(), dimSource, name));
+                    Larders.underride(
+                        schemaLoader.createLarder(
+                            cube + "." + uniqueName + ".hierarchy",
+                            null,
+                            null,
+                            null),
+                        Larders.prefix(
+                            rolapHierarchy.getLarder(),
+                            dimSource,
+                            name)));
             hierarchyList.add(hierarchy);
             if (hierarchy.isScenario) {
                 assert cube.scenarioHierarchy == null;

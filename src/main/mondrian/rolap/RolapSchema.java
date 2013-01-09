@@ -144,10 +144,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
      */
     private final String id;
 
-    final Set<Locale> locales = new HashSet<Locale>();
-
-    public final Set<Locale> unmodifiableLocales =
-        Collections.unmodifiableSet(locales);
+    public final Set<Locale> locales;
 
     final List<String> translations = new ArrayList<String>();
 
@@ -164,6 +161,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
      * @param useContentChecksum Whether to use content checksum
      * @param name Name
      * @param quoteSql Whether dialect should not quote SQL identifiers
+     * @param locales Locales
      * @param larder Annotation map
      */
     RolapSchema(
@@ -174,10 +172,12 @@ public class RolapSchema extends OlapElementBase implements Schema {
         boolean useContentChecksum,
         String name,
         boolean quoteSql,
+        Set<Locale> locales,
         Larder larder)
     {
         this.id = Util.generateUuidString();
         this.key = key;
+        this.locales = locales;
         this.md5Bytes = md5Bytes;
         if (useContentChecksum && md5Bytes == null) {
             throw new AssertionError();

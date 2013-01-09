@@ -125,7 +125,7 @@ class MondrianOlap4jSchema
     }
 
     public Collection<Locale> getSupportedLocales() {
-        return schema.unmodifiableLocales;
+        return schema.locales;
     }
 
     public String getName() {

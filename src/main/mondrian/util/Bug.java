@@ -386,6 +386,14 @@ public class Bug {
     public static final boolean BugMondrian1335Fixed = false;
 
     /**
+     * Whether
+     * <a href="https://sourceforge.net/p/olap4j/feature-requests/31/">bug
+     * OLAP4J-31, "Schema and Catalog should implement MetadataElement"</a> is
+     * fixed.
+     */
+    public static final boolean BugOlap4j31Fixed = false;
+
+    /**
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-1338">Bug 1338</a><br/>
      * Mondrian isn't optimizing member fetching according to query constraints
      */

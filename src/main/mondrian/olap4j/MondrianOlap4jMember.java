@@ -4,12 +4,13 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
 
 import mondrian.olap.OlapElement;
+import mondrian.olap.LocalizedProperty;
 import mondrian.rolap.RolapMeasure;
 
 import org.olap4j.OlapException;
@@ -207,11 +208,15 @@ class MondrianOlap4jMember
     }
 
     public String getCaption() {
-        return member.getCaption();
+        return member.getLocalized(
+            LocalizedProperty.CAPTION,
+            olap4jSchema.getLocale());
     }
 
     public String getDescription() {
-        return member.getDescription();
+        return member.getLocalized(
+            LocalizedProperty.DESCRIPTION,
+            olap4jSchema.getLocale());
     }
 
     public boolean isVisible() {

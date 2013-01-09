@@ -10,10 +10,12 @@
 package mondrian.test;
 
 import mondrian.olap.*;
-import mondrian.rolap.RolapConnectionProperties;
-import mondrian.util.Format;
+import mondrian.rolap.*;
+import mondrian.util.*;
 
-import org.olap4j.OlapConnection;
+import org.olap4j.*;
+import org.olap4j.mdx.IdentifierNode;
+import org.olap4j.metadata.*;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Schema;
 
@@ -168,12 +170,12 @@ public class I18nTest extends FoodMartTestCase {
                 + "    <Locale locale='de-DE'/>\n"
                 + "  </Locales>\n"
                 + "  <Translations>\n"
-                + "    <Translation path='/home/jhyde/open1/mondrian/testsrc/main/mondrian/test/I18nTest_${locale}.properties'/>\n"
+                + "    <Translation path='../testsrc/main/mondrian/test/I18nTest_${locale}.properties'/>\n"
                 + "  </Translations>\n"
                 + "</Localization>\n")
             .assertSchemaError(
                 "(?s).*Error reading resource file.*",
-                "<Translation path='/home/jhyde/open1/mondrian/testsrc/main/mondrian/test/I18nTest_${locale}.properties'/>");
+                "<Translation path='../testsrc/main/mondrian/test/I18nTest_${locale}.properties'/>");
     }
 
     /** Unit test for captions and descriptions loaded from resource file. */
@@ -188,27 +190,33 @@ public class I18nTest extends FoodMartTestCase {
                     + "    <Locale locale='fr-CA'/>\n"
                     + "  </Locales>\n"
                     + "  <Translations>\n"
-                    + "    <Translation path='/home/jhyde/open1/mondrian/testsrc/main/mondrian/test/I18nTest_${locale}.properties'/>\n"
+                    + "    <Translation path='../testsrc/main/mondrian/test/I18nTest_${locale}.properties'/>\n"
                     + "  </Translations>\n"
                     + "</Localization>\n")
                 .getOlap4jConnection();
 
         olapConnection.setLocale(Locale.US);
-        final Cube salesCubeUs =
-            olapConnection.getOlapSchema().getCubes().get("Sales");
-        assertEquals("Sales", salesCubeUs.getCaption());
+
+        final Schema olapSchema = olapConnection.getOlapSchema();
+
+        final Cube salesCubeUs = olapSchema.getCubes().get("Sales");
+
+        // Resource from file overrides resource from annotation. (Is this what
+        // we want?)
+        assertEquals(
+            "Caption of Sales cube in en-US", salesCubeUs.getCaption());
 
         // Switch locales. Note that we have to re-read metadata from the
         // root (getOlapSchema()).
         olapConnection.setLocale(Locale.GERMANY);
         final Cube salesCubeGerman =
-            olapConnection.getOlapSchema().getCubes().get("Sales");
+            olapSchema.getCubes().get("Sales");
         assertEquals("Verkaufen", salesCubeGerman.getCaption());
         assertEquals("Cube Verkaufen", salesCubeGerman.getDescription());
 
         olapConnection.setLocale(Locale.FRANCE);
         final Cube salesCubeFrance =
-            olapConnection.getOlapSchema().getCubes().get("Sales");
+            olapSchema.getCubes().get("Sales");
         assertEquals("Ventes", salesCubeFrance.getCaption());
         assertEquals("Cube des ventes", salesCubeFrance.getDescription());
 
@@ -217,6 +225,98 @@ public class I18nTest extends FoodMartTestCase {
         // In the mondrian-olap4j driver, the cube object is the same under
         // all locales, and switches based on the connection's locale.
         assertEquals("Ventes", salesCubeUs.getCaption());
+
+
+        // Now the resources coming from files.
+
+        olapConnection.setLocale(Locale.FRANCE);
+
+        // olap4j Schema class does not have i18n APIs yet. So get resources
+        // through the back door.
+        assertEquals(
+            "Caption of Sales schema in fr",
+            ((MetadataElement) olapSchema).getCaption());
+        assertEquals(
+            "Description of Sales schema in fr",
+            ((MetadataElement) olapSchema).getDescription());
+
+        olapConnection.setLocale(Locale.CANADA_FRENCH);
+
+        // Description is overridden in fr-CA, but not caption.
+        assertEquals(
+            "Caption of Sales schema in fr",
+            ((MetadataElement) olapSchema).getCaption());
+        assertEquals(
+            "Description of Sales schema in fr-CA",
+            ((MetadataElement) olapSchema).getDescription());
+
+        assertEquals(
+            "Caption of Unit Sales measure in fr",
+            olapSchema.getCubes().get("Sales")
+                .getDimensions().get("Measures")
+                .getHierarchies().get(0)
+                .getRootMembers().get("Unit Sales")
+                .getCaption());
+
+        assertEquals(
+            "Profit",
+            // TODO: should be "Caption of Profit calculated measure in fr",
+            olapSchema.getCubes().get("Sales").lookupMember(
+                IdentifierNode.parseIdentifier("[Measures].[Profit]")
+                    .getSegmentList())
+                .getCaption());
+
+        assertEquals(
+            "Caption of Time shared dimension in fr",
+            olapSchema.getSharedDimensions().get("Time").getCaption());
+
+        assertEquals(
+            "Caption of shared Weekly hierarchy in fr",
+            olapSchema.getSharedDimensions().get("Time").getHierarchies()
+                .get("Weekly").getCaption());
+
+        assertEquals(
+            "Caption of shared Year level in fr",
+            olapSchema.getSharedDimensions().get("Time").getHierarchies()
+                .get("Weekly").getLevels().get("Year").getCaption());
+
+        assertEquals(
+            "Caption of Time dimension in Sales cube in fr",
+            olapSchema.getCubes().get("Sales").getDimensions().get("Time")
+                .getCaption());
+
+        assertEquals(
+            "Caption of Weekly hierarchy in Sales cube in fr",
+            olapSchema.getCubes().get("Sales").getDimensions().get("Time")
+                .getHierarchies().get("Weekly").getCaption());
+
+        assertEquals(
+            "Caption of shared Year level in fr",
+            // TODO: should be "Caption of Year level in Sales cube in fr",
+            olapSchema.getCubes().get("Sales").getDimensions().get("Time")
+                .getHierarchies().get("Weekly").getLevels().get("Year")
+                .getCaption());
+
+        try {
+            assertEquals(
+                "Caption of Top Sellers named set in Sales cube in fr",
+                olapSchema.getCubes().get("Sales").getSets().get("Top Sellers")
+                    .getCaption());
+        } catch (NullPointerException e) {
+            // TODO: fix me
+        }
+
+        // TODO: test named set in schema, e.g. "[Best Customers].set.caption"
+        Util.discard(Bug.BugOlap4j31Fixed);
+
+        // TODO: test attribute hierarchy (resource coming from attribute)
+
+        // TODO: test level in attribute hierarchy (resource coming from
+        // attribute)
+
+        // TODO: test calculated member in non-Measures dimension
+
+        // TODO: test property
 
         // Reset locale.
         olapConnection.setLocale(Locale.US);

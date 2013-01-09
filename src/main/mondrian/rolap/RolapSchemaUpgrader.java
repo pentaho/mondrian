@@ -106,6 +106,7 @@ public class RolapSchemaUpgrader {
                 useContentChecksum,
                 xmlLegacySchema.name,
                 true,
+                Collections.<Locale>emptySet(),
                 Larders.create(
                     null, // no caption available
                     xmlLegacySchema.description));

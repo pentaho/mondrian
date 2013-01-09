@@ -11,7 +11,8 @@ package mondrian.olap;
 
 import mondrian.util.Pair;
 
-import org.olap4j.impl.Named;
+import org.olap4j.impl.*;
+import org.olap4j.metadata.NamedList;
 
 import java.util.*;
 
@@ -38,59 +39,61 @@ public class Larders {
         String description)
     {
         return create(
-            Collections.<MondrianDef.Annotation>emptyList(),
+            null,
             caption,
-            description);
+            description,
+            Collections.<Resource>emptyList());
     }
 
     public static Larder create(
-        List<MondrianDef.Annotation> annotations,
+        NamedList<MondrianDef.Annotation> annotations,
         String caption,
         String description)
     {
-        int n = 0;
+        return create(
+            annotations, caption, description,
+            Collections.<Resource>emptyList());
+    }
+
+    public static Larder create(
+        NamedList<MondrianDef.Annotation> annotations,
+        String caption,
+        String description,
+        List<Resource> resources)
+    {
         if (annotations == null) {
-            annotations = Collections.emptyList();
+            annotations = Olap4jUtil.emptyNamedList();
         }
-        n += annotations.size() * 2;
-        if (caption != null) {
-            n += 2;
-        }
-        if (description != null) {
-            n += 2;
-        }
-        if (n == 0) {
+        int n = annotations.size()
+            + (caption != null ? 1 : 0)
+            + (description != null ? 1 : 0)
+            + resources.size();
+        switch (n) {
+        case 0:
             return EmptyLarder.INSTANCE;
-        }
-        if (n == 2 && caption != null) {
-            return ofCaption(caption);
-        }
-        Object[] elements = new Object[n];
-        int i = 0;
-        for (MondrianDef.Annotation annotation : annotations) {
-            if (annotation.name.startsWith("caption.")) {
-                elements[i++] = LocaleProp.lookup(
-                    annotation.name.substring("caption.".length()),
-                    LocalizedProperty.CAPTION);
-            } else if (annotation.name.startsWith("description.")) {
-                elements[i++] = LocaleProp.lookup(
-                    annotation.name.substring("description.".length()),
-                    LocalizedProperty.DESCRIPTION);
-            } else {
-                elements[i++] = annotation.name;
+        case 1:
+            if (caption != null) {
+                return ofCaption(caption);
             }
-            elements[i++] = annotation.cdata;
+            // fall through
+        default:
+            final LarderBuilder builder = new LarderBuilder();
+            for (MondrianDef.Annotation annotation : annotations) {
+                builder.add(annotation);
+            }
+            if (caption != null) {
+                builder.add(DEFAULT_LOCALE_CAPTION, caption);
+            }
+            if (description != null) {
+                builder.add(DEFAULT_LOCALE_DESCRIPTION, description);
+            }
+            for (Resource resource : resources) {
+                builder.add(
+                    LocaleProp.lookup(resource.locale, resource.prop),
+                    resource.value);
+            }
+            return builder.create();
         }
-        if (caption != null) {
-            elements[i++] = DEFAULT_LOCALE_CAPTION;
-            elements[i++] = caption;
-        }
-        if (description != null) {
-            elements[i++] = DEFAULT_LOCALE_DESCRIPTION;
-            elements[i++] = description;
-        }
-        assert i == n;
-        return new ArrayLarder(elements);
     }
 
     public static String get(
@@ -118,8 +121,7 @@ public class Larders {
         }
     }
 
-    /** Returns a Larder that gets map and description from a property
-     * map. */
+    /** Returns a Larder that gets map and description from a property map. */
     public static Larder ofProperties(Map<String, Object> map) {
         return new PropertiesLarder(map);
     }
@@ -144,15 +146,15 @@ public class Larders {
 
             @Override
             public Map<Pair<Locale, LocalizedProperty>, String> translations() {
-                final Map<Pair<Locale, LocalizedProperty>, String> map =
-                    new LinkedHashMap<Pair<Locale, LocalizedProperty>, String>(
-                        super.translations());
-                for (Map.Entry<Pair<Locale, LocalizedProperty>, String> entry
-                    : map.entrySet())
-                {
+                //noinspection unchecked
+                final Map<LocaleProp, String> map =
+                    new LinkedHashMap<LocaleProp, String>(
+                        (Map) super.translations());
+                for (Map.Entry<LocaleProp, String> entry : map.entrySet()) {
                     entry.setValue(name + "." + entry.getValue());
                 }
-                return map;
+                //noinspection unchecked
+                return (Map) map;
             }
         };
     }
@@ -164,58 +166,30 @@ public class Larders {
         String caption,
         String description)
     {
-        if (caption != null) {
-            larder =
-                replace(
-                    larder, LocalizedProperty.CAPTION,
-                    DEFAULT_LOCALE, caption);
-        }
-        if (description != null) {
-            larder =
-                replace(
-                    larder, LocalizedProperty.DESCRIPTION,
-                    DEFAULT_LOCALE, description);
-        }
-        return larder;
-    }
-
-    /** Replaces or adds a (locale, property) combination to a larder. Since
-     * larders are immutable, creates a new larder if changes are needed. */
-    private static Larder replace(
-        Larder larder,
-        LocalizedProperty prop,
-        Locale locale,
-        String value)
-    {
-        assert value != null;
-        final String previous = larder.get(prop, locale);
-        if (Util.equals(previous, value)) {
+        if (caption == null && description == null) {
             return larder;
         }
-        final List<Object> list = new ArrayList<Object>();
-        for (Annotation annotation : larder.getAnnotationMap().values()) {
-            list.add(annotation.getName());
-            list.add(annotation.getValue());
+        final LarderBuilder builder = new LarderBuilder();
+        if (caption != null) {
+            builder.add(DEFAULT_LOCALE_CAPTION, caption);
         }
-        final LocaleProp key = LocaleProp.lookup(locale, prop);
-        int match = 0;
-        for (Map.Entry<Pair<Locale, LocalizedProperty>, String> entry
-            : larder.translations().entrySet())
-        {
-            assert entry.getKey() instanceof LocaleProp;
-            list.add(entry.getKey());
-            if (entry.getKey().equals(key)) {
-                list.add(value);
-                ++match;
-            } else {
-                list.add(entry.getValue());
-            }
+        if (description != null) {
+            builder.add(DEFAULT_LOCALE_DESCRIPTION, description);
         }
-        if (match == 0) {
-            list.add(key);
-            list.add(value);
-        }
-        return new ArrayLarder(list.toArray());
+        builder.add(larder);
+        return builder.create();
+    }
+
+    /** Returns a larder the same as {@code larder1}, but resources in
+     * {@code larder2} override if they are not specified in {@code larder1}. */
+    public static Larder underride(
+        Larder larder,
+        Larder larder2)
+    {
+        final LarderBuilder builder = new LarderBuilder();
+        builder.add(larder);
+        builder.add(larder2);
+        return builder.create();
     }
 
     /** Returns the caption of a named element, using the caption in the larder
@@ -253,7 +227,7 @@ public class Larders {
     private static class ArrayLarder implements Larder {
         private final Object[] elements;
 
-        // must be private... does not copy array
+        // constructor must be private... does not copy array
         private ArrayLarder(Object[] elements) {
             this.elements = elements;
         }
@@ -296,6 +270,9 @@ public class Larders {
         }
 
         public String get(LocalizedProperty prop, Locale locale) {
+            // REVIEW: we could sort the elements on creation, putting child
+            // locales before parent locales, so we know that the first locale
+            // that matches is the best one.
             Locale bestLocale = null;
             String bestValue = null;
             for (int i = 0; i < elements.length;) {
@@ -351,7 +328,9 @@ public class Larders {
         }
 
         public String get(LocalizedProperty prop, Locale locale) {
-            if (prop == LocalizedProperty.CAPTION && locale == DEFAULT_LOCALE) {
+            if (prop == LocalizedProperty.CAPTION
+                && locale.equals(DEFAULT_LOCALE))
+            {
                 return caption;
             } else {
                 return null;
@@ -482,6 +461,94 @@ public class Larders {
             final LocaleProp localeProp = new LocaleProp(locale, prop);
             INSTANCES.add(localeProp);
             return localeProp;
+        }
+    }
+
+    public static class Resource {
+        public final LocalizedProperty prop;
+        public  final Locale locale;
+        public final String value;
+
+        public Resource(LocalizedProperty prop, Locale locale, String value) {
+            this.prop = prop;
+            this.locale = locale;
+            this.value = value;
+        }
+    }
+
+    private static class LarderBuilder {
+        final List<Object> elements = new ArrayList<Object>();
+        final Set<Object> keys = new HashSet<Object>();
+
+        void add(Resource resource) {
+            LocaleProp localeProp =
+                LocaleProp.lookup(resource.locale, resource.prop);
+            if (keys.add(localeProp)) {
+                elements.add(localeProp);
+                elements.add(resource.value);
+            }
+        }
+
+        void add(MondrianDef.Annotation xmlAnnotation) {
+            if (xmlAnnotation.name.startsWith("caption.")) {
+                add(
+                    LocaleProp.lookup(
+                        xmlAnnotation.name.substring("caption.".length()),
+                        LocalizedProperty.CAPTION),
+                    xmlAnnotation.cdata);
+            } else if (xmlAnnotation.name.startsWith("description.")) {
+                add(
+                    LocaleProp.lookup(
+                        xmlAnnotation.name.substring("description.".length()),
+                        LocalizedProperty.DESCRIPTION),
+                    xmlAnnotation.cdata);
+            } else {
+                add(xmlAnnotation.name, xmlAnnotation.cdata);
+            }
+        }
+
+        void add(String name, Object value) {
+            if (keys.add(name)) {
+                elements.add(name);
+                elements.add(value);
+            }
+        }
+
+        void add(Annotation annotation) {
+            add(annotation.getName(), annotation.getValue());
+        }
+
+        Larder create() {
+            switch (elements.size()) {
+            case 0:
+                return EMPTY;
+            case 2:
+                final Object o = elements.get(0);
+                if (o == DEFAULT_LOCALE_CAPTION) {
+                    return ofCaption((String) elements.get(1));
+                }
+                // fall through
+            default:
+                return new ArrayLarder(elements.toArray());
+            }
+        }
+
+        void add(Larder larder) {
+            for (Annotation entry : larder.getAnnotationMap().values()) {
+                add(entry);
+            }
+            //noinspection unchecked
+            final Map<LocaleProp, String> cast = (Map) larder.translations();
+            for (Map.Entry<LocaleProp, String> entry : cast.entrySet()) {
+                add(entry.getKey(), entry.getValue());
+            }
+        }
+
+        void add(LocaleProp localeProp, String value) {
+            if (keys.add(localeProp)) {
+                elements.add(localeProp);
+                elements.add(value);
+            }
         }
     }
 }
