@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -1289,6 +1289,129 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Row #20: 0\n"
             + "Row #21: 0\n"
             + "Row #22: 0\n");
+    }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1285">MONDRIAN-1285</a>
+     *
+     * On MS SQL server only the MDX query would throw
+     * java.lang.ClassCastException:
+     * java.lang.Integer cannot be cast to java.lang.Double
+     * keys.
+     */
+    public void testBug1285() {
+        getTestContext().assertQueryReturns(
+            "with set [*NATIVE_CJ_SET] as 'Filter(NonEmptyCrossJoin([*BASE_MEMBERS_Time], [*BASE_MEMBERS_Product]), (NOT IsEmpty([Measures].[Quantity])))'\n"
+            + "  set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], [Product].CurrentMember.OrderKey, BASC)'\n"
+            + "  set [*SORTED_COL_AXIS] as 'Order([*CJ_COL_AXIS], [Time].CurrentMember.OrderKey, BASC)'\n"
+            + "  set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'\n"
+            + "  set [*BASE_MEMBERS_Product] as '[Product].[Line].Members'\n"
+            + "  set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_1], [Measures].[*SUMMARY_MEASURE_0]}'\n"
+            + "  set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'\n"
+            + "  set [*BASE_MEMBERS_Time] as '[Time].[Years].Members'\n"
+            + "  set [*CJ_COL_AXIS] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})'\n"
+            + "  member [Measures].[*SUMMARY_MEASURE_0] as 'Rank([Product].CurrentMember, [*CJ_ROW_AXIS], [Measures].[Quantity])', FORMAT_STRING = \"#,##0\", SOLVE_ORDER = 100\n"
+            + "  member [Product].[*TOTAL_MEMBER_SEL~AGG] as 'Aggregate({[Product].[All Products]})', SOLVE_ORDER = (- 100)\n"
+            + "  member [Measures].[*FORMATTED_MEASURE_1] as '[Measures].[Quantity]', FORMAT_STRING = \"#,###\", SOLVE_ORDER = 400\n"
+            + "select Crossjoin([*SORTED_COL_AXIS], [*BASE_MEMBERS_Measures]) ON COLUMNS,\n"
+            + "  Union({[Product].[*TOTAL_MEMBER_SEL~AGG]}, [*SORTED_ROW_AXIS]) ON ROWS\n"
+            + "from [SteelWheelsSales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[2003], [Measures].[*FORMATTED_MEASURE_1]}\n"
+            + "{[Time].[2003], [Measures].[*SUMMARY_MEASURE_0]}\n"
+            + "{[Time].[2004], [Measures].[*FORMATTED_MEASURE_1]}\n"
+            + "{[Time].[2004], [Measures].[*SUMMARY_MEASURE_0]}\n"
+            + "{[Time].[2005], [Measures].[*FORMATTED_MEASURE_1]}\n"
+            + "{[Time].[2005], [Measures].[*SUMMARY_MEASURE_0]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[*TOTAL_MEMBER_SEL~AGG]}\n"
+            + "{[Product].[Classic Cars]}\n"
+            + "{[Product].[Motorcycles]}\n"
+            + "{[Product].[Planes]}\n"
+            + "{[Product].[Ships]}\n"
+            + "{[Product].[Trains]}\n"
+            + "{[Product].[Trucks and Buses]}\n"
+            + "{[Product].[Vintage Cars]}\n"
+            + "Row #0: 36,439\n"
+            + "Row #0: 1\n"
+            + "Row #0: 49,417\n"
+            + "Row #0: 1\n"
+            + "Row #0: 19,475\n"
+            + "Row #0: 1\n"
+            + "Row #1: 12,762\n"
+            + "Row #1: 1\n"
+            + "Row #1: 16,085\n"
+            + "Row #1: 1\n"
+            + "Row #1: 6,705\n"
+            + "Row #1: 1\n"
+            + "Row #2: 4,031\n"
+            + "Row #2: 4\n"
+            + "Row #2: 5,906\n"
+            + "Row #2: 3\n"
+            + "Row #2: 2,771\n"
+            + "Row #2: 3\n"
+            + "Row #3: 3,833\n"
+            + "Row #3: 5\n"
+            + "Row #3: 5,820\n"
+            + "Row #3: 4\n"
+            + "Row #3: 2,207\n"
+            + "Row #3: 4\n"
+            + "Row #4: 2,844\n"
+            + "Row #4: 6\n"
+            + "Row #4: 4,309\n"
+            + "Row #4: 6\n"
+            + "Row #4: 1,346\n"
+            + "Row #4: 6\n"
+            + "Row #5: 1,000\n"
+            + "Row #5: 7\n"
+            + "Row #5: 1,409\n"
+            + "Row #5: 7\n"
+            + "Row #5: 409\n"
+            + "Row #5: 7\n"
+            + "Row #6: 4,056\n"
+            + "Row #6: 3\n"
+            + "Row #6: 5,024\n"
+            + "Row #6: 5\n"
+            + "Row #6: 1,921\n"
+            + "Row #6: 5\n"
+            + "Row #7: 7,913\n"
+            + "Row #7: 2\n"
+            + "Row #7: 10,864\n"
+            + "Row #7: 2\n"
+            + "Row #7: 4,116\n"
+            + "Row #7: 2\n");
+    }
+
+    public void testDoubleValueCanBeRankedAmongIntegers() {
+        getTestContext().assertQueryReturns(
+            "with \n"
+            + "  member [Product].[agg] as \n"
+            + "    'Aggregate({[Product].[Line].[Motorcycles]})'\n"
+            + "  member [Measures].[rank] as \n"
+            + "    'Rank([Product].[agg], [Product].[Line].members, [Measures].[Quantity])'\n"
+            + "select [Measures].[rank] on columns from [SteelWheelsSales]\n",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[rank]}\n"
+            + "Row #0: 3\n");
+        getTestContext().assertQueryReturns(
+            "with \n"
+            + "  member [Product].[agg] as \n"
+            + "    'Aggregate({[Product].[Line].[Motorcycles]})'\n"
+            + "  member [Measures].[rank] as \n"
+            + "    'Rank(([Time].[2003],[Product].[agg]),"
+            + "          Crossjoin({[Time].[2003]},[Product].[Line].members),"
+            + "          [Measures].[Quantity])'\n"
+            + "select [Measures].[rank] on columns from [SteelWheelsSales]\n",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[rank]}\n"
+            + "Row #0: 4\n");
     }
 }
 
