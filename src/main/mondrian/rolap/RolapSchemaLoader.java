@@ -145,9 +145,8 @@ public class RolapSchemaLoader {
     private final Map<RolapHierarchy, List<RolapCubeHierarchy>> cubeHierMap =
         new HashMap<RolapHierarchy, List<RolapCubeHierarchy>>();
 
-    // TODO: more efficient data structure. Maybe a map: tag -> list<resource>
-    private final Map<Pair<String, Locale>, String> resourceMap =
-        new HashMap<Pair<String, Locale>, String>();
+    private final Map<String, List<Larders.Resource>> resourceMap =
+        new HashMap<String, List<Larders.Resource>>();
 
     /**
      * Creates a RolapSchemaLoader.
@@ -508,11 +507,26 @@ public class RolapSchemaLoader {
                         final Properties properties = new Properties();
                         properties.load(inputStream);
                         for (Map.Entry entry : properties.entrySet()) {
-                            resourceMap.put(
-                                Pair.of(
-                                    (String) entry.getKey(),
-                                    locale),
-                                (String) entry.getValue());
+                            String key = (String) entry.getKey();
+                            LocalizedProperty prop;
+                            if (key.endsWith(".caption")) {
+                                key = key.substring(
+                                    0, key.length() - ".caption".length());
+                                prop = LocalizedProperty.CAPTION;
+                            } else if (key.endsWith(".description")) {
+                                key = key.substring(
+                                    0, key.length() - ".description".length());
+                                prop = LocalizedProperty.DESCRIPTION;
+                            } else {
+                                continue;
+                            }
+                            Util.putMulti(
+                                resourceMap,
+                                key,
+                                new Larders.Resource(
+                                    prop,
+                                    locale,
+                                    (String) entry.getValue()));
                         }
                         inputStream.close();
                     } catch (Throwable e) {
@@ -1889,34 +1903,11 @@ public class RolapSchemaLoader {
         String caption,
         String description)
     {
-        final List<Larders.Resource> list = new ArrayList<Larders.Resource>();
-        if (tag != null && !resourceMap.isEmpty()) {
-            final String captionTag = tag + ".caption";
-            final String descriptionTag = tag + ".description";
-            for (Map.Entry<Pair<String, Locale>, String> entry
-                : resourceMap.entrySet())
-            {
-                if (entry.getKey().left.equals(captionTag)) {
-                    list.add(
-                        new Larders.Resource(
-                            LocalizedProperty.CAPTION,
-                            entry.getKey().right,
-                            entry.getValue()));
-                }
-                if (entry.getKey().left.equals(descriptionTag)) {
-                    list.add(
-                        new Larders.Resource(
-                            LocalizedProperty.DESCRIPTION,
-                            entry.getKey().right,
-                            entry.getValue()));
-                }
-            }
-        }
         return Larders.create(
             annotations,
             caption,
             description,
-            list);
+            tag != null ? resourceMap.get(tag) : null);
     }
 
     private List<RolapMember> nonSystemMeasures() {

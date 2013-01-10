@@ -39,7 +39,7 @@ public class Larders {
         String description)
     {
         return create(
-            null,
+            Olap4jUtil.<MondrianDef.Annotation>emptyNamedList(),
             caption,
             description,
             Collections.<Resource>emptyList());
@@ -63,6 +63,9 @@ public class Larders {
     {
         if (annotations == null) {
             annotations = Olap4jUtil.emptyNamedList();
+        }
+        if (resources == null) {
+            resources = Collections.emptyList();
         }
         int n = annotations.size()
             + (caption != null ? 1 : 0)
@@ -368,7 +371,7 @@ public class Larders {
         }
 
         public String get(LocalizedProperty prop, Locale locale) {
-            if (locale != DEFAULT_LOCALE) {
+            if (!locale.equals(DEFAULT_LOCALE)) {
                 return null;
             }
             switch (prop) {
