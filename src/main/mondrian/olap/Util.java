@@ -165,7 +165,7 @@ public class Util extends XOMUtil {
         } else if (PreJdk16) {
             className = "mondrian.util.UtilCompatibleJdk15";
         } else if (PreJdk17) {
-            className = "mondrian.util.UtilCompatibleJdk15";
+            className = "mondrian.util.UtilCompatibleJdk16";
         } else {
             className = "mondrian.util.UtilCompatibleJdk17";
         }
