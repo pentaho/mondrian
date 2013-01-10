@@ -5,11 +5,13 @@
   == You must accept the terms of that agreement to use this software.
   ==
   == Copyright (C) 2001-2005 Julian Hyde
-  == Copyright (C) 2005-2012 Pentaho and others
+  == Copyright (C) 2005-2013 Pentaho and others
   == All Rights Reserved.
   -->
 <project name="mondrian" default="all" xmlns:ivy="antlib:org.apache.ivy.ant">
   <property environment="env"/>
+
+  <property name="build.compiler" value="javac1.7"/>
 
   <property name="project.location" location="${basedir}"/>
   <property name="lib.location" location="${project.location}/lib"/>

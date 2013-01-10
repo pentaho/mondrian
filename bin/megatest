@@ -5,7 +5,7 @@
 # http://www.eclipse.org/legal/epl-v10.html.
 # You must accept the terms of that agreement to use this software.
 #
-# Copyright (C) 2006-2012 Pentaho
+# Copyright (C) 2006-2013 Pentaho
 # All Rights Reserved.
 #
 # Script to run the Mondrian test suite under various JDKs, with parameter
@@ -47,41 +47,21 @@ mackerel) if [ ! "$cygwin" ]; then hostname=mackerel-linux; fi ;;
 esac
 
 case ${hostname} in
-branston)
+(branston)
   databaseList="access derby hsqldb mysql oracle"
   jdkList="jdk1.5 jdk1.6"
   ;;
-mackerel)
-  databaseList="access derby hsqldb"
-  jdkList="jdk1.4 jdk1.5 jdk1.6"
-  ;;
-mackerel-linux)
-  databaseList="derby hsqldb"
-  jdkList="jdk1.4 jdk1.5 jdk1.6"
-  ;;
-mackerel-winxp)
-  databaseList="access derby hsqldb teradata"
-  jdkList="jdk1.4 jdk1.5 jdk1.6"
-  ;;
-marmalade)
+(marmalade)
   databaseList="derby hsqldb mysql oracle luciddb postgresql"
   jdkList="jdk1.4 jdk1.5 jdk1.6 openjdk1.6"
   ;;
-marmite)
+(marmite)
   databaseList="derby hsqldb monetdb mysql oracle"
-  jdkList="jdk1.4 jdk1.5 jdk1.6 jdk1.7 openjdk1.6 openjdk1.7 ibmjdk1.6"
+  jdkList="jdk1.4 jdk1.5 jdk1.6 jdk1.7 jdk1.8 openjdk1.6 openjdk1.7 ibmjdk1.6"
   ;;
-ATRHisv1)
-  databaseList="hsqldb neoview"
-  jdkList="jdk1.6"
-  ;;
-plank)
-  databaseList="derby mysql hsqldb"
-  jdkList="jdk1.4 jdk1.5 jdk1.6 openjdk1.6"
-  ;;
-*)
+(*)
   databaseList="derby hsqldb mysql oracle"
-  jdkList="jdk1.4 jdk1.5 jdk1.6"
+  jdkList="jdk1.4 jdk1.5 jdk1.6 jdk1.7"
   ;;
 esac
 
@@ -791,7 +771,10 @@ doRandom() {
 }
 
 doQuick() {
-  doTest jdk1.7 mysql
+# doTest jdk1.8 mysql
+# doTest jdk1.7 mysql
+  doTest jdk1.6 mysql
+# doTest jdk1.5 mysql
 }
 
 # Runs the tests that are believed to be working.
