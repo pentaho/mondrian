@@ -9,8 +9,8 @@
 */
 package mondrian.olap4j;
 
-import mondrian.olap.OlapElement;
 import mondrian.olap.LocalizedProperty;
+import mondrian.olap.OlapElement;
 import mondrian.rolap.RolapMeasure;
 
 import org.olap4j.OlapException;
