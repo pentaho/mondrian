@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.xmla;
@@ -635,14 +635,6 @@ System.out.println("Got CONTINUE");
             XmlaSupport.processXmla(
                 xmlaReqDoc, connectString, catalogNameUrls, role,
                 resource.serverCache);
-        if (XmlUtil.supportsValidation()) {
-            if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
-                if (DEBUG) {
-                    System.out.println(
-                        "XmlaBaseTestCase.doTests: XML Data is Valid");
-                }
-            }
-        }
 
         // do SOAP-XMLA
         String callBackClassName = CallBack.class.getName();
@@ -656,14 +648,6 @@ System.out.println("Got CONTINUE");
         if (DEBUG) {
             System.out.println(
                 "XmlaBaseTestCase.doTests: soap response=" + new String(bytes));
-        }
-        if (XmlUtil.supportsValidation()) {
-            if (XmlaSupport.validateSoapXmlaUsingXpath(bytes)) {
-                if (DEBUG) {
-                    System.out.println(
-                        "XmlaBaseTestCase.doTests: XML Data is Valid");
-                }
-            }
         }
 
         String gotStr = new String(bytes);
