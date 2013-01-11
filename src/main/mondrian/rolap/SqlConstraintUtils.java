@@ -1215,11 +1215,13 @@ public class SqlConstraintUtils {
         final Dialect dialect = queryBuilder.getDialect();
 
         int levelCount = 0;
-        for (Collection<RolapMember> members2 = members;
+        Collection<RolapMember> members2 = members;
+        RolapMember m = null;
+        for (;
             !members2.isEmpty();
             members2 = getUniqueParentMembers(members2))
         {
-            RolapMember m = members2.iterator().next();
+            m = members2.iterator().next();
             if (m.isAll()) {
                 continue;
             }
@@ -1235,6 +1237,8 @@ public class SqlConstraintUtils {
                 }
                 continue;
             }
+            break;
+        }
 
             boolean containsNullKey = false;
             for (RolapMember member : members2) {
@@ -1245,8 +1249,9 @@ public class SqlConstraintUtils {
             }
 
             final RolapLevel level = m.getLevel();
-            for (RolapSchema.PhysColumn key : level.getAttribute().getKeyList())
-            {
+            if (level.getAttribute().getKeyList().size() > 0) {
+                RolapSchema.PhysColumn key =
+                    level.getAttribute().getKeyList().get(0);
                 // this method can be called within the context of shared
                 // members, outside of the normal rolap star, therefore we need
                 // to check the level to see if it is a shared or cube level.
@@ -1341,13 +1346,6 @@ public class SqlConstraintUtils {
                     }
                 }
             }
-
-            if (false /* TODO: m.getLevel().isUnique() */
-                || m.getLevel() == fromLevel)
-            {
-                break; // no further qualification needed
-            }
-        }
     }
 
     /**
