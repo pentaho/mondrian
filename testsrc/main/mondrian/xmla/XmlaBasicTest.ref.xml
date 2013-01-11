@@ -2141,13 +2141,6 @@
                         <SET_NAME>[Top Sellers]</SET_NAME>
                         <SCOPE>1</SCOPE>
                     </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <SET_NAME>[Top Sellers]</SET_NAME>
-                        <SCOPE>1</SCOPE>
-                    </row>
                 </root>
             </cxmla:return>
         </cxmla:DiscoverResponse>
@@ -6704,25 +6697,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     <row>
                         <FUNCTION_NAME>IS</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether two objects are the same</DESCRIPTION>
-                        <PARAMETER_LIST>Member, Member</PARAMETER_LIST>
-                        <RETURN_TYPE>11</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>IS</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>IS</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether two objects are the same</DESCRIPTION>
-                        <PARAMETER_LIST>Level, Level</PARAMETER_LIST>
-                        <RETURN_TYPE>11</RETURN_TYPE>
-                        <ORIGIN>1</ORIGIN>
-                        <INTERFACE_NAME/>
-                        <CAPTION>IS</CAPTION>
-                    </row>
-                    <row>
-                        <FUNCTION_NAME>IS</FUNCTION_NAME>
-                        <DESCRIPTION>Returns whether two objects are the same</DESCRIPTION>
-                        <PARAMETER_LIST>Hierarchy, Hierarchy</PARAMETER_LIST>
+                        <PARAMETER_LIST>Tuple, Tuple</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
@@ -6740,7 +6715,25 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     <row>
                         <FUNCTION_NAME>IS</FUNCTION_NAME>
                         <DESCRIPTION>Returns whether two objects are the same</DESCRIPTION>
-                        <PARAMETER_LIST>Tuple, Tuple</PARAMETER_LIST>
+                        <PARAMETER_LIST>Hierarchy, Hierarchy</PARAMETER_LIST>
+                        <RETURN_TYPE>11</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IS</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IS</FUNCTION_NAME>
+                        <DESCRIPTION>Returns whether two objects are the same</DESCRIPTION>
+                        <PARAMETER_LIST>Level, Level</PARAMETER_LIST>
+                        <RETURN_TYPE>11</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IS</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>IS</FUNCTION_NAME>
+                        <DESCRIPTION>Returns whether two objects are the same</DESCRIPTION>
+                        <PARAMETER_LIST>Member, Member</PARAMETER_LIST>
                         <RETURN_TYPE>11</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
