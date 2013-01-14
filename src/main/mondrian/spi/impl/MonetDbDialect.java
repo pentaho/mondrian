@@ -4,15 +4,18 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2012 Pentaho
+// Copyright (C) 2012-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
 
 import mondrian.olap.Util;
+import mondrian.rolap.SqlStatement;
 
 import java.sql.Connection;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the MonetDB database.
@@ -36,6 +39,9 @@ public class MonetDbDialect extends JdbcDialectImpl {
      */
     public MonetDbDialect(Connection connection) throws SQLException {
         super(connection);
+    }
+
+    public MonetDbDialect() {
     }
 
     @Override
@@ -72,6 +78,27 @@ public class MonetDbDialect extends JdbcDialectImpl {
         buf.append(s1);
         buf.append('\'');
     }
+
+    @Override
+    public SqlStatement.Type getType(
+        ResultSetMetaData metaData, int columnIndex)
+        throws SQLException
+    {
+        final int columnType = metaData.getColumnType(columnIndex + 1);
+        final int precision = metaData.getPrecision(columnIndex + 1);
+        final int scale = metaData.getScale(columnIndex + 1);
+
+        if (columnType == Types.NUMERIC || columnType == Types.DECIMAL) {
+            if (scale == 0 && precision == 0) {
+                // MonetDB marks doesn't return precision and scale for agg
+                // decimal data types, so we'll assume it's a double.
+                logTypeInfo(metaData, columnIndex, SqlStatement.Type.DOUBLE);
+                return SqlStatement.Type.DOUBLE;
+            }
+        }
+        return super.getType(metaData, columnIndex);
+    }
+
 }
 
 // End MonetDbDialect.java

@@ -9,6 +9,10 @@
 */
 package mondrian.spi;
 
+import mondrian.rolap.SqlStatement;
+
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -773,6 +777,23 @@ public interface Dialect {
      * of them returns a non-negative value.</p>
      */
     List<StatisticsProvider> getStatisticsProviders();
+
+    /**
+     * Chooses the most appropriate type for accessing the values of a
+     * column in a result set for a dialect.
+     *
+     * Dialect-specific nuances involving type representation should be
+     * encapsulated in implementing methods.  For example, if a dialect
+     * has implicit rules involving scale or precision, they should be
+     * handled within this method so the client can simply retrieve the
+     * "best fit" SqlStatement.Type for the column.
+     *
+     * @param metadata  Results set metadata
+     * @param columnIndex Column ordinal (0-based)
+     * @return the most appropriate SqlStatement.Type for the column
+     */
+    SqlStatement.Type getType(ResultSetMetaData metadata, int columnIndex)
+        throws SQLException;
 
     /**
      * Enumeration of common database types.
