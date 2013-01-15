@@ -344,200 +344,6 @@ public class SqlStatement {
         return runtimeException;
     }
 
-    private static Type getDecimalType(
-        int precision,
-        int scale,
-        Dialect dialect)
-    {
-        // Dialect might be null. This can happen when Mondrian issues a first
-        // query and tries to figure out what dialect to use. Watch out
-        // for NPEs.
-        if (dialect != null
-            && dialect.getDatabaseProduct() == Dialect.DatabaseProduct.NETEZZA
-            && scale == 0
-            && precision == 38)
-        {
-            // Neteeza marks longs as scale 0 and precision 38.
-            // An int would overflow.
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "Using type DOUBLE for Neteeza scale 0 and precision 38.");
-            }
-            return Type.DOUBLE;
-        } else if (dialect != null
-                && dialect.getDatabaseProduct()
-                   == Dialect.DatabaseProduct.MONETDB
-                && scale == 0
-                && precision == 0)
-        {
-            // MonetDB marks doesn't return precision and scale for aggregated
-            // decimal data types, so we'll assume it's a double.
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "Using type DOUBLE for MonetDB scale 0 and precision 0.");
-            }
-            return Type.DOUBLE;
-        } else if ((scale == 0 || scale == -127)
-            && (precision <= 9 || precision == 38))
-        {
-            // An int (up to 2^31 = 2.1B) can hold any NUMBER(10, 0) value
-            // (up to 10^9 = 1B). NUMBER(38, 0) is conventionally used in
-            // Oracle for integers of unspecified precision, so let's be
-            // bold and assume that they can fit into an int.
-            //
-            // Oracle also seems to sometimes represent integers as
-            // (type=NUMERIC, precision=0, scale=-127) for reasons unknown.
-            return Type.INT;
-        } else {
-            return Type.DOUBLE;
-        }
-    }
-
-    /**
-     * Chooses the most appropriate type for accessing the values of a
-     * column in a result set.
-     *
-     * <p>NOTE: It is possible that this method is driver-dependent. If this is
-     * the case, move it to {@link mondrian.spi.Dialect}.
-     *
-     * @param suggestedType Type suggested by Level.internalType attribute
-     * @param metaData Result set metadata
-     * @param i Column ordinal (0-based)
-     * @return Best client type
-     * @throws SQLException on error
-     */
-    public static Type guessType(
-        Type suggestedType,
-        ResultSetMetaData metaData,
-        int i,
-        Dialect dialect)
-        throws SQLException
-    {
-        final String columnName = metaData.getColumnName(i + 1);
-        if (suggestedType != null) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "SqlStatement.guessType - Column "
-                    + columnName
-                    + " is of explicit type "
-                    + suggestedType.name());
-            }
-            return suggestedType;
-        }
-        final String typeName = metaData.getColumnTypeName(i + 1);
-        final int columnType = metaData.getColumnType(i + 1);
-        int precision;
-        int scale;
-        switch (columnType) {
-        case Types.SMALLINT:
-        case Types.INTEGER:
-        case Types.BOOLEAN:
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "SqlStatement.guessType - Column "
-                    + columnName
-                    + " is of internal type INT. JDBC type was "
-                    + columnType);
-            }
-            return Type.INT;
-        case Types.NUMERIC:
-            precision = metaData.getPrecision(i + 1);
-            scale = metaData.getScale(i + 1);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "SqlStatement.guessType - Column "
-                    + columnName
-                    + " has precision "
-                    + precision
-                    + " and scale "
-                    + scale
-                    + " for JDBC type "
-                    + typeName);
-            }
-            if (precision == 0
-                && (scale == 0 || scale == -127)
-                && (typeName.equalsIgnoreCase("NUMBER")
-                    || (typeName.equalsIgnoreCase("NUMERIC"))))
-            {
-                // In Oracle and Greenplum the NUMBER/NUMERIC datatype with no
-                // precision or scale (not NUMBER(p) or NUMBER(p, s)) means
-                // floating point. Some drivers represent this with scale 0,
-                // others scale -127.
-                //
-                // There is a further problem. In GROUPING SETS queries, Oracle
-                // loosens the type of columns compared to mere GROUP BY
-                // queries. We need integer GROUP BY columns to remain integers,
-                // otherwise the segments won't be found; but if we convert
-                // measure (whose column names are like "m0", "m1") to integers,
-                // data loss will occur.
-                if (columnName.startsWith("m")) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(
-                            "SqlStatement.guessType - Column "
-                            + columnName
-                            + " is of internal type OBJECT. JDBC type was "
-                            + columnType);
-                    }
-                    return Type.OBJECT;
-                } else {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(
-                            "SqlStatement.guessType - Column "
-                            + columnName
-                            + " is of internal type INT. JDBC type was "
-                            + columnType);
-                    }
-                    return Type.INT;
-                }
-            }
-            final Type decimalType = getDecimalType(precision, scale, dialect);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "SqlStatement.guessType - Column "
-                    + columnName
-                    + " is of internal type "
-                    + decimalType.name()
-                    + ". JDBC type was "
-                    + columnType);
-            }
-            return decimalType;
-        case Types.DECIMAL:
-            precision = metaData.getPrecision(i + 1);
-            scale = metaData.getScale(i + 1);
-            final Type dt = getDecimalType(precision, scale, dialect);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "SqlStatement.guessType - Column "
-                    + columnName
-                    + " is of internal type "
-                    + dt.name()
-                    + ". JDBC type was "
-                    + columnType);
-            }
-            return dt;
-        case Types.DOUBLE:
-        case Types.FLOAT:
-        case Types.BIGINT:
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "SqlStatement.guessType - Column "
-                    + columnName
-                    + " is of internal type DOUBLE. JDBC type was "
-                    + columnType);
-            }
-            return Type.DOUBLE;
-        default:
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "SqlStatement.guessType - Column "
-                    + columnName
-                    + " is of internal type OBJECT. JDBC type was "
-                    + columnType);
-            }
-            return Type.OBJECT;
-        }
-    }
-
     private Accessor createAccessor(int column, Type type) {
         final int columnPlusOne = column + 1;
         switch (type) {
@@ -593,6 +399,7 @@ public class SqlStatement {
         final int columnCount = metaData.getColumnCount();
         assert this.types == null || this.types.size() == columnCount;
         List<Type> types = new ArrayList<Type>();
+
         for (int i = 0; i < columnCount; i++) {
             final Type suggestedType =
                 this.types == null ? null : this.types.get(i);
@@ -601,10 +408,14 @@ public class SqlStatement {
             RolapSchema schema = locus.execution.getMondrianStatement()
                 .getMondrianConnection()
                 .getSchema();
-            types.add(
-                guessType(
-                    suggestedType, metaData, i,
-                    schema != null ? schema.getDialect() : null));
+
+            if (suggestedType != null) {
+                types.add(suggestedType);
+            } else if (schema != null && schema.getDialect() != null) {
+                types.add(schema.getDialect().getType(metaData, i));
+            } else {
+                types.add(Type.OBJECT);
+            }
         }
         return types;
     }
