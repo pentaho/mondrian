@@ -919,7 +919,6 @@ public class JdbcDialectImpl implements Dialect {
         return statisticsProviders;
     }
 
-    @Override
     public SqlStatement.Type getType(ResultSetMetaData metaData, int columnIndex)
         throws SQLException
     {

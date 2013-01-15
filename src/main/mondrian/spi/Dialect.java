@@ -779,14 +779,14 @@ public interface Dialect {
     List<StatisticsProvider> getStatisticsProviders();
 
     /**
-     * Chooses the most appropriate type for accessing the values of a
-     * column in a result set for a dialect.
+     * <p>Chooses the most appropriate type for accessing the values of a
+     * column in a result set for a dialect.</p>
      *
-     * Dialect-specific nuances involving type representation should be
+     * <p>Dialect-specific nuances involving type representation should be
      * encapsulated in implementing methods.  For example, if a dialect
      * has implicit rules involving scale or precision, they should be
      * handled within this method so the client can simply retrieve the
-     * "best fit" SqlStatement.Type for the column.
+     * "best fit" SqlStatement.Type for the column.</p>
      *
      * @param metadata  Results set metadata
      * @param columnIndex Column ordinal (0-based)
