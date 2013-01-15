@@ -919,7 +919,8 @@ public class JdbcDialectImpl implements Dialect {
         return statisticsProviders;
     }
 
-    public SqlStatement.Type getType(ResultSetMetaData metaData, int columnIndex)
+    public SqlStatement.Type getType(
+        ResultSetMetaData metaData, int columnIndex)
         throws SQLException
     {
         final int columnType = metaData.getColumnType(columnIndex + 1);
@@ -929,25 +930,23 @@ public class JdbcDialectImpl implements Dialect {
         SqlStatement.Type internalType;
         if (columnType != Types.NUMERIC && columnType != Types.DECIMAL) {
             internalType = DEFAULT_TYPE_MAP.get(columnType);
-        }
-        else if (scale == 0 && precision <= 9)
-        {
+        } else if (scale == 0 && precision <= 9) {
             // An int (up to 2^31 = 2.1B) can hold any NUMBER(10, 0) value
             // (up to 10^9 = 1B).
             internalType = SqlStatement.Type.INT;
-        }
-        else {
+        } else {
             internalType = SqlStatement.Type.DOUBLE;
         }
-        internalType =  internalType == null ? SqlStatement.Type.OBJECT :
-            internalType;
+        internalType =  internalType == null ? SqlStatement.Type.OBJECT
+            : internalType;
         logTypeInfo(metaData, columnIndex, internalType);
         return internalType;
     }
 
 
-    void logTypeInfo(ResultSetMetaData metaData, int columnIndex,
-                     SqlStatement.Type internalType)
+    void logTypeInfo(
+        ResultSetMetaData metaData, int columnIndex,
+        SqlStatement.Type internalType)
     throws SQLException
     {
         if (LOGGER.isDebugEnabled()) {
@@ -962,7 +961,7 @@ public class JdbcDialectImpl implements Dialect {
                 + columnName
                 + " is of internal type "
                 + internalType
-                +". JDBC type was "
+                + ". JDBC type was "
                 + columnType
                 + ".  Column precision=" + precision
                 + ".  Column scale=" + scale);
