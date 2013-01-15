@@ -4,13 +4,14 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2012 Pentaho
+// Copyright (C) 2008-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.rolap.SqlStatement;
 import mondrian.spi.Dialect;
 import mondrian.spi.StatisticsProvider;
 import mondrian.util.ClassResolver;
@@ -103,11 +104,27 @@ public class JdbcDialectImpl implements Dialect {
      * The size required to add quotes around a string - this ought to be
      * large enough to prevent a reallocation.
      */
-    public static final int SINGLE_QUOTE_SIZE = 10;
+    private static final int SINGLE_QUOTE_SIZE = 10;
     /**
      * Two strings are quoted and the character '.' is placed between them.
      */
     private static final int DOUBLE_QUOTE_SIZE = 2 * SINGLE_QUOTE_SIZE + 1;
+
+    /**
+     * The default mapping of java.sql.Types to SqlStatement.Type
+     */
+    private static final Map<Types, SqlStatement.Type> DEFAULT_TYPE_MAP;
+    static {
+        Map typeMapInitial = new HashMap<Types, SqlStatement.Type>();
+        typeMapInitial.put(Types.SMALLINT, SqlStatement.Type.INT);
+        typeMapInitial.put(Types.INTEGER, SqlStatement.Type.INT);
+        typeMapInitial.put(Types.BOOLEAN, SqlStatement.Type.INT);
+        typeMapInitial.put(Types.DOUBLE, SqlStatement.Type.DOUBLE);
+        typeMapInitial.put(Types.FLOAT, SqlStatement.Type.DOUBLE);
+        typeMapInitial.put(Types.BIGINT, SqlStatement.Type.DOUBLE);
+
+        DEFAULT_TYPE_MAP = Collections.unmodifiableMap(typeMapInitial);
+    }
 
     /**
      * Creates a JdbcDialectImpl.
@@ -156,6 +173,19 @@ public class JdbcDialectImpl implements Dialect {
                 : metaData.storesLowerCaseIdentifiers() ? Case.LOWER
                 : metaData.storesMixedCaseIdentifiers() ? Case.MIXED
                 : Case.UNKNOWN;
+    }
+
+    public JdbcDialectImpl() {
+        quoteIdentifierString = "";
+        productName = "";
+        productVersion = "";
+        supportedResultSetTypes = null;
+        readOnly = true;
+        maxColumnNameLength = 0;
+        databaseProduct = null;
+        permitsSelectNotInGroupBy = true;
+        statisticsProviders = null;
+        unquotedIdentifierRegexp = null;
     }
 
     public DatabaseProduct getDatabaseProduct() {
@@ -534,7 +564,6 @@ public class JdbcDialectImpl implements Dialect {
             fromClause,
             cast);
     }
-
     /**
      * Generates inline values list using ANSI 'VALUES' syntax.
      * For example,
@@ -642,7 +671,11 @@ public class JdbcDialectImpl implements Dialect {
         if (value == null) {
             buf.append("null");
         } else {
-            datatype.quoteValue(buf, this, value);
+            String valueString = value.toString();
+            if (needsExponent(value, valueString)) {
+                valueString += "E0";
+            }
+            datatype.quoteValue(buf, this, valueString);
         }
     }
 
@@ -873,6 +906,57 @@ public class JdbcDialectImpl implements Dialect {
         return identifier;
     }
 
+
+
+    public SqlStatement.Type getType(
+        ResultSetMetaData metaData, int columnIndex)
+        throws SQLException
+    {
+        final int columnType = metaData.getColumnType(columnIndex + 1);
+        final int precision = metaData.getPrecision(columnIndex + 1);
+        final int scale = metaData.getScale(columnIndex + 1);
+
+        SqlStatement.Type internalType;
+        if (columnType != Types.NUMERIC && columnType != Types.DECIMAL) {
+            internalType = DEFAULT_TYPE_MAP.get(columnType);
+        } else if (scale == 0 && precision <= 9) {
+            // An int (up to 2^31 = 2.1B) can hold any NUMBER(10, 0) value
+            // (up to 10^9 = 1B).
+            internalType = SqlStatement.Type.INT;
+        } else {
+            internalType = SqlStatement.Type.DOUBLE;
+        }
+        internalType =  internalType == null
+            ? SqlStatement.Type.OBJECT : internalType;
+        logTypeInfo(metaData, columnIndex, internalType);
+        return internalType;
+    }
+
+
+    void logTypeInfo(
+        ResultSetMetaData metaData, int columnIndex,
+        SqlStatement.Type internalType)
+    throws SQLException
+    {
+        if (LOGGER.isDebugEnabled()) {
+            final int columnType = metaData.getColumnType(columnIndex + 1);
+            final int precision = metaData.getPrecision(columnIndex + 1);
+            final int scale = metaData.getScale(columnIndex + 1);
+            final String columnName = metaData.getColumnName(columnIndex + 1);
+            LOGGER.debug(
+                "JdbcDialectImpl.getType "
+                + "Dialect- " + this.getDatabaseProduct()
+                + ", Column-"
+                + columnName
+                + " is of internal type "
+                + internalType
+                + ". JDBC type was "
+                + columnType
+                + ".  Column precision=" + precision
+                + ".  Column scale=" + scale);
+        }
+    }
+
     public List<StatisticsProvider> getStatisticsProviders() {
         return statisticsProviders;
     }
@@ -963,13 +1047,17 @@ public class JdbcDialectImpl implements Dialect {
             }
         } else if (upperProductName.indexOf("FIREBIRD") >= 0) {
             return DatabaseProduct.FIREBIRD;
+        } else if (productName.equals("Hive")) {
+            return DatabaseProduct.HIVE;
         } else if (productName.startsWith("Informix")) {
             return DatabaseProduct.INFORMIX;
         } else if (upperProductName.equals("INGRES")) {
             return DatabaseProduct.INGRES;
         } else if (productName.equals("Interbase")) {
             return DatabaseProduct.INTERBASE;
-        } else if (upperProductName.equals("LUCIDDB")) {
+        } else if (upperProductName.equals("LUCIDDB")
+            || upperProductName.equals("OPTIQ"))
+        {
             return DatabaseProduct.LUCIDDB;
         } else if (upperProductName.indexOf("SQL SERVER") >= 0) {
             return DatabaseProduct.MSSQL;

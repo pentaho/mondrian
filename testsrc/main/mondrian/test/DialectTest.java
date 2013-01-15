@@ -4,12 +4,13 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
 
 import mondrian.olap.Util;
+import mondrian.rolap.SqlStatement;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 import mondrian.spi.impl.*;
@@ -128,6 +129,13 @@ public class DialectTest extends TestCase {
                 databaseMetaData.getDatabaseProductName()
                     .indexOf("PostgreSQL") >= 0);
             break;
+        case MSSQL:
+            // Dialect has identified that it is MSSQL.
+            assertTrue(dialect instanceof MicrosoftSqlServerDialect);
+            assertTrue(
+                databaseMetaData.getDatabaseProductName()
+                    .contains("Microsoft"));
+            break;
         case NETEZZA:
             // Dialect has identified that it is Netezza and a sub class of
             // PostgreSql.
@@ -180,7 +188,9 @@ public class DialectTest extends TestCase {
                 // postgres
                 "(?s).*ERROR: function count\\(integer, integer\\) does not exist.*",
                 // monetdb
-                "syntax error, unexpected ',', expecting '\\)' in: \"select count\\(distinct \"customer_id\",\""
+                "syntax error, unexpected ',', expecting '\\)' in: \"select count\\(distinct \"customer_id\",\"",
+                // SQL server 2008
+                "Incorrect syntax near ','."
             };
             assertQueryFails(sql, errs);
         }
@@ -322,7 +332,9 @@ public class DialectTest extends TestCase {
                 // netezza
                 "(?s).*ERROR:  sub-SELECT in FROM must have an alias.*",
                 // monetdb
-                "subquery table reference needs alias, use AS xxx in:.*"
+                "subquery table reference needs alias, use AS xxx in:.*",
+                // SQL server 2008
+                "Incorrect syntax near \\'\\)\\'\\."
             };
             assertQueryFails(sql, errs);
         } else {
@@ -411,6 +423,8 @@ public class DialectTest extends TestCase {
                 "(?s)ERROR: invalid UNION/INTERSECT/EXCEPT ORDER BY clause.*",
                 // Vectorwise
                 "Parse error in StringBuffer at line 0, column 525\\: \\<missing\\>\\.",
+                // SQL server 2008
+                "ORDER BY items must appear in the select list if the statement contains a UNION, INTERSECT or EXCEPT operator."
             };
             assertQueryFails(sql, errs);
         }
@@ -513,7 +527,9 @@ public class DialectTest extends TestCase {
                 // netezza
                 "(?s).*found \"1\" \\(at char 81\\) expecting `SELECT' or `'\\(''.*",
                 // monetdb
-                "syntax error, unexpected ',', expecting '\\)' in: \"select \"unit_sales\""
+                "syntax error, unexpected ',', expecting '\\)' in: \"select \"unit_sales\"",
+                // SQL server 2008
+                "An expression of non-boolean type specified in a context where a condition is expected, near ','."
             };
             assertQueryFails(sql, errs);
         }
@@ -897,7 +913,9 @@ public class DialectTest extends TestCase {
                 // Vectorwise
                 "line 1, The columns in the SELECT clause must be contained in the GROUP BY clause\\.",
                 // MonetDB
-                "SELECT: cannot use non GROUP BY column 'the_month' in query results without an aggregate function"
+                "SELECT: cannot use non GROUP BY column 'the_month' in query results without an aggregate function",
+                // SQL Server 2008
+                "Column 'time_by_day.the_month' is invalid in the select list because it is not contained in either an aggregate function or the GROUP BY clause."
             };
             assertQueryFails(sql, errs);
         }
@@ -1114,6 +1132,274 @@ public class DialectTest extends TestCase {
         assertEquals(
             "Emp with Space", dialectWith.rectifyCase("Emp with Space"));
     }
+
+    public void testOracleTypeMapQuirks() throws SQLException {
+        MockResultSetMetadata mockResultSetMeta = new MockResultSetMetadata();
+        Dialect oracleDialect = new OracleDialect();
+
+        assertTrue(
+            "Oracle dialect NUMERIC type with 0 precision, 0 scale should map "
+            + "to INT, unless column starts with 'm'",
+            oracleDialect.getType(
+                mockResultSetMeta.withColumnName("c0")
+                    .withColumnType(Types.NUMERIC)
+                    .withPrecision(0)
+                    .withScale(0),
+                0) == SqlStatement.Type.INT);
+
+        assertTrue(
+            "Oracle dialect NUMERIC type with non-zero precision, -127 scale "
+            + " should map to DOUBLE.  MONDRIAN-1044",
+            oracleDialect.getType(
+                mockResultSetMeta.withColumnName("c0")
+                    .withColumnType(Types.NUMERIC)
+                    .withPrecision(5)
+                    .withScale(-127),
+                0) == SqlStatement.Type.DOUBLE);
+        assertTrue(
+            "Oracle dialect NUMERIC type with precision less than 10, 0 scale "
+            + " should map to INT. ",
+            oracleDialect.getType(
+                mockResultSetMeta.withColumnName("c0")
+                    .withColumnType(Types.NUMERIC)
+                    .withPrecision(9)
+                    .withScale(0),
+                0) == SqlStatement.Type.INT);
+        assertTrue(
+            "Oracle dialect NUMERIC type with precision = 38, scale = 0"
+            + " should map to INT.  38 is a magic number in Oracle "
+            + " for integers of unspecified precision.",
+            oracleDialect.getType(
+                mockResultSetMeta.withColumnName("c0")
+                    .withColumnType(Types.NUMERIC)
+                    .withPrecision(38)
+                    .withScale(0),
+                0) == SqlStatement.Type.INT);
+        assertTrue(
+            "Oracle dialect DECIMAL type with precision > 9, scale = 0"
+            + " should map to DOUBLE (unless magic #38)",
+            oracleDialect.getType(
+                mockResultSetMeta.withColumnName("c0")
+                    .withColumnType(Types.NUMERIC)
+                    .withPrecision(20)
+                    .withScale(0),
+                0) == SqlStatement.Type.DOUBLE);
+
+        assertTrue(
+            "Oracle dialect NUMBER type with precision =0 , scale = -127"
+            + " should map to INT, unless measure name starts with 'm'",
+            oracleDialect.getType(
+                mockResultSetMeta.withColumnName("c0")
+                    .withColumnType(Types.NUMERIC)
+                    .withPrecision(0)
+                    .withScale(-127),
+                0) == SqlStatement.Type.INT);
+        assertTrue(
+            "Oracle dialect NUMBER type with precision =0 , scale = -127"
+            + " should map to INT, unless measure name starts with 'm'",
+            oracleDialect.getType(
+                mockResultSetMeta.withColumnName("m0")
+                    .withColumnType(Types.NUMERIC)
+                    .withPrecision(0)
+                    .withScale(-127),
+                0) == SqlStatement.Type.OBJECT);
+    }
+
+    public void testPostgresGreenplumTypeMapQuirks() throws SQLException {
+        MockResultSetMetadata mockResultSetMeta = new MockResultSetMetadata();
+        Dialect postgresDialect = new PostgreSqlDialect();
+        assertTrue(
+            "Postgres/Greenplum dialect NUMBER with precision =0, scale = 0"
+            + ", measure name starts with 'm' maps to OBJECT",
+            postgresDialect.getType(
+                mockResultSetMeta.withColumnName("m0")
+                    .withColumnType(Types.NUMERIC)
+                    .withPrecision(0)
+                    .withScale(0),
+                0) == SqlStatement.Type.OBJECT);
+    }
+
+    public void testNetezzaTypeMapQuirks() throws SQLException {
+        MockResultSetMetadata mockResultSetMeta = new MockResultSetMetadata();
+        Dialect netezzaDialect = new NetezzaDialect();
+        assertTrue(
+            "Netezza dialect NUMERIC/DECIMAL with precision =38, scale = 0"
+            + " means long.  Should be mapped to DOUBLE",
+            netezzaDialect.getType(
+                mockResultSetMeta
+                    .withColumnType(Types.NUMERIC)
+                    .withPrecision(38)
+                    .withScale(0),
+                0) == SqlStatement.Type.DOUBLE);
+        assertTrue(
+            "Netezza dialect NUMERIC/DECIMAL with precision =38, scale = 0"
+            + " means long.  Should be mapped to DOUBLE",
+            netezzaDialect.getType(
+                mockResultSetMeta
+                    .withColumnType(Types.DECIMAL)
+                    .withPrecision(38)
+                    .withScale(0),
+                0) == SqlStatement.Type.DOUBLE);
+    }
+
+    public void testMonetDBTypeMapQuirks() throws SQLException {
+        MockResultSetMetadata mockResultSetMeta = new MockResultSetMetadata();
+        Dialect postgresDialect = new MonetDbDialect();
+        assertTrue(
+            "MonetDB dialect NUMERIC with precision =0, scale = 0"
+            + " may be an aggregated decimal, should assume DOUBLE",
+            postgresDialect.getType(
+                mockResultSetMeta
+                    .withColumnType(Types.NUMERIC)
+                    .withPrecision(0)
+                    .withScale(0),
+                0) == SqlStatement.Type.DOUBLE);
+    }
+
+    public void testJdbcDialectTypeMap() throws SQLException {
+        MockResultSetMetadata mockResultSetMeta = new MockResultSetMetadata();
+        Dialect postgresDialect = new JdbcDialectImpl();
+        assertTrue(
+            "JdbcDialectImpl NUMERIC/DECIMAL types w/ precision 0-9"
+            + " and scale=0 should return INT",
+            postgresDialect.getType(
+                mockResultSetMeta
+                    .withColumnType(Types.NUMERIC)
+                    .withPrecision(5)
+                    .withScale(0),
+                0) == SqlStatement.Type.INT);
+        assertTrue(
+            "JdbcDialectImpl NUMERIC/DECIMAL types w/ precision 0-9"
+            + " and scale=0 should return INT",
+            postgresDialect.getType(
+                mockResultSetMeta
+                    .withColumnType(Types.DECIMAL)
+                    .withPrecision(5)
+                    .withScale(0),
+                0) == SqlStatement.Type.INT);
+    }
+
+    static class MockResultSetMetadata implements ResultSetMetaData {
+
+        private static int precision;
+        private static int scale;
+        private static int columnType;
+        private static String columnName;
+
+        public MockResultSetMetadata withPrecision(int setPrecision) {
+            precision = setPrecision;
+            return this;
+        }
+
+        public MockResultSetMetadata withScale(int setScale) {
+            scale = setScale;
+            return this;
+        }
+
+        public MockResultSetMetadata withColumnType(int setColumnType) {
+            columnType = setColumnType;
+            return this;
+        }
+
+        public MockResultSetMetadata withColumnName(String setColumnName) {
+            columnName = setColumnName;
+            return this;
+        }
+
+
+        public int getPrecision(int column) throws SQLException {
+            return precision;
+        }
+
+        public String getColumnName(int column) throws SQLException {
+            return columnName;
+        }
+
+        public int getColumnType(int column) throws SQLException {
+            return columnType;
+        }
+
+        public int getScale(int column) throws SQLException {
+            return scale;
+        }
+
+        public int getColumnCount() throws SQLException {
+            return 0;
+        }
+
+        public boolean isAutoIncrement(int column) throws SQLException {
+            return false;
+        }
+
+        public boolean isCaseSensitive(int column) throws SQLException {
+            return false;
+        }
+
+        public boolean isSearchable(int column) throws SQLException {
+            return false;
+        }
+
+        public boolean isCurrency(int column) throws SQLException {
+            return false;
+        }
+
+        public int isNullable(int column) throws SQLException {
+            return 0;
+        }
+
+        public boolean isSigned(int column) throws SQLException {
+            return false;
+        }
+
+        public int getColumnDisplaySize(int column) throws SQLException {
+            return 0;
+        }
+
+        public String getColumnLabel(int column) throws SQLException {
+            return null;
+        }
+
+        public String getSchemaName(int column) throws SQLException {
+            return null;
+        }
+
+        public String getTableName(int column) throws SQLException {
+            return null;
+        }
+
+        public String getCatalogName(int column) throws SQLException {
+            return null;
+        }
+
+        public String getColumnTypeName(int column) throws SQLException {
+            return null;
+        }
+
+        public boolean isReadOnly(int column) throws SQLException {
+            return false;
+        }
+
+        public boolean isWritable(int column) throws SQLException {
+            return false;
+        }
+
+        public boolean isDefinitelyWritable(int column) throws SQLException {
+            return false;
+        }
+
+        public String getColumnClassName(int column) throws SQLException {
+            return null;
+        }
+
+        public <T> T unwrap(Class<T> iface) throws SQLException {
+            return null;
+        }
+
+        public boolean isWrapperFor(Class<?> iface) throws SQLException {
+            return false;
+        }
+    }
+
 }
 
 // End DialectTest.java

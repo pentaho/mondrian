@@ -4,11 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2012 Pentaho
+// Copyright (C) 2012-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
 
+import mondrian.rolap.SqlStatement;
 import mondrian.spi.*;
 
 import java.sql.*;
@@ -237,6 +238,12 @@ public class DelegatingDialect implements Dialect {
 
     public List<StatisticsProvider> getStatisticsProviders() {
         return dialect.getStatisticsProviders();
+    }
+
+    public SqlStatement.Type getType(
+        ResultSetMetaData metadata, int columnIndex) throws SQLException
+    {
+        return dialect.getType(metadata, columnIndex);
     }
 
     public boolean alwaysQuoteIdentifiers() {

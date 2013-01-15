@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho and others
+// Copyright (C) 2007-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -347,127 +347,6 @@ public class SqlStatement {
         return runtimeException;
     }
 
-    private static Type getDecimalType(
-        int precision,
-        int scale,
-        Dialect dialect)
-    {
-        // Dialect might be null. This can happen when Mondrian issues a first
-        // query and tries to figure out what dialect to use. Watch out
-        // for NPEs.
-        if (dialect != null
-            && dialect.getDatabaseProduct() == Dialect.DatabaseProduct.NETEZZA
-            && scale == 0
-            && precision == 38)
-        {
-            // Netezza marks longs as scale 0 and precision 38.
-            // An int would overflow.
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "Using type DOUBLE for Neteeza scale 0 and precision 38.");
-            }
-            return Type.DOUBLE;
-        } else if (dialect != null
-                && dialect.getDatabaseProduct()
-                    == Dialect.DatabaseProduct.MONETDB
-                && scale == 0
-                && precision == 0)
-        {
-            // MonetDB marks doesn't return precision and scale for aggregated
-            // decimal data types, so we'll assume it's a double.
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "Using type DOUBLE for MonetDB scale 0 and precision 0.");
-            }
-            return Type.DOUBLE;
-        } else if ((scale == 0 || scale == -127)
-            && (precision <= 9 || precision == 38))
-        {
-            // An int (up to 2^31 = 2.1B) can hold any NUMBER(10, 0) value
-            // (up to 10^9 = 1B). NUMBER(38, 0) is conventionally used in
-            // Oracle for integers of unspecified precision, so let's be
-            // bold and assume that they can fit into an int.
-            //
-            // Oracle also seems to sometimes represent integers as
-            // (type=NUMERIC, precision=0, scale=-127) for reasons unknown.
-            return Type.INT;
-        } else {
-            return Type.DOUBLE;
-        }
-    }
-
-    /**
-     * Chooses the most appropriate type for accessing the values of a
-     * column in a result set.
-     *
-     * <p>NOTE: It is possible that this method is driver-dependent. If this is
-     * the case, move it to {@link mondrian.spi.Dialect}.
-     *
-     * @param suggestedType Type suggested by Level.internalType attribute
-     * @param metaData Result set metadata
-     * @param i Column ordinal (0-based)
-     * @param dialect Dialect, or null
-     * @return Best client type
-     * @throws SQLException on error
-     */
-    public static Type guessType(
-        Type suggestedType,
-        ResultSetMetaData metaData,
-        int i,
-        Dialect dialect)
-        throws SQLException
-    {
-        if (suggestedType != null) {
-            return suggestedType;
-        }
-        final String typeName = metaData.getColumnTypeName(i + 1);
-        final int columnType = metaData.getColumnType(i + 1);
-        int precision;
-        int scale;
-        switch (columnType) {
-        case Types.SMALLINT:
-        case Types.INTEGER:
-        case Types.BOOLEAN:
-            return Type.INT;
-        case Types.NUMERIC:
-            precision = metaData.getPrecision(i + 1);
-            scale = metaData.getScale(i + 1);
-            if (precision == 0
-                && (scale == 0 || scale == -127)
-                && (typeName.equalsIgnoreCase("NUMBER")
-                    || (typeName.equalsIgnoreCase("NUMERIC"))))
-            {
-                // In Oracle and Greenplum the NUMBER/NUMERIC datatype with no
-                // precision or scale (not NUMBER(p) or NUMBER(p, s)) means
-                // floating point. Some drivers represent this with scale 0,
-                // others scale -127.
-                //
-                // There is a further problem. In GROUPING SETS queries, Oracle
-                // loosens the type of columns compared to mere GROUP BY
-                // queries. We need integer GROUP BY columns to remain integers,
-                // otherwise the segments won't be found; but if we convert
-                // measure (whose column names are like "m0", "m1") to integers,
-                // data loss will occur.
-                final String columnName = metaData.getColumnName(i + 1);
-                if (columnName.startsWith("m")) {
-                    return Type.OBJECT;
-                } else {
-                    return Type.INT;
-                }
-            }
-            return getDecimalType(precision, scale, dialect);
-        case Types.DECIMAL:
-            precision = metaData.getPrecision(i + 1);
-            scale = metaData.getScale(i + 1);
-            return getDecimalType(precision, scale, dialect);
-        case Types.DOUBLE:
-        case Types.FLOAT:
-            return Type.DOUBLE;
-        default:
-            return Type.OBJECT;
-        }
-    }
-
     /**
      * Creates an accessor that returns the value of a given column, converting
      * to the required type.
@@ -560,10 +439,14 @@ public class SqlStatement {
             RolapSchema schema = locus.execution.getMondrianStatement()
                 .getMondrianConnection()
                 .getSchema();
-            types.add(
-                guessType(
-                    suggestedType, metaData, i,
-                    schema != null ? schema.getDialect() : null));
+
+            if (suggestedType != null) {
+                types.add(suggestedType);
+            } else if (schema != null && schema.getDialect() != null) {
+                types.add(schema.getDialect().getType(metaData, i));
+            } else {
+                types.add(Type.OBJECT);
+            }
         }
         return types;
     }

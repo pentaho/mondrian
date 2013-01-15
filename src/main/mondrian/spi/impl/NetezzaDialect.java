@@ -9,8 +9,13 @@
 */
 package mondrian.spi.impl;
 
+import mondrian.olap.Util;
+import mondrian.rolap.SqlStatement;
+
 import java.sql.Connection;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the Netezza database.
@@ -23,7 +28,20 @@ public class NetezzaDialect extends PostgreSqlDialect {
     public static final JdbcDialectFactory FACTORY =
         new JdbcDialectFactory(
             NetezzaDialect.class,
-            DatabaseProduct.NETEZZA);
+            // While we're choosing dialects, this still looks like a Postgres
+            // connection.
+            DatabaseProduct.POSTGRESQL)
+        {
+            protected boolean acceptsConnection(Connection connection) {
+                try {
+                    return super.acceptsConnection(connection)
+                       && isNetezza(connection.getMetaData());
+                } catch (SQLException e) {
+                    throw Util.newError(
+                        e, "Error while instantiating dialect");
+                }
+            }
+        };
 
     /**
      * Creates a NetezzaDialect.
@@ -34,5 +52,42 @@ public class NetezzaDialect extends PostgreSqlDialect {
         super(connection);
     }
 
+    public NetezzaDialect() {
+    }
+
+    @Override
+    public DatabaseProduct getDatabaseProduct() {
+        return DatabaseProduct.NETEZZA;
+    }
+
+    @Override
+    public boolean allowsRegularExpressionInWhereClause() {
+        return false;
+    }
+
+    @Override
+    public String generateRegularExpression(String source, String javaRegex) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public SqlStatement.Type getType(
+        ResultSetMetaData metaData, int columnIndex)
+        throws SQLException
+    {
+        final int precision = metaData.getPrecision(columnIndex + 1);
+        final int scale = metaData.getScale(columnIndex + 1);
+        final int columnType = metaData.getColumnType(columnIndex + 1);
+
+        if (columnType == Types.NUMERIC || columnType == Types.DECIMAL
+            && (scale == 0 && precision == 38))
+        {
+            // Neteeza marks longs as scale 0 and precision 38.
+            // An int would overflow.
+            logTypeInfo(metaData, columnIndex, SqlStatement.Type.DOUBLE);
+            return SqlStatement.Type.DOUBLE;
+        }
+        return super.getType(metaData, columnIndex);
+    }
 }
 // End NetezzaDialect.java

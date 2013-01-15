@@ -4,13 +4,21 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2012 Pentaho
+// Copyright (C) 2008-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi;
 
+import mondrian.rolap.SqlStatement;
+
 import java.math.BigDecimal;
-import java.sql.*;
+
+import java.sql.Date;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
+
 import java.util.List;
 import java.util.Map;
 
@@ -111,7 +119,7 @@ public interface Dialect {
     /**
      * Converts an expression to upper case.
      *
-     * <p>For example, for MySQL, <code>toUpper("foo.bar")</code> returns
+     * <p>For example, for MySQL, {@code toUpper("foo.bar")} returns
      * {@code "UPPER(foo.bar)"}.</p>
      *
      * @param expr SQL expression
@@ -124,7 +132,7 @@ public interface Dialect {
     /**
      * Generates a conditional statement in this dialect's syntax.
      *
-     * <p>For example, <code>caseWhenElse("b", "1", "0")</code> returns
+     * <p>For example, {@code caseWhenElse("b", "1", "0")} returns
      * {@code "case when b then 1 else 0 end"} on Oracle,
      * {@code "Iif(b, 1, 0)"} on Access.
      *
@@ -838,6 +846,22 @@ public interface Dialect {
      */
     List<StatisticsProvider> getStatisticsProviders();
 
+    /**
+     * <p>Chooses the most appropriate type for accessing the values of a
+     * column in a result set for a dialect.</p>
+     *
+     * <p>Dialect-specific nuances involving type representation should be
+     * handled in implementing methods.  For example, if a dialect
+     * has implicit rules involving scale or precision, they should be
+     * handled within this method so the client can simply retrieve the
+     * "best fit" SqlStatement.Type for the column.</p>
+     *
+     * @param metadata  Results set metadata
+     * @param columnIndex Column ordinal (0-based)
+     * @return the most appropriate SqlStatement.Type for the column
+     */
+    SqlStatement.Type getType(ResultSetMetaData metadata, int columnIndex)
+        throws SQLException;
     /**
      * Returns whether identifiers are always quoted.
      */
