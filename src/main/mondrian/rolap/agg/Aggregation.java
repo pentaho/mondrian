@@ -14,7 +14,6 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.*;
 import mondrian.rolap.*;
-import mondrian.util.Pair;
 
 import java.util.*;
 import java.util.concurrent.Future;

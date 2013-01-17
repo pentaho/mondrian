@@ -12,7 +12,6 @@ package mondrian.rolap.agg;
 import mondrian.olap.Aggregator;
 import mondrian.olap.Util;
 import mondrian.rolap.*;
-import mondrian.rolap.RolapStar.Column;
 import mondrian.rolap.agg.Segment.ExcludedRegion;
 import mondrian.spi.*;
 import mondrian.util.ArraySortedSet;
