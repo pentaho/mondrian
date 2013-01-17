@@ -12354,6 +12354,28 @@ public class FunctionTest extends FoodMartTestCase {
                 + "Row #46: 263,793.22\n");
         }
     }
+
+    /**
+     * "Could not find column for <agg table column> in header.." error<br>
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1359">MONDRIAN-1359</a>
+     */
+    public void testMondrian1359() {
+        executeQuery(
+            "WITH MEMBER [Store].[Stores].[CA plus OR] AS 'AGGREGATE({[Store].[USA].[CA], [Store].[USA].[OR]})'\n"
+            + "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
+            + "      {[Store].[USA].[CA], [Store].[USA].[OR], [Store].[CA plus OR]} ON ROWS\n"
+            + "FROM Sales\n"
+            + "WHERE ([1997].[Q1])");
+        executeQuery(
+            "SELECT {[Measures].AllMembers} ON COLUMNS,"
+            + "{[Store].[USA].[CA], [Store].[USA].[WA]} ON ROWS "
+            + "FROM Sales "
+            + "WHERE ([1997].[Q1])");
+        executeQuery(
+            "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
+            + "{[Store].[USA].[CA]} ON ROWS "
+            + "FROM Sales ");
+    }
 }
 
 // End FunctionTest.java

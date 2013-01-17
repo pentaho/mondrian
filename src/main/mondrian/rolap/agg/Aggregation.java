@@ -128,7 +128,7 @@ public class Aggregation {
         int axisCount = columns.length;
         Util.assertTrue(predicates.length == axisCount);
 
-        Pair<Segment, List<Segment>> segments =
+        List<Segment> segments =
             createSegments(
                 starConverter, columns, measures, measureBitKey, predicates);
 
@@ -136,7 +136,7 @@ public class Aggregation {
         BitKey levelBitKey = getConstrainedColumnsBitKey();
         GroupingSet groupingSet =
             new GroupingSet(
-                segments.left, segments.right, levelBitKey, measureBitKey,
+                segments, levelBitKey, measureBitKey,
                 predicates, columns);
         if (groupingSetsCollector.useGroupingSets()) {
             groupingSetsCollector.add(groupingSet);
@@ -151,7 +151,7 @@ public class Aggregation {
         }
     }
 
-    private Pair<Segment, List<Segment>> createSegments(
+    private List<Segment> createSegments(
         AggregationManager.StarConverter starConverter,
         RolapStar.Column[] columns,
         List<RolapStar.Measure> measures,
@@ -159,7 +159,6 @@ public class Aggregation {
         StarColumnPredicate[] predicates)
     {
         List<Segment> segments = new ArrayList<Segment>(measures.size());
-        Segment baseSegment = null;
         for (RolapStar.Measure measure : measures) {
             measureBitKey.set(measure.getBitPosition());
             Segment segment =
@@ -172,22 +171,6 @@ public class Aggregation {
                     predicates,
                     Collections.<Segment.ExcludedRegion>emptyList(),
                     compoundPredicateList);
-            if (segments.isEmpty()) {
-                if (starConverter == null) {
-                    baseSegment = segment;
-                } else {
-                    baseSegment =
-                        Segment.create(
-                            null,
-                            star,
-                            constrainedColumnsBitKey,
-                            columns,
-                            measure,
-                            predicates,
-                            Collections.<Segment.ExcludedRegion>emptyList(),
-                            compoundPredicateList);
-                }
-            }
             segments.add(segment);
         }
 
@@ -206,7 +189,7 @@ public class Aggregation {
                         o2.measure.getBitPosition());
                 }
             });
-        return Pair.of(baseSegment, segments);
+        return segments;
     }
 
     /**

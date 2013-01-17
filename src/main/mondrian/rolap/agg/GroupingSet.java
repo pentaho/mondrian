@@ -23,7 +23,6 @@ import java.util.List;
  * @since 05-Jun-2007
  */
 public class GroupingSet {
-    private final Segment baseSegment;
     private final List<Segment> segments;
     final Segment segment0;
     private final BitKey levelBitKey;
@@ -45,14 +44,12 @@ public class GroupingSet {
      * @param columns Columns
      */
     public GroupingSet(
-        Segment baseSegment,
         List<Segment> segments,
         BitKey levelBitKey,
         BitKey measureBitKey,
         StarColumnPredicate[] predicates,
         RolapStar.Column[] columns)
     {
-        this.baseSegment = baseSegment;
         this.segments = segments;
         this.segment0 = segments.get(0);
         this.levelBitKey = levelBitKey;

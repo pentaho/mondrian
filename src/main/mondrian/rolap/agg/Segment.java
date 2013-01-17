@@ -167,6 +167,25 @@ public class Segment {
                 this);
     }
 
+    public Segment(
+        RolapStar star,
+        BitKey constrainedColumnsBitKey,
+        RolapStar.Column[] columns,
+        RolapStar.Measure measure,
+        StarColumnPredicate[] predicates,
+        List<ExcludedRegion> excludedRegions,
+        final List<StarPredicate> compoundPredicateList)
+    {
+        this(
+            star,
+            constrainedColumnsBitKey,
+            columns, columns,
+            measure, measure,
+            predicates,
+            excludedRegions,
+            compoundPredicateList);
+    }
+
     public static Segment create(
         AggregationManager.StarConverter starConverter,
         RolapStar star,
@@ -185,7 +204,7 @@ public class Segment {
                 starConverter.convertColumnArray(columns),
                 measure,
                 starConverter.convertMeasure(measure),
-                starConverter.convertPredicateArray(predicates),
+                predicates,
                 Collections.<ExcludedRegion>emptyList(),
                 starConverter.convertPredicateList(compoundPredicateList));
         } else {
@@ -193,8 +212,6 @@ public class Segment {
                 star,
                 constrainedColumnsBitKey,
                 columns,
-                columns,
-                measure,
                 measure,
                 predicates,
                 excludedRegions,

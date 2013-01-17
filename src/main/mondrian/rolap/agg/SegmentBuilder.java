@@ -12,6 +12,7 @@ package mondrian.rolap.agg;
 import mondrian.olap.Aggregator;
 import mondrian.olap.Util;
 import mondrian.rolap.*;
+import mondrian.rolap.RolapStar.Column;
 import mondrian.rolap.agg.Segment.ExcludedRegion;
 import mondrian.spi.*;
 import mondrian.util.ArraySortedSet;
@@ -160,8 +161,6 @@ public class SegmentBuilder {
             star,
             constrainedColumnsBitKey,
             constrainedColumns,
-            constrainedColumns,
-            measure,
             measure,
             predicateList.toArray(
                 new StarColumnPredicate[predicateList.size()]),
@@ -561,20 +560,13 @@ public class SegmentBuilder {
 
     public static List<SegmentColumn> toConstrainedColumns(
         RolapSchema.PhysStatistic statistic,
-        StarColumnPredicate[] predicates)
-    {
-        return toConstrainedColumns(
-            statistic,
-            Arrays.asList(predicates));
-    }
-
-    public static List<SegmentColumn> toConstrainedColumns(
-        RolapSchema.PhysStatistic statistic,
-        Collection<StarColumnPredicate> predicates)
+        StarColumnPredicate[] predicates,
+        RolapStar.Column[] baseColumns)
     {
         List<SegmentColumn> ccs =
             new ArrayList<SegmentColumn>();
-        for (StarColumnPredicate predicate : predicates) {
+        for (int i = 0; i < predicates.length; i++) {
+            StarColumnPredicate predicate = predicates[i];
             final List<Comparable> values =
                 new ArrayList<Comparable>();
             predicate.values(Util.cast(values));
@@ -591,7 +583,7 @@ public class SegmentBuilder {
             }
             ccs.add(
                 new SegmentColumn(
-                    predicate.getColumn().physColumn.toSql(),
+                    baseColumns[i].getExpression().toSql(),
                     statistic.getColumnCardinality(
                         predicate.getColumn().physColumn.relation,
                         predicate.getColumn().physColumn,
@@ -615,7 +607,8 @@ public class SegmentBuilder {
         Segment segment)
     {
         final List<SegmentColumn> cc =
-            SegmentBuilder.toConstrainedColumns(statistic, segment.predicates);
+            SegmentBuilder.toConstrainedColumns(
+                statistic, segment.predicates, segment.columns);
         final List<String> cp = new ArrayList<String>();
 
         StringBuilder buf = new StringBuilder();
