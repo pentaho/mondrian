@@ -3404,11 +3404,23 @@ public class FunUtil extends Util {
             throw new UnsupportedOperationException();
         }
 
+        public Object getPropertyValue(Property property) {
+            throw new UnsupportedOperationException();
+        }
+
         public String getPropertyFormattedValue(String propertyName) {
             throw new UnsupportedOperationException();
         }
 
-        public void setProperty(String name, Object value) {
+        public String getPropertyFormattedValue(Property property) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void setProperty(String propertyName, Object value) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void setProperty(Property property, Object value) {
             throw new UnsupportedOperationException();
         }
 

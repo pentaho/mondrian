@@ -377,10 +377,22 @@ class SqlMemberSource
                             nameObject = null;
                             nameValue = null;
                         }
+                        Larders.LarderBuilder builder =
+                            new Larders.LarderBuilder();
+                        builder.add(Property.NAME, nameValue);
+                        if (captionValue != null) {
+                            String caption = captionValue.toString();
+                            if (!caption.equals(nameValue)) {
+                                builder.caption(caption);
+                            }
+                        }
                         RolapMemberBase memberBase =
                             new RolapMemberBase(
                                 parent, level, key,
-                                nameValue, MemberType.REGULAR);
+                                MemberType.REGULAR,
+                                RolapMemberBase.deriveUniqueName(
+                                    parent, level, nameValue, false),
+                                builder.build());
                         memberBase.setOrdinal(lastOrdinal++);
                         member = memberBase;
                         list.add(member);
@@ -421,7 +433,7 @@ class SqlMemberSource
                         // Presumably the value is already in the pool
                         // as a result of makeMember().
                         member.setProperty(
-                            property.getName(),
+                            property,
                             accessors.get(propertyOrdinal).get());
                     }
                 }
@@ -1119,7 +1131,7 @@ class SqlMemberSource
                         nameObject = accessors.get(layout.nameOrdinal).get();
                         nameValue =
                             nameObject == null
-                                ? null
+                                ? RolapUtil.mdxNullLiteral()
                                 : String.valueOf(nameObject);
                     } else {
                         nameObject = null;
@@ -1182,14 +1194,24 @@ class SqlMemberSource
         } else {
             rolapChildLevel = childLevel;
         }
+        final Larders.LarderBuilder builder = new Larders.LarderBuilder();
+        builder.add(Property.NAME, nameValue);
+
+        if (captionValue != null) {
+            final String caption = captionValue.toString();
+            if (!caption.equals(nameValue)) {
+                builder.caption(caption);
+            }
+        }
         RolapMemberBase member =
             new RolapMemberBase(
                 parentMember,
                 rolapChildLevel,
                 key,
-                nameValue,
                 MemberType.REGULAR,
-                captionValue != null ? captionValue.toString() : null);
+                RolapMemberBase.deriveUniqueName(
+                    parentMember, childLevel, nameValue, false),
+                builder.build());
         assert parentMember == null
             || parentMember.getLevel().getDepth() == childLevel.getDepth() - 1
             || childLevel.isParentChild();
@@ -1216,11 +1238,12 @@ class SqlMemberSource
             member.setOrderKey(orderKey);
         }
         if (layout.nameOrdinal
-            != layout.keyOrdinals[layout.keyOrdinals.length - 1])
+            != layout.keyOrdinals[layout.keyOrdinals.length - 1]
+            && false)
         {
             Comparable name = accessors.get(layout.nameOrdinal).get();
             member.setProperty(
-                Property.NAME.name,
+                Property.NAME,
                 name == null
                     ? RolapUtil.sqlNullValue.toString()
                     : name.toString());
@@ -1230,7 +1253,7 @@ class SqlMemberSource
             : childLevel.attribute.getExplicitProperties())
         {
             member.setProperty(
-                property.getName(),
+                property,
                 getPooledValue(
                     accessors.get(layout.propertyOrdinals[j++]).get()));
         }
@@ -1491,8 +1514,10 @@ class SqlMemberSource
             RolapMember dataMember)
         {
             super(
-                parentMember, childLevel, value,
-                dataMember.getName(), dataMember.getMemberType());
+                parentMember, childLevel, value, dataMember.getMemberType(),
+                deriveUniqueName(
+                    parentMember, childLevel, dataMember.getName(), false),
+                Larders.ofName(dataMember.getName()));
             this.dataMember = dataMember;
             this.depth = (parentMember != null)
                 ? parentMember.getDepth() + 1
@@ -1503,10 +1528,6 @@ class SqlMemberSource
             return dataMember;
         }
 
-        /**
-         * @return the members's depth
-         * @see mondrian.olap.Member#getDepth()
-         */
         public int getDepth() {
             return depth;
         }

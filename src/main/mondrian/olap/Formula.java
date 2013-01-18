@@ -123,10 +123,9 @@ public class Formula extends QueryPart {
         if (isMember) {
             Exp formatExp = getFormatExp(validator);
             if (formatExp != null) {
+                mdxMember.setProperty(Property.FORMAT_EXP_PARSED, formatExp);
                 mdxMember.setProperty(
-                    Property.FORMAT_EXP_PARSED.name, formatExp);
-                mdxMember.setProperty(
-                    Property.FORMAT_EXP.name, Util.unparse(formatExp));
+                    Property.FORMAT_EXP, Util.unparse(formatExp));
             }
 
             final List<MemberProperty> memberPropertyList =
@@ -615,8 +614,7 @@ public class Formula extends QueryPart {
         }
 
         private Exp getFormula(Member member) {
-            return (Exp)
-                member.getPropertyValue(Property.FORMAT_EXP_PARSED.name);
+            return (Exp) member.getPropertyValue(Property.FORMAT_EXP_PARSED);
         }
     }
 }

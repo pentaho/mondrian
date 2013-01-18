@@ -28,7 +28,6 @@ public class RolapCalculatedMember
     implements CalculatedMember
 {
     private final Formula formula;
-    private Larder larder;
 
     /**
      * Creates a RolapCalculatedMember.
@@ -46,9 +45,12 @@ public class RolapCalculatedMember
     {
         // A calculated measure has MemberType.FORMULA because FORMULA
         // overrides MEASURE.
-        super(parentMember, level, null, name, MemberType.FORMULA);
+        super(
+            parentMember, level, null,
+            MemberType.FORMULA,
+            deriveUniqueName(parentMember, level, name, true),
+            Larders.ofName(name));
         this.formula = formula;
-        this.larder = Larders.EMPTY;
     }
 
     // override RolapMember
@@ -57,17 +59,15 @@ public class RolapCalculatedMember
         return solveOrder == null ? 0 : solveOrder.intValue();
     }
 
-    public Object getPropertyValue(String propertyName, boolean matchCase) {
-        if (Util.equal(propertyName, Property.FORMULA.name, matchCase)) {
+    public Object getPropertyValue(Property property) {
+        if (property == Property.FORMULA) {
             return formula;
-        } else if (Util.equal(
-                propertyName, Property.CHILDREN_CARDINALITY.name, matchCase))
-        {
+        } else if (property == Property.CHILDREN_CARDINALITY) {
             // Looking up children is unnecessary for calculated member.
             // If do that, SQLException will be thrown.
             return 0;
         } else {
-            return super.getPropertyValue(propertyName, matchCase);
+            return super.getPropertyValue(property);
         }
     }
 
@@ -77,7 +77,7 @@ public class RolapCalculatedMember
 
     public boolean isCalculatedInQuery() {
         final String memberScope =
-            (String) getPropertyValue(Property.MEMBER_SCOPE.name);
+            (String) getPropertyValue(Property.MEMBER_SCOPE);
         return memberScope == null
             || memberScope.equals("QUERY");
     }
@@ -88,11 +88,6 @@ public class RolapCalculatedMember
 
     public Formula getFormula() {
         return formula;
-    }
-
-    @Override
-    public Larder getLarder() {
-        return larder;
     }
 
     void setLarder(Larder larder) {

@@ -108,6 +108,7 @@ public class RolapSchemaUpgrader {
                 true,
                 Collections.<Locale>emptySet(),
                 Larders.create(
+                    null,
                     null, // no caption available
                     xmlLegacySchema.description));
         tempSchema.physicalSchema =

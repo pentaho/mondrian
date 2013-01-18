@@ -209,7 +209,11 @@ public class VisualTotalsFunDef extends FunDefBase {
             super(
                 member.getParentMember(),
                 member.getLevel(),
-                null, name, MemberType.FORMULA);
+                null,
+                MemberType.FORMULA,
+                deriveUniqueName(
+                    member.getParentMember(), member.getLevel(), name, false),
+                Larders.ofName(name));
             this.member = member;
             this.exp = exp;
         }
@@ -295,16 +299,12 @@ public class VisualTotalsFunDef extends FunDefBase {
             return member;
         }
 
-        public Object getPropertyValue(String propertyName, boolean matchCase) {
-            Property property = Property.lookup(propertyName, matchCase);
-            if (property == null) {
-                return null;
-            }
+        public Object getPropertyValue(Property property) {
             switch (property.ordinal) {
             case Property.CHILDREN_CARDINALITY_ORDINAL:
-                return member.getPropertyValue(propertyName, matchCase);
+                return member.getPropertyValue(property);
             default:
-                return super.getPropertyValue(propertyName, matchCase);
+                return super.getPropertyValue(property);
             }
         }
     }

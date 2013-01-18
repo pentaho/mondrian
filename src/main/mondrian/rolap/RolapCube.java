@@ -119,7 +119,7 @@ public class RolapCube extends CubeBase {
                 true,
                 org.olap4j.metadata.Dimension.Type.MEASURE,
                 false,
-                Larders.ofCaption(measuresCaption));
+                Larders.ofCaption(Dimension.MEASURES_NAME, measuresCaption));
         RolapHierarchy measuresHierarchy =
             new RolapHierarchy(
                 measuresDimension,

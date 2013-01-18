@@ -136,7 +136,8 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 null,
                 RolapLevel.HideMemberCondition.Never,
-                Larders.EMPTY);
+                Larders.EMPTY,
+                schemaLoader.resourceMap);
         if (hasAll) {
             this.levelList.add(allLevel);
         }
@@ -155,7 +156,8 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 null,
                 RolapLevel.HideMemberCondition.Never,
-                Larders.EMPTY);
+                Larders.EMPTY,
+                schemaLoader.resourceMap);
 
         this.nullMember = new RolapNullMember(nullLevel);
 
@@ -172,7 +174,8 @@ public class RolapHierarchy extends HierarchyBase {
                     null,
                     null,
                     RolapLevel.HideMemberCondition.Never,
-                    Larders.EMPTY));
+                    Larders.EMPTY,
+                    schemaLoader.resourceMap));
         }
 
         if (this instanceof RolapCubeHierarchy) {
@@ -181,14 +184,20 @@ public class RolapHierarchy extends HierarchyBase {
         }
 
         // Create an all member.
+        final String name = Util.first(allMemberName, "All " + this.name + "s");
+        final Larders.LarderBuilder builder = new Larders.LarderBuilder();
+        builder.name(name);
+        if (allMemberCaption != null && !allMemberCaption.equals(name)) {
+            builder.caption(allMemberCaption);
+        }
         this.allMember =
             new RolapMemberBase(
                 null,
                 allLevel,
                 Util.COMPARABLE_EMPTY_LIST,
-                Util.first(allMemberName, "All " + name + "s"),
                 Member.MemberType.ALL,
-                allMemberCaption);
+                Util.makeFqName(allLevel.getHierarchy(), name),
+                builder.build());
         this.allMember.setOrdinal(0);
     }
 
@@ -280,16 +289,21 @@ public class RolapHierarchy extends HierarchyBase {
         String name,
         Formula formula)
     {
+        final RolapMember rolapParent = (RolapMember) parent;
+        final RolapLevel rolapLevel = (RolapLevel) level;
         if (formula == null) {
             return new RolapMemberBase(
-                (RolapMember) parent, (RolapLevel) level, name,
-                name, mondrian.olap.Member.MemberType.REGULAR);
+                rolapParent, rolapLevel, name,
+                mondrian.olap.Member.MemberType.REGULAR,
+                RolapMemberBase.deriveUniqueName(
+                    rolapParent, rolapLevel, name, false),
+                Larders.ofName(name));
         } else if (level.getDimension().isMeasures()) {
             return new RolapCalculatedMeasure(
-                (RolapMember) parent, (RolapLevel) level, name, formula);
+                rolapParent, rolapLevel, name, formula);
         } else {
             return new RolapCalculatedMember(
-                (RolapMember) parent, (RolapLevel) level, name, formula);
+                rolapParent, rolapLevel, name, formula);
         }
     }
 
@@ -611,6 +625,7 @@ public class RolapHierarchy extends HierarchyBase {
             false,
             Larders.create(
                 null,
+                null,
                 "Closure dimension for parent-child hierarchy " + getName()));
 
         // Create a peer hierarchy.
@@ -624,6 +639,7 @@ public class RolapHierarchy extends HierarchyBase {
                 this,
                 null,
                 Larders.create(
+                    peerDimension.getName(),
                     peerDimension.getCaption(),
                     peerDimension.getDescription()));
         peerDimension.addHierarchy(peerHier);
@@ -644,7 +660,8 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 null,
                 src.getHideMemberCondition(),
-                Larders.EMPTY);
+                Larders.EMPTY,
+                null);
         peerHier.levelList.add(level);
 
         // Create lower level.
@@ -664,7 +681,8 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 null,
                 src.getHideMemberCondition(),
-                Larders.EMPTY);
+                Larders.EMPTY,
+                null);
         peerHier.levelList.add(sublevel);
         return peerDimension;
     }
@@ -719,9 +737,10 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 level,
                 Util.COMPARABLE_EMPTY_LIST,
-                RolapUtil.mdxNullLiteral(),
-                MemberType.NULL);
-            assert level != null;
+                MemberType.NULL,
+                Util.makeFqName(
+                    level.getHierarchy(), RolapUtil.mdxNullLiteral()),
+                Larders.ofName(RolapUtil.mdxNullLiteral()));
         }
     }
 
@@ -741,8 +760,8 @@ public class RolapHierarchy extends HierarchyBase {
             super(parent, level, name, formula);
         }
 
-        public synchronized void setProperty(String name, Object value) {
-            if (name.equals(Property.CELL_FORMATTER.getName())) {
+        public synchronized void setProperty(Property property, Object value) {
+            if (property == Property.CELL_FORMATTER) {
                 String cellFormatterClass = (String) value;
                 try {
                     CellFormatter formatter =
@@ -758,9 +777,9 @@ public class RolapHierarchy extends HierarchyBase {
                             cellFormatterClass, getUniqueName(), e);
                 }
             }
-            if (name.equals(Property.CELL_FORMATTER_SCRIPT.name)) {
+            if (property == Property.CELL_FORMATTER_SCRIPT) {
                 String language = (String) getPropertyValue(
-                    Property.CELL_FORMATTER_SCRIPT_LANGUAGE.name);
+                    Property.CELL_FORMATTER_SCRIPT_LANGUAGE);
                 String scriptText = (String) value;
                 try {
                     final Scripts.ScriptDefinition script =
@@ -780,7 +799,7 @@ public class RolapHierarchy extends HierarchyBase {
                             scriptText, getUniqueName(), e);
                 }
             }
-            super.setProperty(name, value);
+            super.setProperty(property, value);
         }
 
         public RolapResult.ValueFormatter getFormatter() {

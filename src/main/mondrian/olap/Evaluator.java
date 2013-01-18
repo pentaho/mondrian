@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -284,13 +284,13 @@ public interface Evaluator {
     Locale getConnectionLocale();
 
     /**
-     * Retrieves the value of property <code>name</code>. If more than one
+     * Retrieves the value of a given property. If more than one
      * member in the current context defines that property, the one with the
      * highest solve order has precedence.
      *
      * <p>If the property is not defined, default value is returned.
      */
-    Object getProperty(String name, Object defaultValue);
+    Object getProperty(Property property, Object defaultValue);
 
     /**
      * Returns a {@link SchemaReader} appropriate for the current

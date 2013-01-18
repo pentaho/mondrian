@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -614,7 +614,7 @@ public class BuiltinFunTable extends FunTableImpl {
                                 members);
                         Aggregator aggregator =
                             (Aggregator) evaluator.getProperty(
-                                Property.AGGREGATION_TYPE.name, null);
+                                Property.AGGREGATION_TYPE, null);
                         if (aggregator == null) {
                             throw FunUtil.newEvalException(
                                 null,

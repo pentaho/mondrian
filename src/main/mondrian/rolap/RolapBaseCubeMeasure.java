@@ -32,7 +32,6 @@ public class RolapBaseCubeMeasure
     private final RolapAggregator aggregator;
 
     private final RolapCube cube;
-    private final Larder larder;
 
     /**
      * Holds the {@link mondrian.rolap.RolapStar.Measure} from which this
@@ -50,28 +49,26 @@ public class RolapBaseCubeMeasure
      *
      * @param cube Cube
      * @param measureGroup Measure group that this measure belongs to
-     * @param parentMember Parent member
      * @param level Level this member belongs to
-     * @param name Name of this member
-     * @param formatString Format string
+     * @param key Name of this member
      * @param expression Expression (or null if not calculated)
      * @param aggregator Aggregator
      * @param datatype Data type
      * @param larder Larder
+     * @param uniqueName Unique name
      */
     RolapBaseCubeMeasure(
         RolapCube cube,
         RolapMeasureGroup measureGroup,
-        RolapMember parentMember,
         RolapLevel level,
-        String name,
-        String formatString,
+        String key,
+        String uniqueName,
         RolapSchema.PhysExpr expression,
         final RolapAggregator aggregator,
         Dialect.Datatype datatype,
         Larder larder)
     {
-        super(parentMember, level, name, null, MemberType.MEASURE);
+        super(null, level, key, MemberType.MEASURE, uniqueName, larder);
         assert larder != null;
         this.cube = cube;
         this.larder = larder;
@@ -84,19 +81,7 @@ public class RolapBaseCubeMeasure
             : "inconsistent fact: " + expression + " vs. " + factRelation;
         this.expression = expression;
         this.aggregator = aggregator;
-        if (formatString == null) {
-            formatString = "";
-        }
-        setProperty(
-            Property.FORMAT_EXP_PARSED.name,
-            Literal.createString(formatString));
-        setProperty(
-            Property.FORMAT_EXP.name,
-            formatString);
-
-        setProperty(Property.AGGREGATION_TYPE.name, this.aggregator);
         this.datatype = datatype;
-        setProperty(Property.DATATYPE.name, datatype.name());
     }
 
     public RolapSchema.PhysExpr getExpr() {

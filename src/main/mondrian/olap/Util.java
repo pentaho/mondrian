@@ -24,8 +24,9 @@ import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.XOMUtil;
 
-import org.olap4j.impl.Olap4jUtil;
+import org.olap4j.impl.*;
 import org.olap4j.mdx.*;
+import org.olap4j.metadata.NamedList;
 
 import java.io.*;
 import java.lang.ref.Reference;
@@ -1501,18 +1502,18 @@ public class Util extends XOMUtil {
         Level level,
         String propertyName)
     {
+        boolean caseSensitive =
+            MondrianProperties.instance().CaseSensitive.get();
         do {
             Property[] properties = level.getProperties();
             for (Property property : properties) {
-                if (property.getName().equals(propertyName)) {
+                if (equal(property.getName(), propertyName, caseSensitive)) {
                     return property;
                 }
             }
             level = level.getParentLevel();
         } while (level != null);
         // Now try a standard property.
-        boolean caseSensitive =
-            MondrianProperties.instance().CaseSensitive.get();
         final Property property = Property.lookup(propertyName, caseSensitive);
         if (property != null
             && property.isMemberProperty()
@@ -2611,6 +2612,25 @@ public class Util extends XOMUtil {
             list.add(v);
             map.put(k, list);
         }
+    }
+
+    /**
+     * Adds a (key, bit) pair to a multi-map represented as a map of
+     * {@link BitSet}s. A "put" may add a new bit set, or it may add a new value
+     * to the list of an existing bit set.
+     *
+     * @param map Map
+     * @param k Key
+     * @param v Value
+     * @param <K> Key type
+     */
+    public static <K> void putMulti(Map<K, BitSet> map, K k, int v) {
+        BitSet bitSet = map.get(k);
+        if (bitSet == null) {
+            bitSet = new BitSet();
+            map.put(k, bitSet);
+        }
+        bitSet.set(v);
     }
 
     /** Returns a subset of a list whose elements pass a given predicate. */
@@ -4148,6 +4168,24 @@ public class Util extends XOMUtil {
         role.grant(schema, Access.ALL);
         role.makeImmutable();
         return role;
+    }
+
+    /** Returns a view of an array of {@link Named} objects as a
+     * {@link NamedList}. */
+    public static <T extends Named> NamedList<T> asNamedList(final T... ts) {
+        return new AbstractNamedList<T>() {
+            public T get(int index) {
+                return ts[index];
+            }
+
+            public int size() {
+                return ts.length;
+            }
+
+            public String getName(Object element) {
+                return ((Named) element).getName();
+            }
+        };
     }
 
     public static abstract class AbstractFlatList<T>

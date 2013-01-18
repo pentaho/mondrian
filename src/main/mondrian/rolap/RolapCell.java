@@ -529,7 +529,7 @@ public class RolapCell implements Cell {
         final int savepoint = evaluator.savepoint();
         try {
             result.populateEvaluator(evaluator, pos);
-            return evaluator.getProperty(propertyName, defaultValue);
+            return evaluator.getProperty(property, defaultValue);
         } finally {
             evaluator.restore(savepoint);
         }
@@ -555,7 +555,7 @@ public class RolapCell implements Cell {
             RolapMember member = members[i];
             if (member.getHierarchy().isScenario) {
                 scenario =
-                    (Scenario) member.getPropertyValue(Property.SCENARIO.name);
+                    (Scenario) member.getPropertyValue(Property.SCENARIO);
                 members[i] = member.getHierarchy().getAllMember();
             } else if (member.isCalculated()) {
                 throw Util.newError(

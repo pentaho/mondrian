@@ -14,7 +14,7 @@ import mondrian.olap.*;
 import mondrian.rolap.agg.*;
 import mondrian.spi.MemberFormatter;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * RolapCubeLevel wraps a RolapLevel for a specific Cube.
@@ -36,7 +36,20 @@ public class RolapCubeLevel extends RolapLevel {
     private final RolapCubeLevel parentCubeLevel;
     private RolapCubeLevel childCubeLevel;
 
-    public RolapCubeLevel(RolapLevel level, RolapCubeHierarchy cubeHierarchy) {
+    /**
+     * Creates a RolapCubeLevel.
+     *
+     * @param level Shared level
+     * @param cubeHierarchy Cube hierarchy
+     * @param resourceMap Resource map, if there are resources to override
+     *                    captions or descriptions of members in this level;
+     *                    otherwise null
+     */
+    public RolapCubeLevel(
+        RolapLevel level,
+        RolapCubeHierarchy cubeHierarchy,
+        Map<String, List<Larders.Resource>> resourceMap)
+    {
         super(
             cubeHierarchy,
             level.getName(),
@@ -48,7 +61,8 @@ public class RolapCubeLevel extends RolapLevel {
             level.nullParentValue,
             level.closure,
             level.getHideMemberCondition(),
-            level.getLarder());
+            level.getLarder(),
+            resourceMap);
 
         this.rolapLevel = level;
         this.cubeHierarchy = cubeHierarchy;
@@ -438,8 +452,10 @@ public class RolapCubeLevel extends RolapLevel {
                         wrappedAllMember,
                         closedPeerLevel,
                         member.getKeyCompact(),
-                        member.getName(),
-                        member.getMemberType());
+                        member.getMemberType(),
+                        Util.makeFqName(
+                            wrappedAllMember.getHierarchy(), member.getName()),
+                        Larders.ofName(member.getName()));
                 member =
                     new RolapCubeMember(
                         // REVIEW pass the actual parent member instead of the

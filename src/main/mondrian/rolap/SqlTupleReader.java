@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -230,7 +230,7 @@ public class SqlTupleReader implements TupleReader {
                                     accessors.get(layout.nameOrdinal).get();
                                 nameValue =
                                     nameObject == null
-                                        ? null
+                                        ? RolapUtil.mdxNullLiteral()
                                         : String.valueOf(nameObject);
                             } else {
                                 nameObject = null;
@@ -263,7 +263,7 @@ public class SqlTupleReader implements TupleReader {
                     }
 
                     final RolapMember prevMember = members.get(i);
-                    //TODO: is this block ever entered?
+                    // TODO: is this block ever entered?
                     if (member != prevMember && prevMember != null) {
                         // Flush list we've been building.
                         List<RolapMember> children = siblings.get(i + 1);

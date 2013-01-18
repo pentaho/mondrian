@@ -145,8 +145,11 @@ public class RolapSchemaLoader {
     private final Map<RolapHierarchy, List<RolapCubeHierarchy>> cubeHierMap =
         new HashMap<RolapHierarchy, List<RolapCubeHierarchy>>();
 
-    private final Map<String, List<Larders.Resource>> resourceMap =
+    final Map<String, List<Larders.Resource>> resourceMap =
         new HashMap<String, List<Larders.Resource>>();
+
+    final Map<String, BitSet> resourceHierarchyTags =
+        new HashMap<String, BitSet>();
 
     /**
      * Creates a RolapSchemaLoader.
@@ -309,8 +312,9 @@ public class RolapSchemaLoader {
                 createLarder(
                     ".schema",
                     xmlSchema.getAnnotations(),
+                    xmlSchema.name,
                     xmlSchema.caption,
-                    xmlSchema.description));
+                    xmlSchema.description).build());
 
         validator.putXml(schema, xmlSchema);
         missingLinkAction =
@@ -527,6 +531,25 @@ public class RolapSchemaLoader {
                                     prop,
                                     locale,
                                     (String) entry.getValue()));
+                            if (key.endsWith(".member")) {
+                                // Given
+                                //   [Sales].[Time].[Weekly].[1997].[23].member
+                                // find the hierarchy
+                                //   [Sales].[Time].[Weekly]
+                                int count = 0;
+                                String hierarchyTag = null;
+                                for (int i = 0; i < key.length(); i++) {
+                                    if (key.charAt(i) == '.') {
+                                        if (++count == 3) {
+                                            hierarchyTag = key.substring(0, i);
+                                        }
+                                    }
+                                }
+                                // Record level depth. ('All' = 0.)
+                                Util.putMulti(
+                                    resourceHierarchyTags, hierarchyTag,
+                                    count - 3);
+                            }
                         }
                         inputStream.close();
                     } catch (Throwable e) {
@@ -1452,8 +1475,9 @@ public class RolapSchemaLoader {
                 createLarder(
                     Util.quoteMdxIdentifier(xmlCube.name) + ".cube",
                     xmlCube.getAnnotations(),
+                    xmlCube.name,
                     xmlCube.caption,
-                    xmlCube.description),
+                    xmlCube.description).build(),
                 xmlSchema.measuresCaption);
         validator.putXml(cube, xmlCube);
         deferAssignDefaultMember(
@@ -1897,17 +1921,21 @@ public class RolapSchemaLoader {
         return cube;
     }
 
-    Larder createLarder(
+    Larders.LarderBuilder createLarder(
         String tag,
         NamedList<MondrianDef.Annotation> annotations,
+        String name,
         String caption,
         String description)
     {
-        return Larders.create(
-            annotations,
-            caption,
-            description,
-            tag != null ? resourceMap.get(tag) : null);
+        return new Larders.LarderBuilder()
+            .populate(
+                Larders.create(
+                    annotations,
+                    name,
+                    caption,
+                    description,
+                    tag != null ? resourceMap.get(tag) : null));
     }
 
     private List<RolapMember> nonSystemMeasures() {
@@ -2185,10 +2213,11 @@ public class RolapSchemaLoader {
 
         RolapSchema.PhysRelation table =
             last(measureGroupTable, xmlMeasure.table, xmlMeasure, "table");
+        final RolapCube cube = measureGroup.getCube();
         if (table == null) {
             throw MondrianResource.instance()
                 .MeasureWithColumnMustHaveTable.ex(
-                    measureGroup.getCube().getName(), xmlMeasure.name);
+                    cube.getName(), xmlMeasure.name);
         }
 
         measureExp =
@@ -2208,7 +2237,7 @@ public class RolapSchemaLoader {
                 // it's ok if count has no expression; it means 'count(*)'
             } else {
                 throw MondrianResource.instance().BadMeasureSource.ex(
-                    measureGroup.getCube().getName(), xmlMeasure.name);
+                    cube.getName(), xmlMeasure.name);
             }
         }
 
@@ -2273,24 +2302,44 @@ public class RolapSchemaLoader {
             datatype = Dialect.Datatype.Numeric;
         }
 
+        String formatString = xmlMeasure.formatString;
+        if (formatString == null) {
+            formatString = "";
+        }
+
+        // Set member's visibility, default true.
+        final boolean visible = toBoolean(xmlMeasure.visible, true);
+
+        final RolapCubeHierarchy measuresHierarchy =
+            cube.getHierarchyList().get(0);
+        final RolapCubeLevel level = measuresHierarchy.getLevelList().get(0);
+        final Larder larder =
+            createLarder(
+                cube.getUniqueName() + "."
+                    + Util.quoteMdxIdentifier(xmlMeasure.name) + ".measure",
+                xmlMeasure.getAnnotations(),
+                xmlMeasure.name,
+                xmlMeasure.caption,
+                xmlMeasure.description)
+                .add(
+                    Property.FORMAT_EXP_PARSED,
+                    Literal.createString(formatString))
+                .add(Property.FORMAT_EXP, formatString)
+                .add(Property.AGGREGATION_TYPE, aggregator)
+                .add(Property.DATATYPE, datatype.name())
+                .add(Property.VISIBLE, visible)
+                .build();
         final RolapBaseCubeMeasure measure =
             new RolapBaseCubeMeasure(
-                measureGroup.getCube(),
+                cube,
                 measureGroup,
-                null,
-                measureGroup.getCube()
-                    .getHierarchyList().get(0).getLevelList().get(0),
+                level,
                 xmlMeasure.name,
-                xmlMeasure.formatString,
+                Util.makeFqName(level.getHierarchy(), xmlMeasure.name),
                 measureExp,
                 aggregator,
                 datatype,
-                createLarder(
-                    measureGroup.getCube().getUniqueName() + "."
-                        + Util.quoteMdxIdentifier(xmlMeasure.name) + ".measure",
-                    xmlMeasure.getAnnotations(),
-                    xmlMeasure.caption,
-                    xmlMeasure.description));
+                larder);
         measureGroup.measureList.add(measure);
         validator.putXml(measure, xmlMeasure);
 
@@ -2300,14 +2349,10 @@ public class RolapSchemaLoader {
             measure.setFormatter(cellFormatter);
         }
 
-        // Set member's visibility, default true.
-        final boolean visible = toBoolean(xmlMeasure.visible, true);
-        measure.setProperty(Property.VISIBLE.name, visible);
-
         List<String> propNames = new ArrayList<String>();
         List<String> propExprs = new ArrayList<String>();
         validateMemberProps(
-            measureGroup.getCube(),
+            cube,
             xmlMeasure.getCalculatedMemberProperties(),
             propNames, propExprs, xmlMeasure.name);
         for (int j = 0; j < propNames.size(); j++) {
@@ -2620,8 +2665,9 @@ public class RolapSchemaLoader {
                 createLarder(
                     Util.quoteMdxIdentifier(xmlDimension.name) + ".dimension",
                     annotations,
+                    xmlDimension.name,
                     xmlDimension.caption,
-                    xmlDimension.description));
+                    xmlDimension.description).build());
         validator.putXml(dimension, xmlDimension);
 
         if (xmlCubeDimension.source != null) {
@@ -2734,8 +2780,9 @@ public class RolapSchemaLoader {
                         Util.makeFqName(dimension, hierarchyName)
                         + ".hierarchy",
                         xmlHierarchy.getAnnotations(),
+                        hierarchyName,
                         xmlHierarchy.caption,
-                        xmlHierarchy.description));
+                        xmlHierarchy.description).build());
             validator.putXml(hierarchy, xmlHierarchy);
             dimension.addHierarchy(hierarchy);
             hierarchy.initHierarchy(
@@ -2798,15 +2845,16 @@ public class RolapSchemaLoader {
                         toBoolean(xmlAttribute.hierarchyHasAll, true),
                         null,
                         attribute,
-                        Larders.underride(
-                            createLarder(
-                                cube + "." + uniqueName + ".hierarchy",
-                                null,
-                                first(
-                                    xmlAttribute.hierarchyCaption,
-                                    xmlAttribute.caption),
-                                xmlAttribute.description),
-                            attribute.getLarder()));
+                        createLarder(
+                            cube + "." + uniqueName + ".hierarchy",
+                            null,
+                            xmlAttribute.name,
+                            first(
+                                xmlAttribute.hierarchyCaption,
+                                xmlAttribute.caption),
+                            xmlAttribute.description)
+                            .populate(attribute.getLarder())
+                            .build());
                 dimension.addHierarchy(hierarchy);
                 dimension.attributeMap.put(
                     attribute.getName(),
@@ -2839,21 +2887,26 @@ public class RolapSchemaLoader {
                         null,
                         null,
                         RolapLevel.HideMemberCondition.Never,
-                        Larders.underride(
-                            createLarder(
-                                cube + "."
+                        createLarder(
+                            cube + "."
                                 + Util.makeFqName(hierarchy, xmlAttribute.name)
                                 + ".level",
-                                null,
-                                null,
-                                null),
-                            createLarder(
-                                cube + "."
-                                + Util.makeFqName(hierarchy, xmlAttribute.name)
-                                + ".level",
-                                xmlAttribute.getAnnotations(),
-                                xmlAttribute.caption,
-                                xmlAttribute.description))));
+                            null,
+                            null,
+                            null,
+                            null)
+                            .populate(
+                                createLarder(
+                                    cube + "."
+                                    + Util.makeFqName(
+                                        hierarchy, xmlAttribute.name)
+                                    + ".level",
+                                    xmlAttribute.getAnnotations(),
+                                    xmlAttribute.name,
+                                    xmlAttribute.caption,
+                                    xmlAttribute.description).build())
+                            .build(),
+                        resourceMap));
                 hierarchy.init2(this);
                 deferAssignDefaultMember(
                     cube, hierarchy, xmlAttribute,
@@ -2886,16 +2939,17 @@ public class RolapSchemaLoader {
             xmlCubeDimension.source,
             dimensionOrdinal,
             cubeHierarchyList,
-            Larders.underride(
-                createLarder(
-                    cube.getUniqueName() + "."
-                        + Util.quoteMdxIdentifier(dimensionName) + ".dimension",
-                    xmlCubeDimension.getAnnotations(),
-                    first(xmlCubeDimension.caption, xmlDimension.caption),
-                    first(
-                        xmlCubeDimension.description,
-                        xmlDimension.description)),
-                dimension.getLarder()));
+            createLarder(
+                cube.getUniqueName() + "."
+                + Util.quoteMdxIdentifier(dimensionName) + ".dimension",
+                xmlCubeDimension.getAnnotations(),
+                dimensionName,
+                first(xmlCubeDimension.caption, xmlDimension.caption),
+                first(
+                    xmlCubeDimension.description,
+                    xmlDimension.description))
+                .populate(dimension.getLarder())
+                .build());
         validator.putXml(cubeDimension, xmlCubeDimension);
 
         // Populate attribute map. (REVIEW: Should attributes go ONLY in the
@@ -3317,8 +3371,9 @@ public class RolapSchemaLoader {
                     Util.makeFqName(dimension, xmlAttribute.name)
                         + ".attribute",
                     xmlAttribute.getAnnotations(),
+                    xmlAttribute.name,
                     caption,
-                    xmlAttribute.description))
+                    xmlAttribute.description).build())
             {
                 public RolapDimension getDimension() {
                     return dimension;
@@ -3463,8 +3518,10 @@ public class RolapSchemaLoader {
                 createLarder(
                     Util.makeFqName(hierarchy, levelName) + ".level",
                     xmlLevel.getAnnotations(),
+                    xmlLevel.name,
                     xmlLevel.caption,
-                    xmlLevel.description));
+                    xmlLevel.description).build(),
+                resourceMap);
         validator.putXml(level, xmlLevel);
         return level;
     }
@@ -3611,6 +3668,7 @@ public class RolapSchemaLoader {
                 null, // Not so sure about this.
                 null,
                 Larders.create(
+                    closureDim.getName(),
                     closureDim.getCaption(),
                     closureDim.getDescription()));
 
@@ -3926,8 +3984,9 @@ public class RolapSchemaLoader {
             createLarder(
                 Util.makeFqName(dimension, attribute.getName()) + ".property",
                 xmlProperty.getAnnotations(),
+                xmlProperty.name,
                 xmlProperty.caption,
-                xmlProperty.description));
+                xmlProperty.description).build());
     }
 
     private static Property.Datatype dialectToPropertyDatatype(
@@ -4362,8 +4421,9 @@ public class RolapSchemaLoader {
                         createLarder(
                             Util.quoteMdxIdentifier(xmlCube.name) + ".cube",
                             xmlCube.getAnnotations(),
+                            xmlCube.name,
                             xmlCube.caption,
-                            xmlCube.description),
+                            xmlCube.description).build(),
                         xmlSchema.measuresCaption);
                 validator.putXml(cube, xmlCube);
             } else {
@@ -4498,8 +4558,9 @@ public class RolapSchemaLoader {
             createLarder(
                 cube + "." + namedSet.getUniqueName() + ".set",
                 xmlNamedSet.getAnnotations(),
+                xmlNamedSet.name,
                 emptyNull(xmlNamedSet.caption),
-                emptyNull(xmlNamedSet.description)));
+                emptyNull(xmlNamedSet.description)).build());
 
         formulaList.add(formula);
     }
@@ -4554,19 +4615,24 @@ public class RolapSchemaLoader {
         calculatedMemberList.add(formula);
 
         final RolapMember member = (RolapMember) formula.getMdxMember();
-        boolean visible = toBoolean(xmlCalcMember.visible, true);
-        member.setProperty(Property.VISIBLE.name, visible);
-
         RolapMember member1 = RolapUtil.strip(member);
         ((RolapCalculatedMember) member1).setLarder(
-            createLarder(
-                cube + "." + member1 + ".member",
-                xmlCalcMember.getAnnotations(),
-                emptyNull(xmlCalcMember.caption),
-                emptyNull(xmlCalcMember.description)));
-//        member.setProperty(Property.CAPTION.name, member1.getCaption());
+            Larders.LarderBuilder.of(member1.getLarder())
+                .addAll(xmlCalcMember.getAnnotations())
+                .caption(second(xmlCalcMember.name, xmlCalcMember.caption))
+                .description(emptyNull(xmlCalcMember.description))
+                .addAll(resourceMap.get(cube + "." + member1 + ".member"))
+                .add(Property.VISIBLE, toBoolean(xmlCalcMember.visible, true))
+                .build());
 
         memberList.add(member);
+    }
+
+    private String second(String s1, String s2) {
+        if (s2 == null || s2.equals("") || s2.equals(s1)) {
+            return null;
+        }
+        return s2;
     }
 
     private void preCalcMember(

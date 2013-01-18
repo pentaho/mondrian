@@ -112,20 +112,16 @@ public class DelegatingRolapMember extends RolapMemberBase {
         return member.isCalculatedInQuery();
     }
 
-    public Object getPropertyValue(String propertyName) {
-        return member.getPropertyValue(propertyName);
+    public Object getPropertyValue(Property property) {
+        return member.getPropertyValue(property);
     }
 
-    public Object getPropertyValue(String propertyName, boolean matchCase) {
-        return member.getPropertyValue(propertyName, matchCase);
+    public String getPropertyFormattedValue(Property property) {
+        return member.getPropertyFormattedValue(property);
     }
 
-    public String getPropertyFormattedValue(String propertyName) {
-        return member.getPropertyFormattedValue(propertyName);
-    }
-
-    public void setProperty(String name, Object value) {
-        member.setProperty(name, value);
+    public void setProperty(Property property, Object value) {
+        member.setProperty(property, value);
     }
 
     public Property[] getProperties() {

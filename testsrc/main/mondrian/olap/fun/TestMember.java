@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -102,6 +102,10 @@ public class TestMember implements Member {
         throw new UnsupportedOperationException();
     }
 
+    public Object getPropertyValue(Property property) {
+        throw new UnsupportedOperationException();
+    }
+
     public Object getPropertyValue(String propertyName) {
         throw new UnsupportedOperationException();
     }
@@ -110,7 +114,15 @@ public class TestMember implements Member {
         throw new UnsupportedOperationException();
     }
 
+    public String getPropertyFormattedValue(Property property) {
+        throw new UnsupportedOperationException();
+    }
+
     public String getPropertyFormattedValue(String propertyName) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void setProperty(Property property, Object value) {
         throw new UnsupportedOperationException();
     }
 

@@ -29,6 +29,9 @@ public interface Larder extends Annotated {
 
     /** Returns the value of a given (locale, property) pair. */
     String get(LocalizedProperty prop, Locale locale);
+
+    /** Returns the value of a property. */
+    Object get(Property property);
 }
 
 // End Larder.java

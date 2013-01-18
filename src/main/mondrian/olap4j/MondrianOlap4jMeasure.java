@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
@@ -60,7 +60,7 @@ class MondrianOlap4jMeasure
 
     public Datatype getDatatype() {
         final String datatype =
-            (String) member.getPropertyValue(Property.DATATYPE.getName());
+            (String) member.getPropertyValue(Property.DATATYPE);
         if (datatype != null) {
             if (datatype.equals("Integer")) {
                 return Datatype.INTEGER;

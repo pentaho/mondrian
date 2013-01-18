@@ -4371,13 +4371,13 @@ Test that get error if a dimension has more than one hierarchy with same name.
         assertEquals("Measure description", measure.getDescription());
         assertEquals(
             measure.getDescription(),
-            measure.getPropertyValue(Property.DESCRIPTION.name));
+            measure.getPropertyValue(Property.DESCRIPTION));
         assertEquals(
             measure.getCaption(),
-            measure.getPropertyValue(Property.CAPTION.name));
+            measure.getPropertyValue(Property.CAPTION));
         assertEquals(
             measure.getCaption(),
-            measure.getPropertyValue(Property.MEMBER_CAPTION.name));
+            measure.getPropertyValue(Property.MEMBER_CAPTION));
         checkAnnotations(measure.getAnnotationMap(), "a", "Measure");
 
         if (Bug.BugMondrian1332Fixed) {
@@ -4386,7 +4386,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             assertEquals("Fact Count", factCountMeasure.getName());
             assertEquals(
                 false,
-                factCountMeasure.getPropertyValue(Property.VISIBLE.name));
+                factCountMeasure.getPropertyValue(Property.VISIBLE));
         }
 
         final int fooIndex = Bug.BugMondrian1332Fixed ? 2 : 1;
@@ -4396,13 +4396,13 @@ Test that get error if a dimension has more than one hierarchy with same name.
         assertEquals("Calc member description", calcMeasure.getDescription());
         assertEquals(
             calcMeasure.getDescription(),
-            calcMeasure.getPropertyValue(Property.DESCRIPTION.name));
+            calcMeasure.getPropertyValue(Property.DESCRIPTION));
         assertEquals(
             calcMeasure.getCaption(),
-            calcMeasure.getPropertyValue(Property.CAPTION.name));
+            calcMeasure.getPropertyValue(Property.CAPTION));
         assertEquals(
             calcMeasure.getCaption(),
-            calcMeasure.getPropertyValue(Property.MEMBER_CAPTION.name));
+            calcMeasure.getPropertyValue(Property.MEMBER_CAPTION));
         checkAnnotations(calcMeasure.getAnnotationMap(), "a", "Calc member");
 
         final NamedSet namedSet = cube.getNamedSets()[0];

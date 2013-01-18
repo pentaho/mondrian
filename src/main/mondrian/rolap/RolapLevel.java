@@ -45,6 +45,7 @@ public class RolapLevel extends LevelBase {
     final RolapClosure closure;
     final RolapAttribute parentAttribute;
     private final Larder larder;
+    final Map<String, List<Larders.Resource>> resourceMap;
 
     private final List<RolapSchema.PhysColumn> orderByList;
 
@@ -85,10 +86,12 @@ public class RolapLevel extends LevelBase {
         String nullParentValue,
         RolapClosure closure,
         HideMemberCondition hideMemberCondition,
-        Larder larder)
+        Larder larder,
+        Map<String, List<Larders.Resource>> resourceMap)
     {
         super(hierarchy, name, visible, depth);
         this.larder = larder;
+        this.resourceMap = resourceMap;
         this.attribute = attribute;
         this.orderByList = orderByList;
         this.parentAttribute = parentAttribute;

@@ -87,7 +87,7 @@ public abstract class DimensionBase
     }
 
     public boolean isMeasures() {
-        return getUniqueName().equals(MEASURES_UNIQUE_NAME);
+        return dimensionType == org.olap4j.metadata.Dimension.Type.MEASURE;
     }
 
     public OlapElement lookupChild(

@@ -250,7 +250,7 @@ class MondrianOlap4jExtra extends XmlaHandler.XmlaExtraImpl {
             (MondrianOlap4jMeasure) member;
         Object aggProp =
             olap4jMeasure.member.getPropertyValue(
-                Property.AGGREGATION_TYPE.name);
+                Property.AGGREGATION_TYPE);
         if (aggProp == null) {
             return
                 RowsetDefinition.MdschemaMeasuresRowset

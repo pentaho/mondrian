@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -1680,9 +1680,12 @@ public class CacheControlImpl implements CacheControl {
 
         public void commit() {
             try {
-                ((RolapMemberBase) member).setParentMember(newParent);
+                final RolapMemberBase memberBase = (RolapMemberBase) member;
+                memberBase.setParentMember(newParent);
                 callable1.call();
-                ((RolapMemberBase) member).setUniqueName(member.getKey());
+                memberBase.setUniqueName(
+                    memberBase.computeUniqueName(
+                        member.getKey()));
                 callable2.call();
             } catch (Exception e) {
                 throw new MondrianException(e);

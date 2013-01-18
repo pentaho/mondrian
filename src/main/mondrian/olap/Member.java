@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1999-2005 Julian Hyde
-// Copyright (C) 2005-2010 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -130,27 +130,50 @@ public interface Member extends OlapElement, Comparable, Annotated {
     boolean isCalculatedInQuery();
 
     /**
+     * Returns the value of the given property.
+     */
+    Object getPropertyValue(Property property);
+
+    /**
      * Returns the value of the property named <code>propertyName</code>.
      * Name match is case-sensitive.
+     *
+     * @deprecated Use {@link #getPropertyValue(Property)}
      */
     Object getPropertyValue(String propertyName);
 
     /**
      * Returns the value of the property named <code>propertyName</code>,
      * matching according to the required case-sensitivity.
+     *
+     * @deprecated Use {@link #getPropertyValue(Property)}
      */
     Object getPropertyValue(String propertyName, boolean matchCase);
 
     /**
+     * Returns the formatted value of the given property.
+     */
+    String getPropertyFormattedValue(Property property);
+
+    /**
      * Returns the formatted value of the property named
      * <code>propertyName</code>.
+     *
+     * @deprecated Use {@link #getPropertyFormattedValue(Property)}
      */
     String getPropertyFormattedValue(String propertyName);
 
     /**
      * Sets a property of this member to a given value.
      */
-    void setProperty(String name, Object value);
+    void setProperty(Property property, Object value);
+
+    /**
+     * Sets a property of this member to a given value.
+     *
+     * @deprecated Use {@link #setProperty(Property, Object)}
+     */
+    void setProperty(String propertyName, Object value);
 
     /**
      * Returns the definitions of the properties this member may have.

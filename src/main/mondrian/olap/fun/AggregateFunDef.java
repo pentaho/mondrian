@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -93,7 +93,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
         {
             Aggregator aggregator =
                 (Aggregator) evaluator.getProperty(
-                    Property.AGGREGATION_TYPE.name, null);
+                    Property.AGGREGATION_TYPE, null);
             if (aggregator == null) {
                 throw newEvalException(
                     null,

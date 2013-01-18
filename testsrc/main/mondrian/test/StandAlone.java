@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -265,7 +265,7 @@ public class StandAlone {
 
                         System.out.print(
                             prop.getName() + ": "
-                            + member.getPropertyValue(prop.getName()));
+                            + member.getPropertyValue(prop));
                     }
                     System.out.print("}");
                 }

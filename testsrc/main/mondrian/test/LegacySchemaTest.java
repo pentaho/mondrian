@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho
+// Copyright (C) 2011-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -2401,13 +2401,13 @@ public class LegacySchemaTest extends FoodMartTestCase {
         assertEquals("Measure description", measure.getDescription());
         assertEquals(
             measure.getDescription(),
-            measure.getPropertyValue(Property.DESCRIPTION.name));
+            measure.getPropertyValue(Property.DESCRIPTION));
         assertEquals(
             measure.getCaption(),
-            measure.getPropertyValue(Property.CAPTION.name));
+            measure.getPropertyValue(Property.CAPTION));
         assertEquals(
             measure.getCaption(),
-            measure.getPropertyValue(Property.MEMBER_CAPTION.name));
+            measure.getPropertyValue(Property.MEMBER_CAPTION));
         checkAnnotations(measure.getAnnotationMap(), "a", "Measure");
 
         // The implicitly created [Fact Count] measure
@@ -2415,7 +2415,7 @@ public class LegacySchemaTest extends FoodMartTestCase {
         assertEquals("Fact Count", factCountMeasure.getName());
         assertEquals(
             false,
-            factCountMeasure.getPropertyValue(Property.VISIBLE.name));
+            factCountMeasure.getPropertyValue(Property.VISIBLE));
 
         final Member calcMeasure = measures.get(2);
         assertEquals("Foo", calcMeasure.getName());
@@ -2423,13 +2423,13 @@ public class LegacySchemaTest extends FoodMartTestCase {
         assertEquals("Calc member description", calcMeasure.getDescription());
         assertEquals(
             calcMeasure.getDescription(),
-            calcMeasure.getPropertyValue(Property.DESCRIPTION.name));
+            calcMeasure.getPropertyValue(Property.DESCRIPTION));
         assertEquals(
             calcMeasure.getCaption(),
-            calcMeasure.getPropertyValue(Property.CAPTION.name));
+            calcMeasure.getPropertyValue(Property.CAPTION));
         assertEquals(
             calcMeasure.getCaption(),
-            calcMeasure.getPropertyValue(Property.MEMBER_CAPTION.name));
+            calcMeasure.getPropertyValue(Property.MEMBER_CAPTION));
         checkAnnotations(calcMeasure.getAnnotationMap(), "a", "Calc member");
 
         final NamedSet namedSet = cube.getNamedSets()[0];
@@ -2458,13 +2458,13 @@ public class LegacySchemaTest extends FoodMartTestCase {
         assertEquals("Measure description", measure2.getDescription());
         assertEquals(
             measure2.getDescription(),
-            measure2.getPropertyValue(Property.DESCRIPTION.name));
+            measure2.getPropertyValue(Property.DESCRIPTION));
         assertEquals(
             measure2.getCaption(),
-            measure2.getPropertyValue(Property.CAPTION.name));
+            measure2.getPropertyValue(Property.CAPTION));
         assertEquals(
             measure2.getCaption(),
-            measure2.getPropertyValue(Property.MEMBER_CAPTION.name));
+            measure2.getPropertyValue(Property.MEMBER_CAPTION));
         checkAnnotations(
             measure2.getAnnotationMap(), "a", "Virtual cube measure");
     }

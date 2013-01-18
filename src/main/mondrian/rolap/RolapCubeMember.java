@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -15,6 +15,8 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
 import mondrian.util.Bug;
+
+import java.util.*;
 
 /**
  * RolapCubeMember wraps RolapMembers and binds them to a specific cube.
@@ -81,6 +83,27 @@ public class RolapCubeMember
     // final is important for performance
     public final RolapCube getCube() {
         return cubeLevel.getCube();
+    }
+
+    @Override
+    public String getLocalized(LocalizedProperty prop, Locale locale) {
+        if (cubeLevel.resourceMap != null) {
+            final List<Larders.Resource> resources =
+                cubeLevel.resourceMap.get(
+                    getCube() + "." + getUniqueName() + ".member");
+            if (resources != null) {
+                final String resource =
+                    Larders.Resource.lookup(prop, locale, resources);
+                if (resource != null) {
+                    return resource;
+                }
+            }
+        }
+        String x = Larders.get(null, getLarder(), prop, locale);
+        if (x != null) {
+            return x;
+        }
+        return member.getLocalized(prop, locale);
     }
 
     public final RolapCubeMember getDataMember() {
@@ -163,48 +186,44 @@ public class RolapCubeMember
         return cubeLevel;
     }
 
-    public void setProperty(String name, Object value) {
+    public void setProperty(Property property, Object value) {
         synchronized (this) {
-            super.setProperty(name, value);
+            super.setProperty(property, value);
         }
     }
 
-    public Object getPropertyValue(String propertyName, boolean matchCase) {
-        // we need to wrap these children as rolap cube members
-        Property property = Property.lookup(propertyName, matchCase);
-        if (property != null) {
-            switch (property.ordinal) {
-            case Property.DIMENSION_UNIQUE_NAME_ORDINAL:
-                return getDimension().getUniqueName();
+    public Object getPropertyValue(Property property) {
+        switch (property.ordinal) {
+        case Property.DIMENSION_UNIQUE_NAME_ORDINAL:
+            return getDimension().getUniqueName();
 
-            case Property.HIERARCHY_UNIQUE_NAME_ORDINAL:
-                return getHierarchy().getUniqueName();
+        case Property.HIERARCHY_UNIQUE_NAME_ORDINAL:
+            return getHierarchy().getUniqueName();
 
-            case Property.LEVEL_UNIQUE_NAME_ORDINAL:
-                return getLevel().getUniqueName();
+        case Property.LEVEL_UNIQUE_NAME_ORDINAL:
+            return getLevel().getUniqueName();
 
-            case Property.MEMBER_UNIQUE_NAME_ORDINAL:
-                return getUniqueName();
+        case Property.MEMBER_UNIQUE_NAME_ORDINAL:
+            return getUniqueName();
 
-            case Property.MEMBER_NAME_ORDINAL:
-                return getName();
+        case Property.MEMBER_NAME_ORDINAL:
+            return getName();
 
-            case Property.MEMBER_CAPTION_ORDINAL:
-                return getCaption();
+        case Property.MEMBER_CAPTION_ORDINAL:
+            return getCaption();
 
-            case Property.PARENT_UNIQUE_NAME_ORDINAL:
-                return parentCubeMember == null
-                    ? null
-                    : parentCubeMember.getUniqueName();
+        case Property.PARENT_UNIQUE_NAME_ORDINAL:
+            return parentCubeMember == null
+                ? null
+                : parentCubeMember.getUniqueName();
 
-            case Property.MEMBER_KEY_ORDINAL:
-            case Property.KEY_ORDINAL:
-                return this == this.getHierarchy().getAllMember() ? 0
-                    : getKey();
-            }
+        case Property.MEMBER_KEY_ORDINAL:
+        case Property.KEY_ORDINAL:
+            return this == this.getHierarchy().getAllMember() ? 0
+                : getKey();
         }
         // fall through to rolap member
-        return member.getPropertyValue(propertyName, matchCase);
+        return member.getPropertyValue(property);
     }
 
     public final RolapCubeMember getParentMember() {

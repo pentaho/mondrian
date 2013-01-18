@@ -1646,8 +1646,8 @@ public class Query extends QueryPart {
                 parent, names, failIfNotFound, category, matchType);
             if (olapElement instanceof Member) {
                 Member member = (Member) olapElement;
-                final Formula formula = (Formula)
-                    member.getPropertyValue(Property.FORMULA.name);
+                final Formula formula =
+                    (Formula) member.getPropertyValue(Property.FORMULA);
                 if (formula != null) {
                     // This is a calculated member defined against the cube.
                     // Create a free-standing formula using the same

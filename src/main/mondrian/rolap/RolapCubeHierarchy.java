@@ -95,7 +95,23 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         }
 
         for (RolapLevel level : rolapHierarchy.getLevelList()) {
-            levelList.add(new RolapCubeLevel(level, this));
+            final Map<String, List<Larders.Resource>> resourceMap;
+            final BitSet bitSet =
+                schemaLoader.resourceHierarchyTags.get(
+                    getCube() + "." + uniqueName);
+            if (bitSet != null
+                && (bitSet.get(level.getDepth())
+                    || level.isAll()))
+            {
+                // We can't be sure whether there is a resource for the 'all'
+                // member because we don't know its name when we are parsing
+                // the resource file, so always give the 'all' level a resource
+                // map.
+                resourceMap = schemaLoader.resourceMap;
+            } else {
+                resourceMap = null;
+            }
+            levelList.add(new RolapCubeLevel(level, this, resourceMap));
         }
 
         RolapCubeLevel allLevel;
@@ -107,7 +123,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             allLevel =
                 new RolapCubeLevel(
                     rolapHierarchy.getAllMember().getLevel(),
-                    this);
+                    this,
+                    schemaLoader.resourceMap);
             allLevel.initLevel(schemaLoader, false);
         }
 
@@ -117,7 +134,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 allLevel);
 
         this.nullLevel =
-            new RolapCubeLevel(rolapHierarchy.nullLevel, this);
+            new RolapCubeLevel(rolapHierarchy.nullLevel, this, null);
 
         nullMember =
             new RolapCubeMember(
@@ -175,8 +192,10 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             }
             RolapMember member =
                 new RolapMemberBase(
-                    rolapParent, rolapLevel, name,
-                    name, MemberType.REGULAR);
+                    rolapParent, rolapLevel, name, MemberType.REGULAR,
+                    RolapMemberBase.deriveUniqueName(
+                        rolapParent, rolapLevel, name, false),
+                    Larders.ofName(name));
             return wrapMember(cubeParent, member, cubeLevel);
         } else if (level.getDimension().isMeasures()) {
             RolapCalculatedMeasure member =

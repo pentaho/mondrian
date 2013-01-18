@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -5294,19 +5294,19 @@ public class BasicQueryTest extends FoodMartTestCase {
         Member member = scr.getMemberByUniqueName(
             Id.Segment.toList(
                 "Measures", "Unit Sales"), true);
-        Object visible = member.getPropertyValue(Property.VISIBLE.name);
+        Object visible = member.getPropertyValue(Property.VISIBLE);
         assertEquals(Boolean.FALSE, visible);
 
         member = scr.getMemberByUniqueName(
             Id.Segment.toList(
                 "Measures", "Store Cost"), true);
-        visible = member.getPropertyValue(Property.VISIBLE.name);
+        visible = member.getPropertyValue(Property.VISIBLE);
         assertEquals(Boolean.TRUE, visible);
 
         member = scr.getMemberByUniqueName(
             Id.Segment.toList(
                 "Measures", "Profit"), true);
-        visible = member.getPropertyValue(Property.VISIBLE.name);
+        visible = member.getPropertyValue(Property.VISIBLE);
         assertEquals(Boolean.FALSE, visible);
     }
 

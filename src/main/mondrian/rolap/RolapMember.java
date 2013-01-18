@@ -76,7 +76,7 @@ public interface RolapMember extends Member, RolapCalculation {
     RolapHierarchy getHierarchy();
     RolapLevel getLevel();
 
-    /** @deprecated will be removed in mondrian-4.0 */
+    /** @deprecated Use {@link #isAll}; will be removed in mondrian-4.0 */
     boolean isAllMember();
 
     /** Returns the object that stores annotations and localized strings. */

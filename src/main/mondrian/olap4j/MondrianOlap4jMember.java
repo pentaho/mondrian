@@ -19,8 +19,7 @@ import org.olap4j.impl.Named;
 import org.olap4j.mdx.ParseTreeNode;
 import org.olap4j.metadata.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Implementation of {@link Member}
@@ -35,6 +34,37 @@ class MondrianOlap4jMember
     extends MondrianOlap4jMetadataElement
     implements Member, Named
 {
+    private static final
+        Map<Property.StandardCellProperty, mondrian.olap.Property>
+        STANDARD_CELL_PROPERTY_MAP =
+        initasd(Property.StandardCellProperty.values());
+
+    private static final
+        Map<Property.StandardMemberProperty, mondrian.olap.Property>
+        STANDARD_MEMBER_PROPERTY_MAP =
+        initasd(Property.StandardMemberProperty.values());
+
+    private static <T extends Enum<T>> Map<T, mondrian.olap.Property> initasd(
+        T[] values)
+    {
+        final List<String> missingProperties = Arrays.asList(
+            "IS_DATAMEMBER",
+            "IS_PLACEHOLDERMEMBER",
+            "UPDATEABLE");
+        final Map<T, mondrian.olap.Property> map =
+            new HashMap<T, mondrian.olap.Property>();
+        for (T p : values) {
+            final mondrian.olap.Property value =
+                mondrian.olap.Property.enumeration.getValue(p.name(), false);
+            if (value == null) {
+                assert missingProperties.contains(p.name()) : p.name();
+            } else {
+                map.put(p, value);
+            }
+        }
+        return map;
+    }
+
     final mondrian.olap.Member member;
     final MondrianOlap4jSchema olap4jSchema;
 
@@ -159,17 +189,29 @@ class MondrianOlap4jMember
     }
 
     public Object getPropertyValue(Property property) {
-        return member.getPropertyValue(property.getName());
+        return member.getPropertyValue(asd(property));
+    }
+
+    private mondrian.olap.Property asd(Property property) {
+        if (property instanceof MondrianOlap4jProperty) {
+            return ((MondrianOlap4jProperty) property).property;
+        } else if (property instanceof Property.StandardCellProperty) {
+            return STANDARD_CELL_PROPERTY_MAP.get(property);
+        } else if (property instanceof Property.StandardMemberProperty) {
+            return STANDARD_MEMBER_PROPERTY_MAP.get(property);
+        } else {
+            return null;
+        }
     }
 
     public String getPropertyFormattedValue(Property property) {
-        return member.getPropertyFormattedValue(property.getName());
+        return member.getPropertyFormattedValue(asd(property));
     }
 
     public void setProperty(Property property, Object value)
         throws OlapException
     {
-        member.setProperty(property.getName(), value);
+        member.setProperty(asd(property), value);
     }
 
     public NamedList<Property> getProperties() {
@@ -179,7 +221,7 @@ class MondrianOlap4jMember
     public int getOrdinal() {
         final Number ordinal =
             (Number) member.getPropertyValue(
-                Property.StandardMemberProperty.MEMBER_ORDINAL.getName());
+                mondrian.olap.Property.MEMBER_ORDINAL);
         return ordinal.intValue();
     }
 
@@ -221,7 +263,7 @@ class MondrianOlap4jMember
 
     public boolean isVisible() {
         return (Boolean) member.getPropertyValue(
-            mondrian.olap.Property.VISIBLE.getName());
+            mondrian.olap.Property.VISIBLE);
     }
 
     protected OlapElement getOlapElement() {

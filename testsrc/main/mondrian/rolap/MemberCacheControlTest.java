@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -158,7 +158,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             }
             pw.println();
             String name = p.getName();
-            Object value = member.getPropertyValue(name);
+            Object value = member.getPropertyValue(p);
 
             // Fixup value for different database representations of boolean and
             // numeric values.

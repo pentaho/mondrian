@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 10 August, 2001
@@ -819,7 +819,7 @@ public class RolapEvaluator implements Evaluator {
         return buf.toString();
     }
 
-    public final Object getProperty(String name, Object defaultValue) {
+    public final Object getProperty(Property property, Object defaultValue) {
         Object o = defaultValue;
         int maxSolve = Integer.MIN_VALUE;
         int i = -1;
@@ -843,7 +843,7 @@ public class RolapEvaluator implements Evaluator {
             // difference.
             final int solve = member.getSolveOrder();
             if (solve > maxSolve) {
-                final Object p = member.getPropertyValue(name);
+                final Object p = member.getPropertyValue(property);
                 if (p != null) {
                     o = p;
                     maxSolve = solve;
@@ -862,7 +862,7 @@ public class RolapEvaluator implements Evaluator {
      */
     public final String getFormatString() {
         final Exp formatExp =
-            (Exp) getProperty(Property.FORMAT_EXP_PARSED.name, null);
+            (Exp) getProperty(Property.FORMAT_EXP_PARSED, null);
         if (formatExp == null) {
             return "Standard";
         }

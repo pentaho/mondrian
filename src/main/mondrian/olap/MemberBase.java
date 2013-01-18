@@ -271,8 +271,33 @@ public abstract class MemberBase
         return null;
     }
 
-    public String getPropertyFormattedValue(String propertyName) {
-        return getPropertyValue(propertyName).toString();
+    protected Property lookupProperty(String propertyName, boolean matchCase) {
+        return Property.lookup(propertyName, matchCase);
+    }
+
+    public final Object getPropertyValue(String propertyName) {
+        return getPropertyValue(propertyName, true);
+    }
+
+    public final Object getPropertyValue(String propertyName, boolean matchCase)
+    {
+        Property property = lookupProperty(propertyName, matchCase);
+        if (property == null) {
+            return null;
+        }
+        return getPropertyValue(property);
+    }
+
+    public final String getPropertyFormattedValue(String propertyName) {
+        final Property property = lookupProperty(propertyName, true);
+        if (property == null) {
+            return "";
+        }
+        return getPropertyFormattedValue(property);
+    }
+
+    public String getPropertyFormattedValue(Property property) {
+        return getPropertyValue(property).toString();
     }
 
     public boolean isParentChildLeaf() {

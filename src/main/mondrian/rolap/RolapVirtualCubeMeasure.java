@@ -40,8 +40,9 @@ class RolapVirtualCubeMeasure
         Larder larder)
     {
         super(
-            parentMember, level, cubeMeasure.getName(),
-            cubeMeasure.getName(), MemberType.MEASURE);
+            parentMember, level, cubeMeasure.getName(), MemberType.MEASURE,
+            deriveUniqueName(parentMember, level, cubeMeasure.getName(), false),
+            Larders.ofName(cubeMeasure.getName()));
         this.measureGroup = measureGroup;
         Util.deprecated(
             "since all cubes are now virtual, is this class obsolete? we just need a way to clone RolapStoredMeasure in a different measure group",
@@ -50,14 +51,14 @@ class RolapVirtualCubeMeasure
         this.larder = larder;
     }
 
-    public Object getPropertyValue(String propertyName, boolean matchCase) {
+    public Object getPropertyValue(Property property) {
         // Look first in this member (against the virtual cube), then
         // fallback on the base measure.
         // This allows, for instance, a measure to be invisible in a virtual
         // cube but visible in its base cube.
-        Object value = super.getPropertyValue(propertyName, matchCase);
+        Object value = super.getPropertyValue(property);
         if (value == null) {
-            value = cubeMeasure.getPropertyValue(propertyName, matchCase);
+            value = cubeMeasure.getPropertyValue(property);
         }
         return value;
     }

@@ -14,9 +14,10 @@ import mondrian.rolap.*;
 import mondrian.util.*;
 
 import org.olap4j.*;
-import org.olap4j.mdx.IdentifierNode;
+import org.olap4j.mdx.*;
 import org.olap4j.metadata.*;
 import org.olap4j.metadata.Cube;
+import org.olap4j.metadata.Member;
 import org.olap4j.metadata.Schema;
 
 import java.sql.SQLException;
@@ -261,9 +262,8 @@ public class I18nTest extends FoodMartTestCase {
         assertEquals(
             "Profit",
             // TODO: should be "Caption of Profit calculated measure in fr",
-            olapSchema.getCubes().get("Sales").lookupMember(
-                IdentifierNode.parseIdentifier("[Measures].[Profit]")
-                    .getSegmentList())
+            olapSchema.getCubes().get("Sales")
+                .lookupMember(parse("[Measures].[Profit]"))
                 .getCaption());
 
         assertEquals(
@@ -297,6 +297,15 @@ public class I18nTest extends FoodMartTestCase {
                 .getHierarchies().get("Weekly").getLevels().get("Year")
                 .getCaption());
 
+        // The Month level does not have a caption, so it inherits the caption
+        // from the Month attribute
+        assertEquals(
+            "Month",
+            // TODO: should be "Caption of Month attribute in fr",
+            olapSchema.getCubes().get("Sales").getDimensions().get("Time")
+                .getHierarchies().get("Time").getLevels().get("Month")
+                .getCaption());
+
         try {
             assertEquals(
                 "Caption of Top Sellers named set in Sales cube in fr",
@@ -306,8 +315,65 @@ public class I18nTest extends FoodMartTestCase {
             // TODO: fix me
         }
 
+        // level 1 member
+        assertEquals(
+            "Caption of member USA in fr",
+            olapSchema.getCubes().get("Sales")
+                .lookupMember(parse("[Store].[Stores].[USA]"))
+                .getCaption());
+
+        // level 2 member
+        assertEquals(
+            "Caption of member CA in fr",
+            olapSchema.getCubes().get("Sales")
+                .lookupMember(parse("[Store].[Stores].[USA].[CA]"))
+                .getCaption());
+
+        // level 2 member, resource defined against shared dimension
+        assertEquals(
+            "Caption of shared member OR in fr",
+            olapSchema.getCubes().get("Sales")
+                .lookupMember(parse("[Store].[Stores].[USA].[OR]"))
+                .getCaption());
+
+        // look for equivalent member (defined from same shared dimension) in
+        // a different cube. should not be found
+        assertEquals(
+            "CA",
+            olapSchema.getCubes().get("HR")
+                .lookupMember(parse("[Store].[Stores].[USA].[CA]"))
+                .getCaption());
+
+        // same resource as previous, equivalent member from another cube
+        assertEquals(
+            "Caption of shared member OR in fr",
+            olapSchema.getCubes().get("HR")
+                .lookupMember(parse("[Store].[Stores].[USA].[OR]"))
+                .getCaption());
+
+        // all member
+        assertEquals(
+            "Caption of member All Stores in fr",
+            olapSchema.getCubes().get("Sales")
+                .lookupMember(parse("[Store].[Stores].[All Stores]"))
+                .getCaption());
+
+        // all member of attribute hierarchy
+        assertEquals(
+            "Caption of member All Gender in fr",
+            olapSchema.getCubes().get("Sales")
+                .lookupMember(parse("[Customer].[Gender].[All Gender]"))
+                .getCaption());
+
+        // level 1 member of attribute hierarchy
+        assertEquals(
+            "Caption of member F in fr",
+            olapSchema.getCubes().get("Sales")
+                .lookupMember(parse("[Customer].[Gender].[F]"))
+                .getCaption());
+
         // TODO: test named set in schema, e.g. "[Best Customers].set.caption"
-        Util.discard(Bug.BugOlap4j31Fixed);
+        Util.discard(Bug.olap4jUpgrade("bug-31") && Bug.BugOlap4j31Fixed);
 
         // TODO: test attribute hierarchy (resource coming from attribute)
 
@@ -320,6 +386,11 @@ public class I18nTest extends FoodMartTestCase {
 
         // Reset locale.
         olapConnection.setLocale(Locale.US);
+    }
+
+    private static List<IdentifierSegment> parse(String x) {
+        return IdentifierNode.parseIdentifier(x)
+            .getSegmentList();
     }
 }
 

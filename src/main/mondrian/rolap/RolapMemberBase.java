@@ -22,8 +22,6 @@ import mondrian.util.*;
 import org.apache.commons.collections.map.Flat3Map;
 import org.apache.log4j.Logger;
 
-import org.eigenbase.util.property.StringProperty;
-
 import java.util.*;
 
 
@@ -44,6 +42,7 @@ public class RolapMemberBase
      */
     private Comparable orderKey;
     private Boolean isParentChildLeaf;
+
     private static final Logger LOGGER = Logger.getLogger(RolapMember.class);
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
 
@@ -82,48 +81,34 @@ public class RolapMemberBase
      * have properties. So to reduce memory usage, when empty, this is set to
      * an immutable empty set.
      */
-    private Map<String, Object> mapPropertyNameToValue;
+    protected Larder larder;
 
+    /** TODO: remove this; takes too much space. */
     private Boolean containsAggregateFunction = null;
 
     /**
-     * Creates a RolapMemberBase.
+     * Creates a RolapMemberBase with larder.
+     *
+     * <p>Larder must contain name (if different from that derived from the
+     * key), caption (if different from that derived from the name),
+     * property values, and annotations. (Only calculated members defined in the
+     * schema have annotations.)</p>
      *
      * @param parentMember Parent member
      * @param level Level this member belongs to
      * @param key Key to this member in the underlying RDBMS, per
      *   {@link RolapMember.Key}
-     * @param name Name of this member
      * @param memberType Type of member
+     * @param uniqueName Unique name of this member
+     * @param larder Larder
      */
     protected RolapMemberBase(
         RolapMember parentMember,
         RolapLevel level,
         Comparable key,
-        String name,
-        MemberType memberType)
-    {
-        this(parentMember, level, key, name, memberType, null);
-    }
-
-    /**
-     * Creates a RolapMemberBase with caption.
-     *
-     * @param parentMember Parent member
-     * @param level Level this member belongs to
-     * @param key Key to this member in the underlying RDBMS, per
-     *   {@link RolapMember.Key}
-     * @param name Name of this member
-     * @param memberType Type of member
-     * @param caption Caption
-     */
-    protected RolapMemberBase(
-        RolapMember parentMember,
-        RolapLevel level,
-        Comparable key,
-        String name,
         MemberType memberType,
-        String caption)
+        String uniqueName,
+        Larder larder)
     {
         super(parentMember, level, memberType);
         assert !(parentMember instanceof RolapCubeMember)
@@ -131,22 +116,11 @@ public class RolapMemberBase
             || this instanceof VisualTotalsFunDef.VisualTotalMember;
         assert Key.isValid(key, level, memberType)
             : "invalid key " + key + " for level " + level;
+        assert larder != null;
         this.key = key;
         this.ordinal = -1;
-        this.mapPropertyNameToValue = Collections.emptyMap();
-
-        if (name != null
-            && !(key != null && name.equals(key.toString())))
-        {
-            // Save memory by only saving the name as a property if it's
-            // different from the key.
-            setProperty(Property.NAME.name, name);
-        } else if (key != null) {
-            setUniqueName(key);
-        }
-        if (caption != null) {
-            setProperty(Property.CAPTION.name, caption);
-        }
+        this.larder = larder;
+        this.uniqueName = uniqueName;
     }
 
     protected RolapMemberBase() {
@@ -173,7 +147,7 @@ public class RolapMemberBase
     // Regular members do not have annotations. Measures and calculated members
     // do, so they override this method.
     public Larder getLarder() {
-        return Larders.ofProperties(mapPropertyNameToValue);
+        return larder;
     }
 
     public int hashCode() {
@@ -241,7 +215,13 @@ public class RolapMemberBase
         return this.equals(member);
     }
 
-    protected void setUniqueName(Object key) {
+    /** Call this very sparingly. */
+    protected void setUniqueName(String string) {
+        this.uniqueName = string;
+    }
+
+    /** Call this very sparingly. */
+    protected String computeUniqueName(Object key) {
         String name = keyToString(key);
 
         // Drop the '[All Xxxx]' segment in regular members.
@@ -251,9 +231,9 @@ public class RolapMemberBase
         // as calculated, but do have a data member).
         if (parentMember == null
             || (parentMember.isAll()
-                && (!isCalculated()
-                    || this instanceof VisualTotalsFunDef.VisualTotalMember
-                    || getDataMember() != null)))
+            && (!isCalculated()
+            || this instanceof VisualTotalsFunDef.VisualTotalMember
+            || getDataMember() != null)))
         {
             final RolapHierarchy hierarchy = getHierarchy();
             final Dimension dimension = hierarchy.getDimension();
@@ -266,21 +246,86 @@ public class RolapMemberBase
                 // [Measures].[Foo] not [Measures].[Measures].[Foo]. We can
                 // remove this code when we revisit the scheme to generate
                 // member unique names.
-                this.uniqueName = Util.makeFqName(dimension, name);
+                return Util.makeFqName(dimension, name);
             } else {
                 if (name.equals(level.getName())) {
-                    this.uniqueName =
+                    return
                         Util.makeFqName(
                             Util.makeFqName(
                                 hierarchy.getUniqueName(),
                                 level.getName()),
                             name);
                 } else {
-                    this.uniqueName = Util.makeFqName(hierarchy, name);
+                    return Util.makeFqName(hierarchy, name);
                 }
             }
         } else {
-            this.uniqueName = Util.makeFqName(parentMember, name);
+            return Util.makeFqName(parentMember, name);
+        }
+    }
+
+    /** Fast and simple way to derive unique name, if you know parent member is
+     * not null. */
+    protected static String deriveUniqueName(
+        RolapMember parentMember,
+        String name)
+    {
+        // Should call special
+        assert parentMember != null && !parentMember.isAll();
+        assert name != null;
+        return Util.makeFqName(parentMember, name);
+    }
+
+    /** More complex way to derive unique name if parent member might be null
+     * or the all member.
+     *
+     * @param parentMember Parent member
+     * @param level Level
+     * @param name Member name
+     * @param calc Whether calculated (pass false if member of a parent-child
+     *             hierarchy or a visual total member)
+     * @return Unique name of member
+     */
+    protected static String deriveUniqueName(
+        RolapMember parentMember,
+        RolapLevel level,
+        String name,
+        boolean calc)
+    {
+        assert name != null;
+
+        return Util.makeFqName(
+            deriveRootUniqueName(parentMember, level, name, calc),
+            name);
+    }
+
+    private static OlapElement deriveRootUniqueName(
+        RolapMember parentMember,
+        RolapLevel level,
+        String name,
+        boolean calc)
+    {
+        // Drop the '[All Xxxx]' segment in regular members.
+        // Keep the '[All Xxxx]' segment in the 'all' member.
+        // Keep the '[All Xxxx]' segment in calc members.
+        // Drop it in visual-totals and parent-child members (which are flagged
+        // as calculated, but do have a data member).
+        if (parentMember == null || (parentMember.isAll() && !calc)) {
+            final RolapHierarchy hierarchy = level.getHierarchy();
+            final RolapDimension dimension = hierarchy.getDimension();
+            if (dimension.isMeasures()) {
+                // Kludge to ensure that calc members are called
+                // [Measures].[Foo] not [Measures].[Measures].[Foo]. We can
+                // remove this code when we revisit the scheme to generate
+                // member unique names.
+                return dimension;
+            } else if (name.equals(level.getName())) {
+                return level;
+            } else {
+                return hierarchy;
+            }
+        } else {
+            return parentMember;
         }
     }
 
@@ -289,8 +334,7 @@ public class RolapMemberBase
     }
 
     public String getName() {
-        final String name =
-            (String) getPropertyValue(Property.NAME.name);
+        final String name = (String) getPropertyValue(Property.NAME);
         return (name != null)
             ? name
             : keyToString(key);
@@ -300,27 +344,22 @@ public class RolapMemberBase
         throw new Error("unsupported");
     }
 
+    public final void setProperty(String propertyName, Object value) {
+        Property property = lookupProperty(propertyName, true);
+        if (property != null) {
+            setProperty(property, value);
+        }
+    }
+
     /**
      * Sets a property of this member to a given value.
      *
      * <p>WARNING: Setting system properties such as "$name" may have nasty
      * side-effects.
      */
-    public synchronized void setProperty(String name, Object value) {
-        if (mapPropertyNameToValue.isEmpty()) {
-            // the empty map is shared and immutable; create our own
-            PropertyValueMapFactory factory =
-                PropertyValueMapFactoryFactory.getPropertyValueMapFactory();
-            mapPropertyNameToValue = factory.create(this);
-        }
-        if (name.equals(Property.NAME.name)) {
-            if (value == null) {
-                value = RolapUtil.mdxNullLiteral();
-            }
-            setUniqueName(value);
-        }
-
-        if (name.equals(Property.MEMBER_ORDINAL.name)) {
+    public synchronized void setProperty(Property property, Object value) {
+        assert property != Property.NAME;
+        if (property == Property.MEMBER_ORDINAL) {
             String ordinal = (String) value;
             if (ordinal.startsWith("\"") && ordinal.endsWith("\"")) {
                 ordinal = ordinal.substring(1, ordinal.length() - 1);
@@ -329,15 +368,10 @@ public class RolapMemberBase
             setOrdinal((int) d);
         }
 
-        mapPropertyNameToValue.put(name, value);
+        larder = Larders.set(larder, property, value);
     }
 
-    public Object getPropertyValue(String propertyName) {
-        return getPropertyValue(propertyName, true);
-    }
-
-    public Object getPropertyValue(String propertyName, boolean matchCase) {
-        Property property = Property.lookup(propertyName, matchCase);
+    public Object getPropertyValue(Property property) {
         if (property != null) {
             Member parentMember;
             List<RolapMember> list;
@@ -455,32 +489,35 @@ public class RolapMemberBase
                 // fall through
             }
         }
-        return getPropertyFromMap(propertyName, matchCase);
+        return getPropertyFromMap(property);
     }
 
     /**
      * Returns the value of a property by looking it up in the property map.
      *
-     * @param propertyName Name of property
-     * @param matchCase Whether to match name case-sensitive
+     * @param property Property
      * @return Property value
      */
-    protected Object getPropertyFromMap(
-        String propertyName,
-        boolean matchCase)
-    {
+    protected Object getPropertyFromMap(Property property) {
         synchronized (this) {
-            if (matchCase) {
-                return mapPropertyNameToValue.get(propertyName);
-            } else {
-                for (String key : mapPropertyNameToValue.keySet()) {
-                    if (key.equalsIgnoreCase(propertyName)) {
-                        return mapPropertyNameToValue.get(key);
-                    }
+            return larder.get(property);
+        }
+    }
+
+    @Override
+    public String getLocalized(LocalizedProperty prop, Locale locale) {
+        if (getLevel().resourceMap != null) {
+            final List<Larders.Resource> resources =
+                getLevel().resourceMap.get(uniqueName + ".member");
+            if (resources != null) {
+                final String resource =
+                    Larders.Resource.lookup(prop, locale, resources);
+                if (resource != null) {
+                    return resource;
                 }
-                return null;
             }
         }
+        return super.getLocalized(prop, locale);
     }
 
     protected boolean childLevelHasApproxRowCount() {
@@ -488,9 +525,6 @@ public class RolapMemberBase
             > Integer.MIN_VALUE;
     }
 
-    /**
-     * @deprecated Use {@link #isAll}; will be removed in mondrian-4.0
-     */
     public boolean isAllMember() {
         return getLevel().getHierarchy().hasAll()
                 && getLevel().getDepth() == 0;
@@ -658,23 +692,15 @@ public class RolapMemberBase
         }
     }
 
-    public String getPropertyFormattedValue(String propertyName) {
+    public String getPropertyFormattedValue(Property property) {
+        Object val = getPropertyValue(property);
+
         // do we have a formatter ? if yes, use it
-        Property prop = null;
-        for (Property prop1 : getLevel().attribute.getProperties()) {
-            if (prop1.getName().equals(propertyName)) {
-                prop = prop1;
-                break;
-            }
-        }
-        PropertyFormatter pf;
-        if (prop != null && (pf = prop.getFormatter()) != null) {
-            return pf.formatProperty(
-                this, propertyName,
-                getPropertyValue(propertyName));
+        PropertyFormatter pf = property.getFormatter();
+        if (pf != null) {
+            return pf.formatProperty(this, property.name, val);
         }
 
-        Object val = getPropertyValue(propertyName);
         return (val == null)
             ? ""
             : val.toString();
@@ -987,7 +1013,7 @@ public class RolapMemberBase
          * @param member Member
          * @return the Map instance to store property/value pairs
          */
-        Map<String, Object> create(Member member);
+        Map<Property, Object> create(Member member);
     }
 
     /**
@@ -1020,69 +1046,17 @@ public class RolapMemberBase
          * @return {@inheritDoc}
          */
         @SuppressWarnings({"unchecked"})
-        public Map<String, Object> create(Member member) {
+        public Map<Property, Object> create(Member member) {
             assert member != null;
             Property[] props = member.getProperties();
             if ((member instanceof RolapMeasure)
                 || (props == null)
                 || (props.length > 3))
             {
-                return new HashMap<String, Object>();
+                return new HashMap<Property, Object>();
             } else {
                 return new Flat3Map();
             }
-        }
-    }
-
-    /**
-     * <p>Creates the PropertyValueMapFactory which is in turn used
-     * to create property-value maps for member properties.</p>
-     *
-     * <p>The name of the PropertyValueMapFactory is drawn from
-     * {@link mondrian.olap.MondrianProperties#PropertyValueMapFactoryClass}
-     * in mondrian.properties.  If unset, it defaults to
-     * {@link RolapMemberBase.DefaultPropertyValueMapFactory}. </p>
-     */
-    public static final class PropertyValueMapFactoryFactory
-        extends ObjectFactory.Singleton<PropertyValueMapFactory>
-    {
-        /**
-         * Single instance of the <code>PropertyValueMapFactory</code>.
-         */
-        private static final PropertyValueMapFactoryFactory factory;
-        static {
-            factory = new PropertyValueMapFactoryFactory();
-        }
-
-        /**
-         * Access the <code>PropertyValueMapFactory</code> instance.
-         *
-         * @return the <code>Map</code>.
-         */
-        public static PropertyValueMapFactory getPropertyValueMapFactory() {
-            return factory.getObject();
-        }
-
-        /**
-         * The constructor for the <code>PropertyValueMapFactoryFactory</code>.
-         * This passes the <code>PropertyValueMapFactory</code> class to the
-         * <code>ObjectFactory</code> base class.
-         */
-        @SuppressWarnings({"unchecked"})
-        private PropertyValueMapFactoryFactory() {
-            super((Class) PropertyValueMapFactory.class);
-        }
-
-        protected StringProperty getStringProperty() {
-            return MondrianProperties.instance().PropertyValueMapFactoryClass;
-        }
-
-        protected PropertyValueMapFactory getDefault(
-            Class[] parameterTypes,
-            Object[] parameterValues)
-            throws CreationException
-        {
-            return new DefaultPropertyValueMapFactory();
         }
     }
 

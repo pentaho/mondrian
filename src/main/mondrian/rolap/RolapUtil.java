@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 22 December, 2001
@@ -65,6 +65,9 @@ public class RolapUtil {
      */
     public static final Comparable<?> sqlNullValue =
         RolapUtilComparable.INSTANCE;
+
+    /** Name of member that has null key. */
+    public static final String NULL_NAME = "#null";
 
     /**
      * Wraps a schema reader in a proxy so that each call to schema reader
@@ -132,6 +135,8 @@ public class RolapUtil {
     /**
      * Comparable value, equal only to itself. Used to represent the NULL value,
      * as returned from a SQL query.
+     *
+     * @see #mdxNullLiteral()
      */
     private static final class RolapUtilComparable
         implements Comparable, Serializable
@@ -148,7 +153,7 @@ public class RolapUtil {
         // do not override equals and hashCode -- use identity
 
         public String toString() {
-            return "#null";
+            return NULL_NAME;
         }
 
         public int compareTo(Object o) {
