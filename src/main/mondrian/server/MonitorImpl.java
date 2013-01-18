@@ -870,6 +870,7 @@ class MonitorImpl
                             RolapUtil.MONITOR_LOGGER.debug(message);
                         }
                         if (message instanceof ShutdownCommand) {
+                            LOGGER.debug("ShutdownCommand received. Monitor thread is shutting down.");
                             return;
                         }
                     } catch (InterruptedException e) {
