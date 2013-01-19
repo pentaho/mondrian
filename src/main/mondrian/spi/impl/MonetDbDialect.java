@@ -41,9 +41,6 @@ public class MonetDbDialect extends JdbcDialectImpl {
         super(connection);
     }
 
-    public MonetDbDialect() {
-    }
-
     @Override
     public boolean allowsMultipleDistinctSqlMeasures() {
         return false;

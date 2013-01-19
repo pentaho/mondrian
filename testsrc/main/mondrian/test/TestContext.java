@@ -327,7 +327,7 @@ public class TestContext {
             connectProperties = new Util.PropertyList();
             connectProperties.put("Provider", "mondrian");
         } else {
-             connectProperties = Util.parseConnectString(connectString);
+            connectProperties = Util.parseConnectString(connectString);
         }
         String jdbcURL = MondrianProperties.instance().FoodmartJdbcURL.get();
         if (jdbcURL != null) {
@@ -1909,45 +1909,23 @@ public class TestContext {
     /**
      * Creates a dialect without using a connection.
      *
-     * @return dialect of an Access persuasion
+     * @param product Database product
+     * @return dialect of an required persuasion
      */
-    public static Dialect getFakeDialect()
-    {
+    public static Dialect getFakeDialect(Dialect.DatabaseProduct product) {
         final DatabaseMetaData metaData =
             (DatabaseMetaData) Proxy.newProxyInstance(
                 null,
                 new Class<?>[] {DatabaseMetaData.class},
-                new DelegatingInvocationHandler() {
-                    public boolean supportsResultSetConcurrency(
-                        int type, int concurrency)
-                    {
-                        return false;
-                    }
-                    public String getDatabaseProductName() {
-                        return "Access";
-                    }
-                    public String getIdentifierQuoteString() {
-                        return "\"";
-                    }
-                    public String getDatabaseProductVersion() {
-                        return "1.0";
-                    }
-                    public boolean isReadOnly() {
-                        return true;
-                    }
-                }
-            );
+                new DatabaseMetaDataInvocationHandler(product));
         final java.sql.Connection connection =
             (java.sql.Connection) Proxy.newProxyInstance(
                 null,
                 new Class<?>[] {java.sql.Connection.class},
-                new DelegatingInvocationHandler() {
-                    public DatabaseMetaData getMetaData() {
-                        return metaData;
-                    }
-                }
-            );
-        return DialectManager.createDialect(null, connection);
+                new ConnectionInvocationHandler(metaData));
+        final Dialect dialect = DialectManager.createDialect(null, connection);
+        assert dialect.getDatabaseProduct() == product;
+        return dialect;
     }
 
     /**
@@ -2399,7 +2377,7 @@ public class TestContext {
         this.schema = schema;
         this.errorStart = errorStart;
         this.errorEnd = errorEnd;
-     }
+    }
 
     /**
      * Creates a TestContext which is like this one but uses the given
@@ -3193,6 +3171,132 @@ public class TestContext {
             .withCube("Sales Ragged");
     }
 
+    // Public only because required for reflection to work.
+    @SuppressWarnings("UnusedDeclaration")
+    public static class ConnectionInvocationHandler
+        extends DelegatingInvocationHandler
+    {
+        private final DatabaseMetaData metaData;
+
+        ConnectionInvocationHandler(DatabaseMetaData metaData) {
+            this.metaData = metaData;
+        }
+
+        /** Proxy for {@link java.sql.Connection#getMetaData()}. */
+        public DatabaseMetaData getMetaData() {
+            return metaData;
+        }
+    }
+
+    // Public only because required for reflection to work.
+    @SuppressWarnings("UnusedDeclaration")
+    public static class DatabaseMetaDataInvocationHandler
+        extends DelegatingInvocationHandler
+    {
+        private final Dialect.DatabaseProduct product;
+
+        DatabaseMetaDataInvocationHandler(
+            Dialect.DatabaseProduct product)
+        {
+            this.product = product;
+        }
+
+        /** Proxy for
+         * {@link DatabaseMetaData#supportsResultSetConcurrency(int, int)}. */
+        public boolean supportsResultSetConcurrency(int type, int concurrency) {
+            return false;
+        }
+
+        /** Proxy for {@link DatabaseMetaData#getDatabaseProductName()}. */
+        public String getDatabaseProductName() {
+            switch (product) {
+            case GREENPLUM:
+                return "postgres";
+            default:
+                return product.name();
+            }
+        }
+
+        /** Proxy for {@link DatabaseMetaData#getIdentifierQuoteString()}. */
+        public String getIdentifierQuoteString() {
+            return "\"";
+        }
+
+        /** Proxy for {@link DatabaseMetaData#getDatabaseProductVersion()}. */
+        public String getDatabaseProductVersion() {
+            return "1.0";
+        }
+
+        /** Proxy for {@link DatabaseMetaData#isReadOnly()}. */
+        public boolean isReadOnly() {
+            return true;
+        }
+
+        /** Proxy for {@link DatabaseMetaData#getMaxColumnNameLength()}. */
+        public int getMaxColumnNameLength() {
+            return 30;
+        }
+
+        /** Proxy for {@link DatabaseMetaData#getDriverName()}. */
+        public String getDriverName() {
+            switch (product) {
+            case GREENPLUM:
+                return "Mondrian fake dialect for Greenplum";
+            default:
+                return "Mondrian fake dialect";
+            }
+        }
+
+        /** Proxy for {@link DatabaseMetaData#getExtraNameCharacters()}. */
+        public String getExtraNameCharacters() {
+            return "";
+        }
+
+        /** Proxy for
+         * {@link DatabaseMetaData#supportsMixedCaseQuotedIdentifiers()}. */
+        public boolean supportsMixedCaseQuotedIdentifiers() {
+            return true;
+        }
+
+        /** Proxy for
+         * {@link DatabaseMetaData#supportsMixedCaseIdentifiers()}. */
+        public boolean supportsMixedCaseIdentifiers() {
+            return true;
+        }
+
+        /** Proxy for
+         * {@link DatabaseMetaData#storesUpperCaseQuotedIdentifiers()}. */
+        public boolean storesUpperCaseQuotedIdentifiers() {
+            return false;
+        }
+
+        /** Proxy for
+         * {@link DatabaseMetaData#storesLowerCaseQuotedIdentifiers()}. */
+        public boolean storesLowerCaseQuotedIdentifiers() {
+            return false;
+        }
+
+        /** Proxy for
+         * {@link DatabaseMetaData#storesMixedCaseQuotedIdentifiers()}. */
+        public boolean storesMixedCaseQuotedIdentifiers() {
+            return false;
+        }
+
+        /** Proxy for {@link DatabaseMetaData#storesUpperCaseIdentifiers()}. */
+        public boolean storesUpperCaseIdentifiers() {
+            return false;
+        }
+
+        /** Proxy for {@link DatabaseMetaData#storesLowerCaseIdentifiers()}. */
+        public boolean storesLowerCaseIdentifiers() {
+            return false;
+        }
+
+        /** Proxy for {@link DatabaseMetaData#storesMixedCaseIdentifiers()}. */
+        public boolean storesMixedCaseIdentifiers() {
+            return false;
+        }
+    }
 }
 
 // End TestContext.java

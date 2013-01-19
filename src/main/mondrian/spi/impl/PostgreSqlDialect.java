@@ -57,9 +57,6 @@ public class PostgreSqlDialect extends JdbcDialectImpl {
         super(connection);
     }
 
-    public PostgreSqlDialect() {
-    }
-
     public boolean requiresAliasForFromQuery() {
         return true;
     }
@@ -162,6 +159,13 @@ public class PostgreSqlDialect extends JdbcDialectImpl {
         Statement statement = null;
         ResultSet resultSet = null;
         try {
+            // Mock connection used to create dialects during testing does not
+            // support executing statements.
+            final String driverName = databaseMetaData.getDriverName();
+            if (driverName.startsWith("Mondrian fake dialect")) {
+                return driverName.equals("Mondrian fake dialect for Greenplum");
+            }
+
             statement = databaseMetaData.getConnection().createStatement();
             resultSet = statement.executeQuery("select version()");
             if (resultSet.next()) {

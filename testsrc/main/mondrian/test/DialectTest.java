@@ -14,10 +14,12 @@ import mondrian.rolap.SqlStatement;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 import mondrian.spi.impl.*;
+import mondrian.util.DelegatingInvocationHandler;
 
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
+import java.lang.reflect.*;
 import java.sql.*;
 import java.util.*;
 import javax.sql.DataSource;
@@ -1144,7 +1146,8 @@ public class DialectTest extends TestCase {
                 mockResultSetMeta.withColumnName("c0")
                     .withColumnType(Types.NUMERIC)
                     .withPrecision(0)
-                    .withScale(0),
+                    .withScale(0)
+                    .build(),
                 0) == SqlStatement.Type.INT);
 
         assertTrue(
@@ -1154,7 +1157,8 @@ public class DialectTest extends TestCase {
                 mockResultSetMeta.withColumnName("c0")
                     .withColumnType(Types.NUMERIC)
                     .withPrecision(5)
-                    .withScale(-127),
+                    .withScale(-127)
+                    .build(),
                 0) == SqlStatement.Type.DOUBLE);
         assertTrue(
             "Oracle dialect NUMERIC type with precision less than 10, 0 scale "
@@ -1163,7 +1167,8 @@ public class DialectTest extends TestCase {
                 mockResultSetMeta.withColumnName("c0")
                     .withColumnType(Types.NUMERIC)
                     .withPrecision(9)
-                    .withScale(0),
+                    .withScale(0)
+                    .build(),
                 0) == SqlStatement.Type.INT);
         assertTrue(
             "Oracle dialect NUMERIC type with precision = 38, scale = 0"
@@ -1173,7 +1178,8 @@ public class DialectTest extends TestCase {
                 mockResultSetMeta.withColumnName("c0")
                     .withColumnType(Types.NUMERIC)
                     .withPrecision(38)
-                    .withScale(0),
+                    .withScale(0)
+                    .build(),
                 0) == SqlStatement.Type.INT);
         assertTrue(
             "Oracle dialect DECIMAL type with precision > 9, scale = 0"
@@ -1182,7 +1188,8 @@ public class DialectTest extends TestCase {
                 mockResultSetMeta.withColumnName("c0")
                     .withColumnType(Types.NUMERIC)
                     .withPrecision(20)
-                    .withScale(0),
+                    .withScale(0)
+                    .build(),
                 0) == SqlStatement.Type.DOUBLE);
 
         assertTrue(
@@ -1192,7 +1199,8 @@ public class DialectTest extends TestCase {
                 mockResultSetMeta.withColumnName("c0")
                     .withColumnType(Types.NUMERIC)
                     .withPrecision(0)
-                    .withScale(-127),
+                    .withScale(-127)
+                    .build(),
                 0) == SqlStatement.Type.INT);
         assertTrue(
             "Oracle dialect NUMBER type with precision =0 , scale = -127"
@@ -1201,27 +1209,31 @@ public class DialectTest extends TestCase {
                 mockResultSetMeta.withColumnName("m0")
                     .withColumnType(Types.NUMERIC)
                     .withPrecision(0)
-                    .withScale(-127),
+                    .withScale(-127)
+                    .build(),
                 0) == SqlStatement.Type.OBJECT);
     }
 
     public void testPostgresGreenplumTypeMapQuirks() throws SQLException {
         MockResultSetMetadata mockResultSetMeta = new MockResultSetMetadata();
-        Dialect postgresDialect = new PostgreSqlDialect();
+        Dialect greenplumDialect =
+            TestContext.getFakeDialect(Dialect.DatabaseProduct.GREENPLUM);
         assertTrue(
             "Postgres/Greenplum dialect NUMBER with precision =0, scale = 0"
             + ", measure name starts with 'm' maps to OBJECT",
-            postgresDialect.getType(
+            greenplumDialect.getType(
                 mockResultSetMeta.withColumnName("m0")
                     .withColumnType(Types.NUMERIC)
                     .withPrecision(0)
-                    .withScale(0),
+                    .withScale(0)
+                    .build(),
                 0) == SqlStatement.Type.OBJECT);
     }
 
     public void testNetezzaTypeMapQuirks() throws SQLException {
         MockResultSetMetadata mockResultSetMeta = new MockResultSetMetadata();
-        Dialect netezzaDialect = new NetezzaDialect();
+        Dialect netezzaDialect =
+            TestContext.getFakeDialect(Dialect.DatabaseProduct.NETEZZA);
         assertTrue(
             "Netezza dialect NUMERIC/DECIMAL with precision =38, scale = 0"
             + " means long.  Should be mapped to DOUBLE",
@@ -1229,7 +1241,8 @@ public class DialectTest extends TestCase {
                 mockResultSetMeta
                     .withColumnType(Types.NUMERIC)
                     .withPrecision(38)
-                    .withScale(0),
+                    .withScale(0)
+                    .build(),
                 0) == SqlStatement.Type.DOUBLE);
         assertTrue(
             "Netezza dialect NUMERIC/DECIMAL with precision =38, scale = 0"
@@ -1238,21 +1251,24 @@ public class DialectTest extends TestCase {
                 mockResultSetMeta
                     .withColumnType(Types.DECIMAL)
                     .withPrecision(38)
-                    .withScale(0),
+                    .withScale(0)
+                    .build(),
                 0) == SqlStatement.Type.DOUBLE);
     }
 
     public void testMonetDBTypeMapQuirks() throws SQLException {
         MockResultSetMetadata mockResultSetMeta = new MockResultSetMetadata();
-        Dialect postgresDialect = new MonetDbDialect();
+        Dialect monetDbDialect =
+            TestContext.getFakeDialect(Dialect.DatabaseProduct.MONETDB);
         assertTrue(
             "MonetDB dialect NUMERIC with precision =0, scale = 0"
             + " may be an aggregated decimal, should assume DOUBLE",
-            postgresDialect.getType(
+            monetDbDialect.getType(
                 mockResultSetMeta
                     .withColumnType(Types.NUMERIC)
                     .withPrecision(0)
-                    .withScale(0),
+                    .withScale(0)
+                    .build(),
                 0) == SqlStatement.Type.DOUBLE);
     }
 
@@ -1266,7 +1282,8 @@ public class DialectTest extends TestCase {
                 mockResultSetMeta
                     .withColumnType(Types.NUMERIC)
                     .withPrecision(5)
-                    .withScale(0),
+                    .withScale(0)
+                    .build(),
                 0) == SqlStatement.Type.INT);
         assertTrue(
             "JdbcDialectImpl NUMERIC/DECIMAL types w/ precision 0-9"
@@ -1275,16 +1292,18 @@ public class DialectTest extends TestCase {
                 mockResultSetMeta
                     .withColumnType(Types.DECIMAL)
                     .withPrecision(5)
-                    .withScale(0),
+                    .withScale(0)
+                    .build(),
                 0) == SqlStatement.Type.INT);
     }
 
-    static class MockResultSetMetadata implements ResultSetMetaData {
-
-        private static int precision;
-        private static int scale;
-        private static int columnType;
-        private static String columnName;
+    public static class MockResultSetMetadata
+        extends DelegatingInvocationHandler
+    {
+        private int precision;
+        private int scale;
+        private int columnType;
+        private String columnName;
 
         public MockResultSetMetadata withPrecision(int setPrecision) {
             precision = setPrecision;
@@ -1306,100 +1325,33 @@ public class DialectTest extends TestCase {
             return this;
         }
 
+        public ResultSetMetaData build() {
+            return (ResultSetMetaData) Proxy.newProxyInstance(
+                null,
+                new Class[] {ResultSetMetaData.class},
+                this);
+        }
 
+        /** Proxy for {@link ResultSetMetaData#getPrecision(int)}. */
         public int getPrecision(int column) throws SQLException {
             return precision;
         }
 
+        /** Proxy for {@link ResultSetMetaData#getPrecision(int)}. */
         public String getColumnName(int column) throws SQLException {
             return columnName;
         }
 
+        /** Proxy for {@link ResultSetMetaData#getPrecision(int)}. */
         public int getColumnType(int column) throws SQLException {
             return columnType;
         }
 
+        /** Proxy for {@link ResultSetMetaData#getPrecision(int)}. */
         public int getScale(int column) throws SQLException {
             return scale;
         }
-
-        public int getColumnCount() throws SQLException {
-            return 0;
-        }
-
-        public boolean isAutoIncrement(int column) throws SQLException {
-            return false;
-        }
-
-        public boolean isCaseSensitive(int column) throws SQLException {
-            return false;
-        }
-
-        public boolean isSearchable(int column) throws SQLException {
-            return false;
-        }
-
-        public boolean isCurrency(int column) throws SQLException {
-            return false;
-        }
-
-        public int isNullable(int column) throws SQLException {
-            return 0;
-        }
-
-        public boolean isSigned(int column) throws SQLException {
-            return false;
-        }
-
-        public int getColumnDisplaySize(int column) throws SQLException {
-            return 0;
-        }
-
-        public String getColumnLabel(int column) throws SQLException {
-            return null;
-        }
-
-        public String getSchemaName(int column) throws SQLException {
-            return null;
-        }
-
-        public String getTableName(int column) throws SQLException {
-            return null;
-        }
-
-        public String getCatalogName(int column) throws SQLException {
-            return null;
-        }
-
-        public String getColumnTypeName(int column) throws SQLException {
-            return null;
-        }
-
-        public boolean isReadOnly(int column) throws SQLException {
-            return false;
-        }
-
-        public boolean isWritable(int column) throws SQLException {
-            return false;
-        }
-
-        public boolean isDefinitelyWritable(int column) throws SQLException {
-            return false;
-        }
-
-        public String getColumnClassName(int column) throws SQLException {
-            return null;
-        }
-
-        public <T> T unwrap(Class<T> iface) throws SQLException {
-            return null;
-        }
-
-        public boolean isWrapperFor(Class<?> iface) throws SQLException {
-            return false;
-        }
     }
-
 }
 
 // End DialectTest.java

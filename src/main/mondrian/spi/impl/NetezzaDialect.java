@@ -5,6 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2008-2009 Jaspersoft
+// Copyright (C) 2009-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -52,9 +53,6 @@ public class NetezzaDialect extends PostgreSqlDialect {
         super(connection);
     }
 
-    public NetezzaDialect() {
-    }
-
     @Override
     public DatabaseProduct getDatabaseProduct() {
         return DatabaseProduct.NETEZZA;
@@ -82,7 +80,7 @@ public class NetezzaDialect extends PostgreSqlDialect {
         if (columnType == Types.NUMERIC || columnType == Types.DECIMAL
             && (scale == 0 && precision == 38))
         {
-            // Neteeza marks longs as scale 0 and precision 38.
+            // Netezza marks longs as scale 0 and precision 38.
             // An int would overflow.
             logTypeInfo(metaData, columnIndex, SqlStatement.Type.DOUBLE);
             return SqlStatement.Type.DOUBLE;
@@ -90,4 +88,5 @@ public class NetezzaDialect extends PostgreSqlDialect {
         return super.getType(metaData, columnIndex);
     }
 }
+
 // End NetezzaDialect.java
