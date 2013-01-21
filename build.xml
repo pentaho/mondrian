@@ -19,6 +19,7 @@
   <property file="${project.location}/test.properties"/>
   <property file="${project.location}/mondrian.properties"/>
   <property name="project.build.debug" value="on"/>
+  <property name="testsrc.dir" value="${basedir}/testsrc" />
 
   <!--
     ===================================================================
