@@ -243,7 +243,7 @@ TYPICAL TARGET SEQUENCE
           value="${ivy.artifact.id}-${project.revision}.zip"/>
 
   <!-- Ivy properties -->
-  <property name="ivy.install.version" value="2.1.0" description="Specifies the version of IVY to fetch" />
+  <property name="ivy.install.version" value="2.2.0" description="Specifies the version of IVY to fetch" />
   <property name="ivy.jar.file"
             value="${ivy.build.cache.dir}/ivy.jar"
             description="The full path to the IVY jar file to use during the build.  If the file is not present, the build will attempt to fetch IVY and save the jar as specified by this property" />
