@@ -522,6 +522,44 @@ public class Olap4jTest extends FoodMartTestCase {
             finished.set(true);
         }
     }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1353">MONDRIAN-1353</a>
+     *
+     * <p>An empty stack exception was thrown from the olap4j API if
+     * the hierarchy didn't have a all member and the default member
+     * was not explicitly set.
+     */
+    public void testMondrian1353() throws Exception {
+        final TestContext testContext = TestContext.instance().create(
+            null,
+            "<Cube name=\"Mondrian1353\">\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <Dimension name=\"Cities\" foreignKey=\"customer_id\">\n"
+            + "    <Hierarchy hasAll=\"false\" primaryKey=\"customer_id\">\n"
+            + "      <Table name=\"customer\"/>\n"
+            + "      <Level name=\"City\" column=\"city\" uniqueMembers=\"false\"/> \n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\" visible=\"false\"/>\n"
+            + "</Cube>",
+            null,
+            null,
+            null,
+            null);
+
+        final Member defaultMember =
+            testContext.getOlap4jConnection()
+                .getOlapSchema()
+                .getCubes().get("Mondrian1353")
+                .getDimensions().get("Cities")
+                .getDefaultHierarchy().getDefaultMember();
+
+        assertNotNull(defaultMember);
+        assertEquals("Acapulco", defaultMember.getName());
+    }
 }
 
 // End Olap4jTest.java
