@@ -74,10 +74,15 @@ class MondrianOlap4jHierarchy
         return hierarchy.hasAll();
     }
 
-    public Member getDefaultMember() {
+    public Member getDefaultMember() throws OlapException {
         final MondrianOlap4jConnection olap4jConnection =
             olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
-        return olap4jConnection.toOlap4j(hierarchy.getDefaultMember());
+        final mondrian.olap.SchemaReader schemaReader =
+            olap4jConnection.getMondrianConnection()
+                .getSchemaReader().withLocus();
+        return
+            olap4jConnection.toOlap4j(
+                schemaReader.getHierarchyDefaultMember(hierarchy));
     }
 
     public NamedList<Member> getRootMembers() throws OlapException {
