@@ -34,9 +34,6 @@ public class GroupingSet {
     /**
      * Creates a GroupingSet.
      *
-     * @param baseSegment Segment that this grouping set will be registered as
-     *                    in the cell segment cache (even if it is populated
-     *                    from a different agg table)
      * @param segments Constituent segments
      * @param levelBitKey Levels
      * @param measureBitKey Measures
