@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -144,7 +144,7 @@ public class RoleImpl implements Role {
             getAccess(cube.getSchema());
         if (schemaAccess == Access.NONE) {
             LOGGER.debug(
-                "Cascading grant " + access + " on schema "
+                "Cascading grant " + Access.CUSTOM + " on schema "
                 + cube.getSchema().getName());
             grant(cube.getSchema(), Access.CUSTOM);
         }

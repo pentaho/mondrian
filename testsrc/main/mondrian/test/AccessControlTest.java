@@ -5,12 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.olap.Role.HierarchyAccess;
 
 import junit.framework.Assert;
 
@@ -1350,6 +1351,47 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Row #0: 3,583\n"
             + "Row #0: 124,366\n");
         checkQuery(testContext.withRole("Role1,Role2"), mdx);
+    }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1384">MONDRIAN-1384</a>
+     */
+    public void testUnionRoleHasInaccessibleDescendants() throws Exception {
+        final TestContext testContext =
+            TestContext.instance().create(
+                null, null, null, null, null,
+                "<Role name=\"Role1\">\n"
+                + "  <SchemaGrant access=\"none\">\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>\n"
+                + "<Role name=\"Role2\">\n"
+                + "  <SchemaGrant access=\"all\">\n"
+                + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                + "      <HierarchyGrant hierarchy=\"[Customers]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+                + "        <MemberGrant member=\"[Customers].[USA].[OR]\" access=\"all\"/>\n"
+                + "      </HierarchyGrant>\n"
+                + "    </CubeGrant>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>\n");
+        final Connection connection =
+            testContext.withRole("Role1,Role2").getConnection();
+        final Cube cube =
+            connection.getSchema()
+                .lookupCube("Sales", true);
+        final HierarchyAccess accessDetails =
+            connection.getRole().getAccessDetails(
+                cube.lookupHierarchy(
+                    new Id.NameSegment("Customers", Id.Quoting.UNQUOTED),
+                    false));
+        final SchemaReader scr =
+            cube.getSchemaReader(null).withLocus();
+        assertEquals(
+            true,
+            accessDetails.hasInaccessibleDescendants(
+                scr.getMemberByUniqueName(
+                    Util.parseIdentifier("[Customers].[USA]"),
+                    true)));
     }
 
     /**
