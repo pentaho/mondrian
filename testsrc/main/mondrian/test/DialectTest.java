@@ -1166,17 +1166,17 @@ public class DialectTest extends TestCase {
 
         assertTrue(
             "Oracle dialect NUMBER type with precision =0 , scale = -127"
-            + " should map to INT, unless measure name starts with 'm'",
+            + " should map to DOUBLE",
             oracleDialect.getType(
                 mockResultSetMeta.withColumnName("c0")
                     .withColumnType(Types.NUMERIC)
                     .withPrecision(0)
                     .withScale(-127)
                     .build(),
-                0) == SqlStatement.Type.INT);
+                0) == SqlStatement.Type.DOUBLE);
         assertTrue(
             "Oracle dialect NUMBER type with precision =0 , scale = -127"
-            + " should map to INT, unless measure name starts with 'm'",
+            + " should map to OBJECT if measure name starts with 'm'",
             oracleDialect.getType(
                 mockResultSetMeta.withColumnName("m0")
                     .withColumnType(Types.NUMERIC)
