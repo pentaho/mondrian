@@ -4,10 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2009 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap;
+
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +24,8 @@ import java.util.List;
  * @since Nov 26, 2007
  */
 class UnionRoleImpl implements Role {
+    private static final Logger LOGGER =
+        Logger.getLogger(UnionRoleImpl.class);
     private final List<Role> roleList;
 
     /**
@@ -41,6 +45,10 @@ class UnionRoleImpl implements Role {
                 break;
             }
         }
+        LOGGER.debug(
+            "Access level " + access
+            + " granted to schema " + schema.getName()
+            + " because of a union of roles.");
         return access;
     }
 
@@ -68,6 +76,10 @@ class UnionRoleImpl implements Role {
                 break;
             }
         }
+        LOGGER.debug(
+            "Access level " + access
+            + " granted to cube " + cube.getName()
+            + " because of a union of roles.");
         return access;
     }
 
@@ -79,6 +91,10 @@ class UnionRoleImpl implements Role {
                 break;
             }
         }
+        LOGGER.debug(
+            "Access level " + access
+            + " granted to dimension " + dimension.getUniqueName()
+            + " because of a union of roles.");
         return access;
     }
 
@@ -90,6 +106,10 @@ class UnionRoleImpl implements Role {
                 break;
             }
         }
+        LOGGER.debug(
+            "Access level " + access
+            + " granted to hierarchy " + hierarchy.getUniqueName()
+            + " because of a union of roles.");
         return access;
     }
 
@@ -123,6 +143,10 @@ class UnionRoleImpl implements Role {
                 break;
             }
         }
+        LOGGER.debug(
+            "Access level " + access
+            + " granted to level " + level.getUniqueName()
+            + " because of a union of roles.");
         return access;
     }
 
@@ -133,7 +157,12 @@ class UnionRoleImpl implements Role {
         if (hierarchyAccess != null) {
             return hierarchyAccess.getAccess(member);
         }
-        return getAccess(member.getDimension());
+        final Access access = getAccess(member.getDimension());
+        LOGGER.debug(
+            "Access level " + access
+            + " granted to member " + member.getUniqueName()
+            + " because of a union of roles.");
+        return access;
     }
 
     public Access getAccess(NamedSet set) {
@@ -144,6 +173,10 @@ class UnionRoleImpl implements Role {
                 break;
             }
         }
+        LOGGER.debug(
+            "Access level " + access
+            + " granted to set " + set.getUniqueName()
+            + " because of a union of roles.");
         return access;
     }
 
@@ -189,6 +222,10 @@ class UnionRoleImpl implements Role {
                     break;
                 }
             }
+            LOGGER.debug(
+                "Access level " + access
+                + " granted to member " + member.getUniqueName()
+                + " because of a union of roles.");
             return access;
         }
 
@@ -251,18 +288,25 @@ class UnionRoleImpl implements Role {
         }
 
         public boolean hasInaccessibleDescendants(Member member) {
+            // If any of the roles return all the members,
+            // we assume that all descendants are accessible when
+            // we create a union of these roles.
+            final Access unionAccess = getAccess(member);
+            if (unionAccess == Access.ALL) {
+                return false;
+            }
+            if (unionAccess == Access.NONE) {
+                return true;
+            }
             for (HierarchyAccess hierarchyAccess : list) {
-                switch (hierarchyAccess.getAccess(member)) {
-                case NONE:
-                    continue;
-                case CUSTOM:
-                    return true;
-                case ALL:
-                    if (!hierarchyAccess.hasInaccessibleDescendants(member)) {
-                        return false;
-                    }
+                if (hierarchyAccess.getAccess(member) == Access.CUSTOM
+                    && !hierarchyAccess.hasInaccessibleDescendants(member))
+                {
+                    return false;
                 }
             }
+            // All of the roles have restricted the descendants in
+            // some way.
             return true;
         }
 
