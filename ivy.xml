@@ -78,9 +78,8 @@
         </dependency>
         <dependency org="org.olap4j" name="olap4j-xmlaserver" rev="${dependency.olap4j-xmlaserver.revision}"/>
 
-        <!-- REVIEW: try xalan 2.6.0? -->
-        <dependency org="xalan" name="xalan" rev="2.4.1"/>
-        <dependency org="xerces" name="xercesImpl" rev="2.5.0"/>
+        <dependency org="xalan" name="xalan" rev="2.6.0"/>
+        <dependency org="xerces" name="xercesImpl" rev="2.9.1"/>
 
         <!-- JDK 1.4 backwards compatibility jars -->
         <dependency org="backport-util-concurrent" 
@@ -102,7 +101,7 @@
 
         <!-- Test Jars -->
         <dependency org="junit" name="junit" rev="3.8.1" conf="test->default"/>
-        <dependency org="xmlunit" name="xmlunit" rev="1.1" conf="test->default"/>
+        <dependency org="xmlunit" name="xmlunit" rev="1.3" conf="test->default"/>
         <dependency org="monetdb" name="monetdb-jdbc" rev="2.8-SNAPSHOT" conf="test->default"/>
         <dependency org="pentaho" name="mondrian-data-adventureworks" rev="0.1-SNAPSHOT" conf="test->default"/>
         <dependency org="pentaho" name="mondrian-data-adventureworks-dw" rev="0.1-SNAPSHOT" conf="test->default"/>

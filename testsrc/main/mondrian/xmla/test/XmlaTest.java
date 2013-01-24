@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.xmla.test;
@@ -74,6 +74,7 @@ public class XmlaTest extends TestCase {
         handler = new XmlaHandler(
             (XmlaHandler.ConnectionFactory) server,
             "xmla");
+        XMLUnit.setIgnoreWhitespace(false);
     }
 
     // implement TestCase
@@ -133,14 +134,13 @@ public class XmlaTest extends TestCase {
     private Element ignoreLastUpdateDate(Element element) {
         NodeList elements = element.getElementsByTagName("LAST_SCHEMA_UPDATE");
         for (int i = elements.getLength(); i > 0; i--) {
-            removeNode(elements.item(i - 1));
+            blankNode(elements.item(i - 1));
         }
         return element;
     }
 
-    private void removeNode(Node node) {
-        Node parentNode = node.getParentNode();
-        parentNode.removeChild(node);
+    private void blankNode(Node node) {
+        node.setTextContent("");
     }
 
     private Element executeRequest(Element requestElem) {
