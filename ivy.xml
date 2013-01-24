@@ -76,8 +76,8 @@
         </dependency>
 
         <!-- REVIEW: try xalan 2.6.0? -->
-        <dependency org="xalan" name="xalan" rev="2.4.1"/>
-        <dependency org="xerces" name="xercesImpl" rev="2.5.0"/>
+        <dependency org="xalan" name="xalan" rev="2.6.0"/>
+        <dependency org="xerces" name="xercesImpl" rev="2.9.1"/>
 
         <!-- JDK 1.4 backwards compatibility jars -->
         <dependency org="backport-util-concurrent" 
