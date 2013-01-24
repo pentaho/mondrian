@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2012 Pentaho and others
+// Copyright (C) 2009-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -866,6 +866,73 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "{[Customer].[Customers].[USA].[WA].[Walla Walla].[Ramon Williams]}\n"
             + "{[Customer].[Customers].[USA].[WA].[Yakima].[Louis Gomez]}\n");
     }
+
+    public void testSlicerWithCalcMembers() throws Exception {
+        final TestContext testContext = TestContext.instance();
+        //2 calc mems
+        testContext.assertQueryReturns(
+            "WITH "
+            + "MEMBER [Store].[Stores].[aggCA] AS "
+            + "'Aggregate({[Store].[Stores].[USA].[CA].[Los Angeles], "
+            + "[Store].[Stores].[USA].[CA].[San Francisco]})'"
+            + " MEMBER [Store].[Stores].[aggOR] AS "
+            + "'Aggregate({[Store].[Stores].[USA].[OR].[Portland]})' "
+            + " SELECT FROM SALES WHERE { [Store].[Stores].[aggCA], [Store].[Stores].[aggOR] } ",
+            "Axis #0:\n"
+            + "{[Store].[Stores].[aggCA]}\n"
+            + "{[Store].[Stores].[aggOR]}\n"
+            + "53,859");
+
+        // mix calc and non-calc
+        testContext.assertQueryReturns(
+            "WITH "
+            + "MEMBER [Store].[Stores].[aggCA] AS "
+            + "'Aggregate({[Store].[Stores].[USA].[CA].[Los Angeles], "
+            + "[Store].[Stores].[USA].[CA].[San Francisco]})'"
+            + " SELECT FROM SALES WHERE { [Store].[Stores].[aggCA], [Store].[Stores].[All Stores].[USA].[OR].[Portland] } ",
+            "Axis #0:\n"
+            + "{[Store].[Stores].[aggCA]}\n"
+            + "{[Store].[Stores].[USA].[OR].[Portland]}\n"
+            + "53,859");
+
+        // multi-position slicer with mix of calc and non-calc
+        testContext.assertQueryReturns(
+            "WITH "
+            + "MEMBER [Store].[Stores].[aggCA] AS "
+            + "'Aggregate({[Store].[Stores].[USA].[CA].[Los Angeles], "
+            + "[Store].[Stores].[USA].[CA].[San Francisco]})'"
+            + " SELECT FROM SALES WHERE "
+            +  "Gender.Gender.members * "
+            + "{ [Store].[Stores].[aggCA], [Store].[Stores].[All Stores].[USA].[OR].[Portland] } ",
+            "Axis #0:\n"
+            + "{[Customer].[Gender].[F], [Store].[Stores].[aggCA]}\n"
+            + "{[Customer].[Gender].[F], [Store].[Stores].[USA].[OR].[Portland]}\n"
+            + "{[Customer].[Gender].[M], [Store].[Stores].[aggCA]}\n"
+            + "{[Customer].[Gender].[M], [Store].[Stores].[USA].[OR].[Portland]}\n"
+            + "53,859");
+
+        // named set with calc mem and non-calc
+        testContext.assertQueryReturns(
+            "with member Time.Time.aggTime as "
+            + "'aggregate({ [Time].[1997].[Q1], [Time].[1997].[Q2] })'"
+            + "set [timeMembers] as "
+            + "'{Time.aggTime, [Time].[1997].[Q3] }'"
+            + "select from sales where [timeMembers]",
+            "Axis #0:\n"
+            + "{[Time].[Time].[aggTime]}\n"
+            + "{[Time].[Time].[1997].[Q3]}\n"
+            + "194,749");
+
+        // calculated measure in slicer
+        testContext.assertQueryReturns(
+            " SELECT FROM SALES WHERE "
+            + "[Measures].[Profit] * { [Store].[Stores].[USA].[CA], [Store].[Stores].[USA].[OR]}",
+            "Axis #0:\n"
+            + "{[Measures].[Profit], [Store].[Stores].[USA].[CA]}\n"
+            + "{[Measures].[Profit], [Store].[Stores].[USA].[OR]}\n"
+            + "$181,141.98");
+    }
+
 }
 
 // End CompoundSlicerTest.java

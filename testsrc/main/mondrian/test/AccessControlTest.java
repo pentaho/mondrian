@@ -1927,10 +1927,14 @@ public class AccessControlTest extends FoodMartTestCase {
                 Util.replace(member.getUniqueName(), ".[All Customers]", "");
             // e.g. "[Customers2].[State Province].[BC].[Burnaby]"
             String uniqueName2 =
-                Util.replace(uniqueName, "Customers", "Customers2");
+                Util.replace(
+                    uniqueName, "Customers].[Customers",
+                    "Customers2].[Customers");
             // e.g. "[Customers3].[State Province].[BC].[Burnaby]"
             String uniqueName3 =
-                Util.replace(uniqueName, "Customers", "Customers3");
+                Util.replace(
+                    uniqueName, "Customers].[Customers",
+                    "Customers3].[Customers");
             buf.append(
                 "  <Role name=\"" + name + "\"> \n"
                 + "    <SchemaGrant access=\"none\"> \n"
@@ -2862,6 +2866,81 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "</Role>\n";
         }
     }
+
+    public void testMondrian936() throws Exception {
+        final TestContext testContext = TestContext.instance().create(
+            null, null, null, null, null,
+            "<Role name=\"test\">\n"
+                + " <SchemaGrant access=\"none\">\n"
+                + "   <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                + "     <HierarchyGrant hierarchy=\"[Store].[Stores]\" access=\"custom\"\n"
+                + "         topLevel=\"[Store].[Stores].[Store Country]\" rollupPolicy=\"partial\">\n"
+                + "       <MemberGrant member=\"[Store].[Stores].[All Stores]\" access=\"none\"/>\n"
+                + "       <MemberGrant member=\"[Store].[Stores].[USA].[CA].[Los Angeles]\" access=\"all\"/>\n"
+                + "       <MemberGrant member=\"[Store].[Stores].[USA].[CA].[Alameda]\" access=\"all\"/>\n"
+                + "       <MemberGrant member=\"[Store].[Stores].[USA].[CA].[Beverly Hills]\"\n"
+                + "access=\"all\"/>\n"
+                + "       <MemberGrant member=\"[Store].[Stores].[USA].[CA].[San Francisco]\"\n"
+                + "access=\"all\"/>\n"
+                + "       <MemberGrant member=\"[Store].[Stores].[USA].[CA].[San Diego]\" access=\"all\"/>\n"
+                + "\n"
+                + "       <MemberGrant member=\"[Store].[Stores].[USA].[OR].[Portland]\" access=\"all\"/>\n"
+                + "       <MemberGrant member=\"[Store].[Stores].[USA].[OR].[Salem]\" access=\"all\"/>\n"
+                + "     </HierarchyGrant>\n"
+                + "   </CubeGrant>\n"
+                + " </SchemaGrant>\n"
+                + "</Role>");
+
+        testContext.withRole("test").assertQueryReturns(
+            "select {[Measures].[Unit Sales]} on columns, "
+            + " {[Product].[Food].[Baked Goods].[Bread]} on rows "
+            + " from [Sales] "
+            + " where { [Store].[Stores].[USA].[OR], [Store].[Stores].[USA].[CA]} ",
+            "Axis #0:\n"
+            + "{[Store].[Stores].[USA].[OR]}\n"
+            + "{[Store].[Stores].[USA].[CA]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Products].[Food].[Baked Goods].[Bread]}\n"
+            + "Row #0: 4,163\n");
+
+        // changing ordering of members in the slicer should not change
+        // result
+        testContext.withRole("test").assertQueryReturns(
+            "select {[Measures].[Unit Sales]} on columns, "
+            + "                 {[Product].[Food].[Baked Goods].[Bread]} on rows "
+            + "                 from [Sales] "
+            + " where { [Store].[Stores].[USA].[CA], [Store].[Stores].[USA].[OR]} ",
+            "Axis #0:\n"
+            + "{[Store].[Stores].[USA].[CA]}\n"
+            + "{[Store].[Stores].[USA].[OR]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Products].[Food].[Baked Goods].[Bread]}\n"
+            + "Row #0: 4,163\n");
+
+        Result result = testContext.withRole("test").executeQuery(
+            "with member store.stores.aggCaliforniaOregon as "
+                + "'aggregate({ [Store].[Stores].[USA].[CA], [Store].[Stores].[USA].[OR]})'"
+                + " select store.aggCaliforniaOregon on 0 from sales");
+
+        String valueAggMember = result
+            .getCell(new int[] {0}).getFormattedValue();
+
+        result = testContext.withRole("test").executeQuery(
+            " select from sales where "
+                + "{ [Store].[Stores].[USA].[CA], [Store].[Stores].[USA].[OR]}");
+
+        String valueSlicerAgg = result
+            .getCell(new int[] {}).getFormattedValue();
+
+        // aggregating CA & OR in a calc member should produce same result
+        // as aggregating in the slicer.
+        assertTrue(valueAggMember.equals(valueSlicerAgg));
+    }
+
 }
 
 // End AccessControlTest.java
