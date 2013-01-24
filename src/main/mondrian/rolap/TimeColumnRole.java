@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2012 Pentaho
+// Copyright (C) 2012-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -27,10 +27,12 @@ enum TimeColumnRole {
     YYMMDD("yymmdd", Dialect.Datatype.Integer), // e.g. 121231
     YYYYMMDD("yyyymmdd", Dialect.Datatype.Integer), // e.g. 20121231
     DATE("the_date", Dialect.Datatype.Date), // e.g. '2012-12-31'
+    DAY_OF_WEEK("day_of_week", Dialect.Datatype.Integer), // e.g. 0 (= Sunday)
+    DAY_OF_WEEK_IN_MONTH("day_of_week_in_month", Dialect.Datatype.Integer),
     DAY_OF_WEEK_NAME("the_day", Dialect.Datatype.String), // e.g. 'Friday'
     MONTH_NAME("the_month", Dialect.Datatype.String), // e.g. 'December'
     YEAR("the_year", Dialect.Datatype.Integer), // e.g. 2012
-    DAY_OF_MONTH("day_of_month", Dialect.Datatype.String), // e.g. 31
+    DAY_OF_MONTH("day_of_month", Dialect.Datatype.Integer), // e.g. 31
     WEEK_OF_YEAR("week_of_year", Dialect.Datatype.Integer), // e.g. 53
     MONTH("month_of_year", Dialect.Datatype.Integer), // e.g. 12
     QUARTER("quarter", Dialect.Datatype.String); // e.g. 'Q4'
@@ -143,6 +145,13 @@ enum TimeColumnRole {
             case DAY_OF_WEEK_NAME:
                 pstmt.setString(
                     ordinal, ((Format) states[ordinal]).format(calendar));
+                return;
+            case DAY_OF_WEEK:
+                pstmt.setInt(ordinal, calendar.get(Calendar.DAY_OF_WEEK));
+                return;
+            case DAY_OF_WEEK_IN_MONTH:
+                pstmt.setInt(
+                    ordinal, calendar.get(Calendar.DAY_OF_WEEK_IN_MONTH));
                 return;
             case WEEK_OF_YEAR:
                 pstmt.setInt(ordinal, calendar.get(Calendar.WEEK_OF_YEAR));

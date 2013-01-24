@@ -7206,7 +7206,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "   role = \"BAD_ROLE\"\n"
             + "   epoch = null\n"
             + "', in column 'the_year'. Allowable roles are "
-            + "\\[JULIAN, YYMMDD, YYYYMMDD, DATE, DAY_OF_WEEK_NAME, MONTH_NAME, "
+            + "\\[JULIAN, YYMMDD, YYYYMMDD, DATE, DAY_OF_WEEK, "
+            + "DAY_OF_WEEK_IN_MONTH, DAY_OF_WEEK_NAME, MONTH_NAME, "
             + "YEAR, DAY_OF_MONTH, WEEK_OF_YEAR, MONTH, QUARTER\\]"
             + " \\(in ColumnDef\\) \\(at ${pos}\\)",
             "<ColumnDef name='the_year'>");
