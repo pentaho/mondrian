@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -326,7 +326,7 @@ public class RolapResult extends ResultBase {
 
             // throws exception if number of members exceeds limit
             axisMembers.checkLimit();
-
+            Axis savedSlicerAxis;
             /////////////////////////////////////////////////////////////////
             // Execute Slicer
             //
@@ -344,7 +344,12 @@ public class RolapResult extends ResultBase {
                 // axes are generally small.
                 TupleList tupleList =
                     TupleCollections.materialize(tupleIterable, true);
+
                 this.slicerAxis = new RolapAxis(tupleList);
+                // the slicerAxis may be overwritten during slicer execution
+                // if there is a compound slicer.  Save it so that it can be
+                // reverted before completing result construction.
+                savedSlicerAxis = this.slicerAxis;
 
                 // Use the context created by the slicer for the other
                 // axes.  For example, "select filter([Customers], [Store
@@ -387,6 +392,12 @@ public class RolapResult extends ResultBase {
                         };
                     evaluator.addCalculation(
                         new RolapTupleCalculation(hierarchyList, calc), true);
+
+                    // replace the slicer set with a placeholder to avoid
+                    // interaction between the aggregate calc we just created
+                    // and any calculated members that might be present in
+                    // the slicer.
+                    setPlaceholderSlicerAxis(hierarchyList.get(0));
                 }
             } while (phase());
 
@@ -466,6 +477,9 @@ public class RolapResult extends ResultBase {
             if (this.cellInfos.size() > 10000) {
                 this.cellInfos.trimToSize();
             }
+            // revert the slicer axis so that the original slicer
+            // can be included in the result.
+            this.slicerAxis  = savedSlicerAxis;
         } catch (ResultLimitExceededException ex) {
             // If one gets a ResultLimitExceededException, then
             // don't count on anything being worth caching.
@@ -495,6 +509,21 @@ public class RolapResult extends ResultBase {
                 LOGGER.debug("RolapResult<init>: " + Util.printMemory());
             }
         }
+    }
+
+    /**
+     * Sets slicerAxis to a dummy placeholder RolapAxis containing
+     * a single item TupleList with the null member of hierarchy.
+     * This is used with compound slicer evaluation to avoid the slicer
+     * tuple list from interacting with the aggregate calc which rolls up
+     * the set.
+     * @param hierarchy the hierarchy to use for the placeholder slicer
+     */
+    private void setPlaceholderSlicerAxis(RolapHierarchy hierarchy) {
+        Member nullMember = hierarchy.getNullMember();
+        TupleList dummyList = TupleCollections.createList(1);
+        dummyList.addTuple(nullMember);
+        this.slicerAxis = new RolapAxis(dummyList);
     }
 
     private boolean phase() {
