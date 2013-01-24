@@ -16,7 +16,7 @@ import mondrian.util.Lazy;
 
 import org.apache.log4j.Logger;
 
-import org.olap4j.metadata.*;
+import org.olap4j.metadata.NamedList;
 
 import java.util.*;
 
@@ -29,20 +29,24 @@ import java.util.*;
  * {@link RolapEvaluator} needs each dimension to have an ordinal, so that it
  * can store the evaluation context as an array of members.
  *
- * <p>A dimension may be either shared or private to a particular cube.
- * If a dimension is shared between several cubes, the {@link Dimension} objects
- * which represent them may (or may not be) the same. (That's why there's no
- * <code>getCube()</code> method.)
+ * <p>A dimension may be either shared or private to a particular cube. The
+ * dimension object doesn't actually know which; {@link Schema} has a list of
+ * shared dimensions ({@link Schema#getSharedDimensions()}), and {@link Cube}
+ * has a list of dimensions ({@link Cube#getDimensionList()}).</p>
+ *
+ * <p>If a dimension is shared between several cubes, the {@link Dimension}
+ * objects which represent them may (or may not be) the same. (That's why
+ * there's no <code>getCube()</code> method.)</p>
  *
  * <p>Furthermore, since members are created by a {@link MemberReader} which
- * belongs to the {@link RolapHierarchy}, you will the members will be the same
+ * belongs to the {@link RolapHierarchy}, you know the members will be the same
  * too. For example, if you query <code>[Product].[Beer]</code> from the
  * <code>Sales</code> and <code>Warehouse</code> cubes, you will get the
  * same {@link RolapMember} object. But it will be wrapped in a different
- * {@link RolapCubeMember} object.
+ * {@link RolapCubeMember} object.</p>
  *
  * <p>NOTE: This class must not contain any references to XML (MondrianDef)
- * objects. Put those in {@link mondrian.rolap.RolapSchemaLoader}.
+ * objects. Put those in {@link mondrian.rolap.RolapSchemaLoader}.</p>
  *
  * @author jhyde
  * @since 10 August, 2001
@@ -76,8 +80,6 @@ class RolapDimension extends DimensionBase {
         boolean hanger,
         Larder larder)
     {
-        // todo: recognition of a time dimension should be improved
-        // allow multiple time dimensions
         super(
             name,
             visible,

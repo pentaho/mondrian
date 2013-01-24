@@ -752,6 +752,7 @@ length($0) > maxLineLength                      \
 && $0 !~ /\$Id: /                               \
 && $0 !~ /^import /                             \
 && $0 !~ /http:/                                \
+&& $0 !~ /https:/                               \
 && $0 !~ /\/\/ Expect "/                        \
 && s !~ /^ *(\+ |<< |: |\?)?string\)*[;,]?$/ {
     error( \
