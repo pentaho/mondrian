@@ -480,10 +480,11 @@ olap4j() {
     ;;
   esac
 
-  # Javadoc only runs clean under jdk16 or jdk17, because it depends
+  # Javadoc only runs clean under jdk16 or later, because it depends
   # on JDBC 4.0 or later.
   case "$jdk" in
-  (jdk1.6|openjdk1.6|jdk1.7|openjdk1.7|ibmjdk1.6) ant javadoc ;;
+  (jdk1.4|jdk1.5) ;;
+  (*) ant javadoc ;;
   esac
 }
 
@@ -771,10 +772,7 @@ doRandom() {
 }
 
 doQuick() {
-# doTest jdk1.8 mysql
-# doTest jdk1.7 mysql
-  doTest jdk1.6 mysql
-# doTest jdk1.5 mysql
+  doTest jdk1.7 mysql
 }
 
 # Runs the tests that are believed to be working.
@@ -862,8 +860,8 @@ doTests() {
 }
 
 checkJavadoc() {
-  export JAVA_HOME=$(chooseJavaHome jdk1.6)
-  export ANT_HOME=$(chooseAntHome jdk1.6)
+  export JAVA_HOME=$(chooseJavaHome jdk1.7)
+  export ANT_HOME=$(chooseAntHome jdk1.7)
 
   $ANT_HOME/bin/ant -emacs javadoc-strict 2>&1 > ant-javadoc.log
   cat ant-javadoc.log |
