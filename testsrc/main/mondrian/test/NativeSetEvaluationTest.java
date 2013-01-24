@@ -449,5 +449,64 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "Row #0: 82,248.42\n"
             + "Row #1: 67,609.82\n");
     }
+
+    public void testMultipleAllWithInExpr() {
+        //set up three hierarchies on same dimension
+        final String multiHierarchyCube =
+            " <Cube name=\"3StoreHCube\">\n"
+            + "    <Table name=\"sales_fact_1997\"/>\n"
+            + "    <Dimension name=\"AltStore\" foreignKey=\"store_id\">\n"
+            + "        <Hierarchy hasAll=\"true\" primaryKey=\"store_id\" allMemberName=\"All\">\n"
+            + "            <Table name=\"store\"/>\n"
+            + "            <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"false\"/>\n"
+            + "            <Level name=\"Store City\" column=\"store_city\" uniqueMembers=\"false\"/>\n"
+            + "        </Hierarchy>\n"
+            + "        <Hierarchy name=\"City\" hasAll=\"true\" primaryKey=\"store_id\" allMemberName=\"All\">\n"
+            + "            <Table name=\"store\"/>\n"
+            + "            <Level name=\"Store City\" column=\"store_city\" uniqueMembers=\"false\"/>\n"
+            + "            <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"false\"/>\n"
+            + "        </Hierarchy>\n"
+            + "        <Hierarchy name=\"State\" hasAll=\"true\" primaryKey=\"store_id\" allMemberName=\"All\">\n"
+            + "            <Table name=\"store\"/>\n"
+            + "            <Level name=\"Store State\" column=\"store_state\" uniqueMembers=\"false\"/>\n"
+            + "            <Level name=\"Store City\" column=\"store_city\" uniqueMembers=\"false\"/>\n"
+            + "            <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"false\"/>\n"
+            + "        </Hierarchy>\n"
+            + "    </Dimension>\n"
+            + "    <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>  \n"
+            + "    <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n"
+            + "    <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\" formatString=\"#,###.00\"/>\n"
+            + " </Cube>";
+        //slicer with multiple elements and two All members
+        final String mdx =
+            "with  member [AltStore].[AllSlicer] as 'Aggregate({[AltStore].[All]})'\n"
+            + "      member [AltStore.City].[SetSlicer] as 'Aggregate({[AltStore.City].[San Francisco], [AltStore.City].[San Diego]})'\n"
+            + "      member [AltStore.State].[AllSlicer] as 'Aggregate({[AltStore.State].[All]})'\n"
+            + "select {[Time].[1997].[Q1]} ON COLUMNS,\n"
+            + "     NON EMPTY TopCount(Product.[Product Name].Members, 2, Measures.[Store Sales]) ON ROWS\n"
+            + "from [3StoreHCube]\n"
+            + "where ([AltStore].[AllSlicer], [AltStore.City].[SetSlicer], [AltStore.State].[AllSlicer])\n";
+        String result =
+            "Axis #0:\n"
+            + "{[AltStore].[AllSlicer], [AltStore.City].[SetSlicer], [AltStore.State].[AllSlicer]}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Food].[Deli].[Meat].[Bologna].[Red Spade].[Red Spade Low Fat Bologna]}\n"
+            + "{[Product].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Mouthwash].[Hilltop].[Hilltop Mint Mouthwash]}\n"
+            + "Row #0: 51.60\n"
+            + "Row #1: 28.96\n";
+        TestContext context =
+            getTestContext().create(
+                null,
+                multiHierarchyCube,
+                null,
+                null,
+                null,
+                null);
+        context.assertQueryReturns(
+            mdx,
+            result);
+    }
 }
 // End NativeSetEvaluationTest.java

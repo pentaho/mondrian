@@ -153,16 +153,16 @@ public class SqlConstraintUtils {
                         List<RolapMember> slicerMembers =
                                 new ArrayList<RolapMember>(slicerMembersSet);
 
-                        // search and destroy [all]
-                        RolapMember allMember = null;
+                        //search and destroy [all](s)
+                        List<RolapMember> allMembers =
+                            new ArrayList<RolapMember>();
                         for (RolapMember slicerMember : slicerMembers) {
                             if (slicerMember.isAll()) {
-                                allMember = slicerMember;
-                                break;
+                                allMembers.add(slicerMember);
                             }
                         }
-                        if (allMember != null) {
-                            slicerMembers.remove(allMember);
+                        if (allMembers.size() > 0) {
+                            slicerMembers.removeAll(allMembers);
                         }
 
                         if (slicerMembers.size() > 0) {
