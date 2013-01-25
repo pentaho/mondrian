@@ -1499,7 +1499,9 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "  </Measure>\n"
             + " </Cube>\n"
             + "</Schema>\n");
-
+        if (!testContext.databaseIsValid()) {
+            return;
+        }
         testContext.assertQueryReturns(
             "WITH \n"
             + "SET [*NATIVE_CJ_SET] AS 'FILTER([*BASE_MEMBERS_MyProduct], NOT ISEMPTY ([Measures].[Sales]))' \n"
