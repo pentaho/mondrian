@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -63,6 +63,7 @@ public class SharedDimensionTest extends FoodMartTestCase {
         + "  <DimensionUsage name=\"Store Type\" source=\"Store Type\" foreignKey=\"store_id\" />\n"
         + "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
         + "  <DimensionUsage name=\"Buyer\" source=\"Store\" visible=\"true\" foreignKey=\"product_id\" highCardinality=\"false\"/>\n"
+        + "  <DimensionUsage name=\"BuyerTwo\" source=\"Store\" visible=\"true\" foreignKey=\"product_id\" highCardinality=\"false\"/>\n"
         + "  <DimensionUsage name=\"Store Size in SQFT\" source=\"Store Size in SQFT\"\n"
         + "      foreignKey=\"store_id\"/>\n"
         + "  <DimensionUsage name=\"Store Type\" source=\"Store Type\" foreignKey=\"store_id\"/>\n"
@@ -416,6 +417,18 @@ public class SharedDimensionTest extends FoodMartTestCase {
         getTestContextForSharedDimCubeAltSales().assertQueryReturns(
             queryIssue1243,
             resultIssue1243);
+    }
+
+    public void testMemberUniqueNameForSharedWithChangedName() {
+        getTestContextForSharedDimCubeAltSales().assertQueryReturns(
+            "with "
+            + " member [BuyerTwo].[Mexico].[calc] as '[BuyerTwo].[Mexico]' "
+            + "select [BuyerTwo].[Mexico].[calc] on 0 from [Alternate Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[BuyerTwo].[Mexico].[calc]}\n"
+            + "Row #0: 1,389\n");
     }
 
     private TestContext getTestContextForSharedDimCubeACubeB() {
