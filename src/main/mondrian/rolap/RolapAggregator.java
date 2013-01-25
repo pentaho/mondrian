@@ -131,7 +131,10 @@ public abstract class RolapAggregator
                     double minDouble = Double.MAX_VALUE;
                     for (Object data : rawData) {
                         if (data != null) {
-                            minDouble = Math.min(minDouble, (Double)data);
+                            minDouble =
+                                Math.min(
+                                    minDouble,
+                                    ((Number)data).doubleValue());
                         }
                     }
                     return minDouble == Double.MAX_VALUE
@@ -178,9 +181,13 @@ public abstract class RolapAggregator
                     double maxDouble = Double.MIN_VALUE;
                     for (Object data : rawData) {
                         if (data != null) {
-                            maxDouble = Math.max(maxDouble, (Double)data);
+                            maxDouble =
+                                Math.max(
+                                    maxDouble,
+                                    ((Number)data).doubleValue());
                         }
                     }
+
                     return maxDouble == Double.MIN_VALUE
                         ? null
                         : maxDouble;

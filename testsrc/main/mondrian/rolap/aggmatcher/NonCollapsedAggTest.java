@@ -379,5 +379,34 @@ public class NonCollapsedAggTest extends AggTableTestCase {
             + "Row #0: 31\n"
             + "Row #1: 121\n");
     }
+
+    /**
+     * Test case for cast exception on min/max of an integer measure
+     */
+    public void testMondrian1325() {
+        final String query1 =
+            "SELECT\n"
+            + "{ Measures.[Bogus Number]} on 0,\n"
+            + "non empty Descendants([Time].[Year].Members, Time.Month, SELF) on 1\n"
+            + "FROM [Sales]\n";
+
+        final String query2 =
+            "SELECT\n"
+            + "{ Measures.[Bogus Number]} on 0,\n"
+            + "non empty Descendants([Time].[Year].Members, Time.Month, SELF_AND_BEFORE) on 1\n"
+            + "FROM [Sales]";
+
+        TestContext context =
+            getTestContext().createSubstitutingCube(
+                "Sales",
+                null,
+                "<Measure name=\"Bogus Number\" column=\"promotion_id\" datatype=\"Numeric\" aggregator=\"max\" visible=\"true\"/>",
+                null,
+                null);
+
+        context.executeQuery(query1);
+        context.executeQuery(query2);
+    }
+
 }
 // End NonCollapsedAggTest.java
