@@ -9,6 +9,7 @@
 */
 package mondrian.test;
 
+import mondrian.olap.MondrianProperties;
 import mondrian.rolap.BatchTestCase;
 import mondrian.spi.Dialect.DatabaseProduct;
 
@@ -77,6 +78,27 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "    ISNULL(`product_class`.`product_subcategory`) ASC, `product_class`.`product_subcategory` ASC,\n"
             + "    ISNULL(`product`.`brand_name`) ASC, `product`.`brand_name` ASC,\n"
             + "    ISNULL(`product`.`product_name`) ASC, `product`.`product_name` ASC";
+
+        static final String mysqlAgg =
+            "select\n"
+            + "    `agg_c_14_sales_fact_1997`.`the_year` as `c0`,\n"
+            + "    `agg_c_14_sales_fact_1997`.`quarter` as `c1`,\n"
+            + "    `product`.`product_name` as `c2`,\n"
+            + "    sum(`agg_c_14_sales_fact_1997`.`store_sales`) as `m0`\n"
+            + "from\n"
+            + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
+            + "    `product` as `product`\n"
+            + "where\n"
+            + "    `agg_c_14_sales_fact_1997`.`the_year` = 1997\n"
+            + "and\n"
+            + "    `agg_c_14_sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+            + "and\n"
+            + "    `product`.`product_name` in ('Hermanos Green Pepper', 'Hilltop Mint Mouthwash')\n"
+            + "group by\n"
+            + "    `agg_c_14_sales_fact_1997`.`the_year`,\n"
+            + "    `agg_c_14_sales_fact_1997`.`quarter`,\n"
+            + "    `product`.`product_name`";
+
         static final String result =
             "Axis #0:\n"
             + "{[Time].[x]}\n"
@@ -102,30 +124,43 @@ public class NativeSetEvaluationTest extends BatchTestCase {
      * Simple enumerated aggregate.
      */
     public void testNativeTopCountWithAggFlatSet() {
-      final String mdx =
-          "with\n"
-          + "member Time.x as Aggregate({[Time].[1997].[Q1] , [Time].[1997].[Q2], [Time].[1997].[Q3]}, [Measures].[Store Sales])\n"
-          + "member Measures.x1 as ([Time].[1997].[Q1], [Measures].[Store Sales])\n"
-          + "member Measures.x2 as ([Time].[1997].[Q2], [Measures].[Store Sales])\n"
-          + "member Measures.x3 as ([Time].[1997].[Q3], [Measures].[Store Sales])\n"
-          + " set products as TopCount(Product.[Product Name].Members, 2, Measures.[Store Sales])\n"
-          + " SELECT NON EMPTY products ON 1,\n"
-          + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2, Measures.x3} ON 0\n"
-          + "FROM [Sales] where Time.x";
-      propSaver.set(propSaver.properties.GenerateFormattedSql, true);
-      SqlPattern mysqlPattern =
-          new SqlPattern(
-              DatabaseProduct.MYSQL,
-              NativeTopCountWithAgg.mysql,
-              NativeTopCountWithAgg.mysql);
-      assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
-      assertQueryReturns(mdx, NativeTopCountWithAgg.result);
+        final boolean useAgg =
+            MondrianProperties.instance().UseAggregates.get()
+            && MondrianProperties.instance().ReadAggregates.get();
+
+        final String mdx =
+            "with\n"
+            + "member Time.x as Aggregate({[Time].[1997].[Q1] , [Time].[1997].[Q2], [Time].[1997].[Q3]}, [Measures].[Store Sales])\n"
+            + "member Measures.x1 as ([Time].[1997].[Q1], [Measures].[Store Sales])\n"
+            + "member Measures.x2 as ([Time].[1997].[Q2], [Measures].[Store Sales])\n"
+            + "member Measures.x3 as ([Time].[1997].[Q3], [Measures].[Store Sales])\n"
+            + " set products as TopCount(Product.[Product Name].Members, 2, Measures.[Store Sales])\n"
+            + " SELECT NON EMPTY products ON 1,\n"
+            + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2, Measures.x3} ON 0\n"
+            + "FROM [Sales] where Time.x";
+
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+        SqlPattern mysqlPattern = useAgg?
+            new SqlPattern(
+                DatabaseProduct.MYSQL,
+                NativeTopCountWithAgg.mysqlAgg,
+                NativeTopCountWithAgg.mysqlAgg)
+            : new SqlPattern(
+                DatabaseProduct.MYSQL,
+                NativeTopCountWithAgg.mysql,
+                NativeTopCountWithAgg.mysql);
+        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        assertQueryReturns(mdx, NativeTopCountWithAgg.result);
     }
 
     /**
      * Same as above, but using a named set
      */
     public void testNativeTopCountWithAggMemberEnumSet() {
+        final boolean useAgg =
+            MondrianProperties.instance().UseAggregates.get()
+            && MondrianProperties.instance().ReadAggregates.get();
+
         final String mdx =
             "with set TO_AGGREGATE as '{[Time].[1997].[Q1] , [Time].[1997].[Q2], [Time].[1997].[Q3]}'\n"
             + "member Time.x as Aggregate(TO_AGGREGATE, [Measures].[Store Sales])\n"
@@ -138,8 +173,12 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "FROM [Sales] where Time.x";
 
         propSaver.set(propSaver.properties.GenerateFormattedSql, true);
-        SqlPattern mysqlPattern =
+        SqlPattern mysqlPattern = useAgg?
             new SqlPattern(
+                DatabaseProduct.MYSQL,
+                NativeTopCountWithAgg.mysqlAgg,
+                NativeTopCountWithAgg.mysqlAgg)
+            : new SqlPattern(
                 DatabaseProduct.MYSQL,
                 NativeTopCountWithAgg.mysql,
                 NativeTopCountWithAgg.mysql);
@@ -151,6 +190,9 @@ public class NativeSetEvaluationTest extends BatchTestCase {
      * Same as above, defined as a range.
      */
     public void testNativeTopCountWithAggMemberCMRange() {
+        final boolean useAgg =
+            MondrianProperties.instance().UseAggregates.get()
+            && MondrianProperties.instance().ReadAggregates.get();
         final String mdx =
             "with set TO_AGGREGATE as '([Time].[1997].[Q1] : [Time].[1997].[Q3])'\n"
             + "member Time.x as Aggregate(TO_AGGREGATE, [Measures].[Store Sales])\n"
@@ -163,8 +205,12 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + " FROM [Sales] where Time.x";
 
           propSaver.set(propSaver.properties.GenerateFormattedSql, true);
-          SqlPattern mysqlPattern =
+          SqlPattern mysqlPattern = useAgg?
               new SqlPattern(
+                  DatabaseProduct.MYSQL,
+                  NativeTopCountWithAgg.mysqlAgg,
+                  NativeTopCountWithAgg.mysqlAgg)
+              : new SqlPattern(
                   DatabaseProduct.MYSQL,
                   NativeTopCountWithAgg.mysql,
                   NativeTopCountWithAgg.mysql);
@@ -173,6 +219,10 @@ public class NativeSetEvaluationTest extends BatchTestCase {
     }
 
     public void testNativeFilterWithAggDescendants() {
+      final boolean useAgg =
+          MondrianProperties.instance().UseAggregates.get()
+          && MondrianProperties.instance().ReadAggregates.get();
+
       final String mdx =
           "with\n"
           + "  set QUARTERS as Descendants([Time].[1997], [Time].[Time].[Quarter])\n"
@@ -193,17 +243,25 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "from\n"
             + "    `product` as `product`,\n"
             + "    `product_class` as `product_class`,\n"
-            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
-            + "    `time_by_day` as `time_by_day`\n"
-            + "where\n"
-            + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
-            + "and\n"
-            + "    `sales_fact_1997`.`product_id` = `product`.`product_id`\n"
-            + "and\n"
-            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
-            + "and\n"
-            + "    `time_by_day`.`quarter` in ('Q1', 'Q2', 'Q3', 'Q4')"
-            + " and `time_by_day`.`the_year` = 1997\n" // slicer
+            + (useAgg?
+                "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`\n"
+                + "where\n"
+                + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+                + "and\n"
+                + "    `agg_c_14_sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+                + "and\n"
+                + "    `agg_c_14_sales_fact_1997`.`quarter` in ('Q1', 'Q2', 'Q3', 'Q4') and `agg_c_14_sales_fact_1997`.`the_year` = 1997\n"
+                : "    `sales_fact_1997` as `sales_fact_1997`,\n"
+                  + "    `time_by_day` as `time_by_day`\n"
+                  + "where\n"
+                  + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+                  + "and\n"
+                  + "    `sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+                  + "and\n"
+                  + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+                  + "and\n"
+                  + "    `time_by_day`.`quarter` in ('Q1', 'Q2', 'Q3', 'Q4')"
+                    + " and `time_by_day`.`the_year` = 1997\n")
             + "and\n"
             + "    (`product`.`brand_name` = 'Hermanos' and `product_class`.`product_subcategory` = 'Fresh Vegetables' and `product_class`.`product_category` = 'Vegetables' and `product_class`.`product_department` = 'Produce' and `product_class`.`product_family` = 'Food')\n"
             + "group by\n"
@@ -214,7 +272,9 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "    `product`.`brand_name`,\n"
             + "    `product`.`product_name`\n"
             + "having\n"
-            + "    (sum(`sales_fact_1997`.`store_sales`) > 700)\n" // filter exp
+            + (useAgg?
+                "    (sum(`agg_c_14_sales_fact_1997`.`store_sales`) > 700)\n"
+                : "    (sum(`sales_fact_1997`.`store_sales`) > 700)\n")
             + "order by\n"
             + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC,\n"
             + "    ISNULL(`product_class`.`product_department`) ASC, `product_class`.`product_department` ASC,\n"
