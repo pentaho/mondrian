@@ -5351,7 +5351,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "where ([Time].[1997].[Q1].[2] : [Time].[1997].[Q2].[5])";
 
         propSaver.set(propSaver.properties.GenerateFormattedSql, true);
-        final String mysqlNativeCrossJoinQuery =
+        String mysqlNativeCrossJoinQuery =
             "select\n"
             + "    `time_by_day`.`the_year` as `c0`,\n"
             + "    `time_by_day`.`quarter` as `c1`,\n"
@@ -5405,13 +5405,74 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `product_class`.`product_subcategory`,\n"
             + "    `product`.`brand_name`,\n"
             + "    `customer`.`customer_id`";
-
-        final String triggerSql =
+        String triggerSql =
             "select\n"
             + "    `time_by_day`.`the_year` as `c0`,\n"
             + "    `time_by_day`.`quarter` as `c1`,\n"
             + "    `time_by_day`.`month_of_year` as `c2`,\n"
             + "    `product_class`.`product_family` as `c3`,\n";
+
+        if (MondrianProperties.instance().UseAggregates.get()
+            && MondrianProperties.instance().ReadAggregates.get())
+        {
+            mysqlNativeCrossJoinQuery =
+                "select\n"
+                + "    `agg_c_14_sales_fact_1997`.`the_year` as `c0`,\n"
+                + "    `agg_c_14_sales_fact_1997`.`quarter` as `c1`,\n"
+                + "    `agg_c_14_sales_fact_1997`.`month_of_year` as `c2`,\n"
+                + "    `product_class`.`product_family` as `c3`,\n"
+                + "    `product_class`.`product_department` as `c4`,\n"
+                + "    `product_class`.`product_category` as `c5`,\n"
+                + "    `product_class`.`product_subcategory` as `c6`,\n"
+                + "    `product`.`brand_name` as `c7`,\n"
+                + "    `customer`.`customer_id` as `c8`,\n"
+                + "    sum(`agg_c_14_sales_fact_1997`.`unit_sales`) as `m0`\n"
+                + "from\n"
+                + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
+                + "    `product_class` as `product_class`,\n"
+                + "    `product` as `product`,\n"
+                + "    `customer` as `customer`\n"
+                + "where\n"
+                + "    `agg_c_14_sales_fact_1997`.`the_year` = 1997\n"
+                + "and\n"
+                + "    `agg_c_14_sales_fact_1997`.`quarter` in ('Q1', 'Q2')\n"
+                + "and\n"
+                + "    `agg_c_14_sales_fact_1997`.`month_of_year` in (2, 3, 4, 5)\n"
+                + "and\n"
+                + "    `agg_c_14_sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+                + "and\n"
+                + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+                + "and\n"
+                + "    `product_class`.`product_family` = 'Drink'\n"
+                + "and\n"
+                + "    `product_class`.`product_department` = 'Alcoholic Beverages'\n"
+                + "and\n"
+                + "    `product_class`.`product_category` = 'Beer and Wine'\n"
+                + "and\n"
+                + "    `product_class`.`product_subcategory` = 'Beer'\n"
+                + "and\n"
+                + "    `product`.`brand_name` = 'Portsmouth'\n"
+                + "and\n"
+                + "    `agg_c_14_sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+                + "and\n"
+                + "    `customer`.`customer_id` in (2295, 4099, 5219, 7100, 8617, 10250)\n"
+                + "group by\n"
+                + "    `agg_c_14_sales_fact_1997`.`the_year`,\n"
+                + "    `agg_c_14_sales_fact_1997`.`quarter`,\n"
+                + "    `agg_c_14_sales_fact_1997`.`month_of_year`,\n"
+                + "    `product_class`.`product_family`,\n"
+                + "    `product_class`.`product_department`,\n"
+                + "    `product_class`.`product_category`,\n"
+                + "    `product_class`.`product_subcategory`,\n"
+                + "    `product`.`brand_name`,\n"
+                + "    `customer`.`customer_id`";
+            triggerSql =
+                "select\n"
+                + "    `agg_c_14_sales_fact_1997`.`the_year` as `c0`,\n"
+                + "    `agg_c_14_sales_fact_1997`.`quarter` as `c1`,\n"
+                + "    `agg_c_14_sales_fact_1997`.`month_of_year` as `c2`,\n"
+                + "    `product_class`.`product_family` as `c3`,\n";
+        }
         SqlPattern mysqlPattern =
             new SqlPattern(
                 DatabaseProduct.MYSQL,
