@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -5394,7 +5394,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "and\n"
             + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
             + "and\n"
-            + "    `customer`.`customer_id` in (2295, 4099, 5219, 7100, 8617, 10250)\n"
+            + "    `customer`.`customer_id` = 5219\n"
             + "group by\n"
             + "    `time_by_day`.`the_year`,\n"
             + "    `time_by_day`.`quarter`,\n"
@@ -5455,7 +5455,7 @@ public class NonEmptyTest extends BatchTestCase {
                 + "and\n"
                 + "    `agg_c_14_sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
                 + "and\n"
-                + "    `customer`.`customer_id` in (2295, 4099, 5219, 7100, 8617, 10250)\n"
+                + "    `customer`.`customer_id` = 5219\n"
                 + "group by\n"
                 + "    `agg_c_14_sales_fact_1997`.`the_year`,\n"
                 + "    `agg_c_14_sales_fact_1997`.`quarter`,\n"

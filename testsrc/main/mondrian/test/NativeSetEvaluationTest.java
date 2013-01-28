@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2012 Pentaho and others
+// Copyright (C) 2012-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -61,7 +61,9 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
             // aggregate set
             + "and\n"
-            + "    `time_by_day`.`quarter` in ('Q1', 'Q2', 'Q3') and `time_by_day`.`the_year` = 1997\n"
+            +    "    `time_by_day`.`the_year` = 1997\n"
+            + "and\n"
+            + "    `time_by_day`.`quarter` in ('Q1', 'Q2', 'Q3')\n"
             + "group by\n"
             + "    `product_class`.`product_family`,\n"
             + "    `product_class`.`product_department`,\n"
@@ -98,7 +100,6 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "    `agg_c_14_sales_fact_1997`.`the_year`,\n"
             + "    `agg_c_14_sales_fact_1997`.`quarter`,\n"
             + "    `product`.`product_name`";
-
         static final String result =
             "Axis #0:\n"
             + "{[Time].[x]}\n"
@@ -222,7 +223,6 @@ public class NativeSetEvaluationTest extends BatchTestCase {
       final boolean useAgg =
           MondrianProperties.instance().UseAggregates.get()
           && MondrianProperties.instance().ReadAggregates.get();
-
       final String mdx =
           "with\n"
           + "  set QUARTERS as Descendants([Time].[1997], [Time].[Time].[Quarter])\n"
@@ -250,7 +250,9 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                 + "and\n"
                 + "    `agg_c_14_sales_fact_1997`.`product_id` = `product`.`product_id`\n"
                 + "and\n"
-                + "    `agg_c_14_sales_fact_1997`.`quarter` in ('Q1', 'Q2', 'Q3', 'Q4') and `agg_c_14_sales_fact_1997`.`the_year` = 1997\n"
+                + "    `agg_c_14_sales_fact_1997`.`the_year` = 1997\n"
+                + "and\n"
+                + "    `agg_c_14_sales_fact_1997`.`quarter` in ('Q1', 'Q2', 'Q3', 'Q4')\n"
                 : "    `sales_fact_1997` as `sales_fact_1997`,\n"
                   + "    `time_by_day` as `time_by_day`\n"
                   + "where\n"
@@ -260,8 +262,9 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                   + "and\n"
                   + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
                   + "and\n"
-                  + "    `time_by_day`.`quarter` in ('Q1', 'Q2', 'Q3', 'Q4')"
-                    + " and `time_by_day`.`the_year` = 1997\n")
+            +    "    `time_by_day`.`the_year` = 1997\n"
+            + "and\n"
+                  + "    `time_by_day`.`quarter` in ('Q1', 'Q2', 'Q3', 'Q4')\n")
             + "and\n"
             + "    (`product`.`brand_name` = 'Hermanos' and `product_class`.`product_subcategory` = 'Fresh Vegetables' and `product_class`.`product_category` = 'Vegetables' and `product_class`.`product_department` = 'Produce' and `product_class`.`product_family` = 'Food')\n"
             + "group by\n"
@@ -480,7 +483,9 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "and\n"
             + "    `agg_pl_01_sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
             + "and\n"
-            + "    `time_by_day`.`week_of_year` in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52) and `time_by_day`.`the_year` = 1997\n"
+            +    "    `time_by_day`.`the_year` = 1997\n"
+            + "and\n"
+            + "    `time_by_day`.`week_of_year` in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52)\n"
             + "group by\n"
             + "    `product_class`.`product_family`,\n"
             + "    `product_class`.`product_department`\n"
@@ -516,7 +521,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
      * two all members for same dimension in slicer
      */
     public void testMultipleAllWithInExpr() {
-        //set up three hierarchies on same dimension
+        // set up three hierarchies on same dimension
         final String multiHierarchyCube =
             " <Cube name=\"3StoreHCube\">\n"
             + " <Table name=\"sales_fact_1997\"/>\n"
@@ -542,7 +547,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + " <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n"
             + " <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\" formatString=\"#,###.00\"/>\n"
             + " </Cube>";
-        //slicer with multiple elements and two All members
+        // slicer with multiple elements and two All members
         final String mdx =
             "with member [AltStore].[AllSlicer] as 'Aggregate({[AltStore].[All]})'\n"
             + " member [AltStore.City].[SetSlicer] as 'Aggregate({[AltStore.City].[San Francisco], [AltStore.City].[San Diego]})'\n"
@@ -573,5 +578,255 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             mdx,
             result);
     }
+
+
+    public void testCompoundSlicerNativeEval() {
+        // MONDRIAN-1404
+        propSaver.set(
+            propSaver.properties.GenerateFormattedSql,
+            true);
+        propSaver.set(
+            propSaver.properties.UseAggregates,
+            false);
+        final String mdx =
+            "select NON EMPTY [Customers].[USA].[CA].[San Francisco].Children ON COLUMNS \n"
+            + "from [Sales] \n"
+            + "where ([Time].[1997].[Q1] : [Time].[1997].[Q3]) \n";
+
+        final String mysql =
+            "select\n"
+            + "    `customer`.`customer_id` as `c0`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c1`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c2`,\n"
+            + "    `customer`.`gender` as `c3`,\n"
+            + "    `customer`.`marital_status` as `c4`,\n"
+            + "    `customer`.`education` as `c5`,\n"
+            + "    `customer`.`yearly_income` as `c6`\n"
+            + "from\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `customer` as `customer`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            +    "    `time_by_day`.`the_year` = 1997\n"
+            + "and\n"
+            + "    `time_by_day`.`quarter` in ('Q1', 'Q2', 'Q3')\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    `customer`.`state_province` = 'CA'\n"
+            + "and\n"
+            + "    `customer`.`city` = 'San Francisco'\n"
+            + "group by\n"
+            + "    `customer`.`customer_id`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`),\n"
+            + "    `customer`.`gender`,\n"
+            + "    `customer`.`marital_status`,\n"
+            + "    `customer`.`education`,\n"
+            + "    `customer`.`yearly_income`\n"
+            + "order by\n"
+            + "    ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC";
+        SqlPattern mysqlPattern =
+            new SqlPattern(
+                DatabaseProduct.MYSQL,
+                mysql,
+                mysql);
+
+        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+
+        assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[1997].[Q2]}\n"
+            + "{[Time].[1997].[Q3]}\n"
+            + "Axis #1:\n"
+            + "{[Customers].[USA].[CA].[San Francisco].[Dennis Messer]}\n"
+            + "{[Customers].[USA].[CA].[San Francisco].[Esther Logsdon]}\n"
+            + "{[Customers].[USA].[CA].[San Francisco].[Karen Moreland]}\n"
+            + "{[Customers].[USA].[CA].[San Francisco].[Kent Brant]}\n"
+            + "{[Customers].[USA].[CA].[San Francisco].[Louise Wakefield]}\n"
+            + "{[Customers].[USA].[CA].[San Francisco].[Reta Mikalas]}\n"
+            + "{[Customers].[USA].[CA].[San Francisco].[Tammy Mihalek]}\n"
+            + "Row #0: 8\n"
+            + "Row #0: 3\n"
+            + "Row #0: 13\n"
+            + "Row #0: 5\n"
+            + "Row #0: 13\n"
+            + "Row #0: 10\n"
+            + "Row #0: 1\n");
+    }
+
+    public void testSnowflakeDimInSlicerBug1407() {
+        // MONDRIAN-1407
+        propSaver.set(
+            propSaver.properties.GenerateFormattedSql,
+            true);
+        propSaver.set(
+            propSaver.properties.UseAggregates,
+            false);
+        final String mdx =
+            "select TopCount([Customers].[Name].members, 5, measures.[unit sales]) ON COLUMNS \n"
+            + "  from sales where \n"
+            + " { [Time].[1997]} * {[Product].[All Products].[Drink], [Product].[All Products].[Food] }";
+
+        final String mysql =
+            "select\n"
+            + "    `customer`.`country` as `c0`,\n"
+            + "    `customer`.`state_province` as `c1`,\n"
+            + "    `customer`.`city` as `c2`,\n"
+            + "    `customer`.`customer_id` as `c3`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c4`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c5`,\n"
+            + "    `customer`.`gender` as `c6`,\n"
+            + "    `customer`.`marital_status` as `c7`,\n"
+            + "    `customer`.`education` as `c8`,\n"
+            + "    `customer`.`yearly_income` as `c9`,\n"
+            + "    sum(`sales_fact_1997`.`unit_sales`) as `c10`\n"
+            + "from\n"
+            + "    `customer` as `customer`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `product_class` as `product_class`,\n"
+            + "    `product` as `product`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `time_by_day`.`the_year` = 1997\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+            + "and\n"
+            + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+            + "and\n"
+            + "    `product_class`.`product_family` in ('Drink', 'Food')\n"
+            + "group by\n"
+            + "    `customer`.`country`,\n"
+            + "    `customer`.`state_province`,\n"
+            + "    `customer`.`city`,\n"
+            + "    `customer`.`customer_id`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`),\n"
+            + "    `customer`.`gender`,\n"
+            + "    `customer`.`marital_status`,\n"
+            + "    `customer`.`education`,\n"
+            + "    `customer`.`yearly_income`\n"
+            + "order by\n"
+            + "    `c10` DESC,\n"
+            + "    ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC,\n"
+            + "    ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC,\n"
+            + "    ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC,\n"
+            + "    ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC";
+        SqlPattern mysqlPattern =
+            new SqlPattern(
+                DatabaseProduct.MYSQL,
+                mysql,
+                mysql);
+
+        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{[Time].[1997], [Product].[Drink]}\n"
+            + "{[Time].[1997], [Product].[Food]}\n"
+            + "Axis #1:\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Mary Francis Benigar]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[James Horvat]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Wildon Cameron]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Ida Rodriguez]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Joann Mramor]}\n"
+            + "Row #0: 427\n"
+            + "Row #0: 384\n"
+            + "Row #0: 366\n"
+            + "Row #0: 357\n"
+            + "Row #0: 324\n");
+    }
+
+    public void testCompoundSlicerNonUniqueMemberNames1413() {
+        // MONDRIAN-1413
+        propSaver.set(
+            propSaver.properties.GenerateFormattedSql,
+            true);
+        propSaver.set(
+            propSaver.properties.UseAggregates,
+            false);
+        final String mdx =
+            "select TopCount([Customers].[Name].members, 5, "
+            + "measures.[unit sales]) ON COLUMNS \n"
+            + "  from sales where \n"
+            + "  {[Time.Weekly].[1997].[48].[17] :[Time.Weekly].[1997].[48].[20]} ";
+
+        final String mysql =
+            "select\n"
+            + "    `customer`.`country` as `c0`,\n"
+            + "    `customer`.`state_province` as `c1`,\n"
+            + "    `customer`.`city` as `c2`,\n"
+            + "    `customer`.`customer_id` as `c3`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c4`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c5`,\n"
+            + "    `customer`.`gender` as `c6`,\n"
+            + "    `customer`.`marital_status` as `c7`,\n"
+            + "    `customer`.`education` as `c8`,\n"
+            + "    `customer`.`yearly_income` as `c9`,\n"
+            + "    sum(`sales_fact_1997`.`unit_sales`) as `c10`\n"
+            + "from\n"
+            + "    `customer` as `customer`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `time_by_day` as `time_by_day`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `time_by_day`.`the_year` = 1997\n"
+            + "and\n"
+            + "    `time_by_day`.`week_of_year` = 48\n"
+            + "and\n"
+            + "    `time_by_day`.`day_of_month` in (17, 18, 19, 20)\n"
+            + "group by\n"
+            + "    `customer`.`country`,\n"
+            + "    `customer`.`state_province`,\n"
+            + "    `customer`.`city`,\n"
+            + "    `customer`.`customer_id`,\n"
+            + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`),\n"
+            + "    `customer`.`gender`,\n"
+            + "    `customer`.`marital_status`,\n"
+            + "    `customer`.`education`,\n"
+            + "    `customer`.`yearly_income`\n"
+            + "order by\n"
+            + "    `c10` DESC,\n"
+            + "    ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC,\n"
+            + "    ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC,\n"
+            + "    ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC,\n"
+            + "    ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC";
+        SqlPattern mysqlPattern =
+            new SqlPattern(
+                DatabaseProduct.MYSQL,
+                mysql,
+                mysql);
+        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+
+        assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{[Time].[Weekly].[1997].[48].[17]}\n"
+            + "{[Time].[Weekly].[1997].[48].[18]}\n"
+            + "{[Time].[Weekly].[1997].[48].[19]}\n"
+            + "{[Time].[Weekly].[1997].[48].[20]}\n"
+            + "Axis #1:\n"
+            + "{[Customers].[USA].[WA].[Yakima].[Joanne Skuderna]}\n"
+            + "{[Customers].[USA].[WA].[Yakima].[Paula Stevens]}\n"
+            + "{[Customers].[USA].[WA].[Everett].[Sarah Miller]}\n"
+            + "{[Customers].[USA].[OR].[Albany].[Kathryn Chamberlin]}\n"
+            + "{[Customers].[USA].[OR].[Salem].[Scott Pavicich]}\n"
+            + "Row #0: 37\n"
+            + "Row #0: 32\n"
+            + "Row #0: 29\n"
+            + "Row #0: 28\n"
+            + "Row #0: 28\n");
+    }
+
+
 }
 // End NativeSetEvaluationTest.java
