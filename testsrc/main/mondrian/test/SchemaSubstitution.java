@@ -194,6 +194,19 @@ public class SchemaSubstitution {
         };
     }
 
+    public static Util.Function1<String, String> insertSharedDimension(
+        final String sharedDimension)
+    {
+        return new Util.Function1<String, String>() {
+            public String apply(String schema) {
+                int i = schema.indexOf("</PhysicalSchema>");
+                return schema.substring(0, i + 17)
+                       + sharedDimension
+                       + schema.substring(i + 17);
+            }
+        };
+    }
+
     public static Util.Function1<String, String> replacePhysSchema(
         final String physSchema)
     {

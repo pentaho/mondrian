@@ -3147,6 +3147,12 @@ public class TestContext {
             SchemaSubstitution.insertRole(roleDef));
     }
 
+    public TestContext insertSharedDimension(String sharedDimension) {
+        return withSubstitution(
+            SchemaSubstitution.insertSharedDimension(sharedDimension));
+    }
+
+
     public final TestContext replacePhysSchema(final String physSchema) {
         return withSubstitution(
             SchemaSubstitution.replacePhysSchema(physSchema));

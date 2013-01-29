@@ -4,13 +4,14 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
+import mondrian.util.Bug;
 
 /**
  * Unit test for shared dimensions.
@@ -19,64 +20,125 @@ import mondrian.test.TestContext;
  */
 public class SharedDimensionTest extends FoodMartTestCase {
 
+    private static final String employeeManager =
+        "  <Table name='employee' alias='employee_manager'>\n"
+        + "   <Key name='key$0'>\n"
+        + "    <Column table='employee_manager' name='employee_id'/>\n"
+        + "   </Key>\n"
+        + "  </Table>\n"
+        + "  <Link source='employee_manager' target='employee' key='key$0'>\n"
+        + "   <ForeignKey>\n"
+        + "    <Column table='employee' name='supervisor_id'/>\n"
+        + "   </ForeignKey>\n"
+        + "  </Link>\n";
+
     private static final String sharedDimension =
-        "<Dimension name=\"Employee\">\n"
-        + "  <Hierarchy hasAll=\"true\" primaryKey=\"employee_id\" primaryKeyTable=\"employee\">\n"
-        + "    <Join leftKey=\"supervisor_id\" rightKey=\"employee_id\">\n"
-        + "      <Table name=\"employee\" alias=\"employee\" />\n"
-        + "      <Table name=\"employee\" alias=\"employee_manager\" />\n"
-        + "    </Join>\n"
-        + "    <Level name=\"Role\" table=\"employee_manager\" column=\"management_role\" uniqueMembers=\"true\"/>\n"
-        + "    <Level name=\"Title\" table=\"employee_manager\" column=\"position_title\" uniqueMembers=\"false\"/>\n"
-        + "  </Hierarchy>\n"
-        + "</Dimension>";
+        " <Dimension name='Employee' visible='true' key='$Id' table='employee_manager'>\n"
+        + "  <Hierarchies>\n"
+        + "   <Hierarchy name='Employee' visible='true' hasAll='true'>\n"
+        + "    <Level attribute='Role'/>\n"
+        + "    <Level attribute='Title'/>\n"
+        + "   </Hierarchy>\n"
+        + "  </Hierarchies>\n"
+        + "  <Attributes>\n"
+        + "   <Attribute name='Role' hasHierarchy='false' keyColumn='management_role'/>\n"
+        + "   <Attribute name='Title' hasHierarchy='false'>\n"
+        + "    <Key>\n"
+        + "     <Column name='management_role'/>\n"
+        + "     <Column name='position_title'/>\n"
+        + "    </Key>\n"
+        + "    <Name>\n"
+        + "     <Column name='position_title'/>\n"
+        + "    </Name>\n"
+        + "   </Attribute>\n"
+        + "   <Attribute name='$Id' table='employee' keyColumn='employee_id' hasHierarchy='false'/>\n"
+        + "  </Attributes>\n"
+        + " </Dimension>\n"
+        + " <Dimension name='Store Type' table='store' visible='true' key='$Id'>\n"
+        + "  <Hierarchies>\n"
+        + "   <Hierarchy name='Store Type' visible='true' hasAll='true'>\n"
+        + "    <Level name='Store Type' visible='true' attribute='Store Type'>\n"
+        + "    </Level>\n"
+        + "   </Hierarchy>\n"
+        + "  </Hierarchies>\n"
+        + "  <Attributes>\n"
+        + "   <Attribute name='Store Type' hasHierarchy='false' keyColumn='store_type'/>\n"
+        + "   <Attribute name='$Id' keyColumn='store_id' hasHierarchy='false'>\n"
+        + "   </Attribute>\n"
+        + "  </Attributes>\n"
+        + " </Dimension>\n";
+
 
     // Base Cube A: use product_id as foreign key for Employee diemnsion
     // because there exist rows satidfying the join condition
     // "employee.employee_id = inventory_fact_1997.product_id"
     private static final String cubeA =
-        "<Cube name=\"Employee Store Analysis A\">\n"
-        + "  <Table name=\"inventory_fact_1997\" alias=\"inventory\" />\n"
-        + "  <DimensionUsage name=\"Employee\" source=\"Employee\" foreignKey=\"product_id\" />\n"
-        + "  <DimensionUsage name=\"Store Type\" source=\"Store Type\" foreignKey=\"warehouse_id\" />\n"
-        + "  <Measure name=\"Employee Store Sales\" aggregator=\"sum\" formatString=\"$#,##0\" column=\"warehouse_sales\" />\n"
-        + "  <Measure name=\"Employee Store Cost\" aggregator=\"sum\" formatString=\"$#,##0\" column=\"warehouse_cost\" />\n"
-        + "</Cube>";
+        " <Cube name='Employee Store Analysis A'>\n"
+        + "  <Dimensions>\n"
+        + "   <Dimension name='Employee' source='Employee'/>\n"
+        + "   <Dimension name='Store Type' source='Store Type'/>\n"
+        + "  </Dimensions>\n"
+        + "  <MeasureGroups>\n"
+        + "   <MeasureGroup name='Employee Store Analysis A' type='fact' table='inventory_fact_1997'>\n"
+        + "    <Measures>\n"
+        + "     <Measure name='Employee Store Sales' formatString='$#,##0' aggregator='sum' column='warehouse_sales'/>\n"
+        + "     <Measure name='Employee Store Cost' formatString='$#,##0' aggregator='sum' column='warehouse_cost'/>\n"
+        + "   </Measures>"
+        + "    <DimensionLinks>\n"
+        + "     <ForeignKeyLink dimension='Employee' foreignKeyColumn='product_id'/>\n"
+        + "     <ForeignKeyLink dimension='Store Type' foreignKeyColumn='warehouse_id'/>\n"
+        + "    </DimensionLinks>\n"
+        + "   </MeasureGroup>\n"
+        + "  </MeasureGroups>\n"
+        + " </Cube>\n";
 
     // Base Cube B: use time_id as foreign key for Employee dimension
     // because there exist rows satisfying the join condition
     // "employee.employee_id = inventory_fact_1997.time_id"
     private static final String cubeB =
-        "<Cube name=\"Employee Store Analysis B\">\n"
-        + "  <Table name=\"inventory_fact_1997\" alias=\"inventory\" />\n"
-        + "  <DimensionUsage name=\"Employee\" source=\"Employee\" foreignKey=\"time_id\" />\n"
-        + "  <DimensionUsage name=\"Store Type\" source=\"Store Type\" foreignKey=\"store_id\" />\n"
-        + "  <Measure name=\"Employee Store Sales\" aggregator=\"sum\" formatString=\"$#,##0\" column=\"warehouse_sales\" />\n"
-        + "  <Measure name=\"Employee Store Cost\" aggregator=\"sum\" formatString=\"$#,##0\" column=\"warehouse_cost\" />\n"
-        + "</Cube>";
+        " <Cube name='Employee Store Analysis B'>\n"
+        + "  <Dimensions>\n"
+        + "   <Dimension name='Employee' source='Employee'/>\n"
+        + "   <Dimension name='Store Type' source='Store Type'/>"
+        + "  </Dimensions>\n"
+        + "  <MeasureGroups>\n"
+        + "   <MeasureGroup name='Employee Store Analysis B' type='fact' table='inventory_fact_1997'>\n"
+        + "    <Measures>\n"
+        + "     <Measure name='Employee Store Sales' formatString='$#,##0' aggregator='sum' column='warehouse_sales'/>\n"
+        + "     <Measure name='Employee Store Cost' formatString='$#,##0' aggregator='sum' column='warehouse_cost'/>\n"
+        + "    </Measures>\n"
+        + "    <DimensionLinks>\n"
+        + "     <ForeignKeyLink dimension='Employee' foreignKeyColumn='time_id'/>\n"
+        + "     <ForeignKeyLink dimension='Store Type' foreignKeyColumn='store_id'/>\n"
+        + "    </DimensionLinks>\n"
+        + "   </MeasureGroup>\n"
+        + "  </MeasureGroups>\n"
+        + " </Cube>\n";
 
     // Some product_id's match store_id. Used to test MONDRIAN-1243
     // without having to alter fact table.
     private static final String cubeAltSales =
-        "<Cube name=\"Alternate Sales\">\n"
-        + "  <Table name=\"sales_fact_1997\" alias=\"inventory\" />\n"
-        + "  <DimensionUsage name=\"Store Type\" source=\"Store Type\" foreignKey=\"store_id\" />\n"
-        + "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
-        + "  <DimensionUsage name=\"Buyer\" source=\"Store\" visible=\"true\" foreignKey=\"product_id\" highCardinality=\"false\"/>\n"
-        + "  <DimensionUsage name=\"Store Size in SQFT\" source=\"Store Size in SQFT\"\n"
-        + "      foreignKey=\"store_id\"/>\n"
-        + "  <DimensionUsage name=\"Store Type\" source=\"Store Type\" foreignKey=\"store_id\"/>\n"
-        + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
-        + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n"
-        + "</Cube>";
-
-    private static final String virtualCube =
-        "<VirtualCube name=\"Employee Store Analysis\">\n"
-        + "  <VirtualCubeDimension name=\"Employee\"/>\n"
-        + "  <VirtualCubeDimension name=\"Store Type\"/>\n"
-        + "  <VirtualCubeMeasure cubeName=\"Employee Store Analysis A\" name=\"[Measures].[Employee Store Sales]\"/>\n"
-        + "  <VirtualCubeMeasure cubeName=\"Employee Store Analysis B\" name=\"[Measures].[Employee Store Cost]\"/>\n"
-        + "</VirtualCube>";
+        " <Cube name='Alternate Sales'>\n"
+        + "  <Dimensions>\n"
+        + "   <Dimension name='Store' source='Store'/>\n"
+        + "   <Dimension name='Buyer' source='Store'/>\n"
+        + "   <Dimension name='BuyerTwo' source='Store'/>\n"
+        + "   <Dimension name='Time' source='Time'/>\n"
+        + "  </Dimensions>\n"
+        + "  <MeasureGroups>\n"
+        + "   <MeasureGroup name='Alternate Sales' type='fact' table='sales_fact_1997'>\n"
+        + "    <Measures>\n"
+        + "     <Measure name='Unit Sales' formatString='Standard' aggregator='sum' column='unit_sales'/>\n"
+        + "    </Measures>\n"
+        + "    <DimensionLinks>\n"
+        + "     <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>\n"
+        + "     <ForeignKeyLink dimension='Buyer' foreignKeyColumn='product_id'/>\n"
+        + "     <ForeignKeyLink dimension='BuyerTwo' foreignKeyColumn='product_id'/>\n"
+        + "     <ForeignKeyLink dimension='Time' foreignKeyColumn='time_id'/>\n"
+        + "    </DimensionLinks>\n"
+        + "   </MeasureGroup>\n"
+        + "  </MeasureGroups>\n"
+        + " </Cube>\n";
 
     private static final String queryCubeA =
         "with\n"
@@ -105,20 +167,6 @@ public class SharedDimensionTest extends FoodMartTestCase {
         + "  NON EMPTY Generate([*NATIVE_CJ_SET], {([Employee].CurrentMember, [Store Type].CurrentMember)}) ON ROWS\n"
         + "from\n"
         + "  [Employee Store Analysis B]";
-
-    private static final String queryVirtualCube =
-        "with\n"
-        + "  set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Employee], [*BASE_MEMBERS_Store Type])'\n"
-        + "  set [*BASE_MEMBERS_Measures] as '{[Measures].[Employee Store Sales], [Measures].[Employee Store Cost]}'\n"
-        + "  set [*BASE_MEMBERS_Employee] as '[Employee].[Role].Members'\n"
-        + "  set [*NATIVE_MEMBERS_Employee] as 'Generate([*NATIVE_CJ_SET], {[Employee].CurrentMember})'\n"
-        + "  set [*BASE_MEMBERS_Store Type] as '[Store].[Store Type].[Store Type].Members'\n"
-        + "  set [*NATIVE_MEMBERS_Store Type] as 'Generate([*NATIVE_CJ_SET], {[Store].[Store Type].CurrentMember})'\n"
-        + "select\n"
-        + "  [*BASE_MEMBERS_Measures] ON COLUMNS,\n"
-        + "  NON EMPTY Generate([*NATIVE_CJ_SET], {([Employee].CurrentMember, [Store].[Store Type].CurrentMember)}) ON ROWS\n"
-        + "from\n"
-        + "  [Employee Store Analysis]";
 
     private static final String queryStoreCube =
         "with set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Store Type], [*BASE_MEMBERS_Store])'\n"
@@ -152,18 +200,18 @@ public class SharedDimensionTest extends FoodMartTestCase {
         + "{[Measures].[Employee Store Sales]}\n"
         + "{[Measures].[Employee Store Cost]}\n"
         + "Axis #2:\n"
-        + "{[Employee].[Middle Management], [Store].[Store Type].[Deluxe Supermarket]}\n"
-        + "{[Employee].[Middle Management], [Store].[Store Type].[Supermarket]}\n"
-        + "{[Employee].[Senior Management], [Store].[Store Type].[Deluxe Supermarket]}\n"
-        + "{[Employee].[Senior Management], [Store].[Store Type].[Gourmet Supermarket]}\n"
-        + "{[Employee].[Senior Management], [Store].[Store Type].[Mid-Size Grocery]}\n"
-        + "{[Employee].[Senior Management], [Store].[Store Type].[Small Grocery]}\n"
-        + "{[Employee].[Senior Management], [Store].[Store Type].[Supermarket]}\n"
-        + "{[Employee].[Store Management], [Store].[Store Type].[Deluxe Supermarket]}\n"
-        + "{[Employee].[Store Management], [Store].[Store Type].[Gourmet Supermarket]}\n"
-        + "{[Employee].[Store Management], [Store].[Store Type].[Mid-Size Grocery]}\n"
-        + "{[Employee].[Store Management], [Store].[Store Type].[Small Grocery]}\n"
-        + "{[Employee].[Store Management], [Store].[Store Type].[Supermarket]}\n"
+        + "{[Employee].[Employee].[Middle Management], [Store Type].[Store Type].[Deluxe Supermarket]}\n"
+        + "{[Employee].[Employee].[Middle Management], [Store Type].[Store Type].[Supermarket]}\n"
+        + "{[Employee].[Employee].[Senior Management], [Store Type].[Store Type].[Deluxe Supermarket]}\n"
+        + "{[Employee].[Employee].[Senior Management], [Store Type].[Store Type].[Gourmet Supermarket]}\n"
+        + "{[Employee].[Employee].[Senior Management], [Store Type].[Store Type].[Mid-Size Grocery]}\n"
+        + "{[Employee].[Employee].[Senior Management], [Store Type].[Store Type].[Small Grocery]}\n"
+        + "{[Employee].[Employee].[Senior Management], [Store Type].[Store Type].[Supermarket]}\n"
+        + "{[Employee].[Employee].[Store Management], [Store Type].[Store Type].[Deluxe Supermarket]}\n"
+        + "{[Employee].[Employee].[Store Management], [Store Type].[Store Type].[Gourmet Supermarket]}\n"
+        + "{[Employee].[Employee].[Store Management], [Store Type].[Store Type].[Mid-Size Grocery]}\n"
+        + "{[Employee].[Employee].[Store Management], [Store Type].[Store Type].[Small Grocery]}\n"
+        + "{[Employee].[Employee].[Store Management], [Store Type].[Store Type].[Supermarket]}\n"
         + "Row #0: $200\n"
         + "Row #0: $87\n"
         + "Row #1: $161\n"
@@ -211,50 +259,6 @@ public class SharedDimensionTest extends FoodMartTestCase {
         + "Row #3: $2,714\n"
         + "Row #4: $108,610\n"
         + "Row #4: $49,178\n";
-
-    private static final String resultVirtualCube =
-        "Axis #0:\n"
-        + "{}\n"
-        + "Axis #1:\n"
-        + "{[Measures].[Employee Store Sales]}\n"
-        + "{[Measures].[Employee Store Cost]}\n"
-        + "Axis #2:\n"
-        + "{[Employee].[Employee].[Middle Management], [Store].[Store Type].[Deluxe Supermarket]}\n"
-        + "{[Employee].[Employee].[Middle Management], [Store].[Store Type].[Supermarket]}\n"
-        + "{[Employee].[Employee].[Senior Management], [Store].[Store Type].[Deluxe Supermarket]}\n"
-        + "{[Employee].[Employee].[Senior Management], [Store].[Store Type].[Gourmet Supermarket]}\n"
-        + "{[Employee].[Employee].[Senior Management], [Store].[Store Type].[Mid-Size Grocery]}\n"
-        + "{[Employee].[Employee].[Senior Management], [Store].[Store Type].[Small Grocery]}\n"
-        + "{[Employee].[Employee].[Senior Management], [Store].[Store Type].[Supermarket]}\n"
-        + "{[Employee].[Employee].[Store Management], [Store].[Store Type].[Deluxe Supermarket]}\n"
-        + "{[Employee].[Employee].[Store Management], [Store].[Store Type].[Gourmet Supermarket]}\n"
-        + "{[Employee].[Employee].[Store Management], [Store].[Store Type].[Mid-Size Grocery]}\n"
-        + "{[Employee].[Employee].[Store Management], [Store].[Store Type].[Small Grocery]}\n"
-        + "{[Employee].[Employee].[Store Management], [Store].[Store Type].[Supermarket]}\n"
-        + "Row #0: $200\n"
-        + "Row #0: \n"
-        + "Row #1: $161\n"
-        + "Row #1: \n"
-        + "Row #2: $1,721\n"
-        + "Row #2: \n"
-        + "Row #3: $261\n"
-        + "Row #3: \n"
-        + "Row #4: $257\n"
-        + "Row #4: \n"
-        + "Row #5: $196\n"
-        + "Row #5: \n"
-        + "Row #6: $3,993\n"
-        + "Row #6: \n"
-        + "Row #7: $45,014\n"
-        + "Row #7: $28,093\n"
-        + "Row #8: $7,231\n"
-        + "Row #8: $4,482\n"
-        + "Row #9: $8,171\n"
-        + "Row #9: $4,576\n"
-        + "Row #10: $4,471\n"
-        + "Row #10: $2,714\n"
-        + "Row #11: $77,236\n"
-        + "Row #11: $49,178\n";
 
     // This result is actually incorrect for native evaluation.
     // Keep the test case here to test the SQL generation.
@@ -337,6 +341,9 @@ public class SharedDimensionTest extends FoodMartTestCase {
     }
 
     public void testB() {
+        if (!Bug.BugMondrian1324Fixed) {
+            return;
+        }
         // Schema has two cubes sharing a dimension.
         // Query from the second cube.
         TestContext testContext = getTestContextForSharedDimCubeACubeB();
@@ -344,24 +351,10 @@ public class SharedDimensionTest extends FoodMartTestCase {
         testContext.assertQueryReturns(queryCubeB, resultCubeB);
     }
 
-    public void testVirtualCube() {
-        // Schema has two cubes sharing a dimension, and a virtual cube built
-        // over these two cubes.
-        // Query from the virtual cube.
-
-        TestContext testContext =
-            TestContext.instance().legacy().create(
-                sharedDimension,
-                cubeA + "\n" + cubeB,
-                virtualCube,
-                null,
-                null,
-                null);
-
-        testContext.assertQueryReturns(queryVirtualCube, resultVirtualCube);
-    }
-
     public void testNECJMemberList() {
+        if (!Bug.BugMondrian1324Fixed) {
+            return;
+        }
         // Schema has two cubes sharing a dimension.
         // Query from the second cube.
         TestContext testContext = getTestContextForSharedDimCubeACubeB();
@@ -372,6 +365,9 @@ public class SharedDimensionTest extends FoodMartTestCase {
     }
 
     public void testNECJMultiLevelMemberList() {
+        if (!Bug.BugMondrian1324Fixed) {
+            return;
+        }
         // Schema has two cubes sharing a dimension.
         // Query from the first cube.
         // This is a case where not using alias not only affects performance,
@@ -407,24 +403,28 @@ public class SharedDimensionTest extends FoodMartTestCase {
         getTestContextForSharedDimCubeAltSales().executeQuery(queryIssue1243);
     }
 
+    public void testMemberUniqueNameForSharedWithChangedName() {
+        getTestContextForSharedDimCubeAltSales().assertQueryReturns(
+            "with "
+            + " member [BuyerTwo].[Stores].[Mexico].[calc] as '[BuyerTwo].[Stores].[Mexico]' "
+            + "select [BuyerTwo].[Stores].[calc] on 0 from [Alternate Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[BuyerTwo].[Stores].[Mexico].[calc]}\n"
+            + "Row #0: 1,389\n");
+    }
+
     private TestContext getTestContextForSharedDimCubeACubeB() {
-        return TestContext.instance().create(
-            sharedDimension,
-            cubeA + "\n" + cubeB,
-            null,
-            null,
-            null,
-            null);
+        return TestContext.instance()
+            .insertPhysTable(employeeManager)
+            .insertCube(cubeA)
+            .insertCube(cubeB)
+            .insertSharedDimension(sharedDimension);
     }
 
     private TestContext getTestContextForSharedDimCubeAltSales() {
-        return getTestContext().create(
-            null,
-            cubeAltSales,
-            null,
-            null,
-            null,
-            null);
+        return getTestContext().insertCube(cubeAltSales);
     }
 }
 

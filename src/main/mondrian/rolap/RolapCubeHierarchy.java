@@ -305,7 +305,9 @@ public class RolapCubeHierarchy extends RolapHierarchy {
      * @return Translated unique name
      */
     final String convertMemberName(String memberUniqueName) {
-        if (removePrefixLength > 0) {
+        if (removePrefixLength > 0
+            && !memberUniqueName.startsWith(uniqueName))
+        {
             return uniqueName + memberUniqueName.substring(removePrefixLength);
         }
         return memberUniqueName;
