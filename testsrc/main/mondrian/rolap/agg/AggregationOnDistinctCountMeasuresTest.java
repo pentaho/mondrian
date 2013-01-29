@@ -22,6 +22,7 @@ import mondrian.rolap.RolapCube;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.spi.Dialect;
+import mondrian.spi.Dialect.DatabaseProduct;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
 
@@ -1519,6 +1520,105 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 }
             }
         );
+    }
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1370">MONDRIAN-1370</a>
+     * <br> Wrong results for aggregate with distinct count measure.
+     */
+    public void testDistinctCountAggMeasure() {
+        String dimension =
+            "<Dimension name=\"Time\" type=\"TimeDimension\"> "
+            + "  <Hierarchy hasAll=\"false\" primaryKey=\"time_id\"> "
+            + "    <Table name=\"time_by_day\"/> "
+            + "    <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\" levelType=\"TimeYears\"/> "
+            + "    <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\" levelType=\"TimeQuarters\"/> "
+            + "    <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\" levelType=\"TimeMonths\"/> "
+            + "  </Hierarchy> "
+            + "</Dimension>";
+        String cube =
+            "<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\"> "
+            + "  <Table name=\"sales_fact_1997\"> "
+            + "      <AggExclude name=\"agg_c_special_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_c_14_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_l_05_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_lc_06_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_l_04_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_ll_01_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_lc_100_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_l_03_sales_fact_1997\"/>"
+            + "      <AggExclude name=\"agg_pl_01_sales_fact_1997\"/>"
+            + "      <AggName name=\"agg_c_10_sales_fact_1997\">"
+            + "           <AggFactCount column=\"FACT_COUNT\"/>"
+            + "           <AggIgnoreColumn column=\"store_sales\"/>"
+            + "           <AggIgnoreColumn column=\"store_cost\"/>"
+            + "           <AggIgnoreColumn column=\"unit_sales\"/>"
+            + "           <AggMeasure name=\"[Measures].[Customer Count]\" column=\"customer_count\" />"
+            + "           <AggLevel name=\"[Time].[Year]\" column=\"the_year\" />"
+            + "           <AggLevel name=\"[Time].[Quarter]\" column=\"quarter\" />"
+            + "           <AggLevel name=\"[Time].[Month]\" column=\"month_of_year\" />"
+            + "      </AggName>"
+            + "  </Table>"
+            + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/> "
+            + "  <Measure name=\"Customer Count\" column=\"customer_id\" aggregator=\"distinct-count\" formatString=\"#,###\" />"
+            + "</Cube>";
+        final String query =
+            "select "
+            + "  NON EMPTY {[Measures].[Customer Count]} ON COLUMNS, "
+            + "  NON EMPTY {[Time].[Year].Members} ON ROWS "
+            + "from [Sales]";
+        final String monthsQuery =
+            "select "
+            + "  NON EMPTY {[Measures].[Customer Count]} ON COLUMNS, "
+            + "  NON EMPTY {[Time].[1997].[Q1].Children} ON ROWS "
+            + "from [Sales]";
+        String simpleSchema = "<Schema name=\"FoodMart\">" + dimension + cube
+            + "</Schema>";
+        // should skip aggregate table, cannot aggregate
+        propSaver.set(propSaver.properties.UseAggregates, true);
+        propSaver.set(propSaver.properties.ReadAggregates, true);
+        TestContext withAggDistinctCount =
+            TestContext.instance().withSchema(simpleSchema);
+        withAggDistinctCount.assertQueryReturns(
+            query,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997]}\n"
+            + "Row #0: 5,581\n");
+        // aggregate table has count for months, make sure it is used
+        propSaver.set(propSaver.properties.UseAggregates, true);
+        propSaver.set(propSaver.properties.ReadAggregates, true);
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+        final String expectedSql =
+            "select\n"
+            + "    `agg_c_10_sales_fact_1997`.`the_year` as `c0`,\n"
+            + "    `agg_c_10_sales_fact_1997`.`quarter` as `c1`,\n"
+            + "    `agg_c_10_sales_fact_1997`.`month_of_year` as `c2`,\n"
+            + "    `agg_c_10_sales_fact_1997`.`customer_count` as `m0`\n"
+            + "from\n"
+            + "    `agg_c_10_sales_fact_1997` as `agg_c_10_sales_fact_1997`\n"
+            + "where\n"
+            + "    `agg_c_10_sales_fact_1997`.`the_year` = 1997\n"
+            + "and\n"
+            + "    `agg_c_10_sales_fact_1997`.`quarter` = 'Q1'\n"
+            + "and\n"
+            + "    `agg_c_10_sales_fact_1997`.`month_of_year` in (1, 2, 3)";
+        assertQuerySqlOrNot(
+            withAggDistinctCount,
+            monthsQuery,
+            new SqlPattern[]{
+                new SqlPattern(
+                    DatabaseProduct.MYSQL,
+                    expectedSql,
+                    expectedSql.indexOf("from"))},
+            false,
+            true,
+            true);
     }
 }
 

@@ -784,9 +784,6 @@ abstract class Recognizer {
         if (factAgg == RolapAggregator.Avg) {
             String columnExpr = getFactCountExpr(aggUsage);
             return new RolapAggregator.AvgFromSum(columnExpr);
-        } else if (factAgg == RolapAggregator.DistinctCount) {
-            //return RolapAggregator.Count;
-            return RolapAggregator.DistinctCount;
         } else {
             return factAgg;
         }
@@ -833,6 +830,8 @@ abstract class Recognizer {
                 // needed for BUG_1541077.testTotalAmount
                 rollupAgg =  new RolapAggregator.SumFromAvg(columnExpr);
             }
+        } else if (factAgg == RolapAggregator.DistinctCount) {
+            rollupAgg = factAgg;
         }
 
         if (rollupAgg == null) {
