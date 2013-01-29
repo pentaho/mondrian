@@ -72,7 +72,7 @@ public class InfobrightDialect extends MySqlDialect {
             return expr + " ASC";
         } else {
             return expr + " DESC";
-        }    	
+        }
     }
 
     public boolean supportsGroupByExpressions() {
