@@ -387,6 +387,15 @@ public class Bug {
 
     /**
      * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1416">bug MONDRIAN-1416,
+     * Inline calculated members defined as a child of an existing member
+     * cannot be referenced in the mdx query
+     * </a> is fixed.
+     */
+    public static final boolean BugMondrian1416Fixed = false;
+
+    /**
+     * Whether
      * <a href="https://sourceforge.net/p/olap4j/feature-requests/31/">bug
      * OLAP4J-31, "Schema and Catalog should implement MetadataElement"</a> is
      * fixed.

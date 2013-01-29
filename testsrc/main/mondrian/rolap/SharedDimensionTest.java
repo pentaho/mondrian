@@ -404,15 +404,27 @@ public class SharedDimensionTest extends FoodMartTestCase {
     }
 
     public void testMemberUniqueNameForSharedWithChangedName() {
-        getTestContextForSharedDimCubeAltSales().assertQueryReturns(
-            "with "
-            + " member [BuyerTwo].[Stores].[Mexico].[calc] as '[BuyerTwo].[Stores].[Mexico]' "
-            + "select [BuyerTwo].[Stores].[calc] on 0 from [Alternate Sales]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[BuyerTwo].[Stores].[Mexico].[calc]}\n"
-            + "Row #0: 1,389\n");
+        if (Bug.BugMondrian1416Fixed) {
+            getTestContextForSharedDimCubeAltSales().assertQueryReturns(
+                "with "
+                + " member [BuyerTwo].[Stores].[Mexico].[calc] as '[BuyerTwo].[Stores].[Mexico]' "
+                + "select [BuyerTwo].[Stores].[Mexico].[calc] on 0 from [Alternate Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[BuyerTwo].[Stores].[Mexico].[calc]}\n"
+                + "Row #0: 1,389\n");
+        } else {
+            getTestContextForSharedDimCubeAltSales().assertQueryReturns(
+                "with "
+                + " member [BuyerTwo].[Stores].[Mexico].[calc] as '[BuyerTwo].[Stores].[Mexico]' "
+                + "select [BuyerTwo].[Stores].[calc] on 0 from [Alternate Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[BuyerTwo].[Stores].[Mexico].[calc]}\n"
+                + "Row #0: 1,389\n");
+        }
     }
 
     private TestContext getTestContextForSharedDimCubeACubeB() {
