@@ -10,27 +10,25 @@
 package mondrian.test;
 
 import mondrian.olap.*;
-import mondrian.olap.Cube;
-import mondrian.olap.Dimension;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Member;
-import mondrian.olap.NamedSet;
-import mondrian.olap.Property;
-import mondrian.olap.Schema;
 import mondrian.rolap.aggmatcher.*;
-import mondrian.spi.Dialect;
+import mondrian.spi.*;
 import mondrian.spi.PropertyFormatter;
-import mondrian.util.Bug;
+import mondrian.util.*;
 
 import junit.framework.Assert;
 
-import org.apache.log4j.*;
-import org.apache.log4j.Level;
+import org.apache.log4j.Appender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
+import org.apache.log4j.WriterAppender;
 import org.apache.log4j.varia.LevelRangeFilter;
 
 import org.olap4j.OlapConnection;
 import org.olap4j.impl.ArrayMap;
-import org.olap4j.metadata.*;
+import org.olap4j.metadata.Catalog;
+import org.olap4j.metadata.Database;
+import org.olap4j.metadata.MetadataElement;
+import org.olap4j.metadata.NamedList;
 
 import java.io.StringWriter;
 import java.sql.*;
@@ -1977,12 +1975,12 @@ Test that get error if a dimension has more than one hierarchy with same name.
             return;
         }
         final Logger logger = Logger.getLogger(AggTableManager.class);
-        propSaver.setAtLeast(logger, Level.WARN);
+        propSaver.setAtLeast(logger, org.apache.log4j.Level.WARN);
         final StringWriter sw = new StringWriter();
         final Appender appender =
             new WriterAppender(new SimpleLayout(), sw);
         final LevelRangeFilter filter = new LevelRangeFilter();
-        filter.setLevelMin(Level.WARN);
+        filter.setLevelMin(org.apache.log4j.Level.WARN);
         appender.addFilter(filter);
         logger.addAppender(appender);
         try {
@@ -2054,12 +2052,12 @@ Test that get error if a dimension has more than one hierarchy with same name.
             return;
         }
         final Logger logger = Logger.getLogger(AggTableManager.class);
-        propSaver.setAtLeast(logger, Level.WARN);
+        propSaver.setAtLeast(logger, org.apache.log4j.Level.WARN);
         final StringWriter sw = new StringWriter();
         final Appender appender =
             new WriterAppender(new SimpleLayout(), sw);
         final LevelRangeFilter filter = new LevelRangeFilter();
-        filter.setLevelMin(Level.WARN);
+        filter.setLevelMin(org.apache.log4j.Level.WARN);
         appender.addFilter(filter);
         logger.addAppender(appender);
         try {
@@ -7709,6 +7707,52 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "{[Geography].[Geographies].[USA].[OR]}\n"
             + "{[Geography].[Geographies].[USA].[USA].[Washington]}\n"
             + "{[Geography].[Geographies].[USA].[WA]}\n");
+    }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1390">MONDRIAN-1390</a>
+     *
+     * <p>Calling {@link SchemaReader#getLevelMembers(Level, boolean)}
+     * directly would return the null members at the end, since it was
+     * using TupleReader#readTuples instead of TupleReader#readMembers.
+     */
+    public void testMondrian1390() throws Exception {
+        Schema schema = getConnection().getSchema();
+        Cube salesCube = schema.lookupCube("Sales", true);
+        SchemaReader sr = salesCube.getSchemaReader(null).withLocus();
+        List<Member> members = sr.getLevelMembers(
+            (Level)Util.lookupCompound(
+                sr,
+                salesCube,
+                Util.parseIdentifier(
+                    "[Store Size in SQFT].[Store Sqft]"),
+                true,
+                Category.Level),
+            true);
+        assertEquals(
+            "[[Store Size in SQFT].[#null], "
+            + "[Store Size in SQFT].[20319], "
+            + "[Store Size in SQFT].[21215], "
+            + "[Store Size in SQFT].[22478], "
+            + "[Store Size in SQFT].[23112], "
+            + "[Store Size in SQFT].[23593], "
+            + "[Store Size in SQFT].[23598], "
+            + "[Store Size in SQFT].[23688], "
+            + "[Store Size in SQFT].[23759], "
+            + "[Store Size in SQFT].[24597], "
+            + "[Store Size in SQFT].[27694], "
+            + "[Store Size in SQFT].[28206], "
+            + "[Store Size in SQFT].[30268], "
+            + "[Store Size in SQFT].[30584], "
+            + "[Store Size in SQFT].[30797], "
+            + "[Store Size in SQFT].[33858], "
+            + "[Store Size in SQFT].[34452], "
+            + "[Store Size in SQFT].[34791], "
+            + "[Store Size in SQFT].[36509], "
+            + "[Store Size in SQFT].[38382], "
+            + "[Store Size in SQFT].[39696]]",
+            members.toString());
     }
 
     // TODO: test that there is an error if we try to define a property

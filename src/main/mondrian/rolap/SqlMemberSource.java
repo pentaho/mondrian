@@ -553,7 +553,7 @@ class SqlMemberSource
                 : new SqlTupleReader(constraint);
         tupleReader.addLevelMembers(level, this, null);
         final TupleList tupleList =
-            tupleReader.readTuples(
+            tupleReader.readMembers(
                 hierarchy.getDimension().getSchema().getDialect(),
                 dataSource,
                 null,

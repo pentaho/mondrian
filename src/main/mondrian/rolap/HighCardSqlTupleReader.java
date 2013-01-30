@@ -24,6 +24,7 @@ import mondrian.util.TraversalList;
 
 import java.sql.SQLException;
 import java.util.*;
+
 import javax.sql.DataSource;
 
 /**
@@ -137,9 +138,12 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
         final List<List<RolapMember>> newPartialResult)
     {
         prepareTuples(dialect, dataSource, partialResult, newPartialResult);
+
         assert targets.size() == 1;
+
         return new UnaryTupleList(
-            Util.<Member>cast(targets.get(0).close()));
+            bumpNullMember(
+                targets.get(0).close()));
     }
 
     public TupleList readTuples(
