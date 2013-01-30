@@ -1241,7 +1241,6 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "{[Measures].[*ZERO]}\n"
             + "Axis #2:\n"
             + "{[Markets].[#null].[Germany].[#null]}\n"
-            + "{[Markets].[#null].[Ireland].[#null]}\n"
             + "{[Markets].[#null].[Ireland].[Co. Cork]}\n"
             + "{[Markets].[#null].[Israel].[#null]}\n"
             + "{[Markets].[#null].[Netherlands].[#null]}\n"
@@ -1284,8 +1283,7 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Row #18: 0\n"
             + "Row #19: 0\n"
             + "Row #20: 0\n"
-            + "Row #21: 0\n"
-            + "Row #22: 0\n");
+            + "Row #21: 0\n");
     }
 }
 

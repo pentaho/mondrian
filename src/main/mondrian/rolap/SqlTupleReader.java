@@ -519,8 +519,23 @@ public class SqlTupleReader implements TupleReader {
                     "Parent-child hierarchy contains cyclic data");
             }
         }
+
         assert targets.size() == 1;
-        return new UnaryTupleList(targets.get(0).close());
+
+        return new UnaryTupleList(
+            bumpNullMember(
+                targets.get(0).close()));
+    }
+
+    protected List<Member> bumpNullMember(List<Member> members) {
+        if (members.size() > 0
+            && ((RolapMemberBase)members.get(members.size() - 1)).getKey()
+                == RolapUtil.sqlNullValue)
+        {
+            Member removed = members.remove(members.size() - 1);
+            members.add(0, removed);
+        }
+        return members;
     }
 
     /**
