@@ -177,6 +177,8 @@ public class OracleDialect extends JdbcDialectImpl {
                 // measure (whose column names are like "m0", "m1") to integers,
                 // data loss will occur.
                 type = SqlStatement.Type.OBJECT;
+            } else if (scale == -127 && precision ==0) {
+                type = SqlStatement.Type.INT;
             } else if (scale == 0 && (precision == 38 || precision == 0)) {
                 // NUMBER(38, 0) is conventionally used in
                 // Oracle for integers of unspecified precision, so let's be
