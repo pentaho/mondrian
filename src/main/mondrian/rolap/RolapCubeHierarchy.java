@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -432,9 +432,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
      * @return Translated unique name
      */
     final String convertMemberName(String memberUniqueName) {
-        if (removePrefixLength > 0
-            && !memberUniqueName.startsWith(uniqueName))
-        {
+        if (removePrefixLength > 0) {
             return uniqueName + memberUniqueName.substring(removePrefixLength);
         }
         return memberUniqueName;
