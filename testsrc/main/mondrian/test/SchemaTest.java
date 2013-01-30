@@ -7726,32 +7726,32 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 sr,
                 salesCube,
                 Util.parseIdentifier(
-                    "[Store Size in SQFT].[Store Sqft]"),
+                    "[Store].[Store Size in SQFT].[Store Sqft]"),
                 true,
                 Category.Level),
             true);
         assertEquals(
-            "[[Store Size in SQFT].[#null], "
-            + "[Store Size in SQFT].[20319], "
-            + "[Store Size in SQFT].[21215], "
-            + "[Store Size in SQFT].[22478], "
-            + "[Store Size in SQFT].[23112], "
-            + "[Store Size in SQFT].[23593], "
-            + "[Store Size in SQFT].[23598], "
-            + "[Store Size in SQFT].[23688], "
-            + "[Store Size in SQFT].[23759], "
-            + "[Store Size in SQFT].[24597], "
-            + "[Store Size in SQFT].[27694], "
-            + "[Store Size in SQFT].[28206], "
-            + "[Store Size in SQFT].[30268], "
-            + "[Store Size in SQFT].[30584], "
-            + "[Store Size in SQFT].[30797], "
-            + "[Store Size in SQFT].[33858], "
-            + "[Store Size in SQFT].[34452], "
-            + "[Store Size in SQFT].[34791], "
-            + "[Store Size in SQFT].[36509], "
-            + "[Store Size in SQFT].[38382], "
-            + "[Store Size in SQFT].[39696]]",
+            "[[Store].[Store Size in SQFT].[#null], "
+            + "[Store].[Store Size in SQFT].[20319], "
+            + "[Store].[Store Size in SQFT].[21215], "
+            + "[Store].[Store Size in SQFT].[22478], "
+            + "[Store].[Store Size in SQFT].[23112], "
+            + "[Store].[Store Size in SQFT].[23593], "
+            + "[Store].[Store Size in SQFT].[23598], "
+            + "[Store].[Store Size in SQFT].[23688], "
+            + "[Store].[Store Size in SQFT].[23759], "
+            + "[Store].[Store Size in SQFT].[24597], "
+            + "[Store].[Store Size in SQFT].[27694], "
+            + "[Store].[Store Size in SQFT].[28206], "
+            + "[Store].[Store Size in SQFT].[30268], "
+            + "[Store].[Store Size in SQFT].[30584], "
+            + "[Store].[Store Size in SQFT].[30797], "
+            + "[Store].[Store Size in SQFT].[33858], "
+            + "[Store].[Store Size in SQFT].[34452], "
+            + "[Store].[Store Size in SQFT].[34791], "
+            + "[Store].[Store Size in SQFT].[36509], "
+            + "[Store].[Store Size in SQFT].[38382], "
+            + "[Store].[Store Size in SQFT].[39696]]",
             members.toString());
     }
 
