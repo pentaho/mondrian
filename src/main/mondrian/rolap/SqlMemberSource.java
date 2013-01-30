@@ -485,7 +485,7 @@ RME is this right
                 : new SqlTupleReader(constraint);
         tupleReader.addLevelMembers(level, this, null);
         final TupleList tupleList =
-            tupleReader.readTuples(dataSource, null, null);
+            tupleReader.readMembers(dataSource, null, null);
 
         assert tupleList.getArity() == 1;
         return Util.cast(tupleList.slice(0));
