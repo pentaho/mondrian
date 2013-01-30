@@ -560,6 +560,44 @@ public class Olap4jTest extends FoodMartTestCase {
         assertNotNull(defaultMember);
         assertEquals("Acapulco", defaultMember.getName());
     }
+
+    /**
+     * Same as {@link SchemaTest#testMondrian1390()} but this time
+     * with olap4j.
+     */
+    public void testMondrian1390() throws Exception {
+        final List<Member> members =
+            getTestContext().getOlap4jConnection()
+                .getOlapSchema()
+                .getCubes().get("Sales")
+                .getDimensions().get("Store Size in SQFT")
+                .getDefaultHierarchy()
+                .getLevels().get("Store Sqft")
+                    .getMembers();
+        assertEquals(
+            "[[Store Size in SQFT].[#null], "
+            + "[Store Size in SQFT].[20319], "
+            + "[Store Size in SQFT].[21215], "
+            + "[Store Size in SQFT].[22478], "
+            + "[Store Size in SQFT].[23112], "
+            + "[Store Size in SQFT].[23593], "
+            + "[Store Size in SQFT].[23598], "
+            + "[Store Size in SQFT].[23688], "
+            + "[Store Size in SQFT].[23759], "
+            + "[Store Size in SQFT].[24597], "
+            + "[Store Size in SQFT].[27694], "
+            + "[Store Size in SQFT].[28206], "
+            + "[Store Size in SQFT].[30268], "
+            + "[Store Size in SQFT].[30584], "
+            + "[Store Size in SQFT].[30797], "
+            + "[Store Size in SQFT].[33858], "
+            + "[Store Size in SQFT].[34452], "
+            + "[Store Size in SQFT].[34791], "
+            + "[Store Size in SQFT].[36509], "
+            + "[Store Size in SQFT].[38382], "
+            + "[Store Size in SQFT].[39696]]",
+            members.toString());
+    }
 }
 
 // End Olap4jTest.java
