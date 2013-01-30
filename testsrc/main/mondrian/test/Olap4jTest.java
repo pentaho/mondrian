@@ -561,7 +561,7 @@ public class Olap4jTest extends FoodMartTestCase {
      * was not explicitly set.
      */
     public void testMondrian1353() throws Exception {
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = TestContext.instance().legacy().create(
             null,
             "<Cube name=\"Mondrian1353\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -588,6 +588,44 @@ public class Olap4jTest extends FoodMartTestCase {
 
         assertNotNull(defaultMember);
         assertEquals("Acapulco", defaultMember.getName());
+    }
+
+    /**
+     * Same as {@link SchemaTest#testMondrian1390()} but this time
+     * with olap4j.
+     */
+    public void testMondrian1390() throws Exception {
+        final List<Member> members =
+            getTestContext().getOlap4jConnection()
+                .getOlapSchema()
+                .getCubes().get("Sales")
+                .getDimensions().get("Store")
+                .getHierarchies().get("Store Size in SQFT")
+                .getLevels().get("Store Sqft")
+                    .getMembers();
+        assertEquals(
+            "[[Store].[Store Size in SQFT].[#null], "
+            + "[Store].[Store Size in SQFT].[20319], "
+            + "[Store].[Store Size in SQFT].[21215], "
+            + "[Store].[Store Size in SQFT].[22478], "
+            + "[Store].[Store Size in SQFT].[23112], "
+            + "[Store].[Store Size in SQFT].[23593], "
+            + "[Store].[Store Size in SQFT].[23598], "
+            + "[Store].[Store Size in SQFT].[23688], "
+            + "[Store].[Store Size in SQFT].[23759], "
+            + "[Store].[Store Size in SQFT].[24597], "
+            + "[Store].[Store Size in SQFT].[27694], "
+            + "[Store].[Store Size in SQFT].[28206], "
+            + "[Store].[Store Size in SQFT].[30268], "
+            + "[Store].[Store Size in SQFT].[30584], "
+            + "[Store].[Store Size in SQFT].[30797], "
+            + "[Store].[Store Size in SQFT].[33858], "
+            + "[Store].[Store Size in SQFT].[34452], "
+            + "[Store].[Store Size in SQFT].[34791], "
+            + "[Store].[Store Size in SQFT].[36509], "
+            + "[Store].[Store Size in SQFT].[38382], "
+            + "[Store].[Store Size in SQFT].[39696]]",
+            members.toString());
     }
 }
 
