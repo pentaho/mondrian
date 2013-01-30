@@ -392,6 +392,14 @@ public class Bug {
      * cannot be referenced in the mdx query
      * </a> is fixed.
      */
+    public static final boolean BugMondrian1420Fixed = false;
+
+    /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1420">bug MONDRIAN-1420,
+     * Add support for native evaluation of compound slicers to Mondrian 4.0
+     * </a> is fixed.
+     */
     public static final boolean BugMondrian1416Fixed = false;
 
     /**
