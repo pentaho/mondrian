@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2009 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.udf;
@@ -17,8 +17,8 @@ import mondrian.olap.type.Type;
 import mondrian.spi.UserDefinedFunction;
 
 import org.apache.commons.math.MathException;
-import org.apache.commons.math.distribution.DistributionFactory;
 import org.apache.commons.math.distribution.NormalDistribution;
+import org.apache.commons.math.distribution.NormalDistributionImpl;
 import org.apache.log4j.Logger;
 
 
@@ -45,10 +45,10 @@ public class InverseNormalUdf implements UserDefinedFunction {
     private static final Logger LOGGER =
         Logger.getLogger(InverseNormalUdf.class);
 
-    private static DistributionFactory distributionFactory =
-        DistributionFactory.newInstance();
-    private static NormalDistribution nd =
-        distributionFactory.createNormalDistribution();
+
+    // the zero arg constructor sets the mean equal to zero and standard
+    // deviation equal to one
+    private static final NormalDistribution nd = new NormalDistributionImpl();
 
     public String getName() {
         return "InverseNormal";
@@ -86,12 +86,11 @@ public class InverseNormalUdf implements UserDefinedFunction {
         if (d.isNaN()) {
             return null;
         }
-        /*
-           If probability is nonnumeric or
-                probability < 0 or
-                probability > 1,
-            returns an error.
-         */
+
+        // If probability is nonnumeric or
+        //   probability < 0 or
+        //   probability > 1,
+        // returns an error.
         double dbl = d.doubleValue();
         if (dbl < 0.0 || dbl > 1.0) {
             LOGGER.debug(
