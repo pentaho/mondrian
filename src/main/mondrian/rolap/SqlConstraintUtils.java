@@ -372,6 +372,8 @@ public class SqlConstraintUtils {
                 } else if (member.getExpression() instanceof MemberExpr) {
                     listOfMembers.add(
                         ((MemberExpr)member.getExpression()).getMember());
+                } else {
+                    throw new AssertionError(member.getExpression());
                 }
             } else {
                 // just add the member
