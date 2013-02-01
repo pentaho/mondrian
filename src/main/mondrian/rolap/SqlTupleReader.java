@@ -900,11 +900,12 @@ Util.deprecated("obsolete basecube parameter", false);
         // add the selects for all levels to fetch
         if (!unevaluatedTargets.isEmpty()) {
             ColumnLayoutBuilder columnLayoutBuilder =
-                new ColumnLayoutBuilder(
-                    Collections.<List<RolapSchema.PhysColumn>>emptyList());
+                new ColumnLayoutBuilder();
             RolapSchema.SqlQueryBuilder queryBuilder =
                 new RolapSchema.SqlQueryBuilder(
-                    sqlQuery, columnLayoutBuilder);
+                    sqlQuery,
+                    columnLayoutBuilder,
+                    Collections.<List<RolapSchema.PhysColumn>>emptyList());
 
             if (measureGroup != null) {
                 for (RolapDimension dimension : dimensions) {
@@ -1405,17 +1406,11 @@ Util.deprecated("obsolete basecube parameter", false);
         LevelLayoutBuilder currentLevelLayout;
         final List<SqlStatement.Type> types =
             new ArrayList<SqlStatement.Type>();
-        final List<List<RolapSchema.PhysColumn>> keyListList;
 
         /**
          * Creates a ColumnLayoutBuilder.
-         *
-         * @param keyListList Key of starting point for query; other attributes
-         *   will be joined to this
          */
-        ColumnLayoutBuilder(List<List<RolapSchema.PhysColumn>> keyListList) {
-            this.keyListList = keyListList;
-            assert keyListList != null;
+        ColumnLayoutBuilder() {
         }
 
         /**

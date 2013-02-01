@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -168,7 +168,9 @@ public class SqlConstraintUtils {
                 } else {
                     path = starSet.getMeasureGroup().getPath(dim);
                 }
-                path.addToFrom(sqlQuery, false);
+                if (path != null) {
+                    path.addToFrom(sqlQuery, false);
+                }
             }
         }
     }
@@ -459,8 +461,8 @@ public class SqlConstraintUtils {
         final RolapSchema.SqlQueryBuilder queryBuilder =
             new RolapSchema.SqlQueryBuilder(
                 sqlQuery,
-                new SqlTupleReader.ColumnLayoutBuilder(
-                    Collections.<List<RolapSchema.PhysColumn>>emptyList()));
+                new SqlTupleReader.ColumnLayoutBuilder(),
+                Collections.<List<RolapSchema.PhysColumn>>emptyList());
         if (crossJoin
             && true /* TODO: !memberLevel.isUnique() */
             && !membersAreCrossProduct(members))

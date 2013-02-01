@@ -2163,6 +2163,14 @@ public class RolapSchemaLoader {
             return null;
         }
 
+        for (Pair<RolapStar.Column, RolapSchema.PhysColumn> pair
+            : measureGroup.copyColumnList)
+        {
+            if (pair.right.equals(expr)) {
+                return pair.left;
+            }
+        }
+
         final RolapSchema.PhysSchemaGraph graph =
             measureGroup.getFactRelation().getSchema().getGraph();
         RolapSchema.PhysPathBuilder pathBuilder =

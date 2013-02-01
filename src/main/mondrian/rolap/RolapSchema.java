@@ -2844,15 +2844,18 @@ public class RolapSchema extends OlapElementBase implements Schema {
          *
          * @param sqlQuery SQL query
          * @param layoutBuilder Column layout builder
+         * @param keyListList Key of starting point for query; other attributes
+         *   will be joined to this
          */
         public SqlQueryBuilder(
             SqlQuery sqlQuery,
-            SqlTupleReader.ColumnLayoutBuilder layoutBuilder)
+            SqlTupleReader.ColumnLayoutBuilder layoutBuilder,
+            List<List<RolapSchema.PhysColumn>> keyListList)
         {
             this.sqlQuery = sqlQuery;
             this.layoutBuilder = layoutBuilder;
 
-            for (List<PhysColumn> keyList : layoutBuilder.keyListList) {
+            for (List<PhysColumn> keyList : keyListList) {
                 addListToFrom(keyList);
             }
         }

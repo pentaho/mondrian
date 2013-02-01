@@ -2646,6 +2646,23 @@ public class Util extends XOMUtil {
         return result.size() == size ? list : result;
     }
 
+    /** Returns a view of a list obtained by applying a function to each
+     * element. */
+    public static <P, R> List<R> transform(
+        final Function1<P, R> fn,
+        final List<P> list)
+    {
+        return new AbstractList<R>() {
+            public R get(int index) {
+                return fn.apply(list.get(index));
+            }
+
+            public int size() {
+                return list.size();
+            }
+        };
+    }
+
     public static class ErrorCellValue {
         public String toString() {
             return "#ERR";

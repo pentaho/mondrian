@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 28 September, 2002
@@ -1584,15 +1584,15 @@ public class TestAggregationManager extends BatchTestCase {
 
         SqlPattern[] patterns = {
             new SqlPattern(
-                ACCESS_MYSQL,
+                Dialect.DatabaseProduct.MYSQL,
                 "select\n"
-                + "`agg_g_ms_pcat_sales_fact_1997`.`gender` as `c0`\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c0`\n"
                 + "from\n"
                 + "    `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997`\n"
                 + "group by\n"
-                + "    `agg_g_ms_pcat_sales_fact_1997`.`gender`"
-                + " order by\n"
-                + " ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`gender`\n"
+                + "order by\n"
+                + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
                 null)
         };
 
@@ -1601,6 +1601,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "from [Sales]";
 
         final TestContext testContext = getTestContext();
+        propSaver.set(propSaver.props.GenerateFormattedSql, true);
         assertQuerySqlOrNot(
             testContext, query, patterns, false, false, false);
 
