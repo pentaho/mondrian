@@ -310,6 +310,72 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "Row #3: 718.08\n");
    }
 
+
+
+
+    public void testNativeTopCountWithMemberOnlySlicer() {
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+
+        final String mdx =
+            "WITH\n"
+            + "  SET TC AS 'TopCount([Product].[Drink].[Alcoholic Beverages].Children, 3, [Measures].[Unit Sales] )'\n"
+            + "  MEMBER [Time].[Slicer] as [Time].[1997]\n"
+            + "  MEMBER [Store Type].[Slicer] as [Store Type].[Store Type].[Deluxe Supermarket]\n"
+            + "\n"
+            + "  SELECT NON EMPTY [Measures].[Unit Sales] on 0,\n"
+            + "    TC ON 1 \n"
+            + "  FROM [Sales] WHERE {([Time].[Slicer], [Store Type].[Slicer])}\n";
+
+        String mysqlQuery =
+              "select\n"
+              + "    `product_class`.`product_family` as `c0`,\n"
+              + "    `product_class`.`product_department` as `c1`,\n"
+              + "    `product_class`.`product_category` as `c2`,\n"
+              + "    sum(`agg_c_14_sales_fact_1997`.`unit_sales`) as `c3`\n"
+              + "from\n"
+              + "    `product` as `product`,\n"
+              + "    `product_class` as `product_class`,\n"
+              + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
+              + "    `store` as `store`\n"
+              + "where\n"
+              + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+              + "and\n"
+              + "    `agg_c_14_sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+              + "and\n"
+              + "    `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+              + "and\n"
+              + "    `store`.`store_type` = 'Deluxe Supermarket'\n"
+              + "and\n"
+              + "    `agg_c_14_sales_fact_1997`.`the_year` = 1997\n"
+              + "and\n"
+              + "    (`product_class`.`product_department` = 'Alcoholic Beverages' and `product_class`.`product_family` = 'Drink')\n"
+              + "group by\n"
+              + "    `product_class`.`product_family`,\n"
+              + "    `product_class`.`product_department`,\n"
+              + "    `product_class`.`product_category`\n"
+              + "order by\n"
+              + "    `c3` DESC,\n"
+              + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC,\n"
+              + "    ISNULL(`product_class`.`product_department`) ASC, `product_class`.`product_department` ASC,\n"
+              + "    ISNULL(`product_class`.`product_category`) ASC, `product_class`.`product_category` ASC";
+
+        SqlPattern mysqlPattern =
+            new SqlPattern(
+                DatabaseProduct.MYSQL,
+                mysqlQuery,
+                mysqlQuery);
+        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{[Time].[Slicer], [Store Type].[Slicer]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]}\n"
+            + "Row #0: 1,910\n");
+    }
+
     /**
      * Aggregate with default measure and TopCount without measure argument.
      */
