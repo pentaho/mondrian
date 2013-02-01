@@ -394,7 +394,7 @@ public class SqlConstraintUtils {
         if (member.getExpression() instanceof ResolvedFunCall) {
             ResolvedFunCall fun = (ResolvedFunCall) member.getExpression();
 
-              // We can only deal with Aggregates.
+             // We can only deal with Aggregates.
             if (fun.getFunDef() instanceof AggregateFunDef) {
                 return true;
             }
