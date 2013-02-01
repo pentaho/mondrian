@@ -14,6 +14,7 @@ function _matchFile(fname) {
        || fname ~ "/extensions/" \
        || fname ~ "/com/sqlstream/" \
        || fname ~ "/linq4j/" \
+       || fname ~ "/lambda/" \
        || fname ~ "/optiq/" \
        || strict > 0;
 }
@@ -80,6 +81,10 @@ function countLeadingSpaces(str) {
     return i;
 }
 
+function checkIndent(str) {
+    return str % indent == 0;
+}
+
 function startsWith(s, p) {
     return length(s) > length(p) \
         && substr(s, 1, length(p)) == p;
@@ -104,6 +109,8 @@ FNR == 1 {
     mondrian = _isMondrian(fname);
     prevImport = "";
     prevImportGroup = "";
+    indent = (fname ~ /lambda/ || fname ~ /linq4j/) ? 2 : 4;
+    cindent = 4;
 
     delete headers;
     headerCount = 0;
@@ -178,19 +185,19 @@ FNR < headerCount {
         gsub(/:}/, "}", s);
         gsub(/:/, " : ", s);
     }
-    if (inComment && $0 ~ /\*\//) {
+    if (inComment && s ~ /\*\//) {
         # end of multiline comment "*/"
         inComment = 0;
         gsub(/^.*\*\//, "/* comment */", s);
     } else if (inComment) {
         s = "/* comment */";
-    } else if ($0 ~ /\/\*/ && $0 !~ /\/\*.*\*\//) {
+    } else if (s ~ /\/\*/ && s !~ /\/\*.*\*\//) {
         # beginning of multiline comment "/*"
         inComment = 1;
-        gsub(/\/\*.*$/, "/* comment */", s);
-        if (strict > 1 && FNR > 1 && $0 !~ /\/\*\*/ && $0 !~ /^\/\*/) {
-            error(fname, FNR, "Multi-line c-style comment not allowed");
+        if (strict > 1 && FNR > 1 && s !~ /\/\*\*/ && s !~ /^\/\*/) {
+            error(fname, FNR, "Multi-line c-style comment not allowed" s);
         }
+        gsub(/\/\*.*$/, "/* comment */", s);
     } else {
         # mask out /* */ comments
         gsub(/\/\*.*\*\//, "/* comment */", s);
@@ -223,8 +230,8 @@ FNR < headerCount {
 
     # Is the line indented as expected?
     if (nextIndent > 0) {
-        indent = countLeadingSpaces(s);
-        if (indent != nextIndent) {
+        x = countLeadingSpaces(s);
+        if (x != nextIndent) {
             error(fname, FNR, "Incorrect indent for first line of arg list");
         }
     }
@@ -373,7 +380,7 @@ s ~ /\<(if) *\(/ {
         error(fname, FNR, "if must be followed by space");
     } else if (s ~ / else if /) {
     } else if (s ~ /^#if /) {
-    } else if (s !~ /^(    )*(if)/) {
+    } else if (!checkIndent(s)) {
         error(fname, FNR, "if must be correctly indented");
     }
 }
@@ -382,13 +389,13 @@ s ~ /\<(while) *\(/ {
     } else if (s !~ /\<(while) /) {
         error(fname, FNR, "while must be followed by space");
     } else if (s ~ /} while /) {
-    } else if (s !~ /^(    )+(while)/) {
+    } else if (!checkIndent(s)) {
         error(fname, FNR, "while must be correctly indented");
     }
 }
 s ~ /\<(for|switch|synchronized|} catch) *\(/ {
     if (!matchFile) {}
-    else if (s !~ /^(    )*(for|switch|synchronized|} catch)/) {
+    else if (!checkIndent(s)) {
         error(fname, FNR, "for/switch/synchronized/catch must be correctly indented");
     } else if (s !~ /\<(for|switch|synchronized|} catch) /) {
         error(fname, FNR, "for/switch/synchronized/catch must be followed by space");
@@ -447,7 +454,7 @@ s !~ /\<(if|while|for|switch|assert)\>/ {
                     # Ignore case like 'for (Map.Entry<Foo,{nl} Bar> entry : ...'
                 } else if (s ~ / for /) {
                     # Ignore case like 'for (int i = 1,{nl} j = 2; i < j; ...'
-                } else {
+                } else if (indent == cindent) {
                     error(                                              \
                         fname, FNR,                                     \
                         "multi-line parameter list should start with newline");
@@ -458,7 +465,7 @@ s !~ /\<(if|while|for|switch|assert)\>/ {
                 # for macros), we're fine.
             } else if (s ~ /@.*\({/) {
                 # Ignore Java annotations.
-            } else {
+            } else if (indent == cindent) {
                 error(                                                  \
                     fname, FNR,                                         \
                     "Open parenthesis should be at end of line (function call spans several lines)");
@@ -494,7 +501,7 @@ s ~ /\<(case|default)\>/ {
 s ~ /\<assert\>/ {
     if (!matchFile) {}
     else if (isCpp) {} # rule only applies to java
-    else if (s !~ /^(    )+(assert)/) {
+    else if (!checkIndent(s)) {
         error(fname, FNR, "assert must be correctly indented");
     } else if (s !~ /\<assert /) {
         error(fname, FNR, "assert must be followed by space");
@@ -504,7 +511,7 @@ s ~ /\<return\>/ {
     if (!matchFile) {}
     else if (isCpp && s ~ /^#/) {
         # ignore macros
-    } else if (s !~ /^(    )+(return)/) {
+    } else if (!checkIndent(s)) {
         error(fname, FNR, "return must be correctly indented");
     } else if (s !~ /\<return[ ;]/ && s !~ /\<return$/) {
         error(fname, FNR, "return must be followed by space or ;");
@@ -514,7 +521,7 @@ s ~ /\<throw\>/ {
     if (!matchFile) {}
     else if (isCpp) {
         # cannot yet handle C++ cases like 'void foo() throw(int)'
-    } else if (s !~ /^(    )+(throw)/) {
+    } else if (!checkIndent(s)) {
         error(fname, FNR, "throw must be correctly indented");
     } else if (s !~ /\<throw / && s !~ /\<throw$/) {
         error(fname, FNR, "throw must be followed by space");
@@ -523,38 +530,48 @@ s ~ /\<throw\>/ {
 s ~ /\<else\>/ {
     if (!matchFile) {}
     else if (isCpp && s ~ /^# *else$/) {} # ignore "#else"
-    else if (s !~ /^(    )+} else (if |{$|{ *\/\/|{ *\/\*)/) {
-        error(fname, FNR, "else must be preceded by } and followed by { or if and correctly indented");
+    else if (!checkIndent(s)) {
+        error(fname, FNR, "else must be correctly indented");
+    } else if (s !~ /^ +} else (if |{$|{ *\/\/|{ *\/\*)/) {
+        error(fname, FNR, "else must be preceded by } and followed by { or if");
     }
 }
 s ~ /\<do\>/ {
     if (!matchFile) {}
-    else if (s !~ /^(    )*do {/) {
-        error(fname, FNR, "do must be followed by space {, and correctly indented");
+    else if (!checkIndent(s)) {
+        error(fname, FNR, "do must be correctly indented");
+    } else if (s !~ /^ *do {/) {
+        error(fname, FNR, "do must be followed by space {");
     }
 }
 s ~ /\<try\>/ {
     if (!matchFile) {}
-    else if (s !~ /^(    )+try {/) {
-        error(fname, FNR, "try must be followed by space {, and correctly indented");
+    else if (!checkIndent(s)) {
+        error(fname, FNR, "try must be correctly indented");
+    } else if (s !~ /^ +try {/) {
+        error(fname, FNR, "try must be followed by space {");
     }
 }
 s ~ /\<catch\>/ {
     if (!matchFile) {}
-    else if (s !~ /^(    )+} catch /) {
-        error(fname, FNR, "catch must be preceded by }, followed by space, and correctly indented");
+    else if (!checkIndent(s)) {
+        error(fname, FNR, "catch must be correctly indented");
+    } else if (s !~ /^ +} catch /) {
+        error(fname, FNR, "catch must be preceded by } and followed by space");
     }
 }
 s ~ /\<finally\>/ {
     if (!matchFile) {}
-    else if (s !~ /^(    )+} finally {/) {
-        error(fname, FNR, "finally must be preceded by }, followed by space {, and correctly indented");
+    else if (!checkIndent(s)) {
+        error(fname, FNR, "finally must be correctly indented");
+    } else if (s !~ /^ +} finally {/) {
+        error(fname, FNR, "finally must be preceded by } and followed by space {");
     }
 }
 s ~ /\($/ {
-    nextIndent = countLeadingSpaces(s) + 4;
-    if (s ~ / (if|while) .*\(.*\(/) {
-        nextIndent += 4;
+    nextIndent = countLeadingSpaces(s) + cindent;
+    if (s ~ / (if|while) .*\(.*\(/ && indent == cindent) {
+        nextIndent += indent;
     }
 }
 match(s, /([]A-Za-z0-9()])(+|-|\*|\^|\/|%|=|==|+=|-=|\*=|\/=|>=|<=|!=|&|&&|\||\|\||^|\?|:) *[A-Za-z0-9(]/, a) {
@@ -676,8 +693,10 @@ s ~ /}/ {
     if (!matchFile) {}
     else if (s !~ /}( |;|,|$|\)|\.)/) {
         error(fname, FNR, "} must be followed by space");
-    } else if (s !~ /(    )*}/) {
-        error(fname, FNR, "} must be at start of line and correctly indented");
+    } else if (s !~ /^ *}/) {
+        # not at start of line - ignore
+    } else if (!checkIndent(s)) {
+        error(fname, FNR, "} must be correctly indented");
     }
 }
 $0 ~ /\* @param [A-Za-z0-9_]+$/ && strict > 1 {
@@ -711,7 +730,7 @@ s ~ /{/ {
         closes = s;
         gsub(/[^)]/, "", closes);
         if (0 && strict < 2 && fname ~ /aspen/) {} # not enabled
-        else if (length(closes) > length(opens)) {
+        else if (length(closes) > length(opens) && indent == cindent) {
             error(fname, FNR, "Open brace should be on new line (function call/decl spans several lines)");
         }
     }
@@ -754,7 +773,7 @@ length($0) > maxLineLength                      \
 && $0 !~ /http:/                                \
 && $0 !~ /https:/                               \
 && $0 !~ /\/\/ Expect "/                        \
-&& s !~ /^ *(\+ |<< |: |\?)?string\)?[;,]?$/ {
+&& s !~ /^ *(\+ |<< |: |\?)?string\)*[;,]?$/ {
     error( \
         fname, \
         FNR, \
@@ -770,7 +789,8 @@ length($0) > maxLineLength                      \
     # Ignore open brace if it is part of class or interface declaration.
     if (classDeclStartLine) {
         if (classDeclStartLine < FNR \
-            && $0 !~ /^ *{$/)
+            && $0 !~ /^ *{$/ \
+            && indent == cindent)
         {
             error(fname, FNR, "Open brace should be on new line (class decl spans several lines)");
         }
@@ -783,6 +803,7 @@ length($0) > maxLineLength                      \
             && $0 !~ /^ *{$/)
         {
             if (strict < 2 && fname ~ /aspen/) {} # not enabled
+            else if (cindent != indent) {}
             else error(fname, FNR, "Open brace should be on new line (function decl spans several lines)");
         }
         funDeclStartLine = 0;
