@@ -312,7 +312,11 @@ public class NativeSetEvaluationTest extends BatchTestCase {
 
 
 
-
+    /**
+     * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-1426">
+     * Mondrian-1426:</a> Native top count support for Member expressions
+     * in Calculated member slicer
+     */
     public void testNativeTopCountWithMemberOnlySlicer() {
         propSaver.set(propSaver.properties.GenerateFormattedSql, true);
 
