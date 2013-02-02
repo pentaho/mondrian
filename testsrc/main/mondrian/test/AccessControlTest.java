@@ -2871,25 +2871,25 @@ public class AccessControlTest extends FoodMartTestCase {
         final TestContext testContext = TestContext.instance().create(
             null, null, null, null, null,
             "<Role name=\"test\">\n"
-                + " <SchemaGrant access=\"none\">\n"
-                + "   <CubeGrant cube=\"Sales\" access=\"all\">\n"
-                + "     <HierarchyGrant hierarchy=\"[Store].[Stores]\" access=\"custom\"\n"
-                + "         topLevel=\"[Store].[Stores].[Store Country]\" rollupPolicy=\"partial\">\n"
-                + "       <MemberGrant member=\"[Store].[Stores].[All Stores]\" access=\"none\"/>\n"
-                + "       <MemberGrant member=\"[Store].[Stores].[USA].[CA].[Los Angeles]\" access=\"all\"/>\n"
-                + "       <MemberGrant member=\"[Store].[Stores].[USA].[CA].[Alameda]\" access=\"all\"/>\n"
-                + "       <MemberGrant member=\"[Store].[Stores].[USA].[CA].[Beverly Hills]\"\n"
-                + "access=\"all\"/>\n"
-                + "       <MemberGrant member=\"[Store].[Stores].[USA].[CA].[San Francisco]\"\n"
-                + "access=\"all\"/>\n"
-                + "       <MemberGrant member=\"[Store].[Stores].[USA].[CA].[San Diego]\" access=\"all\"/>\n"
-                + "\n"
-                + "       <MemberGrant member=\"[Store].[Stores].[USA].[OR].[Portland]\" access=\"all\"/>\n"
-                + "       <MemberGrant member=\"[Store].[Stores].[USA].[OR].[Salem]\" access=\"all\"/>\n"
-                + "     </HierarchyGrant>\n"
-                + "   </CubeGrant>\n"
-                + " </SchemaGrant>\n"
-                + "</Role>");
+            + " <SchemaGrant access=\"none\">\n"
+            + "   <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "     <HierarchyGrant hierarchy=\"[Store].[Stores]\" access=\"custom\"\n"
+            + "         topLevel=\"[Store].[Stores].[Store Country]\" rollupPolicy=\"partial\">\n"
+            + "       <MemberGrant member=\"[Store].[Stores].[All Stores]\" access=\"none\"/>\n"
+            + "       <MemberGrant member=\"[Store].[Stores].[USA].[CA].[Los Angeles]\" access=\"all\"/>\n"
+            + "       <MemberGrant member=\"[Store].[Stores].[USA].[CA].[Alameda]\" access=\"all\"/>\n"
+            + "       <MemberGrant member=\"[Store].[Stores].[USA].[CA].[Beverly Hills]\"\n"
+            + "access=\"all\"/>\n"
+            + "       <MemberGrant member=\"[Store].[Stores].[USA].[CA].[San Francisco]\"\n"
+            + "access=\"all\"/>\n"
+            + "       <MemberGrant member=\"[Store].[Stores].[USA].[CA].[San Diego]\" access=\"all\"/>\n"
+            + "\n"
+            + "       <MemberGrant member=\"[Store].[Stores].[USA].[OR].[Portland]\" access=\"all\"/>\n"
+            + "       <MemberGrant member=\"[Store].[Stores].[USA].[OR].[Salem]\" access=\"all\"/>\n"
+            + "     </HierarchyGrant>\n"
+            + "   </CubeGrant>\n"
+            + " </SchemaGrant>\n"
+            + "</Role>");
 
         testContext.withRole("test").assertQueryReturns(
             "select {[Measures].[Unit Sales]} on columns, "
@@ -2923,15 +2923,15 @@ public class AccessControlTest extends FoodMartTestCase {
 
         Result result = testContext.withRole("test").executeQuery(
             "with member store.stores.aggCaliforniaOregon as "
-                + "'aggregate({ [Store].[Stores].[USA].[CA], [Store].[Stores].[USA].[OR]})'"
-                + " select store.aggCaliforniaOregon on 0 from sales");
+            + "'aggregate({ [Store].[Stores].[USA].[CA], [Store].[Stores].[USA].[OR]})'"
+            + " select store.aggCaliforniaOregon on 0 from sales");
 
         String valueAggMember = result
             .getCell(new int[] {0}).getFormattedValue();
 
         result = testContext.withRole("test").executeQuery(
             " select from sales where "
-                + "{ [Store].[Stores].[USA].[CA], [Store].[Stores].[USA].[OR]}");
+            + "{ [Store].[Stores].[USA].[CA], [Store].[Stores].[USA].[OR]}");
 
         String valueSlicerAgg = result
             .getCell(new int[] {}).getFormattedValue();
