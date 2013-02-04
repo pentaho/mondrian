@@ -362,11 +362,18 @@ public class SqlConstraintUtils {
             if (member.isCalculated()
                 && isSupportedCalculatedMember(member))
             {
-                // Extract the list of members
-                Iterator<Member> evaluatedSet =
-                    getSetFromCalculatedMember(evaluator, member);
-                while (evaluatedSet.hasNext()) {
-                    listOfMembers.add(evaluatedSet.next());
+                if (member.getExpression() instanceof ResolvedFunCall) {
+                    // Extract the list of members
+                    Iterator<Member> evaluatedSet =
+                        getSetFromCalculatedMember(evaluator, member);
+                    while (evaluatedSet.hasNext()) {
+                        listOfMembers.add(evaluatedSet.next());
+                    }
+                } else if (member.getExpression() instanceof MemberExpr) {
+                    listOfMembers.add(
+                        ((MemberExpr)member.getExpression()).getMember());
+                } else {
+                    throw new AssertionError(member.getExpression());
                 }
             } else {
                 // just add the member
@@ -389,10 +396,14 @@ public class SqlConstraintUtils {
         if (member.getExpression() instanceof ResolvedFunCall) {
             ResolvedFunCall fun = (ResolvedFunCall) member.getExpression();
 
-            // We can only deal with Aggregates.
+             // We can only deal with Aggregates.
             if (fun.getFunDef() instanceof AggregateFunDef) {
                 return true;
             }
+        }
+
+        if (member.getExpression() instanceof MemberExpr) {
+            return true;
         }
         return false;
     }
