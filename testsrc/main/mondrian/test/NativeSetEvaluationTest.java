@@ -319,7 +319,9 @@ public class NativeSetEvaluationTest extends BatchTestCase {
      */
     public void testNativeTopCountWithMemberOnlySlicer() {
         propSaver.set(propSaver.properties.GenerateFormattedSql, true);
-
+        final boolean useAggregates =
+            MondrianProperties.instance().UseAggregates.get()
+            && MondrianProperties.instance().ReadAggregates.get();
         final String mdx =
             "WITH\n"
             + "  SET TC AS 'TopCount([Product].[Drink].[Alcoholic Beverages].Children, 3, [Measures].[Unit Sales] )'\n"
@@ -335,22 +337,42 @@ public class NativeSetEvaluationTest extends BatchTestCase {
               + "    `product_class`.`product_family` as `c0`,\n"
               + "    `product_class`.`product_department` as `c1`,\n"
               + "    `product_class`.`product_category` as `c2`,\n"
-              + "    sum(`agg_c_14_sales_fact_1997`.`unit_sales`) as `c3`\n"
-              + "from\n"
-              + "    `product` as `product`,\n"
-              + "    `product_class` as `product_class`,\n"
-              + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
-              + "    `store` as `store`\n"
-              + "where\n"
-              + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
-              + "and\n"
-              + "    `agg_c_14_sales_fact_1997`.`product_id` = `product`.`product_id`\n"
-              + "and\n"
-              + "    `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
-              + "and\n"
-              + "    `store`.`store_type` = 'Deluxe Supermarket'\n"
-              + "and\n"
-              + "    `agg_c_14_sales_fact_1997`.`the_year` = 1997\n"
+              + (useAggregates
+              ? ("    sum(`agg_c_14_sales_fact_1997`.`unit_sales`) as `c3`\n"
+                + "from\n"
+                + "    `product` as `product`,\n"
+                + "    `product_class` as `product_class`,\n"
+                + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
+                + "    `store` as `store`\n"
+                + "where\n"
+                + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+                + "and\n"
+                + "    `agg_c_14_sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+                + "and\n"
+                + "    `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+                + "and\n"
+                + "    `store`.`store_type` = 'Deluxe Supermarket'\n"
+                + "and\n"
+                + "    `agg_c_14_sales_fact_1997`.`the_year` = 1997\n")
+              : ("    sum(`sales_fact_1997`.`unit_sales`) as `c3`\n"
+                + "from\n"
+                + "    `product` as `product`,\n"
+                + "    `product_class` as `product_class`,\n"
+                + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+                + "    `store` as `store`,\n"
+                + "    `time_by_day` as `time_by_day`\n"
+                + "where\n"
+                + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+                + "and\n"
+                + "    `sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+                + "and\n"
+                + "    `sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+                + "and\n"
+                + "    `store`.`store_type` = `Deluxe Supermarket`\n"
+                + "and\n"
+                + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+                + "and\n"
+                + "    `time_by_day`.`the_year` = 1997\n"))
               + "and\n"
               + "    (`product_class`.`product_department` = 'Alcoholic Beverages' and `product_class`.`product_family` = 'Drink')\n"
               + "group by\n"
@@ -367,7 +389,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             new SqlPattern(
                 DatabaseProduct.MYSQL,
                 mysqlQuery,
-                mysqlQuery);
+                mysqlQuery.indexOf("("));
         assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
         assertQueryReturns(
             mdx,
