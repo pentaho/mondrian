@@ -859,28 +859,32 @@ public class FilterTest extends BatchTestCase {
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         final TestContext context = getTestContext().withFreshConnection();
-        context.assertQueryReturns(
-            "select Filter([Store].[Store Name].members, "
-            + "              Not ([Measures].[Store Sqft] - [Measures].[Grocery Sqft] < 10000)) on rows, "
-            + "{[Measures].[Store Sqft], [Measures].[Grocery Sqft]} on columns "
-            + "from [Store]", "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Store Sqft]}\n"
-            + "{[Measures].[Grocery Sqft]}\n"
-            + "Axis #2:\n"
-            + "{[Store].[Mexico].[DF].[Mexico City].[Store 9]}\n"
-            + "{[Store].[Mexico].[Yucatan].[Merida].[Store 8]}\n"
-            + "{[Store].[USA].[WA].[Bremerton].[Store 3]}\n"
-            + "{[Store].[USA].[WA].[Tacoma].[Store 17]}\n"
-            + "Row #0: 36,509\n"
-            + "Row #0: 22,450\n"
-            + "Row #1: 30,797\n"
-            + "Row #1: 20,141\n"
-            + "Row #2: 39,696\n"
-            + "Row #2: 24,390\n"
-            + "Row #3: 33,858\n"
-            + "Row #3: 22,123\n");
+        try {
+            context.assertQueryReturns(
+                "select Filter([Store].[Store Name].members, "
+                + "              Not ([Measures].[Store Sqft] - [Measures].[Grocery Sqft] < 10000)) on rows, "
+                + "{[Measures].[Store Sqft], [Measures].[Grocery Sqft]} on columns "
+                + "from [Store]", "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Store Sqft]}\n"
+                + "{[Measures].[Grocery Sqft]}\n"
+                + "Axis #2:\n"
+                + "{[Store].[Mexico].[DF].[Mexico City].[Store 9]}\n"
+                + "{[Store].[Mexico].[Yucatan].[Merida].[Store 8]}\n"
+                + "{[Store].[USA].[WA].[Bremerton].[Store 3]}\n"
+                + "{[Store].[USA].[WA].[Tacoma].[Store 17]}\n"
+                + "Row #0: 36,509\n"
+                + "Row #0: 22,450\n"
+                + "Row #1: 30,797\n"
+                + "Row #1: 20,141\n"
+                + "Row #2: 39,696\n"
+                + "Row #2: 24,390\n"
+                + "Row #3: 33,858\n"
+                + "Row #3: 22,123\n");
+        } finally {
+            context.close();
+        }
     }
 
     public void testNonNativeFilterWithCalcMember() {

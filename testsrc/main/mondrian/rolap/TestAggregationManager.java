@@ -1036,14 +1036,18 @@ public class TestAggregationManager extends BatchTestCase {
             };
 
         final TestContext context = getTestContext().withFreshConnection();
+        try {
+            // This MDX gets the [Product].[Product Family] cardinality
+            // from the DB.
+            context.executeQuery(query1);
 
-        // This MDX gets the [Product].[Product Family] cardinality from the DB.
-        context.executeQuery(query1);
-
-        // This MDX should be able to reuse the cardinality for
-        // [Product].[Product Family]; and should not issue a SQL to fetch
-        // that from DB again.
-        assertQuerySqlOrNot(context, query2, patterns, true, false, false);
+            // This MDX should be able to reuse the cardinality for
+            // [Product].[Product Family]; and should not issue a SQL to fetch
+            // that from DB again.
+            assertQuerySqlOrNot(context, query2, patterns, true, false, false);
+        } finally {
+            context.close();
+        }
     }
 
     public void testKeyExpressionCardinalityCache() {
@@ -2502,6 +2506,7 @@ public class TestAggregationManager extends BatchTestCase {
             },
             false, false, true);
     }
+
 }
 
 // End TestAggregationManager.java

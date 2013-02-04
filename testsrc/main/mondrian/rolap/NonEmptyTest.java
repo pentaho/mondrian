@@ -3564,22 +3564,26 @@ public class NonEmptyTest extends BatchTestCase {
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         final TestContext context = getTestContext().withFreshConnection();
-        context.assertQueryReturns(
-            "with set [p] as '[Product].[Product Family].members' "
-            + "set [s] as '[Store].[Store Country].members' "
-            + "set [ne] as 'nonemptycrossjoin([p],[s])' "
-            + "set [nep] as 'Generate([ne],{[Product].CurrentMember})' "
-            + "select [nep] on columns from sales "
-            + "where ([Store].[Store Country].[Mexico])",
-            "Axis #0:\n"
-            + "{[Store].[Mexico]}\n"
-            + "Axis #1:\n"
-            + "{[Product].[Drink]}\n"
-            + "{[Product].[Food]}\n"
-            + "{[Product].[Non-Consumable]}\n"
-            + "Row #0: \n"
-            + "Row #0: \n"
-            + "Row #0: \n");
+        try {
+            context.assertQueryReturns(
+                "with set [p] as '[Product].[Product Family].members' "
+                + "set [s] as '[Store].[Store Country].members' "
+                + "set [ne] as 'nonemptycrossjoin([p],[s])' "
+                + "set [nep] as 'Generate([ne],{[Product].CurrentMember})' "
+                + "select [nep] on columns from sales "
+                + "where ([Store].[Store Country].[Mexico])",
+                "Axis #0:\n"
+                + "{[Store].[Mexico]}\n"
+                + "Axis #1:\n"
+                + "{[Product].[Drink]}\n"
+                + "{[Product].[Food]}\n"
+                + "{[Product].[Non-Consumable]}\n"
+                + "Row #0: \n"
+                + "Row #0: \n"
+                + "Row #0: \n");
+        } finally {
+            context.close();
+        }
     }
 
     public void testDependentSlicerMemberNonNative() {
@@ -3589,16 +3593,20 @@ public class NonEmptyTest extends BatchTestCase {
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         final TestContext context = getTestContext().withFreshConnection();
-        context.assertQueryReturns(
-            "with set [p] as '[Product].[Product Family].members' "
-            + "set [s] as '[Store].[Store Country].members' "
-            + "set [ne] as 'nonemptycrossjoin([p],[s])' "
-            + "set [nep] as 'Generate([ne],{[Product].CurrentMember})' "
-            + "select [nep] on columns from sales "
-            + "where ([Time].[1998])",
-            "Axis #0:\n"
-            + "{[Time].[1998]}\n"
-            + "Axis #1:\n");
+        try {
+            context.assertQueryReturns(
+                "with set [p] as '[Product].[Product Family].members' "
+                + "set [s] as '[Store].[Store Country].members' "
+                + "set [ne] as 'nonemptycrossjoin([p],[s])' "
+                + "set [nep] as 'Generate([ne],{[Product].CurrentMember})' "
+                + "select [nep] on columns from sales "
+                + "where ([Time].[1998])",
+                "Axis #0:\n"
+                + "{[Time].[1998]}\n"
+              + "Axis #1:\n");
+        } finally {
+            context.close();
+        }
     }
 
     public void testDependentSlicerMemberNative() {
@@ -3608,16 +3616,20 @@ public class NonEmptyTest extends BatchTestCase {
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         final TestContext context = getTestContext().withFreshConnection();
-        context.assertQueryReturns(
-            "with set [p] as '[Product].[Product Family].members' "
-            + "set [s] as '[Store].[Store Country].members' "
-            + "set [ne] as 'nonemptycrossjoin([p],[s])' "
-            + "set [nep] as 'Generate([ne],{[Product].CurrentMember})' "
-            + "select [nep] on columns from sales "
-            + "where ([Time].[1998])",
-            "Axis #0:\n"
-            + "{[Time].[1998]}\n"
-            + "Axis #1:\n");
+        try {
+            context.assertQueryReturns(
+                "with set [p] as '[Product].[Product Family].members' "
+                + "set [s] as '[Store].[Store Country].members' "
+                + "set [ne] as 'nonemptycrossjoin([p],[s])' "
+                + "set [nep] as 'Generate([ne],{[Product].CurrentMember})' "
+                + "select [nep] on columns from sales "
+                + "where ([Time].[1998])",
+                "Axis #0:\n"
+                + "{[Time].[1998]}\n"
+                + "Axis #1:\n");
+        } finally {
+            context.close();
+        }
     }
 
     /**

@@ -1177,16 +1177,21 @@ public class NativizeSetFunDefTest extends BatchTestCase {
         // Ssas compatible: time.[weekly].[week]
         // Use fresh connection -- unique names are baked in when schema is
         // loaded, depending the Ssas setting at that time.
-        assertQueryIsReWritten(
-            getTestContext().withFreshConnection(),
-            "select nativizeSet(crossjoin(time.[week].members, { gender.m })) on 0 "
-            + "from sales",
-            "with member [Time].[Weekly].[_Nativized_Member_Time_Weekly_Week_] as '[Time].[Weekly].DefaultMember'\n"
-            + "  set [_Nativized_Set_Time_Weekly_Week_] as '{[Time].[Weekly].[_Nativized_Member_Time_Weekly_Week_]}'\n"
-            + "  member [Time].[_Nativized_Sentinel_Time_Year_] as '101010'\n"
-            + "  member [Gender].[_Nativized_Sentinel_Gender_(All)_] as '101010'\n"
-            + "select NativizeSet(Crossjoin([_Nativized_Set_Time_Weekly_Week_], {[Gender].[M]})) ON COLUMNS\n"
-            + "from [Sales]\n");
+        TestContext context = getTestContext().withFreshConnection();
+        try {
+            assertQueryIsReWritten(
+                context,
+                "select nativizeSet(crossjoin(time.[week].members, { gender.m })) on 0 "
+                + "from sales",
+                "with member [Time].[Weekly].[_Nativized_Member_Time_Weekly_Week_] as '[Time].[Weekly].DefaultMember'\n"
+                + "  set [_Nativized_Set_Time_Weekly_Week_] as '{[Time].[Weekly].[_Nativized_Member_Time_Weekly_Week_]}'\n"
+                + "  member [Time].[_Nativized_Sentinel_Time_Year_] as '101010'\n"
+                + "  member [Gender].[_Nativized_Sentinel_Gender_(All)_] as '101010'\n"
+                + "select NativizeSet(Crossjoin([_Nativized_Set_Time_Weekly_Week_], {[Gender].[M]})) ON COLUMNS\n"
+                + "from [Sales]\n");
+        } finally {
+            context.close();
+        }
     }
 
     public void testMultipleHierarchySsasFalse() {

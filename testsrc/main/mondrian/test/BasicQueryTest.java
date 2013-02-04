@@ -7569,6 +7569,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     public void testStatistics() {
         final String product =
             getTestContext().getDialect().getDatabaseProduct().name();
+        final String dialectClassName =
+            getTestContext().getDialect().getClass().getName();
+
         propSaver.set(
             new StringProperty(
                 MondrianProperties.instance(),
@@ -7580,52 +7583,63 @@ public class BasicQueryTest extends FoodMartTestCase {
             + ","
             + SqlStatisticsProvider.class.getName());
         final TestContext testContext = getTestContext().withFreshConnection();
-        testContext.assertSimpleQuery();
-
-        final List<StatisticsProvider> statisticsProviders =
-            testContext.getDialect().getStatisticsProviders();
-        assertEquals(2, statisticsProviders.size());
-        assertTrue(
-            statisticsProviders.get(0) instanceof MyJdbcStatisticsProvider);
-        assertTrue(
-            statisticsProviders.get(1) instanceof SqlStatisticsProvider);
-
-        for (StatisticsProvider statisticsProvider : statisticsProviders) {
-            int rowCount =
-                statisticsProvider.getTableCardinality(
-                    testContext.getDialect(),
+        try {
+            testContext.assertSimpleQuery();
+            // bypass dialect cache and always get a fresh dialect instance
+            // with our custom providers
+            Dialect dialect =
+                DialectManager.createDialect(
                     testContext.getConnection().getDataSource(),
                     null,
-                    null,
-                    "customer",
-                    new Execution(
-                        ((RolapSchema) testContext.getConnection().getSchema())
-                            .getInternalConnection()
-                            .getInternalStatement(),
-                        0));
-            if (statisticsProvider instanceof SqlStatisticsProvider) {
-                assertTrue(
-                    "Row count estimate: " + rowCount + " (actual 10281)",
-                    rowCount > 10000 && rowCount < 15000);
-            }
-
-            int valueCount =
-                statisticsProvider.getColumnCardinality(
-                    testContext.getDialect(),
-                    testContext.getConnection().getDataSource(),
-                    null,
-                    null,
-                    "customer",
-                    "gender",
-                    new Execution(
-                        ((RolapSchema) testContext.getConnection().getSchema())
-                            .getInternalConnection().getInternalStatement(),
-                        0));
+                    dialectClassName);
+            final List<StatisticsProvider> statisticsProviders =
+                dialect.getStatisticsProviders();
+            assertEquals(2, statisticsProviders.size());
             assertTrue(
-                "Value count estimate: " + valueCount + " (actual 2)",
-                statisticsProvider instanceof JdbcStatisticsProvider
-                    ? valueCount == -1
-                    : valueCount == 2);
+                statisticsProviders.get(0) instanceof MyJdbcStatisticsProvider);
+            assertTrue(
+                statisticsProviders.get(1) instanceof SqlStatisticsProvider);
+
+            for (StatisticsProvider statisticsProvider : statisticsProviders) {
+                int rowCount =
+                    statisticsProvider.getTableCardinality(
+                        dialect,
+                        testContext.getConnection().getDataSource(),
+                        null,
+                        null,
+                        "customer",
+                        new Execution(
+                            ((RolapSchema) testContext.getConnection().getSchema())
+                                .getInternalConnection()
+                                .getInternalStatement(),
+                            0));
+                if (statisticsProvider instanceof SqlStatisticsProvider) {
+                    assertTrue(
+                        "Row count estimate: " + rowCount + " (actual 10281)",
+                        rowCount > 10000 && rowCount < 15000);
+                }
+
+                int valueCount =
+                    statisticsProvider.getColumnCardinality(
+                        dialect,
+                        //testContext.getDialect(),
+                        testContext.getConnection().getDataSource(),
+                        null,
+                        null,
+                        "customer",
+                        "gender",
+                        new Execution(
+                            ((RolapSchema) testContext.getConnection().getSchema())
+                                .getInternalConnection().getInternalStatement(),
+                            0));
+                assertTrue(
+                    "Value count estimate: " + valueCount + " (actual 2)",
+                    statisticsProvider instanceof JdbcStatisticsProvider
+                        ? valueCount == -1
+                        : valueCount == 2);
+            }
+        } finally {
+            testContext.close();
         }
     }
 
