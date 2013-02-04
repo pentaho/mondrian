@@ -3603,7 +3603,7 @@ public class NonEmptyTest extends BatchTestCase {
                 + "where ([Time].[1998])",
                 "Axis #0:\n"
                 + "{[Time].[1998]}\n"
-              + "Axis #1:\n");
+                + "Axis #1:\n");
         } finally {
             context.close();
         }

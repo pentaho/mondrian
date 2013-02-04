@@ -7609,7 +7609,8 @@ public class BasicQueryTest extends FoodMartTestCase {
                         null,
                         "customer",
                         new Execution(
-                            ((RolapSchema) testContext.getConnection().getSchema())
+                            ((RolapSchema)
+                                testContext.getConnection().getSchema())
                                 .getInternalConnection()
                                 .getInternalStatement(),
                             0));
@@ -7629,7 +7630,8 @@ public class BasicQueryTest extends FoodMartTestCase {
                         "customer",
                         "gender",
                         new Execution(
-                            ((RolapSchema) testContext.getConnection().getSchema())
+                            ((RolapSchema)
+                                testContext.getConnection().getSchema())
                                 .getInternalConnection().getInternalStatement(),
                             0));
                 assertTrue(
