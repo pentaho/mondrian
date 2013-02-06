@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.cache;
@@ -218,9 +218,10 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         if (headerInfo.slot != null && !headerInfo.slot.isDone()) {
             // Cannot remove while load is pending; flag for removal after load
             headerInfo.removeAfterLoad = true;
-        } else {
-            headerMap.remove(header);
+            return;
         }
+
+        headerMap.remove(header);
 
         final List factKey = makeFactKey(header);
         final FactInfo factInfo = factMap.get(factKey);
@@ -247,8 +248,6 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
             bitkeyMap.remove(bitkeyKey);
             factInfo.bitkeyPoset.remove(header.getConstrainedColumnsBitKey());
         }
-
-        headerMap.remove(header);
     }
 
     private void checkThread() {
