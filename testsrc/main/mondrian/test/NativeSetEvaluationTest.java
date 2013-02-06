@@ -150,7 +150,9 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                 DatabaseProduct.MYSQL,
                 NativeTopCountWithAgg.mysql,
                 NativeTopCountWithAgg.mysql);
-        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        if (MondrianProperties.instance().EnableNativeTopCount.get()) {
+            assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        }
         assertQueryReturns(mdx, NativeTopCountWithAgg.result);
     }
 
@@ -390,7 +392,9 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                 DatabaseProduct.MYSQL,
                 mysqlQuery,
                 mysqlQuery.indexOf("("));
-        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        if (MondrianProperties.instance().EnableNativeTopCount.get()) {
+            assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        }
         assertQueryReturns(
             mdx,
             "Axis #0:\n"
@@ -457,6 +461,9 @@ public class NativeSetEvaluationTest extends BatchTestCase {
      * make it more permissable.
      */
     public void testLoopDetection() {
+        if (!MondrianProperties.instance().EnableNativeTopCount.get()) {
+            return;
+        }
         final String mdx =
             "WITH\n"
             + "  SET CJ AS NonEmptyCrossJoin([Store Type].[Store Type].Members, {[Measures].[Unit Sales]})\n"
@@ -592,7 +599,9 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                 mysql,
                 mysql);
 
-        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        if (MondrianProperties.instance().EnableNativeTopCount.get()) {
+            assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        }
 
         assertQueryReturns(
             mdx,
@@ -816,7 +825,10 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                 mysql,
                 mysql);
 
-        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        if (MondrianProperties.instance().EnableNativeTopCount.get()) {
+            assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        }
+
         assertQueryReturns(
             mdx,
             "Axis #0:\n"
@@ -897,7 +909,10 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                 DatabaseProduct.MYSQL,
                 mysql,
                 mysql);
-        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+
+        if (MondrianProperties.instance().EnableNativeTopCount.get()) {
+            assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        }
 
         assertQueryReturns(
             mdx,
