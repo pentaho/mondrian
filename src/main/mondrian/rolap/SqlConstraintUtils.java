@@ -13,6 +13,7 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.olap.fun.AggregateFunDef;
+import mondrian.olap.fun.ParenthesesFunDef;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggStar;
@@ -27,6 +28,7 @@ import org.apache.log4j.Logger;
 
 import java.util.*;
 import java.util.Map.Entry;
+
 
 
 /**
@@ -357,24 +359,12 @@ public class SqlConstraintUtils {
         Evaluator evaluator)
     {
         ArrayList<Member> listOfMembers = new ArrayList<Member>();
-
         for (Member member : members) {
-            if (member.isCalculated()
+          if (member.isCalculated()
                 && isSupportedCalculatedMember(member))
             {
-                if (member.getExpression() instanceof ResolvedFunCall) {
-                    // Extract the list of members
-                    Iterator<Member> evaluatedSet =
-                        getSetFromCalculatedMember(evaluator, member);
-                    while (evaluatedSet.hasNext()) {
-                        listOfMembers.add(evaluatedSet.next());
-                    }
-                } else if (member.getExpression() instanceof MemberExpr) {
-                    listOfMembers.add(
-                        ((MemberExpr)member.getExpression()).getMember());
-                } else {
-                    throw new AssertionError(member.getExpression());
-                }
+                    listOfMembers.addAll(
+                        expandExpressions(member, null, evaluator));
             } else {
                 // just add the member
                 listOfMembers.add(member);
@@ -384,28 +374,92 @@ public class SqlConstraintUtils {
         return members;
     }
 
+    public static List<Member> expandExpressions(
+        Member member,
+        Exp expression,
+        Evaluator evaluator)
+    {
+      List<Member> listOfMembers = new ArrayList<Member>();
+      if (expression == null) {
+        expression = member.getExpression();
+      }
+      if (expression instanceof ResolvedFunCall) {
+        ResolvedFunCall fun = (ResolvedFunCall)expression;
+
+        if (fun.getFunDef() instanceof ParenthesesFunDef) {
+          assert (fun.getArgCount() == 1);
+          listOfMembers.addAll(
+              expandExpressions(member, fun.getArg(0), evaluator));
+        } else if (fun.getFunName().equals("+")) {
+          Exp[] expressions = fun.getArgs();
+          for (Exp innerExp : expressions) {
+            listOfMembers.addAll(
+                expandExpressions(member, innerExp, evaluator));
+          }
+        } else {
+          // Extract the list of members
+          Iterator<Member> evaluatedSet =
+            getSetFromCalculatedMember(evaluator, member);
+          while (evaluatedSet.hasNext()) {
+            listOfMembers.add(evaluatedSet.next());
+          }
+        }
+      } else if (expression instanceof MemberExpr) {
+        listOfMembers.add(((MemberExpr)expression).getMember());
+      } else {
+        listOfMembers.add(member);
+      }
+      return listOfMembers;
+    }
+
     /**
      * Check to see if this is in a list of supported calculated members.
-     * Currently, only the Aggregate function is supported.
+     * Currently, only the Aggregate and the + function is supported.
      *
      * @return <i>true</i> if the calculated member is supported for native
      *         evaluation
      */
     public static boolean isSupportedCalculatedMember(final Member member) {
         // Is it a supported function?
-        if (member.getExpression() instanceof ResolvedFunCall) {
-            ResolvedFunCall fun = (ResolvedFunCall) member.getExpression();
+        return isSupportedExpressionForCalculatedMember(member.getExpression());
+    }
 
-             // We can only deal with Aggregates.
+    public static boolean isSupportedExpressionForCalculatedMember(
+        final Exp expression)
+    {
+      if (expression instanceof ResolvedFunCall) {
+            ResolvedFunCall fun = (ResolvedFunCall) expression;
+
             if (fun.getFunDef() instanceof AggregateFunDef) {
                 return true;
             }
-        }
 
-        if (member.getExpression() instanceof MemberExpr) {
-            return true;
-        }
-        return false;
+            if (fun.getFunDef() instanceof ParenthesesFunDef) {
+              if (fun.getArgs().length == 1) {
+                for (Exp argsExp : fun.getArgs()) {
+                  if (!isSupportedExpressionForCalculatedMember(argsExp)) {
+                    return false;
+                  }
+                }
+              }
+              return true;
+            }
+
+            if (fun.getFunDef().getName().equals("+")) {
+              for (Exp argsExp : fun.getArgs()) {
+                if (!isSupportedExpressionForCalculatedMember(argsExp)) {
+                  return false;
+                }
+              }
+              return true;
+            }
+      }
+
+      if (expression instanceof MemberExpr) {
+        return true;
+      }
+
+      return false;
     }
 
     public static Iterator<Member> getSetFromCalculatedMember(
