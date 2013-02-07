@@ -34,6 +34,10 @@ public abstract class AggTableTestCase extends CsvDBTestCase {
     }
 
     protected void setUp() throws Exception {
+        // Schema needs to be flushed before DBLoader is created is super.setUp,
+        // otherwise AggTableManager can end up loading an old JdbcSchema
+        getConnection().getCacheControl(null).flushSchemaCache();
+
         super.setUp();
 
         // store current property values

@@ -238,15 +238,6 @@ public class NonCollapsedAggTest extends AggTableTestCase {
         super(name);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        final MondrianProperties props = MondrianProperties.instance();
-        propSaver.set(props.UseAggregates, true);
-        propSaver.set(props.ReadAggregates, true);
-        super.getConnection().getCacheControl(null).flushSchemaCache();
-    }
-
     protected String getFileName() {
         return "non_collapsed_agg_test.csv";
     }
