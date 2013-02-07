@@ -10,15 +10,6 @@
 */
 package mondrian.test;
 
-import mondrian.olap.*;
-import mondrian.server.UrlRepositoryContentFinder;
-import mondrian.xmla.test.XmlaTestContext;
-import org.apache.log4j.Logger;
-import org.olap4j.*;
-
-import java.util.*;
-import java.util.concurrent.*;
-
 /**
  * Runs specified set of MDX queries concurrently.
  * This Class is not added to the Main test suite.
@@ -29,8 +20,6 @@ import java.util.concurrent.*;
  * @author Thiyagu,Ajit
  */
 public class ConcurrentMdxTest extends FoodMartTestCase {
-    private static final Logger LOGGER =
-        Logger.getLogger(FoodMartTestCase.class);
 
     static final QueryAndResult[] mdxQueries = {
         new QueryAndResult(
@@ -74,7 +63,7 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
         new QueryAndResult(
             "select {[Measures].[Sales Count], "
             + "[Measures].[Store Invoice]} on 0, "
-            + "{[Time].[Time].[1997],[Time].[Time].[1998]} on 1 "
+            + "{[Time].[1997],[Time].[1998]} on 1 "
             + "from [Warehouse and Sales]",
             "Axis #0:\n"
             + "{}\n"
@@ -92,7 +81,7 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
         new QueryAndResult(
             "select {[Measures].[Sales Count], "
             + "[Measures].[Store Invoice]} on 0, "
-            + "{([Gender].[Gender].[M],[Time].[Time].[1997])} on 1 "
+            + "{([Gender].[M],[Time].[1997])} on 1 "
             + "from [Warehouse and Sales]",
             "Axis #0:\n"
             + "{}\n"
@@ -100,14 +89,14 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             + "{[Measures].[Sales Count]}\n"
             + "{[Measures].[Store Invoice]}\n"
             + "Axis #2:\n"
-            + "{[Customer].[Gender].[M], [Time].[Time].[1997]}\n"
+            + "{[[Customer].Gender].[M], [Time].[Time].[1997]}\n"
             + "Row #0: 44,006\n"
             + "Row #0: \n"),
 
         new QueryAndResult(
             "select {[Measures].[Sales Count], "
             + "[Measures].[Store Invoice]} on 0, "
-            + "{([Gender].[Gender].[F],[Time].[Time].[1997])} on 1 "
+            + "{([Gender].[F],[Time].[1997])} on 1 "
             + "from [Warehouse and Sales]",
             "Axis #0:\n"
             + "{}\n"
@@ -175,7 +164,7 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             "select \n"
             + "{[Measures].[Unit Sales]} on columns,\n"
             + "order(except([Promotion].[Media Type].members,"
-            + "{[Promotion].[Media Type].[No Media], [Promotion].[Media Type].[All Media]}),"
+            + "{[Promotion].[Media Type].[No Media]}),"
             + "[Measures].[Unit Sales],DESC) on rows\n"
             + "from Sales",
             "Axis #0:\n"
@@ -222,19 +211,19 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             + "{[Measures].[Units Shipped]}\n"
             + "{[Measures].[Units Ordered]}\n"
             + "Axis #2:\n"
-            + "{[Store].[Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n"
-            + "{[Store].[Stores].[USA].[CA].[Los Angeles].[Store 7]}\n"
-            + "{[Store].[Stores].[USA].[CA].[San Diego].[Store 24]}\n"
-            + "{[Store].[Stores].[USA].[CA].[San Francisco].[Store 14]}\n"
-            + "{[Store].[Stores].[USA].[OR].[Portland].[Store 11]}\n"
-            + "{[Store].[Stores].[USA].[OR].[Salem].[Store 13]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Bellingham].[Store 2]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Seattle].[Store 15]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Spokane].[Store 16]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Walla Walla].[Store 22]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Yakima].[Store 23]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "{[Store].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Store].[USA].[OR].[Salem].[Store 13]}\n"
+            + "{[Store].[USA].[WA].[Bellingham].[Store 2]}\n"
+            + "{[Store].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[USA].[WA].[Seattle].[Store 15]}\n"
+            + "{[Store].[USA].[WA].[Spokane].[Store 16]}\n"
+            + "{[Store].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "{[Store].[USA].[WA].[Walla Walla].[Store 22]}\n"
+            + "{[Store].[USA].[WA].[Yakima].[Store 23]}\n"
             + "Row #0: 10759.0\n"
             + "Row #0: 11699.0\n"
             + "Row #1: 24587.0\n"
@@ -264,13 +253,13 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
 
         new QueryAndResult(
             "with member [Measures].[Store Sales Last Period] as"
-            + " '([Measures].[Store Sales], Time.[Time].PrevMember)'\n"
+            + " '([Measures].[Store Sales], Time.PrevMember)'\n"
             + "select\n"
             + " {[Measures].[Store Sales Last Period]} on columns,\n"
             + " {TopCount([Product].[Product Department].members,5,"
             + " [Measures].[Store Sales Last Period])} on rows\n"
             + "from Sales\n"
-            + "where ([Time].[Time].[1998])",
+            + "where ([Time].[1998])",
             "Axis #0:\n"
             + "{[Time].[Time].[1998]}\n"
             + "Axis #1:\n"
@@ -557,7 +546,7 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
         new QueryAndResult(
             "WITH\n"
             + "   MEMBER [Measures].[StoreType] AS \n"
-            + "   '[Store].[Store Name].CurrentMember.Properties(\"Store Type\")',\n"
+            + "   '[Store].CurrentMember.Properties(\"Store Type\")',\n"
             + "   SOLVE_ORDER = 2\n"
             + "   MEMBER [Measures].[ProfitPct] AS \n"
             + "   '((Measures.[Store Sales] - Measures.[Store Cost]) /"
@@ -572,19 +561,19 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n"
-            + "{[Store].[Stores].[USA].[CA].[Los Angeles].[Store 7]}\n"
-            + "{[Store].[Stores].[USA].[CA].[San Diego].[Store 24]}\n"
-            + "{[Store].[Stores].[USA].[CA].[San Francisco].[Store 14]}\n"
-            + "{[Store].[Stores].[USA].[OR].[Portland].[Store 11]}\n"
-            + "{[Store].[Stores].[USA].[OR].[Salem].[Store 13]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Bellingham].[Store 2]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Seattle].[Store 15]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Spokane].[Store 16]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Walla Walla].[Store 22]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Yakima].[Store 23]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "{[Store].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Store].[USA].[OR].[Salem].[Store 13]}\n"
+            + "{[Store].[USA].[WA].[Bellingham].[Store 2]}\n"
+            + "{[Store].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[USA].[WA].[Seattle].[Store 15]}\n"
+            + "{[Store].[USA].[WA].[Spokane].[Store 16]}\n"
+            + "{[Store].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "{[Store].[USA].[WA].[Walla Walla].[Store 22]}\n"
+            + "{[Store].[USA].[WA].[Yakima].[Store 23]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Store Sales]}\n"
             + "{[Measures].[Store Cost]}\n"
@@ -656,31 +645,31 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[BigSeller]}\n"
             + "Axis #2:\n"
-            + "{[Store].[Stores].[Canada].[BC].[Vancouver].[Store 19]}\n"
-            + "{[Store].[Stores].[Canada].[BC].[Victoria].[Store 20]}\n"
-            + "{[Store].[Stores].[Mexico].[DF].[Mexico City].[Store 9]}\n"
-            + "{[Store].[Stores].[Mexico].[DF].[San Andres].[Store 21]}\n"
-            + "{[Store].[Stores].[Mexico].[Guerrero].[Acapulco].[Store 1]}\n"
-            + "{[Store].[Stores].[Mexico].[Jalisco].[Guadalajara].[Store 5]}\n"
-            + "{[Store].[Stores].[Mexico].[Veracruz].[Orizaba].[Store 10]}\n"
-            + "{[Store].[Stores].[Mexico].[Yucatan].[Merida].[Store 8]}\n"
-            + "{[Store].[Stores].[Mexico].[Zacatecas].[Camacho].[Store 4]}\n"
-            + "{[Store].[Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 12]}\n"
-            + "{[Store].[Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 18]}\n"
-            + "{[Store].[Stores].[USA].[CA].[Alameda].[HQ]}\n"
-            + "{[Store].[Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n"
-            + "{[Store].[Stores].[USA].[CA].[Los Angeles].[Store 7]}\n"
-            + "{[Store].[Stores].[USA].[CA].[San Diego].[Store 24]}\n"
-            + "{[Store].[Stores].[USA].[CA].[San Francisco].[Store 14]}\n"
-            + "{[Store].[Stores].[USA].[OR].[Portland].[Store 11]}\n"
-            + "{[Store].[Stores].[USA].[OR].[Salem].[Store 13]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Bellingham].[Store 2]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Seattle].[Store 15]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Spokane].[Store 16]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Walla Walla].[Store 22]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Yakima].[Store 23]}\n"
+            + "{[Store].[Canada].[BC].[Vancouver].[Store 19]}\n"
+            + "{[Store].[Canada].[BC].[Victoria].[Store 20]}\n"
+            + "{[Store].[Mexico].[DF].[Mexico City].[Store 9]}\n"
+            + "{[Store].[Mexico].[DF].[San Andres].[Store 21]}\n"
+            + "{[Store].[Mexico].[Guerrero].[Acapulco].[Store 1]}\n"
+            + "{[Store].[Mexico].[Jalisco].[Guadalajara].[Store 5]}\n"
+            + "{[Store].[Mexico].[Veracruz].[Orizaba].[Store 10]}\n"
+            + "{[Store].[Mexico].[Yucatan].[Merida].[Store 8]}\n"
+            + "{[Store].[Mexico].[Zacatecas].[Camacho].[Store 4]}\n"
+            + "{[Store].[Mexico].[Zacatecas].[Hidalgo].[Store 12]}\n"
+            + "{[Store].[Mexico].[Zacatecas].[Hidalgo].[Store 18]}\n"
+            + "{[Store].[USA].[CA].[Alameda].[HQ]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "{[Store].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Store].[USA].[OR].[Salem].[Store 13]}\n"
+            + "{[Store].[USA].[WA].[Bellingham].[Store 2]}\n"
+            + "{[Store].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[USA].[WA].[Seattle].[Store 15]}\n"
+            + "{[Store].[USA].[WA].[Spokane].[Store 16]}\n"
+            + "{[Store].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "{[Store].[USA].[WA].[Walla Walla].[Store 22]}\n"
+            + "{[Store].[USA].[WA].[Yakima].[Store 23]}\n"
             + "Row #0: No\n"
             + "Row #1: No\n"
             + "Row #2: No\n"
@@ -725,19 +714,19 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n"
-            + "{[Store].[Stores].[USA].[CA].[Los Angeles].[Store 7]}\n"
-            + "{[Store].[Stores].[USA].[CA].[San Diego].[Store 24]}\n"
-            + "{[Store].[Stores].[USA].[CA].[San Francisco].[Store 14]}\n"
-            + "{[Store].[Stores].[USA].[OR].[Portland].[Store 11]}\n"
-            + "{[Store].[Stores].[USA].[OR].[Salem].[Store 13]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Bellingham].[Store 2]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Seattle].[Store 15]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Spokane].[Store 16]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Walla Walla].[Store 22]}\n"
-            + "{[Store].[Stores].[USA].[WA].[Yakima].[Store 23]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "{[Store].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Store].[USA].[OR].[Salem].[Store 13]}\n"
+            + "{[Store].[USA].[WA].[Bellingham].[Store 2]}\n"
+            + "{[Store].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[USA].[WA].[Seattle].[Store 15]}\n"
+            + "{[Store].[USA].[WA].[Spokane].[Store 16]}\n"
+            + "{[Store].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "{[Store].[USA].[WA].[Walla Walla].[Store 22]}\n"
+            + "{[Store].[USA].[WA].[Yakima].[Store 23]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Store Sales]}\n"
             + "{[Measures].[Store Cost]}\n"
@@ -801,13 +790,13 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             + "     '([Measures].[Store Sales]-[Measures].[Store Cost])/"
             + "([Measures].[Store Cost])',\n"
             + " FORMAT_STRING = '#.00%', SOLVE_ORDER = 1\n"
-            + " Member [Time].[Time].[First Half 97] AS  '[Time].[Time].[1997].[Q1] +"
-            + " [Time].[Time].[1997].[Q2]'\n"
-            + " Member [Time].[Time].[Second Half 97] AS '[Time].[Time].[1997].[Q3] +"
-            + " [Time].[Time].[1997].[Q4]'\n"
+            + " Member [Time].[Time].[First Half 97] AS  '[Time].[1997].[Q1] +"
+            + " [Time].[1997].[Q2]'\n"
+            + " Member [Time].[Time].[Second Half 97] AS '[Time].[1997].[Q3] +"
+            + " [Time].[1997].[Q4]'\n"
             + " SELECT {[Time].[First Half 97],\n"
-            + "     [Time].[Time].[Second Half 97],\n"
-            + "     [Time].[Time].[1997].CHILDREN} ON COLUMNS,\n"
+            + "     [Time].[Second Half 97],\n"
+            + "     [Time].[1997].CHILDREN} ON COLUMNS,\n"
             + " {[Store].[Store Country].[USA].CHILDREN} ON ROWS\n"
             + " FROM [Sales]\n"
             + " WHERE ([Measures].[ProfitPercent])",
@@ -821,9 +810,9 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             + "{[Time].[Time].[1997].[Q3]}\n"
             + "{[Time].[Time].[1997].[Q4]}\n"
             + "Axis #2:\n"
-            + "{[Store].[Stores].[USA].[CA]}\n"
-            + "{[Store].[Stores].[USA].[OR]}\n"
-            + "{[Store].[Stores].[USA].[WA]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[WA]}\n"
             + "Row #0: 150.55%\n"
             + "Row #0: 150.53%\n"
             + "Row #0: 150.68%\n"
@@ -849,7 +838,7 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             + "select\n"
             + "    {[Measures].[Store Sales],[Measures].[Accumulated Sales]}"
             + " on columns,\n"
-            + "    {Descendants([Time].[Time].[1997],[Time].[Month])} on rows\n"
+            + "    {Descendants([Time].[1997],[Time].[Month])} on rows\n"
             + "from [Warehouse and Sales]",
             "Axis #0:\n"
             + "{}\n"
@@ -900,7 +889,7 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             + "  {[Warehouse].DefaultMember, [Warehouse].[USA].children},\n"
             + " {[Measures].[Unit Sales], [Measures].[Units Shipped]}) on"
             + " columns,\n"
-            + " [Time].[Time].children on rows\n"
+            + " [Time].children on rows\n"
             + "from [Warehouse and Sales]",
             "Axis #0:\n"
             + "{}\n"
@@ -939,17 +928,17 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
         // should allow dimension to be used as shorthand for member
         new QueryAndResult(
             "select {[Measures].[Unit Sales]} on columns,\n"
-            + " {[Store].[Stores], [Store].[Stores].children} on rows\n"
+            + " {[Store], [Store].[Stores].children} on rows\n"
             + "from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[Stores].[All Stores]}\n"
-            + "{[Store].[Stores].[Canada]}\n"
-            + "{[Store].[Stores].[Mexico]}\n"
-            + "{[Store].[Stores].[USA]}\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[Canada]}\n"
+            + "{[Store].[Mexico]}\n"
+            + "{[Store].[USA]}\n"
             + "Row #0: 266,773\n"
             + "Row #1: \n"
             + "Row #2: \n"
@@ -960,20 +949,20 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             "select\n"
             + "  CrossJoin(\n"
             + "    {[Measures].[Unit Sales], [Measures].[Store Sales]},\n"
-            + "    {[Time].[Time].[1997].[Q2].children}) on columns, \n"
+            + "    {[Time].[1997].[Q2].children}) on columns, \n"
             + "  CrossJoin(\n"
             + "    CrossJoin(\n"
             + "      [Gender].members,\n"
             + "      [Marital Status].members),\n"
-            + "   {[Store].[Stores], [Store].[Stores].children}) on rows\n"
+            + "   {[Store], [Store].[Stores].children}) on rows\n"
             + "from [Sales]\n"
             + "where (\n"
             + " [Product].[Food],\n"
             + " [Education Level].[High School Degree],\n"
             + " [Promotions].DefaultMember)",
             "Axis #0:\n"
-            + "{[Product].[Products].[Food], [Customer].[Education Level].[High School Degree], "
-            + "[Promotion].[Promotions].[All Promotions]}\n"
+            + "{[Product].[Products].[Food], [Education Level].[High School Degree], "
+            + "[Promotions].[All Promotions]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales], [Time].[Time].[1997].[Q2].[4]}\n"
             + "{[Measures].[Unit Sales], [Time].[Time].[1997].[Q2].[5]}\n"
@@ -982,42 +971,42 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             + "{[Measures].[Store Sales], [Time].[Time].[1997].[Q2].[5]}\n"
             + "{[Measures].[Store Sales], [Time].[Time].[1997].[Q2].[6]}\n"
             + "Axis #2:\n"
-            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[All Marital Status], [Store].[Stores].[All Stores]}\n"
-            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[All Marital Status], [Store].[Stores].[Canada]}\n"
-            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[All Marital Status], [Store].[Stores].[Mexico]}\n"
-            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[All Marital Status], [Store].[Stores].[USA]}\n"
-            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[M], [Store].[Stores].[All Stores]}\n"
-            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[M], [Store].[Stores].[Canada]}\n"
-            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[M], [Store].[Stores].[Mexico]}\n"
-            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[M], [Store].[Stores].[USA]}\n"
-            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[S], [Store].[Stores].[All Stores]}\n"
-            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[S], [Store].[Stores].[Canada]}\n"
-            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[S], [Store].[Stores].[Mexico]}\n"
-            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[S], [Store].[Stores].[USA]}\n"
-            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[All Marital Status], [Store].[Stores].[All Stores]}\n"
-            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[All Marital Status], [Store].[Stores].[Canada]}\n"
-            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[All Marital Status], [Store].[Stores].[Mexico]}\n"
-            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[All Marital Status], [Store].[Stores].[USA]}\n"
-            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[M], [Store].[Stores].[All Stores]}\n"
-            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[M], [Store].[Stores].[Canada]}\n"
-            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[M], [Store].[Stores].[Mexico]}\n"
-            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[M], [Store].[Stores].[USA]}\n"
-            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[S], [Store].[Stores].[All Stores]}\n"
-            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[S], [Store].[Stores].[Canada]}\n"
-            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[S], [Store].[Stores].[Mexico]}\n"
-            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[S], [Store].[Stores].[USA]}\n"
-            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[All Marital Status], [Store].[Stores].[All Stores]}\n"
-            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[All Marital Status], [Store].[Stores].[Canada]}\n"
-            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[All Marital Status], [Store].[Stores].[Mexico]}\n"
-            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[All Marital Status], [Store].[Stores].[USA]}\n"
-            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[M], [Store].[Stores].[All Stores]}\n"
-            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[M], [Store].[Stores].[Canada]}\n"
-            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[M], [Store].[Stores].[Mexico]}\n"
-            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[M], [Store].[Stores].[USA]}\n"
-            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[S], [Store].[Stores].[All Stores]}\n"
-            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[S], [Store].[Stores].[Canada]}\n"
-            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[S], [Store].[Stores].[Mexico]}\n"
-            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[S], [Store].[Stores].[USA]}\n"
+            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[All Marital Status], [Store].[All Stores]}\n"
+            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[All Marital Status], [Store].[Canada]}\n"
+            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[All Marital Status], [Store].[Mexico]}\n"
+            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[All Marital Status], [Store].[USA]}\n"
+            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[M], [Store].[All Stores]}\n"
+            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[M], [Store].[Canada]}\n"
+            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[M], [Store].[Mexico]}\n"
+            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[M], [Store].[USA]}\n"
+            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[S], [Store].[All Stores]}\n"
+            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[S], [Store].[Canada]}\n"
+            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[S], [Store].[Mexico]}\n"
+            + "{[Customer].[Gender].[All Gender], [Customer].[Marital Status].[S], [Store].[USA]}\n"
+            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[All Marital Status], [Store].[All Stores]}\n"
+            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[All Marital Status], [Store].[Canada]}\n"
+            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[All Marital Status], [Store].[Mexico]}\n"
+            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[All Marital Status], [Store].[USA]}\n"
+            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[M], [Store].[All Stores]}\n"
+            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[M], [Store].[Canada]}\n"
+            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[M], [Store].[Mexico]}\n"
+            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[M], [Store].[USA]}\n"
+            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[S], [Store].[All Stores]}\n"
+            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[S], [Store].[Canada]}\n"
+            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[S], [Store].[Mexico]}\n"
+            + "{[Customer].[Gender].[F], [Customer].[Marital Status].[S], [Store].[USA]}\n"
+            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[All Marital Status], [Store].[All Stores]}\n"
+            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[All Marital Status], [Store].[Canada]}\n"
+            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[All Marital Status], [Store].[Mexico]}\n"
+            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[All Marital Status], [Store].[USA]}\n"
+            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[M], [Store].[All Stores]}\n"
+            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[M], [Store].[Canada]}\n"
+            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[M], [Store].[Mexico]}\n"
+            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[M], [Store].[USA]}\n"
+            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[S], [Store].[All Stores]}\n"
+            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[S], [Store].[Canada]}\n"
+            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[S], [Store].[Mexico]}\n"
+            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[S], [Store].[USA]}\n"
             + "Row #0: 4,284\n"
             + "Row #0: 3,972\n"
             + "Row #0: 4,476\n"
@@ -1236,9 +1225,9 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             + "Row #35: 2,673.34\n"),
 
         new QueryAndResult(
-            "select from [Warehouse and Sales] where [Measures].[Store Sales]",
+            "select from [Warehouse and Sales]",
             "Axis #0:\n"
-            + "{[Measures].[Store Sales]}\n"
+            + "{}\n"
             + "565,238.13"),
     };
 
@@ -1266,95 +1255,6 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             ConcurrentValidatingQueryRunner.runTest(
                 10, 45, true, true, mdxQueries)
             .size() == 0);
-    }
-
-    private int count = 0;
-
-    public void testFlushingDoesNotCauseDeadlock() throws InterruptedException {
-        final XmlaTestContext xmlaTestContext = new XmlaTestContext();
-        final MondrianServer server =
-            MondrianServer.createWithRepository(
-                new UrlRepositoryContentFinder(
-                    "inline:" + xmlaTestContext.getDataSourcesString()),
-                null);
-        final int id = server.getId();
-        assertNotNull(id);
-        final List<OlapStatement> statements = new ArrayList<OlapStatement>();
-        ExecutorService executorService = Executors.newFixedThreadPool(80);
-        for (int i = 0; i < 700; i++) {
-            for (final QueryAndResult mdxQuery : mdxQueries) {
-                executorService.submit(
-                    new Runnable() {
-                        public void run() {
-                            OlapStatement statement = null;
-                            try {
-                                OlapConnection connection = server.getConnection(
-                                    "FoodMart", "FoodMart", null);
-                                statement = connection.createStatement();
-                                statements.add(statement);
-                                statement.executeOlapQuery(mdxQuery.query);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            } finally {
-                                logStatus();
-                            }
-                        }
-                    });
-            }
-        }
-        randomlyFlush(statements);
-
-        executorService.shutdown();
-        boolean finished = executorService.awaitTermination(
-            120, TimeUnit.SECONDS);
-        assertTrue(finished);
-        server.shutdown();
-    }
-
-    private synchronized void logStatus() {
-        if (count % 1000 == 0) {
-            LOGGER.debug(count);
-        }
-        count++;
-    }
-
-    private void randomlyFlush(List<OlapStatement> statements) {
-        try {
-            Thread.sleep(2000);
-            for (int i = 0; i < 5; i++) {
-                Thread.sleep(1000 * i);
-                try {
-                    if (statements.size() > 0) {
-                        OlapStatement olapStatement = statements.get(
-                            new Random().nextInt(statements.size()));
-                        LOGGER.debug("flushing");
-                        flushSchema(
-                            olapStatement.getConnection().unwrap(
-                                Connection.class));
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void flushSchema(Connection connection) {
-        CacheControl cacheControl =
-            connection.getCacheControl(null);
-
-        Cube salesCube = connection.getSchema().lookupCube("Sales", true);
-        CacheControl.CellRegion measuresRegion =
-            cacheControl.createMeasuresRegion(salesCube);
-        cacheControl.flush(measuresRegion);
-
-        Cube whsalesCube =
-            connection.getSchema().lookupCube("Warehouse and Sales", true);
-        measuresRegion =
-            cacheControl.createMeasuresRegion(whsalesCube);
-        cacheControl.flush(measuresRegion);
     }
 
     protected void tearDown() throws Exception {

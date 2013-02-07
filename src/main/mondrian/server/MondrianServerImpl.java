@@ -69,7 +69,7 @@ class MondrianServerImpl
          // We use a reference map here because the value
          // is what needs to be week, not the key, as it
          // would be the case with a WeakHashMap.
-        new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK);
+        new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
 
     /**
      * Map of open statements, by id. Statements are added just after
@@ -87,7 +87,7 @@ class MondrianServerImpl
          // We use a reference map here because the value
          // is what needs to be week, not the key, as it
          // would be the case with a WeakHashMap.
-        new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK);
+        new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
 
     private final MonitorImpl monitor = new MonitorImpl();
 
@@ -318,7 +318,7 @@ class MondrianServerImpl
     }
 
     @Override
-    synchronized public void addConnection(RolapConnection connection) {
+    public void addConnection(RolapConnection connection) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(
                 "addConnection "
@@ -341,7 +341,7 @@ class MondrianServerImpl
     }
 
     @Override
-    synchronized public void removeConnection(RolapConnection connection) {
+    public void removeConnection(RolapConnection connection) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(
                 "removeConnection "
@@ -370,7 +370,7 @@ class MondrianServerImpl
     }
 
     @Override
-    synchronized public void addStatement(Statement statement) {
+    public void addStatement(Statement statement) {
         if (shutdown) {
             throw new MondrianException("Server already shutdown.");
         }
@@ -396,7 +396,7 @@ class MondrianServerImpl
     }
 
     @Override
-    synchronized public void removeStatement(Statement statement) {
+    public void removeStatement(Statement statement) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(
                 "removeStatement "
