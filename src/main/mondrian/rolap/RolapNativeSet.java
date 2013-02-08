@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -173,7 +173,17 @@ public abstract class RolapNativeSet extends RolapNative {
         public Object execute(ResultStyle desiredResultStyle) {
             switch (desiredResultStyle) {
             case ITERABLE:
-                return executeList(new HighCardSqlTupleReader(constraint));
+                for (CrossJoinArg arg : this.args) {
+                    if (arg.getLevel().getDimension().isHighCardinality()) {
+                        // If any of the dimensions is a HCD,
+                        // use the proper tuple reader.
+                        return executeList(
+                            new HighCardSqlTupleReader(constraint));
+                    }
+                    // Use the regular tuple reader.
+                    return executeList(
+                        new SqlTupleReader(constraint));
+                }
             case MUTABLE_LIST:
             case LIST:
                 return executeList(new SqlTupleReader(constraint));
@@ -315,6 +325,7 @@ public abstract class RolapNativeSet extends RolapNative {
     }
 
     /** disable garbage collection for test */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     void useHardCache(boolean hard) {
         if (hard) {
             cache = new HardSmartCache();

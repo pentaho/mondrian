@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -30,9 +30,11 @@ import javax.sql.DataSource;
  * Reads the members of a single level (level.members) or of multiple levels
  * (crossjoin).
  *
+ * @deprecated Deprecated for Mondrian 4.0.
  * @author luis f. canals
  * @since Dec, 2007
  */
+@Deprecated
 public class HighCardSqlTupleReader extends SqlTupleReader {
     private ResultLoader resultLoader;
     private boolean moreRows;

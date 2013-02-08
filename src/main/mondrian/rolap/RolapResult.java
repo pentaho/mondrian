@@ -1440,10 +1440,6 @@ public class RolapResult extends ResultBase {
             this.totalCellCount = 1;
         }
 
-        List<Member> members() {
-            return this.members;
-        }
-
         void mergeTupleList(TupleList list) {
             mergeTupleIter(list.tupleCursor());
         }
