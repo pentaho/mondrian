@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -22,9 +22,11 @@ import java.util.*;
  * Helper class for {@link mondrian.rolap.HighCardSqlTupleReader} that
  * keeps track of target levels and constraints for adding to SQL query.
  *
+ * @deprecated Deprecated for Mondrian 4.0.
  * @author luis f. canals, Kurtis Walker
  * @since July 23, 2009
  */
+@Deprecated
 public class Target extends TargetBase {
     private final HighCardSqlTupleReader sqlTupleReader;
     private final MemberCache cache;
@@ -167,27 +169,25 @@ public class Target extends TargetBase {
                 while (index >= getList().size() && this.moreRows) {
                     this.moreRows = sqlTupleReader.readNextTuple();
                     if (limit > 0 && getList().size() >= limit) {
-                        /*
-                         * We have to offset the list, but we don't want to use
-                         * a 0(n) operation. What we do is we calculate an
-                         * offset value corresponding to 10% of the current
-                         * size of the list and use subList(), which will
-                         * create a view of the sub array with an offset.
-                         *
-                         * We use a ~10% offset increment because we don't want
-                         * to perform this operation too often and impair
-                         * performance by spawning too many sublists.
-                         *
-                         * REVIEW: It doesn't matter right now if this code
-                         * is sub-optimal. The highCardinality feature is
-                         * marked for deprecation in 4.0. In practice,
-                         * this code should never get executed because if
-                         * you create a tuple list bigger than the value
-                         * of 'limit', the code will throw an exception
-                         * upstream before it ever reaches this point.
-                         * For now it is sufficient. We get the speed of
-                         * random access along with quick offsets.
-                         */
+                        // We have to offset the list, but we don't want to use
+                        // a 0(n) operation. What we do is we calculate an
+                        // offset value corresponding to 10% of the current
+                        // size of the list and use subList(), which will
+                        // create a view of the sub array with an offset.
+                        //
+                        // We use a ~10% offset increment because we don't want
+                        // to perform this operation too often and impair
+                        // performance by spawning too many sublists.
+                        //
+                        // REVIEW: It doesn't matter right now if this code
+                        // is sub-optimal. The highCardinality feature is
+                        // marked for deprecation in 4.0. In practice,
+                        // this code should never get executed because if
+                        // you create a tuple list bigger than the value
+                        // of 'limit', the code will throw an exception
+                        // upstream before it ever reaches this point.
+                        // For now it is sufficient. We get the speed of
+                        // random access along with quick offsets.
                         int deltaOffset = Math.round((limit / 10) + 0.5f);
                         index -= deltaOffset;
                         offset += deltaOffset;
