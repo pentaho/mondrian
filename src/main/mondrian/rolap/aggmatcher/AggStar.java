@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -421,6 +421,22 @@ public class AggStar {
             return columns[bitPos];
         }
         return levelColumnsToJoin.get(bitPos);
+    }
+
+    /**
+     * Returns true if every level column in the AggStar  is collapsed.
+     */
+    public boolean isFullyCollapsed() {
+        BitSet bitSet = this.getLevelBitKey().toBitSet();
+        for (int i = bitSet.nextSetBit(0); i >= 0; i = bitSet.nextSetBit(i + 1))
+        {
+            if (this.lookupLevel(i) == null
+                || !(this.lookupLevel(i)).isCollapsed())
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 28 September, 2002
@@ -1963,6 +1963,187 @@ public class TestAggregationManager extends BatchTestCase {
             },
             false, false, true);
     }
+
+    public void testNonCollapsedAggregateAllLevelsPresentInQuerySnowflake()
+        throws Exception
+    {
+        // MONDRIAN-1072.
+        propSaver.set(MondrianProperties.instance().UseAggregates, true);
+        propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        final String cube =
+            "<Schema name=\"AMC\"><Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_c_14_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_pl_01_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_ll_01_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_l_03_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_lc_06_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_l_04_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_c_10_sales_fact_1997\"/>"
+            + "    <AggName name=\"agg_l_05_sales_fact_1997\">"
+            + "        <AggFactCount column=\"fact_count\"/>\n"
+            + "        <AggIgnoreColumn column=\"customer_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"promotion_id\"/>\n"
+            + " <AggForeignKey factColumn=\"product_id\" aggColumn=\"product_id\"/>"
+            + "        <AggMeasure name=\"[Measures].[Store Cost]\" column=\"store_cost\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Store Sales]\" column=\"store_sales\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_sales\" />\n"
+            + "    </AggName>\n"
+            + "</Table>\n"
+            + "  <Dimension name=\"Product\" foreignKey=\"product_id\">\n"
+            + "<Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+            + "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+            + "        <Table name=\"product\"/>\n"
+            + "        <Table name=\"product_class\"/>\n"
+            + "     </Join>\n"
+            + "     <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n"
+            + "        uniqueMembers=\"true\"/>"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "<Measure name=\"Customer Count\" column=\"customer_id\" aggregator=\"distinct-count\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "<Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "<Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "</Cube></Schema>\n";
+        final TestContext context = TestContext.instance().withSchema(cube);
+        final String mdx =
+            "select \n"
+            + "{ "
+            + "[Product].[Product Family].members } on rows, "
+            + "{[Measures].[Unit Sales]} on columns from [Foo]";
+
+        context.assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            +    "{}\n"
+            +    "Axis #1:\n"
+            +    "{[Measures].[Unit Sales]}\n"
+            +    "Axis #2:\n"
+            +    "{[Product].[Drink]}\n"
+            +    "{[Product].[Food]}\n"
+            +    "{[Product].[Non-Consumable]}\n"
+            +    "Row #0: 24,597\n"
+            +    "Row #1: 191,940\n"
+            +    "Row #2: 50,236\n");
+        final String sqlMysql =
+            "select `product_class`.`product_family` as `c0`, sum(`agg_l_05_sales_fact_1997`.`unit_sales`) as `m0` from `product_class` as `product_class`, `product` as `product`, `agg_l_05_sales_fact_1997` as `agg_l_05_sales_fact_1997` where `agg_l_05_sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` group by `product_class`.`product_family`";
+        assertQuerySqlOrNot(
+            context,
+            mdx,
+            new SqlPattern[] {
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL,
+                    sqlMysql,
+                    sqlMysql.length())
+            },
+            false, false, true);
+    }
+
+
+    public void testNonCollapsedAggregateAllLevelsPresentInQuery()
+        throws Exception
+    {
+        // MONDRIAN-1072
+        propSaver.set(MondrianProperties.instance().UseAggregates, true);
+        propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        final String cube =
+            "<Schema name=\"AMC\"><Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_c_14_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_pl_01_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_ll_01_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_l_03_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_lc_06_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_l_04_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_c_10_sales_fact_1997\"/>"
+            + "    <AggName name=\"agg_l_05_sales_fact_1997\">"
+            + "        <AggFactCount column=\"fact_count\"/>\n"
+            + "        <AggIgnoreColumn column=\"customer_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"promotion_id\"/>\n"
+            + " <AggForeignKey factColumn=\"promotion_id\" aggColumn=\"promotion_id\"/>"
+            + "        <AggMeasure name=\"[Measures].[Store Cost]\" column=\"store_cost\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Store Sales]\" column=\"store_sales\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_sales\" />\n"
+            + "    </AggName>\n"
+            + "</Table>\n"
+            + "  <Dimension name=\"Promotions\" foreignKey=\"promotion_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Promotions\" primaryKey=\"promotion_id\" defaultMember=\"[All Promotions]\">\n"
+            + "      <Table name=\"promotion\"/>\n"
+            + "      <Level name=\"Media Type\" column=\"media_type\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>"
+            + "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "<Measure name=\"Customer Count\" column=\"customer_id\" aggregator=\"distinct-count\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "<Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "<Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "</Cube></Schema>\n";
+        final TestContext context = TestContext.instance().withSchema(cube);
+        final String mdx =
+            "select \n"
+            + "{ "
+            + "[Promotions].[Media Type].members } on rows, {[Measures].[Unit Sales]} on columns from [Foo]";
+
+        context.assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Promotions].[Bulk Mail]}\n"
+            + "{[Promotions].[Cash Register Handout]}\n"
+            + "{[Promotions].[Daily Paper]}\n"
+            + "{[Promotions].[Daily Paper, Radio]}\n"
+            + "{[Promotions].[Daily Paper, Radio, TV]}\n"
+            + "{[Promotions].[In-Store Coupon]}\n"
+            + "{[Promotions].[No Media]}\n"
+            + "{[Promotions].[Product Attachment]}\n"
+            + "{[Promotions].[Radio]}\n"
+            + "{[Promotions].[Street Handout]}\n"
+            + "{[Promotions].[Sunday Paper]}\n"
+            + "{[Promotions].[Sunday Paper, Radio]}\n"
+            + "{[Promotions].[Sunday Paper, Radio, TV]}\n"
+            + "{[Promotions].[TV]}\n"
+            + "Row #0: 4,320\n"
+            + "Row #1: 6,697\n"
+            + "Row #2: 7,738\n"
+            + "Row #3: 6,891\n"
+            + "Row #4: 9,513\n"
+            + "Row #5: 3,798\n"
+            + "Row #6: 195,448\n"
+            + "Row #7: 7,544\n"
+            + "Row #8: 2,454\n"
+            + "Row #9: 5,753\n"
+            + "Row #10: 4,339\n"
+            + "Row #11: 5,945\n"
+            + "Row #12: 2,726\n"
+            + "Row #13: 3,607\n");
+        final String sqlMysql =
+            "select `promotion`.`media_type` as `c0`, sum(`agg_c_special_sales_fact_1997`.`unit_sales_sum`) as `m0` from `promotion` as `promotion`, `agg_c_special_sales_fact_1997` as `agg_c_special_sales_fact_1997` where `agg_c_special_sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` group by `promotion`.`media_type`";
+        assertQuerySqlOrNot(
+            context,
+            mdx,
+            new SqlPattern[] {
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL,
+                    sqlMysql,
+                    sqlMysql.length())
+            },
+            false, false, true);
+    }
+
 
     public void testTwoNonCollapsedAggregate() throws Exception {
         propSaver.set(MondrianProperties.instance().UseAggregates, true);

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 30 August, 2001
@@ -367,16 +367,18 @@ public class AggregationManager extends RolapAggregationManager {
             if (!aggStar.superSetMatch(fullBitKey)) {
                 continue;
             }
-
             boolean isDistinct = measureBitKey.intersects(
                 aggStar.getDistinctMeasureBitKey());
 
             // The AggStar has no "distinct count" measures so
             // we can use it without looking any further.
             if (!isDistinct) {
-                rollup[0] =
-                    levelBitKey.isEmpty()
-                    || !aggStar.getLevelBitKey().equals(levelBitKey);
+                // Need to use SUM if the query levels don't match
+                // the agg stars levels, or if the agg star is not
+                // fully collapsed.
+                rollup[0] = !aggStar.isFullyCollapsed()
+                    || (levelBitKey.isEmpty()
+                    || !aggStar.getLevelBitKey().equals(levelBitKey));
                 return aggStar;
             }
 
