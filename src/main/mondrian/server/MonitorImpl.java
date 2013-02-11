@@ -383,6 +383,9 @@ class MonitorImpl
     }
 
     private static class Handler implements CommandVisitor<Object> {
+
+        private static final int MAX_EXEC_HISTORY = 1000000;
+
         private final MutableServerInfo server =
             new MutableServerInfo();
 
@@ -400,11 +403,21 @@ class MonitorImpl
 
         /**
          * Holds info for executions that have ended. Cell cache events may
-         * arrive late, and this map lets them get into the system. One day
-         * we may purge executions if the map gets too large.
+         * arrive late, and this map lets them get into the system.
          */
         private final Map<Long, MutableExecutionInfo> retiredExecutionMap =
-            new HashMap<Long, MutableExecutionInfo>();
+            new LinkedHashMap<Long, MutableExecutionInfo>(
+                MAX_EXEC_HISTORY,
+                0.8f,
+                false)
+            {
+                private static final long serialVersionUID = 1L;
+                protected boolean removeEldestEntry(
+                    Map.Entry<Long, MutableExecutionInfo> e)
+                {
+                    return size() > MAX_EXEC_HISTORY;
+                }
+        };
 
         /**
          * Method for debugging that does nothing, but is a place to put a break
