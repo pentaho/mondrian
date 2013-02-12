@@ -185,7 +185,11 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                 DatabaseProduct.MYSQL,
                 NativeTopCountWithAgg.mysql,
                 NativeTopCountWithAgg.mysql);
-        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        if (propSaver.properties.EnableNativeTopCount.get()
+            && propSaver.properties.EnableNativeNonEmpty.get())
+        {
+            assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        }
         assertQueryReturns(mdx, NativeTopCountWithAgg.result);
     }
 
@@ -217,7 +221,11 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                   DatabaseProduct.MYSQL,
                   NativeTopCountWithAgg.mysql,
                   NativeTopCountWithAgg.mysql);
-          assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+          if (propSaver.properties.EnableNativeTopCount.get()
+              && propSaver.properties.EnableNativeNonEmpty.get())
+          {
+              assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+          }
           assertQueryReturns(mdx, NativeTopCountWithAgg.result);
     }
 
@@ -294,7 +302,11 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                 DatabaseProduct.MYSQL,
                 mysqlQuery,
                 mysqlQuery);
-        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        if (propSaver.properties.EnableNativeFilter.get()
+            && propSaver.properties.EnableNativeNonEmpty.get())
+        {
+            assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        }
         assertQueryReturns(
             mdx,
             "Axis #0:\n"
@@ -734,7 +746,9 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                 mysql,
                 mysql);
 
-        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        if (propSaver.properties.EnableNativeNonEmpty.get()) {
+            assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        }
 
         assertQueryReturns(
             mdx,
