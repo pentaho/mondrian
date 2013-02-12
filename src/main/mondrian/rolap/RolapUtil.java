@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 22 December, 2001
@@ -17,6 +17,7 @@ import mondrian.olap.*;
 import mondrian.olap.Member;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.RolapHierarchy.LimitedRollupMember;
 import mondrian.server.*;
 import mondrian.spi.Dialect;
 import mondrian.util.ClassResolver;
@@ -54,7 +55,7 @@ public class RolapUtil {
      */
     public static final Object valueNotReadyException = new Double(0);
 
-    /*
+    /**
      * Hook to run when a query is executed. This should not be
      * used at runtime but only for testing.
      */
@@ -681,6 +682,58 @@ public class RolapUtil {
         void onExecuteQuery(String sql);
     }
 
+    /**
+     * Modifies a bitkey so that it includes the proper bits
+     * for members in an array which should be considered
+     * as a limited rollup member.
+     */
+    public static void constraintBitkeyForLimitedMembers(
+        Evaluator evaluator,
+        Member[] members,
+        RolapCube cube,
+        BitKey levelBitKey)
+    {
+        // Limited Rollup Members have to be included in the bitkey
+        // so that we can pick the correct agg table.
+        for (Member curMember : members) {
+            if (curMember instanceof LimitedRollupMember) {
+                List<Member> lowestMembers =
+                    ((RolapHierarchy)curMember.getHierarchy())
+                        .getLowestMembersForAccess(
+                            evaluator,
+                            ((LimitedRollupMember)curMember).hierarchyAccess,
+                            FunUtil.getNonEmptyMemberChildrenWithDetails(
+                                evaluator,
+                                curMember));
+
+                assert lowestMembers.size() > 0;
+
+                Member lowMember = lowestMembers.get(0);
+
+                while (true) {
+                    RolapStar.Column curColumn =
+                        ((RolapCubeLevel)lowMember.getLevel())
+                            .getBaseStarKeyColumn(cube);
+
+                    if (curColumn != null) {
+                        levelBitKey.set(curColumn.getBitPosition());
+                    }
+
+                    // If the level doesn't have unique members, we have to
+                    // add the parent levels until the keys are unique,
+                    // or all of them are added.
+                    if (!((RolapCubeLevel)lowMember.getLevel()).isUnique()) {
+                        lowMember = lowMember.getParentMember();
+                        if (lowMember.isAll()) {
+                            break;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }
 
 // End RolapUtil.java

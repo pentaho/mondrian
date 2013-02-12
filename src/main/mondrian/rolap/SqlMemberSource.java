@@ -5,13 +5,14 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.calc.TupleList;
 import mondrian.olap.*;
+import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
@@ -420,7 +421,7 @@ RME is this right
         if ((orderKey != null) && !(orderKey instanceof Comparable)) {
             orderKey = orderKey.toString();
         }
-        member.setOrderKey((Comparable) orderKey);
+        member.setOrderKey((Comparable<?>) orderKey);
     }
 
     /**
@@ -690,8 +691,6 @@ RME is this right
         int bitPosition =
             ((RolapStar.Measure)measure.getStarMeasure()).getBitPosition();
 
-        int ordinal = measure.getOrdinal();
-
         // childLevel will always end up being a RolapCubeLevel, but the API
         // calls into this method can be both shared RolapMembers and
         // RolapCubeMembers so this cast is necessary for now. Also note that
@@ -723,12 +722,12 @@ RME is this right
         levelBitKey.set(column.getBitPosition());
         measureBitKey.set(bitPosition);
 
-        // find the aggstar using the masks
+        // Set the bits for limited rollup members
+        RolapUtil.constraintBitkeyForLimitedMembers(
+            evaluator, members, cube, levelBitKey);
 
-        final AggregationManager aggMgr =
-            cube.getSchema().getInternalConnection().getServer()
-                .getAggregationManager();
-        return aggMgr.findAgg(
+        // find the aggstar using the masks
+        return AggregationManager.findAgg(
             star, levelBitKey, measureBitKey, new boolean[] {false});
     }
 

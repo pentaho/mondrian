@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -17,7 +17,6 @@ import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.RolapHierarchy.LimitedRollupMember;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.aggmatcher.AggStar;
@@ -1290,26 +1289,9 @@ public class SqlTupleReader implements TupleReader {
             }
         }
 
-        for (Member member : evaluator.getMembers()) {
-            if (member instanceof LimitedRollupMember) {
-                List<Member> lowestMembers =
-                    ((RolapHierarchy)member.getHierarchy())
-                        .getLowestMembersForAccess(
-                            evaluator,
-                            ((LimitedRollupMember)member).hierarchyAccess,
-                            FunUtil.getNonEmptyMemberChildrenWithDetails(
-                                evaluator,
-                                member));
-                for (Member lowestMember : lowestMembers) {
-                    RolapStar.Column column =
-                        ((RolapCubeLevel)lowestMember.getLevel())
-                            .getBaseStarKeyColumn(baseCube);
-                    if (column != null) {
-                        levelBitKey.set(column.getBitPosition());
-                    }
-                }
-            }
-        }
+        // Set the bits for limited rollup members
+        RolapUtil.constraintBitkeyForLimitedMembers(
+            evaluator, evaluator.getMembers(), baseCube, levelBitKey);
 
         measureBitKey.set(bitPosition);
 

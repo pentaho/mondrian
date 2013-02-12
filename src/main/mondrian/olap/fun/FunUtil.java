@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -17,7 +17,12 @@ import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.BitKey;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapCubeLevel;
 import mondrian.rolap.RolapHierarchy;
+import mondrian.rolap.RolapHierarchy.LimitedRollupMember;
+import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapUtil;
 import mondrian.util.*;
 
