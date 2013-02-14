@@ -22,6 +22,7 @@ import mondrian.util.*;
 import org.apache.commons.collections.map.Flat3Map;
 import org.apache.log4j.Logger;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 
@@ -699,6 +700,14 @@ public class RolapMemberBase
         PropertyFormatter pf = property.getFormatter();
         if (pf != null) {
             return pf.formatProperty(this, property.name, val);
+        }
+
+        if (val != null && val instanceof Number) {
+            // Numbers are a special case. We don't want any
+            // scientific notations, so we wrap in a BigDecimal
+            // before calling toString. This is cheap to perform here
+            // because this method only gets called by the GUI.
+            val = new BigDecimal(((Number)val).doubleValue());
         }
 
         return (val == null)
