@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 
 import org.eigenbase.util.property.StringProperty;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 
@@ -607,6 +608,15 @@ public class RolapMemberBase
         }
 
         Object val = getPropertyValue(propertyName);
+
+        if (val != null && val instanceof Number) {
+            // Numbers are a special case. We don't want any
+            // scientific notations, so we wrap in a BigDecimal
+            // before calling toString. This is cheap to perform here
+            // because this method only gets called by the GUI.
+            val = new BigDecimal(((Number)val).doubleValue());
+        }
+
         return (val == null)
             ? ""
             : val.toString();
