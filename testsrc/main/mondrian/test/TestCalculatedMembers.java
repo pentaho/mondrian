@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -1708,6 +1708,15 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{[Measures].[Foo]}\n"
             + "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Expected value of type NUMERIC; got value '123' (STRING)\n");
 
+        // unrelated to Mondrian852 we were occasionally seeing differences
+        // in number of digits of the casted value based on whether the
+        // data was rolled up from segment cache, due to FP math.
+        // Added query below to force the cache to have a rollable segment
+        // as a way to make the test consistently fail w/o formatting,
+        // and added a Format() inside the cache to assure fixed # of digits.
+        executeQuery(
+            "select {[Time].[1997].[Q1].[1] : [Time].[1997].[Q2].[4]} * "
+            + "Customer.Gender.Gender.members * { measures.[store sales] } on 0 from sales ");
         // Tom's original query should generate a cast error (not a
         // ClassCastException) because solve orders are wrong.
         assertQueryReturns(
@@ -1719,7 +1728,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "  member [Time].[Time].[Past 4 months] as\n"
             + "     Generate(\n"
             + "         [spark1],\n"
-            + "         CAST(([Measures].CurrentMember + 0.0) AS String),\n"
+            + "           CAST(Format(([Measures].CurrentMember + 0.0), '###.0#') as String),\n"
             + "         \", \")\n"
             + "select {[Time].[Past 4 months]} ON COLUMNS,\n"
             + "  {[Measures].[Unit Sales], [Measures].[Tom1]} ON ROWS\n"
@@ -1745,7 +1754,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "  member [Time].[Time].[Past 4 months] as\n"
             + "     Generate(\n"
             + "         [spark1],\n"
-            + "         CAST(([Measures].CurrentMember + 0.0) AS String),\n"
+            + "         CAST(Format(([Measures].CurrentMember + 0.0), '###.0#') AS String),\n"
             + "         \", \"),"
             + "     solve_order = 2\n"
             + "select {[Time].[Past 4 months]} ON COLUMNS,\n"
@@ -1759,8 +1768,8 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[Tom1]}\n"
             + "Row #0: 21628.0, 20957.0, 23706.0, 20179.0\n"
-            + "Row #1: 2.10558951359349, 2.1023424154220547, 2.1104306926516494, 2.124894692502106\n");
-    }
+            + "Row #1: 2.11, 2.1, 2.11, 2.12\n");
+     }
 
     /**
      * Tests referring to a calc member by a name other than its canonical
