@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 
 import org.eigenbase.util.property.IntegerProperty;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -566,6 +567,48 @@ public class BatchTestCase extends FoodMartTestCase {
         final CacheControl.CellRegion measuresRegion =
             cacheControl.createMeasuresRegion(cube);
         cacheControl.flush(measuresRegion);
+        waitForFlush(cacheControl, measuresRegion, cube.getName());
+    }
+
+    private void waitForFlush(
+        final CacheControl cacheControl,
+        final CacheControl.CellRegion measuresRegion,
+        final String cubeName)
+    {
+        int i = 100;
+        while (true) {
+            try {
+                Thread.sleep(i);
+            } catch (InterruptedException e) {
+                fail(e.getMessage());
+            }
+            String cacheState = getCacheState(cacheControl, measuresRegion);
+            if (regionIsEmpty(cacheState, cubeName)) {
+                break;
+            }
+            i *= 2;
+            if (i > 6400) {
+                fail(
+                    "Cache didn't flush in sufficient time\nCache Was: \n"
+                    + cacheState);
+                break;
+            }
+        }
+    }
+
+    private String getCacheState(
+        final CacheControl cacheControl,
+        final CacheControl.CellRegion measuresRegion)
+    {
+        StringWriter out = new StringWriter();
+        cacheControl.printCacheState(new PrintWriter(out), measuresRegion);
+        return out.toString();
+    }
+
+    private boolean regionIsEmpty(
+        final String cacheState, final String cubeName)
+    {
+        return !cacheState.contains("Cube:[" + cubeName + "]");
     }
 
     private static String replaceQuotes(String s) {
