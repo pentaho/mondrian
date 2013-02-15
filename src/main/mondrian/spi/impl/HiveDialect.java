@@ -130,8 +130,7 @@ public class HiveDialect extends JdbcDialectImpl {
     public static boolean isImpala(
         DatabaseMetaData databaseMetaData)
     {
-        return true;
-        // return isDatabase(DatabaseProduct.IMPALA, databaseMetaData);
+        return isDatabase(DatabaseProduct.IMPALA, databaseMetaData);
     }
 
     protected String deduceIdentifierQuoteString(
