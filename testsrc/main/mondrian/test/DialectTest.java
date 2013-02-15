@@ -246,7 +246,12 @@ public class DialectTest extends TestCase {
                 // derby
                 "Multiple DISTINCT aggregates are not supported at this time.",
                 // access
-                "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(missing operator\\) in query expression '.*'."
+                "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(missing operator\\) in query expression '.*'.",
+                // impala -- Returns a whole stack trace in its message
+                // requires (?s) to set single line mode
+                "(?s).*all DISTINCT aggregate functions need to have the same set of parameters as COUNT\\(DISTINCT customer_id\\)\\; deviating function\\: COUNT\\(DISTINCT time_id\\).*",
+                // impala
+                "(?s).*GROUP BY expression must have a discrete \\(non-floating point\\) type.*"
             };
             assertQueryFails(sql1, errs);
             assertQueryFails(sql3, errs);
@@ -336,7 +341,9 @@ public class DialectTest extends TestCase {
                 // monetdb
                 "subquery table reference needs alias, use AS xxx in:.*",
                 // SQL server 2008
-                "Incorrect syntax near \\'\\)\\'\\."
+                "Incorrect syntax near \\'\\)\\'\\.",
+                // Impala
+                "(?s).*Encountered: EOF.*Expected: IDENTIFIER.*"
             };
             assertQueryFails(sql, errs);
         } else {
@@ -447,7 +454,9 @@ public class DialectTest extends TestCase {
                 // neoview
                 ".* ERROR\\[4197\\] This expression cannot be used in the GROUP BY clause\\. .*",
                 // monetdb
-                "syntax error, unexpected '\\+', expecting SCOLON in: \"select sum\\(\"unit_sales\" \\+ 3\\) \\+ 8"
+                "syntax error, unexpected '\\+', expecting SCOLON in: \"select sum\\(\"unit_sales\" \\+ 3\\) \\+ 8",
+                // impala
+                "(?s).*GROUP BY expression must have a discrete.*"
             };
             assertQueryFails(sql, errs);
         }
@@ -495,7 +504,9 @@ public class DialectTest extends TestCase {
                 // Vertica
                 "line 3, There is no such function as \\'grouping\\'\\.",
                 // monetdb
-                "syntax error, unexpected IDENT, expecting SCOLON in: \"select \"customer_id\","
+                "syntax error, unexpected IDENT, expecting SCOLON in: \"select \"customer_id\",",
+                // impala
+                "(?s).*Encountered: IDENTIFIER.*Expected: DIV, HAVING, LIMIT, ORDER, UNION, COMMA.*"
             };
             assertQueryFails(sql, errs);
         }
@@ -531,7 +542,9 @@ public class DialectTest extends TestCase {
                 // monetdb
                 "syntax error, unexpected ',', expecting '\\)' in: \"select \"unit_sales\"",
                 // SQL server 2008
-                "An expression of non-boolean type specified in a context where a condition is expected, near ','."
+                "An expression of non-boolean type specified in a context where a condition is expected, near ','.",
+                // impala
+                "(?s).*Encountered: COMMA.*Expected: BETWEEN, DIV, IS, IN, LIKE, NOT, REGEXP, RLIKE.*"
             };
             assertQueryFails(sql, errs);
         }
@@ -599,6 +612,12 @@ public class DialectTest extends TestCase {
         assertInline(
             nameList, typeList,
             new String[]{"a", "1"}, new String[]{"bb", "2"});
+
+        // Make sure the handling of the single quote doesn't interfere
+        // with double quotes
+        assertInline(
+            nameList, typeList,
+            new String[]{"can't \"stop\"", "1"});
 
         // string containing single quote (problem for all database) and a
         // backslash (problem for mysql; appears as a double backslash for
@@ -775,6 +794,11 @@ public class DialectTest extends TestCase {
             s = s.replace(']', '`');
             s = s.replaceAll(" as ", "");
             break;
+        case IMPALA:
+            s = s.replace("[", "");
+            s = s.replace("]", "");
+            s = s.replaceAll(" as ", " ");
+            break;
         case MYSQL:
         case INFOBRIGHT:
             s = s.replace('[', '`');
@@ -917,7 +941,9 @@ public class DialectTest extends TestCase {
                 // MonetDB
                 "SELECT: cannot use non GROUP BY column 'the_month' in query results without an aggregate function",
                 // SQL Server 2008
-                "Column 'time_by_day.the_month' is invalid in the select list because it is not contained in either an aggregate function or the GROUP BY clause."
+                "Column 'time_by_day.the_month' is invalid in the select list because it is not contained in either an aggregate function or the GROUP BY clause.",
+                // impala
+                "(?s).*select list expression not produced by aggregation output.*missing from GROUP BY clause.*"
             };
             assertQueryFails(sql, errs);
         }

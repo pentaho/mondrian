@@ -5,6 +5,7 @@ mondrian.spi.impl.DerbyDialect
 mondrian.spi.impl.FirebirdDialect
 mondrian.spi.impl.GreenplumDialect
 mondrian.spi.impl.HsqldbDialect
+mondrian.spi.impl.ImpalaDialect
 mondrian.spi.impl.InfobrightDialect
 mondrian.spi.impl.InformixDialect
 mondrian.spi.impl.InterbaseDialect
