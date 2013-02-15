@@ -32,8 +32,8 @@ public class ImpalaDialect extends HiveDialect {
 
     public static final JdbcDialectFactory FACTORY =
         new JdbcDialectFactory(
-                ImpalaDialect.class,
-                DatabaseProduct.HIVE)
+            ImpalaDialect.class,
+            DatabaseProduct.HIVE)
         {
             protected boolean acceptsConnection(Connection connection) {
                 try {
@@ -41,7 +41,7 @@ public class ImpalaDialect extends HiveDialect {
                             && isImpala(connection.getMetaData());
                 } catch (SQLException e) {
                     throw Util.newError(
-                            e, "Error while instantiating dialect");
+                        e, "Error while instantiating dialect");
                 }
             }
         };
@@ -53,9 +53,9 @@ public class ImpalaDialect extends HiveDialect {
 
     @Override
     protected String generateOrderByNulls(
-            String expr,
-            boolean ascending,
-            boolean collateNullsLast)
+        String expr,
+        boolean ascending,
+        boolean collateNullsLast)
     {
         if (ascending) {
             return expr + " ASC";
@@ -67,10 +67,10 @@ public class ImpalaDialect extends HiveDialect {
 
     @Override
     public String generateOrderItem(
-            String expr,
-            boolean nullable,
-            boolean ascending,
-            boolean collateNullsLast)
+        String expr,
+        boolean nullable,
+        boolean ascending,
+        boolean collateNullsLast)
     {
         String ret = null;
 
@@ -80,7 +80,7 @@ public class ImpalaDialect extends HiveDialect {
             ret = "CASE WHEN " + expr + " IS NULL THEN 0 ELSE 1 END, ";
         }
 
-        if(ascending) {
+        if (ascending) {
             ret += expr + " ASC";
         } else {
             ret += expr + " DESC";
@@ -121,29 +121,26 @@ public class ImpalaDialect extends HiveDialect {
 
     @Override
     public String generateInline(
-            List<String> columnNames,
-            List<String> columnTypes,
-            List<String[]> valueList)
+        List<String> columnNames,
+        List<String> columnTypes,
+        List<String[]> valueList)
     {
-        return "select * from ("
-                + generateInlineGeneric(
-                columnNames, columnTypes, valueList, " from customer", false)
-                + ") x limit " + valueList.size();
+        return "";
     }
 
     @Override
     public void quoteStringLiteral(
-            StringBuilder buf,
-            String value)
+        StringBuilder buf,
+        String value)
     {
         String quote = "\'";
         String s0 = value;
 
-        if(value.contains("'")) {
+        if (value.contains("'")) {
             quote = "\"";
         }
 
-        if(value.contains(quote)) {
+        if (value.contains(quote)) {
             s0 = value.replaceAll(quote, "\\\\" + quote);
         }
 
@@ -155,3 +152,4 @@ public class ImpalaDialect extends HiveDialect {
     }
 
 }
+// End ImpalaDialect.java
