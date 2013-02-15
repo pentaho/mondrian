@@ -11,19 +11,12 @@
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
-import mondrian.calc.impl.DelegatingTupleList;
-import mondrian.calc.impl.UnaryTupleList;
+import mondrian.calc.impl.*;
 import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.BitKey;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapCubeLevel;
-import mondrian.rolap.RolapHierarchy;
-import mondrian.rolap.RolapHierarchy.LimitedRollupMember;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.RolapUtil;
+import mondrian.rolap.*;
 import mondrian.util.*;
 
 import org.apache.commons.collections.ComparatorUtils;
@@ -764,7 +757,7 @@ public class FunUtil extends Util {
         for (SortKeySpec key : keySpecList) {
             boolean brk = key.direction.brk;
             boolean orderByKey =
-                key.key instanceof MemberOrderKeyFunDef.CalcImpl;
+                key.key.isWrapperFor(MemberOrderKeyFunDef.CalcImpl.class);
             if (brk) {
                 TupleExpMemoComparator comp =
                     new BreakTupleComparator(evaluator, key.key, arity);
