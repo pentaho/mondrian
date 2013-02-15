@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class ImpalaDialect extends HiveDialect {
     /**
-     * Creates a HiveDialect.
+     * Creates an ImpalaDialect.
      *
      * @param connection Connection
      * @throws java.sql.SQLException on error
