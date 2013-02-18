@@ -5,8 +5,8 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
 // Copyright (C) 2004-2005 TONBELLER AG
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -21,6 +21,7 @@ import mondrian.spi.DataSourceChangeListener;
 import mondrian.util.Pair;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Encapsulation of member caching.
@@ -68,8 +69,7 @@ public class MemberCacheHelper implements MemberCache {
     }
 
     // implement MemberCache
-    // synchronization: Must synchronize, because uses mapKeyToMember
-    public synchronized RolapMember getMember(
+    public RolapMember getMember(
         RolapLevel level,
         Object key,
         boolean mustCheckCacheStatus)
@@ -82,8 +82,7 @@ public class MemberCacheHelper implements MemberCache {
 
 
     // implement MemberCache
-    // synchronization: Must synchronize, because modifies mapKeyToMember
-    public synchronized Object putMember(
+    public Object putMember(
         RolapLevel level,
         Object key,
         RolapMember value)
@@ -108,9 +107,8 @@ public class MemberCacheHelper implements MemberCache {
      * Deprecated in favor of
      * {@link #putChildren(RolapLevel, TupleConstraint, List)}
      */
-    // synchronization: Must synchronize, because modifies mapKeyToMember
     @Deprecated
-    public synchronized void putLevelMembersInCache(
+    public void putLevelMembersInCache(
         RolapLevel level,
         TupleConstraint constraint,
         List<RolapMember> members)
@@ -118,7 +116,7 @@ public class MemberCacheHelper implements MemberCache {
         putChildren(level, constraint, members);
     }
 
-    public synchronized void putChildren(
+    public void putChildren(
         RolapLevel level,
         TupleConstraint constraint,
         List<RolapMember> members)
@@ -126,7 +124,7 @@ public class MemberCacheHelper implements MemberCache {
         mapLevelToMembers.put(level, constraint, members);
     }
 
-    public synchronized List<RolapMember> getChildrenFromCache(
+    public List<RolapMember> getChildrenFromCache(
         RolapMember member,
         MemberChildrenConstraint constraint)
     {
@@ -137,7 +135,7 @@ public class MemberCacheHelper implements MemberCache {
         return mapMemberToChildren.get(member, constraint);
     }
 
-    public synchronized void putChildren(
+    public void putChildren(
         RolapMember member,
         MemberChildrenConstraint constraint,
         List<RolapMember> children)
@@ -149,7 +147,7 @@ public class MemberCacheHelper implements MemberCache {
         mapMemberToChildren.put(member, constraint, children);
     }
 
-    public synchronized List<RolapMember> getLevelMembersFromCache(
+    public List<RolapMember> getLevelMembersFromCache(
         RolapLevel level,
         TupleConstraint constraint)
     {
@@ -159,6 +157,7 @@ public class MemberCacheHelper implements MemberCache {
         return mapLevelToMembers.get(level, constraint);
     }
 
+    // Must sync here because we want the three maps to be modified together.
     public synchronized void flushCache() {
         mapMemberToChildren.clear();
         mapKeyToMember.clear();
@@ -182,27 +181,42 @@ public class MemberCacheHelper implements MemberCache {
         return true;
     }
 
-    public synchronized RolapMember removeMember(RolapLevel level, Object key)
+    public RolapMember removeMember(RolapLevel level, Object key)
     {
         // Flush entries from the level-to-members map
         // for member's level and all child levels.
         // Important: Do this even if the member is apparently not in the cache.
-        for (Iterator<Map.Entry<Pair<RolapLevel, Object>, List<RolapMember>>>
-                 iterator = mapLevelToMembers.getCache().iterator();
-             iterator.hasNext();)
-        {
-            Map.Entry<Pair<RolapLevel, Object>, List<RolapMember>> entry =
-                iterator.next();
-            final RolapLevel cacheLevel = entry.getKey().left;
-            if (cacheLevel.equals(level)
-                || (cacheLevel.getHierarchy().equals(level.getHierarchy())
-                    && cacheLevel.getDepth() >= level.getDepth()))
-            {
-                iterator.remove();
-            }
+        if (level == null) {
+            level = (RolapLevel) this.rolapHierarchy.getLevels()[0];
         }
+        final RolapLevel levelRef = level;
+        mapLevelToMembers.getCache().execute(
+            new SmartCache.SmartCacheTask
+                <Pair<RolapLevel, Object>, List<RolapMember>>()
+            {
+                public void execute(
+                    Iterator<Entry<Pair
+                        <RolapLevel, Object>, List<RolapMember>>> iterator)
+                {
+                    while (iterator.hasNext()) {
+                       Map.Entry<Pair
+                           <RolapLevel, Object>, List<RolapMember>> entry =
+                               iterator.next();
+                       final RolapLevel cacheLevel = entry.getKey().left;
+                       if (cacheLevel.equals(levelRef)
+                           || (cacheLevel.getHierarchy()
+                               .equals(levelRef.getHierarchy())
+                               && cacheLevel.getDepth()
+                                   >= levelRef.getDepth()))
+                       {
+                           iterator.remove();
+                       }
+                   }
+                }
+            });
 
-        RolapMember member = getMember(level, key);
+        final RolapMember member = getMember(level, key);
+
         if (member == null) {
             // not in cache
             return null;
@@ -210,50 +224,51 @@ public class MemberCacheHelper implements MemberCache {
 
         // Drop member from the member-to-children map, wherever it occurs as
         // a parent or as a child, regardless of the constraint.
-        RolapMember parent = member.getParentMember();
-        final Iterator<Map.Entry<Pair<RolapMember, Object>, List<RolapMember>>>
-            iter = mapMemberToChildren.getCache().iterator();
-        while (iter.hasNext()) {
-            Map.Entry<Pair<RolapMember, Object>, List<RolapMember>> entry =
-                iter.next();
-            final RolapMember member1 = entry.getKey().left;
-            final Object constraint = entry.getKey().right;
+        final RolapMember parent = member.getParentMember();
+        mapMemberToChildren.cache.execute(
+            new SmartCache.SmartCacheTask
+                <Pair<RolapMember, Object>, List<RolapMember>>()
+            {
+                public void execute(
+                    Iterator<Entry
+                        <Pair<RolapMember, Object>, List<RolapMember>>> iter)
+                {
+                    while (iter.hasNext()) {
+                        Map.Entry<Pair
+                            <RolapMember, Object>, List<RolapMember>> entry =
+                                iter.next();
+                        final RolapMember member1 = entry.getKey().left;
+                        final Object constraint = entry.getKey().right;
 
-            // Cache key is (member's parent, constraint);
-            // cache value is a list of member's siblings;
-            // If constraint is trivial remove member from list of siblings;
-            // otherwise it's safer to nuke the cache entry
-            if (Util.equals(member1, parent)) {
-                if (constraint == DefaultMemberChildrenConstraint.instance()) {
-                    List<RolapMember> siblings = entry.getValue();
-                    boolean removedIt = siblings.remove(member);
-                    Util.discard(removedIt);
-                } else {
-                    iter.remove();
+                        // Cache key is (member's parent, constraint);
+                        // cache value is a list of member's siblings;
+                        // If constraint is trivial remove member from list
+                        // of siblings; otherwise it's safer to nuke the cache
+                        // entry
+                        if (Util.equals(member1, parent)) {
+                            if (constraint
+                                == DefaultMemberChildrenConstraint.instance())
+                            {
+                                List<RolapMember> siblings = entry.getValue();
+                                siblings.remove(member);
+                            } else {
+                                iter.remove();
+                            }
+                        }
+
+                        // cache is (member, some constraint);
+                        // cache value is list of member's children;
+                        // remove cache entry
+                        if (Util.equals(member1, member)) {
+                            iter.remove();
+                        }
+                    }
                 }
-            }
-
-            // cache is (member, some constraint);
-            // cache value is list of member's children;
-            // remove cache entry
-            if (Util.equals(member1, member)) {
-                iter.remove();
-            }
-        }
+            });
 
         // drop it from the lookup-cache
         return mapKeyToMember.put(Pair.of(level, key), null);
     }
-
-    public RolapMember removeMemberAndDescendants(
-        RolapLevel level,
-        Object key)
-    {
-        // Can use mapMemberToChildren recursively. No need to update inferior
-        // lists of children. Do need to update inferior lists of level-peers.
-        return null; // STUB
-    }
 }
 
 // End MemberCacheHelper.java
-

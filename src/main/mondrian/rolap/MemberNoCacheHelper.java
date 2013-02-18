@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2008-2008 TASecurity Group Spain
-// Copyright (C) 2008-2009 Pentaho and others
+// Copyright (C) 2008-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -47,13 +47,6 @@ public class MemberNoCacheHelper extends MemberCacheHelper {
     public void checkCacheStatus() {
     }
 
-    /**
-     * ???
-     *
-     * @param level
-     * @param constraint
-     * @param members
-     */
     public void putLevelMembersInCache(
         RolapLevel level,
         TupleConstraint constraint,
@@ -94,7 +87,7 @@ public class MemberNoCacheHelper extends MemberCacheHelper {
         return true;
     }
 
-    public synchronized RolapMember removeMember(RolapLevel level, Object key) {
+    public RolapMember removeMember(RolapLevel level, Object key) {
         return null;
     }
 }

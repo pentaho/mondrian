@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 22 December, 2001
@@ -60,8 +60,8 @@ interface MemberCache {
 
     /**
      * Returns whether the cache supports removing selected items. If it does,
-     * it is valid to call the {@link #removeMember(RolapLevel, Object)} and
-     * {@link #removeMemberAndDescendants(RolapLevel, Object)} methods.
+     * it is valid to call the {@link #removeMember(RolapLevel, Object)}
+     * method.
      *
      * <p>REVIEW: remove isMutable and move removeMember and
      * removeMemberAndDescendants to new interface MutableMemberCache
@@ -80,17 +80,6 @@ interface MemberCache {
      * @return previous member with that key, or null
      */
     RolapMember removeMember(RolapLevel level, Object key);
-
-    /**
-     * Removes the designated {@link RolapMember} and all its descendants.
-     * Returns the previous member with that key, or null.
-     * Optional operation: see {@link #isMutable}.
-     *
-     * @param level Level
-     * @param key Member key
-     * @return previous member with that key, or null
-     */
-    RolapMember removeMemberAndDescendants(RolapLevel level, Object key);
 
     /**
      * Returns the children of <code>member</code> if they are currently in the
