@@ -33,7 +33,14 @@ public class SoftSmartCache<K, V> extends SmartCacheImpl<K, V> {
         new ReferenceMap(ReferenceMap.SOFT, ReferenceMap.SOFT);
 
     public V putImpl(K key, V value) {
-        return cache.put(key, value);
+        // Null values are the same as a 'remove'
+        // Convert the operation because ReferenceMap doesn't
+        // like null values.
+        if (value == null) {
+            return cache.remove(key);
+        } else {
+            return cache.put(key, value);
+        }
     }
 
     public V getImpl(K key) {
