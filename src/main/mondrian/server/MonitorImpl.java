@@ -4,11 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho
+// Copyright (C) 2011-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server;
 
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapUtil;
 import mondrian.server.monitor.*;
@@ -384,8 +385,6 @@ class MonitorImpl
 
     private static class Handler implements CommandVisitor<Object> {
 
-        private static final int MAX_EXEC_HISTORY = 1000000;
-
         private final MutableServerInfo server =
             new MutableServerInfo();
 
@@ -407,15 +406,17 @@ class MonitorImpl
          */
         private final Map<Long, MutableExecutionInfo> retiredExecutionMap =
             new LinkedHashMap<Long, MutableExecutionInfo>(
-                MAX_EXEC_HISTORY,
+                MondrianProperties.instance().ExecutionHistorySize.get(),
                 0.8f,
                 false)
             {
+                private final int maxSize =
+                    MondrianProperties.instance().ExecutionHistorySize.get();
                 private static final long serialVersionUID = 1L;
                 protected boolean removeEldestEntry(
                     Map.Entry<Long, MutableExecutionInfo> e)
                 {
-                    return size() > MAX_EXEC_HISTORY;
+                    return size() > size();
                 }
         };
 
