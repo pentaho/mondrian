@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -14,6 +14,7 @@ import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.*;
 import mondrian.spi.Dialect;
+import mondrian.spi.Dialect.Datatype;
 
 import java.util.List;
 
@@ -44,50 +45,41 @@ public abstract class RolapAggregator
                 default:
                     return false;
                 }
-            }
-            public Object aggregate(List<Object> rawData) {
+            };
+            public Object aggregate(List<Object> rawData, Datatype datatype) {
                 assert rawData.size() > 0;
-                // Find the first non-null reference to a data object.
-                Object firstNonNull = null;
-                for (Object obj : rawData) {
-                    if (obj != null) {
-                        firstNonNull = obj;
-                        break;
-                    }
-                }
-                if (firstNonNull == null) {
-                    return 0;
-                }
-                if (firstNonNull instanceof Integer) {
-                    int totalValue = 0;
+                switch (datatype) {
+                case Integer:
+                    int sumInt = Integer.MIN_VALUE;
                     for (Object data : rawData) {
                         if (data != null) {
-                            totalValue += (Integer)data;
+                            if (sumInt == Integer.MIN_VALUE) {
+                                sumInt = 0;
+                            }
+                            sumInt += (Integer) data;
                         }
                     }
-                    return totalValue;
-                }
-                if (firstNonNull instanceof Double) {
-                    double totalValue = 0d;
+                    return sumInt == Integer.MIN_VALUE
+                        ? null
+                        : sumInt;
+                case Numeric:
+                    double sumDouble = Double.MIN_VALUE;
                     for (Object data : rawData) {
                         if (data != null) {
-                            totalValue += (Double)data;
+                            if (sumDouble == Double.MIN_VALUE) {
+                                sumDouble = 0;
+                            }
+                            sumDouble += ((Number) data).doubleValue();
                         }
                     }
-                    return totalValue;
+                    return sumDouble == Double.MIN_VALUE
+                        ? null
+                        : sumDouble;
+                default:
+                    throw new MondrianException(
+                        "Aggregator " + this.name
+                        + " does not support datatype" + datatype.name());
                 }
-                if (firstNonNull instanceof Long) {
-                    long totalValue = 0l;
-                    for (Object data : rawData) {
-                        if (data != null) {
-                            totalValue += (Long)data;
-                        }
-                    }
-                    return totalValue;
-                }
-                throw new IllegalArgumentException(
-                    "Unknown data type: "
-                    + firstNonNull.getClass().getName());
             }
         };
 
@@ -126,51 +118,38 @@ public abstract class RolapAggregator
                 default:
                     return false;
                 }
-            }
-
-            public Object aggregate(List<Object> rawData) {
+            };
+            public Object aggregate(List<Object> rawData, Datatype datatype) {
                 assert rawData.size() > 0;
-                // Find the first non-null reference to a data object.
-                Object firstNonNull = null;
-                for (Object obj : rawData) {
-                    if (obj != null) {
-                        firstNonNull = obj;
-                        break;
-                    }
-                }
-                if (firstNonNull == null) {
-                    return null;
-                }
-                if (firstNonNull instanceof Integer) {
-                    int min = Integer.MAX_VALUE;
+                switch (datatype) {
+                case Integer:
+                    int minInt = Integer.MAX_VALUE;
                     for (Object data : rawData) {
                         if (data != null) {
-                            min = Math.min(min, (Integer)data);
+                            minInt = Math.min(minInt, (Integer)data);
                         }
                     }
-                    return min;
-                }
-                if (firstNonNull instanceof Double) {
-                    double min = Double.MAX_VALUE;
+                    return minInt == Integer.MAX_VALUE
+                        ? null
+                        : minInt;
+                case Numeric:
+                    double minDouble = Double.MAX_VALUE;
                     for (Object data : rawData) {
                         if (data != null) {
-                            min = Math.min(min, (Double)data);
+                            minDouble =
+                                Math.min(
+                                    minDouble,
+                                    ((Number)data).doubleValue());
                         }
                     }
-                    return min;
+                    return minDouble == Double.MAX_VALUE
+                        ? null
+                        : minDouble;
+                default:
+                    throw new MondrianException(
+                        "Aggregator " + this.name
+                        + " does not support datatype" + datatype.name());
                 }
-                if (firstNonNull instanceof Long) {
-                    long min = Long.MAX_VALUE;
-                    for (Object data : rawData) {
-                        if (data != null) {
-                            min = Math.min(min, (Long)data);
-                        }
-                    }
-                    return min;
-                }
-                throw new IllegalArgumentException(
-                    "Unknown data type: "
-                    + firstNonNull.getClass().getName());
             }
         };
 
@@ -190,51 +169,39 @@ public abstract class RolapAggregator
                 default:
                     return false;
                 }
-            }
-
-            public Object aggregate(List<Object> rawData) {
+            };
+            public Object aggregate(List<Object> rawData, Datatype datatype) {
                 assert rawData.size() > 0;
-                // Find the first non-null reference to a data object.
-                Object firstNonNull = null;
-                for (Object obj : rawData) {
-                    if (obj != null) {
-                        firstNonNull = obj;
-                        break;
-                    }
-                }
-                if (firstNonNull == null) {
-                    return null;
-                }
-                if (firstNonNull instanceof Integer) {
-                    int min = Integer.MIN_VALUE;
+                switch (datatype) {
+                case Integer:
+                    int maxInt = Integer.MIN_VALUE;
                     for (Object data : rawData) {
                         if (data != null) {
-                            min = Math.max(min, (Integer)data);
+                            maxInt = Math.max(maxInt, (Integer)data);
                         }
                     }
-                    return min;
-                }
-                if (firstNonNull instanceof Double) {
-                    double min = Double.MIN_VALUE;
+                    return maxInt == Integer.MIN_VALUE
+                        ? null
+                        : maxInt;
+                case Numeric:
+                    double maxDouble = Double.MIN_VALUE;
                     for (Object data : rawData) {
                         if (data != null) {
-                            min = Math.max(min, (Double)data);
+                            maxDouble =
+                                Math.max(
+                                    maxDouble,
+                                    ((Number)data).doubleValue());
                         }
                     }
-                    return min;
+
+                    return maxDouble == Double.MIN_VALUE
+                        ? null
+                        : maxDouble;
+                default:
+                    throw new MondrianException(
+                        "Aggregator " + this.name
+                        + " does not support datatype" + datatype.name());
                 }
-                if (firstNonNull instanceof Long) {
-                    long min = Long.MIN_VALUE;
-                    for (Object data : rawData) {
-                        if (data != null) {
-                            min = Math.max(min, (Long)data);
-                        }
-                    }
-                    return min;
-                }
-                throw new IllegalArgumentException(
-                    "Unknown data type: "
-                    + firstNonNull.getClass().getName());
             }
         };
 
@@ -251,7 +218,6 @@ public abstract class RolapAggregator
                     }
                 };
             }
-
             public Object aggregate(
                 Evaluator evaluator, TupleList members, Calc exp)
             {
@@ -472,7 +438,8 @@ public abstract class RolapAggregator
         return false;
     }
 
-    public Object aggregate(List<Object> rawData) {
+    public Object aggregate(List<Object> rawData, Dialect.Datatype datatype)
+    {
         throw new UnsupportedOperationException();
     }
 

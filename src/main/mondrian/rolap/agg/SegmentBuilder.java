@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -14,6 +14,7 @@ import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.Segment.ExcludedRegion;
 import mondrian.spi.*;
+import mondrian.spi.Dialect.Datatype;
 import mondrian.util.ArraySortedSet;
 import mondrian.util.Pair;
 
@@ -183,7 +184,8 @@ public class SegmentBuilder {
         Map<SegmentHeader, SegmentBody> map,
         Set<String> keepColumns,
         BitKey targetBitkey,
-        Aggregator rollupAggregator)
+        Aggregator rollupAggregator,
+        Datatype datatype)
     {
         class AxisInfo {
             SegmentColumn column;
@@ -366,62 +368,76 @@ public class SegmentBuilder {
             {
                 data.put(
                     CellKey.Generator.newCellKey(entry.getKey().getOrdinals()),
-                    rollupAggregator.aggregate(entry.getValue()));
+                    rollupAggregator.aggregate(
+                        entry.getValue(),
+                        datatype));
             }
             body =
                 new SparseSegmentBody(
                     data,
                     axisList);
         } else {
-            // Peek at the value class. We will use a native dataset
-            // if possible.
-            final Object peek =
-                cellValues.entrySet().iterator().next().getValue().get(0);
-            if (peek instanceof Double) {
-                final double[] data = new double[nbValues];
+            switch (datatype) {
+            case Integer:
+                final int[] ints = new int[nbValues];
                 for (Entry<CellKey, List<Object>> entry
                     : cellValues.entrySet())
                 {
                     final int offset =
                         CellKey.Generator.getOffset(
                             entry.getKey().getOrdinals(), axisMultipliers);
-                    data[offset] =
-                        (Double)rollupAggregator.aggregate(entry.getValue());
-                }
-                body =
-                    new DenseDoubleSegmentBody(
-                        nullIndicators,
-                        data,
-                        axisList);
-            } else if (peek instanceof Integer) {
-                final int[] data = new int[cellValues.size()];
-                for (Entry<CellKey, List<Object>> entry
-                    : cellValues.entrySet())
-                {
-                    final int offset =
-                        CellKey.Generator.getOffset(
-                            entry.getKey().getOrdinals(), axisMultipliers);
-                    data[offset] =
-                        (Integer)rollupAggregator.aggregate(entry.getValue());
+                    final Object value =
+                        rollupAggregator.aggregate(
+                            entry.getValue(),
+                            datatype);
+                    if (value != null) {
+                        ints[offset] = (Integer) value;
+                    }
                 }
                 body =
                     new DenseIntSegmentBody(
                         nullIndicators,
-                        data,
+                        ints,
                         axisList);
-            } else {
-                final Object[] data = new Object[cellValues.size()];
+                  break;
+            case Numeric:
+                final double[] doubles = new double[nbValues];
                 for (Entry<CellKey, List<Object>> entry
                     : cellValues.entrySet())
                 {
                     final int offset =
                         CellKey.Generator.getOffset(
                             entry.getKey().getOrdinals(), axisMultipliers);
-                    data[offset] = rollupAggregator.aggregate(entry.getValue());
+                    final Object value =
+                        rollupAggregator.aggregate(
+                            entry.getValue(),
+                            datatype);
+                    if (value != null) {
+                        doubles[offset] = (Double) value;
+                    }
+                }
+                body =
+                    new DenseDoubleSegmentBody(
+                        nullIndicators,
+                        doubles,
+                        axisList);
+                break;
+            default:
+                final Object[] objects = new Object[nbValues];
+                for (Entry<CellKey, List<Object>> entry
+                    : cellValues.entrySet())
+                {
+                    final int offset =
+                        CellKey.Generator.getOffset(
+                            entry.getKey().getOrdinals(), axisMultipliers);
+                    objects[offset] =
+                        rollupAggregator.aggregate(
+                            entry.getValue(),
+                            datatype);
                 }
                 body =
                     new DenseObjectSegmentBody(
-                        data,
+                        objects,
                         axisList);
             }
         }

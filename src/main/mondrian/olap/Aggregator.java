@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -73,7 +73,7 @@ public interface Aggregator {
      * @return A rolled up value of the raw data.
      * if the object type is not supported.
      */
-    Object aggregate(List<Object> rawData);
+    Object aggregate(List<Object> rawData, Datatype datatype);
 }
 
 // End Aggregator.java
