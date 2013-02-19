@@ -437,6 +437,13 @@ public class Bug {
      */
     public static final boolean PopulateChildrenCacheOnLevelMembersFixed =
         Enable;
+
+    /**
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1375">Bug 1375:</a><br/>
+     * AggregationManager and native set functions not using measure groups
+     * for aggregates in lagunitas.
+     */
+    public static final boolean BugMondrian1375Fixed = Enable;
 }
 
 // End Bug.java

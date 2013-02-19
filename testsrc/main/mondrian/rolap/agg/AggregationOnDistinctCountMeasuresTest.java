@@ -21,8 +21,10 @@ import mondrian.rolap.RolapCube;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.spi.Dialect;
+import mondrian.spi.Dialect.DatabaseProduct;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
+import mondrian.util.Bug;
 
 import java.util.*;
 
@@ -1383,6 +1385,142 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 }
             }
         );
+    }
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1370">MONDRIAN-1370</a>
+     * <br> Wrong results for aggregate with distinct count measure.
+     */
+    public void testDistinctCountAggMeasure() {
+        final String dimension =
+            "<Dimension name='Time' table='time_by_day' type='TIME' key='Time Id'> \n"
+            + "  <Attributes>\n"
+            + "      <Attribute name='Year' keyColumn='the_year' levelType='TimeYears' hasHierarchy='false'/>\n"
+            + "      <Attribute name='Quarter' levelType='TimeQuarters' hasHierarchy='false'>\n"
+            + "   <Key>\n"
+            + "       <Column name='the_year'/>\n"
+            + "       <Column name='quarter'/>\n"
+            + "   </Key>\n"
+            + "   <Name>\n"
+            + "       <Column name='quarter'/>\n"
+            + "   </Name>\n"
+            + "      </Attribute>\n"
+            + "      <Attribute name='Month' levelType='TimeMonths' hasHierarchy='false'>\n"
+            + " <Key>\n"
+            + "     <Column name='the_year'/>\n"
+            + "     <Column name='month_of_year'/>\n"
+            + " </Key>\n"
+            + " <Name>\n"
+            + "     <Column name='month_of_year'/>\n"
+            + " </Name>\n"
+            + "      </Attribute>\n"
+            + "      <Attribute name='Time Id' keyColumn='time_id' hasHierarchy='false'/>\n"
+            + "  </Attributes>\n"
+            + "  <Hierarchies>\n"
+            + "    <Hierarchy name='Time' hasAll='false'>\n"
+            + "      <Level attribute='Year'/>\n"
+            + "      <Level attribute='Quarter'/>\n"
+            + "      <Level attribute='Month'/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Hierarchies>\n"
+            + "</Dimension>\n";
+        final String cube =
+            "<Cube name='Sales'>\n"
+            + "  <Dimensions>\n"
+            + "    <Dimension source='Time'/>\n"
+            + "  </Dimensions>\n"
+            + "  <MeasureGroups>\n"
+            + "   <MeasureGroup name='Sales' table='sales_fact_1997'>\n"
+            + "      <Measures>\n"
+            + "        <Measure name='Customer Count' column='customer_id' aggregator='distinct-count' formatString='#,###'/>\n"
+            + "     </Measures>\n"
+            + "     <DimensionLinks>\n"
+            + "       <ForeignKeyLink dimension='Time' foreignKeyColumn='time_id'/>\n"
+            + "     </DimensionLinks>\n"
+            + "   </MeasureGroup>\n"
+            + "   <MeasureGroup table='agg_c_10_sales_fact_1997' type='aggregate'>\n"
+            + "     <Measures>\n"
+            + "       <MeasureRef name='Customer Count' aggColumn='customer_count'/>\n"
+            + "     </Measures>\n"
+            + "     <DimensionLinks>\n"
+            + "       <CopyLink dimension='Time' attribute='Month'>\n"
+            + "         <Column aggColumn='the_year' table='time_by_day' name='the_year'/>\n"
+            + "         <Column aggColumn='quarter' table='time_by_day' name='quarter'/>\n"
+            + "         <Column aggColumn='month_of_year' table='time_by_day' name='month_of_year'/>\n"
+            + "        </CopyLink>\n"
+            + "     </DimensionLinks>\n"
+            + "   </MeasureGroup>\n"
+            + "  </MeasureGroups>\n"
+            + "</Cube>\n";
+        final String schema = "<?xml version='1.0'?>\n"
+            + "<Schema name='FoodMart' metamodelVersion='4.0'>\n"
+            + "<PhysicalSchema>\n"
+            + "  <Table name='sales_fact_1997'/>\n"
+            + "  <Table name='time_by_day'/>\n"
+            + "  <Table name='agg_c_10_sales_fact_1997'/>\n"
+            + "</PhysicalSchema>\n"
+            + dimension
+            + cube
+            + "</Schema>";
+        final String query =
+            "select "
+            + "  NON EMPTY {[Measures].[Customer Count]} ON COLUMNS, "
+            + "  NON EMPTY {[Time].[Year].Members} ON ROWS "
+            + "from [Sales]";
+        final String monthsQuery =
+            "select "
+            + "  NON EMPTY {[Measures].[Customer Count]} ON COLUMNS, "
+            + "  NON EMPTY {[Time].[1997].[Q1].Children} ON ROWS "
+            + "from [Sales]";
+        // should skip aggregate table, cannot aggregate
+        propSaver.set(propSaver.props.UseAggregates, true);
+        propSaver.set(propSaver.props.ReadAggregates, true);
+
+        TestContext withAggDistinctCount =
+            TestContext.instance().withSchema(schema);
+        withAggDistinctCount.assertQueryReturns(
+            query,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[Time].[1997]}\n"
+            + "Row #0: 5,581\n");
+
+        if (!Bug.BugMondrian1375Fixed) {
+            return;
+        }
+        // aggregate table has count for months, make sure it is used
+        propSaver.set(propSaver.props.UseAggregates, true);
+        propSaver.set(propSaver.props.ReadAggregates, true);
+        propSaver.set(propSaver.props.GenerateFormattedSql, true);
+        final String expectedSql =
+            "select\n"
+            + "    `agg_c_10_sales_fact_1997`.`the_year` as `c0`,\n"
+            + "    `agg_c_10_sales_fact_1997`.`quarter` as `c1`,\n"
+            + "    `agg_c_10_sales_fact_1997`.`month_of_year` as `c2`,\n"
+            + "    `agg_c_10_sales_fact_1997`.`customer_count` as `m0`\n"
+            + "from\n"
+            + "    `agg_c_10_sales_fact_1997` as `agg_c_10_sales_fact_1997`\n"
+            + "where\n"
+            + "    `agg_c_10_sales_fact_1997`.`the_year` = 1997\n"
+            + "and\n"
+            + "    `agg_c_10_sales_fact_1997`.`quarter` = 'Q1'\n"
+            + "and\n"
+            + "    `agg_c_10_sales_fact_1997`.`month_of_year` in (1, 2, 3)";
+        assertQuerySqlOrNot(
+            withAggDistinctCount,
+            monthsQuery,
+            new SqlPattern[]{
+                new SqlPattern(
+                    DatabaseProduct.MYSQL,
+                    expectedSql,
+                    expectedSql.indexOf("from"))},
+            false,
+            true,
+            true);
     }
 }
 
