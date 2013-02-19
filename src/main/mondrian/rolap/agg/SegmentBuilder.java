@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -330,14 +330,28 @@ public class SegmentBuilder {
             new ArrayList<Pair<SortedSet<Comparable>, Boolean>>();
         final BitSet nullIndicators = new BitSet(axes.length);
         int nbValues = 1;
+        // the logic used here for the sparse check follows
+        // SegmentLoader.setAxisDataAndDecideSparseUse.
+        // The two methods use different data structures (AxisInfo/SegmentAxis)
+        // so combining logic is probably more trouble than it's worth.
+        boolean sparse = false;
         for (int i = 0; i < axes.length; i++) {
             axisList.add(
                 new Pair<SortedSet<Comparable>, Boolean>(
                     axes[i].valueSet, axes[i].hasNull));
             nullIndicators.set(i, axes[i].hasNull);
-            nbValues *= axes[i].hasNull
-                ? axes[i].values.length + 1
-                : axes[i].values.length;
+
+            if (!sparse) {
+                int previous = nbValues;
+                int size = axes[i].values.length;
+                nbValues *= axes[i].hasNull
+                    ? size + 1
+                    : size;
+                if (nbValues < previous || nbValues < size) {
+                    nbValues = Integer.MAX_VALUE;
+                    sparse = true;
+                }
+            }
          }
 
         final int[] axisMultipliers =
@@ -352,9 +366,9 @@ public class SegmentBuilder {
                 new DenseObjectSegmentBody(
                     new Object[0],
                     axisList);
-        } else if (SegmentLoader.useSparse(
-                cellValues.size(),
-                cellValues.size() - nullIndicators.cardinality()))
+        } else if (
+            sparse || SegmentLoader.useSparse(
+                nbValues, cellValues.size()))
         {
             // The rule says we must use a sparse dataset.
             // First, aggregate the values of each key.

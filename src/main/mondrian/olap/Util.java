@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -2219,7 +2219,7 @@ public class Util extends XOMUtil {
             || !(set2 instanceof ArraySortedSet))
         {
             final TreeSet<E> set = new TreeSet<E>(set1);
-            set.removeAll(set2);
+            set.retainAll(set2);
             return set;
         }
         final Comparable<?>[] result =
