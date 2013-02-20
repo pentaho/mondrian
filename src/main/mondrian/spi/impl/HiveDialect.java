@@ -4,14 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2011 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
 
 import mondrian.olap.Util;
-
-import org.apache.log4j.Logger;
 
 import java.sql.*;
 import java.sql.Date;
@@ -24,9 +22,6 @@ import java.util.*;
  * @since Jan 10, 2011
  */
 public class HiveDialect extends JdbcDialectImpl {
-    private static final Logger LOGGER =
-            Logger.getLogger(HiveDialect.class);
-
     private static final int MAX_COLUMN_NAME_LENGTH = 128;
 
     public static final JdbcDialectFactory FACTORY =
@@ -35,13 +30,8 @@ public class HiveDialect extends JdbcDialectImpl {
             DatabaseProduct.HIVE)
         {
             protected boolean acceptsConnection(Connection connection) {
-                try {
-                    return super.acceptsConnection(connection)
-                        && !isImpala(connection.getMetaData());
-                } catch (SQLException e) {
-                    throw Util.newError(
-                        e, "Error while instantiating dialect");
-                }
+                return super.acceptsConnection(connection)
+                    && !isDatabase(DatabaseProduct.IMPALA, connection);
             }
         };
 
@@ -54,83 +44,6 @@ public class HiveDialect extends JdbcDialectImpl {
      */
     public HiveDialect(Connection connection) throws SQLException {
         super(connection);
-    }
-
-    /**
-     * Detects whether the database is the desired product
-     *
-     * @param  databaseProduct the Product to detect for
-     * @param databaseMetaData Database metadata
-     *
-     * @return Whether this is the requested database product
-     */
-    protected static boolean isDatabase(
-        DatabaseProduct databaseProduct,
-        DatabaseMetaData databaseMetaData)
-    {
-        Statement statement = null;
-        ResultSet resultSet = null;
-
-        String dbProduct = databaseProduct.name().toLowerCase();
-
-        try {
-            // Quick and dirty check first.
-            if (databaseMetaData.getDatabaseProductName()
-                    .toLowerCase().contains(dbProduct))
-            {
-                LOGGER.info("Using " + databaseProduct.name() + " dialect");
-                return true;
-            }
-
-            // Let's try using version().
-            statement = databaseMetaData.getConnection().createStatement();
-            resultSet = statement.executeQuery("select version()");
-            if (resultSet.next()) {
-                String version = resultSet.getString(1);
-                LOGGER.info("Version=" + version);
-                if (version != null) {
-                    if (version.toLowerCase().contains(dbProduct)) {
-                        LOGGER.info(
-                            "Using " + databaseProduct.name() + " dialect");
-                        return true;
-                    }
-                }
-            }
-            LOGGER.info("NOT Using " + databaseProduct.name() + " dialect");
-            return false;
-        } catch (SQLException e) {
-            throw Util.newInternal(
-                e,
-                "while running query to detect Postgresql derivative database");
-        } finally {
-            if (resultSet != null) {
-                try {
-                    resultSet.close();
-                } catch (SQLException e) {
-                    // ignore
-                }
-            }
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException e) {
-                    // ignore
-                }
-            }
-        }
-    }
-
-    /**
-     * Detects whether this database is Impala.
-     *
-     * @param databaseMetaData Database metadata
-     *
-     * @return Whether this is a Impala database
-     */
-    public static boolean isImpala(
-        DatabaseMetaData databaseMetaData)
-    {
-        return isDatabase(DatabaseProduct.IMPALA, databaseMetaData);
     }
 
     protected String deduceIdentifierQuoteString(
@@ -236,9 +149,8 @@ public class HiveDialect extends JdbcDialectImpl {
         return false;
     }
 
-    @Override
     public boolean allowsJoinOn() {
-        return true;
+        return false;
     }
 }
 

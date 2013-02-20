@@ -1358,6 +1358,66 @@ public class JdbcDialectImpl implements Dialect {
     private enum Case {
         LOWER, MIXED, UNKNOWN, UPPER
     }
+
+    /**
+     * Helper method to determine if a connection would work with
+     * a given database product. This can be used to differenciate
+     * between databases which use the same driver as others.
+     *
+     * <p>It will first try to use
+     * {@link DatabaseMetaData#getDatabaseProductName()} and match the
+     * name of {@link DatabaseProduct} passed as an argument.
+     *
+     * <p>If that fails, it will try to execute <code>select version();</code>
+     * and obtains some information directly from the server.
+     *
+     * @param databaseProduct Database product instance
+     * @param connection SQL connection
+     * @return true if a match was found. false otherwise.
+     */
+    protected static boolean isDatabase(
+        DatabaseProduct databaseProduct,
+        Connection connection)
+    {
+        Statement statement = null;
+        ResultSet resultSet = null;
+
+        String dbProduct = databaseProduct.name().toLowerCase();
+
+        try {
+            // Quick and dirty check first.
+            if (connection.getMetaData().getDatabaseProductName()
+                .toLowerCase().contains(dbProduct))
+            {
+                LOGGER.debug("Using " + databaseProduct.name() + " dialect");
+                return true;
+            }
+
+            // Let's try using version().
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery("select version()");
+            if (resultSet.next()) {
+                String version = resultSet.getString(1);
+                LOGGER.debug("Version=" + version);
+                if (version != null) {
+                    if (version.toLowerCase().contains(dbProduct)) {
+                        LOGGER.info(
+                            "Using " + databaseProduct.name() + " dialect");
+                        return true;
+                    }
+                }
+            }
+            LOGGER.debug("NOT Using " + databaseProduct.name() + " dialect");
+            return false;
+        } catch (SQLException e) {
+            throw Util.newInternal(
+                e,
+                "Could not match the database product for dialect: "
+                + databaseProduct.name());
+        } finally {
+            Util.close(resultSet, statement, null);
+        }
+    }
 }
 
 // End JdbcDialectImpl.java
