@@ -47,6 +47,7 @@ public class XmlaSupport {
     public static final String nl = Util.nl;
     public static final String SOAP_PREFIX = XmlaConstants.SOAP_PREFIX;
 
+    public static final String UTF8_BOM = "\uFEFF";
     public static final String CATALOG_NAME = "FoodMart";
     public static final String DATASOURCE_NAME = "FoodMart";
     public static final String DATASOURCE_DESCRIPTION =
@@ -1112,8 +1113,19 @@ public class XmlaSupport {
         if (! XmlUtil.supportsValidation()) {
             return false;
         }
+
+        // Remove the UTF BOM for proper validation.
+        bytes = removeUTF8BOM(bytes);
+
         Node[] nodes = extractNodesFromSoapXmla(bytes);
         return validateNodes(nodes);
+    }
+
+    private static byte[] removeUTF8BOM(byte[] s) {
+        if (s[0] == UTF8_BOM.getBytes()[0]) {
+            return new String(s).substring(1).getBytes();
+        }
+        return s;
     }
 
     /**
@@ -1128,6 +1140,10 @@ public class XmlaSupport {
         if (! XmlUtil.supportsValidation()) {
             return false;
         }
+
+        // Remove the UTF BOM for proper validation.
+        bytes = removeUTF8BOM(bytes);
+
         Node[] nodes = extractNodesFromXmla(bytes);
         return validateNodes(nodes);
     }

@@ -577,7 +577,15 @@ System.out.println("Got CONTINUE");
                 xmlaReqDoc, connectString, catalogNameUrls, role,
                 resource.serverCache);
         if (XmlUtil.supportsValidation()) {
-            if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
+            // Validating requires a <?xml header.
+            String response = new String(bytes);
+            if (!response.startsWith("<?xml version=\"1.0\"?>")) {
+                response =
+                    "<?xml version=\"1.0\"?>"
+                    + Util.nl
+                    + response;
+            }
+            if (XmlaSupport.validateXmlaUsingXpath(response.getBytes())) {
                 if (DEBUG) {
                     System.out.println(
                         "XmlaBaseTestCase.doTests: XML Data is Valid");

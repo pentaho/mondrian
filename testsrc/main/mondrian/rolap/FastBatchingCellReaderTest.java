@@ -2341,6 +2341,10 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                 Arrays.asList(intSet4),
                 Dialect.Datatype.Integer));
     }
+
+    private static class Bacon {
+        // It's just bacon.
+    };
 }
 
 // End FastBatchingCellReaderTest.java
