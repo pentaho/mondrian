@@ -565,7 +565,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                 + "and\n"
                 + "    `sales_fact_1997`.`store_id` = `store`.`store_id`\n"
                 + "and\n"
-                + "    `store`.`store_type` = `Deluxe Supermarket`\n"
+                + "    `store`.`store_type` in ('Deluxe Supermarket', 'Gourmet Supermarket')\n"
                 + "and\n"
                 + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
                 + "and\n"

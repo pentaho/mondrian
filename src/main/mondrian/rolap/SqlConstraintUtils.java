@@ -360,11 +360,11 @@ public class SqlConstraintUtils {
     {
         ArrayList<Member> listOfMembers = new ArrayList<Member>();
         for (Member member : members) {
-          if (member.isCalculated()
+            if (member.isCalculated()
                 && isSupportedCalculatedMember(member))
             {
-                    listOfMembers.addAll(
-                        expandExpressions(member, null, evaluator));
+                listOfMembers.addAll(
+                    expandExpressions(member, null, evaluator));
             } else {
                 // just add the member
                 listOfMembers.add(member);
@@ -379,37 +379,37 @@ public class SqlConstraintUtils {
         Exp expression,
         Evaluator evaluator)
     {
-      List<Member> listOfMembers = new ArrayList<Member>();
-      if (expression == null) {
-        expression = member.getExpression();
-      }
-      if (expression instanceof ResolvedFunCall) {
-        ResolvedFunCall fun = (ResolvedFunCall)expression;
-
-        if (fun.getFunDef() instanceof ParenthesesFunDef) {
-          assert (fun.getArgCount() == 1);
-          listOfMembers.addAll(
-              expandExpressions(member, fun.getArg(0), evaluator));
-        } else if (fun.getFunName().equals("+")) {
-          Exp[] expressions = fun.getArgs();
-          for (Exp innerExp : expressions) {
-            listOfMembers.addAll(
-                expandExpressions(member, innerExp, evaluator));
-          }
-        } else {
-          // Extract the list of members
-          Iterator<Member> evaluatedSet =
-            getSetFromCalculatedMember(evaluator, member);
-          while (evaluatedSet.hasNext()) {
-            listOfMembers.add(evaluatedSet.next());
-          }
+        List<Member> listOfMembers = new ArrayList<Member>();
+        if (expression == null) {
+            expression = member.getExpression();
         }
-      } else if (expression instanceof MemberExpr) {
-        listOfMembers.add(((MemberExpr)expression).getMember());
-      } else {
-        listOfMembers.add(member);
-      }
-      return listOfMembers;
+        if (expression instanceof ResolvedFunCall) {
+            ResolvedFunCall fun = (ResolvedFunCall)expression;
+
+          if (fun.getFunDef() instanceof ParenthesesFunDef) {
+              assert (fun.getArgCount() == 1);
+              listOfMembers.addAll(
+                  expandExpressions(member, fun.getArg(0), evaluator));
+          } else if (fun.getFunName().equals("+")) {
+              Exp[] expressions = fun.getArgs();
+              for (Exp innerExp : expressions) {
+                  listOfMembers.addAll(
+                      expandExpressions(member, innerExp, evaluator));
+              }
+          } else {
+              // Extract the list of members
+              Iterator <Member> evaluatedSet =
+                  getSetFromCalculatedMember(evaluator, member);
+              while (evaluatedSet.hasNext()) {
+                  listOfMembers.add(evaluatedSet.next());
+              }
+          }
+        } else if (expression instanceof MemberExpr) {
+            listOfMembers.add(((MemberExpr)expression).getMember());
+        } else {
+            listOfMembers.add(member);
+        }
+        return listOfMembers;
     }
 
     /**
@@ -428,35 +428,35 @@ public class SqlConstraintUtils {
         final Exp expression)
     {
       if (expression instanceof ResolvedFunCall) {
-            ResolvedFunCall fun = (ResolvedFunCall) expression;
+          ResolvedFunCall fun = (ResolvedFunCall) expression;
 
-            if (fun.getFunDef() instanceof AggregateFunDef) {
-                return true;
-            }
+          if (fun.getFunDef() instanceof AggregateFunDef) {
+              return true;
+          }
 
-            if (fun.getFunDef() instanceof ParenthesesFunDef) {
+          if (fun.getFunDef() instanceof ParenthesesFunDef) {
               if (fun.getArgs().length == 1) {
-                for (Exp argsExp : fun.getArgs()) {
-                  if (!isSupportedExpressionForCalculatedMember(argsExp)) {
-                    return false;
+                  for (Exp argsExp : fun.getArgs()) {
+                      if (!isSupportedExpressionForCalculatedMember(argsExp)) {
+                          return false;
+                      }
                   }
-                }
               }
               return true;
-            }
+          }
 
-            if (fun.getFunDef().getName().equals("+")) {
+          if (fun.getFunDef().getName().equals("+")) {
               for (Exp argsExp : fun.getArgs()) {
-                if (!isSupportedExpressionForCalculatedMember(argsExp)) {
-                  return false;
-                }
+                  if (!isSupportedExpressionForCalculatedMember(argsExp)) {
+                      return false;
+                  }
               }
               return true;
-            }
+          }
       }
 
       if (expression instanceof MemberExpr) {
-        return true;
+          return true;
       }
 
       return false;
