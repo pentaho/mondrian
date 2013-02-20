@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2004-2005 Julian Hyde
+// Copyright (C) 2002-2005 Julian Hyde
 // Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
@@ -16,6 +16,7 @@ import mondrian.spi.Dialect;
 import mondrian.spi.SegmentBody;
 import mondrian.spi.SegmentColumn;
 import mondrian.spi.SegmentHeader;
+import mondrian.test.PerformanceTest;
 import mondrian.util.ByteString;
 import mondrian.util.Pair;
 
@@ -40,31 +41,34 @@ public class SegmentBuilderTest extends BatchTestCase {
             MondrianProperties.instance().SparseSegmentCountThreshold, 1000);
     }
 
-    public void _testSparseRollup() {
+    public void testSparseRollup() {
         // functional test for a case that causes OOM if rollup creates
         // a dense segment.
-        // This takes several seconds to run, disabling in favor of
-        // unit tests below.
+        // This takes several seconds to run
 
-        // load the cache with a segment that can fulfill the subsequent rollup
-        executeQuery(
-            "select NON EMPTY Crossjoin([Store Type].[Store Type].members, "
-            + "CrossJoin([Promotion Media].[Media Type].members, "
-            + " Crossjoin([Promotions].[Promotion Name].members, "
-            + "Crossjoin([Store].[Store Name].Members, "
-            + "Crossjoin( [product].[product name].members, "
-            + "Crossjoin( [Customers].[Name].members,  "
-            + "[Gender].[Gender].members)))))) on 1, "
-            + "{ measures.[unit sales] } on 0 from [Sales]");
+        if (PerformanceTest.LOGGER.isDebugEnabled()) {
+            // load the cache with a segment for the subsequent rollup
+            executeQuery(
+                "select NON EMPTY Crossjoin([Store Type].[Store Type].members, "
+                + "CrossJoin([Promotion Media].[Media Type].members, "
+                + " Crossjoin([Promotions].[Promotion Name].members, "
+                + "Crossjoin([Store].[Store Name].Members, "
+                + "Crossjoin( [product].[product name].members, "
+                + "Crossjoin( [Customers].[Name].members,  "
+                + "[Gender].[Gender].members)))))) on 1, "
+                + "{ measures.[unit sales] } on 0 from [Sales]");
 
-        executeQuery(
-            "select NON EMPTY Crossjoin([Store Type].[Store Type].members, "
-            + "CrossJoin([Promotion Media].[Media Type].members, "
-            + "Crossjoin([Promotions].[Promotion Name].members, "
-            + "Crossjoin([Store].[Store Name].Members, "
-            + "Crossjoin( [product].[product name].members, "
-            + "[Customers].[Name].members))))) on 1, "
-            + "{ measures.[unit sales] } on 0 from [Sales]");
+            executeQuery(
+                "select NON EMPTY Crossjoin([Store Type].[Store Type].members, "
+                + "CrossJoin([Promotion Media].[Media Type].members, "
+                + "Crossjoin([Promotions].[Promotion Name].members, "
+                + "Crossjoin([Store].[Store Name].Members, "
+                + "Crossjoin( [product].[product name].members, "
+                + "[Customers].[Name].members))))) on 1, "
+                + "{ measures.[unit sales] } on 0 from [Sales]");
+            // second query will throw OOM if .rollup() attempts
+            // to create a dense segment
+        }
     }
 
     public void testRollupWithIntOverflowPossibility() {
