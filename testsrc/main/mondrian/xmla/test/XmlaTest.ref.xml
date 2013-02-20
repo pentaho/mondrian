@@ -1154,11 +1154,10 @@
 ]]>
         </Resource>
         <Resource name="response">
-            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-  <xmla:return>
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?><xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
     <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema xmlns:sql="urn:schemas-microsoft-com:xml-sql" elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         <xsd:element name="root">
           <xsd:complexType>
             <xsd:sequence>
@@ -1252,7 +1251,7 @@
         <DIMENSION_UNIQUE_NAME>[Customer]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Gender</HIERARCHY_NAME>
         <HIERARCHY_UNIQUE_NAME>[Customer].[Gender]</HIERARCHY_UNIQUE_NAME>
-        <HIERARCHY_CAPTION>Gender</HIERARCHY_CAPTION>
+        <HIERARCHY_CAPTION>Customer - Gender</HIERARCHY_CAPTION>
         <DIMENSION_TYPE>3</DIMENSION_TYPE>
         <HIERARCHY_CARDINALITY>3</HIERARCHY_CARDINALITY>
         <DEFAULT_MEMBER>[Customer].[Gender].[All Gender]</DEFAULT_MEMBER>
@@ -1275,7 +1274,7 @@
         <DIMENSION_UNIQUE_NAME>[Customer]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Marital Status</HIERARCHY_NAME>
         <HIERARCHY_UNIQUE_NAME>[Customer].[Marital Status]</HIERARCHY_UNIQUE_NAME>
-        <HIERARCHY_CAPTION>Marital Status</HIERARCHY_CAPTION>
+        <HIERARCHY_CAPTION>Customer - Marital Status</HIERARCHY_CAPTION>
         <DIMENSION_TYPE>3</DIMENSION_TYPE>
         <HIERARCHY_CARDINALITY>112</HIERARCHY_CARDINALITY>
         <DEFAULT_MEMBER>[Customer].[Marital Status].[All Marital Status]</DEFAULT_MEMBER>
@@ -1298,7 +1297,7 @@
         <DIMENSION_UNIQUE_NAME>[Customer]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Yearly Income</HIERARCHY_NAME>
         <HIERARCHY_UNIQUE_NAME>[Customer].[Yearly Income]</HIERARCHY_UNIQUE_NAME>
-        <HIERARCHY_CAPTION>Yearly Income</HIERARCHY_CAPTION>
+        <HIERARCHY_CAPTION>Customer - Yearly Income</HIERARCHY_CAPTION>
         <DIMENSION_TYPE>3</DIMENSION_TYPE>
         <HIERARCHY_CARDINALITY>9</HIERARCHY_CARDINALITY>
         <DEFAULT_MEMBER>[Customer].[Yearly Income].[All Yearly Incomes]</DEFAULT_MEMBER>
@@ -1435,7 +1434,7 @@
         <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
         <HIERARCHY_NAME>Store Type</HIERARCHY_NAME>
         <HIERARCHY_UNIQUE_NAME>[Store].[Store Type]</HIERARCHY_UNIQUE_NAME>
-        <HIERARCHY_CAPTION>Store Type</HIERARCHY_CAPTION>
+        <HIERARCHY_CAPTION>Store - Store Type</HIERARCHY_CAPTION>
         <DIMENSION_TYPE>3</DIMENSION_TYPE>
         <HIERARCHY_CARDINALITY>7</HIERARCHY_CARDINALITY>
         <DEFAULT_MEMBER>[Store].[Store Type].[All Store Types]</DEFAULT_MEMBER>
@@ -1547,11 +1546,10 @@
 ]]>
         </Resource>
         <Resource name="response">
-            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-  <xmla:return>
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?><xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
     <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema xmlns:sql="urn:schemas-microsoft-com:xml-sql" elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         <xsd:element name="root">
           <xsd:complexType>
             <xsd:sequence>
@@ -1683,7 +1681,7 @@
         <LEVEL_CARDINALITY>104</LEVEL_CARDINALITY>
         <LEVEL_TYPE>260</LEVEL_TYPE>
         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
-        <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
+        <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
         <DESCRIPTION>Sales Cube - Time.Weekly Hierarchy - Week Level</DESCRIPTION>
       </row>
@@ -1700,7 +1698,7 @@
         <LEVEL_CARDINALITY>730</LEVEL_CARDINALITY>
         <LEVEL_TYPE>516</LEVEL_TYPE>
         <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
-        <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
+        <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
         <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
         <DESCRIPTION>Sales Cube - Time.Weekly Hierarchy - Day Level</DESCRIPTION>
       </row>
@@ -1898,11 +1896,10 @@
 ]]>
         </Resource>
         <Resource name="response">
-            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
-  <xmla:return>
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?><xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
     <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema xmlns:sql="urn:schemas-microsoft-com:xml-sql" elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         <xsd:element name="root">
           <xsd:complexType>
             <xsd:sequence>
@@ -1965,7 +1962,7 @@
         <HIERARCHY_UNIQUE_NAME>[Time].[Time]</HIERARCHY_UNIQUE_NAME>
         <LEVEL_UNIQUE_NAME>[Time].[Time].[Year]</LEVEL_UNIQUE_NAME>
         <LEVEL_NUMBER>0</LEVEL_NUMBER>
-        <MEMBER_ORDINAL>17</MEMBER_ORDINAL>
+        <MEMBER_ORDINAL>1</MEMBER_ORDINAL>
         <MEMBER_NAME>1998</MEMBER_NAME>
         <MEMBER_UNIQUE_NAME>[Time].[Time].[1998]</MEMBER_UNIQUE_NAME>
         <MEMBER_TYPE>1</MEMBER_TYPE>
