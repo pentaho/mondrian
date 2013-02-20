@@ -681,7 +681,7 @@ class BatchLoader {
                 measure.getDatatype())
             && measure.getAggregator().getRollup().supportsFastAggregates(
                 measure.getDatatype())
-            && !rollupBitmaps.contains(request.getConstrainedColumnsBitKey()))
+            && !isRequestCoveredByRollups(request))
         {
             // Don't even bother doing a segment lookup if we can't
             // rollup that measure.
@@ -713,6 +713,86 @@ class BatchLoader {
         }
         return false;
     }
+
+      /**
+       * Checks if the request can be satisfied by a rollup already in place
+       * and moves that rollup to the top of the list if not there.
+       */
+      private boolean isRequestCoveredByRollups(CellRequest request) {
+          BitKey bitKey = request.getConstrainedColumnsBitKey();
+          if (!rollupBitmaps.contains(bitKey)) {
+              return false;
+          }
+          List<SegmentHeader> firstOkList = null;
+          for (RollupInfo rollupInfo : rollups) {
+              if (!rollupInfo.constrainedColumnsBitKey.equals(bitKey)) {
+                  continue;
+              }
+              int candidateListsIdx = 0;
+              // bitkey is the same, are the constrained values compatible?
+              candidatesLoop:
+                  for (List<SegmentHeader> candList
+                      : rollupInfo.candidateLists)
+                  {
+                      for (SegmentHeader header : candList) {
+                          if (headerCoversRequest(header, request)) {
+                              firstOkList = candList;
+                              break candidatesLoop;
+                          }
+                      }
+                      candidateListsIdx++;
+                  }
+              if (firstOkList != null) {
+                  if (candidateListsIdx > 0) {
+                      // move good candidate list to first position
+                      rollupInfo.candidateLists.remove(candidateListsIdx);
+                      rollupInfo.candidateLists.set(0, firstOkList);
+                  }
+                  return true;
+              }
+          }
+          return false;
+      }
+
+      /**
+       * Check constraint compatibility
+       */
+      private boolean headerCoversRequest(
+          SegmentHeader header,
+          CellRequest request)
+      {
+          BitKey bitKey = request.getConstrainedColumnsBitKey();
+          assert header.getConstrainedColumnsBitKey().cardinality()
+                >= bitKey.cardinality();
+          BitKey headerBitKey = header.getConstrainedColumnsBitKey();
+          // get all constrained values for relevant bitKey positions
+          List<SortedSet<Comparable>> headerValues =
+              new ArrayList<SortedSet<Comparable>>(bitKey.cardinality());
+          Map<Integer, Integer> valueIndexes = new HashMap<Integer, Integer>();
+          int relevantCCIdx = 0, keyValuesIdx = 0;
+          for (int bitPos : headerBitKey) {
+              if (bitKey.get(bitPos)) {
+                  headerValues.add(
+                      header.getConstrainedColumns().get(relevantCCIdx).values);
+                  valueIndexes.put(bitPos, keyValuesIdx++);
+              }
+              relevantCCIdx++;
+          }
+          assert request.getConstrainedColumns().length
+              == request.getSingleValues().length;
+          // match header constraints against request values
+          for (int i = 0; i < request.getConstrainedColumns().length; i++) {
+              RolapStar.Column col = request.getConstrainedColumns()[i];
+              Integer valueIdx = valueIndexes.get(col.getBitPosition());
+              if (headerValues.get(valueIdx) != null
+                  && !headerValues.get(valueIdx).contains(
+                      request.getSingleValues()[i]))
+              {
+                return false;
+              }
+          }
+          return true;
+      }
 
     private void loadFromSql(
         final CellRequest request,
