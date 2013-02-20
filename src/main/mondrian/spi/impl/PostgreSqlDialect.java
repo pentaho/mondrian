@@ -9,11 +9,7 @@
 */
 package mondrian.spi.impl;
 
-import mondrian.olap.Util;
-
 import mondrian.rolap.SqlStatement;
-
-import org.apache.log4j.Logger;
 
 import java.sql.*;
 import java.util.regex.Pattern;
@@ -26,25 +22,17 @@ import java.util.regex.PatternSyntaxException;
  * @since Nov 23, 2008
  */
 public class PostgreSqlDialect extends JdbcDialectImpl {
-    private static final Logger LOGGER =
-        Logger.getLogger(PostgreSqlDialect.class);
-
     public static final JdbcDialectFactory FACTORY =
         new JdbcDialectFactory(
             PostgreSqlDialect.class,
             DatabaseProduct.POSTGRESQL)
         {
             protected boolean acceptsConnection(Connection connection) {
-                try {
-                    // Greenplum looks a lot like Postgres. If this is a
-                    // Greenplum connection, yield to the Greenplum dialect.
-                    return super.acceptsConnection(connection)
-                        && !isGreenplum(connection.getMetaData())
-                        && !isNetezza(connection.getMetaData());
-                } catch (SQLException e) {
-                    throw Util.newError(
-                        e, "Error while instantiating dialect");
-                }
+                // Greenplum looks a lot like Postgres. If this is a
+                // Greenplum connection, yield to the Greenplum dialect.
+                return super.acceptsConnection(connection)
+                    && !isDatabase(DatabaseProduct.GREENPLUM, connection)
+                    && !isDatabase(DatabaseProduct.NETEZZA, connection);
             }
         };
 
@@ -80,125 +68,6 @@ public class PostgreSqlDialect extends JdbcDialectImpl {
                     expr,
                     ascending,
                     collateNullsLast);
-        }
-    }
-
-    /**
-     * Detects whether this database is Netezza.
-     *
-     * @param databaseMetaData Database metadata
-     *
-     * @return Whether this is a Netezza database
-     */
-    public static boolean isNetezza(
-        DatabaseMetaData databaseMetaData)
-    {
-        Statement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            // Quick and dirty check first.
-            if (databaseMetaData.getDatabaseProductName()
-                .toLowerCase().contains("netezza"))
-            {
-                LOGGER.info("Using NETEZZA dialect");
-                return true;
-            }
-
-            // Let's try using version().
-            statement = databaseMetaData.getConnection().createStatement();
-            resultSet = statement.executeQuery("select version()");
-            if (resultSet.next()) {
-                String version = resultSet.getString(1);
-                LOGGER.info("Version=" + version);
-                if (version != null
-                    && version.toLowerCase().indexOf("netezza") != -1)
-                {
-                    LOGGER.info("Using NETEZZA dialect");
-                    return true;
-                }
-            }
-            LOGGER.info("NOT Using NETEZZA dialect");
-            return false;
-        } catch (SQLException e) {
-            throw Util.newInternal(
-                e,
-                "while running query to detect Netezza database");
-        } finally {
-            if (resultSet != null) {
-                try {
-                    resultSet.close();
-                } catch (SQLException e) {
-                    // ignore
-                }
-            }
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException e) {
-                    // ignore
-                }
-            }
-        }
-    }
-
-    /**
-     * Detects whether this database is Greenplum.
-     *
-     * <p>Greenplum uses the Postgres driver and appears to be a Postgres
-     * instance. The key difference is the presence of 'greenplum' in 'select
-     * version()'.
-     *
-     * @param databaseMetaData Database metadata
-     *
-     * @return Whether this is a Greenplum database
-     */
-    public static boolean isGreenplum(
-        DatabaseMetaData databaseMetaData)
-    {
-        Statement statement = null;
-        ResultSet resultSet = null;
-        try {
-            // Mock connection used to create dialects during testing does not
-            // support executing statements.
-            final String driverName = databaseMetaData.getDriverName();
-            if (driverName.startsWith("Mondrian fake dialect")) {
-                return driverName.equals("Mondrian fake dialect for Greenplum");
-            }
-
-            statement = databaseMetaData.getConnection().createStatement();
-            resultSet = statement.executeQuery("select version()");
-            if (resultSet.next()) {
-                String version = resultSet.getString(1);
-                LOGGER.info("Version=" + version);
-                if (version != null
-                    && version.toLowerCase().indexOf("greenplum") != -1)
-                {
-                    LOGGER.info("Using GREENPLUM dialect");
-                    return true;
-                }
-            }
-            LOGGER.info("Using POSTGRES dialect");
-            return false;
-        } catch (SQLException e) {
-            throw Util.newInternal(
-                e,
-                "while running query to detect Greenplum database");
-        } finally {
-            if (resultSet != null) {
-                try {
-                    resultSet.close();
-                } catch (SQLException e) {
-                    // ignore
-                }
-            }
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException e) {
-                    // ignore
-                }
-            }
         }
     }
 

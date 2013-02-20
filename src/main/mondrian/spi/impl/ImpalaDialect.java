@@ -4,20 +4,19 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2013 Pentaho
+// Copyright (C) 2013-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
-
-import mondrian.olap.Util;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
 /**
- * User: cboyden
- * Date: 2/11/13
+ * Dialect for Cloudera's Impala DB.
+ * @author cboyden
+ * @since 2/11/13
  */
 public class ImpalaDialect extends HiveDialect {
     /**
@@ -36,13 +35,8 @@ public class ImpalaDialect extends HiveDialect {
             DatabaseProduct.HIVE)
         {
             protected boolean acceptsConnection(Connection connection) {
-                try {
-                    return super.acceptsConnection(connection)
-                            && isImpala(connection.getMetaData());
-                } catch (SQLException e) {
-                    throw Util.newError(
-                        e, "Error while instantiating dialect");
-                }
+                return super.acceptsConnection(connection)
+                    && isDatabase(DatabaseProduct.IMPALA, connection);
             }
         };
 
@@ -128,6 +122,10 @@ public class ImpalaDialect extends HiveDialect {
         return "";
     }
 
+    public boolean allowsJoinOn() {
+        return false;
+    }
+
     @Override
     public void quoteStringLiteral(
         StringBuilder buf,
@@ -150,6 +148,5 @@ public class ImpalaDialect extends HiveDialect {
 
         buf.append(quote);
     }
-
 }
 // End ImpalaDialect.java
