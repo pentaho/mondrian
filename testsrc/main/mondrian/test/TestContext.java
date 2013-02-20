@@ -3217,7 +3217,7 @@ public class TestContext {
         public String getDatabaseProductName() {
             switch (product) {
             case GREENPLUM:
-                return "postgres";
+                return "postgres greenplum";
             default:
                 return product.name();
             }
