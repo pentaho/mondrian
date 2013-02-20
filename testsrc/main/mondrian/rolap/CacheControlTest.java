@@ -4,13 +4,14 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.olap.CacheControl.CellRegion;
+import mondrian.spi.Dialect;
 import mondrian.test.*;
 
 import java.io.PrintWriter;
@@ -296,40 +297,45 @@ public class CacheControlTest extends FoodMartTestCase {
      * Creates a cell region, runs a query, then flushes the cache.
      */
     public void testFlush() {
+        if (!getTestContext().getDialect().getDatabaseProduct()
+            .equals(Dialect.DatabaseProduct.MYSQL))
+        {
+            return;
+        }
         assertQueryReturns(
-            "SELECT {[Product].[Product Department].MEMBERS} ON AXIS(0),\n"
-            + "{{[Gender].[Gender].MEMBERS}, {[Gender].[All Gender]}} ON AXIS(1)\n"
+            "SELECT {[Product].[Products].[Product Department].MEMBERS} ON AXIS(0),\n"
+            + "{{[Gender].[Gender].[Gender].MEMBERS}, {[Gender].[All Gender]}} ON AXIS(1)\n"
             + "FROM [Sales 2] WHERE {[Measures].[Unit Sales]}",
             "Axis #0:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #1:\n"
-            + "{[Product].[Drink].[Alcoholic Beverages]}\n"
-            + "{[Product].[Drink].[Beverages]}\n"
-            + "{[Product].[Drink].[Dairy]}\n"
-            + "{[Product].[Food].[Baked Goods]}\n"
-            + "{[Product].[Food].[Baking Goods]}\n"
-            + "{[Product].[Food].[Breakfast Foods]}\n"
-            + "{[Product].[Food].[Canned Foods]}\n"
-            + "{[Product].[Food].[Canned Products]}\n"
-            + "{[Product].[Food].[Dairy]}\n"
-            + "{[Product].[Food].[Deli]}\n"
-            + "{[Product].[Food].[Eggs]}\n"
-            + "{[Product].[Food].[Frozen Foods]}\n"
-            + "{[Product].[Food].[Meat]}\n"
-            + "{[Product].[Food].[Produce]}\n"
-            + "{[Product].[Food].[Seafood]}\n"
-            + "{[Product].[Food].[Snack Foods]}\n"
-            + "{[Product].[Food].[Snacks]}\n"
-            + "{[Product].[Food].[Starchy Foods]}\n"
-            + "{[Product].[Non-Consumable].[Carousel]}\n"
-            + "{[Product].[Non-Consumable].[Checkout]}\n"
-            + "{[Product].[Non-Consumable].[Health and Hygiene]}\n"
-            + "{[Product].[Non-Consumable].[Household]}\n"
-            + "{[Product].[Non-Consumable].[Periodicals]}\n"
+            + "{[Product].[Products].[Drink].[Alcoholic Beverages]}\n"
+            + "{[Product].[Products].[Drink].[Beverages]}\n"
+            + "{[Product].[Products].[Drink].[Dairy]}\n"
+            + "{[Product].[Products].[Food].[Baked Goods]}\n"
+            + "{[Product].[Products].[Food].[Baking Goods]}\n"
+            + "{[Product].[Products].[Food].[Breakfast Foods]}\n"
+            + "{[Product].[Products].[Food].[Canned Foods]}\n"
+            + "{[Product].[Products].[Food].[Canned Products]}\n"
+            + "{[Product].[Products].[Food].[Dairy]}\n"
+            + "{[Product].[Products].[Food].[Deli]}\n"
+            + "{[Product].[Products].[Food].[Eggs]}\n"
+            + "{[Product].[Products].[Food].[Frozen Foods]}\n"
+            + "{[Product].[Products].[Food].[Meat]}\n"
+            + "{[Product].[Products].[Food].[Produce]}\n"
+            + "{[Product].[Products].[Food].[Seafood]}\n"
+            + "{[Product].[Products].[Food].[Snack Foods]}\n"
+            + "{[Product].[Products].[Food].[Snacks]}\n"
+            + "{[Product].[Products].[Food].[Starchy Foods]}\n"
+            + "{[Product].[Products].[Non-Consumable].[Carousel]}\n"
+            + "{[Product].[Products].[Non-Consumable].[Checkout]}\n"
+            + "{[Product].[Products].[Non-Consumable].[Health and Hygiene]}\n"
+            + "{[Product].[Products].[Non-Consumable].[Household]}\n"
+            + "{[Product].[Products].[Non-Consumable].[Periodicals]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[F]}\n"
-            + "{[Gender].[M]}\n"
-            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[Gender].[F]}\n"
+            + "{[Gender].[Gender].[M]}\n"
+            + "{[Gender].[Gender].[All Gender]}\n"
             + "Row #0: 3,439\n"
             + "Row #0: 6,776\n"
             + "Row #0: 1,987\n"
@@ -511,6 +517,11 @@ public class CacheControlTest extends FoodMartTestCase {
      */
     public void testPartialFlush_2() throws Exception {
         if (propSaver.props.DisableCaching.get()) {
+            return;
+        }
+        if (!getTestContext().getDialect().getDatabaseProduct()
+            .equals(Dialect.DatabaseProduct.MYSQL))
+        {
             return;
         }
 
@@ -933,7 +944,7 @@ public class CacheControlTest extends FoodMartTestCase {
         } catch (RuntimeException e) {
             assertContains(
                 "Cannot union cell regions of different dimensionalities. "
-                + "(Dimensionalities are '[[Time], [Product]]', '[[Time]]'.)",
+                + "(Dimensionalities are '[[Time].[Time], [Product].[Products]]', '[[Time].[Time]]'.)",
                 e.getMessage());
         }
 
@@ -947,8 +958,8 @@ public class CacheControlTest extends FoodMartTestCase {
         } catch (RuntimeException e) {
             assertContains(
                 "Cannot union cell regions of different dimensionalities. "
-                + "(Dimensionalities are '[[Time], [Product]]', "
-                + "'[[Product]]'.)",
+                + "(Dimensionalities are '[[Time].[Time], [Product].[Products]]', "
+                + "'[[Product].[Products]]'.)",
                 e.getMessage());
         }
 
@@ -962,7 +973,7 @@ public class CacheControlTest extends FoodMartTestCase {
         } catch (RuntimeException e) {
             assertContains(
                 "Cannot union cell regions of different dimensionalities. "
-                + "(Dimensionalities are '[[Time]]', '[[Time], [Product]]'.)",
+                + "(Dimensionalities are '[[Time].[Time]]', '[[Time].[Time], [Product].[Products]]'.)",
                 e.getMessage());
         }
 
@@ -993,7 +1004,7 @@ public class CacheControlTest extends FoodMartTestCase {
         } catch (RuntimeException e) {
             assertContains(
                 "Cannot crossjoin cell regions which have dimensions in common."
-                + " (Dimensionalities are '[[Product]]', '[[Product]]'.)",
+                + " (Dimensionalities are '[[Product].[Products]]', '[[Product].[Products]]'.)",
                 e.getMessage());
         }
 
@@ -1008,7 +1019,7 @@ public class CacheControlTest extends FoodMartTestCase {
             assertContains(
                 "Cannot crossjoin cell regions which have dimensions in common."
                 + " (Dimensionalities are "
-                + "'[[Product]]', '[[Time], [Product]]'.)",
+                + "'[[Product].[Products]]', '[[Time].[Time], [Product].[Products]]'.)",
                 e.getMessage());
         }
     }

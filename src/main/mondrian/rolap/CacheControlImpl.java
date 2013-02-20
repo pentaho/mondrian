@@ -509,19 +509,22 @@ public class CacheControlImpl implements CacheControl {
                     final Map<String, Set<Comparable>> levels =
                         new HashMap<String, Set<Comparable>>();
                     for (Member member : region.memberList) {
-                        // FIXME: assumes non-composite key
-                        final String ccName =
-                            ((RolapLevel)member.getLevel()).getAttribute()
-                                .getKeyList().get(0).toSql();
-                        Set<Comparable> levelValueSet = levels.get(ccName);
-                        if (levelValueSet == null) {
-                            levelValueSet = new HashSet<Comparable>();
-                            levels.put(ccName, levelValueSet);
+                        List<RolapSchema.PhysColumn> keyList =
+                            ((RolapLevel) member.getLevel()).getAttribute()
+                            .getKeyList();
+                        for (RolapSchema.PhysColumn physColumn : keyList) {
+                            final String ccName = physColumn.toSql();
+                            Set<Comparable> levelValueSet = levels.get(ccName);
+                            if (levelValueSet == null) {
+                                levelValueSet = new HashSet<Comparable>();
+                                levels.put(ccName, levelValueSet);
+                            }
+                            final Object key =
+                                getMemberNameForLevel(
+                                    (RolapMember) member, ccName);
+                            levelValueSet.add(
+                                (Comparable) key);
                         }
-                        final Object key =
-                            ((RolapMember) member).getKeyCompact();
-                        levelValueSet.add(
-                            (Comparable) key);
                     }
                     for (Entry<String, Set<Comparable>> entry
                         : levels.entrySet())
@@ -547,6 +550,21 @@ public class CacheControlImpl implements CacheControl {
                                     -1,
                                     new ArraySortedSet(keys)));
                         }
+                    }
+                }
+
+                private Comparable getMemberNameForLevel(
+                    RolapMember member, String ccName)
+                {
+                    String levelSql =
+                        member.getLevel().getAttribute().getNameExp().toSql();
+                    if (levelSql.equals(ccName)) {
+                        return member.getName();
+                    } else if (member.getLevel().getDepth()> 0) {
+                        return getMemberNameForLevel(
+                            member.getParentMember(), ccName);
+                    } else {
+                        return null;
                     }
                 }
 
