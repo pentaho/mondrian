@@ -2419,7 +2419,7 @@ public class Util extends XOMUtil {
             || !(set2 instanceof ArraySortedSet))
         {
             final TreeSet<E> set = new TreeSet<E>(set1);
-            set.removeAll(set2);
+            set.retainAll(set2);
             return set;
         }
         final Comparable<?>[] result =
