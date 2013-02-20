@@ -10,6 +10,7 @@
 */
 package mondrian.olap;
 
+import mondrian.olap.Util.ByteMatcher;
 import mondrian.rolap.RolapUtil;
 import mondrian.util.*;
 
@@ -1903,6 +1904,21 @@ public class UtilTestCase extends TestCase {
         public String toString() {
             return from + "-" + to;
         }
+
+    public void testByteMatcher() throws Exception {
+        final ByteMatcher bm = new ByteMatcher(new byte[] {(byte)0x2A});
+        final byte[] bytesNotPresent =
+            new byte[] {(byte)0x2B, (byte)0x2C};
+        final byte[] bytesPresent =
+            new byte[] {(byte)0x2B, (byte)0x2A, (byte)0x2C};
+        final byte[] bytesPresentLast =
+            new byte[] {(byte)0x2B, (byte)0x2C, (byte)0x2A};
+        final byte[] bytesPresentFirst =
+                new byte[] {(byte)0x2A, (byte)0x2C, (byte)0x2B};
+        assertEquals(-1, bm.match(bytesNotPresent));
+        assertEquals(1, bm.match(bytesPresent));
+        assertEquals(2, bm.match(bytesPresentLast));
+        assertEquals(0, bm.match(bytesPresentFirst));
     }
 }
 

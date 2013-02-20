@@ -10,6 +10,7 @@
 package mondrian.tui;
 
 import mondrian.olap.*;
+import mondrian.olap.Util.ByteMatcher;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.server.StringRepositoryContentFinder;
 import mondrian.spi.CatalogLocator;
@@ -47,7 +48,26 @@ public class XmlaSupport {
     public static final String nl = Util.nl;
     public static final String SOAP_PREFIX = XmlaConstants.SOAP_PREFIX;
 
-    public static final String UTF8_BOM = "\uFEFF";
+    private static final ByteMatcher UTF8_BOM_MATCHER =
+        new ByteMatcher(
+            new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF});
+
+    private static final ByteMatcher UTF16_LE_BOM_MATCHER =
+        new ByteMatcher(
+            new byte[]{ (byte)0xFF, (byte)0xFE });
+
+    private static final ByteMatcher UTF16_BE_BOM_MATCHER =
+        new ByteMatcher(
+            new byte[]{ (byte)0xFE, (byte)0xFF });
+
+    private static final ByteMatcher UTF32_LE_BOM_MATCHER =
+        new ByteMatcher(
+            new byte[]{ (byte)0xFF, (byte)0xFE, (byte)0x00, (byte)0x00 });
+
+    private static final ByteMatcher UTF32_BE_BOM_MATCHER =
+        new ByteMatcher(
+            new byte[]{ (byte)0x00, (byte)0x00, (byte)0xFE, (byte)0xFF });
+
     public static final String CATALOG_NAME = "FoodMart";
     public static final String DATASOURCE_NAME = "FoodMart";
     public static final String DATASOURCE_DESCRIPTION =
@@ -1122,8 +1142,25 @@ public class XmlaSupport {
     }
 
     private static byte[] removeUTF8BOM(byte[] s) {
-        if (s[0] == UTF8_BOM.getBytes()[0]) {
-            return new String(s).substring(1).getBytes();
+        if (UTF8_BOM_MATCHER.match(s) == 0) {
+            return Arrays.copyOfRange(
+                s, 0, UTF8_BOM_MATCHER.key.length);
+        }
+        if (UTF16_LE_BOM_MATCHER.match(s) == 0) {
+            return Arrays.copyOfRange(
+                s, 0, UTF16_LE_BOM_MATCHER.key.length);
+        }
+        if (UTF16_BE_BOM_MATCHER.match(s) == 0) {
+            return Arrays.copyOfRange(
+                s, 0, UTF16_BE_BOM_MATCHER.key.length);
+        }
+        if (UTF32_LE_BOM_MATCHER.match(s) == 0) {
+            return Arrays.copyOfRange(
+                s, 0, UTF32_LE_BOM_MATCHER.key.length);
+        }
+        if (UTF32_BE_BOM_MATCHER.match(s) == 0) {
+            return Arrays.copyOfRange(
+                s, 0, UTF32_BE_BOM_MATCHER.key.length);
         }
         return s;
     }
