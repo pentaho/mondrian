@@ -213,6 +213,7 @@ public abstract class RolapNativeSet extends RolapNative {
             List<Object> key = new ArrayList<Object>();
             key.add(tr.getCacheKey());
             key.addAll(Arrays.asList(args));
+            key.add(maxRows);
 
             TupleList result = cache.get(key);
             boolean hasEnumTargets = (tr.getEnumTargetCount() > 0);
