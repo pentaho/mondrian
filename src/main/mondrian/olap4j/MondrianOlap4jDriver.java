@@ -4,17 +4,14 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
 
-import mondrian.rolap.RolapConnectionProperties;
 import mondrian.xmla.XmlaHandler;
 
 import java.sql.*;
-import java.util.*;
-import java.util.logging.Logger;
 
 /**
  * Olap4j driver for Mondrian.
@@ -62,11 +59,9 @@ import java.util.logging.Logger;
  * @author jhyde
  * @since May 22, 2007
  */
-public class MondrianOlap4jDriver implements Driver {
+public class MondrianOlap4jDriver extends MondrianBaseOlap4jDriver {
     public static final XmlaHandler.XmlaExtra EXTRA =
         MondrianOlap4jExtra.INSTANCE;
-
-    protected final Factory factory;
 
     static {
         try {
@@ -80,44 +75,9 @@ public class MondrianOlap4jDriver implements Driver {
      * Creates a MondrianOlap4jDriver.
      */
     public MondrianOlap4jDriver() {
-        this.factory = createFactory();
-    }
-
-    private static Factory createFactory() {
-        final String factoryClassName = getFactoryClassName();
-        try {
-            // Cannot use ClassResolver here, because factory's constructor has
-            // package access.
-            final Class<?> clazz = Class.forName(factoryClassName);
-            return (Factory) clazz.newInstance();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static String getFactoryClassName() {
-        try {
-            // If java.sql.PseudoColumnUsage is present, we are running JDBC 4.1
-            // or later.
-            Class.forName("java.sql.PseudoColumnUsage");
-            return "mondrian.olap4j.FactoryJdbc41Impl";
-        } catch (ClassNotFoundException e) {
-            // java.sql.PseudoColumnUsage is not present. This means we are
-            // running JDBC 4.0 or earlier.
-            try {
-                Class.forName("java.sql.Wrapper");
-                return "mondrian.olap4j.FactoryJdbc4Impl";
-            } catch (ClassNotFoundException e2) {
-                // java.sql.Wrapper is not present. This means we are running
-                // JDBC 3.0 or earlier (probably JDK 1.5). Load the JDBC 3.0
-                // factory.
-                return "mondrian.olap4j.FactoryJdbc3Impl";
-            }
-        }
+        super(
+            createFactory(),
+            new PluginImpl());
     }
 
     /**
@@ -130,75 +90,6 @@ public class MondrianOlap4jDriver implements Driver {
      */
     private static void register() throws SQLException {
         DriverManager.registerDriver(new MondrianOlap4jDriver());
-    }
-
-    public Connection connect(String url, Properties info) throws SQLException {
-        if (!MondrianOlap4jConnection.acceptsURL(url)) {
-            return null;
-        }
-        return factory.newConnection(this, url, info);
-    }
-
-    public boolean acceptsURL(String url) throws SQLException {
-        return MondrianOlap4jConnection.acceptsURL(url);
-    }
-
-    public DriverPropertyInfo[] getPropertyInfo(
-        String url, Properties info) throws SQLException
-    {
-        List<DriverPropertyInfo> list = new ArrayList<DriverPropertyInfo>();
-
-        // First, add the contents of info
-        for (Map.Entry<Object, Object> entry : info.entrySet()) {
-            list.add(
-                new DriverPropertyInfo(
-                    (String) entry.getKey(),
-                    (String) entry.getValue()));
-        }
-        // Next, add property defns not mentioned in info
-        for (RolapConnectionProperties p : RolapConnectionProperties.values()) {
-            if (info.containsKey(p.name())) {
-                continue;
-            }
-            list.add(
-                new DriverPropertyInfo(
-                    p.name(),
-                    null));
-        }
-        return list.toArray(new DriverPropertyInfo[list.size()]);
-    }
-
-    // JDBC 4.1 support (JDK 1.7 and higher)
-    public Logger getParentLogger() {
-        return Logger.getLogger("");
-    }
-
-    /**
-     * Returns the driver name. Not in the JDBC API.
-     * @return Driver name
-     */
-    String getName() {
-        return MondrianOlap4jDriverVersion.NAME;
-    }
-
-    /**
-     * Returns the driver version. Not in the JDBC API.
-     * @return Driver version
-     */
-    String getVersion() {
-        return MondrianOlap4jDriverVersion.VERSION;
-    }
-
-    public int getMajorVersion() {
-        return MondrianOlap4jDriverVersion.MAJOR_VERSION;
-    }
-
-    public int getMinorVersion() {
-        return MondrianOlap4jDriverVersion.MINOR_VERSION;
-    }
-
-    public boolean jdbcCompliant() {
-        return false;
     }
 }
 

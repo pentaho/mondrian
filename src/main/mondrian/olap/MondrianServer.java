@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2010 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -190,6 +190,24 @@ public abstract class MondrianServer {
     public abstract CatalogLocator getCatalogLocator();
 
     /**
+     * Authenticates the credentials of a potential connection.
+     * Typically based on "user" and "password", but specific plugins may
+     * have other/additional policies.
+     *
+     * <p>If authentication is successful, returns a non-empty list of
+     * roles. Later in the session, any of these roles can be adopted
+     * without further challenge if the user calls
+     * {@link OlapConnection#setRoleName(String)}.</p>
+     *
+     * <p>If authentication is unsuccessful, throws.</p>
+     *
+     * @return Set of allowed role names
+     * @throws SQLException if authentication fails
+     */
+    public abstract User authenticate(Util.PropertyList list)
+        throws SQLException;
+
+    /**
      * Called when the server must terminate all background tasks
      * and cleanup all potential memory leaks.
      */
@@ -280,6 +298,17 @@ public abstract class MondrianServer {
          */
         String getProductName();
     }
+
+    /** Authenticated user within a particular schema. */
+    public interface User {
+        /** Returns a list of role names this user is allowed to adopt in the
+         * current schema. null means no restriction. */
+        List<String> getAllowedRoleNames();
+
+        /** Returns a list of role names that this user will use if they do not
+         * specify explicitly. */
+        List<String> getDefaultRoleNames();
+     }
 
 }
 

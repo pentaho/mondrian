@@ -9,8 +9,7 @@
 */
 package mondrian.server;
 
-import mondrian.olap.MondrianException;
-import mondrian.olap.MondrianServer;
+import mondrian.olap.*;
 import mondrian.olap4j.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapConnection;
@@ -18,7 +17,7 @@ import mondrian.rolap.RolapResultShepherd;
 import mondrian.rolap.RolapSchema;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.server.monitor.*;
-import mondrian.spi.CatalogLocator;
+import mondrian.spi.*;
 import mondrian.util.LockBox;
 import mondrian.xmla.*;
 
@@ -31,6 +30,7 @@ import java.lang.ref.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.naming.AuthenticationException;
 
 /**
  * Implementation of {@link mondrian.olap.MondrianServer}.
@@ -57,6 +57,10 @@ class MondrianServerImpl
     private final Repository repository;
 
     private final CatalogLocator catalogLocator;
+
+    private final Authenticator authenticator;
+
+    private final AccessController accessController;
 
     private final RolapResultShepherd shepherd;
 
@@ -171,12 +175,27 @@ class MondrianServerImpl
     MondrianServerImpl(
         MondrianServerRegistry registry,
         Repository repository,
-        CatalogLocator catalogLocator)
+        CatalogLocator catalogLocator,
+        Authenticator authenticator,
+        AccessController accessController)
     {
-        assert repository != null;
-        assert catalogLocator != null;
+        if (repository == null) {
+            throw new NullPointerException();
+        }
+        if (catalogLocator == null) {
+            throw new NullPointerException();
+        }
+        if (authenticator == null) {
+            throw new NullPointerException();
+        }
+        if (accessController == null) {
+            throw new NullPointerException();
+        }
+
         this.repository = repository;
         this.catalogLocator = catalogLocator;
+        this.authenticator = authenticator;
+        this.accessController = accessController;
 
         // All servers in a JVM share the same lockbox. This is a bit more
         // forgiving to applications which have slightly mismatched
@@ -292,6 +311,27 @@ class MondrianServerImpl
             throw new MondrianException("Server already shutdown.");
         }
         return catalogLocator;
+    }
+
+    public final MondrianServer.User authenticate(Util.PropertyList list)
+        throws SQLException
+    {
+        final Object result;
+        try {
+            result = authenticator.authenticate(list);
+        } catch (AuthenticationException e) {
+            throw new SQLException("Authenticate failed: " + e.getMessage());
+        }
+        if (result == null) {
+            throw new AssertionError("authenticator returned null value");
+        }
+        // Authentication succeeded. Now figure out what the user can see.
+        final List<String> accessibleRoles =
+            accessController.getAccessibleRoles(result);
+        final List<String> defaultRoles =
+            accessController.getDefaultRoles(result);
+
+        return new UserImpl(accessibleRoles, defaultRoles);
     }
 
     @Override
@@ -509,6 +549,31 @@ class MondrianServerImpl
 
         public MondrianServerXmlaRequest(Locus locus) {
             this.locus = locus;
+        }
+    }
+
+    /** Implementation of {@link User}. */
+    private static class UserImpl implements User {
+        private final List<String> accessibleRoles;
+        private final List<String> defaultRoles;
+
+        UserImpl(
+            List<String> accessibleRoles,
+            List<String> defaultRoles)
+        {
+            // defensively copy lists
+            this.accessibleRoles = Util.flatList(accessibleRoles);
+            this.defaultRoles = Util.flatList(defaultRoles);
+        }
+
+        public List<String> getAllowedRoleNames() {
+            // "null" means no restriction on roles that can be adopted
+            return accessibleRoles;
+        }
+
+        public List<String> getDefaultRoleNames() {
+            // List with one null means adopt the root role ("system")
+            return defaultRoles;
         }
     }
 }

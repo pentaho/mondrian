@@ -4,15 +4,15 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2012 Pentaho
+// Copyright (C) 2010-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server;
 
 import mondrian.olap.MondrianServer;
 import mondrian.olap.Util;
-import mondrian.spi.CatalogLocator;
-import mondrian.spi.impl.IdentityCatalogLocator;
+import mondrian.spi.*;
+import mondrian.spi.impl.*;
 import mondrian.util.LockBox;
 
 import java.io.*;
@@ -194,6 +194,19 @@ public class MondrianServerRegistry {
         RepositoryContentFinder contentFinder,
         CatalogLocator catalogLocator)
     {
+        return createWithRepository(
+            contentFinder,
+            catalogLocator,
+            new TrivialAuthenticator(),
+            new TrivialAccessController());
+    }
+
+    public MondrianServer createWithRepository(
+        RepositoryContentFinder contentFinder,
+        CatalogLocator catalogLocator,
+        Authenticator authenticator,
+        AccessController accessController)
+    {
         if (catalogLocator == null) {
             catalogLocator = new IdentityCatalogLocator();
         }
@@ -208,7 +221,8 @@ public class MondrianServerRegistry {
         } else {
             repository = new FileRepository(contentFinder, catalogLocator);
         }
-        return new MondrianServerImpl(this, repository, catalogLocator);
+        return new MondrianServerImpl(
+            this, repository, catalogLocator, authenticator, accessController);
     }
 }
 

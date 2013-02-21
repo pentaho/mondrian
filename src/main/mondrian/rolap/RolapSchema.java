@@ -53,6 +53,9 @@ public class RolapSchema extends OlapElementBase implements Schema {
 
     final String name;
 
+    /** The name of the role that has access to everything. */
+    private static final String ROOT_ROLE_NAME = "system";
+
     /**
      * Internal use only.
      */
@@ -713,6 +716,10 @@ public class RolapSchema extends OlapElementBase implements Schema {
     {
         funTable = new RolapSchemaFunctionTable(userDefinedFunctions);
         ((RolapSchemaFunctionTable) funTable).init();
+    }
+
+    public String getRootRoleName() {
+        return ROOT_ROLE_NAME;
     }
 
     /** Source of members for a hanger dimension. Often a hanger dimension is

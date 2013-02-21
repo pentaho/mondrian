@@ -4,16 +4,18 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
 
+import mondrian.olap.*;
 import mondrian.rolap.RolapConnection;
 
 import org.olap4j.OlapException;
 
 import java.sql.*;
+import java.sql.Connection;
 import java.util.*;
 import java.util.concurrent.Executor;
 
@@ -24,12 +26,14 @@ import java.util.concurrent.Executor;
  */
 class FactoryJdbc41Impl implements Factory {
     public Connection newConnection(
-        MondrianOlap4jDriver driver,
-        String url,
-        Properties info)
+        MondrianBaseOlap4jDriver driver,
+        MondrianServer server,
+        Util.PropertyList propertyList,
+        MondrianServer.User user)
         throws SQLException
     {
-        return new MondrianOlap4jConnectionJdbc41(this, driver, url, info);
+        return new MondrianOlap4jConnectionJdbc41(
+            this, driver, server, propertyList, user);
     }
 
     public EmptyResultSet newEmptyResultSet(
@@ -111,11 +115,12 @@ class FactoryJdbc41Impl implements Factory {
     {
         MondrianOlap4jConnectionJdbc41(
             Factory factory,
-            MondrianOlap4jDriver driver,
-            String url,
-            Properties info) throws SQLException
+            MondrianBaseOlap4jDriver driver,
+            MondrianServer server,
+            Util.PropertyList propertyList,
+            MondrianServer.User user) throws SQLException
         {
-            super(factory, driver, url, info);
+            super(factory, driver, server, propertyList, user);
         }
 
         public void abort(Executor executor) throws SQLException {

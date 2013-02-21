@@ -4,11 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
 
+import mondrian.olap.*;
 import mondrian.rolap.RolapConnection;
 
 import org.olap4j.*;
@@ -316,11 +317,12 @@ class FactoryJdbc4Plus {
     {
         AbstractConnection(
             Factory factory,
-            MondrianOlap4jDriver driver,
-            String url,
-            Properties info) throws SQLException
+            MondrianBaseOlap4jDriver driver,
+            MondrianServer server,
+            Util.PropertyList propertyList,
+            MondrianServer.User user) throws SQLException
         {
-            super(factory, driver, url, info);
+            super(factory, driver, server, propertyList, user);
         }
 
         public OlapStatement createStatement() {

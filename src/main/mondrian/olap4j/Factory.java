@@ -4,18 +4,19 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
 
+import mondrian.olap.*;
 import mondrian.rolap.RolapConnection;
 
 import org.olap4j.OlapException;
 
 import java.sql.*;
-import java.util.List;
-import java.util.Properties;
+import java.sql.Connection;
+import java.util.*;
 
 /**
  * Instantiates classes to implement the olap4j API against the
@@ -32,15 +33,17 @@ interface Factory {
      * Creates a connection.
      *
      * @param driver Driver
-     * @param url URL of server
-     * @param info Properties defining the connection
+     * @param server Server
+     * @param propertyList Properties defining the connection
+     * @param user Authenticated user
      * @return Connection
      * @throws SQLException on error
      */
     Connection newConnection(
-        MondrianOlap4jDriver driver,
-        String url,
-        Properties info) throws SQLException;
+        MondrianBaseOlap4jDriver driver,
+        MondrianServer server,
+        Util.PropertyList propertyList,
+        MondrianServer.User user) throws SQLException;
 
     /**
      * Creates an empty result set.

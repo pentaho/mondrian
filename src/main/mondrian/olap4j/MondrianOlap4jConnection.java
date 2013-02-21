@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho and others
+// Copyright (C) 2007-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap4j;
@@ -43,8 +43,7 @@ import java.util.*;
  * for the Mondrian OLAP engine.
  *
  * <p>This class has sub-classes which implement JDBC 3.0 and JDBC 4.0 APIs;
- * it is instantiated using
- * {@link Factory#newConnection(MondrianOlap4jDriver, String, java.util.Properties)}.</p>
+ * it is instantiated using {@link Factory#newConnection}.</p>
  *
  * <p>This class is public, to allow access to the
  * {@link #setRoleNames(java.util.List)} method before it is added to olap4j
@@ -87,19 +86,16 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
 
     private final MondrianOlap4jDatabaseMetaData olap4jDatabaseMetaData;
 
-    private static final String CONNECT_STRING_PREFIX = "jdbc:mondrian:";
-
-    private static final String ENGINE_CONNECT_STRING_PREFIX =
-        "jdbc:mondrian:engine:";
-
     final Factory factory;
-    final MondrianOlap4jDriver driver;
+    final MondrianBaseOlap4jDriver driver;
     private String roleName;
 
     /** List of role names. Empty if role is the 'all' role. Value must always
      * be an unmodifiable list, because {@link #getRoleNames()} returns the
      * value directly. */
     private List<String> roleNames = Collections.emptyList();
+
+    private final MondrianServer.User user;
     private boolean autoCommit;
     private boolean readOnly;
     boolean preferList;
@@ -117,54 +113,39 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
      *
      * @param factory Factory
      * @param driver Driver
-     * @param url Connect-string URL
-     * @param info Additional properties
+     * @param user Authenticated user
      * @throws SQLException if there is an error
      */
     MondrianOlap4jConnection(
         Factory factory,
-        MondrianOlap4jDriver driver,
-        String url,
-        Properties info)
+        MondrianBaseOlap4jDriver driver,
+        MondrianServer server,
+        Util.PropertyList propertyList,
+        MondrianServer.User user)
         throws SQLException
     {
-        // Required for the logic below to work.
-        assert ENGINE_CONNECT_STRING_PREFIX.startsWith(CONNECT_STRING_PREFIX);
+        assert user != null;
+        assert server != null;
+        assert factory != null;
+        assert driver != null;
+        assert propertyList != null;
 
         this.factory = factory;
         this.driver = driver;
-        String x;
-        if (url.startsWith(ENGINE_CONNECT_STRING_PREFIX)) {
-            x = url.substring(ENGINE_CONNECT_STRING_PREFIX.length());
-        } else if (url.startsWith(CONNECT_STRING_PREFIX)) {
-            x = url.substring(CONNECT_STRING_PREFIX.length());
-        } else {
-            // This is not a URL we can handle.
-            // DriverManager should not have invoked us.
-            throw new AssertionError(
-                "does not start with '" + CONNECT_STRING_PREFIX + "'");
-        }
-        Util.PropertyList list = Util.parseConnectString(x);
-        final Map<String, String> map = Util.toMap(info);
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            list.put(entry.getKey(), entry.getValue());
-        }
-
+        this.user = user;
         this.mondrianConnection =
-            (RolapConnection) mondrian.olap.DriverManager
-                .getConnection(list, null);
+            new RolapConnection(server, propertyList, null);
+        server.addConnection(mondrianConnection);
 
         this.olap4jDatabaseMetaData =
             factory.newDatabaseMetaData(this, mondrianConnection);
 
-
-        this.mondrianServer =
-            MondrianServer.forConnection(mondrianConnection);
+        this.mondrianServer = server;
         final CatalogFinder catalogFinder =
             (CatalogFinder) mondrianServer;
 
-        NamedList<MondrianOlap4jCatalog> olap4jCatalogs = new
-            NamedListImpl<MondrianOlap4jCatalog>();
+        NamedList<MondrianOlap4jCatalog> olap4jCatalogs =
+            new NamedListImpl<MondrianOlap4jCatalog>();
         this.olap4jDatabases =
             new NamedListImpl<MondrianOlap4jDatabase>();
 
@@ -223,10 +204,6 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
 
     static String toString(Object o) {
         return o == null ? null : o.toString();
-    }
-
-    static boolean acceptsURL(String url) {
-        return url.startsWith(CONNECT_STRING_PREFIX);
     }
 
     public OlapStatement createStatement() {
@@ -671,15 +648,14 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
 
     public void setRoleName(String roleName) throws OlapException {
         if (roleName == null) {
+            // Every schema has a root role, that has access to everything.
+            // A null roleName is asking for that root role.
+            // There is no guarantee that setRoleNames will allow it.
             final RolapConnection connection1 = getMondrianConnection();
-            final Role role = Util.createRootRole(connection1.getSchema());
-            assert role != null;
-            this.roleName = roleName;
-            this.roleNames = Collections.emptyList();
-            connection1.setRole(role);
-        } else {
-            setRoleNames(Collections.singletonList(roleName));
+            roleName = connection1.getSchema().getRootRoleName();
+            assert roleName != null && roleName.length() > 0;
         }
+        setRoleNames(Collections.singletonList(roleName));
     }
 
     /**
@@ -704,6 +680,9 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
         for (String roleName : roleNames) {
             if (roleName == null) {
                 throw new NullPointerException("null role name");
+            }
+            if (!user.getAllowedRoleNames().contains(roleName)) {
+                throw helper.createException("Unknown role '" + roleName + "'");
             }
             final Role role = connection1.getSchema().lookupRole(roleName);
             if (role == null) {
@@ -730,7 +709,7 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
             this.roleName = this.roleNames.toString();
             break;
         }
-        connection1.setRole(role);
+        getMondrianConnection().setRole(role);
     }
 
     public String getRoleName() {
