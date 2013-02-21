@@ -362,19 +362,6 @@
                     <row>
                         <CATALOG_NAME>FoodMart2</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <CUBE_TYPE>CUBE</CUBE_TYPE>
-                        <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
-                        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
-                        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
-                        <IS_LINKABLE>false</IS_LINKABLE>
-                        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
-                        <CUBE_CAPTION>Sales Ragged</CUBE_CAPTION>
-                        <DESCRIPTION>FoodMart2 Schema - Sales Ragged Cube</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Store</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
@@ -402,7 +389,7 @@
                         <CATALOG_NAME>FoodMart2</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <CUBE_TYPE>VIRTUAL CUBE</CUBE_TYPE>
+                        <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
@@ -532,19 +519,6 @@
                     <row>
                         <CATALOG_NAME>FoodMart2</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
-                        <CUBE_NAME>Sales Ragged</CUBE_NAME>
-                        <CUBE_TYPE>CUBE</CUBE_TYPE>
-                        <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
-                        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
-                        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
-                        <IS_LINKABLE>false</IS_LINKABLE>
-                        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
-                        <CUBE_CAPTION>Sales Ragged</CUBE_CAPTION>
-                        <DESCRIPTION>FoodMart2 Schema - Sales Ragged Cube</DESCRIPTION>
-                    </row>
-                    <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Store</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
@@ -572,7 +546,7 @@
                         <CATALOG_NAME>FoodMart2</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
-                        <CUBE_TYPE>VIRTUAL CUBE</CUBE_TYPE>
+                        <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>

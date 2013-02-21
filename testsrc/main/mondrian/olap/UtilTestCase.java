@@ -1904,6 +1904,7 @@ public class UtilTestCase extends TestCase {
         public String toString() {
             return from + "-" + to;
         }
+    }
 
     public void testByteMatcher() throws Exception {
         final ByteMatcher bm = new ByteMatcher(new byte[] {(byte)0x2A});
