@@ -349,12 +349,17 @@ System.out.println("Got CONTINUE");
         String connectString = testContext.getConnectString();
         Map<String, String> catalogNameUrls =
             getCatalogNameUrls(testContext);
+        connectString = filterConnectString(connectString);
         return
             XmlaSupport.makeServlet(
                 connectString,
                 catalogNameUrls,
                 getServletCallbackClass().getName(),
                 resource.servletCache);
+    }
+
+    protected String filterConnectString(String original) {
+        return original;
     }
 
     protected abstract Class<? extends XmlaRequestCallback>
@@ -371,11 +376,13 @@ System.out.println("Got CONTINUE");
         return props;
     }
 
-    protected Document fileToDocument(String filename)
+    protected Document fileToDocument(String filename, Properties props)
         throws IOException, SAXException
     {
         final String var = "${" + filename + "}";
         String s = getDiffRepos().expand(null, var);
+        s = Util.replaceProperties(
+            s, Util.toMap(props));
         if (s.equals(filename)) {
             s = "<?xml version='1.0'?><Empty/>";
             getDiffRepos().amend(var, s);
@@ -474,7 +481,7 @@ System.out.println("Got CONTINUE");
         }
 
         final Document responseDoc = (respFileName != null)
-            ? fileToDocument(respFileName)
+            ? fileToDocument(respFileName, props)
             : null;
         Document expectedDoc;
 
@@ -578,7 +585,12 @@ System.out.println("Got CONTINUE");
             XmlaSupport.processXmla(
                 xmlaReqDoc, connectString, catalogNameUrls, role,
                 resource.serverCache);
-        if (XmlUtil.supportsValidation()) {
+
+        if (XmlUtil.supportsValidation()
+            // We can't validate against the schema when the content type
+            // is Data because it doesn't respect the XDS.
+            && !content.equals(XmlaConstants.Content.Data))
+        {
             // Validating requires a <?xml header.
             String response = new String(bytes);
             if (!response.startsWith("<?xml version=\"1.0\"?>")) {
@@ -599,7 +611,7 @@ System.out.println("Got CONTINUE");
         String callBackClassName = CallBack.class.getName();
         bytes = XmlaSupport.processSoapXmla(
             soapReqDoc,
-            connectString,
+            filterConnectString(connectString),
             catalogNameUrls,
             callBackClassName,
             role,

@@ -988,7 +988,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         String requestText = fileToString("request");
         TestContext testContext = getTestContext();
         requestText = testContext.upgradeQuery(requestText);
-        Document responseDoc = fileToDocument("response");
+        Document responseDoc = fileToDocument("response", props);
 
         String connectString = testContext.getConnectString();
         Map<String, String> catalogNameUrls = getCatalogNameUrls(testContext);
