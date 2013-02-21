@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2012 Pentaho and others
+// Copyright (C) 2009-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -32,9 +32,8 @@ import static mondrian.olap.fun.NativizeSetFunDef.NativeElementType.*;
  * @since Oct 14, 2009
  */
 public class NativizeSetFunDef extends FunDefBase {
-    /*
-     * Static final fields.
-     */
+
+    // Static final fields.
     protected static final Logger LOGGER =
         Logger.getLogger(NativizeSetFunDef.class);
 
@@ -55,18 +54,14 @@ public class NativizeSetFunDef extends FunDefBase {
         new String[] {"fxx"},
         NativizeSetFunDef.class);
 
-    /*
-     * Instance final fields.
-     */
+    // Instance final fields.
     private final SubstitutionMap substitutionMap = new SubstitutionMap();
     private final HashSet<Hierarchy> hierarchies =
         new LinkedHashSet<Hierarchy>();
 
     private boolean isFirstCompileCall = true;
 
-    /*
-     * Instance non-final fields.
-     */
+    // Instance non-final fields.
     private Exp originalExp;
     private static final String ESTIMATE_MESSAGE =
         "isHighCardinality=%b: estimate=%,d threshold=%,d";
@@ -356,9 +351,9 @@ public class NativizeSetFunDef extends FunDefBase {
             originalExp.accept(
                 new TransformFromFormulasVisitor(query, compiler));
             if (originalExp instanceof NamedSetExpr) {
-                //named sets get their evaluator cached in RolapResult.
-                //We do not want to use the cached evaluator, so pass along the
-                //expression instead.
+                // named sets get their evaluator cached in RolapResult.
+                // We do not want to use the cached evaluator, so pass along the
+                // expression instead.
                 return ((NamedSetExpr) originalExp).getNamedSet().getExp();
             }
             return originalExp;
@@ -1145,9 +1140,7 @@ public class NativizeSetFunDef extends FunDefBase {
 
             // The mergeCalcMembers method in this file assumes that the
             // resultList is random access - that calls to get(n) are constant
-            // cost, regardless of n. Unfortunately, the TraversalList objects
-            // created by HighCardSqlTupleReader are implemented using linked
-            // lists, leading to pathologically long run times.
+            // cost, regardless of n.
             // This presumes that the ResultStyle is LIST
             if (LOGGER.isDebugEnabled()) {
                 String sourceListType =

@@ -88,7 +88,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             this.removePrefixLength = rolapHierarchy.getUniqueName().length();
         }
 
-        if (cubeDimension.isHighCardinality() || !cachingEnabled) {
+        if (!cachingEnabled) {
             this.reader = new NoCacheRolapCubeHierarchyMemberReader();
         } else {
             this.reader = new CacheRolapCubeHierarchyMemberReader();

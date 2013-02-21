@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1999-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -58,18 +58,6 @@ public interface Dimension extends OlapElement, Annotated, Named {
      * Returns the schema this dimension belongs to.
      */
     Schema getSchema();
-
-    /**
-     * Returns whether the dimension should be considered as a "high
-     * cardinality" or "low cardinality" according to cube definition.
-     *
-     * Mondrian tends to evaluate high cardinality dimensions using
-     * iterators rather than lists, avoiding instantiating the dimension in
-     * memory.
-     *
-     * @return whether this dimension is high-cardinality
-     */
-    boolean isHighCardinality();
 }
 
 // End Dimension.java

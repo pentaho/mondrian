@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -100,10 +100,6 @@ public abstract class ResultBase implements Result {
             boolean firstTime = true;
             pw.print("{");
             for (Member member : position) {
-                if (member.getDimension().isHighCardinality()) {
-                    pw.println(" -- High cardinality dimension --}");
-                    return;
-                }
                 if (! firstTime) {
                     pw.print(", ");
                 }

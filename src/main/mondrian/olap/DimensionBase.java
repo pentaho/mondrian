@@ -132,10 +132,6 @@ public abstract class DimensionBase
         }
     }
 
-    public boolean isHighCardinality() {
-        return false;
-    }
-
     private Hierarchy lookupHierarchy(Id.NameSegment s) {
         for (Hierarchy hierarchy : hierarchyList) {
             if (Util.equalName(hierarchy.getName(), s.getName())) {

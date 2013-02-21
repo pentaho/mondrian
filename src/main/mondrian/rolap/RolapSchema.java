@@ -620,21 +620,14 @@ public class RolapSchema extends OlapElementBase implements Schema {
                 new HangerMemberSource(hierarchy, memberList));
         } else {
             SqlMemberSource source = new SqlMemberSource(hierarchy);
-            if (hierarchy.getDimension().isHighCardinality()) {
-                LOGGER.debug(
-                    "High cardinality for " + hierarchy.getDimension());
+
+            if (MondrianProperties.instance().DisableCaching.get()) {
+                // If the cell cache is disabled, we can't cache
+                // the members or else we get undefined results,
+                // depending on the functions used and all.
                 return new NoCacheMemberReader(source);
             } else {
-                LOGGER.debug(
-                    "Normal cardinality for " + hierarchy.getDimension());
-                if (MondrianProperties.instance().DisableCaching.get()) {
-                    // If the cell cache is disabled, we can't cache
-                    // the members or else we get undefined results,
-                    // depending on the functions used and all.
-                    return new NoCacheMemberReader(source);
-                } else {
-                    return new SmartMemberReader(source);
-                }
+                return new SmartMemberReader(source);
             }
         }
     }

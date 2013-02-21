@@ -76,7 +76,7 @@ public class SqlTupleReader implements TupleReader {
     private static final Logger LOGGER =
         Logger.getLogger(SqlTupleReader.class);
     protected final TupleConstraint constraint;
-    protected final List<TargetBase> targets = new ArrayList<TargetBase>();
+    protected final List<Target> targets = new ArrayList<Target>();
     int maxRows = 0;
 
     /**
@@ -93,7 +93,14 @@ public class SqlTupleReader implements TupleReader {
      * Helper class for SqlTupleReader;
      * keeps track of target levels and constraints for adding to sql query.
      */
-    private class Target extends TargetBase {
+    private class Target {
+        final List<RolapMember> srcMembers;
+        final RolapLevel level;
+        private RolapMember currMember;
+        private List<RolapMember> list;
+        final Object cacheLock;
+        final TupleReader.MemberBuilder memberBuilder;
+
         final MemberCache cache;
         ColumnLayout columnLayout;
 
@@ -112,8 +119,59 @@ public class SqlTupleReader implements TupleReader {
             MemberBuilder memberBuilder,
             List<RolapMember> srcMembers)
         {
-            super(srcMembers, level, memberBuilder);
+            this.srcMembers = srcMembers;
+            this.level = level;
+            cacheLock = memberBuilder.getMemberCacheLock();
+            this.memberBuilder = memberBuilder;
             this.cache = memberBuilder.getMemberCache();
+        }
+
+        public void setList(final List<RolapMember> list) {
+            this.list = list;
+        }
+
+        public List<RolapMember> getSrcMembers() {
+            return srcMembers;
+        }
+
+        public RolapLevel getLevel() {
+            return level;
+        }
+
+        public RolapMember getCurrMember() {
+            return this.currMember;
+        }
+
+        public void removeCurrMember() {
+            this.currMember = null;
+        }
+
+        public void setCurrMember(final RolapMember m) {
+            this.currMember = m;
+        }
+
+        public List<RolapMember> getList() {
+            return list;
+        }
+
+        public String toString() {
+            return level.getUniqueName();
+        }
+
+        /**
+         * Adds a row to the collection.
+         *
+         * @param stmt Statement
+         * @throws SQLException On error
+         */
+        public final void addRow(SqlStatement stmt) throws SQLException {
+            synchronized (cacheLock) {
+                internalAddRow(stmt);
+            }
+        }
+
+        public void add(final RolapMember member) {
+            this.getList().add(member);
         }
 
         public void open() {
@@ -309,7 +367,6 @@ public class SqlTupleReader implements TupleReader {
             getList().add(member);
         }
 
-        @Override
         public void setColumnLayout(ColumnLayout columnLayout) {
             this.columnLayout = columnLayout;
         }
@@ -383,7 +440,7 @@ public class SqlTupleReader implements TupleReader {
         List<Object> key = new ArrayList<Object>();
         key.add(constraint.getCacheKey());
         key.add(SqlTupleReader.class);
-        for (TargetBase target : targets) {
+        for (Target target : targets) {
             // don't include the level in the key if the target isn't
             // processed through native sql
             if (target.srcMembers != null) {
@@ -400,7 +457,7 @@ public class SqlTupleReader implements TupleReader {
     public int getEnumTargetCount()
     {
         int enumTargetCount = 0;
-        for (TargetBase target : targets) {
+        for (Target target : targets) {
             if (target.getSrcMembers() != null) {
                 enumTargetCount++;
             }
@@ -422,8 +479,8 @@ public class SqlTupleReader implements TupleReader {
             if (execQuery) {
                 // we're only reading tuples from the targets that are
                 // non-enum targets
-                List<TargetBase> partialTargets = new ArrayList<TargetBase>();
-                for (TargetBase target : targets) {
+                List<Target> partialTargets = new ArrayList<Target>();
+                for (Target target : targets) {
                     if (target.srcMembers == null) {
                         partialTargets.add(target);
                     }
@@ -446,7 +503,7 @@ public class SqlTupleReader implements TupleReader {
                 resultSet = null;
             }
 
-            for (TargetBase target : targets) {
+            for (Target target : targets) {
                 target.open();
             }
 
@@ -478,7 +535,7 @@ public class SqlTupleReader implements TupleReader {
                 }
 
                 if (enumTargetCount == 0) {
-                    for (TargetBase target : targets) {
+                    for (Target target : targets) {
                         target.setCurrMember(null);
                         target.addRow(stmt);
                     }
@@ -585,7 +642,7 @@ public class SqlTupleReader implements TupleReader {
      */
     private int countMembers() {
         int n = 0;
-        for (TargetBase target : targets) {
+        for (Target target : targets) {
             if (target.getList() != null) {
                 n += target.getList().size();
             }
@@ -606,7 +663,7 @@ public class SqlTupleReader implements TupleReader {
         @SuppressWarnings({"unchecked"})
         final Iterator<Member>[] iter = new Iterator[n];
         for (int i = 0; i < n; i++) {
-            TargetBase t = targets.get(i);
+            Target t = targets.get(i);
             iter[i] = t.close().iterator();
         }
         List<Member> members = new ArrayList<Member>();
@@ -639,7 +696,7 @@ public class SqlTupleReader implements TupleReader {
      */
     private void resetCurrMembers(List<RolapMember> partialRow) {
         int nativeTarget = 0;
-        for (TargetBase target : targets) {
+        for (Target target : targets) {
             if (target.srcMembers == null) {
                 // if we have a previously cached row, use that by picking
                 // out the column corresponding to this target; otherwise,
@@ -678,7 +735,7 @@ public class SqlTupleReader implements TupleReader {
         String message)
     {
         // loop through the list of members for the current enum target
-        TargetBase currTarget = targets.get(currTargetIdx);
+        Target currTarget = targets.get(currTargetIdx);
         for (int i = 0; i < currTarget.srcMembers.size(); i++) {
             srcMemberIdxes[currEnumTargetIdx] = i;
             // if we're not on the last enum target, recursively move
@@ -698,7 +755,7 @@ public class SqlTupleReader implements TupleReader {
                 // result set row and the current members that recursion
                 // has reached for the enum targets
                 int enumTargetIdx = 0;
-                for (TargetBase target : targets) {
+                for (Target target : targets) {
                     if (target.srcMembers == null) {
                         try {
                             target.addRow(stmt);
@@ -725,7 +782,7 @@ public class SqlTupleReader implements TupleReader {
      */
     private void savePartialResult(List<List<RolapMember>> partialResult) {
         List<RolapMember> row = new ArrayList<RolapMember>();
-        for (TargetBase target : targets) {
+        for (Target target : targets) {
             if (target.srcMembers == null) {
                 row.add(target.getCurrMember());
             }
@@ -819,7 +876,7 @@ public class SqlTupleReader implements TupleReader {
             new ArrayList<RolapMeasureGroup>();
         for (RolapMeasureGroup measureGroup : measureGroupList) {
             boolean allTargetsJoin = true;
-            for (TargetBase target : targets) {
+            for (Target target : targets) {
                 if (!targetIsOnBaseCube(target, measureGroup)) {
                     allTargetsJoin = false;
                 }
@@ -883,14 +940,14 @@ Util.deprecated("obsolete basecube parameter", false);
         // Find targets whose members are not enumerated.
         // if we're going to be enumerating the values for this target,
         // then we don't need to generate sql for it.
-        List<TargetBase> unevaluatedTargets = new ArrayList<TargetBase>();
+        List<Target> unevaluatedTargets = new ArrayList<Target>();
 
         // Distinct dimensions. (In case two or more levels come from the same
         // dimension, e.g. [Customer].[Gender] and [Customer].[Marital Status].)
         final Set<RolapDimension> dimensions =
             new LinkedHashSet<RolapDimension>();
 
-        for (TargetBase target : targets) {
+        for (Target target : targets) {
             if (target.getSrcMembers() == null) {
                 unevaluatedTargets.add(target);
                 dimensions.add(target.level.getDimension());
@@ -932,13 +989,13 @@ Util.deprecated("obsolete basecube parameter", false);
                 }
             } else {
                 // start at target level
-                for (TargetBase target : unevaluatedTargets) {
+                for (Target target : unevaluatedTargets) {
                     queryBuilder.addListToFrom(
                         target.level.attribute.getKeyList());
                 }
             }
 
-            for (TargetBase target : unevaluatedTargets) {
+            for (Target target : unevaluatedTargets) {
                 addLevelMemberSql(
                     queryBuilder,
                     target.getLevel(),
@@ -956,7 +1013,7 @@ Util.deprecated("obsolete basecube parameter", false);
     }
 
     boolean targetIsOnBaseCube(
-        TargetBase target,
+        Target target,
         RolapMeasureGroup measureGroup)
     {
         Util.deprecated("disallow baseCube==null", false);
@@ -1338,7 +1395,7 @@ Util.deprecated("obsolete basecube parameter", false);
         }
 
         // set the masks
-        for (TargetBase target : targets) {
+        for (Target target : targets) {
             RolapCubeLevel level = (RolapCubeLevel) target.level;
             if (!level.isAll()) {
                 RolapStar.Column starColumn =

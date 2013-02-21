@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -185,7 +185,6 @@ public abstract class RolapNativeSet extends RolapNative {
         public Object execute(ResultStyle desiredResultStyle) {
             switch (desiredResultStyle) {
             case ITERABLE:
-                return executeList(new HighCardSqlTupleReader(constraint));
             case MUTABLE_LIST:
             case LIST:
                 return executeList(new SqlTupleReader(constraint));

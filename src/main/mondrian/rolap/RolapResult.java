@@ -1032,112 +1032,38 @@ public class RolapResult extends ResultBase {
             RolapAxis axis = (RolapAxis) axes[axisOrdinal];
             TupleList tupleList = axis.getTupleList();
             Util.discard(tupleList.size()); // force materialize
-            if (isAxisHighCardinality(axisOrdinal, tupleList)) {
-                final int limit =
-                    MondrianProperties.instance().HighCardChunkSize.get();
-                if (positionsIterators.get(axisOrdinal) == null) {
-                    final TupleCursor tupleCursor = tupleList.tupleCursor();
-                    positionsIterators.put(axisOrdinal, tupleCursor);
-                    positionsIndexes.put(axisOrdinal, 0);
-                    final List<List<Member>> subPositions =
-                        new ArrayList<List<Member>>();
-                    for (int i = 0; i < limit && tupleCursor.forward(); i++) {
-                        subPositions.add(tupleCursor.current());
-                    }
-                    positionsCurrent.put(axisOrdinal, subPositions);
-                }
-                final TupleCursor tupleCursor =
-                    positionsIterators.get(axisOrdinal);
-                final int positionIndex = positionsIndexes.get(axisOrdinal);
-                List<List<Member>> subTuples =
-                    positionsCurrent.get(axisOrdinal);
 
-                if (subTuples == null) {
-                    return;
-                }
-
-                int pi;
-                if (pos[axisOrdinal] > positionIndex + subTuples.size() - 1
-                        && subTuples.size() == limit)
-                {
-                    pi = positionIndex + subTuples.size();
-                    positionsIndexes.put(
-                        axisOrdinal, positionIndex + subTuples.size());
-                    subTuples.subList(0, subTuples.size()).clear();
-                    for (int i = 0; i < limit && tupleCursor.forward(); i++) {
-                        subTuples.add(tupleCursor.current());
-                    }
-                    positionsCurrent.put(axisOrdinal, subTuples);
-                } else {
-                    pi = positionIndex;
-                }
-                for (final List<Member> tuple : subTuples) {
-                    point.setAxis(axisOrdinal, pi);
-                    final int savepoint = revaluator.savepoint();
-                    try {
-                        revaluator.setContext(tuple);
-                        execution.checkCancelOrTimeout();
-                        executeStripe(axisOrdinal - 1, revaluator, pos);
-                    } finally {
-                        revaluator.restore(savepoint);
-                    }
-                    pi++;
-                }
-            } else {
-                for (List<Member> tuple : tupleList) {
-                    List<Member> measures =
-                        new ArrayList<Member>(
-                            statement.getQuery().getMeasuresMembers());
-                    for (Member measure : measures) {
-                        if (measure instanceof RolapBaseCubeMeasure) {
-                            RolapBaseCubeMeasure baseCubeMeasure =
-                                (RolapBaseCubeMeasure) measure;
-                            if (baseCubeMeasure.getAggregator()
-                                == RolapAggregator.DistinctCount)
-                            {
-                                processDistinctMeasureExpr(
-                                    tuple, baseCubeMeasure);
-                            }
+            for (List<Member> tuple : tupleList) {
+                List<Member> measures =
+                    new ArrayList<Member>(
+                        statement.getQuery().getMeasuresMembers());
+                for (Member measure : measures) {
+                    if (measure instanceof RolapBaseCubeMeasure) {
+                        RolapBaseCubeMeasure baseCubeMeasure =
+                            (RolapBaseCubeMeasure) measure;
+                        if (baseCubeMeasure.getAggregator()
+                            == RolapAggregator.DistinctCount)
+                        {
+                            processDistinctMeasureExpr(
+                                tuple, baseCubeMeasure);
                         }
                     }
                 }
-
-                int tupleIndex = 0;
-                for (final List<Member> tuple : tupleList) {
-                    point.setAxis(axisOrdinal, tupleIndex);
-                    final int savepoint = revaluator.savepoint();
-                    try {
-                        revaluator.setContext(tuple);
-                        execution.checkCancelOrTimeout();
-                        executeStripe(axisOrdinal - 1, revaluator, pos);
-                    } finally {
-                        revaluator.restore(savepoint);
-                    }
-                    tupleIndex++;
+            }
+            int tupleIndex = 0;
+            for (final List<Member> tuple : tupleList) {
+                point.setAxis(axisOrdinal, tupleIndex);
+                final int savepoint = revaluator.savepoint();
+                try {
+                    revaluator.setContext(tuple);
+                    execution.checkCancelOrTimeout();
+                    executeStripe(axisOrdinal - 1, revaluator, pos);
+                } finally {
+                    revaluator.restore(savepoint);
                 }
+                tupleIndex++;
             }
         }
-    }
-
-    private boolean isAxisHighCardinality(
-        int axisOrdinal,
-        TupleList tupleList)
-    {
-        Boolean highCardinality =
-            positionsHighCardinality.get(axisOrdinal);
-        if (highCardinality == null) {
-            highCardinality = false;
-            //noinspection LoopStatementThatDoesntLoop
-            for (List<Member> tuple : tupleList) {
-                if (!tuple.isEmpty()) {
-                    highCardinality =
-                        tuple.get(0).getDimension().isHighCardinality();
-                }
-                break;
-            }
-            positionsHighCardinality.put(axisOrdinal, highCardinality);
-        }
-        return highCardinality;
     }
 
     /**

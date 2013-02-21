@@ -2643,6 +2643,11 @@ public class RolapSchemaUpgrader {
                 new MondrianDef.Hierarchies()).list();
         xmlDimension.caption = xmlLegacyDimension.caption;
         xmlDimension.description = description;
+        if (xmlLegacyDimension.highCardinality) {
+            LOGGER.warn(
+                "Removing unsupported highCardinality attribute "
+                + "from " + dimensionName);
+        }
         Util.discard(xmlLegacyDimension.highCardinality);
         xmlDimension.type =
             xmlLegacyDimension.type == null

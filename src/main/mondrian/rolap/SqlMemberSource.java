@@ -554,10 +554,7 @@ class SqlMemberSource
         if (level.isAll()) {
             return Collections.singletonList(hierarchy.getAllMember());
         }
-        final TupleReader tupleReader =
-            level.getDimension().isHighCardinality()
-                ? new HighCardSqlTupleReader(constraint)
-                : new SqlTupleReader(constraint);
+        final TupleReader tupleReader = new SqlTupleReader(constraint);
         tupleReader.addLevelMembers(level, this, null);
         final TupleList tupleList =
             tupleReader.readMembers(

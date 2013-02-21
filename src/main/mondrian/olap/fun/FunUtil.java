@@ -819,9 +819,6 @@ public class FunUtil extends Util {
         if (memberList.size() <= 1) {
             return;
         }
-        if (memberList.get(0).getDimension().isHighCardinality()) {
-            return;
-        }
         Comparator<Member> comparator = new HierarchizeComparator(post);
         Collections.sort(memberList, comparator);
     }

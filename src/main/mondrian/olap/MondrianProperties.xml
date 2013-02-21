@@ -58,17 +58,6 @@ maximum size of a result set.
         <Default>0</Default>
     </PropertyDefinition>
     <PropertyDefinition>
-        <Name>HighCardChunkSize</Name>
-        <Path>mondrian.result.highCardChunkSize</Path>
-        <Description>
-Property that establishes the amount of chunks for querying cells
-involving high-cardinality dimensions.
-Should prime with {@link #ResultLimit mondrian.result.limit}.
-        </Description>
-        <Type>int</Type>
-        <Default>1</Default>
-    </PropertyDefinition>
-    <PropertyDefinition>
         <Name>TestName</Name>
         <Path>mondrian.test.Name</Path>
         <Category>Testing</Category>
