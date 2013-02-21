@@ -35,13 +35,8 @@ public class RedshiftDialect extends PostgreSqlDialect {
             DatabaseProduct.POSTGRESQL)
         {
             protected boolean acceptsConnection(Connection connection) {
-                try {
-                    return super.acceptsConnection(connection)
-                            && isRedshift(connection.getMetaData());
-                } catch (SQLException e) {
-                    throw Util.newError(
-                        e, "Error while instantiating dialect");
-                }
+                return super.acceptsConnection(connection)
+                    && isDatabase(DatabaseProduct.REDSHIFT, connection);
             }
         };
 
