@@ -9,6 +9,7 @@
 */
 package mondrian.spi.impl;
 
+import mondrian.olap.Util;
 import mondrian.rolap.SqlStatement;
 
 import java.sql.*;
@@ -28,11 +29,17 @@ public class PostgreSqlDialect extends JdbcDialectImpl {
             DatabaseProduct.POSTGRESQL)
         {
             protected boolean acceptsConnection(Connection connection) {
-                // Greenplum looks a lot like Postgres. If this is a
-                // Greenplum connection, yield to the Greenplum dialect.
-                return super.acceptsConnection(connection)
-                    && !isDatabase(DatabaseProduct.GREENPLUM, connection)
-                    && !isDatabase(DatabaseProduct.NETEZZA, connection);
+                try {
+                    // Other databases use the Postgres JDBC driver
+                    // Yield to the sub-dialects if identified.
+                    return super.acceptsConnection(connection)
+                        && !isGreenplum(connection.getMetaData())
+                        && !isNetezza(connection.getMetaData())
+                        && !isRedshift(connection.getMetaData());
+                } catch (SQLException e) {
+                    throw Util.newError(
+                            e, "Error while instantiating dialect");
+                }
             }
         };
 
@@ -69,6 +76,122 @@ public class PostgreSqlDialect extends JdbcDialectImpl {
                     ascending,
                     collateNullsLast);
         }
+    }
+
+    /**
+     * Detects whether the database is the desired product
+     *
+     * @param databaseProduct the Product to detect for
+     * @param databaseMetaData Database metadata
+     *
+     * @return Whether this is the requested database product
+     */
+    protected static boolean isDatabase(
+        DatabaseProduct databaseProduct, DatabaseMetaData databaseMetaData)
+    {
+        Statement statement = null;
+        ResultSet resultSet = null;
+
+        String dbProduct = databaseProduct.name().toLowerCase();
+
+        try {
+            // Quick and dirty check first.
+            if (databaseMetaData.getDatabaseProductName()
+                .toLowerCase().contains(dbProduct))
+            {
+                LOGGER.info("Using " + databaseProduct.name() + " dialect");
+                return true;
+            }
+
+            // Let's try using version().
+            statement = databaseMetaData.getConnection().createStatement();
+            resultSet = statement.executeQuery("select version()");
+            if (resultSet.next()) {
+                String version = resultSet.getString(1);
+                LOGGER.info("Version=" + version);
+                if (version != null) {
+                    if (version.toLowerCase().contains(dbProduct)) {
+                        LOGGER.info(
+                            "Using " + databaseProduct.name() + " dialect");
+                        return true;
+                    }
+                }
+            }
+            LOGGER.info("NOT Using " + databaseProduct.name() + " dialect");
+            return false;
+        } catch (SQLException e) {
+            throw Util.newInternal(
+                e,
+                "while running query to detect Postgresql derivative database");
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    // ignore
+                }
+            }
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    // ignore
+                }
+            }
+        }
+    }
+
+    /**
+     * Detects whether this database is Netezza.
+     *
+     * @param databaseMetaData Database metadata
+     *
+     * @return Whether this is a Netezza database
+     */
+    public static boolean isNetezza(DatabaseMetaData databaseMetaData) {
+        return isDatabase(DatabaseProduct.NETEZZA, databaseMetaData);
+    }
+
+    /**
+     * Detects whether this database is Greenplum.
+     *
+     * <p>Greenplum uses the Postgres driver and appears to be a Postgres
+     * instance. The key difference is the presence of 'greenplum' in 'select
+     * version()'.
+     *
+     * @param databaseMetaData Database metadata
+     *
+     * @return Whether this is a Greenplum database
+     */
+    public static boolean isGreenplum(DatabaseMetaData databaseMetaData) {
+        try {
+            // Mock connection used to create dialects during testing does not
+            // support executing statements.
+            final String driverName = databaseMetaData.getDriverName();
+            if (driverName.startsWith("Mondrian fake dialect")) {
+                return driverName.equals("Mondrian fake dialect for Greenplum");
+            }
+        } catch (SQLException e) {
+            LOGGER.error(
+                "Failed to access databaseMetaData for Mock object test");
+        }
+
+        return isDatabase(DatabaseProduct.GREENPLUM, databaseMetaData);
+    }
+
+    /**
+     * Detects whether this database is Redshift.
+     *
+     * <p>Redshift uses the Postgres driver and appears to be a Postgres
+     * instance. The key difference is the presence of 'redshift' in 'select
+     * version()'.
+     *
+     * @param databaseMetaData Database metadata
+     *
+     * @return Whether this is a Redshift database
+     */
+    public static boolean isRedshift(DatabaseMetaData databaseMetaData) {
+        return isDatabase(DatabaseProduct.REDSHIFT, databaseMetaData);
     }
 
     public DatabaseProduct getDatabaseProduct() {
