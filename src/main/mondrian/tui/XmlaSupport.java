@@ -1135,34 +1135,47 @@ public class XmlaSupport {
         }
 
         // Remove the UTF BOM for proper validation.
-        bytes = removeUTF8BOM(bytes);
+        bytes = removeUtfBom(bytes);
 
         Node[] nodes = extractNodesFromSoapXmla(bytes);
         return validateNodes(nodes);
     }
 
-    private static byte[] removeUTF8BOM(byte[] s) {
-        if (UTF8_BOM_MATCHER.match(s) == 0) {
-            return Arrays.copyOfRange(
-                s, 0, UTF8_BOM_MATCHER.key.length);
+    private static byte[] removeUtfBom(byte[] s) {
+        byte[] response = removeUtfBom(s, UTF8_BOM_MATCHER);
+        if (response != null) {
+            return response;
         }
-        if (UTF16_LE_BOM_MATCHER.match(s) == 0) {
-            return Arrays.copyOfRange(
-                s, 0, UTF16_LE_BOM_MATCHER.key.length);
+        response = removeUtfBom(s, UTF16_BE_BOM_MATCHER);
+        if (response != null) {
+            return response;
         }
-        if (UTF16_BE_BOM_MATCHER.match(s) == 0) {
-            return Arrays.copyOfRange(
-                s, 0, UTF16_BE_BOM_MATCHER.key.length);
+        response = removeUtfBom(s, UTF16_LE_BOM_MATCHER);
+        if (response != null) {
+            return response;
         }
-        if (UTF32_LE_BOM_MATCHER.match(s) == 0) {
-            return Arrays.copyOfRange(
-                s, 0, UTF32_LE_BOM_MATCHER.key.length);
+        response = removeUtfBom(s, UTF32_BE_BOM_MATCHER);
+        if (response != null) {
+            return response;
         }
-        if (UTF32_BE_BOM_MATCHER.match(s) == 0) {
-            return Arrays.copyOfRange(
-                s, 0, UTF32_BE_BOM_MATCHER.key.length);
+        response = removeUtfBom(s, UTF32_LE_BOM_MATCHER);
+        if (response != null) {
+            return response;
         }
         return s;
+    }
+
+    private static byte[] removeUtfBom(byte[] s, ByteMatcher matcher) {
+        byte[] firstBytes = new byte[matcher.key.length];
+        System.arraycopy(s, 0, firstBytes, 0, matcher.key.length);
+        if (s.length >= matcher.key.length
+            && matcher.match(firstBytes) == 0)
+        {
+            byte[] result = new byte[s.length - matcher.key.length];
+            System.arraycopy(s, 0, result, 0, s.length - matcher.key.length);
+            return result;
+        }
+        return null;
     }
 
     /**
@@ -1179,7 +1192,7 @@ public class XmlaSupport {
         }
 
         // Remove the UTF BOM for proper validation.
-        bytes = removeUTF8BOM(bytes);
+        bytes = removeUtfBom(bytes);
 
         Node[] nodes = extractNodesFromXmla(bytes);
         return validateNodes(nodes);
