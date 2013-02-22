@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -139,9 +139,12 @@ public class AbstractAggregateFunDef extends FunDefBase {
             return tuplesForAggregation;
         }
 
-        RolapCube virtualCube = (RolapCube) evaluator.getCube();
         RolapMeasureGroup measureGroup = evaluator.getMeasureGroup();
-        if (virtualCube.isVirtual() && measureGroup != null) {
+        final List<RolapMeasureGroup> cubeMeasureGroups =
+            ((RolapCube) evaluator.getCube()).getMeasureGroups();
+        if (measureGroup != null && cubeMeasureGroups != null
+            && cubeMeasureGroups.size() > 1)
+        {
             if (measureGroup.ignoreUnrelatedDimensions) {
                 return ignoreUnrelatedDimensions(
                     tuplesForAggregation, measureGroup);

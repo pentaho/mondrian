@@ -232,8 +232,10 @@ public class RolapEvaluator implements Evaluator {
         {
             return false;
         }
-        RolapCube virtualCube = getCube();
-        return virtualCube.isVirtual();
+
+        final List<RolapMeasureGroup> measureGroups =
+            getCube().getMeasureGroups();
+        return  measureGroups != null && measureGroups.size() > 1;
     }
 
     public boolean needToReturnNullForUnrelatedDimension(Member[] members) {

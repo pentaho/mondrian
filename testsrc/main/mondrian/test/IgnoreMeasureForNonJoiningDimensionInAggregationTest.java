@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -144,8 +144,8 @@ public class IgnoreMeasureForNonJoiningDimensionInAggregationTest
             + "Axis #1:\n"
             + "{[Measures].[Total Sales]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse].[AggSP1_1]}\n"
-            + "{[Warehouse].[AggSP1_2]}\n"
+            + "{[Warehouse].[Warehouses].[AggSP1_1]}\n"
+            + "{[Warehouse].[Warehouses].[AggSP1_2]}\n"
             + "Row #0: 196,770.89\n"
             + "Row #1: 196,770.89\n");
     }
