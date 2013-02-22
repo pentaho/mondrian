@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2012 Pentaho and others
+// Copyright (C) 2010-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -146,6 +146,13 @@ abstract class RolapSchemaLoaderHandlerImpl
             RolapSchema.Severity.FATAL, cause);
     }
 
+    public void check() {
+        if (errorCount > 0) {
+            throw new RolapSchemaLoader.MondrianMultipleSchemaException(
+                "There were schema errors",
+                getWarningList());
+        }
+    }
 }
 
 // End RolapSchemaLoaderHandlerImpl.java

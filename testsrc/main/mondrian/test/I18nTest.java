@@ -174,7 +174,7 @@ public class I18nTest extends FoodMartTestCase {
                 + "    <Translation path='../testsrc/main/mondrian/test/I18nTest_${locale}.properties'/>\n"
                 + "  </Translations>\n"
                 + "</Localization>\n")
-            .assertSchemaError(
+            .assertErrorList().containsError(
                 "(?s).*Error reading resource file.*",
                 "<Translation path='../testsrc/main/mondrian/test/I18nTest_${locale}.properties'/>");
     }

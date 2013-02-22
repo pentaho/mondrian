@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho
+// Copyright (C) 2011-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -21,7 +21,6 @@ import mondrian.spi.*;
 import mondrian.util.ByteString;
 import mondrian.util.Pair;
 
-import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
@@ -193,7 +192,7 @@ import java.util.concurrent.*;
  * {@link SegmentWithData} can use {@link SegmentBody} instead. Will save
  * copying.</p>
  *
- * <p>21. Obsolete {@link mondrian.util.CombiningGenerator}.</p>
+ * <p>21. Obsolete {@code mondrian.util.CombiningGenerator}.</p>
  *
  * <p>22. {@link SegmentHeader#constrain(mondrian.spi.SegmentColumn[])} is
  * broken for N-dimensional regions where N &gt; 1. Each call currently

@@ -339,7 +339,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "    <Attribute name='Store Id' table='store' keyColumn='store_id' hasHierarchy='false'/>\n"
                 + "  </Attributes>\n"
                 + "</Dimension>");
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "Dimension 'Store2' must have at least one hierarchy \\(or attribute hierarchy\\).*",
             "<Dimension name='Store2' key='Store Id'>");
     }
@@ -357,7 +357,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                     "Sales",
                     "<ForeignKeyLink dimension='Customer2' "
                     + "foreignKeyColumn='customer_id'/>"));
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "Duplicate dimension 'Time' \\(in Dimension 'Time'\\) \\(at ${pos}\\)",
             "<Dimension source='Time'/>");
     }
@@ -373,7 +373,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "    <Attribute name='Store Id'/>\n"
                 + "  </Attributes>\n"
                 + "</Dimension>");
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "Duplicate attribute 'Store Id' in dimension 'Store' \\(in "
             + "Attribute 'Store Id'\\) \\(at ${pos}\\)",
             "<Attribute name='Store Id'/>");
@@ -396,7 +396,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "    </Hierarchy>\n"
                 + "  </Hierarchies>\n"
                 + "</Dimension>");
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "mondrian.olap.MondrianException: Mondrian Error:"
             + "Level names within hierarchy '\\[Store\\].\\[Stores\\]' are not "
             + "unique; there is more than one level with name 'Store Id'. "
@@ -431,14 +431,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "  </MeasureGroups>\n"
                 + "</Cube>\n"
                 + "</Schema>\n");
-        final List<Exception> exceptionList = new ArrayList<Exception>();
-        try {
-            testContext.assertExprReturns("0", "0");
-        } catch (Exception e) {
-            exceptionList.add(e);
-        }
-        testContext.assertContains(
-            exceptionList,
+        testContext.assertErrorList().contains(
             testContext.pattern(
                 "Duplicate cube 'Sales' \\(in Cube 'Sales'\\) \\(at ${pos}\\)",
                 "<Cube  name='Sales'>"));
@@ -463,7 +456,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "  </MeasureGroups>\n"
                 + "</Cube>\n"
                 + "</Schema>\n");
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "Duplicate measure 'Unit Sales' in cube 'Sales' "
             + "\\(in Measure 'Unit Sales'\\) \\(at ${pos}\\)",
             "<Measure name='Unit Sales' column='store_cost' aggregator='sum'/>");
@@ -655,7 +648,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "    <Column name='unit_sales'/>\n"
             + "  </Arguments>"
             + "</Measure>", null, null);
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "must not specify both column and Arguments \\(in Arguments\\) \\(at ${pos}\\)",
             "<Arguments>");
     }
@@ -685,7 +678,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "    <Attribute name='Yearly Income' keyColumn='yearly_income' table='customer_not_found'/>"
             + "  </Attributes>"
             + "</Dimension>");
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "table 'customer_not_found' not found \\(in Attribute 'Yearly Income'\\) \\(at ${pos}\\)",
             "<Attribute name='Yearly Income' keyColumn='yearly_income' table='customer_not_found'/>");
     }
@@ -1704,7 +1697,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "    </MeasureGroup>"
             + "  </MeasureGroups>"
             + "</Cube>", null, null, null, null);
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "Column 'invalid_column' not found in relation 'sales_fact_1997' \\(in ForeignKeyLink\\) \\(at ${pos}\\)",
             "<ForeignKeyLink dimension='Store' foreignKeyColumn='invalid_column'/>");
     }
@@ -2176,13 +2169,13 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "  <Attributes>"
                 + "    <Attribute name='Store Type' keyColumn='store_id'>"
                 + "      <Property name='Store Type' attribute='Store Type' column='store_type' formatter='"
-                +         DummyPropertyFormatter.class.getName()
-                + "'/>"
-                + "      <Property attribute='Store Manager' column='store_manager'/>"
-                + "    </Attribute>"
-                + "    <Attribute name='id' keyColumn='store_id'/>"
-                + "  </Attributes>"
-                + "</Dimension>\n");
+                    + DummyPropertyFormatter.class.getName()
+                    + "'/>"
+                    + "      <Property attribute='Store Manager' column='store_manager'/>"
+                    + "    </Attribute>"
+                    + "    <Attribute name='id' keyColumn='store_id'/>"
+                    + "  </Attributes>"
+                    + "</Dimension>\n");
         try {
             testContext.assertSimpleQuery();
             fail("expected exception");
@@ -2410,9 +2403,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
             null,
             "<Cube name='Cube with caption' caption='Cube with name'/>\n",
             null, null, null, null);
-            testContext.assertSchemaError(
-                "Cube definition must contain a MeasureGroups element, and at least one MeasureGroup \\(in Cube 'Cube with caption'\\) \\(at ${pos}\\)",
-                "<Cube name='Cube with caption' caption='Cube with name'/>");
+        testContext.assertErrorList().containsError(
+            "Cube definition must contain a MeasureGroups element, and at least one MeasureGroup \\(in Cube 'Cube with caption'\\) \\(at ${pos}\\)",
+            "<Cube name='Cube with caption' caption='Cube with name'/>");
     }
 
     public void testCubeCaption() throws SQLException {
@@ -2466,7 +2459,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "  </MeasureGroups>\n"
             + "</Cube>",
             null, null, null, null);
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "Cube 'NoMeasures' must have at least one measure "
             + "\\(in Cube 'NoMeasures'\\) \\(at ${pos}\\)",
             "<Cube name='NoMeasures'>");
@@ -2634,7 +2627,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
         } catch (MondrianException e) {
             assertTrue(
                 e.getMessage().contains(
-                    "Named set in cube 'Sales' has bad formula"));
+                    "Calculated member or named set in cube 'Sales' has bad formula"));
         }
 
         // Test where parent is invalid. should fail
@@ -2721,8 +2714,50 @@ Test that get error if a dimension has more than one hierarchy with same name.
         } catch (MondrianException e) {
             assertTrue(
                 e.getMessage().contains(
-                    "Named set in cube 'Sales' has bad formula"));
+                    "Calculated member or named set in cube 'Sales' has bad formula"));
         }
+    }
+
+    /** Calculated members must have precisely one of:  formula attribute and
+     * Formula element. Also tests ability to return multiple exceptions (per
+     * {@link mondrian.rolap.RolapConnectionProperties#Ignore} and
+     * {@link mondrian.rolap.RolapSchemaLoader.Handler#check()}. */
+    public void testCalculatedMemberFormulaBothOrNeither() {
+        TestContext testContext = getTestContext()
+            .withIgnore(true)
+            .insertCalculatedMembers(
+                "Sales",
+                "<CalculatedMember name='Profit bad 1' hierarchy='Measures'/>\n"
+                + "<CalculatedMember name='Profit good 1' hierarchy='Measures' formula='1'/>\n"
+                + "<CalculatedMember name='Profit bad 2' hierarchy='Measures' formula='2'>\n"
+                + "  <Formula>3</Formula>\n"
+                + "</CalculatedMember>");
+        // since we carry on parsing, there will be 2 errors
+        testContext.assertErrorList().containsError(
+            "Must specify either 'formula' attribute or 'Formula' child element; ignoring member '\\[Measures\\].\\[Measures\\].\\[Profit bad 1\\]' \\(in CalculatedMember 'Profit bad 1'\\) \\(at ${pos}\\).*",
+            "<CalculatedMember name='Profit bad 1' hierarchy='Measures'/>");
+        testContext.assertErrorList().containsError(
+            "Must not specify both 'formula' attribute and 'Formula' child element; ignoring member '\\[Measures\\].\\[Measures\\].\\[Profit bad 2\\]' \\(in CalculatedMember 'Profit bad 2'\\) \\(at ${pos}\\).*",
+            "<CalculatedMember name='Profit bad 2' hierarchy='Measures' formula='2'>");
+    }
+
+    /** Unit test with various calculated members and various
+     * combinations of hierarchy and dimension attribute. */
+    public void testCalculatedMemberDimensionAttribute() {
+        checkCalculatedMemberDimensionAttribute("dimension='Measures'");
+        checkCalculatedMemberDimensionAttribute("dimension='[Measures]'");
+        checkCalculatedMemberDimensionAttribute("hierarchy='Measures'");
+        checkCalculatedMemberDimensionAttribute("hierarchy='[Measures]'");
+        checkCalculatedMemberDimensionAttribute(
+            "hierarchy='[Measures].[Measures]'");
+    }
+
+    private void checkCalculatedMemberDimensionAttribute(String s) {
+        getTestContext()
+            .insertCalculatedMembers(
+                "Sales",
+                "<CalculatedMember " + s + " name='One' formula='1'/>")
+            .assertExprReturns("[Measures].[One]", "1");
     }
 
     /**
@@ -3018,7 +3053,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "<Role name='Role1' >\n"
             + "  <SchemaGrant access='all'/>\n"
             + "</Role>").withRole("Role1Plus2");
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "Duplicate role 'Role1' \\(in Role 'Role1'\\) \\(at ${pos}\\)",
             "<Role name='Role1' >");
     }
@@ -3059,7 +3094,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "  </Union>\n"
             + "</Role>")
             .withRole("Role1");
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "Role 'Role3' has cyclic dependencies on other roles \\(in Role "
             + "'Role3'\\) \\(at ${pos}\\)",
             "<Role name='Role3'>");
@@ -3087,11 +3122,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             schema.replaceFirst(
                 "<Schema name='FoodMart'",
                 "<Schema name='FoodMart' defaultRole='Unknown'");
-        final TestContext testContext =
-            getTestContext().withSchema(schema);
-        final List<Exception> exceptionList = testContext.getSchemaWarnings();
-        testContext.assertContains(
-            exceptionList,
+        getTestContext().withSchema(schema).assertErrorList().containsError(
             "Role 'Unknown' not found \\(in Schema 'FoodMart'\\) \\(at ${pos}\\)",
             "<Schema name='FoodMart' defaultRole='Unknown' metamodelVersion='4.0'>");
     }
@@ -3557,9 +3588,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                     + "</Cube>", null, null, null, null);
 
         // No link for 'Customer_2'.
-        final List<Exception> exceptionList = testContext.getSchemaWarnings();
-        testContext.assertContains(
-            exceptionList,
+        testContext.assertErrorList().containsError(
             "No link for dimension 'Gender4' in measure group 'Sales' \\(in MeasureGroup 'Sales'\\) \\(at ${pos}\\)",
             "<MeasureGroup name='Sales' table='sales_fact_1997'>");
     }
@@ -3578,9 +3607,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                     "  <Dimension name='Store_2' source='Store'/>");
 
         // No link for 'Customer_2'.
-        final List<Exception> exceptionList = testContext.getSchemaWarnings();
-        testContext.assertContains(
-            exceptionList,
+        testContext.assertErrorList().containsError(
             "No link for dimension 'Store_2' in measure group 'Sales' \\(in MeasureGroup 'Sales'\\) \\(at ${pos}\\)",
             "<MeasureGroup name='Sales' table='sales_fact_1997'>");
     }
@@ -3611,7 +3638,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 ArrayMap.of(
                     "Sales",
                     "<NoLink dimension='Store'/>"));
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "More than one link for dimension 'Store' in measure group 'Sales' \\(in NoLink\\) \\(at ${pos}\\)",
             "<NoLink dimension='Store'/>");
     }
@@ -5706,14 +5733,14 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * there is no physical schema.
      */
     public void testPhysicalSchemaRequired() {
-        final TestContext testContext =
-            getTestContext().withSchema(
+        getTestContext()
+            .withSchema(
                 "<Schema metamodelVersion='4.0' name='foo' >"
                 + "<Cube name='SalesPhys'/>"
-                + "</Schema>");
-        final List<Exception> list = testContext.getSchemaWarnings();
-        testContext.assertContains(
-            list, "Physical schema required");
+                + "</Schema>")
+            .assertErrorList()
+            .containsError(
+                "Physical schema required", null);
     }
 
     /**
@@ -5731,7 +5758,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "    </MeasureGroup>"
                 + "</MeasureGroups>"
                 + "</Cube>");
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "Unknown fact table 'Foo' \\(in MeasureGroup 'Foo'\\) \\(at ${pos}\\)",
             "<MeasureGroup table='Foo'>");
     }
@@ -5757,10 +5784,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "    </MeasureGroups>"
                 + "  </Cube>"
                 + "</Schema>");
-        final List<Exception> list = testContext.getSchemaWarnings();
-        testContext.assertContains(
-            list,
-            "Unknown fact table 'sales_fact_1997'.*");
+        testContext.assertErrorList().containsError(
+            "Unknown fact table 'sales_fact_1997'.*",
+            "<MeasureGroup table='sales_fact_1997'>");
     }
 
     public void testJoinInvalidInPhysicalSchema() {
@@ -5791,7 +5817,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
         final TestContext testContext =
             getTestContext().insertCube(
                 "<Cube name='cube without fact table'/>");
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "Cube definition must contain a MeasureGroups element, and at least "
             + "one MeasureGroup \\(in Cube 'cube without fact table'\\) \\(at ${pos}\\)",
             "<Cube name='cube without fact table'/>");
@@ -5950,7 +5976,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "</PhysicalSchema>\n"
                 + MINIMAL_SALES_CUBE
                 + "</Schema>");
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "Missing required child element ExpressionView \\(in Query\\) \\(at ${pos}\\)",
             "<Query alias='customer'>");
     }
@@ -6038,7 +6064,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
      */
     public void testPhysicalColumn() {
         final TestContext testContext =
-            getTestContext().withSchema(
+            getTestContext().withIgnore(true).withSchema(
                 "<Schema name='FoodMart' metamodelVersion='4.0'>"
                 + "<PhysicalSchema>"
                 + "  <Table name='sales_fact_1997' alias='myfact'>\n"
@@ -6057,8 +6083,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "    </Key>\n"
                 + "  </Table>\n"
                 + "  <Table name='customer' alias='emptyKeyNotSupported'>\n"
-                + "    <Key>\n"
-                + "    </Key>\n"
+                + "    <Key/>\n"
                 + "  </Table>\n"
                 + "  <Table name='customer' alias='calcColumnInKeyNotSupported'>\n"
                 + "    <ColumnDefs>\n"
@@ -6171,52 +6196,56 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "</PhysicalSchema>"
                 + "<Cube name='Sales'/>\n"
                 + "</Schema>");
-        final List<Exception> list = testContext.getSchemaWarnings();
-        testContext.assertContains(
-            list,
-            "Table 'unknownTable' does not exist in database.*");
-        testContext.assertContains(
-            list,
-            "Reference to unknown column 'nonexistent' in table 'customer2', in definition of calculated column 'customer2'.'err1'.*");
-        testContext.assertContains(
-            list,
-            "Reference to unknown column 'unit_sales' in table 'customer2', in definition of calculated column 'customer2'.'err2'.*");
-        testContext.assertContains(
-            list,
-            "Unknown table 'sales_fact_1997', in definition of calculated column 'customer2'.'err3'.*");
-        testContext.assertContains(
-            list,
-            "Duplicate table alias 'myfact'.*");
-        testContext.assertContains(
-            list,
-            "Duplicate column 'state_province' in table 'customer2'.*");
-        testContext.assertContains(
-            list,
-            "Link references unknown source table 'unknownSource'.*");
-        testContext.assertContains(
-            list,
-            "Link references unknown target table 'unknownTarget'.*");
-        testContext.assertContains(
-            list,
-            "Source table 'myfact' of link has no key named 'primary'.*");
+        final TestContext.ExceptionList assertList =
+            testContext.assertErrorList();
+        assertList.containsError(
+            "Table 'unknownTable' does not exist in database.*",
+            "<Table name='unknownTable'/>");
+        assertList.containsError(
+            "Reference to unknown column 'nonexistent' in table 'customer2', in definition of calculated column 'customer2'.'err1'.*",
+            "<SQL dialect='generic'>");
+        assertList.containsError(
+            "Reference to unknown column 'unit_sales' in table 'customer2', in definition of calculated column 'customer2'.'err2'.*",
+            "<SQL dialect='generic'>");
+        assertList.containsError(
+            "Unknown table 'sales_fact_1997', in definition of calculated column 'customer2'.'err3'.*",
+            "<SQL dialect='generic'>");
+        assertList.containsError(
+            "Duplicate table alias 'myfact'.*",
+            "<Table name='customer' alias='myfact'/>");
+
+        // REVIEW: location should be "<CalculatedColumnDef
+        // name='state_province'>"?
+        assertList.containsError(
+            "Duplicate column 'state_province' in table 'customer2'.*",
+            "<ColumnDef name='state_province'/>");
+        assertList.containsError(
+            "Link references unknown source table 'unknownSource'.*",
+            "<Link source='unknownSource' target='customer2'/>");
+        assertList.containsError(
+            "Link references unknown target table 'unknownTarget'.*",
+            "<Link source='myfact' target='unknownTarget'/>");
+        assertList.containsError(
+            "Source table 'myfact' of link has no key named 'primary'.*",
+            "<Link source='myfact' target='customer2'/>");
         // We would like to support compound keys in future, but for now it's
         // an error.
-        testContext.assertContains(
-            list,
+        assertList.containsError(
             "Key must have precisely one column; "
             + "key \\[compoundKeyNotSupported.customer_id, compoundKeyNotSupported.customer_id\\] "
-            + "in table 'compoundKeyNotSupported'.*");
-        testContext.assertContains(
-            list,
-            "Key must have precisely one column; key \\[\\] in table 'emptyKeyNotSupported'.*");
-        testContext.assertContains(
-            list,
-            "Columns in primary key must belong to key table; in table 'keyInOtherTable'.");
+            + "in table 'compoundKeyNotSupported'.*",
+            "<Key>");
+        assertList.containsError(
+            "Key must have precisely one column; key \\[\\] in table 'emptyKeyNotSupported'.*",
+            "<Key/>");
+        assertList.containsError(
+            "Columns in primary key must belong to key table; in table 'keyInOtherTable'.*",
+            "<Table name='customer' alias='keyInOtherTable'>");
         // We would like to support calculated columns in compound keys in
         // future, but for now it's an error.
-        testContext.assertContains(
-            list,
-            "Key must not contain calculated column; calculated column 'cidPlusOne' in table 'calcColumnInKeyNotSupported'.");
+        assertList.containsError(
+            "Key must not contain calculated column; calculated column 'cidPlusOne' in table 'calcColumnInKeyNotSupported'.*",
+            "<Table name='customer' alias='calcColumnInKeyNotSupported'>");
     }
 
     public void testPhysicalSchemaColumnRequiresTable() {
@@ -6253,12 +6282,10 @@ Test that get error if a dimension has more than one hierarchy with same name.
         TestContext testContext =
             getTestContext().withSchema(
                 "<Schema metamodelVersion='4.0' name='x'>\n"
-                + physSchema
-                + cube
-                + "</Schema>");
-        List<Exception> list = testContext.getSchemaWarnings();
-        testContext.assertContains(
-            list,
+                    + physSchema
+                    + cube
+                    + "</Schema>");
+        testContext.assertErrorList().containsError(
             "Table required. No table is specified or inherited when resolving "
             + "column 'the_year' \\(in Column\\) \\(at ${pos}\\)",
             "<Column name='the_year'/>");
@@ -6272,8 +6299,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                     "<Column name='the_year'/>",
                     "<Column name='the_year' table='time_by_day'/>")
                 + "</Schema>");
-        list = testContext.getSchemaWarnings();
-        assertTrue(list.toString(), list.isEmpty());
+        testContext.assertErrorList().isEmpty();
 
         // As above, but specify table in Attribute
         testContext =
@@ -6284,8 +6310,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                     "<Attribute name='Year' ",
                     "<Attribute name='Year' table='time_by_day' ")
                 + "</Schema>");
-        list = testContext.getSchemaWarnings();
-        assertTrue(list.toString(), list.isEmpty());
+        testContext.assertErrorList().isEmpty();
 
         // As above, but specify table in Dimension
         testContext =
@@ -6296,13 +6321,12 @@ Test that get error if a dimension has more than one hierarchy with same name.
                     "<Dimension name='Time' ",
                     "<Dimension name='Time' table='time_by_day' ")
                 + "</Schema>");
-        list = testContext.getSchemaWarnings();
-        assertTrue(list.toString(), list.isEmpty());
+        testContext.assertErrorList().isEmpty();
 
         // todo: test for property that does not specify exactly one
         // of column name and expression
 
-        // todo: test for peoprty that does not specify table
+        // todo: test for property that does not specify table
     }
 
     public void testInvalidTableElements() {
@@ -6921,7 +6945,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             getTestContext()
                 .insertPhysTable(tblDef)
                 .insertDimension("Sales", cubeDef);
-            testContext.assertSchemaError(
+            testContext.assertErrorList().containsError(
                 "Column 'time_id' not found in relation 'foo2' \\(in Attribute 'id'\\) \\(at ${pos}\\)",
                 "<Attribute name='id' keyColumn='time_id'/>");
     }
@@ -7069,7 +7093,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "  <MeasureGroup name='sales_fact'>\n"
             + "  </MeasureGroup>\n"
             + "</MeasureGroups>");
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "Cannot create hierarchy for attribute 'City'; dimension already "
             + "has a hierarchy of that name \\(in Attribute 'City'\\) "
             + "\\(at ${pos}\\)",
@@ -7102,7 +7126,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "  <MeasureGroup name='sales_fact'>\n"
             + "  </MeasureGroup>\n"
             + "</MeasureGroups>");
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "Table required. No table is specified or inherited when resolving "
             + "column 'city' \\(in Column\\) \\(at ${pos}\\)",
             "<Column name='city'/>");
@@ -7199,7 +7223,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "  </AutoGeneratedDateTable>\n"
             + "  <Table name='sales_fact_1997'/>\n"
             + "</PhysicalSchema>");
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "Bad role 'TimeDomain\n"
             + "   role = \"BAD_ROLE\"\n"
             + "   epoch = null\n"
@@ -7433,7 +7457,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                     + "foreignKeyColumn='product_id'/>"))
             .ignoreMissingLink();
 
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "Number of foreign key columns 1 does not match number of key columns "
             + "4 \\(in ForeignKeyLink\\) \\(at ${pos}\\)",
             "<ForeignKeyLink dimension='Product with no all' "

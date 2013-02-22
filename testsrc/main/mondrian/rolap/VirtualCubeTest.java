@@ -871,7 +871,7 @@ public class VirtualCubeTest extends BatchTestCase {
             null,
             null,
             null);
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "Virtual cube dimension must join to at least one cube: dimension 'Warehouse' in cube 'Sales vs HR' \\(in VirtualCubeDimension\\) \\(at ${pos}\\)",
             "<VirtualCubeDimension name=\"Warehouse\"/>");
     }

@@ -6136,7 +6136,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         // It is an error if the default measure does not exist.
         // (Previous behavior was to silently ignore the measure.)
         TestContext testContext = defaultMeasureContext("Supply Time Error");
-        testContext.assertSchemaError(
+        testContext.assertErrorList().containsError(
             "Default measure 'Supply Time Error' not found \\(in Cube 'DefaultMeasureTesting'\\) \\(at ${pos}\\)",
             "<Cube name='DefaultMeasureTesting' defaultMeasure='Supply Time Error'>");
     }

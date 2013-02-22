@@ -167,7 +167,7 @@ public class TestCalculatedMembers extends BatchTestCase {
         } catch (RuntimeException e) {
             TestContext.checkThrowable(
                 e,
-                "Mondrian Error:Named set in cube 'Sales' has bad formula");
+                "Mondrian Error:Calculated member or named set in cube 'Sales' has bad formula");
         }
 
         // should succeed if we switch the property to ignore invalid

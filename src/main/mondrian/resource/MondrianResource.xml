@@ -409,7 +409,7 @@
 </exception>
 
 <exception id="40230" name="UnknownNamedSetHasBadFormula">
-    <text>Named set in cube ''{0}'' has bad formula</text>
+    <text>Calculated member or named set in cube ''{0}'' has bad formula</text>
 </exception>
 
 <exception id="40240" name="NamedSetHasBadFormula">

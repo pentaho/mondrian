@@ -457,23 +457,23 @@ public class LegacySchemaTest extends FoodMartTestCase {
     }
 
     public void testDimensionRequiresForeignKey() {
-        final TestContext testContext =
-            getTestContext().legacy().createSubstitutingCube(
-                "Sales",
-                "    <Dimension name='Store'>\n"
-                + "    <Hierarchy hasAll='true' primaryKey='store_id'>\n"
-                + "      <Table name='store'/>\n"
-                + "      <Level name='Store Country' column='store_country'/>\n"
-                + "      <Level name='Store State' column='store_state' uniqueMembers='true'/>\n"
-                + "    </Hierarchy>\n"
-                + "</Dimension>");
-        testContext.assertSchemaError(
-            "Dimension or DimensionUsage must have foreignKey \\(in Dimension\\) \\(at ${pos}\\)",
-            "<Dimension name='Store'>");
+        getTestContext().legacy().createSubstitutingCube(
+            "Sales",
+            "    <Dimension name='Store'>\n"
+            + "    <Hierarchy hasAll='true' primaryKey='store_id'>\n"
+            + "      <Table name='store'/>\n"
+            + "      <Level name='Store Country' column='store_country'/>\n"
+            + "      <Level name='Store State' column='store_state' uniqueMembers='true'/>\n"
+            + "    </Hierarchy>\n"
+            + "</Dimension>")
+            .assertErrorList()
+            .containsError(
+                "Dimension or DimensionUsage must have foreignKey \\(in Dimension\\) \\(at ${pos}\\)",
+                "<Dimension name='Store'>");
     }
 
     public void testDimensionUsageWithInvalidForeignKey() {
-        final TestContext testContext = getTestContext().legacy().create(
+        getTestContext().legacy().create(
             null,
             "<Cube name='Sales77'>\n"
             + "  <Table name='sales_fact_1997'/>\n"
@@ -481,10 +481,11 @@ public class LegacySchemaTest extends FoodMartTestCase {
             + "  <DimensionUsage name='Store' source='Store' foreignKey='invalid_column'/>\n"
             + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum' "
             + "   formatString='Standard'/>\n"
-            + "</Cube>", null, null, null, null);
-        testContext.assertSchemaError(
-            ".*Relation sales_fact_1997 does not contain column invalid_column",
-            "");
+            + "</Cube>", null, null, null, null)
+            .assertErrorList()
+            .containsError(
+                ".*Relation sales_fact_1997 does not contain column invalid_column",
+                "");
     }
 
     /**
@@ -816,13 +817,14 @@ public class LegacySchemaTest extends FoodMartTestCase {
     }
 
     public void testCubeHasFact() {
-        final TestContext testContext = getTestContext().legacy().create(
+        getTestContext().legacy().create(
             null,
             "<Cube name='Cube with caption' caption='Cube with name'/>\n",
-            null, null, null, null);
-        testContext.assertSchemaError(
-            "Cube 'Cube with caption' requires fact table \\(in Cube\\) \\(at ${pos}\\)",
-            "<Cube name='Cube with caption' caption='Cube with name'/>");
+            null, null, null, null)
+            .assertErrorList()
+            .containsError(
+                "Cube 'Cube with caption' requires fact table \\(in Cube\\) \\(at ${pos}\\)",
+                "<Cube name='Cube with caption' caption='Cube with name'/>");
     }
 
     /**
@@ -1299,9 +1301,7 @@ public class LegacySchemaTest extends FoodMartTestCase {
                 "<Schema name='FoodMart' defaultRole='Unknown'");
         final TestContext testContext =
             getTestContext().withSchema(schema);
-        final List<Exception> exceptionList = testContext.getSchemaWarnings();
-        testContext.assertContains(
-            exceptionList,
+        testContext.assertErrorList().containsError(
             "Role 'Unknown' not found \\(in Schema 'FoodMart'\\) \\(at ${pos}\\)",
             "<Schema name='FoodMart' defaultRole='Unknown'>");
     }
@@ -1510,13 +1510,13 @@ public class LegacySchemaTest extends FoodMartTestCase {
 
 
     public void testCubeRequiresFactTable() {
-        final TestContext testContext =
-            getTestContext().create(
-                null, "<Cube name='cube without fact table'/>",
-                null, null, null, null);
-        testContext.assertSchemaError(
-            "Cube 'cube without fact table' requires fact table \\(in Cube\\) \\(at ${pos}\\)",
-            "<Cube name='cube without fact table'/>");
+        getTestContext().create(
+            null, "<Cube name='cube without fact table'/>",
+            null, null, null, null)
+            .assertErrorList()
+            .containsError(
+                "Cube 'cube without fact table' requires fact table \\(in Cube\\) \\(at ${pos}\\)",
+                "<Cube name='cube without fact table'/>");
     }
 
     /**

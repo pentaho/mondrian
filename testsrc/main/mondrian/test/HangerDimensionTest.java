@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2012 Pentaho
+// Copyright (C) 2012-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -91,7 +91,7 @@ public class HangerDimensionTest extends FoodMartTestCase {
                 + "    <Attribute name='Boolean' hierarchyHasAll='false'/>\n"
                 + "  </Attributes>\n"
                 + "</Dimension>")
-            .assertSchemaError(
+            .assertErrorList().containsError(
                 "mondrian.olap.InvalidHierarchyException: Mondrian Error:Hierarchy '\\[Boolean\\].\\[Boolean\\]' is invalid \\(has no members\\) \\(in Attribute 'Boolean'\\) \\(at ${pos}\\).*",
                 "<Attribute name='Boolean' hierarchyHasAll='false'/>");
     }
@@ -108,7 +108,7 @@ public class HangerDimensionTest extends FoodMartTestCase {
                 + "    <Attribute name='Boolean' keyColumn='xxx'/>\n"
                 + "  </Attributes>\n"
                 + "</Dimension>")
-            .assertSchemaError(
+            .assertErrorList().containsError(
                 "Attribute 'Boolean' in hanger dimension must not map to column \\(in Attribute 'Boolean'\\) \\(at ${pos}\\)",
                 "<Attribute name='Boolean' keyColumn='xxx'/>");
     }

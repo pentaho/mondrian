@@ -1675,17 +1675,34 @@ public class TestContext {
         String expected,
         String errorLoc)
     {
-        assertSchemaError(pattern(expected, errorLoc));
+        assertErrorList().containsError(expected, errorLoc);
     }
 
     public void assertSchemaError(Predicate predicate) {
+        assertErrorList().contains(predicate);
+    }
+
+    /**
+     * Instantiates the schema and captures the list of warnings and errors
+     * in an {@link ExceptionList} object, which can then be the object of
+     * further scrutiny.
+     */
+    public ExceptionList assertErrorList() {
         final List<Exception> exceptionList = new ArrayList<Exception>();
         try {
-            assertSimpleQuery();
+            if (isPreferOlap4j()) {
+                OlapConnection connection = getOlap4jConnection();
+                connection.close();
+            } else {
+                Connection connection = getConnection();
+                connection.close();
+            }
+        } catch (RolapSchemaLoader.MondrianMultipleSchemaException e) {
+            exceptionList.addAll(e.exceptionList);
         } catch (Exception e) {
             exceptionList.add(e);
         }
-        assertContains(exceptionList, predicate);
+        return new ExceptionList(exceptionList);
     }
 
     /**
@@ -2579,14 +2596,21 @@ public class TestContext {
      * @return Warnings encountered while loading schema
      */
     public List<Exception> getSchemaWarnings() {
+        final Connection connection = withIgnore(true).getConnection();
+        return connection.getSchema().getWarnings();
+    }
+
+    /**
+     * Creates a test context that soldiers on if it encounters a warning or
+     * error.
+     */
+    public TestContext withIgnore(boolean b) {
         final Util.PropertyList propertyList =
             getConnectionProperties().clone();
         propertyList.put(
             RolapConnectionProperties.Ignore.name(),
-            "true");
-        final Connection connection =
-            withProperties(propertyList).getConnection();
-        return connection.getSchema().getWarnings();
+            Boolean.toString(b));
+        return withProperties(propertyList);
     }
 
     /**
@@ -2607,9 +2631,7 @@ public class TestContext {
         String expected,
         String errorLoc)
     {
-        assertContains(
-            exceptionList,
-            new PatternPredicate(expected, errorLoc));
+        assertErrorList().containsError(expected, errorLoc);
     }
 
     /**
@@ -2647,29 +2669,7 @@ public class TestContext {
         List<Exception> exceptionList,
         Predicate predicate)
     {
-        final StringBuilder buf = new StringBuilder();
-        final StringWriter sw = new StringWriter();
-        for (Exception exception : exceptionList) {
-            RolapSchema.XmlLocation xmlLocation = null;
-            if (exception instanceof RolapSchema.MondrianSchemaException) {
-                final RolapSchema.MondrianSchemaException mse =
-                    (RolapSchema.MondrianSchemaException) exception;
-                xmlLocation = mse.getXmlLocation();
-            }
-            if (predicate.foo(exception, xmlLocation, sw, this)) {
-                return;
-            }
-            if (buf.length() > 0) {
-                buf.append(Util.nl);
-            }
-            buf.append(Util.getErrorMessage(exception));
-        }
-        throw new AssertionFailedError(
-            "Exception list did not contain expected exception. Exception is:\n"
-            + predicate.describe()
-            + "\nException list is:\n"
-            + buf
-            + "\nOther info:\n" + sw);
+        assertErrorList().contains(predicate);
     }
 
     /**
@@ -3089,7 +3089,8 @@ public class TestContext {
             }
             throw new AssertionFailedError(
                 "Actual message matched expected, but actual error "
-                + "location (" + xmlLocation + ") did not match expected."
+                + "location (" + xmlLocation + ") did not match expected (\""
+                + errorLoc + "\")."
                 + (sw.getBuffer().length() > 0
                    ? " Other info: "
                    : "")
@@ -3301,6 +3302,75 @@ public class TestContext {
         /** Proxy for {@link DatabaseMetaData#storesMixedCaseIdentifiers()}. */
         public boolean storesMixedCaseIdentifiers() {
             return false;
+        }
+    }
+
+    public class ExceptionList {
+        private final List<Exception> exceptionList;
+
+        public ExceptionList(List<Exception> exceptionList) {
+            this.exceptionList = exceptionList;
+        }
+
+        /**
+         * Asserts that a list of exceptions (probably from
+         * {@link mondrian.olap.Schema#getWarnings()}) contains the expected
+         * exception.
+         *
+         * <p>If the expected string contains the token "${pos}", it is replaced
+         * with the range indicated by carets when the schema was created: see
+         * {@link #setErrorLocation(String, int, int)}.
+         *
+         * @param predicate Checks exception is as expected
+         */
+        public void contains(Predicate predicate) {
+            final StringBuilder buf = new StringBuilder();
+            final StringWriter sw = new StringWriter();
+            for (Exception exception : exceptionList) {
+                RolapSchema.XmlLocation xmlLocation = null;
+                if (exception instanceof RolapSchema.MondrianSchemaException) {
+                    final RolapSchema.MondrianSchemaException mse =
+                        (RolapSchema.MondrianSchemaException) exception;
+                    xmlLocation = mse.getXmlLocation();
+                }
+                if (predicate.foo(exception, xmlLocation, sw, TestContext.this))
+                {
+                    return;
+                }
+                if (buf.length() > 0) {
+                    buf.append(Util.nl);
+                }
+                buf.append(Util.getErrorMessage(exception));
+            }
+            throw new AssertionFailedError(
+                "Exception list did not contain expected exception. Exception is:\n"
+                + predicate.describe()
+                + "\nException list is:\n"
+                + buf
+                + "\nOther info:\n" + sw);
+        }
+
+        /**
+         * Asserts that the list of exceptions contains the expected exception.
+         *
+         * <p>If the expected string contains the token "${pos}", it is replaced
+         * with the range indicated by carets when the schema was created: see
+         * {@link #setErrorLocation(String, int, int)}.
+         *
+         * @param expected Expected message
+         * @param errorLoc Location of error
+         */
+        public void containsError(
+            String expected,
+            String errorLoc)
+        {
+            contains(new PatternPredicate(expected, errorLoc));
+        }
+
+        /** Checks that list is empty. */
+        public void isEmpty() {
+            Assert.assertTrue(
+                exceptionList.toString(), exceptionList.isEmpty());
         }
     }
 }
