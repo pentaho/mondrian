@@ -186,7 +186,7 @@ public class DialectTest extends TestCase {
                 // netezza
                 "(?s).*ERROR:  Function 'COUNT', number of parameters greater than the maximum \\(1\\).*",
                 // Vertica
-                "ERROR: function count\\(int, int\\) does not exist, or permission is denied for count\\(int, int\\)",
+                "(?s).*ERROR: [Ff]unction count\\(int, int\\) does not exist, or permission is denied for count\\(int, int\\).*",
                 // postgres
                 "(?s).*ERROR: function count\\(integer, integer\\) does not exist.*",
                 // monetdb

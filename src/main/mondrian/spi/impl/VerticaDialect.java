@@ -44,11 +44,6 @@ public class VerticaDialect extends JdbcDialectImpl {
     }
 
     @Override
-    public boolean allowsCountDistinct() {
-        return false;
-    }
-
-    @Override
     public DatabaseProduct getDatabaseProduct() {
         return DatabaseProduct.VERTICA;
     }
