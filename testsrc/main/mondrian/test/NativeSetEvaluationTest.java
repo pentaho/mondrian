@@ -497,7 +497,9 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                 DatabaseProduct.MYSQL,
                 mysqlQuery,
                 mysqlQuery.indexOf("("));
-        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        if (MondrianProperties.instance().EnableNativeTopCount.get()) {
+            assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        }
         assertQueryReturns(
             mdx,
             "Axis #0:\n"
@@ -582,12 +584,14 @@ public class NativeSetEvaluationTest extends BatchTestCase {
               + "    ISNULL(`product_class`.`product_department`) ASC, `product_class`.`product_department` ASC,\n"
               + "    ISNULL(`product_class`.`product_category`) ASC, `product_class`.`product_category` ASC";
 
-        SqlPattern mysqlPattern =
-            new SqlPattern(
-                DatabaseProduct.MYSQL,
-                mysqlQuery,
-                mysqlQuery.indexOf("("));
-        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        if (MondrianProperties.instance().EnableNativeTopCount.get()) {
+            SqlPattern mysqlPattern =
+                new SqlPattern(
+                    DatabaseProduct.MYSQL,
+                    mysqlQuery,
+                    mysqlQuery.indexOf("("));
+            assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+        }
         assertQueryReturns(
             mdx,
             "Axis #0:\n"
