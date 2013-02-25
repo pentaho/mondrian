@@ -32,7 +32,8 @@ public class PostgreSqlDialect extends JdbcDialectImpl {
                 // Greenplum connection, yield to the Greenplum dialect.
                 return super.acceptsConnection(connection)
                     && !isDatabase(DatabaseProduct.GREENPLUM, connection)
-                    && !isDatabase(DatabaseProduct.NETEZZA, connection);
+                    && !isDatabase(DatabaseProduct.NETEZZA, connection)
+                    && !isDatabase(DatabaseProduct.REDSHIFT, connection);
             }
         };
 
