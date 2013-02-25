@@ -958,6 +958,7 @@ public interface Dialect {
         NEOVIEW,
         ORACLE,
         POSTGRESQL,
+        REDSHIFT,
         MYSQL,
         SQLSTREAM,
         SYBASE,
