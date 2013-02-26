@@ -742,11 +742,6 @@
             </CalculatedMember>
         </CalculatedMembers>
 
-        <NamedSets>
-            <NamedSet name='Top Sellers'>
-                <Formula>TopCount([Warehouse].[Warehouse Name].MEMBERS, 5, [Measures].[Warehouse Sales])</Formula>
-            </NamedSet>
-        </NamedSets>
     </Cube>
 
     <Cube name='HR'>
@@ -903,6 +898,12 @@
                 </DimensionLinks>
             </MeasureGroup>
         </MeasureGroups>
+        <NamedSets>
+            <NamedSet name='Top Sellers'>
+                <Formula>TopCount([Warehouse].[Warehouse Name].MEMBERS, 5, [Measures].[Warehouse Sales])</Formula>
+            </NamedSet>
+        </NamedSets>
+
     </Cube>
 
     <!-- A cube based on a single table. -->
