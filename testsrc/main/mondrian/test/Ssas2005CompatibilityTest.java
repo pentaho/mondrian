@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2012 Pentaho
+// Copyright (C) 2008-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -1370,6 +1370,45 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "[Time].[Time2] on 5,\n"
             + "[Time].[Time by Week] on 6\n"
             + "from [Warehouse and Sales]");
+    }
+
+    /** Tests Mosha's recommended way to query members; see
+     * <a href="http://sqlblog.com/blogs/mosha/archive/2006/10/11/querying-dimensions-in-mdx.aspx">Querying dimensions in MDX</a>.
+     */
+    public void testEmptyAxis() {
+        assertQueryReturns(
+            "SELECT {} ON 0,Customer.Customer.Country.Members ON 1\n"
+            + "FROM [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "Axis #2:\n"
+            + "{[Customer].[Customer].[Canada]}\n"
+            + "{[Customer].[Customer].[Mexico]}\n"
+            + "{[Customer].[Customer].[USA]}\n");
+        // reverse axes
+        assertQueryReturns(
+            "SELECT Customer.Customer.Country.Members ON 0,{} ON 1\n"
+            + "FROM [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Customer].[Customer].[Canada]}\n"
+            + "{[Customer].[Customer].[Mexico]}\n"
+            + "{[Customer].[Customer].[USA]}\n"
+            + "Axis #2:\n");
+        // multiple empty axes
+        assertQueryReturns(
+            "SELECT Customer.Customer.Country.Members ON 0,{} ON 1,{} on 2\n"
+            + "FROM [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Customer].[Customer].[Canada]}\n"
+            + "{[Customer].[Customer].[Mexico]}\n"
+            + "{[Customer].[Customer].[USA]}\n"
+            + "Axis #2:\n"
+            + "Axis #3:\n");
     }
 
     public void testOnAxesFails() {
