@@ -4,11 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho
+// Copyright (C) 2011-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server;
 
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapUtil;
 import mondrian.server.monitor.*;
@@ -390,6 +391,7 @@ class MonitorImpl
     }
 
     private static class Handler implements CommandVisitor<Object> {
+
         private final MutableServerInfo server =
             new MutableServerInfo();
 
@@ -407,11 +409,23 @@ class MonitorImpl
 
         /**
          * Holds info for executions that have ended. Cell cache events may
-         * arrive late, and this map lets them get into the system. One day
-         * we may purge executions if the map gets too large.
+         * arrive late, and this map lets them get into the system.
          */
         private final Map<Long, MutableExecutionInfo> retiredExecutionMap =
-            new HashMap<Long, MutableExecutionInfo>();
+            new LinkedHashMap<Long, MutableExecutionInfo>(
+                MondrianProperties.instance().ExecutionHistorySize.get(),
+                0.8f,
+                false)
+            {
+                private final int maxSize =
+                    MondrianProperties.instance().ExecutionHistorySize.get();
+                private static final long serialVersionUID = 1L;
+                protected boolean removeEldestEntry(
+                    Map.Entry<Long, MutableExecutionInfo> e)
+                {
+                    return size() > size();
+                }
+        };
 
         /**
          * Method for debugging that does nothing, but is a place to put a break
