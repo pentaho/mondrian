@@ -294,9 +294,9 @@ public class RolapCube extends CubeBase {
     public List<RolapStar> getStars() {
         List<RolapStar> starList = new ArrayList<RolapStar>();
         for (Member member : getMeasures()) {
-            if (member instanceof RolapBaseCubeMeasure) {
-                RolapBaseCubeMeasure storedMeasure =
-                    (RolapBaseCubeMeasure) member;
+            if (member instanceof RolapStoredMeasure) {
+                RolapStoredMeasure storedMeasure =
+                    (RolapStoredMeasure) member;
                 final RolapStar star =
                     storedMeasure.getMeasureGroup().getStar();
                 assert star != null : "measure " + member + " has no star";

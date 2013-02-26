@@ -449,6 +449,11 @@ public class CacheControlTest extends FoodMartTestCase {
      * Creates a partial cell region, runs a query, then flushes the cache.
      */
     public void testPartialFlush() {
+        if (!getTestContext().getDialect().getDatabaseProduct()
+            .equals(Dialect.DatabaseProduct.MYSQL))
+        {
+            return;
+        }
         if (propSaver.props.DisableCaching.get()) {
             return;
         }
@@ -516,6 +521,11 @@ public class CacheControlTest extends FoodMartTestCase {
      * header column values to those of the cache region.
      */
     public void testPartialFlush_2() throws Exception {
+        if (!getTestContext().getDialect().getDatabaseProduct()
+            .equals(Dialect.DatabaseProduct.MYSQL))
+        {
+            return;
+        }
         if (propSaver.props.DisableCaching.get()) {
             return;
         }
@@ -557,6 +567,11 @@ public class CacheControlTest extends FoodMartTestCase {
      * the cache.
      */
     public void testPartialFlushRange() {
+        if (!getTestContext().getDialect().getDatabaseProduct()
+            .equals(Dialect.DatabaseProduct.MYSQL))
+        {
+            return;
+        }
         if (propSaver.props.DisableCaching.get()) {
             return;
         }

@@ -498,14 +498,21 @@ public class CacheControlImpl implements CacheControl {
     }
 
     public static SegmentColumn[] findAxisValues(CellRegion region) {
-        final List<SegmentColumn> list =
-            new ArrayList<SegmentColumn>();
+        final List<SegmentColumn> list = new ArrayList<SegmentColumn>();
         final CellRegionVisitor visitor =
             new CellRegionVisitorImpl() {
                 public void visit(MemberCellRegion region) {
                     if (region.hierarchy.getDimension().isMeasures()) {
                         return;
                     }
+                    final Map<String, Set<Comparable>> levels =
+                        collectValuesByLevel(region);
+                    populateSegmentColumns(levels);
+                }
+
+                private Map<String, Set<Comparable>> collectValuesByLevel(
+                    MemberCellRegion region)
+                {
                     final Map<String, Set<Comparable>> levels =
                         new HashMap<String, Set<Comparable>>();
                     for (Member member : region.memberList) {
@@ -520,12 +527,18 @@ public class CacheControlImpl implements CacheControl {
                                 levels.put(ccName, levelValueSet);
                             }
                             final Object key =
-                                getMemberNameForLevel(
+                                getMemberKeyAtLevel(
                                     (RolapMember) member, ccName);
                             levelValueSet.add(
                                 (Comparable) key);
                         }
                     }
+                    return levels;
+                }
+
+                private void populateSegmentColumns(
+                    Map<String, Set<Comparable>> levels)
+                {
                     for (Entry<String, Set<Comparable>> entry
                         : levels.entrySet())
                     {
@@ -553,15 +566,16 @@ public class CacheControlImpl implements CacheControl {
                     }
                 }
 
-                private Comparable getMemberNameForLevel(
+                private Comparable getMemberKeyAtLevel(
                     RolapMember member, String ccName)
                 {
                     String levelSql =
                         member.getLevel().getAttribute().getNameExp().toSql();
                     if (levelSql.equals(ccName)) {
-                        return member.getName();
+                        List<Comparable> keyList = member.getKeyAsList();
+                        return keyList.get(keyList.size() - 1);
                     } else if (member.getLevel().getDepth()> 0) {
-                        return getMemberNameForLevel(
+                        return getMemberKeyAtLevel(
                             member.getParentMember(), ccName);
                     } else {
                         return null;
