@@ -707,6 +707,8 @@ CONCAT(CONCAT(<Column table="customer" name="fname"/>, ' '), <Column table="cust
   <VirtualCubeMeasure cubeName="Sales" name="[Measures].[Profit]"/>
   <VirtualCubeMeasure cubeName="Sales" name="[Measures].[Profit Growth]"/>
   <VirtualCubeMeasure cubeName="Sales" name="[Measures].[Profit last Period]"/>
+  <VirtualCubeMeasure cubeName="Sales" name="[Measures].[Customer Count]"/>
+  <VirtualCubeMeasure cubeName="Sales" name="[Measures].[Promotion Sales]"/>
   <VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Store Invoice]"/>
   <VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Supply Time]"/>
   <VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Units Ordered]"/>
