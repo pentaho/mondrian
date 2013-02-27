@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho
+// Copyright (C) 2011-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -193,7 +193,7 @@ public class ArraySortedSet<E extends Comparable<E>>
                 (Class<E>) this.values[0].getClass(),
                 k);
 
-        while (p1 < data1.length && p2 < data2.length) {
+        while (p1 < this.size() && p2 < arrayToMerge.size()) {
             final int compare =
                 data1[p1].compareTo(data2[p2]);
             if (compare == 0) {
@@ -206,11 +206,11 @@ public class ArraySortedSet<E extends Comparable<E>>
             }
         }
 
-        while (p1 < data1.length) {
+        while (p1 < this.size()) {
             merged[m++] = data1[p1++];
         }
 
-        while (p2 < data2.length) {
+        while (p2 < arrayToMerge.size()) {
             merged[m++] = data2[p2++];
         }
 

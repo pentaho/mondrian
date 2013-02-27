@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -480,33 +480,20 @@ public class CacheControlImpl implements CacheControl {
                     final Map<String, Set<Comparable>> levels =
                         new HashMap<String, Set<Comparable>>();
                     for (Member member : region.memberList) {
-                        RolapLevel currentLevel =
-                            ((RolapLevel)member.getLevel());
                         while (true) {
-                            if (currentLevel == null) {
+                            if (member == null || member.isAll()) {
                                 break;
                             }
-                            if (currentLevel.isAll()) {
-                                currentLevel =
-                                    (RolapLevel) currentLevel.getChildLevel();
-                                continue;
-                            }
                             final String ccName =
-                                currentLevel.getKeyExp()
+                                ((RolapLevel) member.getLevel()).getKeyExp()
                                     .getGenericExpression();
                             if (!levels.containsKey(ccName)) {
                                 levels.put(
                                     ccName, new HashSet<Comparable>());
                             }
-                            if (member.getLevel().equals(currentLevel)) {
                                 levels.get(ccName).add(
                                     (Comparable)((RolapMember)member).getKey());
-                            } else {
-                                levels.get(ccName).clear();
-                                levels.get(ccName).add(true);
-                            }
-                            currentLevel =
-                                (RolapLevel) currentLevel.getChildLevel();
+                            member = member.getParentMember();
                         }
                     }
                     for (Entry<String, Set<Comparable>> entry
