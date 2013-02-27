@@ -193,7 +193,7 @@ public class ArraySortedSet<E extends Comparable>
                 (Class<E>) data1.getClass().getComponentType(),
                 k);
 
-        while (p1 < data1.length && p2 < data2.length) {
+        while (p1 < this.size() && p2 < arrayToMerge.size()) {
             @SuppressWarnings("unchecked")
             final int compare =
                 data1[p1].compareTo(data2[p2]);
@@ -207,11 +207,11 @@ public class ArraySortedSet<E extends Comparable>
             }
         }
 
-        while (p1 < data1.length) {
+        while (p1 < this.size()) {
             merged[m++] = data1[p1++];
         }
 
-        while (p2 < data2.length) {
+        while (p2 < arrayToMerge.size()) {
             merged[m++] = data2[p2++];
         }
 
