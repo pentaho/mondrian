@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 30 August, 2001
@@ -234,6 +234,12 @@ public abstract class RolapAggregationManager {
                         (DrillThroughCellRequest) request);
                 }
             }
+
+            // Sort the members.  Columns will be added to
+            // DrillThroughCellRequest which will preserve the order
+            // they are added.
+            Arrays.sort(members, new CubeOrderedMemberLevelComparator(
+                cube.getDimensionList()));
 
             // Iterate over members.
             for (int i = 0; i < members.length; i++) {
@@ -893,6 +899,32 @@ public abstract class RolapAggregationManager {
      * for a short duration as a result of a cache inquiry.
      */
     public interface PinSet {
+    }
+
+    /**
+     * Compares members based on the position of their respective
+     * levels wrt the list of RolapCubeDimension objects.
+     */
+    private static class CubeOrderedMemberLevelComparator
+        implements Comparator<Member>
+    {
+        private final List<RolapLevel> orderedLevels =
+            new ArrayList<RolapLevel>();
+
+        public CubeOrderedMemberLevelComparator(
+            List<? extends RolapCubeDimension> dimList)
+        {
+            for (RolapCubeDimension dim : dimList) {
+                for (RolapHierarchy hier : dim.getHierarchies()) {
+                    orderedLevels.addAll(hier.getLevelList());
+                }
+            }
+        }
+
+        public int compare(Member o1, Member o2) {
+            return orderedLevels.indexOf(o1.getLevel())
+                - orderedLevels.indexOf(o2.getLevel());
+        }
     }
 }
 

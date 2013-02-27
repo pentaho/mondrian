@@ -6,18 +6,18 @@
     `time_by_day`.`the_year` as `Year`,
     `time_by_day`.`quarter` as `Quarter`,
     `time_by_day`.`month_of_year` as `Month`,
-    `product`.`product_name` as `Product Name`,
     `product_class`.`product_family` as `Product Family`,
     `product_class`.`product_department` as `Product Department`,
     `product_class`.`product_category` as `Product Category`,
     `product_class`.`product_subcategory` as `Product Subcategory`,
     `product`.`brand_name` as `Brand Name`,
+    `product`.`product_name` as `Product Name`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
     `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
-    `product` as `product`,
-    `product_class` as `product_class`
+    `product_class` as `product_class`,
+    `product` as `product`
 where
     `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
@@ -32,30 +32,30 @@ group by
     `time_by_day`.`the_year`,
     `time_by_day`.`quarter`,
     `time_by_day`.`month_of_year`,
-    `product`.`product_name`,
     `product_class`.`product_family`,
     `product_class`.`product_department`,
     `product_class`.`product_category`,
     `product_class`.`product_subcategory`,
-    `product`.`brand_name`]]>
+    `product`.`brand_name`,
+    `product`.`product_name`]]>
         </Resource>
         <Resource name="sql2">
             <![CDATA[select
     `time_by_day`.`the_year` as `Year`,
     `time_by_day`.`quarter` as `Quarter`,
     `time_by_day`.`month_of_year` as `Month`,
-    `product`.`product_name` as `Product Name`,
     `product_class`.`product_family` as `Product Family`,
     `product_class`.`product_department` as `Product Department`,
     `product_class`.`product_category` as `Product Category`,
     `product_class`.`product_subcategory` as `Product Subcategory`,
     `product`.`brand_name` as `Brand Name`,
+    `product`.`product_name` as `Product Name`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
     `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
-    `product` as `product`,
-    `product_class` as `product_class`
+    `product_class` as `product_class`,
+    `product` as `product`
 where
     `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
@@ -70,12 +70,12 @@ group by
     `time_by_day`.`the_year`,
     `time_by_day`.`quarter`,
     `time_by_day`.`month_of_year`,
-    `product`.`product_name`,
     `product_class`.`product_family`,
     `product_class`.`product_department`,
     `product_class`.`product_category`,
     `product_class`.`product_subcategory`,
-    `product`.`brand_name`]]>
+    `product`.`brand_name`,
+    `product`.`product_name`]]>
         </Resource>
     </TestCase>
     <TestCase name="testDrillThrough">
@@ -84,18 +84,18 @@ group by
     `time_by_day`.`the_year` as `Year`,
     `time_by_day`.`quarter` as `Quarter`,
     `time_by_day`.`month_of_year` as `Month`,
-    `product`.`product_name` as `Product Name`,
     `product_class`.`product_family` as `Product Family`,
     `product_class`.`product_department` as `Product Department`,
     `product_class`.`product_category` as `Product Category`,
     `product_class`.`product_subcategory` as `Product Subcategory`,
     `product`.`brand_name` as `Brand Name`,
+    `product`.`product_name` as `Product Name`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
     `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
-    `product` as `product`,
-    `product_class` as `product_class`
+    `product_class` as `product_class`,
+    `product` as `product`
 where
     `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
@@ -110,12 +110,12 @@ group by
     `time_by_day`.`the_year`,
     `time_by_day`.`quarter`,
     `time_by_day`.`month_of_year`,
-    `product`.`product_name`,
     `product_class`.`product_family`,
     `product_class`.`product_department`,
     `product_class`.`product_category`,
     `product_class`.`product_subcategory`,
-    `product`.`brand_name`]]>
+    `product`.`brand_name`,
+    `product`.`product_name`]]>
         </Resource>
     </TestCase>
     <TestCase name="testDrillThrough2">
@@ -124,18 +124,18 @@ group by
     `time_by_day`.`the_year` as `Year`,
     `time_by_day`.`quarter` as `Quarter`,
     `time_by_day`.`month_of_year` as `Month`,
-    `product`.`product_name` as `Product Name`,
     `product_class`.`product_family` as `Product Family`,
     `product_class`.`product_department` as `Product Department`,
     `product_class`.`product_category` as `Product Category`,
     `product_class`.`product_subcategory` as `Product Subcategory`,
     `product`.`brand_name` as `Brand Name`,
+    `product`.`product_name` as `Product Name`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
     `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
-    `product` as `product`,
-    `product_class` as `product_class`
+    `product_class` as `product_class`,
+    `product` as `product`
 where
     `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
@@ -150,12 +150,12 @@ group by
     `time_by_day`.`the_year`,
     `time_by_day`.`quarter`,
     `time_by_day`.`month_of_year`,
-    `product`.`product_name`,
     `product_class`.`product_family`,
     `product_class`.`product_department`,
     `product_class`.`product_category`,
     `product_class`.`product_subcategory`,
-    `product`.`brand_name`]]>
+    `product`.`brand_name`,
+    `product`.`product_name`]]>
         </Resource>
     </TestCase>
     <TestCase name="testDrillThrough3">
@@ -163,18 +163,18 @@ group by
             <![CDATA[select
     `time_by_day`.`the_year` as `Month`,
     `time_by_day`.`month_of_year` as `Month_0`,
-    `product`.`product_id` as `Product Name`,
     `product_class`.`product_family` as `Product Department`,
     `product_class`.`product_department` as `Product Department_0`,
     `product_class`.`product_category` as `Product Category`,
     `product_class`.`product_subcategory` as `Product Subcategory`,
     `product`.`brand_name` as `Brand Name`,
+    `product`.`product_id` as `Product Name`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
     `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
-    `product` as `product`,
-    `product_class` as `product_class`
+    `product_class` as `product_class`,
+    `product` as `product`
 where
     `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
@@ -192,12 +192,12 @@ and
 group by
     `time_by_day`.`the_year`,
     `time_by_day`.`month_of_year`,
-    `product`.`product_id`,
     `product_class`.`product_family`,
     `product_class`.`product_department`,
     `product_class`.`product_category`,
     `product_class`.`product_subcategory`,
-    `product`.`brand_name`]]>
+    `product`.`brand_name`,
+    `product`.`product_id`]]>
         </Resource>
     </TestCase>
     <TestCase name="testDrillThroughBugMondrian180">
@@ -237,18 +237,18 @@ group by
     `time_by_day`.`the_year` as `Year`,
     `time_by_day`.`quarter` as `Quarter`,
     `time_by_day`.`month_of_year` as `Month`,
-    `product`.`product_name` as `Product Name`,
     `product_class`.`product_family` as `Product Family`,
     `product_class`.`product_department` as `Product Department`,
     `product_class`.`product_category` as `Product Category`,
     `product_class`.`product_subcategory` as `Product Subcategory`,
     `product`.`brand_name` as `Brand Name`,
+    `product`.`product_name` as `Product Name`,
     sum(`sales_fact_1997`.`store_sales`) as `Promotion Sales`
 from
     `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
-    `product` as `product`,
-    `product_class` as `product_class`
+    `product_class` as `product_class`,
+    `product` as `product`
 where
     `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
@@ -263,61 +263,61 @@ group by
     `time_by_day`.`the_year`,
     `time_by_day`.`quarter`,
     `time_by_day`.`month_of_year`,
-    `product`.`product_name`,
     `product_class`.`product_family`,
     `product_class`.`product_department`,
     `product_class`.`product_category`,
     `product_class`.`product_subcategory`,
-    `product`.`brand_name`]]>
+    `product`.`brand_name`,
+    `product`.`product_name`]]>
         </Resource>
     </TestCase>
     <TestCase name="testDrillThroughDupKeys">
         <Resource name="sql">
             <![CDATA[select
-    `store`.`store_id` as `Store Id`,
     `time_by_day`.`the_year` as `Year`,
-    `store_ragged`.`store_id` as `Store Id_0`,
+    `store_ragged`.`store_id` as `Store Id`,
+    `store`.`store_id` as `Store Id_0`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
-    `store` as `store`,
-    `sales_fact_1997` as `sales_fact_1997`,
     `time_by_day` as `time_by_day`,
-    `store_ragged` as `store_ragged`
+    `sales_fact_1997` as `sales_fact_1997`,
+    `store_ragged` as `store_ragged`,
+    `store` as `store`
 where
-    `sales_fact_1997`.`store_id` = `store`.`store_id`
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
     `store`.`store_id` = 2
 and
-    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+    `sales_fact_1997`.`store_id` = `store_ragged`.`store_id`
 and
     `time_by_day`.`the_year` = 1997
 and
-    `sales_fact_1997`.`store_id` = `store_ragged`.`store_id`
+    `sales_fact_1997`.`store_id` = `store`.`store_id`
 and
     `store_ragged`.`store_id` = 19
 group by
-    `store`.`store_id`,
     `time_by_day`.`the_year`,
-    `store_ragged`.`store_id`]]>
+    `store_ragged`.`store_id`,
+    `store`.`store_id`]]>
         </Resource>
     </TestCase>
     <TestCase name="testDrillThroughVirtualCube">
         <Resource name="sql">
             <![CDATA[select
+    `customer`.`state_province` as `City`,
+    `customer`.`city` as `City_0`,
+    `customer`.`customer_id` as `Name`,
+    `customer`.`gender` as `Gender`,
     `time_by_day`.`the_year` as `Month`,
     `time_by_day`.`quarter` as `Month_0`,
     `time_by_day`.`month_of_year` as `Month_1`,
-    `customer`.`customer_id` as `Name`,
-    `customer`.`state_province` as `City`,
-    `customer`.`gender` as `Gender`,
-    `customer`.`city` as `City_0`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
-    `time_by_day` as `time_by_day`,
+    `customer` as `customer`,
     `sales_fact_1997` as `sales_fact_1997`,
-    `customer` as `customer`
+    `time_by_day` as `time_by_day`
 where
-    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`
 and
     `time_by_day`.`the_year` = 1997
 and
@@ -325,7 +325,7 @@ and
 and
     `time_by_day`.`month_of_year` = 12
 and
-    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
     `customer`.`state_province` = 'OR'
 and
@@ -333,13 +333,13 @@ and
 and
     `customer`.`city` = 'Albany'
 group by
+    `customer`.`state_province`,
+    `customer`.`city`,
+    `customer`.`customer_id`,
+    `customer`.`gender`,
     `time_by_day`.`the_year`,
     `time_by_day`.`quarter`,
-    `time_by_day`.`month_of_year`,
-    `customer`.`customer_id`,
-    `customer`.`state_province`,
-    `customer`.`gender`,
-    `customer`.`city`]]>
+    `time_by_day`.`month_of_year`]]>
         </Resource>
     </TestCase>
     <TestCase name="testBug1438285">
@@ -400,8 +400,8 @@ order by customer.gender ASC, customer.marital_status ASC]]>
         </Resource>
         <Resource name="sql2-compound-in">
             <![CDATA[select
-    `customer`.`marital_status` as `Marital Status`,
     `customer`.`gender` as `Gender`,
+    `customer`.`marital_status` as `Marital Status`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
     `customer` as `customer`,
@@ -418,8 +418,8 @@ and
 and
     ((`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q2' and `time_by_day`.`the_year` = 1997))
 group by
-    `customer`.`marital_status`,
-    `customer`.`gender`]]>
+    `customer`.`gender`,
+    `customer`.`marital_status`]]>
         </Resource>
         <Resource name="sql3">
             <![CDATA[
