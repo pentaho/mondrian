@@ -3515,6 +3515,108 @@
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Product</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Product</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>1561</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Product]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Product Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Store</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Store</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>1</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>26</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Store]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Store Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Store Size in SQFT</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Store Size in SQFT</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>2</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>22</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Store Size in SQFT]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Store Size in SQFT Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Store Type</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Store Type</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>3</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>7</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Store Type]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Store Type Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Time</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Time</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>4</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>1</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Time]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Time Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Warehouse</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Warehouse]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Warehouse</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>5</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Warehouse]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Warehouse Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <DIMENSION_NAME>Department</DIMENSION_NAME>
                         <DIMENSION_UNIQUE_NAME>[Department]</DIMENSION_UNIQUE_NAME>
@@ -4439,7 +4541,7 @@
                         <DIMENSION_CAPTION>Measures</DIMENSION_CAPTION>
                         <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
                         <DIMENSION_TYPE>2</DIMENSION_TYPE>
-                        <DIMENSION_CARDINALITY>17</DIMENSION_CARDINALITY>
+                        <DIMENSION_CARDINALITY>19</DIMENSION_CARDINALITY>
                         <DEFAULT_HIERARCHY>[Measures]</DEFAULT_HIERARCHY>
                         <DESCRIPTION>Warehouse and Sales Cube - Measures Dimension</DESCRIPTION>
                         <IS_VIRTUAL>false</IS_VIRTUAL>
@@ -13369,36 +13471,51 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         </xsd:simpleType>
                         <xsd:complexType name="row">
                             <xsd:sequence>
-                                <xsd:element minOccurs="0" name="Year_x0020__x0028_Key_x0029_" sql:field="Year (Key)" type="xsd:int"/>
-                                <xsd:element minOccurs="0" name="State_x0020_Province_x0020__x0028_Key_x0029_" sql:field="State Province (Key)" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="City_x0020__x0028_Key_x0029_" sql:field="City (Key)" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Year" sql:field="Year" type="xsd:int"/>
+                                <xsd:element minOccurs="0" name="Quarter" sql:field="Quarter" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Month" sql:field="Month" type="xsd:int"/>
+                                <xsd:element minOccurs="0" name="Name" sql:field="Name" type="xsd:int"/>
+                                <xsd:element minOccurs="0" name="City" sql:field="City" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="City_0" sql:field="City_0" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="Unit_x0020_Sales" sql:field="Unit Sales" type="xsd:decimal"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
                     <row>
-                        <Year_x0020__x0028_Key_x0029_>86</Year_x0020__x0028_Key_x0029_>
-                        <State_x0020_Province_x0020__x0028_Key_x0029_>86</State_x0020_Province_x0020__x0028_Key_x0029_>
-                        <City_x0020__x0028_Key_x0029_>86</City_x0020__x0028_Key_x0029_>
+                        <Year>86</Year>
+                        <Quarter>86</Quarter>
+                        <Month>86</Month>
+                        <Name>86</Name>
+                        <City>86</City>
+                        <City_0>86</City_0>
                         <Unit_x0020_Sales>86</Unit_x0020_Sales>
                     </row>
                     <row>
-                        <Year_x0020__x0028_Key_x0029_ xsi:type="xsd:int">1997</Year_x0020__x0028_Key_x0029_>
-                        <State_x0020_Province_x0020__x0028_Key_x0029_ xsi:type="xsd:string">CA</State_x0020_Province_x0020__x0028_Key_x0029_>
-                        <City_x0020__x0028_Key_x0029_ xsi:type="xsd:string">Berkeley</City_x0020__x0028_Key_x0029_>
-                        <Unit_x0020_Sales xsi:type="xsd:decimal">1</Unit_x0020_Sales>
+                        <Year xsi:type="xsd:int">1997</Year>
+                        <Quarter xsi:type="xsd:string">Q1</Quarter>
+                        <Month xsi:type="xsd:int">3</Month>
+                        <Name xsi:type="xsd:int">1066</Name>
+                        <City xsi:type="xsd:string">CA</City>
+                        <City_0 xsi:type="xsd:string">Berkeley</City_0>
+                        <Unit_x0020_Sales xsi:type="xsd:decimal">9</Unit_x0020_Sales>
                     </row>
                     <row>
-                        <Year_x0020__x0028_Key_x0029_ xsi:type="xsd:int">1997</Year_x0020__x0028_Key_x0029_>
-                        <State_x0020_Province_x0020__x0028_Key_x0029_ xsi:type="xsd:string">CA</State_x0020_Province_x0020__x0028_Key_x0029_>
-                        <City_x0020__x0028_Key_x0029_ xsi:type="xsd:string">Berkeley</City_x0020__x0028_Key_x0029_>
-                        <Unit_x0020_Sales xsi:type="xsd:decimal">1</Unit_x0020_Sales>
+                        <Year xsi:type="xsd:int">1997</Year>
+                        <Quarter xsi:type="xsd:string">Q1</Quarter>
+                        <Month xsi:type="xsd:int">3</Month>
+                        <Name xsi:type="xsd:int">3944</Name>
+                        <City xsi:type="xsd:string">CA</City>
+                        <City_0 xsi:type="xsd:string">Berkeley</City_0>
+                        <Unit_x0020_Sales xsi:type="xsd:decimal">8</Unit_x0020_Sales>
                     </row>
                     <row>
-                        <Year_x0020__x0028_Key_x0029_ xsi:type="xsd:int">1997</Year_x0020__x0028_Key_x0029_>
-                        <State_x0020_Province_x0020__x0028_Key_x0029_ xsi:type="xsd:string">CA</State_x0020_Province_x0020__x0028_Key_x0029_>
-                        <City_x0020__x0028_Key_x0029_ xsi:type="xsd:string">Berkeley</City_x0020__x0028_Key_x0029_>
-                        <Unit_x0020_Sales xsi:type="xsd:decimal">2</Unit_x0020_Sales>
+                        <Year xsi:type="xsd:int">1997</Year>
+                        <Quarter xsi:type="xsd:string">Q1</Quarter>
+                        <Month xsi:type="xsd:int">3</Month>
+                        <Name xsi:type="xsd:int">4241</Name>
+                        <City xsi:type="xsd:string">CA</City>
+                        <City_0 xsi:type="xsd:string">Berkeley</City_0>
+                        <Unit_x0020_Sales xsi:type="xsd:decimal">3</Unit_x0020_Sales>
                     </row>
                 </root>
             </cxmla:return>
@@ -13461,46 +13578,66 @@ FROM Sales
                         </xsd:simpleType>
                         <xsd:complexType name="row">
                             <xsd:sequence>
-                                <xsd:element minOccurs="0" name="Year_x0020__x0028_Key_x0029_" sql:field="Year (Key)" type="xsd:int"/>
-                                <xsd:element minOccurs="0" name="Product_x0020_Subcategory_x0020__x0028_Key_x0029_" sql:field="Product Subcategory (Key)" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="Product_x0020_Subcategory_x0020__x0028_Key_x0029__0" sql:field="Product Subcategory (Key)_0" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="Product_x0020_Subcategory_x0020__x0028_Key_x0029__1" sql:field="Product Subcategory (Key)_1" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="Product_x0020_Subcategory_x0020__x0028_Key_x0029__2" sql:field="Product Subcategory (Key)_2" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="State_x0020_Province_x0020__x0028_Key_x0029_" sql:field="State Province (Key)" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="City_x0020__x0028_Key_x0029_" sql:field="City (Key)" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="Sales_x0020_Count" sql:field="Sales Count" type="xsd:int"/>
+                                <xsd:element minOccurs="0" name="Year" sql:field="Year" type="xsd:int"/>
+                                <xsd:element minOccurs="0" name="Quarter" sql:field="Quarter" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Month" sql:field="Month" type="xsd:int"/>
+                                <xsd:element minOccurs="0" name="Product_x0020_Name" sql:field="Product Name" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Product_x0020_Subcategory" sql:field="Product Subcategory" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Product_x0020_Subcategory_0" sql:field="Product Subcategory_0" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Product_x0020_Subcategory_1" sql:field="Product Subcategory_1" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Product_x0020_Subcategory_2" sql:field="Product Subcategory_2" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Brand_x0020_Name" sql:field="Brand Name" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Name" sql:field="Name" type="xsd:int"/>
+                                <xsd:element minOccurs="0" name="City" sql:field="City" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="City_0" sql:field="City_0" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Sales_x0020_Count" sql:field="Sales Count" type="xsd:integer"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
                     <row>
-                        <Year_x0020__x0028_Key_x0029_>2</Year_x0020__x0028_Key_x0029_>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029_>2</Product_x0020_Subcategory_x0020__x0028_Key_x0029_>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029__0>2</Product_x0020_Subcategory_x0020__x0028_Key_x0029__0>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029__1>2</Product_x0020_Subcategory_x0020__x0028_Key_x0029__1>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029__2>2</Product_x0020_Subcategory_x0020__x0028_Key_x0029__2>
-                        <State_x0020_Province_x0020__x0028_Key_x0029_>2</State_x0020_Province_x0020__x0028_Key_x0029_>
-                        <City_x0020__x0028_Key_x0029_>2</City_x0020__x0028_Key_x0029_>
+                        <Year>2</Year>
+                        <Quarter>2</Quarter>
+                        <Month>2</Month>
+                        <Product_x0020_Name>2</Product_x0020_Name>
+                        <Product_x0020_Subcategory>2</Product_x0020_Subcategory>
+                        <Product_x0020_Subcategory_0>2</Product_x0020_Subcategory_0>
+                        <Product_x0020_Subcategory_1>2</Product_x0020_Subcategory_1>
+                        <Product_x0020_Subcategory_2>2</Product_x0020_Subcategory_2>
+                        <Brand_x0020_Name>2</Brand_x0020_Name>
+                        <Name>2</Name>
+                        <City>2</City>
+                        <City_0>2</City_0>
                         <Sales_x0020_Count>2</Sales_x0020_Count>
                     </row>
                     <row>
-                        <Year_x0020__x0028_Key_x0029_ xsi:type="xsd:int">1997</Year_x0020__x0028_Key_x0029_>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029_ xsi:type="xsd:string">Drink</Product_x0020_Subcategory_x0020__x0028_Key_x0029_>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029__0 xsi:type="xsd:string">Beverages</Product_x0020_Subcategory_x0020__x0028_Key_x0029__0>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029__1 xsi:type="xsd:string">Pure Juice Beverages</Product_x0020_Subcategory_x0020__x0028_Key_x0029__1>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029__2 xsi:type="xsd:string">Juice</Product_x0020_Subcategory_x0020__x0028_Key_x0029__2>
-                        <State_x0020_Province_x0020__x0028_Key_x0029_ xsi:type="xsd:string">CA</State_x0020_Province_x0020__x0028_Key_x0029_>
-                        <City_x0020__x0028_Key_x0029_ xsi:type="xsd:string">Concord</City_x0020__x0028_Key_x0029_>
-                        <Sales_x0020_Count xsi:type="xsd:int">319</Sales_x0020_Count>
+                        <Year xsi:type="xsd:int">1997</Year>
+                        <Quarter xsi:type="xsd:string">Q1</Quarter>
+                        <Month xsi:type="xsd:int">2</Month>
+                        <Product_x0020_Name xsi:type="xsd:string">Skinner Apple Juice</Product_x0020_Name>
+                        <Product_x0020_Subcategory xsi:type="xsd:string">Drink</Product_x0020_Subcategory>
+                        <Product_x0020_Subcategory_0 xsi:type="xsd:string">Beverages</Product_x0020_Subcategory_0>
+                        <Product_x0020_Subcategory_1 xsi:type="xsd:string">Pure Juice Beverages</Product_x0020_Subcategory_1>
+                        <Product_x0020_Subcategory_2 xsi:type="xsd:string">Juice</Product_x0020_Subcategory_2>
+                        <Brand_x0020_Name xsi:type="xsd:string">Skinner</Brand_x0020_Name>
+                        <Name xsi:type="xsd:int">2948</Name>
+                        <City xsi:type="xsd:string">CA</City>
+                        <City_0 xsi:type="xsd:string">Concord</City_0>
+                        <Sales_x0020_Count xsi:type="xsd:integer">1</Sales_x0020_Count>
                     </row>
                     <row>
-                        <Year_x0020__x0028_Key_x0029_ xsi:type="xsd:int">1997</Year_x0020__x0028_Key_x0029_>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029_ xsi:type="xsd:string">Drink</Product_x0020_Subcategory_x0020__x0028_Key_x0029_>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029__0 xsi:type="xsd:string">Beverages</Product_x0020_Subcategory_x0020__x0028_Key_x0029__0>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029__1 xsi:type="xsd:string">Pure Juice Beverages</Product_x0020_Subcategory_x0020__x0028_Key_x0029__1>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029__2 xsi:type="xsd:string">Juice</Product_x0020_Subcategory_x0020__x0028_Key_x0029__2>
-                        <State_x0020_Province_x0020__x0028_Key_x0029_ xsi:type="xsd:string">CA</State_x0020_Province_x0020__x0028_Key_x0029_>
-                        <City_x0020__x0028_Key_x0029_ xsi:type="xsd:string">Concord</City_x0020__x0028_Key_x0029_>
-                        <Sales_x0020_Count xsi:type="xsd:int">1259</Sales_x0020_Count>
+                        <Year xsi:type="xsd:int">1997</Year>
+                        <Quarter xsi:type="xsd:string">Q3</Quarter>
+                        <Month xsi:type="xsd:int">9</Month>
+                        <Product_x0020_Name xsi:type="xsd:string">Excellent Orange Juice</Product_x0020_Name>
+                        <Product_x0020_Subcategory xsi:type="xsd:string">Drink</Product_x0020_Subcategory>
+                        <Product_x0020_Subcategory_0 xsi:type="xsd:string">Beverages</Product_x0020_Subcategory_0>
+                        <Product_x0020_Subcategory_1 xsi:type="xsd:string">Pure Juice Beverages</Product_x0020_Subcategory_1>
+                        <Product_x0020_Subcategory_2 xsi:type="xsd:string">Juice</Product_x0020_Subcategory_2>
+                        <Brand_x0020_Name xsi:type="xsd:string">Excellent</Brand_x0020_Name>
+                        <Name xsi:type="xsd:int">3956</Name>
+                        <City xsi:type="xsd:string">CA</City>
+                        <City_0 xsi:type="xsd:string">Concord</City_0>
+                        <Sales_x0020_Count xsi:type="xsd:integer">1</Sales_x0020_Count>
                     </row>
                 </root>
             </cxmla:return>
@@ -13566,39 +13703,51 @@ FROM Sales
                         </xsd:simpleType>
                         <xsd:complexType name="row">
                             <xsd:sequence>
-                                <xsd:element minOccurs="0" name="Year_x0020__x0028_Key_x0029_" sql:field="Year (Key)" type="xsd:int"/>
-                                <xsd:element minOccurs="0" name="Quarter_x0020__x0028_Key_x0029_" sql:field="Quarter (Key)" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="Product_x0020_Subcategory_x0020__x0028_Key_x0029_" sql:field="Product Subcategory (Key)" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="Product_x0020_Subcategory_x0020__x0028_Key_x0029__0" sql:field="Product Subcategory (Key)_0" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="Product_x0020_Subcategory_x0020__x0028_Key_x0029__1" sql:field="Product Subcategory (Key)_1" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="Product_x0020_Subcategory_x0020__x0028_Key_x0029__2" sql:field="Product Subcategory (Key)_2" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="State_x0020_Province_x0020__x0028_Key_x0029_" sql:field="State Province (Key)" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="City_x0020__x0028_Key_x0029_" sql:field="City (Key)" type="xsd:string"/>
-                                <xsd:element minOccurs="0" name="Sales_x0020_Count" sql:field="Sales Count" type="xsd:int"/>
+                                <xsd:element minOccurs="0" name="Quarter" sql:field="Quarter" type="xsd:int"/>
+                                <xsd:element minOccurs="0" name="Quarter_0" sql:field="Quarter_0" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Month" sql:field="Month" type="xsd:int"/>
+                                <xsd:element minOccurs="0" name="Product_x0020_Name" sql:field="Product Name" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Product_x0020_Subcategory" sql:field="Product Subcategory" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Product_x0020_Subcategory_0" sql:field="Product Subcategory_0" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Product_x0020_Subcategory_1" sql:field="Product Subcategory_1" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Product_x0020_Subcategory_2" sql:field="Product Subcategory_2" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Brand_x0020_Name" sql:field="Brand Name" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Name" sql:field="Name" type="xsd:int"/>
+                                <xsd:element minOccurs="0" name="City" sql:field="City" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="City_0" sql:field="City_0" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="Sales_x0020_Count" sql:field="Sales Count" type="xsd:integer"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
                     <row>
-                        <Year_x0020__x0028_Key_x0029_>1</Year_x0020__x0028_Key_x0029_>
-                        <Quarter_x0020__x0028_Key_x0029_>1</Quarter_x0020__x0028_Key_x0029_>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029_>1</Product_x0020_Subcategory_x0020__x0028_Key_x0029_>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029__0>1</Product_x0020_Subcategory_x0020__x0028_Key_x0029__0>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029__1>1</Product_x0020_Subcategory_x0020__x0028_Key_x0029__1>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029__2>1</Product_x0020_Subcategory_x0020__x0028_Key_x0029__2>
-                        <State_x0020_Province_x0020__x0028_Key_x0029_>1</State_x0020_Province_x0020__x0028_Key_x0029_>
-                        <City_x0020__x0028_Key_x0029_>1</City_x0020__x0028_Key_x0029_>
+                        <Quarter>1</Quarter>
+                        <Quarter_0>1</Quarter_0>
+                        <Month>1</Month>
+                        <Product_x0020_Name>1</Product_x0020_Name>
+                        <Product_x0020_Subcategory>1</Product_x0020_Subcategory>
+                        <Product_x0020_Subcategory_0>1</Product_x0020_Subcategory_0>
+                        <Product_x0020_Subcategory_1>1</Product_x0020_Subcategory_1>
+                        <Product_x0020_Subcategory_2>1</Product_x0020_Subcategory_2>
+                        <Brand_x0020_Name>1</Brand_x0020_Name>
+                        <Name>1</Name>
+                        <City>1</City>
+                        <City_0>1</City_0>
                         <Sales_x0020_Count>1</Sales_x0020_Count>
                     </row>
                     <row>
-                        <Year_x0020__x0028_Key_x0029_ xsi:type="xsd:int">1997</Year_x0020__x0028_Key_x0029_>
-                        <Quarter_x0020__x0028_Key_x0029_ xsi:type="xsd:string">Q3</Quarter_x0020__x0028_Key_x0029_>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029_ xsi:type="xsd:string">Drink</Product_x0020_Subcategory_x0020__x0028_Key_x0029_>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029__0 xsi:type="xsd:string">Beverages</Product_x0020_Subcategory_x0020__x0028_Key_x0029__0>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029__1 xsi:type="xsd:string">Pure Juice Beverages</Product_x0020_Subcategory_x0020__x0028_Key_x0029__1>
-                        <Product_x0020_Subcategory_x0020__x0028_Key_x0029__2 xsi:type="xsd:string">Juice</Product_x0020_Subcategory_x0020__x0028_Key_x0029__2>
-                        <State_x0020_Province_x0020__x0028_Key_x0029_ xsi:type="xsd:string">CA</State_x0020_Province_x0020__x0028_Key_x0029_>
-                        <City_x0020__x0028_Key_x0029_ xsi:type="xsd:string">Concord</City_x0020__x0028_Key_x0029_>
-                        <Sales_x0020_Count xsi:type="xsd:int">319</Sales_x0020_Count>
+                        <Quarter xsi:type="xsd:int">1997</Quarter>
+                        <Quarter_0 xsi:type="xsd:string">Q3</Quarter_0>
+                        <Month xsi:type="xsd:int">9</Month>
+                        <Product_x0020_Name xsi:type="xsd:string">Excellent Orange Juice</Product_x0020_Name>
+                        <Product_x0020_Subcategory xsi:type="xsd:string">Drink</Product_x0020_Subcategory>
+                        <Product_x0020_Subcategory_0 xsi:type="xsd:string">Beverages</Product_x0020_Subcategory_0>
+                        <Product_x0020_Subcategory_1 xsi:type="xsd:string">Pure Juice Beverages</Product_x0020_Subcategory_1>
+                        <Product_x0020_Subcategory_2 xsi:type="xsd:string">Juice</Product_x0020_Subcategory_2>
+                        <Brand_x0020_Name xsi:type="xsd:string">Excellent</Brand_x0020_Name>
+                        <Name xsi:type="xsd:int">3956</Name>
+                        <City xsi:type="xsd:string">CA</City>
+                        <City_0 xsi:type="xsd:string">Concord</City_0>
+                        <Sales_x0020_Count xsi:type="xsd:integer">1</Sales_x0020_Count>
                     </row>
                 </root>
             </cxmla:return>
