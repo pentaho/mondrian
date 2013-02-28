@@ -231,7 +231,7 @@ public class RolapMeasureGroup {
      * <p>Never null, because if there is no count measure explicitly defined,
      * the system creates one.
      */
-    RolapMeasure getFactCountMeasure() {
+    public RolapMeasure getFactCountMeasure() {
         return factCountMeasure;
     }
 

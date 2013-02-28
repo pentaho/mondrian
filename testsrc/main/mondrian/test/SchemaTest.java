@@ -10,6 +10,8 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapMeasureGroup;
 import mondrian.rolap.aggmatcher.*;
 import mondrian.spi.*;
 import mondrian.spi.PropertyFormatter;
@@ -4405,16 +4407,19 @@ Test that get error if a dimension has more than one hierarchy with same name.
             measure.getPropertyValue(Property.MEMBER_CAPTION));
         checkAnnotations(measure.getAnnotationMap(), "a", "Measure");
 
-        if (Bug.BugMondrian1332Fixed) {
-            // The implicitly created [Fact Count] measure
-            final Member factCountMeasure = measures.get(1);
-            assertEquals("Fact Count", factCountMeasure.getName());
-            assertEquals(
-                false,
-                factCountMeasure.getPropertyValue(Property.VISIBLE));
+        // The implicitly created [Fact Count] measure
+        Member factCountMeasure = null;
+        if (cube instanceof RolapCube) {
+            RolapMeasureGroup mg = ((RolapCube)cube).getMeasureGroups().get(0);
+            factCountMeasure = mg.getFactCountMeasure();
         }
+        assertNotNull(factCountMeasure);
+        assertEquals("Fact Count", factCountMeasure.getName());
+        assertEquals(
+            false,
+            factCountMeasure.getPropertyValue(Property.VISIBLE));
 
-        final int fooIndex = Bug.BugMondrian1332Fixed ? 2 : 1;
+        final int fooIndex = 1;
         final Member calcMeasure = measures.get(fooIndex);
         assertEquals("Foo", calcMeasure.getName());
         assertEquals("Calc member caption", calcMeasure.getCaption());
