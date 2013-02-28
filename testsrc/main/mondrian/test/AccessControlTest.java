@@ -3145,10 +3145,28 @@ public class AccessControlTest extends FoodMartTestCase {
         assertTrue(valueAggMember.equals(valueSlicerAgg));
     }
 
-
-
-
-
+    public void testMondrian1434() {
+        String roleDef =
+            "<Role name=\"dev\">"
+            + "    <SchemaGrant access=\"all\">"
+            + "      <CubeGrant cube=\"Sales\" access=\"all\">"
+            + "      </CubeGrant>"
+            + "      <CubeGrant cube=\"HR\" access=\"all\">"
+            + "      </CubeGrant>"
+            + "      <CubeGrant cube=\"Warehouse and Sales\" access=\"all\">"
+            + "         <HierarchyGrant hierarchy=\"Measures\" access=\"custom\">"
+            + "            <MemberGrant member=\"[Measures].[Warehouse Sales]\" access=\"all\">"
+            + "            </MemberGrant>"
+            + "         </HierarchyGrant>"
+            + "     </CubeGrant>"
+            + "  </SchemaGrant>"
+            + "</Role>";
+        TestContext testContext = TestContext.instance()
+            .create(null, null, null, null, null, roleDef).withRole("dev");
+        testContext.executeQuery(
+            " select from [Sales] where {[Measures].[Unit Sales]}");
+        // test is that there is no exception
+    }
 }
 
 // End AccessControlTest.java
