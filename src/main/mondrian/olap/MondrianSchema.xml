@@ -1067,6 +1067,7 @@ version 3.x schemas.</p>
             <Value>Regular</Value>
             <Value>TimeYears</Value>
             <Value>TimeHalfYear</Value>
+            <Value>TimeHalfYears</Value>
             <Value>TimeQuarters</Value>
             <Value>TimeMonths</Value>
             <Value>TimeWeeks</Value>

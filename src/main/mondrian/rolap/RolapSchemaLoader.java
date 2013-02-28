@@ -3438,12 +3438,9 @@ public class RolapSchemaLoader {
     private org.olap4j.metadata.Level.Type stringToLevelType(
         String levelTypeString)
     {
-        levelTypeString = levelTypeString.toUpperCase();
-        // For mondrian-3 compatibility, convert "TIMEYEARS" to "TIME_YEARS" etc
-        if (levelTypeString.startsWith("TIME")
-            && !levelTypeString.startsWith("TIME_"))
-        {
-            levelTypeString = "TIME_" + levelTypeString.substring(4);
+        levelTypeString = Util.camelToUpper(levelTypeString);
+        if (levelTypeString.equals("TIME_HALF_YEARS")) {
+            levelTypeString = "TIME_HALF_YEAR";
         }
         return Util.lookup(
             org.olap4j.metadata.Level.Type.class,

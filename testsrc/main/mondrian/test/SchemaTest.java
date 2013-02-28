@@ -3822,9 +3822,6 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * "adding hours/mins as levelType for level of type Dimension"</a>.
      */
     public void testBugMondrian355() {
-        if (!Bug.BugMondrian1329Fixed) {
-            return;
-        }
         checkBugMondrian355("TimeHalfYears");
 
         // make sure that the deprecated name still works
@@ -3843,6 +3840,15 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "    <Attribute name='Hours' keyColumn='month_of_year' uniqueMembers='false' type='Numeric' levelType='TimeHours'/>\n"
             + "    <Attribute name='Quarter hours' keyColumn='time_id' uniqueMembers='false' type='Numeric' levelType='TimeUndefined'/>\n"
             + "  </Attributes>"
+            + "  <Hierarchies>"
+            + "    <Hierarchy name='Time2'>"
+            + "      <Level name='Years' visible='true' attribute='Years' hideMemberIf='Never'/>"
+            + "      <Level name='Half year' visible='true' attribute='Half year' hideMemberIf='Never'/>"
+            + "      <Level name='Hours' visible='true' attribute='Hours' hideMemberIf='Never'/>"
+            + "      <Level name='Quarter hours' visible='true' attribute='Quarter hours' hideMemberIf='Never'/>"
+            + "    </Hierarchy>"
+            + "  </Hierarchies>"
+            
             + "</Dimension>";
         final Map<String, String> dimLinks =
             ArrayMap.of(
@@ -3854,27 +3860,27 @@ Test that get error if a dimension has more than one hierarchy with same name.
             .ignoreMissingLink();
 
         testContext.assertQueryReturns(
-            "select Head([Time2].[Quarter hours].Members, 3) on columns\n"
+            "select Head([Time2].[Time2].[Quarter hours].Members, 3) on columns\n"
             + "from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Time2].[1997].[Q1].[1].[367]}\n"
-            + "{[Time2].[1997].[Q1].[1].[368]}\n"
-            + "{[Time2].[1997].[Q1].[1].[369]}\n"
+            + "{[Time2].[Time2].[1997].[Q1].[1].[367]}\n"
+            + "{[Time2].[Time2].[1997].[Q1].[1].[368]}\n"
+            + "{[Time2].[Time2].[1997].[Q1].[1].[369]}\n"
             + "Row #0: 348\n"
             + "Row #0: 635\n"
             + "Row #0: 589\n");
 
         // Check that can apply ParallelPeriod to a TimeUndefined level.
         testContext.assertAxisReturns(
-            "PeriodsToDate([Time2].[Quarter hours], [Time2].[1997].[Q1].[1].[368])",
-            "[Time2].[1997].[Q1].[1].[368]");
+            "PeriodsToDate([Time2].[Time2].[Quarter hours], [Time2].[Time2].[1997].[Q1].[1].[368])",
+            "[Time2].[Time2].[1997].[Q1].[1].[368]");
 
         testContext.assertAxisReturns(
-            "PeriodsToDate([Time2].[Half year], [Time2].[1997].[Q1].[1].[368])",
-            "[Time2].[1997].[Q1].[1].[367]\n"
-            + "[Time2].[1997].[Q1].[1].[368]");
+            "PeriodsToDate([Time2].[Time2].[Half year], [Time2].[Time2].[1997].[Q1].[1].[368])",
+            "[Time2].[Time2].[1997].[Q1].[1].[367]\n"
+            + "[Time2].[Time2].[1997].[Q1].[1].[368]");
 
         // Check that get an error if give invalid level type
         try {
