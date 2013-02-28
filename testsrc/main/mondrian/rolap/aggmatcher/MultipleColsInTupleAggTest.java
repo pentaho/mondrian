@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -76,7 +76,7 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
             "select "
             + "{[Measures].[Total]} on columns, "
             + "non empty CrossJoin({[Product].[Cat One].[Prod Cat One]},"
-            + "{[Store].[All Stores]}) on rows "
+            + "{[Store].[Store].[All Stores]}) on rows "
             + "from [Fact]";
 
         getCubeTestContext().assertQueryReturns(
@@ -87,7 +87,7 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
             + "{[Measures].[Total]}\n"
             + "Axis #2:\n"
             + "{[Product].[Products].[Cat One].[Prod Cat One],"
-            + " [Store].[All Stores]}\n"
+            + " [Store].[Store].[All Stores]}\n"
             + "Row #0: 15\n");
     }
 
@@ -130,7 +130,7 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
            + " </Hierarchy>\n"
            + "</Dimension>\n"
            + "<Dimension name='Product' foreignKey='prod_id'>\n"
-           + " <Hierarchy hasAll='true' primaryKey='prod_id' "
+           + " <Hierarchy hasAll='true' name='Products' primaryKey='prod_id' "
            + "primaryKeyTable='product_csv'>\n"
            + " <Join leftKey='prod_cat' rightAlias='product_cat' "
            + "rightKey='prod_cat'>\n"
