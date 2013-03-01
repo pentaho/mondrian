@@ -209,7 +209,7 @@ mondrian/rolap/RolapCubeUsages.java"/>
   </path>
 
   <path id="project.bootclasspath.jdk16">
-      <pathelement location="${lib.dir}/rt-java6.jar"/>
+      <pathelement location="${lib.dir}/ctsym-java6.jar"/>
   </path>
 
   <condition property="jdk" id="jdk" value="jdk14">
