@@ -136,9 +136,18 @@ class MondrianOlap4jLevel
             "Reading members of level",
             new Locus.Action<List<Member>>() {
                 public List<Member> execute() {
-                    final mondrian.olap.SchemaReader schemaReader =
-                        ((RolapCubeLevel) level).getCube()
-                            .getSchemaReader().withLocus();
+                    final mondrian.olap.SchemaReader schemaReader;
+                    if (level instanceof RolapCubeLevel) {
+                        schemaReader =
+                            ((RolapCubeLevel) level).getCube()
+                            .getSchemaReader(
+                                mondrianConnection.getRole())
+                                .withLocus();
+                    } else {
+                        schemaReader =
+                            mondrianConnection.getSchemaReader()
+                                .withLocus();
+                    }
                     final List<mondrian.olap.Member> levelMembers =
                         schemaReader.getLevelMembers(level, true);
                     return new AbstractList<Member>() {
@@ -146,7 +155,6 @@ class MondrianOlap4jLevel
                             return olap4jConnection.toOlap4j(
                                 levelMembers.get(index));
                         }
-
                         public int size() {
                             return levelMembers.size();
                         }

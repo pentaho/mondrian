@@ -11,6 +11,7 @@ package mondrian.olap4j;
 
 import mondrian.olap.LocalizedProperty;
 import mondrian.olap.OlapElement;
+import mondrian.rolap.RolapCubeHierarchy;
 
 import org.olap4j.OlapException;
 import org.olap4j.impl.*;
@@ -86,13 +87,8 @@ class MondrianOlap4jHierarchy
     }
 
     public NamedList<Member> getRootMembers() throws OlapException {
-        final MondrianOlap4jConnection olap4jConnection =
-            olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
-        final List<mondrian.olap.Member> levelMembers =
-            olap4jConnection.getMondrianConnection().getSchemaReader()
-                .withLocus()
-                .getLevelMembers(
-                    hierarchy.getLevelList().get(0), true);
+        final List<Member> levelMembers =
+            getLevels().get(0).getMembers();
 
         return new AbstractNamedList<Member>() {
             public String getName(Object member) {
@@ -100,7 +96,7 @@ class MondrianOlap4jHierarchy
             }
 
             public Member get(int index) {
-                return olap4jConnection.toOlap4j(levelMembers.get(index));
+                return levelMembers.get(index);
             }
 
             public int size() {
