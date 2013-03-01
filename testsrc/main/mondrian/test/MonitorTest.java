@@ -43,7 +43,7 @@ public class MonitorTest extends FoodMartTestCase {
             "WITH MEMBER [Measures].[Foo] AS\n"
             + " [Measures].[Unit Sales]"
             + " + case when [Measures].[Unit Sales] > 0\n"
-            + "   then CInt( ([Measures].[Foo], [Time].PrevMember) )\n"
+            + "   then CInt( ([Measures].[Foo], [Time].[Time].PrevMember) )\n"
             + "   end\n"
             + "SELECT [Measures].[Foo] on 0\n"
             + "from [Sales]\n"

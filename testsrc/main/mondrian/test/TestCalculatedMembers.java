@@ -1574,7 +1574,7 @@ public class TestCalculatedMembers extends BatchTestCase {
      * look like two evaluation contexts were expanding the same member.
      */
     public void testCycleFalsePositive() {
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = TestContext.instance().legacy().create(
             null,
             "<Cube name=\"Store5\"> \n"
             + "  <Table name=\"store\"/> \n"

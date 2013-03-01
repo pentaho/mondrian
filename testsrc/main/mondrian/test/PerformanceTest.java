@@ -121,7 +121,7 @@ public class PerformanceTest extends FoodMartTestCase {
     }
 
     private TestContext getBugMondrian550Schema() {
-        return TestContext.instance().createSubstitutingCube(
+        return TestContext.instance().legacy().createSubstitutingCube(
             "Sales",
             "      <Dimension name=\"ACC\" caption=\"Account\" type=\"StandardDimension\" foreignKey=\"customer_id\">\n"
             + "         <Hierarchy hasAll=\"true\" allMemberName=\"All\" primaryKey=\"customer_id\">\n"
@@ -323,7 +323,7 @@ public class PerformanceTest extends FoodMartTestCase {
             "WITH SET [cjoin] AS "
             + "crossjoin(customers.members, "
             + TestContext.hierarchyName("store type", "store type")
-            + ".[store type].members) "
+            + ".members) "
             + "MEMBER [Measures].[total_available_count] "
             + "AS Format(COUNT([cjoin]), \"#####\") "
             + "SELECT"

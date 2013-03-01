@@ -7728,15 +7728,18 @@ Test that get error if a dimension has more than one hierarchy with same name.
         Schema schema = getConnection().getSchema();
         Cube salesCube = schema.lookupCube("Sales", true);
         SchemaReader sr = salesCube.getSchemaReader(null).withLocus();
-        List<Member> members = sr.getLevelMembers(
-            (Level)Util.lookupCompound(
-                sr,
-                salesCube,
-                Util.parseIdentifier(
-                    "[Store].[Store Size in SQFT].[Store Sqft]"),
-                true,
-                Category.Level),
-            true);
+        List<Member> members =
+            sr.getLevelMembers(
+                (Level) new NameResolver().resolve(
+                    salesCube,
+                    Util.toOlap4j(
+                        Util.parseIdentifier(
+                            "[Store].[Store Size in SQFT].[Store Sqft]")),
+                    true,
+                    Category.Level,
+                    MatchType.EXACT,
+                    sr.getNamespaces()),
+                true);
         assertEquals(
             "[[Store].[Store Size in SQFT].[#null], "
             + "[Store].[Store Size in SQFT].[20319], "

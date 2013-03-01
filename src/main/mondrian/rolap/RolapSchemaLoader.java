@@ -37,7 +37,6 @@ import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.*;
-import org.eigenbase.xom.Parser;
 
 import org.olap4j.impl.*;
 import org.olap4j.metadata.*;
@@ -4713,12 +4712,14 @@ public class RolapSchemaLoader {
         if (!hierarchy.getDimension().isMeasures()) {
             // Check if the parent exists.
             final OlapElement parent =
-                Util.lookupCompound(
-                    cube.getSchemaReader().withLocus(),
+                new NameResolver().resolve(
                     cube,
-                    Util.parseIdentifier(parentFqName),
+                    Util.toOlap4j(
+                        Util.parseIdentifier(parentFqName)),
                     false,
-                    Category.Unknown);
+                    Category.Unknown,
+                    MatchType.EXACT,
+                    cube.getSchemaReader().getNamespaces());
 
             if (parent == null) {
                 throw MondrianResource.instance()
@@ -5838,13 +5839,14 @@ public class RolapSchemaLoader {
         protected RolapMember lookup(SchemaReader schemaReader) {
             // First look up from within this hierarchy. Works for
             // unqualified names, e.g. [USA].[CA].
-            RolapMember member = (RolapMember) Util.lookupCompound(
-                schemaReader,
-                hierarchy,
-                uniqueNameParts,
-                false,
-                Category.Member,
-                MatchType.EXACT);
+            RolapMember member =
+                (RolapMember) new NameResolver().resolve(
+                    hierarchy,
+                    Util.toOlap4j(uniqueNameParts),
+                    false,
+                    Category.Member,
+                    MatchType.EXACT,
+                    cube.getSchemaReader().getNamespaces());
 
             if (member != null) {
                 return member;
@@ -5853,13 +5855,14 @@ public class RolapSchemaLoader {
             // Next look up within global context. Works for qualified
             // names, e.g. [Store].[USA].[CA] or
             // [Time].[Weekly].[1997].[Q2].
-            return (RolapMember) Util.lookupCompound(
-                schemaReader,
-                new RolapHierarchy.DummyElement(hierarchy),
-                uniqueNameParts,
-                false,
-                Category.Member,
-                MatchType.EXACT);
+            return (RolapMember)
+                new NameResolver().resolve(
+                    new RolapHierarchy.DummyElement(hierarchy),
+                    Util.toOlap4j(uniqueNameParts),
+                    false,
+                    Category.Member,
+                    MatchType.EXACT,
+                    cube.getSchemaReader().getNamespaces());
         }
     }
 }
