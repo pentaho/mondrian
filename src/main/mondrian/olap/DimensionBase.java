@@ -98,38 +98,20 @@ public abstract class DimensionBase
             oe = lookupHierarchy((Id.NameSegment) s);
         }
 
-        // Original mondrian behavior:
-        // If the user is looking for [Marital Status].[Marital Status] we
-        // should not return oe "Marital Status", because he is
-        // looking for level - we can check that by checking of hierarchy and
-        // dimension name is the same.
-        //
-        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            if (oe == null || oe.getName().equalsIgnoreCase(getName())) {
-                OlapElement oeLevel =
-                    hierarchyList.get(0)
-                        .lookupChild(schemaReader, s, matchType);
-                if (oeLevel != null) {
-                    return oeLevel; // level match overrides hierarchy match
-                }
-            }
+        // New (SSAS-compatible) behavior. If there is no matching
+        // hierarchy, find the first level with the given name.
+        if (oe != null) {
             return oe;
-        } else {
-            // New (SSAS-compatible) behavior. If there is no matching
-            // hierarchy, find the first level with the given name.
+        }
+        final List<Hierarchy> hierarchyList =
+            schemaReader.getDimensionHierarchies(this);
+        for (Hierarchy hierarchy : hierarchyList) {
+            oe = hierarchy.lookupChild(schemaReader, s, matchType);
             if (oe != null) {
                 return oe;
             }
-            final List<Hierarchy> hierarchyList =
-                schemaReader.getDimensionHierarchies(this);
-            for (Hierarchy hierarchy : hierarchyList) {
-                oe = hierarchy.lookupChild(schemaReader, s, matchType);
-                if (oe != null) {
-                    return oe;
-                }
-            }
-            return null;
         }
+        return null;
     }
 
     private Hierarchy lookupHierarchy(Id.NameSegment s) {

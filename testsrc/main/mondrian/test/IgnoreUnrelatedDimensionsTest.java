@@ -119,7 +119,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales VM]}\n"
             + "Axis #2:\n"
-            + "{[Customer].[Gender].[G]}\n"
+            + "{[Gender].[Gender].[G]}\n"
             + "Row #0: 266,773\n");
     }
 
@@ -139,7 +139,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Total Sales]}\n"
             + "Axis #2:\n"
-            + "{[Customer].[Gender].[G]}\n"
+            + "{[Gender].[Gender].[G]}\n"
             + "Row #0: 30,405.602\n");
     }
 
@@ -163,7 +163,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Total Sales]}\n"
             + "Axis #2:\n"
-            + "{[Customer].[Gender].[G]}\n"
+            + "{[Gender].[Gender].[G]}\n"
             + "Row #0: 30,405.602\n");
     }
 
@@ -228,13 +228,13 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales VM]}\n"
             + "Axis #2:\n"
-            + "{[Customer].[Gender].[M], [Warehouse].[Warehouses].[Mexico].[DF].[Mexico City].[Freeman And Co]}\n"
-            + "{[Customer].[Gender].[M], [Warehouse].[Warehouses].[Canada].[BC].[Vancouver].[Bellmont Distributing]}\n"
-            + "{[Customer].[Gender].[M], [Warehouse].[Warehouses].[COG_OQP_USR_Aggregate(WAREHOUSE SET)]}\n"
-            + "{[Customer].[Gender].[F], [Warehouse].[Warehouses].[Mexico].[DF].[Mexico City].[Freeman And Co]}\n"
-            + "{[Customer].[Gender].[F], [Warehouse].[Warehouses].[Canada].[BC].[Vancouver].[Bellmont Distributing]}\n"
-            + "{[Customer].[Gender].[F], [Warehouse].[Warehouses].[COG_OQP_USR_Aggregate(WAREHOUSE SET)]}\n"
-            + "{[Customer].[Gender].[COG_OQP_USR_Aggregate(Gender SET)], [Warehouse].[Warehouses].[All Warehouses]}\n"
+            + "{[Gender].[Gender].[M], [Warehouse].[Warehouse].[Mexico].[DF].[Mexico City].[Freeman And Co]}\n"
+            + "{[Gender].[Gender].[M], [Warehouse].[Warehouse].[Canada].[BC].[Vancouver].[Bellmont Distributing]}\n"
+            + "{[Gender].[Gender].[M], [Warehouse].[Warehouse].[COG_OQP_USR_Aggregate(WAREHOUSE SET)]}\n"
+            + "{[Gender].[Gender].[F], [Warehouse].[Warehouse].[Mexico].[DF].[Mexico City].[Freeman And Co]}\n"
+            + "{[Gender].[Gender].[F], [Warehouse].[Warehouse].[Canada].[BC].[Vancouver].[Bellmont Distributing]}\n"
+            + "{[Gender].[Gender].[F], [Warehouse].[Warehouse].[COG_OQP_USR_Aggregate(WAREHOUSE SET)]}\n"
+            + "{[Gender].[Gender].[COG_OQP_USR_Aggregate(Gender SET)], [Warehouse].[Warehouse].[All Warehouses]}\n"
             + "Row #0: 135,215\n"
             + "Row #1: 135,215\n"
             + "Row #2: 135,215\n"
@@ -289,13 +289,13 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "{[Measures].[Unit Sales VM]}\n"
             + "{[Measures].[VirtualMeasure]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Products].[Drink], [Warehouse].[Warehouses].[USA].[OR]}\n"
-            + "{[Product].[Products].[Drink], [Warehouse].[Warehouses].[USA].[WA]}\n"
-            + "{[Product].[Products].[Drink], [Warehouse].[Warehouses].[COG_OQP_USR_Aggregate(Warehouse set)]}\n"
-            + "{[Product].[Products].[Food], [Warehouse].[Warehouses].[USA].[OR]}\n"
-            + "{[Product].[Products].[Food], [Warehouse].[Warehouses].[USA].[WA]}\n"
-            + "{[Product].[Products].[Food], [Warehouse].[Warehouses].[COG_OQP_USR_Aggregate(Warehouse set)]}\n"
-            + "{[Product].[Products].[COG_OQP_USR_Aggregate(Product Set)1], [Warehouse].[Warehouses].[All Warehouses]}\n"
+            + "{[Product].[Product].[Drink], [Warehouse].[Warehouse].[USA].[OR]}\n"
+            + "{[Product].[Product].[Drink], [Warehouse].[Warehouse].[USA].[WA]}\n"
+            + "{[Product].[Product].[Drink], [Warehouse].[Warehouse].[COG_OQP_USR_Aggregate(Warehouse set)]}\n"
+            + "{[Product].[Product].[Food], [Warehouse].[Warehouse].[USA].[OR]}\n"
+            + "{[Product].[Product].[Food], [Warehouse].[Warehouse].[USA].[WA]}\n"
+            + "{[Product].[Product].[Food], [Warehouse].[Warehouse].[COG_OQP_USR_Aggregate(Warehouse set)]}\n"
+            + "{[Product].[Product].[COG_OQP_USR_Aggregate(Product Set)1], [Warehouse].[Warehouse].[All Warehouses]}\n"
             + "Row #0: 2,057.232\n"
             + "Row #0: 24,597\n"
             + "Row #0: 0.084\n"

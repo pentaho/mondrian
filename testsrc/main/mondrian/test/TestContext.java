@@ -1054,68 +1054,65 @@ public class TestContext {
      */
     public String upgradeActual(String actual) {
         String[] strings = {actual};
-        if (true || !MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            foo(strings, "Time", "Weekly");
-            strings[0] = Util.replace(
-                strings[0],
-                "[All Time.Weeklys]",
-                "[All Weeklys]");
-            strings[0] = Util.replace(
-                strings[0],
-                "<HIERARCHY_NAME>Time.Weekly</HIERARCHY_NAME>",
-                "<HIERARCHY_NAME>Weekly</HIERARCHY_NAME>");
-            if (false) {
-            foo(strings, "Time", "Monthly");
-            foo2(strings, "Store", "Stores");
-            foo2(strings, "Customer", "Customers");
-            foo2(strings, "Customer", "Marital Status");
-            foo2(strings, "Customer", "Gender");
-            foo2(strings, "Store", "Store Type");
-            foo2(strings, "Product", "Products");
-            foo1(strings, "Promotion Media");
-            foo1(strings, "Time");
+        foo(strings, "Time", "Weekly");
+        strings[0] = Util.replace(
+            strings[0],
+            "[All Time.Weeklys]",
+            "[All Weeklys]");
+        strings[0] = Util.replace(
+            strings[0],
+            "<HIERARCHY_NAME>Time.Weekly</HIERARCHY_NAME>",
+            "<HIERARCHY_NAME>Weekly</HIERARCHY_NAME>");
+        if (false) {
+        foo(strings, "Time", "Monthly");
+        foo2(strings, "Store", "Stores");
+        foo2(strings, "Customer", "Customers");
+        foo2(strings, "Customer", "Marital Status");
+        foo2(strings, "Customer", "Gender");
+        foo2(strings, "Store", "Store Type");
+        foo2(strings, "Product", "Products");
+        foo1(strings, "Promotion Media");
+        foo1(strings, "Time");
 
-            // for a few tests in SchemaTest
-            foo(strings, "Store", "MyHierarchy");
-            strings[0] = Util.replace(
-                strings[0],
-                "[All Store.MyHierarchys]",
-                "[All MyHierarchys]");
-            strings[0] = Util.replace(
-                strings[0],
-                "[Store2].[All Store2s]",
-                "[Store2].[Store].[All Stores]");
-            strings[0] = Util.replace(
-                strings[0],
-                "[Store Type 2.Store Type 2].[All Store Type 2.Store Type 2s]",
-                "[Store Type 2].[All Store Type 2s]");
-            foo(strings, "TIME", "CALENDAR");
-            }
-            strings[0] = Util.replace(
-                strings[0],
-                "<Store>true</Store>",
-                "<Store>1</Store>");
-            strings[0] = Util.replace(
-                strings[0],
-                "<Employees>80000.0000</Employees>",
-                "<Employees>80000</Employees>");
+        // for a few tests in SchemaTest
+        foo(strings, "Store", "MyHierarchy");
+        strings[0] = Util.replace(
+            strings[0],
+            "[All Store.MyHierarchys]",
+            "[All MyHierarchys]");
+        strings[0] = Util.replace(
+            strings[0],
+            "[Store2].[All Store2s]",
+            "[Store2].[Store].[All Stores]");
+        strings[0] = Util.replace(
+            strings[0],
+            "[Store Type 2.Store Type 2].[All Store Type 2.Store Type 2s]",
+            "[Store Type 2].[All Store Type 2s]");
+        foo(strings, "TIME", "CALENDAR");
         }
-        if (true) {
-            // mondrian-4
-            strings[0] = Util.replace(
-                strings[0],
-                "[Promotion.Media Type]",
-                "[Promotion].[Media Type]");
-            strings[0] = Util.replace(
-                strings[0],
-                "[Promotion].[Media Type]",
-                "[Promotion].[Media Type]");
-            if (false) {
-            strings[0] = Util.replace(
-                strings[0],
-                "[Product].[All Products].",
-                "[Product].[Products].");
-            }
+        strings[0] = Util.replace(
+            strings[0],
+            "<Store>true</Store>",
+            "<Store>1</Store>");
+        strings[0] = Util.replace(
+            strings[0],
+            "<Employees>80000.0000</Employees>",
+            "<Employees>80000</Employees>");
+
+        // mondrian-4
+        strings[0] = Util.replace(
+            strings[0],
+            "[Promotion.Media Type]",
+            "[Promotion].[Media Type]");
+        strings[0] = Util.replace(
+            strings[0],
+            "[Promotion].[Media Type]",
+            "[Promotion].[Media Type]");
+        if (false) {
+        strings[0] = Util.replace(
+            strings[0],
+            "[Product].[All Products].",
+            "[Product].[Products].");
         }
         return strings[0];
     }
@@ -1177,25 +1174,23 @@ public class TestContext {
      * @return Massaged query for backwards compatibility
      */
     public String upgradeQuery(String queryString) {
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            String[] names = {
+        String[] names = {
 //                "[Gender]",
 //                "[Education Level]",
 //                "[Marital Status]",
 //                "[Store Type]",
 //                "[Yearly Income]",
-            };
-            for (String name : names) {
-                queryString = Util.replace(
-                    queryString,
-                    name + "." + name,
-                    name + "." + name + "." + name);
-            }
+        };
+        for (String name : names) {
             queryString = Util.replace(
                 queryString,
-                "[Time.Weekly].[All Time.Weeklys]",
-                "[Time].[Weekly].[All Weeklys]");
+                name + "." + name,
+                name + "." + name + "." + name);
         }
+        queryString = Util.replace(
+            queryString,
+            "[Time.Weekly].[All Time.Weeklys]",
+            "[Time].[Weekly].[All Weeklys]");
         return queryString;
     }
 
@@ -1407,7 +1402,7 @@ public class TestContext {
         String message)
     {
         assertEqualsVerbose(
-            fold(expected), actual, java, message);
+            fold(expected), fold(actual).s, java, message);
     }
 
     /**

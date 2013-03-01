@@ -24,19 +24,19 @@ public class NonCollapsedAggTest extends AggTableTestCase {
         + "        <AggName name=\"agg_tenant\">\n"
         + "            <AggFactCount column=\"fact_count\"/>\n"
         + "            <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_sales\"/>\n"
-        + "            <AggLevel name=\"[dimension.tenant].[tenant]\"\n"
+        + "            <AggLevel name=\"[dimension].[tenant].[tenant]\"\n"
         + "                column=\"tenant_id\" collapsed=\"false\"/>\n"
         + "        </AggName>\n"
         + "        <AggName name=\"agg_line_class\">\n"
         + "            <AggFactCount column=\"fact_count\"/>\n"
         + "            <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_sales\"/>\n"
-        + "            <AggLevel name=\"[dimension.distributor].[line class]\"\n"
+        + "            <AggLevel name=\"[dimension].[distributor].[line class]\"\n"
         + "                column=\"line_class_id\" collapsed=\"false\"/>\n"
         + "        </AggName>\n"
         + "        <AggName name=\"agg_line_class\">\n"
         + "            <AggFactCount column=\"fact_count\"/>\n"
         + "            <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_sales\"/>\n"
-        + "            <AggLevel name=\"[dimension.network].[line class]\"\n"
+        + "            <AggLevel name=\"[dimension].[network].[line class]\"\n"
         + "                column=\"line_class_id\" collapsed=\"false\"/>\n"
         + "        </AggName>\n"
         + "    </Table>\n"
@@ -185,7 +185,7 @@ public class NonCollapsedAggTest extends AggTableTestCase {
         }
 
         final String mdx =
-            "select {[Measures].[Unit Sales]} on columns, {[dimension.tenant].[tenant].Members} on rows from [foo]";
+            "select {[Measures].[Unit Sales]} on columns, {[dimension].[tenant].[tenant].Members} on rows from [foo]";
 
         final TestContext context = getCubeTestContext();
 
@@ -197,8 +197,8 @@ public class NonCollapsedAggTest extends AggTableTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[dimension.tenant].[tenant one]}\n"
-            + "{[dimension.tenant].[tenant two]}\n"
+            + "{[dimension].[tenant].[tenant one]}\n"
+            + "{[dimension].[tenant].[tenant two]}\n"
             + "Row #0: 31\n"
             + "Row #1: 121\n");
     }
@@ -209,7 +209,7 @@ public class NonCollapsedAggTest extends AggTableTestCase {
         }
 
         final String mdx =
-            "select {[Measures].[Unit Sales]} on columns, {[dimension.distributor].[line class].Members} on rows from [foo]";
+            "select {[Measures].[Unit Sales]} on columns, {[dimension].[distributor].[line class].Members} on rows from [foo]";
 
         final TestContext context = getCubeTestContext();
 
@@ -221,13 +221,13 @@ public class NonCollapsedAggTest extends AggTableTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[dimension.distributor].[distributor one].[line class one]}\n"
-            + "{[dimension.distributor].[distributor two].[line class two]}\n"
+            + "{[dimension].[distributor].[distributor one].[line class one]}\n"
+            + "{[dimension].[distributor].[distributor two].[line class two]}\n"
             + "Row #0: 31\n"
             + "Row #1: 121\n");
 
         final String mdx2 =
-            "select {[Measures].[Unit Sales]} on columns, {[dimension.network].[line class].Members} on rows from [foo]";
+            "select {[Measures].[Unit Sales]} on columns, {[dimension].[network].[line class].Members} on rows from [foo]";
         // We expect the correct cell value + 1 if the agg table is used.
         context.assertQueryReturns(
             mdx2,
@@ -236,8 +236,8 @@ public class NonCollapsedAggTest extends AggTableTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[dimension.network].[network one].[line class one]}\n"
-            + "{[dimension.network].[network two].[line class two]}\n"
+            + "{[dimension].[network].[network one].[line class one]}\n"
+            + "{[dimension].[network].[network two].[line class two]}\n"
             + "Row #0: 31\n"
             + "Row #1: 121\n");
     }
@@ -251,7 +251,7 @@ public class NonCollapsedAggTest extends AggTableTestCase {
 
         // We expect the correct cell value + 2 if the agg table is used.
         final String mdx =
-            "select {[Measures].[Unit Sales]} on columns, {[dimension.distributor].[line class].Members} on rows from [foo2]";
+            "select {[Measures].[Unit Sales]} on columns, {[dimension].[distributor].[line class].Members} on rows from [foo2]";
         context.assertQueryReturns(
             mdx,
             "Axis #0:\n"
@@ -259,13 +259,13 @@ public class NonCollapsedAggTest extends AggTableTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[dimension.distributor].[distributor one].[line class one]}\n"
-            + "{[dimension.distributor].[distributor two].[line class two]}\n"
+            + "{[dimension].[distributor].[distributor one].[line class one]}\n"
+            + "{[dimension].[distributor].[distributor two].[line class two]}\n"
             + "Row #0: 32\n"
             + "Row #1: 122\n");
 
         final String mdx2 =
-            "select {[Measures].[Unit Sales]} on columns, {[dimension.network].[line class].Members} on rows from [foo2]";
+            "select {[Measures].[Unit Sales]} on columns, {[dimension].[network].[line class].Members} on rows from [foo2]";
         // We expect the correct cell value + 2 if the agg table is used.
         context.assertQueryReturns(
             mdx2,
@@ -274,8 +274,8 @@ public class NonCollapsedAggTest extends AggTableTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[dimension.network].[network one].[line class one]}\n"
-            + "{[dimension.network].[network two].[line class two]}\n"
+            + "{[dimension].[network].[network one].[line class one]}\n"
+            + "{[dimension].[network].[network two].[line class two]}\n"
             + "Row #0: 32\n"
             + "Row #1: 122\n");
     }

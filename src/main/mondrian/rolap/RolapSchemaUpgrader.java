@@ -4227,18 +4227,14 @@ public class RolapSchemaUpgrader {
 
         private String deriveHierarchyName(RolapHierarchy hierarchy) {
             final String name = hierarchy.getName();
-            if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            final String dimensionName = hierarchy.getDimension().getName();
+            if (name == null
+                || name.equals("")
+                || name.equals(dimensionName))
+            {
                 return name;
             } else {
-                final String dimensionName = hierarchy.getDimension().getName();
-                if (name == null
-                    || name.equals("")
-                    || name.equals(dimensionName))
-                {
-                    return name;
-                } else {
-                    return dimensionName + '.' + name;
-                }
+                return dimensionName + '.' + name;
             }
         }
 

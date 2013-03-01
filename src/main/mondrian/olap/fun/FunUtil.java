@@ -275,18 +275,6 @@ public class FunUtil extends Util {
         if (dimension.getHierarchyList().size() == 1) {
             return dimension.getHierarchyList().get(0);
         }
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            // In SSAS 2005, dimensions with more than one hierarchy do not have
-            // a default hierarchy.
-            return null;
-        }
-        for (Hierarchy hierarchy : dimension.getHierarchyList()) {
-            if (hierarchy.getName() == null
-                || hierarchy.getUniqueName().equals(dimension.getUniqueName()))
-            {
-                return hierarchy;
-            }
-        }
         return null;
     }
 

@@ -88,9 +88,7 @@ public class FunctionTest extends FoodMartTestCase {
         + "[Beer and Wine].[Beer].[Good].[Good Imported Beer])";
 
     private static final String TimeWeekly =
-        MondrianProperties.instance().SsasCompatibleNaming.get()
-            ? "[Time].[Weekly]"
-            : "[Time.Weekly]";
+        "[Time].[Weekly]";
 
     // ~ Constructors ----------------------------------------------------------
 
@@ -1972,10 +1970,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testCurrentMemberMultiHierarchy() {
-        final String hierarchyName =
-            MondrianProperties.instance().SsasCompatibleNaming.get()
-                ? "Weekly"
-                : "Time.Weekly";
+        final String hierarchyName = "Weekly";
         final String queryString =
             "with member [Measures].[Foo] as\n"
             + " 'IIf(([Time].[Time].CurrentMember.Hierarchy.Name = \""
@@ -2049,16 +2044,12 @@ public class FunctionTest extends FoodMartTestCase {
                 "select {[Time.Weekly].DefaultMember} on columns\n"
                 + "from Sales");
         assertEquals(
-            MondrianProperties.instance().SsasCompatibleNaming.get()
-                ? "All Weeklys"
-                : "All Time.Weeklys",
+            "All Weeklys",
             result.getAxes()[0].getPositions().get(0).get(0).getName());
         }
 
         final String memberUname =
-            MondrianProperties.instance().SsasCompatibleNaming.get()
-                ? "[Time2].[Weekly].[1997].[23]"
-                : "[Time2.Weekly].[1997].[23]";
+            "[Time2].[Weekly].[1997].[23]";
 
         if (!Bug.ModifiedSchema) {
             return;
@@ -5540,15 +5531,9 @@ public class FunctionTest extends FoodMartTestCase {
             "{[Time].[Weekly].[All Weeklys], [Measures].[Store Sales], [Customer].[Marital Status].[M], [Time].[Time].[1997]}");
 
         // two usages of the [Time].[Weekly] hierarchy
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            assertAxisThrows(
-                "{([Time].[Weekly], [Measures].[Store Sales], [Marital Status].[M], [Time].[Weekly])}",
-                "Tuple contains more than one member of hierarchy '[Time].[Weekly]'.");
-        } else {
-            assertAxisThrows(
-                "{([Time.Weekly], [Measures].[Store Sales], [Marital Status].[M], [Time.Weekly])}",
-                "Tuple contains more than one member of hierarchy '[Time.Weekly]'.");
-        }
+        assertAxisThrows(
+            "{([Time].[Weekly], [Measures].[Store Sales], [Marital Status].[M], [Time].[Weekly])}",
+            "Tuple contains more than one member of hierarchy '[Time].[Weekly]'.");
 
         // cannot coerce integer to member
         assertAxisThrows(
@@ -9510,16 +9495,10 @@ public class FunctionTest extends FoodMartTestCase {
             "[Product].[Products].[All Products]");
 
         // Applied to a dimension (invalid because has no default hierarchy)
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            assertExprThrows(
-                "TupleToStr([Time])",
-                "The 'Time' dimension contains more than one hierarchy, "
-                + "therefore the hierarchy must be explicitly specified.");
-        } else {
-            assertExprReturns(
-                "TupleToStr([Time])",
-                "[Time].[Time].[1997]");
-        }
+        assertExprThrows(
+            "TupleToStr([Time])",
+            "The 'Time' dimension contains more than one hierarchy, "
+            + "therefore the hierarchy must be explicitly specified.");
 
         // Applied to a hierarchy
         assertExprReturns(

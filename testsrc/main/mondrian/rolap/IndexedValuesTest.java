@@ -47,11 +47,6 @@ public class IndexedValuesTest extends FoodMartTestCase {
             + "ON ROWS FROM [HR]",
             desiredResult);
 
-        // Member keys only work with SsasCompatibleNaming=true
-        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            return;
-        }
-
         // Query using key; expect same result.
         assertQueryReturns(
             "SELECT {[Measures].[Org Salary], [Measures].[Count]} "
@@ -92,11 +87,6 @@ public class IndexedValuesTest extends FoodMartTestCase {
     }
 
     public void testAttemptInjectionWithNonNumericKeyValue() {
-        // Member keys only work with SsasCompatibleNaming=true
-        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            return;
-        }
-
         // If SQL injection attempt is not caught, will return internal error
         // "More than one member in level [Product].[Products].[Product Name]
         // with key [1 or true or 2]". Mondrian must see that the value is

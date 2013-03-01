@@ -1205,9 +1205,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * method.
      */
     public void testGetContext() {
-        if (!propSaver.props.SsasCompatibleNaming.get()) {
-            return;
-        }
         Result result =
             getTestContext().executeQuery(
                 "select [Gender].Members on 0,\n"
@@ -6761,9 +6758,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * Tests hierarchies of the same dimension on different axes.
      */
     public void testHierarchiesOfSameDimensionOnDifferentAxes() {
-        if (!propSaver.props.SsasCompatibleNaming.get()) {
-            return;
-        }
         assertQueryReturns(
             "select [Time].[Year].Members on columns,\n"
             + "[Time].[Weekly].[1997].[6].Children on rows\n"

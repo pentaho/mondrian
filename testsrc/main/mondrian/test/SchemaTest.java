@@ -1437,9 +1437,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + (MondrianProperties.instance().SsasCompatibleNaming.get()
-                ? "{[Time2].[Time].[1997]}\n"
-                : "{[Time2].[1997]}\n")
+            + "{[Time2].[Time].[1997]}\n"
             + "Axis #2:\n"
             + "{[Time].[Time].[1997].[Q3]}\n"
             + "Row #0: 16,266\n");
@@ -1601,10 +1599,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
         // or [Store2].[All Stores] for short.
         //
         // Under the old behavior, the member is called [Store2].[All Store2s].
-        final String store2AllMember =
-            MondrianProperties.instance().SsasCompatibleNaming.get()
-                ? "[Store2].[All Stores]"
-                : "[Store2].[All Store2s]";
+        final String store2AllMember = "[Store2].[All Stores]";
         testContext.assertQueryReturns(
             "select\n"
             + " {[Store].[Stores].[All Stores]} on columns,\n"
@@ -1661,21 +1656,15 @@ Test that get error if a dimension has more than one hierarchy with same name.
         final String query = "select\n"
                              + " {[Time].[1997]} on columns \n"
                              + "From [Sales Two Dimensions]";
-        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            testContext.assertQueryThrows(
-                query,
-                "In cube 'Sales Two Dimensions' use of unaliased Dimension name '[Time]' rather than the alias name 'Time2'");
-        } else {
-            // In new behavior, resolves to the hierarchy name [Time] even if
-            // not qualified by dimension name [Time2].
-            testContext.assertQueryReturns(
-                query,
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Time2].[Time].[1997]}\n"
-                + "Row #0: 266,773\n");
-        }
+        // In new behavior, resolves to the hierarchy name [Time] even if
+        // not qualified by dimension name [Time2].
+        testContext.assertQueryReturns(
+            query,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time2].[Time].[1997]}\n"
+            + "Row #0: 266,773\n");
     }
 
     public void testDimensionUsageWithInvalidForeignKey() {
@@ -2535,16 +2524,13 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "Row #0: 27,780\n");
 
         // Now access the same member using a path that is not its unique name.
-        // Only works with new name resolver (if ssas = true).
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            testContext.assertQueryReturns(
-                "select {[Store].[All Stores].[USA].[CA].[SF and LA]} on columns from [Sales]",
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Store].[Stores].[USA].[CA].[SF and LA]}\n"
-                + "Row #0: 27,780\n");
-        }
+        testContext.assertQueryReturns(
+            "select {[Store].[All Stores].[USA].[CA].[SF and LA]} on columns from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[Stores].[USA].[CA].[SF and LA]}\n"
+            + "Row #0: 27,780\n");
 
         // Test where hierarchy & dimension both specified. should fail
         try {
@@ -3240,8 +3226,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
         String tableDef =
             "<InlineTable alias='t'>\n"
             + "  <ColumnDefs>\n"
-            + "    <ColumnDef name='id' type='Integer'/>\n"
-            + "    <ColumnDef name='big_num' type='Integer'/>\n"
+            + "    <ColumnDef name='id' type='Integer' internalType='int'/>\n"
+            + "    <ColumnDef name='big_num' type='Integer' internalType='long'/>\n"
             + "    <ColumnDef name='name' type='String'/>\n"
             + "  </ColumnDefs>\n"
             + "  <Rows>\n"
@@ -3260,7 +3246,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
         String dimDef =
             "<Dimension name='Big numbers' foreignKey='promotion_id' table='t' key='Level2'>\n"
             + "  <Attributes>"
-            + "    <Attribute name='Level1' keyColumn='big_num' internalType='long'/>\n"
+            + "    <Attribute name='Level1' keyColumn='big_num'/>\n"
             + "    <Attribute name='Level2' keyColumn='id'/>\n"
             + "  </Attributes>"
             + "  <Hierarchies>"
@@ -4339,14 +4325,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
         final Hierarchy timeHierarchy = timeDimension.getHierarchyList().get(0);
         // The hierarchy in the shared dimension does not have a name, so the
         // hierarchy usage inherits the name of the dimension usage, Time1.
-        final boolean ssasCompatibleNaming =
-            MondrianProperties.instance().SsasCompatibleNaming.get();
-        if (ssasCompatibleNaming) {
-            assertEquals("Time", timeHierarchy.getName());
-            assertEquals("Time1", timeHierarchy.getDimension().getName());
-        } else {
-            assertEquals("Time1", timeHierarchy.getName());
-        }
+        assertEquals("Time", timeHierarchy.getName());
+        assertEquals("Time1", timeHierarchy.getDimension().getName());
         // The description is prefixed by the dimension usage name.
         assertEquals(
             "Time1.Time shared hierarchy description",
@@ -4371,12 +4351,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
             time2Dimension.getHierarchyList().get(0);
         // The hierarchy in the shared dimension does not have a name, so the
         // hierarchy usage inherits the name of the dimension usage, Time2.
-        if (ssasCompatibleNaming) {
-            assertEquals("Time", time2Hierarchy.getName());
-            assertEquals("Time2", time2Hierarchy.getDimension().getName());
-        } else {
-            assertEquals("Time2", time2Hierarchy.getName());
-        }
+        assertEquals("Time", time2Hierarchy.getName());
+        assertEquals("Time2", time2Hierarchy.getDimension().getName());
         // The description is prefixed by the dimension usage name (because
         // dimension usage has no caption).
         assertEquals(
@@ -5142,9 +5118,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             final Hierarchy hier = dim.getHierarchy();
             assertNotNull(hier);
             assertEquals(
-                MondrianProperties.instance().SsasCompatibleNaming.get()
-                    ? "Bacon"
-                    : "Bar.Bacon",
+                "Bacon",
                 hier.getName());
             assertTrue(testValue.equals(hier.isVisible()));
         }
@@ -5198,9 +5172,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             final Hierarchy hier = dim.getHierarchy();
             assertNotNull(hier);
             assertEquals(
-                MondrianProperties.instance().SsasCompatibleNaming.get()
-                    ? "Bacon"
-                    : "Bar.Bacon",
+                "Bacon",
                 hier.getName());
             final mondrian.olap.Level level = hier.getLevelList().get(0);
             assertEquals("Samosa", level.getName());

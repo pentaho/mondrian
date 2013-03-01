@@ -1143,7 +1143,6 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testMultipleHierarchySsasTrue() {
-        assertTrue(propSaver.props.SsasCompatibleNaming.get());
         propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, false);
 
         // Ssas compatible: time.[weekly].[week]

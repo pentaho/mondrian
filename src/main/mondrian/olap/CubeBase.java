@@ -109,8 +109,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         final List<Dimension> dimensions = schemaReader.getCubeDimensions(this);
 
         // Look for hierarchies named '[dimension.hierarchy]'.
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()
-            && s instanceof Id.NameSegment
+        if (s instanceof Id.NameSegment
             && ((Id.NameSegment) s).name.contains("."))
         {
             for (Dimension dimension : dimensions) {

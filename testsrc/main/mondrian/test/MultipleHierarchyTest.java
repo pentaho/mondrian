@@ -293,20 +293,10 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
             + "  [Time].Children.Count\n"
             + "select [Measures].[Time Child Count] on 0\n"
             + "from [Sales]";
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            assertQueryThrows(
-                query,
-                "The 'Time' dimension contains more than one hierarchy, "
-                + "therefore the hierarchy must be explicitly specified.");
-        } else {
-            assertQueryReturns(
-                query,
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Time Child Count]}\n"
-                + "Row #0: 4\n");
-        }
+        assertQueryThrows(
+            query,
+            "The 'Time' dimension contains more than one hierarchy, "
+            + "therefore the hierarchy must be explicitly specified.");
     }
 
     /**

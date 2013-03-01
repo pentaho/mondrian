@@ -4122,7 +4122,7 @@ public class NonEmptyTest extends BatchTestCase {
             + " ,{[Measures].[Unit Sales]} ON COLUMNS\n"
             + "FROM [Sales]\n"
             + "WHERE \n"
-            + "  [Store Size in SQFT].[All Store Size in SQFTs].[~Missing ]";
+            + "  [Store].[Store Size in SQFT].[All Store Size in SQFTs].[~Missing ]";
 
         // run an mdx query with the default NullMemberRepresentation
         executeQuery(preMdx);

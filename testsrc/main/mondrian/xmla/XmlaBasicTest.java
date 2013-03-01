@@ -319,11 +319,6 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
             // MDSCHEMA_FUNCTIONS produces different output in JDK 1.4.
             return;
         }
-        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            // <Dimension>.CurrentMember function exists if
-            // SsasCompatibleNaming=false.
-            return;
-        }
         String requestType = "MDSCHEMA_FUNCTIONS";
 
         Properties props = new Properties();
@@ -693,30 +688,18 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
     public void testExecuteSlicer_ContentDataIncludeDefaultSlicer()
         throws Exception
     {
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            // slight differences in reference log, viz [Time.Weekly]
-            return;
-        }
         doTestExecuteContent(XmlaConstants.Content.DataIncludeDefaultSlicer);
     }
 
     public void testExecuteNoSlicer_ContentDataIncludeDefaultSlicer()
         throws Exception
     {
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            // slight differences in reference log, viz [Time.Weekly]
-            return;
-        }
         doTestExecuteContent(XmlaConstants.Content.DataIncludeDefaultSlicer);
     }
 
     public void testExecuteEmptySlicer_ContentDataIncludeDefaultSlicer()
         throws Exception
     {
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            // slight differences in reference log, viz [Time.Weekly]
-            return;
-        }
         doTestExecuteContent(XmlaConstants.Content.DataIncludeDefaultSlicer);
     }
 

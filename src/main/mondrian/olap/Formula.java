@@ -213,10 +213,7 @@ public class Formula extends QueryPart {
                         }
                     } else {
                         final Hierarchy hierarchy;
-                        if (parent instanceof Dimension
-                            && MondrianProperties.instance()
-                                .SsasCompatibleNaming.get())
-                        {
+                        if (parent instanceof Dimension) {
                             Dimension dimension = (Dimension) parent;
                             if (dimension.getHierarchyList().size() == 1) {
                                 hierarchy = dimension.getHierarchyList().get(0);

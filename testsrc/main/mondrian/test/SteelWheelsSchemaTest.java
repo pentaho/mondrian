@@ -43,23 +43,23 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             return;
         }
         testContext.assertQueryReturns(
-            "select [Markets].[All Markets].[Japan] on 0 from [SteelWheelsSales]",
+            "select [Markets].[Markets].[All Markets].[Japan] on 0 from [SteelWheelsSales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Markets].[Japan]}\n"
+            + "{[Markets].[Markets].[Japan]}\n"
             + "Row #0: 4,923\n");
 
         testContext.assertQueryReturns(
-            "select [Markets].Children on 0 from [SteelWheelsSales]",
+            "select [Markets].[Markets].Children on 0 from [SteelWheelsSales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Markets].[#null]}\n"
-            + "{[Markets].[APAC]}\n"
-            + "{[Markets].[EMEA]}\n"
-            + "{[Markets].[Japan]}\n"
-            + "{[Markets].[NA]}\n"
+            + "{[Markets].[Markets].[#null]}\n"
+            + "{[Markets].[Markets].[APAC]}\n"
+            + "{[Markets].[Markets].[EMEA]}\n"
+            + "{[Markets].[Markets].[Japan]}\n"
+            + "{[Markets].[Markets].[NA]}\n"
             + "Row #0: \n"
             + "Row #0: 12,878\n"
             + "Row #0: 49,578\n"
@@ -67,18 +67,18 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Row #0: 37,952\n");
 
         testContext.assertQueryReturns(
-            "select Subset([Markets].Members, 130, 8) on 0 from [SteelWheelsSales]",
+            "select Subset([Markets].[Markets].Members, 130, 8) on 0 from [SteelWheelsSales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Markets].[EMEA].[UK].[Isle of Wight].[Cowes]}\n"
-            + "{[Markets].[Japan]}\n"
-            + "{[Markets].[Japan].[Hong Kong]}\n"
-            + "{[Markets].[Japan].[Hong Kong].[#null]}\n"
-            + "{[Markets].[Japan].[Hong Kong].[#null].[Central Hong Kong]}\n"
-            + "{[Markets].[Japan].[Japan]}\n"
-            + "{[Markets].[Japan].[Japan].[Osaka]}\n"
-            + "{[Markets].[Japan].[Japan].[Osaka].[Osaka]}\n"
+            + "{[Markets].[Markets].[EMEA].[UK].[Isle of Wight].[Cowes]}\n"
+            + "{[Markets].[Markets].[Japan]}\n"
+            + "{[Markets].[Markets].[Japan].[Hong Kong]}\n"
+            + "{[Markets].[Markets].[Japan].[Hong Kong].[#null]}\n"
+            + "{[Markets].[Markets].[Japan].[Hong Kong].[#null].[Central Hong Kong]}\n"
+            + "{[Markets].[Markets].[Japan].[Japan]}\n"
+            + "{[Markets].[Markets].[Japan].[Japan].[Osaka]}\n"
+            + "{[Markets].[Markets].[Japan].[Japan].[Osaka].[Osaka]}\n"
             + "Row #0: 895\n"
             + "Row #0: 4,923\n"
             + "Row #0: 596\n"
@@ -89,16 +89,16 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Row #0: 692\n");
 
         testContext.assertQueryReturns(
-            "select [Markets].[Territory].Members on 0 from "
+            "select [Markets].[Markets].[Territory].Members on 0 from "
             + "[SteelWheelsSales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Markets].[#null]}\n"
-            + "{[Markets].[APAC]}\n"
-            + "{[Markets].[EMEA]}\n"
-            + "{[Markets].[Japan]}\n"
-            + "{[Markets].[NA]}\n"
+            + "{[Markets].[Markets].[#null]}\n"
+            + "{[Markets].[Markets].[APAC]}\n"
+            + "{[Markets].[Markets].[EMEA]}\n"
+            + "{[Markets].[Markets].[Japan]}\n"
+            + "{[Markets].[Markets].[NA]}\n"
             + "Row #0: \n"
             + "Row #0: 12,878\n"
             + "Row #0: 49,578\n"
@@ -241,11 +241,11 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
         final TestContext testContext = testContext0.withSchema(schema);
         testContext.assertQueryReturns(
             "select NON EMPTY {[Measures].[Quantity]} ON COLUMNS,\n"
-            + "NON EMPTY {[Markets].[APAC]} ON ROWS\n"
+            + "NON EMPTY {[Markets].[Markets].[APAC]} ON ROWS\n"
             + "from [SteelWheelsSales]\n"
-            + "where [Time].[2004]",
+            + "where [Time].[Time].[2004]",
             "Axis #0:\n"
-            + "{[Time].[2004]}\n"
+            + "{[Time].[Time].[2004]}\n"
             + "Axis #1:\n"
             + "Axis #2:\n");
     }
@@ -579,9 +579,9 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "select Crossjoin([*SORTED_COL_AXIS], [*BASE_MEMBERS_Measures]) ON COLUMNS\n"
             + "from [SteelWheelsSales]",
             "Axis #0:\n" + "{}\n" + "Axis #1:\n"
-            + "{[Time].[2003], [Measures].[*ZERO]}\n"
-            + "{[Time].[2004], [Measures].[*ZERO]}\n"
-            + "{[Time].[2005], [Measures].[*ZERO]}\n" + "Row #0: 0\n"
+            + "{[Time].[Time].[2003], [Measures].[*ZERO]}\n"
+            + "{[Time].[Time].[2004], [Measures].[*ZERO]}\n"
+            + "{[Time].[Time].[2005], [Measures].[*ZERO]}\n" + "Row #0: 0\n"
             + "Row #0: 0\n" + "Row #0: 0\n");
     }
 

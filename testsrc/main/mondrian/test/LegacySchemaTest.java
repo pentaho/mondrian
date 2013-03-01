@@ -653,9 +653,7 @@ public class LegacySchemaTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + (MondrianProperties.instance().SsasCompatibleNaming.get()
-                ? "{[Time2].[Time].[1997]}\n"
-                : "{[Time2].[1997]}\n")
+            + "{[Time2].[Time].[1997]}\n"
             + "Axis #2:\n"
             + "{[Time].[Time].[1997].[Q3]}\n"
             + "Row #0: 16,266\n");
@@ -1282,9 +1280,7 @@ public class LegacySchemaTest extends FoodMartTestCase {
             final Hierarchy hier = dim.getHierarchy();
             assertNotNull(hier);
             assertEquals(
-                MondrianProperties.instance().SsasCompatibleNaming.get()
-                    ? "Bacon"
-                    : "Bar.Bacon",
+                "Bacon",
                 hier.getName());
             final mondrian.olap.Level level = hier.getLevelList().get(0);
             assertEquals("Samosa", level.getName());
@@ -2035,9 +2031,7 @@ public class LegacySchemaTest extends FoodMartTestCase {
             final Hierarchy hier = dim.getHierarchy();
             assertNotNull(hier);
             assertEquals(
-                MondrianProperties.instance().SsasCompatibleNaming.get()
-                    ? "Bacon"
-                    : "Bar.Bacon",
+                "Bacon",
                 hier.getName());
             assertTrue(testValue.equals(hier.isVisible()));
         }
@@ -2336,14 +2330,8 @@ public class LegacySchemaTest extends FoodMartTestCase {
         final Hierarchy timeHierarchy = timeDimension.getHierarchyList().get(0);
         // The hierarchy in the shared dimension does not have a name, so the
         // hierarchy usage inherits the name of the dimension usage, Time1.
-        final boolean ssasCompatibleNaming =
-            MondrianProperties.instance().SsasCompatibleNaming.get();
-        if (ssasCompatibleNaming) {
-            assertEquals("Time", timeHierarchy.getName());
-            assertEquals("Time1", timeHierarchy.getDimension().getName());
-        } else {
-            assertEquals("Time1", timeHierarchy.getName());
-        }
+        assertEquals("Time", timeHierarchy.getName());
+        assertEquals("Time1", timeHierarchy.getDimension().getName());
         // The description is prefixed by the dimension usage name.
         assertEquals(
             "Time usage caption.Time shared hierarchy description",
@@ -2368,12 +2356,8 @@ public class LegacySchemaTest extends FoodMartTestCase {
             time2Dimension.getHierarchyList().get(0);
         // The hierarchy in the shared dimension does not have a name, so the
         // hierarchy usage inherits the name of the dimension usage, Time2.
-        if (ssasCompatibleNaming) {
-            assertEquals("Time", time2Hierarchy.getName());
-            assertEquals("Time2", time2Hierarchy.getDimension().getName());
-        } else {
-            assertEquals("Time2", time2Hierarchy.getName());
-        }
+        assertEquals("Time", time2Hierarchy.getName());
+        assertEquals("Time2", time2Hierarchy.getDimension().getName());
         // The description is prefixed by the dimension usage name (because
         // dimension usage has no caption).
         assertEquals(

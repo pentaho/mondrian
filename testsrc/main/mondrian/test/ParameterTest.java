@@ -352,10 +352,7 @@ public class ParameterTest extends FoodMartTestCase {
             "Parameter(\"Foo\", [Time.Weekly], [Time.Weekly].[1997].[40],\"Foo\").Name",
             "40");
         // right dimension, wrong hierarchy
-        final String levelName =
-            MondrianProperties.instance().SsasCompatibleNaming.get()
-                ? "[Time].[Weekly]"
-                : "[Time.Weekly]";
+        final String levelName = "[Time].[Weekly]";
         assertExprThrows(
             "Parameter(\"Foo\",[Time.Weekly],[Time].[1997].[Q1],\"Foo\").Name",
             "Default value of parameter 'Foo' is not consistent with the parameter type 'MemberType<hierarchy="

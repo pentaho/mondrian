@@ -92,14 +92,6 @@ public class XmlaTest extends TestCase {
     }
 
     protected void runTest() throws Exception {
-        if (!MondrianProperties.instance().SsasCompatibleNaming.get()
-            && getName().equals("mdschemaLevelsCubeDimRestrictions"))
-        {
-            // Changes in unique names of hierarchies and levels mean that the
-            // output is a different order in the old behavior, and cannot be
-            // fixed by a few sed-like comparisons.
-            return;
-        }
         DiffRepository diffRepos = getDiffRepos();
         String request = diffRepos.expand(null, "${request}");
         String expectedResponse = diffRepos.expand(null, "${response}");

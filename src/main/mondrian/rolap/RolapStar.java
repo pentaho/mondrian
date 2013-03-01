@@ -1079,7 +1079,7 @@ public class RolapStar {
                         expr.getDatatype() == null
                             ? Dialect.Datatype.Numeric
                             : expr.getDatatype(),
-                        null,
+                        expr.getInternalType(),
                         // TODO: obsolete nameColumn
                         null,
                         // TODO: obsolete parentColumn

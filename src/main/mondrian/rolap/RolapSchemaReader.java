@@ -402,32 +402,13 @@ public class RolapSchemaReader
         int category,
         MatchType matchType)
     {
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            return new NameResolver().resolve(
-                parent,
-                Util.toOlap4j(names),
-                failIfNotFound,
-                category,
-                matchType,
-                getNamespaces());
-        }
-        return lookupCompoundInternal(
+        return new NameResolver().resolve(
             parent,
-            names,
+            Util.toOlap4j(names),
             failIfNotFound,
             category,
-            matchType);
-    }
-
-    public final OlapElement lookupCompoundInternal(
-        OlapElement parent,
-        List<Id.Segment> names,
-        boolean failIfNotFound,
-        int category,
-        MatchType matchType)
-    {
-        return Util.lookupCompound(
-            this, parent, names, failIfNotFound, category, matchType);
+            matchType,
+            getNamespaces());
     }
 
     public List<NameResolver.Namespace> getNamespaces() {

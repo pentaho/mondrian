@@ -256,10 +256,6 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     public void testQueryCalcMemberOverridesShallowerStoredMember() {
-        if (!propSaver.props.SsasCompatibleNaming.get()) {
-            // functionality requires new name resolver
-            return;
-        }
         // Does "[Time].[Time2].[1998]" resolve to
         // the stored member "[Time].[Time2].[1998]"
         // or the calculated member "[Time].[Time2].[1997].[1998]"?
@@ -291,10 +287,6 @@ public class TestCalculatedMembers extends BatchTestCase {
      * chosen, even if it is not the best match.
      */
     public void testEarlierCalcMember() {
-        if (!propSaver.props.SsasCompatibleNaming.get()) {
-            // functionality requires new name resolver
-            return;
-        }
         // SSAS returns 2
         assertQueryReturns(
             "with\n"
@@ -459,16 +451,10 @@ public class TestCalculatedMembers extends BatchTestCase {
         // Dimension can be converted, if unambiguous.
         assertExprReturns("[Customers]", "266,773");
 
-        if (propSaver.props.SsasCompatibleNaming.get()) {
-            // SSAS 2005 does not have default hierarchies.
-            assertExprThrows(
-                "[Time]",
-                "The 'Time' dimension contains more than one hierarchy, "
-                + "therefore the hierarchy must be explicitly specified.");
-        } else {
-            // Default to first hierarchy.
-            assertExprReturns("[Time]", "266,773");
-        }
+        assertExprThrows(
+            "[Time]",
+            "The 'Time' dimension contains more than one hierarchy, "
+            + "therefore the hierarchy must be explicitly specified.");
 
         // Explicit hierarchy OK.
         assertExprReturns("[Time].[Time]", "266,773");
@@ -1588,10 +1574,6 @@ public class TestCalculatedMembers extends BatchTestCase {
      * look like two evaluation contexts were expanding the same member.
      */
     public void testCycleFalsePositive() {
-        if (propSaver.props.SsasCompatibleNaming.get()) {
-            // This test uses old-style [dimension.hierarchy] names.
-            return;
-        }
         final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"Store5\"> \n"
@@ -1634,15 +1616,15 @@ public class TestCalculatedMembers extends BatchTestCase {
         testContext.assertQueryReturns(
             "With \n"
             + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Country],[*BASE_MEMBERS_Store Type.Store Types Hierarchy])' \n"
-            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],[Country].CurrentMember.OrderKey,BASC,[Store Type.Store Types Hierarchy].CurrentMember.OrderKey,BASC)' \n"
+            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],[Country].CurrentMember.OrderKey,BASC,[Store Type].[Store Types Hierarchy].CurrentMember.OrderKey,BASC)' \n"
             + "Set [*BASE_MEMBERS_Country] as '[Country].[Country].Members' \n"
             + "Set [*NATIVE_MEMBERS_Country] as 'Generate([*NATIVE_CJ_SET], {[Country].CurrentMember})' \n"
             + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' \n"
-            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Country].currentMember,[Store Type.Store Types Hierarchy].currentMember)})' \n"
-            + "Set [*BASE_MEMBERS_Store Type.Store Types Hierarchy] as '[Store Type.Store Types Hierarchy].[Store Type].Members' \n"
-            + "Set [*NATIVE_MEMBERS_Store Type.Store Types Hierarchy] as 'Generate([*NATIVE_CJ_SET], {[Store Type.Store Types Hierarchy].CurrentMember})' \n"
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Country].currentMember,[Store Type].[Store Types Hierarchy].currentMember)})' \n"
+            + "Set [*BASE_MEMBERS_Store Type.Store Types Hierarchy] as '[Store Type].[Store Types Hierarchy].[Store Type].Members' \n"
+            + "Set [*NATIVE_MEMBERS_Store Type.Store Types Hierarchy] as 'Generate([*NATIVE_CJ_SET], {[Store Type].[Store Types Hierarchy].CurrentMember})' \n"
             + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]' \n"
-            + "Member [Store Type.Store Types Hierarchy].[*TOTAL_MEMBER_SEL~SUM] as 'Sum({[Store Type.Store Types Hierarchy].[All Store Types Member Name]})', SOLVE_ORDER=-101 \n"
+            + "Member [Store Type.Store Types Hierarchy].[*TOTAL_MEMBER_SEL~SUM] as 'Sum({[Store Type].[Store Types Hierarchy].[All Store Types Member Name]})', SOLVE_ORDER=-101 \n"
             + "Member [Country].[*TOTAL_MEMBER_SEL~SUM] as 'Sum({[Country].[All Countrys]})', SOLVE_ORDER=-100 \n"
             + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Sqft]', FORMAT_STRING = '#,###', SOLVE_ORDER=400 \n"
             + "Select \n"

@@ -1321,19 +1321,6 @@ value Mondrian throws a LimitExceededDuringCrossjoin error.</p>
         <Default>150000</Default>
     </PropertyDefinition>
     <PropertyDefinition>
-        <Name>SsasCompatibleNaming</Name>
-        <Path>mondrian.olap.SsasCompatibleNaming</Path>
-        <Description>
-<p>Property that defines
-whether to enable new naming behavior.</p>
-
-<p>If true, hierarchies are named [Dimension].[Hierarchy]; if false,
-[Dimension.Hierarchy].</p>
-        </Description>
-        <Type>boolean</Type>
-        <Default>true</Default>
-    </PropertyDefinition>
-    <PropertyDefinition>
         <Name>XmlaSchemaRefreshInterval</Name>
         <Path>mondrian.xmla.SchemaRefreshInterval</Path>
         <Description>

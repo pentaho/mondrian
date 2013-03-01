@@ -123,21 +123,13 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         int category,
         MatchType matchType)
     {
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            return new NameResolver().resolve(
-                parent,
-                Util.toOlap4j(names),
-                failIfNotFound,
-                category,
-                matchType,
-                getNamespaces());
-        }
-        return lookupCompoundInternal(
+        return new NameResolver().resolve(
             parent,
-            names,
+            Util.toOlap4j(names),
             failIfNotFound,
             category,
-            matchType);
+            matchType,
+            getNamespaces());
     }
 
     public List<NameResolver.Namespace> getNamespaces() {

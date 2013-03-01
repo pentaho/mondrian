@@ -359,9 +359,7 @@ class MondrianOlap4jExtra extends XmlaHandler.XmlaExtraImpl {
 
     public String getHierarchyName(Hierarchy hierarchy) {
         String hierarchyName = hierarchy.getName();
-        if (MondrianProperties.instance().SsasCompatibleNaming.get()
-            && !hierarchyName.equals(hierarchy.getDimension().getName()))
-        {
+        if (!hierarchyName.equals(hierarchy.getDimension().getName())) {
             hierarchyName =
                 hierarchy.getDimension().getName() + "." + hierarchyName;
         }

@@ -47,7 +47,7 @@ public class MonitorTest extends FoodMartTestCase {
             + "   end\n"
             + "SELECT [Measures].[Foo] on 0\n"
             + "from [Sales]\n"
-            + "where [Time].[1997].[Q3].[9]";
+            + "where [Time].[Time].[1997].[Q3].[9]";
 
         final OlapStatement statement1 =
             getTestContext().getOlap4jConnection().createStatement();

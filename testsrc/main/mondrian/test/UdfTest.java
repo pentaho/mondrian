@@ -348,11 +348,8 @@ public class UdfTest extends FoodMartTestCase {
     public void testCurrentDateMemberBeforeUsingQuotes()
     {
         assertAxisReturns(
-            MondrianProperties.instance().SsasCompatibleNaming.get()
-            ? "CurrentDateMember([Time].[Time], "
-            + "'\"[Time].[Time].[\"yyyy\"].[Q\"q\"].[\"m\"]\"', BEFORE)"
-            : "CurrentDateMember([Time], "
-            + "'\"[Time].[\"yyyy\"].[Q\"q\"].[\"m\"]\"', BEFORE)",
+            "CurrentDateMember([Time].[Time], "
+            + "'\"[Time].[Time].[\"yyyy\"].[Q\"q\"].[\"m\"]\"', BEFORE)",
             "[Time].[Time].[1998].[Q4].[12]");
     }
 
@@ -398,13 +395,9 @@ public class UdfTest extends FoodMartTestCase {
 
     public void testCurrentDateMemberHierarchy() {
         final String query =
-            MondrianProperties.instance().SsasCompatibleNaming.get()
-                ? "SELECT { CurrentDateMember([Time.Weekly], "
-                  + "\"[Ti\\me\\.Weekl\\y]\\.[All Weekl\\y\\s]\\.[yyyy]\\.[ww]\", BEFORE)} "
-                  + "ON COLUMNS FROM [Sales]"
-                : "SELECT { CurrentDateMember([Time.Weekly], "
-                  + "\"[Ti\\me\\.Weekl\\y]\\.[All Ti\\me\\.Weekl\\y\\s]\\.[yyyy]\\.[ww]\", BEFORE)} "
-                  + "ON COLUMNS FROM [Sales]";
+            "SELECT { CurrentDateMember([Time.Weekly], "
+            + "\"[Ti\\me\\.Weekl\\y]\\.[All Weekl\\y\\s]\\.[yyyy]\\.[ww]\", BEFORE)} "
+            + "ON COLUMNS FROM [Sales]";
         assertQueryReturns(
             query,
             "Axis #0:\n"
