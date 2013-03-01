@@ -289,7 +289,6 @@ public class Main extends TestSuite {
             // CsvDBTestCase
             addTest(suite, GroupingSetQueryTest.class);
             addTest(suite, CmdRunnerTest.class);
-            addTest(suite, DataSourceChangeListenerTest.class);
             addTest(suite, ModulosTest.class);
             addTest(suite, PrimeFinderTest.class);
             addTest(suite, CellKeyTest.class);

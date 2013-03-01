@@ -563,8 +563,6 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 return;
             }
             synchronized (cacheHelper) {
-                checkCacheStatus();
-
                 List<RolapMember> missed = new ArrayList<RolapMember>();
                 for (RolapMember parentMember : parentMembers) {
                     List<RolapMember> list =
@@ -591,8 +589,6 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             TupleConstraint constraint)
         {
             synchronized (cacheHelper) {
-                checkCacheStatus();
-
                 List<RolapMember> members =
                     rolapCubeCacheHelper.getLevelMembersFromCache(
                         level, constraint);
@@ -693,7 +689,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 if (enableCache) {
                     Object key = member.getKeyAsList();
                     cubeMember = (RolapCubeMember)
-                        rolapCubeCacheHelper.getMember(level, key, false);
+                        rolapCubeCacheHelper.getMember(level, key);
                     if (cubeMember == null) {
                         cubeMember = wrapMember(parent, member, level);
                         rolapCubeCacheHelper.putMember(level, key, cubeMember);
@@ -707,42 +703,6 @@ public class RolapCubeHierarchy extends RolapHierarchy {
 
         public int getMemberCount() {
             return rolapHierarchy.getMemberReader().getMemberCount();
-        }
-
-        protected void checkCacheStatus() {
-            synchronized (cacheHelper) {
-                // if necessary, flush all caches:
-                //   - shared SmartMemberReader RolapMember cache
-                //   - local key to cube member RolapCubeMember cache
-                //   - cube source RolapCubeMember cache
-                //   - local regular RolapMember cache, used when cube
-                //     specific joins occur
-
-                if (cacheHelper.getChangeListener() != null) {
-                    if (cacheHelper.getChangeListener().isHierarchyChanged(
-                            getHierarchy()))
-                    {
-                        cacheHelper.flushCache();
-                        rolapCubeCacheHelper.flushCache();
-
-                        if (rolapHierarchy.getMemberReader()
-                                instanceof SmartMemberReader)
-                        {
-                            SmartMemberReader smartMemberReader =
-                                (SmartMemberReader)
-                                    rolapHierarchy.getMemberReader();
-                            if (smartMemberReader.getMemberCache()
-                                    instanceof MemberCacheHelper)
-                            {
-                                MemberCacheHelper helper =
-                                    (MemberCacheHelper)
-                                        smartMemberReader.getMemberCache();
-                                helper.flushCache();
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 

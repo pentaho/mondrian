@@ -1504,32 +1504,6 @@ public class SegmentCacheManager {
                     indexRegistry.getIndex(star)
                         .getFuture(header);
                 if (bodyFuture != null) {
-                    // Check if the DataSourceChangeListener wants us to clear
-                    // the current segment
-                    if (star.getChangeListener() != null
-                        && star.getChangeListener().isAggregationChanged(key))
-                    {
-                         // We can't satisfy this request, and we must clear the
-                         // data from our cache. This must be in sync with the
-                         // actor thread to maintain consistency.
-                        indexRegistry.getIndex(star).remove(header);
-                        Util.safeGet(
-                            cacheExecutor.submit(
-                                new Runnable() {
-                                    public void run() {
-                                        try {
-                                            compositeCache.remove(header);
-                                        } catch (Throwable e) {
-                                            LOGGER.warn(
-                                                "remove header failed: "
-                                                + header,
-                                                e);
-                                        }
-                                    }
-                                }),
-                            "SegmentCacheManager.peek");
-                        continue;
-                    }
                     converterMap.put(
                         SegmentCacheIndexImpl.makeConverterKey(header),
                         getConverter(star, header));

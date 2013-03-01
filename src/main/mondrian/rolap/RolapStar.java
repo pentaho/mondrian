@@ -71,8 +71,6 @@ public class RolapStar {
      */
     private final List<AggStar> aggStars = new LinkedList<AggStar>();
 
-    private DataSourceChangeListener changeListener;
-
     private final Map<RolapSchema.PhysExpr, Column> map =
         new HashMap<RolapSchema.PhysExpr, Column>();
 
@@ -94,7 +92,6 @@ public class RolapStar {
         this.factTable = new RolapStar.Table(this, fact, null, path);
 
         this.sqlQueryDialect = schema.getDialect();
-        this.changeListener = schema.getDataSourceChangeListener();
     }
 
     /**
@@ -420,15 +417,6 @@ public class RolapStar {
         localBars.get().aggregations.put(
             aggregationKey, aggregation);
 
-        // Let the change listener get the opportunity to register the
-        // first time the aggregation is used
-        if (this.cacheAggregations
-            && !isCacheDisabled()
-            && changeListener != null)
-        {
-            Util.discard(
-                changeListener.isAggregationChanged(aggregationKey));
-        }
         return aggregation;
     }
 
@@ -581,24 +569,6 @@ public class RolapStar {
                 aggStar.print(pw, subprefix);
             }
         }
-    }
-
-    /**
-     * Returns the listener for changes to this star's underlying database.
-     *
-     * @return Returns the Data source change listener.
-     */
-    public DataSourceChangeListener getChangeListener() {
-        return changeListener;
-    }
-
-    /**
-     * Sets the listener for changes to this star's underlying database.
-     *
-     * @param changeListener The Data source change listener to set
-     */
-    public void setChangeListener(DataSourceChangeListener changeListener) {
-        this.changeListener = changeListener;
     }
 
     // -- Inner classes --------------------------------------------------------

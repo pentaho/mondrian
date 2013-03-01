@@ -201,7 +201,6 @@ public class SqlTupleReader implements TupleReader {
             if (getCurrMember() != null) {
                 setCurrMember(member);
             } else {
-                boolean checkCacheStatus = true;
                 for (int i = 0; i <= levelDepth; i++) {
                     RolapLevel childLevel = levels[i];
                     final LevelColumnLayout layout =
@@ -259,8 +258,7 @@ public class SqlTupleReader implements TupleReader {
                         keyValues[j] = SqlMemberSource.toComparable(value);
                     }
                     final Object key = RolapMember.Key.quick(keyValues);
-                    member = cache.getMember(childLevel, key, checkCacheStatus);
-                    checkCacheStatus = false; // only check the first time
+                    member = cache.getMember(childLevel, key);
                     if (member == null) {
                         if (constraint instanceof
                             RolapNativeCrossJoin.NonEmptyCrossJoinConstraint

@@ -1117,7 +1117,6 @@ class SqlMemberSource
                 -1, -1);
         try {
             int limit = MondrianProperties.instance().ResultLimit.get();
-            boolean checkCacheStatus = true;
 
             final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
             ResultSet resultSet = stmt.getResultSet();
@@ -1153,9 +1152,7 @@ class SqlMemberSource
                 RolapMember member =
                     cache.getMember(
                         childLevel,
-                        RolapMember.Key.quick(keyValues),
-                        checkCacheStatus);
-                checkCacheStatus = false; // only check the first time
+                        RolapMember.Key.quick(keyValues));
                 if (member == null) {
                     final Comparable keyClone =
                         RolapMember.Key.create(keyValues);

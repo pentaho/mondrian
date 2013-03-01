@@ -123,8 +123,6 @@ public class RolapSchema extends OlapElementBase implements Schema {
      * in bootstrap. */
     private Date schemaLoadDate;
 
-    private DataSourceChangeListener dataSourceChangeListener;
-
     PhysSchema physicalSchema;
 
     /**
@@ -196,8 +194,6 @@ public class RolapSchema extends OlapElementBase implements Schema {
         this.dialect = internalConnection.dialect.withQuoting(quoteSql);
 
         this.aggTableManager = new AggTableManager(this);
-        this.dataSourceChangeListener =
-            createDataSourceChangeListener(connectInfo);
         this.name = name;
         if (name == null || name.equals("")) {
             throw Util.newError("<Schema> name must be set");
@@ -637,43 +633,6 @@ public class RolapSchema extends OlapElementBase implements Schema {
     }
 
     /**
-     * Creates a {@link DataSourceChangeListener} with which to detect changes
-     * to datasources.
-     */
-    private DataSourceChangeListener createDataSourceChangeListener(
-        Util.PropertyList connectInfo)
-    {
-        DataSourceChangeListener changeListener = null;
-
-        // If CatalogContent is specified in the connect string, ignore
-        // everything else. In particular, ignore the dynamic schema
-        // processor.
-        String dataSourceChangeListenerStr = connectInfo.get(
-            RolapConnectionProperties.DataSourceChangeListener.name());
-
-        if (!Util.isEmpty(dataSourceChangeListenerStr)) {
-            try {
-                changeListener =
-                    ClassResolver.INSTANCE.instantiateSafe(
-                        dataSourceChangeListenerStr);
-            } catch (Exception e) {
-                throw Util.newError(
-                    e,
-                    "loading DataSourceChangeListener "
-                    + dataSourceChangeListenerStr);
-            }
-
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
-                    "RolapSchema.createDataSourceChangeListener: "
-                    + "create datasource change listener \""
-                    + dataSourceChangeListenerStr);
-            }
-        }
-        return changeListener;
-    }
-
-    /**
      * Returns the checksum of this schema. Returns
      * <code>null</code> if {@link RolapConnectionProperties#UseContentChecksum}
      * is set to false.
@@ -806,22 +765,6 @@ public class RolapSchema extends OlapElementBase implements Schema {
 
     RolapNativeRegistry getNativeRegistry() {
         return nativeRegistry;
-    }
-
-    /**
-     * @return Returns the dataSourceChangeListener.
-     */
-    public DataSourceChangeListener getDataSourceChangeListener() {
-        return dataSourceChangeListener;
-    }
-
-    /**
-     * @param dataSourceChangeListener The dataSourceChangeListener to set.
-     */
-    public void setDataSourceChangeListener(
-        DataSourceChangeListener dataSourceChangeListener)
-    {
-        this.dataSourceChangeListener = dataSourceChangeListener;
     }
 
     /**

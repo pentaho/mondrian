@@ -35,19 +35,6 @@ interface MemberCache {
     RolapMember getMember(RolapLevel level, Object key);
 
     /**
-     * Retrieves the {@link RolapMember} with a given key.
-     *
-     * @param level Level
-     * @param key Member key
-     * @param mustCheckCacheStatus If {@code true}, do not check cache status
-     * @return member with a given cache key
-     */
-    RolapMember getMember(
-        RolapLevel level,
-        Object key,
-        boolean mustCheckCacheStatus);
-
-    /**
      * Replaces the {@link RolapMember} with a given key and returns the
      * previous member if any.
      *

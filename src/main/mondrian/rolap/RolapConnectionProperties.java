@@ -169,14 +169,6 @@ public enum RolapConnectionProperties {
     Locale,
 
     /**
-     * The name of a class implementing the
-     * {@link mondrian.spi.DataSourceChangeListener} interface.
-     * A data source change listener is used to flush the cache of
-     * mondrian every time the datasource is changed.
-     */
-    DataSourceChangeListener,
-
-    /**
      * The "Ignore" property is a boolean value. If true, mondrian ignores
      * warnings and non-fatal errors while loading the schema. The resulting
      * errors can be obtained by calling

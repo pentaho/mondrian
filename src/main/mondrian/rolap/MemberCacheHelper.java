@@ -17,7 +17,6 @@ import mondrian.rolap.cache.SmartCache;
 import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
-import mondrian.spi.DataSourceChangeListener;
 import mondrian.util.Pair;
 
 import java.util.*;
@@ -40,7 +39,6 @@ public class MemberCacheHelper implements MemberCache {
     /** a cache for all members to ensure uniqueness */
     SmartCache<Pair<RolapLevel, Object>, RolapMember> mapKeyToMember;
     RolapHierarchy rolapHierarchy;
-    DataSourceChangeListener changeListener;
 
     /** maps a level to its members */
     final SmartMemberListCache<RolapLevel, List<RolapMember>>
@@ -59,24 +57,13 @@ public class MemberCacheHelper implements MemberCache {
             new SoftSmartCache<Pair<RolapLevel, Object>, RolapMember>();
         this.mapMemberToChildren =
             new SmartMemberListCache<RolapMember, List<RolapMember>>();
-
-        if (rolapHierarchy != null) {
-            changeListener =
-                rolapHierarchy.getRolapSchema().getDataSourceChangeListener();
-        } else {
-            changeListener = null;
-        }
     }
 
     // implement MemberCache
     public RolapMember getMember(
         RolapLevel level,
-        Object key,
-        boolean mustCheckCacheStatus)
+        Object key)
     {
-        if (mustCheckCacheStatus) {
-            checkCacheStatus();
-        }
         return mapKeyToMember.get(Pair.of(level, key));
     }
 
@@ -88,19 +75,6 @@ public class MemberCacheHelper implements MemberCache {
         RolapMember value)
     {
         return mapKeyToMember.put(Pair.of(level, key), value);
-    }
-
-    // implement MemberCache
-    public final RolapMember getMember(RolapLevel level, Object key) {
-        return getMember(level, key, true);
-    }
-
-    public synchronized void checkCacheStatus() {
-        if (changeListener != null) {
-            if (changeListener.isHierarchyChanged(rolapHierarchy)) {
-                flushCache();
-            }
-        }
     }
 
     /**
@@ -166,14 +140,6 @@ public class MemberCacheHelper implements MemberCache {
         for (Level level : rolapHierarchy.getLevels()) {
             ((RolapLevel)level).setApproxRowCount(Integer.MIN_VALUE);
         }
-    }
-
-    public DataSourceChangeListener getChangeListener() {
-        return changeListener;
-    }
-
-    public void setChangeListener(DataSourceChangeListener listener) {
-        changeListener = listener;
     }
 
     public boolean isMutable()

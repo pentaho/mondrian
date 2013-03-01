@@ -104,36 +104,6 @@ public class Scripts {
     }
 
     /**
-     * Creates an implementation of the {@link DataSourceChangeListener} SPI
-     * based on a script.
-     *
-     * @param script Script
-     * @return data source change listener
-     */
-    public static DataSourceChangeListener dataSourceChangeListener(
-        ScriptDefinition script)
-    {
-        final String code;
-        switch (script.language) {
-        case JAVASCRIPT:
-            code =
-                "function isHierarchyChanged(hierarchy) {\n"
-                + "  return false;\n"
-                + "}\n"
-                + "function isAggregationChanged(aggregation) {\n"
-                + "  return false;\n"
-                + "}\n";
-            break;
-        default:
-            throw Util.unexpected(script.language);
-        }
-        return create(
-            script,
-            DataSourceChangeListener.class,
-            code);
-    }
-
-    /**
      * Creates an implementation of the {@link DataSourceResolver} SPI based on
      * a script.
      *
