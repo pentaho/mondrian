@@ -11,6 +11,7 @@ package mondrian.olap4j;
 
 import mondrian.olap.*;
 import mondrian.rolap.RolapConnection;
+import mondrian.rolap.RolapCubeLevel;
 import mondrian.server.Locus;
 
 import org.olap4j.OlapException;
@@ -136,7 +137,8 @@ class MondrianOlap4jLevel
             new Locus.Action<List<Member>>() {
                 public List<Member> execute() {
                     final mondrian.olap.SchemaReader schemaReader =
-                        mondrianConnection.getSchemaReader().withLocus();
+                        ((RolapCubeLevel) level).getCube()
+                            .getSchemaReader().withLocus();
                     final List<mondrian.olap.Member> levelMembers =
                         schemaReader.getLevelMembers(level, true);
                     return new AbstractList<Member>() {
