@@ -57,12 +57,14 @@ public class InfobrightDialect extends MySqlDialect {
         return false;
     }
 
+    @Override
     public String generateOrderItem(
-        String expr,
-        boolean nullable,
-        boolean ascending)
+            String expr,
+            boolean nullable,
+            boolean ascending,
+            boolean collateNullsLast)
     {
-        // Like MySQL, Infobright collates NULL values as negative-infinity
+    	// Like MySQL, Infobright collates NULL values as negative-infinity
         // (first in ASC, last in DESC). But we can't generate ISNULL to
         // correct the NULL ordering, as we do for MySQL, because Infobright
         // does not support this function.
