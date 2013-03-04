@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2009 Pentaho
+// Copyright (C) 2008-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -57,10 +57,12 @@ public class InfobrightDialect extends MySqlDialect {
         return false;
     }
 
+    @Override
     public String generateOrderItem(
         String expr,
         boolean nullable,
-        boolean ascending)
+        boolean ascending,
+        boolean collateNullsLast)
     {
         // Like MySQL, Infobright collates NULL values as negative-infinity
         // (first in ASC, last in DESC). But we can't generate ISNULL to
