@@ -1243,6 +1243,73 @@ public class CacheControlTest extends FoodMartTestCase {
         cacheControl.flush(flushRegion);
     }
 
+    public void testMondrian1094() throws Exception {
+        final String query =
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+            + "NON EMPTY {[Store].[All Stores].Children} ON ROWS \n"
+            + "from [Sales] \n";
+
+        flushCache(getTestContext());
+
+        assertQueryReturns(
+            query,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[Stores].[USA]}\n"
+            + "Row #0: 266,773\n");
+
+        if (MondrianProperties.instance().DisableCaching.get()) {
+            return;
+        }
+
+        // Make sure MaxConstraint is high enough
+        int minConstraints = 3;
+
+        if (MondrianProperties.instance().MaxConstraints.get()
+            < minConstraints)
+        {
+            propSaver.set(
+                MondrianProperties.instance().MaxConstraints,
+                minConstraints);
+        }
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        final CacheControl cacheControl =
+            getConnection().getCacheControl(pw);
+
+        // Flush the cache.
+        final Cube salesCube =
+            getConnection().getSchema().lookupCube("Sales", true);
+        final Hierarchy storeHierarchy =
+            salesCube.lookupHierarchy(
+                new Id.NameSegment(
+                    "Stores",
+                    Id.Quoting.UNQUOTED),
+                false);
+        final CacheControl.CellRegion measuresRegion =
+            cacheControl.createMeasuresRegion(salesCube);
+        final CacheControl.CellRegion hierarchyRegion =
+            cacheControl.createMemberRegion(
+                storeHierarchy.getAllMember(), true);
+        final CacheControl.CellRegion region =
+            cacheControl.createCrossjoinRegion(
+                measuresRegion, hierarchyRegion);
+        cacheControl.flush(region);
+        pw.flush();
+
+        String tag = "output";
+        String expected =
+            MondrianProperties.instance().EnableNativeNonEmpty.get()
+                ? "${output}" : "${output2}";
+        String actual = sw.toString();
+        assertCacheStateEquals(tag, expected, actual);
+    }
+
+
     // todo: Test flushing a segment which is unconstrained
 
     // todo: Test flushing a segment where 2 or more axes are reduced. E.g.

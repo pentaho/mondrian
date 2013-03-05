@@ -70,29 +70,35 @@ Cache state after flush:
             <![CDATA[Cache state before flush:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[adc67095ea588fb8ef5cc174a3f74b7a]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
-    {store.store_country=('USA')}
-    {time_by_day.the_year=('1997')}]
+    {`store`.`store_country`=('USA')}
+    {`time_by_day`.`the_year`=('1997')}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[247b8a6562d3147e730bdca37fb2d0f72432a7fdf660466e2a52fdbda2458f28]
+ID:[4c71156b84a70053c18c8e30d12408de330b2aa59eac09506c35b286f32b270c]
 
 
-discard segment - it cannot be constrained and maintain consistency:
+Cache state after flush:
+
+]]>
+        </Resource>
+        <Resource name="output2">
+            <![CDATA[Cache state before flush:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[adc67095ea588fb8ef5cc174a3f74b7a]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
-    {store.store_country=('USA')}
-    {time_by_day.the_year=('1997')}]
+    {`store`.`store_country`=(*)}
+    {`time_by_day`.`the_year`=('1997')}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[247b8a6562d3147e730bdca37fb2d0f72432a7fdf660466e2a52fdbda2458f28]
+ID:[6d800f808cb6504c58af5a316c1fa60cf4fe1688c46fc64f6b611cfd83ced5e0]
+
 
 Cache state after flush:
 
