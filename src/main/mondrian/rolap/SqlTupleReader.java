@@ -21,7 +21,9 @@ import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
+import mondrian.server.Execution;
 import mondrian.server.Locus;
+import mondrian.server.Statement;
 import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.spi.Dialect;
 import mondrian.util.Pair;
@@ -488,10 +490,11 @@ public class SqlTupleReader implements TupleReader {
                 String sql = pair.left;
                 List<SqlStatement.Type> types = pair.right;
                 assert sql != null && !sql.equals("");
+
                 stmt = RolapUtil.executeQuery(
                     dataSource, sql, types, maxRows, 0,
                     new SqlStatement.StatementLocus(
-                        Locus.peek().execution,
+                        getExecution(),
                         "SqlTupleReader.readTuples " + partialTargets,
                         message,
                         SqlStatementEvent.Purpose.TUPLES, 0),
@@ -587,6 +590,17 @@ public class SqlTupleReader implements TupleReader {
                 stmt.close();
             }
         }
+    }
+
+    /**
+     * Constructs an Execution based on the internalStatement associated
+     * with the schema.  Used for setting StatementLocus.
+     */
+    private Execution getExecution() {
+        assert targets.size() > 0;
+        Statement statement = targets.get(0).getLevel().getHierarchy()
+            .getRolapSchema().getInternalConnection().getInternalStatement();
+        return new Execution(statement, 0);
     }
 
     public TupleList readMembers(
