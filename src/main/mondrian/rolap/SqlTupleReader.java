@@ -144,10 +144,6 @@ public class SqlTupleReader implements TupleReader {
             return this.currMember;
         }
 
-        public void removeCurrMember() {
-            this.currMember = null;
-        }
-
         public void setCurrMember(final RolapMember m) {
             this.currMember = m;
         }
@@ -593,14 +589,29 @@ public class SqlTupleReader implements TupleReader {
     }
 
     /**
-     * Constructs an Execution based on the internalStatement associated
-     * with the schema.  Used for setting StatementLocus.
+     * Gets an appropriate Execution based on the state of the current
+     * locus.  Used for setting StatementLocus.
      */
     private Execution getExecution() {
         assert targets.size() > 0;
-        Statement statement = targets.get(0).getLevel().getHierarchy()
-            .getRolapSchema().getInternalConnection().getInternalStatement();
-        return new Execution(statement, 0);
+        if (Locus.peek().execution.getMondrianStatement()
+            .getMondrianConnection().getSchema() != null)
+        {
+            // the current locus has a statement that's associated with
+            // a schema.  Use it.
+            return Locus.peek().execution;
+        } else {
+            // no schema defined in the current locus.  This could
+            // happen during schema load.  Construct a new execution associated
+            // with the schema.
+            Statement statement = targets.get(0)
+                .getLevel()
+                .getHierarchy()
+                .getRolapSchema()
+                .getInternalConnection()
+                .getInternalStatement();
+            return new Execution(statement, 0);
+        }
     }
 
     public TupleList readMembers(
