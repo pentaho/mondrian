@@ -51,21 +51,25 @@ class CountFunDef extends AbstractAggregateFunDef {
         {
             public int evaluateInteger(Evaluator evaluator) {
                 final int savepoint = evaluator.savepoint();
-                evaluator.setNonEmpty(false);
-                final int count;
-                if (calc instanceof IterCalc) {
-                    IterCalc iterCalc = (IterCalc) calc;
-                    TupleIterable iterable =
-                        evaluateCurrentIterable(iterCalc, evaluator);
-                    count = count(evaluator, iterable, includeEmpty);
-                } else {
-                    // must be ListCalc
-                    ListCalc listCalc = (ListCalc) calc;
-                    TupleList list = evaluateCurrentList(listCalc, evaluator);
-                    count = count(evaluator, list, includeEmpty);
+                try {
+                    evaluator.setNonEmpty(false);
+                    final int count;
+                    if (calc instanceof IterCalc) {
+                        IterCalc iterCalc = (IterCalc) calc;
+                        TupleIterable iterable =
+                            evaluateCurrentIterable(iterCalc, evaluator);
+                        count = count(evaluator, iterable, includeEmpty);
+                    } else {
+                        // must be ListCalc
+                        ListCalc listCalc = (ListCalc) calc;
+                        TupleList list =
+                            evaluateCurrentList(listCalc, evaluator);
+                        count = count(evaluator, list, includeEmpty);
+                    }
+                    return count;
+                } finally {
+                    evaluator.restore(savepoint);
                 }
-                evaluator.restore(savepoint);
-                return count;
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

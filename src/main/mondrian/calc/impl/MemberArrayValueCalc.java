@@ -57,30 +57,28 @@ public class MemberArrayValueCalc extends GenericCalc {
 
     public Object evaluate(Evaluator evaluator) {
         final int savepoint = evaluator.savepoint();
-        for (int i = 0; i < memberCalcs.length; i++) {
-            MemberCalc memberCalc = memberCalcs[i];
-            final Member member = memberCalc.evaluateMember(evaluator);
-            if (member == null
-                || member.isNull())
+        try {
+            for (int i = 0; i < memberCalcs.length; i++) {
+                MemberCalc memberCalc = memberCalcs[i];
+                final Member member = memberCalc.evaluateMember(evaluator);
+                if (member == null
+                        || member.isNull())
+                {
+                    return null;
+                }
+                evaluator.setContext(member);
+                members[i] = member;
+            }
+            if (nullCheck
+                && evaluator.needToReturnNullForUnrelatedDimension(members))
             {
-                // This method needs to leave the evaluator in the same state
-                // it found it.
-                evaluator.restore(savepoint);
                 return null;
             }
-            evaluator.setContext(member);
-            members[i] = member;
-        }
-        if (nullCheck
-            && evaluator.needToReturnNullForUnrelatedDimension(members))
-        {
+            final Object result = evaluator.evaluateCurrent();
+            return result;
+        } finally {
             evaluator.restore(savepoint);
-            return null;
         }
-
-        final Object result = evaluator.evaluateCurrent();
-        evaluator.restore(savepoint);
-        return result;
     }
 
     public Calc[] getCalcs() {

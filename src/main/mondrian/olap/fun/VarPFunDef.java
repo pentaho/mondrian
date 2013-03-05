@@ -54,11 +54,13 @@ class VarPFunDef extends AbstractAggregateFunDef {
             public double evaluateDouble(Evaluator evaluator) {
                 TupleList memberList = evaluateCurrentList(listCalc, evaluator);
                 final int savepoint = evaluator.savepoint();
-                evaluator.setNonEmpty(false);
-                final double d =
-                    (Double) var(evaluator, memberList, calc, true);
-                evaluator.restore(savepoint);
-                return d;
+                try {
+                    evaluator.setNonEmpty(false);
+                    return
+                        (Double) var(evaluator, memberList, calc, true);
+                } finally {
+                    evaluator.restore(savepoint);
+                }
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

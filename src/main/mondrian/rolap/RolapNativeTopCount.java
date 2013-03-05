@@ -207,30 +207,33 @@ public class RolapNativeTopCount extends RolapNativeSet {
         }
         LOGGER.debug("using native topcount");
         final int savepoint = evaluator.savepoint();
-        overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
-
-        CrossJoinArg[] predicateArgs = null;
-        if (allArgs.size() == 2) {
-            predicateArgs = allArgs.get(1);
+        try {
+            overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
+    
+            CrossJoinArg[] predicateArgs = null;
+            if (allArgs.size() == 2) {
+                predicateArgs = allArgs.get(1);
+            }
+    
+            CrossJoinArg[] combinedArgs;
+            if (predicateArgs != null) {
+                // Combined the CJ and the additional predicate args to form the
+                // TupleConstraint.
+                combinedArgs =
+                    Util.appendArrays(cjArgs, predicateArgs);
+            } else {
+                combinedArgs = cjArgs;
+            }
+            TupleConstraint constraint =
+                new TopCountConstraint(
+                    count, combinedArgs, evaluator,
+                    measureGroupList, orderByExpr, ascending);
+            SetEvaluator sev = new SetEvaluator(cjArgs, schemaReader, constraint);
+            sev.setMaxRows(count);
+            return sev;
+        } finally {
+            evaluator.restore(savepoint);
         }
-
-        CrossJoinArg[] combinedArgs;
-        if (predicateArgs != null) {
-            // Combined the CJ and the additional predicate args to form the
-            // TupleConstraint.
-            combinedArgs =
-                Util.appendArrays(cjArgs, predicateArgs);
-        } else {
-            combinedArgs = cjArgs;
-        }
-        TupleConstraint constraint =
-            new TopCountConstraint(
-                count, combinedArgs, evaluator,
-                measureGroupList, orderByExpr, ascending);
-        evaluator.restore(savepoint);
-        SetEvaluator sev = new SetEvaluator(cjArgs, schemaReader, constraint);
-        sev.setMaxRows(count);
-        return sev;
     }
 }
 

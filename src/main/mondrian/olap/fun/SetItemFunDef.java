@@ -120,27 +120,35 @@ class SetItemFunDef extends FunDefBase {
                 return new AbstractTupleCalc(call, calcs) {
                     public Member[] evaluateTuple(Evaluator evaluator) {
                         final int savepoint = evaluator.savepoint();
-                        evaluator.setNonEmpty(false);
-                        final TupleList list =
-                            listCalc.evaluateList(evaluator);
-                        assert list != null;
-                        evaluator.restore(savepoint);
-                        String[] results = new String[stringCalcs.length];
-                        for (int i = 0; i < stringCalcs.length; i++) {
-                            results[i] =
-                                stringCalcs[i].evaluateString(evaluator);
+                        final TupleList list;
+                        try {
+                            evaluator.setNonEmpty(false);
+                            list = listCalc.evaluateList(evaluator);
+                            assert list != null;
+                        } finally {
+                            evaluator.restore(savepoint);
                         }
-                        listLoop:
-                        for (List<Member> members : list) {
-                            for (int j = 0; j < results.length; j++) {
-                                String result = results[j];
-                                final Member member = members.get(j);
-                                if (!matchMember(member, result)) {
-                                    continue listLoop;
-                                }
+                        try {
+                            String[] results = new String[stringCalcs.length];
+                            for (int i = 0; i < stringCalcs.length; i++) {
+                                results[i] =
+                                    stringCalcs[i].evaluateString(evaluator);
                             }
-                            // All members match. Return the current one.
-                            return members.toArray(new Member[members.size()]);
+                            listLoop:
+                            for (List<Member> members : list) {
+                                for (int j = 0; j < results.length; j++) {
+                                    String result = results[j];
+                                    final Member member = members.get(j);
+                                    if (!matchMember(member, result)) {
+                                        continue listLoop;
+                                    }
+                                }
+                                // All members match. Return the current one.
+                                return members.toArray(
+                                    new Member[members.size()]);
+                            }
+                        } finally {
+                            evaluator.restore(savepoint);
                         }
                         // We use 'null' to represent the null tuple. Don't
                         // know why.
@@ -151,18 +159,29 @@ class SetItemFunDef extends FunDefBase {
                 return new AbstractTupleCalc(call, calcs) {
                     public Member[] evaluateTuple(Evaluator evaluator) {
                         final int savepoint = evaluator.savepoint();
-                        evaluator.setNonEmpty(false);
-                        final TupleList list =
-                            listCalc.evaluateList(evaluator);
+                        final TupleList list;
+                        try {
+                            evaluator.setNonEmpty(false);
+                            list =
+                                listCalc.evaluateList(evaluator);
+                        } finally {
+                            evaluator.restore(savepoint);
+                        }
                         assert list != null;
-                        evaluator.restore(savepoint);
-                        final int index = indexCalc.evaluateInteger(evaluator);
-                        int listSize = list.size();
-                        if (index >= listSize || index < 0) {
-                            return nullTuple;
-                        } else {
-                            final List<Member> members = list.get(index);
-                            return members.toArray(new Member[members.size()]);
+                        try {
+                            final int index =
+                                indexCalc.evaluateInteger(evaluator);
+                            int listSize = list.size();
+                            if (index >= listSize || index < 0) {
+                                return nullTuple;
+                            } else {
+                                final List<Member> members =
+                                    list.get(index);
+                                return members.toArray(
+                                    new Member[members.size()]);
+                            }
+                        } finally {
+                            evaluator.restore(savepoint);
                         }
                     }
                 };
@@ -174,36 +193,53 @@ class SetItemFunDef extends FunDefBase {
                 return new AbstractMemberCalc(call, calcs) {
                     public Member evaluateMember(Evaluator evaluator) {
                         final int savepoint = evaluator.savepoint();
-                        evaluator.setNonEmpty(false);
-                        final List<Member> list =
-                            listCalc.evaluateList(evaluator).slice(0);
-                        assert list != null;
-                        evaluator.restore(savepoint);
-                        final String result =
-                            stringCalcs[0].evaluateString(evaluator);
-                        for (Member member : list) {
-                            if (matchMember(member, result)) {
-                                return member;
-                            }
+                        final List<Member> list;
+                        try {
+                            evaluator.setNonEmpty(false);
+                            list =
+                                listCalc.evaluateList(evaluator).slice(0);
+                            assert list != null;
+                        } finally {
+                            evaluator.restore(savepoint);
                         }
-                        return nullMember;
+                        try {
+                            final String result =
+                                stringCalcs[0].evaluateString(evaluator);
+                            for (Member member : list) {
+                                if (matchMember(member, result)) {
+                                    return member;
+                                }
+                            }
+                            return nullMember;
+                        } finally {
+                            evaluator.restore(savepoint);
+                        }
                     }
                 };
             } else {
                 return new AbstractMemberCalc(call, calcs) {
                     public Member evaluateMember(Evaluator evaluator) {
                         final int savepoint = evaluator.savepoint();
-                        evaluator.setNonEmpty(false);
-                        final List<Member> list =
-                            listCalc.evaluateList(evaluator).slice(0);
-                        assert list != null;
-                        evaluator.restore(savepoint);
-                        final int index = indexCalc.evaluateInteger(evaluator);
-                        int listSize = list.size();
-                        if (index >= listSize || index < 0) {
-                            return nullMember;
-                        } else {
-                            return list.get(index);
+                        final List<Member> list;
+                        try {
+                            evaluator.setNonEmpty(false);
+                            list =
+                                listCalc.evaluateList(evaluator).slice(0);
+                            assert list != null;
+                        } finally {
+                            evaluator.restore(savepoint);
+                        }
+                        try {
+                            final int index =
+                                indexCalc.evaluateInteger(evaluator);
+                            int listSize = list.size();
+                            if (index >= listSize || index < 0) {
+                                return nullMember;
+                            } else {
+                                return list.get(index);
+                            }
+                        } finally {
+                            evaluator.restore(savepoint);
                         }
                     }
                 };

@@ -16,6 +16,7 @@ import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.rolap.RolapEvaluator;
+import mondrian.rolap.RolapUtil;
 import mondrian.util.CartesianProductList;
 
 import java.util.*;
@@ -925,26 +926,28 @@ public class CrossJoinFunDef extends FunDefBase {
         //
         // Put all of the All Members into Evaluator
         final int savepoint = evaluator.savepoint();
-        evaluator.setContext(allMemberList);
-
-        // Iterate over elements of the input list. If for any combination of
-        // Measure and non-All Members evaluation is non-null, then
-        // add it to the result List.
-        final TupleCursor cursor = list.tupleCursor();
-        while (cursor.forward()) {
-            cursor.setContext(evaluator);
-            if (checkData(
-                    nonAllMembers,
-                    nonAllMembers.length - 1,
-                    measureSet,
-                    evaluator))
-            {
-                result.addCurrent(cursor);
+        try {
+            evaluator.setContext(allMemberList);
+            // Iterate over elements of the input list. If for any
+            // combination of
+            // Measure and non-All Members evaluation is non-null, then
+            // add it to the result List.
+            final TupleCursor cursor = list.tupleCursor();
+            while (cursor.forward()) {
+                cursor.setContext(evaluator);
+                if (checkData(
+                        nonAllMembers,
+                        nonAllMembers.length - 1,
+                        measureSet,
+                        evaluator))
+                {
+                    result.addCurrent(cursor);
+                }
             }
+            return result;
+        } finally {
+            evaluator.restore(savepoint);
         }
-
-        evaluator.restore(savepoint);
-        return result;
     }
 
     /**
@@ -971,7 +974,9 @@ public class CrossJoinFunDef extends FunDefBase {
             // no measures found, use standard algorithm
             if (measureSet.isEmpty()) {
                 Object value = evaluator.evaluateCurrent();
-                if (value != null && !(value instanceof Throwable)) {
+                if (value != null
+                    && !(value instanceof Throwable))
+                {
                     return true;
                 }
             } else {
@@ -981,7 +986,9 @@ public class CrossJoinFunDef extends FunDefBase {
                 for (Member measure : measureSet) {
                     evaluator.setContext(measure);
                     Object value = evaluator.evaluateCurrent();
-                    if (value != null && !(value instanceof Throwable)) {
+                    if (value != null
+                        && !(value instanceof Throwable))
+                    {
                         found = true;
                     }
                 }

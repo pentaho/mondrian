@@ -167,31 +167,34 @@ class OrderFunDef extends FunDefBase {
             Flag sortKeyDir = keySpecList.get(0).getDirection();
             final TupleList tupleList;
             final int savepoint = subEvaluator.savepoint();
-            subEvaluator.setNonEmpty(false);
-            if (arity == 1) {
-                tupleList =
-                    new UnaryTupleList(
-                        sortMembers(
-                            subEvaluator,
-                            iterable.slice(0),
-                            list == null
+            try {
+                subEvaluator.setNonEmpty(false);
+                if (arity == 1) {
+                    tupleList =
+                        new UnaryTupleList(
+                            sortMembers(
+                                subEvaluator,
+                                iterable.slice(0),
+                                list == null
                                 ? null
-                                : list.slice(0),
-                            sortKeyCalc,
-                            sortKeyDir.descending,
-                            sortKeyDir.brk));
-            } else {
-                tupleList = sortTuples(
-                    subEvaluator,
-                    iterable,
-                    list,
-                    sortKeyCalc,
-                    sortKeyDir.descending,
-                    sortKeyDir.brk,
-                    arity);
+                                    : list.slice(0),
+                                    sortKeyCalc,
+                                    sortKeyDir.descending,
+                                    sortKeyDir.brk));
+                } else {
+                    tupleList = sortTuples(
+                        subEvaluator,
+                        iterable,
+                        list,
+                        sortKeyCalc,
+                        sortKeyDir.descending,
+                        sortKeyDir.brk,
+                        arity);
+                }
+                return tupleList;
+            } finally {
+                subEvaluator.restore(savepoint);
             }
-            subEvaluator.restore(savepoint);
-            return tupleList;
         }
 
         public TupleList evaluateList(Evaluator evaluator) {
@@ -208,30 +211,33 @@ class OrderFunDef extends FunDefBase {
                 Flag sortKeyDir = keySpecList.get(0).getDirection();
                 final TupleList tupleList;
                 final int savepoint = evaluator.savepoint();
-                evaluator.setNonEmpty(false);
-                if (arity == 1) {
-                    tupleList =
-                        new UnaryTupleList(
-                            sortMembers(
+                try {
+                    evaluator.setNonEmpty(false);
+                    if (arity == 1) {
+                        tupleList =
+                            new UnaryTupleList(
+                                sortMembers(
+                                    evaluator,
+                                    iterable.slice(0),
+                                    list == null ? null : list.slice(0),
+                                        sortKeyCalc,
+                                        sortKeyDir.descending,
+                                        sortKeyDir.brk));
+                    } else {
+                        tupleList =
+                            sortTuples(
                                 evaluator,
-                                iterable.slice(0),
-                                list == null ? null : list.slice(0),
+                                iterable,
+                                list,
                                 sortKeyCalc,
                                 sortKeyDir.descending,
-                                sortKeyDir.brk));
-                } else {
-                    tupleList =
-                        sortTuples(
-                            evaluator,
-                            iterable,
-                            list,
-                            sortKeyCalc,
-                            sortKeyDir.descending,
-                            sortKeyDir.brk,
-                            arity);
+                                sortKeyDir.brk,
+                                arity);
+                    }
+                    return tupleList;
+                } finally {
+                    evaluator.restore(savepoint);
                 }
-                evaluator.restore(savepoint);
-                return tupleList;
             } else {
                 purgeKeySpecList(keySpecList, list);
                 if (keySpecList.isEmpty()) {
@@ -239,26 +245,29 @@ class OrderFunDef extends FunDefBase {
                 }
                 final TupleList tupleList;
                 final int savepoint = evaluator.savepoint();
-                evaluator.setNonEmpty(false);
-                if (arity == 1) {
-                    tupleList =
-                        new UnaryTupleList(
-                            sortMembers(
+                try {
+                    evaluator.setNonEmpty(false);
+                    if (arity == 1) {
+                        tupleList =
+                            new UnaryTupleList(
+                                sortMembers(
+                                    evaluator,
+                                    iterable.slice(0),
+                                    list == null ? null : list.slice(0),
+                                        keySpecList));
+                    } else {
+                        tupleList =
+                            sortTuples(
                                 evaluator,
-                                iterable.slice(0),
-                                list == null ? null : list.slice(0),
-                                keySpecList));
-                } else {
-                    tupleList =
-                        sortTuples(
-                            evaluator,
-                            iterable,
-                            list,
-                            keySpecList,
-                            arity);
+                                iterable,
+                                list,
+                                keySpecList,
+                                arity);
+                    }
+                    return tupleList;
+                } finally {
+                    evaluator.restore(savepoint);
                 }
-                evaluator.restore(savepoint);
-                return tupleList;
             }
         }
 

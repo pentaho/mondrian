@@ -166,26 +166,29 @@ public class RolapNativeFilter extends RolapNativeSet {
         LOGGER.debug("using native filter");
 
         final int savepoint = evaluator.savepoint();
-        overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
-
-        // Now construct the TupleConstraint that contains both the CJ
-        // dimensions and the additional filter on them.
-        CrossJoinArg[] combinedArgs = cjArgs;
-        if (allArgs.size() == 2) {
-            CrossJoinArg[] predicateArgs = allArgs.get(1);
-            if (predicateArgs != null) {
-                // Combined the CJ and the additional predicate args.
-                combinedArgs =
-                    Util.appendArrays(cjArgs, predicateArgs);
+        try {
+            overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
+    
+            // Now construct the TupleConstraint that contains both the CJ
+            // dimensions and the additional filter on them.
+            CrossJoinArg[] combinedArgs = cjArgs;
+            if (allArgs.size() == 2) {
+                CrossJoinArg[] predicateArgs = allArgs.get(1);
+                if (predicateArgs != null) {
+                    // Combined the CJ and the additional predicate args.
+                    combinedArgs =
+                        Util.appendArrays(cjArgs, predicateArgs);
+                }
             }
+    
+            TupleConstraint constraint =
+                new FilterConstraint(
+                    combinedArgs, evaluator, measureGroupList, filterExpr);
+            return new SetEvaluator(
+                cjArgs, evaluator.getSchemaReader(), constraint);
+        } finally {
+            evaluator.restore(savepoint);
         }
-
-        TupleConstraint constraint =
-            new FilterConstraint(
-                combinedArgs, evaluator, measureGroupList, filterExpr);
-        evaluator.restore(savepoint);
-        return new SetEvaluator(
-            cjArgs, evaluator.getSchemaReader(), constraint);
     }
 }
 

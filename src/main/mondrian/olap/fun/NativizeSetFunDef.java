@@ -293,14 +293,16 @@ public class NativizeSetFunDef extends FunDefBase {
 
         private TupleList evaluateSimplifiedList(Evaluator evaluator) {
             final int savepoint = evaluator.savepoint();
-            evaluator.setNonEmpty(false);
-            evaluator.setNativeEnabled(false);
-            TupleList simplifiedList =
-                simpleCalc.evaluateList(evaluator);
-            evaluator.restore(savepoint);
-
-            dumpListToLog("simplified list", simplifiedList);
-            return simplifiedList;
+            try {
+                evaluator.setNonEmpty(false);
+                evaluator.setNativeEnabled(false);
+                TupleList simplifiedList =
+                        simpleCalc.evaluateList(evaluator);
+                dumpListToLog("simplified list", simplifiedList);
+                return simplifiedList;
+            } finally {
+                evaluator.restore(savepoint);
+            }
         }
 
         private TupleList evaluateNonNative(Evaluator evaluator) {
@@ -310,11 +312,14 @@ public class NativizeSetFunDef extends FunDefBase {
             ListCalc calc =
                 compiler.compileList(getOriginalExp(evaluator.getQuery()));
             final int savepoint = evaluator.savepoint();
-            evaluator.setNonEmpty(true);
-            evaluator.setNativeEnabled(false);
-            TupleList members = calc.evaluateList(evaluator);
-            evaluator.restore(savepoint);
-            return members;
+            try {
+                evaluator.setNonEmpty(true);
+                evaluator.setNativeEnabled(false);
+                TupleList members = calc.evaluateList(evaluator);
+                return members;
+            } finally {
+                evaluator.restore(savepoint);
+            }
         }
 
         private TupleList evaluateNative(
@@ -338,13 +343,16 @@ public class NativizeSetFunDef extends FunDefBase {
                     "%n"
                     + crossJoin.replaceAll(",", "%n, ")));
             final int savepoint = evaluator.savepoint();
-            evaluator.setNonEmpty(true);
-            evaluator.setNativeEnabled(true);
+            try {
+                evaluator.setNonEmpty(true);
+                evaluator.setNativeEnabled(true);
 
-            TupleList members = analyzer.mergeCalcMembers(
-                evaluateJoinExpression(evaluator, crossJoin));
-            evaluator.restore(savepoint);
-            return members;
+                TupleList members = analyzer.mergeCalcMembers(
+                    evaluateJoinExpression(evaluator, crossJoin));
+                return members;
+            } finally {
+                evaluator.restore(savepoint);
+            }
         }
 
         private Exp getOriginalExp(final Query query) {

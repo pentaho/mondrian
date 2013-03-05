@@ -392,36 +392,38 @@ public class FunUtil extends Util {
         List<Member> memberList,
         boolean parentsToo)
     {
-        // REVIEW: is this necessary?
         final int savepoint = evaluator.savepoint();
-
-        assert exp.getType() instanceof ScalarType;
-        Map<Member, Object> mapMemberToValue = new HashMap<Member, Object>();
-        for (Member member : memberIter) {
-            if (memberList != null) {
-                memberList.add(member);
+        try {
+            assert exp.getType() instanceof ScalarType;
+            Map<Member, Object> mapMemberToValue =
+                new HashMap<Member, Object>();
+            for (Member member : memberIter) {
+                if (memberList != null) {
+                    memberList.add(member);
+                }
+                while (true) {
+                    evaluator.setContext(member);
+                    Object result = exp.evaluate(evaluator);
+                    if (result == null) {
+                        result = Util.nullValue;
+                    }
+                    mapMemberToValue.put(member, result);
+                    if (!parentsToo) {
+                        break;
+                    }
+                    member = member.getParentMember();
+                    if (member == null) {
+                        break;
+                    }
+                    if (mapMemberToValue.containsKey(member)) {
+                        break;
+                    }
+                }
             }
-            while (true) {
-                evaluator.setContext(member);
-                Object result = exp.evaluate(evaluator);
-                if (result == null) {
-                    result = Util.nullValue;
-                }
-                mapMemberToValue.put(member, result);
-                if (!parentsToo) {
-                    break;
-                }
-                member = member.getParentMember();
-                if (member == null) {
-                    break;
-                }
-                if (mapMemberToValue.containsKey(member)) {
-                    break;
-                }
-            }
+            return mapMemberToValue;
+        } finally {
+            evaluator.restore(savepoint);
         }
-        evaluator.restore(savepoint);
-        return mapMemberToValue;
     }
 
     /**
@@ -442,20 +444,23 @@ public class FunUtil extends Util {
     {
         final int savepoint = evaluator.savepoint();
 
-        assert exp.getType() instanceof ScalarType;
-        final Map<List<Member>, Object> mapMemberToValue =
-            new HashMap<List<Member>, Object>();
-        for (int i = 0, count = tuples.size(); i < count; i++) {
-            List<Member> tuple = tuples.get(i);
-            evaluator.setContext(tuple);
-            Object result = exp.evaluate(evaluator);
-            if (result == null) {
-                result = Util.nullValue;
+        try {
+            assert exp.getType() instanceof ScalarType;
+            final Map<List<Member>, Object> mapMemberToValue =
+                    new HashMap<List<Member>, Object>();
+            for (int i = 0, count = tuples.size(); i < count; i++) {
+                List<Member> tuple = tuples.get(i);
+                evaluator.setContext(tuple);
+                Object result = exp.evaluate(evaluator);
+                if (result == null) {
+                    result = Util.nullValue;
+                }
+                mapMemberToValue.put(tuple, result);
             }
-            mapMemberToValue.put(tuple, result);
+            return mapMemberToValue;
+        } finally {
+            evaluator.restore(savepoint);
         }
-        evaluator.restore(savepoint);
-        return mapMemberToValue;
     }
 
     /**
@@ -1349,10 +1354,18 @@ public class FunUtil extends Util {
         boolean biased)
     {
         final int savepoint = evaluator.savepoint();
-        SetWrapper sw1 = evaluateSet(evaluator, members, exp1);
-        evaluator.restore(savepoint);
-        SetWrapper sw2 = evaluateSet(evaluator, members, exp2);
-        evaluator.restore(savepoint);
+        SetWrapper sw1;
+        try {
+            sw1 = evaluateSet(evaluator, members, exp1);
+        } finally {
+            evaluator.restore(savepoint);
+        }
+        SetWrapper sw2;
+        try {
+            sw2 = evaluateSet(evaluator, members, exp2);
+        } finally {
+            evaluator.restore(savepoint);
+        }
         // todo: because evaluateSet does not add nulls to the SetWrapper, this
         // solution may lead to mismatched lists and is therefore not robust
         return _covariance(sw1, sw2, biased);
@@ -3059,17 +3072,21 @@ public class FunUtil extends Util {
         public int compare(List<Member> a1, List<Member> a2) {
             int c = 0;
             final int savepoint = evaluator.savepoint();
-            for (int i = 0; i < arity; i++) {
-                Member m1 = a1.get(i), m2 = a2.get(i);
-                c = compareHierarchicallyButSiblingsByValue(m1, m2);
-                if (c != 0) {
-                    break;
+            try {
+                for (int i = 0; i < arity; i++) {
+                    Member m1 = a1.get(i), m2 = a2.get(i);
+                    c = compareHierarchicallyButSiblingsByValue(m1, m2);
+                    if (c != 0) {
+                        break;
+                    }
+                    // compareHierarchicallyButSiblingsByValue imposes a
+                    // total order
+                    assert m1.equals(m2);
+                    evaluator.setContext(m1);
                 }
-                // compareHierarchicallyButSiblingsByValue imposes a total order
-                assert m1.equals(m2);
-                evaluator.setContext(m1);
+            } finally {
+                evaluator.restore(savepoint);
             }
-            evaluator.restore(savepoint);
             return c;
         }
 
@@ -3112,14 +3129,17 @@ public class FunUtil extends Util {
         private int compareByValue(Member m1, Member m2) {
             int c;
             final int savepoint = evaluator.savepoint();
-            evaluator.setContext(m1);
-            Object v1 = calc.evaluate(evaluator);
-            evaluator.setContext(m2);
-            Object v2 = calc.evaluate(evaluator);
-            // important to restore the evaluator state
-            evaluator.restore(savepoint);
-            c = FunUtil.compareValues(v1, v2);
-            return c;
+            try {
+                evaluator.setContext(m1);
+                Object v1 = calc.evaluate(evaluator);
+                evaluator.setContext(m2);
+                Object v2 = calc.evaluate(evaluator);
+                c = FunUtil.compareValues(v1, v2);
+                return c;
+            } finally {
+                // important to restore the evaluator state
+                evaluator.restore(savepoint);
+            }
         }
     }
 

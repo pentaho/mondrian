@@ -275,10 +275,13 @@ public class SqlContextConstraint
             throw Util.newInternal("cannot restrict SQL to calculated member");
         }
         final int savepoint = evaluator.savepoint();
-        evaluator.setContext(parent);
-        SqlConstraintUtils.addContextConstraint(
-            sqlQuery, starSet, evaluator, strict);
-        evaluator.restore(savepoint);
+        try {
+            evaluator.setContext(parent);
+            SqlConstraintUtils.addContextConstraint(
+                sqlQuery, starSet, evaluator, strict);
+        } finally {
+            evaluator.restore(savepoint);
+        }
     }
 
     /**

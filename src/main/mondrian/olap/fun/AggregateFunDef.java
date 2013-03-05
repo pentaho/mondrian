@@ -107,12 +107,15 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             }
             if (aggregator != RolapAggregator.DistinctCount) {
                 final int savepoint = evaluator.savepoint();
-                evaluator.setNonEmpty(false);
-                final Object o =
-                    rollup.aggregate(
-                        evaluator, tupleList, calc);
-                evaluator.restore(savepoint);
-                return o;
+                try {
+                    evaluator.setNonEmpty(false);
+                    final Object o =
+                        rollup.aggregate(
+                            evaluator, tupleList, calc);
+                    return o;
+                } finally {
+                    evaluator.restore(savepoint);
+                }
             }
 
             // All that follows is logic for distinct count. It's not like the

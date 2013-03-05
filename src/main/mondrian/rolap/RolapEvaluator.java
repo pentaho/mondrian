@@ -271,9 +271,12 @@ public class RolapEvaluator implements Evaluator {
         // For other cell values (e.g. zero), the cell is deemed empty if the
         // number of fact table rows is zero.
         final int savepoint = savepoint();
-        setContext(measureCube.getFactCountMeasure());
-        o = evaluateCurrent();
-        restore(savepoint);
+        try {
+            setContext(measureCube.getFactCountMeasure());
+            o = evaluateCurrent();
+        } finally {
+            restore(savepoint);
+        }
         return o == null
            || (o instanceof Number && ((Number) o).intValue() == 0);
     }
