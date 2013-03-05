@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -1272,7 +1272,9 @@ public class CacheControlTest extends FoodMartTestCase {
         pw.flush();
 
         String tag = "output";
-        String expected = "${output}";
+        String expected =
+            MondrianProperties.instance().EnableNativeNonEmpty.get()
+                ? "${output}" : "${output2}";
         String actual = sw.toString();
         assertCacheStateEquals(tag, expected, actual);
     }

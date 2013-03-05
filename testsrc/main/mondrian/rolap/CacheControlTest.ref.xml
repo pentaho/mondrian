@@ -98,6 +98,38 @@ Cache state after flush:
 
 ]]>
         </Resource>
+        <Resource name="output2">
+            <![CDATA[Cache state before flush:
+*Segment Header
+Schema:[FoodMart]
+Checksum:[9cca66327439577753dd5c3144ab59b5]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {store.store_country=(*)}
+    {time_by_day.the_year=('1997')}]
+Excluded Regions:[]
+Compound Predicates:[]
+ID:[71e635239a2781c635737b4244e80f099d4a91470200de74c8da0113bbe0ed05]
+
+
+discard segment - it cannot be constrained and maintain consistency:
+*Segment Header
+Schema:[FoodMart]
+Checksum:[9cca66327439577753dd5c3144ab59b5]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {store.store_country=(*)}
+    {time_by_day.the_year=('1997')}]
+Excluded Regions:[]
+Compound Predicates:[]
+ID:[71e635239a2781c635737b4244e80f099d4a91470200de74c8da0113bbe0ed05]
+
+Cache state after flush:
+
+]]>
+        </Resource>
     </TestCase>
     <TestCase name="testPartialFlush">
         <Resource name="output">
