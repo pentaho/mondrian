@@ -27,6 +27,7 @@ public class ExecutionInfo extends Info {
     public final int cellRequestCount;
 
     public ExecutionInfo(
+        String stack,
         long executionId,
         int phaseCount,
         long cellCacheRequestCount,
@@ -40,6 +41,7 @@ public class ExecutionInfo extends Info {
         long sqlStatementExecuteNanos,
         int cellRequestCount)
     {
+        super(stack);
         this.executionId = executionId;
         this.phaseCount = phaseCount;
         this.cellCacheRequestCount = cellCacheRequestCount;

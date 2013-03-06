@@ -1041,10 +1041,10 @@ which happen after the fact. Setting this property too high will make the
 JVM run out of memory. Setting it too low might prevent some events from
 reaching the listeners of the monitor.</p>
 <p>This property is for internal use only and should not be changed
-unless required. Defaults to 10,000.</p>
+unless required. Defaults to 1,000.</p>
         </Description>
         <Type>int</Type>
-        <Default>10000</Default>
+        <Default>1000</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>MemoryMonitor</Name>

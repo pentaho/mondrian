@@ -16,7 +16,16 @@ import mondrian.util.BeanMap;
  * {@link mondrian.server.monitor.Monitor} for server state.
  */
 abstract class Info {
-    protected Info() {
+
+    /**
+     * A printout of the stack trace which represents the code stack
+     * when the event was created. Useful for debugging purposes and
+     * identifying orphaned connections and statements.
+     */
+    public final String stack;
+
+    protected Info(String stack) {
+        this.stack = stack;
     }
 
     @Override
