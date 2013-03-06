@@ -192,17 +192,23 @@ class MonitorImpl
      */
     private static class MutableServerInfo {
         private final MutableSqlStatementInfo aggSql =
-            new MutableSqlStatementInfo(null, -1);
+            new MutableSqlStatementInfo(null, -1, null);
         private final MutableExecutionInfo aggExec =
-            new MutableExecutionInfo(null, -1);
+            new MutableExecutionInfo(null, -1, null);
         private final MutableStatementInfo aggStmt =
-            new MutableStatementInfo(null, -1);
+            new MutableStatementInfo(null, -1, null);
         private final MutableConnectionInfo aggConn =
-            new MutableConnectionInfo();
+            new MutableConnectionInfo(null);
+        private final String stack;
+
+        public MutableServerInfo(String stack) {
+            this.stack = stack;
+        }
 
         public ServerInfo fix() {
             Util.MemoryInfo.Usage memoryUsage = MEMORY_INFO.get();
             return new ServerInfo(
+                stack,
                 aggConn.startCount,
                 aggConn.endCount,
                 aggStmt.startCount,
@@ -240,14 +246,20 @@ class MonitorImpl
      */
     private static class MutableConnectionInfo {
         private final MutableExecutionInfo aggExec =
-            new MutableExecutionInfo(null, -1);
+            new MutableExecutionInfo(null, -1, null);
         private final MutableStatementInfo aggStmt =
-            new MutableStatementInfo(null, -1);
+            new MutableStatementInfo(null, -1, null);
         private int startCount;
         private int endCount;
+        private final String stack;
+
+        public MutableConnectionInfo(String stack) {
+            this.stack = stack;
+        }
 
         public ConnectionInfo fix() {
             return new ConnectionInfo(
+                stack,
                 aggExec.cellCacheHitCount,
                 aggExec.cellCacheRequestCount,
                 aggExec.cellCacheMissCount,
@@ -267,22 +279,26 @@ class MonitorImpl
         private final MutableConnectionInfo conn;
         private final long statementId;
         private final MutableExecutionInfo aggExec =
-            new MutableExecutionInfo(null, -1);
+            new MutableExecutionInfo(null, -1, null);
         private final MutableSqlStatementInfo aggSql =
-            new MutableSqlStatementInfo(null, -1);
+            new MutableSqlStatementInfo(null, -1, null);
         private int startCount;
         private int endCount;
+        private final String stack;
 
         public MutableStatementInfo(
             MutableConnectionInfo conn,
-            long statementId)
+            long statementId,
+            String stack)
         {
             this.statementId = statementId;
             this.conn = conn;
+            this.stack = stack;
         }
 
         public StatementInfo fix() {
             return new StatementInfo(
+                stack,
                 statementId,
                 aggExec.startCount,
                 aggExec.endCount,
@@ -316,7 +332,7 @@ class MonitorImpl
         private final MutableStatementInfo stmt;
         private final long executionId;
         private final MutableSqlStatementInfo aggSql =
-            new MutableSqlStatementInfo(null, -1);
+            new MutableSqlStatementInfo(null, -1, null);
         private int startCount;
         private int phaseCount;
         private int endCount;
@@ -335,17 +351,21 @@ class MonitorImpl
         private int cellCacheSegmentDeleteCount;
         private int cellCacheSegmentCoordinateSum;
         private int cellCacheSegmentCellCount;
+        private final String stack;
 
         public MutableExecutionInfo(
             MutableStatementInfo stmt,
-            long executionId)
+            long executionId,
+            String stack)
         {
             this.stmt = stmt;
             this.executionId = executionId;
+            this.stack = stack;
         }
 
         public ExecutionInfo fix() {
             return new ExecutionInfo(
+                stack,
                 executionId,
                 phaseCount,
                 cellCacheRequestCount,
@@ -375,17 +395,21 @@ class MonitorImpl
         private int cellRequestCount;
         private long executeNanos;
         private long rowFetchCount;
+        private final String stack;
 
         public MutableSqlStatementInfo(
             MutableStatementInfo stmt,
-            long sqlStatementId)
+            long sqlStatementId,
+            String stack)
         {
             this.sqlStatementId = sqlStatementId;
             this.stmt = stmt;
+            this.stack = stack;
         }
 
         public SqlStatementInfo fix() {
             return new SqlStatementInfo(
+                stack,
                 sqlStatementId);
         }
     }
@@ -393,19 +417,115 @@ class MonitorImpl
     private static class Handler implements CommandVisitor<Object> {
 
         private final MutableServerInfo server =
-            new MutableServerInfo();
+            new MutableServerInfo(null);
 
         private final Map<Integer, MutableConnectionInfo> connectionMap =
-            new HashMap<Integer, MutableConnectionInfo>();
+            new LinkedHashMap<Integer, MutableConnectionInfo>(
+                MondrianProperties.instance().ExecutionHistorySize.get(),
+                0.8f,
+                false)
+            {
+                private final int maxSize =
+                    MondrianProperties.instance().ExecutionHistorySize.get();
+                private static final long serialVersionUID = 1L;
+                protected boolean removeEldestEntry(
+                    Map.Entry<Integer, MutableConnectionInfo> e)
+                {
+                    if (size() > maxSize) {
+                        if (RolapUtil.MONITOR_LOGGER.isTraceEnabled()) {
+                            RolapUtil.MONITOR_LOGGER.trace(
+                                "ConnectionInfo("
+                                + e.getKey()
+                                + ") evicted. Stack is:"
+                                + Util.nl
+                                + e.getValue().stack);
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+            };
 
         private final Map<Long, MutableSqlStatementInfo> sqlStatementMap =
-            new HashMap<Long, MutableSqlStatementInfo>();
+            new LinkedHashMap<Long, MutableSqlStatementInfo>(
+                MondrianProperties.instance().ExecutionHistorySize.get(),
+                0.8f,
+                false)
+            {
+                private final int maxSize =
+                    MondrianProperties.instance().ExecutionHistorySize.get();
+                private static final long serialVersionUID = 1L;
+                protected boolean removeEldestEntry(
+                    Map.Entry<Long, MutableSqlStatementInfo> e)
+                {
+                    if (size() > maxSize) {
+                        if (RolapUtil.MONITOR_LOGGER.isTraceEnabled()) {
+                            RolapUtil.MONITOR_LOGGER.trace(
+                                "StatementInfo("
+                                + e.getKey()
+                                + ") evicted. Stack is:"
+                                + Util.nl
+                                + e.getValue().stack);
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+            };
 
         private final Map<Long, MutableStatementInfo> statementMap =
-            new HashMap<Long, MutableStatementInfo>();
+            new LinkedHashMap<Long, MutableStatementInfo>(
+                MondrianProperties.instance().ExecutionHistorySize.get(),
+                0.8f,
+                false)
+            {
+                private final int maxSize =
+                    MondrianProperties.instance().ExecutionHistorySize.get();
+                private static final long serialVersionUID = 1L;
+                protected boolean removeEldestEntry(
+                    Map.Entry<Long, MutableStatementInfo> e)
+                {
+                    if (size() > maxSize) {
+                        if (RolapUtil.MONITOR_LOGGER.isTraceEnabled()) {
+                            RolapUtil.MONITOR_LOGGER.trace(
+                                "StatementInfo("
+                                + e.getKey()
+                                + ") evicted. Stack is:"
+                                + Util.nl
+                                + e.getValue().stack);
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+            };
 
         private final Map<Long, MutableExecutionInfo> executionMap =
-            new HashMap<Long, MutableExecutionInfo>();
+            new LinkedHashMap<Long, MutableExecutionInfo>(
+                MondrianProperties.instance().ExecutionHistorySize.get(),
+                0.8f,
+                false)
+            {
+                private final int maxSize =
+                    MondrianProperties.instance().ExecutionHistorySize.get();
+                private static final long serialVersionUID = 1L;
+                protected boolean removeEldestEntry(
+                    Map.Entry<Long, MutableExecutionInfo> e)
+                {
+                    if (size() > maxSize) {
+                        if (RolapUtil.MONITOR_LOGGER.isTraceEnabled()) {
+                            RolapUtil.MONITOR_LOGGER.trace(
+                                "ExecutionInfo("
+                                + e.getKey()
+                                + ") evicted. Stack is:"
+                                + Util.nl
+                                + e.getValue().stack);
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+        };
 
         /**
          * Holds info for executions that have ended. Cell cache events may
@@ -423,7 +543,18 @@ class MonitorImpl
                 protected boolean removeEldestEntry(
                     Map.Entry<Long, MutableExecutionInfo> e)
                 {
-                    return size() > size();
+                    if (size() > maxSize) {
+                        if (RolapUtil.MONITOR_LOGGER.isTraceEnabled()) {
+                            RolapUtil.MONITOR_LOGGER.trace(
+                                "Retired ExecutionInfo("
+                                + e.getKey()
+                                + ") evicted. Stack is:"
+                                + Util.nl
+                                + e.getValue().stack);
+                        }
+                        return true;
+                    }
+                    return false;
                 }
         };
 
@@ -440,10 +571,19 @@ class MonitorImpl
         }
 
         public Object visit(ConnectionStartEvent event) {
-            final MutableConnectionInfo conn = new MutableConnectionInfo();
+            final MutableConnectionInfo conn =
+                new MutableConnectionInfo(event.stack);
             connectionMap.put(event.connectionId, conn);
             foo(conn, event);
             foo(server.aggConn, event);
+            if (RolapUtil.MONITOR_LOGGER.isTraceEnabled()) {
+                RolapUtil.MONITOR_LOGGER.trace(
+                    "Connection("
+                    + event.connectionId
+                    + ") created. stack is:"
+                    + Util.nl
+                    + event.stack);
+            }
             return null;
         }
 
@@ -483,11 +623,20 @@ class MonitorImpl
                 return missing(event);
             }
             final MutableStatementInfo stmt =
-                new MutableStatementInfo(conn, event.statementId);
+                new MutableStatementInfo(
+                    conn, event.statementId, event.stack);
             statementMap.put(event.statementId, stmt);
             foo(stmt, event);
             foo(conn.aggStmt, event);
             foo(server.aggStmt, event);
+            if (RolapUtil.MONITOR_LOGGER.isTraceEnabled()) {
+                RolapUtil.MONITOR_LOGGER.trace(
+                    "Statement("
+                    + event.statementId
+                    + ") created. stack is:"
+                    + Util.nl
+                    + event.stack);
+            }
             return null;
         }
 
@@ -528,13 +677,22 @@ class MonitorImpl
                 return missing(event);
             }
             final MutableExecutionInfo exec =
-                new MutableExecutionInfo(stmt, event.executionId);
+                new MutableExecutionInfo(
+                    stmt, event.executionId, event.stack);
             executionMap.put(event.executionId, exec);
 
             foo(exec, event);
             foo(stmt.aggExec, event);
             foo(stmt.conn.aggExec, event);
             foo(server.aggExec, event);
+            if (RolapUtil.MONITOR_LOGGER.isTraceEnabled()) {
+                RolapUtil.MONITOR_LOGGER.trace(
+                    "Execution("
+                    + event.executionId
+                    + ") created. stack is:"
+                    + Util.nl
+                    + event.stack);
+            }
             return null;
         }
 
@@ -687,11 +845,22 @@ class MonitorImpl
                 return missing(event);
             }
             final MutableSqlStatementInfo sql =
-                new MutableSqlStatementInfo(stmt, event.sqlStatementId);
+                new MutableSqlStatementInfo(
+                    stmt,
+                    event.sqlStatementId,
+                    event.stack);
             sqlStatementMap.put(event.sqlStatementId, sql);
             foo(sql, event);
             foo(sql.stmt.aggSql, event);
             foo(server.aggSql, event);
+            if (RolapUtil.MONITOR_LOGGER.isTraceEnabled()) {
+                RolapUtil.MONITOR_LOGGER.trace(
+                    "SqlStatement("
+                    + event.sqlStatementId
+                    + ") created. stack is:"
+                    + Util.nl
+                    + event.stack);
+            }
             return null;
         }
 

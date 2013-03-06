@@ -18,7 +18,11 @@ package mondrian.server.monitor;
 public class SqlStatementInfo extends Info {
     public final long sqlStatementId;
 
-    public SqlStatementInfo(long sqlStatementId) {
+    public SqlStatementInfo(
+        String stack,
+        long sqlStatementId)
+    {
+        super(stack);
         this.sqlStatementId = sqlStatementId;
     }
 }

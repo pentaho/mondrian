@@ -23,6 +23,7 @@ public class ConnectionInfo extends Info {
     public final int executeEndCount;
 
     public ConnectionInfo(
+        String stack,
         int cellCacheHitCount,
         int cellCacheRequestCount,
         int cellCacheMissCount,
@@ -32,6 +33,7 @@ public class ConnectionInfo extends Info {
         int executeStartCount,
         int executeEndCount)
     {
+        super(stack);
         this.cellCacheHitCount = cellCacheHitCount;
         this.cellCacheRequestCount = cellCacheRequestCount;
         this.cellCacheMissCount = cellCacheMissCount;

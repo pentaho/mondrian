@@ -29,6 +29,7 @@ public class StatementInfo extends Info {
     public final int cellRequestCount;
 
     public StatementInfo(
+        String stack,
         long statementId,
         int executeStartCount,
         int executeEndCount,
@@ -44,6 +45,7 @@ public class StatementInfo extends Info {
         long sqlStatementExecuteNanos,
         int cellRequestCount)
     {
+        super(stack);
         this.statementId = statementId;
         this.cellCacheRequestCount = cellCacheRequestCount;
         this.phaseCount = phaseCount;

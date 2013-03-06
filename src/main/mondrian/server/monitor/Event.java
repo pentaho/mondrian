@@ -9,6 +9,11 @@
 */
 package mondrian.server.monitor;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+import mondrian.rolap.RolapUtil;
+
 /**
  * Base class for an event of interest.
  *
@@ -22,6 +27,13 @@ public abstract class Event implements Message {
     public final long timestamp;
 
     /**
+     * When {@link RolapUtil#MONITOR_LOGGER} is set to TRACE,
+     * this field will contain the stack of the code which
+     * created this event.
+     */
+    public final String stack;
+
+    /**
      * Creates an Event.
      *
      * @param timestamp Timestamp
@@ -31,6 +43,17 @@ public abstract class Event implements Message {
         long timestamp)
     {
         this.timestamp = timestamp;
+        if (RolapUtil.MONITOR_LOGGER.isTraceEnabled()) {
+            try {
+                throw new Exception();
+            } catch (Exception e) {
+                StringWriter sw = new StringWriter();
+                e.printStackTrace(new PrintWriter(sw, true));
+                this.stack = sw.toString();
+            }
+        } else {
+            this.stack = null;
+        }
     }
 }
 

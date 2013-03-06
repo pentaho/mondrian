@@ -103,6 +103,7 @@ public class ServerInfo extends Info {
     public final int cellCoordinateCount;
 
     public ServerInfo(
+        String stack,
         int connectionStartCount,
         int connectionEndCount,
         int statementStartCount,
@@ -131,6 +132,7 @@ public class ServerInfo extends Info {
         int cellCount,
         int cellCoordinateCount)
     {
+        super(stack);
         this.connectionStartCount = connectionStartCount;
         this.connectionEndCount = connectionEndCount;
         this.statementStartCount = statementStartCount;
