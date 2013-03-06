@@ -17,7 +17,7 @@
                     <member>[Employee].[Pay Type].[All Pay Types]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                     <member>[Employee].[Position].[All Position]</member>
-                    <member>[Department].[All Departments]</member>
+                    <member>[Department].[Department].[All Departments]</member>
                     <member>[Employee].[Employees].[All Employees]</member>
                 </tuple>
             </tuples>
