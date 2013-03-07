@@ -171,8 +171,8 @@ public class DateTableBuilderTest extends TestCase {
             Locale.FRANCE);
         TestContext.assertEqualsVerbose(
             "JULIAN|YYMMDD|YYYYMMDD|DATE|DAY_OF_WEEK|DAY_OF_WEEK_IN_MONTH|DAY_OF_WEEK_NAME|MONTH_NAME|YEAR|DAY_OF_MONTH|WEEK_OF_YEAR|MONTH|QUARTER|\n"
-            + "2455926|111230|20111230|2011-12-30|6|5|vendredi|décembre|2011|30|53|12|Q4|\n"
-            + "2455927|111231|20111231|2011-12-31|7|5|samedi|décembre|2011|31|53|12|Q4|\n"
+            + "2455926|111230|20111230|2011-12-30|6|5|vendredi|dÃ©cembre|2011|30|53|12|Q4|\n"
+            + "2455927|111231|20111231|2011-12-31|7|5|samedi|dÃ©cembre|2011|31|53|12|Q4|\n"
             + "2455928|120101|20120101|2012-01-01|1|1|dimanche|janvier|2012|1|1|1|Q1|\n"
             + "2455929|120102|20120102|2012-01-02|2|1|lundi|janvier|2012|2|1|1|Q1|\n",
             buf.toString());
