@@ -176,7 +176,7 @@ public class SchemaVersionTest extends FoodMartTestCase {
         + "        </Table>\n"
         + "    </PhysicalSchema>\n"
         + "\n"
-        + "    <Dimension name='Time' table='time_by_day' type='TimeDimension' key='Time Id'>\n"
+        + "    <Dimension name='Time' table='time_by_day' type='TIME' key='Time Id'>\n"
         + "      <Attributes>\n"
         + "          <Attribute name='Year' keyColumn='the_year' levelType='TimeYears'/>\n"
         + "          <Attribute name='Quarter' levelType='TimeQuarters'>\n"
