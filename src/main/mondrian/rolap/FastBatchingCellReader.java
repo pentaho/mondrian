@@ -66,6 +66,8 @@ public class FastBatchingCellReader implements CellReader {
     private int pendingCount;
 
     private final AggregationManager aggMgr;
+    
+    private final boolean cacheEnabled;
 
     private final SegmentCacheManager cacheMgr;
 
@@ -97,6 +99,7 @@ public class FastBatchingCellReader implements CellReader {
         this.aggMgr = aggMgr;
         cacheMgr = aggMgr.cacheMgr;
         pinnedSegments = this.aggMgr.createPinSet();
+        cacheEnabled = !MondrianProperties.instance().DisableCaching.get();
     }
 
     public Object get(RolapEvaluator evaluator) {
@@ -121,7 +124,7 @@ public class FastBatchingCellReader implements CellReader {
         // synchronous request for the cell segment. If it is in the cache, it
         // will be worth the wait, because we can avoid the effort of batching
         // up requests that could have been satisfied by the same segment.
-        if (!MondrianProperties.instance().DisableCaching.get()
+        if (cacheEnabled
             && missCount == 0)
         {
             SegmentWithData segmentWithData = cacheMgr.peek(request);
