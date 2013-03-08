@@ -207,7 +207,7 @@ public class RoleImpl implements Role {
     public Access getAccess(Dimension dimension) {
         assert dimension != null;
         // Check for explicit rules.
-        Access access = dimensionGrants.get(dimension);
+        Access access = getDimensionGrant(dimension);
         if (access == Access.CUSTOM) {
             // For legacy reasons, if there are no accessible hierarchies
             // and the dimension has an access level of custom, we deny.
@@ -278,6 +278,19 @@ public class RoleImpl implements Role {
         }
     }
 
+    private Access getDimensionGrant(final Dimension dimension) {
+        if (dimension.isMeasures()) {
+            for (Dimension key : dimensionGrants.keySet()) {
+                if (key == dimension) {
+                    return dimensionGrants.get(key);
+                }
+            }
+            return null;
+        } else {
+            return dimensionGrants.get(dimension);
+        }
+    }
+
     /**
      * This method is used to check if the access rights over a dimension
      * that might be inherited from the parent cube.
@@ -286,7 +299,8 @@ public class RoleImpl implements Role {
      * argument.
      */
     private Access checkDimensionAccessByCubeInheritance(Dimension dimension) {
-        assert dimensionGrants.containsKey(dimension) == false;
+        assert dimensionGrants.containsKey(dimension) == false
+               || dimension.isMeasures();
         for (Map.Entry<Cube, Access> cubeGrant : cubeGrants.entrySet()) {
             final Access access = toAccess(cubeGrant.getValue());
             // The 'none' and 'custom' access level are not good enough

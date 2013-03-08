@@ -2998,6 +2998,49 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "{[Time].[1997], [Product].[All Products]}\n"
                 + "Row #0: 74,748\n");
     }
+
+    public void testMondrian1434() {
+        String roleDef =
+            "<Role name=\"dev\">"
+                + "    <SchemaGrant access=\"all\">"
+                + "      <CubeGrant cube=\"Sales\" access=\"all\">"
+                + "      </CubeGrant>"
+                + "      <CubeGrant cube=\"HR\" access=\"all\">"
+                + "      </CubeGrant>"
+                + "      <CubeGrant cube=\"Warehouse and Sales\" access=\"all\">"
+                + "         <HierarchyGrant hierarchy=\"Measures\" access=\"custom\">"
+                + "            <MemberGrant member=\"[Measures].[Warehouse Sales]\" access=\"all\">"
+                + "            </MemberGrant>"
+                + "         </HierarchyGrant>"
+                + "     </CubeGrant>"
+                + "  </SchemaGrant>"
+                + "</Role>";
+        TestContext testContext = TestContext.instance()
+            .create(null, null, null, null, null, roleDef).withRole("dev");
+        testContext.executeQuery(
+            " select from [Sales] where {[Measures].[Unit Sales]}");
+
+        roleDef =
+            "<Role name=\"dev\">"
+                + "    <SchemaGrant access=\"all\">"
+                + "      <CubeGrant cube=\"Sales\" access=\"all\">"
+                + "         <HierarchyGrant hierarchy=\"Measures\" access=\"custom\">"
+                + "            <MemberGrant member=\"[Measures].[Unit Sales]\" access=\"all\">"
+                + "            </MemberGrant>"
+                + "         </HierarchyGrant>"
+                + "      </CubeGrant>"
+                + "      <CubeGrant cube=\"HR\" access=\"all\">"
+                + "      </CubeGrant>"
+                + "      <CubeGrant cube=\"Warehouse and Sales\" access=\"all\">"
+                + "     </CubeGrant>"
+                + "  </SchemaGrant>"
+                + "</Role>";
+        testContext = TestContext.instance()
+            .create(null, null, null, null, null, roleDef).withRole("dev");
+        testContext.executeQuery(
+            " select from [Warehouse and Sales] where {[Measures].[Store Sales]}");
+        // test is that there is no exception
+    }
 }
 
 // End AccessControlTest.java
