@@ -3307,6 +3307,7 @@ public class MondrianFoodMartLoader {
                 case GREENPLUM:
                 case LUCIDDB:
                 case NETEZZA:
+                case HSQLDB:
                     return name;
                 case MYSQL:
                 case INFOBRIGHT:
