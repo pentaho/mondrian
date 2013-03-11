@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2011 Pentaho
+// Copyright (C) 2011-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server.monitor;
@@ -29,6 +29,7 @@ public class StatementInfo extends Info {
     public final int cellRequestCount;
 
     public StatementInfo(
+        String stack,
         long statementId,
         int executeStartCount,
         int executeEndCount,
@@ -44,6 +45,7 @@ public class StatementInfo extends Info {
         long sqlStatementExecuteNanos,
         int cellRequestCount)
     {
+        super(stack);
         this.statementId = statementId;
         this.cellCacheRequestCount = cellCacheRequestCount;
         this.phaseCount = phaseCount;

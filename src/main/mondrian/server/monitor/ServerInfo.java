@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho
+// Copyright (C) 2011-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server.monitor;
@@ -103,6 +103,7 @@ public class ServerInfo extends Info {
     public final int cellCoordinateCount;
 
     public ServerInfo(
+        String stack,
         int connectionStartCount,
         int connectionEndCount,
         int statementStartCount,
@@ -131,6 +132,7 @@ public class ServerInfo extends Info {
         int cellCount,
         int cellCoordinateCount)
     {
+        super(stack);
         this.connectionStartCount = connectionStartCount;
         this.connectionEndCount = connectionEndCount;
         this.statementStartCount = statementStartCount;
