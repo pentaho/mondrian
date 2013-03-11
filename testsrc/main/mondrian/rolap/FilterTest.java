@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2011 Pentaho and others
+// Copyright (C) 2009-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -1106,6 +1106,106 @@ public class FilterTest extends BatchTestCase {
         assertQueryReturns(query1, expectedResult1);
         assertQueryReturns(query2, expectedResult2);
     }
+
+    /**
+     * http://jira.pentaho.com/browse/MONDRIAN-1458
+     * When using a multi value IN clause which includes null values
+     * against a collapsed field on an aggregate table, the dimension table
+     * field was referenced as the column expression, causing sql errors.
+     */
+    public void testMultiValueInWithNullVals() {
+        // MONDRIAN-1458 - Native exclusion predicate doesn't use agg table
+        // when checking for nulls
+        TestContext context = getTestContext();
+        if (!propSaver.properties.EnableNativeCrossJoin.get()
+            || !propSaver.properties.ReadAggregates.get()
+            || !propSaver.properties.UseAggregates.get())
+        {
+            return;
+        }
+
+        String sql;
+        if (!context.getDialect().supportsMultiValueInExpr()) {
+            sql = "select `agg_g_ms_pcat_sales_fact_1997`.`product_family` "
+                + "as `c0`,"
+                + " `agg_g_ms_pcat_sales_fact_1997`.`product_department` as "
+                + "`c1`,"
+                + " `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c2` "
+                + "from `agg_g_ms_pcat_sales_fact_1997` as "
+                + "`agg_g_ms_pcat_sales_fact_1997` "
+                + "where (not ((`agg_g_ms_pcat_sales_fact_1997`."
+                + "`product_family` = 'Food'"
+                + " and `agg_g_ms_pcat_sales_fact_1997`."
+                + "`product_department` = 'Baked Goods') "
+                + "or (`agg_g_ms_pcat_sales_fact_1997`.`product_family` "
+                + "= 'Drink' "
+                + "and `agg_g_ms_pcat_sales_fact_1997`."
+                + "`product_department` = 'Dairy')) "
+                + "or ((`agg_g_ms_pcat_sales_fact_1997`."
+                + "`product_department` is null "
+                + "or `agg_g_ms_pcat_sales_fact_1997`."
+                + "`product_family` is null) "
+                + "and not((`agg_g_ms_pcat_sales_fact_1997`.`product_family`"
+                + " = 'Food' "
+                + "and `agg_g_ms_pcat_sales_fact_1997`.`product_department` "
+                + "= 'Baked Goods') "
+                + "or (`agg_g_ms_pcat_sales_fact_1997`.`product_family` = "
+                + "'Drink' "
+                + "and `agg_g_ms_pcat_sales_fact_1997`.`product_department` "
+                + "= 'Dairy')))) "
+                + "group by `agg_g_ms_pcat_sales_fact_1997`.`product_family`,"
+                + " `agg_g_ms_pcat_sales_fact_1997`.`product_department`,"
+                + " `agg_g_ms_pcat_sales_fact_1997`.`gender` "
+                + "order by ISNULL(`agg_g_ms_pcat_sales_fact_1997`."
+                + "`product_family`) ASC,"
+                + " `agg_g_ms_pcat_sales_fact_1997`.`product_family` ASC,"
+                + " ISNULL(`agg_g_ms_pcat_sales_fact_1997`."
+                + "`product_department`) ASC,"
+                + " `agg_g_ms_pcat_sales_fact_1997`.`product_department` ASC,"
+                + " ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC,"
+                + " `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC";
+        } else {
+                sql = "select `agg_g_ms_pcat_sales_fact_1997`."
+                + "`product_family` as `c0`,"
+                + " `agg_g_ms_pcat_sales_fact_1997`.`product_department` as `c1`,"
+                + " `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c2` "
+                + "from `agg_g_ms_pcat_sales_fact_1997` as "
+                + "`agg_g_ms_pcat_sales_fact_1997` "
+                + "where (not ((`agg_g_ms_pcat_sales_fact_1997`.`product_department`,"
+                + " `agg_g_ms_pcat_sales_fact_1997`.`product_family`) in "
+                + "(('Baked Goods',"
+                + " 'Food'),"
+                + " ('Dairy',"
+                + " 'Drink'))) or (`agg_g_ms_pcat_sales_fact_1997`."
+                + "`product_department` "
+                + "is null or `agg_g_ms_pcat_sales_fact_1997`.`product_family` "
+                + "is null)) "
+                + "group by `agg_g_ms_pcat_sales_fact_1997`.`product_family`,"
+                + " `agg_g_ms_pcat_sales_fact_1997`.`product_department`,"
+                + " `agg_g_ms_pcat_sales_fact_1997`.`gender` order by "
+                + "ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_family`) ASC,"
+                + " `agg_g_ms_pcat_sales_fact_1997`.`product_family` ASC,"
+                + " ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_department`) ASC,"
+                + " `agg_g_ms_pcat_sales_fact_1997`.`product_department` ASC,"
+                + " ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC,"
+                + " `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC";
+        }
+        String mdx =  "select NonEmptyCrossjoin( \n"+
+            "   filter ( product.[product department].members,\n"+
+            "      NOT ([Product].CurrentMember IN  \n"+
+            "  { [Product].[Food].[Baked Goods], Product.Drink.Dairy})),\n"+
+            "   gender.gender.members\n"+
+            ")\n"+
+            "on 0 from sales\n";
+        assertQuerySql(
+            mdx,
+            new SqlPattern[] {
+                new SqlPattern(Dialect.DatabaseProduct.MYSQL, sql, null)
+            });
+    }
+
+
+
 }
 
 // End FilterTest.java

@@ -882,7 +882,8 @@ public class SqlConstraintUtils {
                             sqlQuery,
                             baseCube,
                             members.get(0),
-                            fromLevel));
+                            fromLevel,
+                            aggStar));
                 }
                 return condition.toString();
             }
@@ -1083,7 +1084,8 @@ public class SqlConstraintUtils {
                     sqlQuery,
                     baseCube,
                     members.get(0),
-                    fromLevel));
+                    fromLevel,
+                    aggStar));
             condition.append(" and not(");
             condition.append(condition2.toString());
             condition.append("))");
@@ -1302,47 +1304,8 @@ public class SqlConstraintUtils {
             if (m.isAll()) {
                 continue;
             }
-            RolapLevel level = m.getLevel();
-            RolapHierarchy hierarchy = level.getHierarchy();
-
-            // this method can be called within the context of shared members,
-            // outside of the normal rolap star, therefore we need to
-            // check the level to see if it is a shared or cube level.
-
-            RolapStar.Column column = null;
-            if (level instanceof RolapCubeLevel) {
-                column = ((RolapCubeLevel)level).getBaseStarKeyColumn(baseCube);
-            }
-
-            // REVIEW: The following code mostly uses the name column (or name
-            // expression) of the level. Shouldn't it use the key column (or key
-            // expression)?
-            String columnString;
-            if (column != null) {
-                if (aggStar != null) {
-                    // this assumes that the name column is identical to the
-                    // id column
-                    int bitPos = column.getBitPosition();
-                    AggStar.Table.Column aggColumn =
-                        aggStar.lookupColumn(bitPos);
-                    AggStar.Table table = aggColumn.getTable();
-                    table.addToFrom(sqlQuery, false, true);
-                    columnString = aggColumn.generateExprString(sqlQuery);
-                } else {
-                    RolapStar.Table targetTable = column.getTable();
-                    hierarchy.addToFrom(sqlQuery, targetTable);
-                    columnString = column.generateExprString(sqlQuery);
-                }
-            } else {
-                assert (aggStar == null);
-                hierarchy.addToFrom(sqlQuery, level.getKeyExp());
-
-                MondrianDef.Expression nameExp = level.getNameExp();
-                if (nameExp == null) {
-                    nameExp = level.getKeyExp();
-                }
-                columnString = nameExp.getExpression(sqlQuery);
-            }
+            String columnString = getColumnString(
+                sqlQuery, aggStar, m.getLevel(), baseCube);
 
             if (ordinalInMultiple++ > 0) {
                 columnBuf.append(", ");
@@ -1448,6 +1411,59 @@ public class SqlConstraintUtils {
     }
 
     /**
+     * Returns the column expression for the level, assuring
+     * appropriate tables are added to the from clause of
+     * sqlQuery if required.
+     * Determines the correct table and field based on the cube
+     * and whether an AggStar is present.
+     */
+    private static String getColumnString(
+        SqlQuery sqlQuery, AggStar aggStar, RolapLevel level,
+        RolapCube baseCube)
+    {
+        String columnString;
+        RolapStar.Column column = null;
+        if (level instanceof RolapCubeLevel) {
+            // this method can be called within the context of shared members,
+            // outside of the normal rolap star, therefore we need to
+            // check the level to see if it is a shared or cube level.
+            column = ((RolapCubeLevel)level).getBaseStarKeyColumn(baseCube);
+        }
+
+        // REVIEW: The following code mostly uses the name column (or name
+        // expression) of the level. Shouldn't it use the key column (or key
+        // expression)?
+        RolapHierarchy hierarchy = level.getHierarchy();
+        if (column != null) {
+            if (aggStar != null) {
+                // this assumes that the name column is identical to the
+                // id column
+                int bitPos = column.getBitPosition();
+                AggStar.Table.Column aggColumn =
+                    aggStar.lookupColumn(bitPos);
+                AggStar.Table table = aggColumn.getTable();
+                table.addToFrom(sqlQuery, false, true);
+                columnString = aggColumn.generateExprString(sqlQuery);
+            } else {
+                RolapStar.Table targetTable = column.getTable();
+                hierarchy.addToFrom(sqlQuery, targetTable);
+                columnString = column.generateExprString(sqlQuery);
+            }
+        } else {
+            assert (aggStar == null);
+            hierarchy.addToFrom(sqlQuery, level.getKeyExp());
+
+            MondrianDef.Expression nameExp = level.getNameExp();
+            if (nameExp == null) {
+                nameExp = level.getKeyExp();
+            }
+            columnString = nameExp.getExpression(sqlQuery);
+        }
+        return columnString;
+    }
+
+
+    /**
      * Generates an expression that is an OR of IS NULL expressions, one
      * per level in a RolapMember.
      *
@@ -1455,14 +1471,15 @@ public class SqlConstraintUtils {
      * @param baseCube base cube if virtual
      * @param member the RolapMember
      * @param fromLevel lowest parent level that is unique
-     *
+     * @param aggStar aggregate star if available
      * @return the text of the expression
      */
     private static String generateMultiValueIsNullExprs(
         SqlQuery sqlQuery,
         RolapCube baseCube,
         RolapMember member,
-        RolapLevel fromLevel)
+        RolapLevel fromLevel,
+        AggStar aggStar)
     {
         final StringBuilder conditionBuf = new StringBuilder();
 
@@ -1474,31 +1491,10 @@ public class SqlConstraintUtils {
             if (m.isAll()) {
                 continue;
             }
-            RolapLevel level = m.getLevel();
 
-            // this method can be called within the context of shared members,
-            // outside of the normal rolap star, therefore we need to
-            // check the level to see if it is a shared or cube level.
 
-            RolapStar.Column column = null;
-            if (level instanceof RolapCubeLevel) {
-                column = ((RolapCubeLevel)level).getBaseStarKeyColumn(baseCube);
-            }
-
-            String columnString;
-            if (column != null) {
-                RolapStar.Column nameColumn = column.getNameColumn();
-                if (nameColumn == null) {
-                    nameColumn = column;
-                }
-                columnString = nameColumn.generateExprString(sqlQuery);
-            } else {
-                MondrianDef.Expression nameExp = level.getNameExp();
-                if (nameExp == null) {
-                    nameExp = level.getKeyExp();
-                }
-                columnString = nameExp.getExpression(sqlQuery);
-            }
+            String columnString = getColumnString(
+                sqlQuery, aggStar, m.getLevel(), baseCube);
 
             if (!isFirstLevelInMultiple) {
                 conditionBuf.append(" or ");
