@@ -48,7 +48,11 @@ public class MicrosoftSqlServerDialect extends JdbcDialectImpl {
 
     public boolean requiresAliasForFromQuery() {
         return true;
-    };
+    }
+
+    public boolean requiresUnionOrderByOrdinal() {
+        return false;
+    }
 }
 
 // End MicrosoftSqlServerDialect.java
