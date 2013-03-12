@@ -1170,7 +1170,12 @@ public class SqlConstraintUtils {
             if (levelInMultiple++ > 0) {
                 buf.append(strip("\n        or "));
             }
-
+            // REVIEW.  Will this mishandle aggregate table queries?
+            // SqlTupleReader does not generate agg table queries
+            // (MONDRIAN-1372), but will once that is fixed and this
+            // may generate incorrect sql.
+            // 1a62586962a854bfec36e8c2d47b5f1fce98d4d6 addressed an
+            // agg table issue with this method in 3x
             buf.append(m.getLevel().getAttribute().getNameExp().toSql())
                 .append(" is null");
 

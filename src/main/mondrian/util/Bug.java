@@ -436,6 +436,13 @@ public class Bug {
      * for aggregates in lagunitas.
      */
     public static final boolean BugMondrian1375Fixed = Enable;
+
+
+    /**
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1372">Bug 1372:</a><br/>
+     * SqlTupleReader doesn't use aggregate tables in lagunitas
+     */
+    public static final boolean BugMondrian1372Fixed = Enable;
 }
 
 // End Bug.java
