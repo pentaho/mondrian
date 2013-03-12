@@ -874,7 +874,7 @@ public class JdbcDialectImpl implements Dialect {
     }
 
     public boolean requiresUnionOrderByOrdinal() {
-        return false;
+        return true;
     }
 
     public boolean requiresUnionOrderByExprToBeInSelectClause() {

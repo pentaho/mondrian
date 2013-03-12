@@ -394,6 +394,43 @@ public class DialectTest extends TestCase {
         }
     }
 
+    public void testRequiresUnionOrderByOrdinal() {
+        final String sql;
+        switch (getDialect().getDatabaseProduct()) {
+        default:
+            sql =
+                dialectize(
+                    "select\n"
+                    + "    *\n"
+                    + "from\n"
+                    + "    (select\n"
+                    + "    [time_by_day].[the_year] as [c0]\n"
+                    + "from\n"
+                    + "    [time_by_day] as [time_by_day]\n"
+                    + "group by\n"
+                    + "    [time_by_day].[the_year]\n"
+                    + "union\n"
+                    + "select\n"
+                    + "    [time_by_day].[the_year] as [c0]\n"
+                    + "from\n"
+                    + "    [time_by_day] as [time_by_day]\n"
+                    + "group by\n"
+                    + "    [time_by_day].[the_year]) as [unionQuery]\n"
+                    + "order by\n"
+                    + getDialect().generateOrderItem("1", true, true, true));
+        }
+
+        if (getDialect().requiresUnionOrderByOrdinal()) {
+            assertQuerySucceeds(sql);
+        } else {
+            String[] errs = {
+                // SQL server 2008
+                "A constant expression was encountered in the ORDER BY list, position 1."
+            };
+            assertQueryFails(sql, errs);
+        }
+    }
+
     public void testRequiresUnionOrderByExprToBeInSelectClause() {
         String sql =
             dialectize(
@@ -786,7 +823,7 @@ public class DialectTest extends TestCase {
             }
             s = s.replace('[', '`');
             s = s.replace(']', '`');
-            s = s.replaceAll(" as ", "");
+            s = s.replaceAll(" as ", " ");
             break;
         case IMPALA:
             s = s.replace("[", "");
@@ -801,7 +838,7 @@ public class DialectTest extends TestCase {
         case ORACLE:
             s = s.replace('[', '"');
             s = s.replace(']', '"');
-            s = s.replaceAll(" as ", "");
+            s = s.replaceAll(" as ", " ");
             break;
         default:
             s = s.replace('[', '"');

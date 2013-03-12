@@ -57,6 +57,10 @@ public class MicrosoftSqlServerDialect extends JdbcDialectImpl {
         return true;
     }
 
+    public boolean requiresUnionOrderByOrdinal() {
+        return false;
+    }
+
     protected void quoteDateLiteral(StringBuilder buf, String value, Date date)
     {
         buf.append("CONVERT(DATE, '");

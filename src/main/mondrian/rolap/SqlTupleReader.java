@@ -819,7 +819,15 @@ public class SqlTupleReader implements TupleReader {
                     for (int i = 0; i < types.size(); i++) {
                         unionQuery.addOrderBy(
                             i + 1 + "",
-                            true, false, true);
+                            true,
+                            false,
+                            // We can't order the nulls
+                            // because column ordinals used as alias
+                            // are not supported by functions.
+                            // FIXME This dialect call is old and
+                            // has lost its meaning in the process.
+                            unionQuery.getDialect()
+                                .requiresUnionOrderByOrdinal());
                     }
                 }
                 return Pair.of(unionQuery.toSqlAndTypes().left, types);
