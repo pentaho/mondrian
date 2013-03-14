@@ -23,7 +23,7 @@ class DenseDoubleSegmentBody extends AbstractSegmentBody {
     private static final long serialVersionUID = 5775717165497921144L;
 
     private final double[] values;
-    private final BitSet nullIndicators;
+    private final BitSet notNullZeroValues;
 
     /**
      * Creates a DenseDoubleSegmentBody.
@@ -31,18 +31,20 @@ class DenseDoubleSegmentBody extends AbstractSegmentBody {
      * <p>Stores the given array of cell values and null indicators; caller must
      * not modify them afterwards.</p>
      *
-     * @param nullIndicators Null indicators
+     * @param notNullZeroValues a bitset indicating whether values of "0" should
+     * be considered as true "0" values instead of nulls.  Each position in the
+     * bitset corresponds to an offset in the value array
      * @param values Cell values
      * @param axes Axes
      */
     DenseDoubleSegmentBody(
-        BitSet nullIndicators,
+        BitSet notNullZeroValues,
         double[] values,
         List<Pair<SortedSet<Comparable>, Boolean>> axes)
     {
         super(axes);
         this.values = values;
-        this.nullIndicators = nullIndicators;
+        this.notNullZeroValues = notNullZeroValues;
     }
 
     @Override
@@ -52,18 +54,18 @@ class DenseDoubleSegmentBody extends AbstractSegmentBody {
 
     @Override
     public BitSet getIndicators() {
-        return nullIndicators;
+        return notNullZeroValues;
     }
 
     @Override
     protected int getSize() {
-        return values.length - nullIndicators.cardinality();
+        return values.length;// - notNullZeroValues.cardinality();
     }
 
     @Override
     protected Object getObject(int i) {
         double value = values[i];
-        if (value == 0d && nullIndicators.get(i)) {
+        if (value == 0d && !notNullZeroValues.get(i)) {
             return null;
         }
         return value;
@@ -76,7 +78,7 @@ class DenseDoubleSegmentBody extends AbstractSegmentBody {
         sb.append(values.length);
         sb.append(", data=");
         sb.append(Arrays.toString(values));
-        sb.append(", nullIndicators=").append(nullIndicators);
+        sb.append(", notNullZeroValues=").append(notNullZeroValues);
         sb.append(", axisValueSets=");
         sb.append(Arrays.toString(getAxisValueSets()));
         sb.append(", nullAxisFlags=");

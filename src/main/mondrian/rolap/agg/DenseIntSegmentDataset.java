@@ -81,7 +81,7 @@ class DenseIntSegmentDataset extends DenseNativeSegmentDataset {
         final int offset = getOffset(pos);
         final int value = values[offset] = data.getInt(key);
         if (value == 0) {
-            nullIndicators.set(offset, !data.isNull(key));
+            notNullZeroValues.set(offset, !data.isNull(key));
         }
     }
 
@@ -91,7 +91,7 @@ class DenseIntSegmentDataset extends DenseNativeSegmentDataset {
         int offset = getOffset(pos);
         final int value = values[offset] = rowList.getInt(column);
         if (value == 0) {
-            nullIndicators.set(offset, !rowList.isNull(column));
+            notNullZeroValues.set(offset, !rowList.isNull(column));
         }
     }
 
@@ -121,7 +121,7 @@ class DenseIntSegmentDataset extends DenseNativeSegmentDataset {
         List<Pair<SortedSet<Comparable>, Boolean>> axes)
     {
         return new DenseIntSegmentBody(
-            nullIndicators,
+            notNullZeroValues,
             values,
             axes);
     }

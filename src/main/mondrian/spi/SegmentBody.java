@@ -40,7 +40,11 @@ public interface SegmentBody extends Serializable {
     Object getValueArray();
 
     /**
-     * Returns a bitset indicating whether values are null.
+     * Returns a bitset indicating whether values of "0" should be considered
+     * as true "0" values instead of nulls.  Each position in the bitset
+     * corresponds to an offset in the value array.
+     *
+     * <p>Example: A cell key of (2,3) would be at bit position 5</p>
      * Use only for dense segments.
      *
      * @return Indicators

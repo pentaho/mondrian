@@ -328,17 +328,16 @@ public class SegmentBuilder {
         // Build the axis list.
         final List<Pair<SortedSet<Comparable>, Boolean>> axisList =
             new ArrayList<Pair<SortedSet<Comparable>, Boolean>>();
-        final BitSet nullIndicators = new BitSet(axes.length);
         int nbValues = 1;
         for (int i = 0; i < axes.length; i++) {
             axisList.add(
                 new Pair<SortedSet<Comparable>, Boolean>(
                     axes[i].valueSet, axes[i].hasNull));
-            nullIndicators.set(i, axes[i].hasNull);
             nbValues *= axes[i].hasNull
                 ? axes[i].values.length + 1
                 : axes[i].values.length;
          }
+        final BitSet notNullZeroValues = new BitSet(nbValues);
 
         final int[] axisMultipliers =
             computeAxisMultipliers(axisList);
@@ -354,7 +353,7 @@ public class SegmentBuilder {
                     axisList);
         } else if (SegmentLoader.useSparse(
                 cellValues.size(),
-                cellValues.size() - nullIndicators.cardinality()))
+                cellValues.size() - notNullZeroValues.cardinality()))
         {
             // The rule says we must use a sparse dataset.
             // First, aggregate the values of each key.
@@ -389,11 +388,16 @@ public class SegmentBuilder {
                             datatype);
                     if (value != null) {
                         ints[offset] = (Integer) value;
+                        if (ints[offset] == 0) {
+                            // we only need to set the null indicator when
+                            // the value is zero
+                            notNullZeroValues.set(offset, true);
+                        }
                     }
                 }
                 body =
                     new DenseIntSegmentBody(
-                        nullIndicators,
+                        notNullZeroValues,
                         ints,
                         axisList);
                   break;
@@ -411,11 +415,16 @@ public class SegmentBuilder {
                             datatype);
                     if (value != null) {
                         doubles[offset] = (Double) value;
+                        if (doubles[offset] == 0d) {
+                            // we only need to set the null indicator when
+                            // the value is zero
+                            notNullZeroValues.set(offset, true);
+                        }
                     }
                 }
                 body =
                     new DenseDoubleSegmentBody(
-                        nullIndicators,
+                        notNullZeroValues,
                         doubles,
                         axisList);
                 break;
