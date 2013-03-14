@@ -4,12 +4,14 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
 
 import mondrian.olap.MondrianProperties;
+import mondrian.rolap.BatchTestCase;
+import mondrian.spi.Dialect;
 
 /**
  * Tests multiple hierarchies within the same dimension.
@@ -17,7 +19,7 @@ import mondrian.olap.MondrianProperties;
  * @author jhyde
  * @since Dec 15, 2005
  */
-public class MultipleHierarchyTest extends FoodMartTestCase {
+public class MultipleHierarchyTest extends BatchTestCase {
     private static final String timeWeekly =
         TestContext.hierarchyName("Time", "Weekly");
     private static final String timeTime =
@@ -369,6 +371,25 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
             + "Row #0: 0\n"
             + "Row #1: 0\n"
             + "Row #2: 0\n");
+    }
+    
+    public void testCalcMemOnMultipleHierarchy() {
+        // MONDRIAN-1485
+        // Mondrian generates multiple queries during getMemberChildren
+        // that references the hierarchy as a value in the where clause.
+        String forbiddenSql = "select `store`.`store_country` as `c0` from "
+            + "`store` as `store` where UPPER(`store`.`store_country`) = "
+            + "UPPER('Time.Weekly') group by `store`.`store_country` order by"
+            + " ISNULL(`store`.`store_country`) ASC, "
+            + "`store`.`store_country` ASC";
+        assertNoQuerySql(
+            "with member [Time.Weekly].blah as '1' select from sales",
+            new SqlPattern[]{
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL,
+                    forbiddenSql, forbiddenSql)
+            }
+        );
     }
 }
 
