@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -57,6 +57,9 @@ public abstract class RolapAggregator
                         if (data != null) {
                             if (sumInt == Integer.MIN_VALUE) {
                                 sumInt = 0;
+                            }
+                            if (data instanceof Double) {
+                                data = ((Double) data).intValue();
                             }
                             sumInt += (Integer) data;
                         }

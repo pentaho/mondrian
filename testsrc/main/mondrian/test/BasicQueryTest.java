@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -67,6 +67,84 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public BasicQueryTest(String name) {
         super(name);
+    }
+
+    public void testMondrian1432()
+    {
+        TestContext testContext = getTestContext().createSubstitutingCube(
+            "Sales", null,
+            "<Measure name=\"zero\" aggregator=\"sum\">\n"
+            + "  <MeasureExpression>\n"
+            + "  <SQL dialect=\"generic\">\n"
+            + "    0"
+            + "  </SQL></MeasureExpression></Measure>", null, null);
+        testContext.assertQueryReturns(
+            "select "
+            + "Crossjoin([Gender].[Gender].Members, [Measures].[zero]) ON COLUMNS\n"
+            + "from [Sales] "
+            + "  \n",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[F], [Measures].[zero]}\n"
+            + "{[Gender].[M], [Measures].[zero]}\n"
+            + "Row #0: 0\n"
+            + "Row #0: 0\n");
+        testContext.assertQueryReturns(
+            "select [Measures].[zero] ON COLUMNS,\n"
+            + "  {[Gender].[All Gender]}  ON ROWS\n"
+            + "from [Sales] "
+            + " ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[zero]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "Row #0: 0\n");
+    }
+
+    public void testMondrian1432_ZeroAxisSegment()
+    {
+        TestContext testContext = getTestContext().create(
+            null,
+            "<Cube name=\"FooBarZerOneAnything\">\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
+            + "      <Table name=\"customer\"/>\n"
+            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>"
+            + "<Measure name=\"zero\" aggregator=\"sum\">\n"
+            + "  <MeasureExpression>\n"
+            + "  <SQL dialect=\"generic\">\n"
+            + "    0"
+            + "  </SQL></MeasureExpression></Measure>"
+            + "</Cube>", null, null, null, null);
+
+        testContext.assertQueryReturns(
+            "select "
+            + "Crossjoin([Gender].[Gender].Members, [Measures].[zero]) ON COLUMNS\n"
+            + "from [FooBarZerOneAnything] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[F], [Measures].[zero]}\n"
+            + "{[Gender].[M], [Measures].[zero]}\n"
+            + "Row #0: 0\n"
+            + "Row #0: 0\n");
+        testContext.assertQueryReturns(
+            "select [Measures].[zero] ON COLUMNS,\n"
+            + "  {[Gender].[All Gender]}  ON ROWS\n"
+            + "from [FooBarZerOneAnything] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[zero]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "Row #0: 0\n");
     }
 
     private static final QueryAndResult[] sampleQueries = {

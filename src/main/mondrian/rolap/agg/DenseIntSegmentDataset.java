@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2012 Pentaho and others
+// Copyright (C) 2010-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -81,7 +81,7 @@ class DenseIntSegmentDataset extends DenseNativeSegmentDataset {
         final int offset = getOffset(pos);
         final int value = values[offset] = data.getInt(key);
         if (value == 0) {
-            nullIndicators.set(offset, !data.isNull(key));
+            notNullZeroValues.set(offset, !data.isNull(key));
         }
     }
 
@@ -91,7 +91,7 @@ class DenseIntSegmentDataset extends DenseNativeSegmentDataset {
         int offset = getOffset(pos);
         final int value = values[offset] = rowList.getInt(column);
         if (value == 0) {
-            nullIndicators.set(offset, !rowList.isNull(column));
+            notNullZeroValues.set(offset, !rowList.isNull(column));
         }
     }
 
@@ -121,7 +121,7 @@ class DenseIntSegmentDataset extends DenseNativeSegmentDataset {
         List<Pair<SortedSet<Comparable>, Boolean>> axes)
     {
         return new DenseIntSegmentBody(
-            nullIndicators,
+            notNullZeroValues,
             values,
             axes);
     }
