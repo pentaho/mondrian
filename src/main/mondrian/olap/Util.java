@@ -41,6 +41,7 @@ import java.sql.*;
 import java.sql.Connection;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -277,11 +278,12 @@ public class Util extends XOMUtil {
         // have the right name and are marked as daemon threads.
         final ThreadFactory factory =
             new ThreadFactory() {
+                private final AtomicInteger counter = new AtomicInteger(0);
                 public Thread newThread(Runnable r) {
                     final Thread t =
                         Executors.defaultThreadFactory().newThread(r);
                     t.setDaemon(true);
-                    t.setName(name);
+                    t.setName(name + '_' + counter.incrementAndGet());
                     return t;
                 }
             };
@@ -331,33 +333,12 @@ public class Util extends XOMUtil {
         return Executors.newScheduledThreadPool(
             maxNbThreads,
             new ThreadFactory() {
+                final AtomicInteger counter = new AtomicInteger(0);
                 public Thread newThread(Runnable r) {
                     final Thread thread =
                         Executors.defaultThreadFactory().newThread(r);
                     thread.setDaemon(true);
-                    thread.setName(name);
-                    return thread;
-                }
-            }
-        );
-    }
-
-    /**
-     * Creates an {@link ExecutorService} object backed by an expanding
-     * cached thread pool.
-     * @param name The name of the threads.
-     * @return An executor service preconfigured.
-     */
-    public static ExecutorService getExecutorService(
-        final String name)
-    {
-        return Executors.newCachedThreadPool(
-            new ThreadFactory() {
-                public Thread newThread(Runnable r) {
-                    final Thread thread =
-                        Executors.defaultThreadFactory().newThread(r);
-                    thread.setDaemon(true);
-                    thread.setName(name);
+                    thread.setName(name + '_' + counter.incrementAndGet());
                     return thread;
                 }
             }
