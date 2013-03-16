@@ -69,84 +69,6 @@ public class BasicQueryTest extends FoodMartTestCase {
         super(name);
     }
 
-    public void testMondrian1432()
-    {
-        TestContext testContext = getTestContext().createSubstitutingCube(
-            "Sales", null,
-            "<Measure name=\"zero\" aggregator=\"sum\">\n"
-            + "  <MeasureExpression>\n"
-            + "  <SQL dialect=\"generic\">\n"
-            + "    0"
-            + "  </SQL></MeasureExpression></Measure>", null, null);
-        testContext.assertQueryReturns(
-            "select "
-            + "Crossjoin([Gender].[Gender].Members, [Measures].[zero]) ON COLUMNS\n"
-            + "from [Sales] "
-            + "  \n",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Gender].[F], [Measures].[zero]}\n"
-            + "{[Gender].[M], [Measures].[zero]}\n"
-            + "Row #0: 0\n"
-            + "Row #0: 0\n");
-        testContext.assertQueryReturns(
-            "select [Measures].[zero] ON COLUMNS,\n"
-            + "  {[Gender].[All Gender]}  ON ROWS\n"
-            + "from [Sales] "
-            + " ",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[zero]}\n"
-            + "Axis #2:\n"
-            + "{[Gender].[All Gender]}\n"
-            + "Row #0: 0\n");
-    }
-
-    public void testMondrian1432_ZeroAxisSegment()
-    {
-        TestContext testContext = getTestContext().create(
-            null,
-            "<Cube name=\"FooBarZerOneAnything\">\n"
-            + "  <Table name=\"sales_fact_1997\"/>\n"
-            + "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">\n"
-            + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>"
-            + "<Measure name=\"zero\" aggregator=\"sum\">\n"
-            + "  <MeasureExpression>\n"
-            + "  <SQL dialect=\"generic\">\n"
-            + "    0"
-            + "  </SQL></MeasureExpression></Measure>"
-            + "</Cube>", null, null, null, null);
-
-        testContext.assertQueryReturns(
-            "select "
-            + "Crossjoin([Gender].[Gender].Members, [Measures].[zero]) ON COLUMNS\n"
-            + "from [FooBarZerOneAnything] ",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Gender].[F], [Measures].[zero]}\n"
-            + "{[Gender].[M], [Measures].[zero]}\n"
-            + "Row #0: 0\n"
-            + "Row #0: 0\n");
-        testContext.assertQueryReturns(
-            "select [Measures].[zero] ON COLUMNS,\n"
-            + "  {[Gender].[All Gender]}  ON ROWS\n"
-            + "from [FooBarZerOneAnything] ",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[zero]}\n"
-            + "Axis #2:\n"
-            + "{[Gender].[All Gender]}\n"
-            + "Row #0: 0\n");
-    }
-
     private static final QueryAndResult[] sampleQueries = {
         // 0
         new QueryAndResult(
@@ -4991,8 +4913,8 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
 
-    /*
-     * takes quite long
+    /**
+     * Disabled; takes a quite long time.
      */
     public void dont_testParallelMutliple() {
         for (int i = 0; i < 5; i++) {
@@ -7147,6 +7069,91 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1432">MONDRIAN-1432,
+     * "ArrayIndexOutOfBoundsException in
+     * DenseObjectSegmentDataset.getObject"</a>.
+     */
+    public void testMondrian1432() {
+        TestContext testContext = getTestContext().createSubstitutingCube(
+            "Sales",
+            null,
+            "<Measure name='zero' aggregator='sum'>\n"
+            + "  <MeasureExpression>\n"
+            + "  <SQL dialect='generic'>\n"
+            + "    0"
+            + "  </SQL></MeasureExpression></Measure>",
+            null, null);
+        testContext.assertQueryReturns(
+            "select "
+            + "Crossjoin([Gender].[Gender].Members, [Measures].[zero]) ON COLUMNS\n"
+            + "from [Sales] "
+            + "  \n",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[F], [Measures].[zero]}\n"
+            + "{[Gender].[M], [Measures].[zero]}\n"
+            + "Row #0: 0\n"
+            + "Row #0: 0\n");
+        testContext.assertQueryReturns(
+            "select [Measures].[zero] ON COLUMNS,\n"
+            + "  {[Gender].[All Gender]}  ON ROWS\n"
+            + "from [Sales] "
+            + " ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[zero]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "Row #0: 0\n");
+    }
+
+    public void testMondrian1432_ZeroAxisSegment() {
+        TestContext testContext = getTestContext().create(
+            null,
+            "<Cube name='FooBarZerOneAnything'>\n"
+            + "  <Table name='sales_fact_1997'/>\n"
+            + "  <Dimension name='Gender' foreignKey='customer_id'>\n"
+            + "    <Hierarchy hasAll='true' allMemberName='All Gender' primaryKey='customer_id'>\n"
+            + "      <Table name='customer'/>\n"
+            + "      <Level name='Gender' column='gender' uniqueMembers='true'/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>"
+            + "<Measure name='zero' aggregator='sum'>\n"
+            + "  <MeasureExpression>\n"
+            + "  <SQL dialect='generic'>\n"
+            + "    0"
+            + "  </SQL></MeasureExpression></Measure>"
+            + "</Cube>",
+            null, null, null, null);
+
+        testContext.assertQueryReturns(
+            "select "
+            + "Crossjoin([Gender].[Gender].Members, [Measures].[zero]) ON COLUMNS\n"
+            + "from [FooBarZerOneAnything] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[F], [Measures].[zero]}\n"
+            + "{[Gender].[M], [Measures].[zero]}\n"
+            + "Row #0: 0\n"
+            + "Row #0: 0\n");
+        testContext.assertQueryReturns(
+            "select [Measures].[zero] ON COLUMNS,\n"
+            + "  {[Gender].[All Gender]}  ON ROWS\n"
+            + "from [FooBarZerOneAnything] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[zero]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "Row #0: 0\n");
+    }
+
+    /**
      * A simple user-defined function which adds one to its argument, but
      * sleeps 1 ms before doing so.
      */
@@ -7701,7 +7708,6 @@ public class BasicQueryTest extends FoodMartTestCase {
                 int valueCount =
                     statisticsProvider.getColumnCardinality(
                         dialect,
-                        //testContext.getDialect(),
                         testContext.getConnection().getDataSource(),
                         null,
                         null,

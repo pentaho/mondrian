@@ -4,8 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2013-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -23,7 +22,7 @@ import mondrian.util.Pair;
 import java.util.*;
 
 /**
- * <p>Test for <code>SegmenBuilder</code></p>
+ * <p>Test for <code>SegmentBuilder</code>.</p>
  *
  * @author mcampbell
  */
@@ -85,7 +84,7 @@ public class SegmentBuilderTest extends BatchTestCase {
                     new String[] {"col1", "col2", "col3"}, 47000, 4),
                 new HashSet<String>(Arrays.asList("col1", "col2")),
                 null, RolapAggregator.Sum, Dialect.Datatype.Numeric);
-        assertTrue(rollup.right instanceof  SparseSegmentBody);
+        assertTrue(rollup.right instanceof SparseSegmentBody);
     }
 
     public void testRollupWithOOMPossibility() {
@@ -101,7 +100,7 @@ public class SegmentBuilderTest extends BatchTestCase {
                     new String[] {"col1", "col2", "col3"}, 44000, 4),
                 new HashSet<String>(Arrays.asList("col1", "col2")),
                 null, RolapAggregator.Sum, Dialect.Datatype.Numeric);
-        assertTrue(rollup.right instanceof  SparseSegmentBody);
+        assertTrue(rollup.right instanceof SparseSegmentBody);
     }
 
     public void testRollupShouldBeDense() {
@@ -137,20 +136,18 @@ public class SegmentBuilderTest extends BatchTestCase {
     {
         Pair<SegmentHeader, SegmentBody> headerBody = makeDummyHeaderBodyPair(
             colNames,
-            dummyColumnValues(
-                colNames.length, numValsPerCol), numPopulatedCells);
+            dummyColumnValues(colNames.length, numValsPerCol),
+            numPopulatedCells);
         Map<SegmentHeader, SegmentBody> map =
             new HashMap<SegmentHeader, SegmentBody>();
         map.put(headerBody.left, headerBody.right);
 
         return map;
     }
+
     private Pair<SegmentHeader, SegmentBody> makeDummyHeaderBodyPair(
         String[] colExps, String[][] colVals, int numCellVals)
     {
-        final Map<CellKey, Object> data =
-            new HashMap<CellKey, Object>();
-
         final List<SegmentColumn> constrainedColumns =
             new ArrayList<SegmentColumn>();
 
@@ -158,27 +155,24 @@ public class SegmentBuilderTest extends BatchTestCase {
             new ArrayList<Pair<SortedSet<Comparable>, Boolean>>();
         for (int i = 0; i < colVals.length; i++) {
             String colExp = colExps[i];
-            SortedSet<Comparable> vals = new TreeSet<Comparable>();
-            for (int j = 0; j < colVals[i].length; j++) {
-                vals.add(new String(colVals[i][j]));
-            }
+            SortedSet<Comparable> vals =
+                new TreeSet<Comparable>(Arrays.<Comparable>asList(colVals[i]));
             constrainedColumns.add(
                 new SegmentColumn(
                     colExp,
                     colVals[i].length,
                     vals));
-            axes.add(new Pair<SortedSet<Comparable>,
-                Boolean>(vals, Boolean.FALSE));
+            axes.add(Pair.of(vals, Boolean.FALSE));
         }
 
         Object [] cells = new Object[numCellVals];
         for (int i = 0; i < numCellVals; i++) {
             cells[i] = 123.123; // assign a non-null val
         }
-        return new Pair<SegmentHeader, SegmentBody> (
+        return Pair.<SegmentHeader, SegmentBody>of(
             new SegmentHeader(
                 "dummySchemaName",
-                new ByteString(new byte[] {}),
+                new ByteString(new byte[]{}),
                 "dummyCubeName",
                 "dummyMeasureName",
                 constrainedColumns,
@@ -201,4 +195,5 @@ public class SegmentBuilderTest extends BatchTestCase {
         return dummyColVals;
     }
 }
+
 // End SegmentBuilderTest.java

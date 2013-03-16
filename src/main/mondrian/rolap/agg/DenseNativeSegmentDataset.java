@@ -23,22 +23,23 @@ import java.util.BitSet;
  * @author jhyde
  */
 abstract class DenseNativeSegmentDataset extends DenseSegmentDataset {
-    protected final BitSet notNullZeroValues;
+    protected final BitSet nullValues;
 
     /**
      * Creates a DenseNativeSegmentDataset.
      *
      * @param axes Segment axes, containing actual column values
-     * @param notNullZeroValues a bitset indicating whether values of "0" should
-     * be considered as true "0" values instead of nulls.  Each position in the
-     * bitset corresponds to an offset in the value array
+     * @param nullValues A bit-set indicating whether values are null. Each
+     *                   position in the bit-set corresponds to an offset in the
+     *                   value array. If position is null, the corresponding
+     *                   entry in the value array will also be 0.
      */
     DenseNativeSegmentDataset(
         SegmentAxis[] axes,
-        BitSet notNullZeroValues)
+        BitSet nullValues)
     {
         super(axes);
-        this.notNullZeroValues = notNullZeroValues;
+        this.nullValues = nullValues;
     }
 
     public boolean isNull(CellKey key) {
@@ -49,14 +50,14 @@ abstract class DenseNativeSegmentDataset extends DenseSegmentDataset {
     /**
      * Returns whether the value at the given offset is null.
      *
-     * <p>The native value at this offset will also be 0. You can only
+     * <p>The native value at this offset will also be 0. You only need to
      * call this method if the {@link #getInt getXxx} method has returned 0.
      *
      * @param offset Cell offset
      * @return Whether the cell at this offset is null
      */
     protected final boolean isNull(int offset) {
-        return !notNullZeroValues.get(offset);
+        return nullValues.get(offset);
     }
 }
 
