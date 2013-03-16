@@ -4,11 +4,13 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2012 Pentaho and others
+// Copyright (C) 2010-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
 
+
+import mondrian.olap.Util;
 import mondrian.rolap.CellKey;
 import mondrian.rolap.SqlStatement;
 import mondrian.spi.SegmentBody;
@@ -32,7 +34,7 @@ class DenseDoubleSegmentDataset extends DenseNativeSegmentDataset {
      * @param size Number of coordinates
      */
     DenseDoubleSegmentDataset(SegmentAxis[] axes, int size) {
-        this(axes, new double[size], new BitSet(size));
+        this(axes, new double[size], Util.bitSetBetween(0, size));
     }
 
     /**
@@ -55,12 +57,6 @@ class DenseDoubleSegmentDataset extends DenseNativeSegmentDataset {
     }
 
     public Object getObject(CellKey pos) {
-        if (values.length == 0) {
-            // No values means they are all null.
-            // We can't call isNull because we risk going into a SOE. Besides,
-            // this is a tight loop and we can skip over one VFC.
-            return null;
-        }
         int offset = pos.getOffset(axisMultipliers);
         return getObject(offset);
     }
@@ -79,19 +75,19 @@ class DenseDoubleSegmentDataset extends DenseNativeSegmentDataset {
 
     public void populateFrom(int[] pos, SegmentDataset data, CellKey key) {
         final int offset = getOffset(pos);
-        double value = values[offset] = data.getDouble(key);
-        if (value == 0) {
-            nullIndicators.set(offset, !data.isNull(key));
+        final double value = values[offset] = data.getDouble(key);
+        if (value != 0d || !data.isNull(key)) {
+            nullValues.clear(offset);
         }
     }
 
     public void populateFrom(
         int[] pos, SegmentLoader.RowList rowList, int column)
     {
-        int offset = getOffset(pos);
-        double d = values[offset] = rowList.getDouble(column);
-        if (d == 0) {
-            nullIndicators.set(offset, !rowList.isNull(column));
+        final int offset = getOffset(pos);
+        final double value = values[offset] = rowList.getDouble(column);
+        if (value != 0d || !rowList.isNull(column)) {
+            nullValues.clear(offset);
         }
     }
 
@@ -111,7 +107,7 @@ class DenseDoubleSegmentDataset extends DenseNativeSegmentDataset {
         List<Pair<SortedSet<Comparable>, Boolean>> axes)
     {
         return new DenseDoubleSegmentBody(
-            nullIndicators,
+            nullValues,
             values,
             axes);
     }

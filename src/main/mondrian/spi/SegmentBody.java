@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
+// Copyright (C) 2011-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.spi;
@@ -33,19 +33,24 @@ public interface SegmentBody extends Serializable {
     Map<CellKey, Object> getValueMap();
 
     /**
-     * Returns an array of values. Use only for dense segments.
+     * Returns an array of values.
+     *
+     * <p>Use only for dense segments.</p>
      *
      * @return An array of values
      */
     Object getValueArray();
 
     /**
-     * Returns a bitset indicating whether values are null.
-     * Use only for dense segments.
+     * Returns a bit-set indicating whether values are null. The ordinals in
+     * the bit-set correspond to the indexes in the array returned from
+     * {@link #getValueArray()}.
+     *
+     * <p>Use only for dense segments of native values.</p>
      *
      * @return Indicators
      */
-    BitSet getIndicators();
+    BitSet getNullValueIndicators();
 
     /**
      * Returns the cached axis value sets to be used as an

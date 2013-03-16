@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
+// Copyright (C) 2011-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -23,7 +23,7 @@ class DenseIntSegmentBody extends AbstractSegmentBody {
     private static final long serialVersionUID = 5391233622968115488L;
 
     private final int[] values;
-    private final BitSet nullIndicators;
+    private final BitSet nullValues;
 
     /**
      * Creates a DenseIntSegmentBody.
@@ -31,18 +31,21 @@ class DenseIntSegmentBody extends AbstractSegmentBody {
      * <p>Stores the given array of cell values and null indicators; caller must
      * not modify them afterwards.</p>
      *
-     * @param nullIndicators Null indicators
+     * @param nullValues A bit-set indicating whether values are null. Each
+     *                   position in the bit-set corresponds to an offset in the
+     *                   value array. If position is null, the corresponding
+     *                   entry in the value array will also be 0.
      * @param values Cell values
      * @param axes Axes
      */
     DenseIntSegmentBody(
-        BitSet nullIndicators,
+        BitSet nullValues,
         int[] values,
         List<Pair<SortedSet<Comparable>, Boolean>> axes)
     {
         super(axes);
         this.values = values;
-        this.nullIndicators = nullIndicators;
+        this.nullValues = nullValues;
     }
 
     @Override
@@ -51,17 +54,17 @@ class DenseIntSegmentBody extends AbstractSegmentBody {
     }
 
     @Override
-    public BitSet getIndicators() {
-        return nullIndicators;
+    public BitSet getNullValueIndicators() {
+        return nullValues;
     }
 
     protected int getSize() {
-        return values.length - nullIndicators.cardinality();
+        return values.length;
     }
 
     protected Object getObject(int i) {
         int value = values[i];
-        if (value == 0 && nullIndicators.get(i)) {
+        if (value == 0 && nullValues.get(i)) {
             return null;
         }
         return value;

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 21 March, 2002
@@ -23,20 +23,23 @@ import java.util.BitSet;
  * @author jhyde
  */
 abstract class DenseNativeSegmentDataset extends DenseSegmentDataset {
-    protected final BitSet nullIndicators;
+    protected final BitSet nullValues;
 
     /**
      * Creates a DenseNativeSegmentDataset.
      *
      * @param axes Segment axes, containing actual column values
-     * @param nullIndicators Null indicators
+     * @param nullValues A bit-set indicating whether values are null. Each
+     *                   position in the bit-set corresponds to an offset in the
+     *                   value array. If position is null, the corresponding
+     *                   entry in the value array will also be 0.
      */
     DenseNativeSegmentDataset(
         SegmentAxis[] axes,
-        BitSet nullIndicators)
+        BitSet nullValues)
     {
         super(axes);
-        this.nullIndicators = nullIndicators;
+        this.nullValues = nullValues;
     }
 
     public boolean isNull(CellKey key) {
@@ -54,7 +57,7 @@ abstract class DenseNativeSegmentDataset extends DenseSegmentDataset {
      * @return Whether the cell at this offset is null
      */
     protected final boolean isNull(int offset) {
-        return !nullIndicators.get(offset);
+        return nullValues.get(offset);
     }
 }
 
