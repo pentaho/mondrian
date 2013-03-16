@@ -2354,6 +2354,27 @@ public class Util extends XOMUtil {
         return firstException;
     }
 
+    /**
+     * Creates a bitset with bits from {@code fromIndex} (inclusive) to
+     * specified {@code toIndex} (exclusive) set to {@code true}.
+     *
+     * <p>For example, {@code bitSetBetween(0, 3)} returns a bit set with bits
+     * {0, 1, 2} set.
+     *
+     * @param fromIndex Index of the first bit to be set.
+     * @param toIndex   Index after the last bit to be set.
+     * @return Bit set
+     */
+    public static BitSet bitSetBetween(int fromIndex, int toIndex) {
+        final BitSet bitSet = new BitSet();
+        if (toIndex > fromIndex) {
+            // Avoid http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6222207
+            // "BitSet internal invariants may be violated"
+            bitSet.set(fromIndex, toIndex);
+        }
+        return bitSet;
+    }
+
     public static class ErrorCellValue {
         public String toString() {
             return "#ERR";

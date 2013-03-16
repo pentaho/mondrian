@@ -33,23 +33,24 @@ public interface SegmentBody extends Serializable {
     Map<CellKey, Object> getValueMap();
 
     /**
-     * Returns an array of values. Use only for dense segments.
+     * Returns an array of values.
+     *
+     * <p>Use only for dense segments.</p>
      *
      * @return An array of values
      */
     Object getValueArray();
 
     /**
-     * Returns a bitset indicating whether values of "0" should be considered
-     * as true "0" values instead of nulls.  Each position in the bitset
-     * corresponds to an offset in the value array.
+     * Returns a bit-set indicating whether values are null. The ordinals in
+     * the bit-set correspond to the indexes in the array returned from
+     * {@link #getValueArray()}.
      *
-     * <p>Example: A cell key of (2,3) would be at bit position 5</p>
-     * Use only for dense segments.
+     * <p>Use only for dense segments of native values.</p>
      *
      * @return Indicators
      */
-    BitSet getIndicators();
+    BitSet getNullValueIndicators();
 
     /**
      * Returns the cached axis value sets to be used as an

@@ -9,6 +9,7 @@
 */
 package mondrian.rolap.agg;
 
+import mondrian.olap.Util;
 import mondrian.rolap.CellKey;
 import mondrian.rolap.SqlStatement;
 import mondrian.spi.SegmentBody;
@@ -36,7 +37,7 @@ class DenseIntSegmentDataset extends DenseNativeSegmentDataset {
      * @param size Number of coordinates
      */
     DenseIntSegmentDataset(SegmentAxis[] axes, int size) {
-        this(axes, new int[size], new BitSet(size));
+        this(axes, new int[size], Util.bitSetBetween(0, size));
     }
 
     /**
@@ -80,8 +81,8 @@ class DenseIntSegmentDataset extends DenseNativeSegmentDataset {
     public void populateFrom(int[] pos, SegmentDataset data, CellKey key) {
         final int offset = getOffset(pos);
         final int value = values[offset] = data.getInt(key);
-        if (value == 0) {
-            notNullZeroValues.set(offset, !data.isNull(key));
+        if (value != 0 || !data.isNull(key)) {
+            nullValues.clear(offset);
         }
     }
 
@@ -90,8 +91,8 @@ class DenseIntSegmentDataset extends DenseNativeSegmentDataset {
     {
         int offset = getOffset(pos);
         final int value = values[offset] = rowList.getInt(column);
-        if (value == 0) {
-            notNullZeroValues.set(offset, !rowList.isNull(column));
+        if (value != 0 || !rowList.isNull(column)) {
+            nullValues.clear(offset);
         }
     }
 
@@ -121,7 +122,7 @@ class DenseIntSegmentDataset extends DenseNativeSegmentDataset {
         List<Pair<SortedSet<Comparable>, Boolean>> axes)
     {
         return new DenseIntSegmentBody(
-            notNullZeroValues,
+            nullValues,
             values,
             axes);
     }

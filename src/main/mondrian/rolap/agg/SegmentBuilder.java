@@ -20,6 +20,7 @@ import mondrian.util.ArraySortedSet;
 import mondrian.util.Pair;
 
 import java.lang.ref.WeakReference;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -74,11 +75,13 @@ public class SegmentBuilder {
                 new DenseDoubleSegmentDataset(
                     axes,
                     (double[]) body.getValueArray(),
-                    body.getIndicators());
+                    body.getNullValueIndicators());
         } else if (body instanceof DenseIntSegmentBody) {
             dataSet =
                 new DenseIntSegmentDataset(
-                    axes, (int[]) body.getValueArray(), body.getIndicators());
+                    axes,
+                    (int[]) body.getValueArray(),
+                    body.getNullValueIndicators());
         } else if (body instanceof DenseObjectSegmentBody) {
             dataSet =
                 new DenseObjectSegmentDataset(
@@ -328,16 +331,26 @@ public class SegmentBuilder {
         // Build the axis list.
         final List<Pair<SortedSet<Comparable>, Boolean>> axisList =
             new ArrayList<Pair<SortedSet<Comparable>, Boolean>>();
-        int nbValues = 1;
-        for (int i = 0; i < axes.length; i++) {
-            axisList.add(
-                new Pair<SortedSet<Comparable>, Boolean>(
-                    axes[i].valueSet, axes[i].hasNull));
-            nbValues *= axes[i].hasNull
-                ? axes[i].values.length + 1
-                : axes[i].values.length;
-         }
-        final BitSet notNullZeroValues = new BitSet(nbValues);
+
+        BigInteger bigValueCount = BigInteger.ONE;
+        for (AxisInfo axis : axes) {
+            axisList.add(Pair.of(axis.valueSet, axis.hasNull));
+            int size = axis.values.length;
+            if (axis.hasNull) {
+                ++size;
+            }
+            bigValueCount = bigValueCount.multiply(
+                BigInteger.valueOf(axis.hasNull ? size + 1 : size));
+        }
+
+        // The logic used here for the sparse check follows
+        // SegmentLoader.setAxisDataAndDecideSparseUse.
+        // The two methods use different data structures (AxisInfo/SegmentAxis)
+        // so combining logic is probably more trouble than it's worth.
+        final boolean sparse =
+            bigValueCount.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) > 0
+                || SegmentLoader.useSparse(
+                    bigValueCount.doubleValue(), cellValues.size());
 
         final int[] axisMultipliers =
             computeAxisMultipliers(axisList);
@@ -351,10 +364,7 @@ public class SegmentBuilder {
                 new DenseObjectSegmentBody(
                     new Object[0],
                     axisList);
-        } else if (SegmentLoader.useSparse(
-                cellValues.size(),
-                cellValues.size() - notNullZeroValues.cardinality()))
-        {
+        } else if (sparse) {
             // The rule says we must use a sparse dataset.
             // First, aggregate the values of each key.
             final Map<CellKey, Object> data =
@@ -373,9 +383,12 @@ public class SegmentBuilder {
                     data,
                     axisList);
         } else {
+            final BitSet nullValues;
+            final int valueCount = bigValueCount.intValue();
             switch (datatype) {
             case Integer:
-                final int[] ints = new int[nbValues];
+                final int[] ints = new int[valueCount];
+                nullValues = Util.bitSetBetween(0, valueCount);
                 for (Entry<CellKey, List<Object>> entry
                     : cellValues.entrySet())
                 {
@@ -388,21 +401,18 @@ public class SegmentBuilder {
                             datatype);
                     if (value != null) {
                         ints[offset] = (Integer) value;
-                        if (ints[offset] == 0) {
-                            // we only need to set the null indicator when
-                            // the value is zero
-                            notNullZeroValues.set(offset, true);
-                        }
+                        nullValues.clear(offset);
                     }
                 }
                 body =
                     new DenseIntSegmentBody(
-                        notNullZeroValues,
+                        nullValues,
                         ints,
                         axisList);
                   break;
             case Numeric:
-                final double[] doubles = new double[nbValues];
+                final double[] doubles = new double[valueCount];
+                nullValues = Util.bitSetBetween(0, valueCount);
                 for (Entry<CellKey, List<Object>> entry
                     : cellValues.entrySet())
                 {
@@ -415,21 +425,17 @@ public class SegmentBuilder {
                             datatype);
                     if (value != null) {
                         doubles[offset] = (Double) value;
-                        if (doubles[offset] == 0d) {
-                            // we only need to set the null indicator when
-                            // the value is zero
-                            notNullZeroValues.set(offset, true);
-                        }
+                        nullValues.clear(offset);
                     }
                 }
                 body =
                     new DenseDoubleSegmentBody(
-                        notNullZeroValues,
+                        nullValues,
                         doubles,
                         axisList);
                 break;
             default:
-                final Object[] objects = new Object[nbValues];
+                final Object[] objects = new Object[valueCount];
                 for (Entry<CellKey, List<Object>> entry
                     : cellValues.entrySet())
                 {

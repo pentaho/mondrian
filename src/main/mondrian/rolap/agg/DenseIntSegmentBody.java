@@ -23,7 +23,7 @@ class DenseIntSegmentBody extends AbstractSegmentBody {
     private static final long serialVersionUID = 5391233622968115488L;
 
     private final int[] values;
-    private final BitSet notNullZeroValues;
+    private final BitSet nullValues;
 
     /**
      * Creates a DenseIntSegmentBody.
@@ -31,20 +31,21 @@ class DenseIntSegmentBody extends AbstractSegmentBody {
      * <p>Stores the given array of cell values and null indicators; caller must
      * not modify them afterwards.</p>
      *
-     * @param notNullZeroValues a bitset indicating whether values of "0" should
-     * be considered as true "0" values instead of nulls.  Each position in the
-     * bitset corresponds to an offset in the value array
+     * @param nullValues A bit-set indicating whether values are null. Each
+     *                   position in the bit-set corresponds to an offset in the
+     *                   value array. If position is null, the corresponding
+     *                   entry in the value array will also be 0.
      * @param values Cell values
      * @param axes Axes
      */
     DenseIntSegmentBody(
-        BitSet notNullZeroValues,
+        BitSet nullValues,
         int[] values,
         List<Pair<SortedSet<Comparable>, Boolean>> axes)
     {
         super(axes);
         this.values = values;
-        this.notNullZeroValues = notNullZeroValues;
+        this.nullValues = nullValues;
     }
 
     @Override
@@ -53,17 +54,17 @@ class DenseIntSegmentBody extends AbstractSegmentBody {
     }
 
     @Override
-    public BitSet getIndicators() {
-        return notNullZeroValues;
+    public BitSet getNullValueIndicators() {
+        return nullValues;
     }
 
     protected int getSize() {
-        return values.length;// - notNullZeroValues.cardinality();
+        return values.length;
     }
 
     protected Object getObject(int i) {
         int value = values[i];
-        if (value == 0 && !notNullZeroValues.get(i)) {
+        if (value == 0 && nullValues.get(i)) {
             return null;
         }
         return value;

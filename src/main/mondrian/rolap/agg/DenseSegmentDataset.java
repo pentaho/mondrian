@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 21 March, 2002
@@ -114,6 +114,7 @@ outer:
         Iterator<Map.Entry<CellKey, Object>>,
         Map.Entry<CellKey, Object>
     {
+        private final int last = getSize() - 1;
         private int i = -1;
         private final int[] ordinals;
 
@@ -123,7 +124,7 @@ outer:
         }
 
         public boolean hasNext() {
-            return i < getSize() - 1;
+            return i < last;
         }
 
         public Map.Entry<CellKey, Object> next() {
