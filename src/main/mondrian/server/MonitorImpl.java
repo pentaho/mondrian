@@ -185,7 +185,7 @@ class MonitorImpl
      */
     private static class MutableServerInfo {
         private final MutableSqlStatementInfo aggSql =
-            new MutableSqlStatementInfo(null, -1, null);
+            new MutableSqlStatementInfo(null, -1, null, null);
         private final MutableExecutionInfo aggExec =
             new MutableExecutionInfo(null, -1, null);
         private final MutableStatementInfo aggStmt =
@@ -274,7 +274,7 @@ class MonitorImpl
         private final MutableExecutionInfo aggExec =
             new MutableExecutionInfo(null, -1, null);
         private final MutableSqlStatementInfo aggSql =
-            new MutableSqlStatementInfo(null, -1, null);
+            new MutableSqlStatementInfo(null, -1, null, null);
         private int startCount;
         private int endCount;
         private final String stack;
@@ -325,7 +325,7 @@ class MonitorImpl
         private final MutableStatementInfo stmt;
         private final long executionId;
         private final MutableSqlStatementInfo aggSql =
-            new MutableSqlStatementInfo(null, -1, null);
+            new MutableSqlStatementInfo(null, -1, null, null);
         private int startCount;
         private int phaseCount;
         private int endCount;
@@ -389,21 +389,25 @@ class MonitorImpl
         private long executeNanos;
         private long rowFetchCount;
         private final String stack;
+        private final String sql;
 
         public MutableSqlStatementInfo(
             MutableStatementInfo stmt,
             long sqlStatementId,
+            String sql,
             String stack)
         {
             this.sqlStatementId = sqlStatementId;
             this.stmt = stmt;
+            this.sql = sql;
             this.stack = stack;
         }
 
         public SqlStatementInfo fix() {
             return new SqlStatementInfo(
                 stack,
-                sqlStatementId);
+                sqlStatementId,
+                sql);
         }
     }
 
@@ -841,6 +845,7 @@ class MonitorImpl
                 new MutableSqlStatementInfo(
                     stmt,
                     event.sqlStatementId,
+                    event.sql,
                     event.stack);
             sqlStatementMap.put(event.sqlStatementId, sql);
             foo(sql, event);
