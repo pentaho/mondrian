@@ -318,6 +318,7 @@ public class Main extends TestSuite {
             addTest(suite, VisualTotalsTest.class);
             addTest(suite, AggregationOnDistinctCountMeasuresTest.class);
             addTest(suite, NonCollapsedAggTest.class);
+            addTest(suite, SpeciesNonCollapsedAggTest.class);
             addTest(suite, BitKeyTest.class);
             addTest(suite, TypeTest.class);
             addTest(suite, SteelWheelsSchemaTest.class);
