@@ -12,6 +12,8 @@ package mondrian.rolap;
 import mondrian.mdx.MdxVisitorImpl;
 import mondrian.mdx.MemberExpr;
 import mondrian.olap.*;
+import mondrian.olap.Id.NameSegment;
+import mondrian.olap.Id.Segment;
 import mondrian.resource.MondrianResource;
 import mondrian.spi.Dialect;
 import mondrian.util.ByteString;
@@ -1223,19 +1225,40 @@ public class RolapSchemaUpgrader {
         List<LevelInfo> elements,
         String name)
     {
-        StringBuilder buf = new StringBuilder();
         for (LevelInfo element : elements) {
             if (element.level.equals(name)) {
                 return element;
             }
-            buf.setLength(0);
-            Util.quoteForMdx(buf, element.dimension);
-            Util.quoteForMdx(buf, element.hierarchy);
-            Util.quoteForMdx(buf, element.level);
-            if (buf.toString().equals(name)) {
+
+            final String elementName =
+                Util.quoteMdxIdentifier(
+                    NameSegment.toList(
+                        element.dimension,
+                        element.hierarchy,
+                        element.level));
+
+            if (elementName.equals(name)) {
                 return element;
             }
         }
+
+        // Lets try [Dimension Name].[Level Name]
+        for (LevelInfo element : elements) {
+            if (element.level.equals(name)) {
+                return element;
+            }
+
+            final String shortElementName =
+                Util.quoteMdxIdentifier(
+                    NameSegment.toList(
+                        element.dimension,
+                        element.level));
+
+            if (shortElementName.equals(name)) {
+                return element;
+            }
+        }
+
         return null;
     }
 
