@@ -11,6 +11,7 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.rolap.RolapHierarchy.LimitedRollupMember;
 
 import junit.framework.Assert;
 
@@ -3040,6 +3041,55 @@ public class AccessControlTest extends FoodMartTestCase {
         testContext.executeQuery(
             " select from [Warehouse and Sales] where {[Measures].[Store Sales]}");
         // test is that there is no exception
+    }
+
+    /**
+     * Fix for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1486">MONDRIAN-1486</a>
+     *
+     * When NECJ was used, a call to RolapNativeCrossJoin.createEvaluator
+     * would swap the {@link LimitedRollupMember} for the regular all member
+     * of the hierarchy, effectively removing security constraints.
+     */
+    public void testMondrian1486() throws Exception {
+        final String mdx =
+            "With\n"
+            + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Gender],[*BASE_MEMBERS_Marital Status])'\n"
+            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],[Gender].CurrentMember.OrderKey,BASC,[Marital Status].CurrentMember.OrderKey,BASC)'\n"
+            + "Set [*BASE_MEMBERS_Gender] as '[Gender].[Gender].Members'\n"
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Gender].currentMember,[Marital Status].currentMember)})'\n"
+            + "Set [*BASE_MEMBERS_Marital Status] as '[Marital Status].[Marital Status].Members'\n"
+            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'\n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', SOLVE_ORDER=400\n"
+            + "Select\n"
+            + "[*BASE_MEMBERS_Measures] on columns,\n"
+            + "Non Empty [*SORTED_ROW_AXIS] on rows\n"
+            + "From [Sales]\n";
+        final TestContext context =
+            TestContext.instance().create(
+                null, null, null, null, null,
+                "<Role name=\"Admin\">\n"
+                + "    <SchemaGrant access=\"none\">\n"
+                + "      <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                + "        <HierarchyGrant hierarchy=\"[Gender]\" rollupPolicy=\"partial\" access=\"custom\">\n"
+                + "          <MemberGrant member=\"[Gender].[F]\" access=\"all\">\n"
+                + "          </MemberGrant>\n"
+                + "        </HierarchyGrant>\n"
+                + "      </CubeGrant>\n"
+                + "    </SchemaGrant>\n"
+                + "  </Role>\n").withRole("Admin");
+        context.assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[F], [Marital Status].[M]}\n"
+            + "{[Gender].[F], [Marital Status].[S]}\n"
+            + "Row #0: 65,336\n"
+            + "Row #1: 66,222\n");
     }
 }
 

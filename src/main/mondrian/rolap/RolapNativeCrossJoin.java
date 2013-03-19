@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -217,11 +217,15 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             Member[] evalMembers = evaluator.getMembers().clone();
             for (RolapLevel level : levels) {
                 RolapHierarchy hierarchy = level.getHierarchy();
+                memberLoop:
                 for (int i = 0; i < evalMembers.length; ++i) {
                     Dimension evalMemberDimension =
-                            evalMembers[i].getHierarchy().getDimension();
-                    if (evalMemberDimension == hierarchy.getDimension()) {
+                        evalMembers[i].getHierarchy().getDimension();
+                    if (evalMemberDimension == hierarchy.getDimension()
+                        && !evalMembers[i].isAll())
+                    {
                         evalMembers[i] = hierarchy.getAllMember();
+                        break memberLoop;
                     }
                 }
             }
