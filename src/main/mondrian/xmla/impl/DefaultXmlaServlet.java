@@ -409,14 +409,15 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
 
 
         // Generate a pseudo-random new session ID.
-        return Long.toString(17L * System.nanoTime()
-                +
-                3L * System.currentTimeMillis(), 35);
+        return Long.toString(
+            17L * System.nanoTime()
+            + 3L * System.currentTimeMillis(), 35);
     }
 
 
-    private static String getSessionIdFromRequest(Element e,
-            Map<String, Object> context)
+    private static String getSessionIdFromRequest(
+        Element e,
+        Map<String, Object> context)
         throws Exception
     {
         // extract the SessionId attrs value and put into context

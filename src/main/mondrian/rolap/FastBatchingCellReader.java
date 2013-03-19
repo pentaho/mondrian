@@ -66,7 +66,7 @@ public class FastBatchingCellReader implements CellReader {
     private int pendingCount;
 
     private final AggregationManager aggMgr;
-    
+
     private final boolean cacheEnabled;
 
     private final SegmentCacheManager cacheMgr;
