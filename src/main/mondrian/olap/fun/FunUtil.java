@@ -957,11 +957,13 @@ public class FunUtil extends Util {
         if (value1 == null) {
             return 1;
         }
-        if (value0 == RolapUtil.valueNotReadyException
-            || value1 == RolapUtil.valueNotReadyException)
-        {
-            // one of the values is not in cache; continue as best as we can
-            return 0;
+
+        if (value0 == RolapUtil.valueNotReadyException) {
+            // the left value is not in cache; continue as best as we can
+             return -1;
+        } else if (value1 == RolapUtil.valueNotReadyException) {
+            // the right value is not in cache; continue as best as we can
+            return 1;
         } else if (value0 == Util.nullValue) {
             return -1; // null == -infinity
         } else if (value1 == Util.nullValue) {
