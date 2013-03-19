@@ -168,7 +168,7 @@ public class RolapNativeFilter extends RolapNativeSet {
         final int savepoint = evaluator.savepoint();
         try {
             overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
-    
+
             // Now construct the TupleConstraint that contains both the CJ
             // dimensions and the additional filter on them.
             CrossJoinArg[] combinedArgs = cjArgs;
@@ -180,7 +180,7 @@ public class RolapNativeFilter extends RolapNativeSet {
                         Util.appendArrays(cjArgs, predicateArgs);
                 }
             }
-    
+
             TupleConstraint constraint =
                 new FilterConstraint(
                     combinedArgs, evaluator, measureGroupList, filterExpr);

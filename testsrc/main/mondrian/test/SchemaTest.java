@@ -3834,7 +3834,6 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "      <Level name='Quarter hours' visible='true' attribute='Quarter hours' hideMemberIf='Never'/>"
             + "    </Hierarchy>"
             + "  </Hierarchies>"
-            
             + "</Dimension>";
         final Map<String, String> dimLinks =
             ArrayMap.of(

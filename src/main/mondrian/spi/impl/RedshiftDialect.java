@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2013 Pentaho
+// Copyright (C) 2013-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -30,15 +30,15 @@ public class RedshiftDialect extends PostgreSqlDialect {
     }
 
     public static final JdbcDialectFactory FACTORY =
-            new JdbcDialectFactory(
-                    RedshiftDialect.class,
-                    DatabaseProduct.POSTGRESQL)
-            {
-                protected boolean acceptsConnection(Connection connection) {
-                    return super.acceptsConnection(connection)
-                            && isDatabase(DatabaseProduct.REDSHIFT, connection);
-                }
-            };
+        new JdbcDialectFactory(
+            RedshiftDialect.class,
+            DatabaseProduct.POSTGRESQL)
+        {
+            protected boolean acceptsConnection(Connection connection) {
+                return super.acceptsConnection(connection)
+                    && isDatabase(DatabaseProduct.REDSHIFT, connection);
+            }
+        };
 
     public DatabaseProduct getDatabaseProduct() {
         return DatabaseProduct.REDSHIFT;
@@ -46,18 +46,18 @@ public class RedshiftDialect extends PostgreSqlDialect {
 
     @Override
     public String generateInline(
-            List<String> columnNames,
-            List<String> columnTypes,
-            List<String[]> valueList)
+        List<String> columnNames,
+        List<String> columnTypes,
+        List<String[]> valueList)
     {
         return generateInlineGeneric(
-                columnNames, columnTypes, valueList, null, false);
+            columnNames, columnTypes, valueList, null, false);
     }
 
     @Override
     public void quoteStringLiteral(
-            StringBuilder buf,
-            String value)
+        StringBuilder buf,
+        String value)
     {
         // '\' to '\\'
         Util.singleQuoteString(value.replaceAll("\\\\", "\\\\\\\\"), buf);
@@ -70,8 +70,8 @@ public class RedshiftDialect extends PostgreSqlDialect {
 
     @Override
     public String generateRegularExpression(
-            String source,
-            String javaRegExp)
+        String source,
+        String javaRegExp)
     {
         return null;
     }
