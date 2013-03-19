@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -245,28 +245,32 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             Member[] evalMembers = evaluator.getMembers().clone();
             for (RolapLevel level : levels) {
                 RolapHierarchy hierarchy = level.getHierarchy();
+                memberLoop:
                 for (int i = 0; i < evalMembers.length; ++i) {
                     Dimension evalMemberDimension =
                         evalMembers[i].getHierarchy().getDimension();
-                    if (evalMemberDimension == hierarchy.getDimension()) {
+                    if (evalMemberDimension == hierarchy.getDimension()
+                        && !evalMembers[i].isAll())
+                    {
                         evalMembers[i] = hierarchy.getAllMember();
+                        break memberLoop;
                     }
                 }
             }
             evaluator.setContext(evalMembers);
-    
-            // Use the combined CrossJoinArg for the tuple constraint, which will be
-            // translated to the SQL WHERE clause.
+
+            // Use the combined CrossJoinArg for the tuple constraint,
+            // which will be translated to the SQL WHERE clause.
             CrossJoinArg[] cargs = combineArgs(allArgs);
-    
+
             // Now construct the TupleConstraint that contains both the CJ
-            // dimensions and the additional filter on them. It will make a copy
-            // of the evaluator.
+            // dimensions and the additional filter on them. It will make a
+            // copy of the evaluator.
             TupleConstraint constraint =
                 buildConstraint(evaluator, fun, cargs, measureGroupList);
-    
-            // Use the just the CJ CrossJoiArg for the evaluator context, which will
-            // be translated to select list in sql.
+
+            // Use the just the CJ CrossJoiArg for the evaluator context,
+            // which will be translated to select list in sql.
             final SchemaReader schemaReader = evaluator.getSchemaReader();
             return new SetEvaluator(cjArgs, schemaReader, constraint);
         } finally {
