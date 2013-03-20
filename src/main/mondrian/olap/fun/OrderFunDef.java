@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -421,7 +421,7 @@ class OrderFunDef extends FunDefBase {
                 }
                 // if symbol is not specified, skip to the next
                 if ((i == args.length)) {
-                    //done, will default last arg to ASC
+                    // done, will default last arg to ASC
                 } else {
                     if (!validator.canConvert(
                             i, args[i], Category.Symbol, conversions))
