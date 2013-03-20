@@ -3010,7 +3010,7 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Non Empty [*SORTED_ROW_AXIS] on rows\n"
             + "From [Sales]\n";
         final TestContext context =
-            TestContext.instance().create(
+            TestContext.instance().legacy().create(
                 null, null, null, null, null,
                 "<Role name=\"Admin\">\n"
                 + "    <SchemaGrant access=\"none\">\n"
@@ -3029,10 +3029,18 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[F], [Marital Status].[M]}\n"
-            + "{[Gender].[F], [Marital Status].[S]}\n"
-            + "Row #0: 65,336\n"
-            + "Row #1: 66,222\n");
+            + "{[Gender].[Gender].[All Gender], [Marital Status].[Marital Status].[All Marital Status]}\n"
+            + "{[Gender].[Gender].[All Gender], [Marital Status].[Marital Status].[M]}\n"
+            + "{[Gender].[Gender].[All Gender], [Marital Status].[Marital Status].[S]}\n"
+            + "{[Gender].[Gender].[F], [Marital Status].[Marital Status].[All Marital Status]}\n"
+            + "{[Gender].[Gender].[F], [Marital Status].[Marital Status].[M]}\n"
+            + "{[Gender].[Gender].[F], [Marital Status].[Marital Status].[S]}\n"
+            + "Row #0: 131,558\n"
+            + "Row #1: 65,336\n"
+            + "Row #2: 66,222\n"
+            + "Row #3: 131,558\n"
+            + "Row #4: 65,336\n"
+            + "Row #5: 66,222\n");
     }
 }
 
