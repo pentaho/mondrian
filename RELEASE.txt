@@ -340,3 +340,47 @@ MONDRIAN-679 - VisualTotals gives ClassCastException when called
                via XMLA
 
 
+Mondrian Previous Releases - Tags and Checksums
+===============================================
+
+Below is the list of Mondrian tags and checksums in Git. They
+represent the previous releases of Mondrian and can all be found
+directly from: https://github.com/pentaho/mondrian/tags
+
+Version   Tag         Git Hash
+-------   ---------   ----------------------------------------
+3.5.5     3.5.5-R     1a6f422f88a285d560dc3d4f903fba756643a080
+3.5.4     3.5.4-R     3c76d436b1324be35c922a2c5fd0495bdd36ebe6
+3.5.3     3.5.3-R     8d01ab45bfd641bc2c489ea3f46a5ba563d557a7
+3.5.2     3.5.2-R     3dfeb82c0ae2e1f96fe82c2fc3e4bc95959fe8a4
+3.5.1     3.5.1-R     dcef59a1c32eab95662b9950b9b875e88511af29
+3.5.0     3.5.0-R     b7033fea78744a3a9702efed767498e14593951e
+
+3.4.17    3.4.17-R    10abbaf0bde215e8c6cf31b2708a045ef128cf8c
+3.4.16    3.4.16-R    3be0d9220620268245880b03dacd9b33c6a4bf61
+3.4.15    3.4.15-R    3d0333fcd1bec7ee5ae0660ca6ad2f1f8c3c21f1
+3.4.14    3.4.14-R    7a0613f7ac1610a4a260814fe7f20a683345a4e1
+3.4.13    3.4.13-R    762d7bfc1074802a0bd2ca554bfb799f9dffdd09
+3.4.12    3.4.12-R    59c3ddacdefa6c0174d9777176f366d7feb1daf0
+3.4.11    3.4.11-R    ef3a173941b7f355a5e3c28d4ff3d204c299ec18
+3.4.10    3.4.10-R    d5eb9b1534ee2a1325b9c0418ec919c5e6cda67e
+3.4.9     3.4.9-R     bfc255caaccca484f4cbdfc99d0a3bf3244b8867
+3.4.8     3.4.8-R     50470c77d4872509821a78d1835b566cd3ffffea
+3.4.7     3.4.7-R     46a5b225264ec731433c6fde64335578fbabf9e3
+3.4.6     3.4.6-R     9636faddab631b3dc504677d1a442d380fc32ed9
+3.4.5     3.4.5-R     0e4efa3e8273bd27b01e3b4871629c773edaa8f1
+3.4.4     3.4.4-R     0d86fc57b743fcad6ba618d18ac5e80b3344447a
+3.4.3     3.4.3-R     e526272ceed4c888d6162e33e5260487fe4d4261
+3.4.2     3.4.2-R     afdf8826a7bc40633cdb363df71abdfef791ed9f
+3.4.1     3.4.1-R     4639f47ce665e94d99f99d89a0a2c8e399d9d358
+
+3.3.2     3.3.2-R     9518450f359a099368c3391262953a0c9cb72792
+3.3.1     3.3.1-R     34460aca8fdef617bef640fa9331bfacc04f9324
+3.3.0     3.3.0-R     d14cac7b8c95d2e70ab87121d0098aa854c805d4
+
+3.2.5     3.2.5-R     17e3c699655494fc383b5365eec5b428da66435b
+3.2.4     3.2.4-R     8bc44978106a2e3c5817286a0717903281695b19
+3.2.3     3.2.3-R     0436dec34369fbf0a1fdda47ac0e44831ee81747
+3.2.2     3.2.2-R     88c3b7e8fdecc91001391ff4998758b14dc173da
+3.2.1     3.2.1-R     984fce88f5f55aa4e051e2e0377b4b84a8865960
+
