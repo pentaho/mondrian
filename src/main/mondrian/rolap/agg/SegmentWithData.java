@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2012 Pentaho and others
+// Copyright (C) 2010-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -231,7 +231,7 @@ public class SegmentWithData extends Segment {
      * @param axisKeepBitSets For each axis, a bitmap of the axis values to
      *   keep; each axis must have at least one bit set
      * @param bestColumn The column that retains most of its values
-     * @param bestPredicate
+     * @param bestPredicate Best predicate
      * @param excludedRegions List of regions to exclude from segment
      * @return Segment containing a subset of the values
      */

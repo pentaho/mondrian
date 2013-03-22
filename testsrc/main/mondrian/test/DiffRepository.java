@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -98,7 +98,7 @@ public class DiffRepository
     private final File refFile;
     private final File logFile;
 
-    /*
+/*
     Example XML document:
 
     <Root>
@@ -119,7 +119,8 @@ public class DiffRepository
             </Resource>
         </TestCase>
     </Root>
-    */
+*/
+
     private static final String RootTag = "Root";
     private static final String TestCaseTag = "TestCase";
     private static final String TestCaseNameAttr = "name";

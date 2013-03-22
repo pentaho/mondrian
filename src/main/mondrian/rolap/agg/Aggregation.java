@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 28 August, 2001
@@ -109,7 +109,7 @@ public class Aggregation {
      * state = {CA, OR},
      * gender = unconstrained</pre></blockquote>
      *
-     * @param starConverter
+     * @param starConverter Star converter
      * @param segmentFutures List of futures wherein each statement will place
      *                       a list of the segments it has loaded, when it
      */

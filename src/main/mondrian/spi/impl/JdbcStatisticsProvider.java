@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2012 Pentaho
+// Copyright (C) 2012-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -118,7 +118,7 @@ public class JdbcStatisticsProvider implements StatisticsProvider {
                 case DatabaseMetaData.tableIndexStatistic:
                     continue;
                 default:
-                    String columnName = resultSet.getString(9); //COLUMN_NAME
+                    String columnName = resultSet.getString(9); // COLUMN_NAME
                     if (columnName != null && columnName.equals(column)) {
                         return resultSet.getInt(11); // "CARDINALITY" column
                     }
