@@ -13,7 +13,8 @@ import mondrian.olap.*;
 import mondrian.spi.*;
 import mondrian.spi.MemberFormatter;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.olap4j.metadata.Level;
 
@@ -28,7 +29,7 @@ import java.util.List;
  * @author jhyde
  */
 public interface RolapAttribute extends OlapElement {
-    final Logger LOGGER = Logger.getLogger(RolapAttribute.class);
+    final Logger LOGGER = LoggerFactory.getLogger(RolapAttribute.class);
 
     RolapDimension getDimension();
 

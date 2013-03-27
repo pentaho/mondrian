@@ -28,7 +28,8 @@ import mondrian.util.Pair;
 import junit.framework.*;
 import junit.framework.Test;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.olap4j.*;
 import org.olap4j.impl.CoordinateIterator;
@@ -1831,7 +1832,7 @@ public class TestContext {
     }
 
     public Logger getLogger() {
-        return Logger.getLogger(FoodMartTestCase.class);
+        return LoggerFactory.getLogger(FoodMartTestCase.class);
     }
 
     /**

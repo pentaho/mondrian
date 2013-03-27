@@ -20,7 +20,8 @@ import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.spi.Dialect;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -51,7 +52,7 @@ import javax.sql.DataSource;
  * @author Richard M. Emberson
  */
 public class AggStar extends RolapStar {
-    private static final Logger LOGGER = Logger.getLogger(AggStar.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AggStar.class);
 
     static Logger getLogger() {
         return LOGGER;
@@ -420,7 +421,7 @@ public class AggStar extends RolapStar {
     }
 
     private static final Logger JOIN_CONDITION_LOGGER =
-            Logger.getLogger(AggStar.Table.JoinCondition.class);
+            LoggerFactory.getLogger(AggStar.Table.JoinCondition.class);
 
     /**
      * Base Table class for the FactTable and DimTable classes.

@@ -20,7 +20,8 @@ import mondrian.spi.*;
 import mondrian.util.*;
 
 import org.apache.commons.collections.Predicate;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.eigenbase.xom.XOMUtil;
 
@@ -55,7 +56,7 @@ public class Util extends XOMUtil {
 
     public static final String nl = System.getProperty("line.separator");
 
-    private static final Logger LOGGER = Logger.getLogger(Util.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
 
     /**
      * Placeholder which indicates a value NULL.

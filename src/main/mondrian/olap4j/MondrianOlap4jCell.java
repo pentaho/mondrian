@@ -14,7 +14,8 @@ import mondrian.olap.Util;
 import mondrian.rolap.RolapCell;
 import mondrian.rolap.SqlStatement;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.olap4j.*;
 import org.olap4j.metadata.Property;

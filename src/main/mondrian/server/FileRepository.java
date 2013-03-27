@@ -17,7 +17,8 @@ import mondrian.tui.XmlaSupport;
 import mondrian.util.*;
 import mondrian.xmla.DataSourcesConfig;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.olap4j.*;
 import org.olap4j.impl.Olap4jUtil;
@@ -41,7 +42,7 @@ public class FileRepository implements Repository {
     private static final Object SERVER_INFO_LOCK = new Object();
     private final RepositoryContentFinder repositoryContentFinder;
 
-    private static final Logger LOGGER = Logger.getLogger(MondrianServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MondrianServer.class);
 
     private static final ScheduledExecutorService executorService =
         Util.getScheduledExecutorService(

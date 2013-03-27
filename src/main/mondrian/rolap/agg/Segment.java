@@ -16,7 +16,8 @@ import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.spi.SegmentHeader;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -111,7 +112,7 @@ public class Segment {
 
     private final SegmentHeader segmentHeader;
 
-    private static final Logger LOGGER = Logger.getLogger(Segment.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Segment.class);
 
     /**
      * Creates a <code>Segment</code>; it's not loaded yet.

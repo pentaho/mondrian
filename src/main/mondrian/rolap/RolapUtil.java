@@ -21,7 +21,8 @@ import mondrian.server.*;
 import mondrian.spi.Dialect;
 import mondrian.util.ClassResolver;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.eigenbase.util.property.StringProperty;
 
@@ -39,14 +40,14 @@ import javax.sql.DataSource;
  * @since 22 December, 2001
  */
 public class RolapUtil {
-    public static final Logger MDX_LOGGER = Logger.getLogger("mondrian.mdx");
-    public static final Logger SQL_LOGGER = Logger.getLogger("mondrian.sql");
+    public static final Logger MDX_LOGGER = LoggerFactory.getLogger("mondrian.mdx");
+    public static final Logger SQL_LOGGER = LoggerFactory.getLogger("mondrian.sql");
     public static final Logger MONITOR_LOGGER =
-        Logger.getLogger("mondrian.server.monitor");
+        LoggerFactory.getLogger("mondrian.server.monitor");
     public static final Logger PROFILE_LOGGER =
-        Logger.getLogger("mondrian.profile");
+        LoggerFactory.getLogger("mondrian.profile");
 
-    static final Logger LOGGER = Logger.getLogger(RolapUtil.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(RolapUtil.class);
     private static Semaphore querySemaphore;
 
     /**
@@ -372,12 +373,10 @@ public class RolapUtil {
             MondrianProperties.instance().AlertNativeEvaluationUnsupported;
         String alertValue = alertProperty.get();
 
-        if (alertValue.equalsIgnoreCase(
-                org.apache.log4j.Level.WARN.toString()))
+        if (alertValue.equalsIgnoreCase( "WARN" ))
         {
             LOGGER.warn(alertMsg);
-        } else if (alertValue.equalsIgnoreCase(
-                org.apache.log4j.Level.ERROR.toString()))
+        } else if (alertValue.equalsIgnoreCase( "ERROR" ))
         {
             LOGGER.error(alertMsg);
             throw MondrianResource.instance().NativeEvaluationUnsupported.ex(

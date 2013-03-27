@@ -10,11 +10,12 @@
 */
 package mondrian.test;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import mondrian.olap.MondrianProperties;
 import mondrian.rolap.RolapUtil;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+
 
 import org.eigenbase.util.property.*;
 

@@ -20,7 +20,8 @@ import mondrian.server.Statement;
 import mondrian.spi.Dialect;
 import mondrian.util.Format;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -63,7 +64,7 @@ import java.util.*;
  * @since 10 August, 2001
  */
 public class RolapEvaluator implements Evaluator {
-    private static final Logger LOGGER = Logger.getLogger(RolapEvaluator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RolapEvaluator.class);
 
     /**
      * Dummy value to represent null results in the expression cache.

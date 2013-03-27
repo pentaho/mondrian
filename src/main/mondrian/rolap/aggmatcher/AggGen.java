@@ -14,7 +14,8 @@ import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -30,7 +31,7 @@ import java.util.*;
  * @author Richard M. Emberson
  */
 public class AggGen {
-    private static final Logger LOGGER = Logger.getLogger(AggGen.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AggGen.class);
 
     private final String cubeName;
     private final RolapStar star;
@@ -167,7 +168,7 @@ public class AggGen {
         try {
             factTable.load();
         } catch (SQLException ex) {
-            getLogger().error(ex);
+            getLogger().error("Exception", ex);
             return;
         }
 
@@ -366,7 +367,7 @@ public class AggGen {
         try {
             jt.load();
         } catch (SQLException ex) {
-            getLogger().error(ex);
+            getLogger().error("Error", ex);
             return false;
         }
 
@@ -457,7 +458,7 @@ public class AggGen {
         try {
             jt.load();
         } catch (SQLException ex) {
-            getLogger().error(ex);
+            getLogger().error("Error", ex);
             return false;
         }
 
@@ -465,7 +466,7 @@ public class AggGen {
         try {
             jt.load();
         } catch (SQLException sqle) {
-            getLogger().error(sqle);
+            getLogger().error("Error", sqle);
             return false;
         }
 

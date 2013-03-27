@@ -16,6 +16,8 @@ import mondrian.server.UrlRepositoryContentFinder;
 import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.ServletContextCatalogLocator;
 import mondrian.xmla.XmlaHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -29,6 +31,9 @@ import javax.servlet.*;
  * @author jhyde
  */
 public class MondrianXmlaServlet extends DefaultXmlaServlet {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MondrianXmlaServlet.class);
+
     public static final String DEFAULT_DATASOURCE_FILE = "datasources.xml";
 
     protected MondrianServer server;

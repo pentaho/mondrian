@@ -14,7 +14,8 @@ import mondrian.olap.*;
 import mondrian.server.UrlRepositoryContentFinder;
 import mondrian.xmla.test.XmlaTestContext;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.olap4j.*;
 
@@ -32,7 +33,7 @@ import java.util.concurrent.*;
  */
 public class ConcurrentMdxTest extends FoodMartTestCase {
     private static final Logger LOGGER =
-        Logger.getLogger(FoodMartTestCase.class);
+        LoggerFactory.getLogger(FoodMartTestCase.class);
 
     static final QueryAndResult[] mdxQueries = {
         new QueryAndResult(
@@ -1316,7 +1317,7 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
 
     private synchronized void logStatus() {
         if (count % 1000 == 0) {
-            LOGGER.debug(count);
+            LOGGER.debug("{}", count);
         }
         count++;
     }

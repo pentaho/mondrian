@@ -14,7 +14,8 @@ import mondrian.olap.*;
 import mondrian.olap.Dimension;
 import mondrian.util.Lazy;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.olap4j.metadata.NamedList;
 
@@ -53,7 +54,7 @@ import java.util.*;
  */
 class RolapDimension extends DimensionBase {
 
-    private static final Logger LOGGER = Logger.getLogger(RolapDimension.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RolapDimension.class);
 
     final RolapSchema schema;
     private final Larder larder;

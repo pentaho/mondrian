@@ -18,7 +18,8 @@ import mondrian.olap.type.StringType;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.eigenbase.util.property.Property;
 
@@ -46,7 +47,7 @@ public class RolapSchemaReader
     private final SqlConstraintFactory sqlConstraintFactory =
         SqlConstraintFactory.instance();
     private static final Logger LOGGER =
-        Logger.getLogger(RolapSchemaReader.class);
+        LoggerFactory.getLogger(RolapSchemaReader.class);
 
     /**
      * Creates a RolapSchemaReader.

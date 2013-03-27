@@ -20,7 +20,8 @@ import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.server.Statement;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.olap4j.impl.NamedListImpl;
 import org.olap4j.mdx.IdentifierNode;
@@ -37,7 +38,7 @@ import java.util.*;
  */
 public class RolapCube extends CubeBase {
 
-    private static final Logger LOGGER = Logger.getLogger(RolapCube.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RolapCube.class);
 
     private final RolapSchema schema;
     private final Larder larder;

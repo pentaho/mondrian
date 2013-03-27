@@ -10,12 +10,18 @@
 */
 package mondrian.test.loader;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.PatternLayout;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.ConsoleAppender;
+import ch.qos.logback.core.Layout;
 import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 
-import org.apache.log4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -72,8 +78,8 @@ import java.util.regex.Pattern;
 public class MondrianFoodMartLoader {
     // Constants
 
-    private static final Logger LOGGER =
-        Logger.getLogger(MondrianFoodMartLoader.class);
+    private static final ch.qos.logback.classic.Logger LOGGER =
+            (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(MondrianFoodMartLoader.class);
     private static final String nl = Util.nl;
 
     /**
@@ -149,19 +155,19 @@ public class MondrianFoodMartLoader {
         StringBuilder parametersMessage = new StringBuilder();
 
         // Add a console appender for error messages.
-        final ConsoleAppender consoleAppender =
-            new ConsoleAppender(
-                // Formats the message on its own line,
-                // omits timestamp, priority etc.
-                new PatternLayout("%m%n"),
-                "System.out");
-        consoleAppender.setThreshold(Level.ERROR);
+        final ConsoleAppender<ILoggingEvent> consoleAppender = new ConsoleAppender();
+        Layout<ILoggingEvent> layout = new PatternLayout();
+
+        consoleAppender.setTarget("System.out");
+        consoleAppender.setLayout(layout);
+
+        LOGGER.setLevel(Level.ERROR);
         LOGGER.addAppender(consoleAppender);
 
         for (String arg : args) {
             if (arg.equals("-verbose")) {
                 // Make sure the logger is passing at least debug events.
-                consoleAppender.setThreshold(Level.DEBUG);
+                LOGGER.setLevel(Level.DEBUG);
                 if (!LOGGER.isDebugEnabled()) {
                     LOGGER.setLevel(Level.DEBUG);
                 }

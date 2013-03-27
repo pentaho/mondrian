@@ -17,7 +17,8 @@ import mondrian.olap.fun.*;
 import mondrian.olap.type.*;
 import mondrian.rolap.*;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -29,7 +30,7 @@ import java.util.*;
  */
 public class CrossJoinArgFactory {
     protected static final Logger LOGGER =
-        Logger.getLogger(CrossJoinArgFactory.class);
+        LoggerFactory.getLogger(CrossJoinArgFactory.class);
 
     private final boolean restrictMemberTypes;
 

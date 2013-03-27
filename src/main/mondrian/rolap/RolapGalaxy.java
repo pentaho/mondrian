@@ -13,7 +13,8 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.util.Pair;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -64,7 +65,7 @@ public class RolapGalaxy {
     private Map<RolapStar.Measure, BitKey> nonAdditiveMeasureSafeToRollup =
         new HashMap<RolapStar.Measure, BitKey>();
 
-    private static final Logger LOGGER = Logger.getLogger(RolapStar.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RolapStar.class);
 
     RolapGalaxy(RolapCube cube) {
         this.cube = cube;
