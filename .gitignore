@@ -52,3 +52,7 @@ src/main/mondrian/rolap/aggmatcher/aggregates.dtd
 src/main/mondrian/xmla/DataSourcesConfig.java
 src/main/mondrian/xmla/datasourcesconfig.dtd
 
+.idea
+target
+*.iml
+bin
