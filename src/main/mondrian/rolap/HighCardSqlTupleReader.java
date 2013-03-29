@@ -140,8 +140,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
         assert targets.size() == 1;
 
         return new UnaryTupleList(
-            bumpNullMember(
-                targets.get(0).close()));
+            targets.get(0).close());
     }
 
     public TupleList readTuples(

@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -214,6 +214,32 @@ public class HighDimensionsTest extends FoodMartTestCase {
             1,
             "Promotions",
             moreThan4000highCardResults, moreThan4000Cells, true, 3);
+    }
+
+    public void testMondrian1488() {
+        //  MONDRIAN-1501 / MONDRIAN-1488
+        // Both involve an attempt to modify the list backing
+        // HighCardSqlTupleReader when handling null values.
+        // Requires use of a dim flagged as high card which has null members
+        TestContext ctx = TestContext.instance().create(
+            null,
+            "<Cube name=\"highCard\"> \n"
+            + "  <Table name=\"sales_fact_1997\"/> \n"
+            + "<Dimension name=\"StoreSize\" foreignKey=\"customer_id\"  highCardinality=\"true\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
+            + "      <Table name=\"store\"/>\n"
+            + "      <Level name=\"Sqft\" column=\"store_sqft\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"/> \n"
+            + "</Cube> \n",
+            null,
+            null,
+            null,
+            null);
+        // this will throw an exception if .remove is called on the HCSTR list
+        ctx.executeQuery(
+            "select NON EMPTY filter([StoreSize].[Sqft].members, 1=1) on 0 from highCard");
     }
 
     //
