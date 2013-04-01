@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -1284,6 +1284,40 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Row #19: 0\n"
             + "Row #20: 0\n"
             + "Row #21: 0\n");
+    }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1464">MONDRIAN-1464</a>
+     *
+     * Invalid filter SQL generated on numeric column
+     */
+    public void testMondrian1464() {
+        if (!getTestContext().databaseIsValid()) {
+            return;
+        }
+        final PropertySaver propSaver = new PropertySaver();
+        propSaver.set(MondrianProperties.instance().IgnoreInvalidMembers, true);
+        propSaver.set(MondrianProperties.instance().IgnoreInvalidMembersDuringQuery, true);
+        getTestContext().assertQueryReturns(
+            "WITH \n" +
+                "SET [*NATIVE_CJ_SET] AS '[*BASE_MEMBERS_Time]' \n" +
+                "SET [*BASE_MEMBERS_Measures] AS '{[Measures].[*ZERO]}' \n" +
+                "SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Time].CURRENTMEMBER)})' \n" +
+                "SET [*BASE_MEMBERS_Time] AS 'FILTER([Time].[Quarters].MEMBERS,[Time].CURRENTMEMBER IN([Time].[PARAM].[qtr1] : [Time].[2003].[QTR2]))' \n" +
+                "SET [*CJ_COL_AXIS] AS '[*NATIVE_CJ_SET]' \n" +
+                "MEMBER [Measures].[*ZERO] AS '0', SOLVE_ORDER=0 \n" +
+                "SELECT \n" +
+                "[*BASE_MEMBERS_Measures] ON COLUMNS \n" +
+                ",ORDER([*CJ_ROW_AXIS],[Time].CURRENTMEMBER.ORDERKEY,BASC,ANCESTOR([Time].CURRENTMEMBER,[Time].[Years]).ORDERKEY,BASC) ON ROWS \n" +
+                "FROM [SteelWheelsSales]",
+            "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[*ZERO]}\n" +
+                "Axis #2:\n"
+        );
+        propSaver.reset();
     }
 }
 

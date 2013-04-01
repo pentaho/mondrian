@@ -40,7 +40,7 @@
 			<Hierarchy hasAll="true" allMemberName="All Years" primaryKey="TIME_ID">
 				<Table name="time">
 				</Table>
-				<Level name="Years" column="YEAR_ID" type="String" uniqueMembers="true" levelType="TimeYears" hideMemberIf="Never">
+				<Level name="Years" column="YEAR_ID" type="Integer" uniqueMembers="true" levelType="TimeYears" hideMemberIf="Never">
 				</Level>
 				<Level name="Quarters" column="QTR_NAME" ordinalColumn="QTR_ID" type="String" uniqueMembers="false" levelType="TimeQuarters" hideMemberIf="Never">
 				</Level>
