@@ -1538,6 +1538,9 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
      * Invalid filter SQL generated on numeric column
      */
     public void testMondrian1464() {
+        if (!getTestContext().databaseIsValid()) {
+            return;
+        }
         final PropertySaver propSaver = new PropertySaver();
         propSaver.set(MondrianProperties.instance().IgnoreInvalidMembers, true);
         propSaver.set(MondrianProperties.instance().IgnoreInvalidMembersDuringQuery, true);
