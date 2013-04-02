@@ -30,8 +30,7 @@
         <dependency org="jaxen" name="jaxen" rev="1.1.1"/>
         <dependency org="dom4j" name="dom4j" rev="1.6.1"/>
         <dependency org="junit" name="junit" rev="4.0"/>
-        <dependency org="pentaho" name="pentaho-mondrianschemaworkbench-plugins" rev="${dependency.schemaworkbench-plugins.revision}"/>
-
+        <dependency org="pentaho" name="pentaho-mondrianschemaworkbench-plugins" rev="${dependency.schemaworkbench-plugins.revision}" transitive="false" changing="true"/>
         <dependency org="pentaho" name="pentaho-xul-core" rev="${dependency.pentaho-xul.revision}" changing="true" />
         <dependency org="pentaho" name="pentaho-xul-swing" rev="${dependency.pentaho-xul.revision}" changing="true" />
 	    <dependency org="commons-beanutils" name="commons-beanutils" rev="1.6" transitive="false"/>
