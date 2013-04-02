@@ -41,6 +41,10 @@ public class SybaseDialect extends JdbcDialectImpl {
     public boolean allowsFromQuery() {
         return false;
     }
+
+    public boolean requiresAliasForFromQuery() {
+        return true;
+    }
 }
 
 // End SybaseDialect.java
