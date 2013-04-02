@@ -15,6 +15,7 @@ import java.util.List;
 
 /**
  * Dialect for Cloudera's Impala DB.
+ *
  * @author cboyden
  * @since 2/11/13
  */
@@ -119,6 +120,8 @@ public class ImpalaDialect extends HiveDialect {
         List<String> columnTypes,
         List<String[]> valueList)
     {
+        // TODO: fix this, when Impala has the necessary features. See bug
+        // http://jira.pentaho.com/browse/MONDRIAN-1512.
         return "";
     }
 
@@ -131,6 +134,8 @@ public class ImpalaDialect extends HiveDialect {
         StringBuilder buf,
         String value)
     {
+        // REVIEW: Are Impala's rules for string literals so very different
+        // from the standard? Or from Hive's?
         String quote = "\'";
         String s0 = value;
 
