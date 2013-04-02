@@ -5018,7 +5018,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `store`.`store_country`,\n"
             + "    `store`.`store_state`\n"
             + "having\n"
-            + "    c1 REGEXP '.*CA.*'\n"
+            + "    UPPER(c1) REGEXP '.*CA.*'\n"
             + "order by\n"
             + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
             + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
@@ -5045,7 +5045,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `store`.`store_country`,\n"
             + "    `store`.`store_state`\n"
             + "having\n"
-            + "    c1 REGEXP '.*CA.*'\n"
+            + "    UPPER(c1) REGEXP '.*CA.*'\n"
             + "order by\n"
             + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
             + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
@@ -5203,7 +5203,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `store`.`store_country`,\n"
             + "    `store`.`store_state`\n"
             + "having\n"
-            + "    c1 REGEXP '.*CA.*'\n"
+            + "    UPPER(c1) REGEXP '.*CA.*'\n"
             + "order by\n"
             + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
             + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
@@ -5227,7 +5227,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `store`.`store_country`,\n"
             + "    `store`.`store_state`\n"
             + "having\n"
-            + "    c1 REGEXP '.*CA.*'\n"
+            + "    UPPER(c1) REGEXP '.*CA.*'\n"
             + "order by\n"
             + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
             + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
