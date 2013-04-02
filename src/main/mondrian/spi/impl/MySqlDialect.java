@@ -278,7 +278,16 @@ public class MySqlDialect extends JdbcDialectImpl {
             // Not a valid Java regex. Too risky to continue.
             return null;
         }
+
+        // We might have to use case-insensitive matching
         final Matcher flagsMatcher = flagsPattern.matcher(javaRegex);
+        boolean caseSensitive = true;
+        if (flagsMatcher.matches()) {
+            final String flags = flagsMatcher.group(2);
+            if (flags.contains("i")) {
+                caseSensitive = false;
+            }
+        }
         if (flagsMatcher.matches()) {
             javaRegex =
                 javaRegex.substring(0, flagsMatcher.start(1))
@@ -292,9 +301,21 @@ public class MySqlDialect extends JdbcDialectImpl {
                     escapeMatcher.group(2));
         }
         final StringBuilder sb = new StringBuilder();
-        sb.append(source);
+
+        // Now build the string.
+        if (caseSensitive) {
+            sb.append(source);
+        } else {
+            sb.append("UPPER(");
+            sb.append(source);
+            sb.append(")");
+        }
         sb.append(" REGEXP ");
-        quoteStringLiteral(sb, javaRegex);
+        if (caseSensitive) {
+            quoteStringLiteral(sb, javaRegex);
+        } else {
+            quoteStringLiteral(sb, javaRegex.toUpperCase());
+        }
         return sb.toString();
     }
 }
