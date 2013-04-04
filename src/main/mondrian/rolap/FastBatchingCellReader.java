@@ -161,7 +161,7 @@ public class FastBatchingCellReader implements CellReader {
         int limit =
             MondrianProperties.instance().CellBatchSize.get();
         if (limit <= 0) {
-            limit = 5000; // TODO Make this logic into a pluggable algorithm.
+            limit = 50000; // TODO Make this logic into a pluggable algorithm.
         }
         if (cellRequests.size() % limit == 0) {
             // Signal that it's time to ask the cache manager if it has cells
