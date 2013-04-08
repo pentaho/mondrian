@@ -1229,16 +1229,14 @@ public class DialectTest extends TestCase {
 
         assertTrue(
             "Oracle dialect NUMBER type with precision =0 , scale = -127"
-            + " should map to INT.  GROUPING SETS queries can shift"
-            + " scale for columns to -127, whether INT or other NUMERIC."
-            + " Assume INT unless the column name indicates it is a measure.",
+            + " should map to DOUBLE",
             oracleDialect.getType(
                 mockResultSetMeta.withColumnName("c0")
                     .withColumnType(Types.NUMERIC)
                     .withPrecision(0)
                     .withScale(-127)
                     .build(),
-                0) == SqlStatement.Type.INT);
+                0) == SqlStatement.Type.DOUBLE);
         assertTrue(
             "Oracle dialect NUMBER type with precision =0 , scale = -127"
             + " should map to OBJECT if measure name starts with 'm'",
