@@ -89,6 +89,15 @@ public class SqlTupleReader implements TupleReader {
      */
     private int missedMemberCount;
     private static final String UNION = "union";
+    private boolean allowHints = true;
+
+    public void disableAllowHints() {
+      allowHints = false;
+    }
+
+    public void enableAllowHints() {
+      allowHints = true;
+    }
 
     /**
      * Helper class for SqlTupleReader;
@@ -900,7 +909,7 @@ public class SqlTupleReader implements TupleReader {
 
         // Allow query to use optimization hints from the table definition
         SqlQuery sqlQuery = SqlQuery.newQuery(dataSource, s);
-        sqlQuery.setAllowHints(true);
+        sqlQuery.setAllowHints(allowHints);
 
 
         Evaluator evaluator = getEvaluator(constraint);

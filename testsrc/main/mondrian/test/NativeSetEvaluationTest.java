@@ -121,6 +121,63 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "Row #1: 209.96\n";
     }
 
+
+    /**
+     * Tests that native top count is able to return empty members.
+     * Fixes <a href="http://jira.pentaho.com/browse/MONDRIAN-1272">
+     * Mondrian-1272</a>.
+     */
+    public void testNativeTopCountWithEmptyCells() {
+      final String mdx =
+          "select [Measures].[Unit Sales] on 0,\n"
+          + "TopCount(\n"
+          + "[Customers].[Country].Members,\n"
+          + "2,\n"
+          +   "[Measures].[Unit Sales]) on 1\n"
+          + "from [Sales]\n"
+          + "where [Time].[1997].[Q3]       \n";
+
+      String sql =
+          "select\n"
+          + "    `agg_lc_06_sales_fact_1997`.`country` as `c0`,\n"
+          + "    sum(`agg_lc_06_sales_fact_1997`.`unit_sales`) as `c1`\n"
+          + "from\n"
+          + "    `agg_lc_06_sales_fact_1997` as `agg_lc_06_sales_fact_1997`,\n"
+          + "    `time_by_day` as `time_by_day`\n"
+          + "where\n"
+          + "    `agg_lc_06_sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+          + "and\n"
+          + "    `time_by_day`.`the_year` = 1997\n"
+          + "and\n"
+          + "    `time_by_day`.`quarter` = 'Q3'\n"
+          + "group by\n"
+          + "    `agg_lc_06_sales_fact_1997`.`country`\n"
+          + "order by\n"
+          + "    `c1` DESC,\n"
+          + "    ISNULL(`agg_lc_06_sales_fact_1997`.`country`) ASC, `agg_lc_06_sales_fact_1997`.`country` ASC";
+
+      propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+
+        SqlPattern mysqlPattern =
+            new SqlPattern(
+                DatabaseProduct.MYSQL,
+                sql,
+                sql);
+        assertQuerySql(mdx, new SqlPattern[]{mysqlPattern});
+
+      assertQueryReturns(
+          mdx,
+          "Axis #0:\n"
+          + "{[Time].[1997].[Q3]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Unit Sales]}\n"
+          + "Axis #2:\n"
+          + "{[Customers].[USA]}\n"
+          + "{[Customers].[Canada]}\n"
+          + "Row #0: 65,848\n"
+          + "Row #1: \n");
+    }
+
     /**
      * Simple enumerated aggregate.
      */

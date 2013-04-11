@@ -627,7 +627,7 @@ public class AccessControlTest extends FoodMartTestCase {
         final TestContext unrestrictedTestContext = getTestContext();
         unrestrictedTestContext.assertQueryReturns(
             "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
-            + "  TopCount([Store].[USA].[CA].Children, 10, "
+            + " NON EMPTY TopCount([Store].[USA].[CA].Children, 10, "
             + "           [Measures].[Unit Sales]) ON ROWS \n"
             + "from [Sales] \n"
             + "where ([Time].[1997].[Q1].[2])",
@@ -669,7 +669,7 @@ public class AccessControlTest extends FoodMartTestCase {
         final TestContext unrestrictedTestContext = getTestContext();
         unrestrictedTestContext.assertQueryReturns(
             "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
-            + "  TopCount([Store].[USA].[CA].Children, 10, "
+            + "  NON EMPTY TopCount([Store].[USA].[CA].Children, 10, "
             + "           [Measures].[Unit Sales]) ON ROWS \n"
             + "from [Sales] \n"
             + "where ([Time].[1997].[Q1].[2] : [Time].[1997].[Q1].[3])",
