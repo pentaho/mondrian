@@ -119,7 +119,7 @@ public class ChunkListTest extends TestCase {
     /** Unit test for {@link mondrian.util.ChunkList} that applies random
      * operations. */
     public void testRandom() {
-        final int ITERATION_COUNT = 10000;
+        final int ITERATION_COUNT = 50000;
         checkRandom(new Random(1), new ChunkList<Integer>(), ITERATION_COUNT);
         final Random random = new Random(2);
         for (int j = 0; j < 10; j++) {
@@ -139,7 +139,7 @@ public class ChunkListTest extends TestCase {
         int addCount = 0;
         final int initialCount = list.size();
         for (int i = 0; i < iterationCount; i++) {
-            assert list.isValid(true);
+            assert list.isValid(false, true);
             switch (random.nextInt(8)) {
             case 0:
                 // remove last
@@ -197,6 +197,7 @@ public class ChunkListTest extends TestCase {
             }
             assertEquals(list.size(), initialCount + addCount - removeCount);
         }
+        assert list.isValid(true, true);
     }
 
     public void testPerformance() {
@@ -243,6 +244,7 @@ public class ChunkListTest extends TestCase {
                             list.add(1);
                         }
                         statistician.record(start);
+                        assertValid(list);
                         return null;
                     }
                 },
@@ -262,6 +264,7 @@ public class ChunkListTest extends TestCase {
                         }
                         statistician.record(start);
                         assert count == 10000000;
+                        assertValid(list);
                         return null;
                     }
                 },
@@ -289,6 +292,7 @@ public class ChunkListTest extends TestCase {
                                 }
                             }
                             statistician.record(start);
+                            assertValid(list);
                             return null;
                         }
                     },
@@ -316,6 +320,7 @@ public class ChunkListTest extends TestCase {
                             }
                             assert n == probeCount;
                             statistician.record(start);
+                            assertValid(list);
                             return null;
                         }
                     },
@@ -360,11 +365,19 @@ public class ChunkListTest extends TestCase {
                             }
                             assert n > probeCount;
                             statistician.record(start);
+                            assertValid(list);
                             return null;
                         }
                     },
                     10).run();
             }
+        }
+    }
+
+    private void assertValid(List list) {
+        if (list instanceof ChunkList) {
+            ChunkList chunkList = (ChunkList) list;
+            assert chunkList.isValid(true, true);
         }
     }
 }

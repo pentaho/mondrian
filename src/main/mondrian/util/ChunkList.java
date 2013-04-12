@@ -44,7 +44,7 @@ public class ChunkList<E> extends AbstractSequentialList<E> {
     }
 
     /** For debugging and testing. */
-    boolean isValid(boolean fail) {
+    boolean isValid(boolean print, boolean fail) {
         if ((first == null) != (last == null)) {
             assert !fail;
             return false;
@@ -76,7 +76,33 @@ public class ChunkList<E> extends AbstractSequentialList<E> {
                 return false;
             }
         }
+        if (print) {
+            System.out.println(chunkSizeDistribution());
+        }
         return true;
+    }
+
+    /** For debugging and testing. */
+    String chunkSizeDistribution() {
+        final ArrayList<Integer> list = new ArrayList<Integer>();
+        int n = 0;
+        for (Object[] chunk = first; chunk != null; chunk = next(chunk)) {
+            ++n;
+            final int size1 = end(chunk) - HEADER_SIZE;
+            while (size1 > list.size() - 1) {
+                list.add(null);
+            }
+            final Integer integer = list.get(size1);
+            if (integer == null) {
+                list.set(size1, 1);
+            } else {
+                list.set(size1, integer + 1);
+            }
+        }
+        return "size: " + size()
+            + ", distribution: " + list
+            + ", chunks: " + n
+            + ", elements per chunk: " + ((float) size / (float) n);
     }
 
     @Override
