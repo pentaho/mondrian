@@ -46,12 +46,15 @@ public class PerformanceTest extends FoodMartTestCase {
      */
     public void testBugMondrian550() {
         final TestContext testContext = getBugMondrian550Schema();
-        final Statistician statistician =
-            new Statistician("testBugMondrian550");
-        for (int i = 0; i < 10; i++) {
-            checkBugMondrian550(testContext, statistician);
-        }
-        statistician.printDurations();
+        new Benchmarker(
+            "testBugMondrian550",
+            new Util.Function1<Statistician, Void>() {
+                public Void apply(Statistician statistician) {
+                    checkBugMondrian550(testContext, statistician);
+                    return null;
+                }
+            },
+            10).run();
     }
 
     private void checkBugMondrian550(
@@ -85,13 +88,15 @@ public class PerformanceTest extends FoodMartTestCase {
      */
     public void testBugMondrian550Tuple() {
         final TestContext testContext = getBugMondrian550Schema();
-        final Statistician statistician =
-            new Statistician("testBugMondrian550Tuple");
-        int n = LOGGER.isDebugEnabled() ? 10 : 2;
-        for (int i = 0; i < n; i++) {
-            checkBugMondrian550Tuple(testContext, statistician);
-        }
-        statistician.printDurations();
+        new Benchmarker(
+            "testBugMondrian550Tuple",
+            new Util.Function1<Statistician, Void>() {
+                public Void apply(Statistician statistician) {
+                    checkBugMondrian550Tuple(testContext, statistician);
+                    return null;
+                }
+            },
+            LOGGER.isDebugEnabled() ? 10 : 2).run();
     }
 
     private void checkBugMondrian550Tuple(
@@ -309,12 +314,15 @@ public class PerformanceTest extends FoodMartTestCase {
         // jdk1.7 marmite   main 14770 478 ms first, 150 +- 8 ms
         // jdk1.7 marmite   main 14771 513 ms first, 152 +- 14 ms
         // jdk1.7 marmite   main 14773 523 ms first, 150 +- 5 ms
-        final Statistician statistician =
-            new Statistician("testBugMondrian639");
-        for (int i = 0; i < 20; i++) {
-            checkBugMondrian639(statistician);
-        }
-        statistician.printDurations();
+        new Benchmarker(
+            "testBugMondrian639",
+            new Util.Function1<Statistician, Void>() {
+                public Void apply(Statistician statistician) {
+                    checkBugMondrian639(statistician);
+                    return null;
+                }
+            },
+            20).run();
     }
 
     private void checkBugMondrian639(Statistician statistician) {
@@ -774,7 +782,7 @@ public class PerformanceTest extends FoodMartTestCase {
     /**
      * Collects statistics for a test that is run multiple times.
      */
-    static class Statistician {
+    public static class Statistician {
         private final String desc;
         private final List<Long> durations = new ArrayList<Long>();
 
@@ -783,7 +791,7 @@ public class PerformanceTest extends FoodMartTestCase {
             this.desc = desc;
         }
 
-        private void record(long start) {
+        public void record(long start) {
             durations.add(
                 printDuration(
                     desc + " iteration #" + (durations.size() + 1),
@@ -876,6 +884,29 @@ public class PerformanceTest extends FoodMartTestCase {
         public int compare(T e0, T e1) {
             ++count;
             return e0.compareTo(e1);
+        }
+    }
+
+    public static class Benchmarker {
+        private final Util.Function1<Statistician, Void> function;
+        private final int repeat;
+        private final Statistician statistician;
+
+        public Benchmarker(
+            String description,
+            Util.Function1<Statistician, Void> function,
+            int repeat)
+        {
+            this.function = function;
+            this.repeat = repeat;
+            this.statistician = new Statistician(description);
+        }
+
+        public void run() {
+            for (int i = 0; i < repeat; i++) {
+                function.apply(statistician);
+            }
+            statistician.printDurations();
         }
     }
 }
