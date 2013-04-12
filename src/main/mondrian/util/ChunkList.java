@@ -25,7 +25,8 @@ public class ChunkList<E> extends AbstractSequentialList<E> {
     private Object[] last;
 
     private static final int CHUNK_SIZE = 64;
-    private static final Integer[] INTEGERS = new Integer[CHUNK_SIZE + 3];
+    private static final Integer[] INTEGERS =
+        new Integer[CHUNK_SIZE + HEADER_SIZE + 1];
 
     static {
         for (int i = 0; i < INTEGERS.length; i++) {
@@ -70,8 +71,8 @@ public class ChunkList<E> extends AbstractSequentialList<E> {
                 return false;
             }
             prev = chunk;
-            if (occupied(chunk) == 0) {
-                assert !fail;
+            if (end(chunk) == HEADER_SIZE) {
+                assert !fail : "chunk is empty";
                 return false;
             }
         }
@@ -91,22 +92,22 @@ public class ChunkList<E> extends AbstractSequentialList<E> {
     @Override
     public boolean add(E element) {
         Object[] chunk = last;
-        int occupied;
+        int end;
         if (chunk == null) {
             chunk = first = last = new Object[CHUNK_SIZE + HEADER_SIZE];
-            occupied = 0;
+            end = HEADER_SIZE;
         } else {
-            occupied = occupied(chunk);
-            if (occupied == CHUNK_SIZE) {
+            end = end(chunk);
+            if (end == CHUNK_SIZE + HEADER_SIZE) {
                 chunk = new Object[CHUNK_SIZE + HEADER_SIZE];
                 setNext(last, chunk);
                 setPrev(chunk, last);
-                occupied = 0;
+                end = HEADER_SIZE;
                 last = chunk;
             }
         }
-        setOccupied(chunk, occupied + 1);
-        setElement(chunk, HEADER_SIZE + occupied, element);
+        setEnd(chunk, end + 1);
+        setElement(chunk, end, element);
         ++size;
         return true;
     }
@@ -137,11 +138,11 @@ public class ChunkList<E> extends AbstractSequentialList<E> {
         chunk[1] = next;
     }
 
-    private static int occupied(Object[] chunk) {
+    private static int end(Object[] chunk) {
         return (Integer) chunk[2];
     }
 
-    private static void setOccupied(Object[] chunk, int size) {
+    private static void setEnd(Object[] chunk, int size) {
         chunk[2] = INTEGERS[size];
     }
 
@@ -159,13 +160,12 @@ public class ChunkList<E> extends AbstractSequentialList<E> {
         }
         int n = 0;
         for (Object[] chunk = first;;) {
-            final int occupied = occupied(chunk);
-            final int nextN = n + occupied;
+            final int end = end(chunk);
+            final int nextN = n + end - HEADER_SIZE;
             final Object[] next = next(chunk);
             if (nextN > index || next == null) {
                 return new ChunkListIterator(
-                    chunk, n, index - n - 1 + HEADER_SIZE,
-                    occupied + HEADER_SIZE);
+                    chunk, n, index - n - 1 + HEADER_SIZE, end);
             }
             n = nextN;
             chunk = next;
@@ -210,7 +210,7 @@ public class ChunkList<E> extends AbstractSequentialList<E> {
                     throw new NoSuchElementException();
                 }
                 offset = HEADER_SIZE;
-                end = occupied(chunk) + HEADER_SIZE;
+                end = end(chunk);
             }
             return (E) element(chunk, offset);
         }
@@ -226,8 +226,8 @@ public class ChunkList<E> extends AbstractSequentialList<E> {
                 if (chunk == null) {
                     throw new NoSuchElementException();
                 }
-                end = occupied(chunk);
-                startIndex -= end;
+                end = end(chunk);
+                startIndex -= (end - HEADER_SIZE);
                 offset = end - 1;
             }
             return (E) element(chunk, offset);
@@ -267,7 +267,7 @@ public class ChunkList<E> extends AbstractSequentialList<E> {
                     }
                     chunk = next;
                     offset = HEADER_SIZE;
-                    end = HEADER_SIZE + occupied(next);
+                    end = end(next);
                 }
                 return;
             }
@@ -276,14 +276,14 @@ public class ChunkList<E> extends AbstractSequentialList<E> {
                 chunk, offset + 1, chunk, offset, end - offset - 1);
             --end;
             setElement(chunk, end, null); // allow gc
-            setOccupied(chunk, end - HEADER_SIZE);
+            setEnd(chunk, end);
             if (offset == end) {
                 final Object[] next = ChunkList.next(chunk);
                 if (next != null) {
                     startIndex += (end - HEADER_SIZE);
                     chunk = next;
                     offset = HEADER_SIZE - 1;
-                    end = HEADER_SIZE + occupied(next);
+                    end = end(next);
                 }
             }
         }
@@ -327,9 +327,8 @@ public class ChunkList<E> extends AbstractSequentialList<E> {
                     chunk, offset, chunk, offset + 1, end - offset);
             }
             setElement(chunk, offset, e);
-//            ++offset;
             ++end;
-            setOccupied(chunk, end - HEADER_SIZE);
+            setEnd(chunk, end);
             ++size;
         }
     }
