@@ -37,6 +37,20 @@ public class ChunkListTest extends TestCase {
             // ok
         }
 
+        try {
+            int x = list.get(0);
+            fail("expected exception, got " + x);
+        } catch (IndexOutOfBoundsException e) {
+            // ok
+        }
+
+        try {
+            int x = list.get(100);
+            fail("expected exception, got " + x);
+        } catch (IndexOutOfBoundsException e) {
+            // ok
+        }
+
         list.add(7);
         assertEquals(1, list.size());
         assertEquals(7, (int) list.get(0));
@@ -116,10 +130,49 @@ public class ChunkListTest extends TestCase {
         assertEquals("[y, x]", list2.toString());
     }
 
+    public void testClear() {
+        // clear using removeRange
+        final ChunkList<Integer> list3 =
+            new ChunkList<Integer>(Arrays.asList(1, 2, 3, 4));
+        list3.subList(0, list3.size()).clear();
+        assertTrue(list3.isEmpty());
+        list3.subList(0, list3.size()).clear();
+        assertTrue(list3.isEmpty());
+    }
+
+    public void testFragment() {
+        final ChunkList<Integer> list3 =
+            new ChunkList<Integer>(Arrays.asList(1, 2, 3, 4));
+        assertEquals(
+            "size: 4, distribution: [4:1], chunks: 1, elements per chunk: 4.0",
+            list3.chunkSizeDistribution());
+        list3.add(0, 5);
+        assertEquals(
+            "size: 5, distribution: [5:1], chunks: 1, elements per chunk: 5.0",
+            list3.chunkSizeDistribution());
+        list3.addAll(Collections.nCopies(100, 6));
+        assertEquals(
+            "size: 105, distribution: [41:1, 64:1], chunks: 2, elements per chunk: 52.5",
+            list3.chunkSizeDistribution());
+
+        // Adding element at 0 causes the 64 block to split into 33 + 32.
+        list3.add(0, 7);
+        assertEquals(7, (int) list3.get(0));
+        assertEquals(
+            "size: 106, distribution: [32:1, 33:1, 41:1], chunks: 3, elements per chunk: 35.333332",
+            list3.chunkSizeDistribution());
+
+        // Adding another element at 0 causes no further split.
+        list3.add(0, 8);
+        assertEquals(
+            "size: 107, distribution: [32:1, 34:1, 41:1], chunks: 3, elements per chunk: 35.666668",
+            list3.chunkSizeDistribution());
+    }
+
     /** Unit test for {@link mondrian.util.ChunkList} that applies random
      * operations. */
     public void testRandom() {
-        final int ITERATION_COUNT = 50000;
+        final int ITERATION_COUNT = 3; //10000;
         checkRandom(new Random(1), new ChunkList<Integer>(), ITERATION_COUNT);
         final Random random = new Random(2);
         for (int j = 0; j < 10; j++) {
@@ -128,18 +181,24 @@ public class ChunkListTest extends TestCase {
         checkRandom(
             new Random(3), new ChunkList<Integer>(Collections.nCopies(1000, 5)),
             ITERATION_COUNT);
+        checkRandom(
+            new Random(3), new ReverseList<Integer>(new ChunkList<Integer>()),
+            ITERATION_COUNT);
     }
 
     void checkRandom(
         Random random,
-        ChunkList<Integer> list,
+        List<Integer> list,
         int iterationCount)
     {
         int removeCount = 0;
         int addCount = 0;
         final int initialCount = list.size();
         for (int i = 0; i < iterationCount; i++) {
-            assert list.isValid(false, true);
+            if (i == 227) {
+                Util.discard(0);
+            }
+            assertValid(list, false);
             switch (random.nextInt(8)) {
             case 0:
                 // remove last
@@ -197,7 +256,7 @@ public class ChunkListTest extends TestCase {
             }
             assertEquals(list.size(), initialCount + addCount - removeCount);
         }
-        assert list.isValid(true, true);
+        assertValid(list, true);
     }
 
     public void testPerformance() {
@@ -228,7 +287,7 @@ public class ChunkListTest extends TestCase {
             factories1.add(pair);
         }
         List<Pair<Function0<List<Integer>>, String>> factories =
-            factories1.subList(2, 3);
+            factories1.subList(0, 3);
         Iterable<Pair<Integer, String>> sizes =
             Pair.iterate(
                 Arrays.asList(100000, 1000000, 10000000),
@@ -244,7 +303,7 @@ public class ChunkListTest extends TestCase {
                             list.add(1);
                         }
                         statistician.record(start);
-                        assertValid(list);
+                        assertValid(list, true);
                         return null;
                     }
                 },
@@ -264,7 +323,7 @@ public class ChunkListTest extends TestCase {
                         }
                         statistician.record(start);
                         assert count == 10000000;
-                        assertValid(list);
+                        assertValid(list, true);
                         return null;
                     }
                 },
@@ -292,7 +351,7 @@ public class ChunkListTest extends TestCase {
                                 }
                             }
                             statistician.record(start);
-                            assertValid(list);
+                            assertValid(list, true);
                             return null;
                         }
                     },
@@ -320,7 +379,7 @@ public class ChunkListTest extends TestCase {
                             }
                             assert n == probeCount;
                             statistician.record(start);
-                            assertValid(list);
+                            assertValid(list, true);
                             return null;
                         }
                     },
@@ -365,7 +424,7 @@ public class ChunkListTest extends TestCase {
                             }
                             assert n > probeCount;
                             statistician.record(start);
-                            assertValid(list);
+                            assertValid(list, true);
                             return null;
                         }
                     },
@@ -374,10 +433,38 @@ public class ChunkListTest extends TestCase {
         }
     }
 
-    private void assertValid(List list) {
+    private void assertValid(List list, boolean print) {
         if (list instanceof ChunkList) {
             ChunkList chunkList = (ChunkList) list;
-            assert chunkList.isValid(true, true);
+            assert chunkList.isValid(print, true);
+        }
+    }
+
+    private static class ReverseList<E> extends AbstractList<E> {
+        private final List<E> list;
+
+        protected ReverseList(List<E> list) {
+            this.list = list;
+        }
+
+        @Override
+        public E get(int index) {
+            return list.get(size() - 1 - index);
+        }
+
+        @Override
+        public int size() {
+            return list.size();
+        }
+
+        @Override
+        public void add(int index, E element) {
+            list.add(size() - index, element);
+        }
+
+        @Override
+        public E remove(int index) {
+            return list.remove(size() - 1 - index);
         }
     }
 }
