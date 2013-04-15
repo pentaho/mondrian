@@ -175,11 +175,17 @@ public final class ScenarioImpl implements Scenario {
      * @return Wrapped scenario
      */
     static Scenario forMember(final RolapMember member) {
-        final Formula formula = ((RolapCalculatedMember) member).getFormula();
-        final ResolvedFunCall resolvedFunCall =
-            (ResolvedFunCall) formula.getExpression();
-        final Calc calc = resolvedFunCall.getFunDef().compileCall(null, null);
-        return ((ScenarioCalc) calc).getScenario();
+        if (isScenario(member.getHierarchy())) {
+            final Formula formula = ((RolapCalculatedMember) member)
+                .getFormula();
+            final ResolvedFunCall resolvedFunCall =
+                (ResolvedFunCall) formula.getExpression();
+            final Calc calc = resolvedFunCall.getFunDef()
+                .compileCall(null, null);
+            return ((ScenarioCalc) calc).getScenario();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -202,6 +208,18 @@ public final class ScenarioImpl implements Scenario {
                 assert member != null;
             }
         }
+    }
+
+    /**
+     * Returns whether a hierarchy is the [Scenario] hierarchy.
+     *
+     * <p>TODO: use a flag
+     *
+     * @param hierarchy Hierarchy
+     * @return Whether hierarchy is the scenario hierarchy
+     */
+    public static boolean isScenario(Hierarchy hierarchy) {
+        return hierarchy.getName().equals("Scenario");
     }
 
     /**

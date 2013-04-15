@@ -4,11 +4,13 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2012 Pentaho
+// Copyright (C) 2009-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
 
+import mondrian.olap.Property;
+import mondrian.olap.Result;
 import mondrian.olap.Util;
 
 import org.olap4j.*;
@@ -434,6 +436,28 @@ public class ScenarioTest extends FoodMartTestCase {
             + "Row #1: 2\n",
             TestContext.toString(cellSet2));
     }
+
+    public void testScenarioPropertyBug1496() {
+        // looking up the $scenario property for a non ScenarioCalc member
+        // causes class cast exception
+        // http://jira.pentaho.com/browse/MONDRIAN-1496
+        Result result = TestContext.instance().executeQuery(
+            "select customer.country.members on 0 from sales");
+
+        // non calc member, should return null
+        Object o = result.getAxes()[0].getPositions().get(0).get(0)
+            .getPropertyValue(Property.SCENARIO);
+        assertEquals(null, o);
+
+        result = TestContext.instance().executeQuery(
+            "with member Customer.Customers.cal as '1' "
+            + "select {[Customer].Customers.cal} on 0 from Sales");
+        // calc member, should return null
+        o = result.getAxes()[0].getPositions().get(0).get(0)
+            .getPropertyValue(Property.SCENARIO);
+        assertEquals(null, o);
+    }
+
 
     // TODO: test whether it is valid for two connections to have the same
     // active scenario
