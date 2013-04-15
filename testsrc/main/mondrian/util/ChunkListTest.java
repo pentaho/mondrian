@@ -91,6 +91,15 @@ public class ChunkListTest extends TestCase {
         assertEquals(-1, i);
 
         Collections.sort(list);
+        assertEquals(
+            "[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, "
+            + "1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7, 9, "
+            + "11, 123]",
+            list.toString());
+
+        // sort a multi-chunk list
+        Collections.sort(
+            new ChunkList<Integer>(Collections.nCopies(1000000, 1)));
 
         list.remove((Integer) 7);
         Collections.sort(list);
@@ -116,8 +125,11 @@ public class ChunkListTest extends TestCase {
         b = list.removeAll(Arrays.asList(12345));
         assertTrue(b);
 
-        assertEquals(
-            1000, new ChunkList<Integer>(Collections.nCopies(1000, 77)).size());
+        final ChunkList<Integer> list1 =
+            new ChunkList<Integer>(Collections.nCopies(1000, 77));
+        assertEquals(1000, list1.size());
+        list1.add(1234);
+        assertTrue(list1.contains(1234));
 
         // add to an empty list via iterator
         //noinspection MismatchedQueryAndUpdateOfCollection
@@ -131,42 +143,106 @@ public class ChunkListTest extends TestCase {
     }
 
     public void testClear() {
-        // clear using removeRange
-        final ChunkList<Integer> list3 =
+        // clear using AbstractList.removeRange
+        final ChunkList<Integer> list =
             new ChunkList<Integer>(Arrays.asList(1, 2, 3, 4));
-        list3.subList(0, list3.size()).clear();
-        assertTrue(list3.isEmpty());
-        list3.subList(0, list3.size()).clear();
-        assertTrue(list3.isEmpty());
+        list.subList(0, list.size()).clear();
+        assertTrue(list.isEmpty());
+        list.subList(0, list.size()).clear();
+        assertTrue(list.isEmpty());
     }
 
-    public void testFragment() {
-        final ChunkList<Integer> list3 =
+    public void testContainsAll() {
+        assertTrue(
+            new ChunkList<Integer>(Arrays.asList(1, 2, 3))
+                .containsAll(Collections.singletonList(1)));
+        assertTrue(
+            new ChunkList<Integer>(Arrays.asList(1, 2, 3))
+                .containsAll(Collections.emptyList()));
+        assertTrue(
+            new ChunkList<Integer>()
+                .containsAll(Collections.emptyList()));
+        assertFalse(
+            new ChunkList<Integer>()
+                .containsAll(Collections.singletonList(1)));
+        assertTrue(
+            new ChunkList<Integer>(Arrays.asList(1, 2, null, 3))
+                .containsAll(Collections.singletonList(null)));
+        assertFalse(
+            new ChunkList<Integer>(Arrays.asList(1, 2, null, 3))
+                .containsAll(Collections.singletonList(4)));
+        assertFalse(
+            new ChunkList<Integer>(Arrays.asList(1, 2, null, 3))
+                .containsAll(Arrays.asList(4, null)));
+        assertFalse(
+            new ChunkList<Integer>(Arrays.asList(1, 2, 3))
+                .containsAll(Collections.singletonList(null)));
+        assertFalse(
+            new ChunkList<Integer>(Arrays.asList(1, 2, null, 3))
+                .containsAll(Collections.singletonList("xxx")));
+    }
+
+    public void testIndexOf() {
+        assertEquals(
+            1, new ChunkList<Integer>(Arrays.asList(1, 2, 3)).indexOf(2));
+        assertEquals(
+            1, new ChunkList<Integer>(Arrays.asList(1, 2, 3, 2)).indexOf(2));
+        assertEquals(
+            -1, new ChunkList<Integer>(Arrays.asList(1, 2, 3)).indexOf(5));
+        assertEquals(-1, new ChunkList<Integer>().indexOf(5));
+        assertEquals(
+            3,
+            new ChunkList<Integer>(Arrays.asList(1, 2, 3, 2)).lastIndexOf(2));
+    }
+
+    public void testContains() {
+        assertTrue(new ChunkList<Integer>(Arrays.asList(1, 2)).contains(1));
+        assertFalse(new ChunkList<Integer>(Arrays.asList(1, 2)).contains(11));
+        assertFalse(new ChunkList<Integer>(Arrays.asList(1, 2)).contains(null));
+        assertTrue(
+            new ChunkList<Integer>(Arrays.asList(1, null, 2)).contains(null));
+        assertFalse(new ChunkList<Integer>().contains(null));
+        assertFalse(new ChunkList<Integer>().contains(123));
+
+        final ChunkList<Integer> list =
+            new ChunkList<Integer>(Collections.nCopies(10000, 7));
+        assertFalse(list.contains(null));
+        assertFalse(list.contains(99));
+        list.add(99);
+        list.add(98);
+        assertTrue(list.contains(99));
+        assertFalse(list.contains(null));
+        list.add(null);
+        assertTrue(list.contains(null));
+    }
+
+    public void testFragmentation() {
+        final ChunkList<Integer> list =
             new ChunkList<Integer>(Arrays.asList(1, 2, 3, 4));
         assertEquals(
             "size: 4, distribution: [4:1], chunks: 1, elements per chunk: 4.0",
-            list3.chunkSizeDistribution());
-        list3.add(0, 5);
+            list.chunkSizeDistribution());
+        list.add(0, 5);
         assertEquals(
             "size: 5, distribution: [5:1], chunks: 1, elements per chunk: 5.0",
-            list3.chunkSizeDistribution());
-        list3.addAll(Collections.nCopies(100, 6));
+            list.chunkSizeDistribution());
+        list.addAll(Collections.nCopies(100, 6));
         assertEquals(
             "size: 105, distribution: [41:1, 64:1], chunks: 2, elements per chunk: 52.5",
-            list3.chunkSizeDistribution());
+            list.chunkSizeDistribution());
 
         // Adding element at 0 causes the 64 block to split into 33 + 32.
-        list3.add(0, 7);
-        assertEquals(7, (int) list3.get(0));
+        list.add(0, 7);
+        assertEquals(7, (int) list.get(0));
         assertEquals(
             "size: 106, distribution: [32:1, 33:1, 41:1], chunks: 3, elements per chunk: 35.333332",
-            list3.chunkSizeDistribution());
+            list.chunkSizeDistribution());
 
         // Adding another element at 0 causes no further split.
-        list3.add(0, 8);
+        list.add(0, 8);
         assertEquals(
             "size: 107, distribution: [32:1, 34:1, 41:1], chunks: 3, elements per chunk: 35.666668",
-            list3.chunkSizeDistribution());
+            list.chunkSizeDistribution());
     }
 
     /** Unit test for {@link mondrian.util.ChunkList} that applies random

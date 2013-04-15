@@ -9,6 +9,7 @@
 */
 package mondrian.util;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -171,6 +172,110 @@ public class ChunkList<E> extends AbstractSequentialList<E>
         }
         first = last = null;
         size = 0;
+    }
+
+    @Override
+    public boolean addAll(int index, Collection<? extends E> c) {
+        if (index != size() || c.isEmpty()) {
+            return super.addAll(index, c);
+        }
+        // Efficient addAll to end
+        Object[] chunk;
+        int end;
+        if (last == null) {
+            chunk = new Object[HEADER_SIZE + CHUNK_SIZE];
+            end = HEADER_SIZE;
+        } else {
+            chunk = last;
+            end = end(chunk);
+        }
+        for (E e : c) {
+            if (end == HEADER_SIZE + CHUNK_SIZE) {
+                Object[] prev = chunk;
+                chunk = new Object[HEADER_SIZE + CHUNK_SIZE];
+                end = HEADER_SIZE;
+                setNext(prev, chunk);
+                setPrev(chunk, prev);
+            }
+            chunk[end++] = e;
+        }
+        last = chunk;
+        setEnd(chunk, end);
+        return true;
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a) {
+        final int size = size();
+        @SuppressWarnings("unchecked")
+        T[] r = a.length >= size
+            ? a
+            : (T[]) Array.newInstance(a.getClass().getComponentType(), size);
+        populateArray(r);
+        if (r.length > size) {
+            r[size] = null;
+        }
+        return r;
+    }
+
+    @Override
+    public Object[] toArray() {
+        final Object[] a = new Object[size];
+        populateArray(a);
+        return a;
+    }
+
+    private <T> void populateArray(T[] r) {
+        int start = 0;
+        for (Object[] chunk = first;;) {
+            final int end = end(chunk);
+            final int count = end - HEADER_SIZE;
+            System.arraycopy(chunk, HEADER_SIZE, r, start, count);
+            chunk = next(chunk);
+            if (chunk == null) {
+                break;
+            }
+            start += count;
+        }
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        return locate((E) o, true) != null;
+    }
+
+    @Override
+    public int indexOf(Object o) {
+        final ChunkListIterator listIterator = locate((E) o, true);
+        if (listIterator == null) {
+            return -1;
+        }
+        return listIterator.nextIndex();
+    }
+
+    @Override
+    public int lastIndexOf(Object o) {
+        final ChunkListIterator listIterator = locate((E) o, false);
+        if (listIterator == null) {
+            return -1;
+        }
+        return listIterator.nextIndex();
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        if (c.isEmpty()) {
+            return true;
+        }
+        final Set set = new HashSet(c);
+        for (E e : this) {
+            if (set.remove(e)) {
+                if (set.isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
@@ -384,6 +489,8 @@ public class ChunkList<E> extends AbstractSequentialList<E>
         chunk[index] = element;
     }
 
+    /** Returns a ChunkListIterator positioned at a given index, never null.
+     * Index must be between 0 and size (inclusive). */
     private ChunkListIterator locate(int index) {
         if (first == null) {
             return new ChunkListIterator();
@@ -415,6 +522,66 @@ public class ChunkList<E> extends AbstractSequentialList<E>
                 }
                 n = start;
                 chunk = prev;
+            }
+        }
+    }
+
+    /** Returns a ChunkListIterator positioned on the first (or last, if forward
+     * is false) element that equals a given element. Null if not found. */
+    private ChunkListIterator locate(E element, boolean forward) {
+        if (first == null) {
+            return null;
+        }
+        if (forward) {
+            int start = 0;
+            for (Object[] chunk = first;;) {
+                final int end = end(chunk);
+                if (element == null) {
+                    for (int i = HEADER_SIZE; i < end; i++) {
+                        if (chunk[i] == null) {
+                            return new ChunkListIterator(
+                                chunk, start, i, end);
+                        }
+                    }
+                } else {
+                    for (int i = HEADER_SIZE; i < end; i++) {
+                        if (element.equals(chunk[i])) {
+                            return new ChunkListIterator(
+                                chunk, start, i, end);
+                        }
+                    }
+                }
+                chunk = next(chunk);
+                if (chunk == null) {
+                    return null;
+                }
+                start += (end - HEADER_SIZE);
+            }
+        } else {
+            int top = size;
+            for (Object[] chunk = last;;) {
+                final int end = end(chunk);
+                final int start = top - (end - HEADER_SIZE);
+                if (element == null) {
+                    for (int i = end - 1; i >= HEADER_SIZE; i--) {
+                        if (chunk[i] == null) {
+                            return new ChunkListIterator(
+                                chunk, start, i, end);
+                        }
+                    }
+                } else {
+                    for (int i = end - 1; i >= HEADER_SIZE; i--) {
+                        if (element.equals(chunk[i])) {
+                            return new ChunkListIterator(
+                                chunk, start, i, end);
+                        }
+                    }
+                }
+                chunk = prev(chunk);
+                if (chunk == null) {
+                    return null;
+                }
+                top = start;
             }
         }
     }
