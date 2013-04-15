@@ -24,7 +24,8 @@ import java.util.*;
  * gaps. An insertion into a full chunk will cause the chunk to split. A
  * deletion may cause a chunk to merge with the following chunk.</p>
  */
-public class ChunkList<E> extends AbstractSequentialList<E> implements Deque<E>
+public class ChunkList<E> extends AbstractSequentialList<E>
+    // implements Deque<E>
 {
     /** Number of elements in the chunk header. The elements are the previous
      * link, next link, and the size of the chunk. */
