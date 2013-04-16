@@ -226,6 +226,9 @@ public class ChunkList<E> extends AbstractSequentialList<E>
     }
 
     private <T> void populateArray(T[] r) {
+        if (first == null) {
+            return;
+        }
         int start = 0;
         for (Object[] chunk = first;;) {
             final int end = end(chunk);

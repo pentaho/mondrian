@@ -22,10 +22,39 @@ import java.util.*;
  * Unit and performance test for {@link ChunkList}.
  */
 public class ChunkListTest extends TestCase {
+    public static final Factory FACTORY = new Factory() {
+        public <E> List<E> create() {
+            return new ChunkList<E>();
+        }
+
+        public <E> List<E> create(Collection<E> c) {
+            return new ChunkList<E>(c);
+        }
+    };
+
+    public static final Factory REVERSE_FACTORY = new Factory() {
+        public <E> List<E> create() {
+            return new ReverseList<E>(FACTORY.<E>create());
+        }
+
+        public <E> List<E> create(Collection<E> c) {
+            final Object[] objects = c.toArray();
+            //noinspection unchecked
+            final List<E> list = (List) Arrays.asList(objects);
+            Collections.reverse(list);
+            return new ReverseList<E>(FACTORY.<E>create(list));
+        }
+    };
+
+    final List<Factory> factories = Arrays.asList(FACTORY, REVERSE_FACTORY);
 
     /** Unit test for {@link mondrian.util.ChunkList}. */
     public void testChunkList() {
-        final ChunkList<Integer> list = new ChunkList<Integer>();
+        checkChunkList(FACTORY);
+    }
+
+    private void checkChunkList(Factory factory) {
+        final List<Integer> list = factory.create();
         assertEquals(0, list.size());
         assertTrue(list.isEmpty());
         assertEquals("[]", list.toString());
@@ -99,7 +128,9 @@ public class ChunkListTest extends TestCase {
 
         // sort a multi-chunk list
         Collections.sort(
-            new ChunkList<Integer>(Collections.nCopies(1000000, 1)));
+            factory.create(Collections.nCopies(1000000, 1)));
+
+        Collections.sort(factory.<Integer>create());
 
         list.remove((Integer) 7);
         Collections.sort(list);
@@ -125,15 +156,15 @@ public class ChunkListTest extends TestCase {
         b = list.removeAll(Arrays.asList(12345));
         assertTrue(b);
 
-        final ChunkList<Integer> list1 =
-            new ChunkList<Integer>(Collections.nCopies(1000, 77));
+        final List<Integer> list1 =
+            factory.create(Collections.nCopies(1000, 77));
         assertEquals(1000, list1.size());
         list1.add(1234);
         assertTrue(list1.contains(1234));
 
         // add to an empty list via iterator
         //noinspection MismatchedQueryAndUpdateOfCollection
-        final ChunkList<String> list2 = new ChunkList<String>();
+        final List<String> list2 = factory.create();
         list2.listIterator(0).add("x");
         assertEquals("[x]", list2.toString());
 
@@ -143,9 +174,15 @@ public class ChunkListTest extends TestCase {
     }
 
     public void testClear() {
+        for (Factory factory : factories) {
+            checkClear(factory);
+        }
+    }
+
+    public void checkClear(Factory factory) {
         // clear using AbstractList.removeRange
-        final ChunkList<Integer> list =
-            new ChunkList<Integer>(Arrays.asList(1, 2, 3, 4));
+        final List<Integer> list =
+            factory.create(Arrays.asList(1, 2, 3, 4));
         list.subList(0, list.size()).clear();
         assertTrue(list.isEmpty());
         list.subList(0, list.size()).clear();
@@ -153,59 +190,79 @@ public class ChunkListTest extends TestCase {
     }
 
     public void testContainsAll() {
+        for (Factory factory : factories) {
+            checkContainsAll(factory);
+        }
+    }
+
+    private void checkContainsAll(Factory factory) {
         assertTrue(
-            new ChunkList<Integer>(Arrays.asList(1, 2, 3))
+            factory.create(Arrays.asList(1, 2, 3))
                 .containsAll(Collections.singletonList(1)));
         assertTrue(
-            new ChunkList<Integer>(Arrays.asList(1, 2, 3))
+            factory.create(Arrays.asList(1, 2, 3))
                 .containsAll(Collections.emptyList()));
         assertTrue(
-            new ChunkList<Integer>()
+            factory.create()
                 .containsAll(Collections.emptyList()));
         assertFalse(
-            new ChunkList<Integer>()
+            factory.create()
                 .containsAll(Collections.singletonList(1)));
         assertTrue(
-            new ChunkList<Integer>(Arrays.asList(1, 2, null, 3))
+            factory.create(Arrays.asList(1, 2, null, 3))
                 .containsAll(Collections.singletonList(null)));
         assertFalse(
-            new ChunkList<Integer>(Arrays.asList(1, 2, null, 3))
+            factory.create(Arrays.asList(1, 2, null, 3))
                 .containsAll(Collections.singletonList(4)));
         assertFalse(
-            new ChunkList<Integer>(Arrays.asList(1, 2, null, 3))
+            factory.create(Arrays.asList(1, 2, null, 3))
                 .containsAll(Arrays.asList(4, null)));
         assertFalse(
-            new ChunkList<Integer>(Arrays.asList(1, 2, 3))
+            factory.create(Arrays.asList(1, 2, 3))
                 .containsAll(Collections.singletonList(null)));
         assertFalse(
-            new ChunkList<Integer>(Arrays.asList(1, 2, null, 3))
+            factory.create(Arrays.asList(1, 2, null, 3))
                 .containsAll(Collections.singletonList("xxx")));
     }
 
     public void testIndexOf() {
+        for (Factory factory : factories) {
+            checkIndexOf(factory);
+        }
+    }
+
+    public void checkIndexOf(Factory factory) {
         assertEquals(
-            1, new ChunkList<Integer>(Arrays.asList(1, 2, 3)).indexOf(2));
+            1, factory.create(Arrays.asList(1, 2, 3, 4, 5)).indexOf(2));
         assertEquals(
-            1, new ChunkList<Integer>(Arrays.asList(1, 2, 3, 2)).indexOf(2));
+            1, factory.create(Arrays.asList(1, 2, 3, 4, null, 2)).indexOf(2));
         assertEquals(
-            -1, new ChunkList<Integer>(Arrays.asList(1, 2, 3)).indexOf(5));
-        assertEquals(-1, new ChunkList<Integer>().indexOf(5));
+            3, factory.create(Arrays.asList(1, 2, 3, null, 2)).indexOf(null));
+        assertEquals(
+            -1, factory.create(Arrays.asList(1, 2, 3)).indexOf(5));
+        assertEquals(-1, factory.create().indexOf(5));
         assertEquals(
             3,
-            new ChunkList<Integer>(Arrays.asList(1, 2, 3, 2)).lastIndexOf(2));
+            factory.create(Arrays.asList(1, 2, 3, 2)).lastIndexOf(2));
     }
 
     public void testContains() {
-        assertTrue(new ChunkList<Integer>(Arrays.asList(1, 2)).contains(1));
-        assertFalse(new ChunkList<Integer>(Arrays.asList(1, 2)).contains(11));
-        assertFalse(new ChunkList<Integer>(Arrays.asList(1, 2)).contains(null));
-        assertTrue(
-            new ChunkList<Integer>(Arrays.asList(1, null, 2)).contains(null));
-        assertFalse(new ChunkList<Integer>().contains(null));
-        assertFalse(new ChunkList<Integer>().contains(123));
+        for (Factory factory : factories) {
+            checkContains(factory);
+        }
+    }
 
-        final ChunkList<Integer> list =
-            new ChunkList<Integer>(Collections.nCopies(10000, 7));
+    public void checkContains(Factory factory) {
+        assertTrue(factory.create(Arrays.asList(1, 2)).contains(1));
+        assertFalse(factory.create(Arrays.asList(1, 2)).contains(11));
+        assertFalse(factory.create(Arrays.asList(1, 2)).contains(null));
+        assertTrue(
+            factory.create(Arrays.asList(1, null, 2)).contains(null));
+        assertFalse(factory.create().contains(null));
+        assertFalse(factory.create().contains(123));
+
+        final List<Integer> list =
+            factory.create(Collections.nCopies(10000, 7));
         assertFalse(list.contains(null));
         assertFalse(list.contains(99));
         list.add(99);
@@ -249,16 +306,19 @@ public class ChunkListTest extends TestCase {
      * operations. */
     public void testRandom() {
         final int ITERATION_COUNT = 3; //10000;
-        checkRandom(new Random(1), new ChunkList<Integer>(), ITERATION_COUNT);
+        for (Factory factory : factories) {
+            checkRandom0(factory, ITERATION_COUNT);
+        }
+    }
+
+    void checkRandom0(Factory factory, int ITERATION_COUNT) {
+        checkRandom(new Random(1), factory.<Integer>create(), ITERATION_COUNT);
         final Random random = new Random(2);
         for (int j = 0; j < 10; j++) {
-            checkRandom(random, new ChunkList<Integer>(), ITERATION_COUNT);
+            checkRandom(random, factory.<Integer>create(), ITERATION_COUNT);
         }
         checkRandom(
-            new Random(3), new ChunkList<Integer>(Collections.nCopies(1000, 5)),
-            ITERATION_COUNT);
-        checkRandom(
-            new Random(3), new ReverseList<Integer>(new ChunkList<Integer>()),
+            new Random(3), factory.create(Collections.nCopies(1000, 5)),
             ITERATION_COUNT);
     }
 
@@ -363,7 +423,7 @@ public class ChunkListTest extends TestCase {
             factories1.add(pair);
         }
         List<Pair<Function0<List<Integer>>, String>> factories =
-            factories1.subList(0, 3);
+            factories1.subList(2, 3);
         Iterable<Pair<Integer, String>> sizes =
             Pair.iterate(
                 Arrays.asList(100000, 1000000, 10000000),
@@ -542,6 +602,17 @@ public class ChunkListTest extends TestCase {
         public E remove(int index) {
             return list.remove(size() - 1 - index);
         }
+
+        @Override
+        public int indexOf(Object o) {
+            return super.indexOf(o);
+        }
+    }
+
+    private interface Factory {
+        <E> List<E> create();
+
+        <E> List<E> create(Collection<E> c);
     }
 }
 
