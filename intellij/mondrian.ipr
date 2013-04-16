@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="AntConfiguration">
-    <defaultAnt bundledAnt="true" />
-  </component>
   <component name="BuildJarProjectSettings">
     <option name="BUILD_JARS_ON_MAKE" value="false" />
   </component>
@@ -44,7 +41,6 @@
       <file url="file://$PROJECT_DIR$/../../olap4j/src/org/olap4j/driver/xmla/FactoryJdbc3Impl.java" />
       <file url="file://$PROJECT_DIR$/../src/main/mondrian/olap4j/FactoryJdbc3Impl.java" />
       <file url="file://$PROJECT_DIR$/../src/main/mondrian/olap4j/FactoryJdbc4Impl.java" />
-      <file url="file://$PROJECT_DIR$/../src/main/mondrian/util/UtilCompatibleJdk16.java" />
     </excludeFromCompile>
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />
@@ -61,7 +57,11 @@
       <entry name="?*.dtd" />
       <entry name="?*.tld" />
     </wildcardResourcePatterns>
-    <annotationProcessing enabled="false" useClasspath="true" />
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="false">
+        <processorPath useClasspath="true" />
+      </profile>
+    </annotationProcessing>
   </component>
   <component name="CopyrightManager" default="">
     <module2copyright />
