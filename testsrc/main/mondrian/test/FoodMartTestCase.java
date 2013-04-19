@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -120,7 +120,7 @@ public class FoodMartTestCase extends TestCase {
     /**
      * Runs a query with a given expression on an axis, and asserts that it
      * throws an error which matches a particular pattern. The expression
-     * is evaulated against the Sales cube.
+     * is evaluated against the Sales cube.
      */
     public void assertAxisThrows(String expression, String pattern) {
         getTestContext().assertAxisThrows(expression, pattern);

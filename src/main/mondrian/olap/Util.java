@@ -140,10 +140,7 @@ public class Util extends XOMUtil {
         Access.class.getSuperclass().getName().equals(
             "net.sourceforge.retroweaver.runtime.java.lang.Enum");
 
-    /**
-     * Whether scripting is available.
-     */
-    public static final boolean HaveScripting;
+    private static Boolean HAVE_SCRIPTING;
 
     private static final UtilCompatible compatible;
 
@@ -172,25 +169,42 @@ public class Util extends XOMUtil {
             className = "mondrian.util.UtilCompatibleJdk17";
         }
         compatible = ClassResolver.INSTANCE.instantiateSafe(className);
+    }
 
+    private static boolean deduceHaveScripting() {
         // Figure out whether scripting is available.
         // We know that scripting only exists in JDK 1.6 and later.
         // But even then, if certain JARs are not on path, the JavaScript
         // engine may not be available. OpenJDK 1.7 has this problem.
-        boolean b = false;
-        if (!PreJdk16) {
-            try {
-                final Function0<Boolean> function =
-                    compatible.compileScript(
-                        Function0.class,
-                        "function apply() { return true; }",
-                        "JavaScript");
-                b = function.apply();
-            } catch (MondrianException e) {
-                Util.discard(e);
-            }
+        if (PreJdk16) {
+            return false;
         }
-        HaveScripting = b;
+        try {
+            //noinspection unchecked
+            final Function0<Boolean> function =
+                compatible.compileScript(
+                    Function0.class,
+                    "function apply() { return true; }",
+                    "JavaScript");
+            return function.apply();
+        } catch (MondrianException e) {
+            Util.discard(e);
+        }
+        return false;
+    }
+
+    /**
+     * Returns whether scripting is available.
+     */
+    public static synchronized boolean haveScripting() {
+        if (HAVE_SCRIPTING == null) {
+            // Figure out whether scripting is available.
+            // We know that scripting only exists in JDK 1.6 and later.
+            // But even then, if certain JARs are not on path, the JavaScript
+            // engine may not be available. OpenJDK 1.7 has this problem.
+            HAVE_SCRIPTING = deduceHaveScripting();
+        }
+        return HAVE_SCRIPTING;
     }
 
     public static boolean isNull(Object o) {

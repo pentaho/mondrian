@@ -903,7 +903,7 @@ public class UdfTest extends FoodMartTestCase {
      * Unit test for a UDF defined in JavaScript.
      */
     public void testScriptUdf() {
-        if (!Util.HaveScripting) {
+        if (!Util.haveScripting()) {
             return;
         }
         TestContext tc = udfTestContext(
@@ -948,7 +948,7 @@ public class UdfTest extends FoodMartTestCase {
      * function. We also use 'CDATA' section to mask the '&lt;' symbol.
      */
     public void testScriptUdfFactorial() {
-        if (!Util.HaveScripting) {
+        if (!Util.haveScripting()) {
             return;
         }
         TestContext tc = udfTestContext(
@@ -980,7 +980,7 @@ public class UdfTest extends FoodMartTestCase {
      * Unit test that we get a nice error if a script UDF contains an error.
      */
     public void testScriptUdfInvalid() {
-        if (!Util.HaveScripting) {
+        if (!Util.haveScripting()) {
             return;
         }
         TestContext tc = udfTestContext(
@@ -1068,7 +1068,7 @@ public class UdfTest extends FoodMartTestCase {
      * As {@link #testCellFormatterNested()}, but using a script.
      */
     public void testCellFormatterScript() {
-        if (!Util.HaveScripting) {
+        if (!Util.haveScripting()) {
             return;
         }
         TestContext tc = measureTestContext(
@@ -1155,7 +1155,7 @@ public class UdfTest extends FoodMartTestCase {
      * using a script.
      */
     public void testCellFormatterOnCalcMemberScript() {
-        if (!Util.HaveScripting) {
+        if (!Util.haveScripting()) {
             return;
         }
         TestContext tc = calcMemberTestContext(
@@ -1230,7 +1230,7 @@ public class UdfTest extends FoodMartTestCase {
      * As {@link #testMemberFormatterNested()}, but using a script.
      */
     public void testMemberFormatterScript() {
-        if (!Util.HaveScripting) {
+        if (!Util.haveScripting()) {
             return;
         }
         TestContext tc = TestContext.instance().legacy().createSubstitutingCube(
@@ -1323,7 +1323,7 @@ public class UdfTest extends FoodMartTestCase {
      * @throws java.sql.SQLException on error
      */
     public void testPropertyFormatterScript() throws SQLException {
-        if (!Util.HaveScripting) {
+        if (!Util.haveScripting()) {
             return;
         }
         TestContext tc = TestContext.instance().legacy().createSubstitutingCube(
