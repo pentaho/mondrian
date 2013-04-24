@@ -1533,7 +1533,8 @@ public class Query extends QueryPart {
             Member member, List<Id.Segment> nameParts)
         {
             if (Util.equalName(Util.implode(nameParts),
-                member.getUniqueName())) {
+                member.getUniqueName()))
+            {
                 // exact match
                 return true;
             }
