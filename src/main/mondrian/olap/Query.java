@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1998-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -474,8 +474,6 @@ public class Query extends QueryPart {
      *   ResultStyle.ITERABLE
      *   ResultStyle.LIST
      *   ResultStyle.MUTABLE_LIST
-     *
-     * @param resultStyle
      */
     public void setResultStyle(ResultStyle resultStyle) {
         switch (resultStyle) {
@@ -1080,8 +1078,8 @@ public class Query extends QueryPart {
         Formula formula = findFormula(uniqueName);
         if (failIfUsedInQuery && formula != null) {
             OlapElement mdxElement = formula.getElement();
-            //search the query tree to see if this formula expression is used
-            //anywhere (on the axes or in another formula)
+            // search the query tree to see if this formula expression is used
+            // anywhere (on the axes or in another formula)
             Walker walker = new Walker(this);
             while (walker.hasMoreElements()) {
                 Object queryElement = walker.nextElement();
@@ -1534,6 +1532,12 @@ public class Query extends QueryPart {
         private static boolean match(
             Member member, List<Id.Segment> nameParts)
         {
+            if (Util.equalName(Util.implode(nameParts),
+                member.getUniqueName()))
+            {
+                // exact match
+                return true;
+            }
             Id.Segment segment = nameParts.get(nameParts.size() - 1);
             while (member.getParentMember() != null) {
                 if (!segment.matches(member.getName())) {

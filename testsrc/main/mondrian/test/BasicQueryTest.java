@@ -3217,6 +3217,51 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "[Gender2].[M]");
     }
 
+
+    public void testMemberSameNameAsLevel() throws SQLException {
+        // http://jira.pentaho.com/browse/ANALYZER-1618
+        // Tests the case where the Level name matches the name of a member
+        // in the level.  We were failing to resolve such members.
+        // In this test the "Product Family" level has been renamed "Drink"
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
+            "Sales",
+            "   <Dimension name=\"ProdAmbiguousLevelName\" foreignKey=\"product_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+            + "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+            + "        <Table name=\"product\"/>\n"
+            + "        <Table name=\"product_class\"/>\n"
+            + "      </Join>\n"
+            + "\n"
+            + "      <Level name=\"Drink\" table=\"product_class\" column=\"product_family\"\n"
+            + "          uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Beverages\" table=\"product_class\" column=\"product_department\"\n"
+            + "          uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"\n"
+            + "          uniqueMembers=\"false\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n",
+            null);
+
+        // These two references should resolve
+        // to the same member whether used in the WITH block or on an axis
+        String[] alternateReferences = {
+            "ProdAmbiguousLevelName.Drink.Drink.calc",
+            "ProdAmbiguousLevelName.[All ProdAmbiguousLevelNames].Drink.calc"
+        };
+        for (String withMemberName : alternateReferences) {
+            for (String queryMemberName : alternateReferences) {
+                testContext.assertQueryReturns(
+                    "with member " + withMemberName + " as '1' "
+                    + " select " + queryMemberName + " on 0 from sales",
+                    "Axis #0:\n"
+                    + "{}\n"
+                    + "Axis #1:\n"
+                    + "{[ProdAmbiguousLevelName].[Drink].[Drink].[calc]}\n"
+                    + "Row #0: 1\n");
+            }
+        }
+    }
+
     /**
      * Run a query against a large hierarchy, to make sure that we can generate
      * joins correctly. This probably won't work in MySQL.
