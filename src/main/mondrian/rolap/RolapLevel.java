@@ -320,8 +320,7 @@ public class RolapLevel extends LevelBase {
                     (RolapMember) parent,
                     this,
                     name,
-                    matchType,
-                    false);
+                    matchType);
         }
         return null;
     }
