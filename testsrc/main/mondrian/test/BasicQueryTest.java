@@ -7859,6 +7859,44 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
+     * Test for MONDRIAN-1560
+     * Verifies that various references to a member resolve
+     * correctly when case.sensitive=false
+     */
+    public void testCaseInsensitiveResolution() {
+        propSaver.set(MondrianProperties.instance().CaseSensitive, false);
+        String [] equivalentMemberNames =
+            {
+             "gender.gender.F",
+             "gender.gender.f",
+             "gender.[All gender].F",
+             "gender.[All gender].f"
+            };
+        for (String memberName : equivalentMemberNames) {
+            assertQueryReturns(
+                "select " + memberName + " on 0 from sales",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Gender].[F]}\n"
+                + "Row #0: 131,558\n");
+        }
+        // also verify case.sensitive=true is honored
+        propSaver.set(MondrianProperties.instance().CaseSensitive, true);
+        String [] wrongCase =
+            {
+                "gender.gender.f",
+                "gender.[All gender].f"
+            };
+        for (String memberName : wrongCase) {
+            assertExprThrows(
+                "select " + memberName + " on 0 from sales",
+                "Failed to parse query");
+        }
+        propSaver.set(MondrianProperties.instance().CaseSensitive, false);
+    }
+
+    /**
      * Dummy statistics provider for
      * {@link mondrian.test.BasicQueryTest#testStatistics()}.
      */
