@@ -427,15 +427,13 @@ public class RolapUtil {
      * members.  If an exact match isn't found, but a matchType of BEFORE
      * or AFTER is specified, then the closest matching member is returned.
      *
+     *
      * @param members array of members to search from
      * @param parent parent member corresponding to the member being searched
      * for
      * @param level level of the member
      * @param searchName member name
      * @param matchType match type
-     * @param caseInsensitive if true, use case insensitive search (if
-     * applicable) when when doing exact searches
-     *
      * @return matching member (if it exists) or the closest matching one
      * in the case of a BEFORE or AFTER search
      */
@@ -444,8 +442,7 @@ public class RolapUtil {
         RolapMember parent,
         RolapLevel level,
         Id.Segment searchName,
-        MatchType matchType,
-        boolean caseInsensitive)
+        MatchType matchType)
     {
         if (!(searchName instanceof Id.NameSegment)) {
             return null;
@@ -484,11 +481,7 @@ public class RolapUtil {
                 }
             }
             if (matchType.isExact()) {
-                if (caseInsensitive) {
-                    rc = Util.compareName(member.getName(), nameSegment.name);
-                } else {
-                    rc = member.getName().compareTo(nameSegment.name);
-                }
+                rc = Util.compareName(member.getName(), nameSegment.name);
             } else {
                 if (searchMember == null) {
                     searchMember =
