@@ -471,8 +471,7 @@ public class RolapSchemaReader
                         (RolapMember) parent,
                         children.get(0).getLevel(),
                         childName,
-                        matchType,
-                        true);
+                        matchType);
             }
         } catch (NumberFormatException e) {
             // this was thrown in SqlQuery#quote(boolean numeric, Object
