@@ -36,7 +36,6 @@
 	    <dependency org="commons-beanutils" name="commons-beanutils" rev="1.6" transitive="false"/>
 	    <dependency org="org.codehaus.groovy" name="groovy-all" rev="1.5.6" transitive="false"/>
         <dependency org="pentaho-kettle" name="kettle-core" rev="${dependency.kettle.revision}"  changing="true"/>
-        <dependency org="pentaho-kettle" name="kettle-db" rev="${dependency.kettle.revision}"  changing="true"/>
         <dependency org="pentaho-kettle" name="kettle-engine" rev="${dependency.kettle.revision}"  changing="true"/>
         <dependency org="pentaho-kettle" name="kettle-dbdialog" rev="${dependency.kettle.revision}" changing="true">
           <artifact name="kettle-dbdialog" ext="jar"/>
