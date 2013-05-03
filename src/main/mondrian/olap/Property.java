@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 12 September, 2002
@@ -106,7 +106,6 @@ public class Property extends EnumeratedValues.BasicValue {
             true, false, false, null);
 
     public static final int NAME_ORDINAL = 2;
-
     /**
      * Definition of the internal property which
      * holds a member's name.
