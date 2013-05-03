@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -14,7 +14,7 @@ import mondrian.xmla.XmlaHandler;
 
 import org.olap4j.*;
 import org.olap4j.Cell;
-import org.olap4j.Position; 
+import org.olap4j.Position;
 import org.olap4j.mdx.IdentifierNode;
 import org.olap4j.mdx.SelectNode;
 import org.olap4j.mdx.parser.*;
@@ -578,7 +578,7 @@ public class Olap4jTest extends FoodMartTestCase {
         }
         assertEquals(1, n);
         assertEquals(1, n2);
-    } 
+    }
 }
 
 // End Olap4jTest.java
