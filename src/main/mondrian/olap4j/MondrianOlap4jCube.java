@@ -126,8 +126,17 @@ class MondrianOlap4jCube
                     measuresLevel.level,
                     true);
             for (mondrian.olap.Member member : levelMembers) {
-                measures.add(
-                    (Measure) olap4jConnection.toOlap4j(member));
+                // This corrects MONDRIAN-1123, a ClassCastException (see below)
+                // that occurs when you create a calculated member on a
+                // dimension other than Measures:
+                // java.lang.ClassCastException:
+                // mondrian.olap4j.MondrianOlap4jMember cannot be cast to
+                // org.olap4j.metadata.Measure
+                MondrianOlap4jMember olap4jMember = olap4jConnection.toOlap4j(
+                    member);
+                if (olap4jMember instanceof Measure) {
+                    measures.add((Measure) olap4jMember);
+                }
             }
             return measures;
         } catch (OlapException e) {
