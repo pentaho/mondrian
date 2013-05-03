@@ -14,6 +14,7 @@ import mondrian.xmla.XmlaHandler;
 
 import org.olap4j.*;
 import org.olap4j.Cell;
+import org.olap4j.Position; 
 import org.olap4j.mdx.IdentifierNode;
 import org.olap4j.mdx.SelectNode;
 import org.olap4j.mdx.parser.*;
@@ -598,6 +599,62 @@ public class Olap4jTest extends FoodMartTestCase {
             + "[Store Size in SQFT].[39696]]",
             members.toString());
     }
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-1123">
+     * MONDRIAN-1123, "ClassCastException for calculated members that are not
+     * part of the measures dimension"</a>.
+     *
+     * @throws java.sql.SQLException on error
+     */
+    public void testCalcMemberInCube() throws SQLException {
+        final OlapConnection testContext =
+            TestContext.instance().createSubstitutingCube(
+                "Sales",
+                null,
+                "<CalculatedMember name='H1 1997' formula='Aggregate([Time].[1997].[Q1]:[Time].[1997].[Q2])' dimension='Time' />")
+            .getOlap4jConnection();
+        final Cube cube = testContext.getOlapSchema().getCubes().get("Sales");
+        final List<Measure> measureList = cube.getMeasures();
+        StringBuilder buf = new StringBuilder();
+        for (Measure measure : measureList) {
+            buf.append(measure.getName()).append(";");
+        }
+        // Calc member in the Time dimension does not appear in the list.
+        // Never did, as far as I can tell.
+        assertEquals(
+            "Unit Sales;Store Cost;Store Sales;Sales Count;Customer Count;"
+            + "Promotion Sales;Profit;Profit last Period;Profit Growth;",
+            buf.toString());
+
+        final CellSet cellSet = testContext.createStatement().executeOlapQuery(
+            "select AddCalculatedMembers([Time].[Time].Members) on 0 from [Sales]");
+        int n = 0, n2 = 0;
+        for (Position position : cellSet.getAxes().get(0).getPositions()) {
+            if (position.getMembers().get(0).getName().equals("H1 1997")) {
+                ++n;
+            }
+            ++n2;
+        }
+        assertEquals(1, n);
+        assertEquals(35, n2);
+
+        final CellSet cellSet2 = testContext.createStatement().executeOlapQuery(
+            "select Filter(\n"
+            + " AddCalculatedMembers([Time].[Time].Members),\n"
+            + " [Time].[Time].CurrentMember.Properties('MEMBER_TYPE') = 4) on 0\n"
+            + "from [Sales]");
+        n = 0;
+        n2 = 0;
+        for (Position position : cellSet2.getAxes().get(0).getPositions()) {
+            if (position.getMembers().get(0).getName().equals("H1 1997")) {
+                ++n;
+            }
+            ++n2;
+        }
+        assertEquals(1, n);
+        assertEquals(1, n2);
+    } 
 }
 
 // End Olap4jTest.java
