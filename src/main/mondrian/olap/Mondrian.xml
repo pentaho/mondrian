@@ -1532,9 +1532,14 @@ Revision is $Id$
                 if (tbl.filter != null) {
                     this.filter = new SQL();
                     this.filter.dialect = tbl.filter.dialect;
-                    if (tbl.filter.cdata != null)
+                     if (tbl.filter.cdata != null) {
                         this.filter.cdata =
-                            tbl.filter.cdata.replace(tbl.alias, possibleName);
+                            tbl.filter.cdata.replace(
+                                tbl.alias == null
+                                    ? tbl.name
+                                    : tbl.alias,
+                                possibleName);
+                    }
                 }
             }
             

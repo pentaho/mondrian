@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2011 Pentaho and others
+// Copyright (C) 2009-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -174,11 +174,17 @@ public final class ScenarioImpl implements Scenario {
      * @return Wrapped scenario
      */
     static Scenario forMember(final RolapMember member) {
-        final Formula formula = ((RolapCalculatedMember) member).getFormula();
-        final ResolvedFunCall resolvedFunCall =
-            (ResolvedFunCall) formula.getExpression();
-        final Calc calc = resolvedFunCall.getFunDef().compileCall(null, null);
-        return ((ScenarioCalc) calc).getScenario();
+        if (isScenario(member.getHierarchy())) {
+            final Formula formula = ((RolapCalculatedMember) member)
+                .getFormula();
+            final ResolvedFunCall resolvedFunCall =
+                (ResolvedFunCall) formula.getExpression();
+            final Calc calc = resolvedFunCall.getFunDef()
+                .compileCall(null, null);
+            return ((ScenarioCalc) calc).getScenario();
+        } else {
+            return null;
+        }
     }
 
     /**
