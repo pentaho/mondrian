@@ -1300,7 +1300,12 @@ README.txt,
 VERSION.txt"/>
       <manifest>
         <attribute name="Built-By" value="${user.name}"/>
-        <section name="mondrian.olap">
+        <section name="mondrian/olap/">
+          <attribute name="Implementation-Title" value="${name}"/>
+          <attribute name="Implementation-Version" value="${project.revision}"/>
+          <attribute name="Implementation-Vendor" value="${vendor}"/>
+        </section>
+		<section name="mondrian/server/">
           <attribute name="Implementation-Title" value="${name}"/>
           <attribute name="Implementation-Version" value="${project.revision}"/>
           <attribute name="Implementation-Vendor" value="${vendor}"/>
