@@ -1144,7 +1144,7 @@ VERSION.txt"/>
           <attribute name="Implementation-Version" value="${project.revision}"/>
           <attribute name="Implementation-Vendor" value="${vendor}"/>
         </section>
-		<section name="mondrian/server/">
+        <section name="mondrian/server/">
           <attribute name="Implementation-Title" value="${name}"/>
           <attribute name="Implementation-Version" value="${project.revision}"/>
           <attribute name="Implementation-Vendor" value="${vendor}"/>

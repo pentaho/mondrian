@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2012 Pentaho
+// Copyright (C) 2010-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server;
@@ -184,7 +184,10 @@ public class MondrianServerRegistry {
         }
 
         // Version from jar manifest overrides that from VERSION.txt.
-        if (implementationVersion != null) {
+        // But ignore versions like 'TRUNK-SNAPSHOT'.
+        if (implementationVersion != null
+            && !implementationVersion.endsWith("-SNAPSHOT"))
+        {
             version = implementationVersion;
         }
         return new String[] {vendor, title, version};
