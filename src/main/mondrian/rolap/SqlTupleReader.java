@@ -400,7 +400,7 @@ public class SqlTupleReader implements TupleReader {
                         "SqlTupleReader.readTuples " + partialTargets,
                         message,
                         SqlStatementEvent.Purpose.TUPLES, 0),
-                    -1, -1);
+                    -1, -1, null);
                 resultSet = stmt.getResultSet();
             } else {
                 resultSet = null;

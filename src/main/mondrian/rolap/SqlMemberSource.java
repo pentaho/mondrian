@@ -327,7 +327,7 @@ class SqlMemberSource
                     "SqlMemberSource.getMembers",
                     "while building member cache",
                     SqlStatementEvent.Purpose.TUPLES, 0),
-                -1, -1);
+                -1, -1, null);
         try {
             final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
             List<RolapMember> list = new ArrayList<RolapMember>();
@@ -928,7 +928,7 @@ RME is this right
                     "SqlMemberSource.getMemberChildren",
                     "while building member cache",
                     SqlStatementEvent.Purpose.TUPLES, 0),
-                -1, -1);
+                -1, -1, null);
         try {
             int limit = MondrianProperties.instance().ResultLimit.get();
             boolean checkCacheStatus = true;

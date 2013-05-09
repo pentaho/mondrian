@@ -309,6 +309,13 @@ public class BatchTestCase extends FoodMartTestCase {
                 bomb = null;
             } catch (Bomb e) {
                 bomb = e;
+            } catch (RuntimeException e) {
+                // Walk up the exception tree and see if the root cause
+                // was a SQL bomb.
+                bomb = Util.getMatchingCause(e, Bomb.class);
+                if (bomb == null) {
+                    throw e;
+                }
             } finally {
                 RolapUtil.setHook(null);
                 Locus.pop(locus);

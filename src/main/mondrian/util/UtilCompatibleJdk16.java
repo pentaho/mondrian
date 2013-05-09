@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho
+// Copyright (C) 2011-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -15,7 +15,6 @@ import mondrian.rolap.RolapUtil;
 
 import org.apache.log4j.Logger;
 
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
@@ -66,7 +65,7 @@ public class UtilCompatibleJdk16 extends UtilCompatibleJdk15 {
             // synchronized internally and won't return until the query
             // completes.
             stmt.cancel();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             // We crush this one. A lot of drivers will complain if cancel() is
             // called on a closed statement, but a call to isClosed() isn't
             // thread safe and might block. See above.
@@ -85,7 +84,7 @@ public class UtilCompatibleJdk16 extends UtilCompatibleJdk15 {
             // JDBC says it is OK to call close on a closed statement, so
             // why check?
             stmt.close();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             if (LOGGER.isTraceEnabled()) {
                 LOGGER.trace(
                     MondrianResource.instance()

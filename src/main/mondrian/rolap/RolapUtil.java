@@ -288,7 +288,7 @@ public class RolapUtil {
         String sql,
         Locus locus)
     {
-        return executeQuery(dataSource, sql, null, 0, 0, locus, -1, -1);
+        return executeQuery(dataSource, sql, null, 0, 0, locus, -1, -1, null);
     }
 
     /**
@@ -323,12 +323,13 @@ public class RolapUtil {
         int firstRowOrdinal,
         Locus locus,
         int resultSetType,
-        int resultSetConcurrency)
+        int resultSetConcurrency,
+        Util.Functor1<Void, java.sql.Statement> callback)
     {
         SqlStatement stmt =
             new SqlStatement(
                 dataSource, sql, types, maxRowCount, firstRowOrdinal, locus,
-                resultSetType, resultSetConcurrency);
+                resultSetType, resultSetConcurrency, callback);
         stmt.execute();
         return stmt;
     }

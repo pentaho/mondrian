@@ -4,17 +4,19 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.cache;
 
 import mondrian.rolap.BitKey;
 import mondrian.rolap.agg.SegmentBuilder;
+import mondrian.server.Execution;
 import mondrian.spi.*;
 import mondrian.util.ByteString;
 
 import java.io.PrintWriter;
+import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -170,10 +172,41 @@ public interface SegmentCacheIndex {
      * loading, otherwise null. This is the method to use to get segments
      * 'hot out of the oven'.
      *
+     * <p>When this method is invoked, the execution instance of the
+     * thread is automatically added to the list of clients for the
+     * given segment. The calling code is responsible for calling
+     * {@link #cancel(Execution)} when it is done with the segments,
+     * or else this registration will prevent others from canceling
+     * the running SQL statements associated to this segment.
+     *
      * @param header Segment header
      * @return Slot, or null
      */
-    Future<SegmentBody> getFuture(SegmentHeader header);
+    Future<SegmentBody> getFuture(Execution exec, SegmentHeader header);
+
+    /**
+     * This method must remove all registrations as a client
+     * for the given execution.
+     *
+     * This must terminate all SQL activity for any orphaned
+     * segments.
+     * @param exec The execution to unregister.
+     */
+    void cancel(Execution exec);
+
+    /**
+     * Tells whether or not a given segment is known to this index.
+     */
+    public boolean contains(SegmentHeader header);
+
+    /**
+     * Allows to link a {@link Statement} to a segment. This allows
+     * the index to cleanup when {@link #cancel(Execution)} is
+     * invoked and orphaned segments are left.
+     * @param header The segment.
+     * @param stmt The SQL statement.
+     */
+    public void linkSqlStatement(SegmentHeader header, Statement stmt);
 
     /**
      * Returns a converter that can convert the given header to internal

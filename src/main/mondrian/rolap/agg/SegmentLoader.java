@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -112,6 +113,12 @@ public class SegmentLoader {
                         new SegmentBuilder.StarSegmentConverter(
                             segment.measure,
                             compoundPredicateList));
+                    // Make sure that we are registered as a client of
+                    // the segment by invoking getFuture.
+                    Util.discard(
+                        index.getFuture(
+                            Locus.peek().execution,
+                            segment.getHeader()));
                 }
             }
         }
@@ -170,10 +177,6 @@ public class SegmentLoader {
         List<GroupingSet> groupingSets,
         List<StarPredicate> compoundPredicateList)
     {
-        // Simple assertion. Is this Execution instance still valid,
-        // or should we get outa here.
-        Locus.peek().execution.checkCancelOrTimeout();
-
         SqlStatement stmt = null;
         GroupingSetsList groupingSetsList =
             new GroupingSetsList(groupingSets);
@@ -187,10 +190,16 @@ public class SegmentLoader {
             int arity = defaultColumns.length;
             SortedSet<Comparable>[] axisValueSets =
                 getDistinctValueWorkspace(arity);
+
             stmt = createExecuteSql(
                 cellRequestCount,
                 groupingSetsList,
                 compoundPredicateList);
+
+            if (stmt == null) {
+                // Nothing to do. We're done here.
+                return segmentMap;
+            }
 
             boolean[] axisContainsNull = new boolean[arity];
 
@@ -224,12 +233,6 @@ public class SegmentLoader {
                 segmentMap);
 
             return segmentMap;
-        } catch (RuntimeException e) {
-            throwable = e;
-            throw e;
-        } catch (Error e) {
-            throwable = e;
-            throw e;
         } catch (Throwable e) {
             throwable = e;
             if (stmt == null) {
@@ -550,27 +553,97 @@ public class SegmentLoader {
      */
     SqlStatement createExecuteSql(
         int cellRequestCount,
-        GroupingSetsList groupingSetsList,
+        final GroupingSetsList groupingSetsList,
         List<StarPredicate> compoundPredicateList)
     {
         RolapStar star = groupingSetsList.getStar();
         Pair<String, List<SqlStatement.Type>> pair =
             AggregationManager.generateSql(
                 groupingSetsList, compoundPredicateList);
-        return RolapUtil.executeQuery(
-            star.getDataSource(),
-            pair.left,
-            pair.right,
-            0,
-            0,
+        final Locus locus =
             new SqlStatement.StatementLocus(
                 Locus.peek().execution,
                 "Segment.load",
                 "Error while loading segment",
                 SqlStatementEvent.Purpose.CELL_SEGMENT,
-                cellRequestCount),
-            -1,
-            -1);
+                cellRequestCount);
+
+        // This exception will be thrown back at us by the callback
+        // if there are no segments left to load after checking with the index.
+        final class NoWorkToDo extends RuntimeException {
+            private static final long serialVersionUID = 1L;
+        };
+
+        // When caching is enabled, we must register the SQL statement
+        // in the index. We don't want to cancel SQL statements that are shared
+        // across threads unless it is safe.
+        final Util.Functor1<Void, Statement> callbackWithCaching =
+            new Util.Functor1<Void, Statement>() {
+                public Void apply(final Statement stmt) {
+                    cacheMgr.execute(
+                        new SegmentCacheManager.Command<Void>() {
+                            public Void call() throws Exception {
+                                boolean atLeastOneActive = false;
+                                for (Segment seg
+                                    : groupingSetsList.getDefaultSegments())
+                                {
+                                    final SegmentCacheIndex index =
+                                        cacheMgr.getIndexRegistry()
+                                            .getIndex(seg.star);
+                                    // Make sure to check if the segment still
+                                    // exists in the index. It could have been
+                                    // removed by a cancellation request since
+                                    // then.
+                                    if (index.contains(seg.getHeader())) {
+                                        index.linkSqlStatement(
+                                            seg.getHeader(), stmt);
+                                        atLeastOneActive = true;
+                                    }
+                                    if (!atLeastOneActive) {
+                                        // There are no segments to load.
+                                        // Throw this so that the segment thread
+                                        // knows to stop.
+                                            throw new NoWorkToDo();
+                                    }
+                                }
+                                return null;
+                            }
+                            public Locus getLocus() {
+                              return locus;
+                            }
+                        });
+                    return null;
+                }
+        };
+
+        // When using no cache, we register the SQL statement directly
+        // with the execution instance for cleanup.
+        final Util.Functor1<Void, Statement> callbackNoCaching =
+                new Util.Functor1<Void, Statement>() {
+                    public Void apply(final Statement stmt) {
+                        locus.execution.registerStatement(locus, stmt);
+                        return null;
+                    }
+            };
+
+        try {
+            return RolapUtil.executeQuery(
+                star.getDataSource(),
+                pair.left,
+                pair.right,
+                0,
+                0,
+                locus,
+                -1,
+                -1,
+                // Only one of the two callbacks are required, depending if we
+                // cache the segments or not.
+                MondrianProperties.instance().DisableCaching.get()
+                    ? callbackNoCaching
+                    : callbackWithCaching);
+        } catch (NoWorkToDo e) {
+            return null;
+        }
     }
 
     RowList processData(

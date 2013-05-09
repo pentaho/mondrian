@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -77,7 +77,7 @@ public class RolapResultShepherd {
                         .RolapConnectionShepherdThreadPollingInterval.get()),
                 TimeUnit.MILLISECONDS);
         long period = interval.right.toMillis(interval.left);
-        timer.scheduleAtFixedRate(
+        timer.schedule(
             new TimerTask() {
                 public void run() {
                     for (final Pair<FutureTask<Result>, Execution> task
@@ -91,6 +91,7 @@ public class RolapResultShepherd {
                             // Remove it from the list so that we know
                             // it was cleaned once.
                             tasks.remove(task);
+
                             // Cancel the FutureTask for which
                             // the user thread awaits. The user
                             // thread will call
@@ -98,22 +99,6 @@ public class RolapResultShepherd {
                             // later and take care of sending
                             // an exception on the user thread.
                             task.left.cancel(false);
-                            // The cleanup operation can be done async.
-                            // Let's not interrupt this task.
-                            executor.submit(
-                                new Runnable() {
-                                    public void run() {
-                                        // Now cleanup the statement on
-                                        // this thread.
-                                        try {
-                                            task.right.cancelSqlStatements();
-                                        } catch (Throwable e) {
-                                            // cancelSqlStatements should never
-                                            // throw.
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                });
                         }
                     }
                 }
@@ -147,30 +132,40 @@ public class RolapResultShepherd {
         // We must wrap this execution into a task that so that we are able
         // to monitor, cancel and detach from it.
         FutureTask<Result> task = new FutureTask<Result>(callable);
+
         // Register this task with the shepherd thread
         final Pair<FutureTask<Result>, Execution> pair =
             new Pair<FutureTask<Result>, Execution>(
                 task,
                 execution);
         tasks.add(pair);
+
         try {
             // Now run it.
             executor.execute(task);
             return task.get();
-        } catch (Exception e) {
+        } catch (Throwable e) {
+            // Make sure to clean up pending SQL queries.
+            execution.cancelSqlStatements();
+
+            // Make sure to propagate the interruption flag.
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
+
+            // Unwrap any java.concurrent wrappers.
             Throwable node = e;
             if (e instanceof ExecutionException) {
                 ExecutionException executionException = (ExecutionException) e;
                 node = executionException.getCause();
             }
+
             // Let the Execution throw whatever it wants to, this way the
             // API contract is respected. The program should in most cases
             // stop here as most exceptions will originate from the Execution
             // instance.
             execution.checkCancelOrTimeout();
+
             // We must also check for ResourceLimitExceededExceptions,
             // which might be wrapped by an ExecutionException. In order to
             // respect the API contract, we must throw the cause, not the
@@ -180,6 +175,16 @@ public class RolapResultShepherd {
                     node, ResourceLimitExceededException.class);
             if (t != null) {
                 throw t;
+            }
+
+            // Check for Mondrian exceptions in the exception chain.
+            // we can throw these back as-is.
+            final MondrianException m =
+                Util.getMatchingCause(
+                    node, MondrianException.class);
+            if (m != null) {
+                // Throw that.
+                throw m;
             }
 
             // Since we got here, this means that the exception was

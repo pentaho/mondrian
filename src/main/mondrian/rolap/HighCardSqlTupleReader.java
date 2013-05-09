@@ -84,7 +84,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
                         "HighCardSqlTupleReader.readTuples " + partialTargets,
                         message,
                         SqlStatementEvent.Purpose.TUPLES, 0),
-                    -1, -1);
+                    -1, -1, null);
             }
 
             for (TargetBase target : targets) {
