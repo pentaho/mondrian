@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -1028,7 +1028,8 @@ public class SegmentLoaderTest extends BatchTestCase {
                 0,
                 SegmentLoaderTest.this.locus,
                 0,
-                0);
+                0,
+                null);
             this.data = data;
         }
 

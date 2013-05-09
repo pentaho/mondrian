@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -496,7 +496,8 @@ public class RolapCell implements Cell {
                     "Error in drill through",
                     SqlStatementEvent.Purpose.DRILL_THROUGH, 0),
                 resultSetType,
-                resultSetConcurrency);
+                resultSetConcurrency,
+                null);
     }
 
     public Object getPropertyValue(String propertyName) {

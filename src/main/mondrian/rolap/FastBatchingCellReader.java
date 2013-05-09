@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -80,6 +80,8 @@ public class FastBatchingCellReader implements CellReader {
 
     private final List<CellRequest> cellRequests = new ArrayList<CellRequest>();
 
+    private final Execution execution;
+
     /**
      * Creates a FastBatchingCellReader.
      *
@@ -93,6 +95,7 @@ public class FastBatchingCellReader implements CellReader {
         RolapCube cube,
         AggregationManager aggMgr)
     {
+        this.execution = execution;
         assert cube != null;
         assert execution != null;
         this.cube = cube;
@@ -342,9 +345,8 @@ public class FastBatchingCellReader implements CellReader {
                                             .makeConverterKey(
                                                 segmentWithData.getHeader())));
                                 if (added) {
-                                    ((SlotFuture<SegmentBody>)index.getFuture(
-                                        segmentWithData.getHeader()))
-                                        .put(body);
+                                    index.loadSucceeded(
+                                        segmentWithData.getHeader(), body);
                                 }
                                 return null;
                             }
@@ -643,8 +645,10 @@ class BatchLoader {
 
         if (!headersInCache.isEmpty()) {
             final SegmentHeader headerInCache = headersInCache.get(0);
+
             final Future<SegmentBody> future =
-                index.getFuture(headerInCache);
+                index.getFuture(locus.execution, headerInCache);
+
             if (future != null) {
                 // Segment header is in cache, body is being loaded. Worker will
                 // need to wait for load to complete.
