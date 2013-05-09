@@ -7966,6 +7966,9 @@ public class BasicQueryTest extends FoodMartTestCase {
                 }
             });
 
+        // Wait a bit to clean up stuff
+        Thread.currentThread().sleep(1000);
+
         // Second test. Launch one query. Cancel and start another one right
         // after the call to cancel() returns. Same result as test 1.
         runMondrian1506(
