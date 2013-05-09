@@ -1502,7 +1502,7 @@ public class SegmentCacheManager {
             for (final SegmentHeader header : headers) {
                 final Future<SegmentBody> bodyFuture =
                     indexRegistry.getIndex(star)
-                        .getFuture(header);
+                        .getFuture(locus.execution, header);
                 if (bodyFuture != null) {
                     converterMap.put(
                         SegmentCacheIndexImpl.makeConverterKey(header),
@@ -1586,6 +1586,11 @@ public class SegmentCacheManager {
                 return getIndex(star);
             }
             return null;
+        }
+        public void cancelExecutionSegments(Execution exec) {
+            for (SegmentCacheIndex index : indexes.values()) {
+                index.cancel(exec);
+            }
         }
     }
 }

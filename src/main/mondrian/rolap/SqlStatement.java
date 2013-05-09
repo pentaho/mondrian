@@ -13,7 +13,7 @@ import mondrian.olap.Util;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.monitor.*;
-import mondrian.spi.Dialect;
+import mondrian.server.monitor.SqlStatementEvent.Purpose;
 import mondrian.util.*;
 
 import org.apache.log4j.Logger;
@@ -81,6 +81,7 @@ public class SqlStatement {
     private final List<Accessor> accessors = new ArrayList<Accessor>();
     private State state = State.FRESH;
     private final long id;
+    private Util.Function1<Statement, Void> callback;
 
     /**
      * Creates a SqlStatement.
@@ -104,8 +105,10 @@ public class SqlStatement {
         int firstRowOrdinal,
         Locus locus,
         int resultSetType,
-        int resultSetConcurrency)
+        int resultSetConcurrency,
+        Util.Function1<Statement, Void> callback)
     {
+        this.callback = callback;
         this.id = ID_GENERATOR.getAndIncrement();
         this.dataSource = dataSource;
         this.sql = sql;
@@ -167,7 +170,13 @@ public class SqlStatement {
             }
 
             // First make sure to register with the execution instance.
-            locus.execution.registerStatement(locus, statement);
+            if (getPurpose() != Purpose.CELL_SEGMENT) {
+                locus.execution.registerStatement(locus, statement);
+            } else {
+                if (callback != null) {
+                    callback.apply(statement);
+                }
+            }
 
             locus.getServer().getMonitor().sendEvent(
                 new SqlStatementStartEvent(

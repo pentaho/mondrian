@@ -21,7 +21,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -142,7 +141,7 @@ public class UtilCompatibleJdk15 implements UtilCompatible {
     public void cancelAndCloseStatement(Statement stmt) {
         try {
             stmt.cancel();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             // We can't call stmt.isClosed(); the method doesn't exist until
             // JDK 1.6. So, mask out the error.
             if (e.getMessage().equals(
@@ -160,7 +159,7 @@ public class UtilCompatibleJdk15 implements UtilCompatible {
         }
         try {
             stmt.close();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(
                     MondrianResource.instance()

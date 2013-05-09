@@ -9,16 +9,20 @@
 */
 package mondrian.rolap.cache;
 
+import mondrian.olap.QueryCanceledException;
 import mondrian.olap.Util;
 import mondrian.rolap.BitKey;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.agg.*;
+import mondrian.server.Execution;
 import mondrian.spi.*;
 import mondrian.util.*;
 
 import java.io.PrintWriter;
+import java.sql.Statement;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 
 /**
@@ -196,6 +200,9 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         if (headerInfo.removeAfterLoad) {
             remove(header);
         }
+        // Cleanup the HeaderInfo
+        headerInfo.stmt = null;
+        headerInfo.clients.clear();
     }
 
     public void loadFailed(SegmentHeader header, Throwable throwable) {
@@ -208,6 +215,9 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
             : "segment header " + header.getUniqueID() + " is not loading";
         headerInfo.slot.fail(throwable);
         remove(header);
+        // Cleanup the HeaderInfo
+        headerInfo.stmt = null;
+        headerInfo.clients.clear();
     }
 
     public void remove(SegmentHeader header) {
@@ -404,10 +414,45 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         }
     }
 
-    public Future<SegmentBody> getFuture(SegmentHeader header) {
+    public Future<SegmentBody> getFuture(Execution exec, SegmentHeader header) {
         checkThread();
+        HeaderInfo hi = headerMap.get(header);
+        if (!hi.clients.contains(exec)) {
+            hi.clients.add(exec);
+        }
+        return hi.slot;
+    }
 
-        return headerMap.get(header).slot;
+    public void linkSqlStatement(SegmentHeader header, Statement stmt) {
+        checkThread();
+        headerMap.get(header).stmt = stmt;
+    }
+
+    public boolean contains(SegmentHeader header) {
+        return headerMap.containsKey(header);
+    }
+
+    public void cancel(Execution exec) {
+        checkThread();
+        List<SegmentHeader> toRemove = new ArrayList<SegmentHeader>();
+        for (Entry<SegmentHeader, HeaderInfo> entry : headerMap.entrySet()) {
+            if (entry.getValue().clients.remove(exec)) {
+                if (entry.getValue().slot != null
+                    && !entry.getValue().slot.isDone()
+                    && entry.getValue().clients.isEmpty())
+                {
+                    Util.cancelAndCloseStatement(entry.getValue().stmt);
+                    toRemove.add(entry.getKey());
+                }
+            }
+        }
+        // Make sure to cleanup the orphaned segments.
+        for (SegmentHeader header : toRemove) {
+            loadFailed(
+                header,
+                new QueryCanceledException(
+                    "Canceling due to an absence of interested parties."));
+        }
     }
 
     public SegmentBuilder.SegmentConverter getConverter(
@@ -890,8 +935,31 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         }
     }
 
+    /**
+     * A private class that we use in the index to track who was interested in
+     * which headers, the SQL statement that is populating it and a future
+     * object which we pass to clients.
+     */
     private static class HeaderInfo {
+        /**
+         * The SQL statement populating this header.
+         * Will be null until the SQL thread calls us back to register it.
+         */
+        private Statement stmt;
+        /**
+         * The future object to pass on to clients.
+         */
         private SlotFuture<SegmentBody> slot;
+        /**
+         * A list of clients interested in this segment.
+         */
+        private final List<Execution> clients =
+            new CopyOnWriteArrayList<Execution>();
+        /**
+         * Whether this segment is already considered stale and must
+         * be deleted after it is done loading. This can happen
+         * when flushing.
+         */
         private boolean removeAfterLoad;
 
         HeaderInfo(SlotFuture<SegmentBody> slot) {

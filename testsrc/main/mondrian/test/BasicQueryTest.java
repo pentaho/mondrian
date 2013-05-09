@@ -40,6 +40,7 @@ import java.io.StringWriter;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
@@ -7492,6 +7493,207 @@ public class BasicQueryTest extends FoodMartTestCase {
     public static class MyJdbcStatisticsProvider
         extends JdbcStatisticsProvider
     {
+    }
+
+    /**
+     * Test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1506">MONDRIAN-1506</a>
+     *
+     * <p>This is a test for a concurrency problem in the old Query API.
+     * It also makes sure that we do not leak a future to a segment
+     * which we are about to cancel.
+     *
+     * <p>It is disabled by default because it can make the JVM crash
+     * pretty hard if it is run as part of the full test suite. Something to
+     * do with stack heap problems. Probably because the test has to run on
+     * multiple threads at the same time.
+     */
+    public void testMondrian1506() throws Exception {
+        // First test. Run two queries in parallel. Cancel one.
+        // The exception should appear on thread 1 and thread 2
+        // should succeed.
+        runMondrian1506(
+            new Mondrian1506Lambda() {
+                public void run(
+                    ExecutorService exec,
+                    Query q1,
+                    AtomicBoolean fail,
+                    AtomicBoolean success,
+                    Runnable r1,
+                    Runnable r2) throws Exception
+                {
+                    getTestContext().flushSchemaCache();
+
+                    // Run the first query
+                    exec.submit(r1);
+
+                    // Wait a bit
+                    Thread.sleep(500);
+
+                    // Run the second immediatly
+                    Future<?> f2 = exec.submit(r2);
+
+                    // Wait a bit
+                    Thread.sleep(500);
+
+                    // Cancel the first
+                    q1.cancel();
+
+                    // Wait a bit for the cancelation of q1 to propagate.
+                    Thread.sleep(3000);
+
+                    // Make sure the first query didn't have time to finish.
+                    assertTrue(fail.get());
+
+                    // Wait for q2 to finish
+                    while (!f2.isDone()) {
+                        Thread.sleep(1000);
+                    }
+
+                    // Make sure the second query worked.
+                    assertTrue(success.get());
+                }
+            });
+
+        // Second test. Launch one query. Cancel and start another one right
+        // after the call to cancel() returns. Same result as test 1.
+        runMondrian1506(
+            new Mondrian1506Lambda() {
+                public void run(
+                    ExecutorService exec,
+                    Query q1,
+                    AtomicBoolean fail,
+                    AtomicBoolean success,
+                    Runnable r1,
+                    Runnable r2) throws Exception
+                {
+                    getTestContext().flushSchemaCache();
+
+                    // Run the first query
+                    exec.submit(r1);
+
+                    // Wait a bit
+                    Thread.sleep(500);
+
+                    // Cancel the first
+                    q1.cancel();
+
+                    // Run the second immediatly
+                    Future<?> f2 = exec.submit(r2);
+
+                    // Wait a bit for the cancelation of q1 to propagate.
+                    Thread.sleep(1000);
+
+                    // Make sure the first query didn't have time to finish.
+                    assertTrue(fail.get());
+
+                    // Wait for q2 to finish
+                    while (!f2.isDone()) {
+                        Thread.sleep(1000);
+                    }
+
+                    // Make sure the second query worked.
+                    assertTrue(success.get());
+                }
+            });
+    }
+
+    private interface Mondrian1506Lambda {
+        void run(
+            final ExecutorService exec,
+            final Query q1,
+            final AtomicBoolean fail,
+            final AtomicBoolean success,
+            final Runnable r1,
+            final Runnable r2) throws Exception;
+    }
+
+    private void runMondrian1506(Mondrian1506Lambda lambda) throws Exception {
+        if (getTestContext().getDialect().getDatabaseProduct()
+            != Dialect.DatabaseProduct.MYSQL)
+        {
+            // This only works on MySQL because of Sleep()
+            return;
+        }
+        final TestContext context =
+            getTestContext().withSchema(
+                "<Schema name=\"Foo\">\n"
+                + "  <Cube name=\"Bar\">\n"
+                + "    <Table name=\"warehouse\">\n"
+                + "      <SQL>sleep(0.1) = 0</SQL>\n"
+                + "    </Table>   \n"
+                + " <Dimension name=\"Dim\">\n"
+                + "   <Hierarchy hasAll=\"true\">\n"
+                + "     <Level name=\"Level\" column=\"warehouse_id\"/>\n"
+                + "      </Hierarchy>\n"
+                + " </Dimension>\n"
+                + " <Measure name=\"Measure\" aggregator=\"sum\">\n"
+                + "   <MeasureExpression>\n"
+                + "     <SQL>1</SQL>\n"
+                + "   </MeasureExpression>\n"
+                + " </Measure>\n"
+                + "  </Cube>\n"
+                + "</Schema>\n");
+
+        final String mdx =
+            "select {[Measures].[Measure]} on columns from [Bar]";
+
+        // A service to execute stuff in the background.
+        final ExecutorService exec =
+            Util.getExecutorService(
+                2,
+                2,
+                1000,
+                "BasicQueryTest.testMondrian1506",
+                new RejectedExecutionHandler() {
+                    public void rejectedExecution(
+                        Runnable r,
+                        ThreadPoolExecutor executor)
+                    {
+                        throw new RuntimeException();
+                    }
+            });
+
+        // We are testing the old Query API.
+        final Connection connection =
+            context.getConnection();
+        final Query q1 =
+            connection.parseQuery(mdx);
+        final Query q2 =
+            connection.parseQuery(mdx);
+
+        // Some flags to test.
+        final AtomicBoolean fail =
+            new AtomicBoolean(false);
+        final AtomicBoolean success =
+            new AtomicBoolean(false);
+
+        final Runnable r1 =
+            new Runnable() {
+                public void run() {
+                    try {
+                        connection.execute(q1);
+                    } catch (Throwable t) {
+                        fail.set(true);
+                    }
+                }
+            };
+        final Runnable r2 =
+            new Runnable() {
+                public void run() {
+                    try {
+                        connection.execute(q2);
+                        success.set(true);
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                    }
+                }
+            };
+        try {
+            lambda.run(exec, q1, fail, success, r1, r2);
+        } finally {
+            exec.shutdownNow();
+        }
     }
 }
 

@@ -481,7 +481,8 @@ public class RolapCell implements Cell {
                     "Error in drill through",
                     SqlStatementEvent.Purpose.DRILL_THROUGH, 0),
                 resultSetType,
-                resultSetConcurrency);
+                resultSetConcurrency,
+                null);
     }
 
     public Object getPropertyValue(String propertyName) {

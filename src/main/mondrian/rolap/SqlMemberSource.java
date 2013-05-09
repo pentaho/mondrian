@@ -306,7 +306,7 @@ class SqlMemberSource
                     "SqlMemberSource.getMembers",
                     "while building member cache",
                     SqlStatementEvent.Purpose.TUPLES, 0),
-                -1, -1);
+                -1, -1, null);
         final SqlTupleReader.ColumnLayout columnLayout =
             layoutBuilder.toLayout();
         try {
@@ -1114,7 +1114,7 @@ class SqlMemberSource
                     "SqlMemberSource.getMemberChildren",
                     "while building member cache",
                     SqlStatementEvent.Purpose.TUPLES, 0),
-                -1, -1);
+                -1, -1, null);
         try {
             int limit = MondrianProperties.instance().ResultLimit.get();
 
