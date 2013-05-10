@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho
+// Copyright (C) 2011-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server;
@@ -38,7 +38,7 @@ public class Execution {
      */
     private static AtomicLong SEQ = new AtomicLong();
 
-    final StatementImpl statement;
+    public final StatementImpl statement;
 
     /**
      * Holds a collection of the SqlStatements which were used by this

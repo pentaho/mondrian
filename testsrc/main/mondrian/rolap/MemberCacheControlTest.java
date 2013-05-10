@@ -12,6 +12,7 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.olap.CacheControl.MemberEditCommand;
 import mondrian.olap.Hierarchy;
+import mondrian.pref.PrefDef;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
@@ -55,7 +56,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        propSaver.set(propSaver.props.EnableRolapCubeMemberCache, false);
+        PrefDef.EnableRolapCubeMemberCache.with(propSaver).set(false);
         RolapSchemaPool.instance().clear();
 
         final RolapConnection conn = (RolapConnection) getConnection();
@@ -279,7 +280,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
      * Tests that member operations fail if cache is enabled.
      */
     public void testMemberOpsFailIfCacheEnabled() {
-        propSaver.set(propSaver.props.EnableRolapCubeMemberCache, true);
+        PrefDef.EnableRolapCubeMemberCache.with(propSaver).set(true);
         final TestContext tc = getTestContext();
         final Connection conn = tc.getConnection();
         final CacheControl cc = conn.getCacheControl(null);

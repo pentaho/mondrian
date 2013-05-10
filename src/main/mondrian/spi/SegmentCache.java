@@ -4,15 +4,14 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.spi;
 
-import mondrian.olap.MondrianProperties;
+import mondrian.pref.PrefDef;
 
 import java.util.List;
-import java.util.concurrent.Future;
 
 /**
  * SPI definition of the segments cache.
@@ -22,7 +21,7 @@ import java.util.concurrent.Future;
  *
  * <p>There are two ways to declare a SegmentCache implementation in
  * Mondrian. The first one (and the one which will be used by default)
- * is to set the {@link MondrianProperties#SegmentCache} property. The
+ * is to set the {@link PrefDef#SegmentCache} property. The
  * second one is to use the Java Services API. You will need to create
  * a jar file, accessible through the same class loader as Mondrian,
  * and add a file called <code>/META-INF/services/mondrian.spi.SegmentCache
@@ -30,7 +29,7 @@ import java.util.concurrent.Future;
  * to use. If more than one SegmentCache Java service is found, the first
  * one found is used. This is a non-deterministic choice as there are
  * no guarantees as to which will appear first. This later mean of discovery
- * is overridden by defining the {@link MondrianProperties#SegmentCache}
+ * is overridden by defining the {@link PrefDef#SegmentCache}
  * property.
  *
  * <p>Implementations are expected to be thread-safe. Mondrian is likely to
@@ -51,7 +50,7 @@ import java.util.concurrent.Future;
  * Mondrian creates one segment cache instance per Mondrian server.
  * There could be more than one Mondrian server running in the same JVM.
  *
- * @see MondrianProperties#SegmentCache
+ * @see PrefDef#SegmentCache
  * @author LBoudreau
  */
 public interface SegmentCache {

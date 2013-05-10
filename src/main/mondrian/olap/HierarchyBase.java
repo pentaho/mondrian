@@ -50,10 +50,6 @@ public abstract class HierarchyBase
         return uniqueName;
     }
 
-    public String getUniqueNameSsas() {
-        return Util.makeFqName(dimension, name);
-    }
-
     public String getName() {
         return name;
     }

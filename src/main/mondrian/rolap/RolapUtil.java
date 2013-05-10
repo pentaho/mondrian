@@ -16,14 +16,13 @@ import mondrian.calc.ExpCompiler;
 import mondrian.olap.*;
 import mondrian.olap.Member;
 import mondrian.olap.fun.FunUtil;
+import mondrian.pref.*;
 import mondrian.resource.MondrianResource;
 import mondrian.server.*;
 import mondrian.spi.Dialect;
 import mondrian.util.ClassResolver;
 
 import org.apache.log4j.Logger;
-
-import org.eigenbase.util.property.StringProperty;
 
 import java.io.*;
 import java.lang.reflect.*;
@@ -201,7 +200,7 @@ public class RolapUtil {
 
     public static void reloadNullLiteral() {
         mdxNullLiteral =
-            MondrianProperties.instance().NullMemberRepresentation.get();
+            StatementPref.instance().NullMemberRepresentation;
     }
 
     /**
@@ -368,9 +367,9 @@ public class RolapUtil {
             "Unable to use native SQL evaluation for '" + functionName
             + "'; reason:  " + reason;
 
-        StringProperty alertProperty =
-            MondrianProperties.instance().AlertNativeEvaluationUnsupported;
-        String alertValue = alertProperty.get();
+        final StringProperty alertProperty =
+            PrefDef.AlertNativeEvaluationUnsupported;
+        final String alertValue = alertProperty.get(StatementPref.instance());
 
         if (alertValue.equalsIgnoreCase(
                 org.apache.log4j.Level.WARN.toString()))
@@ -659,7 +658,7 @@ public class RolapUtil {
      */
     static synchronized Semaphore getQuerySemaphore() {
         if (querySemaphore == null) {
-            int queryCount = MondrianProperties.instance().QueryLimit.get();
+            int queryCount = StatementPref.instance().QueryLimit;
             querySemaphore = new Semaphore(queryCount);
         }
         return querySemaphore;

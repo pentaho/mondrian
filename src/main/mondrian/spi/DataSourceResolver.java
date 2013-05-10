@@ -4,10 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2009 Pentaho
+// Copyright (C) 2009-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi;
+
+import mondrian.pref.PrefDef;
 
 import javax.sql.DataSource;
 
@@ -15,8 +17,7 @@ import javax.sql.DataSource;
  * Plugin class that resolves data source name to {@link javax.sql.DataSource}
  * object.
  *
- * <p>The property
- * {@link mondrian.olap.MondrianProperties#DataSourceResolverClass} determines
+ * <p>The property {@link PrefDef#DataSourceResolverClass} determines
  * which class to use. The default implementation is
  * {@link mondrian.spi.impl.JndiDataSourceResolver}.
  *

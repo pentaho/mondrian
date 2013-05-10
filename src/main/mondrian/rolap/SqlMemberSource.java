@@ -13,17 +13,16 @@ package mondrian.rolap;
 import mondrian.calc.TupleList;
 import mondrian.olap.*;
 import mondrian.olap.Member.MemberType;
+import mondrian.pref.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
-import mondrian.server.Locus;
+import mondrian.server.*;
 import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.spi.Dialect;
 import mondrian.util.*;
-
-import org.eigenbase.util.property.StringProperty;
 
 import java.sql.*;
 import java.util.*;
@@ -320,7 +319,7 @@ class SqlMemberSource
                 list.add(root);
             }
 
-            int limit = MondrianProperties.instance().ResultLimit.get();
+            int limit = StatementPref.instance().ResultLimit;
             ResultSet resultSet = stmt.getResultSet();
             while (resultSet.next()) {
                 ++stmt.rowCount;
@@ -817,7 +816,7 @@ class SqlMemberSource
     {
         Util.deprecated("method not used; remove", true);
 
-        if (!MondrianProperties.instance().UseAggregates.get()
+        if (!StatementPref.instance().UseAggregates
             || !(constraint instanceof SqlContextConstraint))
         {
             return null;
@@ -885,7 +884,7 @@ class SqlMemberSource
         MemberChildrenConstraint constraint,
         RolapMember member)
     {
-        if (!MondrianProperties.instance().UseAggregates.get()) {
+        if (!StatementPref.instance().UseAggregates) {
             return null;
         }
         if (!(constraint instanceof SqlContextConstraint)) {
@@ -1116,7 +1115,7 @@ class SqlMemberSource
                     SqlStatementEvent.Purpose.TUPLES, 0),
                 -1, -1);
         try {
-            int limit = MondrianProperties.instance().ResultLimit.get();
+            int limit = StatementPref.instance().ResultLimit;
 
             final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
             ResultSet resultSet = stmt.getResultSet();
@@ -1347,8 +1346,7 @@ class SqlMemberSource
      * is to allow the duplicate object to be garbage collected earlier, thus
      * keeping overall memory requirements down.</p>
      *
-     * <p>If
-     * {@link mondrian.olap.MondrianProperties#SqlMemberSourceValuePoolFactoryClass}
+     * <p>If {@link PrefDef#SqlMemberSourceValuePoolFactoryClass}
      * is not set, then valuePool will be null and no attempt to cache the
      * value will be made.  The method will simply return the incoming
      * object reference.</p>
@@ -1646,7 +1644,7 @@ class SqlMemberSource
     /**
      * Default {@link mondrian.rolap.SqlMemberSource.ValuePoolFactory}
      * implementation, used if
-     * {@link mondrian.olap.MondrianProperties#SqlMemberSourceValuePoolFactoryClass}
+     * {@link PrefDef#SqlMemberSourceValuePoolFactoryClass}
      * is not set.
      */
     public static final class NullValuePoolFactory
@@ -1670,7 +1668,7 @@ class SqlMemberSource
      * to create property-value maps for member properties.</p>
      *
      * <p>The name of the ValuePoolFactory is drawn from
-     * {@link mondrian.olap.MondrianProperties#SqlMemberSourceValuePoolFactoryClass}
+     * {@link PrefDef#SqlMemberSourceValuePoolFactoryClass}
      * in mondrian.properties.  If unset, it defaults to
      * {@link mondrian.rolap.SqlMemberSource.NullValuePoolFactory}. </p>
      */
@@ -1680,10 +1678,8 @@ class SqlMemberSource
         /**
          * Single instance of the <code>ValuePoolFactoryFactory</code>.
          */
-        private static final ValuePoolFactoryFactory factory;
-        static {
-            factory = new ValuePoolFactoryFactory();
-        }
+        private static final ValuePoolFactoryFactory factory =
+            new ValuePoolFactoryFactory();
 
         /**
          * Access the <code>ValuePoolFactory</code> instance.
@@ -1703,9 +1699,8 @@ class SqlMemberSource
             super(ValuePoolFactory.class);
         }
 
-        protected StringProperty getStringProperty() {
-            return MondrianProperties.instance()
-               .SqlMemberSourceValuePoolFactoryClass;
+        protected String getPropertyName() {
+            return PrefDef.SqlMemberSourceValuePoolFactoryClass.getPath();
         }
 
         protected ValuePoolFactory getDefault(

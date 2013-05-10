@@ -42,6 +42,11 @@ src/main/mondrian/parser/ParseException.java
 src/main/mondrian/parser/SimpleCharStream.java
 src/main/mondrian/parser/Token.java
 src/main/mondrian/parser/TokenMgrError.java
+src/main/mondrian/pref/ConnectionPref.java
+src/main/mondrian/pref/PrefDef.java
+src/main/mondrian/pref/SchemaPref.java
+src/main/mondrian/pref/ServerPref.java
+src/main/mondrian/pref/StatementPref.java
 src/main/mondrian/resource/MondrianResource.java
 src/main/mondrian/resource/MondrianResource_de.java
 src/main/mondrian/resource/MondrianResource_de_DE.java
@@ -51,4 +56,3 @@ src/main/mondrian/rolap/aggmatcher/DefaultDef.java
 src/main/mondrian/rolap/aggmatcher/aggregates.dtd
 src/main/mondrian/xmla/DataSourcesConfig.java
 src/main/mondrian/xmla/datasourcesconfig.dtd
-

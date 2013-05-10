@@ -5,18 +5,15 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
-package mondrian.test;
+package mondrian.pref;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.rolap.RolapUtil;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
-import org.eigenbase.util.property.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,13 +25,12 @@ import java.util.Map;
  * @author jhyde
  * @since Oct 28, 2008
  */
-public class PropertySaver {
+public class PrefSaver {
 
-    public final MondrianProperties props =
-        MondrianProperties.instance();
+    public final StatementPref pref = StatementPref.instance();
 
-    private final Map<Property, String> originalValues =
-        new HashMap<Property, String>();
+    private final Map<BaseProperty, Object> originalValues =
+        new HashMap<BaseProperty, Object>();
 
     private final Map<Logger, Level> originalLoggerLevels =
         new HashMap<Logger, Level>();
@@ -44,6 +40,16 @@ public class PropertySaver {
     private static final String NOT_SET =
         new StringBuffer("NOT_" + "SET").toString();
 
+    private void set_(BaseProperty property, Object value) {
+        if (!originalValues.containsKey(property)) {
+            final Object originalValue = Prefs.get(pref, property);
+            originalValues.put(
+                property,
+                originalValue);
+        }
+        property.setObject(pref, value);
+    }
+
     /**
      * Sets a boolean property and remembers its previous value.
      *
@@ -51,16 +57,7 @@ public class PropertySaver {
      * @param value New value
      */
     public void set(BooleanProperty property, boolean value) {
-        if (!originalValues.containsKey(property)) {
-            final String originalValue =
-                props.containsKey(property.getPath())
-                    ? props.getProperty(property.getPath())
-                    : NOT_SET;
-            originalValues.put(
-                property,
-                originalValue);
-        }
-        property.set(value);
+        set_(property, value);
     }
 
     /**
@@ -70,16 +67,7 @@ public class PropertySaver {
      * @param value New value
      */
     public void set(IntegerProperty property, int value) {
-        if (!originalValues.containsKey(property)) {
-            final String originalValue =
-                props.containsKey(property.getPath())
-                    ? props.getProperty(property.getPath())
-                    : NOT_SET;
-            originalValues.put(
-                property,
-                originalValue);
-        }
-        property.set(value);
+        set_(property, value);
     }
 
     /**
@@ -89,16 +77,7 @@ public class PropertySaver {
      * @param value New value
      */
     public void set(StringProperty property, String value) {
-        if (!originalValues.containsKey(property)) {
-            final String originalValue =
-                props.containsKey(property.getPath())
-                    ? props.getProperty(property.getPath())
-                    : NOT_SET;
-            originalValues.put(
-                property,
-                originalValue);
-        }
-        property.set(value);
+        set_(property, value);
     }
 
     /**
@@ -108,33 +87,24 @@ public class PropertySaver {
      * @param value New value
      */
     public void set(DoubleProperty property, Double value) {
-        if (!originalValues.containsKey(property)) {
-            final String originalValue =
-                props.containsKey(property.getPath())
-                    ? props.getProperty(property.getPath())
-                    : NOT_SET;
-            originalValues.put(
-                property,
-                originalValue);
-        }
-        property.set(value);
+        set_(property, value);
     }
 
     /**
      * Sets all properties back to their original values.
      */
     public void reset() {
-        for (Map.Entry<Property, String> entry : originalValues.entrySet()) {
-            final String value = entry.getValue();
+        for (Map.Entry<BaseProperty, Object> entry
+                 : originalValues.entrySet())
+        {
+            final Object value = entry.getValue();
             //noinspection StringEquality
             if (value == NOT_SET) {
-                props.remove(entry.getKey().getPath());
+                Prefs.remove(pref, entry.getKey().getPath());
             } else {
-                entry.getKey().setString(value);
+                Prefs.set(pref, entry.getKey(), value);
             }
-            if (entry.getKey()
-                == MondrianProperties.instance().NullMemberRepresentation)
-            {
+            if (entry.getKey() == PrefDef.NullMemberRepresentation) {
                 RolapUtil.reloadNullLiteral();
             }
         }
@@ -171,6 +141,14 @@ public class PropertySaver {
             set(logger, level);
         }
     }
+
+    public void setMin(
+        StatementPref pref, IntegerProperty property, int minValue)
+    {
+        if (pref.MaxConstraints < minValue) {
+            set(property, minValue);
+        }
+    }
 }
 
-// End PropertySaver.java
+// End PrefSaver.java

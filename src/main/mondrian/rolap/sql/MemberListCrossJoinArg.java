@@ -5,12 +5,12 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
 
-import mondrian.olap.MondrianProperties;
+import mondrian.pref.StatementPref;
 import mondrian.rolap.*;
 
 import java.util.ArrayList;
@@ -60,7 +60,7 @@ public class MemberListCrossJoinArg implements CrossJoinArg {
 
         // First check that the member list will not result in a predicate
         // longer than the underlying DB could support.
-        if (argSize > MondrianProperties.instance().MaxConstraints.get()) {
+        if (argSize > StatementPref.instance().MaxConstraints) {
             argSizeNotSupported = true;
         }
 

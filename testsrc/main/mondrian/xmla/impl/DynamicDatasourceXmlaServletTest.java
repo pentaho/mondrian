@@ -4,13 +4,14 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.xmla.impl;
 
 import mondrian.olap.*;
-import mondrian.server.DynamicContentFinder;
+import mondrian.pref.StatementPref;
+import mondrian.server.*;
 import mondrian.util.Pair;
 import mondrian.xmla.DataSourcesConfig;
 
@@ -295,7 +296,7 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
         // Wait for it to auto-reload.
         final Pair<Long, TimeUnit> interval =
             Util.parseInterval(
-                MondrianProperties.instance().XmlaSchemaRefreshInterval.get(),
+                StatementPref.instance().XmlaSchemaRefreshInterval,
                 TimeUnit.MILLISECONDS);
         Thread.sleep(
             interval.right.toMillis(interval.left)

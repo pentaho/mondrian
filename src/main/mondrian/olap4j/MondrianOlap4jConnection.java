@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho and others
+// Copyright (C) 2007-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap4j;
@@ -13,6 +13,7 @@ import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.Member;
 import mondrian.olap.fun.MondrianEvaluationException;
+import mondrian.pref.*;
 import mondrian.rolap.*;
 import mondrian.util.Bug;
 import mondrian.xmla.XmlaHandler;
@@ -105,8 +106,9 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
     boolean preferList;
 
     final MondrianServer mondrianServer;
-    private final MondrianOlap4jSchema olap4jSchema;
+    final MondrianOlap4jSchema olap4jSchema;
     private final NamedList<MondrianOlap4jDatabase> olap4jDatabases;
+    public final ConnectionPref pref;
 
     /**
      * Creates an Olap4j connection to Mondrian.
@@ -160,11 +162,11 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
 
         this.mondrianServer =
             MondrianServer.forConnection(mondrianConnection);
-        final CatalogFinder catalogFinder =
-            (CatalogFinder) mondrianServer;
+        final CatalogFinder catalogFinder = (CatalogFinder) mondrianServer;
+        this.pref = Prefs.connection(Prefs.server());
 
-        NamedList<MondrianOlap4jCatalog> olap4jCatalogs = new
-            NamedListImpl<MondrianOlap4jCatalog>();
+        NamedList<MondrianOlap4jCatalog> olap4jCatalogs =
+            new NamedListImpl<MondrianOlap4jCatalog>();
         this.olap4jDatabases =
             new NamedListImpl<MondrianOlap4jDatabase>();
 

@@ -4,12 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.MondrianProperties;
+import mondrian.pref.*;
 import mondrian.resource.MondrianResource;
 import mondrian.spi.*;
 import mondrian.util.*;
@@ -58,12 +58,13 @@ public final class SegmentCacheWorker {
      * Instantiates a cache. Returns null if there is no external cache defined.
      *
      * @return Cache
+     * @param pref Server preferences
      */
-    public static SegmentCache initCache() {
+    public static SegmentCache initCache(ServerPref pref) {
         // First try to get the segmentcache impl class from
         // mondrian properties.
         final String cacheName =
-            MondrianProperties.instance().SegmentCache.get();
+            pref.SegmentCache;
         if (cacheName != null) {
             return instantiateCache(cacheName);
         }

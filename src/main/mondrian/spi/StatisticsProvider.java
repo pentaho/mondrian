@@ -4,11 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2012 Pentaho
+// Copyright (C) 2012-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi;
 
+import mondrian.pref.PrefDef;
 import mondrian.server.Execution;
 
 import javax.sql.DataSource;
@@ -21,7 +22,7 @@ import javax.sql.DataSource;
  * current connection. The default implementation of that method looks first at
  * the "mondrian.statistics.providers.DATABASE" property (substituting the
  * current database name, e.g. MYSQL or ORACLE, for <i>DATABASE</i>), then at
- * the {@link mondrian.olap.MondrianProperties#StatisticsProviders "mondrian.statistics.providers"}
+ * the {@link PrefDef#StatisticsProviders "mondrian.statistics.providers"}
  * property.</p>
  *
  * @see mondrian.spi.impl.JdbcStatisticsProvider

@@ -10,6 +10,7 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.pref.PrefDef;
 import mondrian.util.Bug;
 
 import java.sql.SQLException;
@@ -1216,10 +1217,6 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
     /**
      * Tests a member where a name segments {@code [San Francisco].[Store 14]}
      * occur after a key segment {@code &amp;&amp;CA}.
-     *
-     * <p>Needs to work regardless of the value of
-     * {@link MondrianProperties#SsasCompatibleNaming}. Mondrian-3 had this
-     * functionality.</p>
      */
     public void testNameAfterKey() {
         assertQueryReturns(
@@ -1310,7 +1307,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "[Time].[Time2].[Quarter].&Q3&[1997] on 1\n"
             + "from [Warehouse and Sales]");
 
-        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, true);
+        PrefDef.IgnoreInvalidMembersDuringQuery.with(propSaver).set(true);
         // SSAS gives 0 rows
         assertQueryReturns(
             "select [Measures].[Unit Sales] on 0,\n"
@@ -1322,7 +1319,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n");
 
-        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, false);
+        PrefDef.IgnoreInvalidMembersDuringQuery.with(propSaver).set(false);
         assertQueryThrows(
             "select [Measures].[Unit Sales] on 0,\n"
             + "[Time].[Time2].[Quarter].&Q5&[1997] on 1\n"

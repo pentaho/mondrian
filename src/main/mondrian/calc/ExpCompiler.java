@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.calc;
@@ -12,10 +12,9 @@ package mondrian.calc;
 import mondrian.calc.impl.BetterExpCompiler;
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
+import mondrian.pref.*;
 import mondrian.util.CreationException;
 import mondrian.util.ObjectFactory;
-
-import org.eigenbase.util.property.StringProperty;
 
 import java.util.List;
 
@@ -305,23 +304,15 @@ public interface ExpCompiler {
         private Factory() {
             super(ExpCompiler.class);
         }
-        /**
-         * Get the class name set in the <code>ThreadLocal</code> or null.
-         *
-         * @return class name or null.
-         */
-        protected String getClassName() {
+
+        @Override protected String getClassName() {
             return getThreadLocalClassName();
         }
 
-        /**
-         * Return the <code>ExpCompiler.Factory</code property name.
-         *
-         * @return <code>ExpCompiler.Factory</code> property name
-         */
-        protected StringProperty getStringProperty() {
-            return MondrianProperties.instance().ExpCompilerClass;
+        protected String getPropertyName() {
+            return PrefDef.ExpCompilerClass.getPath();
         }
+
         /**
          * The <code>ExpCompiler.Factory</code>'s implementation of the
          * <code>ObjectFactory</code>'s abstract method which returns

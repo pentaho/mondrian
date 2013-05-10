@@ -12,6 +12,7 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.olap.Level;
+import mondrian.pref.*;
 import mondrian.rolap.RolapConnection.NonEmptyResult;
 import mondrian.rolap.RolapNative.*;
 import mondrian.rolap.cache.HardSmartCache;
@@ -27,9 +28,6 @@ import junit.framework.Assert;
 
 import org.apache.log4j.*;
 import org.apache.log4j.spi.LoggingEvent;
-
-import org.eigenbase.util.property.BooleanProperty;
-import org.eigenbase.util.property.StringProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,8 +62,8 @@ public class NonEmptyTest extends BatchTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
-        propSaver.set(propSaver.props.EnableNativeNonEmpty, true);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(true);
+        PrefDef.EnableNativeNonEmpty.with(propSaver).set(true);
     }
 
     @Override
@@ -119,11 +117,11 @@ public class NonEmptyTest extends BatchTestCase {
      * the result limit is exceeded.
      */
     public void testAnalyzerPerformanceIssue() {
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
-        propSaver.set(propSaver.props.EnableNativeTopCount, false);
-        propSaver.set(propSaver.props.EnableNativeFilter, true);
-        propSaver.set(propSaver.props.EnableNativeNonEmpty, false);
-        propSaver.set(propSaver.props.ResultLimit, 5000000);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(true);
+        PrefDef.EnableNativeTopCount.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(true);
+        PrefDef.EnableNativeNonEmpty.with(propSaver).set(false);
+        PrefDef.ResultLimit.with(propSaver).set(5000000);
 
         assertQueryReturns(
             "with set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Education Level], NonEmptyCrossJoin([*BASE_MEMBERS_Product], NonEmptyCrossJoin([*BASE_MEMBERS_Customers], [*BASE_MEMBERS_Time])))' "
@@ -726,7 +724,8 @@ public class NonEmptyTest extends BatchTestCase {
      * no exception is thrown.
      */
     public void testVirtualCube() {
-        if (propSaver.props.TestExpDependencies.get() > 0) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.server.TestExpDependencies > 0) {
             return;
         }
         LimitedQuery c = new LimitedQuery(
@@ -740,7 +739,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testVirtualCubeMembers() throws Exception {
-        if (propSaver.props.TestExpDependencies.get() > 0) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.server.TestExpDependencies > 0) {
             return;
         }
         // ok to use native sql optimization for members on a virtual cube
@@ -760,7 +760,7 @@ public class NonEmptyTest extends BatchTestCase {
      *  {{[Store Type].[Store Type].members}}
      */
     public void testNativeCJWithRedundantSetBraces() {
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -789,8 +789,8 @@ public class NonEmptyTest extends BatchTestCase {
         // Note: Both dimensions only have one hierarchy, which has the All
         // member. <Dimension>.Children is interpreted as the children of
         // the All member.
-        propSaver.set(propSaver.props.ExpandNonNative, true);
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -819,8 +819,8 @@ public class NonEmptyTest extends BatchTestCase {
     public void testExpandOneNonNativeInput() {
         // This query will not be evaluated natively unless the Filter
         // expression is expanded to a member list.
-        propSaver.set(propSaver.props.ExpandNonNative, true);
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -847,9 +847,9 @@ public class NonEmptyTest extends BatchTestCase {
      * containing large number of members.
      */
     public void testExpandNonNativeResourceLimitFailure() {
-        propSaver.set(propSaver.props.ExpandNonNative, true);
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
-        propSaver.set(propSaver.props.ResultLimit, 2);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(true);
+        PrefDef.ResultLimit.with(propSaver).set(2);
 
         try {
             executeQuery(
@@ -872,8 +872,8 @@ public class NonEmptyTest extends BatchTestCase {
         // This query will not be evaluated natively, even if the Hierarchize
         // expression is expanded to a member list. The reason is that the
         // expanded list contains ALL members.
-        propSaver.set(propSaver.props.ExpandNonNative, true);
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(true);
         checkNotNative(
             getTestContext(),
             1,
@@ -900,8 +900,8 @@ public class NonEmptyTest extends BatchTestCase {
         // This query will not be evaluated natively, even if the Hierarchize
         // expression is expanded to a member list. The reason is that the
         // expanded list contains ALL members.
-        propSaver.set(propSaver.props.ExpandNonNative, true);
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(true);
         checkNotNative(
             getTestContext(),
             1,
@@ -926,7 +926,7 @@ public class NonEmptyTest extends BatchTestCase {
      * native CJ is not used.
      */
     public void testExpandCalcMemberInputNECJ() {
-        propSaver.set(propSaver.props.ExpandNonNative, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
         checkNotNative(
             getTestContext(),
             1,
@@ -952,7 +952,7 @@ public class NonEmptyTest extends BatchTestCase {
      * {@link #testCjEnumCalcMembersBug()} test.
      */
     public void testExpandCalcMembers() {
-        propSaver.set(propSaver.props.ExpandNonNative, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
         checkNotNative(
             getTestContext(),
             9,
@@ -993,8 +993,8 @@ public class NonEmptyTest extends BatchTestCase {
      * inputs that preduce MemberList results.
      */
     public void testExpandNestedNonNativeInputs() {
-        propSaver.set(propSaver.props.ExpandNonNative, true);
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -1031,8 +1031,8 @@ public class NonEmptyTest extends BatchTestCase {
      * even when ExpandNonNative is true.
      */
     public void testExpandLowMaxConstraints() {
-        propSaver.set(propSaver.props.MaxConstraints, 2);
-        propSaver.set(propSaver.props.ExpandNonNative, true);
+        PrefDef.MaxConstraints.with(propSaver).set(2);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
         checkNotNative(
             getTestContext(),
             12,
@@ -1074,7 +1074,7 @@ public class NonEmptyTest extends BatchTestCase {
      * contain members from different levels, even if ExpandNonNative is set.
      */
     public void testExpandDifferentLevels() {
-        propSaver.set(propSaver.props.ExpandNonNative, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
         checkNotNative(
             getTestContext(),
             278,
@@ -1090,7 +1090,7 @@ public class NonEmptyTest extends BatchTestCase {
      * ExpandNonNative is set.
      */
     public void testExpandTupleInputs1() {
-        propSaver.set(propSaver.props.ExpandNonNative, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
         checkNotNative(
             getTestContext(),
             1,
@@ -1111,7 +1111,7 @@ public class NonEmptyTest extends BatchTestCase {
      * ExpandNonNative is set.
      */
     public void testExpandTupleInputs2() {
-        propSaver.set(propSaver.props.ExpandNonNative, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
         checkNotNative(
             getTestContext(),
             1,
@@ -1132,7 +1132,7 @@ public class NonEmptyTest extends BatchTestCase {
      * the input list is empty.
      */
     public void testExpandWithOneEmptyInput() {
-        propSaver.set(propSaver.props.ExpandNonNative, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
         boolean requestFreshConnection = true;
         // Query should return empty result.
         checkNative(
@@ -1161,7 +1161,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testExpandWithTwoEmptyInputs() {
         getConnection().getCacheControl(null).flushSchemaCache();
-        propSaver.set(propSaver.props.ExpandNonNative, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
         // Query should return empty result.
         checkNotNative(
             getTestContext(),
@@ -1191,7 +1191,7 @@ public class NonEmptyTest extends BatchTestCase {
      * evaluations will be turned off.
      */
     public void testEnumLowMaxConstraints() {
-        propSaver.set(propSaver.props.MaxConstraints, 2);
+        PrefDef.MaxConstraints.with(propSaver).set(2);
         checkNotNative(
             getTestContext(),
             12,
@@ -1246,7 +1246,7 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testAllMembersNECJ1() {
         // This query cannot be evaluated natively because of the "All" member.
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(true);
         checkNotNative(
             getTestContext(),
             1,
@@ -1272,7 +1272,7 @@ public class NonEmptyTest extends BatchTestCase {
         // Filter([Product].Children, Is
         // NotEmpty([Measures].[Unit Sales]))
         // which can be natively evaluated
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -1362,7 +1362,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
             + "  [Time].[1997].[Q1].[1])";
 
-        propSaver.set(propSaver.props.EnableNativeTopCount, true);
+        PrefDef.EnableNativeTopCount.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -1389,7 +1389,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "        3, [Measures].[Store Profit Rate] / 2) ON ROWS"
             + " from [Sales]";
 
-        propSaver.set(propSaver.props.EnableNativeTopCount, true);
+        PrefDef.EnableNativeTopCount.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -1688,11 +1688,9 @@ public class NonEmptyTest extends BatchTestCase {
      * use SQL even when all members are known
      */
     public void testCjEnumEnum() {
-        // Make sure maxConstraint settting is high enough
-        int minConstraints = 2;
-        if (propSaver.props.MaxConstraints.get() < minConstraints) {
-            propSaver.set(propSaver.props.MaxConstraints, minConstraints);
-        }
+        // Make sure maxConstraint setting is high enough
+        final StatementPref pref = StatementPref.instance();
+        propSaver.setMin(pref, PrefDef.MaxConstraints, 2);
         checkNative(
             getTestContext(),
             4,
@@ -1706,7 +1704,7 @@ public class NonEmptyTest extends BatchTestCase {
      * Set containing only null member should not prevent usage of native.
      */
     public void testCjNullInEnum() {
-        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, true);
+        PrefDef.IgnoreInvalidMembersDuringQuery.with(propSaver).set(true);
         checkNative(
             getTestContext(),
             20,
@@ -1733,11 +1731,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjDescendantsEnum() {
-        // Make sure maxConstraint settting is high enough
-        int minConstraints = 2;
-        if (propSaver.props.MaxConstraints.get() < minConstraints) {
-            propSaver.set(propSaver.props.MaxConstraints, minConstraints);
-        }
+        final StatementPref pref = StatementPref.instance();
+        propSaver.setMin(pref, PrefDef.MaxConstraints, 2);
         checkNative(
             getTestContext(),
             11,
@@ -1751,12 +1746,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjEnumChildren() {
-        // Make sure maxConstraint settting is high enough
-        // Make sure maxConstraint settting is high enough
-        int minConstraints = 2;
-        if (propSaver.props.MaxConstraints.get() < minConstraints) {
-            propSaver.set(propSaver.props.MaxConstraints, minConstraints);
-        }
+        final StatementPref pref = StatementPref.instance();
+        propSaver.setMin(pref, PrefDef.MaxConstraints, 2);
         checkNative(
             getTestContext(),
             3,
@@ -1777,10 +1768,10 @@ public class NonEmptyTest extends BatchTestCase {
         // Don't run the test if we're testing expression dependencies.
         // Expression dependencies cause spurious interval calls to
         // 'level.getMembers()' which create false negatives in this test.
-        if (propSaver.props.TestExpDependencies.get() > 0) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.server.TestExpDependencies > 0) {
             return;
         }
-
         LimitedQuery c = new LimitedQuery(
             getTestContext(),
             8,
@@ -1940,15 +1931,14 @@ public class NonEmptyTest extends BatchTestCase {
             + "    ISNULL(`store`.`store_city`) ASC, `store`.`store_city` ASC,\n"
             + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
 
-        if (propSaver.props.UseAggregates.get()
-            && propSaver.props.ReadAggregates.get())
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.UseAggregates && pref.ReadAggregates) {
             // slightly different sql expected, uses agg table now for join
             sql = sql.replaceAll(
                 "sales_fact_1997", "agg_c_14_sales_fact_1997");
         }
 
-        if (!propSaver.props.FilterChildlessSnowflakeMembers.get()) {
+        if (!pref.FilterChildlessSnowflakeMembers) {
             sql = sql.replaceAll(
                 "`product` as `product`, `product_class` as `product_class`",
                 "`product_class` as `product_class`, `product` as `product`");
@@ -1968,14 +1958,15 @@ public class NonEmptyTest extends BatchTestCase {
      * (1) Use IN list if possible(not possible if there are null values because
      *     NULLs in IN lists do not match)
      * (2) Group members sharing the same parent, including parents with NULLs.
-     * (3) If parent levels include NULLs, comparision includes any unique
+     * (3) If parent levels include NULLs, comparison includes any unique
      * level.
      */
     public void testMultiLevelMemberConstraintNullParent() {
         if (!isDefaultNullMemberRepresentation()) {
             return;
         }
-        if (!propSaver.props.FilterChildlessSnowflakeMembers.get()) {
+        final StatementPref pref = StatementPref.instance();
+        if (!pref.FilterChildlessSnowflakeMembers) {
             return;
         }
         String dimension =
@@ -2073,7 +2064,8 @@ public class NonEmptyTest extends BatchTestCase {
         if (!isDefaultNullMemberRepresentation()) {
             return;
         }
-        if (!propSaver.props.FilterChildlessSnowflakeMembers.get()) {
+        final StatementPref pref = StatementPref.instance();
+        if (!pref.FilterChildlessSnowflakeMembers) {
             return;
         }
         String dimension =
@@ -2164,7 +2156,8 @@ public class NonEmptyTest extends BatchTestCase {
         if (!isDefaultNullMemberRepresentation()) {
             return;
         }
-        if (!propSaver.props.FilterChildlessSnowflakeMembers.get()) {
+        final StatementPref pref = StatementPref.instance();
+        if (!pref.FilterChildlessSnowflakeMembers) {
             return;
         }
         String dimension =
@@ -2262,7 +2255,8 @@ public class NonEmptyTest extends BatchTestCase {
      * it shall not lookup additional members.
      */
     public void testLookupMemberCache() {
-        if (propSaver.props.TestExpDependencies.get() > 0) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.server.TestExpDependencies > 0) {
             // Dependency testing causes extra SQL reads, and screws up this
             // test.
             return;
@@ -2327,8 +2321,8 @@ public class NonEmptyTest extends BatchTestCase {
      * non-zero length before the non empty and 0 after the non empty.
      */
     public void testNonEmptyCrossJoinList() {
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, false);
-        propSaver.set(propSaver.props.EnableNativeNonEmpty, false);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(false);
+        PrefDef.EnableNativeNonEmpty.with(propSaver).set(false);
 
         executeQuery(
             "select non empty CrossJoin([Customers].[Name].Members, "
@@ -2366,7 +2360,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testLevelMembers() {
-        if (propSaver.props.TestExpDependencies.get() > 0) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.server.TestExpDependencies > 0) {
             // Dependency testing causes extra SQL reads, and screws up this
             // test.
             return;
@@ -2409,7 +2404,7 @@ public class NonEmptyTest extends BatchTestCase {
         lmc = scf.getLevelMembersConstraint(context);
         List<RolapMember> list =
             smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
-        if (propSaver.props.EnableRolapCubeMemberCache.get()) {
+        if (pref.EnableRolapCubeMemberCache) {
             assertNotNull(list);
             assertEquals(20, list.size());
         }
@@ -2467,7 +2462,8 @@ public class NonEmptyTest extends BatchTestCase {
         TupleConstraint lmc = scf.getLevelMembersConstraint(null);
         List<RolapMember> list =
             smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
-        if (propSaver.props.EnableRolapCubeMemberCache.get()) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.EnableRolapCubeMemberCache) {
             assertNotNull(list);
             assertEquals(10281, list.size());
         }
@@ -2590,7 +2586,8 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testMemberChildrenNameCol() {
         // Expression dependency testing causes false negatives.
-        if (propSaver.props.TestExpDependencies.get() > 0) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.server.TestExpDependencies > 0) {
             return;
         }
         LimitedQuery c = new LimitedQuery(
@@ -2614,9 +2611,10 @@ public class NonEmptyTest extends BatchTestCase {
      * hierarchy]</code> was put into the slicer.
      */
     public void testCrossjoin() {
-        if (propSaver.props.TestExpDependencies.get() > 0) {
-            // Dependency testing causes extra SQL reads, and makes this
-            // test fail.
+        final StatementPref pref = StatementPref.instance();
+        if (pref.server.TestExpDependencies > 0) {
+            // Dependency testing causes extra SQL reads, and makes this test
+            // fail.
             return;
         }
 
@@ -2643,7 +2641,8 @@ public class NonEmptyTest extends BatchTestCase {
         // Don't run the test if we're testing expression dependencies.
         // Expression dependencies cause spurious interval calls to
         // 'level.getMembers()' which create false negatives in this test.
-        if (propSaver.props.TestExpDependencies.get() > 0) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.server.TestExpDependencies > 0) {
             return;
         }
 
@@ -2775,8 +2774,7 @@ public class NonEmptyTest extends BatchTestCase {
         // for this test, verify that no alert is raised even though
         // native evaluation isn't supported, because query
         // doesn't use explicit NonEmptyCrossJoin
-        propSaver.set(
-            propSaver.props.AlertNativeEvaluationUnsupported, "ERROR");
+        PrefDef.AlertNativeEvaluationUnsupported.with(propSaver).set("ERROR");
         // native cross join cannot be used due to AllMembers
         // TODO: this query appears to be supported in native
         checkNotNative(
@@ -2811,10 +2809,11 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
         final BooleanProperty enableProperty =
-            propSaver.props.EnableNativeCrossJoin;
+            PrefDef.EnableNativeCrossJoin;
         final StringProperty alertProperty =
-            propSaver.props.AlertNativeEvaluationUnsupported;
-        if (!enableProperty.get()) {
+            PrefDef.AlertNativeEvaluationUnsupported;
+        final StatementPref pref = StatementPref.instance();
+        if (!enableProperty.get(pref)) {
             // When native cross joins are explicitly disabled, no alerts
             // are supposed to be raised.
             return;
@@ -2875,8 +2874,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         // verify that exactly one warning is posted but execution succeeds
         // if alerting is set to WARN
-        propSaver.set(
-            alertProperty, org.apache.log4j.Level.WARN.toString());
+        propSaver.set(alertProperty, org.apache.log4j.Level.WARN.toString());
         try {
             checkNotNative(testContext, 3, mdx);
         } finally {
@@ -2891,8 +2889,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         // verify that no warning is posted if native evaluation is
         // explicitly disabled
-        propSaver.set(
-            alertProperty, org.apache.log4j.Level.WARN.toString());
+        propSaver.set(alertProperty, org.apache.log4j.Level.WARN.toString());
         propSaver.set(enableProperty, false);
         try {
             checkNotNative(testContext, 3, mdx);
@@ -3012,8 +3009,8 @@ public class NonEmptyTest extends BatchTestCase {
         // make sure NECJ is forced to be non-native
         // before the fix, the query is natively evaluated and result
         // has empty rows for [Store Type].[All Store Types].[HeadQuarters]
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
-        propSaver.set(propSaver.props.ExpandNonNative, true);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(true);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
         checkNotNative(
             getTestContext(),
             9,
@@ -3053,11 +3050,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjEnumEmptyCalcMembers() {
-        // Make sure maxConstraint settting is high enough
-        int minConstraints = 3;
-        if (propSaver.props.MaxConstraints.get() < minConstraints) {
-            propSaver.set(propSaver.props.MaxConstraints, minConstraints);
-        }
+        propSaver.setMin(StatementPref.instance(), PrefDef.MaxConstraints, 3);
 
         // enumerated list of calculated members results in some empty cells
         checkNotNative(
@@ -3165,12 +3158,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCrossJoinNamedSets2() {
-        // Make sure maxConstraint settting is high enough
-        int minConstraints = 3;
-        if (propSaver.props.MaxConstraints.get() < minConstraints) {
-            propSaver.set(propSaver.props.MaxConstraints, minConstraints);
-        }
-
+        propSaver.setMin(StatementPref.instance(), PrefDef.MaxConstraints, 3);
         checkNative(
             getTestContext(),
             3,
@@ -3200,11 +3188,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCrossJoinSetWithCrossProdMembers() {
-        // Make sure maxConstraint settting is high enough
-        int minConstraints = 6;
-        if (propSaver.props.MaxConstraints.get() < minConstraints) {
-            propSaver.set(propSaver.props.MaxConstraints, minConstraints);
-        }
+        propSaver.setMin(StatementPref.instance(), PrefDef.MaxConstraints, 6);
 
         // members in set are a cross product of (1997, 1998) and (Q1, Q2, Q3)
         checkNative(
@@ -3220,11 +3204,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCrossJoinSetWithSameParent() {
-        // Make sure maxConstraint settting is high enough
-        int minConstraints = 2;
-        if (propSaver.props.MaxConstraints.get() < minConstraints) {
-            propSaver.set(propSaver.props.MaxConstraints, minConstraints);
-        }
+        propSaver.setMin(StatementPref.instance(), PrefDef.MaxConstraints, 2);
 
         // members in set have the same parent
         checkNative(
@@ -3240,11 +3220,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCrossJoinSetWithUniqueLevel() {
-        // Make sure maxConstraint settting is high enough
-        int minConstraints = 2;
-        if (propSaver.props.MaxConstraints.get() < minConstraints) {
-            propSaver.set(propSaver.props.MaxConstraints, minConstraints);
-        }
+        propSaver.setMin(StatementPref.instance(), PrefDef.MaxConstraints, 2);
 
         // members in set have different parents but there is a unique level
         checkNative(
@@ -3331,11 +3307,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCrossJoinEvaluatorContext2() {
-        // Make sure maxConstraint settting is high enough
-        int minConstraints = 2;
-        if (propSaver.props.MaxConstraints.get() < minConstraints) {
-            propSaver.set(propSaver.props.MaxConstraints, minConstraints);
-        }
+        propSaver.setMin(StatementPref.instance(), PrefDef.MaxConstraints, 2);
 
         // calculated measure contains a calculated member
         assertQueryReturns(
@@ -3538,7 +3510,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     private void checkIndependentSlicerMemberNative(boolean useNative) {
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, useNative);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(useNative);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -3562,7 +3534,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testDependentSlicerMemberNonNative() {
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, false);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(false);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -3580,7 +3552,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testDependentSlicerMemberNative() {
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -3700,13 +3672,15 @@ public class NonEmptyTest extends BatchTestCase {
     /**
      * Test that executes &lt;Level&gt;.Members and applies a non-empty
      * constraint. Must work regardless of whether
-     * {@link MondrianProperties#EnableNativeNonEmpty native} is enabled.
-     * Testcase for bug
-     * 1722959, "NON EMPTY Level.MEMBERS fails if nonempty.enable=false"
+     * {@link PrefDef#EnableNativeNonEmpty native} is enabled.
+     *
+     * <p>Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-293">MONDRIAN-293,
+     * "NON EMPTY Level.MEMBERS fails if nonempty.enable=false"</a>.</p>
      */
     public void testNonEmptyLevelMembers() {
-        propSaver.set(propSaver.props.EnableNativeNonEmpty, false);
-        propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, true);
+        PrefDef.EnableNativeNonEmpty.with(propSaver).set(false);
+        PrefDef.EnableNonEmptyOnAllAxis.with(propSaver).set(true);
         assertQueryReturns(
             "WITH MEMBER [Measures].[One] AS '1' "
             + "SELECT "
@@ -3751,7 +3725,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #1: 263,793.22\n");
 
         if (Bug.BugMondrian446Fixed) {
-            propSaver.props.EnableNativeNonEmpty.set(true);
+            PrefDef.EnableNativeNonEmpty.with(propSaver).set(true);
             assertQueryReturns(
                 "WITH MEMBER [Measures].[One] AS '1' "
                 + "SELECT "
@@ -4127,8 +4101,8 @@ public class NonEmptyTest extends BatchTestCase {
         // run an mdx query with the default NullMemberRepresentation
         executeQuery(preMdx);
 
-        propSaver.set(propSaver.props.NullMemberRepresentation, "~Missing ");
-        propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, true);
+        PrefDef.NullMemberRepresentation.with(propSaver).set("~Missing ");
+        PrefDef.EnableNonEmptyOnAllAxis.with(propSaver).set(true);
         RolapUtil.reloadNullLiteral();
         executeQuery(mdx);
     }
@@ -4425,8 +4399,9 @@ public class NonEmptyTest extends BatchTestCase {
             + "non empty [Customers].[name].members on 1 "
             + "from Sales";
 
+        final StatementPref pref = StatementPref.instance();
         final String mysqlQuery =
-            propSaver.props.UseAggregates.get()
+            pref.UseAggregates
             ? "select\n"
             + "    `customer`.`country` as `c0`,\n"
             + "    `customer`.`state_province` as `c1`,\n"
@@ -4503,8 +4478,9 @@ public class NonEmptyTest extends BatchTestCase {
         if (!Bug.FetchMembersOptimizationFixed) {
             return;
         }
-        if (propSaver.props.UseAggregates.get()) {
-            // This test can't work with aggregates becaused
+        final StatementPref pref = StatementPref.instance();
+        if (pref.UseAggregates) {
+            // This test can't work with aggregates because
             // the aggregate table doesn't include member properties.
             return;
         }
@@ -4612,7 +4588,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testMeasureConstraintsInACrossjoinHaveCorrectResults() {
         //http://jira.pentaho.com/browse/MONDRIAN-715
-        propSaver.set(propSaver.props.EnableNativeNonEmpty, true);
+        PrefDef.EnableNativeNonEmpty.with(propSaver).set(true);
         String mdx =
             "with "
             + "  member [Measures].[aa] as '([Measures].[Store Cost],[Gender].[M])'"
@@ -4684,7 +4660,7 @@ public class NonEmptyTest extends BatchTestCase {
      * the list by removeCalculatedMembers, and thus the assumption was wrong.
      */
     public void testCalculatedDefaultMeasureOnVirtualCubeNoThrowException() {
-        propSaver.set(propSaver.props.EnableNativeNonEmpty, true);
+        PrefDef.EnableNativeNonEmpty.with(propSaver).set(true);
         final TestContext context =
             TestContext.instance().withSchema(
                 "<Schema name=\"FoodMart\">"
@@ -4744,8 +4720,8 @@ public class NonEmptyTest extends BatchTestCase {
      * JPivot"</a>.
      */
     public void testExpandNonNativeWithEnableNativeCrossJoin() {
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
-        propSaver.set(propSaver.props.ExpandNonNative, true);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(true);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
 
         String mdx =
             "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS,"
@@ -4808,8 +4784,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #4: 1\n"
             + "Row #4: 21\n"
             + "Row #4: \n";
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
-        propSaver.set(propSaver.props.ExpandNonNative, true);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(true);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
         checkNative(
@@ -4875,7 +4851,8 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testFilterChildlessSnowflakeMembers2() {
-        if (propSaver.props.FilterChildlessSnowflakeMembers.get()
+        final StatementPref pref = StatementPref.instance();
+        if (pref.FilterChildlessSnowflakeMembers
             || !Bug.ShowChildlessSnowflakeMembersFixed)
         {
             // If FilterChildlessSnowflakeMembers is true, then
@@ -4895,7 +4872,7 @@ public class NonEmptyTest extends BatchTestCase {
         if (!Bug.ShowChildlessSnowflakeMembersFixed) {
             return;
         }
-        propSaver.set(propSaver.props.FilterChildlessSnowflakeMembers, false);
+        PrefDef.FilterChildlessSnowflakeMembers.with(propSaver).set(false);
         final String sql =
             "select\n"
             + "    `product_class`.`product_family` as `c0`\n"

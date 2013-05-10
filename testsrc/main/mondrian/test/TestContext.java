@@ -18,6 +18,7 @@ import mondrian.olap.DriverManager;
 import mondrian.olap.*;
 import mondrian.olap.Position;
 import mondrian.olap.fun.FunUtil;
+import mondrian.pref.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.spi.*;
@@ -310,9 +311,9 @@ public class TestContext {
      * FoodMart database.
      *
      * The algorithm is as follows:<ul>
-     * <li>Starts with {@link MondrianProperties#TestConnectString}, if it is
+     * <li>Starts with {@link PrefDef#TestConnectString}, if it is
      *     set.</li>
-     * <li>If {@link MondrianProperties#FoodmartJdbcURL} is set, this
+     * <li>If {@link PrefDef#FoodmartJdbcURL} is set, this
      *     overrides the <code>Jdbc</code> property.</li>
      * <li>If the <code>catalog</code> URL is unset or invalid, it assumes that
      *     we are at the root of the source tree, and references
@@ -320,8 +321,8 @@ public class TestContext {
      * </ul>
      */
     public static String getDefaultConnectString() {
-        String connectString =
-            MondrianProperties.instance().TestConnectString.get();
+        final ServerPref pref = ServerPref.instance();
+        String connectString = pref.TestConnectString;
         final Util.PropertyList connectProperties;
         if (connectString == null || connectString.equals("")) {
             connectProperties = new Util.PropertyList();
@@ -329,16 +330,15 @@ public class TestContext {
         } else {
             connectProperties = Util.parseConnectString(connectString);
         }
-        String jdbcURL = MondrianProperties.instance().FoodmartJdbcURL.get();
+        String jdbcURL = pref.FoodmartJdbcURL;
         if (jdbcURL != null) {
             connectProperties.put("Jdbc", jdbcURL);
         }
-        String jdbcUser = MondrianProperties.instance().TestJdbcUser.get();
+        String jdbcUser = pref.TestJdbcUser;
         if (jdbcUser != null) {
             connectProperties.put("JdbcUser", jdbcUser);
         }
-        String jdbcPassword =
-            MondrianProperties.instance().TestJdbcPassword.get();
+        String jdbcPassword = pref.TestJdbcPassword;
         if (jdbcPassword != null) {
             connectProperties.put("JdbcPassword", jdbcPassword);
         }
@@ -441,8 +441,7 @@ public class TestContext {
     public Util.PropertyList getConnectionProperties() {
         final Util.PropertyList propertyList =
             Util.parseConnectString(getDefaultConnectString());
-        if (MondrianProperties.instance().TestHighCardinalityDimensionList
-            .get() != null
+        if (ServerPref.instance().TestHighCardinalityDimensionList != null
             && propertyList.get(
                 RolapConnectionProperties.DynamicSchemaProcessor.name())
             == null)
@@ -715,7 +714,7 @@ public class TestContext {
         // If we're deep testing, check that we never return the dummy null
         // value when cells are null. TestExpDependencies isn't the perfect
         // switch to enable this, but it will do for now.
-        if (MondrianProperties.instance().TestExpDependencies.booleanValue()) {
+        if (ServerPref.instance().TestExpDependencies > 0) {
             assertResultValid(result);
         }
         return result;
@@ -740,7 +739,7 @@ public class TestContext {
         // If we're deep testing, check that we never return the dummy null
         // value when cells are null. TestExpDependencies isn't the perfect
         // switch to enable this, but it will do for now.
-        if (MondrianProperties.instance().TestExpDependencies.booleanValue()) {
+        if (ServerPref.instance().TestExpDependencies > 0) {
             assertCellSetValid(cellSet);
         }
         return cellSet;
@@ -1042,12 +1041,10 @@ public class TestContext {
 
     /**
      * Massages the actual result of executing a query to handle differences in
-     * unique names betweeen old and new behavior.
+     * unique names between old and new behavior.
      *
      * <p>Since the new naming is now the default, reference logs
      * should be in terms of the new naming.
-     *
-     * @see mondrian.olap.MondrianProperties#SsasCompatibleNaming
      *
      * @param actual Actual result
      * @return Expected result massaged for backwards compatibility
@@ -1167,8 +1164,6 @@ public class TestContext {
      * <p>So, {@code upgradeQuery("[Gender]")} returns
      * "[Gender].[Gender]" for old behavior,
      * "[Gender].[Gender].[Gender]" for new behavior.</p>
-     *
-     * @see mondrian.olap.MondrianProperties#SsasCompatibleNaming
      *
      * @param queryString Original query
      * @return Massaged query for backwards compatibility
@@ -2114,9 +2109,7 @@ public class TestContext {
             if (jdbcDrivers != null) {
                 RolapUtil.loadDrivers(jdbcDrivers);
             }
-            final String jdbcDriversProp =
-                MondrianProperties.instance().JdbcDrivers.get();
-            RolapUtil.loadDrivers(jdbcDriversProp);
+            RolapUtil.loadDrivers(ServerPref.instance().JdbcDrivers);
 
             jdbcConn = java.sql.DriverManager.getConnection(
                 connectProperties.get(RolapConnectionProperties.Jdbc.name()),
@@ -2790,7 +2783,7 @@ public class TestContext {
     /**
      * Schema processor that flags dimensions as high-cardinality if they
      * appear in the list of values in the
-     * {@link MondrianProperties#TestHighCardinalityDimensionList} property.
+     * {@link PrefDef#TestHighCardinalityDimensionList} property.
      * It's a convenient way to run the whole suite against high-cardinality
      * dimensions without modifying FoodMart.mondrian.xml.
      */
@@ -2803,8 +2796,7 @@ public class TestContext {
         {
             String s = super.filter(schemaUrl, connectInfo, stream);
             final String highCardDimensionList =
-                MondrianProperties.instance()
-                    .TestHighCardinalityDimensionList.get();
+                ServerPref.instance().TestHighCardinalityDimensionList;
             if (highCardDimensionList != null
                 && !highCardDimensionList.equals(""))
             {

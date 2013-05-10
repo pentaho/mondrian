@@ -11,6 +11,7 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.pref.PrefDef;
 import mondrian.rolap.BatchTestCase;
 import mondrian.spi.Dialect;
 
@@ -173,7 +174,7 @@ public class TestCalculatedMembers extends BatchTestCase {
         // should succeed if we switch the property to ignore invalid
         // members; the create will succeed and in the select, it will
         // return null for the member and therefore a 0 in the calculation
-        propSaver.set(propSaver.props.IgnoreInvalidMembers, true);
+        PrefDef.IgnoreInvalidMembers.with(propSaver).set(true);
         salesCube.createCalculatedMember(
             "<CalculatedMember name='Profit4'"
             + "  dimension='Measures'"
@@ -1297,7 +1298,7 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     public void testCalculatedMemberMSASCompatibility() {
-        propSaver.set(propSaver.props.CaseSensitive, false);
+        PrefDef.CompareSiblingsByOrderKey.with(propSaver).set(false);
         assertQueryReturns(
             "with "
             + "member gender.calculated as 'gender.m' "

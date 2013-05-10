@@ -10,6 +10,7 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
+import mondrian.pref.PrefDef;
 import mondrian.rolap.BatchTestCase;
 import mondrian.rolap.RolapConnection;
 import mondrian.server.Locus;
@@ -27,11 +28,11 @@ import mondrian.util.Bug;
 public class NativizeSetFunDefTest extends BatchTestCase {
     public void setUp() throws Exception {
         super.setUp();
-        propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, true);
-        propSaver.set(propSaver.props.NativizeMinThreshold, 0);
-        propSaver.set(propSaver.props.UseAggregates, false);
-        propSaver.set(propSaver.props.ReadAggregates, false);
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
+        PrefDef.EnableNonEmptyOnAllAxis.with(propSaver).set(true);
+        PrefDef.NativizeMinThreshold.with(propSaver).set(0);
+        PrefDef.UseAggregates.with(propSaver).set(false);
+        PrefDef.ReadAggregates.with(propSaver).set(false);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(true);
     }
 
     public void tearDown() throws Exception {
@@ -39,8 +40,8 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testIsNoOpWithAggregatesTablesOn() {
-        propSaver.set(propSaver.props.UseAggregates, true);
-        propSaver.set(propSaver.props.ReadAggregates, true);
+        PrefDef.UseAggregates.with(propSaver).set(true);
+        PrefDef.ReadAggregates.with(propSaver).set(true);
         checkNotNative(
             "with  member [gender].[agg] as"
             + "  'aggregate({[gender].[gender].members},[measures].[unit sales])'"
@@ -55,7 +56,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
         //    Year: 2 (level * gender cardinality:2)
         //    Quarter: 16 (level * gender cardinality:2)
         //    Month: 48 (level * gender cardinality:2)
-        propSaver.set(propSaver.props.NativizeMinThreshold, 17);
+        PrefDef.NativizeMinThreshold.with(propSaver).set(17);
         String mdx =
             "select NativizeSet("
             + "CrossJoin( "
@@ -73,7 +74,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
         //    Year: 2 (level * gender cardinality:2)
         //    Quarter: 16 (level * gender cardinality:2)
         //    Month: 48 (level * gender cardinality:2)
-        propSaver.set(propSaver.props.NativizeMinThreshold, 50);
+        PrefDef.NativizeMinThreshold.with(propSaver).set(50);
         String mdx =
             "select NativizeSet("
             + "CrossJoin( "
@@ -87,7 +88,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testNamedSetLowCardinality() {
-        propSaver.set(propSaver.props.NativizeMinThreshold, Integer.MAX_VALUE);
+        PrefDef.NativizeMinThreshold.with(propSaver).set(Integer.MAX_VALUE);
         checkNotNative(
             "with "
             + "set [levelMembers] as 'crossjoin( gender.gender.members, "
@@ -97,7 +98,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testCrossjoinWithNamedSetLowCardinality() {
-        propSaver.set(propSaver.props.NativizeMinThreshold, Integer.MAX_VALUE);
+        PrefDef.NativizeMinThreshold.with(propSaver).set(Integer.MAX_VALUE);
         checkNotNative(
             "with "
             + "set [genderMembers] as 'gender.gender.members'"
@@ -131,7 +132,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + ")) on 0 from sales";
 
         // Set limit to zero (effectively, no limit)
-        propSaver.set(propSaver.props.NativizeMaxResults, 0);
+        PrefDef.NativizeMaxResults.with(propSaver).set(0);
         checkNative(mdx);
     }
 
@@ -147,7 +148,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + ")) on 0 from sales";
 
         // Set limit to exact size of result
-        propSaver.set(propSaver.props.NativizeMaxResults, 6);
+        PrefDef.NativizeMaxResults.with(propSaver).set(6);
         checkNative(mdx);
 
         try {
@@ -155,7 +156,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             // so it will have 4 rows.  Setting the limit to 3 means
             // that the exception will be thrown before calculated
             // members are merged into the result.
-            propSaver.set(propSaver.props.NativizeMaxResults, 3);
+            PrefDef.NativizeMaxResults.with(propSaver).set(3);
             checkNative(mdx);
             fail("Should have thrown ResourceLimitExceededException.");
         } catch (ResourceLimitExceededException expected) {
@@ -175,14 +176,14 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + ")) on 0 from sales";
 
         // Set limit to exact size of result
-        propSaver.set(propSaver.props.NativizeMaxResults, 6);
+        PrefDef.NativizeMaxResults.with(propSaver).set(6);
         checkNative(mdx);
 
         try {
             // The native list doesn't contain the calculated members,
             // so setting the limit to 5 means the exception won't be
             // thrown until calculated members are merged into the result.
-            propSaver.set(propSaver.props.NativizeMaxResults, 5);
+            PrefDef.NativizeMaxResults.with(propSaver).set(5);
             checkNative(mdx);
             fail("Should have thrown ResourceLimitExceededException.");
         } catch (ResourceLimitExceededException expected) {
@@ -268,7 +269,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
 
         // Set the threshold high; same mdx should no longer be natively
         // evaluated.
-        propSaver.set(propSaver.props.NativizeMinThreshold, 200000);
+        PrefDef.NativizeMinThreshold.with(propSaver).set(200000);
         checkNotNative(mdx);
     }
 
@@ -1028,8 +1029,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testDoesNoHarmToPlainEnumeratedMembers() {
-        propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, false);
-
+        PrefDef.EnableNonEmptyOnAllAxis.with(propSaver).set(false);
         assertQueryIsReWritten(
             "SELECT NativizeSet({Gender.M,Gender.F}) on 0 from sales",
             "select "
@@ -1039,8 +1039,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testDoesNoHarmToPlainDotMembers() {
-        propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, false);
-
+        PrefDef.EnableNonEmptyOnAllAxis.with(propSaver).set(false);
         assertQueryIsReWritten(
             "select NativizeSet({[Marital Status].[Marital Status].members}) "
             + "on 0 from sales",
@@ -1050,8 +1049,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testTransformsCallToRemoveDotMembersInCrossJoin() {
-        propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, false);
-
+        PrefDef.EnableNonEmptyOnAllAxis.with(propSaver).set(false);
         assertQueryIsReWritten(
             "select NativizeSet(CrossJoin({Gender.M,Gender.F},{[Marital Status].[Marital Status].members})) on 0 from sales",
             "with member [Customer].[Marital Status].[_Nativized_Member_Customer_Marital Status_Marital Status_] as '[Customer].[Marital Status].DefaultMember'\n"
@@ -1063,8 +1061,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void DISABLED_testTransformsWithSeveralDimensionsNestedOnRows() {
-        propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, false);
-
+        PrefDef.EnableNonEmptyOnAllAxis.with(propSaver).set(false);
         assertQueryIsReWritten(
             "WITH SET [COG_OQP_INT_s4] AS 'CROSSJOIN({[Education Level].[Graduate Degree]},"
             + " [COG_OQP_INT_s3])'"
@@ -1093,8 +1090,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testTransformsComplexQueryWithGenerateAndAggregate() {
-        propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, false);
-
+        PrefDef.EnableNonEmptyOnAllAxis.with(propSaver).set(false);
         assertQueryIsReWritten(
             "WITH MEMBER [Product].[COG_OQP_INT_umg1] AS "
             + "'IIF([Measures].CURRENTMEMBER IS [Measures].[Unit Sales], ([Product].[COG_OQP_INT_m2], [Measures].[Unit Sales]),"
@@ -1143,7 +1139,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testMultipleHierarchySsasTrue() {
-        propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, false);
+        PrefDef.EnableNonEmptyOnAllAxis.with(propSaver).set(false);
 
         // Ssas compatible: time.[weekly].[week]
         // Use fresh connection -- unique names are baked in when schema is
@@ -1241,7 +1237,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testEvaluationIsNonNativeWhenBelowHighcardThreshoold() {
-        propSaver.set(propSaver.props.NativizeMinThreshold, 10000);
+        PrefDef.NativizeMinThreshold.with(propSaver).set(10000);
         SqlPattern[] patterns = {
             new SqlPattern(
                 Dialect.DatabaseProduct.ACCESS,
@@ -1312,7 +1308,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testOneAxisHighAndOneLowGetsNativeEvaluation() {
-        propSaver.set(propSaver.props.NativizeMinThreshold, 19);
+        PrefDef.NativizeMinThreshold.with(propSaver).set(19);
         checkNative(
             "select NativizeSet("
             + "Crossjoin([Gender].[Gender].members,"
@@ -1323,7 +1319,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void disabled_testAggregatesInSparseResultsGetSortedCorrectly() {
-        propSaver.set(propSaver.props.NativizeMinThreshold, 0);
+        PrefDef.NativizeMinThreshold.with(propSaver).set(0);
         checkNative(
             "select non empty NativizeSet("
             + "Crossjoin({[Store Type].[Store Type].members,[Store Type].[all store types]},"
@@ -1348,7 +1344,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testAggregatedCrossjoinWithZeroMembersInNativeList() {
-        propSaver.set(propSaver.props.NativizeMinThreshold, 0);
+        PrefDef.NativizeMinThreshold.with(propSaver).set(0);
         checkNative(
             "with"
             + " member [gender].[agg] as"
@@ -1490,12 +1486,8 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             return;
         }
         // MONDRIAN-1404 use case
-        propSaver.set(
-            propSaver.props.GenerateFormattedSql,
-            true);
-        propSaver.set(
-            propSaver.props.UseAggregates,
-            false);
+        PrefDef.GenerateFormattedSql.with(propSaver).set(true);
+        PrefDef.UseAggregates.with(propSaver).set(false);
         final String mdx =
             "select NON EMPTY [Customers].[USA].[CA].[San Francisco].Children ON COLUMNS \n"
             + "from [Sales] \n"
@@ -1571,12 +1563,8 @@ public class NativizeSetFunDefTest extends BatchTestCase {
         if (!Bug.BugMondrian1420Fixed) {
             return;
         }
-        propSaver.set(
-            propSaver.props.GenerateFormattedSql,
-            true);
-        propSaver.set(
-            propSaver.props.UseAggregates,
-            false);
+        PrefDef.GenerateFormattedSql.with(propSaver).set(true);
+        PrefDef.UseAggregates.with(propSaver).set(false);
         final String mdx =
             "select TopCount([Customers].[Name].members, 5, measures.[unit sales]) ON COLUMNS \n"
             + "  from sales where \n"
@@ -1659,12 +1647,8 @@ public class NativizeSetFunDefTest extends BatchTestCase {
         if (!Bug.BugMondrian1420Fixed) {
             return;
         }
-        propSaver.set(
-            propSaver.props.GenerateFormattedSql,
-            true);
-        propSaver.set(
-            propSaver.props.UseAggregates,
-            false);
+        PrefDef.GenerateFormattedSql.with(propSaver).set(true);
+        PrefDef.UseAggregates.with(propSaver).set(false);
         final String mdx =
             "select TopCount([Customers].[Name].members, 5, "
             + "measures.[unit sales]) ON COLUMNS \n"

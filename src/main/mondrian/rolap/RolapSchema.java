@@ -14,6 +14,7 @@ import mondrian.olap.*;
 import mondrian.olap.Member;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
+import mondrian.pref.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.rolap.aggmatcher.JdbcSchema;
@@ -52,6 +53,8 @@ public class RolapSchema extends OlapElementBase implements Schema {
     static final Logger LOGGER = Logger.getLogger(RolapSchema.class);
 
     final String name;
+    public final SchemaPref pref;
+    final RolapNativeRegistry nativeRegistry;
 
     /**
      * Internal use only.
@@ -174,6 +177,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
         Larder larder)
     {
         this.id = Util.generateUuidString();
+        this.pref = Prefs.schema(Prefs.server());
         this.key = key;
         this.locales = locales;
         this.md5Bytes = md5Bytes;
@@ -209,6 +213,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
         } else {
             warningList = null;
         }
+        nativeRegistry = new RolapNativeRegistry(pref);
     }
 
     public String getUniqueName() {
@@ -617,7 +622,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
         } else {
             SqlMemberSource source = new SqlMemberSource(hierarchy);
 
-            if (MondrianProperties.instance().DisableCaching.get()) {
+            if (ServerPref.instance().DisableCaching) {
                 // If the cell cache is disabled, we can't cache
                 // the members or else we get undefined results,
                 // depending on the functions used and all.
@@ -760,8 +765,6 @@ public class RolapSchema extends OlapElementBase implements Schema {
     public Collection<RolapStar> getStars() {
         return getRolapStarRegistry().getStars();
     }
-
-    final RolapNativeRegistry nativeRegistry = new RolapNativeRegistry();
 
     RolapNativeRegistry getNativeRegistry() {
         return nativeRegistry;

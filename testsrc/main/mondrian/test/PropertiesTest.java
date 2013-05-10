@@ -4,12 +4,13 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.pref.StatementPref;
 
 /**
  * Tests intrinsic member and cell properties as specified in OLE DB for OLAP
@@ -34,8 +35,8 @@ public class PropertiesTest extends FoodMartTestCase {
             scr.getMemberByUniqueName(
                 Id.Segment.toList("Customers", "All Customers", "USA", "CA"),
                 true);
-        final boolean caseSensitive =
-            MondrianProperties.instance().CaseSensitive.get();
+        final StatementPref pref = StatementPref.instance();
+        final boolean caseSensitive = pref.CaseSensitive;
 
         String stringPropValue;
         Integer intPropValue;
@@ -281,7 +282,8 @@ public class PropertiesTest extends FoodMartTestCase {
             0.1);
 
         // Case sensitivity.
-        if (MondrianProperties.instance().CaseSensitive.get()) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.CaseSensitive) {
             assertNull(cell.getPropertyValue("cell_ordinal"));
             assertNull(cell.getPropertyValue("font_flags"));
             assertNull(cell.getPropertyValue("format_string"));

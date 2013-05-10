@@ -11,6 +11,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
@@ -157,7 +158,7 @@ public class VirtualCubeTest extends BatchTestCase {
             "select from [Sales vs Warehouse] "
             + "where measures.[Profit]";
 
-        if (MondrianProperties.instance().CaseSensitive.get()) {
+        if (StatementPref.instance().CaseSensitive) {
             testContext.assertQueryThrows(
                 "select from [Sales vs Warehouse]",
                 "Default measure 'PROFIT' not found");
@@ -919,9 +920,8 @@ public class VirtualCubeTest extends BatchTestCase {
             return;
         }
 
-        if (!MondrianProperties.instance().EnableNativeCrossJoin.get()
-            && !MondrianProperties.instance().EnableNativeNonEmpty.get())
-        {
+        final ServerPref pref = StatementPref.instance().server;
+        if (!pref.EnableNativeCrossJoin && !pref.EnableNativeNonEmpty) {
             // Only run the tests if either native CrossJoin or native NonEmpty
             // is enabled.
             return;
@@ -945,7 +945,7 @@ public class VirtualCubeTest extends BatchTestCase {
 
         String derbyNecjSql1, derbyNecjSql2;
 
-        if (MondrianProperties.instance().EnableNativeCrossJoin.get()) {
+        if (pref.EnableNativeCrossJoin) {
             derbyNecjSql1 =
                 "select "
                 + "\"product_class\".\"product_family\", "
@@ -1194,7 +1194,7 @@ public class VirtualCubeTest extends BatchTestCase {
      * cube is correct.  The joins shouldn't be cartesian product.
      */
     public void testNonEmptyCJConstraintOnVirtualCube() {
-        if (!MondrianProperties.instance().EnableNativeCrossJoin.get()) {
+        if (!StatementPref.instance().server.EnableNativeCrossJoin) {
             // Generated SQL is different if NonEmptyCrossJoin is evaluated in
             // memory.
             return;
@@ -1347,7 +1347,7 @@ public class VirtualCubeTest extends BatchTestCase {
             + "Row #10: 38,709.15\n"
             + "Row #11: 9,705.561\n"
             + "Row #11: 41,484.40\n";
-        propSaver.set(propSaver.props.GenerateFormattedSql, true);
+        PrefDef.GenerateFormattedSql.with(propSaver).set(true);
         assertQuerySql(getTestContext(), query, mysqlPattern, true);
         assertQueryReturns(query, result);
     }
@@ -1357,7 +1357,7 @@ public class VirtualCubeTest extends BatchTestCase {
      * cube is correct.  The joins shouldn't be cartesian product.
      */
     public void testNonEmptyConstraintOnVirtualCubeWithCalcMeasure() {
-        if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {
+        if (!StatementPref.instance().server.EnableNativeNonEmpty) {
             // Generated SQL is different if NON EMPTY is evaluated in memory.
             return;
         }

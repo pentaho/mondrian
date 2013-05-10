@@ -4,14 +4,17 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2011 Pentaho and others
+// Copyright (C) 2008-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
 
+import mondrian.pref.PrefDef;
+
+
 /**
  * Strategies for applying solve order, exposed via the property
- * {@link MondrianProperties#SolveOrderMode}.
+ * {@link PrefDef#SolveOrderMode}.
  */
 public enum SolveOrderMode {
 

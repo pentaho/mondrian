@@ -18,6 +18,7 @@ import mondrian.olap.Member;
 import mondrian.olap.NamedSet;
 import mondrian.olap.Property;
 import mondrian.olap.Schema;
+import mondrian.pref.StatementPref;
 import mondrian.spi.Dialect;
 import mondrian.util.Bug;
 
@@ -67,7 +68,7 @@ public class LegacySchemaTest extends FoodMartTestCase {
     public void testCatalogHierarchyBasedOnView() {
         // Don't run this test if aggregates are enabled: two levels mapped to
         // the "gender" column confuse the agg engine.
-        if (MondrianProperties.instance().ReadAggregates.get()) {
+        if (StatementPref.instance().ReadAggregates) {
             return;
         }
         TestContext testContext =
@@ -122,7 +123,7 @@ public class LegacySchemaTest extends FoodMartTestCase {
     public void testCatalogHierarchyBasedOnView2() {
         // Don't run this test if aggregates are enabled: two levels mapped to
         // the "gender" column confuse the agg engine.
-        if (MondrianProperties.instance().ReadAggregates.get()) {
+        if (StatementPref.instance().ReadAggregates) {
             return;
         }
         if (getTestContext().getDialect().allowsFromQuery()) {
@@ -1613,7 +1614,7 @@ public class LegacySchemaTest extends FoodMartTestCase {
 
         // skip this test if using aggregates, the agg tables do not
         // enforce the SQL element in the fact table
-        if (MondrianProperties.instance().UseAggregates.booleanValue()) {
+        if (StatementPref.instance().UseAggregates) {
             return;
         }
 
@@ -1763,7 +1764,7 @@ public class LegacySchemaTest extends FoodMartTestCase {
         if (!Bug.BugMondrian1335Fixed) {
             return;
         }
-        if (!propSaver.props.FilterChildlessSnowflakeMembers.get()) {
+        if (!propSaver.pref.FilterChildlessSnowflakeMembers) {
             // Similar to aggregates. If we turn off filtering,
             // we get wild stuff because of referential integrity.
             return;
@@ -1800,9 +1801,8 @@ public class LegacySchemaTest extends FoodMartTestCase {
                 + "</Dimension>"));
 
         // As above, but using shared dimension.
-        if (MondrianProperties.instance().ReadAggregates.get()
-            && MondrianProperties.instance().UseAggregates.get())
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.ReadAggregates && pref.UseAggregates) {
             // With aggregates enabled, query gives different answer. This is
             // expected because some of the foreign keys have referential
             // integrity problems.

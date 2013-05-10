@@ -9,11 +9,11 @@
 */
 package mondrian.olap4j;
 
-import mondrian.olap.Hierarchy;
 import mondrian.olap.LocalizedProperty;
 import mondrian.olap.OlapElement;
 import mondrian.olap.Role;
 
+import mondrian.pref.*;
 import mondrian.rolap.RolapSchema;
 
 import org.olap4j.OlapException;
@@ -36,6 +36,7 @@ class MondrianOlap4jSchema
     final MondrianOlap4jCatalog olap4jCatalog;
     final String schemaName;
     final RolapSchema schema;
+    final SchemaPref pref;
 
     /**
      * Creates a MondrianOlap4jSchema.
@@ -57,6 +58,7 @@ class MondrianOlap4jSchema
         this.olap4jCatalog = olap4jCatalog;
         this.schemaName = schemaName;
         this.schema = schema;
+        this.pref = schema.pref;
     }
 
     public Catalog getCatalog() {

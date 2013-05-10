@@ -14,6 +14,7 @@ import mondrian.calc.*;
 import mondrian.mdx.*;
 import mondrian.olap.fun.ParameterFunDef;
 import mondrian.olap.type.*;
+import mondrian.pref.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.server.*;
@@ -44,11 +45,11 @@ import java.util.*;
  * three ways to control rogue queries:<ul>
  *
  * <li>You can set a query timeout by setting the
- *     {@link MondrianProperties#QueryTimeout} parameter. If the query
+ *     {@link PrefDef#QueryTimeout} parameter. If the query
  *     takes longer to execute than the value of this parameter, the system
  *     will kill it.</li>
  *
- * <li>The {@link MondrianProperties#QueryLimit} parameter limits the number
+ * <li>The {@link PrefDef#QueryLimit} parameter limits the number
  *     of cells returned by a query.</li>
  *
  * <li>At any time while a query is executing, another thread can cancel the
@@ -459,13 +460,13 @@ public class Query extends QueryPart {
      */
     public boolean ignoreInvalidMembers()
     {
-        MondrianProperties props = MondrianProperties.instance();
+        StatementPref props = StatementPref.instance();
         final boolean load = ((RolapCube) getCube()).isLoadInProgress();
         return
             !strictValidation
             && (load
-                ? props.IgnoreInvalidMembers.get()
-                : props.IgnoreInvalidMembersDuringQuery.get());
+                ? props.IgnoreInvalidMembers
+                : props.IgnoreInvalidMembersDuringQuery);
     }
 
     /**
@@ -1289,7 +1290,7 @@ public class Query extends QueryPart {
                 resultStyleList);
 
         final int expDeps =
-            MondrianProperties.instance().TestExpDependencies.get();
+            evaluator.getStatementPref().server.TestExpDependencies;
         final ProfileHandler profileHandler = statement.getProfileHandler();
         if (profileHandler != null) {
             // Cannot test dependencies and profile at the same time. Profiling

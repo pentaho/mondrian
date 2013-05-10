@@ -9,7 +9,7 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.MondrianProperties;
+import mondrian.pref.*;
 import mondrian.rolap.sql.MemberListCrossJoinArg;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
@@ -34,12 +34,12 @@ public class FilterTest extends BatchTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
+        PrefDef.EnableNativeCrossJoin.with(propSaver).set(true);
     }
 
     public void testInFilterSimple() throws Exception {
-        propSaver.set(propSaver.props.ExpandNonNative, false);
-        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -61,8 +61,8 @@ public class FilterTest extends BatchTestCase {
     }
 
     public void testNotInFilterSimple() throws Exception {
-        propSaver.set(propSaver.props.ExpandNonNative, false);
-        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -84,8 +84,8 @@ public class FilterTest extends BatchTestCase {
     }
 
     public void testInFilterAND() throws Exception {
-        propSaver.set(propSaver.props.ExpandNonNative, false);
-        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -109,8 +109,8 @@ public class FilterTest extends BatchTestCase {
     }
 
     public void testIsFilterSimple() throws Exception {
-        propSaver.set(propSaver.props.ExpandNonNative, false);
-        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -132,8 +132,8 @@ public class FilterTest extends BatchTestCase {
     }
 
     public void testNotIsFilterSimple() throws Exception {
-        propSaver.set(propSaver.props.ExpandNonNative, false);
-        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -155,8 +155,8 @@ public class FilterTest extends BatchTestCase {
     }
 
     public void testMixedInIsFilters() throws Exception {
-        propSaver.set(propSaver.props.ExpandNonNative, false);
-        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -190,8 +190,8 @@ public class FilterTest extends BatchTestCase {
      * @throws Exception
      */
     public void testInFilterNonNative() throws Exception {
-        propSaver.set(propSaver.props.ExpandNonNative, false);
-        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(true);
 
         String query =
             "With "
@@ -208,9 +208,9 @@ public class FilterTest extends BatchTestCase {
     }
 
     public void testTopCountOverInFilter() throws Exception {
-        propSaver.set(propSaver.props.ExpandNonNative, false);
-        propSaver.set(propSaver.props.EnableNativeFilter, true);
-        propSaver.set(propSaver.props.EnableNativeTopCount, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(true);
+        PrefDef.EnableNativeTopCount.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -237,8 +237,8 @@ public class FilterTest extends BatchTestCase {
      * @throws Exception
      */
     public void testNotInFilterKeepNullMember() throws Exception {
-        propSaver.set(propSaver.props.ExpandNonNative, false);
-        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -294,8 +294,8 @@ public class FilterTest extends BatchTestCase {
      * @throws Exception on error
      */
     public void testNotInFilterExcludeNullMember() throws Exception {
-        propSaver.set(propSaver.props.ExpandNonNative, false);
-        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -348,7 +348,8 @@ public class FilterTest extends BatchTestCase {
      * that contain multiple levels, but none being null.
      */
     public void testNotInMultiLevelMemberConstraintNonNullParent() {
-        if (propSaver.props.ReadAggregates.get()) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.ReadAggregates) {
             // If aggregate tables are enabled, generates similar SQL involving
             // agg tables.
             return;
@@ -403,7 +404,8 @@ public class FilterTest extends BatchTestCase {
      * the same parent.
      */
     public void testNotInMultiLevelMemberConstraintNonNullSameParent() {
-        if (propSaver.props.ReadAggregates.get()) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.ReadAggregates) {
             // If aggregate tables are enabled, generates similar SQL involving
             // agg tables.
             return;
@@ -463,7 +465,8 @@ public class FilterTest extends BatchTestCase {
         if (!isDefaultNullMemberRepresentation()) {
             return;
         }
-        if (propSaver.props.FilterChildlessSnowflakeMembers.get()) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.FilterChildlessSnowflakeMembers) {
             return;
         }
 
@@ -538,7 +541,8 @@ public class FilterTest extends BatchTestCase {
         if (!isDefaultNullMemberRepresentation()) {
             return;
         }
-        if (propSaver.props.FilterChildlessSnowflakeMembers.get()) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.FilterChildlessSnowflakeMembers) {
             return;
         }
 
@@ -607,8 +611,8 @@ public class FilterTest extends BatchTestCase {
     }
 
     public void testCachedNativeSetUsingFilters() throws Exception {
-        propSaver.set(propSaver.props.ExpandNonNative, false);
-        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -646,8 +650,8 @@ public class FilterTest extends BatchTestCase {
     }
 
     public void testNativeFilter() {
-        propSaver.set(propSaver.props.ExpandNonNative, false);
-        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -668,8 +672,8 @@ public class FilterTest extends BatchTestCase {
      * Executes a Filter() whose condition contains a calculated member.
      */
     public void testCmNativeFilter() {
-        propSaver.set(propSaver.props.ExpandNonNative, false);
-        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -738,8 +742,8 @@ public class FilterTest extends BatchTestCase {
         if (!Bug.CubeStoreFeature) {
             return;
         }
-        propSaver.set(propSaver.props.ExpandNonNative, false);
-        propSaver.set(propSaver.props.EnableNativeFilter, false);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(false);
         checkNotNative(
             getTestContext(),
             9,
@@ -787,8 +791,8 @@ public class FilterTest extends BatchTestCase {
             return;
         }
         // Currently this behaves differently from the non-native evaluation.
-        propSaver.set(propSaver.props.EnableNativeFilter, true);
-        propSaver.set(propSaver.props.ExpandNonNative, false);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -819,8 +823,8 @@ public class FilterTest extends BatchTestCase {
 
     public void testNonNativeFilterWithCalcMember() {
         // Currently this query cannot run natively
-        propSaver.set(propSaver.props.EnableNativeFilter, false);
-        propSaver.set(propSaver.props.ExpandNonNative, false);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(false);
         checkNotNative(
             getTestContext(),
             3,
@@ -852,8 +856,8 @@ public class FilterTest extends BatchTestCase {
         if (!Bug.CubeStoreFeature) {
             return;
         }
-        propSaver.set(propSaver.props.ExpandNonNative, false);
-        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
+        PrefDef.EnableNativeFilter.with(propSaver).set(true);
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
@@ -874,7 +878,7 @@ public class FilterTest extends BatchTestCase {
     }
 
     /**
-     * Testcase for
+     * Test case for
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-706">bug MONDRIAN-706,
      * "SQL using hierarchy attribute 'Column Name' instead of 'Column' in the
      * filter"</a>.
@@ -883,14 +887,15 @@ public class FilterTest extends BatchTestCase {
         if (!Bug.CubeStoreFeature) {
             return;
         }
-        propSaver.set(propSaver.props.UseAggregates, false);
-        propSaver.set(propSaver.props.ReadAggregates, false);
-        propSaver.set(propSaver.props.DisableCaching, false);
-        propSaver.set(propSaver.props.EnableNativeNonEmpty, true);
-        propSaver.set(propSaver.props.CompareSiblingsByOrderKey, true);
-        propSaver.set(propSaver.props.NullDenominatorProducesNull, true);
-        propSaver.set(propSaver.props.ExpandNonNative, true);
-        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        PrefDef.UseAggregates.with(propSaver).set(false);
+        PrefDef.ReadAggregates.with(propSaver).set(false);
+        PrefDef.DisableCaching.with(propSaver).set(false);
+        PrefDef.EnableNativeNonEmpty.with(propSaver).set(true);
+        PrefDef.CompareSiblingsByOrderKey.with(propSaver).set(true);
+        PrefDef.NullDenominatorProducesNull.with(propSaver).set(true);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
+        PrefDef.EnableNativeFilter.with(propSaver).set(true);
+
         // With bug MONDRIAN-706, would generate
         //
         // ((`store`.`store_name`, `store`.`store_city`, `store`.`store_state`)
@@ -1042,10 +1047,11 @@ public class FilterTest extends BatchTestCase {
         // use the aggregate table due to a different bug (1372).
         // Once 1372 is fixed this test should be enabled.
         TestContext context = getTestContext();
+        final StatementPref pref = StatementPref.instance();
         if (!Bug.BugMondrian1372Fixed
-            || !propSaver.props.EnableNativeCrossJoin.get()
-            || !propSaver.props.ReadAggregates.get()
-            || !propSaver.props.UseAggregates.get())
+            || !pref.server.EnableNativeCrossJoin
+            || !pref.ReadAggregates
+            || !pref.UseAggregates)
         {
             return;
         }

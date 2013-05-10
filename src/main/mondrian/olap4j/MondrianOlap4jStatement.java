@@ -4,13 +4,14 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
 
 import mondrian.calc.ResultStyle;
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.rolap.RolapConnection;
 import mondrian.server.*;
 import mondrian.util.Pair;
@@ -54,7 +55,9 @@ abstract class MondrianOlap4jStatement
     MondrianOlap4jStatement(
         MondrianOlap4jConnection olap4jConnection)
     {
-        assert olap4jConnection != null;
+        super(
+            Prefs.statement(
+                olap4jConnection.pref, olap4jConnection.olap4jSchema.pref));
         this.olap4jConnection = olap4jConnection;
         this.closed = false;
     }

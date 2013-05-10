@@ -4,13 +4,13 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2010 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.i18n;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.pref.*;
 import mondrian.spi.DynamicSchemaProcessor;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 
@@ -56,7 +56,7 @@ public class LocalizingDynamicSchemaProcessor
      * "com/acme/MyResource.properties" is equivalent to
      * "com.acme.MyResource".
      *
-     * @see MondrianProperties#LocalePropFile
+     * @see PrefDef#LocalePropFile
      *
      * @param propFile The name of the property file
      */
@@ -82,7 +82,7 @@ public class LocalizingDynamicSchemaProcessor
     }
 
     private void loadProperties() {
-        String propFile = MondrianProperties.instance().LocalePropFile.get();
+        String propFile = StatementPref.instance().LocalePropFile;
         if (propFile != null) {
             populate(propFile);
         }

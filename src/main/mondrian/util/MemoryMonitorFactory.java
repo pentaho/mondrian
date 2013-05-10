@@ -5,17 +5,16 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, Dec 23, 2002
 */
 package mondrian.util;
 
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 
-import org.eigenbase.util.property.StringProperty;
+import mondrian.pref.*;
 
 /**
  * The <code>MemoryMonitorFactory</code> is used to get the application's
@@ -123,36 +122,28 @@ public final class MemoryMonitorFactory
      * @return <code>true</code> if enabled and <code>false</code> otherwise.
      */
     protected boolean enabled() {
-        return MondrianProperties.instance().MemoryMonitor.get();
+        return StatementPref.instance().MemoryMonitor;
     }
 
-    /**
-     * Get the class name set in the <code>ThreadLocal</code> or null.
-     *
-     * @return class name or null.
-     */
-    protected String getClassName() {
+    @Override protected String getClassName() {
         return getThreadLocalClassName();
     }
 
-    /**
-     * Return the <code>MemoryMonitorFactory</code property name.
-     *
-     * @return <code>MemoryMonitorFactory</code> property name
-     */
-    protected StringProperty getStringProperty() {
-        return MondrianProperties.instance().MemoryMonitorClass;
+    protected String getPropertyName() {
+        return PrefDef.MemoryMonitorClass.getPath();
     }
 
     /**
-     * The <code>MemoryMonitorFactory</code>'s implementation of the
+     * {@inheritDoc}
+     *
+     * <p>The <code>MemoryMonitorFactory</code>'s implementation of the
      * <code>ObjectFactory</code>'s abstract method which returns
      * the default <code>MemoryMonitor</code> instance.
      * For Java4 or if the <code>MemoryMonitorFactory</code> is not enabled
      * then this method returns the "faux" <code>MemoryMonitor</code>
      * implementation, it does nothing. When enabled and for
      * Java5 and above JVMs, and instance of the
-     * <code>NotificationMemoryMonitor</code> is returned.
+     * <code>NotificationMemoryMonitor</code> is returned.</p>
      *
      * @param parameterTypes  not used
      * @param parameterValues  not used

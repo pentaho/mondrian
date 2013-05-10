@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -12,6 +12,7 @@ package mondrian.rolap.agg;
 import mondrian.olap.CacheControl;
 import mondrian.olap.Cube;
 import mondrian.olap.MondrianServer;
+import mondrian.pref.PrefDef;
 import mondrian.spi.SegmentCache;
 import mondrian.spi.SegmentHeader;
 import mondrian.test.BasicQueryTest;
@@ -31,7 +32,7 @@ public class SegmentCacheTest extends BasicQueryTest {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        propSaver.set(propSaver.props.DisableCaching, true);
+        PrefDef.DisableCaching.with(propSaver).set(true);
         this.mockCache = new MockSegmentCache();
         this.testWorker = new SegmentCacheWorker(mockCache, null);
         MondrianServer.forConnection(getTestContext().getConnection())

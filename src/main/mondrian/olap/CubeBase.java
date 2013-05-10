@@ -10,6 +10,7 @@
 */
 package mondrian.olap;
 
+import mondrian.pref.StatementPref;
 import mondrian.resource.MondrianResource;
 
 import java.util.List;
@@ -139,7 +140,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
                 schemaReader, s, matchType);
             if (mdxElement != null) {
                 if (mdxElement instanceof Member
-                    && MondrianProperties.instance().NeedDimensionPrefix.get())
+                    && StatementPref.instance().NeedDimensionPrefix)
                 {
                     // With this property setting, don't allow members to be
                     // referenced without at least a dimension prefix. We

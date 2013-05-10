@@ -9,7 +9,6 @@
 */
 package mondrian.test;
 
-import mondrian.olap.MondrianProperties;
 
 /**
  * Tests multiple hierarchies within the same dimension.

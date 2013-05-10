@@ -4,12 +4,13 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2011 Pentaho
+// Copyright (C) 2011-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server;
 
 import mondrian.olap.*;
+import mondrian.pref.StatementPref;
 import mondrian.rolap.RolapSchema;
 import mondrian.spi.ProfileHandler;
 
@@ -27,6 +28,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class StatementImpl implements Statement {
     private static AtomicLong SEQ = new AtomicLong();
 
+    public final StatementPref pref;
+
     /**
      * Writer to which to send profiling information, or null if profiling is
      * disabled.
@@ -38,8 +41,7 @@ public abstract class StatementImpl implements Statement {
     /**
      * Query timeout, in milliseconds
      */
-    protected long queryTimeout =
-        MondrianProperties.instance().QueryTimeout.get() * 1000;
+    protected long queryTimeout;
 
     /**
      * The current locus context, or null if query is not executing.
@@ -57,8 +59,10 @@ public abstract class StatementImpl implements Statement {
     /**
      * Creates a StatementImpl.
      */
-    public StatementImpl() {
+    public StatementImpl(StatementPref pref) {
         this.id = SEQ.getAndIncrement();
+        this.pref = pref;
+        queryTimeout = pref.QueryTimeout * 1000;
     }
 
     public synchronized void start(Execution execution) {

@@ -12,6 +12,7 @@ package mondrian.xmla;
 
 import mondrian.olap.*;
 import mondrian.olap4j.MondrianOlap4jDriver;
+import mondrian.pref.*;
 import mondrian.spi.Dialect;
 import mondrian.test.DiffRepository;
 import mondrian.test.TestContext;
@@ -353,9 +354,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
     // good 2/25 : (partial implementation)
     public void testMDHierarchies() throws Exception {
-        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
-            .get())
-        {
+        if (!StatementPref.instance().FilterChildlessSnowflakeMembers) {
             return;
         }
         String requestType = "MDSCHEMA_HIERARCHIES";
@@ -526,7 +525,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
     public void testDrillThroughMaxRows() throws Exception {
         // NOTE: this test uses the filter method to adjust the expected result
         // for different databases
-        if (!MondrianProperties.instance().EnableTotalCount.booleanValue()) {
+        if (!StatementPref.instance().EnableTotalCount) {
             return;
         }
         String requestType = "EXECUTE";
@@ -549,7 +548,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
     public void testDrillThrough() throws Exception {
         // NOTE: this test uses the filter method to adjust the expected result
         // for different databases
-        if (!MondrianProperties.instance().EnableTotalCount.booleanValue()) {
+        if (!StatementPref.instance().EnableTotalCount) {
             return;
         }
         String requestType = "EXECUTE";
@@ -573,7 +572,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
     public void testDrillThroughZeroDimensionalQuery() throws Exception {
         // NOTE: this test uses the filter method to adjust the expected result
         // for different databases
-        if (!MondrianProperties.instance().EnableTotalCount.booleanValue()) {
+        if (!StatementPref.instance().EnableTotalCount) {
             return;
         }
         String requestType = "EXECUTE";
@@ -770,9 +769,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
      * XMLA"</a>.
      */
     public void testExecuteCrossjoin() throws Exception {
-        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
-            .get())
-        {
+        if (!StatementPref.instance().FilterChildlessSnowflakeMembers) {
             return;
         }
         String requestType = "EXECUTE";
@@ -814,9 +811,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
      * [Customers].[All Customers].[Mexico].
      */
     public void testExecuteCrossjoinRole() throws Exception {
-        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
-            .get())
-        {
+        if (!StatementPref.instance().FilterChildlessSnowflakeMembers) {
             return;
         }
         String requestType = "EXECUTE";
@@ -947,9 +942,9 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
     {
         String requestType = "EXECUTE";
         Properties props = getDefaultRequestProperties(requestType);
-        propSaver.set(propSaver.props.EnableRolapCubeMemberCache, false);
+        PrefDef.EnableRolapCubeMemberCache.with(propSaver).set(false);
         doTest(requestType, props, getTestContext());
-        propSaver.set(propSaver.props.EnableRolapCubeMemberCache, true);
+        PrefDef.EnableRolapCubeMemberCache.with(propSaver).set(true);
     }
 
     public void testExecuteBugMondrian1316() throws Exception {

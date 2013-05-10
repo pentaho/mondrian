@@ -12,6 +12,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.rolap.RolapSchema.PhysSchemaException;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggStar;
@@ -924,7 +925,7 @@ public class SqlConstraintUtils {
                 // the value to upper-case in the DBMS (e.g. UPPER('Foo'))
                 // rather than in Java (e.g. 'FOO') in case the DBMS is running
                 // a different locale.
-                if (!MondrianProperties.instance().CaseSensitive.get()) {
+                if (!StatementPref.instance().CaseSensitive) {
                     columnString = dialect.toUpper(columnString);
                     value = dialect.toUpper(value);
                 }
@@ -1218,7 +1219,7 @@ public class SqlConstraintUtils {
         boolean exclude)
     {
         final int maxConstraints =
-            MondrianProperties.instance().MaxConstraints.get();
+            StatementPref.instance().MaxConstraints;
         final Dialect dialect = queryBuilder.getDialect();
 
         int levelCount = 0;
@@ -1357,12 +1358,12 @@ public class SqlConstraintUtils {
 
     /**
      * Converts multiple whitespace and linefeeds to a single space, if
-     * {@link MondrianProperties#GenerateFormattedSql} is false. This method
+     * {@link PrefDef#GenerateFormattedSql} is false. This method
      * is a convenient way to generate the right amount of formatting with one
      * call.
      */
     private static String strip(String s) {
-        if (!MondrianProperties.instance().GenerateFormattedSql.get()) {
+        if (!StatementPref.instance().GenerateFormattedSql) {
             s = MULTIPLE_WHITESPACE_PATTERN.matcher(s).replaceAll(" ");
         }
         return s;

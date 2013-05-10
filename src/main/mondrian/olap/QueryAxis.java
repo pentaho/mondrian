@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1998-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -14,6 +14,7 @@ import mondrian.calc.*;
 import mondrian.mdx.*;
 import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.*;
+import mondrian.pref.StatementPref;
 import mondrian.resource.MondrianResource;
 
 import java.io.PrintWriter;
@@ -58,7 +59,7 @@ public class QueryAxis extends QueryPart {
         assert dimensionProperties != null;
         assert axisOrdinal != null;
         this.nonEmpty = nonEmpty
-            || (MondrianProperties.instance().EnableNonEmptyOnAllAxis.get()
+            || (StatementPref.instance().EnableNonEmptyOnAllAxis
             && !axisOrdinal.isFilter());
         this.exp = set;
         this.axisOrdinal = axisOrdinal;

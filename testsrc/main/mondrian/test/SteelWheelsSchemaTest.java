@@ -10,6 +10,7 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 import mondrian.util.Bug;
@@ -838,27 +839,26 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
         if (!getTestContext().databaseIsValid()) {
             return;
         }
-        final PropertySaver propSaver = new PropertySaver();
-        propSaver.set(MondrianProperties.instance().IgnoreInvalidMembers, true);
-        propSaver.set(MondrianProperties.instance().IgnoreInvalidMembersDuringQuery, true);
+        final PrefSaver propSaver = new PrefSaver();
+        PrefDef.IgnoreInvalidMembers.with(propSaver).set(true);
+        PrefDef.IgnoreInvalidMembersDuringQuery.with(propSaver).set(true);
         getTestContext().assertQueryReturns(
-            "WITH \n" +
-                "SET [*NATIVE_CJ_SET] AS '[*BASE_MEMBERS_Time]' \n" +
-                "SET [*BASE_MEMBERS_Measures] AS '{[Measures].[*ZERO]}' \n" +
-                "SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Time].CURRENTMEMBER)})' \n" +
-                "SET [*BASE_MEMBERS_Time] AS 'FILTER([Time].[Quarters].MEMBERS,[Time].CURRENTMEMBER IN([Time].[PARAM].[qtr1] : [Time].[2003].[QTR2]))' \n" +
-                "SET [*CJ_COL_AXIS] AS '[*NATIVE_CJ_SET]' \n" +
-                "MEMBER [Measures].[*ZERO] AS '0', SOLVE_ORDER=0 \n" +
-                "SELECT \n" +
-                "[*BASE_MEMBERS_Measures] ON COLUMNS \n" +
-                ",ORDER([*CJ_ROW_AXIS],[Time].CURRENTMEMBER.ORDERKEY,BASC,ANCESTOR([Time].CURRENTMEMBER,[Time].[Years]).ORDERKEY,BASC) ON ROWS \n" +
-                "FROM [SteelWheelsSales]",
-            "Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[*ZERO]}\n" +
-                "Axis #2:\n"
-        );
+            "WITH \n"
+            + "SET [*NATIVE_CJ_SET] AS '[*BASE_MEMBERS_Time]' \n"
+            + "SET [*BASE_MEMBERS_Measures] AS '{[Measures].[*ZERO]}' \n"
+            + "SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Time].CURRENTMEMBER)})' \n"
+            + "SET [*BASE_MEMBERS_Time] AS 'FILTER([Time].[Quarters].MEMBERS,[Time].CURRENTMEMBER IN([Time].[PARAM].[qtr1] : [Time].[2003].[QTR2]))' \n"
+            + "SET [*CJ_COL_AXIS] AS '[*NATIVE_CJ_SET]' \n"
+            + "MEMBER [Measures].[*ZERO] AS '0', SOLVE_ORDER=0 \n"
+            + "SELECT \n"
+            + "[*BASE_MEMBERS_Measures] ON COLUMNS \n"
+            + ",ORDER([*CJ_ROW_AXIS],[Time].CURRENTMEMBER.ORDERKEY,BASC,ANCESTOR([Time].CURRENTMEMBER,[Time].[Years]).ORDERKEY,BASC) ON ROWS \n"
+            + "FROM [SteelWheelsSales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*ZERO]}\n"
+            + "Axis #2:\n");
         propSaver.reset();
     }
 }

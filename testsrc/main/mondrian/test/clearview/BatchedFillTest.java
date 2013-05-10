@@ -4,12 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2010 Pentaho and others
+// Copyright (C) 2007-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test.clearview;
 
-import mondrian.olap.MondrianProperties;
+import mondrian.pref.StatementPref;
 import mondrian.test.DiffRepository;
 
 import junit.framework.TestSuite;
@@ -47,9 +47,10 @@ public class BatchedFillTest extends ClearViewBase {
     }
 
     protected void runTest() throws Exception {
+        final StatementPref pref = StatementPref.instance();
         if (getName().equals("testBatchedFill2")
-            && MondrianProperties.instance().ReadAggregates.get()
-            && MondrianProperties.instance().UseAggregates.get())
+            && pref.ReadAggregates
+            && pref.UseAggregates)
         {
             // If agg tables are enabled, the SQL generated is 'better' than
             // expected.

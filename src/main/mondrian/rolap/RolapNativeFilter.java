@@ -12,6 +12,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.rolap.sql.*;
 
 import java.util.*;
@@ -26,10 +27,11 @@ public class RolapNativeFilter extends RolapNativeSet {
 
     /**
      * Creates a RolapNativeFilter.
+     *
+     * @param pref Schema preferences
      */
-    public RolapNativeFilter() {
-        super.setEnabled(
-            MondrianProperties.instance().EnableNativeFilter.get());
+    public RolapNativeFilter(SchemaPref pref) {
+        super.setEnabled(pref.server.EnableNativeFilter);
     }
 
     static class FilterConstraint extends SetConstraint {

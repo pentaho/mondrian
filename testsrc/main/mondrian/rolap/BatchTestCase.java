@@ -5,21 +5,19 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.calc.ResultStyle;
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.rolap.RolapNative.*;
 import mondrian.rolap.agg.*;
-import mondrian.server.Execution;
-import mondrian.server.Locus;
+import mondrian.server.*;
 import mondrian.spi.Dialect;
 import mondrian.test.*;
-
-import org.eigenbase.util.property.IntegerProperty;
 
 import java.util.*;
 import java.util.concurrent.Future;
@@ -230,7 +228,7 @@ public class BatchTestCase extends FoodMartTestCase {
         CellRequest[] requests,
         SqlPattern[] patterns)
     {
-        propSaver.set(propSaver.props.GenerateFormattedSql, true);
+        PrefDef.GenerateFormattedSql.with(propSaver).set(true);
         assertRequestSql(testContext, requests, patterns, false);
     }
 
@@ -344,7 +342,7 @@ public class BatchTestCase extends FoodMartTestCase {
         // dialect.
         if (!patternFound) {
             String warnDialect =
-                MondrianProperties.instance().WarnIfNoPatternForDialect.get();
+                StatementPref.instance().WarnIfNoPatternForDialect;
 
             if (warnDialect.equals(d.toString())) {
                 System.out.println(
@@ -401,7 +399,7 @@ public class BatchTestCase extends FoodMartTestCase {
         String mdxQuery,
         SqlPattern[] patterns)
     {
-        propSaver.set(propSaver.props.GenerateFormattedSql, true);
+        PrefDef.GenerateFormattedSql.with(propSaver).set(true);
         assertQuerySqlOrNot(
             testContext, mdxQuery, patterns, false, false, true);
     }
@@ -543,7 +541,7 @@ public class BatchTestCase extends FoodMartTestCase {
         // dialect.
         if (!patternFound) {
             String warnDialect =
-                MondrianProperties.instance().WarnIfNoPatternForDialect.get();
+                StatementPref.instance().WarnIfNoPatternForDialect;
 
             if (warnDialect.equals(d.toString())) {
                 System.out.println(
@@ -909,7 +907,7 @@ public class BatchTestCase extends FoodMartTestCase {
         // Don't run the test if we're testing expression dependencies.
         // Expression dependencies cause spurious interval calls to
         // 'level.getMembers()' which create false negatives in this test.
-        if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
+        if (ServerPref.instance().TestExpDependencies > 0) {
             return;
         }
 
@@ -938,8 +936,7 @@ public class BatchTestCase extends FoodMartTestCase {
             if (!listener.isExecuteSql()) {
                 fail("cache is empty: expected SQL query to be executed");
             }
-            if (MondrianProperties.instance().EnableRolapCubeMemberCache.get())
-            {
+            if (StatementPref.instance().EnableRolapCubeMemberCache) {
                 // run once more to make sure that the result comes from cache
                 // now
                 listener.setExecuteSql(false);
@@ -1098,11 +1095,11 @@ public class BatchTestCase extends FoodMartTestCase {
 
         protected Result run() {
             con.getCacheControl(null).flushSchemaCache();
-            IntegerProperty monLimit =
-                MondrianProperties.instance().ResultLimit;
-            int oldLimit = monLimit.get();
+            final IntegerProperty monLimit = PrefDef.ResultLimit;
+            final StatementPref pref = StatementPref.instance();
+            int oldLimit = monLimit.get(pref);
             try {
-                monLimit.set(this.resultLimit);
+                monLimit.set(pref, this.resultLimit);
                 Result result = executeQuery(query, con);
 
                 // Check the number of positions on the last axis, which is
@@ -1113,7 +1110,7 @@ public class BatchTestCase extends FoodMartTestCase {
                 assertEquals(rowCount, positionCount);
                 return result;
             } finally {
-                monLimit.set(oldLimit);
+                monLimit.set(pref, oldLimit);
             }
         }
     }

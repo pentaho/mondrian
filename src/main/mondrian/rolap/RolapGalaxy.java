@@ -5,12 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho others
+// Copyright (C) 2005-2013 Pentaho others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.util.Pair;
 
 import org.apache.log4j.Logger;
@@ -144,7 +145,7 @@ public class RolapGalaxy {
      * Finds a fact or aggregate table in the given cube that has the desired
      * levels and measures. Returns null if no fact or aggregate table is
      * suitable; if more than one is suitable, returns the smallest (per the
-     * {@link MondrianProperties#ChooseAggregateByVolume} property).
+     * {@link PrefDef#ChooseAggregateByVolume} property).
      *
      * <p>If there no aggregate is an exact match, returns a more
      * granular aggregate which can be rolled up, and sets rollup to true.
@@ -164,9 +165,8 @@ public class RolapGalaxy {
         final BitKey measureBitKey,
         boolean[] rollupOut)
     {
-        if (!MondrianProperties.instance().ReadAggregates.get()
-            || !MondrianProperties.instance().UseAggregates.get())
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (!pref.ReadAggregates || !pref.UseAggregates) {
             // Can't do anything here.
             return null;
         }

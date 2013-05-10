@@ -11,6 +11,7 @@ package mondrian.test;
 
 import mondrian.olap.*;
 import mondrian.olap4j.MondrianOlap4jDriver;
+import mondrian.pref.*;
 
 import org.olap4j.*;
 import org.olap4j.Cell;
@@ -254,7 +255,7 @@ public class Olap4jTest extends FoodMartTestCase {
      * @throws SQLException on error
      */
     public void testLimit() throws SQLException {
-        propSaver.set(MondrianProperties.instance().IterationLimit, 11);
+        PrefDef.IterationLimit.with(propSaver).set(11);
         String queryString =
             "With Set [*NATIVE_CJ_SET] as "
             + "'NonEmptyCrossJoin([*BASE_MEMBERS_Dates], [*BASE_MEMBERS_Stores])' "

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
@@ -15,6 +15,7 @@ import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.*;
+import mondrian.pref.StatementPref;
 import mondrian.rolap.*;
 
 import org.apache.log4j.Logger;
@@ -540,7 +541,7 @@ public class CrossJoinArgFactory {
 
         // First check that the member list will not result in a predicate
         // longer than the underlying DB could support.
-        if (argSize > MondrianProperties.instance().MaxConstraints.get()) {
+        if (argSize > StatementPref.instance().MaxConstraints) {
             argSizeNotSupported = true;
         }
 
@@ -632,7 +633,7 @@ public class CrossJoinArgFactory {
         FunDef fun,
         Exp[] filterArgs)
     {
-        if (!MondrianProperties.instance().EnableNativeFilter.get()) {
+        if (!evaluator.getStatementPref().server.EnableNativeFilter) {
             return null;
         }
 
@@ -912,7 +913,7 @@ public class CrossJoinArgFactory {
     }
 
     private boolean shouldExpandNonEmpty(Exp exp) {
-        return MondrianProperties.instance().ExpandNonNative.get()
+        return StatementPref.instance().ExpandNonNative
 //               && !MondrianProperties.instance().EnableNativeCrossJoin.get()
             || isCheapSet(exp);
     }

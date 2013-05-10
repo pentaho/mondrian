@@ -11,11 +11,11 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.*;
 import mondrian.olap.CacheControl.CellRegion;
+import mondrian.pref.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.rolap.cache.*;
-import mondrian.server.Execution;
-import mondrian.server.Locus;
+import mondrian.server.*;
 import mondrian.server.monitor.*;
 import mondrian.spi.*;
 import mondrian.util.ByteString;
@@ -140,7 +140,7 @@ import java.util.concurrent.*;
  * {@link mondrian.server.Execution}. Would it still be thread-local?</p>
  *
  * <p>10. Call
- * {@link mondrian.spi.DataSourceChangeListener#isAggregationChanged}.
+ * {@code mondrian.spi.DataSourceChangeListener#isAggregationChanged}.
  * Previously called from
  * {@link RolapStar}.checkAggregateModifications, now never called.</p>
  *
@@ -216,21 +216,7 @@ public class SegmentCacheManager {
     /**
      * Executor with which to send requests to external caches.
      */
-    public final ExecutorService cacheExecutor =
-        Util.getExecutorService(
-            MondrianProperties.instance()
-                .SegmentCacheManagerNumberCacheThreads.get(),
-            0, 1,
-            "mondrian.rolap.agg.SegmentCacheManager$cacheExecutor",
-            new RejectedExecutionHandler() {
-                public void rejectedExecution(
-                    Runnable r,
-                    ThreadPoolExecutor executor)
-                {
-                    throw MondrianResource.instance()
-                        .SegmentCacheLimitReached.ex();
-                }
-            });
+    public final ExecutorService cacheExecutor;
 
     /**
      * Executor with which to execute SQL requests.
@@ -238,21 +224,7 @@ public class SegmentCacheManager {
      * <p>TODO: create using factory and/or configuration parameters. Executor
      * should be shared within MondrianServer or target JDBC database.
      */
-    public final ExecutorService sqlExecutor =
-        Util.getExecutorService(
-            MondrianProperties.instance()
-                .SegmentCacheManagerNumberSqlThreads.get(),
-            0, 1,
-            "mondrian.rolap.agg.SegmentCacheManager$sqlExecutor",
-            new RejectedExecutionHandler() {
-                public void rejectedExecution(
-                    Runnable r,
-                    ThreadPoolExecutor executor)
-                {
-                    throw MondrianResource.instance()
-                        .SqlQueryLimitReached.ex();
-                }
-            });
+    public final ExecutorService sqlExecutor;
 
     // NOTE: This list is only mutable for testing purposes. Would rather it
     // were immutable.
@@ -264,10 +236,8 @@ public class SegmentCacheManager {
 
     private static final Logger LOGGER =
         Logger.getLogger(AggregationManager.class);
-    private final MondrianServer server;
 
     public SegmentCacheManager(MondrianServer server) {
-        this.server = server;
         ACTOR = new Actor();
         thread = new Thread(
             ACTOR, "mondrian.rolap.agg.SegmentCacheManager$ACTOR");
@@ -278,15 +248,16 @@ public class SegmentCacheManager {
         this.indexRegistry = new SegmentCacheIndexRegistry();
 
         // Add a local cache, if needed.
-        if (!MondrianProperties.instance().DisableLocalSegmentCache.get()
-            && !MondrianProperties.instance().DisableCaching.get())
+        final ServerPref pref = ServerPref.instance();
+        if (!pref.DisableLocalSegmentCache
+            && !pref.DisableCaching)
         {
             final MemorySegmentCache cache = new MemorySegmentCache();
             segmentCacheWorkers.add(
                 new SegmentCacheWorker(cache, thread));
         }
         // Add an external cache, if configured.
-        final SegmentCache externalCache = SegmentCacheWorker.initCache();
+        final SegmentCache externalCache = SegmentCacheWorker.initCache(pref);
         if (externalCache != null) {
             // Create a worker for this external cache
             segmentCacheWorkers.add(
@@ -297,6 +268,32 @@ public class SegmentCacheManager {
         }
 
         compositeCache = new CompositeSegmentCache(segmentCacheWorkers);
+        cacheExecutor = Util.getExecutorService(
+            server.pref.SegmentCacheManagerNumberCacheThreads,
+            0, 1,
+            "mondrian.rolap.agg.SegmentCacheManager$cacheExecutor",
+            new RejectedExecutionHandler() {
+                public void rejectedExecution(
+                    Runnable r,
+                    ThreadPoolExecutor executor)
+                {
+                    throw MondrianResource.instance()
+                        .SegmentCacheLimitReached.ex();
+                }
+            });
+        sqlExecutor = Util.getExecutorService(
+            server.pref.SegmentCacheManagerNumberSqlThreads,
+            0, 1,
+            "mondrian.rolap.agg.SegmentCacheManager$sqlExecutor",
+            new RejectedExecutionHandler() {
+                public void rejectedExecution(
+                    Runnable r,
+                    ThreadPoolExecutor executor)
+                {
+                    throw MondrianResource.instance()
+                        .SqlQueryLimitReached.ex();
+                }
+            });
     }
 
     public <T> T execute(Command<T> command) {
@@ -405,7 +402,7 @@ public class SegmentCacheManager {
         SegmentHeader header,
         MondrianServer server)
     {
-        if (MondrianProperties.instance().DisableCaching.get()) {
+        if (ServerPref.instance().DisableCaching) {
             // Ignore cache requests.
             return;
         }
@@ -430,7 +427,7 @@ public class SegmentCacheManager {
         SegmentHeader header,
         MondrianServer server)
     {
-        if (MondrianProperties.instance().DisableCaching.get()) {
+        if (ServerPref.instance().DisableCaching) {
             // Ignore cache requests.
             return;
         }
@@ -1369,7 +1366,7 @@ public class SegmentCacheManager {
         }
 
         public boolean contains(SegmentHeader header) {
-            if (MondrianProperties.instance().DisableCaching.get()) {
+            if (ServerPref.instance().DisableCaching) {
                 return false;
             }
             for (SegmentCacheWorker worker : workers) {
@@ -1381,7 +1378,7 @@ public class SegmentCacheManager {
         }
 
         public List<SegmentHeader> getSegmentHeaders() {
-            if (MondrianProperties.instance().DisableCaching.get()) {
+            if (ServerPref.instance().DisableCaching) {
                 return Collections.emptyList();
             }
             // Special case 0 and 1 workers, for which the 'union' operation
@@ -1406,7 +1403,7 @@ public class SegmentCacheManager {
         }
 
         public boolean put(SegmentHeader header, SegmentBody body) {
-            if (MondrianProperties.instance().DisableCaching.get()) {
+            if (ServerPref.instance().DisableCaching) {
                 return true;
             }
             for (SegmentCacheWorker worker : workers) {

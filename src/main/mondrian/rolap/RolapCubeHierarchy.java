@@ -13,6 +13,7 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.olap.Member.MemberType;
 import mondrian.olap.fun.VisualTotalsFunDef;
+import mondrian.pref.StatementPref;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
@@ -29,7 +30,7 @@ import java.util.*;
 public class RolapCubeHierarchy extends RolapHierarchy {
 
     private final boolean cachingEnabled =
-        MondrianProperties.instance().EnableRolapCubeMemberCache.get();
+        StatementPref.instance().EnableRolapCubeMemberCache;
     private final RolapCubeDimension cubeDimension;
     private final RolapHierarchy rolapHierarchy;
     private RolapCubeHierarchyMemberReader reader;
@@ -416,7 +417,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
          */
         protected MemberCacheHelper rolapCubeCacheHelper;
         private final boolean enableCache =
-            MondrianProperties.instance().EnableRolapCubeMemberCache.get();
+            StatementPref.instance().EnableRolapCubeMemberCache;
 
         public CacheRolapCubeHierarchyMemberReader() {
             super(new SqlMemberSource(RolapCubeHierarchy.this));

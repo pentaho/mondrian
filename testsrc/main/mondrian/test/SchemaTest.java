@@ -10,6 +10,7 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapMeasureGroup;
 import mondrian.rolap.aggmatcher.*;
@@ -1592,13 +1593,10 @@ Test that get error if a dimension has more than one hierarchy with same name.
             null,
             null);
 
-        // If SsasCompatibleNaming (the new behavior), the usages of the
-        // [Store] dimension create dimensions called [Store]
+        // Usages of the [Store] dimension create dimensions called [Store]
         // and [Store2], each with a hierarchy called [Store].
         // Therefore Store2's all member is [Store2].[Store].[All Stores],
         // or [Store2].[All Stores] for short.
-        //
-        // Under the old behavior, the member is called [Store2].[All Store2s].
         final String store2AllMember = "[Store2].[All Stores]";
         testContext.assertQueryReturns(
             "select\n"
@@ -1950,12 +1948,12 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     /**
-     * Testcase for
+     * Test case for
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-291">
      * Bug MONDRIAN-291, "'unknown usage' messages"</a>.
      */
     public void testUnknownUsages() {
-        if (!MondrianProperties.instance().ReadAggregates.get()) {
+        if (!StatementPref.instance().ReadAggregates) {
             return;
         }
         final Logger logger = Logger.getLogger(AggTableManager.class);
@@ -2032,7 +2030,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     public void testUnknownUsages1() {
-        if (!MondrianProperties.instance().ReadAggregates.get()) {
+        if (!StatementPref.instance().ReadAggregates) {
             return;
         }
         final Logger logger = Logger.getLogger(AggTableManager.class);
@@ -2819,12 +2817,13 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "Row #0: 16,266\n");
 
         // turn off caching
-        propSaver.set(propSaver.props.DisableCaching, true);
+        PrefDef.DisableCaching.with(propSaver).set(true);
 
         // re-read aggregates
-        propSaver.set(propSaver.props.UseAggregates, true);
-        propSaver.set(propSaver.props.ReadAggregates, false);
-        propSaver.set(propSaver.props.ReadAggregates, true);
+        // FIXME: This no longer works now we've obsoleted property triggers.
+        PrefDef.UseAggregates.with(propSaver).set(true);
+        PrefDef.ReadAggregates.with(propSaver).set(false);
+        PrefDef.ReadAggregates.with(propSaver).set(true);
     }
 
     /**
@@ -3719,7 +3718,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
         // skip this test if using aggregates, the agg tables do not
         // enforce the SQL element in the fact table
-        if (MondrianProperties.instance().UseAggregates.booleanValue()) {
+        if (StatementPref.instance().UseAggregates) {
             return;
         }
 
@@ -4576,7 +4575,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "</Schema>");
 
         if (!Bug.BugMondrian747Fixed
-            && MondrianProperties.instance().EnableGroupingSets.get())
+            && StatementPref.instance().EnableGroupingSets)
         {
             // With grouping sets enabled, MONDRIAN-747 behavior is even worse.
             return;
@@ -4610,8 +4609,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
         // No idea why, but this value comes out TOO LOW. FIXME.
         final String y = !Bug.BugMondrian747Fixed
-            && MondrianProperties.instance().ReadAggregates.get()
-            && MondrianProperties.instance().UseAggregates.get()
+            && StatementPref.instance().ReadAggregates
+            && StatementPref.instance().UseAggregates
             ? "20,957"
             : "266,773";
         testContext.assertQueryReturns(
@@ -4735,9 +4734,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
         if (!Bug.BugMondrian1335Fixed) {
             return;
         }
-        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
-            .get())
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (!pref.FilterChildlessSnowflakeMembers) {
             // Similar to aggregates. If we turn off filtering,
             // we get wild stuff because of referential integrity.
             return;
@@ -4794,9 +4792,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                     + "        </Link>"));
 
         // As above, but using shared dimension.
-        if (MondrianProperties.instance().ReadAggregates.get()
-            && MondrianProperties.instance().UseAggregates.get())
-        {
+        if (pref.ReadAggregates && pref.UseAggregates) {
             // With aggregates enabled, query gives different answer. This is
             // expected because some of the foreign keys have referential
             // integrity problems.
@@ -5180,9 +5176,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     public void testNonCollapsedAggregate() throws Exception {
-        if (!MondrianProperties.instance().UseAggregates.get()
-            && !MondrianProperties.instance().ReadAggregates.get())
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (!pref.UseAggregates && !pref.ReadAggregates) {
             return;
         }
         final String cube =
@@ -5248,9 +5243,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
     public void testNonCollapsedAggregateOnNonUniqueLevelFails()
         throws Exception
     {
-        if (!MondrianProperties.instance().UseAggregates.get()
-            && !MondrianProperties.instance().ReadAggregates.get())
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (!pref.UseAggregates && !pref.ReadAggregates) {
             return;
         }
         final String cube =
@@ -5304,9 +5298,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     public void testTwoNonCollapsedAggregate() throws Exception {
-        if (!MondrianProperties.instance().UseAggregates.get()
-            && !MondrianProperties.instance().ReadAggregates.get())
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (!pref.UseAggregates && !pref.ReadAggregates) {
             return;
         }
         final String cube =
@@ -5528,9 +5521,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
     }
 
     public void testCollapsedError() throws Exception {
-        if (!MondrianProperties.instance().UseAggregates.get()
-            && !MondrianProperties.instance().ReadAggregates.get())
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (!pref.UseAggregates && !pref.ReadAggregates) {
             return;
         }
         final String cube =

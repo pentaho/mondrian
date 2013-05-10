@@ -15,8 +15,8 @@ import mondrian.calc.impl.*;
 import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
+import mondrian.pref.StatementPref;
 import mondrian.rolap.RolapEvaluator;
-import mondrian.rolap.RolapUtil;
 import mondrian.util.CartesianProductList;
 
 import java.util.*;
@@ -457,7 +457,7 @@ public class CrossJoinFunDef extends FunDefBase {
         TupleList list,
         ResolvedFunCall call)
     {
-        int opSize = MondrianProperties.instance().CrossJoinOptimizerSize.get();
+        int opSize = StatementPref.instance().CrossJoinOptimizerSize;
         if (list.isEmpty()) {
             return list;
         }

@@ -4,10 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho
+// Copyright (C) 2011-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap;
+
+import mondrian.pref.StatementPref;
 
 import org.olap4j.mdx.IdentifierNode;
 import org.olap4j.mdx.IdentifierSegment;
@@ -206,7 +208,7 @@ public final class NameResolver {
                 return parent.equals(formulaMember.getHierarchy())
                     || parent.equals(formulaMember.getDimension())
                     || parent instanceof Cube
-                    && !MondrianProperties.instance().NeedDimensionPrefix.get();
+                    && !StatementPref.instance().NeedDimensionPrefix;
             }
         } else {
             return parent instanceof Cube;

@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2009 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.mdx;
@@ -12,6 +12,7 @@ package mondrian.mdx;
 import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
+import mondrian.pref.Scope;
 
 import java.io.PrintWriter;
 import java.util.List;
@@ -96,7 +97,7 @@ public class ParameterExpr extends ExpBase {
         // the parameter.
         final boolean def;
         if (pw instanceof QueryPrintWriter
-            && parameter.getScope() == Parameter.Scope.Statement)
+            && parameter.getScope() == Scope.Statement)
         {
             def = ((QueryPrintWriter) pw).parameters.add(parameter);
         } else {

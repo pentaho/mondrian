@@ -10,16 +10,14 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.SegmentCacheManager;
 import mondrian.rolap.sql.MemberChildrenConstraint;
-import mondrian.server.Execution;
-import mondrian.server.Locus;
+import mondrian.server.*;
 import mondrian.spi.SegmentColumn;
 import mondrian.util.ArraySortedSet;
 import mondrian.util.Pair;
-
-import org.eigenbase.util.property.BooleanProperty;
 
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -843,8 +841,8 @@ public class CacheControlImpl implements CacheControl {
 
     public void execute(MemberEditCommand cmd) {
         final BooleanProperty prop =
-            MondrianProperties.instance().EnableRolapCubeMemberCache;
-        if (prop.get()) {
+            PrefDef.EnableRolapCubeMemberCache;
+        if (prop.get(StatementPref.instance())) {
             throw new IllegalArgumentException(
                 "Member cache control operations are not allowed unless "
                 + "property " + prop.getPath() + " is false");

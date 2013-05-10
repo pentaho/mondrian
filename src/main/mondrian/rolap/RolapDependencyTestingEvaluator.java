@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -13,6 +13,7 @@ import mondrian.calc.*;
 import mondrian.calc.impl.*;
 import mondrian.olap.*;
 import mondrian.olap.type.SetType;
+import mondrian.pref.ServerPref;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -237,8 +238,7 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
         int fakeCount;
         boolean faking;
         boolean disabled;
-        final Random random = Util.createRandom(
-            MondrianProperties.instance().TestSeed.get());
+        final Random random = Util.createRandom(ServerPref.instance().TestSeed);
 
         DteRoot(RolapResult result, int expDeps) {
             super(result);

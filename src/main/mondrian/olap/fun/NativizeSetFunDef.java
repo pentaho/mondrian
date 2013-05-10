@@ -15,7 +15,9 @@ import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
+import mondrian.pref.StatementPref;
 import mondrian.resource.MondrianResource;
+import mondrian.server.*;
 
 import org.apache.log4j.Logger;
 
@@ -85,8 +87,8 @@ public class NativizeSetFunDef extends FunDefBase {
         LOGGER.debug("NativizeSetFunDef compileCall");
         Exp funArg = call.getArg(0);
 
-        if (MondrianProperties.instance().UseAggregates.get()
-            || MondrianProperties.instance().ReadAggregates.get())
+        if (StatementPref.instance().UseAggregates
+            || StatementPref.instance().ReadAggregates)
         {
             return funArg.accept(compiler);
         }
@@ -129,8 +131,8 @@ public class NativizeSetFunDef extends FunDefBase {
             int cardinality =
                 evaluator.getSchemaReader()
                     .getLevelCardinality(level, false, true);
-            final int minThreshold = MondrianProperties.instance()
-                .NativizeMinThreshold.get();
+            final int minThreshold =
+                StatementPref.instance().NativizeMinThreshold;
             final boolean isHighCard = cardinality > minThreshold;
             logHighCardinality(
                 ESTIMATE_MESSAGE, minThreshold, cardinality, isHighCard);
@@ -375,7 +377,7 @@ public class NativizeSetFunDef extends FunDefBase {
             SchemaReader schema = evaluator.getSchemaReader();
             List<Member> tuple = simplifiedList.get(0);
             long nativizeMinThreshold =
-                MondrianProperties.instance().NativizeMinThreshold.get();
+                StatementPref.instance().NativizeMinThreshold;
             long estimatedCardinality = simplifiedList.size();
 
             for (Member member : tuple) {
@@ -773,7 +775,7 @@ public class NativizeSetFunDef extends FunDefBase {
             TupleList simplifiedList, SubstitutionMap substitutionMap)
         {
             long nativizeMaxResults =
-                MondrianProperties.instance().NativizeMaxResults.get();
+                StatementPref.instance().NativizeMaxResults;
             arity = simplifiedList.getArity();
             tempTuple = new Member[arity];
             tempTupleAsList = Arrays.asList(tempTuple);

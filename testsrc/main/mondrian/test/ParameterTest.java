@@ -11,11 +11,10 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.rolap.RolapConnectionProperties;
 
 import junit.framework.Assert;
-
-import org.eigenbase.util.property.Property;
 
 import org.olap4j.impl.Olap4jUtil;
 
@@ -1066,14 +1065,13 @@ public class ParameterTest extends FoodMartTestCase {
      * Tests accessing system properties as parameters in a statement.
      */
     public void testSystemPropsGet() {
-        final List<Property> propertyList =
-            MondrianProperties.instance().getPropertyList();
-        for (Property property : propertyList) {
+        final StatementPref pref = StatementPref.instance();
+        for (BaseProperty property : PrefDef.MAP.values()) {
             assertExprReturns(
                 "ParamRef("
-                + Util.singleQuoteString(property.getPath())
-                + ")",
-                property.stringValue());
+                    + Util.singleQuoteString(property.getPath())
+                    + ")",
+                String.valueOf(property.getObject(pref)));
         }
     }
 
@@ -1091,7 +1089,7 @@ public class ParameterTest extends FoodMartTestCase {
      */
     public void testMondrianPropsGetJava() {
         final String jdbcDrivers =
-            MondrianProperties.instance().JdbcDrivers.get();
+            StatementPref.instance().server.JdbcDrivers;
         assertExprReturns(
             "ParamRef(\"mondrian.jdbcDrivers\")", jdbcDrivers);
     }
@@ -1100,9 +1098,7 @@ public class ParameterTest extends FoodMartTestCase {
      * Tests setting system properties.
      */
     public void testSystemPropsSet() {
-        final List<Property> propertyList =
-            MondrianProperties.instance().getPropertyList();
-        for (Property property : propertyList) {
+        for (BaseProperty property : PrefDef.MAP.values()) {
             final String propName = property.getPath();
             assertSetPropertyFails(propName, "System");
         }

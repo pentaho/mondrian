@@ -14,9 +14,8 @@ import mondrian.calc.impl.*;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.Role.RollupPolicy;
+import mondrian.pref.*;
 import mondrian.rolap.*;
-
-import org.eigenbase.util.property.IntegerProperty;
 
 import java.util.*;
 
@@ -289,9 +288,9 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
         }
 
         private static void checkIfAggregationSizeIsTooLarge(List list) {
-            final IntegerProperty property =
-                MondrianProperties.instance().MaxConstraints;
-            final int maxConstraints = property.get();
+            final IntegerProperty property = PrefDef.MaxConstraints;
+            final int maxConstraints =
+                property.get(StatementPref.instance());
             if (list.size() > maxConstraints) {
                 throw newEvalException(
                     null,

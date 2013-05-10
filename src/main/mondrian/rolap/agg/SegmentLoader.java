@@ -5,18 +5,18 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
 
 import mondrian.olap.MondrianException;
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.pref.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.rolap.cache.SegmentCacheIndex;
-import mondrian.server.Locus;
+import mondrian.server.*;
 import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.spi.*;
 import mondrian.util.*;
@@ -40,8 +40,8 @@ import java.util.concurrent.*;
  * {"CA", "OR", "WA"}, null})</code> returns sales in states CA, OR and WA
  * in the Western region, for all years.</p>
  *
- * <p>It will also look at the {@link MondrianProperties#SegmentCache} property
- * and make usage of the SegmentCache provided as an SPI.
+ * <p>It also looks at the {@link PrefDef#SegmentCache} property
+ * and makes usage of the SegmentCache provided as an SPI.
  *
  * @author Thiyagu, LBoudreau
  * @since 24 May 2007
@@ -101,7 +101,7 @@ public class SegmentLoader {
         List<StarPredicate> compoundPredicateList,
         List<Future<Map<Segment, SegmentWithData>>> segmentFutures)
     {
-        if (!MondrianProperties.instance().DisableCaching.get()) {
+        if (!StatementPref.instance().server.DisableCaching) {
             for (GroupingSet groupingSet : groupingSets) {
                 for (Segment segment : groupingSet.getSegments()) {
                     final SegmentCacheIndex index =
@@ -260,13 +260,13 @@ public class SegmentLoader {
         // Write the segment into external cache.
         //
         // It would be a mistake to do this from the cacheMgr -- because the
-        // calls may take time. The cacheMgr's actions must all be quick. We
-        // are a worker, so we have plenty of time.
+        // calls may take time. The cache manager's actions must all be quick.
+        // We are a worker, so we have plenty of time.
         //
         // Also note that we push the segments to external cache after we have
         // called cacheMgr.loadSucceeded. That call will allow the current
         // query to proceed.
-        if (!MondrianProperties.instance().DisableCaching.get()) {
+        if (!StatementPref.instance().server.DisableCaching) {
             cacheMgr.compositeCache.put(header, body);
             cacheMgr.loadSucceeded(star, header, body);
         }
@@ -763,8 +763,7 @@ public class SegmentLoader {
     }
 
     private void checkResultLimit(int currentCount) {
-        final int limit =
-            MondrianProperties.instance().ResultLimit.get();
+        final int limit = StatementPref.instance().ResultLimit;
         if (limit > 0 && currentCount > limit) {
             throw MondrianResource.instance()
                 .SegmentFetchLimitExceeded.ex(limit);
@@ -832,8 +831,7 @@ public class SegmentLoader {
     /**
      * Decides whether to use a sparse representation for this segment, using
      * the formula described
-     * {@link mondrian.olap.MondrianProperties#SparseSegmentCountThreshold
-     * here}.
+     * {@link PrefDef#SparseSegmentCountThreshold here}.
      *
      * @param possibleCount Number of values in the space.
      * @param actualCount   Actual number of values.
@@ -843,16 +841,16 @@ public class SegmentLoader {
         final double possibleCount,
         final double actualCount)
     {
-        final MondrianProperties properties = MondrianProperties.instance();
+        final StatementPref pref = StatementPref.instance();
         double densityThreshold =
-            properties.SparseSegmentDensityThreshold.get();
+            pref.SparseSegmentDensityThreshold;
         if (densityThreshold < 0) {
             densityThreshold = 0;
         }
         if (densityThreshold > 1) {
             densityThreshold = 1;
         }
-        int countThreshold = properties.SparseSegmentCountThreshold.get();
+        int countThreshold = pref.SparseSegmentCountThreshold;
         if (countThreshold < 0) {
             countThreshold = 0;
         }

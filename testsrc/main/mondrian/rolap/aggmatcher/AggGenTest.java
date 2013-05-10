@@ -4,12 +4,13 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
+import mondrian.pref.PrefDef;
 import mondrian.rolap.RolapConnection;
 import mondrian.test.FoodMartTestCase;
 
@@ -48,10 +49,10 @@ public class AggGenTest extends FoodMartTestCase {
         // test run
 
         // If run in Ant and with mondrian.jar, please comment out this line:
-        propSaver.set(propSaver.props.AggregateRules, "DefaultRules.xml");
-        propSaver.set(propSaver.props.UseAggregates, true);
-        propSaver.set(propSaver.props.ReadAggregates, true);
-        propSaver.set(propSaver.props.GenerateAggregateSql, true);
+        PrefDef.AggregateRules.with(propSaver).set("DefaultRules.xml");
+        PrefDef.UseAggregates.with(propSaver).set(true);
+        PrefDef.ReadAggregates.with(propSaver).set(true);
+        PrefDef.GenerateAggregateSql.with(propSaver).set(true);
 
         final RolapConnection rolapConn = (RolapConnection) getConnection();
         Query query =

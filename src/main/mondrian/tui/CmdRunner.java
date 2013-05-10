@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.tui;
@@ -16,12 +16,12 @@ import mondrian.olap.DriverManager;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.fun.FunInfo;
 import mondrian.olap.type.TypeUtil;
+import mondrian.pref.*;
 import mondrian.rolap.*;
+import mondrian.util.Pair;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.*;
-
-import org.eigenbase.util.property.Property;
 
 import org.olap4j.CellSet;
 import org.olap4j.OlapConnection;
@@ -164,8 +164,7 @@ public class CmdRunner {
     }
 
     public static void listPropertyNames(StringBuilder buf) {
-        PropertyInfo propertyInfo =
-                new PropertyInfo(MondrianProperties.instance());
+        PropertyInfo propertyInfo = new PropertyInfo();
         for (int i = 0; i < propertyInfo.size(); i++) {
             buf.append(propertyInfo.getProperty(i).getPath());
             buf.append(nl);
@@ -173,11 +172,11 @@ public class CmdRunner {
     }
 
     public static void listPropertiesAll(StringBuilder buf) {
-        PropertyInfo propertyInfo =
-                new PropertyInfo(MondrianProperties.instance());
+        PropertyInfo propertyInfo = new PropertyInfo();
+        final StatementPref pref = StatementPref.instance();
         for (int i = 0; i < propertyInfo.size(); i++) {
             String propertyName = propertyInfo.getPropertyName(i);
-            String propertyValue = propertyInfo.getProperty(i).getString();
+            Object propertyValue = propertyInfo.getProperty(i).getObject(pref);
             buf.append(propertyName);
             buf.append('=');
             buf.append(propertyValue);
@@ -189,12 +188,8 @@ public class CmdRunner {
      * Returns the value of a property, or null if it is not set.
      */
     private static String getPropertyValue(String propertyName) {
-        final Property property = PropertyInfo.lookupProperty(
-            MondrianProperties.instance(),
-            propertyName);
-        return property.isSet()
-            ? property.getString()
-            : null;
+        final BaseProperty property = PropertyInfo.lookupProperty(propertyName);
+        return (String) property.getObject(StatementPref.instance());
     }
 
     public static void listProperty(String propertyName, StringBuilder buf) {
@@ -202,19 +197,16 @@ public class CmdRunner {
     }
 
     public static boolean isProperty(String propertyName) {
-        final Property property = PropertyInfo.lookupProperty(
-            MondrianProperties.instance(),
-            propertyName);
+        final BaseProperty property = PropertyInfo.lookupProperty(propertyName);
         return property != null;
     }
 
     public static boolean setProperty(String name, String value) {
-        final Property property = PropertyInfo.lookupProperty(
-            MondrianProperties.instance(),
-            name);
-        String oldValue = property.getString();
-        if (! Util.equals(oldValue, value)) {
-            property.setString(value);
+        final BaseProperty property = PropertyInfo.lookupProperty(name);
+        final StatementPref pref = StatementPref.instance();
+        Object oldValue = property.getObject(pref);
+        if (!Util.equals(oldValue, value)) {
+            property.setObject(pref, value);
             return true;
         } else {
             return false;
@@ -232,28 +224,25 @@ public class CmdRunner {
      * Looks up the definition of a property with a given name.
      */
     private static class PropertyInfo {
-        private final List<Property> propertyList = new ArrayList<Property>();
-        private final List<String> propertyNameList = new ArrayList<String>();
+        private final List<Pair<BaseProperty, String>> propertyList =
+            new ArrayList<Pair<BaseProperty, String>>();
 
-        PropertyInfo(MondrianProperties properties) {
-            final Class<? extends Object> clazz = properties.getClass();
-            final Field[] fields = clazz.getFields();
-            for (Field field : fields) {
+        PropertyInfo() {
+            final Class clazz = PrefDef.class;
+            for (Field field : clazz.getFields()) {
                 if (!Modifier.isPublic(field.getModifiers())
-                    || Modifier.isStatic(field.getModifiers())
-                    || !Property.class.isAssignableFrom(
-                        field.getType()))
+                    || !Modifier.isStatic(field.getModifiers())
+                    || !BaseProperty.class.isAssignableFrom(field.getType()))
                 {
                     continue;
                 }
-                final Property property;
+                final BaseProperty property;
                 try {
-                    property = (Property) field.get(properties);
+                    property = (BaseProperty) field.get(null);
                 } catch (IllegalAccessException e) {
                     continue;
                 }
-                propertyList.add(property);
-                propertyNameList.add(field.getName());
+                propertyList.add(Pair.of(property, field.getName()));
             }
         }
 
@@ -261,22 +250,19 @@ public class CmdRunner {
             return propertyList.size();
         }
 
-        public Property getProperty(int i) {
-            return propertyList.get(i);
+        public BaseProperty getProperty(int i) {
+            return propertyList.get(i).left;
         }
 
         public String getPropertyName(int i) {
-            return propertyNameList.get(i);
+            return propertyList.get(i).right;
         }
 
         /**
          * Looks up the definition of a property with a given name.
          */
-        public static Property lookupProperty(
-            MondrianProperties properties,
-            String propertyName)
-        {
-            final Class<? extends Object> clazz = properties.getClass();
+        public static BaseProperty lookupProperty(String propertyName) {
+            final Class clazz = PrefDef.class;
             final Field field;
             try {
                 field = clazz.getField(propertyName);
@@ -284,13 +270,13 @@ public class CmdRunner {
                 return null;
             }
             if (!Modifier.isPublic(field.getModifiers())
-                || Modifier.isStatic(field.getModifiers())
-                || !Property.class.isAssignableFrom(field.getType()))
+                || !Modifier.isStatic(field.getModifiers())
+                || !BaseProperty.class.isAssignableFrom(field.getType()))
             {
                 return null;
             }
             try {
-                return (Property) field.get(properties);
+                return (BaseProperty) field.get(null);
             } catch (IllegalAccessException e) {
                 return null;
             }
@@ -833,24 +819,27 @@ public class CmdRunner {
     // properties
     /////////////////////////////////////////////////////////////////////////
     protected static String getConnectStringProperty() {
-        return MondrianProperties.instance().TestConnectString.get();
+        return ServerPref.instance().TestConnectString;
     }
+
     protected static String getJdbcURLProperty() {
-        return MondrianProperties.instance().FoodmartJdbcURL.get();
+        return ServerPref.instance().FoodmartJdbcURL;
     }
 
     protected static String getJdbcUserProperty() {
-        return MondrianProperties.instance().TestJdbcUser.get();
+        return ServerPref.instance().TestJdbcUser;
     }
 
     protected static String getJdbcPasswordProperty() {
-        return MondrianProperties.instance().TestJdbcPassword.get();
+        return ServerPref.instance().TestJdbcPassword;
     }
+
     protected static String getCatalogURLProperty() {
-        return MondrianProperties.instance().CatalogURL.get();
+        return StatementPref.instance().CatalogURL;
     }
+
     protected static String getJdbcDriversProperty() {
-        return MondrianProperties.instance().JdbcDrivers.get();
+        return ServerPref.instance().JdbcDrivers;
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -2394,7 +2383,7 @@ public class CmdRunner {
         String propFile)
         throws IOException
     {
-        MondrianProperties.instance().load(new FileInputStream(propFile));
+        Prefs.populate(ServerPref.instance(), new File(propFile));
     }
 
     /////////////////////////////////////////////////////////////////////////

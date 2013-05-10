@@ -4,15 +4,15 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho and others
+// Copyright (C) 2007-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.util;
 
-import org.eigenbase.util.property.StringProperty;
+import mondrian.olap.Util;
 
 import java.lang.reflect.*;
-import java.util.Properties;
+import java.util.Map;
 
 /**
  * Concrete derived classes of the generic <code>ObjectFactory</code> class
@@ -312,7 +312,7 @@ public abstract class ObjectFactory<V> {
      * @throws CreationException if unable to create the object
      */
     protected final V getObject() throws CreationException {
-        return getObject(System.getProperties());
+        return getObject(Util.toMap(System.getProperties()));
     }
 
     /**
@@ -320,16 +320,15 @@ public abstract class ObjectFactory<V> {
      * be used to look up a class name.
      * The constructor for the object takes no parameters.
      *
-     * @param props the property definitions to use to determine the
-     * implementation class
+     * @param env Environment
      *
      * @return the newly created object
      * @throws CreationException if unable to create the object
      */
-    protected final V getObject(final Properties props)
+    protected final V getObject(Map<String, String> env)
         throws CreationException
     {
-        return getObject(props, EMPTY_CLASS_ARRAY, EMPTY_OBJECT_ARRAY);
+        return getObject(env, EMPTY_CLASS_ARRAY, EMPTY_OBJECT_ARRAY);
     }
 
     /**
@@ -350,20 +349,22 @@ public abstract class ObjectFactory<V> {
         throws CreationException
     {
         return getObject(
-            System.getProperties(), parameterTypes, parameterValues);
+            Util.toMap(System.getProperties()),
+            parameterTypes,
+            parameterValues);
     }
 
     /**
      * Constructs an object where the <code>parameterTypes</code> and
      * <code>parameterValues</code> are constructor parameters and
      * Properties parameter is used to look up a class name.
-     * <p>
-     * This returns a new instance of the Object each time its
+     *
+     * <p>Returns a new instance of the Object each time it is
      * called (assuming that if the method <code>getDefault</code>,
      * which derived classes implement), if called, creates a new
      * object each time.
      *
-     * @param props the property definitions to use to determine the
+     * @param env Environment
      * @param parameterTypes  the class parameters that define the signature
      * of the constructor to use
      * @param parameterValues  the values to use to construct the current
@@ -372,7 +373,7 @@ public abstract class ObjectFactory<V> {
      * @throws CreationException if unable to create the object
      */
     protected V getObject(
-        final Properties props,
+        final Map<String, String> env,
         final Class[] parameterTypes,
         final Object[] parameterValues) throws CreationException
     {
@@ -382,7 +383,7 @@ public abstract class ObjectFactory<V> {
             return getObject(className, parameterTypes, parameterValues);
         }
 
-        final String propClassName = getClassName(props);
+        final String propClassName = getClassName(env);
         return (propClassName != null)
                 // User overriding application default
             ? getObject(propClassName, parameterTypes, parameterValues)
@@ -394,7 +395,7 @@ public abstract class ObjectFactory<V> {
      * Creates an instance with the given <code>className</code>,
      * <code>parameterTypes</code> and <code>parameterValues</code> or
      * throw a <code>CreationException</code>. There are two different
-     * mechanims available. The first is to uses reflection
+     * mechanisms available. The first is to uses reflection
      * to create the instance typing the generated Object based upon
      * the <code>interfaceClass</code> factory instance object.
      * With the second the <code>className</code> is an class that implements
@@ -473,22 +474,17 @@ public abstract class ObjectFactory<V> {
      * This method is allowed to return null.
      *
      * @return <code>null</code> or a class name
+     * @param env Environment
      */
-    protected String getClassName(final Properties props) {
-        final StringProperty stringProp = getStringProperty();
-        final String className = stringProp.get();
-        return (className != null)
-                ? className
-                : (props == null)
-                    ? null : props.getProperty(stringProp.getPath());
+    protected String getClassName(final Map<String, String> env) {
+        final String propertyName = getPropertyName();
+        return env.get(propertyName);
     }
 
     /**
-     * Return the <code>StringProperty</code> associated with this factory.
-     *
-     * @return the  <code>StringProperty</code>
+     * Returns the property associated with this factory.
      */
-    protected abstract StringProperty getStringProperty();
+    protected abstract String getPropertyName();
 
     /**
      * For most uses (other than testing) this is the method that derived
@@ -562,17 +558,18 @@ public abstract class ObjectFactory<V> {
 
         /**
          * Returns the singleton Object.
-         * The first time this is called, an object is created where
+         *
+         * <p>The first time this is called, an object is created where
          * the <code>parameterTypes</code> and
          * <code>parameterValues</code> are constructor parameters and
-         * Properties parameter is used to look up a class name.
-         * <p>
-         * This returns a same instance of the Object each time its
+         * Properties parameter is used to look up a class name.</p>
+         *
+         * <p>Returns a same instance of the Object each time its
          * called except if the <code>getClassName</code> method
          * returns a non-null class name which should only
-         * happen as needed for unit testing.
+         * happen as needed for unit testing.</p>
          *
-         * @param props the property definitions to use to determine the
+         * @param env Environment
          * @param parameterTypes  the class parameters that define the signature
          * of the constructor to use
          * @param parameterValues  the values to use to construct the current
@@ -581,7 +578,7 @@ public abstract class ObjectFactory<V> {
          * @throws CreationException if unable to create the object
          */
         protected T getObject(
-            final Properties props,
+            final Map<String, String> env,
             final Class[] parameterTypes,
             final Object[] parameterValues) throws CreationException
         {
@@ -607,7 +604,7 @@ public abstract class ObjectFactory<V> {
             // override so we may not want to set the singleInstance
             // to it. For now I am ignoring the issue.
             if (this.singleInstance == null) {
-                final String propClassName = getClassName(props);
+                final String propClassName = getClassName(env);
 
                 this.singleInstance = (propClassName != null)
                         // The user overriding application default

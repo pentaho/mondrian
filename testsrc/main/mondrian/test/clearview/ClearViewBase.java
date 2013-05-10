@@ -5,13 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test.clearview;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.pref.PrefDef;
 import mondrian.rolap.BatchTestCase;
 import mondrian.spi.Dialect;
 import mondrian.test.*;
@@ -123,7 +123,7 @@ public abstract class ClearViewBase extends BatchTestCase {
 
         // Set some properties to match the way we configure them
         // for ClearView.
-        propSaver.set(propSaver.props.ExpandNonNative, true);
+        PrefDef.ExpandNonNative.with(propSaver).set(true);
 
         String mdx = diffRepos.expand(null, "${mdx}");
         String result = Util.nl + TestContext.toString(

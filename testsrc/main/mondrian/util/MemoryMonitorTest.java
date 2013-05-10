@@ -4,13 +4,14 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2009 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.util;
 
 import mondrian.calc.ResultStyle;
 import mondrian.olap.*;
+import mondrian.pref.StatementPref;
 import mondrian.test.FoodMartTestCase;
 
 import java.util.ArrayList;
@@ -84,7 +85,7 @@ public class MemoryMonitorTest extends FoodMartTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        enabled = MondrianProperties.instance().MemoryMonitor.get();
+        enabled = StatementPref.instance().MemoryMonitor;
     }
     protected void tearDown() throws Exception {
         super.tearDown();
@@ -239,10 +240,10 @@ Does not work without the notify on add feature.
         final String queryString =
             "select \n"
             + "{ \n"
-            /*
+/*
             + "[Measures].[Unit Sales], \n"
             + "[Measures].[Store Cost], \n"
-            */
+*/
             + "[Measures].[Store Sales], \n"
             + "[Measures].[Sales Count], \n"
             + "[Measures].[Customer Count] \n"

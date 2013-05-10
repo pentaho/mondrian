@@ -5,12 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.pref.SchemaPref;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,16 +25,15 @@ public class RolapNativeRegistry extends RolapNative {
     private Map<String, RolapNative> nativeEvaluatorMap =
         new HashMap<String, RolapNative>();
 
-    public RolapNativeRegistry() {
+    public RolapNativeRegistry(SchemaPref pref) {
         super.setEnabled(true);
 
-        /*
-         * Mondrian functions which might be evaluated natively.
-         */
-        register("NonEmptyCrossJoin".toUpperCase(), new RolapNativeCrossJoin());
-        register("CrossJoin".toUpperCase(), new RolapNativeCrossJoin());
-        register("TopCount".toUpperCase(), new RolapNativeTopCount());
-        register("Filter".toUpperCase(), new RolapNativeFilter());
+        // Mondrian functions which might be evaluated natively.
+        register(
+            "NonEmptyCrossJoin".toUpperCase(), new RolapNativeCrossJoin(pref));
+        register("CrossJoin".toUpperCase(), new RolapNativeCrossJoin(pref));
+        register("TopCount".toUpperCase(), new RolapNativeTopCount(pref));
+        register("Filter".toUpperCase(), new RolapNativeFilter(pref));
     }
 
     /**

@@ -10,6 +10,7 @@
 package mondrian.util;
 
 import mondrian.olap.*;
+import mondrian.pref.StatementPref;
 import mondrian.rolap.RolapSchemaLoader;
 import mondrian.spi.Dialect;
 
@@ -52,11 +53,6 @@ public class Bug {
      * we want to fix, log a bug, add a new {@code BugMondrianXxxFixed} constant
      * to this class, and make the test case conditional on that constant
      * instead.
-     *
-     * <p>See also the property
-     * {@link mondrian.olap.MondrianProperties#SsasCompatibleNaming},
-     * which allows the user to choose certain behaviors which are compatible
-     * with SSAS 2005 but incompatible with Mondrian's previous behavior.
      */
     public static final boolean Ssas2005Compatible = false;
 
@@ -258,7 +254,7 @@ public class Bug {
      */
     public static boolean avoidMemoryOverflow(Dialect dialect) {
         return dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS
-            && MondrianProperties.instance().MemoryMonitor.get();
+            && StatementPref.instance().MemoryMonitor;
     }
 
     /**

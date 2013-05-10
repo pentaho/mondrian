@@ -29,6 +29,7 @@ will probably reduce long before you get to their limit.</p>
     <PropertyDefinition>
         <Name>JdbcDrivers</Name>
         <Path>mondrian.jdbcDrivers</Path>
+        <Scope>System</Scope>
         <Description>
 Property containing a list of JDBC drivers to load automatically.
 Must be a comma-separated list of class names, and the classes must be
@@ -61,6 +62,7 @@ maximum size of a result set.
         <Name>TestName</Name>
         <Path>mondrian.test.Name</Path>
         <Category>Testing</Category>
+        <Scope>System</Scope>
         <Description>
 <p>String property that determines which tests are run.</p>
 
@@ -77,6 +79,7 @@ in its entirety will be run.</p>
         <Name>TestClass</Name>
         <Path>mondrian.test.Class</Path>
         <Category>Testing</Category>
+        <Scope>System</Scope>
         <Description>
 <p>String property that determines which test class to run.</p>
 
@@ -96,17 +99,19 @@ in its entirety will be run.</p>
         <Name>TestConnectString</Name>
         <Path>mondrian.test.connectString</Path>
         <Category>Testing</Category>
+        <Scope>System</Scope>
         <Description>
-<p>Property containing the connect string which regresssion tests should
+<p>Property containing the connect string which regression tests should
 use to connect to the database.</p>
 
-<p>Format is specified in {@link Util#parseConnectString(String)}.</p>
+<p>Format is specified in {@link mondrian.olap.Util#parseConnectString(String)}.</p>
         </Description>
         <Type>String</Type>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>TestHighCardinalityDimensionList</Name>
         <Path>mondrian.test.highCardDimensions</Path>
+        <Scope>System</Scope>
         <Description>
 Property containing a list of dimensions in the Sales cube that should
 be treated as high-cardinality dimensions by the testing infrastructure.
@@ -119,6 +124,7 @@ functionality enabled.
         <Name>FoodmartJdbcURL</Name>
         <Path>mondrian.foodmart.jdbcURL</Path>
         <Category>Testing</Category>
+        <Scope>System</Scope>
         <Description>
 <p>Property containing the JDBC URL of the FoodMart database.
 The default value is to connect to an ODBC data source called
@@ -265,6 +271,7 @@ driver.classpath=/some/path/iijdbc.jar</code></blockquote>
         <Name>TestJdbcUser</Name>
         <Path>mondrian.foodmart.jdbcUser</Path>
         <Category>Testing</Category>
+        <Scope>System</Scope>
         <Description>
 Property containing the JDBC user of a test database.
 The default value is null, to cope with DBMSs that don't need this.
@@ -275,6 +282,7 @@ The default value is null, to cope with DBMSs that don't need this.
         <Name>TestJdbcPassword</Name>
         <Path>mondrian.foodmart.jdbcPassword</Path>
         <Category>Testing</Category>
+        <Scope>System</Scope>
         <Description>
 Property containing the JDBC password of a test database.
 The default value is null, to cope with DBMSs that don't need this.
@@ -294,6 +302,7 @@ of segment data. Defaults to <code>true</code>.
     <PropertyDefinition>
         <Name>SegmentCache</Name>
         <Path>mondrian.rolap.SegmentCache</Path>
+        <Scope>System</Scope>
         <Description>
 Property which defines which SegmentCache implementation to use.
 Specify the value as a fully qualified class name, such as
@@ -431,6 +440,7 @@ Property that contains the URL of the catalog to be used by
     <PropertyDefinition>
         <Name>EnableCacheHitCounters</Name>
         <Path>mondrian.rolap.agg.enableCacheHitCounters</Path>
+        <Scope>System</Scope>
         <Description>
 <p>Property that controls whether aggregation cache hit / miss
 counters will be enabled.</p>
@@ -574,6 +584,7 @@ generation sql.</p>
         <Name>DisableCaching</Name>
         <Path>mondrian.rolap.star.disableCaching</Path>
         <Category>Caching</Category>
+        <Scope>System</Scope>
         <Description>
 Boolean property that controls whether a RolapStar's
 aggregate data cache is cleared after each query.
@@ -587,6 +598,7 @@ query to the next (the cache is cleared after each query).
         <Name>DisableLocalSegmentCache</Name>
         <Path>mondrian.rolap.star.disableLocalSegmentCache</Path>
         <Category>Caching</Category>
+        <Scope>System</Scope>
         <Description>
 Boolean property that controls whether the data from segments
 is cached locally. To create custom caches, look for the
@@ -600,7 +612,7 @@ SegmentCache SPI.
         <Path>mondrian.olap.triggers.enable</Path>
         <Description>
 <p>Boolean property that controls whether to notify the Mondrian system
-when a {@link MondrianProperties property value} changes.</p>
+when a {@link PrefDef property value} changes.</p>
 
 <p>This allows objects dependent on Mondrian properties to react (that
 is, reload), when a given property changes via, say,
@@ -674,6 +686,7 @@ many redundant sorts. The default is true.
         <Name>TestExpDependencies</Name>
         <Path>mondrian.test.ExpDependencies</Path>
         <Category>Testing</Category>
+        <Scope>System</Scope>
         <Description>
 <p>Integer property that controls whether to test operators'
 dependencies, and how much time to spend doing it.</p>
@@ -692,6 +705,7 @@ dimensions which the expression claims to be independent of.</p>
         <Name>TestSeed</Name>
         <Path>mondrian.test.random.seed</Path>
         <Category>Testing</Category>
+        <Scope>System</Scope>
         <Description>
 <p>Seed for random number generator used by some of the tests.</p>
 
@@ -737,6 +751,7 @@ for more details.</p>
         <Description>
 If enabled some NON EMPTY CrossJoin will be computed in SQL.
         </Description>
+        <Scope>System</Scope>
         <Type>boolean</Type>
         <Default>true</Default>
     </PropertyDefinition>
@@ -747,6 +762,7 @@ If enabled some NON EMPTY CrossJoin will be computed in SQL.
         <Description>
 If enabled some TopCount will be computed in SQL.
         </Description>
+        <Scope>System</Scope>
         <Type>boolean</Type>
         <Default>true</Default>
     </PropertyDefinition>
@@ -754,6 +770,7 @@ If enabled some TopCount will be computed in SQL.
         <Name>EnableNativeFilter</Name>
         <Path>mondrian.native.filter.enable</Path>
         <Category>SQL generation</Category>
+        <Scope>System</Scope>
         <Description>
 If enabled some Filter() will be computed in SQL.
         </Description>
@@ -764,6 +781,7 @@ If enabled some Filter() will be computed in SQL.
         <Name>EnableNativeNonEmpty</Name>
         <Path>mondrian.native.nonempty.enable</Path>
         <Category>SQL generation</Category>
+        <Scope>System</Scope>
         <Description>
 <p>If enabled some NON EMPTY set operations like member.children,
 level.members and member descendants will be computed in SQL.</p>
@@ -788,7 +806,7 @@ definitely have been wasted effort.)</p>
 unrecognized action is specified)</li>
 <li><code>WARN</code>:  log a warning to RolapUtil logger</li>
 <li><code>ERROR</code>:  throw an instance of
-{@link NativeEvaluationUnsupportedException}</li>
+{@link mondrian.olap.NativeEvaluationUnsupportedException}</li>
 </ul>
         </Description>
         <Type>String</Type>
@@ -929,11 +947,12 @@ value of 0 (the default), indicates no timeout.</p>
     <PropertyDefinition>
         <Name>RolapConnectionShepherdThreadPollingInterval</Name>
         <Path>mondrian.rolap.shepherdThreadPollingInterval</Path>
+        <Scope>System</Scope>
         <Description>
 <p>Property that defines the interval value (in milliseconds) between
 polling operations performed by the RolapConnection shepherd thread.
-This controls query timeouts and calcelation, so a small value
-(a few miliseconds) is best. Setting this to a value higher than
+This controls query timeouts and cancellation, so a small value
+(a few milliseconds) is best. Setting this to a value higher than
 mondrian.rolap.queryTimeout will result the timeout not being enforced
 as expected.</p>
 
@@ -945,6 +964,7 @@ as expected.</p>
     <PropertyDefinition>
         <Name>RolapConnectionShepherdNbThreads</Name>
         <Path>mondrian.rolap.maxQueryThreads</Path>
+        <Scope>System</Scope>
         <Description>
 <p>Maximum number of MDX query threads per Mondrian server instance.
 Defaults to 10.</p>
@@ -955,6 +975,7 @@ Defaults to 10.</p>
     <PropertyDefinition>
         <Name>SegmentCacheManagerNumberSqlThreads</Name>
         <Path>mondrian.rolap.maxSqlThreads</Path>
+        <Scope>System</Scope>
         <Description>
 <p>Maximum number of threads per Mondrian server instance that
 are used to run SQL queries when populating segments.
@@ -966,6 +987,7 @@ Defaults to 100.</p>
     <PropertyDefinition>
         <Name>SegmentCacheManagerNumberCacheThreads</Name>
         <Path>mondrian.rolap.maxCacheThreads</Path>
+        <Scope>System</Scope>
         <Description>
 <p>Maximum number of threads per Mondrian server instance that
 are used to run perform operations on the external caches.
@@ -1023,6 +1045,7 @@ allowed when iterating over members to compute aggregates.  A value of
         <Name>ExecutionHistorySize</Name>
         <Path>mondrian.server.monitor.executionHistorySize</Path>
         <Category>Monitoring</Category>
+        <Scope>System</Scope>
         <Description>
 <p>Property that defines how many previous execution instances the
 <code>Monitor</code> keeps in its history so that it can send the events
@@ -1282,7 +1305,7 @@ property.</p>
         <Path>mondrian.rolap.SolveOrderMode</Path>
         <Description>
 Property that controls the behavior of
-{@link Property#SOLVE_ORDER solve order} of calculated members and sets.
+{@link mondrian.olap.Property#SOLVE_ORDER solve order} of calculated members and sets.
 
 <p>Valid values are "ABSOLUTE" (the default) and "SCOPED". See
 {@link mondrian.olap.SolveOrderMode} for details.</p>
@@ -1369,6 +1392,7 @@ table, during your ETL process, and to set this property to
     <PropertyDefinition>
         <Name>StatisticsProviders</Name>
         <Path>mondrian.statistics.providers</Path>
+        <Scope>System</Scope>
         <Description>
 <p>Comma-separated list of classes to be used to get statistics about the
 number of rows in a table, or the number of distinct values in a column.</p>
@@ -1436,6 +1460,7 @@ log4j.configuration=file:log4j.properties</code></blockquote>
         <Name>VfsClass</Name>
         <Path>mondrian.spi.virtualFileHandlerClass</Path>
         <Category>Factories</Category>
+        <Scope>System</Scope>
         <Description>
             <p>Name of the class that allows Mondrian to read from files or
                 URLs. The class must implement the

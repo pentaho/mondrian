@@ -10,7 +10,7 @@
 */
 package mondrian.test;
 
-import mondrian.olap.MondrianProperties;
+import mondrian.pref.*;
 
 /**
  * Test case to
@@ -21,8 +21,6 @@ import mondrian.olap.MondrianProperties;
  * @since Dec 03, 2007
  */
 public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
-
-    private final MondrianProperties prop = MondrianProperties.instance();
 
     private static final String cubeSales3 =
         "<Cube name=\"Sales 3\">\n"
@@ -57,7 +55,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, true);
+        PrefDef.EnableNonEmptyOnAllAxis.with(propSaver).set(true);
     }
 
     public TestContext getTestContext() {
@@ -320,8 +318,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
     }
 
     public void testUnrelatedDimPropOverridesIgnoreMeasure() {
-        propSaver.set(
-            propSaver.props.IgnoreMeasureForNonJoiningDimension, true);
+        PrefDef.IgnoreMeasureForNonJoiningDimension.with(propSaver).set(true);
         assertQueryReturns(
             "WITH\n"
             + "MEMBER [Measures].[Total Sales] AS '[Measures].[Store Sales] + "

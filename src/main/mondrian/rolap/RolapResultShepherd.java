@@ -4,14 +4,15 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2011 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.resource.MondrianResource;
-import mondrian.server.Execution;
+import mondrian.server.*;
 import mondrian.util.Pair;
 
 import java.util.List;
@@ -34,14 +35,15 @@ import java.util.concurrent.*;
  */
 public class RolapResultShepherd {
 
+    private final ServerPref pref = ServerPref.instance();
+
     /**
      * An executor service used for both the shepherd thread and the
      * Execution objects.
      */
     private final ExecutorService executor =
         Util.getExecutorService(
-            MondrianProperties.instance()
-                .RolapConnectionShepherdNbThreads.get(),
+            pref.RolapConnectionShepherdNbThreads,
             0, 1,
             "mondrian.rolap.RolapResultShepherd$executor",
             new RejectedExecutionHandler() {
@@ -66,16 +68,13 @@ public class RolapResultShepherd {
     public RolapResultShepherd() {
         final Pair<Long, TimeUnit> interval =
             Util.parseInterval(
-                MondrianProperties.instance()
-                    .RolapConnectionShepherdThreadPollingInterval.get(),
+                pref.RolapConnectionShepherdThreadPollingInterval,
                 TimeUnit.MILLISECONDS);
         final long period = interval.right.toMillis(interval.left);
         timer.scheduleAtFixedRate(
             new TimerTask() {
             public void run() {
-                for (final Pair<FutureTask<Result>, Execution> task
-                    : tasks)
-                {
+                for (final Pair<FutureTask<Result>, Execution> task : tasks) {
                     if (task.left.isDone()) {
                         tasks.remove(task);
                         continue;

@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2009 Pentaho and others
+// Copyright (C) 2007-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -12,7 +12,7 @@ package mondrian.olap;
 /**
  * Exception which indicates that native evaluation of a function
  * was enabled but not supported, and
- * {@link MondrianProperties#AlertNativeEvaluationUnsupported} was
+ * {@link mondrian.pref.PrefDef#AlertNativeEvaluationUnsupported} was
  * set to <code>ERROR</code>.
  *
  * @author John Sichi

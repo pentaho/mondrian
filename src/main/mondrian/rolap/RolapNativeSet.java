@@ -15,6 +15,7 @@ import mondrian.calc.ResultStyle;
 import mondrian.calc.TupleList;
 import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.olap.*;
+import mondrian.pref.StatementPref;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.cache.*;
 import mondrian.rolap.sql.*;
@@ -251,7 +252,7 @@ public abstract class RolapNativeSet extends RolapNative {
                         dialect, dataSource, partialResult, newPartialResult);
             }
 
-            if (!MondrianProperties.instance().DisableCaching.get()) {
+            if (!StatementPref.instance().server.DisableCaching) {
                 if (hasEnumTargets) {
                     if (newPartialResult != null) {
                         cache.put(

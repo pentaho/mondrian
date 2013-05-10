@@ -5,12 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
 
 import mondrian.olap.Util;
+import mondrian.pref.PrefDef;
 import mondrian.test.clearview.*;
 
 import junit.framework.*;
@@ -35,9 +36,9 @@ public class CVConcurrentMdxTest extends FoodMartTestCase {
     }
 
     public void testConcurrentQueriesInRandomOrder() throws Exception {
-        propSaver.set(propSaver.props.DisableCaching, false);
-        propSaver.set(propSaver.props.UseAggregates, false);
-        propSaver.set(propSaver.props.ReadAggregates, false);
+        PrefDef.DisableCaching.with(propSaver).set(false);
+        PrefDef.UseAggregates.with(propSaver).set(false);
+        PrefDef.ReadAggregates.with(propSaver).set(false);
 
         // test partially filled aggregation cache
         // add test classes
@@ -68,9 +69,9 @@ public class CVConcurrentMdxTest extends FoodMartTestCase {
     public void testConcurrentQueriesInRandomOrderOnVirtualCube()
         throws Exception
     {
-        propSaver.set(propSaver.props.DisableCaching, false);
-        propSaver.set(propSaver.props.UseAggregates, false);
-        propSaver.set(propSaver.props.ReadAggregates, false);
+        PrefDef.DisableCaching.with(propSaver).set(false);
+        PrefDef.UseAggregates.with(propSaver).set(false);
+        PrefDef.ReadAggregates.with(propSaver).set(false);
 
         // test partially filled aggregation cache
         // add test classes
@@ -99,9 +100,9 @@ public class CVConcurrentMdxTest extends FoodMartTestCase {
     }
 
     public void testConcurrentCVQueriesInRandomOrder() throws Exception {
-        propSaver.set(propSaver.props.DisableCaching, false);
-        propSaver.set(propSaver.props.UseAggregates, false);
-        propSaver.set(propSaver.props.ReadAggregates, false);
+        PrefDef.DisableCaching.with(propSaver).set(false);
+        PrefDef.UseAggregates.with(propSaver).set(false);
+        PrefDef.ReadAggregates.with(propSaver).set(false);
 
         // test partially filled aggregation cache
         // add test classes

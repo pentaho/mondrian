@@ -13,10 +13,11 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
-import mondrian.server.Locus;
+import mondrian.server.*;
 import mondrian.spi.*;
 
 import org.apache.commons.collections.map.ReferenceMap;
@@ -97,11 +98,11 @@ public class RolapStar {
     /**
      * Returns a measure of the IO cost of querying this table. It can be
      * either the row count or the row count times the size of a row.
-     * If the property {@link MondrianProperties#ChooseAggregateByVolume}
+     * If the property {@link PrefDef#ChooseAggregateByVolume}
      * is true, then volume is returned, otherwise row count.
      */
     public int getCost() {
-        return MondrianProperties.instance().ChooseAggregateByVolume.get()
+        return StatementPref.instance().ChooseAggregateByVolume
             ? factTable.relation.getVolume()
             : factTable.relation.getRowCount();
     }
@@ -367,7 +368,7 @@ public class RolapStar {
     }
 
     boolean isCacheDisabled() {
-        return MondrianProperties.instance().DisableCaching.get();
+        return StatementPref.instance().server.DisableCaching;
     }
 
     /**

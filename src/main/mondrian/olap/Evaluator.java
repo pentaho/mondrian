@@ -12,6 +12,7 @@ package mondrian.olap;
 
 import mondrian.calc.ParameterSlot;
 import mondrian.calc.TupleIterable;
+import mondrian.pref.StatementPref;
 import mondrian.rolap.RolapMeasureGroup;
 
 import java.util.*;
@@ -489,6 +490,11 @@ public interface Evaluator {
      * @return query timing context
      */
     QueryTiming getTiming();
+
+    /**
+     * Preferences of the current statement.
+     */
+    StatementPref getStatementPref();
 
     /**
      * Interface for evaluating a particular named set.

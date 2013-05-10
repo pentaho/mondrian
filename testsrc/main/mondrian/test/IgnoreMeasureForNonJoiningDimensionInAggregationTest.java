@@ -10,8 +10,7 @@
 */
 package mondrian.test;
 
-import mondrian.olap.MondrianProperties;
-import mondrian.rolap.agg.AggregationManager;
+import mondrian.pref.PrefDef;
 
 /**
  * Test ignoring of measure when unrelated Dimension is in
@@ -26,9 +25,8 @@ public class IgnoreMeasureForNonJoiningDimensionInAggregationTest
 {
     protected void setUp() throws Exception {
         super.setUp();
-        propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, true);
-        propSaver.set(
-            propSaver.props.IgnoreMeasureForNonJoiningDimension, true);
+        PrefDef.EnableNonEmptyOnAllAxis.with(propSaver).set(true);
+        PrefDef.IgnoreMeasureForNonJoiningDimension.with(propSaver).set(true);
         getTestContext().getConnection().getCacheControl(null)
             .flushSchemaCache();
     }
@@ -81,8 +79,7 @@ public class IgnoreMeasureForNonJoiningDimensionInAggregationTest
             + "{[Warehouse].[Warehouses].[AggSP1]}\n"
             + "Row #0: 196,770.89\n"
             + "Row #1: 196,770.89\n");
-        propSaver.set(
-            propSaver.props.IgnoreMeasureForNonJoiningDimension, false);
+        PrefDef.IgnoreMeasureForNonJoiningDimension.with(propSaver).set(false);
         assertQueryReturns(
             query,
             "Axis #0:\n"

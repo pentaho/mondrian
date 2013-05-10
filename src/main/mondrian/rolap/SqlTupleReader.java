@@ -16,14 +16,13 @@ import mondrian.calc.impl.ListTupleList;
 import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
+import mondrian.pref.StatementPref;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
-import mondrian.server.Execution;
-import mondrian.server.Locus;
-import mondrian.server.Statement;
+import mondrian.server.*;
 import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.spi.Dialect;
 import mondrian.util.Pair;
@@ -504,7 +503,7 @@ public class SqlTupleReader implements TupleReader {
                 target.open();
             }
 
-            int limit = MondrianProperties.instance().ResultLimit.get();
+            int limit = StatementPref.instance().ResultLimit;
             int fetchCount = 0;
 
             // determine how many enum targets we have
@@ -999,8 +998,7 @@ Util.deprecated("obsolete basecube parameter", false);
                         queryBuilder.addRelation(hop.relation, false);
                     }
                 }
-            } else if (MondrianProperties.instance()
-                    .FilterChildlessSnowflakeMembers.get())
+            } else if (StatementPref.instance().FilterChildlessSnowflakeMembers)
             {
                 // start at lowest level of each dimension
                 for (RolapDimension dimension : dimensions) {
@@ -1376,7 +1374,7 @@ Util.deprecated("obsolete basecube parameter", false);
         RolapMeasureGroup measureGroup1,
         Evaluator evaluator)
     {
-        if (!MondrianProperties.instance().UseAggregates.get()) {
+        if (!StatementPref.instance().UseAggregates) {
             return null;
         }
 
@@ -1571,7 +1569,7 @@ Util.deprecated("obsolete basecube parameter", false);
 
         public LevelColumnLayout toLayout() {
             boolean assignOrderKeys =
-                MondrianProperties.instance().CompareSiblingsByOrderKey.get()
+                StatementPref.instance().CompareSiblingsByOrderKey
                 || Util.deprecated(true, false); // TODO: remove property
 
             OrderKeySource orderBySource = OrderKeySource.NONE;

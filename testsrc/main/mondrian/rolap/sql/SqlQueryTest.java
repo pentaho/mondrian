@@ -5,12 +5,12 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
 
-import mondrian.olap.MondrianProperties;
+import mondrian.pref.*;
 import mondrian.rolap.BatchTestCase;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
@@ -25,23 +25,21 @@ import java.util.*;
  * @since 06-Jun-2007
  */
 public class SqlQueryTest extends BatchTestCase {
-    private final MondrianProperties prop = propSaver.props;
-
     protected void setUp() throws Exception {
         super.setUp();
 
         // This test warns of missing sql patterns for MYSQL.
         final Dialect dialect = getTestContext().getDialect();
-        if (prop.WarnIfNoPatternForDialect.get().equals("ANY")
+        final BaseProperty.Settable<String> with =
+            PrefDef.WarnIfNoPatternForDialect.with(propSaver);
+        if (with.get().equals("ANY")
             || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MYSQL)
         {
-            propSaver.set(
-                propSaver.props.WarnIfNoPatternForDialect,
-                dialect.getDatabaseProduct().toString());
+            with.set(dialect.getDatabaseProduct().toString());
         } else {
             // Do not warn unless the dialect is "MYSQL", or
             // if the test chooses to warn regardless of the dialect.
-            propSaver.set(propSaver.props.WarnIfNoPatternForDialect, "NONE");
+            with.set("NONE");
         }
     }
 
@@ -171,7 +169,7 @@ public class SqlQueryTest extends BatchTestCase {
         // dialect.
         if (!patternFound) {
             String warnDialect =
-                MondrianProperties.instance().WarnIfNoPatternForDialect.get();
+                StatementPref.instance().WarnIfNoPatternForDialect;
 
             if (warnDialect.equals(d.toString())) {
                 System.out.println(
@@ -184,8 +182,9 @@ public class SqlQueryTest extends BatchTestCase {
 
 
     public void testPredicatesAreOptimizedWhenPropertyIsTrue() {
-        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
-            // Sql pattner will be different if using aggregate tables.
+        final StatementPref pref = StatementPref.instance();
+        if (pref.ReadAggregates && pref.UseAggregates) {
+            // Sql pattern will be different if using aggregate tables.
             // This test cover predicate generation so it's sufficient to
             // only check sql pattern when aggregate tables are not used.
             return;
@@ -227,7 +226,7 @@ public class SqlQueryTest extends BatchTestCase {
                 Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
             new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
-        assertSqlEqualsOptimzePredicates(true, mdx, sqlPatterns);
+        assertSqlEqualsOptimizePredicates(true, mdx, sqlPatterns);
     }
 
     public void testTableNameIsIncludedWithParentChildQuery() {
@@ -261,7 +260,8 @@ public class SqlQueryTest extends BatchTestCase {
     }
 
     public void testPredicatesAreNotOptimizedWhenPropertyIsFalse() {
-        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.ReadAggregates && pref.UseAggregates) {
             // Sql pattern will be different if using aggregate tables.
             // This test cover predicate generation so it's sufficient to
             // only check sql pattern when aggregate tables are not used.
@@ -306,12 +306,13 @@ public class SqlQueryTest extends BatchTestCase {
                 Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
             new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
-        assertSqlEqualsOptimzePredicates(false, mdx, sqlPatterns);
+        assertSqlEqualsOptimizePredicates(false, mdx, sqlPatterns);
     }
 
     public void testPredicatesAreOptimizedWhenAllTheMembersAreIncluded() {
-        if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
-            // Sql pattner will be different if using aggregate tables.
+        final StatementPref pref = StatementPref.instance();
+        if (pref.ReadAggregates && pref.UseAggregates) {
+            // Sql pattern will be different if using aggregate tables.
             // This test cover predicate generation so it's sufficient to
             // only check sql pattern when aggregate tables are not used.
             return;
@@ -352,16 +353,16 @@ public class SqlQueryTest extends BatchTestCase {
                 Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
             new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
-        assertSqlEqualsOptimzePredicates(true, mdx, sqlPatterns);
-        assertSqlEqualsOptimzePredicates(false, mdx, sqlPatterns);
+        assertSqlEqualsOptimizePredicates(true, mdx, sqlPatterns);
+        assertSqlEqualsOptimizePredicates(false, mdx, sqlPatterns);
     }
 
-    private void assertSqlEqualsOptimzePredicates(
+    private void assertSqlEqualsOptimizePredicates(
         boolean optimizePredicatesValue,
         String inputMdx,
         SqlPattern[] sqlPatterns)
     {
-        propSaver.props.OptimizePredicates.set(optimizePredicatesValue);
+        PrefDef.OptimizePredicates.with(propSaver).set(optimizePredicatesValue);
         assertQuerySql(getTestContext(), inputMdx, sqlPatterns);
     }
 
@@ -484,8 +485,8 @@ public class SqlQueryTest extends BatchTestCase {
             return;
         }
 
-        propSaver.set(propSaver.props.IgnoreInvalidMembers, true);
-        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, true);
+        PrefDef.IgnoreInvalidMembers.with(propSaver).set(true);
+        PrefDef.IgnoreInvalidMembersDuringQuery.with(propSaver).set(true);
 
         // assertQuerySql(testContext, query, patterns);
 

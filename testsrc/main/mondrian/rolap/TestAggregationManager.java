@@ -13,6 +13,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.rolap.agg.*;
 import mondrian.server.*;
 import mondrian.spi.Dialect;
@@ -175,9 +176,8 @@ public class TestAggregationManager extends BatchTestCase {
      * generates the correct SQL.
      */
     public void testFemaleUnitSalesSql() {
-        if (!(propSaver.props.UseAggregates.get()
-              && propSaver.props.ReadAggregates.get()))
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (!(pref.UseAggregates && pref.ReadAggregates)) {
             return;
         }
         final TestContext testContext = getTestContext();
@@ -245,12 +245,10 @@ public class TestAggregationManager extends BatchTestCase {
      *   (store_state=OR, gender=M, measure=[Unit Sales])
      */
     public void testMultipleMeasures() {
-        if (!(propSaver.props.UseAggregates.get()
-              && propSaver.props.ReadAggregates.get()))
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (!(pref.UseAggregates && pref.ReadAggregates)) {
             return;
         }
-
         final TestContext testContext = getTestContext();
         CellRequest[] requests = {
             createRequest(
@@ -408,9 +406,8 @@ public class TestAggregationManager extends BatchTestCase {
 
         // Note: the following aggregate loading SQL statements contain no
         // references to the parent level column "store_country".
-        if (propSaver.props.UseAggregates.get()
-            && propSaver.props.ReadAggregates.get())
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.UseAggregates && pref.ReadAggregates) {
             sql =
                 "select\n"
                 + "    `store`.`store_state` as `c0`,\n"
@@ -640,9 +637,8 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     public void testCountDistinctAggMatch() {
-        if (!(propSaver.props.UseAggregates.get()
-              && propSaver.props.ReadAggregates.get()))
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (!(pref.UseAggregates && pref.ReadAggregates)) {
             return;
         }
         final TestContext testContext = getTestContext();
@@ -779,9 +775,8 @@ public class TestAggregationManager extends BatchTestCase {
      * can only belong to one group.
      */
     public void testCountDistinctRollupAlongDim() {
-        if (!(propSaver.props.UseAggregates.get()
-              && propSaver.props.ReadAggregates.get()))
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (!(pref.UseAggregates && pref.ReadAggregates)) {
             return;
         }
         // Request has granularity
@@ -858,9 +853,8 @@ public class TestAggregationManager extends BatchTestCase {
      * [Marital Status] but not [Gender].
      */
     public void testCountDistinctRollup2() {
-        if (!(propSaver.props.UseAggregates.get()
-              && propSaver.props.ReadAggregates.get()))
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (!(pref.UseAggregates && pref.ReadAggregates)) {
             return;
         }
         final TestContext testContext = getTestContext();
@@ -1000,15 +994,14 @@ public class TestAggregationManager extends BatchTestCase {
      * <code>&lt;Member&gt;.Children</code> expression.
      */
     public void testAggMembers() {
-        if (propSaver.props.TestExpDependencies.get() > 0) {
+        final StatementPref pref = StatementPref.instance();
+        if (!(pref.UseAggregates && pref.ReadAggregates)) {
             return;
         }
-        if (!(propSaver.props.UseAggregates.get()
-                && propSaver.props.ReadAggregates.get()))
-        {
+        if (pref.server.TestExpDependencies > 0) {
             return;
         }
-        if (!(propSaver.props.EnableNativeCrossJoin.get())) {
+        if (!pref.server.EnableNativeCrossJoin) {
             return;
         }
         SqlPattern[] patterns = {
@@ -1266,12 +1259,10 @@ public class TestAggregationManager extends BatchTestCase {
      * Tests that using compound member constrant disables using AggregateTable.
      */
     public void testCountDistinctWithConstraintAggMiss() {
-        if (!(propSaver.props.UseAggregates.get()
-              && propSaver.props.ReadAggregates.get()))
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (!(pref.UseAggregates && pref.ReadAggregates)) {
             return;
         }
-
         // Request has granularity
         //  [Product].[Category]
         // and the compound constraint on
@@ -1351,12 +1342,11 @@ public class TestAggregationManager extends BatchTestCase {
     public void testOrdinalExprAggTuplesAndChildren() {
         // this verifies that we can load properties, ordinals, etc out of
         // agg tables in member lookups (tuples and children)
-        if (!(propSaver.props.UseAggregates.get()
-                && propSaver.props.ReadAggregates.get()))
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (!(pref.UseAggregates && pref.ReadAggregates)) {
             return;
         }
-        if (!(propSaver.props.EnableNativeCrossJoin.get())) {
+        if (!pref.server.EnableNativeCrossJoin) {
             return;
         }
         TestContext.instance().flushSchemaCache();
@@ -1459,12 +1449,11 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     public void testAggregatingTuples() {
-        if (!(propSaver.props.UseAggregates.get()
-                && propSaver.props.ReadAggregates.get()))
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (!(pref.UseAggregates && pref.ReadAggregates)) {
             return;
         }
-        if (!(propSaver.props.EnableNativeCrossJoin.get())) {
+        if (!pref.server.EnableNativeCrossJoin) {
             return;
         }
         // flush cache, to be sure sql is executed
@@ -1503,7 +1492,7 @@ public class TestAggregationManager extends BatchTestCase {
                 null)
         };
 
-        propSaver.set(propSaver.props.GenerateFormattedSql, true);
+        PrefDef.GenerateFormattedSql.with(propSaver).set(true);
         final TestContext testContext = getTestContext();
         assertQuerySqlOrNot(
             testContext, query, patterns, false, false, false);
@@ -1568,15 +1557,14 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     /**
-     * this test verifies the collapsed children code in SqlMemberSource
+     * Verifies the collapsed children code in SqlMemberSource.
      */
     public void testCollapsedChildren() {
-        if (!(propSaver.props.UseAggregates.get()
-                && propSaver.props.ReadAggregates.get()))
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (!(pref.UseAggregates && pref.ReadAggregates)) {
             return;
         }
-        if (!(propSaver.props.EnableNativeCrossJoin.get())) {
+        if (!pref.server.EnableNativeCrossJoin) {
             return;
         }
         // flush cache to be sure sql is executed
@@ -1601,7 +1589,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "from [Sales]";
 
         final TestContext testContext = getTestContext();
-        propSaver.set(propSaver.props.GenerateFormattedSql, true);
+        PrefDef.GenerateFormattedSql.with(propSaver).set(true);
         assertQuerySqlOrNot(
             testContext, query, patterns, false, false, false);
 
@@ -1638,8 +1626,8 @@ public class TestAggregationManager extends BatchTestCase {
             p = false;
             break;
         }
-        propSaver.set(propSaver.props.UseAggregates, true);
-        propSaver.set(propSaver.props.ReadAggregates, true);
+        PrefDef.UseAggregates.with(propSaver).set(true);
+        PrefDef.ReadAggregates.with(propSaver).set(true);
         final String mdxQuery =
             "select non empty{[Promotions].[All Promotions].Children} ON rows, "
             + "non empty {[Store].[All Stores]} ON columns "
@@ -1795,8 +1783,8 @@ public class TestAggregationManager extends BatchTestCase {
      * having to issue a select count() query.
      */
     public void testAggNameApproxRowCountLegacy() {
-        propSaver.set(propSaver.props.UseAggregates, true);
-        propSaver.set(propSaver.props.ReadAggregates, true);
+        PrefDef.UseAggregates.with(propSaver).set(true);
+        PrefDef.ReadAggregates.with(propSaver).set(true);
         final TestContext context =
             TestContext.instance().withSchema(
                 "<schema name='FooSchema'><Cube name='Sales_Foo' defaultMeasure='Unit Sales'>\n"
@@ -1984,8 +1972,8 @@ public class TestAggregationManager extends BatchTestCase {
      * having to issue a select count() query.
      */
     public void testAggNameApproxRowCount() {
-        propSaver.set(propSaver.props.UseAggregates, true);
-        propSaver.set(propSaver.props.ReadAggregates, true);
+        PrefDef.UseAggregates.with(propSaver).set(true);
+        PrefDef.ReadAggregates.with(propSaver).set(true);
 
         final String measureGroup =
             "<MeasureGroup table='agg_pl_01_sales_fact_1997' approxRowCount='86000' type='aggregate'>\n"
@@ -2056,8 +2044,8 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     public void testNonCollapsedAggregate() throws Exception {
-        propSaver.set(propSaver.props.UseAggregates, true);
-        propSaver.set(propSaver.props.ReadAggregates, true);
+        PrefDef.UseAggregates.with(propSaver).set(true);
+        PrefDef.ReadAggregates.with(propSaver).set(true);
         final String cube =
             "<Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
             + "  <Table name=\"sales_fact_1997\">\n"
@@ -2126,8 +2114,8 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     public void testTwoNonCollapsedAggregate() throws Exception {
-        propSaver.set(propSaver.props.UseAggregates, true);
-        propSaver.set(propSaver.props.ReadAggregates, true);
+        PrefDef.UseAggregates.with(propSaver).set(true);
+        PrefDef.ReadAggregates.with(propSaver).set(true);
         final String cube =
             "<Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
             + "  <Table name=\"sales_fact_1997\">\n"
@@ -2210,7 +2198,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "group by\n"
             + "    `product_class`.`product_family`,\n"
             + "    `store`.`store_id`";
-        propSaver.set(propSaver.props.GenerateFormattedSql, true);
+        PrefDef.GenerateFormattedSql.with(propSaver).set(true);
         assertQuerySqlOrNot(
             context,
             mdx,

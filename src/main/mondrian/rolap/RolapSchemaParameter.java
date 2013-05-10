@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2010 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -13,6 +13,7 @@ import mondrian.calc.*;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
+import mondrian.pref.Scope;
 import mondrian.resource.MondrianResource;
 
 /**

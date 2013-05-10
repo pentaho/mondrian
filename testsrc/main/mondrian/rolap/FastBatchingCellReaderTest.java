@@ -10,8 +10,8 @@
 package mondrian.rolap;
 
 import mondrian.olap.Connection;
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianServer;
+import mondrian.pref.*;
 import mondrian.rolap.agg.*;
 import mondrian.server.*;
 import mondrian.spi.Dialect;
@@ -155,26 +155,26 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testShouldUseGroupingFunctionOnPropertyTrueAndOnSupportedDB() {
-        propSaver.set(propSaver.props.EnableGroupingSets, true);
+        PrefDef.EnableGroupingSets.with(propSaver).set(true);
         BatchLoader fbcr = createFbcr(true, salesCube);
         assertTrue(fbcr.shouldUseGroupingFunction());
     }
 
     public void testShouldUseGroupingFunctionOnPropertyTrueAndOnNonSupportedDB()
     {
-        propSaver.set(propSaver.props.EnableGroupingSets, true);
+        PrefDef.EnableGroupingSets.with(propSaver).set(true);
         BatchLoader fbcr = createFbcr(false, salesCube);
         assertFalse(fbcr.shouldUseGroupingFunction());
     }
 
     public void testShouldUseGroupingFunctionOnPropertyFalseOnSupportedDB() {
-        propSaver.set(propSaver.props.EnableGroupingSets, false);
+        PrefDef.EnableGroupingSets.with(propSaver).set(false);
         BatchLoader fbcr = createFbcr(true, salesCube);
         assertFalse(fbcr.shouldUseGroupingFunction());
     }
 
     public void testShouldUseGroupingFunctionOnPropertyFalseOnNonSupportedDB() {
-        propSaver.set(propSaver.props.EnableGroupingSets, false);
+        PrefDef.EnableGroupingSets.with(propSaver).set(false);
         BatchLoader fbcr = createFbcr(false, salesCube);
         assertFalse(fbcr.shouldUseGroupingFunction());
     }
@@ -495,9 +495,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         // Until MONDRIAN-1001 is fixed, behavior is flaky due to interaction
         // with previous tests.
         if (Bug.BugMondrian1001Fixed) {
-            if (MondrianProperties.instance().UseAggregates.get()
-                && MondrianProperties.instance().ReadAggregates.get())
-            {
+            final StatementPref pref = StatementPref.instance();
+            if (pref.UseAggregates && pref.ReadAggregates) {
                 assertEquals(4, groupedBatchCount);
             } else {
                 assertEquals(2, groupedBatchCount);
@@ -825,9 +824,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testCanBatchForBatchWithDistinctCountInDetailedBatch() {
-        if (!MondrianProperties.instance().UseAggregates.get()
-            || !MondrianProperties.instance().ReadAggregates.get())
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (!pref.UseAggregates || !pref.ReadAggregates) {
             return;
         }
         final TestContext testContext = getTestContext();
@@ -871,9 +869,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testCanBatchForBatchWithDistinctCountInAggregateBatch() {
-        if (!MondrianProperties.instance().UseAggregates.get()
-            || !MondrianProperties.instance().ReadAggregates.get())
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (!pref.UseAggregates || !pref.ReadAggregates) {
             return;
         }
         final TestContext testContext = getTestContext();
@@ -918,9 +915,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testCanBatchSummaryBatchWithDetailedBatchWithDistinctCount() {
-        if (MondrianProperties.instance().UseAggregates.get()
-            || MondrianProperties.instance().ReadAggregates.get())
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.UseAggregates || pref.ReadAggregates) {
             return;
         }
         final TestContext testContext = getTestContext();
@@ -1079,9 +1075,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         final boolean batch2CanBatch1 = batch2.canBatch(batch1);
         final boolean batch1CanBatch2 = batch1.canBatch(batch2);
         if (Bug.BugMondrian1001Fixed) {
-            if (MondrianProperties.instance().UseAggregates.get()
-                && MondrianProperties.instance().ReadAggregates.get())
-            {
+            final StatementPref pref = StatementPref.instance();
+            if (pref.UseAggregates && pref.ReadAggregates) {
                 assertFalse(batch2CanBatch1);
                 assertFalse(batch1CanBatch2);
             } else {
@@ -1169,9 +1164,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                 cubeNameSales,
                 measureUnitSales);
 
-        if (MondrianProperties.instance().UseAggregates.get()
-            && MondrianProperties.instance().ReadAggregates.get())
-        {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.UseAggregates && pref.ReadAggregates) {
             assertFalse(detailedBatch.canBatch(summaryBatch));
             assertFalse(summaryBatch.canBatch(detailedBatch));
         } else {

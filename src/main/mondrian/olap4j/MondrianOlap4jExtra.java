@@ -12,6 +12,7 @@ package mondrian.olap4j;
 import mondrian.olap.*;
 import mondrian.olap.Property;
 import mondrian.olap.fun.FunInfo;
+import mondrian.pref.StatementPref;
 import mondrian.rolap.*;
 import mondrian.xmla.*;
 import mondrian.xmla.RowsetDefinition.MdschemaFunctionsRowset.VarType;
@@ -367,7 +368,10 @@ class MondrianOlap4jExtra extends XmlaHandler.XmlaExtraImpl {
     }
 
     public boolean isTotalCountEnabled() {
-        return MondrianProperties.instance().EnableTotalCount.booleanValue();
+        // NOTE: We used to instantiate on demand, but
+        // synchronization overhead was significant. See
+        // MONDRIAN-978.
+        return StatementPref.instance().EnableTotalCount;
     }
 
     public String getPropertyValue(PropertyDefinition propertyDefinition) {

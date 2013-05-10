@@ -4,15 +4,15 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2012 Pentaho and others
+// Copyright (C) 2008-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.calc.*;
 import mondrian.olap.*;
-import mondrian.server.Execution;
-import mondrian.server.Statement;
+import mondrian.pref.StatementPref;
+import mondrian.server.*;
 import mondrian.spi.Dialect;
 
 import java.util.*;
@@ -36,6 +36,7 @@ class RolapEvaluatorRoot {
     final Map<CompiledExpKey, Calc> compiledExps =
         new HashMap<CompiledExpKey, Calc>();
     final Statement statement;
+    final StatementPref pref;
     final Query query;
     private final Date queryStartTime;
     final Dialect dialect;
@@ -52,7 +53,7 @@ class RolapEvaluatorRoot {
     final SolveOrderMode solveOrderMode =
         Util.lookup(
             Util.toUpperCase(
-                MondrianProperties.instance().SolveOrderMode.get()),
+                StatementPref.instance().SolveOrderMode),
             SolveOrderMode.ABSOLUTE);
 
     final Set<Exp> activeNativeExpansions = new HashSet<Exp>();
@@ -80,6 +81,7 @@ class RolapEvaluatorRoot {
     private RolapEvaluatorRoot(Statement statement, Execution execution) {
         this.execution = execution;
         this.statement = statement;
+        this.pref = ((StatementImpl) statement).pref;
         this.query = statement.getQuery();
         this.cube = (RolapCube) query.getCube();
         this.connection = statement.getMondrianConnection();

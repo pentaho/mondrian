@@ -5,12 +5,12 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
-import mondrian.olap.MondrianProperties;
+import mondrian.pref.PrefDef;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 
@@ -342,7 +342,7 @@ public class CellKeyTest extends FoodMartTestCase {
         // evaluated natively. For the given data set (which contains NULL
         // members), native evaluation produces results in a different order
         // from the non-native evaluation.
-        propSaver.set(propSaver.props.ExpandNonNative, false);
+        PrefDef.ExpandNonNative.with(propSaver).set(false);
 
         TestContext testContext =
             TestContext.instance().legacy().create(

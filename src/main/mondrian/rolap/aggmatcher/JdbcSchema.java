@@ -5,12 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
+import mondrian.pref.StatementPref;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.spi.Dialect;
@@ -89,7 +90,7 @@ public class JdbcSchema {
             return;
         }
         String className =
-            MondrianProperties.instance().JdbcFactoryClass.get();
+            StatementPref.instance().JdbcFactoryClass;
         if (className == null) {
             factory = new StdFactory();
         } else {

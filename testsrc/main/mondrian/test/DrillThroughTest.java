@@ -5,12 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.pref.PrefDef;
 import mondrian.spi.Dialect;
 
 import java.sql.*;
@@ -36,7 +37,7 @@ public class DrillThroughTest extends FoodMartTestCase {
     private String getDrillThroughSql(
         Cell cell, boolean extendedContext, boolean formatted)
     {
-        propSaver.set(propSaver.props.GenerateFormattedSql, formatted);
+        PrefDef.GenerateFormattedSql.with(propSaver).set(formatted);
         return cell.getDrillThroughSQL(extendedContext);
     }
 
@@ -695,7 +696,7 @@ public class DrillThroughTest extends FoodMartTestCase {
     }
 
     public void testDrillthroughDisable() {
-        propSaver.set(propSaver.props.EnableDrillThrough, true);
+        PrefDef.EnableDrillThrough.with(propSaver).set(true);
         Result result =
             executeQuery(
                 "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
@@ -705,7 +706,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         Cell cell = result.getCell(new int[]{0, 0});
         assertTrue(cell.canDrillThrough());
 
-        propSaver.set(propSaver.props.EnableDrillThrough, false);
+        PrefDef.EnableDrillThrough.with(propSaver).set(false);
         result =
             executeQuery(
                 "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"

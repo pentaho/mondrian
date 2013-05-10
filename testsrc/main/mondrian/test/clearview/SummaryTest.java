@@ -4,12 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho and others
+// Copyright (C) 2007-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test.clearview;
 
-import mondrian.olap.MondrianProperties;
+import mondrian.pref.StatementPref;
 import mondrian.test.DiffRepository;
 import mondrian.util.Bug;
 
@@ -50,11 +50,12 @@ public class SummaryTest extends ClearViewBase {
 
     @Override
     protected void runTest() throws Exception {
+        final StatementPref pref = StatementPref.instance();
         if (!Bug.BugMondrian785Fixed
             && (getName().equals("testRankExpandNonNative")
                 || getName().equals("testCountExpandNonNative")
                 || getName().equals("testCountOverTimeExpandNonNative"))
-            && MondrianProperties.instance().EnableNativeCrossJoin.get())
+            && pref.server.EnableNativeCrossJoin)
         {
             // Tests give wrong results if native crossjoin is disabled.
             return;

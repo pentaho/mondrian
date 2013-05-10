@@ -17,11 +17,11 @@ import mondrian.olap.*;
 import mondrian.olap.fun.*;
 import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
 import mondrian.olap.type.ScalarType;
+import mondrian.pref.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequestQuantumExceededException;
-import mondrian.server.Execution;
-import mondrian.server.Locus;
+import mondrian.server.*;
 import mondrian.spi.CellFormatter;
 import mondrian.util.*;
 
@@ -47,8 +47,7 @@ public class RolapResult extends ResultBase {
     private FastBatchingCellReader batchingReader;
     private final CellReader aggregatingReader;
     private Modulos modulos = null;
-    private final int maxEvalDepth =
-            MondrianProperties.instance().MaxEvalDepth.get();
+    private final int maxEvalDepth = StatementPref.instance().MaxEvalDepth;
 
     private final Map<Integer, Boolean> positionsHighCardinality =
         new HashMap<Integer, Boolean>();
@@ -78,7 +77,7 @@ public class RolapResult extends ResultBase {
                 .getServer().getAggregationManager();
         this.aggregatingReader = aggMgr.getCacheCellReader();
         final int expDeps =
-            MondrianProperties.instance().TestExpDependencies.get();
+            execution.statement.pref.server.TestExpDependencies;
         if (expDeps > 0) {
             this.evaluator = new RolapDependencyTestingEvaluator(this, expDeps);
         } else {
@@ -1282,7 +1281,7 @@ public class RolapResult extends ResultBase {
             this.axisCount = 0;
             // Now that the axes are evaluated, make sure that the number of
             // cells does not exceed the result limit.
-            this.limit = MondrianProperties.instance().ResultLimit.get();
+            this.limit = StatementPref.instance().ResultLimit;
         }
 
         public Iterator<Member> iterator() {
@@ -1438,7 +1437,7 @@ public class RolapResult extends ResultBase {
 
             // Look in other places for the value. Which places we look depends
             // on the scope of the parameter.
-            Parameter.Scope scope = slot.getParameter().getScope();
+            Scope scope = slot.getParameter().getScope();
             switch (scope) {
             case System:
                 // TODO: implement system params

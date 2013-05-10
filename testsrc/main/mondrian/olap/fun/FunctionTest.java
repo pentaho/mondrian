@@ -11,6 +11,7 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.resource.MondrianResource;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
@@ -6409,7 +6410,7 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns(NullNumericExpr + " / " + NullNumericExpr, "");
 
         // default behavior
-        propSaver.set(propSaver.props.NullDenominatorProducesNull, false);
+        PrefDef.NullDenominatorProducesNull.with(propSaver).set(false);
 
         assertExprReturns("-2 / " + NullNumericExpr, "Infinity");
         assertExprReturns("0 / 0", "NaN");
@@ -6420,7 +6421,7 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns("1/NULL", "Infinity");
 
         // when NullOrZeroDenominatorProducesNull is set to true
-        propSaver.set(propSaver.props.NullDenominatorProducesNull, true);
+        PrefDef.NullDenominatorProducesNull.with(propSaver).set(true);
 
         assertExprReturns("-2 / " + NullNumericExpr, "");
         assertExprReturns("0 / 0", "NaN");
@@ -8011,7 +8012,7 @@ public class FunctionTest extends FoodMartTestCase {
         if (!Bug.BugMondrian1173Fixed) {
             return;
         }
-        propSaver.set(propSaver.props.CompareSiblingsByOrderKey, true);
+        PrefDef.CompareSiblingsByOrderKey.with(propSaver).set(true);
         // Use a fresh connection to make sure bad member ordinals haven't
         // been assigned by previous tests.
         final TestContext context = getTestContext().withFreshConnection();
@@ -8039,7 +8040,7 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testOrderMemberMemberValueExpNew1() {
         // sort by default measure
-        propSaver.set(propSaver.props.CompareSiblingsByOrderKey, true);
+        PrefDef.CompareSiblingsByOrderKey.with(propSaver).set(true);
         // Use a fresh connection to make sure bad member ordinals haven't
         // been assigned by previous tests.
         final TestContext context = getTestContext().withFreshConnection();
@@ -8147,7 +8148,7 @@ public class FunctionTest extends FoodMartTestCase {
         if (!Bug.BugMondrian1173Fixed) {
             return;
         }
-        propSaver.set(propSaver.props.CompareSiblingsByOrderKey, true);
+        PrefDef.CompareSiblingsByOrderKey.with(propSaver).set(true);
         // Use a fresh connection to make sure bad member ordinals haven't
         // been assigned by previous tests.
         final TestContext context = getTestContext().withFreshConnection();
@@ -8199,7 +8200,7 @@ public class FunctionTest extends FoodMartTestCase {
         if (!Bug.BugMondrian1173Fixed) {
             return;
         }
-        propSaver.set(propSaver.props.CompareSiblingsByOrderKey, true);
+        PrefDef.CompareSiblingsByOrderKey.with(propSaver).set(true);
         // Use a fresh connection to make sure bad member ordinals haven't
         // been assigned by previous tests.
         final TestContext context = getTestContext().withFreshConnection();
@@ -8232,7 +8233,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderTupleSingleKeysNew1() {
-        propSaver.set(propSaver.props.CompareSiblingsByOrderKey, true);
+        PrefDef.CompareSiblingsByOrderKey.with(propSaver).set(true);
         // Use a fresh connection to make sure bad member ordinals haven't
         // been assigned by previous tests.
         final TestContext context = getTestContext().withFreshConnection();
@@ -8346,7 +8347,7 @@ public class FunctionTest extends FoodMartTestCase {
             return;
         }
         // WA unit sales is greater than CA unit sales
-        propSaver.set(propSaver.props.CompareSiblingsByOrderKey, true);
+        PrefDef.CompareSiblingsByOrderKey.with(propSaver).set(true);
 
         // Use a fresh connection to make sure bad member ordinals haven't
         // been assigned by previous tests.
@@ -8977,7 +8978,7 @@ public class FunctionTest extends FoodMartTestCase {
      * option"</a>.
      */
     public void testStrToMemberIgnoreInvalidMembers() {
-        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, true);
+        PrefDef.IgnoreInvalidMembersDuringQuery.with(propSaver).set(true);
 
         // [Product].[Drugs] is invalid, becomes null member, and is dropped
         // from list
@@ -9029,7 +9030,7 @@ public class FunctionTest extends FoodMartTestCase {
             "StrToMember(\"\")",
             "MDX object '' not found in cube 'Sales'");
 
-        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, false);
+        PrefDef.IgnoreInvalidMembersDuringQuery.with(propSaver).set(false);
         assertQueryThrows(
             "select \n"
             + "  {[Product].[Food],\n"
@@ -9057,7 +9058,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testStrToTupleIgnoreInvalidMembers() {
-        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, true);
+        PrefDef.IgnoreInvalidMembersDuringQuery.with(propSaver).set(true);
 
         // If any member is invalid, the whole tuple is null.
         assertAxisReturns(
@@ -9177,7 +9178,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testStrToSetIgnoreInvalidMembers() {
-        propSaver.set(propSaver.props.IgnoreInvalidMembersDuringQuery, true);
+        PrefDef.IgnoreInvalidMembersDuringQuery.with(propSaver).set(true);
         assertAxisReturns(
             "StrToSet("
             + "\""
@@ -9581,9 +9582,8 @@ public class FunctionTest extends FoodMartTestCase {
     {
         final String actualCalc =
             getTestContext().compileExpression(expr, true);
-        final int expDeps =
-            MondrianProperties.instance().TestExpDependencies.get();
-        if (expDeps > 0) {
+        final ServerPref pref = ServerPref.instance();
+        if (pref.TestExpDependencies > 0) {
             // Don't bother checking the compiled output if we are also
             // testing dependencies. The compiled code will have extra
             // 'DependencyTestingCalc' instances embedded in it.
@@ -9602,8 +9602,8 @@ public class FunctionTest extends FoodMartTestCase {
     {
         final String actualCalc =
             getTestContext().compileExpression(expr, false);
-        final int expDeps =
-            MondrianProperties.instance().TestExpDependencies.get();
+        final ServerPref pref = ServerPref.instance();
+        final int expDeps = pref.TestExpDependencies;
         if (expDeps > 0) {
             // Don't bother checking the compiled output if we are also
             // testing dependencies. The compiled code will have extra
@@ -9871,7 +9871,7 @@ public class FunctionTest extends FoodMartTestCase {
      */
     public void testRankHuge() {
         // If caching is disabled, don't even try -- it will take too long.
-        if (!MondrianProperties.instance().EnableExpCache.get()) {
+        if (!StatementPref.instance().EnableExpCache) {
             return;
         }
 
@@ -9901,7 +9901,7 @@ public class FunctionTest extends FoodMartTestCase {
      */
     public void _testRank3Huge() {
         // If caching is disabled, don't even try -- it will take too long.
-        if (!MondrianProperties.instance().EnableExpCache.get()) {
+        if (!StatementPref.instance().EnableExpCache) {
             return;
         }
 
@@ -11328,7 +11328,7 @@ public class FunctionTest extends FoodMartTestCase {
         // make sure all aggregates referenced in the OR expression are
         // processed in a single load request by setting the eval depth to
         // a value smaller than the number of measures
-        propSaver.set(propSaver.props.MaxEvalDepth, 3);
+        PrefDef.MaxEvalDepth.with(propSaver).set(3);
         assertQueryReturns(
             "with set [*NATIVE_CJ_SET] as '[Store].[Store Country].members' "
             + "set [*GENERATED_MEMBERS_Measures] as "

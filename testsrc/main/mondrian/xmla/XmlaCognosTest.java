@@ -4,19 +4,17 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2010 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.xmla;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.pref.*;
 import mondrian.spi.Dialect;
 import mondrian.test.DiffRepository;
 import mondrian.test.TestContext;
 import mondrian.util.Bug;
-
-import org.eigenbase.util.property.BooleanProperty;
 
 /**
  * Test suite for compatibility of Mondrian XMLA with Cognos8.2 connected via
@@ -198,25 +196,12 @@ public class XmlaCognosTest extends XmlaBaseTestCase {
     }
 
     public void testNonEmptyWithCognosCalcOneLiteral() throws Exception {
-        final BooleanProperty enableNonEmptyOnAllAxes =
-                MondrianProperties.instance().EnableNonEmptyOnAllAxis;
-        boolean nonEmptyAllAxesCurrentState = enableNonEmptyOnAllAxes.get();
-
-        final BooleanProperty enableNativeNonEmpty =
-                MondrianProperties.instance().EnableNativeNonEmpty;
-        boolean nativeNonemptyCurrentState = enableNativeNonEmpty.get();
-
-        try {
-            enableNonEmptyOnAllAxes.set(true);
-            enableNativeNonEmpty.set(false);
+        PrefDef.EnableNonEmptyOnAllAxis.with(propSaver).set(true);
+        PrefDef.EnableNativeNonEmpty.with(propSaver).set(false);
+        executeMDX();
+        if (Bug.BugMondrian446Fixed) {
+            PrefDef.EnableNativeNonEmpty.with(propSaver).set(true);
             executeMDX();
-            if (Bug.BugMondrian446Fixed) {
-                enableNativeNonEmpty.set(true);
-                executeMDX();
-            }
-        } finally {
-            enableNativeNonEmpty.set(nativeNonemptyCurrentState);
-            enableNonEmptyOnAllAxes.set(nonEmptyAllAxesCurrentState);
         }
     }
 

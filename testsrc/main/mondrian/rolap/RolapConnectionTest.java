@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jng, 16 April, 2004
@@ -13,6 +13,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.pref.StatementPref;
 import mondrian.spi.Dialect;
 import mondrian.spi.impl.*;
 import mondrian.test.TestContext;
@@ -271,7 +272,7 @@ public class RolapConnectionTest extends TestCase {
     public void testJndiConnection() throws NamingException {
         // Cannot guarantee that this test will work if they have chosen to
         // resolve data sources other than by JNDI.
-        if (MondrianProperties.instance().DataSourceResolverClass.isSet()) {
+        if (StatementPref.instance().DataSourceResolverClass != null) {
             return;
         }
         // get a regular connection

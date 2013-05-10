@@ -4,12 +4,13 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.Result;
+import mondrian.pref.PrefDef;
 
 /**
  * Testcase for
@@ -36,14 +37,14 @@ public class BUG_1541077 extends AggTableTestCase {
         }
 
         // get value without aggregates
-        propSaver.set(propSaver.props.UseAggregates, false);
+        PrefDef.UseAggregates.with(propSaver).set(false);
 
         String mdx =
             "select {[Measures].[Store Count]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
-        propSaver.set(propSaver.props.UseAggregates, true);
+        PrefDef.UseAggregates.with(propSaver).set(true);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
@@ -57,14 +58,14 @@ public class BUG_1541077 extends AggTableTestCase {
         }
 
         // get value without aggregates
-        propSaver.set(propSaver.props.UseAggregates, false);
+        PrefDef.UseAggregates.with(propSaver).set(false);
 
         String mdx =
             "select {[Measures].[Sales Count]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
-        propSaver.set(propSaver.props.UseAggregates, true);
+        PrefDef.UseAggregates.with(propSaver).set(true);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
@@ -78,14 +79,14 @@ public class BUG_1541077 extends AggTableTestCase {
         }
 
         // get value without aggregates
-        propSaver.set(propSaver.props.UseAggregates, false);
+        PrefDef.UseAggregates.with(propSaver).set(false);
 
         String mdx =
             "select {[Measures].[Total Amount]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
-        propSaver.set(propSaver.props.UseAggregates, true);
+        PrefDef.UseAggregates.with(propSaver).set(true);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
@@ -99,7 +100,7 @@ public class BUG_1541077 extends AggTableTestCase {
         }
 
         // get value without aggregates
-        propSaver.set(propSaver.props.UseAggregates, false);
+        PrefDef.UseAggregates.with(propSaver).set(false);
 
         String mdx = "select {[Measures].[Avg Amount]} on columns from Cheques";
 
@@ -107,7 +108,7 @@ public class BUG_1541077 extends AggTableTestCase {
         Object v = result.getCell(new int[]{0}).getFormattedValue();
 
         // get value with aggregates
-        propSaver.set(propSaver.props.UseAggregates, true);
+        PrefDef.UseAggregates.with(propSaver).set(true);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getFormattedValue();

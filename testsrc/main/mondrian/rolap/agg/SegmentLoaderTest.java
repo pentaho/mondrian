@@ -5,12 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
 
 import mondrian.olap.*;
+import mondrian.pref.PrefDef;
 import mondrian.rolap.*;
 import mondrian.server.*;
 import mondrian.server.Statement;
@@ -77,8 +78,8 @@ public class SegmentLoaderTest extends BatchTestCase {
             PrintWriter pw = new PrintWriter(System.out);
             getConnection().getCacheControl(pw).flushSchemaCache();
             pw.flush();
-            propSaver.set(propSaver.props.DisableCaching, true);
-            propSaver.set(propSaver.props.EnableInMemoryRollup, rollup);
+            PrefDef.DisableCaching.with(propSaver).set(true);
+            PrefDef.EnableInMemoryRollup.with(propSaver).set(rollup);
             final String queryOracle =
                 "select \"time_by_day\".\"the_year\" as \"c0\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" from \"time_by_day\" \"time_by_day\", \"sales_fact_1997\" \"sales_fact_1997\" where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" group by \"time_by_day\".\"the_year\"";
             final String queryMySQL =

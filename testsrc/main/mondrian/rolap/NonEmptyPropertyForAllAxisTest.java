@@ -5,22 +5,22 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2006 Thomson Medstat, Inc, Ann Arbor, MI.
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.Query;
+import mondrian.pref.PrefDef;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 
 /**
- * Tests the {@link MondrianProperties#EnableNonEmptyOnAllAxis} property.
+ * Tests the {@link PrefDef#EnableNonEmptyOnAllAxis} property.
  */
 public class NonEmptyPropertyForAllAxisTest extends FoodMartTestCase {
     public void testNonEmptyForAllAxesWithPropertySet() {
-        propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, true);
+        PrefDef.EnableNonEmptyOnAllAxis.with(propSaver).set(true);
         assertQueryReturns(
             "select {[Country].[USA].[OR].Children} on 0,"
             + " {[Promotions].Members} on 1 "
@@ -188,7 +188,7 @@ public class NonEmptyPropertyForAllAxisTest extends FoodMartTestCase {
     }
 
     public void testSlicerAxisDoesNotGetNonEmptyApplied() {
-        propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, true);
+        PrefDef.EnableNonEmptyOnAllAxis.with(propSaver).set(true);
         String mdxQuery = "select from [Sales]\n"
             + "where [Time].[Time].[1997]\n";
         Query query = getConnection().parseQuery(mdxQuery);

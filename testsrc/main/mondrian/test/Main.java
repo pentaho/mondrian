@@ -18,6 +18,7 @@ import mondrian.olap.fun.*;
 import mondrian.olap.fun.vba.ExcelTest;
 import mondrian.olap.fun.vba.VbaTest;
 import mondrian.olap.type.TypeTest;
+import mondrian.pref.*;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.*;
@@ -96,14 +97,14 @@ public class Main extends TestSuite {
      * @throws Exception on error
      */
     private void run(String[] args) throws Exception {
-        final MondrianProperties properties = MondrianProperties.instance();
         Test test = suite();
         if (args.length == 1 && args[0].equals("-l")) {
             // Only lists the tests to run if invoking ant test-nobuild next.
             return;
         }
 
-        if (properties.Warmup.get()) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.Warmup) {
             System.out.println("Starting warmup run...");
             MondrianTestRunner runner = new MondrianTestRunner();
             TestResult tres = runner.doRun(test);
@@ -115,10 +116,10 @@ public class Main extends TestSuite {
             System.out.println("Warmup run complete. Starting regular run...");
         }
         MondrianTestRunner runner = new MondrianTestRunner();
-        runner.setIterations(properties.Iterations.get());
-        System.out.println("Iterations=" + properties.Iterations.get());
-        runner.setVUsers(properties.VUsers.get());
-        runner.setTimeLimit(properties.TimeLimit.get());
+        runner.setIterations(pref.Iterations);
+        System.out.println("Iterations=" + pref.Iterations);
+        runner.setVUsers(pref.VUsers);
+        runner.setTimeLimit(pref.TimeLimit);
         TestResult tres = runner.doRun(test);
         if (!tres.wasSuccessful()) {
             System.exit(1);
@@ -134,9 +135,9 @@ public class Main extends TestSuite {
      * @throws Exception on error
      */
     public static Test suite() throws Exception {
-        MondrianProperties properties = MondrianProperties.instance();
-        final String testName = properties.TestName.get();
-        String testClass = properties.TestClass.get();
+        final ServerPref pref = ServerPref.instance();
+        final String testName = pref.TestName;
+        String testClass = pref.TestClass;
 
         System.out.println("testName: " + testName);
         System.out.println("testClass: " + testClass);
@@ -321,10 +322,10 @@ public class Main extends TestSuite {
             addTest(suite, CodeComplianceTest.class);
 
             boolean testNonEmpty = isRunOnce();
-            if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {
+            if (!pref.EnableNativeNonEmpty) {
                 testNonEmpty = false;
             }
-            if (!MondrianProperties.instance().EnableNativeCrossJoin.get()) {
+            if (!pref.EnableNativeCrossJoin) {
                 testNonEmpty = false;
             }
             if (testNonEmpty) {
@@ -340,7 +341,7 @@ public class Main extends TestSuite {
             addTest(suite, FastBatchingCellReaderTest.class);
             addTest(suite, SqlQueryTest.class);
 
-            if (MondrianProperties.instance().EnableNativeCrossJoin.get()) {
+            if (pref.EnableNativeCrossJoin) {
                 addTest(suite, BatchedFillTest.class, "suite");
             } else {
                 logger.warn("skipping BatchedFillTests");
@@ -377,10 +378,10 @@ public class Main extends TestSuite {
      * @return whether the tests are run with one user, one iteration
      */
     private static boolean isRunOnce() {
-        final MondrianProperties properties = MondrianProperties.instance();
-        return !properties.Warmup.get()
-            && properties.VUsers.get() == 1
-            && properties.Iterations.get() == 1;
+        final StatementPref properties = StatementPref.instance();
+        return !properties.Warmup
+            && properties.VUsers == 1
+            && properties.Iterations == 1;
     }
 
     private static void addTest(

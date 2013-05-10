@@ -4,11 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap;
 
+import mondrian.pref.PrefDef;
 import mondrian.rolap.RolapUtil;
 import mondrian.test.FoodMartTestCase;
 
@@ -16,8 +17,9 @@ import java.io.IOException;
 
 /**
  * <code>NullMemberRepresentationTest</code> tests the null member
- * custom representation feature supported via
- * {@link mondrian.olap.MondrianProperties#NullMemberRepresentation} property.
+ * custom representation feature supported via the
+ * {@link PrefDef#NullMemberRepresentation} property.
+ *
  * @author ajogleka
  */
 public class NullMemberRepresentationTest extends FoodMartTestCase {

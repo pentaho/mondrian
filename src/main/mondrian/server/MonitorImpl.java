@@ -9,8 +9,8 @@
 */
 package mondrian.server;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.pref.ServerPref;
 import mondrian.rolap.RolapUtil;
 import mondrian.server.monitor.*;
 import mondrian.util.Pair;
@@ -412,18 +412,14 @@ class MonitorImpl
     }
 
     private static class Handler implements CommandVisitor<Object> {
+        private final MutableServerInfo server = new MutableServerInfo(null);
 
-        private final MutableServerInfo server =
-            new MutableServerInfo(null);
+        private final int maxSize = ServerPref.instance().ExecutionHistorySize;
 
         private final Map<Integer, MutableConnectionInfo> connectionMap =
             new LinkedHashMap<Integer, MutableConnectionInfo>(
-                MondrianProperties.instance().ExecutionHistorySize.get(),
-                0.8f,
-                false)
+                maxSize, 0.8f, false)
             {
-                private final int maxSize =
-                    MondrianProperties.instance().ExecutionHistorySize.get();
                 private static final long serialVersionUID = 1L;
                 protected boolean removeEldestEntry(
                     Map.Entry<Integer, MutableConnectionInfo> e)
@@ -445,12 +441,8 @@ class MonitorImpl
 
         private final Map<Long, MutableSqlStatementInfo> sqlStatementMap =
             new LinkedHashMap<Long, MutableSqlStatementInfo>(
-                MondrianProperties.instance().ExecutionHistorySize.get(),
-                0.8f,
-                false)
+                maxSize, 0.8f, false)
             {
-                private final int maxSize =
-                    MondrianProperties.instance().ExecutionHistorySize.get();
                 private static final long serialVersionUID = 1L;
                 protected boolean removeEldestEntry(
                     Map.Entry<Long, MutableSqlStatementInfo> e)
@@ -472,12 +464,8 @@ class MonitorImpl
 
         private final Map<Long, MutableStatementInfo> statementMap =
             new LinkedHashMap<Long, MutableStatementInfo>(
-                MondrianProperties.instance().ExecutionHistorySize.get(),
-                0.8f,
-                false)
+                maxSize, 0.8f, false)
             {
-                private final int maxSize =
-                    MondrianProperties.instance().ExecutionHistorySize.get();
                 private static final long serialVersionUID = 1L;
                 protected boolean removeEldestEntry(
                     Map.Entry<Long, MutableStatementInfo> e)
@@ -499,12 +487,8 @@ class MonitorImpl
 
         private final Map<Long, MutableExecutionInfo> executionMap =
             new LinkedHashMap<Long, MutableExecutionInfo>(
-                MondrianProperties.instance().ExecutionHistorySize.get(),
-                0.8f,
-                false)
+                maxSize, 0.8f, false)
             {
-                private final int maxSize =
-                    MondrianProperties.instance().ExecutionHistorySize.get();
                 private static final long serialVersionUID = 1L;
                 protected boolean removeEldestEntry(
                     Map.Entry<Long, MutableExecutionInfo> e)
@@ -530,12 +514,8 @@ class MonitorImpl
          */
         private final Map<Long, MutableExecutionInfo> retiredExecutionMap =
             new LinkedHashMap<Long, MutableExecutionInfo>(
-                MondrianProperties.instance().ExecutionHistorySize.get(),
-                0.8f,
-                false)
+                maxSize, 0.8f, false)
             {
-                private final int maxSize =
-                    MondrianProperties.instance().ExecutionHistorySize.get();
                 private static final long serialVersionUID = 1L;
                 protected boolean removeEldestEntry(
                     Map.Entry<Long, MutableExecutionInfo> e)

@@ -4,17 +4,16 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2011 Pentaho
+// Copyright (C) 2011-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
 
-import org.eigenbase.util.property.*;
+import mondrian.pref.Scope;
 
 import org.w3c.dom.*;
 
 import java.io.*;
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -28,39 +27,38 @@ import javax.xml.parsers.DocumentBuilderFactory;
  * @author jhyde
  */
 public class PropertyUtil {
-    /**
-     * Generates an XML file from a MondrianProperties instance.
+    /*
+     * Generates an XML file from a PrefDef instance.
      *
      * @param args Arguments
      * @throws IllegalAccessException on error
      */
+    /*
     public static void main0(String[] args) throws IllegalAccessException {
-        Object properties1 = null; // MondrianProperties.instance();
-        System.out.println("<PropertyDefinitions>");
-        for (Field field : properties1.getClass().getFields()) {
-            org.eigenbase.util.property.Property o =
-                (org.eigenbase.util.property.Property) field.get(properties1);
-            System.out.println("    <PropertyDefinition>");
-            System.out.println("        <Name>" + field.getName() + "</Name>");
-            System.out.println("        <Path>" + o.getPath() + "</Path>");
-            System.out.println(
+        final PrintStream out = System.out;
+        out.println("<PropertyDefinitions>");
+        for (BaseProperty o : PrefDef.MAP.values()) {
+            out.println("    <PropertyDefinition>");
+            out.println("        <Name>" + o.name + "</Name>");
+            out.println("        <Path>" + o.path + "</Path>");
+            out.println(
                 "        <Description>" + o.getPath() + "</Description>");
-            System.out.println(
+            out.println(
                 "        <Type>"
                 + (o instanceof BooleanProperty ? "boolean"
                     : o instanceof IntegerProperty ? "int"
                         : o instanceof DoubleProperty ? "double"
                             : "String")
                 + "</Type>");
-            if (o.getDefaultValue() != null) {
-                System.out.println(
-                    "        <Default>"
-                    + o.getDefaultValue() + "</Default"  + ">");
+            if (o.defaultValue != null) {
+                out.println(
+                    "        <Default>" + o.defaultValue + "</Default>");
             }
-            System.out.println("    </PropertyDefinition>");
+            out.println("    </PropertyDefinition>");
         }
-        System.out.println("</PropertyDefinitions>");
+        out.println("</PropertyDefinitions>");
     }
+    */
 
     private static Iterable<Node> iter(final NodeList nodeList) {
         return new Iterable<Node>() {
@@ -85,7 +83,7 @@ public class PropertyUtil {
     }
 
     /**
-     * Generates MondrianProperties.java from MondrianProperties.xml.
+     * Generates several Java files from MondrianProperties.xml.
      *
      * @param args Arguments
      */
@@ -102,13 +100,22 @@ public class PropertyUtil {
     private void generate() {
         final File xmlFile =
             new File("src/main/mondrian/olap", "MondrianProperties.xml");
-        final File javaFile =
-            new File("src/main/mondrian/olap", "MondrianProperties.java");
+        final File serverJavaFile =
+            new File("src/main/mondrian/pref", "ServerPref.java");
+        final File schemaJavaFile =
+            new File("src/main/mondrian/pref", "SchemaPref.java");
+        final File connectionJavaFile =
+            new File("src/main/mondrian/pref", "ConnectionPref.java");
+        final File statementJavaFile =
+            new File("src/main/mondrian/pref", "StatementPref.java");
+        final File defJavaFile =
+            new File("src/main/mondrian/pref", "PrefDef.java");
         final File propertiesFile =
             new File("mondrian.properties.template");
         final File htmlFile = new File("doc", "properties.html");
 
-        SortedMap<String, PropertyDef> propertyDefinitionMap;
+        final SortedMap<String, PropertyDef> propDefs =
+            new TreeMap<String, PropertyDef>();
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setValidating(false);
@@ -119,7 +126,6 @@ public class PropertyUtil {
             assert documentElement.getNodeName().equals("PropertyDefinitions");
             NodeList propertyDefinitions =
                 documentElement.getChildNodes();
-            propertyDefinitionMap = new TreeMap<String, PropertyDef>();
             for (Node element : iter(propertyDefinitions)) {
                 if (element.getNodeName().equals("PropertyDefinition")) {
                     String name = getChildCdata(element, "Name");
@@ -129,7 +135,12 @@ public class PropertyUtil {
                     String category = getChildCdata(element, "Category");
                     String core = getChildCdata(element, "Core");
                     String description = getChildCdata(element, "Description");
-                    propertyDefinitionMap.put(
+                    final String scopeName = getChildCdata(element, "Scope");
+                    Scope scope =
+                        scopeName == null
+                            ? Scope.Statement
+                            : Scope.valueOf(scopeName);
+                    propDefs.put(
                         name,
                         new PropertyDef(
                             name,
@@ -137,6 +148,7 @@ public class PropertyUtil {
                             dflt,
                             category,
                             PropertyType.valueOf(type.toUpperCase()),
+                            scope,
                             core == null || Boolean.valueOf(core),
                             description));
                 }
@@ -144,9 +156,13 @@ public class PropertyUtil {
         } catch (Throwable e) {
             throw new RuntimeException("Error while parsing " + xmlFile, e);
         }
-        doGenerate(Generator.JAVA, propertyDefinitionMap, javaFile);
-        doGenerate(Generator.HTML, propertyDefinitionMap, htmlFile);
-        doGenerate(Generator.PROPERTIES, propertyDefinitionMap, propertiesFile);
+        doGenerate(Generator.DEF, propDefs, defJavaFile);
+        doGenerate(Generator.SERVER, propDefs, serverJavaFile);
+        doGenerate(Generator.SCHEMA, propDefs, schemaJavaFile);
+        doGenerate(Generator.CONNECTION, propDefs, connectionJavaFile);
+        doGenerate(Generator.STATEMENT, propDefs, statementJavaFile);
+        doGenerate(Generator.HTML, propDefs, htmlFile);
+        doGenerate(Generator.PROPERTIES, propDefs, propertiesFile);
     }
 
     void doGenerate(
@@ -187,29 +203,63 @@ public class PropertyUtil {
         }
     }
 
-    private static final void printLines(PrintWriter out, String[] lines) {
+    private static void printLines(PrintWriter out, String... lines) {
         for (String line : lines) {
             out.println(line);
         }
     }
 
+    static void generateX(
+        SortedMap<String, PropertyDef> propertyDefinitionMap,
+        Scope scope,
+        PrintWriter out)
+    {
+        printLines(
+            out,
+            "",
+            "    public void readFrom(Map... maps) {");
+        for (PropertyDef def : propertyDefinitionMap.values()) {
+            if (!def.core || def.scope != scope) {
+                continue;
+            }
+            out.println(
+                "        " + def.name
+                + " = Prefs.read(maps, PrefDef." + def.name + ");");
+        }
+        printLines(
+            out,
+            "    }");
+        for (PropertyDef def : propertyDefinitionMap.values()) {
+            if (!def.core || def.scope != scope) {
+                continue;
+            }
+            printJavadoc(
+                out, 4, def.description + "\n@see PrefDef#" + def.name);
+            out.println(
+                "    public "
+                    + def.propertyType.fieldClass + " " + def.name + ";");
+            out.println();
+        }
+    }
+
     enum Generator {
-        JAVA {
-            @Override
+        DEF {
             void generate(
                 SortedMap<String, PropertyDef> propertyDefinitionMap,
                 File file,
                 PrintWriter out)
             {
-                out.println("// Generated from MondrianProperties.xml.");
-                out.println("package mondrian.olap;");
-                out.println();
-                out.println("import org.eigenbase.util.property.*;");
-                out.println("import java.io.File;");
-                out.println();
-
+                printLines(
+                    out,
+                    "// This class is generated from MondrianProperties.xml.",
+                    "package mondrian.pref;",
+                    "",
+                    "import java.lang.reflect.Field;",
+                    "import java.util.*;",
+                    "");
                 printJavadoc(
-                    out, "",
+                    out,
+                    0,
                     "Configuration properties that determine the\n"
                     + "behavior of a mondrian instance.\n"
                     + "\n"
@@ -217,60 +267,256 @@ public class PropertyUtil {
                     + "<code>mondrian.properties</code> file. Although it is possible to retrieve\n"
                     + "properties using the inherited {@link java.util.Properties#getProperty(String)}\n"
                     + "method, we recommend that you use methods in this class.</p>\n");
-                String[] lines = {
-                    "public class MondrianProperties extends MondrianPropertiesBase {",
-                    "    /**",
-                    "     * Properties, drawn from {@link System#getProperties},",
-                    "     * plus the contents of \"mondrian.properties\" if it",
-                    "     * exists. A singleton.",
-                    "     */",
-                    "    private static final MondrianProperties instance =",
-                    "        new MondrianProperties();",
-                    "",
-                    "    private MondrianProperties() {",
-                    "        super(",
-                    "            new FilePropertySource(",
-                    "                new File(mondrianDotProperties)));",
-                    "        populate();",
-                    "    }",
-                    "",
-                    "    /**",
-                    "     * Returns the singleton.",
-                    "     *",
-                    "     * @return Singleton instance",
-                    "     */",
-                    "    public static MondrianProperties instance() {",
-                    "        // NOTE: We used to instantiate on demand, but",
-                    "        // synchronization overhead was significant. See",
-                    "        // MONDRIAN-978.",
-                    "        return instance;",
-                    "    }",
-                    "",
-                };
-                printLines(out, lines);
+                printLines(
+                    out,
+                    "public class PrefDef {");
                 for (PropertyDef def : propertyDefinitionMap.values()) {
                     if (!def.core) {
                         continue;
                     }
-                    printJavadoc(out, "    ", def.description);
+                    printJavadoc(out, 4, def.description);
                     out.println(
-                        "    public transient final "
+                        "    public static final "
                         + def.propertyType.className + " " + def.name + " =");
                     out.println(
                         "        new " + def.propertyType.className + "(");
                     out.println(
-                        "            this, \"" + def.path + "\", "
+                        "            \"" + def.name
+                        + "\", Scope." + def.scope
+                        + ", \"" + def.path + "\", "
                         + "" + def.defaultJava() + ");");
                     out.println();
                 }
-                out.println("}");
-                out.println();
-                out.println("// End MondrianProperties.java");
+                printLines(
+                    out,
+                    "",
+                    "    public static final Map<String, BaseProperty> MAP = initMap();",
+                    "",
+                    "    private static Map<String, BaseProperty> initMap() {",
+                    "        final Map<String, BaseProperty> map =",
+                    "            new LinkedHashMap<String, BaseProperty>();",
+                    "        for (Field field : PrefDef.class.getFields()) {",
+                    "            if (BaseProperty.class.isAssignableFrom(field.getType())) {",
+                    "                try {",
+                    "                    BaseProperty property = (BaseProperty) field.get(null);",
+                    "                    map.put(property.getPath(), property);",
+                    "                } catch (IllegalAccessException e) {",
+                    "                    throw new RuntimeException();",
+                    "                }",
+                    "            }",
+                    "        }",
+                    "        return Collections.unmodifiableMap(map);",
+                    "    }",
+                    "}",
+                    "",
+                    "// End " + file.getName());
+            }
+        },
+
+        SERVER {
+            void generate(
+                SortedMap<String, PropertyDef> propertyDefinitionMap,
+                File file,
+                PrintWriter out)
+            {
+                printLines(
+                    out,
+                    "// This class is generated from MondrianProperties.xml.",
+                    "package mondrian.pref;",
+                    "",
+                    "import java.util.*;",
+                    "");
+                printJavadoc(out, 0, "Preferences of a Mondrian server.");
+                printLines(
+                    out,
+                    "public class ServerPref {",
+                    "    private static final ServerPref INSTANCE = Prefs.initServer();",
+                    "",
+                    "    int populateCount;",
+                    "",
+                    "    /** Default values for {@link mondrian.pref.StatementPref} created in this",
+                    "     * connection. */",
+                    "    public final Map<BaseProperty, Object> defaultMap =",
+                    "        new HashMap<BaseProperty, Object>();",
+                    "",
+                    "    ServerPref() {",
+                    "    }",
+                    "",
+                    "    void populate(Map<String, String> map) {",
+                    "        Prefs.load(this, Scope.System, defaultMap, map);",
+                    "    }",
+                    "",
+                    "    public Object get(BaseProperty property) {",
+                    "        switch (property.scope) {",
+                    "        case System:",
+                    "            return Prefs.get_(this, property.name);",
+                    "        default:",
+                    "            throw new AssertionError(property.scope);",
+                    "        }",
+                    "    }",
+                    "",
+                    "    public static ServerPref instance() {",
+                    "        return INSTANCE;",
+                    "    }");
+                generateX(propertyDefinitionMap, Scope.System, out);
+                printLines(
+                    out,
+                    "}",
+                    "",
+                    "// End " + file.getName());
+            }
+        },
+
+        SCHEMA {
+            void generate(
+                SortedMap<String, PropertyDef> propertyDefinitionMap,
+                File file,
+                PrintWriter out)
+            {
+                printLines(
+                    out,
+                    "// This class is generated from MondrianProperties.xml.",
+                    "package mondrian.pref;",
+                    "",
+                    "import java.util.*;",
+                    "");
+                printJavadoc(out, 0, "Preferences of a Mondrian schema.");
+                printLines(
+                    out,
+                    "public class SchemaPref {",
+                    "    public final ServerPref server;",
+                    "    public final Map<BaseProperty, Object> defaultMap =",
+                    "        new HashMap<BaseProperty, Object>();",
+                    "",
+                    "    SchemaPref(ServerPref server) {",
+                    "        this.server = server;",
+                    "        readFrom(server.defaultMap);",
+                    "    }",
+                    "",
+                    "    public Object get(BaseProperty property) {",
+                    "        switch (property.scope) {",
+                    "        case System:",
+                    "            return Prefs.get_(server, property.name);",
+                    "        case Schema:",
+                    "            return Prefs.get_(this, property.name);",
+                    "        default:",
+                    "            throw new AssertionError(property.scope);",
+                    "        }",
+                    "    }");
+                generateX(propertyDefinitionMap, Scope.Schema, out);
+                printLines(
+                    out,
+                    "}",
+                    "",
+                    "// End " + file.getName());
+            }
+        },
+
+        CONNECTION {
+            void generate(
+                SortedMap<String, PropertyDef> propertyDefinitionMap,
+                File file,
+                PrintWriter out)
+            {
+                printLines(
+                    out,
+                    "// This class is generated from MondrianProperties.xml.",
+                    "package mondrian.pref;",
+                    "",
+                    "import java.util.*;",
+                    "");
+                printJavadoc(out, 0, "Preferences of a Mondrian connection.");
+                printLines(
+                    out,
+                    "public class ConnectionPref {",
+                    "    public final ServerPref server;",
+                    "    public final Map<BaseProperty, Object> defaultMap =",
+                    "        new HashMap<BaseProperty, Object>();",
+                    "",
+                    "    ConnectionPref(ServerPref server) {",
+                    "        this.server = server;",
+                    "        readFrom(server.defaultMap);",
+                    "    }",
+                    "",
+                    "    public Object get(BaseProperty property) {",
+                    "        switch (property.scope) {",
+                    "        case System:",
+                    "            return Prefs.get_(server, property.name);",
+                    "        case Connection:",
+                    "            return Prefs.get_(this, property.name);",
+                    "        default:",
+                    "            throw new AssertionError(property.scope);",
+                    "        }",
+                    "    }",
+                    "",
+                    "    public static ConnectionPref instance() {",
+                    "        return null;",
+                    "    }");
+                generateX(propertyDefinitionMap, Scope.Connection, out);
+                printLines(
+                    out,
+                    "}",
+                    "",
+                    "// End " + file.getName());
+            }
+        },
+
+        STATEMENT {
+            void generate(
+                SortedMap<String, PropertyDef> propertyDefinitionMap,
+                File file,
+                PrintWriter out)
+            {
+                printLines(
+                    out,
+                    "// This class is generated from MondrianProperties.xml.",
+                    "package mondrian.pref;",
+                    "",
+                    "import java.util.*;",
+                    "");
+                printJavadoc(out, 0, "Preferences of a Mondrian statement.");
+                printLines(
+                    out,
+                    "public class StatementPref {",
+                    "    public final ServerPref server;",
+                    "    public final SchemaPref schema;",
+                    "    public final ConnectionPref connection;",
+                    "",
+                    "    StatementPref(ConnectionPref connection, SchemaPref schema) {",
+                    "        this.connection = connection;",
+                    "        this.schema = schema;",
+                    "        this.server = connection.server;",
+                    "        readFrom(connection.defaultMap);",
+                    "    }",
+                    "",
+                    "    public Object get(BaseProperty property) {",
+                    "        switch (property.scope) {",
+                    "        case System:",
+                    "            return Prefs.get_(server, property.name);",
+                    "        case Connection:",
+                    "            return Prefs.get_(connection, property.name);",
+                    "        case Schema:",
+                    "            return Prefs.get_(schema, property.name);",
+                    "        case Statement:",
+                    "            return Prefs.get_(this, property.name);",
+                    "        default:",
+                    "            throw new AssertionError(property.scope);",
+                    "        }",
+                    "    }",
+                    "",
+                    "    public static StatementPref instance() {",
+                    "        return mondrian.rolap.RolapConnection.INTERNAL_STATEMENT_PREF; // FIXME\n",
+                    "    }");
+                generateX(propertyDefinitionMap, Scope.Statement, out);
+                printLines(
+                    out,
+                    "}",
+                    "",
+                    "// End " + file.getName());
             }
         },
 
         HTML {
-            @Override
             void generate(
                 SortedMap<String, PropertyDef> propertyDefinitionMap,
                 File file,
@@ -279,6 +525,7 @@ public class PropertyUtil {
                 out.println("<table>");
                 out.println("    <tr>");
                 out.println("    <td><strong>Property</strong></td>");
+                out.println("    <td><strong>Scope</strong></td>");
                 out.println("    <td><strong>Type</strong></td>");
                 out.println("    <td><strong>Default value</strong></td>");
                 out.println("    <td><strong>Description</strong></td>");
@@ -291,7 +538,7 @@ public class PropertyUtil {
                 for (String category : categories) {
                     out.println("    <tr>");
                     out.println(
-                        "      <td colspan='4'><b><br>" + category + "</b"
+                        "      <td colspan='5'><b><br>" + category + "</b"
                         + "></td>");
                     out.println("    </tr>");
                     for (PropertyDef def : propertyDefinitionMap.values()) {
@@ -300,11 +547,14 @@ public class PropertyUtil {
                         }
                         out.println("    <tr>");
                         out.println(
-                            "<td><code><a href='api/mondrian/olap/MondrianProperties.html#"
+                            "<td><code><a href='api/mondrian/pref/PrefDef.html#"
                             + def.name + "'>" + split(def.path)
                             + "</a></code></td>");
                         out.println(
-                            "<td>" + def.propertyType.name() .toLowerCase()
+                            "<td>" + def.scope.name().toLowerCase()
+                            + "</td>");
+                        out.println(
+                            "<td>" + def.propertyType.name().toLowerCase()
                             + "</td>");
                         out.println(
                             "<td>" + split(def.defaultHtml()) + "</td>");
@@ -371,9 +621,15 @@ public class PropertyUtil {
 
 
     private static void printJavadoc(
-        PrintWriter out, String prefix, String content)
+        PrintWriter out, int prefixLength, String content)
     {
+        final char[] chars = new char[prefixLength];
+        Arrays.fill(chars, ' ');
+        final String prefix = String.valueOf(chars);
         out.println(prefix + "/**");
+        if (!content.endsWith("\n")) {
+            content += "\n";
+        }
         printComments(out, prefix, " *", wrapText(content));
         out.println(prefix + " */");
     }
@@ -469,6 +725,7 @@ public class PropertyUtil {
         private final String defaultValue;
         private final String category;
         private final PropertyType propertyType;
+        private final Scope scope;
         private final boolean core;
         private final String description;
         private final String path;
@@ -479,12 +736,14 @@ public class PropertyUtil {
             String defaultValue,
             String category,
             PropertyType propertyType,
+            Scope scope,
             boolean core,
             String description)
         {
             this.name = name;
             this.path = path;
             this.defaultValue = defaultValue;
+            this.scope = scope;
             this.category = category == null ? "Miscellaneous" : category;
             this.propertyType = propertyType;
             this.core = core;
@@ -520,15 +779,17 @@ public class PropertyUtil {
     }
 
     private enum PropertyType {
-        INT("IntegerProperty"),
-        STRING("StringProperty"),
-        DOUBLE("DoubleProperty"),
-        BOOLEAN("BooleanProperty");
+        INT("IntegerProperty", "int"),
+        STRING("StringProperty", "String"),
+        DOUBLE("DoubleProperty", "double"),
+        BOOLEAN("BooleanProperty", "boolean");
 
         public final String className;
+        private final String fieldClass;
 
-        PropertyType(String className) {
+        PropertyType(String className, String fieldClass) {
             this.className = className;
+            this.fieldClass = fieldClass;
         }
     }
 }

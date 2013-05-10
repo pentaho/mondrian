@@ -13,6 +13,7 @@
 package mondrian.rolap.agg;
 
 import mondrian.olap.*;
+import mondrian.pref.StatementPref;
 import mondrian.rolap.*;
 
 import java.util.*;
@@ -84,7 +85,7 @@ public class Aggregation {
         this.constrainedColumnsBitKey =
             aggregationKey.getConstrainedColumnsBitKey();
         this.maxConstraints =
-            MondrianProperties.instance().MaxConstraints.get();
+            StatementPref.instance().MaxConstraints;
         this.creationTimestamp = new Date();
     }
 
@@ -351,7 +352,7 @@ public class Aggregation {
                 break;
             }
             // eliminate this constraint
-            if (MondrianProperties.instance().OptimizePredicates.get()
+            if (StatementPref.instance().OptimizePredicates
                 || bloats[j] == 1)
             {
                 newPredicates[j] =

@@ -10,7 +10,7 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 import mondrian.spi.SegmentBody;
@@ -31,14 +31,10 @@ public class SegmentBuilderTest extends BatchTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        propSaver.set(
-            MondrianProperties.instance().EnableInMemoryRollup,
-            true);
-        propSaver.set(MondrianProperties.instance().EnableNativeNonEmpty, true);
-        propSaver.set(
-            MondrianProperties.instance().SparseSegmentDensityThreshold, .5);
-        propSaver.set(
-            MondrianProperties.instance().SparseSegmentCountThreshold, 1000);
+        PrefDef.EnableInMemoryRollup.with(propSaver).set(true);
+        PrefDef.EnableNativeNonEmpty.with(propSaver).set(true);
+        PrefDef.SparseSegmentDensityThreshold.with(propSaver).set(.5);
+        PrefDef.SparseSegmentCountThreshold.with(propSaver).set(1000);
     }
 
     public void _testSparseRollup() {

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1999-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -74,18 +74,6 @@ public interface Hierarchy extends OlapElement, Annotated {
      */
     Member createMember(
         Member parent, Level level, String name, Formula formula);
-
-    /**
-     * Returns the unique name of this hierarchy, always including the dimension
-     * name, e.g. "[Time].[Time]", regardless of whether
-     * {@link MondrianProperties#SsasCompatibleNaming} is enabled.
-     *
-     * @deprecated Will be removed in mondrian-4.0, when
-     * {@link #getUniqueName()} will have this behavior.
-     *
-     * @return Unique name of hierarchy.
-     */
-    String getUniqueNameSsas();
 }
 
 // End Hierarchy.java

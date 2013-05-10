@@ -10,6 +10,7 @@
 package mondrian.server;
 
 import mondrian.olap.*;
+import mondrian.pref.StatementPref;
 import mondrian.rolap.RolapSchema;
 import mondrian.tui.XmlaSupport;
 import mondrian.util.Pair;
@@ -62,7 +63,7 @@ public class DynamicContentFinder
             true);
         final Pair<Long, TimeUnit> interval =
             Util.parseInterval(
-                MondrianProperties.instance().XmlaSchemaRefreshInterval.get(),
+                StatementPref.instance().XmlaSchemaRefreshInterval,
                 TimeUnit.MILLISECONDS);
         final long period = interval.right.toMillis(interval.left);
         timer.schedule(

@@ -11,6 +11,7 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.olap.CacheControl.CellRegion;
+import mondrian.pref.*;
 import mondrian.spi.Dialect;
 import mondrian.test.*;
 
@@ -405,19 +406,16 @@ public class CacheControlTest extends FoodMartTestCase {
             + "Row #2: 16,284\n"
             + "Row #2: 27,038\n"
             + "Row #2: 4,294\n");
-        if (propSaver.props.DisableCaching.get()) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.server.DisableCaching) {
             return;
         }
 
         final TestContext testContext = getTestContext();
         flushCache(testContext);
 
-        // Make sure MaxConstraint is high enough
-        int minConstraints = 3;
-
-        if (propSaver.props.MaxConstraints.get() < minConstraints) {
-            propSaver.set(propSaver.props.MaxConstraints, minConstraints);
-        }
+        // Make sure MaxConstraints is high enough
+        propSaver.setMin(pref, PrefDef.MaxConstraints, 3);
 
         // Execute a query, to bring data into the cache.
         standardQuery(testContext);
@@ -454,7 +452,8 @@ public class CacheControlTest extends FoodMartTestCase {
         {
             return;
         }
-        if (propSaver.props.DisableCaching.get()) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.server.DisableCaching) {
             return;
         }
 
@@ -526,7 +525,8 @@ public class CacheControlTest extends FoodMartTestCase {
         {
             return;
         }
-        if (propSaver.props.DisableCaching.get()) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.server.DisableCaching) {
             return;
         }
         if (!getTestContext().getDialect().getDatabaseProduct()
@@ -572,7 +572,8 @@ public class CacheControlTest extends FoodMartTestCase {
         {
             return;
         }
-        if (propSaver.props.DisableCaching.get()) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.server.DisableCaching) {
             return;
         }
 
@@ -1261,20 +1262,13 @@ public class CacheControlTest extends FoodMartTestCase {
             + "{[Store].[Stores].[USA]}\n"
             + "Row #0: 266,773\n");
 
-        if (MondrianProperties.instance().DisableCaching.get()) {
+        final StatementPref pref = StatementPref.instance();
+        if (pref.server.DisableCaching) {
             return;
         }
 
-        // Make sure MaxConstraint is high enough
-        int minConstraints = 3;
-
-        if (MondrianProperties.instance().MaxConstraints.get()
-            < minConstraints)
-        {
-            propSaver.set(
-                MondrianProperties.instance().MaxConstraints,
-                minConstraints);
-        }
+        // Make sure MaxConstraints is high enough
+        propSaver.setMin(pref, PrefDef.MaxConstraints, 2);
 
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -1303,7 +1297,7 @@ public class CacheControlTest extends FoodMartTestCase {
 
         String tag = "output";
         String expected =
-            MondrianProperties.instance().EnableNativeNonEmpty.get()
+            pref.server.EnableNativeNonEmpty
                 ? "${output}" : "${output2}";
         String actual = sw.toString();
         assertCacheStateEquals(tag, expected, actual);

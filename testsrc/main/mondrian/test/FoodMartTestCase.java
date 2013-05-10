@@ -13,6 +13,7 @@ package mondrian.test;
 import mondrian.calc.TupleList;
 import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
+import mondrian.pref.*;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -32,7 +33,7 @@ public class FoodMartTestCase extends TestCase {
      * Access properties via this object and their values will be reset on
      * {@link #tearDown()}.
      */
-    protected final PropertySaver propSaver = new PropertySaver();
+    protected final PrefSaver propSaver = new PrefSaver();
 
     public FoodMartTestCase(String name) {
         super(name);
@@ -197,13 +198,13 @@ public class FoodMartTestCase extends TestCase {
     }
 
     protected boolean isGroupingSetsSupported() {
-        return MondrianProperties.instance().EnableGroupingSets.get()
+        return StatementPref.instance().EnableGroupingSets
             && getTestContext().getDialect().supportsGroupingSets();
     }
 
     protected boolean isDefaultNullMemberRepresentation() {
-        return MondrianProperties.instance().NullMemberRepresentation.get()
-                .equals("#null");
+        return StatementPref.instance().NullMemberRepresentation
+            .equals("#null");
     }
 
     protected Member member(

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 30 August, 2001
@@ -14,13 +14,13 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.CacheControl;
 import mondrian.olap.Exp;
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianServer;
 import mondrian.olap.Util;
+import mondrian.pref.*;
 import mondrian.rolap.*;
 import mondrian.rolap.SqlStatement.Type;
 import mondrian.rolap.aggmatcher.AggStar;
-import mondrian.server.Locus;
+import mondrian.server.*;
 import mondrian.util.Pair;
 
 import org.apache.log4j.Logger;
@@ -38,9 +38,6 @@ import java.util.concurrent.*;
  */
 public class AggregationManager extends RolapAggregationManager {
 
-    private static final MondrianProperties properties =
-        MondrianProperties.instance();
-
     private static final Logger LOGGER =
         Logger.getLogger(AggregationManager.class);
 
@@ -50,9 +47,9 @@ public class AggregationManager extends RolapAggregationManager {
      * Creates the AggregationManager.
      */
     public AggregationManager(MondrianServer server) {
-        if (properties.EnableCacheHitCounters.get()) {
+        if (server.pref.EnableCacheHitCounters) {
             LOGGER.error(
-                "Property " + properties.EnableCacheHitCounters.getPath()
+                "Property " + PrefDef.EnableCacheHitCounters.getPath()
                 + " is obsolete; ignored.");
         }
         this.cacheMgr = new SegmentCacheManager(server);
@@ -238,7 +235,7 @@ public class AggregationManager extends RolapAggregationManager {
             // Do not use Aggregate tables if compound predicates are present.
             hasCompoundPredicates = true;
         }
-        if (MondrianProperties.instance().UseAggregates.get()
+        if (StatementPref.instance().UseAggregates
              && !hasCompoundPredicates)
         {
             final boolean[] rollup = {false};
@@ -352,8 +349,8 @@ public class AggregationManager extends RolapAggregationManager {
         final BitKey measureBitKey,
         boolean[] rollup)
     {
-        if (!MondrianProperties.instance().ReadAggregates.get()
-            || !MondrianProperties.instance().UseAggregates.get())
+        if (!StatementPref.instance().ReadAggregates
+            || !StatementPref.instance().UseAggregates)
         {
             // Can't do anything here.
             return null;

@@ -20,11 +20,12 @@ import mondrian.olap.NamedSet;
 import mondrian.olap.Property;
 import mondrian.olap.fun.UdfResolver;
 import mondrian.olap.type.*;
+import mondrian.pref.StatementPref;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapLevel.HideMemberCondition;
 import mondrian.rolap.RolapSchema.UnresolvedColumn;
 import mondrian.rolap.aggmatcher.ExplicitRules;
-import mondrian.server.Locus;
+import mondrian.server.*;
 import mondrian.spi.*;
 import mondrian.spi.CellFormatter;
 import mondrian.spi.MemberFormatter;
@@ -4328,8 +4329,7 @@ public class RolapSchemaLoader {
                                 + "<Hierarchy> has access='custom'");
                         }
                         final boolean ignoreInvalidMembers =
-                            MondrianProperties.instance().IgnoreInvalidMembers
-                                .get();
+                            StatementPref.instance().IgnoreInvalidMembers;
                         Member member =
                             schemaReader.withLocus().getMemberByUniqueName(
                                 Util.parseIdentifier(memberGrant.member),
@@ -4706,7 +4706,7 @@ public class RolapSchemaLoader {
         if (xmlCalcMember.parent != null) {
             parentFqName = xmlCalcMember.parent;
         } else {
-            parentFqName = hierarchy.getUniqueNameSsas();
+            parentFqName = hierarchy.getUniqueName();
         }
 
         if (!hierarchy.getDimension().isMeasures()) {

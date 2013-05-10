@@ -13,6 +13,7 @@ package mondrian.rolap;
 
 import mondrian.mdx.MemberExpr;
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.rolap.sql.*;
 import mondrian.spi.Dialect;
 
@@ -29,10 +30,11 @@ public class RolapNativeTopCount extends RolapNativeSet {
 
     /**
      * Creates a RolapNativeTopCount.
+     *
+     * @param pref Schema pref
      */
-    public RolapNativeTopCount() {
-        super.setEnabled(
-            MondrianProperties.instance().EnableNativeTopCount.get());
+    public RolapNativeTopCount(SchemaPref pref) {
+        super.setEnabled(pref.server.EnableNativeTopCount);
     }
 
     static class TopCountConstraint extends SetConstraint {

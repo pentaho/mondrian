@@ -15,6 +15,7 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.VisualTotalsFunDef;
+import mondrian.pref.PrefDef;
 import mondrian.server.Locus;
 import mondrian.spi.PropertyFormatter;
 import mondrian.util.*;
@@ -1028,7 +1029,7 @@ public class RolapMemberBase
     /**
      * Default {@link RolapMemberBase.PropertyValueMapFactory}
      * implementation, used if
-     * {@link mondrian.olap.MondrianProperties#PropertyValueMapFactoryClass}
+     * {@link PrefDef#PropertyValueMapFactoryClass}
      * is not set.
      */
     public static final class DefaultPropertyValueMapFactory

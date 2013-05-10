@@ -16,6 +16,7 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.TupleType;
 import mondrian.olap.type.Type;
+import mondrian.pref.StatementPref;
 import mondrian.rolap.RolapUtil;
 
 import java.io.PrintWriter;
@@ -81,7 +82,7 @@ public class RankFunDef extends FunDefBase {
         final ListCalc listCalc0 = compiler.compileList(listExp);
         Calc listCalc1 = new RankedListCalc(listCalc0, tuple);
         final Calc listCalc;
-        if (MondrianProperties.instance().EnableExpCache.get()) {
+        if (StatementPref.instance().EnableExpCache) {
             final ExpCacheDescriptor key = new ExpCacheDescriptor(
                 listExp, listCalc1, compiler.getEvaluator());
             listCalc = new CacheCalc(listExp, key);

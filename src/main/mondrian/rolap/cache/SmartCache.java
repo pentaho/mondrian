@@ -16,14 +16,10 @@ import java.util.Map.Entry;
 /**
  * Defines a cache API. Implementations exist for hard and soft references.
  *
- * <p>This interface implements the {@link Iterable}. The {@link #iterator()}
- * method returns an iterator over all entries in the cache. The iterator
- * is mutable.
- *
  * @author av
  * @since Nov 21, 2005
  */
-public interface SmartCache <K, V> {
+public interface SmartCache<K, V> {
     /**
      * Places a key/value pair into the queue.
      *

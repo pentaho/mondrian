@@ -14,6 +14,7 @@ import mondrian.mdx.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.olap.fun.Resolver;
 import mondrian.olap.type.Type;
+import mondrian.pref.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.spi.*;
@@ -76,8 +77,13 @@ public class Util extends XOMUtil {
      * Random number generator to provide seed for other random number
      * generators.
      */
-    private static final Random metaRandom =
-            createRandom(MondrianProperties.instance().TestSeed.get());
+    private static final Lazy<Random> META_RANDOM =
+        new Lazy<Random>(
+            new Function0<Random>() {
+                public Random apply() {
+                    return createRandom(ServerPref.instance().TestSeed);
+                }
+            });
 
     /** Unique id for this JVM instance. Part of a key that ensures that if
      * two JVMs in the same cluster have a data-source with the same
@@ -556,7 +562,7 @@ public class Util extends XOMUtil {
      * Returns true if two strings are equal, or are both null.
      *
      * <p>The result is not affected by
-     * {@link MondrianProperties#CaseSensitive the case sensitive option}; if
+     * {@link PrefDef#CaseSensitive the case sensitive option}; if
      * you wish to compare names, use {@link #equalName(String, String)}.
      */
     public static boolean equals(String s, String t) {
@@ -566,7 +572,7 @@ public class Util extends XOMUtil {
     /**
      * Returns whether two names are equal.
      * Takes into account the
-     * {@link MondrianProperties#CaseSensitive case sensitive option}.
+     * {@link PrefDef#CaseSensitive case sensitive option}.
      * Names may be null.
      */
     public static boolean equalName(String s, String t) {
@@ -574,7 +580,7 @@ public class Util extends XOMUtil {
             return t == null;
         }
         boolean caseSensitive =
-            MondrianProperties.instance().CaseSensitive.get();
+            StatementPref.instance().CaseSensitive;
         return caseSensitive ? s.equals(t) : s.equalsIgnoreCase(t);
     }
 
@@ -597,13 +603,13 @@ public class Util extends XOMUtil {
     /**
      * Compares two names.  if case sensitive flag is false,
      * apply finer grain difference with case sensitive
-     * Takes into account the {@link MondrianProperties#CaseSensitive case
+     * Takes into account the {@link PrefDef#CaseSensitive case
      * sensitive option}.
      * Names must not be null.
      */
     public static int caseSensitiveCompareName(String s, String t) {
         boolean caseSensitive =
-            MondrianProperties.instance().CaseSensitive.get();
+            StatementPref.instance().CaseSensitive;
         if (caseSensitive) {
             return s.compareTo(t);
         } else {
@@ -617,24 +623,24 @@ public class Util extends XOMUtil {
 
     /**
      * Compares two names.
-     * Takes into account the {@link MondrianProperties#CaseSensitive case
+     * Takes into account the {@link PrefDef#CaseSensitive case
      * sensitive option}.
      * Names must not be null.
      */
     public static int compareName(String s, String t) {
         boolean caseSensitive =
-            MondrianProperties.instance().CaseSensitive.get();
+            StatementPref.instance().CaseSensitive;
         return caseSensitive ? s.compareTo(t) : s.compareToIgnoreCase(t);
     }
 
     /**
      * Generates a normalized form of a name, for use as a key into a map.
      * Returns the upper case name if
-     * {@link MondrianProperties#CaseSensitive} is true, the name unchanged
+     * {@link PrefDef#CaseSensitive} is true, the name unchanged
      * otherwise.
      */
     public static String normalizeName(String s) {
-        return MondrianProperties.instance().CaseSensitive.get()
+        return StatementPref.instance().CaseSensitive
             ? s
             : s.toUpperCase();
     }
@@ -1250,8 +1256,8 @@ public class Util extends XOMUtil {
         if (seed == 0) {
             seed = new Random().nextLong();
             System.out.println("random: seed=" + seed);
-        } else if (seed == -1 && metaRandom != null) {
-            seed = metaRandom.nextLong();
+        } else if (seed == -1 && META_RANDOM.get() != null) {
+            seed = META_RANDOM.get().nextLong();
         }
         return new Random(seed);
     }
@@ -1282,7 +1288,7 @@ public class Util extends XOMUtil {
         String propertyName)
     {
         boolean caseSensitive =
-            MondrianProperties.instance().CaseSensitive.get();
+            StatementPref.instance().CaseSensitive;
         do {
             Property[] properties = level.getProperties();
             for (Property property : properties) {
@@ -3880,7 +3886,7 @@ public class Util extends XOMUtil {
      * @throws ResourceLimitExceededException
      */
     public static void checkCJResultLimit(long resultSize) {
-        int resultLimit = MondrianProperties.instance().ResultLimit.get();
+        int resultLimit = StatementPref.instance().ResultLimit;
 
         // Throw an exeption, if the size of the crossjoin exceeds the result
         // limit.

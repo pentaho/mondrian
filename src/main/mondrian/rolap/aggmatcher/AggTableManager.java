@@ -5,12 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
+import mondrian.pref.StatementPref;
 import mondrian.recorder.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
@@ -28,8 +29,8 @@ import javax.sql.DataSource;
  * <li>A {@link mondrian.rolap.RolapSchema} creates an {@link AggTableManager},
  *     and stores it in a member variable to ensure that it is not
  *     garbage-collected.
- * <li>The {@link AggTableManager} creates and registers
- *     {@link org.eigenbase.util.property.Trigger} objects, so that it is notified
+ * <li>The {@link AggTableManager} formerly created and registered
+ *     property triggers, so that it was notified
  *     when properties pertinent to aggregate tables change.
  * <li>The {@link mondrian.rolap.RolapSchema} calls {@link #initialize()},
  *     which scans the JDBC catalog and identifies aggregate tables.
@@ -77,7 +78,7 @@ public class AggTableManager {
      */
     public void initialize() {
         if (Util.deprecated(false, false)
-            && MondrianProperties.instance().ReadAggregates.get())
+            && StatementPref.instance().ReadAggregates)
         {
             try {
                 loadRolapStarAggregates();
@@ -104,7 +105,7 @@ public class AggTableManager {
 
     private void reLoadRolapStarAggregates() {
         if (Util.deprecated(false, false)
-            && MondrianProperties.instance().ReadAggregates.get())
+            && StatementPref.instance().ReadAggregates)
         {
             try {
                 clearJdbcSchema();
@@ -304,9 +305,9 @@ public class AggTableManager {
      * column with the same name and a RolapStar foreign key column becomes a
      * foreign key usage for the column with the same name.
      *
-     * @param dbFactTable
-     * @param star
-     * @param msgRecorder
+     * @param dbFactTable Fact table
+     * @param star Star
+     * @param msgRecorder Message recorder
      */
     void bindToStar(
         final JdbcSchema.Table dbFactTable,

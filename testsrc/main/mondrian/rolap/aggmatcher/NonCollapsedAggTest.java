@@ -9,10 +9,11 @@
 */
 package mondrian.rolap.aggmatcher;
 
+import mondrian.pref.PrefDef;
 import mondrian.test.TestContext;
 
 /**
- * Testcase for non-collapsed levels in agg tables.
+ * Test case for non-collapsed levels in agg tables.
  *
  * @author Luc Boudreau
  */
@@ -165,8 +166,8 @@ public class NonCollapsedAggTest extends AggTableTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        propSaver.set(propSaver.props.UseAggregates, true);
-        propSaver.set(propSaver.props.ReadAggregates, true);
+        PrefDef.UseAggregates.with(propSaver).set(true);
+        PrefDef.ReadAggregates.with(propSaver).set(true);
         super.getConnection().getCacheControl(null).flushSchemaCache();
     }
 

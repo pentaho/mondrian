@@ -4,12 +4,13 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2011 Pentaho
+// Copyright (C) 2008-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.pref.StatementPref;
 
 import static mondrian.olap.SolveOrderMode.ABSOLUTE;
 import static mondrian.olap.SolveOrderMode.SCOPED;
@@ -81,11 +82,11 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
     {
         return Util.lookup(
             SolveOrderMode.class,
-            MondrianProperties.instance().SolveOrderMode.get().toUpperCase());
+            StatementPref.instance().SolveOrderMode.toUpperCase());
     }
 
     final void setSolveOrderMode(SolveOrderMode mode) {
-        MondrianProperties.instance().SolveOrderMode.set(mode.toString());
+        StatementPref.instance().SolveOrderMode = mode.toString();
     }
 
     public TestContext getTestContext() {

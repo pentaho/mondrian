@@ -14,6 +14,7 @@ import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.SetFunDef;
+import mondrian.pref.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.*;
 import mondrian.server.*;
@@ -98,13 +99,9 @@ public class RolapCell implements Cell {
         List<Exp> fields,
         boolean extendedContext)
     {
-        if (!MondrianProperties.instance()
-            .EnableDrillThrough.get())
-        {
-            throw MondrianResource.instance()
-                .DrillthroughDisabled.ex(
-                    MondrianProperties.instance()
-                        .EnableDrillThrough.getPath());
+        if (!StatementPref.instance().EnableDrillThrough) {
+            throw MondrianResource.instance().DrillthroughDisabled.ex(
+                PrefDef.EnableDrillThrough.getPath());
         }
         final Member[] currentMembers = getMembersForDrillThrough();
         // Create a StarPredicate to represent the compound slicer
@@ -310,9 +307,7 @@ public class RolapCell implements Cell {
      * @return true if can drill through
      */
     public boolean canDrillThrough() {
-        if (!MondrianProperties.instance()
-            .EnableDrillThrough.get())
-        {
+        if (!StatementPref.instance().EnableDrillThrough) {
             return false;
         }
         // get current members
@@ -486,7 +481,7 @@ public class RolapCell implements Cell {
 
     public Object getPropertyValue(String propertyName) {
         final boolean matchCase =
-            MondrianProperties.instance().CaseSensitive.get();
+            StatementPref.instance().CaseSensitive;
         Property property = Property.lookup(propertyName, matchCase);
         Object defaultValue = null;
         if (property != null) {

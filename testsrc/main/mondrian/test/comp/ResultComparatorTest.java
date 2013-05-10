@@ -5,12 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test.comp;
 
 import mondrian.olap.*;
+import mondrian.pref.StatementPref;
 import mondrian.test.FoodMartTestCase;
 
 import junit.framework.TestSuite;
@@ -155,9 +156,9 @@ public class ResultComparatorTest extends FoodMartTestCase {
 
     public static TestSuite suite() {
         TestSuite suite = new TestSuite();
-        MondrianProperties properties = MondrianProperties.instance();
-        String filePattern = properties.QueryFilePattern.get();
-        String fileDirectory = properties.QueryFileDirectory.get();
+        StatementPref pref = StatementPref.instance();
+        String filePattern = pref.QueryFilePattern;
+        String fileDirectory = pref.QueryFileDirectory;
 
         final Pattern pattern =
             filePattern == null
@@ -171,21 +172,16 @@ public class ResultComparatorTest extends FoodMartTestCase {
         File[] files = new File(directory).listFiles(
             new FilenameFilter() {
                 public boolean accept(File dir, String name) {
-                    if (name.startsWith("query") && name.endsWith(".xml")) {
-                        if (pattern == null) {
-                            return true;
-                        } else {
-                            return pattern.matcher(name).matches();
-                        }
-                    }
-                    return false;
+                    return name.startsWith("query")
+                        && name.endsWith(".xml")
+                        && (pattern == null || pattern.matcher(name).matches());
                 }
             });
         if (files == null) {
             files = new File[0];
         }
-        for (int idx = 0; idx < files.length; idx++) {
-            suite.addTest(new ResultComparatorTest(files[idx]));
+        for (File file1 : files) {
+            suite.addTest(new ResultComparatorTest(file1));
         }
 
         return suite;

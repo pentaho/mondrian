@@ -13,6 +13,7 @@ import mondrian.calc.*;
 import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.mdx.UnresolvedFunCall;
 import mondrian.olap.*;
+import mondrian.pref.StatementPref;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 
@@ -36,7 +37,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
         // If expression cache is enabled, wrap first expression (the set)
         // in a function which will use the expression cache.
         if (i == 0) {
-            if (MondrianProperties.instance().EnableExpCache.get()) {
+            if (StatementPref.instance().EnableExpCache) {
                 Exp arg = args[0];
                 if (FunUtil.worthCaching(arg)) {
                     final Exp cacheCall =
@@ -109,7 +110,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
 
     private static void crossProd(Evaluator evaluator, int currLen) {
         long iterationLimit =
-            MondrianProperties.instance().IterationLimit.get();
+            StatementPref.instance().IterationLimit;
         final int productLen = currLen * evaluator.getIterationLength();
         if (iterationLimit > 0) {
             if (productLen > iterationLimit) {
@@ -158,8 +159,8 @@ public class AbstractAggregateFunDef extends FunDefBase {
             if (measureGroup.ignoreUnrelatedDimensions) {
                 return ignoreUnrelatedDimensions(
                     tuplesForAggregation, measureGroup);
-            } else if (MondrianProperties.instance()
-                .IgnoreMeasureForNonJoiningDimension.get())
+            } else if (StatementPref.instance()
+                .IgnoreMeasureForNonJoiningDimension)
             {
                 return ignoreMeasureForNonJoiningDimension(
                     tuplesForAggregation, measureGroup);

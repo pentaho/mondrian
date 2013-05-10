@@ -10,6 +10,7 @@
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.Result;
+import mondrian.pref.PrefDef;
 
 /**
  * Testcase for levels that contain multiple columns and are
@@ -37,8 +38,8 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
         }
 
         // get value without aggregates
-        propSaver.set(propSaver.props.UseAggregates, false);
-        propSaver.set(propSaver.props.ReadAggregates, false);
+        PrefDef.UseAggregates.with(propSaver).set(false);
+        PrefDef.ReadAggregates.with(propSaver).set(false);
 
         String mdx =
             "select {[Measures].[Total]} on columns from [Fact]";
@@ -53,16 +54,16 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
 
         // unless there is a way to flush the cache,
         // I'm skeptical about these results
-        propSaver.set(propSaver.props.UseAggregates, true);
-        propSaver.set(propSaver.props.ReadAggregates, false);
+        PrefDef.UseAggregates.with(propSaver).set(true);
+        PrefDef.ReadAggregates.with(propSaver).set(false);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
 
         assertTrue(v.equals(v1));
 
-        Result aresult2 = getCubeTestContext().executeQuery(mdx2);
-        Object av1 = aresult2.getCell(new int[]{0}).getValue();
+        Result result2 = getCubeTestContext().executeQuery(mdx2);
+        Object av1 = result2.getCell(new int[]{0}).getValue();
 
         assertTrue(av.equals(av1));
     }

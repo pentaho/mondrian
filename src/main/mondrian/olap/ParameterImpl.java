@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2000-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -15,6 +15,7 @@ import mondrian.calc.impl.AbstractListCalc;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.MemberExpr;
 import mondrian.olap.type.*;
+import mondrian.pref.Scope;
 
 import java.util.List;
 

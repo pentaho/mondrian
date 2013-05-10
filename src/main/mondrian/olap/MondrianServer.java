@@ -4,11 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2010 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap;
 
+import mondrian.pref.ServerPref;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapResultShepherd;
 import mondrian.rolap.agg.AggregationManager;
@@ -33,6 +34,12 @@ import java.util.*;
  * @since Jun 25, 2006
  */
 public abstract class MondrianServer {
+    public final ServerPref pref;
+
+    public MondrianServer() {
+        pref = ServerPref.instance();
+    }
+
     /**
      * Returns the MondrianServer that hosts a given connection.
      *

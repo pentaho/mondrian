@@ -11,6 +11,7 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.pref.PrefDef;
 import mondrian.server.UrlRepositoryContentFinder;
 import mondrian.xmla.test.XmlaTestContext;
 
@@ -1245,9 +1246,9 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
     };
 
     public void testConcurrentValidatingQueriesInRandomOrder() {
-        propSaver.set(propSaver.props.DisableCaching, false);
-        propSaver.set(propSaver.props.UseAggregates, false);
-        propSaver.set(propSaver.props.ReadAggregates, false);
+        PrefDef.DisableCaching.with(propSaver).set(false);
+        PrefDef.UseAggregates.with(propSaver).set(false);
+        PrefDef.ReadAggregates.with(propSaver).set(false);
 
         FoodMartTestCase.QueryAndResult[] singleQuery = {mdxQueries[0]};
         assertTrue(
@@ -1288,7 +1289,7 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
                 executorService.submit(
                     new Runnable() {
                         public void run() {
-                            OlapStatement statement = null;
+                            OlapStatement statement;
                             try {
                                 OlapConnection connection =
                                     server.getConnection(
@@ -1353,10 +1354,10 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             cacheControl.createMeasuresRegion(salesCube);
         cacheControl.flush(measuresRegion);
 
-        Cube whsalesCube =
+        Cube wasCube =
             connection.getSchema().lookupCube("Warehouse and Sales", true);
         measuresRegion =
-            cacheControl.createMeasuresRegion(whsalesCube);
+            cacheControl.createMeasuresRegion(wasCube);
         cacheControl.flush(measuresRegion);
     }
 

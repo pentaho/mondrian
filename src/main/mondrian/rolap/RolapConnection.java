@@ -11,9 +11,9 @@
 package mondrian.rolap;
 
 import mondrian.calc.*;
-import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.olap.*;
 import mondrian.parser.MdxParserValidator;
+import mondrian.pref.*;
 import mondrian.resource.MondrianResource;
 import mondrian.server.*;
 import mondrian.spi.*;
@@ -21,8 +21,6 @@ import mondrian.spi.impl.JndiDataSourceResolver;
 import mondrian.util.*;
 
 import org.apache.log4j.Logger;
-
-import org.eigenbase.util.property.StringProperty;
 
 import org.olap4j.Scenario;
 
@@ -52,6 +50,12 @@ public class RolapConnection extends ConnectionBase {
     private static final Logger LOGGER =
         Logger.getLogger(RolapConnection.class);
     private static final AtomicInteger ID_GENERATOR = new AtomicInteger();
+
+    /** Dummy pref for internal statements. */
+    public static final StatementPref INTERNAL_STATEMENT_PREF =
+        Prefs.statement(
+            Prefs.connection(Prefs.server()),
+            Prefs.schema(Prefs.server()));
 
     private final MondrianServer server;
 
@@ -391,7 +395,7 @@ public class RolapConnection extends ConnectionBase {
                 RolapUtil.loadDrivers(jdbcDrivers);
             }
             final String jdbcDriversProp =
-                    MondrianProperties.instance().JdbcDrivers.get();
+                ServerPref.instance().JdbcDrivers;
             RolapUtil.loadDrivers(jdbcDriversProp);
 
             Properties jdbcProperties = getJdbcProperties(connectInfo);
@@ -488,10 +492,10 @@ public class RolapConnection extends ConnectionBase {
      */
     private static synchronized DataSourceResolver getDataSourceResolver() {
         if (dataSourceResolver == null) {
-            final StringProperty property =
-                MondrianProperties.instance().DataSourceResolverClass;
+            final StringProperty property = PrefDef.DataSourceResolverClass;
             final String className =
                 property.get(
+                    StatementPref.instance(),
                     JndiDataSourceResolver.class.getName());
             try {
                 dataSourceResolver =
@@ -829,8 +833,8 @@ public class RolapConnection extends ConnectionBase {
     private Statement createInternalStatement(boolean reentrant) {
         final Statement statement =
             reentrant
-                ? new ReentrantInternalStatement()
-                : new InternalStatement();
+                ? new ReentrantInternalStatement(INTERNAL_STATEMENT_PREF)
+                : new InternalStatement(INTERNAL_STATEMENT_PREF);
         server.addStatement(statement);
         return statement;
     }
@@ -1205,6 +1209,10 @@ public class RolapConnection extends ConnectionBase {
     private class InternalStatement extends StatementImpl {
         private boolean closed = false;
 
+        public InternalStatement(StatementPref pref) {
+            super(pref);
+        }
+
         public void close() {
             if (!closed) {
                 closed = true;
@@ -1235,6 +1243,10 @@ public class RolapConnection extends ConnectionBase {
      * {@link InternalStatement} for each operation.</p>
      */
     private class ReentrantInternalStatement extends InternalStatement {
+        public ReentrantInternalStatement(StatementPref pref) {
+            super(pref);
+        }
+
         @Override
         public void start(Execution execution) {
             // Unlike StatementImpl, there is not a unique execution. An

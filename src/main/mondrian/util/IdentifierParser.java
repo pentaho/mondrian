@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 3 March, 2002
@@ -16,6 +16,7 @@ import mondrian.calc.TupleList;
 import mondrian.calc.impl.ArrayTupleList;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
+import mondrian.pref.StatementPref;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapCube;
 
@@ -46,12 +47,12 @@ public class IdentifierParser extends org.olap4j.impl.IdentifierParser {
             this.schemaReader = schemaReader;
             this.cube = cube;
             this.hierarchyList = hierarchyList;
-            final MondrianProperties props = MondrianProperties.instance();
+            final StatementPref pref = StatementPref.instance();
             final boolean load = ((RolapCube) cube).isLoadInProgress();
             this.ignoreInvalid =
                 (load
-                    ? props.IgnoreInvalidMembers.get()
-                    : props.IgnoreInvalidMembersDuringQuery.get());
+                    ? pref.IgnoreInvalidMembers
+                    : pref.IgnoreInvalidMembersDuringQuery);
         }
 
         protected Member resolveMember(Hierarchy expectedHierarchy) {

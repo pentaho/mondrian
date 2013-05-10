@@ -9,7 +9,6 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.test.FoodMartTestCase;
 
 /**

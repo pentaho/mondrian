@@ -15,12 +15,11 @@ import mondrian.calc.impl.AbstractCalc;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.olap.*;
 import mondrian.olap.type.StringType;
+import mondrian.pref.*;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 
 import org.apache.log4j.Logger;
-
-import org.eigenbase.util.property.Property;
 
 import org.olap4j.mdx.IdentifierSegment;
 
@@ -660,10 +659,8 @@ public class RolapSchemaReader
         }
 
         // Scan through mondrian and system properties.
-        List<Property> propertyList =
-            MondrianProperties.instance().getPropertyList();
-        for (Property property : propertyList) {
-            if (property.getPath().equals(name)) {
+        for (BaseProperty property : PrefDef.MAP.values()) {
+            if (property.path.equals(name)) {
                 return new SystemPropertyParameter(name, false);
             }
         }
@@ -690,9 +687,9 @@ public class RolapSchemaReader
 
     /**
      * Implementation of {@link Parameter} which is sourced from system
-     * propertes (see {@link System#getProperties()} or mondrian properties
-     * (see {@link MondrianProperties}.
-     * <p/>
+     * properties (see {@link System#getProperties()} or mondrian properties
+     * (see {@link PrefDef}.
+     *
      * <p>The name of the property is the same as the key into the
      * {@link java.util.Properties} object; for example "java.version" or
      * "mondrian.trace.level".
@@ -708,7 +705,7 @@ public class RolapSchemaReader
         /**
          * Definition of mondrian property, or null if system property.
          */
-        private final Property propertyDefinition;
+        private final BaseProperty propertyDefinition;
 
         public SystemPropertyParameter(String name, boolean system) {
             super(
@@ -720,7 +717,7 @@ public class RolapSchemaReader
             this.propertyDefinition =
                 system
                 ? null
-                : MondrianProperties.instance().getPropertyDefinition(name);
+                : PrefDef.MAP.get(name);
         }
 
         public Scope getScope() {
@@ -743,7 +740,8 @@ public class RolapSchemaReader
                             SystemPropertyParameter.this.getName();
                         return System.getProperty(name);
                     } else {
-                        return propertyDefinition.stringValue();
+                        return propertyDefinition.getObject(
+                            evaluator.getStatementPref());
                     }
                 }
             };

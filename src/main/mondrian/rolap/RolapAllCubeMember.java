@@ -10,7 +10,6 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 
 /**

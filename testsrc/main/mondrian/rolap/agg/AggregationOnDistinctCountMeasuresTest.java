@@ -16,6 +16,7 @@ import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
 import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.CrossJoinFunDef;
+import mondrian.pref.PrefDef;
 import mondrian.rolap.BatchTestCase;
 import mondrian.rolap.RolapCube;
 import mondrian.server.Execution;
@@ -301,8 +302,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testDistinctCountOnTuplesWithSomeNonJoiningDimensions() {
-        propSaver.set(
-            propSaver.props.IgnoreMeasureForNonJoiningDimension, false);
+        PrefDef.IgnoreMeasureForNonJoiningDimension.with(propSaver).set(false);
         String mdx =
             "WITH MEMBER WAREHOUSE.X as 'Aggregate({WAREHOUSE.[STATE PROVINCE].MEMBERS}*"
             + "{[Gender].Members})'"
@@ -318,8 +318,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "{[Warehouse].[Warehouse].[X]}\n"
             + "Row #0: \n";
         assertQueryReturns(mdx, expectedResult);
-        propSaver.set(
-            propSaver.props.IgnoreMeasureForNonJoiningDimension, true);
+        PrefDef.IgnoreMeasureForNonJoiningDimension.with(propSaver).set(true);
         assertQueryReturns(mdx, expectedResult);
     }
 
@@ -431,7 +430,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testAggregationOverLargeListGeneratesError() {
-        propSaver.set(propSaver.props.MaxConstraints, 7);
+        PrefDef.MaxConstraints.with(propSaver).set(7);
 
         String result;
         final Dialect dialect = getTestContext().getDialect();
@@ -482,7 +481,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
      * @see #testAggregationOverLargeListGeneratesError
      */
     public void testAggregateMaxConstraints() {
-        propSaver.set(propSaver.props.MaxConstraints, 5);
+        PrefDef.MaxConstraints.with(propSaver).set(5);
         TestContext.instance().assertQueryReturns(
             "SELECT\n"
             + "  Measures.[Unit Sales] on columns,\n"
@@ -725,7 +724,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testCanNotBatchForDifferentCompoundPredicate() {
-        propSaver.set(propSaver.props.EnableGroupingSets, true);
+        PrefDef.EnableGroupingSets.with(propSaver).set(true);
         String mdxQueryWithFewMembers =
             "WITH "
             + "MEMBER [Store].[Store].[COG_OQP_USR_Aggregate(Store)] AS "
@@ -801,7 +800,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
      * with mixed measures.
      */
     public void testDistinctCountInNonGroupingSetsQuery() {
-        propSaver.set(propSaver.props.EnableGroupingSets, true);
+        PrefDef.EnableGroupingSets.with(propSaver).set(true);
         String mdxQueryWithFewMembers =
             "WITH "
             + "MEMBER [Store].[Store].[COG_OQP_USR_Aggregate(Store)] AS "
@@ -876,7 +875,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testAggregationOfMembersAndDefaultMemberWithoutGroupingSets() {
-        propSaver.set(propSaver.props.EnableGroupingSets, false);
+        PrefDef.EnableGroupingSets.with(propSaver).set(false);
         String mdxQueryWithMembers =
             "WITH "
             + "MEMBER [Gender].[COG_OQP_USR_Aggregate(Gender)] AS "
@@ -1276,7 +1275,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testAggregatesAtTheSameLevelForNormalAndDistinctCountMeasure() {
-        propSaver.set(propSaver.props.EnableGroupingSets, true);
+        PrefDef.EnableGroupingSets.with(propSaver).set(true);
         assertQueryReturns(
             "WITH "
             + "MEMBER GENDER.AGG AS 'AGGREGATE({ GENDER.[F] })' "
@@ -1300,7 +1299,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testDistinctCountForAggregatesAtTheSameLevel() {
-        propSaver.set(propSaver.props.EnableGroupingSets, true);
+        PrefDef.EnableGroupingSets.with(propSaver).set(true);
         assertQueryReturns(
             "WITH "
             + "MEMBER GENDER.AGG AS 'AGGREGATE({ GENDER.[F], GENDER.[M] })' "
@@ -1474,8 +1473,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "  NON EMPTY {[Time].[1997].[Q1].Children} ON ROWS "
             + "from [Sales]";
         // should skip aggregate table, cannot aggregate
-        propSaver.set(propSaver.props.UseAggregates, true);
-        propSaver.set(propSaver.props.ReadAggregates, true);
+        PrefDef.UseAggregates.with(propSaver).set(true);
+        PrefDef.ReadAggregates.with(propSaver).set(true);
 
         TestContext withAggDistinctCount =
             TestContext.instance().withSchema(schema);
@@ -1493,9 +1492,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             return;
         }
         // aggregate table has count for months, make sure it is used
-        propSaver.set(propSaver.props.UseAggregates, true);
-        propSaver.set(propSaver.props.ReadAggregates, true);
-        propSaver.set(propSaver.props.GenerateFormattedSql, true);
+        PrefDef.UseAggregates.with(propSaver).set(true);
+        PrefDef.ReadAggregates.with(propSaver).set(true);
+        PrefDef.GenerateFormattedSql.with(propSaver).set(true);
         final String expectedSql =
             "select\n"
             + "    `agg_c_10_sales_fact_1997`.`the_year` as `c0`,\n"

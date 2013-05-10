@@ -12,6 +12,7 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.olap.fun.NonEmptyCrossJoinFunDef;
+import mondrian.pref.*;
 import mondrian.rolap.sql.*;
 
 import java.util.*;
@@ -36,7 +37,7 @@ import java.util.*;
  * where both, customer.name and product.name have many members, but the
  * resulting crossjoin only has few.
  *
- * <p>The implementation currently can not handle sets containting
+ * <p>The implementation currently can not handle sets containing
  * parent/child hierarchies, ragged hierarchies, calculated members and
  * the ALL member. Otherwise all
  *
@@ -47,10 +48,11 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
 
     /**
      * Creates a RolapNativeCrossJoin.
+     *
+     * @param pref Schema pref
      */
-    public RolapNativeCrossJoin() {
-        super.setEnabled(
-            MondrianProperties.instance().EnableNativeCrossJoin.get());
+    public RolapNativeCrossJoin(SchemaPref pref) {
+        super.setEnabled(pref.server.EnableNativeCrossJoin);
     }
 
     /**

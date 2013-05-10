@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, Mar 21, 2002
@@ -13,6 +13,7 @@
 package mondrian.rolap.sql;
 
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 import mondrian.util.Pair;
@@ -142,7 +143,7 @@ public class SqlQuery {
 
     /**
      * Creates a SqlQuery using a given dialect and inheriting the formatting
-     * preferences from {@link MondrianProperties#GenerateFormattedSql}
+     * preferences from {@link PrefDef#GenerateFormattedSql}
      * property.
      *
      * @param dialect Dialect
@@ -150,7 +151,7 @@ public class SqlQuery {
     public SqlQuery(Dialect dialect) {
         this(
             dialect,
-            MondrianProperties.instance().GenerateFormattedSql.get());
+            StatementPref.instance().GenerateFormattedSql);
     }
 
     public void setDistinct(final boolean distinct) {
@@ -333,7 +334,7 @@ public class SqlQuery {
                 table.getAlias(),
                 failIfExists);
 
-            /*
+/*
         } else if (relation instanceof MondrianDef.Join) {
             final MondrianDef.Join join = (MondrianDef.Join) relation;
             return addJoin(

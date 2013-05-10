@@ -5,12 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.web.servlet;
 
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.ServletContextCatalogLocator;
 import mondrian.web.taglib.ResultCache;
@@ -45,7 +46,8 @@ public class MdxQueryServlet extends HttpServlet {
         while (initParameterNames.hasMoreElements()) {
             String name = (String) initParameterNames.nextElement();
             String value = config.getInitParameter(name);
-            MondrianProperties.instance().setProperty(name, value);
+            BaseProperty property = PrefDef.MAP.get(name);
+            Prefs.set(StatementPref.instance(), property, value);
         }
         locator = new ServletContextCatalogLocator(config.getServletContext());
     }
@@ -139,7 +141,7 @@ public class MdxQueryServlet extends HttpServlet {
                 }
                 html.append("</tr>").append(Util.nl);
             }
-            //if is two axes, show
+            // if is two axes, show
             if (result.getAxes().length > 1) {
                 for (int i = 0; i < rows.size(); i++) {
                     html.append("<tr>");

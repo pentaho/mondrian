@@ -20,6 +20,7 @@ import mondrian.olap.fun.vba.Excel;
 import mondrian.olap.fun.vba.Vba;
 import mondrian.olap.type.LevelType;
 import mondrian.olap.type.Type;
+import mondrian.pref.StatementPref;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -1492,8 +1493,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
                 final boolean isNullDenominatorProducesNull =
-                    MondrianProperties.instance().NullDenominatorProducesNull
-                        .get();
+                    StatementPref.instance().NullDenominatorProducesNull;
 
                 // If the mondrian property
                 //   mondrian.olap.NullOrZeroDenominatorProducesNull

@@ -9,8 +9,8 @@
 */
 package mondrian.spi.impl;
 
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
+import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.rolap.SqlStatement;
 import mondrian.spi.Dialect;
 import mondrian.spi.StatisticsProvider;
@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.sql.*;
+import java.sql.Connection;
 import java.sql.Date;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -111,11 +112,13 @@ public class JdbcDialectImpl implements Dialect {
     private static final int DOUBLE_QUOTE_SIZE = 2 * SINGLE_QUOTE_SIZE + 1;
 
     /**
-     * The default mapping of java.sql.Types to SqlStatement.Type
+     * The default mapping of int values in {@link java.sql.Types} to
+     * {@link mondrian.rolap.SqlStatement.Type}.
      */
-    private static final Map<Types, SqlStatement.Type> DEFAULT_TYPE_MAP;
+    private static final Map<Integer, SqlStatement.Type> DEFAULT_TYPE_MAP;
     static {
-        Map typeMapInitial = new HashMap<Types, SqlStatement.Type>();
+        Map<Integer, SqlStatement.Type> typeMapInitial =
+            new HashMap<Integer, SqlStatement.Type>();
         typeMapInitial.put(Types.SMALLINT, SqlStatement.Type.INT);
         typeMapInitial.put(Types.INTEGER, SqlStatement.Type.INT);
         typeMapInitial.put(Types.BOOLEAN, SqlStatement.Type.INT);
@@ -986,17 +989,25 @@ public class JdbcDialectImpl implements Dialect {
 
     private List<String> getStatisticsProviderNames() {
         // Dialect-specific path, e.g. "mondrian.statistics.providers.MYSQL"
-        final String path =
-            MondrianProperties.instance().StatisticsProviders.getPath()
-            + "."
-            + getDatabaseProduct().name();
-        String nameList = MondrianProperties.instance().getProperty(path);
-        if (nameList != null && nameList.length() > 0) {
-            return Arrays.asList(nameList.split(","));
+        final StringProperty path =
+            new StringProperty(
+                null,
+                Scope.System,
+                PrefDef.StatisticsProviders.getPath()
+                    + "."
+                    + getDatabaseProduct().name(),
+                null);
+        Object nameListObj = ServerPref.instance().get(path);
+        String nameList;
+        if (nameListObj instanceof String) {
+            nameList = (String) nameListObj;
+            if (nameList.length() > 0) {
+                return Arrays.asList(nameList.split(","));
+            }
         }
 
         // Generic property, "mondrian.statistics.providers"
-        nameList = MondrianProperties.instance().StatisticsProviders.get();
+        nameList = ServerPref.instance().StatisticsProviders;
         if (nameList != null && nameList.length() > 0) {
             return Arrays.asList(nameList.split(","));
         }
@@ -1361,14 +1372,14 @@ public class JdbcDialectImpl implements Dialect {
 
     /**
      * Helper method to determine if a connection would work with
-     * a given database product. This can be used to differenciate
-     * between databases which use the same driver as others.
+     * a given database product. This can be used to discriminate
+     * among databases which use the same driver.
      *
-     * <p>It will first try to use
+     * <p>It first tries to use
      * {@link DatabaseMetaData#getDatabaseProductName()} and match the
-     * name of {@link DatabaseProduct} passed as an argument.
+     * {@code databaseProduct} argument.
      *
-     * <p>If that fails, it will try to execute <code>select version();</code>
+     * <p>If that fails, it executes <code>select version();</code>
      * and obtains some information directly from the server.
      *
      * @param databaseProduct Database product instance

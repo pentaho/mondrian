@@ -4,12 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2009 Pentaho and others
+// Copyright (C) 2007-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.util;
 
-import mondrian.olap.MondrianProperties;
+import mondrian.pref.*;
 
 import org.apache.log4j.Logger;
 
@@ -99,12 +99,12 @@ public abstract class AbstractMemoryMonitor
      * Returns the default memory notification percentage.
      *
      * <p>This is the value of the Mondrian
-     * {@link MondrianProperties#MemoryMonitorThreshold} property.
+     * {@link PrefDef#MemoryMonitorThreshold} property.
      *
      * @return the default threshold percentage.
      */
     public int getDefaultThresholdPercentage() {
-        return MondrianProperties.instance().MemoryMonitorThreshold.get();
+        return StatementPref.instance().MemoryMonitorThreshold;
     }
 
     public boolean addListener(final Listener listener) {

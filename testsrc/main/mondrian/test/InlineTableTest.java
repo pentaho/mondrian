@@ -4,12 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
 
-import mondrian.olap.MondrianProperties;
+import mondrian.pref.StatementPref;
 import mondrian.spi.Dialect;
 
 /**
@@ -242,7 +242,7 @@ public class InlineTableTest extends FoodMartTestCase {
         // (zero, in fact). It causes a test exception, but is valid mondrian
         // behavior. (Behavior is unspecified if schema does not have
         // referential integrity.)
-        if (MondrianProperties.instance().EnableGroupingSets.get()) {
+        if (StatementPref.instance().EnableGroupingSets) {
             return;
         }
         testContext.assertQueryReturns(

@@ -9,6 +9,7 @@
 */
 package mondrian.rolap.aggmatcher;
 
+import mondrian.pref.PrefDef;
 import mondrian.test.loader.CsvDBTestCase;
 
 /**
@@ -41,7 +42,7 @@ public abstract class AggTableTestCase extends CsvDBTestCase {
         super.setUp();
 
         // turn off caching
-        propSaver.set(propSaver.props.DisableCaching, true);
+        PrefDef.DisableCaching.with(propSaver).set(true);
     }
 
     protected String getDirectoryName() {

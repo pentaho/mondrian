@@ -5,12 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 SAS Institute, Inc.
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.spi.Dialect;
 
 import junit.framework.Assert;
@@ -167,7 +168,7 @@ public class CompatibilityTest extends FoodMartTestCase {
      * Calculated member names are case insensitive.
      */
     public void testCalculatedMemberCase() {
-        propSaver.set(propSaver.props.CaseSensitive, false);
+        PrefDef.CaseSensitive.with(propSaver).set(false);
         assertQueryReturns(
             "with member [Measures].[CaLc] as '1'\n"
             + " select {[Measures].[CaLc]} on columns from Sales",
@@ -330,7 +331,7 @@ public class CompatibilityTest extends FoodMartTestCase {
             null);
 
         // This test should work irrespective of the case-sensitivity setting.
-        Util.discard(propSaver.props.CaseSensitive.get());
+        Util.discard(PrefDef.CaseSensitive);
 
         testContext.assertQueryReturns(
             "select {[Measures].[Unit Sales]} ON COLUMNS,\n"
@@ -509,7 +510,7 @@ public class CompatibilityTest extends FoodMartTestCase {
      * and once with mondrian.olap.case.sensitive=false.
      */
     public void testPropertyCaseSensitivity() {
-        boolean caseSensitive = propSaver.props.CaseSensitive.get();
+        boolean caseSensitive = StatementPref.instance().CaseSensitive;
 
         // A user-defined property of a member.
         assertExprReturns(
@@ -560,7 +561,7 @@ public class CompatibilityTest extends FoodMartTestCase {
     }
 
     private void assertAxisWithDimensionPrefix(boolean prefixNeeded) {
-        propSaver.set(propSaver.props.NeedDimensionPrefix, prefixNeeded);
+        PrefDef.NeedDimensionPrefix.with(propSaver).set(prefixNeeded);
         assertAxisReturns("[Gender].[M]", "[Customer].[Gender].[M]");
         assertAxisReturns(
             "[Gender].[All Gender].[M]", "[Customer].[Gender].[M]");
@@ -570,12 +571,12 @@ public class CompatibilityTest extends FoodMartTestCase {
     }
 
     public void testWithNoDimensionPrefix() {
-        propSaver.set(propSaver.props.NeedDimensionPrefix, false);
+        PrefDef.NeedDimensionPrefix.with(propSaver).set(false);
         assertAxisReturns("{[M]}", "[Customer].[Gender].[M]");
         assertAxisReturns("{M}", "[Customer].[Gender].[M]");
         assertAxisReturns("{[USA].[CA]}", "[Store].[Stores].[USA].[CA]");
         assertAxisReturns("{USA.CA}", "[Store].[Stores].[USA].[CA]");
-        propSaver.set(propSaver.props.NeedDimensionPrefix, true);
+        PrefDef.NeedDimensionPrefix.with(propSaver).set(true);
         assertAxisThrows(
             "{[M]}",
             "Mondrian Error:MDX object '[M]' not found in cube 'Sales'");

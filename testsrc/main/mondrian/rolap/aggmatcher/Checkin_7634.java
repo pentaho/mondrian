@@ -4,13 +4,13 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.Result;
+import mondrian.pref.PrefDef;
 import mondrian.test.TestContext;
 import mondrian.test.loader.CsvDBTestCase;
 
@@ -39,8 +39,6 @@ public class Checkin_7634 extends CsvDBTestCase {
 
     private static final String CHECKIN_7634 = "Checkin_7634.csv";
 
-    private int crossJoinSize;
-
     public Checkin_7634() {
         super();
     }
@@ -61,17 +59,13 @@ public class Checkin_7634 extends CsvDBTestCase {
 
 
         // Execute query but do not used the CrossJoin nonEmptyList optimization
-        propSaver.set(
-            propSaver.props.CrossJoinOptimizerSize,
-            Integer.MAX_VALUE);
+        PrefDef.CrossJoinOptimizerSize.with(propSaver).set(Integer.MAX_VALUE);
         Result result1 = getCubeTestContext().executeQuery(mdx);
         String resultString1 = TestContext.toString(result1);
 
         // Execute query using the new version of the CrossJoin
         // nonEmptyList optimization
-        propSaver.set(
-            propSaver.props.CrossJoinOptimizerSize,
-            Integer.MAX_VALUE);
+        PrefDef.CrossJoinOptimizerSize.with(propSaver).set(0);
         Result result2 = getCubeTestContext().executeQuery(mdx);
         String resultString2 = TestContext.toString(result2);
 

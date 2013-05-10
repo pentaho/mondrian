@@ -12,6 +12,7 @@ package mondrian.test;
 
 import mondrian.olap.*;
 import mondrian.olap.type.*;
+import mondrian.pref.PrefDef;
 import mondrian.spi.CellFormatter;
 import mondrian.spi.MemberFormatter;
 import mondrian.spi.PropertyFormatter;
@@ -220,7 +221,7 @@ public class UdfTest extends FoodMartTestCase {
      * Tests a performance issue with LastNonEmpty (bug 1533677). The naive
      * implementation of LastNonEmpty crawls backward one period at a time,
      * generates a cache miss, and the next iteration reads precisely one cell.
-     * So the query soon exceeds the {@link MondrianProperties#MaxEvalDepth}
+     * So the query soon exceeds the {@link PrefDef#MaxEvalDepth}
      * property.
      */
     public void testLastNonEmptyBig() {

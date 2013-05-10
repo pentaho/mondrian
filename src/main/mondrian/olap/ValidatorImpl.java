@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2009 Pentaho
+// Copyright (C) 2009-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -13,6 +13,7 @@ import mondrian.mdx.*;
 import mondrian.olap.fun.Resolver;
 import mondrian.olap.type.Type;
 import mondrian.olap.type.TypeUtil;
+import mondrian.pref.Scope;
 import mondrian.resource.MondrianResource;
 import mondrian.util.ArrayStack;
 
@@ -349,7 +350,7 @@ abstract class ValidatorImpl implements Validator {
 
         if (definition) {
             if (param != null) {
-                if (param.getScope() == Parameter.Scope.Statement) {
+                if (param.getScope() == Scope.Statement) {
                     ParameterImpl paramImpl = (ParameterImpl) param;
                     paramImpl.setDescription(description);
                     paramImpl.setDefaultExp(defaultExp);

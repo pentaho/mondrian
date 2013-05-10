@@ -5,19 +5,19 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
 import mondrian.olap.MondrianDef.AggLevel;
+import mondrian.pref.StatementPref;
 import mondrian.recorder.MessageRecorder;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
-import mondrian.server.Execution;
-import mondrian.server.Locus;
+import mondrian.server.*;
 import mondrian.spi.Dialect;
 
 import org.apache.log4j.Logger;
@@ -252,7 +252,7 @@ public class AggStar extends RolapStar {
 
     @Override
     public int getCost() {
-        return MondrianProperties.instance().ChooseAggregateByVolume.get()
+        return StatementPref.instance().ChooseAggregateByVolume
             ? getAggFactTable().getVolume()
             : getAggFactTable().getNumberOfRows();
     }

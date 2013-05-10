@@ -11,13 +11,13 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.pref.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggGen;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.cache.SegmentCacheIndex;
 import mondrian.rolap.cache.SegmentCacheIndexImpl;
-import mondrian.server.Execution;
-import mondrian.server.Locus;
+import mondrian.server.*;
 import mondrian.spi.*;
 import mondrian.util.*;
 
@@ -99,7 +99,7 @@ public class FastBatchingCellReader implements CellReader {
         this.aggMgr = aggMgr;
         cacheMgr = aggMgr.cacheMgr;
         pinnedSegments = this.aggMgr.createPinSet();
-        cacheEnabled = !MondrianProperties.instance().DisableCaching.get();
+        cacheEnabled = !ServerPref.instance().DisableCaching;
     }
 
     public Object get(RolapEvaluator evaluator) {
@@ -160,7 +160,7 @@ public class FastBatchingCellReader implements CellReader {
         ++missCount;
         cellRequests.add(request);
         int limit =
-            MondrianProperties.instance().CellBatchSize.get();
+            StatementPref.instance().CellBatchSize;
         if (limit <= 0) {
             limit = 100000; // TODO Make this logic into a pluggable algorithm.
         }
@@ -326,7 +326,7 @@ public class FastBatchingCellReader implements CellReader {
                 // Then we insert the segment body into the SlotFuture.
                 // This has to be done on the SegmentCacheManager's
                 // Actor thread to ensure thread safety.
-                if (!MondrianProperties.instance().DisableCaching.get()) {
+                if (!ServerPref.instance().DisableCaching) {
                     final Locus locus = Locus.peek();
                     cacheMgr.execute(
                         new SegmentCacheManager.Command<Void>() {
@@ -558,7 +558,7 @@ class BatchLoader {
     }
 
     final boolean shouldUseGroupingFunction() {
-        return MondrianProperties.instance().EnableGroupingSets.get()
+        return StatementPref.instance().EnableGroupingSets
             && dialect.supportsGroupingSets();
     }
 
@@ -592,7 +592,7 @@ class BatchLoader {
         final AggregationKey key,
         final SegmentBuilder.SegmentConverterImpl converter)
     {
-        if (MondrianProperties.instance().DisableCaching.get()) {
+        if (ServerPref.instance().DisableCaching) {
             // Caching is disabled. Return always false.
             return false;
         }
@@ -676,8 +676,7 @@ class BatchLoader {
         // for example. Both the measure's aggregator and its rollup
         // aggregator must support raw data aggregation. We call
         // Aggregator.supportsFastAggregates() to verify.
-        if (MondrianProperties.instance()
-                .EnableInMemoryRollup.get()
+        if (StatementPref.instance().EnableInMemoryRollup
             && measure.getAggregator().supportsFastAggregates(
                 measure.getDatatype())
             && measure.getAggregator().getRollup().supportsFastAggregates(
@@ -1265,7 +1264,7 @@ class BatchLoader {
             GroupingSetsCollector groupingSetsCollector,
             List<Future<Map<Segment, SegmentWithData>>> segmentFutures)
         {
-            if (MondrianProperties.instance().GenerateAggregateSql.get()) {
+            if (StatementPref.instance().GenerateAggregateSql) {
                 generateAggregateSql();
             }
             final StarColumnPredicate[] predicates = initPredicates();

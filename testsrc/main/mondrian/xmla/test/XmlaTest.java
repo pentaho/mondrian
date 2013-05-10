@@ -10,7 +10,8 @@
 package mondrian.xmla.test;
 
 import mondrian.olap.*;
-import mondrian.server.StringRepositoryContentFinder;
+import mondrian.pref.StatementPref;
+import mondrian.server.*;
 import mondrian.test.DiffRepository;
 import mondrian.test.TestContext;
 import mondrian.xmla.*;
@@ -153,8 +154,7 @@ public class XmlaTest extends TestCase {
 
         DiffRepository diffRepos = getDiffRepos();
 
-        MondrianProperties properties = MondrianProperties.instance();
-        String filePattern = properties.QueryFilePattern.get();
+        String filePattern = StatementPref.instance().QueryFilePattern;
 
         final Pattern pattern =
             filePattern == null

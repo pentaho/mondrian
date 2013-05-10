@@ -16,7 +16,8 @@ import mondrian.calc.Calc;
 import mondrian.calc.ParameterSlot;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
-import mondrian.server.Statement;
+import mondrian.pref.StatementPref;
+import mondrian.server.*;
 import mondrian.spi.Dialect;
 import mondrian.util.Format;
 
@@ -187,8 +188,8 @@ public class RolapEvaluator implements Evaluator {
         ancestorCommandCount = 0;
         nonEmpty = false;
         nativeEnabled =
-            MondrianProperties.instance().EnableNativeNonEmpty.get()
-            || MondrianProperties.instance().EnableNativeCrossJoin.get();
+            root.pref.server.EnableNativeNonEmpty
+            || root.pref.server.EnableNativeCrossJoin;
         evalAxes = false;
         cellReader = null;
         currentMembers = root.defaultMembers.clone();
@@ -218,6 +219,10 @@ public class RolapEvaluator implements Evaluator {
         return new RolapEvaluator(root);
     }
 
+    public StatementPref getStatementPref() {
+        return root.pref;
+    }
+
     public RolapMeasureGroup getMeasureGroup() {
         final RolapMember measure = currentMembers[0];
         if (measure instanceof RolapStoredMeasure) {
@@ -227,9 +232,7 @@ public class RolapEvaluator implements Evaluator {
     }
 
     public boolean mightReturnNullForUnrelatedDimension() {
-        if (!MondrianProperties.instance()
-            .IgnoreMeasureForNonJoiningDimension.get())
-        {
+        if (!StatementPref.instance().IgnoreMeasureForNonJoiningDimension) {
             return false;
         }
 

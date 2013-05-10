@@ -10,6 +10,7 @@
 */
 package mondrian.olap;
 
+import mondrian.pref.StatementPref;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapCubeDimension;
 import mondrian.rolap.RolapCubeHierarchy;
@@ -804,9 +805,7 @@ public class RoleImpl implements Role {
                 }
             }
             // Not a parent. Cache it and return.
-            if (MondrianProperties.instance()
-                .EnableRolapCubeMemberCache.get())
-            {
+            if (StatementPref.instance().EnableRolapCubeMemberCache) {
                 parentsCache.put(
                     parentMember.getUniqueName(), Boolean.FALSE);
             }
