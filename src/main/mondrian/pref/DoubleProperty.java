@@ -10,11 +10,9 @@
 package mondrian.pref;
 
 /**
- * Created with IntelliJ IDEA.
- * User: jhyde
- * Date: 5/7/13
- * Time: 10:14 AM
- * To change this template use File | Settings | File Templates.
+ * Definition of a property that has a {@code double} value.
+ *
+ * @see PrefDef
  */
 public class DoubleProperty extends BaseProperty {
     private final double defaultValue;

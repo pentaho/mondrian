@@ -51,7 +51,8 @@ public class RolapUtil {
     /**
      * Special cell value indicates that the value is not in cache yet.
      */
-    public static final Object valueNotReadyException = new Double(0);
+    @SuppressWarnings("UnnecessaryBoxing")
+    public static final Object valueNotReadyException = new Double(0d);
 
     /**
      * Hook to run when a query is executed. This should not be
@@ -162,8 +163,9 @@ public class RolapUtil {
     }
 
     /**
-     * A comparator singleton instance which can handle the presence of
-     * {@link RolapUtilComparable} instances in a collection.
+     * A comparator singleton instance that can handle the presence of
+     * {@link mondrian.rolap.RolapUtil.RolapUtilComparable} instances in a
+     * collection.
      */
     public static final Comparator ROLAP_COMPARATOR =
         new RolapUtilComparator();
@@ -635,20 +637,6 @@ public class RolapUtil {
         public void write(String str, int off, int len) throws IOException {
             super.write(str, off, len);
             buf.write(str, off, len);
-        }
-    }
-
-    /**
-     * Writer which throws away all input.
-     */
-    private static class NullWriter extends Writer {
-        public void write(char cbuf[], int off, int len) throws IOException {
-        }
-
-        public void flush() throws IOException {
-        }
-
-        public void close() throws IOException {
         }
     }
 

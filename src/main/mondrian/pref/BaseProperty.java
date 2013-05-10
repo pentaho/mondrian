@@ -10,11 +10,7 @@
 package mondrian.pref;
 
 /**
- * Created with IntelliJ IDEA.
- * User: jhyde
- * Date: 5/7/13
- * Time: 10:18 AM
- * To change this template use File | Settings | File Templates.
+ * Base class for property definitions.
  */
 public abstract class BaseProperty {
     public final Scope scope;

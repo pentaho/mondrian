@@ -10,11 +10,9 @@
 package mondrian.pref;
 
 /**
- * Created with IntelliJ IDEA.
- * User: jhyde
- * Date: 5/7/13
- * Time: 10:12 AM
- * To change this template use File | Settings | File Templates.
+ * Definition of a property that has a {@code boolean} value.
+ *
+ * @see PrefDef
  */
 public class BooleanProperty extends BaseProperty {
     private final boolean defaultValue;

@@ -10,11 +10,9 @@
 package mondrian.pref;
 
 /**
- * Created with IntelliJ IDEA.
- * User: jhyde
- * Date: 5/7/13
- * Time: 10:11 AM
- * To change this template use File | Settings | File Templates.
+ * Definition of a property that has a {@link String} value.
+ *
+ * @see PrefDef
  */
 public class StringProperty extends BaseProperty {
     private final String defaultValue;
