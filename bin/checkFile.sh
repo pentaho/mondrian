@@ -160,6 +160,7 @@ doCheck() {
             -v fname="$filePath" \
             -v strict="$strict" \
             -v maxLineLength="$maxLineLength" \
+            -v year=$(date +%Y) \
             "$file"
     fi
 }
