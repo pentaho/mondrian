@@ -10,7 +10,8 @@
 */
 package mondrian.olap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.eigenbase.util.property.TriggerableProperties;
 
@@ -55,7 +56,7 @@ public abstract class MondrianPropertiesBase extends TriggerableProperties {
     private int populateCount;
 
     private static final Logger LOGGER =
-        Logger.getLogger(MondrianProperties.class);
+        LoggerFactory.getLogger(MondrianProperties.class);
 
     protected static final String mondrianDotProperties = "mondrian.properties";
 

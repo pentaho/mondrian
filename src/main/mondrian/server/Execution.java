@@ -14,7 +14,9 @@ import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapConnection;
 import mondrian.server.monitor.*;
 
-import org.apache.log4j.MDC;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.util.EmptyStackException;
 import java.util.HashMap;
@@ -111,7 +113,7 @@ public class Execution {
     public void copyMDC() {
         this.mdc.clear();
         final Map<String, Object> currentMdc =
-            MDC.getContext();
+            MDC.getCopyOfContextMap();
         if (currentMdc != null) {
             this.mdc.putAll(currentMdc);
         }
@@ -123,11 +125,7 @@ public class Execution {
      * RolapResultShepherd where original MDC needs to be retrieved
      */
     public void setContextMap() {
-        final Map<String, Object> old = MDC.getContext();
-        if (old != null) {
-            old.clear();
-            old.putAll(mdc);
-        }
+        MDC.setContextMap(mdc);
     }
 
     /**

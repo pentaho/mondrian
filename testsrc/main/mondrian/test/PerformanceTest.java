@@ -16,7 +16,8 @@ import mondrian.spi.UserDefinedFunction;
 import mondrian.util.Bug;
 
 import org.apache.commons.collections.ComparatorUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -33,7 +34,7 @@ public class PerformanceTest extends FoodMartTestCase {
      * higher.
      */
     public static final Logger LOGGER =
-        Logger.getLogger(PerformanceTest.class);
+        LoggerFactory.getLogger(PerformanceTest.class);
 
     public PerformanceTest(String name) {
         super(name);

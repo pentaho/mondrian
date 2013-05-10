@@ -11,6 +11,7 @@ package mondrian.olap4j;
 
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.xmla.XmlaHandler;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.*;

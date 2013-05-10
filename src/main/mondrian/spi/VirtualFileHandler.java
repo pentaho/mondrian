@@ -12,7 +12,8 @@ package mondrian.spi;
 import mondrian.olap.*;
 import mondrian.util.ClassResolver;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.Arrays;
@@ -27,7 +28,7 @@ import java.util.Arrays;
  * @author jhyde
  */
 public interface VirtualFileHandler {
-    Logger LOGGER = Logger.getLogger(VirtualFileHandler.class);
+    Logger LOGGER = LoggerFactory.getLogger(VirtualFileHandler.class);
 
     String[] BUILTIN_IMPLEMENTATIONS = {
         "mondrian.spi.impl.ApacheVfsVirtualFileHandler",

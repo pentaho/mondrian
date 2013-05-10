@@ -18,9 +18,6 @@ import mondrian.olap.fun.FunInfo;
 import mondrian.olap.type.TypeUtil;
 import mondrian.rolap.*;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.*;
-
 import org.eigenbase.util.property.Property;
 
 import org.olap4j.CellSet;
@@ -36,6 +33,8 @@ import java.sql.*;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1679,7 +1678,11 @@ public class CmdRunner {
 
         String[] tokens = mdxCmd.split("\\s+");
 
-        if (tokens.length == 1) {
+
+        // TODO :
+        // This probably needs an actual SLF4j implementation - possibly logback.
+
+        /*if (tokens.length == 1) {
             Enumeration e = LogManager.getCurrentLoggers();
             while (e.hasMoreElements()) {
                 Logger logger = (Logger) e.nextElement();
@@ -1734,7 +1737,7 @@ public class CmdRunner {
             buf.append(nl);
             appendSet(buf);
         }
-
+          */
         return buf.toString();
     }
 

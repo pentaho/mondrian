@@ -20,11 +20,11 @@ import mondrian.spi.*;
 import mondrian.spi.impl.JndiDataSourceResolver;
 import mondrian.util.*;
 
-import org.apache.log4j.Logger;
-
 import org.eigenbase.util.property.StringProperty;
 
 import org.olap4j.Scenario;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -50,7 +50,7 @@ import javax.sql.DataSource;
  */
 public class RolapConnection extends ConnectionBase {
     private static final Logger LOGGER =
-        Logger.getLogger(RolapConnection.class);
+        LoggerFactory.getLogger(RolapConnection.class);
     private static final AtomicInteger ID_GENERATOR = new AtomicInteger();
 
     private final MondrianServer server;

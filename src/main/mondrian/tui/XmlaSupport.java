@@ -20,7 +20,8 @@ import mondrian.xmla.*;
 import mondrian.xmla.Enumeration;
 import mondrian.xmla.impl.*;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
@@ -43,7 +44,7 @@ import javax.xml.transform.TransformerException;
  * @author Richard M. Emberson
  */
 public class XmlaSupport {
-    private static final Logger LOGGER = Logger.getLogger(XmlaSupport.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(XmlaSupport.class);
 
     public static final String nl = Util.nl;
     public static final String SOAP_PREFIX = XmlaConstants.SOAP_PREFIX;

@@ -13,7 +13,8 @@ package mondrian.olap;
 import mondrian.server.Execution;
 import mondrian.server.Statement;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.util.List;

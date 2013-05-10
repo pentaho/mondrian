@@ -21,7 +21,8 @@ import mondrian.spi.*;
 import mondrian.util.ByteString;
 import mondrian.util.Pair;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -263,7 +264,7 @@ public class SegmentCacheManager {
     private final SegmentCacheIndexRegistry indexRegistry;
 
     private static final Logger LOGGER =
-        Logger.getLogger(AggregationManager.class);
+        LoggerFactory.getLogger(AggregationManager.class);
     private final MondrianServer server;
 
     public SegmentCacheManager(MondrianServer server) {
@@ -1029,7 +1030,7 @@ public class SegmentCacheManager {
                             event.acceptWithoutResponse(handler);
 
                             // Broadcast the event to anyone who is interested.
-                            RolapUtil.MONITOR_LOGGER.debug(message);
+                            RolapUtil.MONITOR_LOGGER.debug("{}", message);
                         }
                     } catch (Throwable e) {
                         // REVIEW: Somewhere better to send it?

@@ -13,7 +13,8 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.spi.PropertyFormatter;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -24,7 +25,7 @@ import java.util.Map;
  */
 class RolapProperty extends Property implements Annotated {
 
-    private static final Logger LOGGER = Logger.getLogger(RolapProperty.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RolapProperty.class);
 
     private final PropertyFormatter formatter;
     private final Larder larder;

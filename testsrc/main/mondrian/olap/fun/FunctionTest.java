@@ -20,7 +20,8 @@ import mondrian.util.Bug;
 import junit.framework.Assert;
 import junit.framework.ComparisonFailure;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.eigenbase.xom.StringEscaper;
 
@@ -35,7 +36,7 @@ import java.util.*;
  */
 public class FunctionTest extends FoodMartTestCase {
 
-    private static final Logger LOGGER = Logger.getLogger(FunctionTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FunctionTest.class);
 
     public static final boolean FILTER_SNOWFLAKE = Util.deprecated(true, false);
 

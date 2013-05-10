@@ -15,7 +15,8 @@ import mondrian.recorder.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -40,7 +41,7 @@ import javax.sql.DataSource;
  */
 public class AggTableManager {
     private static final Logger LOGGER =
-        Logger.getLogger(AggTableManager.class);
+        LoggerFactory.getLogger(AggTableManager.class);
 
     private final RolapSchema schema;
 

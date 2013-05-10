@@ -19,7 +19,8 @@ import mondrian.spi.Dialect;
 import mondrian.util.ByteString;
 import mondrian.util.Pair;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.eigenbase.xom.DOMWrapper;
 import org.eigenbase.xom.NodeDef;
@@ -48,7 +49,7 @@ public class RolapSchemaUpgrader {
         new HashMap<String, CubeInfo>();
 
     public static final Logger LOGGER =
-        Logger.getLogger(RolapSchemaUpgrader.class);
+        LoggerFactory.getLogger(RolapSchemaUpgrader.class);
 
     /**
      * Creates a RolapSchemaUpgrader; private because you should use
@@ -4052,7 +4053,7 @@ public class RolapSchemaUpgrader {
      */
     public static class HierarchyUsage {
         private static final Logger LOGGER =
-            Logger.getLogger(HierarchyUsage.class);
+            LoggerFactory.getLogger(HierarchyUsage.class);
 
         enum Kind {
             UNKNOWN,

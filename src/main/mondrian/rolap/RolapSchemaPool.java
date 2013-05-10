@@ -16,7 +16,8 @@ import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.spi.DynamicSchemaProcessor;
 import mondrian.util.*;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.ref.*;
@@ -31,7 +32,7 @@ import javax.sql.DataSource;
  * <code>RolapSchemaPool.{@link #instance}().{@link #get}</code>.</p>
  */
 class RolapSchemaPool {
-    static final Logger LOGGER = Logger.getLogger(RolapSchemaPool.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(RolapSchemaPool.class);
 
     private static final RolapSchemaPool INSTANCE = new RolapSchemaPool();
 

@@ -156,7 +156,7 @@ mondrian/rolap/RolapCubeUsages.java"/>
     <pathelement location="${lib.dir}/eigenbase-properties.jar"/>
     <pathelement location="${lib.dir}/eigenbase-resgen.jar"/>
     <pathelement location="${lib.dir}/eigenbase-xom.jar"/>
-    <pathelement location="${lib.dir}/log4j.jar"/>
+    <pathelement location="${lib.dir}/slf4j-api.jar"/>
     <pathelement location="${lib.dir}/olap4j.jar"/>
     <pathelement location="${lib.dir}/olap4j-xmlaserver.jar"/>
     <pathelement location="${lib.dir}/xalan.jar"/>
@@ -181,6 +181,8 @@ mondrian/rolap/RolapCubeUsages.java"/>
       <include name="olap4j-xmla.jar"/>
       <include name="xmlunit.jar"/>
       <include name="junit.jar"/>
+      <include name="logback-core.jar"/>
+      <include name="logback-classic.jar"/>
     </fileset>
     <!-- this picks up the default log4j.properties -->
     <pathelement path="${basedir}"/>

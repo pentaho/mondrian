@@ -21,7 +21,8 @@ import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.spi.*;
 import mondrian.util.*;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.sql.ResultSet;
@@ -48,7 +49,7 @@ import java.util.concurrent.*;
  */
 public class SegmentLoader {
 
-    private static final Logger LOGGER = Logger.getLogger(SegmentLoader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SegmentLoader.class);
 
     private final SegmentCacheManager cacheMgr;
 

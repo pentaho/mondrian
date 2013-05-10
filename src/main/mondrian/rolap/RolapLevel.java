@@ -13,7 +13,8 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.spi.MemberFormatter;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -28,7 +29,7 @@ import java.util.*;
  */
 public class RolapLevel extends LevelBase {
 
-    private static final Logger LOGGER = Logger.getLogger(RolapLevel.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RolapLevel.class);
 
     protected RolapAttribute attribute;
 

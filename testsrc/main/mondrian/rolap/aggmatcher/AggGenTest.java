@@ -9,12 +9,17 @@
 */
 package mondrian.rolap.aggmatcher;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.OutputStreamAppender;
 import mondrian.olap.*;
 import mondrian.rolap.RolapConnection;
 import mondrian.test.FoodMartTestCase;
 
-import org.apache.log4j.*;
-import org.apache.log4j.Level;
+import org.slf4j.LoggerFactory;
+
 
 import java.io.StringWriter;
 import java.sql.Connection;
@@ -38,9 +43,9 @@ public class AggGenTest extends FoodMartTestCase {
         testCallingLoadColumnsInAddCollapsedColumnOrAddzSpecialCollapsedColumn()
         throws Exception
     {
-        Logger logger = Logger.getLogger(AggGen.class);
-        StringWriter writer = new StringWriter();
-        Appender myAppender = new WriterAppender(new SimpleLayout(), writer);
+        Logger logger = (Logger) LoggerFactory.getLogger(AggGen.class);
+
+        OutputStreamAppender<ILoggingEvent> myAppender = new OutputStreamAppender<ILoggingEvent>();
         logger.addAppender(myAppender);
         propSaver.setAtLeast(logger, Level.DEBUG);
 
@@ -59,7 +64,7 @@ public class AggGenTest extends FoodMartTestCase {
                 "select {[Measures].[Count]} on columns from [HR]");
         rolapConn.execute(query);
 
-        logger.removeAppender(myAppender);
+        logger.detachAppender(myAppender);
 
         final DataSource dataSource = rolapConn.getDataSource();
         Connection sqlConnection = null;
@@ -70,7 +75,7 @@ public class AggGenTest extends FoodMartTestCase {
             final String catalogName = jdbcSchema.getCatalogName();
             final String schemaName = jdbcSchema.getSchemaName();
 
-            String log = writer.toString();
+            String log = myAppender.getOutputStream().toString();
             Pattern p = Pattern.compile(
                 "DEBUG - Init: Column: [^:]+: `(\\w+)`.`(\\w+)`"
                 + Util.nl

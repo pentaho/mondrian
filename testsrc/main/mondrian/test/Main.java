@@ -36,7 +36,8 @@ import mondrian.xmla.test.XmlaTest;
 import junit.framework.Test;
 import junit.framework.*;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
@@ -52,7 +53,7 @@ import java.util.*;
  * @author jhyde
  */
 public class Main extends TestSuite {
-    private static final Logger logger = Logger.getLogger(Main.class);
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     /** Scratch area to store information on the emerging test suite. */
     private static Map<TestSuite, String> testSuiteInfo =

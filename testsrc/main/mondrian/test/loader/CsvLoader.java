@@ -10,7 +10,8 @@
 */
 package mondrian.test.loader;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -72,7 +73,7 @@ import java.util.List;
  * @author <a>Richard M. Emberson</a>
  */
 public class CsvLoader {
-    protected static final Logger LOGGER = Logger.getLogger(CsvLoader.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(CsvLoader.class);
     public static final char DEFAULT_SEPARATOR = ',';
     public static final char DOUBLE_QUOTE = '"';
     public static final char SINGLE_QUOTE = '\'';

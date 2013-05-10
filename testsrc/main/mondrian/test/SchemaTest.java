@@ -9,6 +9,12 @@
 */
 package mondrian.test;
 
+import ch.qos.logback.classic.filter.LevelFilter;
+import ch.qos.logback.classic.filter.ThresholdFilter;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.OutputStreamAppender;
+import ch.qos.logback.core.filter.Filter;
 import mondrian.olap.*;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapMeasureGroup;
@@ -19,11 +25,16 @@ import mondrian.util.*;
 
 import junit.framework.Assert;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.Logger;
-import org.apache.log4j.SimpleLayout;
-import org.apache.log4j.WriterAppender;
-import org.apache.log4j.varia.LevelRangeFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.olap4j.OlapConnection;
 import org.olap4j.impl.ArrayMap;
@@ -1958,13 +1969,14 @@ Test that get error if a dimension has more than one hierarchy with same name.
         if (!MondrianProperties.instance().ReadAggregates.get()) {
             return;
         }
-        final Logger logger = Logger.getLogger(AggTableManager.class);
-        propSaver.setAtLeast(logger, org.apache.log4j.Level.WARN);
-        final StringWriter sw = new StringWriter();
-        final Appender appender =
-            new WriterAppender(new SimpleLayout(), sw);
-        final LevelRangeFilter filter = new LevelRangeFilter();
-        filter.setLevelMin(org.apache.log4j.Level.WARN);
+        final ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AggTableManager.class);
+        propSaver.setAtLeast(logger, ch.qos.logback.classic.Level.WARN);
+
+        final OutputStreamAppender<ILoggingEvent> appender = new OutputStreamAppender<ILoggingEvent>();
+
+        final LevelFilter filter = new LevelFilter();
+
+        filter.setLevel(ch.qos.logback.classic.Level.WARN);
         appender.addFilter(filter);
         logger.addAppender(appender);
         try {
@@ -2018,7 +2030,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "{}\n"
                 + "225,627.23");
         } finally {
-            logger.removeAppender(appender);
+            logger.detachAppender(appender);
         }
         // Note that 'product_id' is NOT one of the columns with unknown usage.
         // It is used as a level in the degenerate dimension [Time Degenerate].
@@ -2028,20 +2040,20 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'quarter' with unknown usage.\n"
             + "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'the_year' with unknown usage.\n"
             + "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'unit_sales' with unknown usage.\n",
-            sw.toString());
+            appender.getOutputStream().toString());
     }
 
     public void testUnknownUsages1() {
         if (!MondrianProperties.instance().ReadAggregates.get()) {
             return;
         }
-        final Logger logger = Logger.getLogger(AggTableManager.class);
-        propSaver.setAtLeast(logger, org.apache.log4j.Level.WARN);
-        final StringWriter sw = new StringWriter();
-        final Appender appender =
-            new WriterAppender(new SimpleLayout(), sw);
-        final LevelRangeFilter filter = new LevelRangeFilter();
-        filter.setLevelMin(org.apache.log4j.Level.WARN);
+        final ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(AggTableManager.class);
+        propSaver.setAtLeast(logger, ch.qos.logback.classic.Level.WARN);
+
+        final OutputStreamAppender<ILoggingEvent> appender =
+            new OutputStreamAppender<ILoggingEvent>();
+        final LevelFilter filter = new LevelFilter();
+        filter.setLevel(ch.qos.logback.classic.Level.WARN);
         appender.addFilter(filter);
         logger.addAppender(appender);
         try {
@@ -2103,11 +2115,11 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "{}\n"
                 + "225,627.23");
         } finally {
-            logger.removeAppender(appender);
+            logger.detachAppender(appender);
         }
         TestContext.assertEqualsVerbose(
             "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_l_03_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'time_id' with unknown usage.\n",
-            sw.toString());
+                appender.getOutputStream().toString());
     }
 
     public void testDegenerateDimension() {

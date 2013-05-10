@@ -23,7 +23,8 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.server.Locus;
 import mondrian.util.Pair;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -42,7 +43,7 @@ public class AggregationManager extends RolapAggregationManager {
         MondrianProperties.instance();
 
     private static final Logger LOGGER =
-        Logger.getLogger(AggregationManager.class);
+        LoggerFactory.getLogger(AggregationManager.class);
 
     public final SegmentCacheManager cacheMgr;
 

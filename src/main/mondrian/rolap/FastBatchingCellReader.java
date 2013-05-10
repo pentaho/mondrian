@@ -21,8 +21,9 @@ import mondrian.server.Locus;
 import mondrian.spi.*;
 import mondrian.util.*;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.MDC;
+import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.Future;
@@ -42,7 +43,7 @@ import java.util.concurrent.Future;
  */
 public class FastBatchingCellReader implements CellReader {
     private static final Logger LOGGER =
-        Logger.getLogger(FastBatchingCellReader.class);
+        LoggerFactory.getLogger(FastBatchingCellReader.class);
 
     private final RolapCube cube;
 
@@ -522,7 +523,7 @@ public class FastBatchingCellReader implements CellReader {
  */
 class BatchLoader {
     private static final Logger LOGGER =
-        Logger.getLogger(FastBatchingCellReader.class);
+        LoggerFactory.getLogger(FastBatchingCellReader.class);
 
     private final Locus locus;
     private final SegmentCacheManager cacheMgr;
@@ -978,16 +979,14 @@ class BatchLoader {
             this.dialect = dialect;
             this.cube = cube;
             this.cellRequests = cellRequests;
-            if (MDC.getContext() != null) {
-                this.mdc.putAll(MDC.getContext());
+            if (MDC.getCopyOfContextMap() != null) {
+                this.mdc.putAll(MDC.getCopyOfContextMap());
             }
         }
 
         public LoadBatchResponse call() {
-            if (MDC.getContext() != null) {
-                final Map<String, Object> old = MDC.getContext();
-                old.clear();
-                old.putAll(mdc);
+            if (MDC.getCopyOfContextMap() != null) {
+                MDC.setContextMap(mdc);
             }
             return new BatchLoader(locus, cacheMgr, dialect, cube)
                 .load(cellRequests);
@@ -1063,7 +1062,7 @@ class BatchLoader {
         }
     }
 
-    private static final Logger BATCH_LOGGER = Logger.getLogger(Batch.class);
+    private static final Logger BATCH_LOGGER = LoggerFactory.getLogger(Batch.class);
 
     public static class RollupInfo {
         final RolapStar.Column[] constrainedColumns;

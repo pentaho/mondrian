@@ -25,7 +25,8 @@ import mondrian.server.Locus;
 import mondrian.spi.CellFormatter;
 import mondrian.util.*;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -37,7 +38,7 @@ import java.util.*;
  */
 public class RolapResult extends ResultBase {
 
-    static final Logger LOGGER = Logger.getLogger(ResultBase.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(ResultBase.class);
 
     private RolapEvaluator evaluator;
     RolapEvaluator slicerEvaluator;

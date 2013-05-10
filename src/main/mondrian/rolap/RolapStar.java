@@ -20,7 +20,8 @@ import mondrian.server.Locus;
 import mondrian.spi.*;
 
 import org.apache.commons.collections.map.ReferenceMap;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -42,7 +43,7 @@ import javax.sql.DataSource;
  * @since 12 August, 2001
  */
 public class RolapStar {
-    private static final Logger LOGGER = Logger.getLogger(RolapStar.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RolapStar.class);
 
     private final RolapSchema schema;
 
@@ -1379,7 +1380,7 @@ public class RolapStar {
     }
 
     public static class Condition {
-        private static final Logger LOGGER = Logger.getLogger(Condition.class);
+        private static final Logger LOGGER = LoggerFactory.getLogger(Condition.class);
 
         private final RolapSchema.PhysExpr left;
         private final RolapSchema.PhysExpr right;

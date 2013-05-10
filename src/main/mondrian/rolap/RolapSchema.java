@@ -24,7 +24,8 @@ import mondrian.spi.*;
 import mondrian.spi.impl.*;
 import mondrian.util.*;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.eigenbase.xom.*;
 
@@ -49,7 +50,7 @@ import javax.sql.DataSource;
  * @since 26 July, 2001
  */
 public class RolapSchema extends OlapElementBase implements Schema {
-    static final Logger LOGGER = Logger.getLogger(RolapSchema.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(RolapSchema.class);
 
     final String name;
 

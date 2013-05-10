@@ -9,6 +9,9 @@
 */
 package mondrian.rolap;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.OutputStreamAppender;
 import mondrian.olap.*;
 import mondrian.olap.CacheControl.MemberEditCommand;
 import mondrian.olap.Hierarchy;
@@ -18,9 +21,9 @@ import mondrian.server.Locus;
 import mondrian.server.Statement;
 import mondrian.test.*;
 
-import org.apache.log4j.*;
-import org.apache.log4j.Level;
+import ch.qos.logback.classic.Level;
 
+import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
@@ -986,11 +989,12 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             testContext.getConnection()
                 .getSchema().lookupCube("Sales", true);
 
-        final Logger logger = RolapUtil.SQL_LOGGER;
-        final Level level = logger.getLevel();
-        final StringWriter sw = new StringWriter();
-        final WriterAppender appender =
-            new WriterAppender(new SimpleLayout(), sw);
+        final ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)RolapUtil.SQL_LOGGER;
+        final ch.qos.logback.classic.Level level = logger.getLevel();
+        ByteArrayOutputStream sw = new ByteArrayOutputStream();
+        final OutputStreamAppender<ILoggingEvent> appender =
+            new OutputStreamAppender<ILoggingEvent>();
+        appender.setOutputStream(sw);
         try {
             logger.setLevel(Level.DEBUG);
             logger.addAppender(appender);
@@ -1128,7 +1132,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
                 });
         } finally {
             logger.setLevel(level);
-            logger.removeAppender(appender);
+            logger.detachAppender(appender);
         }
     }
 
@@ -1143,7 +1147,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
      * @param command Command to execute that requires cache contents
      */
     private void checkFlushHierarchy(
-        StringWriter writer,
+        ByteArrayOutputStream writer,
         boolean affected,
         Runnable flusher,
         Runnable command)
@@ -1155,17 +1159,17 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         // require any additional SQL. (There is a small chance that GC will
         // kick in and we'll lose the cache, but we've never seen that happen
         // in the wild.)
-        int length1 = writer.getBuffer().length();
+        int length1 = writer.size();
         command.run();
-        final String since1 = writer.getBuffer().substring(length1);
+        final String since1 = writer.toString().substring(length1);
         assertEquals("", since1);
         flusher.run();
 
         // Now cache has been flushed, it should be impossible to execute the
         // command without running additional SQL.
-        int length2 = writer.getBuffer().length();
+        int length2 = writer.size();
         command.run();
-        final String since2 = writer.getBuffer().substring(length2);
+        final String since2 = writer.toString().substring(length2);
         if (affected) {
             assertNotSame("", since2);
         }
