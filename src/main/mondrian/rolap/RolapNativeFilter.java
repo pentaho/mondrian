@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -105,28 +105,6 @@ public class RolapNativeFilter extends RolapNativeSet {
                 key.add(
                     ((RolapEvaluator)this.getEvaluator())
                     .getSlicerMembers());
-            }
-
-         // Add restrictions imposed by Role based access filtering
-            SchemaReader schemaReader = this.getEvaluator().getSchemaReader();
-            Member[] mm = this.getEvaluator().getMembers();
-            for (int mIndex = 0; mIndex < mm.length; mIndex++) {
-                if (mm[mIndex] instanceof RolapHierarchy.LimitedRollupMember
-                    || mm[mIndex] instanceof
-                       RestrictedMemberReader.MultiCardinalityDefaultMember)
-                {
-                    List<Level> hierarchyLevels = schemaReader
-                            .getHierarchyLevels(mm[mIndex].getHierarchy());
-                    for (Level affectedLevel : hierarchyLevels) {
-                        List<Member> availableMembers = schemaReader
-                                .getLevelMembers(affectedLevel, false);
-                        for (Member member : availableMembers) {
-                            if (!member.isAll()) {
-                                key.add(member);
-                            }
-                        }
-                    }
-                }
             }
 
             return key;

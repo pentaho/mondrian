@@ -27,7 +27,6 @@ import mondrian.mdx.*;
 import org.apache.log4j.Logger;
 
 import java.util.*;
-import java.util.Map.Entry;
 
 
 
@@ -101,7 +100,6 @@ public class SqlConstraintUtils {
         }
         RolapStar.Column[] columns = request.getConstrainedColumns();
         Object[] values = request.getSingleValues();
-        int arity = columns.length;
 
         Map<MondrianDef.Expression, Set<RolapMember>> mapOfSlicerMembers = null;
 
@@ -109,7 +107,7 @@ public class SqlConstraintUtils {
             new HashMap<MondrianDef.Expression, Boolean>();
         // following code is similar to
         // AbstractQuerySpec#nonDistinctGenerateSQL()
-        for (int i = 0; i < arity; i++) {
+        for (int i = 0; i < columns.length; i++) {
             RolapStar.Column column = columns[i];
 
             String expr;
@@ -214,58 +212,99 @@ public class SqlConstraintUtils {
         }
 
         // force Role based Access filtering
-        Map<RolapCubeLevel, String> whereClausesForRoleConstraints =
-            new LinkedHashMap<RolapCubeLevel, String>();
-        SchemaReader schemaReader = evaluator.getSchemaReader();
-        Member[] mm = evaluator.getMembers();
-        for (int mIndex = 0; mIndex < mm.length; mIndex++) {
-            if (mm[mIndex] instanceof RolapHierarchy.LimitedRollupMember
-                || mm[mIndex] instanceof
+        addRoleAccessConstraints(
+            sqlQuery,
+            aggStar,
+            restrictMemberTypes,
+            baseCube,
+            evaluator);
+    }
+
+    public static Map<Level, List<RolapMember>> getRoleConstraintMembers(
+        SchemaReader schemaReader,
+        Member[] members)
+    {
+        // LinkedHashMap keeps insert-order
+        Map<Level, List<RolapMember>> roleMembers =
+            new LinkedHashMap<Level, List<RolapMember>>();
+        Role role = schemaReader.getRole();
+        for (Member member : members) {
+            if (member instanceof RolapHierarchy.LimitedRollupMember
+                || member instanceof
                    RestrictedMemberReader.MultiCardinalityDefaultMember)
             {
+                // iterate relevant levels to get accessible members
                 List<Level> hierarchyLevels = schemaReader
-                        .getHierarchyLevels(mm[mIndex].getHierarchy());
+                        .getHierarchyLevels(member.getHierarchy());
                 for (Level affectedLevel : hierarchyLevels) {
                     List<RolapMember> slicerMembers =
                         new ArrayList<RolapMember>();
-
+                    boolean hasCustom = false;
                     List<Member> availableMembers =
                         schemaReader
                             .getLevelMembers(affectedLevel, false);
-                    for (Member member : availableMembers) {
-                        if (!member.isAll()) {
-                            slicerMembers.add((RolapMember) member);
+                    for (Member availableMember : availableMembers) {
+                        if (!availableMember.isAll()) {
+                            slicerMembers.add((RolapMember) availableMember);
                         }
+                        hasCustom |=
+                            role.getAccess(availableMember) == Access.CUSTOM;
                     }
-
-                    if (slicerMembers.size() > 0) {
-                        final String where =
-                            generateSingleValueInExpr(
-                                sqlQuery, baseCube,
-                                aggStar, slicerMembers,
-                                (RolapCubeLevel) affectedLevel,
-                                restrictMemberTypes,
-                                false, true);
-                        if (!where.equals("")) {
-                            // The where clause might be null because if the
-                            // list of members is greater than the limit
-                            // permitted, we won't constraint.
-                            whereClausesForRoleConstraints.put(
-                                (RolapCubeLevel) affectedLevel, where);
-                        }
+                    if (!slicerMembers.isEmpty()) {
+                        roleMembers.put(affectedLevel, slicerMembers);
+                    }
+                    if (!hasCustom) {
+                        // we don't have partial access, no need to go deeper
+                        break;
                     }
                 }
             }
         }
-        for (Entry<RolapCubeLevel, String> entry
-            : whereClausesForRoleConstraints.entrySet())
+        return roleMembers;
+    }
+
+    private static void addRoleAccessConstraints(
+        SqlQuery sqlQuery,
+        AggStar aggStar,
+        boolean restrictMemberTypes,
+        RolapCube baseCube,
+        Evaluator evaluator)
+    {
+        Map<Level, List<RolapMember>> roleMembers =
+            getRoleConstraintMembers(
+                evaluator.getSchemaReader(),
+                evaluator.getMembers());
+        for (Map.Entry<Level, List<RolapMember>> entry
+            : roleMembers.entrySet())
         {
-            // When dealing with where clauses generated by Roles, it is safer
-            // to join the fact table because in all likelihood, this will
-            // be required.
-            joinLevelTableToFactTable(
-                sqlQuery, baseCube, aggStar, evaluator, entry.getKey());
-            sqlQuery.addWhere(entry.getValue());
+            final String where =
+                generateSingleValueInExpr(
+                    sqlQuery,
+                    baseCube,
+                    aggStar,
+                    entry.getValue(),
+                    (RolapCubeLevel) entry.getKey(),
+                    restrictMemberTypes,
+                    false,
+                    true);
+            if (where.length() > 1) {
+                // The where clause might be null because if the
+                // list of members is greater than the limit
+                // permitted, we won't constrain.
+
+                // When dealing with where clauses generated by Roles,it is
+                // safer to join the fact table because in all likelihood, this
+                // will be required.
+                // TODO: check this against MONDRIAN-1133,1201
+                joinLevelTableToFactTable(
+                    sqlQuery,
+                    baseCube,
+                    aggStar,
+                    evaluator,
+                    (RolapCubeLevel) entry.getKey());
+                // add constraints
+                sqlQuery.addWhere(where);
+            }
         }
     }
 

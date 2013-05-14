@@ -6,22 +6,19 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.mdx.MemberExpr;
 import mondrian.olap.*;
-import mondrian.olap.MondrianDef.RelationOrJoin;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
 import mondrian.spi.Dialect;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -116,29 +113,6 @@ public class RolapNativeTopCount extends RolapNativeSet {
                     ((RolapEvaluator)this.getEvaluator())
                     .getSlicerMembers());
             }
-
-            // Add restrictions imposed by Role based access filtering
-            SchemaReader schemaReader = this.getEvaluator().getSchemaReader();
-            Member[] mm = this.getEvaluator().getMembers();
-            for (int mIndex = 0; mIndex < mm.length; mIndex++) {
-                if (mm[mIndex] instanceof RolapHierarchy.LimitedRollupMember
-                    || mm[mIndex] instanceof
-                       RestrictedMemberReader.MultiCardinalityDefaultMember)
-                {
-                    List<Level> hierarchyLevels = schemaReader
-                            .getHierarchyLevels(mm[mIndex].getHierarchy());
-                    for (Level affectedLevel : hierarchyLevels) {
-                        List<Member> availableMembers = schemaReader
-                                .getLevelMembers(affectedLevel, false);
-                        for (Member member : availableMembers) {
-                            if (!member.isAll()) {
-                                key.add(member);
-                            }
-                        }
-                    }
-                }
-            }
-
             return key;
         }
     }
