@@ -10,6 +10,7 @@
 package mondrian.spi.impl;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -40,6 +41,12 @@ public class ImpalaDialect extends HiveDialect {
                     && isDatabase(DatabaseProduct.IMPALA, connection);
             }
         };
+
+    protected String deduceIdentifierQuoteString(
+        DatabaseMetaData databaseMetaData)
+    {
+        return null;
+    }
 
     @Override
     public DatabaseProduct getDatabaseProduct() {
