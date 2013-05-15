@@ -413,6 +413,200 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
     /**
+     * Tests for Mondrian BUG 1201 - Native Rollups did not handle
+     * access-control with more than one member where granted access=all
+     */
+    public void testBugMondrian_1201_MultipleMembersInRoleAccessControl() {
+        String test_1201_Roles =
+            "<Role name=\"Role1\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Store].[Stores]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[USA].[WA]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[USA].[OR]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[USA].[CA].[San Francisco]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[USA].[CA].[Los Angeles]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[Mexico]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[Mexico].[DF]\" access=\"none\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[Canada]\" access=\"none\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>\n"
+            + "<Role name=\"Role2\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Store].[Stores]\" access=\"custom\" rollupPolicy=\"full\">\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[USA].[WA]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[USA].[OR]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[USA].[CA].[San Francisco]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[USA].[CA].[Los Angeles]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[Mexico]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[Mexico].[DF]\" access=\"none\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[Canada]\" access=\"none\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>";
+
+        final TestContext partialRollupTestContext =
+            TestContext.instance().create(
+                null, null, null, null, null, test_1201_Roles)
+                .withRole("Role1");
+
+        final TestContext fullRollupTestContext =
+            TestContext.instance().create(
+                null, null, null, null, null, test_1201_Roles)
+                .withRole("Role2");
+
+        // Must return only 2 [USA].[CA] stores
+        partialRollupTestContext.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+            + "  Filter( [Store].[Stores].[USA].[CA].children,"
+            + "          [Measures].[Unit Sales]>0) ON ROWS \n"
+            + "from [Sales] \n"
+            + "where ([Time].[Time].[1997].[Q1].[2])",
+            "Axis #0:\n"
+            + "{[Time].[Time].[1997].[Q1].[2]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[Stores].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Francisco]}\n"
+            + "Row #0: 2,614\n"
+            + "Row #1: 187\n");
+
+        // Must return only 2 [USA].[CA] stores
+        partialRollupTestContext.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+            + "  TopCount( [Store].[Stores].[USA].[CA].children, 20,"
+            + "            [Measures].[Unit Sales]) ON ROWS \n"
+            + "from [Sales] \n"
+            + "where ([Time].[Time].[1997].[Q1].[2])",
+            "Axis #0:\n"
+            + "{[Time].[Time].[1997].[Q1].[2]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[Stores].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Francisco]}\n"
+            + "Row #0: 2,614\n"
+            + "Row #1: 187\n");
+
+
+        // Partial Rollup: [USA].[CA] rolls up only up to 2.801
+        partialRollupTestContext.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+            + "  Filter( [Store].[Store State].Members,"
+            + "          [Measures].[Unit Sales]>4000) ON ROWS \n"
+            + "from [Sales] \n"
+            + "where ([Time].[1997].[Q1].[2])",
+            "Axis #0:\n"
+            + "{[Time].[Time].[1997].[Q1].[2]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[Stores].[USA].[OR]}\n"
+            + "{[Store].[Stores].[USA].[WA]}\n"
+            + "Row #0: 4,617\n"
+            + "Row #1: 10,319\n");
+
+        // Full Rollup: [USA].[CA] rolls up to 6.021
+        fullRollupTestContext.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+            + "  Filter( [Store].[Store State].Members,"
+            + "          [Measures].[Unit Sales]>4000) ON ROWS \n"
+            + "from [Sales] \n"
+            + "where ([Time].[1997].[Q1].[2])",
+            "Axis #0:\n"
+            + "{[Time].[Time].[1997].[Q1].[2]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[Stores].[USA].[CA]}\n"
+            + "{[Store].[Stores].[USA].[OR]}\n"
+            + "{[Store].[Stores].[USA].[WA]}\n"
+            + "Row #0: 6,021\n"
+            + "Row #1: 4,617\n"
+            + "Row #2: 10,319\n");
+    }
+
+    public void testBugMondrian_1201_CacheAwareOfRoleAccessControl() {
+        String test_1201_Roles =
+            "<Role name=\"Role1\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Store].[Stores]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[USA].[WA]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[USA].[OR]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[USA].[CA].[San Francisco]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[USA].[CA].[Los Angeles]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[Mexico]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[Mexico].[DF]\" access=\"none\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[Canada]\" access=\"none\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>\n"
+            + "<Role name=\"Role2\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Store].[Stores]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[USA].[WA]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[USA].[OR]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[USA].[CA].[San Francisco]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[Mexico]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[Mexico].[DF]\" access=\"none\"/>\n"
+            + "        <MemberGrant member=\"[Store].[Stores].[Canada]\" access=\"none\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>";
+
+        final TestContext partialRollupTestContext1 =
+            TestContext.instance().create(
+                null, null, null, null, null, test_1201_Roles)
+                .withRole("Role1");
+
+        final TestContext partialRollupTestContext2 =
+            TestContext.instance().create(
+                null, null, null, null, null, test_1201_Roles)
+                .withRole("Role2");
+
+        // Put query into cache
+        partialRollupTestContext1.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+            + "  Filter( [Store].[Stores].[USA].[CA].children,"
+            + "          [Measures].[Unit Sales]>0) ON ROWS \n"
+            + "from [Sales] \n"
+            + "where ([Time].[Time].[1997].[Q1].[2])",
+            "Axis #0:\n"
+            + "{[Time].[Time].[1997].[Q1].[2]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[Stores].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Francisco]}\n"
+            + "Row #0: 2,614\n"
+            + "Row #1: 187\n");
+
+        // Run same query using another role with different access controls
+        partialRollupTestContext2.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+            + "  TopCount( [Store].[Stores].[USA].[CA].children, 20,"
+            + "            [Measures].[Unit Sales]) ON ROWS \n"
+            + "from [Sales] \n"
+            + "where ([Time].[Time].[1997].[Q1].[2])",
+            "Axis #0:\n"
+            + "{[Time].[Time].[1997].[Q1].[2]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[Stores].[USA].[CA].[San Francisco]}\n"
+            + "Row #0: 187\n");
+    }
+
+    /**
      * Tests that we only aggregate over SF, LA, even when called from
      * functions.
      */
