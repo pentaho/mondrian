@@ -13,6 +13,9 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Dialect for Cloudera's Impala DB.
@@ -21,6 +24,11 @@ import java.util.List;
  * @since 2/11/13
  */
 public class ImpalaDialect extends HiveDialect {
+    private final String flagsRegexp = "^(\\(\\?([a-zA-Z])\\)).*$";
+    private final Pattern flagsPattern = Pattern.compile(flagsRegexp);
+    private final String escapeRegexp = "(\\\\Q([^\\\\Q]+)\\\\E)";
+    private final Pattern escapePattern = Pattern.compile(escapeRegexp);
+
     /**
      * Creates an ImpalaDialect.
      *
@@ -159,6 +167,61 @@ public class ImpalaDialect extends HiveDialect {
         buf.append(s0);
 
         buf.append(quote);
+    }
+
+    public boolean allowsRegularExpressionInWhereClause() {
+        return true;
+    }
+
+    public String generateRegularExpression(
+        String source,
+        String javaRegex)
+    {
+        try {
+            Pattern.compile(javaRegex);
+        } catch (PatternSyntaxException e) {
+            // Not a valid Java regex. Too risky to continue.
+            return null;
+        }
+
+        // We might have to use case-insensitive matching
+        final Matcher flagsMatcher = flagsPattern.matcher(javaRegex);
+        boolean caseSensitive = true;
+        if (flagsMatcher.matches()) {
+            final String flags = flagsMatcher.group(2);
+            if (flags.contains("i")) {
+                caseSensitive = false;
+            }
+        }
+        if (flagsMatcher.matches()) {
+            javaRegex =
+                javaRegex.substring(0, flagsMatcher.start(1))
+                + javaRegex.substring(flagsMatcher.end(1));
+        }
+        final Matcher escapeMatcher = escapePattern.matcher(javaRegex);
+        while (escapeMatcher.find()) {
+            javaRegex =
+                javaRegex.replace(
+                    escapeMatcher.group(1),
+                    escapeMatcher.group(2));
+        }
+        final StringBuilder sb = new StringBuilder();
+
+        // Now build the string.
+        if (caseSensitive) {
+            sb.append(source);
+        } else {
+            sb.append("UPPER(");
+            sb.append(source);
+            sb.append(")");
+        }
+        sb.append(" REGEXP ");
+        if (caseSensitive) {
+            quoteStringLiteral(sb, javaRegex);
+        } else {
+            quoteStringLiteral(sb, javaRegex.toUpperCase());
+        }
+        return sb.toString();
     }
 }
 // End ImpalaDialect.java
