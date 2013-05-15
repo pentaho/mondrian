@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -227,6 +227,15 @@ public class SqlContextConstraint
                     members,
                     evaluator)));
         cacheKey.add(expandedMembers);
+
+        // Add restrictions imposed by Role based access filtering
+        Map<Level, List<RolapMember>> roleMembers =
+            SqlConstraintUtils.getRoleConstraintMembers(
+                this.getEvaluator().getSchemaReader(),
+                this.getEvaluator().getMembers());
+        for (List<RolapMember> list : roleMembers.values()) {
+            cacheKey.addAll(list);
+        }
 
         // For virtual cubes, context constraint should be evaluated in the
         // query's context, because the query might reference different base

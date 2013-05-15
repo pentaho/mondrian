@@ -23,6 +23,7 @@ import mondrian.rolap.sql.*;
 import org.apache.log4j.Logger;
 
 import java.util.*;
+
 import javax.sql.DataSource;
 
 /**
@@ -187,10 +188,11 @@ public abstract class RolapNativeSet extends RolapNative {
             case MUTABLE_LIST:
             case LIST:
                 return executeList(new SqlTupleReader(constraint));
+            default:
+                throw ResultStyleException.generate(
+                    ResultStyle.ITERABLE_MUTABLELIST_LIST,
+                    Collections.singletonList(desiredResultStyle));
             }
-            throw ResultStyleException.generate(
-                ResultStyle.ITERABLE_MUTABLELIST_LIST,
-                Collections.singletonList(desiredResultStyle));
         }
 
         protected TupleList executeList(final SqlTupleReader tr) {
