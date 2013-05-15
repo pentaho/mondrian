@@ -9,8 +9,6 @@
 */
 package mondrian.spi.impl;
 
-import mondrian.olap.Util;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -30,13 +28,8 @@ public class NetezzaDialect extends PostgreSqlDialect {
             DatabaseProduct.POSTGRESQL)
         {
             protected boolean acceptsConnection(Connection connection) {
-                try {
-                    return super.acceptsConnection(connection)
-                       && isNetezza(connection.getMetaData());
-                } catch (SQLException e) {
-                    throw Util.newError(
-                        e, "Error while instantiating dialect");
-                }
+                return super.acceptsConnection(connection)
+                    && isDatabase(DatabaseProduct.NETEZZA, connection);
             }
         };
 

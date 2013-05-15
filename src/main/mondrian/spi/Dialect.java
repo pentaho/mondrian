@@ -814,7 +814,9 @@ public interface Dialect {
         SYBASE,
         TERADATA,
         VERTICA,
-        VECTORWISE;
+        VECTORWISE,
+        REDSHIFT,
+        IMPALA;
 
         /**
          * Return the root of the family of products this database product

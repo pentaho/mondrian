@@ -30,7 +30,8 @@ public class HiveDialect extends JdbcDialectImpl {
             DatabaseProduct.HIVE)
         {
             protected boolean acceptsConnection(Connection connection) {
-                return super.acceptsConnection(connection);
+                return super.acceptsConnection(connection)
+                    && !isDatabase(DatabaseProduct.IMPALA, connection);
             }
         };
 
@@ -150,7 +151,7 @@ public class HiveDialect extends JdbcDialectImpl {
 
     @Override
     public boolean allowsJoinOn() {
-        return true;
+        return false;
     }
 }
 
