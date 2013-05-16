@@ -12,6 +12,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.rolap.RestrictedMemberReader.MultiCardinalityDefaultMember;
 import mondrian.rolap.RolapSchema.PhysSchemaException;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggStar;
@@ -21,6 +22,7 @@ import mondrian.util.Pair;
 
 import java.util.*;
 import java.util.regex.Pattern;
+
 
 
 /**
@@ -103,8 +105,96 @@ public class SqlConstraintUtils {
 
         // add constraints to where
         addColumnValueConstraints(sqlQuery, columns, values);
+
+        // add role constraints to where
+        addRoleAccessConstraints(
+            sqlQuery,
+            starSet,
+            restrictMemberTypes,
+            evaluator);
     }
 
+    public static Map<Level, List<RolapMember>> getRoleConstraintMembers(
+        SchemaReader schemaReader,
+        Member[] members)
+    {
+        // LinkedHashMap keeps insert-order
+        Map<Level, List<RolapMember>> roleMembers =
+            new LinkedHashMap<Level, List<RolapMember>>();
+        for (Member member : members) {
+            if (member instanceof RolapHierarchy.LimitedRollupMember
+                || member instanceof
+                   RestrictedMemberReader.MultiCardinalityDefaultMember)
+            {
+                List<Level> hierarchyLevels = schemaReader
+                        .getHierarchyLevels(member.getHierarchy());
+                for (Level affectedLevel : hierarchyLevels) {
+                    List<RolapMember> slicerMembers =
+                        new ArrayList<RolapMember>();
+                    boolean hasCustom = false;
+                    List<Member> availableMembers =
+                        schemaReader
+                            .getLevelMembers(affectedLevel, false);
+                    Role role = schemaReader.getRole();
+                    for (Member availableMember : availableMembers) {
+                        if (!availableMember.isAll()) {
+                            slicerMembers.add((RolapMember) availableMember);
+                        }
+                        hasCustom |=
+                            role.getAccess(availableMember) == Access.CUSTOM;
+                    } // accessible members
+                    if (!slicerMembers.isEmpty()) {
+                        roleMembers.put(affectedLevel, slicerMembers);
+                    }
+                    if (!hasCustom) {
+                        // we don't have partial access, no need going deeper
+                        break;
+                    }
+                } // levels
+            } // members
+        }
+        return roleMembers;
+    }
+
+    private static void addRoleAccessConstraints(
+        SqlQuery sqlQuery,
+        RolapStarSet starSet,
+        boolean restrictMemberTypes,
+        Evaluator evaluator)
+    {
+        Map<Level, List<RolapMember>> roleMembers =
+            getRoleConstraintMembers(
+                evaluator.getSchemaReader(),
+                evaluator.getMembers());
+        final RolapSchema.SqlQueryBuilder queryBuilder =
+            new RolapSchema.SqlQueryBuilder(
+                sqlQuery,
+                new SqlTupleReader.ColumnLayoutBuilder(),
+                Collections.<List<RolapSchema.PhysColumn>>emptyList());
+        for (Map.Entry<Level, List<RolapMember>> entry
+            : roleMembers.entrySet())
+        {
+            StringBuilder where = new StringBuilder("(");
+            generateSingleValueInExpr(
+                where,
+                queryBuilder,
+                evaluator.getMeasureGroup(),
+                starSet.getAggStar(),
+                entry.getValue(),
+                (RolapCubeLevel) entry.getKey(),
+                restrictMemberTypes,
+                false);
+            if (where.length() > 1) {
+                where.append(")");
+                // The where clause might be null because if the
+                // list of members is greater than the limit
+                // permitted, we won't constrain.
+                addLevelToFrom(sqlQuery, starSet, (RolapLevel) entry.getKey());
+                // add constraints
+                sqlQuery.addWhere(where.toString());
+            }
+        }
+    }
 
     private static void addColumnValueConstraints(
         SqlQuery sqlQuery,
@@ -152,25 +242,32 @@ public class SqlConstraintUtils {
                 continue;
             }
             RolapLevel level = (RolapLevel) member.getLevel();
+            addLevelToFrom(sqlQuery, starSet, level);
+        }
+    }
 
-            RolapDimension dim = level.getDimension();
-            for (RolapSchema.PhysColumn column
-                : level.attribute.getKeyList())
-            {
-                final RolapSchema.PhysPath keyPath =
-                    level.getDimension().getKeyPath(column);
-                keyPath.addToFrom(sqlQuery, false);
+    private static void addLevelToFrom(
+        SqlQuery sqlQuery,
+        RolapStarSet starSet,
+        RolapLevel level)
+    {
+        RolapDimension dim = level.getDimension();
+        for (RolapSchema.PhysColumn column
+            : level.attribute.getKeyList())
+        {
+            final RolapSchema.PhysPath keyPath =
+                level.getDimension().getKeyPath(column);
+            keyPath.addToFrom(sqlQuery, false);
+        }
+        if (starSet.getMeasureGroup() != null) {
+            RolapSchema.PhysPath path;
+            if (starSet.getAggMeasureGroup() != null) {
+                path = starSet.getAggMeasureGroup().getPath(dim);
+            } else {
+                path = starSet.getMeasureGroup().getPath(dim);
             }
-            if (starSet.getMeasureGroup() != null) {
-                RolapSchema.PhysPath path;
-                if (starSet.getAggMeasureGroup() != null) {
-                    path = starSet.getAggMeasureGroup().getPath(dim);
-                } else {
-                    path = starSet.getMeasureGroup().getPath(dim);
-                }
-                if (path != null) {
-                    path.addToFrom(sqlQuery, false);
-                }
+            if (path != null) {
+                path.addToFrom(sqlQuery, false);
             }
         }
     }
@@ -309,6 +406,12 @@ public class SqlConstraintUtils {
             {
                 continue;
             }
+
+            // These will be handled by addRoleAccessConstraints
+            if (member instanceof MultiCardinalityDefaultMember) {
+                continue;
+            }
+
             memberList.add(member);
         }
         return memberList.toArray(new Member[memberList.size()]);

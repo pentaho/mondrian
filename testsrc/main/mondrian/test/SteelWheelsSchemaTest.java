@@ -15,6 +15,7 @@ import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 import mondrian.util.Bug;
 
 import java.io.InputStream;
+import java.util.Arrays;
 
 public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
     /**
@@ -840,26 +841,141 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
         }
         final PropertySaver propSaver = new PropertySaver();
         propSaver.set(MondrianProperties.instance().IgnoreInvalidMembers, true);
-        propSaver.set(MondrianProperties.instance().IgnoreInvalidMembersDuringQuery, true);
+        propSaver.set(
+            MondrianProperties.instance().IgnoreInvalidMembersDuringQuery,
+            true);
         getTestContext().assertQueryReturns(
-            "WITH \n" +
-                "SET [*NATIVE_CJ_SET] AS '[*BASE_MEMBERS_Time]' \n" +
-                "SET [*BASE_MEMBERS_Measures] AS '{[Measures].[*ZERO]}' \n" +
-                "SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Time].CURRENTMEMBER)})' \n" +
-                "SET [*BASE_MEMBERS_Time] AS 'FILTER([Time].[Quarters].MEMBERS,[Time].CURRENTMEMBER IN([Time].[PARAM].[qtr1] : [Time].[2003].[QTR2]))' \n" +
-                "SET [*CJ_COL_AXIS] AS '[*NATIVE_CJ_SET]' \n" +
-                "MEMBER [Measures].[*ZERO] AS '0', SOLVE_ORDER=0 \n" +
-                "SELECT \n" +
-                "[*BASE_MEMBERS_Measures] ON COLUMNS \n" +
-                ",ORDER([*CJ_ROW_AXIS],[Time].CURRENTMEMBER.ORDERKEY,BASC,ANCESTOR([Time].CURRENTMEMBER,[Time].[Years]).ORDERKEY,BASC) ON ROWS \n" +
-                "FROM [SteelWheelsSales]",
-            "Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[*ZERO]}\n" +
-                "Axis #2:\n"
-        );
+            "WITH \n"
+            + "SET [*NATIVE_CJ_SET] AS '[*BASE_MEMBERS_Time]' \n"
+            + "SET [*BASE_MEMBERS_Measures] AS '{[Measures].[*ZERO]}' \n"
+            + "SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Time].CURRENTMEMBER)})' \n"
+            + "SET [*BASE_MEMBERS_Time] AS 'FILTER([Time].[Quarters].MEMBERS,[Time].CURRENTMEMBER IN([Time].[PARAM].[qtr1] : [Time].[2003].[QTR2]))' \n"
+            + "SET [*CJ_COL_AXIS] AS '[*NATIVE_CJ_SET]' \n"
+            + "MEMBER [Measures].[*ZERO] AS '0', SOLVE_ORDER=0 \n"
+            + "SELECT \n"
+            + "[*BASE_MEMBERS_Measures] ON COLUMNS \n"
+            + ",ORDER([*CJ_ROW_AXIS],[Time].CURRENTMEMBER.ORDERKEY,BASC,ANCESTOR([Time].CURRENTMEMBER,[Time].[Years]).ORDERKEY,BASC) ON ROWS \n"
+            + "FROM [SteelWheelsSales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*ZERO]}\n"
+            + "Axis #2:\n");
         propSaver.reset();
+    }
+
+    /**
+     * Members stored in cache after role filtering would get picked up by a
+     * different role, resulting in fewer results or none at all.
+     *
+     * On .Members in NonEmpty, with mondrian.native.nonempty.enabled=true
+     */
+    public void testMondrian1252() throws Exception {
+        if (!getTestContext().databaseIsValid()) {
+            return;
+        }
+        final String roleDefs =
+            "  <Role name=\"CUBE_SCHEMA_ALL\">\n "
+            + "          <SchemaGrant access=\"all\" />\n "
+            + "  </Role>\n "
+            + "\n "
+            + "  <Role name=\"CUBE_SALES_MINIMAL\">\n "
+            + "          <SchemaGrant access=\"none\">\n "
+            + "                  <CubeGrant cube=\"SteelWheelsSales\" access=\"all\">\n "
+            + "                          <HierarchyGrant hierarchy=\"[Markets]\" access=\"none\"  />\n "
+            + "                  </CubeGrant>\n "
+            + "          </SchemaGrant>\n "
+            + "  </Role>\n "
+            + "  <Role name='DIM_MARKETAREA_MARKET_800'>\n "
+            + "    <SchemaGrant access='none'>\n "
+            + "        <CubeGrant cube='SteelWheelsSales' access='none'>\n "
+            + "            <HierarchyGrant hierarchy='[Markets]'\n "
+            + "                            access='custom' rollupPolicy=\"partial\"\n "
+            + "                            topLevel='[Markets].[Markets].[Territory]'>\n "
+            + "                <MemberGrant member='[Markets].[Markets].[Territory].[APAC]' access='all' />\n "
+            + "            </HierarchyGrant>\n "
+            + "        </CubeGrant>\n "
+            + "    </SchemaGrant>\n "
+            + "  </Role>\n "
+            + "  <Role name='DIM_MARKETAREA_MARKET_850'>\n "
+            + "    <SchemaGrant access='none'>\n "
+            + "        <CubeGrant cube='SteelWheelsSales' access='none'>\n "
+            + "            <HierarchyGrant hierarchy='[Markets]'\n "
+            + "                            access='custom' rollupPolicy=\"partial\"\n "
+            + "                            topLevel='[Markets].[Markets].[Territory]'>\n "
+            + "                <MemberGrant member='[Markets].[Markets].[Territory].[EMEA]' access='all' />\n "
+            + "            </HierarchyGrant>\n "
+            + "        </CubeGrant>\n "
+            + "    </SchemaGrant>\n "
+            + "  </Role>\n ";
+
+        TestContext ctx = getTestContext();
+        // insert role definitions
+        String swSchema = ctx.getRawSchema();
+        int i = swSchema.indexOf("</Schema>");
+        swSchema = swSchema.substring(0, i)
+            + roleDefs
+            + swSchema.substring(i);
+        ctx = ctx.withSchema(swSchema);
+        Schema schema = ctx.getConnection().getSchema();
+        // get roles
+        // TODO: another way to use composite roles
+        Role minimal = schema.lookupRole("CUBE_SALES_MINIMAL");
+        Role market_800 = RoleImpl.union(
+            Arrays.asList(
+                new Role[]{
+                    minimal,
+                    schema.lookupRole("DIM_MARKETAREA_MARKET_800")}));
+        Role market_800_850 = RoleImpl.union(
+            Arrays.asList(
+                new Role[]{
+                    minimal,
+                    schema.lookupRole("DIM_MARKETAREA_MARKET_850"),
+                    schema.lookupRole("DIM_MARKETAREA_MARKET_800")}));
+
+        final String nonEmptyMembersQuery =
+            "select \n "
+            + " [Time].[Years].[2005]\n "
+            + " * \n "
+            + " {\n "
+            + "   [Measures].[Quantity],\n "
+            + "   [Measures].[Sales]\n "
+            + " }\n "
+            + " ON COLUMNS,\n "
+            + " NON EMPTY \n "
+            + "   [Markets].[Territory].Members\n "
+            + " ON ROWS\n "
+            + "from [SteelWheelsSales]";
+
+        // [Markets].[Territory].Members got cached after role filter..
+        ctx.getConnection().setRole(market_800);
+        ctx.assertQueryReturns(
+            nonEmptyMembersQuery,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[Time].[2005], [Measures].[Quantity]}\n"
+            + "{[Time].[Time].[2005], [Measures].[Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Markets].[Markets].[APAC]}\n"
+            + "Row #0: 3,411\n"
+            + "Row #0: 337,018\n");
+        // ..and prevent EMEA from appearing in the results
+        ctx.getConnection().setRole(market_800_850);
+        ctx.assertQueryReturns(
+            nonEmptyMembersQuery,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[Time].[2005], [Measures].[Quantity]}\n"
+            + "{[Time].[Time].[2005], [Measures].[Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Markets].[Markets].[APAC]}\n"
+            + "{[Markets].[Markets].[EMEA]}\n"
+            + "Row #0: 3,411\n"
+            + "Row #0: 337,018\n"
+            + "Row #1: 9,237\n"
+            + "Row #1: 929,829\n");
     }
 }
 
