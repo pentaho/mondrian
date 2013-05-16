@@ -247,6 +247,15 @@ public class SqlContextConstraint
                 SqlConstraintUtils.removeMultiPositionSlicerMembers(
                     evaluator.getMembers(), evaluator)));
 
+        // Add restrictions imposed by Role based access filtering
+        Map<Level, List<RolapMember>> roleMembers =
+            SqlConstraintUtils.getRoleConstraintMembers(
+                this.getEvaluator().getSchemaReader(),
+                this.getEvaluator().getMembers());
+        for (List<RolapMember> list : roleMembers.values()) {
+            cacheKey.addAll(list);
+        }
+
         // For virtual cubes, context constraint should be evaluated in the
         // query's context, because the query might reference different base
         // cubes.
