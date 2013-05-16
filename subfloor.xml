@@ -1,11 +1,28 @@
-<!--
-  == This software is subject to the terms of the Eclipse Public License v1.0
-  == Agreement, available at the following URL:
-  == http://www.eclipse.org/legal/epl-v10.html.
-  == You must accept the terms of that agreement to use this software.
-  ==
-  == Copyright (C) 2008-2013 Pentaho Corporation
-  == All Rights Reserved.
+<!--===========================================================================
+Copyright (c) 2008-2009, Pentaho Engineering Team
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the Pentaho Corporation nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY Pentaho Engineering Team ''AS IS'' AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL <copyright holder> BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ============================================================================-->
 <!--===========================================================================
     == SUBFLOOR ==
@@ -139,8 +156,8 @@ TYPICAL TARGET SEQUENCE
   <property name="javac.deprecation"
             value="true"
             description="Indicates whether source should be compiled with deprecation information" />
-  <property name="javac.source" value="1.5" description="Provide source compatibility with specified release" />
-  <property name="javac.target" value="1.5" description="Generate class files for specific VM version" />
+  <property name="javac.source" value="6" description="Provide source compatibility with specified release" />
+  <property name="javac.target" value="6" description="Generate class files for specific VM version" />
   <property name="javac.maxmemory" value="256M" description="Max memory alloted to java compile" />
 
   <!-- Third party Ant tasks and tools properties -->
@@ -353,10 +370,10 @@ TYPICAL TARGET SEQUENCE
     <fileset dir="${devlib.dir}">
       <include name="**/*.jar" />
     </fileset>
-    <fileset dir="${lib.dir}">
+    <fileset dir="${testlib.dir}">
       <include name="**/*.jar" />
     </fileset>
-    <fileset dir="${testlib.dir}">
+  	<fileset dir="${lib.dir}">
       <include name="**/*.jar" />
     </fileset>
     <pathelement path="${testclasses.dir}" />
@@ -1440,7 +1457,7 @@ TYPICAL TARGET SEQUENCE
   <target name="javadoc" depends="javadoc.init, compile">
     <javadoc destdir="${javadoc.dir}/docs/api"
              access="public"
-             source="1.5"
+             source="6"
              use="true"
              notree="false"
              nonavbar="false"
@@ -1454,7 +1471,7 @@ TYPICAL TARGET SEQUENCE
              packagenames="${javadoc.packagenames}"
              sourcepath="${src.dir}"
              doctitle="${impl.title} documentation">
-      <link href="http://java.sun.com/j2se/1.5.0/docs/api/" />
+      <link href="http://docs.oracle.com/javase/6/docs/api/" />
       <classpath refid="classpath" />
     </javadoc>
   </target>
@@ -1702,13 +1719,13 @@ TYPICAL TARGET SEQUENCE
     <dot-classpath>
       <!-- Include all lib dirs -->
       <classpath>
-        <fileset dir="${lib.dir}">
-          <include name="*.jar" />
-        </fileset>
         <fileset dir="${devlib.dir}">
           <include name="*.jar" />
         </fileset>
-        <fileset dir="${testlib.dir}">
+      	<fileset dir="${testlib.dir}">
+          <include name="*.jar" />
+        </fileset>
+      	<fileset dir="${lib.dir}">
           <include name="*.jar" />
         </fileset>
       </classpath>
