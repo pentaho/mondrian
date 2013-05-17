@@ -254,7 +254,7 @@ public abstract class RolapAggregationManager {
                     continue;
                 }
 
-                addNonConstrainingColumns(member, cube, request);
+                //addNonConstrainingColumns(member, cube, request);
 
                 final RolapCubeLevel level = member.getLevel();
                 final boolean needToReturnNull =
