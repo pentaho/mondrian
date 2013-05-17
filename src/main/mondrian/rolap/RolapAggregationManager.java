@@ -376,6 +376,7 @@ public abstract class RolapAggregationManager {
                 final RolapStar.Column nameColumn = column.getNameColumn();
                 Util.assertTrue(nameColumn != null);
                 request.addConstrainedColumn(nameColumn, null);
+                ((DrillThroughCellRequest)request).addDrillThroughColumn(column);
             }
         }
     }
