@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -12,7 +12,10 @@ package mondrian.olap.fun;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.olap.*;
+import mondrian.olap.Dimension;
+import mondrian.olap.Evaluator;
+import mondrian.olap.FunDef;
+import mondrian.olap.Member;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,37 +61,15 @@ class ExistsFunDef extends FunDefBase
                 List<Dimension> leftDims = getDimensions(leftTuples.get(0));
                 List<Dimension> rightDims = getDimensions(rightTuples.get(0));
 
-                // map dimensions of right object to those in left object
-                // return empty list if not all of right dims can be mapped
-                int rightSize = rightDims.size();
-                int [] idxmap = new int[rightSize];
-                for (int i = 0; i < rightSize; i++) {
-                    Dimension d = rightDims.get(i);
-                    if (leftDims.contains(d)) {
-                        idxmap[i] = leftDims.indexOf(d);
-                    } else {
-                        return TupleCollections.emptyList(
-                            leftTuples.getArity());
-                    }
-                }
-
                 leftLoop:
                 for (List<Member> leftTuple : leftTuples) {
-                    rightLoop:
                     for (List<Member> rightTuple : rightTuples) {
-                        for (int i = 0; i < rightSize; i++) {
-                            Member leftMem = leftTuple.get(idxmap[i]);
-                            Member rightMem = rightTuple.get(i);
-                            if (!isOnSameHierarchyChain(leftMem, rightMem)) {
-                                // Right tuple does not match left tuple. Try
-                                // next right tuple.
-                                continue rightLoop;
-                            }
+                        if (existsInTuple(leftTuple, rightTuple,
+                            leftDims, rightDims))
+                        {
+                            result.add(leftTuple);
+                            continue leftLoop;
                         }
-                        // Left tuple matches one of the right tuples. Add it
-                        // to the result.
-                        result.add(leftTuple);
-                        continue leftLoop;
                     }
                 }
                 return result;
@@ -102,7 +83,78 @@ class ExistsFunDef extends FunDefBase
             (FunUtil.isAncestorOf(mB, mA, false));
     }
 
-    private static List<Dimension> getDimensions(List<Member> members)
+
+    /**
+     * Returns true if leftTuple Exists w/in rightTuple
+     *
+     *
+     * @param leftTuple tuple from arg one of EXISTS()
+     * @param rightTuple tuple from arg two of EXISTS()
+     * @param leftDims  List of the dimensions in the right tuple,
+     *                  in the same order
+     * @param rightDims List of the dimensions in the right tuple,
+     *                  in the same order
+     * @return true if each member from leftTuple is somewhere in the
+     *         hierarchy chain of the corresponding member from rightTuple,
+     *         false otherwise.
+     *         If there is no explicit corresponding member from either
+     *         right or left, then the default member is used.
+     */
+    private boolean existsInTuple(
+        final List<Member> leftTuple, final List<Member> rightTuple,
+        final List<Dimension> leftDims, final List<Dimension> rightDims)
+    {
+        List<Member> checkedMembers = new ArrayList<Member>();
+
+        for (Member leftMember : leftTuple) {
+            Member rightMember = getCorrespondingMember(
+                leftMember, rightTuple, rightDims);
+            checkedMembers.add(rightMember);
+            if (!isOnSameHierarchyChain(leftMember, rightMember)) {
+                return false;
+            }
+        }
+        // this loop handles members in the right tuple not present in left
+        // Such a member could only impact the resulting tuple list if the
+        // default member of the hierarchy is not the all member.
+        for (Member rightMember : rightTuple) {
+            if (checkedMembers.contains(rightMember)) {
+                // already checked in the previous loop
+                continue;
+            }
+            Member leftMember = getCorrespondingMember(
+                rightMember, leftTuple, leftDims);
+            if (!isOnSameHierarchyChain(leftMember, rightMember)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns the corresponding member from tuple, or the default member
+     * for the hierarchy if member is not explicitly contained in the tuple.
+     *
+     * @param member source member
+     * @param tuple tuple containing the target member
+     * @param tupleDims list of the dimensions explicitly contained in the
+     *                  tuple, in the same order.
+     * @return target member
+     */
+    private Member getCorrespondingMember(
+        final Member member, final List<Member> tuple,
+        final List<Dimension> tupleDims)
+    {
+        assert tuple.size() == tupleDims.size();
+        int dimPos = tupleDims.indexOf(member.getDimension());
+        if (dimPos >= 0) {
+            return tuple.get(dimPos);
+        } else {
+            return member.getHierarchy().getDefaultMember();
+        }
+    }
+
+    private static List<Dimension> getDimensions(final List<Member> members)
     {
         List<Dimension> dimensions = new ArrayList<Dimension>();
         for (Member member : members) {
@@ -110,6 +162,7 @@ class ExistsFunDef extends FunDefBase
         }
         return dimensions;
     }
+
 }
 
 // End ExistsFunDef.java
