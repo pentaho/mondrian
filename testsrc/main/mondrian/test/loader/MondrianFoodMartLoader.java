@@ -14,6 +14,7 @@ import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
+import mondrian.spi.impl.MockDialect;
 
 import org.apache.log4j.*;
 
@@ -131,6 +132,8 @@ public class MondrianFoodMartLoader {
         new HashMap<String, List<UniqueConstraint>>();
     private Dialect dialect;
     private boolean infobrightLoad;
+    private OutputFormat outputFormat;
+    private String nullValue = "NULL";
     private long lastUpdate = 0;
     private boolean quoted = true;
 
@@ -213,6 +216,14 @@ public class MondrianFoodMartLoader {
                 afterFile = parseArg(arg, "-afterFile=");
             } else if (arg.startsWith("-outputDirectory=")) {
                 outputDirectory = parseArg(arg, "-outputDirectory=");
+            } else if (arg.startsWith("-outputFormat=")) {
+                outputFormat =
+                    OutputFormat.valueOf(
+                        parseArg(arg, "-outputFormat=").toUpperCase());
+                switch (outputFormat) {
+                case JSON:
+                    nullValue = "null";
+                }
             } else if (arg.startsWith("-outputJdbcBatchSize=")) {
                 outputBatchSize =
                     Integer.parseInt(
@@ -352,6 +363,9 @@ public class MondrianFoodMartLoader {
      *  <code>"sun.jdbc.odbc.JdbcOdbcDriver,com.mysql.jdbc.Driver"</code>.
      */
     static synchronized void loadDrivers(String jdbcDrivers) {
+        if (jdbcDrivers == null) {
+            return;
+        }
         StringTokenizer tok = new StringTokenizer(jdbcDrivers, ",");
         while (tok.hasMoreTokens()) {
             String jdbcDriver = tok.nextToken();
@@ -377,11 +391,30 @@ public class MondrianFoodMartLoader {
     private void load() throws Exception {
         loadDrivers(jdbcDrivers);
 
-        if (userName == null) {
-            connection = DriverManager.getConnection(jdbcURL);
+        if (jdbcURL == null) {
+            connection = null;
+            dialect =
+                MockDialect.of(Dialect.DatabaseProduct.HSQLDB);
+            LOGGER.info("Output format is " + outputFormat);
         } else {
-            connection =
-                DriverManager.getConnection(jdbcURL, userName, password);
+            if (userName == null) {
+                connection = DriverManager.getConnection(jdbcURL);
+            } else {
+                connection =
+                    DriverManager.getConnection(jdbcURL, userName, password);
+            }
+
+            final DatabaseMetaData metaData = connection.getMetaData();
+
+            String productName = metaData.getDatabaseProductName();
+            String version = metaData.getDatabaseProductVersion();
+
+            LOGGER.info(
+                "Output connection is " + productName
+                + ", version: " + version);
+
+            this.dialect = DialectManager.createDialect(null, connection)
+                .withQuoting(quoted);
         }
 
         if (jdbcInput) {
@@ -392,17 +425,6 @@ public class MondrianFoodMartLoader {
                     inputJdbcURL, inputUserName, inputPassword);
             }
         }
-        final DatabaseMetaData metaData = connection.getMetaData();
-
-        String productName = metaData.getDatabaseProductName();
-        String version = metaData.getDatabaseProductVersion();
-
-        LOGGER.info(
-            "Output connection is " + productName
-            + ", version: " + version);
-
-        this.dialect = DialectManager.createDialect(null, connection)
-            .withQuoting(quoted);
 
         LOGGER.info(
             "Mondrian Dialect is " + dialect
@@ -546,16 +568,18 @@ public class MondrianFoodMartLoader {
             throw new Exception("No data file to process");
         }
 
-        if (dialect.getDatabaseProduct()
-            == Dialect.DatabaseProduct.INFOBRIGHT)
-        {
-            infobrightLoad = true;
+        infobrightLoad = dialect.getDatabaseProduct()
+            == Dialect.DatabaseProduct.INFOBRIGHT;
+
+        if (infobrightLoad) {
             file = File.createTempFile("tmpfile", ".csv");
             fileOutput = new FileWriter(file);
+        } else if (outputFormat == OutputFormat.JSON) {
+            // Json starts a new file each table.
         } else {
-            infobrightLoad = false;
             if (outputDirectory != null) {
                 file = new File(outputDirectory, "createData.sql");
+                file.getParentFile().mkdirs();
                 fileOutput = new FileWriter(file);
             }
         }
@@ -652,6 +676,7 @@ public class MondrianFoodMartLoader {
                         afterTable(prevTable, tableRowCount);
                         tableRowCount = 0;
                         prevTable = tableName;
+                        beforeTable(tableName);
                         quotedTableName = quoteId(schema, tableName);
 
                         Column[] columns = tableMetadataToLoad.get(tableName);
@@ -727,14 +752,31 @@ public class MondrianFoodMartLoader {
                     Thread.sleep(pauseMillis);
                 }
 
-                if (infobrightLoad) {
+                if (this.infobrightLoad) {
                     massagedLine.setLength(0);
-                    getMassagedValues(massagedLine, orderedColumns, values);
+                    getMassagedValues(
+                        massagedLine, false, orderedColumns, values);
                     fileOutput.write(
                         massagedLine.toString()
                             .replaceAll("\"", "\\\"")
                             .replace('\'', '"')
                             .trim());
+                    fileOutput.write(nl);
+                } else if (outputFormat == OutputFormat.JSON) {
+                    massagedLine.setLength(0);
+                    massagedLine.append("{");
+                    getMassagedValues(
+                        massagedLine, true, orderedColumns, values);
+                    while (massagedLine.length() > 0
+                        && massagedLine.charAt(massagedLine.length() - 1)
+                           == ' ')
+                    {
+                        massagedLine.setLength(massagedLine.length() - 1);
+                    }
+                    massagedLine.append("}");
+                    fileOutput.write(
+                        massagedLine.toString()
+                            .replaceAll("\"", "\\\""));
                     fileOutput.write(nl);
                 } else {
                     massagedLine.setLength(0);
@@ -743,7 +785,8 @@ public class MondrianFoodMartLoader {
                         .append(quotedTableName)
                         .append(quotedColumnNames)
                         .append(" VALUES (");
-                    getMassagedValues(massagedLine, orderedColumns, values);
+                    getMassagedValues(
+                        massagedLine, false, orderedColumns, values);
                     massagedLine.append(")");
 
                     line = massagedLine.toString();
@@ -779,6 +822,20 @@ public class MondrianFoodMartLoader {
     }
 
     /**
+     * Called before the first row of a table.
+     *
+     * @param tableName Table name
+     * @throws IOException
+     */
+    private void beforeTable(String tableName) throws IOException {
+        if (outputFormat == OutputFormat.JSON) {
+            file = new File(outputDirectory, tableName + ".json");
+            file.getParentFile().mkdirs();
+            fileOutput = new FileWriter(file);
+        }
+    }
+
+    /**
      * Called after the last row of a table has been read into the batch.
      *
      * @param table Table name, or null if there is no previous table
@@ -791,6 +848,10 @@ public class MondrianFoodMartLoader {
         throws IOException
     {
         if (table == null) {
+            return;
+        }
+        if (outputFormat == OutputFormat.JSON) {
+            fileOutput.close();
             return;
         }
         if (!infobrightLoad) {
@@ -837,14 +898,16 @@ public class MondrianFoodMartLoader {
     /**
      * Converts column values for a destination dialect.
      *
-     * @param columns               column metadata for the table
+     * @param buf                   Buffer in which to write values
+     * @param json                  Whether to output in JSON format
+     * @param columns               Column metadata for the table
      * @param values                the contents of the INSERT VALUES clause,
      *                              for example "34,67.89,'GHt''ab'".
      *                              These are in MySQL form.
-     * @param buf                   Buffer in which to write values
      */
     private void getMassagedValues(
         StringBuilder buf,
+        boolean json,
         Column[] columns,
         String values) throws Exception
     {
@@ -887,6 +950,9 @@ public class MondrianFoodMartLoader {
         for (int i = 0; i < columns.length; i++) {
             if (i > 0) {
                 buf.append(",");
+            }
+            if (json) {
+                buf.append("'").append(columns[i]).append("':");
             }
             String value = individualValues[i];
             if (value != null && value.trim().equals("NULL")) {
@@ -977,7 +1043,7 @@ public class MondrianFoodMartLoader {
             is.close();
         } catch (Exception e) {
             throw new RuntimeException(
-                "Error while reading " + afterFile);
+                "Error while reading " + afterFile, e);
         } finally {
             try {
                 is.close();
@@ -1800,7 +1866,7 @@ public class MondrianFoodMartLoader {
         String columnType = column.typeName;
 
         if (obj == null) {
-            return "NULL";
+            return nullValue;
         }
 
         // Output for an INTEGER column, handling Doubles and Integers
@@ -1968,8 +2034,8 @@ public class MondrianFoodMartLoader {
     {
         String columnType = column.typeName;
 
-        if (columnValue == null) {
-            return "NULL";
+        if (columnValue == null || columnValue.equals("NULL")) {
+            return nullValue;
         }
 
         // Output for a TIMESTAMP
@@ -2029,7 +2095,7 @@ public class MondrianFoodMartLoader {
 
     /**
      * Generate an appropriate string to use in an SQL insert statement for
-     * a VARCHAR colummn, taking into account NULL strings and strings with
+     * a VARCHAR column, taking into account NULL strings and strings with
      * embedded quotes.
      *
      * @param original  String to transform
@@ -2038,7 +2104,7 @@ public class MondrianFoodMartLoader {
      */
     private String embedQuotes(String original) {
         if (original == null) {
-            return "NULL";
+            return nullValue;
         }
         StringBuilder buf = new StringBuilder();
 
@@ -4712,6 +4778,10 @@ public class MondrianFoodMartLoader {
             return Character.toUpperCase(mixedName.charAt(0))
                 + mixedName.substring(1);
         }
+    }
+
+    private enum OutputFormat {
+        JSON
     }
 }
 

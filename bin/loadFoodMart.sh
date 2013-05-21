@@ -172,6 +172,30 @@ firefird() {
         -outputJdbcURL="jdbc:firebirdsql:localhost/3050:/mondrian/foodmart.gdb"
 }
 
+# Generate a JSON file.
+json() {
+    rm -rf foo
+    mkdir foo
+    (
+        cd foo
+        jar xvf ../lib/mondrian-data-foodmart-json.jar
+        find . -type f | xargs perl -p -i -e 's/%VERSION%/0.1/'
+    )
+    java -cp "${CP}" \
+        mondrian.test.loader.MondrianFoodMartLoader \
+        -verbose -data \
+        -dataset=${dataset} \
+        -inputFile="$inputFile" \
+        -outputQuoted=${outputQuoted} \
+        -outputDirectory=foo \
+        -outputFormat=json
+    (
+        cd foo
+        jar cvf /tmp/mondrian-data-foodmart-json.jar .
+    )
+    echo Created /tmp/mondrian-data-foodmart-json.jar
+}
+
 # Load LucidDB
 #
 # Install LucidDB per instructions at
@@ -323,6 +347,7 @@ case "$db" in
 (firebird) firebird;;
 (hsqldb) hsqldb;;
 (infobright) infobright;;
+(json) json;;
 (luciddb) luciddb;;
 (monetdb) monetdb;;
 (mysql) mysql;;

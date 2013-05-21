@@ -1245,7 +1245,7 @@ public class DialectTest extends TestCase {
     public void testPostgresGreenplumTypeMapQuirks() throws SQLException {
         MockResultSetMetadata mockResultSetMeta = new MockResultSetMetadata();
         Dialect greenplumDialect =
-            TestContext.getFakeDialect(Dialect.DatabaseProduct.GREENPLUM);
+            MockDialect.of(Dialect.DatabaseProduct.GREENPLUM);
         assertTrue(
             "Postgres/Greenplum dialect NUMBER with precision =0, scale = 0"
             + ", measure name starts with 'm' maps to OBJECT",
@@ -1261,7 +1261,7 @@ public class DialectTest extends TestCase {
     public void testNetezzaTypeMapQuirks() throws SQLException {
         MockResultSetMetadata mockResultSetMeta = new MockResultSetMetadata();
         Dialect netezzaDialect =
-            TestContext.getFakeDialect(Dialect.DatabaseProduct.NETEZZA);
+            MockDialect.of(Dialect.DatabaseProduct.NETEZZA);
         assertTrue(
             "Netezza dialect NUMERIC/DECIMAL with precision =38, scale = 0"
             + " means long.  Should be mapped to DOUBLE",
@@ -1287,7 +1287,7 @@ public class DialectTest extends TestCase {
     public void testMonetDBTypeMapQuirks() throws SQLException {
         MockResultSetMetadata mockResultSetMeta = new MockResultSetMetadata();
         Dialect monetDbDialect =
-            TestContext.getFakeDialect(Dialect.DatabaseProduct.MONETDB);
+            MockDialect.of(Dialect.DatabaseProduct.MONETDB);
         assertTrue(
             "MonetDB dialect NUMERIC with precision =0, scale = 0"
             + " may be an aggregated decimal, should assume DOUBLE",
