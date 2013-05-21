@@ -12,10 +12,7 @@ package mondrian.olap.fun;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.olap.Dimension;
-import mondrian.olap.Evaluator;
-import mondrian.olap.FunDef;
-import mondrian.olap.Member;
+import mondrian.olap.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,8 +55,8 @@ class ExistsFunDef extends FunDefBase
                 TupleList result =
                     TupleCollections.createList(leftTuples.getArity());
 
-                List<Dimension> leftDims = getDimensions(leftTuples.get(0));
-                List<Dimension> rightDims = getDimensions(rightTuples.get(0));
+                List<Hierarchy> leftDims = getHierarchies(leftTuples.get(0));
+                List<Hierarchy> rightDims = getHierarchies(rightTuples.get(0));
 
                 leftLoop:
                 for (List<Member> leftTuple : leftTuples) {
@@ -88,12 +85,13 @@ class ExistsFunDef extends FunDefBase
      * Returns true if leftTuple Exists w/in rightTuple
      *
      *
+     *
      * @param leftTuple tuple from arg one of EXISTS()
      * @param rightTuple tuple from arg two of EXISTS()
-     * @param leftDims  List of the dimensions in the right tuple,
-     *                  in the same order
-     * @param rightDims List of the dimensions in the right tuple,
-     *                  in the same order
+     * @param leftHierarchies list of hierarchies from leftTuple, in the same
+     *                        order
+     * @param rightHierarchies list of the hiearchies from rightTuple,
+     *                         in the same order
      * @return true if each member from leftTuple is somewhere in the
      *         hierarchy chain of the corresponding member from rightTuple,
      *         false otherwise.
@@ -102,13 +100,14 @@ class ExistsFunDef extends FunDefBase
      */
     private boolean existsInTuple(
         final List<Member> leftTuple, final List<Member> rightTuple,
-        final List<Dimension> leftDims, final List<Dimension> rightDims)
+        final List<Hierarchy> leftHierarchies,
+        final List<Hierarchy> rightHierarchies)
     {
         List<Member> checkedMembers = new ArrayList<Member>();
 
         for (Member leftMember : leftTuple) {
             Member rightMember = getCorrespondingMember(
-                leftMember, rightTuple, rightDims);
+                leftMember, rightTuple, rightHierarchies);
             checkedMembers.add(rightMember);
             if (!isOnSameHierarchyChain(leftMember, rightMember)) {
                 return false;
@@ -123,7 +122,7 @@ class ExistsFunDef extends FunDefBase
                 continue;
             }
             Member leftMember = getCorrespondingMember(
-                rightMember, leftTuple, leftDims);
+                rightMember, leftTuple, leftHierarchies);
             if (!isOnSameHierarchyChain(leftMember, rightMember)) {
                 return false;
             }
@@ -135,18 +134,19 @@ class ExistsFunDef extends FunDefBase
      * Returns the corresponding member from tuple, or the default member
      * for the hierarchy if member is not explicitly contained in the tuple.
      *
+     *
      * @param member source member
      * @param tuple tuple containing the target member
-     * @param tupleDims list of the dimensions explicitly contained in the
-     *                  tuple, in the same order.
+     * @param tupleHierarchies list of the hierarchies explicitly contained
+     *                         in the tuple, in the same order.
      * @return target member
      */
     private Member getCorrespondingMember(
         final Member member, final List<Member> tuple,
-        final List<Dimension> tupleDims)
+        final List<Hierarchy> tupleHierarchies)
     {
-        assert tuple.size() == tupleDims.size();
-        int dimPos = tupleDims.indexOf(member.getDimension());
+        assert tuple.size() == tupleHierarchies.size();
+        int dimPos = tupleHierarchies.indexOf(member.getHierarchy());
         if (dimPos >= 0) {
             return tuple.get(dimPos);
         } else {
@@ -154,13 +154,13 @@ class ExistsFunDef extends FunDefBase
         }
     }
 
-    private static List<Dimension> getDimensions(final List<Member> members)
+    private static List<Hierarchy> getHierarchies(final List<Member> members)
     {
-        List<Dimension> dimensions = new ArrayList<Dimension>();
+        List<Hierarchy> hierarchies = new ArrayList<Hierarchy>();
         for (Member member : members) {
-            dimensions.add(member.getDimension());
+            hierarchies.add(member.getHierarchy());
         }
-        return dimensions;
+        return hierarchies;
     }
 
 }

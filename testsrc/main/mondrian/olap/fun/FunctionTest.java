@@ -11801,6 +11801,51 @@ Intel platforms):
             + "{[Customers].[USA].[CA]}\n"
             + "Row #0: 74,748\n");
     }
+
+    public void testExistsWithMultipleHierarchies() {
+        // tests queries w/ a multi-hierarchy dim in either or both args.
+        assertQueryReturns(
+            "select exists( "
+            + "crossjoin( time.[1997], {[Time.Weekly].[1997].[16]}), "
+            + " { Gender.F } ) on 0 from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997], [Time].[Weekly].[1997].[16]}\n"
+            + "Row #0: 3,839\n");
+
+        assertQueryReturns(
+            "select exists( "
+            + "time.[1997].[Q1], {[Time.Weekly].[1997].[4]}) "
+            + " on 0 from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "Row #0: 66,291\n");
+
+        assertQueryReturns(
+            "select exists( "
+            + "{ Gender.F }, "
+            + "crossjoin( time.[1997], {[Time.Weekly].[1997].[16]})  ) "
+            + "on 0 from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[F]}\n"
+            + "Row #0: 131,558\n");
+
+        assertQueryReturns(
+            "select exists( "
+            + "{ time.[1998] }, "
+            + "crossjoin( time.[1997], {[Time.Weekly].[1997].[16]})  ) "
+            + "on 0 from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n");
+    }
+
+
     public void testExistsWithDefaultNonAllMember() {
         // default mem for Time is 1997
 
