@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -11766,9 +11766,12 @@ Intel platforms):
             + "Row #0: 74,748\n");
     }
 
-    public void testExistsMembersDiffDim() {
+    public void testExistsWithImplicitAllMember() {
+        // the tuple in the second arg in this case should implicitly
+        // contain [Customers].[All Customers], so the whole tuple list
+        // from the first arg should be returned.
         assertQueryReturns(
-            "select exists(\n"
+            "select non empty exists(\n"
             + "  {[Customers].[All Customers],\n"
             + "   [Customers].[All Customers].Children,\n"
             + "   [Customers].[State Province].Members},\n"
@@ -11776,8 +11779,114 @@ Intel platforms):
             + "on 0 from Sales",
             "Axis #0:\n"
             + "{}\n"
+            + "Axis #1:\n"
+            + "{[Customers].[All Customers]}\n"
+            + "{[Customers].[USA]}\n"
+            + "{[Customers].[USA].[CA]}\n"
+            + "{[Customers].[USA].[OR]}\n"
+            + "{[Customers].[USA].[WA]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 67,659\n"
+            + "Row #0: 124,366\n");
+
+        assertQueryReturns(
+            "select exists( "
+            + "[Customers].[USA].[CA], (Store.[USA], Gender.[F])) "
+            + "on 0 from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Customers].[USA].[CA]}\n"
+            + "Row #0: 74,748\n");
+    }
+
+    public void testExistsWithMultipleHierarchies() {
+        // tests queries w/ a multi-hierarchy dim in either or both args.
+        assertQueryReturns(
+            "select exists( "
+            + "crossjoin( time.[1997], {[Time.Weekly].[1997].[16]}), "
+            + " { Gender.F } ) on 0 from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997], [Time].[Weekly].[1997].[16]}\n"
+            + "Row #0: 3,839\n");
+
+        assertQueryReturns(
+            "select exists( "
+            + "time.[1997].[Q1], {[Time.Weekly].[1997].[4]}) "
+            + " on 0 from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "Row #0: 66,291\n");
+
+        assertQueryReturns(
+            "select exists( "
+            + "{ Gender.F }, "
+            + "crossjoin( time.[1997], {[Time.Weekly].[1997].[16]})  ) "
+            + "on 0 from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[F]}\n"
+            + "Row #0: 131,558\n");
+
+        assertQueryReturns(
+            "select exists( "
+            + "{ time.[1998] }, "
+            + "crossjoin( time.[1997], {[Time.Weekly].[1997].[16]})  ) "
+            + "on 0 from sales",
+            "Axis #0:\n"
+            + "{}\n"
             + "Axis #1:\n");
     }
+
+
+    public void testExistsWithDefaultNonAllMember() {
+        // default mem for Time is 1997
+
+        // non-all default on right side.
+        assertQueryReturns(
+            "select exists( [Time].[1998].[Q1], Gender.[All Gender]) on 0 from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n");
+
+        // switching to an explicit member on the hierarchy chain should return
+        // 1998.Q1
+        assertQueryReturns(
+            "select exists( [Time].[1998].[Q1], ([Time].[1998], Gender.[All Gender])) on 0 from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1998].[Q1]}\n"
+            + "Row #0: \n");
+
+
+        // non-all default on left side
+        assertQueryReturns(
+            "select exists( "
+            + "Gender.[All Gender], (Gender.[F], [Time].[1998].[Q1])) "
+            + "on 0 from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n");
+
+        assertQueryReturns(
+            "select exists( "
+            + "(Time.[1998].[Q1].[1], Gender.[All Gender]), (Gender.[F], [Time].[1998].[Q1])) "
+            + "on 0 from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1998].[Q1].[1], [Gender].[All Gender]}\n"
+            + "Row #0: \n");
+    }
+
 
     public void testExistsMembers2Hierarchies() {
         assertQueryReturns(
@@ -11884,8 +11993,16 @@ Intel platforms):
             + "on 0 from Sales",
             "Axis #0:\n"
             + "{}\n"
-            + "Axis #1:\n");
+            + "Axis #1:\n"
+            + "{[Customers].[USA].[CA], [Time].[1997], [Product].[Drink]}\n"
+            + "{[Customers].[USA].[OR], [Time].[1997], [Product].[Drink]}\n"
+            + "{[Customers].[USA].[WA], [Time].[1997], [Product].[Drink]}\n"
+            + "Row #0: 7,102\n"
+            + "Row #0: 6,106\n"
+            + "Row #0: 11,389\n");
     }
+
+
 
     /**
      * Executes a query that has a complex parse tree. Goal is to find
