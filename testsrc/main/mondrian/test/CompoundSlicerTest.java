@@ -199,6 +199,97 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "Row #2: 4,051\n"
             + "Row #2: 131,164\n");
     }
+    public void testCompoundSlicerWithCellFormatter() {
+        String xmlMeasure =
+            "<Measure name='Unit Sales Foo Bar' column='unit_sales'\n"
+            + "    aggregator='sum' formatString='Standard' formatter='"
+            + UdfTest.FooBarCellFormatter.class.getName()
+            + "'/>";
+        TestContext tc =
+            TestContext.instance().legacy().createSubstitutingCube(
+                "Sales", null, xmlMeasure, null, null);
+
+        // the cell formatter for the measure should still be used
+        tc.assertQueryReturns(
+            "select from sales where "
+            + " measures.[Unit Sales Foo Bar] * {[Gender].F, [Gender].M} ",
+            "Axis #0:\n"
+            + "{[Measures].[Unit Sales Foo Bar], [Gender].[Gender].[F]}\n"
+            + "{[Measures].[Unit Sales Foo Bar], [Gender].[Gender].[M]}\n"
+            + "foo266773.0bar");
+
+        tc.assertQueryReturns(
+            "select from sales where "
+            + " {[Gender].F, [Gender].M}  * measures.[Unit Sales Foo Bar]",
+            "Axis #0:\n"
+            + "{[Gender].[Gender].[F], [Measures].[Unit Sales Foo Bar]}\n"
+            + "{[Gender].[Gender].[M], [Measures].[Unit Sales Foo Bar]}\n"
+            + "foo266773.0bar");
+    }
+
+
+    public void testMondrian1226() {
+        assertQueryReturns(
+            "with \n"
+            +    "member Measures.x1 as ([Time].[1997].[Q1],"
+            + "[Measures].[Store Sales])\n"
+            +    "member Measures.x2 as ([Time].[1997].[Q2],"
+            + " [Measures].[Store Sales])\n"
+            +    "set products as TopCount("
+            + "Product.[Product Name].Members,1,Measures.[Store Sales])\n"
+            +    "SELECT\n"
+            +    "NON EMPTY products ON 1,\n"
+            +    "NON EMPTY {[Measures].[Store Sales], "
+            + "Measures.x1, Measures.x2} ON 0\n"
+            +    "FROM [Sales]\n"
+            +    "where ([Time].[1997].[Q1] : [Time].[1997].[Q2])",
+            "Axis #0:\n"
+            + "{[Time].[Time].[1997].[Q1]}\n"
+            + "{[Time].[Time].[1997].[Q2]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "{[Measures].[x1]}\n"
+            + "{[Measures].[x2]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Products].[Food].[Eggs].[Eggs].[Eggs]"
+            + ".[Urban].[Urban Small Eggs]}\n"
+            + "Row #0: 497.42\n"
+            + "Row #0: 235.62\n"
+            + "Row #0: 261.80\n");
+    }
+
+     public void _testMondrian1226Variation() {
+         // Currently broke.  Below are two queries with two dimensions
+         // in the compound slicer.
+         //  The first has a measure which overrides the Time context,
+         // and gives expected results (since the Time dimension is
+         // the "placeholder" dimension.
+         assertQueryReturns(
+             "with member measures.HalfTime as '[Time].[1997].[Q1]/2'"
+             + " select measures.HalfTime on 0 from sales where "
+             + "({[Time].[1997].[Q1] : [Time].[1997].[Q2]} * gender.[All Gender]) ",
+             "Axis #0:\n"
+             + "{[Time].[Time].[1997].[Q1], [Customer].[Gender].[All Gender]}\n"
+             + "{[Time].[Time].[1997].[Q2], [Customer].[Gender].[All Gender]}\n"
+             + "Axis #1:\n"
+             + "{[Measures].[HalfTime]}\n"
+             + "Row #0: 33,146\n");
+
+         // The second query has a measure overriding gender, which
+         // fails since context is not set appropriately for gender.
+         assertQueryReturns(
+             "with member measures.HalfMan as 'Gender.m/2'"
+             +    " select measures.HalfMan on 0 from sales where "
+             +    "({[Time].[1997].[Q1] : [Time].[1997].[Q2]} "
+             + "* gender.[All Gender]) ",
+             "Axis #0:\n"
+             + "{[Time].[Time].[1997].[Q1], [Customer].[Gender].[M]}\n"
+             + "{[Time].[Time].[1997].[Q2], [Customer].[Gender].[M]}\n"
+             + "Axis #1:\n"
+             + "{[Measures].[HalfMan]}\n"
+             + "Row #0: 32,500\n");
+     }
+
 
     /**
      * Tests a query with a compond slicer over tuples. (Multiple rows, each
