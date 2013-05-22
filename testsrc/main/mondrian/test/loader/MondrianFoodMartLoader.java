@@ -776,7 +776,8 @@ public class MondrianFoodMartLoader {
                     massagedLine.append("}");
                     fileOutput.write(
                         massagedLine.toString()
-                            .replaceAll("\"", "\\\""));
+                            .replaceAll("\"", "\\\"")
+                            .replace('\'', '"'));
                     fileOutput.write(nl);
                 } else {
                     massagedLine.setLength(0);
@@ -952,7 +953,7 @@ public class MondrianFoodMartLoader {
                 buf.append(",");
             }
             if (json) {
-                buf.append("'").append(columns[i]).append("':");
+                buf.append("\"").append(columns[i]).append("\":");
             }
             String value = individualValues[i];
             if (value != null && value.trim().equals("NULL")) {
