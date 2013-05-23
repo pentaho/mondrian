@@ -64,22 +64,26 @@ class MondrianServerImpl
      * construction, and are removed when they call close. Garbage collection
      * may cause a connection to be removed earlier.
      */
+    @SuppressWarnings("unchecked")
     private final Map<Integer, RolapConnection> connectionMap =
          // We use a reference map here because the value
          // is what needs to be week, not the key, as it
          // would be the case with a WeakHashMap.
-        new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK);
+        Collections.synchronizedMap(
+            new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK));
 
     /**
      * Map of open statements, by id. Statements are added just after
      * construction, and are removed when they call close. Garbage collection
      * may cause a connection to be removed earlier.
      */
+    @SuppressWarnings("unchecked")
     private final Map<Long, Statement> statementMap =
          // We use a reference map here because the value
          // is what needs to be week, not the key, as it
          // would be the case with a WeakHashMap.
-        new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK);
+        Collections.synchronizedMap(
+            new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK));
 
     private final MonitorImpl monitor = new MonitorImpl();
 
