@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -55,40 +55,18 @@ class ExistsFunDef extends FunDefBase
                 TupleList result =
                     TupleCollections.createList(leftTuples.getArity());
 
-                List<Dimension> leftDims = getDimensions(leftTuples.get(0));
-                List<Dimension> rightDims = getDimensions(rightTuples.get(0));
-
-                // map dimensions of right object to those in left object
-                // return empty list if not all of right dims can be mapped
-                int rightSize = rightDims.size();
-                int [] idxmap = new int[rightSize];
-                for (int i = 0; i < rightSize; i++) {
-                    Dimension d = rightDims.get(i);
-                    if (leftDims.contains(d)) {
-                        idxmap[i] = leftDims.indexOf(d);
-                    } else {
-                        return TupleCollections.emptyList(
-                            leftTuples.getArity());
-                    }
-                }
+                List<Hierarchy> leftDims = getHierarchies(leftTuples.get(0));
+                List<Hierarchy> rightDims = getHierarchies(rightTuples.get(0));
 
                 leftLoop:
                 for (List<Member> leftTuple : leftTuples) {
-                    rightLoop:
                     for (List<Member> rightTuple : rightTuples) {
-                        for (int i = 0; i < rightSize; i++) {
-                            Member leftMem = leftTuple.get(idxmap[i]);
-                            Member rightMem = rightTuple.get(i);
-                            if (!isOnSameHierarchyChain(leftMem, rightMem)) {
-                                // Right tuple does not match left tuple. Try
-                                // next right tuple.
-                                continue rightLoop;
-                            }
+                        if (existsInTuple(leftTuple, rightTuple,
+                            leftDims, rightDims))
+                        {
+                            result.add(leftTuple);
+                            continue leftLoop;
                         }
-                        // Left tuple matches one of the right tuples. Add it
-                        // to the result.
-                        result.add(leftTuple);
-                        continue leftLoop;
                     }
                 }
                 return result;
@@ -102,14 +80,89 @@ class ExistsFunDef extends FunDefBase
             (FunUtil.isAncestorOf(mB, mA, false));
     }
 
-    private static List<Dimension> getDimensions(List<Member> members)
+
+    /**
+     * Returns true if leftTuple Exists w/in rightTuple
+     *
+     *
+     *
+     * @param leftTuple tuple from arg one of EXISTS()
+     * @param rightTuple tuple from arg two of EXISTS()
+     * @param leftHierarchies list of hierarchies from leftTuple, in the same
+     *                        order
+     * @param rightHierarchies list of the hiearchies from rightTuple,
+     *                         in the same order
+     * @return true if each member from leftTuple is somewhere in the
+     *         hierarchy chain of the corresponding member from rightTuple,
+     *         false otherwise.
+     *         If there is no explicit corresponding member from either
+     *         right or left, then the default member is used.
+     */
+    private boolean existsInTuple(
+        final List<Member> leftTuple, final List<Member> rightTuple,
+        final List<Hierarchy> leftHierarchies,
+        final List<Hierarchy> rightHierarchies)
     {
-        List<Dimension> dimensions = new ArrayList<Dimension>();
-        for (Member member : members) {
-            dimensions.add(member.getDimension());
+        List<Member> checkedMembers = new ArrayList<Member>();
+
+        for (Member leftMember : leftTuple) {
+            Member rightMember = getCorrespondingMember(
+                leftMember, rightTuple, rightHierarchies);
+            checkedMembers.add(rightMember);
+            if (!isOnSameHierarchyChain(leftMember, rightMember)) {
+                return false;
+            }
         }
-        return dimensions;
+        // this loop handles members in the right tuple not present in left
+        // Such a member could only impact the resulting tuple list if the
+        // default member of the hierarchy is not the all member.
+        for (Member rightMember : rightTuple) {
+            if (checkedMembers.contains(rightMember)) {
+                // already checked in the previous loop
+                continue;
+            }
+            Member leftMember = getCorrespondingMember(
+                rightMember, leftTuple, leftHierarchies);
+            if (!isOnSameHierarchyChain(leftMember, rightMember)) {
+                return false;
+            }
+        }
+        return true;
     }
+
+    /**
+     * Returns the corresponding member from tuple, or the default member
+     * for the hierarchy if member is not explicitly contained in the tuple.
+     *
+     *
+     * @param member source member
+     * @param tuple tuple containing the target member
+     * @param tupleHierarchies list of the hierarchies explicitly contained
+     *                         in the tuple, in the same order.
+     * @return target member
+     */
+    private Member getCorrespondingMember(
+        final Member member, final List<Member> tuple,
+        final List<Hierarchy> tupleHierarchies)
+    {
+        assert tuple.size() == tupleHierarchies.size();
+        int dimPos = tupleHierarchies.indexOf(member.getHierarchy());
+        if (dimPos >= 0) {
+            return tuple.get(dimPos);
+        } else {
+            return member.getHierarchy().getDefaultMember();
+        }
+    }
+
+    private static List<Hierarchy> getHierarchies(final List<Member> members)
+    {
+        List<Hierarchy> hierarchies = new ArrayList<Hierarchy>();
+        for (Member member : members) {
+            hierarchies.add(member.getHierarchy());
+        }
+        return hierarchies;
+    }
+
 }
 
 // End ExistsFunDef.java
