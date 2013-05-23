@@ -1015,6 +1015,10 @@ public class SegmentCacheManager {
                                 responseQueue.put(
                                     command,
                                     Pair.of(result, (Throwable) null));
+                            } catch (AbortException e) {
+                                responseQueue.put(
+                                    command,
+                                    Pair.of(null, (Throwable) e));
                             } catch (PleaseShutdownException e) {
                                 responseQueue.put(
                                     command,
@@ -1620,6 +1624,18 @@ public class SegmentCacheManager {
             }
         }
     }
+
+    /**
+     * Exception which someone can throw to indicate to the Actor that
+     * whatever it was doing is not needed anymore. Won't trigger any output
+     * to the logs.
+     *
+     * <p>If your {@link Command} throws this, it will be sent back at you.
+     * You must handle it.
+     */
+    public static final class AbortException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+    };
 }
 
 // End SegmentCacheManager.java

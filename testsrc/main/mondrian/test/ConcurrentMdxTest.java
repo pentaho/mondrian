@@ -5,12 +5,20 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
 
-import mondrian.olap.MondrianProperties;
+import mondrian.olap.*;
+
+import org.apache.log4j.Logger;
+
+import org.olap4j.*;
+
+import java.util.*;
+import java.util.concurrent.*;
+
 /**
  * Runs specified set of MDX queries concurrently.
  * This Class is not added to the Main test suite.
@@ -21,6 +29,9 @@ import mondrian.olap.MondrianProperties;
  * @author Thiyagu,Ajit
  */
 public class ConcurrentMdxTest extends FoodMartTestCase {
+    private static final Logger LOGGER =
+        Logger.getLogger(FoodMartTestCase.class);
+
     private MondrianProperties props;
 
     static final QueryAndResult[] mdxQueries = new QueryAndResult[]{
@@ -1232,6 +1243,7 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             + "{}\n"
             + "565,238.13"),
     };
+    private int count = 0;
 
     public void testConcurrentValidatingQueriesInRandomOrder() {
         propSaver.set(props.UseAggregates, false);
@@ -1243,7 +1255,7 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             ConcurrentValidatingQueryRunner.runTest(
                 1, 1, false, true, singleQuery)
             .size() == 0);
-        //ensures same global aggregation is used by 2 or more threads and
+        // ensures same global aggregation is used by 2 or more threads and
         // all of them load the same segment.
         FoodMartTestCase.QueryAndResult[] singleQueryFor2Threads = {
             mdxQueries[1]
@@ -1257,6 +1269,98 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             ConcurrentValidatingQueryRunner.runTest(
                 10, 45, true, true, mdxQueries)
             .size() == 0);
+    }
+
+    public void testFlushingDoesNotCauseDeadlock() throws Exception {
+        // Create a seeded deterministic random generator.
+        final long seed = new Random().nextLong();
+        LOGGER.debug("Test seed: " + seed);
+        final Random random = new Random(seed);
+
+        final List<OlapStatement> statements = new ArrayList<OlapStatement>();
+        ExecutorService executorService =
+            Executors.newFixedThreadPool(
+                propSaver.properties.RolapConnectionShepherdNbThreads.get() - 2);
+
+        for (int i = 0; i < 700; i++) {
+            for (final QueryAndResult mdxQuery : mdxQueries) {
+                executorService.submit(
+                    new Runnable() { public void run() {
+                        OlapStatement statement = null;
+                        try {
+                            // Throttle a bit (randomly)
+                            Thread.sleep(random.nextInt(50));
+                            OlapConnection connection =
+                                getTestContext().getOlap4jConnection();
+                            statement = connection.createStatement();
+                            statements.add(statement);
+                            statement.executeOlapQuery(mdxQuery.query);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            logStatus();
+                        }
+                    }
+                });
+            }
+        }
+
+        randomlyFlush(statements, random);
+
+        executorService.shutdown();
+
+        boolean finished = executorService.awaitTermination(
+            45, TimeUnit.SECONDS);
+        assertTrue(finished);
+    }
+    private synchronized void logStatus() {
+        if (count % 100 == 0) {
+            LOGGER.debug(count);
+            System.out.println(count);
+        }
+        count++;
+    }
+
+    private void randomlyFlush(List<OlapStatement> statements, Random r) {
+        try {
+            // Let the system boot up and start processing queries.
+            Thread.sleep(1000);
+            for (int i = 0; i < 20; i++) {
+                // Wait between 0 and 5 seconds.
+                Thread.sleep(1000 * r.nextInt(5));
+                try {
+                    if (statements.size() > 0) {
+                        OlapStatement olapStatement = statements.get(
+                            r.nextInt(statements.size()));
+                        LOGGER.debug("flushing");
+                        System.out.println("flushing");
+                        flushSchema(
+                            olapStatement.getConnection().unwrap(
+                                Connection.class));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void flushSchema(Connection connection) {
+        CacheControl cacheControl =
+            connection.getCacheControl(null);
+
+        Cube salesCube = connection.getSchema().lookupCube("Sales", true);
+        CacheControl.CellRegion measuresRegion =
+            cacheControl.createMeasuresRegion(salesCube);
+        cacheControl.flush(measuresRegion);
+
+        Cube whsalesCube =
+            connection.getSchema().lookupCube("Warehouse and Sales", true);
+        measuresRegion =
+            cacheControl.createMeasuresRegion(whsalesCube);
+        cacheControl.flush(measuresRegion);
     }
 
     protected void tearDown() throws Exception {
