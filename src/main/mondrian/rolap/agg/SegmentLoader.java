@@ -640,7 +640,9 @@ public class SegmentLoader {
             if (Util.getMatchingCause(t, AbortException.class) != null) {
                 return null;
             } else {
-                throw t;
+                throw new MondrianException(
+                    "Failed to load segment form SQL",
+                    t);
             }
         }
     }
