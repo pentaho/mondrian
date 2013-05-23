@@ -65,11 +65,13 @@ class MondrianServerImpl
      * construction, and are removed when they call close. Garbage collection
      * may cause a connection to be removed earlier.
      */
+    @SuppressWarnings("unchecked")
     private final Map<Integer, RolapConnection> connectionMap =
          // We use a reference map here because the value
          // is what needs to be week, not the key, as it
          // would be the case with a WeakHashMap.
-        new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK);
+        Collections.synchronizedMap(
+            new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK));
 
     /**
      * Map of open statements, by id. Statements are added just after
@@ -82,12 +84,13 @@ class MondrianServerImpl
      * collected if the only reference to them was their own internal
      * statement.</p>
      */
-    private final Map<Long, WeakReference<Statement>> statementMap =
-
+    @SuppressWarnings("unchecked")
+    private final Map<Long, Statement> statementMap =
          // We use a reference map here because the value
          // is what needs to be week, not the key, as it
          // would be the case with a WeakHashMap.
-        new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK);
+        Collections.synchronizedMap(
+            new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK));
 
     private final MonitorImpl monitor = new MonitorImpl();
 
@@ -324,7 +327,6 @@ class MondrianServerImpl
                 "addConnection "
                 + ", id=" + id
                 + ", statements=" + statementMap.size()
-                + " (not null " + nonNullCount(statementMap) + ")"
                 + ", connections=" + connectionMap.size());
         }
         if (shutdown) {
@@ -347,7 +349,6 @@ class MondrianServerImpl
                 "removeConnection "
                 + ", id=" + id
                 + ", statements=" + statementMap.size()
-                + " (not null " + nonNullCount(statementMap) + ")"
                 + ", connections=" + connectionMap.size());
         }
         if (shutdown) {
@@ -379,12 +380,11 @@ class MondrianServerImpl
                 "addStatement "
                 + ", id=" + id
                 + ", statements=" + statementMap.size()
-                + " (not null " + nonNullCount(statementMap) + ")"
                 + ", connections=" + connectionMap.size());
         }
         statementMap.put(
             statement.getId(),
-            new WeakReference<Statement>(statement));
+            statement);
         final RolapConnection connection =
             statement.getMondrianConnection();
         monitor.sendEvent(
@@ -402,7 +402,6 @@ class MondrianServerImpl
                 "removeStatement "
                 + ", id=" + id
                 + ", statements=" + statementMap.size()
-                + " (not null " + nonNullCount(statementMap) + ")"
                 + ", connections=" + connectionMap.size());
         }
         if (shutdown) {
@@ -486,16 +485,6 @@ class MondrianServerImpl
 
     public XmlaHandler.XmlaExtra getExtra() {
         return MondrianOlap4jDriver.EXTRA;
-    }
-
-    private <K, V> int nonNullCount(Map<K, ? extends Reference<V>> map) {
-        int n = 0;
-        for (Map.Entry<K, ? extends Reference<V>> entry : map.entrySet()) {
-            if (entry.getValue().get() != null) {
-                ++n;
-            }
-        }
-        return n;
     }
 
     /**
