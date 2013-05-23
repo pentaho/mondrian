@@ -330,6 +330,10 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
             return list;
         }
         for (SegmentHeader header : factInfo.headerList) {
+            // Don't return stale segments.
+            if (headerMap.get(header).removeAfterLoad) {
+                continue;
+            }
             if (intersects(header, region)) {
                 // Be lazy. Don't allocate a list unless there is at least one
                 // entry.
@@ -441,17 +445,18 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
                     && !entry.getValue().slot.isDone()
                     && entry.getValue().clients.isEmpty())
                 {
-                    Util.cancelAndCloseStatement(entry.getValue().stmt);
                     toRemove.add(entry.getKey());
                 }
             }
         }
         // Make sure to cleanup the orphaned segments.
         for (SegmentHeader header : toRemove) {
+            final Statement stmt = headerMap.get(header).stmt;
             loadFailed(
                 header,
                 new QueryCanceledException(
                     "Canceling due to an absence of interested parties."));
+            Util.cancelAndCloseStatement(stmt);
         }
     }
 

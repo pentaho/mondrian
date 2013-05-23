@@ -15,6 +15,7 @@ import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
+import mondrian.rolap.agg.SegmentCacheManager.AbortException;
 import mondrian.rolap.cache.SegmentCacheIndex;
 import mondrian.server.Locus;
 import mondrian.server.monitor.SqlStatementEvent;
@@ -568,12 +569,6 @@ public class SegmentLoader {
                 SqlStatementEvent.Purpose.CELL_SEGMENT,
                 cellRequestCount);
 
-        // This exception will be thrown back at us by the callback
-        // if there are no segments left to load after checking with the index.
-        final class NoWorkToDo extends RuntimeException {
-            private static final long serialVersionUID = 1L;
-        };
-
         // When caching is enabled, we must register the SQL statement
         // in the index. We don't want to cancel SQL statements that are shared
         // across threads unless it is safe.
@@ -603,7 +598,7 @@ public class SegmentLoader {
                                         // There are no segments to load.
                                         // Throw this so that the segment thread
                                         // knows to stop.
-                                            throw new NoWorkToDo();
+                                        throw new AbortException();
                                     }
                                 }
                                 return null;
@@ -641,8 +636,12 @@ public class SegmentLoader {
                 MondrianProperties.instance().DisableCaching.get()
                     ? callbackNoCaching
                     : callbackWithCaching);
-        } catch (NoWorkToDo e) {
-            return null;
+        } catch (Throwable t) {
+            if (Util.getMatchingCause(t, AbortException.class) != null) {
+                return null;
+            } else {
+                throw t;
+            }
         }
     }
 

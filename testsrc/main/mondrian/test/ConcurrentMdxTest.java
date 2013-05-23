@@ -11,8 +11,6 @@
 package mondrian.test;
 
 import mondrian.olap.*;
-import mondrian.server.UrlRepositoryContentFinder;
-import mondrian.xmla.test.XmlaTestContext;
 
 import org.apache.log4j.Logger;
 
@@ -1243,6 +1241,7 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             + "{[Measures].[Store Sales]}\n"
             + "565,238.13"),
     };
+    private int count = 0;
 
     public void testConcurrentValidatingQueriesInRandomOrder() {
         propSaver.set(propSaver.props.DisableCaching, false);
@@ -1270,67 +1269,70 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             .size() == 0);
     }
 
-    private int count = 0;
+    public void testFlushingDoesNotCauseDeadlock() throws Exception {
+        // Create a seeded deterministic random generator.
+        final long seed = new Random().nextLong();
+        LOGGER.debug("Test seed: " + seed);
+        final Random random = new Random(seed);
 
-    public void testFlushingDoesNotCauseDeadlock() throws InterruptedException {
-        final XmlaTestContext xmlaTestContext = new XmlaTestContext();
-        final MondrianServer server =
-            MondrianServer.createWithRepository(
-                new UrlRepositoryContentFinder(
-                    "inline:" + xmlaTestContext.getDataSourcesString()),
-                null);
-        final int id = server.getId();
-        assertNotNull(id);
         final List<OlapStatement> statements = new ArrayList<OlapStatement>();
-        ExecutorService executorService = Executors.newFixedThreadPool(80);
+        ExecutorService executorService =
+            Executors.newFixedThreadPool(
+                propSaver.props.RolapConnectionShepherdNbThreads.get() - 2);
+
         for (int i = 0; i < 700; i++) {
             for (final QueryAndResult mdxQuery : mdxQueries) {
                 executorService.submit(
-                    new Runnable() {
-                        public void run() {
-                            OlapStatement statement = null;
-                            try {
-                                OlapConnection connection =
-                                    server.getConnection(
-                                        "FoodMart", "FoodMart", null);
-                                statement = connection.createStatement();
-                                statements.add(statement);
-                                statement.executeOlapQuery(mdxQuery.query);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            } finally {
-                                logStatus();
-                            }
+                    new Runnable() { public void run() {
+                        OlapStatement statement = null;
+                        try {
+                            // Throttle a bit (randomly)
+                            Thread.sleep(random.nextInt(50));
+                            OlapConnection connection =
+                                getTestContext().getOlap4jConnection();
+                            statement = connection.createStatement();
+                            statements.add(statement);
+                            statement.executeOlapQuery(mdxQuery.query);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            logStatus();
                         }
-                    });
+                    }
+                });
             }
         }
-        randomlyFlush(statements);
+
+        randomlyFlush(statements, random);
 
         executorService.shutdown();
+
         boolean finished = executorService.awaitTermination(
-            120, TimeUnit.SECONDS);
+            45, TimeUnit.SECONDS);
         assertTrue(finished);
-        server.shutdown();
     }
 
     private synchronized void logStatus() {
-        if (count % 1000 == 0) {
+        if (count % 100 == 0) {
             LOGGER.debug(count);
+            System.out.println(count);
         }
         count++;
     }
 
-    private void randomlyFlush(List<OlapStatement> statements) {
+    private void randomlyFlush(List<OlapStatement> statements, Random r) {
         try {
-            Thread.sleep(2000);
-            for (int i = 0; i < 5; i++) {
-                Thread.sleep(1000 * i);
+            // Let the system boot up and start processing queries.
+            Thread.sleep(1000);
+            for (int i = 0; i < 20; i++) {
+                // Wait between 0 and 5 seconds.
+                Thread.sleep(1000 * r.nextInt(5));
                 try {
                     if (statements.size() > 0) {
                         OlapStatement olapStatement = statements.get(
-                            new Random().nextInt(statements.size()));
+                            r.nextInt(statements.size()));
                         LOGGER.debug("flushing");
+                        System.out.println("flushing");
                         flushSchema(
                             olapStatement.getConnection().unwrap(
                                 Connection.class));
