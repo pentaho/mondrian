@@ -71,8 +71,7 @@ class MondrianServerImpl
          * is what needs to be week, not the key, as it
          * would be the case with a WeakHashMap.
          */
-        Collections.synchronizedMap(
-            new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK));
+        new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
 
     /**
      * Map of open statements, by id. Statements are added just after
@@ -86,8 +85,7 @@ class MondrianServerImpl
          * is what needs to be week, not the key, as it
          * would be the case with a WeakHashMap.
          */
-        Collections.synchronizedMap(
-            new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK));
+        new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
 
     private final MonitorImpl monitor = new MonitorImpl();
 
@@ -314,7 +312,7 @@ class MondrianServerImpl
     }
 
     @Override
-    public void addConnection(RolapConnection connection) {
+    synchronized public void addConnection(RolapConnection connection) {
         if (shutdown) {
             throw new MondrianException("Server already shutdown.");
         }
@@ -329,7 +327,7 @@ class MondrianServerImpl
     }
 
     @Override
-    public void removeConnection(RolapConnection connection) {
+    synchronized public void removeConnection(RolapConnection connection) {
         if (shutdown) {
             throw new MondrianException("Server already shutdown.");
         }
@@ -350,7 +348,7 @@ class MondrianServerImpl
     }
 
     @Override
-    public void addStatement(Statement statement) {
+    synchronized public void addStatement(Statement statement) {
         if (shutdown) {
             throw new MondrianException("Server already shutdown.");
         }
@@ -368,7 +366,7 @@ class MondrianServerImpl
     }
 
     @Override
-    public void removeStatement(Statement statement) {
+    synchronized public void removeStatement(Statement statement) {
         if (shutdown) {
             throw new MondrianException("Server already shutdown.");
         }
