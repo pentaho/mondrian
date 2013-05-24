@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -602,17 +602,15 @@ public class DrillThroughTest extends FoodMartTestCase {
      * bug".
      */
     public void testDrillThroughDupKeys() {
-        /*
-         * Note here that the type on the Store Id level is Integer or
-         * Numeric. The default, of course, would be String.
-         *
-         * For DB2 and Derby, we need the Integer type, otherwise the
-         * generated SQL will be something like:
-         *
-         *      `store_ragged`.`store_id` = '19'
-         *
-         *  and DB2 and Derby don't like converting from CHAR to INTEGER
-         */
+         // Note here that the type on the Store Id level is Integer or
+         // Numeric. The default, of course, would be String.
+         //
+         // For DB2 and Derby, we need the Integer type, otherwise the
+         // generated SQL will be something like:
+         //
+         //      `store_ragged`.`store_id` = '19'
+         //
+         //  and DB2 and Derby don't like converting from CHAR to INTEGER
         TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Store2\" foreignKey=\"store_id\">\n"
@@ -1067,6 +1065,8 @@ public class DrillThroughTest extends FoodMartTestCase {
         assertFalse(cell.canDrillThrough());
     }
 
+
+
     /**
      * Test case for MONDRIAN-791.
      */
@@ -1085,11 +1085,11 @@ public class DrillThroughTest extends FoodMartTestCase {
         switch (getTestContext().getDialect().getDatabaseProduct()) {
         case MYSQL:
             expectedSql =
-                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and (((time_by_day.the_year, time_by_day.quarter) in ((1997, 'Q1'), (1997, 'Q2'))))";
+                "select time_by_day.the_year as Year, time_by_day.quarter as Quarter, sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and (((time_by_day.the_year, time_by_day.quarter) in ((1997, 'Q1'), (1997, 'Q2'))))";
             break;
         case ORACLE:
             expectedSql =
-                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day time_by_day, sales_fact_1997 sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))";
+                "select time_by_day.the_year as Year, time_by_day.quarter as Quarter, sales_fact_1997.unit_sales as Unit Sales from time_by_day time_by_day, sales_fact_1997 sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))";
             break;
         default:
             return;
@@ -1113,11 +1113,11 @@ public class DrillThroughTest extends FoodMartTestCase {
         switch (getTestContext().getDialect().getDatabaseProduct()) {
         case MYSQL:
             expectedSql =
-                "select customer.gender as Gender, customer.marital_status as Marital Status, sales_fact_1997.unit_sales as Unit Sales from customer as customer, sales_fact_1997 as sales_fact_1997, time_by_day as time_by_day where sales_fact_1997.customer_id = customer.customer_id and customer.gender = 'F' and customer.marital_status = 'M' and sales_fact_1997.time_id = time_by_day.time_id and (((time_by_day.the_year, time_by_day.quarter) in ((1997, 'Q1'), (1997, 'Q2')))) order by customer.gender ASC, customer.marital_status ASC";
+                "select customer.marital_status as Marital Status, time_by_day.the_year as Year, time_by_day.quarter as Quarter, customer.gender as Gender, sales_fact_1997.unit_sales as Unit Sales from customer as customer, sales_fact_1997 as sales_fact_1997, time_by_day as time_by_day where sales_fact_1997.customer_id = customer.customer_id and customer.marital_status = 'M' and sales_fact_1997.time_id = time_by_day.time_id and (((time_by_day.the_year, time_by_day.quarter, customer.gender) in ((1997, 'Q1', 'F'), (1997, 'Q2', 'F')))) order by customer.marital_status ASC";
             break;
         case ORACLE:
             expectedSql =
-                "select customer.gender as Gender, customer.marital_status as Marital Status, sales_fact_1997.unit_sales as Unit Sales from customer customer, sales_fact_1997 sales_fact_1997, time_by_day time_by_day where sales_fact_1997.customer_id = customer.customer_id and customer.gender = 'F' and customer.marital_status = 'M' and sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997)) order by customer.gender ASC, customer.marital_status ASC";
+                "select customer.marital_status as Marital Status, time_by_day.the_year as Year, time_by_day.quarter as Quarter, customer.gender as Gender, sales_fact_1997.unit_sales as Unit Sales from customer customer, sales_fact_1997 sales_fact_1997, time_by_day time_by_day where sales_fact_1997.customer_id = customer.customer_id and customer.marital_status = 'M' and sales_fact_1997.time_id = time_by_day.time_id and ((customer.gender = 'F' and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (customer.gender = 'F' and time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997)) order by customer.marital_status ASC";
             break;
         default:
             return;
@@ -1142,11 +1142,11 @@ public class DrillThroughTest extends FoodMartTestCase {
         switch (getTestContext().getDialect().getDatabaseProduct()) {
         case MYSQL:
             expectedSql =
-                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997, customer as customer where sales_fact_1997.time_id = time_by_day.time_id and sales_fact_1997.customer_id = customer.customer_id and (((time_by_day.the_year, time_by_day.quarter, customer.gender) in ((1997, 'Q1', 'F'), (1997, 'Q2', 'M'))))";
+                "select time_by_day.the_year as Year, time_by_day.quarter as Quarter, customer.gender as Gender, sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997, customer as customer where sales_fact_1997.time_id = time_by_day.time_id and sales_fact_1997.customer_id = customer.customer_id and (((time_by_day.the_year, time_by_day.quarter, customer.gender) in ((1997, 'Q1', 'F'), (1997, 'Q2', 'M'))))";
             break;
         case ORACLE:
             expectedSql =
-                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day time_by_day, sales_fact_1997 sales_fact_1997, customer customer where sales_fact_1997.time_id = time_by_day.time_id and sales_fact_1997.customer_id = customer.customer_id and ((customer.gender = 'F' and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (customer.gender = 'M' and time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))";
+                "select time_by_day.the_year as Year, time_by_day.quarter as Quarter, customer.gender as Gender, sales_fact_1997.unit_sales as Unit Sales from time_by_day time_by_day, sales_fact_1997 sales_fact_1997, customer customer where sales_fact_1997.time_id = time_by_day.time_id and sales_fact_1997.customer_id = customer.customer_id and ((customer.gender = 'F' and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (customer.gender = 'M' and time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))";
             break;
         default:
             return;
@@ -1170,11 +1170,11 @@ public class DrillThroughTest extends FoodMartTestCase {
         switch (getTestContext().getDialect().getDatabaseProduct()) {
         case MYSQL:
             expectedSql =
-                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997))";
+                "select time_by_day.the_year as Year, time_by_day.quarter as Quarter, time_by_day.month_of_year as Month, sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997))";
             break;
         case ORACLE:
             expectedSql =
-                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day time_by_day, sales_fact_1997 sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997))";
+                "select time_by_day.the_year as Year, time_by_day.quarter as Quarter, time_by_day.month_of_year as Month, sales_fact_1997.unit_sales as Unit Sales from time_by_day time_by_day, sales_fact_1997 sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997))";
             break;
         default:
             return;
@@ -1195,11 +1195,11 @@ public class DrillThroughTest extends FoodMartTestCase {
         switch (getTestContext().getDialect().getDatabaseProduct()) {
         case MYSQL:
             expectedSql =
-                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))";
+                "select time_by_day.the_year as Year, time_by_day.quarter as Quarter, time_by_day.month_of_year as Month, sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))";
             break;
         case ORACLE:
             expectedSql =
-                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day time_by_day, sales_fact_1997 sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))";
+                "select time_by_day.the_year as Year, time_by_day.quarter as Quarter, time_by_day.month_of_year as Month, sales_fact_1997.unit_sales as Unit Sales from time_by_day time_by_day, sales_fact_1997 sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))";
             break;
         default:
             return;
