@@ -70,8 +70,7 @@ class MondrianServerImpl
          // We use a reference map here because the value
          // is what needs to be week, not the key, as it
          // would be the case with a WeakHashMap.
-        Collections.synchronizedMap(
-            new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK));
+        new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK);
 
     /**
      * Map of open statements, by id. Statements are added just after
@@ -89,8 +88,7 @@ class MondrianServerImpl
          // We use a reference map here because the value
          // is what needs to be week, not the key, as it
          // would be the case with a WeakHashMap.
-        Collections.synchronizedMap(
-            new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK));
+        new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK);
 
     private final MonitorImpl monitor = new MonitorImpl();
 
