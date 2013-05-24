@@ -1280,7 +1280,8 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
         final List<OlapStatement> statements = new ArrayList<OlapStatement>();
         ExecutorService executorService =
             Executors.newFixedThreadPool(
-                propSaver.properties.RolapConnectionShepherdNbThreads.get() - 2);
+                propSaver.properties
+                    .RolapConnectionShepherdNbThreads.get() - 2);
 
         for (int i = 0; i < 700; i++) {
             for (final QueryAndResult mdxQuery : mdxQueries) {
