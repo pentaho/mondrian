@@ -5,16 +5,12 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.Exp;
-import mondrian.olap.Id;
-import mondrian.olap.Member;
 import mondrian.olap.MondrianDef;
-import mondrian.olap.SchemaReader;
 import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
@@ -79,6 +75,15 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
         final List<String> columnNames,
         final Set<String> columnNameSet)
     {
+        String columnName = makeAlias(column, columnNames, columnNameSet);
+        columnNames.add(columnName);
+    }
+
+    private String makeAlias(
+        final RolapStar.Column column,
+        final List<String> columnNames,
+        final Set<String> columnNameSet)
+    {
         String columnName = column.getName();
         if (columnName != null) {
             // nothing
@@ -106,7 +111,8 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
             }
             columnName += suffix;
         }
-        columnNames.add(columnName);
+
+        return columnName;
     }
 
     @Override
@@ -184,6 +190,25 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
 
     protected List<StarPredicate> getPredicateList() {
         return listOfStarPredicates;
+    }
+
+    protected void extraPredicates(SqlQuery sqlQuery) {
+        super.extraPredicates(sqlQuery);
+
+        final Set<String> columnNameSet = new HashSet<String>();
+        columnNameSet.addAll(columnNames);
+
+        List<StarPredicate> predicateList = getPredicateList();
+        for (StarPredicate predicate : predicateList) {
+            for (RolapStar.Column column
+                : predicate.getConstrainedColumnList())
+            {
+                sqlQuery.addSelect(
+                    column.generateExprString(sqlQuery),
+                    column.getInternalType(),
+                    makeAlias(column, columnNames, columnNameSet));
+            }
+        }
     }
 }
 
