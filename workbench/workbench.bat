@@ -14,6 +14,7 @@ set CP=%CP%;lib/commons-pool.jar
 set CP=%CP%;lib/eigenbase-properties.jar
 set CP=%CP%;lib/eigenbase-resgen.jar
 set CP=%CP%;lib/eigenbase-xom.jar
+set CP=%CP%;lib/esapi.jar
 set CP=%CP%;lib/javacup.jar
 set CP=%CP%;lib/log4j.jar
 set CP=%CP%;lib/mondrian.jar
