@@ -674,7 +674,9 @@ public class BasicQueryTest extends FoodMartTestCase {
 
             "/* a simple /* nested comment, only needs to be closed once */",
 
-            "/*\n" + " * a multiline /* nested comment\n" + "*/",
+            "/*\n"
+            + " * a multiline /* nested comment\n"
+            + "*/",
 
             "/**\n"
             + " * a multiline\n"
@@ -7034,7 +7036,9 @@ public class BasicQueryTest extends FoodMartTestCase {
 
         // Plan before execution.
         final ResultSet resultSet =
-            statement.executeQuery("explain plan for\n" + mdx);
+            statement.executeQuery(
+                "explain plan for\n"
+                + mdx);
         assertTrue(resultSet.next());
         String s = resultSet.getString(1);
         TestContext.assertEqualsVerbose(

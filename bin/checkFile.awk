@@ -165,6 +165,11 @@ FNR - headerSkip <= headerCount {
         }
     }
 }
+/\\n" \+/ {
+    if (strict > 1) {
+        error(fname, FNR, "Linefeed in string should be at end of line");
+    }
+}
 {
     if (previousLineEndedInCloseBrace > 0) {
         --previousLineEndedInCloseBrace;
@@ -689,7 +694,7 @@ s ~ / [])]/ {
     if (!matchFile) {}
     else if (s ~ /^ *\)/ && previousLineEndedInCloseBrace) {} # ignore "bar(new Foo() { } );"
     else {
-        error(fname, FNR, ") or ] must not be followed by space");
+        error(fname, FNR, ") or ] must not be preceded by space");
     }
 }
 s ~ /}/ {
