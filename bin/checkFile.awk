@@ -109,7 +109,7 @@ FNR == 1 {
     mondrian = _isMondrian(fname);
     prevImport = "";
     prevImportGroup = "";
-    indent = (fname ~ /lambda/ || fname ~ /linq4j/) ? 2 : 4;
+    indent = (fname ~ /lambda/ || fname ~ /linq4j/ || fname ~ /optiq/ && fname !~ /eigenbase/) ? 2 : 4;
     cindent = 4;
 
     delete headers;
@@ -168,6 +168,16 @@ FNR - headerSkip <= headerCount {
 /\\n" \+/ {
     if (strict > 1) {
         error(fname, FNR, "Linefeed in string should be at end of line");
+    }
+}
+/^ +{/ {
+    if (indent != cindent) {
+        error(fname, FNR, "Open brace should be at end of previous line");
+    }
+}
+/@author/ {
+    if (indent != cindent) {
+        error(fname, FNR, "@author tag not allowed");
     }
 }
 {
