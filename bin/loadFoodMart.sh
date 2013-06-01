@@ -259,6 +259,50 @@ monetdb() {
         -outputJdbcPassword="monetdb"
 }
 
+# Mongo doesn't use MondrianFoodMartLoader. We generate a .js file
+# using bash and awk, then execute it.
+mongodb() {
+    tables="account category currency customer days department employee \
+        employee_closure expense_fact inventory_fact_1997 inventory_fact_1998 \
+        position product product_class promotion region reserve_employee salary \
+        sales_fact_1997 sales_fact_1998 sales_fact_dec_1998 store store_ragged \
+        time_by_day warehouse warehouse_class"
+    for i in $tables
+    do
+      if [ $i = account ]
+      then
+        if false
+        then
+          # for the interactive shell
+          echo "use foodmart"
+          echo "db.dropDatabase()"
+        else
+          # for javascript
+          echo "conn = new Mongo();"
+          echo 'db = conn.getDB("foodmart");'
+        fi
+        # Skip the accounts table because there are problems with string
+        # quotation, e.g.:
+        #   "Custom_Members":"LookUpCube("[Sales]","(Measures.[Store Sales],"
+        #   +time.currentmember.UniqueName+","+ Store.currentmember.UniqueName+")")"
+        # There are also problems in category.json:
+        #   "Current Year""s Budget"
+        continue
+      fi
+      cd /tmp
+      jar xf "$jsonFile" $i.json
+      perl -p -i -e 's/""//' $i.json
+      (
+      gawk -v table=$i '
+    FNR == 1 {printf "db.%s.drop()\n", table}
+    {printf "db.%s.insert(%s)\n", table, $0}
+          ' $i.json
+      )
+    done > /tmp/mongoFoodMart.js
+    
+    mongo foodmart /tmp/mongoFoodMart.js
+}
+
 # Load Teradata.
 # You'll have to download drivers and put them into the drivers folder.
 # Note that we do not use '-aggregates'; we plan to use aggregate
@@ -322,10 +366,12 @@ cd $(dirname $0)/..
 
 inputFile=
 afterFile=
+jsonFile=
 case "$dataset" in
 (FOODMART)
     inputFile=jar:file:lib/mondrian-data-foodmart.jar!/data.sql
     afterFile=jar:file:lib/mondrian-data-foodmart.jar!/after.sql
+    jsonFile=$(pwd)/lib/mondrian-data-foodmart-json.jar
     ;;
 (ADVENTUREWORKS)
     inputFile=jar:file:lib/mondrian-data-adventureworks.jar!/data.sql
@@ -350,6 +396,7 @@ case "$db" in
 (json) json;;
 (luciddb) luciddb;;
 (monetdb) monetdb;;
+(mongodb) mongodb;;
 (mysql) mysql;;
 (oracle) oracle;;
 (oracleTrickle) oracleTrickle;;

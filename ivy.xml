@@ -106,6 +106,7 @@
         <dependency org="pentaho" name="mondrian-data-adventureworks" rev="0.1-SNAPSHOT" conf="test->default"/>
         <dependency org="pentaho" name="mondrian-data-adventureworks-dw" rev="0.1-SNAPSHOT" conf="test->default"/>
         <dependency org="pentaho" name="mondrian-data-foodmart" rev="0.9-SNAPSHOT" conf="test->default"/>
+        <dependency org="pentaho" name="mondrian-data-foodmart-json" rev="0.1" conf="test->default"/>
 
         <!-- Exclusions -->
         <exclude org="avalon-framework" module="avalon-framework"/>
