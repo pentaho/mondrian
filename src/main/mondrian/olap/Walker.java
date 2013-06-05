@@ -5,16 +5,17 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1999-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 1 March, 1999
 */
 package mondrian.olap;
 
+import mondrian.util.ArrayStack;
+
 import java.io.PrintWriter;
 import java.util.Enumeration;
-import java.util.Stack;
 
 /**
  * Walks over a tree, returning nodes in prefix order.  Objects which are an
@@ -39,7 +40,7 @@ public class Walker implements Enumeration {
      * holds the frame of the 'current node' (the node last returned from
      * nextElement()) because it may no longer be on the stack.
      */
-    private final Stack stack;
+    private final ArrayStack stack;
     private Frame currentFrame;
     private Object nextNode;
 
@@ -58,14 +59,14 @@ public class Walker implements Enumeration {
 
     public Walker(Walkable root)
     {
-        stack = new Stack();
+        stack = new ArrayStack();
         currentFrame = null;
         visit(null, root);
     }
 
     private void moveToNext()
     {
-        if (stack.empty()) {
+        if (stack.isEmpty()) {
             return;
         }
         currentFrame = (Frame) stack.peek();
@@ -81,14 +82,14 @@ public class Walker implements Enumeration {
                 return;
             }
             stack.pop();
-        } while (!stack.empty());
+        } while (!stack.isEmpty());
         nextNode = null;
     }
 
     private void visit(Frame parent, Object node)
     {
         nextNode = node;
-        stack.addElement(new Frame(parent, node));
+        stack.add(new Frame(parent, node));
     }
 
     public boolean hasMoreElements()
@@ -110,14 +111,14 @@ public class Walker implements Enumeration {
         if (currentFrame.children != null) {
             currentFrame.childIndex = currentFrame.children.length;
         }
-        //we need to make that next frame on the stack is not a child
-        //of frame we just pruned. if it is, we need to prune it too
+        // we need to make that next frame on the stack is not a child
+        // of frame we just pruned. if it is, we need to prune it too
         if (this.hasMoreElements()) {
             Object nextFrameParentNode = ((Frame)stack.peek()).parent.node;
             if (nextFrameParentNode != currentFrame.node) {
                 return;
             }
-            //delete the child of current member from the stack
+            // delete the child of current member from the stack
             stack.pop();
             if (currentFrame.parent != null) {
                 currentFrame = currentFrame.parent;
