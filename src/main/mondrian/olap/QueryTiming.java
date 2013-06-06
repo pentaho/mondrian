@@ -4,10 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2011 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
+
+import mondrian.util.ArrayStack;
 
 import java.util.*;
 
@@ -32,7 +34,8 @@ import java.util.*;
  */
 public class QueryTiming {
     private boolean enabled;
-    private final Stack<TimingInfo> currentTimings = new Stack<TimingInfo>();
+    private final ArrayStack<TimingInfo> currentTimings =
+        new ArrayStack<TimingInfo>();
     private final Map<String, List<StartEnd>> timings =
         new HashMap<String, List<StartEnd>>();
     private final Map<String, DurationCount> fullTimings =
@@ -94,8 +97,7 @@ public class QueryTiming {
     }
 
     private void markEndInternal(String name, long tstamp) {
-        if (currentTimings == null
-            || currentTimings.isEmpty()
+        if (currentTimings.isEmpty()
             || !currentTimings.peek().name.equals(name))
         {
             throw new IllegalStateException("end but no start for " + name);
