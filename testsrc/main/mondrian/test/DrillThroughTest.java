@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -164,6 +164,23 @@ public class DrillThroughTest extends FoodMartTestCase {
         assertFalse(cell.canDrillThrough());
     }
 
+    public void testDrillthroughCompoundSlicer() {
+        // Tests a case associated with
+        // http://jira.pentaho.com/browse/MONDRIAN-1587
+        // hsqldb was failing with SQL that included redundant parentheses
+        // around IN list items.
+        propSaver.set(propSaver.props.GenerateFormattedSql, true);
+        Result result = executeQuery(
+            "select from sales where "
+            + "{[Promotion Media].[Bulk Mail],[Promotion Media].[Cash Register Handout]}");
+        final Cell cell = result.getCell(new int[]{});
+        assertTrue(cell.canDrillThrough());
+        assertEquals(3584, cell.getDrillThroughCount());
+        getTestContext().assertSqlEquals(
+            getDiffRepos(), "sql",
+            cell.getDrillThroughSQL(false), 1);
+    }
+
     public void testDrillThrough() {
         Result result = executeQuery(
             "WITH MEMBER [Measures].[Price] AS '[Measures].[Store Sales] / ([Measures].[Store Sales], [Time].[Time].PrevMember)'\n"
@@ -288,13 +305,15 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "      <Table name=\"store_ragged\"/>\n"
             + "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>\n"
             + "      <Level name=\"Store Id\" column=\"store_id\" captionColumn=\"store_name\" uniqueMembers=\"true\" type=\"Integer\"/>\n"
-            + "    </Hierarchy>\n" + "  </Dimension>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
             + "  <Dimension name=\"Store3\" foreignKey=\"store_id\">\n"
             + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
             + "      <Table name=\"store\"/>\n"
             + "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>\n"
             + "      <Level name=\"Store Id\" column=\"store_id\" captionColumn=\"store_name\" uniqueMembers=\"true\" type=\"Numeric\"/>\n"
-            + "    </Hierarchy>\n" + "  </Dimension>\n");
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n");
         Result result = testContext.executeQuery(
             "SELECT {[Store2].[Store Id].Members} on columns,\n"
             + " NON EMPTY([Store3].[Store Id].Members) on rows\n"
@@ -374,7 +393,8 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"
             + "      <Table name=\"customer\"/>\n"
             + "      <Level name=\"Education Level but with a very long name that will be too long if converted directly into a column\" column=\"education\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>\n" + "  </Dimension>",
+            + "    </Hierarchy>\n"
+            + "  </Dimension>",
             null);
 
         Result result = testContext.executeQuery(
@@ -635,7 +655,8 @@ public class DrillThroughTest extends FoodMartTestCase {
         result =
             executeQuery(
                 "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
-                + " {[Product].[All Products]} ON ROWS\n" + "FROM [Sales]\n"
+                + " {[Product].[All Products]} ON ROWS\n"
+                + "FROM [Sales]\n"
                 + "WHERE Crossjoin(Crossjoin({[Gender].[F]}, {[Marital Status].[M]}),"
                 + "                {[Time].[1997].[Q1], [Time].[1997].[Q2]})");
         cell = result.getCell(new int[]{0, 0});
