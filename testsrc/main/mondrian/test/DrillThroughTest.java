@@ -13,12 +13,12 @@
 package mondrian.test;
 
 import mondrian.olap.*;
-import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 
 import java.sql.*;
 import javax.sql.DataSource;
+
 
 /**
  * Test generation of SQL to access the fact table data underlying an MDX
@@ -184,6 +184,41 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "where [Product].[My Food Drink]");
         cell = result.getCell(new int[] {0, 0});
         assertFalse(cell.canDrillThrough());
+    }
+
+    public void testDrillthroughCompoundSlicer() {
+        // Tests a case associated with
+        // http://jira.pentaho.com/browse/MONDRIAN-1587
+        // hsqldb was failing with SQL that included redundant parentheses
+        // around IN list items.
+
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+        Result result = executeQuery(
+            "select from sales where "
+            + "{[Promotion Media].[Bulk Mail],[Promotion Media].[Cash Register Handout]}");
+        final Cell cell = result.getCell(new int[]{});
+        assertTrue(cell.canDrillThrough());
+        assertEquals(3584, cell.getDrillThroughCount());
+        getTestContext().assertSqlEquals(
+            "select\n"
+            + "    time_by_day.the_year as Year,\n"
+            + "    sales_fact_1997.unit_sales as Unit Sales\n"
+            + "from\n"
+            + "    time_by_day =as= time_by_day,\n"
+            + "    sales_fact_1997 =as= sales_fact_1997,\n"
+            + "    promotion =as= promotion\n"
+            + "where\n"
+            + "    sales_fact_1997.time_id = time_by_day.time_id\n"
+            + "and\n"
+            + "    time_by_day.the_year = 1997\n"
+            + "and\n"
+            + "    sales_fact_1997.promotion_id = promotion.promotion_id\n"
+            + "and\n"
+            + "    ((promotion.media_type in "
+            + "('Bulk Mail', 'Cash Register Handout')))\n"
+            + "order by\n"
+            + "    time_by_day.the_year ASC",
+            cell.getDrillThroughSQL(false), 3584);
     }
 
     public void testDrillThrough() {
