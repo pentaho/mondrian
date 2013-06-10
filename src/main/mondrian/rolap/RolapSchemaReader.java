@@ -25,6 +25,7 @@ import org.eigenbase.util.property.Property;
 import org.olap4j.mdx.IdentifierSegment;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.sql.DataSource;
 
 /**
@@ -41,7 +42,7 @@ public class RolapSchemaReader
 {
     protected final Role role;
     private final Map<Hierarchy, MemberReader> hierarchyReaders =
-        new HashMap<Hierarchy, MemberReader>();
+        new ConcurrentHashMap<Hierarchy, MemberReader>();
     protected final RolapSchema schema;
     private final SqlConstraintFactory sqlConstraintFactory =
         SqlConstraintFactory.instance();
@@ -78,15 +79,21 @@ public class RolapSchemaReader
         return getLevelMembers(firstLevel, true);
     }
 
-    public synchronized MemberReader getMemberReader(Hierarchy hierarchy) {
+    public MemberReader getMemberReader(Hierarchy hierarchy) {
         MemberReader memberReader = hierarchyReaders.get(hierarchy);
         if (memberReader == null) {
-            memberReader =
-                ((RolapHierarchy) hierarchy).createMemberReader(role);
-            hierarchyReaders.put(hierarchy, memberReader);
+            synchronized (this) {
+                memberReader = hierarchyReaders.get(hierarchy);
+                if (memberReader == null) {
+                    memberReader =
+                        ((RolapHierarchy) hierarchy).createMemberReader(role);
+                    hierarchyReaders.put(hierarchy, memberReader);
+                }
+            }
         }
         return memberReader;
     }
+
 
     public Member substitute(Member member) {
         final MemberReader memberReader =
