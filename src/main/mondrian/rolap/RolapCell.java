@@ -174,6 +174,7 @@ public class RolapCell implements Cell {
                     "Error while counting drill-through"));
         try {
             ResultSet rs = stmt.getResultSet();
+            assert rs.getMetaData().getColumnCount() == 1;
             rs.next();
             ++stmt.rowCount;
             return rs.getInt(1);

@@ -78,6 +78,27 @@ group by
     `product`.`product_name`]]>
         </Resource>
     </TestCase>
+    <TestCase name="testDrillthroughCompoundSlicer">
+        <Resource name="sql">
+            <![CDATA[select
+    `time_by_day`.`the_year` as `Year`,
+    sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
+from
+    `time_by_day` as `time_by_day`,
+    `sales_fact_1997` as `sales_fact_1997`,
+    `promotion` as `promotion`
+where
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    `time_by_day`.`the_year` = 1997
+and
+    `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`
+and
+    ((`promotion`.`media_type` in ('Bulk Mail', 'Cash Register Handout')))
+group by
+    `time_by_day`.`the_year`]]>
+        </Resource>
+    </TestCase>
     <TestCase name="testDrillThrough">
         <Resource name="sql">
             <![CDATA[select
