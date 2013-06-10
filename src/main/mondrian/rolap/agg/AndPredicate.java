@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -132,7 +132,7 @@ public class AndPredicate extends ListPredicate {
         return inListRHSBitKey;
     }
 
-    /*
+    /**
      * Generate value list for this predicate to be used in an IN-list
      * sql predicate.
      *
@@ -146,16 +146,17 @@ public class AndPredicate extends ListPredicate {
         BitKey inListRHSBitKey)
     {
         boolean firstValue = true;
-        buf.append("(");
-        /*
-         * Arranging children according to the bit position. This is required
-         * as RHS of IN list needs to list the column values in the same order.
-         */
+        final boolean multiValueInList = children.size() > 1;
+        if (multiValueInList) {
+            buf.append("(");
+        }
+         // Arranging children according to the bit position. This is required
+         // as RHS of IN list needs to list the column values in the same order.
         Set<ValueColumnPredicate> sortedPredicates =
             new TreeSet<ValueColumnPredicate>();
 
         for (StarPredicate predicate : children) {
-            // inListPossible() checks gaurantees that predicate is of type
+            // inListPossible() checks guarantees that predicate is of type
             // ValueColumnPredicate
             assert predicate instanceof ValueColumnPredicate;
             if (inListRHSBitKey.get(
@@ -176,7 +177,9 @@ public class AndPredicate extends ListPredicate {
                 buf, predicate.getValue(),
                 predicate.getConstrainedColumn().getDatatype());
         }
-        buf.append(")");
+        if (multiValueInList) {
+            buf.append(")");
+        }
     }
 
     protected String getOp() {
