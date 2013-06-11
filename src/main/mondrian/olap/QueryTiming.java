@@ -47,7 +47,7 @@ public class QueryTiming {
      *
      * @param enabled Whether to collect stats in future
      */
-    public void init(boolean enabled) {
+    public synchronized void init(boolean enabled) {
         this.enabled = enabled;
         currentTimings.clear();
         timings.clear();
@@ -62,7 +62,7 @@ public class QueryTiming {
      *
      * @param name Name of the component
      */
-    public final void markStart(String name) {
+    public synchronized final void markStart(String name) {
         if (enabled) {
             markStartInternal(name);
         }
@@ -73,7 +73,7 @@ public class QueryTiming {
      *
      * @param name Name of the component
      */
-    public final void markEnd(String name) {
+    public synchronized final void markEnd(String name) {
         if (enabled) {
             long tstamp = System.currentTimeMillis();
             markEndInternal(name, tstamp);
@@ -86,7 +86,7 @@ public class QueryTiming {
      * @param name Name of the component
      * @param duration Duration of the execution
      */
-    public final void markFull(String name, long duration) {
+    public synchronized final void markFull(String name, long duration) {
         if (enabled) {
             markFullInternal(name, duration);
         }
@@ -124,7 +124,7 @@ public class QueryTiming {
         p.duration += duration;
     }
 
-    public String toString() {
+    public synchronized String toString() {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, List<StartEnd>> entry
             : timings.entrySet())
@@ -167,7 +167,7 @@ public class QueryTiming {
     /**
      * @return a collection of all Query component names
      */
-    public Collection<String> getTimingKeys() {
+    public synchronized Collection<String> getTimingKeys() {
         Set<String> keys = new HashSet<String>();
         keys.addAll(timings.keySet());
         keys.addAll(fullTimings.keySet());
@@ -178,7 +178,7 @@ public class QueryTiming {
      * @param key Name of the Query component to get timing information on
      * @return a List of durations
      */
-    public List<Long> getTimings(String key) {
+    public synchronized List<Long> getTimings(String key) {
         List<Long> timingList = new ArrayList<Long>();
         List<StartEnd> regTime = timings.get(key);
         if (regTime != null) {
