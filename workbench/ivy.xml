@@ -45,6 +45,7 @@
           <exclude org="hsqldb" module="hsqldb"/>
         </dependency>
 
+	<dependency org="org.owasp.esapi" name="esapi" rev="2.0.1" transitive="false"/>
         <dependency org="xerces" name="xercesImpl" rev="2.9.1"/>
 
         <!--  internal runtime dependencies -->
