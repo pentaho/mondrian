@@ -21,21 +21,34 @@ import java.util.concurrent.*;
  */
 public class BlockingHashMapTest extends TestCase {
 
-    final Random random = new Random(new Random().nextLong());
+    private final Random random = new Random(new Random().nextLong());
+    private static final int SLEEP_TIME = 100;
 
+    /**
+     * Validates values put in the BlockingHashMap by one thread
+     * can be correctly retrieved by another thread.
+     * Also verifies get operations can happen concurrently, in
+     * that total time to get all values synchronously would (on average) be
+     * 50 milliseconds * 100 Getters, and the test will fail if duration
+     * is greater than 2 seconds.
+     *
+     */
     public void testBlockingHashMap() throws InterruptedException {
-        ExecutorService exec = Executors.newFixedThreadPool(20);
         BlockingHashMap<Integer, Integer> map =
-            new BlockingHashMap<Integer, Integer>(20);
+            new BlockingHashMap<Integer, Integer>(100);
 
-        for (int i = 0; i < 100; i++) {
-            exec.submit(new Puter(i, i, map));
-            exec.submit(new Getter(i, map));
+        ExecutorService exec = Executors.newFixedThreadPool(20);
+        try {
+            for (int i = 0; i < 100; i++) {
+                exec.submit(new Puter(i, i, map));
+                exec.submit(new Getter(i, map));
+            }
+        } finally {
+            exec.shutdown();
+            boolean finished = exec.awaitTermination(
+                2, TimeUnit.SECONDS);
+            assertTrue(finished);
         }
-        exec.shutdown();
-        boolean finished = exec.awaitTermination(
-            2, TimeUnit.SECONDS);
-        assertTrue(finished);
     }
 
 
@@ -55,7 +68,7 @@ public class BlockingHashMapTest extends TestCase {
 
         public void run() {
             try {
-                Thread.sleep(random.nextInt(50));
+                Thread.sleep(random.nextInt(SLEEP_TIME));
                 map.put(key, value);
                 // System.out.println("putting key: " + key);
             } catch (InterruptedException e) {
@@ -75,7 +88,7 @@ public class BlockingHashMapTest extends TestCase {
 
         public void run() {
             try {
-                Thread.sleep(random.nextInt(50));
+                Thread.sleep(random.nextInt(SLEEP_TIME));
                 Integer val = map.get(key);
                 // System.out.println("getting key: " + key);
                 assertEquals(key, val);
