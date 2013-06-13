@@ -10,6 +10,7 @@
 package mondrian.util;
 
 import junit.framework.TestCase;
+import mondrian.olap.Util;
 
 import java.util.Random;
 import java.util.concurrent.*;
@@ -21,7 +22,7 @@ import java.util.concurrent.*;
  */
 public class BlockingHashMapTest extends TestCase {
 
-    private final Random random = new Random(new Random().nextLong());
+    private final Random random = Util.createRandom(-1);
     private static final int SLEEP_TIME = 100;
 
     /**
