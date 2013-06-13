@@ -4,13 +4,14 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho
+// Copyright (C) 2011-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server;
 
 import mondrian.olap.MondrianServer;
 import mondrian.rolap.RolapConnection;
+import mondrian.util.ArrayStack;
 
 import java.util.Stack;
 
@@ -22,10 +23,10 @@ public class Locus {
     public final String message;
     public final String component;
 
-    private static final ThreadLocal<Stack<Locus>> THREAD_LOCAL =
-        new ThreadLocal<Stack<Locus>>() {
-            protected Stack<Locus> initialValue() {
-                return new Stack<Locus>();
+    private static final ThreadLocal<ArrayStack<Locus>> THREAD_LOCAL =
+        new ThreadLocal<ArrayStack<Locus>>() {
+            protected ArrayStack<Locus> initialValue() {
+                return new ArrayStack<Locus>();
             }
         };
 
