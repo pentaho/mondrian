@@ -13,7 +13,7 @@ import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapUtil;
 import mondrian.server.monitor.*;
-import mondrian.util.Pair;
+import mondrian.util.*;
 
 import org.apache.log4j.Logger;
 
@@ -950,91 +950,14 @@ class MonitorImpl
         }
     }
 
-    /**
-     * Point for various clients in a request-response pattern to receive the
-     * response to their requests.
-     *
-     * <p>The key type should test for object identity using the == operator,
-     * like {@link WeakHashMap}. This allows responses to be automatically
-     * removed if the request (key) is garbage collected.</p>
-     *
-     * <p><b>Thread safety</b>. {@link #queue} is a thread-safe data structure;
-     * a thread can safely call {@link #put} while another thread calls
-     * {@link #take}. The {@link #taken} map is not thread safe, so you must
-     * lock the ResponseQueue before reading or writing it.</p>
-     *
-     * <p>If requests are processed out of order, this queue is not ideal: until
-     * request #1 has received its response, requests #2, #3 etc. will not
-     * receive their response. However, this is not a problem for the monitor,
-     * which uses an actor model, processing requests in strict order.</p>
-     *
-     * @param <K> request (key) type
-     * @param <V> response (value) type
-     */
-    private static class ResponseQueue<K, V> {
-        private final BlockingQueue<Pair<K, V>> queue;
-
-        /**
-         * Entries that have been removed from the queue. If the request
-         * is garbage-collected, the map entry is removed.
-         */
-        private final Map<K, V> taken =
-            new WeakHashMap<K, V>();
-
-        /**
-         * Creates a ResponseQueue with given capacity.
-         *
-         * @param capacity Capacity
-         */
-        public ResponseQueue(int capacity) {
-            queue = new ArrayBlockingQueue<Pair<K, V>>(capacity);
-        }
-
-        /**
-         * Places a (request, response) pair onto the queue.
-         *
-         * @param k Request
-         * @param v Response
-         * @throws InterruptedException if interrupted while waiting
-         */
-        public void put(K k, V v) throws InterruptedException {
-            queue.put(Pair.of(k, v));
-        }
-
-        /**
-         * Retrieves the response from the queue matching the given key,
-         * blocking until it is received.
-         *
-         * @param k Response
-         * @return Response
-         * @throws InterruptedException if interrupted while waiting
-         */
-        public synchronized V take(K k) throws InterruptedException {
-            final V v = taken.remove(k);
-            if (v != null) {
-                return v;
-            }
-            // Take the laundry out of the machine. If it's ours, leave with it.
-            // If it's someone else's, fold it neatly and put it on the pile.
-            for (;;) {
-                final Pair<K, V> pair = queue.take();
-                if (pair.left.equals(k)) {
-                    return pair.right;
-                } else {
-                    taken.put(pair.left, pair.right);
-                }
-            }
-        }
-    }
-
     private static class Actor implements Runnable {
         private boolean running = true;
 
         private final BlockingQueue<Pair<Handler, Message>> eventQueue =
             new ArrayBlockingQueue<Pair<Handler, Message>>(1000);
 
-        private final ResponseQueue<Command, Object> responseQueue =
-            new ResponseQueue<Command, Object>(1000);
+        private final BlockingHashMap<Command, Object> responseMap =
+            new BlockingHashMap<Command, Object>(1000);
 
         public void run() {
             try {
@@ -1045,7 +968,7 @@ class MonitorImpl
                         final Message message = entry.right;
                         final Object result = message.accept(handler);
                         if (message instanceof Command) {
-                            responseQueue.put((Command) message, result);
+                            responseMap.put((Command) message, result);
                         } else {
                             // Broadcast the event to anyone who is interested.
                             RolapUtil.MONITOR_LOGGER.debug(message);
@@ -1085,7 +1008,7 @@ class MonitorImpl
                 throw Util.newError(e, "Exception while executing " + command);
             }
             try {
-                return responseQueue.take(command);
+                return responseMap.get(command);
             } catch (InterruptedException e) {
                 throw Util.newError(e, "Exception while executing " + command);
             }

@@ -18,8 +18,7 @@ import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.monitor.*;
 import mondrian.spi.*;
-import mondrian.util.ByteString;
-import mondrian.util.Pair;
+import mondrian.util.*;
 
 import org.apache.log4j.Logger;
 
@@ -901,87 +900,6 @@ public class SegmentCacheManager {
     }
 
     /**
-     * Point for various clients in a request-response pattern to receive the
-     * response to their requests.
-     *
-     * <p>The key type should test for object identity using the == operator,
-     * like {@link java.util.WeakHashMap}. This allows responses to be automatically
-     * removed if the request (key) is garbage collected.</p>
-     *
-     * <p><b>Thread safety</b>. {@link #queue} is a thread-safe data structure;
-     * a thread can safely call {@link #put} while another thread calls
-     * {@link #take}. The {@link #taken} map is not thread safe, so you must
-     * lock the ResponseQueue before reading or writing it.</p>
-     *
-     * <p>If requests are processed out of order, this queue is not ideal: until
-     * request #1 has received its response, requests #2, #3 etc. will not
-     * receive their response. However, this is not a problem for the monitor,
-     * which uses an actor model, processing requests in strict order.</p>
-     *
-     * <p>REVIEW: This class is copy-pasted from
-     * {@link mondrian.server.monitor.Monitor}. Consider
-     * abstracting common code.</p>
-     *
-     * @param <K> request (key) type
-     * @param <V> response (value) type
-     */
-    private static class ResponseQueue<K, V> {
-        private final BlockingQueue<Pair<K, V>> queue;
-
-        /**
-         * Entries that have been removed from the queue. If the request
-         * is garbage-collected, the map entry is removed.
-         */
-        private final Map<K, V> taken =
-            new WeakHashMap<K, V>();
-
-        /**
-         * Creates a ResponseQueue with given capacity.
-         *
-         * @param capacity Capacity
-         */
-        public ResponseQueue(int capacity) {
-            queue = new ArrayBlockingQueue<Pair<K, V>>(capacity);
-        }
-
-        /**
-         * Places a (request, response) pair onto the queue.
-         *
-         * @param k Request
-         * @param v Response
-         * @throws InterruptedException if interrupted while waiting
-         */
-        public void put(K k, V v) throws InterruptedException {
-            queue.put(Pair.of(k, v));
-        }
-
-        /**
-         * Retrieves the response from the queue matching the given key,
-         * blocking until it is received.
-         *
-         * @param k Response
-         * @return Response
-         * @throws InterruptedException if interrupted while waiting
-         */
-        public synchronized V take(K k) throws InterruptedException {
-            final V v = taken.remove(k);
-            if (v != null) {
-                return v;
-            }
-            // Take the laundry out of the machine. If it's ours, leave with it.
-            // If it's someone else's, fold it neatly and put it on the pile.
-            for (;;) {
-                final Pair<K, V> pair = queue.take();
-                if (pair.left.equals(k)) {
-                    return pair.right;
-                } else {
-                    taken.put(pair.left, pair.right);
-                }
-            }
-        }
-    }
-
-    /**
      * Copy-pasted from {@link mondrian.server.monitor.Monitor}. Consider
      * abstracting common code.
      */
@@ -990,9 +908,9 @@ public class SegmentCacheManager {
         private final BlockingQueue<Pair<Handler, Message>> eventQueue =
             new ArrayBlockingQueue<Pair<Handler, Message>>(1000);
 
-        private final ResponseQueue<Command<?>, Pair<Object, Throwable>>
-            responseQueue =
-            new ResponseQueue<Command<?>, Pair<Object, Throwable>>(1000);
+        private final BlockingHashMap<Command<?>, Pair<Object, Throwable>>
+            responseMap =
+            new BlockingHashMap<Command<?>, Pair<Object, Throwable>>(1000);
 
         public void run() {
             try {
@@ -1009,20 +927,20 @@ public class SegmentCacheManager {
                             try {
                                 Locus.push(command.getLocus());
                                 Object result = command.call();
-                                responseQueue.put(
+                                responseMap.put(
                                     command,
                                     Pair.of(result, (Throwable) null));
                             } catch (AbortException e) {
-                                responseQueue.put(
+                                responseMap.put(
                                     command,
                                     Pair.of(null, (Throwable) e));
                             } catch (PleaseShutdownException e) {
-                                responseQueue.put(
+                                responseMap.put(
                                     command,
                                     Pair.of(null, (Throwable) null));
                                 return; // exit event loop
                             } catch (Throwable e) {
-                                responseQueue.put(
+                                responseMap.put(
                                     command,
                                     Pair.of(null, e));
                             } finally {
@@ -1056,7 +974,7 @@ public class SegmentCacheManager {
             }
             try {
                 final Pair<Object, Throwable> pair =
-                    responseQueue.take(command);
+                    responseMap.get(command);
                 if (pair.right != null) {
                     if (pair.right instanceof RuntimeException) {
                         throw (RuntimeException) pair.right;
@@ -1608,7 +1526,7 @@ public class SegmentCacheManager {
      */
     public static final class AbortException extends RuntimeException {
         private static final long serialVersionUID = 1L;
-    };
+    }
 }
 
 // End SegmentCacheManager.java
