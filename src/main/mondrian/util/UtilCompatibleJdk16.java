@@ -59,7 +59,7 @@ public class UtilCompatibleJdk16 extends UtilCompatibleJdk15 {
     }
 
     @Override
-    public void cancelAndCloseStatement(Statement stmt) {
+    public void cancelStatement(Statement stmt) {
         try {
             // A call to statement.isClosed() would be great here, but in
             // reality, some drivers will block on this check and the
@@ -73,22 +73,6 @@ public class UtilCompatibleJdk16 extends UtilCompatibleJdk15 {
             // We crush this one. A lot of drivers will complain if cancel() is
             // called on a closed statement, but a call to isClosed() isn't
             // thread safe and might block. See above.
-            if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace(
-                    MondrianResource.instance()
-                        .ExecutionStatementCleanupException
-                            .ex(e.getMessage(), e),
-                    e);
-            }
-        }
-        try {
-            // We used to call Statement.isClosed, but DBCP gave error:
-            //   java.lang.IllegalAccessError:
-            //   org.apache.commons.dbcp.DelegatingStatement.isClosed()Z
-            // JDBC says it is OK to call close on a closed statement, so
-            // why check?
-            stmt.close();
-        } catch (Exception e) {
             if (LOGGER.isTraceEnabled()) {
                 LOGGER.trace(
                     MondrianResource.instance()

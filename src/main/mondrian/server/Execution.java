@@ -353,7 +353,7 @@ public class Execution {
                 // there. It is therefore important to close and release the
                 // resources on the proper thread, namely, the thread which
                 // runs the actual statement.
-                Util.cancelAndCloseStatement(statement1);
+                Util.cancelStatement(statement1);
             }
             // Also cleanup the segment registrations from the index.
             unregisterSegmentRequests();

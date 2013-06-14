@@ -456,7 +456,16 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
                 header,
                 new QueryCanceledException(
                     "Canceling due to an absence of interested parties."));
-            Util.cancelAndCloseStatement(stmt);
+            // We only want to cancel the statement, but we can't close it.
+            // Some drivers will not notice the interruption flag on their
+            // own thread before a considerable time has passed. If we were
+            // using a pooling layer, calling close() would make the
+            // underlying connection available again, despite the first
+            // statement still being processed. Some drivers will fail
+            // there. It is therefore important to close and release the
+            // resources on the proper thread, namely, the thread which
+            // runs the actual statement.
+            Util.cancelStatement(stmt);
         }
     }
 
