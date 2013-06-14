@@ -17,9 +17,7 @@ import mondrian.server.monitor.*;
 
 import org.apache.log4j.MDC;
 
-import java.util.EmptyStackException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -50,11 +48,6 @@ public class Execution {
         new HashMap<Locus, java.sql.Statement>();
 
     private State state = State.FRESH;
-
-    /**
-     * State of the SQL statements.
-     */
-    private SqlState sqlState = SqlState.CLEAN;
 
     /**
      * Lock monitor for SQL statements. All operations on
@@ -327,9 +320,11 @@ public class Execution {
      * has occurred or the execution has ended. Any currently running SQL
      * statements will be canceled. It should only be called if
      * {@link Execution#isCancelOrTimeout()} returns true.
+     *
      * <p>This method doesn't need to be called by a user. It will be called
      * internally by Mondrian when the system is ready to clean the remaining
      * resources.
+     *
      * <p>To check if this execution is failed, use
      * {@link Execution#isCancelOrTimeout()} instead.
      */
@@ -338,17 +333,28 @@ public class Execution {
             parent.cancelSqlStatements();
         }
         synchronized (sqlStateLock) {
-            if (sqlState == SqlState.CLEAN) {
-                return;
-            }
-            sqlState = SqlState.CLEAN;
-
-            for (Entry<Locus, java.sql.Statement> entry
-                : statements.entrySet())
+            for (Iterator<Entry<Locus, java.sql.Statement>> iterator =
+                     statements.entrySet().iterator();
+                 iterator.hasNext();)
             {
-                Util.cancelAndCloseStatement(entry.getValue());
+                // Remove entry from the map before trying to cancel the
+                // statement, so that if the cancel throws, we will not try to
+                // cancel again. It's possible that we will try to cancel the
+                // other statements later.
+                final Entry<Locus, java.sql.Statement> entry = iterator.next();
+                final java.sql.Statement statement1 = entry.getValue();
+                iterator.remove();
+                // We only want to cancel the statement, but we can't close it.
+                // Some drivers will not notice the interruption flag on their
+                // own thread before a considerable time has passed. If we were
+                // using a pooling layer, calling close() would make the
+                // underlying connection available again, despite the first
+                // statement still being processed. Some drivers will fail
+                // there. It is therefore important to close and release the
+                // resources on the proper thread, namely, the thread which
+                // runs the actual statement.
+                Util.cancelAndCloseStatement(statement1);
             }
-            statements.clear();
             // Also cleanup the segment registrations from the index.
             unregisterSegmentRequests();
         }
@@ -432,12 +438,13 @@ public class Execution {
      */
     public void registerStatement(Locus locus, java.sql.Statement statement) {
         synchronized (sqlStateLock) {
-            if (state == State.FRESH) {
-                start();
-            }
-            if (state == State.RUNNING) {
-                this.sqlState = SqlState.DIRTY;
-                this.statements.put(locus, statement);
+            synchronized (stateLock) {
+                if (state == State.FRESH) {
+                    start();
+                }
+                if (state == State.RUNNING) {
+                    this.statements.put(locus, statement);
+                }
             }
         }
     }
@@ -489,22 +496,6 @@ public class Execution {
         CANCELED,
         TIMEOUT,
         DONE,
-    }
-
-    /**
-     * Enumeration of the possible states of the SQL statements
-     * associated to an Execution instance.
-     */
-    private enum SqlState {
-        /**
-         * Indicates that there might be SQL statements being
-         * run right now.
-         */
-        DIRTY,
-        /**
-         * Indicates that all SQL statements have been canceled.
-         */
-        CLEAN
     }
 }
 
