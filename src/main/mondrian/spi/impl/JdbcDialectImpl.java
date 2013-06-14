@@ -1159,10 +1159,8 @@ public class JdbcDialectImpl implements Dialect {
             LOGGER.debug("NOT Using " + databaseProduct.name() + " dialect");
             return false;
         } catch (SQLException e) {
-            throw Util.newInternal(
-                e,
-                "Could not match the database product for dialect: "
-                + databaseProduct.name());
+            LOGGER.debug("NOT Using " + databaseProduct.name() + " dialect.", e);
+            return false;
         } finally {
             Util.close(resultSet, statement, null);
         }
