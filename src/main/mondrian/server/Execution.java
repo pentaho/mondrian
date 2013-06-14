@@ -344,7 +344,16 @@ public class Execution {
                 final Entry<Locus, java.sql.Statement> entry = iterator.next();
                 final java.sql.Statement statement1 = entry.getValue();
                 iterator.remove();
-                Util.cancelAndCloseStatement(statement1);
+                // We only want to cancel the statement, but we can't close it.
+                // Some drivers will not notice the interruption flag on their
+                // own thread before a considerable time has passed. If we were
+                // using a pooling layer, calling close() would make the
+                // underlying connection available again, despite the first
+                // statement still being processed. Some drivers will fail
+                // there. It is therefore important to close and release the
+                // resources on the proper thread, namely, the thread which
+                // runs the actual statement.
+                Util.cancelStatement(statement1);
             }
             // Also cleanup the segment registrations from the index.
             unregisterSegmentRequests();

@@ -1578,12 +1578,12 @@ public class Util extends XOMUtil {
     /**
      * Closes and cancels a {@link Statement} using the correct methods
      * available on the current Java runtime.
-     * <p>If errors are encountered while canceling or closing a statement,
+     * <p>If errors are encountered while canceling a statement,
      * the message is logged in {@link Util}.
-     * @param stmt The statement to cancel and close.
+     * @param stmt The statement to cancel.
      */
-    public static void cancelAndCloseStatement(Statement stmt) {
-        compatible.cancelAndCloseStatement(stmt);
+    public static void cancelStatement(Statement stmt) {
+        compatible.cancelStatement(stmt);
     }
 
     public static MemoryInfo getMemoryInfo() {
@@ -2329,25 +2329,28 @@ public class Util extends XOMUtil {
                     statement = resultSet.getStatement();
                 }
                 resultSet.close();
-            } catch (SQLException e) {
-                firstException = e;
+            } catch (Throwable t) {
+                firstException = new SQLException();
+                firstException.initCause(t);
             }
         }
         if (statement != null) {
             try {
                 statement.close();
-            } catch (SQLException e) {
+            } catch (Throwable t) {
                 if (firstException == null) {
-                    firstException = e;
+                    firstException = new SQLException();
+                    firstException.initCause(t);
                 }
             }
         }
         if (connection != null) {
             try {
                 connection.close();
-            } catch (SQLException e) {
+            } catch (Throwable t) {
                 if (firstException == null) {
-                    firstException = e;
+                    firstException = new SQLException();
+                    firstException.initCause(t);
                 }
             }
         }
