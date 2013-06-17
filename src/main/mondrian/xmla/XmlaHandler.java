@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.xmla;
@@ -224,6 +224,8 @@ public class XmlaHandler {
     // xsd:double: IEEE 64-bit floating-point
     public static final String XSD_DOUBLE = "xsd:double";
 
+    public static final String XSD_FLOAT = "xsd:float";
+
     // xsd:decimal: Decimal numbers (BigDecimal)
     public static final String XSD_DECIMAL = "xsd:decimal";
 
@@ -311,12 +313,12 @@ public class XmlaHandler {
                         this.isDecimal = false;
 
                     } else if (inputValue instanceof Byte) {
-                        this.valueType = valueTypeHint;
+                        this.valueType = XSD_BYTE;
                         this.value = inputValue;
                         this.isDecimal = false;
 
                     } else if (inputValue instanceof Short) {
-                        this.valueType = valueTypeHint;
+                        this.valueType = XSD_SHORT;
                         this.value = inputValue;
                         this.isDecimal = false;
 
@@ -351,7 +353,7 @@ public class XmlaHandler {
 
                         } else {
                             // It can not be converted to a long.
-                            this.valueType = XSD_DOUBLE;
+                            this.valueType = XSD_FLOAT;
                             this.value = inputValue;
                             this.isDecimal = true;
                         }
@@ -439,7 +441,7 @@ public class XmlaHandler {
 
                     } else if (inputValue instanceof Float) {
                         this.value = inputValue;
-                        this.valueType = valueTypeHint;
+                        this.valueType = XSD_FLOAT;
                         this.isDecimal = true;
 
                     } else if (inputValue instanceof BigDecimal) {
@@ -513,13 +515,13 @@ public class XmlaHandler {
 
                 } else if (inputValue instanceof Byte) {
                     Byte b = (Byte) inputValue;
-                    this.valueType = XSD_INT;
+                    this.valueType = XSD_BYTE;
                     this.value = b.intValue();
                     this.isDecimal = false;
 
                 } else if (inputValue instanceof Short) {
                     Short s = (Short) inputValue;
-                    this.valueType = XSD_INT;
+                    this.valueType = XSD_SHORT;
                     this.value = s.intValue();
                     this.isDecimal = false;
 
@@ -543,7 +545,7 @@ public class XmlaHandler {
                     }
 
                 } else if (inputValue instanceof Float) {
-                    this.valueType = XSD_DOUBLE;
+                    this.valueType = XSD_FLOAT;
                     this.value = inputValue;
                     this.isDecimal = true;
 
@@ -582,6 +584,10 @@ public class XmlaHandler {
                     this.valueType = XSD_LONG;
                     this.isDecimal = false;
 
+                } else if (inputValue instanceof Boolean) {
+                    this.value = inputValue;
+                    this.valueType = XSD_BOOLEAN;
+                    this.isDecimal = false;
                 } else {
                     // Who knows what we are dealing with,
                     // hope for the best?!?
@@ -1643,10 +1649,8 @@ public class XmlaHandler {
             return XSD_INT;
         case Types.NUMERIC:
         case Types.DECIMAL:
-            /*
-             * Oracle reports all numbers as NUMERIC. We check
-             * the scale of the column and pick the right XSD type.
-             */
+             // Oracle reports all numbers as NUMERIC. We check
+             // the scale of the column and pick the right XSD type.
             if (scale == 0) {
                 return XSD_INT;
             } else {
@@ -2063,7 +2067,7 @@ public class XmlaHandler {
                 + "."
                 + Util.quoteMdxIdentifier(longProp.getName()));
             if (longProp == prop) {
-                //Adding type attribute to the optional properties
+                // Adding type attribute to the optional properties
                 values.add("type");
                 values.add(getXsdType(longProp));
             }
@@ -2778,9 +2782,9 @@ public class XmlaHandler {
                 if (axis >= 2) {
                     iterate(writer, axis - 1, ho);
                 } else {
-                    writer.startElement("row");//abrimos la fila
-                    pos[axis] = i; //coordenadas: fila i
-                    pos[0] = 0; //coordenadas (0,i): columna 0
+                    writer.startElement("row");// abrimos la fila
+                    pos[axis] = i; // coordenadas: fila i
+                    pos[0] = 0; // coordenadas (0,i): columna 0
                     for (ColumnHandler columnHandler : columnHandlers) {
                         if (columnHandler instanceof MemberColumnHandler) {
                             columnHandler.write(writer, null, this.members);
@@ -2790,7 +2794,7 @@ public class XmlaHandler {
                             pos[0]++;// next col.
                         }
                     }
-                    writer.endElement();//cerramos la fila
+                    writer.endElement(); // cerramos la fila
                 }
             }
         }
