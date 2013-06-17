@@ -287,7 +287,7 @@ public class Format {
      * </ol>
      *
      * <p>If there are fewer than 4 formats, the first is used as a fall-back.
-     * See the <a href="http://www.apostate.com/programming/vb-format.html">the
+     * See the <a href="http://apostate.com/vb-format-syntax">the
      * visual basic format specification</a> for more details.
      */
     static class AlternateFormat extends BasicFormat {
