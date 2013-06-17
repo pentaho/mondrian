@@ -1432,9 +1432,10 @@ public class TestContext {
         // problems... probably with the dialectize method
         assertEqualsVerbose(actualSql, dialectize(actualSql));
 
-        String transformedExpectedSql = removeQuotes(dialectize(expectedSql));
-        String transformedActualSql = removeQuotes(actualSql);
-
+        String transformedExpectedSql = removeQuotes(dialectize(expectedSql))
+            .replaceAll("\r\n", "\n");
+        String transformedActualSql = removeQuotes(actualSql)
+            .replaceAll("\r\n", "\n");
         Assert.assertEquals(transformedExpectedSql, transformedActualSql);
 
         checkSqlAgainstDatasource(actualSql, expectedRows);
