@@ -1458,6 +1458,9 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
      * level to evaluate natively as part of the set.
      */
     public void testNativeVirtualRestrictedSet() throws Exception {
+        if (!getTestContext().databaseIsValid()) {
+            return;
+        }
         final TestContext ctx = getTestContext().withSchema(
             "<Schema name=\"SampleData\">\n"
             + "  <Dimension visible=\"true\" highCardinality=\"false\" name=\"Region\">\n"
