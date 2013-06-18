@@ -1133,6 +1133,51 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "Row #0: 28\n");
     }
 
-
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1630">MONDRIAN-1630</a>
+     *
+     * <p>The baseCube was taken out of the evaluator instead of being passed
+     * by the caller, which caused the star column not to be found for the
+     * level to evaluate natively as part of the set.
+     */
+    public void testNativeVirtualRestrictedSet() throws Exception {
+        final TestContext ctx = getTestContext().create(
+            null, null, null, null, null,
+            "  <Role name=\"F-MIS-BE-CLIENT\">\n"
+            + "    <SchemaGrant access=\"none\">\n"
+            + "      <CubeGrant cube=\"Warehouse and Sales\" access=\"all\">\n"
+            + "        <HierarchyGrant hierarchy=\"[Store]\" rollupPolicy=\"partial\" access=\"custom\">\n"
+            + "          <MemberGrant member=\"[Store].[All Stores]\" access=\"none\">\n"
+            + "          </MemberGrant>\n"
+            + "          <MemberGrant member=\"[Store].[USA]\" access=\"all\">\n"
+            + "          </MemberGrant>\n"
+            + "        </HierarchyGrant>\n"
+            + "      </CubeGrant>\n"
+            + "      <CubeGrant cube=\"Warehouse\" access=\"all\">\n"
+            + "        <HierarchyGrant hierarchy=\"[Store]\" rollupPolicy=\"partial\" access=\"custom\">\n"
+            + "          <MemberGrant member=\"[Store].[All Stores]\" access=\"none\">\n"
+            + "          </MemberGrant>\n"
+            + "          <MemberGrant member=\"[Store].[USA]\" access=\"all\">\n"
+            + "          </MemberGrant>\n"
+            + "        </HierarchyGrant>\n"
+            + "      </CubeGrant>\n"
+            + "    </SchemaGrant>\n"
+            + "  </Role>\n").withRole("F-MIS-BE-CLIENT");
+        ctx.executeQuery(
+            "With\n"
+            + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Store],[*BASE_MEMBERS_Warehouse])'\n"
+            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],[Store].CurrentMember.OrderKey,BASC,[Warehouse].CurrentMember.OrderKey,BASC)'\n"
+            + "Set [*BASE_MEMBERS_Warehouse] as '[Warehouse].[Country].Members'\n"
+            + "Set [*BASE_MEMBERS_Store] as '[Store].[Store Country].Members'\n"
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Store].currentMember,[Warehouse].currentMember)})'\n"
+            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'\n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Invoice]', FORMAT_STRING = '#,###.00', SOLVE_ORDER=400\n"
+            + "Select\n"
+            + "[*BASE_MEMBERS_Measures] on columns,\n"
+            + "Non Empty [*SORTED_ROW_AXIS] on rows\n"
+            + "From [Warehouse and Sales]\n");
+    }
 }
 // End NativeSetEvaluationTest.java
