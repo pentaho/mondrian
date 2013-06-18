@@ -9,9 +9,16 @@
 */
 package mondrian.xmla;
 
-import junit.framework.TestCase;
+import mondrian.olap.Result;
+import mondrian.rolap.RolapCube;
+import mondrian.spi.Dialect;
+import mondrian.test.*;
+
+import org.olap4j.CellSet;
 
 import java.math.BigInteger;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * Unit test to validate expected marshalling of Java objects
@@ -20,7 +27,7 @@ import java.math.BigInteger;
  *
  * @author mcampbell
  */
-public class XmlaHandlerTypeTest extends TestCase {
+public class XmlaHandlerTypeTest extends FoodMartTestCase {
 
     TestVal[] typeTests = {
         TestVal.having("StringValue", "xsd:string", "String"),
@@ -53,6 +60,113 @@ public class XmlaHandlerTypeTest extends TestCase {
         }
     }
 
+    /**
+     * Checks whether Cell.getValue() returns a consistent datatype whether
+     * retrieved from Olap4jXmla, Olap4j, or native Mondrian.
+     * @throws SQLException
+     */
+    public void testDatatypeConsistency() throws SQLException {
+        TestContext context = getTestContext();
+
+        // MDX cast expressions
+        String[] castedTypes = {
+            "Cast(1 as String)",
+            "Cast(1 as Numeric)",
+            "Cast(1 as Boolean)",
+            "Cast(1 as Integer)",
+        };
+
+        for (String castedType : castedTypes) {
+            String mdx = "with member measures.type as '"
+            + castedType + "' "
+            + "select measures.type on 0 from sales";
+            CellSet olap4jXmlaCellset = context.executeOlap4jXmlaQuery(mdx);
+            CellSet olap4jCellset = context.executeOlap4jQuery(mdx);
+            Result nativeMondrianResult = context.executeQuery(mdx);
+            assertEquals(
+                "Checking olap4jXmla datatype against native Mondrian. \n"
+                + "Unexpected datatype when running mdx " + mdx + "\n",
+                nativeMondrianResult.getCell(new int[]{0})
+                    .getValue().getClass(),
+                olap4jXmlaCellset.getCell(0).getValue().getClass());
+            assertEquals(
+                "Checking olap4jXmla datatype against native Mondrian. \n"
+                + "Unexpected datatype when running mdx " + mdx + "\n",
+                olap4jXmlaCellset.getCell(0).getValue().getClass(),
+                olap4jCellset.getCell(0).getValue().getClass());
+        }
+
+        RolapCube cube =
+            (RolapCube)context.executeQuery("select from sales")
+                .getQuery().getCube();
+        Dialect dialect = cube.getStar().getSqlQueryDialect();
+
+        if (!dialect.getDatabaseProduct()
+            .equals(Dialect.DatabaseProduct.MYSQL)
+            && !dialect.getDatabaseProduct()
+                .equals(Dialect.DatabaseProduct.ORACLE))
+        {
+            return;
+        }
+
+        // map of sql expressions to the corresponding (optional) datatype
+        // attribute (RolapBaseCubeMeasure.Datatype)
+        Map<String, String> expressionTypeMap = new HashMap<String, String>();
+        expressionTypeMap.put("'StringValue'", "String");
+        expressionTypeMap.put("cast(1.0001 as decimal)", null);
+        expressionTypeMap.put("cast(1.0001 as decimal)", "Numeric");
+        expressionTypeMap.put("cast(10.101 as decimal(10,8))", null);
+        expressionTypeMap.put("cast(10.101 as decimal(10,8))", "Numeric");
+
+
+        for (String expression : expressionTypeMap.keySet()) {
+            String query = "Select measures.typeMeasure on 0 from Sales";
+            context = getContextWithMeasureExpression(
+                expression, expressionTypeMap.get(expression));
+            CellSet olap4jXmlaCellset = context.executeOlap4jXmlaQuery(query);
+            CellSet olap4jCellset = context.executeOlap4jQuery(query);
+            Result nativeMondrianResult = context.executeQuery(query);
+
+            assertEquals(
+                "Checking olap4jXmla datatype against native Mondrian. \n"
+                + "Unexpected datatype for measure expression " + expression
+                + " with datatype attribute "
+                + expressionTypeMap.get(expression) + "\n",
+                nativeMondrianResult.getCell(new int[]{0})
+                    .getValue().getClass(),
+                olap4jXmlaCellset.getCell(0).getValue().getClass());
+            assertEquals(
+                "Checking olap4jXmla datatype against olap4j in process. \n"
+                + "Unexpected datatype for expression " + expression
+                + " with datatype attribute "
+                + expressionTypeMap.get(expression) + "\n",
+                olap4jXmlaCellset.getCell(0).getValue().getClass(),
+                olap4jCellset.getCell(0).getValue().getClass());
+        }
+    }
+
+    private TestContext getContextWithMeasureExpression(
+        String expression, String type)
+    {
+        String datatype = "";
+        String aggregator = " aggregator='sum' ";
+        if (type != null) {
+            datatype = " datatype='" + type + "' ";
+            if (type.equals("String")) {
+                aggregator = " aggregator='max'  ";
+            }
+        }
+        return getTestContext().createSubstitutingCube(
+            "Sales",
+            null,
+            "<Measure name='typeMeasure' " + aggregator + datatype + ">\n"
+            + "  <MeasureExpression>\n"
+            + "  <SQL dialect='generic'>\n"
+            + expression
+            + "  </SQL></MeasureExpression></Measure>",
+            null, null);
+    }
+
     static class TestVal {
         Object value;
         String expectedXsdType;
@@ -66,7 +180,6 @@ public class XmlaHandlerTypeTest extends TestCase {
             return typeTest;
         }
     }
-
 }
 
 // End XmlaHandlerTypeTest.java
