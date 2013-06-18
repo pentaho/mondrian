@@ -60,6 +60,7 @@ public class SqlConstraintUtils {
         SqlQuery sqlQuery,
         AggStar aggStar,
         Evaluator evaluator,
+        RolapCube baseCube,
         boolean restrictMemberTypes)
     {
         // Add constraint using the current evaluator context
@@ -74,8 +75,9 @@ public class SqlConstraintUtils {
         members = expandSupportedCalculatedMembers(members, evaluator);
         members = getUniqueOrdinalMembers(members);
 
-        RolapCube baseCube = null;
-        if (evaluator instanceof RolapEvaluator) {
+        if (baseCube == null
+            && evaluator instanceof RolapEvaluator)
+        {
             baseCube = ((RolapEvaluator)evaluator).getCube();
         }
 
