@@ -244,7 +244,7 @@ public class SqlContextConstraint
         try {
             evaluator.setContext(parent);
             SqlConstraintUtils.addContextConstraint(
-                sqlQuery, aggStar, evaluator, strict);
+                sqlQuery, aggStar, evaluator, baseCube, strict);
         } finally {
             evaluator.restore(savepoint);
         }
@@ -266,7 +266,7 @@ public class SqlContextConstraint
         List<RolapMember> parents)
     {
         SqlConstraintUtils.addContextConstraint(
-            sqlQuery, aggStar, evaluator, strict);
+            sqlQuery, aggStar, evaluator, baseCube, strict);
         boolean exclude = false;
         SqlConstraintUtils.addMemberConstraint(
             sqlQuery, baseCube, aggStar, parents, true, false, exclude);
@@ -282,7 +282,7 @@ public class SqlContextConstraint
         AggStar aggStar)
     {
         SqlConstraintUtils.addContextConstraint(
-            sqlQuery, aggStar, evaluator, strict);
+            sqlQuery, aggStar, evaluator, baseCube, strict);
     }
 
     /**
