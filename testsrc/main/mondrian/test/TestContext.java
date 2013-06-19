@@ -18,6 +18,7 @@ import mondrian.olap.DriverManager;
 import mondrian.olap.*;
 import mondrian.olap.Position;
 import mondrian.olap.fun.FunUtil;
+import mondrian.olap4j.MondrianInprocProxy;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.spi.*;
@@ -31,6 +32,7 @@ import junit.framework.Test;
 import org.apache.log4j.Logger;
 
 import org.olap4j.*;
+import org.olap4j.driver.xmla.XmlaOlap4jDriver;
 import org.olap4j.impl.CoordinateIterator;
 import org.olap4j.layout.TraditionalCellSetFormatter;
 
@@ -745,6 +747,51 @@ public class TestContext {
         }
         return cellSet;
     }
+
+    public CellSet executeOlap4jXmlaQuery(String queryString)
+        throws SQLException
+    {
+        String schema = getConnectionProperties()
+            .get(RolapConnectionProperties.CatalogContent.name());
+        if (schema == null) {
+            schema = getRawSchema();
+        }
+        // TODO:  Need to better handle semicolons in schema content.
+        // Util.parseValue does not appear to allow escaping them.
+        schema = schema.replace("&quot;", "").replace(";", "");
+
+        String Jdbc = getConnectionProperties()
+            .get(RolapConnectionProperties.Jdbc.name());
+
+        String cookie = XmlaOlap4jDriver.nextCookie();
+        Map<String, String> catalogs = new HashMap<String, String>();
+        catalogs.put("FoodMart", "");
+        XmlaOlap4jDriver.PROXY_MAP.put(
+            cookie, new MondrianInprocProxy(
+                catalogs,
+                "jdbc:mondrian:Server=http://whatever;"
+                +  "Jdbc=" + Jdbc + ";TestProxyCookie="
+                + cookie
+                + ";CatalogContent=" + schema));
+        try {
+            Class.forName("org.olap4j.driver.xmla.XmlaOlap4jDriver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("oops", e);
+        }
+        Properties info = new Properties();
+        info.setProperty(
+            XmlaOlap4jDriver.Property.CATALOG.name(), "FoodMart");
+        java.sql.Connection connection = java.sql.DriverManager.getConnection(
+            "jdbc:xmla:Server=http://whatever;Catalog=FoodMart;TestProxyCookie="
+                + cookie,
+            info);
+        OlapConnection olapConnection =
+            ((OlapWrapper) connection).unwrap(OlapConnection.class);
+        OlapStatement statement = olapConnection.createStatement();
+        return  statement.executeOlapQuery(queryString);
+    }
+
+
 
     /**
      * Checks that a {@link Result} is valid.
@@ -2135,7 +2182,8 @@ public class TestContext {
             throw new RuntimeException(
                 "ERROR in SQL - invalid for database: "
                 + connectProperties.get(RolapConnectionProperties.Jdbc.name())
-                + "\n" + actualSql,
+                + "\n"
+                + actualSql,
                 e);
         } finally {
             try {
@@ -3192,8 +3240,9 @@ public class TestContext {
                 "Exception list did not contain expected exception. Exception is:\n"
                 + predicate.describe()
                 + "\nException list is:\n"
-                + buf
-                + "\nOther info:\n" + sw);
+                + buf + "\n"
+                + "Other info:\n"
+                + sw);
         }
 
         /**
