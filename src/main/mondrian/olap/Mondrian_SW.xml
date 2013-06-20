@@ -651,7 +651,7 @@
                 MDSCHEMA_DIMENSIONS XMLA requests
             </Doc>
         </Attribute>
-        <Attribute name="name"><Doc></Doc></Attribute>
+        <Attribute name="name" required="true"><Doc></Doc></Attribute>
         <Attribute name="visible" type="Boolean"
             required="false" default="true">
             <Doc>
