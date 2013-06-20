@@ -17,16 +17,17 @@ import java.io.*;
  * <p>Used in maven resource {groupId=pentaho,
  * artifactId=mondrian-data-foodmart-queries}.</p>
  */
-public class FoodMartData {
-    public FoodMartData() {
+@SuppressWarnings("UnusedDeclaration")
+public class FoodMartQuery {
+    public FoodMartQuery() {
     }
 
     /** Returns the contents of "queries.json" in the current jar file as a
      * stream. */
     public InputStream getQueries() throws IOException {
-        return FoodMartData.class.getClassLoader()
+        return FoodMartQuery.class.getClassLoader()
             .getResourceAsStream("queries.json");
     }
 }
 
-// End FoodMartData.java
+// End FoodMartQuery.java
