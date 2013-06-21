@@ -913,18 +913,20 @@ public class JdbcDialectImpl implements Dialect {
         throws SQLException
     {
         final int columnType = metaData.getColumnType(columnIndex + 1);
-        final int precision = metaData.getPrecision(columnIndex + 1);
-        final int scale = metaData.getScale(columnIndex + 1);
 
-        SqlStatement.Type internalType;
+        SqlStatement.Type internalType = null;
         if (columnType != Types.NUMERIC && columnType != Types.DECIMAL) {
             internalType = DEFAULT_TYPE_MAP.get(columnType);
-        } else if (scale == 0 && precision <= 9) {
-            // An int (up to 2^31 = 2.1B) can hold any NUMBER(10, 0) value
-            // (up to 10^9 = 1B).
-            internalType = SqlStatement.Type.INT;
         } else {
-            internalType = SqlStatement.Type.DOUBLE;
+            final int precision = metaData.getPrecision(columnIndex + 1);
+            final int scale = metaData.getScale(columnIndex + 1);
+            if (scale == 0 && precision <= 9) {
+                // An int (up to 2^31 = 2.1B) can hold any NUMBER(10, 0) value
+                // (up to 10^9 = 1B).
+                internalType = SqlStatement.Type.INT;
+            } else {
+                internalType = SqlStatement.Type.DOUBLE;
+            }
         }
         internalType =  internalType == null
             ? SqlStatement.Type.OBJECT : internalType;
