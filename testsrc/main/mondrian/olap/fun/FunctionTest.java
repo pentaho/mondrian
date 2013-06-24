@@ -11000,6 +11000,14 @@ Intel platforms):
         // probably shouldn't. Feel free to fix the conversion.
         // -- jhyde, 2006/9/3
 
+        // From double to integer.  MONDRIAN-1631
+        Cell cell = getTestContext().executeExprRaw("Cast(1.4 As Integer)");
+        assertEquals(
+            "Cast to Integer resulted in wrong datatype\n"
+            + cell.getValue().getClass().toString(),
+            Integer.class, cell.getValue().getClass());
+        assertEquals(cell.getValue(), 1);
+
         // From integer
         // To integer (trivial)
         assertExprReturns("0 + Cast(1 + 2 AS Integer)", "3");
@@ -11008,6 +11016,7 @@ Intel platforms):
         // To Boolean
         assertExprReturns("1=1 AND Cast(1 + 2 AS Boolean)", "true");
         assertExprReturns("1=1 AND Cast(1 - 1 AS Boolean)", "false");
+
 
         // From boolean
         // To String
