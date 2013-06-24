@@ -4628,7 +4628,8 @@ public class FunctionTest extends FoodMartTestCase {
     public void testDescendantsMLSelfBefore() {
         assertAxisReturns(
             "Descendants([Time].[1997], [Time].[Quarter], SELF_AND_BEFORE)",
-            year1997 + "\n" + quarters);
+            year1997 + "\n"
+            + quarters);
     }
 
     public void testDescendantsMLSelfBeforeAfter() {
@@ -4645,7 +4646,8 @@ public class FunctionTest extends FoodMartTestCase {
     public void testDescendantsMLBeforeAfter() {
         assertAxisReturns(
             "Descendants([Time].[1997], [Time].[Quarter], BEFORE_AND_AFTER)",
-            year1997 + "\n" + months);
+            year1997 + "\n"
+            + months);
     }
 
     public void testDescendantsMLAfter() {
@@ -4710,7 +4712,8 @@ public class FunctionTest extends FoodMartTestCase {
     public void testDescendantsMNY() {
         assertAxisReturns(
             "Descendants([Time].[1997], 1, BEFORE_AND_AFTER)",
-            year1997 + "\n" + months);
+            year1997 + "\n"
+            + months);
     }
 
     public void testDescendants2ndHier() {
@@ -9665,7 +9668,8 @@ public class FunctionTest extends FoodMartTestCase {
             + " ([Gender].[F], [Marital Status].[M])})", "3");
         // Tuple not in empty set
         assertExprReturns(
-            "Rank(([Gender].[F], [Marital Status].[M]), \n" + "{})", "0");
+            "Rank(([Gender].[F], [Marital Status].[M]), \n"
+            + "{})", "0");
         // Partially null tuple in set, returns null
         assertExprReturns(
             "Rank(([Gender].[F], [Marital Status].Parent), \n"
@@ -11173,6 +11177,14 @@ public class FunctionTest extends FoodMartTestCase {
         // probably shouldn't. Feel free to fix the conversion.
         // -- jhyde, 2006/9/3
 
+        // From double to integer.  MONDRIAN-1631
+        Cell cell = getTestContext().executeExprRaw("Cast(1.4 As Integer)");
+        assertEquals(
+            "Cast to Integer resulted in wrong datatype\n"
+            + cell.getValue().getClass().toString(),
+            Integer.class, cell.getValue().getClass());
+        assertEquals(cell.getValue(), 1);
+
         // From integer
         // To integer (trivial)
         assertExprReturns("0 + Cast(1 + 2 AS Integer)", "3");
@@ -11181,6 +11193,7 @@ public class FunctionTest extends FoodMartTestCase {
         // To Boolean
         assertExprReturns("1=1 AND Cast(1 + 2 AS Boolean)", "true");
         assertExprReturns("1=1 AND Cast(1 - 1 AS Boolean)", "false");
+
 
         // From boolean
         // To String
