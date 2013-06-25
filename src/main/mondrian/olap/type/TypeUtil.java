@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2010 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.type;
@@ -193,6 +193,10 @@ public class TypeUtil {
             return Category.Empty;
         } else if (type instanceof DateTimeType) {
             return Category.DateTime;
+        } else if (type instanceof DecimalType
+            && ((DecimalType)type).getScale() == 0)
+        {
+            return Category.Integer;
         } else if (type instanceof NumericType) {
             return Category.Numeric;
         } else if (type instanceof BooleanType) {
