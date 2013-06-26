@@ -254,7 +254,7 @@ public abstract class RolapAggregationManager {
                     continue;
                 }
 
-                addNonConstrainingColumns(member, cube, request);
+                //addNonConstrainingColumns(member, cube, request);
 
                 final RolapCubeLevel level = member.getLevel();
                 final boolean needToReturnNull =
@@ -376,6 +376,7 @@ public abstract class RolapAggregationManager {
                 final RolapStar.Column nameColumn = column.getNameColumn();
                 Util.assertTrue(nameColumn != null);
                 request.addConstrainedColumn(nameColumn, null);
+                ((DrillThroughCellRequest)request).addDrillThroughColumn(nameColumn);
             }
         }
     }
