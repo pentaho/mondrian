@@ -278,6 +278,14 @@ public class ValidationUtils {
                         }
                     }
                 }
+                // verify level's name is set
+                if (isEmpty(level.name)) {
+                    return messages.getString(
+                        "schemaTreeCellRenderer.nameMustBeSet.alert",
+                        "Level name must be set"
+                    );
+                }
+
                 // check level's column is in fact table
                 String column = level.column;
                 if (isEmpty(column)) {
