@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.spi;
@@ -212,7 +212,7 @@ public interface SegmentCache {
      * instead of the injector. See {@link SegmentCache}.
      */
     public static class SegmentCacheInjector {
-        private final static List<SegmentCache> caches =
+        private static final List<SegmentCache> caches =
             new ArrayList<SegmentCache>();
         /**
          * Adds a {@link SegmentCache} instance for Mondrian's use.

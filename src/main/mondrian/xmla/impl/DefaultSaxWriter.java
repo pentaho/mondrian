@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.xmla.impl;
@@ -44,7 +44,7 @@ public class DefaultSaxWriter implements SaxWriter {
     private final ArrayStack<String> stack = new ArrayStack<String>();
     private int state = STATE_END_ELEMENT;
 
-    private final static Pattern nlPattern = Pattern.compile("\\r\\n|\\r|\\n");
+    private static final Pattern nlPattern = Pattern.compile("\\r\\n|\\r|\\n");
 
     /**
      * Creates a DefaultSaxWriter writing to an {@link java.io.OutputStream}.
@@ -72,8 +72,8 @@ public class DefaultSaxWriter implements SaxWriter {
     /**
      * Creates a DefaultSaxWriter writing to a {@link java.io.PrintWriter}.
      *
-     * @param writer
-     * @param initialIndent
+     * @param writer Writer
+     * @param initialIndent Initial indent
      */
     public DefaultSaxWriter(PrintWriter writer, int initialIndent) {
         this.writer = writer;
