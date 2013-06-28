@@ -812,7 +812,7 @@ doRandom() {
 }
 
 doQuick() {
-  doTest jdk1.7 monetdb
+  doTest jdk1.7 mysql
 }
 
 # Runs the tests that are believed to be working.
