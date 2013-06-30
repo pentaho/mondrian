@@ -241,6 +241,7 @@ public class Main extends TestSuite {
             addTest(suite, ScheduleTest.class);
             addTest(suite, UtilTestCase.class);
             addTest(suite, PartiallyOrderedSetTest.class);
+            addTest(suite, ConcatenableListTest.class);
             addTest(suite, ExpiringReferenceTest.class);
             addTest(suite, Olap4jTest.class);
             addTest(suite, SortTest.class);
