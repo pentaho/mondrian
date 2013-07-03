@@ -3091,6 +3091,141 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Row #0: 65,336\n"
             + "Row #1: 66,222\n");
     }
+
+    public void testRollupPolicyWithNative() {
+        // Verifies limited role-restricted results using
+        // all variations of rollup policy
+        // Also verifies consistent results with a non-all default member.
+        // connected with MONDRIAN-1568
+        propSaver.set(propSaver.properties.EnableNativeCrossJoin, true);
+        propSaver.set(propSaver.properties.EnableNativeFilter, true);
+        propSaver.set(propSaver.properties.EnableNativeNonEmpty, true);
+        propSaver.set(propSaver.properties.EnableNativeTopCount, true);
+        propSaver.set(propSaver.properties.ExpandNonNative, true);
+
+        String dimension =
+            "<Dimension name=\"Store2\">\n"
+            + "  <Hierarchy hasAll=\"%s\" primaryKey=\"store_id\" %s >\n"
+            + "    <Table name=\"store\"/>\n"
+            + "    <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>\n"
+            + "    <Level name=\"Store State\" column=\"store_state\" uniqueMembers=\"true\"/>\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>\n";
+
+        String cube =
+            "<Cube name=\"TinySales\">\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n"
+            + "  <DimensionUsage name=\"Store2\" source=\"Store2\" foreignKey=\"store_id\"/>\n"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"/>\n"
+            + "</Cube>";
+
+
+        final String roleDefs =
+            "<Role name=\"test\">\n"
+            + "        <SchemaGrant access=\"none\">\n"
+            + "            <CubeGrant cube=\"TinySales\" access=\"all\">\n"
+            + "                <HierarchyGrant hierarchy=\"[Store2]\" access=\"custom\"\n"
+            + "                                 rollupPolicy=\"%s\">\n"
+            + "                    <MemberGrant member=\"[Store2].[USA].[CA]\" access=\"all\"/>\n"
+            + "                    <MemberGrant member=\"[Store2].[USA].[OR]\" access=\"all\"/>\n"
+            + "                    <MemberGrant member=\"[Store2].[Canada]\" access=\"all\"/>\n"
+            + "                </HierarchyGrant>\n"
+            + "            </CubeGrant>\n"
+            + "        </SchemaGrant>\n"
+            + "    </Role> ";
+
+        String nonAllDefaultMem = "defaultMember=\"[Store2].[USA].[CA]\"";
+
+        for (Role.RollupPolicy policy : Role.RollupPolicy.values()) {
+            for (String defaultMember : new String[]{nonAllDefaultMem, "" }) {
+                for (boolean hasAll : new Boolean[]{true, false}) {
+                    // Results in this test should be the same regardless
+                    // of rollupPolicy, default member, and whether there
+                    // is an all member, since the rollup is not included
+                    // in the test queries and context is explicitly set
+                    // for [Store2].
+                    // MONDRIAN-1568 showed different results with different
+                    // rollup policies and different default members
+                    final TestContext testContext2 = getTestContext().create(
+                        // swap in hasAll and defaultMember
+                        String.format(dimension, hasAll, defaultMember),
+                        cube, null, null, null,
+                        // swap in policy
+                        String.format(roleDefs, policy)).withRole("test");
+                    // RolapNativeCrossjoin
+                    testContext2.assertQueryReturns(
+                        String.format(
+                            "Failure testing RolapNativeCrossJoin with "
+                            + " rollupPolicy=%s, "
+                            +   "defaultMember=%s, hasAll=%s",
+                            policy, defaultMember, hasAll),
+                        "select NonEmptyCrossJoin([Store2].[Store State].MEMBERS,"
+                        + "[Product].[Product Family].MEMBERS) on 0 from tinysales",
+                        "Axis #0:\n"
+                        + "{}\n"
+                        + "Axis #1:\n"
+                        + "{[Store2].[USA].[CA], [Product].[Drink]}\n"
+                        + "{[Store2].[USA].[CA], [Product].[Food]}\n"
+                        + "{[Store2].[USA].[CA], [Product].[Non-Consumable]}\n"
+                        + "{[Store2].[USA].[OR], [Product].[Drink]}\n"
+                        + "{[Store2].[USA].[OR], [Product].[Food]}\n"
+                        + "{[Store2].[USA].[OR], [Product].[Non-Consumable]}\n"
+                        + "Row #0: 7,102\n"
+                        + "Row #0: 53,656\n"
+                        + "Row #0: 13,990\n"
+                        + "Row #0: 6,106\n"
+                        + "Row #0: 48,537\n"
+                        + "Row #0: 13,016\n");
+                    // RolapNativeFilter
+                    testContext2.assertQueryReturns(
+                        String.format(
+                            "Failure testing RolapNativeFilter with "
+                            + "rollupPolicy=%s, "
+                            +   "defaultMember=%s, hasAll=%s",
+                            policy, defaultMember, hasAll),
+                        "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+                        + "  Filter( [Store2].[USA].children,"
+                        + "          [Measures].[Unit Sales]>0) ON ROWS \n"
+                        + "from [TinySales] \n",
+                        "Axis #0:\n"
+                        + "{}\n"
+                        + "Axis #1:\n"
+                        + "{[Measures].[Unit Sales]}\n"
+                        + "Axis #2:\n"
+                        + "{[Store2].[USA].[CA]}\n"
+                        + "{[Store2].[USA].[OR]}\n"
+                        + "Row #0: 74,748\n"
+                        + "Row #1: 67,659\n");
+                    // RolapNativeTopCount
+                    testContext2.assertQueryReturns(
+                        String.format(
+                            "Failure testing RolapNativeTopCount with "
+                            + " rollupPolicy=%s, "
+                            +   "defaultMember=%s, hasAll=%s",
+                            policy, defaultMember, hasAll),
+                        "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+                        + "  TopCount( [Store2].[USA].children,"
+                        + "          2) ON ROWS \n"
+                        + "from [TinySales] \n",
+                        "Axis #0:\n"
+                        + "{}\n"
+                        + "Axis #1:\n"
+                        + "{[Measures].[Unit Sales]}\n"
+                        + "Axis #2:\n"
+                        + "{[Store2].[USA].[CA]}\n"
+                        + "{[Store2].[USA].[OR]}\n"
+                        + "Row #0: 74,748\n"
+                        + "Row #1: 67,659\n");
+                }
+            }
+        }
+
+        propSaver.reset();
+    }
+
+
+
 }
 
 // End AccessControlTest.java
