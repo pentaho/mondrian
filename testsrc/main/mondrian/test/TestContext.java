@@ -1089,6 +1089,24 @@ public class TestContext {
     }
 
     /**
+     * Executes a query and checks that the result is a given string,
+     * displaying a message if result does not match desiredResult.
+     */
+    public void assertQueryReturns(
+        String message, String query, String desiredResult)
+    {
+        Result result = executeQuery(query);
+        String resultString = toString(result);
+        if (desiredResult != null) {
+            assertEqualsVerbose(
+                desiredResult,
+                upgradeActual(resultString),
+                true, message);
+        }
+    }
+
+
+    /**
      * Executes a very simple query.
      *
      * <p>This forces the schema to be loaded and performs a basic sanity check.
