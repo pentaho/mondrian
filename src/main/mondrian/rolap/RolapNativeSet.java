@@ -362,10 +362,28 @@ public abstract class RolapNativeSet extends RolapNative {
         for (CrossJoinArg carg : cargs) {
             RolapLevel level = carg.getLevel();
             if (level != null) {
-                Hierarchy hierarchy = level.getHierarchy();
-                Member defaultMember =
-                    schemaReader.getHierarchyDefaultMember(hierarchy);
-                evaluator.setContext(defaultMember);
+                RolapHierarchy hierarchy = level.getHierarchy();
+
+                final Member contextMember;
+                if (hierarchy.hasAll()
+                    || schemaReader.getRole()
+                    .getAccess(hierarchy) == Access.ALL)
+                {
+                    // The hierarchy may have access restrictions.
+                    // If it does, calling .substitute() will retrieve an
+                    // appropriate LimitedRollupMember.
+                    contextMember =
+                        schemaReader.substitute(hierarchy.getAllMember());
+                } else {
+                    // If there is no All member on a role restricted hierarchy,
+                    // use a restricted member based on the set of accessible
+                    // root members.
+                    contextMember = new RestrictedMemberReader
+                        .MultiCardinalityDefaultMember(
+                            hierarchy.getMemberReader()
+                                .getRootMembers().get(0));
+                }
+                evaluator.setContext(contextMember);
             }
         }
         if (storedMeasure != null) {
