@@ -171,6 +171,9 @@ public class RolapConnection extends ConnectionBase {
                 }
             } finally {
                 Locus.pop(locus);
+                if (locus.execution.getMondrianStatement() != null) {
+                    locus.execution.getMondrianStatement().close();
+                }
                 bootstrapStatement.close();
             }
             internalStatement =
@@ -774,8 +777,8 @@ public class RolapConnection extends ConnectionBase {
             return queryPart;
         } finally {
             Locus.pop(locus);
-            if (statement != null) {
-                statement.close();
+            if (locus.execution.getMondrianStatement() != null) {
+                locus.execution.getMondrianStatement().close();
             }
         }
     }
