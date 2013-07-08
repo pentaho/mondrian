@@ -55,6 +55,12 @@ class DenseDoubleSegmentDataset extends DenseNativeSegmentDataset {
     }
 
     public Object getObject(CellKey pos) {
+        if (values.length == 0) {
+            // No values means they are all null.
+            // We can't call isNull because we risk going into a SOE. Besides,
+            // this is a tight loop and we can skip over one VFC.
+            return null;
+        }
         int offset = pos.getOffset(axisMultipliers);
         return getObject(offset);
     }
