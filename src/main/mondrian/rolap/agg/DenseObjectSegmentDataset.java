@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2012 Pentaho and others
+// Copyright (C) 2010-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -52,11 +52,18 @@ class DenseObjectSegmentDataset extends DenseSegmentDataset {
     }
 
     public Object getObject(CellKey key) {
+        if (isNull(key)) {
+            return null;
+        }
         int offset = key.getOffset(axisMultipliers);
         return values[offset];
     }
 
     public boolean isNull(CellKey pos) {
+        if (values.length == 0) {
+            // No values means they are all null.
+            return true;
+        }
         return getObject(pos) != null;
     }
 
