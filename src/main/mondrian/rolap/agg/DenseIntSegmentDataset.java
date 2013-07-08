@@ -62,6 +62,9 @@ class DenseIntSegmentDataset extends DenseNativeSegmentDataset {
     }
 
     public Object getObject(CellKey pos) {
+        if (isNull(pos)) {
+            return null;
+        }
         int offset = pos.getOffset(axisMultipliers);
         return getObject(offset);
     }

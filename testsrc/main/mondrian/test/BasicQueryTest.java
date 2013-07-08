@@ -8051,6 +8051,44 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Non Empty [*SORTED_ROW_AXIS] on rows\n"
             + "From [Warehouse and Sales]\n");
     }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1605">MONDRIAN-1605</a>
+     *
+     * <p>When a dense object has only null values, it threw a AIOOBE
+     * because the offset resolved to 0 and was used to fetch data directly out
+     * of the array.
+     */
+    public void testArrayIndexOutOfBoundsWithEmptySegment() {
+        TestContext testContext =
+            getTestContext().createSubstitutingCube(
+                "Sales",
+                null,
+                "<Measure name='zero' aggregator='sum'>\n"
+                + " <MeasureExpression>\n"
+                + " <SQL dialect='generic'>\n"
+                + " NULL"
+                + " </SQL></MeasureExpression></Measure>",
+                null, null);
+        testContext.executeQuery(
+            "select "
+            + "Crossjoin([Gender].[Gender].Members, [Measures].[zero]) ON COLUMNS\n"
+            + "from [Sales] "
+            + " \n");
+        testContext.assertQueryReturns(
+            "select [Measures].[zero] ON COLUMNS,\n"
+            + " {[Gender].[All Gender]} ON ROWS\n"
+            + "from [Sales] "
+            + " ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[zero]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "Row #0: \n");
+    }
 }
 
 // End BasicQueryTest.java
