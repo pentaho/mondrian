@@ -8134,6 +8134,17 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Crossjoin([Gender].[Gender].Members, [Measures].[zero]) ON COLUMNS\n"
             + "from [Sales] "
             + " \n");
+
+        // Some DBs return 0 when we ask for null. Like Oracle.
+        final String returnedValue;
+        switch (getTestContext().getDialect().getDatabaseProduct()) {
+            case ORACLE:
+                returnedValue = "0";
+                break;
+            default:
+                returnedValue = "";
+        }
+
         testContext.assertQueryReturns(
             "select [Measures].[zero] ON COLUMNS,\n"
             + " {[Gender].[All Gender]} ON ROWS\n"
@@ -8145,7 +8156,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Measures].[zero]}\n"
             + "Axis #2:\n"
             + "{[Gender].[All Gender]}\n"
-            + "Row #0: \n");
+            + "Row #0: " + returnedValue + "\n");
     }
 }
 
