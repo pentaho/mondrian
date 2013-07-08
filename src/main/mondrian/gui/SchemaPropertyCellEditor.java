@@ -430,6 +430,7 @@ public class SchemaPropertyCellEditor
                 cAccess =
                     new DefaultComboBoxModel(
                         new String[]{"all", "custom", "none"});
+
             } else if (targetClassz == MondrianGuiDef.HierarchyGrant.class
                 || targetClassz == MondrianGuiDef.DimensionGrant.class)
             {
@@ -443,6 +444,14 @@ public class SchemaPropertyCellEditor
             listEditor.setSelectedItem((String) value);
             activeEditor = listEditor;
 
+        } else if (targetClassz == MondrianGuiDef.HierarchyGrant.class
+            && propertyName.equals("rollupPolicy")) {
+            ComboBoxModel cRollupPolicy =
+                new DefaultComboBoxModel(
+                    new String[]{"full", "partial", "hidden"});
+            listEditor.setModel(cRollupPolicy);
+            listEditor.setSelectedItem(value);
+            activeEditor = listEditor;
         } else if (targetClassz == MondrianGuiDef.DimensionGrant.class
                     && propertyName.equals("dimension"))
         {

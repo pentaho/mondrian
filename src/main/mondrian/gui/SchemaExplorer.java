@@ -5421,7 +5421,7 @@ public class SchemaExplorer
     static final String[] DEF_CUBE_GRANT = {"access", "cube"};
     static final String[] DEF_DIMENSION_GRANT = {"access", "dimension"};
     static final String[] DEF_HIERARCHY_GRANT = {
-        "access", "hierarchy", "topLevel", "bottomLevel"};
+        "access", "hierarchy", "topLevel", "bottomLevel", "rollupPolicy"};
     static final String[] DEF_MEMBER_GRANT = {"access", "member"};
     static final String[] DEF_COLUMN = {"name", "table"};   //?
 
