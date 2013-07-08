@@ -691,39 +691,52 @@ public class RolapUtil {
         // so that we can pick the correct agg table.
         for (Member curMember : members) {
             if (curMember instanceof LimitedRollupMember) {
-                List<Member> lowestMembers =
-                    ((RolapHierarchy)curMember.getHierarchy())
-                        .getLowestMembersForAccess(
-                            evaluator,
-                            ((LimitedRollupMember)curMember).hierarchyAccess,
-                            FunUtil.getNonEmptyMemberChildrenWithDetails(
+                final int savepoint = evaluator.savepoint();
+                try {
+                    // set NonEmpty to false to avoid the possibility of
+                    // constraining member retrieval by context, which itself
+                    // requires determination of limited members, resulting
+                    // in infinite loop.
+                    evaluator.setNonEmpty(false);
+                    List<Member> lowestMembers =
+                        ((RolapHierarchy)curMember.getHierarchy())
+                            .getLowestMembersForAccess(
                                 evaluator,
-                                curMember));
+                                ((LimitedRollupMember)curMember)
+                                    .hierarchyAccess,
+                                FunUtil.getNonEmptyMemberChildrenWithDetails(
+                                    evaluator,
+                                    curMember));
 
-                assert lowestMembers.size() > 0;
+                    assert lowestMembers.size() > 0;
 
-                Member lowMember = lowestMembers.get(0);
+                    Member lowMember = lowestMembers.get(0);
 
-                while (true) {
-                    RolapStar.Column curColumn =
-                        ((RolapCubeLevel)lowMember.getLevel())
-                            .getBaseStarKeyColumn(cube);
+                    while (true) {
+                        RolapStar.Column curColumn =
+                            ((RolapCubeLevel)lowMember.getLevel())
+                                .getBaseStarKeyColumn(cube);
 
-                    if (curColumn != null) {
-                        levelBitKey.set(curColumn.getBitPosition());
-                    }
+                        if (curColumn != null) {
+                            levelBitKey.set(curColumn.getBitPosition());
+                        }
 
-                    // If the level doesn't have unique members, we have to
-                    // add the parent levels until the keys are unique,
-                    // or all of them are added.
-                    if (!((RolapCubeLevel)lowMember.getLevel()).isUnique()) {
-                        lowMember = lowMember.getParentMember();
-                        if (lowMember.isAll()) {
+                        // If the level doesn't have unique members, we have to
+                        // add the parent levels until the keys are unique,
+                        // or all of them are added.
+                        if (!((RolapCubeLevel)lowMember
+                            .getLevel()).isUnique())
+                        {
+                            lowMember = lowMember.getParentMember();
+                            if (lowMember.isAll()) {
+                                break;
+                            }
+                        } else {
                             break;
                         }
-                    } else {
-                        break;
                     }
+                } finally {
+                    evaluator.restore(savepoint);
                 }
             }
         }
