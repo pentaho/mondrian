@@ -562,7 +562,7 @@ public class RolapConnection extends ConnectionBase {
     }
 
     public SchemaReader getSchemaReader() {
-        return schemaReader;
+        return schemaReader.withLocus();
     }
 
     public Object getProperty(String name) {
