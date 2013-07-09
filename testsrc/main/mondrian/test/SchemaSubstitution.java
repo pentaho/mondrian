@@ -46,6 +46,45 @@ public class SchemaSubstitution {
         };
     }
 
+    public static Util.Function1<String, String> insertColumnDef(
+        final String tableName,
+        final String columnDef)
+    {
+        return new Util.Function1<String, String>() {
+            public String apply(String schema) {
+                String prefix = "";
+                String suffix = "";
+                int h = schema.indexOf("<Table name='" + tableName + "'");
+                if (h < 0) {
+                    throw new RuntimeException(
+                        "table '" + tableName + "' not found");
+                }
+                int end = schema.indexOf("</Table>", h);
+
+                int existingDefs = schema.indexOf("<ColumnDefs>", h);
+                if (existingDefs == -1) {
+                    // There wasn't a ColumnDefs element yet.
+                    // We create it.
+                    prefix = "<ColumnDefs>\n";
+                    suffix = "</ColumnDefs>\n";
+                } else {
+                    if (existingDefs < end) {
+                        // We change the insertion markers so that they don't
+                        // the existing ColumnDefs.
+                        end = schema.indexOf("</ColumnDefs>", existingDefs);
+                    }
+                }
+
+                return
+                    schema.substring(0, end)
+                        .concat(prefix)
+                        .concat(columnDef)
+                        .concat(suffix)
+                        .concat(schema.substring(end));
+            }
+        };
+    }
+
     public static Util.Function1<String, String> insertDimension(
         final String cubeName, final String dimDefs)
     {

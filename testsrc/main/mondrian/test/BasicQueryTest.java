@@ -7712,44 +7712,50 @@ public class BasicQueryTest extends FoodMartTestCase {
      * of the array.
      */
     public void testArrayIndexOutOfBoundsWithEmptySegment() {
-        TestContext testContext =
-            getTestContext().createSubstitutingCube(
-                "Sales",
-                null,
-                "<Measure name='zero' aggregator='sum'>\n"
-                + " <MeasureExpression>\n"
-                + " <SQL dialect='generic'>\n"
-                + " NULL"
-                + " </SQL></MeasureExpression></Measure>",
-                null, null);
-        testContext.executeQuery(
-            "select "
-            + "Crossjoin([Gender].[Gender].Members, [Measures].[zero]) ON COLUMNS\n"
-            + "from [Sales] "
-            + " \n");
+        final TestContext testContext =
+            getTestContext()
+                .insertCalculatedColumnDef(
+                    "inventory_fact_1997",
+                    "<CalculatedColumnDef name='zero' type='Numeric'>\n"
+                    + "    <ExpressionView>\n"
+                    + "        <SQL dialect='generic'>NULL</SQL>\n"
+                    + "    </ExpressionView>\n"
+                    + "</CalculatedColumnDef>\n")
+                .insertCube(
+                    "<Cube name='FooBar'>\n"
+                    + "  <Dimensions>"
+                    + "    <Dimension source='Time'/>\n"
+                    + "  </Dimensions>"
+                    + "  <MeasureGroups>"
+                    + "    <MeasureGroup table='inventory_fact_1997'>"
+                    + "      <Measures>"
+                    + "        <Measure name='zero' aggregator='sum' column='zero'>\n"
+                    + "        </Measure>\n"
+                    + "      </Measures>"
+                    + "      <DimensionLinks>\n"
+                    + "        <ForeignKeyLink dimension='Time' foreignKeyColumn='time_id'/>\n"
+                    + "      </DimensionLinks>\n"
+                    + "    </MeasureGroup>"
+                    + "  </MeasureGroups>"
+                    + "</Cube>");
 
-        // Some DBs return 0 when we ask for null. Like Oracle.
-        final String returnedValue;
-        switch (getTestContext().getDialect().getDatabaseProduct()) {
-            case ORACLE:
-                returnedValue = "0";
-                break;
-            default:
-                returnedValue = "";
-        }
+        testContext.executeQuery(
+            "select\n"
+            + "  Crossjoin([Time].[Time].[Year].Members, [Measures].[zero]) ON COLUMNS\n"
+            + "from [FooBar]\n");
 
         testContext.assertQueryReturns(
             "select [Measures].[zero] ON COLUMNS,\n"
-            + " {[Gender].[All Gender]} ON ROWS\n"
-            + "from [Sales] "
+            + " {[Time].[Time].[1997]} ON ROWS\n"
+            + "from [FooBar] "
             + " ",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
             + "{[Measures].[zero]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[All Gender]}\n"
-            + "Row #0: " + returnedValue + "\n");
+            + "{[Time].[Time].[1997]}\n"
+            + "Row #0: \n");
     }
 }
 

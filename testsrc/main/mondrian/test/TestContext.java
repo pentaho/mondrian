@@ -2135,7 +2135,8 @@ public class TestContext {
             throw new RuntimeException(
                 "ERROR in SQL - invalid for database: "
                 + connectProperties.get(RolapConnectionProperties.Jdbc.name())
-                + "\n" + actualSql,
+                + "\n"
+                + actualSql,
                 e);
         } finally {
             try {
@@ -3079,6 +3080,14 @@ public class TestContext {
         return withSubstitution(SchemaSubstitution.insertPhysTable(tableDef));
     }
 
+    public final TestContext insertCalculatedColumnDef(
+        final String tableName,
+        final String columnDefs)
+    {
+        return withSubstitution(
+            SchemaSubstitution.insertColumnDef(tableName, columnDefs));
+    }
+
     public final TestContext insertHierarchy(
         final String cubeName,
         final String dimensionName,
@@ -3193,7 +3202,8 @@ public class TestContext {
                 + predicate.describe()
                 + "\nException list is:\n"
                 + buf
-                + "\nOther info:\n" + sw);
+                + "\nOther info:\n"
+                + sw);
         }
 
         /**
