@@ -3371,7 +3371,51 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
 
+    public void testConnectionSchemaReader() {
+        // Connection.getSchemaReader() would formerly not set the Locus,
+        // which could cause issues when looking up members via that schema
+        // reader when role restrictions are in place.
+        final String roleDefs =
+            "<Role name=\"test\">\n"
+            + "        <SchemaGrant access=\"none\">\n"
+            + "            <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "                <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\"\n"
+            + "             topLevel=\"[Store].[Store Country]\"  rollupPolicy=\"partial\">\n"
+            + "                    <MemberGrant member=\"[Store].[USA].[CA]\" access=\"all\"/>\n"
+            + "                    <MemberGrant member=\"[Store].[USA].[OR]\" access=\"all\"/>\n"
+            + "                    <MemberGrant member=\"[Store].[Canada]\" access=\"all\"/>\n"
+            + "                </HierarchyGrant>\n"
+            + "            </CubeGrant>\n"
+            + "        </SchemaGrant>\n"
+            + "    </Role> ";
+        TestContext context = getTestContext().create(
+            null, null, null, null, null,
+            roleDefs).withRole("test");
+        Hierarchy hierarchy = getHierarchyWithName("Sales", "Store", context);
 
+        Member member = context.getConnection().getSchemaReader()
+            .getHierarchyDefaultMember(hierarchy);
+        assertEquals("All Stores", member.getName());
+    }
+
+    private Hierarchy getHierarchyWithName(
+        String cubeName, String hierarchyName, TestContext context)
+    {
+        Cube[] cubes = context.getConnection().getSchema().getCubes();
+        for (Cube cube : cubes) {
+            if (cube.getName().equals(cubeName)) {
+                for (Dimension dim : cube.getDimensions()) {
+                    for (Hierarchy hier : dim.getHierarchies()) {
+                        if (hier.getName().equals(hierarchyName)) {
+                            return hier;
+                        }
+                    }
+                }
+                return null;
+            }
+        }
+        return null;
+    }
 }
 
 // End AccessControlTest.java
