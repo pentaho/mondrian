@@ -3236,6 +3236,156 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Row #4: 65,336\n"
             + "Row #5: 66,222\n");
     }
+
+    public void testRollupPolicyWithNative() {
+        // Verifies limited role-restricted results using
+        // all variations of rollup policy
+        // Also verifies consistent results with a non-all default member.
+        // connected with MONDRIAN-1568
+        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        propSaver.set(propSaver.props.EnableNativeNonEmpty, true);
+        propSaver.set(propSaver.props.EnableNativeTopCount, true);
+        propSaver.set(propSaver.props.ExpandNonNative, true);
+
+        String dimension =
+            "<Dimension name=\"Store2\" table='store' key='Store Id'>\n"
+            + "<Attributes>"
+            + "  <Attribute name='Store Country' hasHierarchy='false'>\n"
+            + "  <Key>\n"
+            + "    <Column name='store_country'/>\n"
+            + "    </Key>\n"
+            + "  </Attribute>\n"
+            + "  <Attribute name='Store State' keyColumn='store_state' hasHierarchy='false'/>\n"
+            + "  <Attribute name='Store Id' keyColumn='store_id' hasHierarchy='false'/>"
+            + "</Attributes>"
+            + " <Hierarchies>"
+            + "  <Hierarchy name='Stores' hasAll=\"%s\"  %s >\n"
+            + "    <Level attribute=\"Store Country\"  />\n"
+            + "    <Level attribute=\"Store State\" />\n"
+            + "  </Hierarchy>\n"
+            + " </Hierarchies>"
+            + "</Dimension>\n";
+
+        String cube =
+            "<Cube name=\"TinySales\">\n"
+            + "<Dimensions>"
+            + "  <Dimension  source=\"Product\" />\n"
+            + "  <Dimension  source=\"Store2\" />\n"
+            + "</Dimensions>"
+            + " <MeasureGroups><MeasureGroup table='sales_fact_1997'><Measures>"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"/>\n"
+            + " </Measures>"
+            + " <DimensionLinks>\n"
+            + "    <ForeignKeyLink dimension='Store2' foreignKeyColumn='store_id'/>\n"
+            + "    <ForeignKeyLink dimension='Product' foreignKeyColumn='product_id'/>\n"
+            + "</DimensionLinks></MeasureGroup></MeasureGroups>\n"
+            + "</Cube>";
+
+
+        final String roleDefs =
+            "<Role name=\"test\">\n"
+            + "        <SchemaGrant access=\"none\">\n"
+            + "            <CubeGrant cube=\"TinySales\" access=\"all\">\n"
+            + "                <HierarchyGrant hierarchy=\"[Stores]\" access=\"custom\"\n"
+            + "                                 rollupPolicy=\"%s\">\n"
+            + "                    <MemberGrant member=\"[Store2].[Stores].[USA].[CA]\" access=\"all\"/>\n"
+            + "                    <MemberGrant member=\"[Store2].[Stores].[USA].[OR]\" access=\"all\"/>\n"
+            + "                    <MemberGrant member=\"[Store2].[Stores].[Canada]\" access=\"all\"/>\n"
+            + "                </HierarchyGrant>\n"
+            + "            </CubeGrant>\n"
+            + "        </SchemaGrant>\n"
+            + "    </Role> ";
+
+        String nonAllDefaultMem =
+            "defaultMember=\"[Store2].[Stores].[USA].[CA]\"";
+
+        for (Role.RollupPolicy policy : Role.RollupPolicy.values()) {
+            for (String defaultMember : new String[]{nonAllDefaultMem, "" }) {
+                for (boolean hasAll : new Boolean[]{true, false}) {
+                    // Results in this test should be the same regardless
+                    // of rollupPolicy, default member, and whether there
+                    // is an all member, since the rollup is not included
+                    // in the test queries and context is explicitly set
+                    // for [Store2].
+                    // MONDRIAN-1568 showed different results with different
+                    // rollup policies and different default members
+                    final TestContext testContext2 = getTestContext().create(
+                        // swap in hasAll and defaultMember
+                        String.format(dimension, hasAll, defaultMember),
+                        cube, null, null, null,
+                        // swap in policy
+                        String.format(roleDefs, policy)).withRole("test");
+                    // RolapNativeCrossjoin
+                    testContext2.assertQueryReturns(
+                        String.format(
+                            "Failure testing RolapNativeCrossJoin with "
+                            + " rollupPolicy=%s, "
+                            +   "defaultMember=%s, hasAll=%s",
+                            policy, defaultMember, hasAll),
+                        "select NonEmptyCrossJoin([Store2].[Store State].MEMBERS,"
+                        + "[Product].[Product Family].MEMBERS) on 0 from tinysales",
+                        "Axis #0:\n"
+                        + "{}\n"
+                        + "Axis #1:\n"
+                        + "{[Store2].[Stores].[USA].[CA], [Product].[Products].[Drink]}\n"
+                        + "{[Store2].[Stores].[USA].[CA], [Product].[Products].[Food]}\n"
+                        + "{[Store2].[Stores].[USA].[CA], [Product].[Products].[Non-Consumable]}\n"
+                        + "{[Store2].[Stores].[USA].[OR], [Product].[Products].[Drink]}\n"
+                        + "{[Store2].[Stores].[USA].[OR], [Product].[Products].[Food]}\n"
+                        + "{[Store2].[Stores].[USA].[OR], [Product].[Products].[Non-Consumable]}\n"
+                        + "Row #0: 7,102\n"
+                        + "Row #0: 53,656\n"
+                        + "Row #0: 13,990\n"
+                        + "Row #0: 6,106\n"
+                        + "Row #0: 48,537\n"
+                        + "Row #0: 13,016\n");
+                    // RolapNativeFilter
+                    testContext2.assertQueryReturns(
+                        String.format(
+                            "Failure testing RolapNativeFilter with "
+                            + "rollupPolicy=%s, "
+                            +   "defaultMember=%s, hasAll=%s",
+                            policy, defaultMember, hasAll),
+                        "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+                        + "  Filter( [Store2].[USA].children,"
+                        + "          [Measures].[Unit Sales]>0) ON ROWS \n"
+                        + "from [TinySales] \n",
+                        "Axis #0:\n"
+                        + "{}\n"
+                        + "Axis #1:\n"
+                        + "{[Measures].[Unit Sales]}\n"
+                        + "Axis #2:\n"
+                        + "{[Store2].[Stores].[USA].[CA]}\n"
+                        + "{[Store2].[Stores].[USA].[OR]}\n"
+                        + "Row #0: 74,748\n"
+                        + "Row #1: 67,659\n");
+                    // RolapNativeTopCount
+                    testContext2.assertQueryReturns(
+                        String.format(
+                            "Failure testing RolapNativeTopCount with "
+                            + " rollupPolicy=%s, "
+                            +   "defaultMember=%s, hasAll=%s",
+                            policy, defaultMember, hasAll),
+                        "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+                        + "  TopCount( [Store2].[USA].children,"
+                        + "          2) ON ROWS \n"
+                        + "from [TinySales] \n",
+                        "Axis #0:\n"
+                        + "{}\n"
+                        + "Axis #1:\n"
+                        + "{[Measures].[Unit Sales]}\n"
+                        + "Axis #2:\n"
+                        + "{[Store2].[Stores].[USA].[CA]}\n"
+                        + "{[Store2].[Stores].[USA].[OR]}\n"
+                        + "Row #0: 74,748\n"
+                        + "Row #1: 67,659\n");
+                }
+            }
+        }
+
+        propSaver.reset();
+    }
 }
 
 // End AccessControlTest.java

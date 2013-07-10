@@ -1331,9 +1331,12 @@ public class TestContext {
     }
 
     /**
-     * Executes a query and checks that the result is a given string.
+     * Executes a query and checks that the result is a given string,
+     * displaying a message if result does not match desiredResult.
      */
-    public void assertQueryReturns(String query, String desiredResult) {
+    public void assertQueryReturns(
+        String message, String query, String desiredResult)
+    {
         String resultString;
         if (isPreferOlap4j()) {
             try {
@@ -1349,8 +1352,18 @@ public class TestContext {
         if (desiredResult != null) {
             assertEqualsVerbose(
                 upgradeExpected(desiredResult),
-                upgradeActual(resultString));
+                upgradeActual(resultString),
+                true, message);
         }
+    }
+
+
+    /**
+     * Executes a query and checks that the result is a given string
+     */
+    public void assertQueryReturns(String query, String desiredResult)
+    {
+        assertQueryReturns(null, query, desiredResult);
     }
 
     /**
