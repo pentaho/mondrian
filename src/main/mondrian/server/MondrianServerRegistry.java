@@ -124,8 +124,9 @@ public class MondrianServerRegistry {
         String title = "Unknown Database";
         String vendor = "Unknown Vendor";
         URL resource =
-            MondrianServerImpl.class.getClassLoader()
-                .getResource("DefaultRules.xml");
+            Util.getClosestResource(
+                MondrianServerImpl.class.getClassLoader(),
+                "DefaultRules.xml");
         if (resource != null) {
             try {
                 String path = resource.getPath();
