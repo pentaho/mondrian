@@ -1413,29 +1413,6 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Masks Mondrian's version number from a string.
-     * Note that this method does a mostly blind replacement
-     * of the version string and may replace strings that
-     * just happen to have the same sequence.
-     *
-     * @param str String
-     * @return String with each occurrence of mondrian's version number
-     *    (e.g. "2.3.0.0") replaced with "${mondrianVersion}"
-     */
-    public static String maskVersion(String str) {
-        MondrianServer.MondrianVersion mondrianVersion =
-            MondrianServer.forId(null).getVersion();
-        String versionString = mondrianVersion.getVersionString();
-        // regex characters that wouldn't be expected before or after the
-        // version string.  This avoids a false match when the version
-        // string digits appear in other contexts (e.g. $3.56)
-        String charsOutOfContext = "([^,\\$\\n\\d])";
-        String matchString = charsOutOfContext + versionString
-            + charsOutOfContext;
-        return str.replaceAll(matchString, "$1\\${mondrianVersion}$2");
-    }
-
-    /**
      * Converts a list of SQL-style patterns into a Java regular expression.
      *
      * <p>For example, {"Foo_", "Bar%BAZ"} becomes "Foo.|Bar.*BAZ".
