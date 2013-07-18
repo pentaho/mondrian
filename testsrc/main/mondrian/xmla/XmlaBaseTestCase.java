@@ -26,6 +26,7 @@ import org.xml.sax.SAXException;
 import java.io.*;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -380,7 +381,7 @@ System.out.println("Got CONTINUE");
         // version string.  This avoids a false match when the version
         // string digits appear in other contexts (e.g. $3.56)
         String charsOutOfContext = "([^,\\$\\d])";
-        String matchString = charsOutOfContext + versionString
+        String matchString = charsOutOfContext + Pattern.quote(versionString)
             + charsOutOfContext;
         return str.replaceAll(matchString, "$1\\${mondrianVersion}$2");
     }
