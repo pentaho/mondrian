@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.xmla;
@@ -25,6 +25,7 @@ import org.xml.sax.SAXException;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -821,7 +822,7 @@ System.out.println("Got CONTINUE");
         // version string.  This avoids a false match when the version
         // string digits appear in other contexts (e.g. $3.56)
         String charsOutOfContext = "([^,\\$\\d])";
-        String matchString = charsOutOfContext + versionString
+        String matchString = charsOutOfContext + Pattern.quote(versionString)
             + charsOutOfContext;
         return str.replaceAll(matchString, "$1\\${mondrianVersion}$2");
     }
