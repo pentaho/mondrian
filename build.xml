@@ -1867,6 +1867,12 @@ xalan.jar"/>
     </sequential>
   </target>
 
+  <target name="ivy-report">
+    <antcall target="subfloor.ivy-report"/>
+    <ivy:resolve file="workbench/${ivyfile}" conf="${ivy.configs}" />
+    <ivy:report xml="true" todir="${ivy.reports.dir}" />
+  </target>
+
 </project>
 
 <!-- End build.xml -->

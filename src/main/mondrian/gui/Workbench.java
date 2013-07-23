@@ -15,7 +15,6 @@ package mondrian.gui;
 import mondrian.olap.DriverManager;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util.PropertyList;
-import mondrian.rolap.agg.AggregationManager;
 import mondrian.util.UnionIterator;
 
 import org.apache.commons.io.FileUtils;
@@ -24,7 +23,7 @@ import org.apache.log4j.Logger;
 import org.eigenbase.xom.XMLOutput;
 
 import org.pentaho.di.core.Const;
-import org.pentaho.di.core.KettleEnvironment;
+import org.pentaho.di.core.KettleClientEnvironment;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleDatabaseException;
 import org.pentaho.di.core.exception.KettleException;
@@ -54,6 +53,7 @@ import javax.swing.tree.TreePath;
  */
 public class Workbench extends javax.swing.JFrame {
 
+    private static final long serialVersionUID = 1L;
     static String WORKBENCH_USER_HOME_DIR;
     static String WORKBENCH_CONFIG_FILE;
     static String DB_META_CONFIG_FILE;
@@ -261,7 +261,7 @@ public class Workbench extends javax.swing.JFrame {
 
         OutputStream out = null;
         try {
-            out = (OutputStream) new FileOutputStream(
+            out = new FileOutputStream(
                 new File(
                     WORKBENCH_CONFIG_FILE));
             workbenchProperties.store(out, "Workbench configuration");
@@ -345,7 +345,6 @@ public class Workbench extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
         jSeparator3 = new javax.swing.JSeparator();
-        jSeparator4 = new javax.swing.JSeparator();
         exitMenuItem = new javax.swing.JMenuItem();
         windowMenu = new javax.swing.JMenu();
         helpMenu = new javax.swing.JMenu();
@@ -362,6 +361,7 @@ public class Workbench extends javax.swing.JFrame {
                     getResourceConverter().getString(
                         "workbench.menu.delete", "Delete"))
                 {
+                    private static final long serialVersionUID = 1L;
                     public void actionPerformed(ActionEvent e) {
                         JInternalFrame jf = desktopPane.getSelectedFrame();
                         if (jf != null && jf.getContentPane()
@@ -378,9 +378,6 @@ public class Workbench extends javax.swing.JFrame {
         aboutMenuItem = new javax.swing.JMenuItem();
         toolsMenu = new javax.swing.JMenu();
         viewMenu = new javax.swing.JMenu();
-        viewDimensionsMenuItem = new javax.swing.JCheckBoxMenuItem();
-        viewMeasuresMenuItem = new javax.swing.JCheckBoxMenuItem();
-        viewCubesMenuItem = new javax.swing.JCheckBoxMenuItem();
         viewXmlMenuItem = new javax.swing.JCheckBoxMenuItem();
 
         setTitle(
@@ -898,7 +895,7 @@ public class Workbench extends javax.swing.JFrame {
         final Dimension dsize = desktopPane.getSize();
         final int desktopW = (int) dsize.getWidth();
         final int desktopH = (int) dsize.getHeight();
-        final int darea = (int) (desktopW * desktopH);
+        final int darea = desktopW * desktopH;
         final double eacharea =
             darea
             / (schemaWindowMap.size() + mdxWindows.size() + jdbcWindows.size());
@@ -999,7 +996,7 @@ public class Workbench extends javax.swing.JFrame {
         SchemaExplorer se)
     {
         if (se.isDirty()) {
-            JMenuItem schemaMenuItem = (JMenuItem) schemaWindowMap.get(
+            JMenuItem schemaMenuItem = schemaWindowMap.get(
                 desktopPane.getSelectedFrame());
             // yes=0; no=1; cancel=2
             int answer = JOptionPane.showConfirmDialog(
@@ -1071,6 +1068,7 @@ public class Workbench extends javax.swing.JFrame {
     /**
      * Returns an iterable over all internal frames.
      */
+    @SuppressWarnings("unchecked")
     private Iterable<JInternalFrame> getAllFrames() {
         return UnionIterator.over(
             schemaWindowMap.keySet(), mdxWindows, jdbcWindows);
@@ -1218,11 +1216,11 @@ public class Workbench extends javax.swing.JFrame {
      */
     private DatabaseMeta getDbMeta(String xml) {
         try {
-            if (!KettleEnvironment.isInitialized()) {
+            if (!KettleClientEnvironment.isInitialized()) {
                 System.setProperty(
                     "KETTLE_PLUGIN_BASE_FOLDERS",
                     KETTLE_PLUGIN_BASE_FOLDERS);
-                KettleEnvironment.init();
+                KettleClientEnvironment.init();
             }
             if (dbMeta != null) {
                 return dbMeta;
@@ -1336,7 +1334,7 @@ public class Workbench extends javax.swing.JFrame {
 
     private void newQueryMenuItemActionPerformed(ActionEvent evt) {
         JMenuItem schemaMenuItem =
-            (JMenuItem) schemaWindowMap.get(desktopPane.getSelectedFrame());
+            schemaWindowMap.get(desktopPane.getSelectedFrame());
 
         final JInternalFrame jf = new JInternalFrame();
         jf.setTitle(
@@ -1428,9 +1426,9 @@ public class Workbench extends javax.swing.JFrame {
 
     // inform all opened mdx query windows about the list of opened schema files
     private void updateMDXCatalogList() {
-        Iterator it = mdxWindows.iterator();
+        Iterator<JInternalFrame> it = mdxWindows.iterator();
         while (it.hasNext()) {
-            JInternalFrame elem = (JInternalFrame) it.next();
+            JInternalFrame elem = it.next();
             QueryPanel qp = (QueryPanel) elem.getContentPane().getComponent(0);
             qp.setSchemaWindowMap(schemaWindowMap);
         }
@@ -1516,7 +1514,7 @@ public class Workbench extends javax.swing.JFrame {
 
                     // Update menu item with new file name, then update catalog
                     // list for mdx queries
-                    JMenuItem sMenuItem = (JMenuItem) schemaWindowMap.get(jf);
+                    JMenuItem sMenuItem = schemaWindowMap.get(jf);
                     String mtexttokens[] = sMenuItem.getText().split(" ");
                     sMenuItem.setText(
                         mtexttokens[0] + " " + se.getSchemaFile().getName());
@@ -1927,9 +1925,9 @@ public class Workbench extends javax.swing.JFrame {
 
     // checks if file already open in schema explorer
     private boolean checkFileOpen(File file) {
-        Iterator it = schemaWindowMap.keySet().iterator();  // keys=schemaframes
+        Iterator<JInternalFrame> it = schemaWindowMap.keySet().iterator();  // keys=schemaframes
         while (it.hasNext()) {
-            JInternalFrame elem = (JInternalFrame) it.next();
+            JInternalFrame elem = it.next();
             File f = ((SchemaExplorer) elem.getContentPane().getComponent(0))
                 .getSchemaFile();
             if (f.equals(file)) {
@@ -1965,10 +1963,11 @@ public class Workbench extends javax.swing.JFrame {
     private void resetWorkbench() {
         getNewJdbcMetadata();
 
-        Iterator theSchemaFrames = schemaWindowMap.keySet().iterator();
+        Iterator<JInternalFrame> theSchemaFrames =
+            schemaWindowMap.keySet().iterator();
         while (theSchemaFrames.hasNext()) {
             JInternalFrame theSchemaFrame =
-                (JInternalFrame) theSchemaFrames.next();
+                theSchemaFrames.next();
             SchemaExplorer theSchemaExplorer =
                 (SchemaExplorer) theSchemaFrame.getContentPane()
                     .getComponent(0);
@@ -2025,7 +2024,7 @@ public class Workbench extends javax.swing.JFrame {
             PropertyList list = new PropertyList();
             list.put("Provider", "mondrian");
             list.put("Jdbc", jdbcConnectionUrl);
-            list.put("Catalog", file.toURL().toString());
+            list.put("Catalog", file.toURI().toURL().toString());
             list.put("JdbcDrivers", jdbcDriverClassName);
             if (jdbcUsername != null && jdbcUsername.length() > 0) {
                 list.put("JdbcUser", jdbcUsername);
@@ -2141,13 +2140,11 @@ public class Workbench extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
-    private javax.swing.JSeparator jSeparator4;
     private javax.swing.JMenuItem cutMenuItem;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem saveMenuItem;
     private javax.swing.JMenuItem newJDBCExplorerMenuItem;
     private javax.swing.JMenuItem newJDBCExplorerMenuItem2;
-    private javax.swing.JCheckBoxMenuItem viewCubesMenuItem;
     private javax.swing.JButton toolbarSaveButton;
     private javax.swing.JMenuItem copyMenuItem;
     private javax.swing.JDesktopPane desktopPane;
@@ -2160,11 +2157,9 @@ public class Workbench extends javax.swing.JFrame {
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JButton toolbarPreferencesButton;
     private javax.swing.JCheckBoxMenuItem requireSchemaCheckboxMenuItem;
-    private javax.swing.JCheckBoxMenuItem viewMeasuresMenuItem;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem pasteMenuItem;
     private javax.swing.JMenuItem preferencesMenuItem;
-    private javax.swing.JCheckBoxMenuItem viewDimensionsMenuItem;
     private javax.swing.JCheckBoxMenuItem viewXmlMenuItem;
     private javax.swing.JMenuItem saveAsMenuItem;
     private javax.swing.JToolBar jToolBar1;
