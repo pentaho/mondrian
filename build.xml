@@ -1735,13 +1735,16 @@ xalan.jar"/>
             <include name="**/*.sh" />
             <include name="**/JavaApplicationStub" />
    		</zipfileset>
-      	<zipfileset
+        <zipfileset
           dir="workbench"
           prefix="${workbench.dist.name}">
-      		<include name="**/*" />
+            <include name="**/*" />
             <exclude name="**/*.sh" />
+            <exclude name="**/plugins/*-source.jar"/>
+            <exclude name="**/plugins/*-javadoc.jar"/>
+            <exclude name="**/plugins/junit.jar"/>
             <exclude name="**/JavaApplicationStub" />
-   		</zipfileset>
+        </zipfileset>
       	<zipfileset
           dir="src/main"
           prefix="${workbench.dist.name}/src"
