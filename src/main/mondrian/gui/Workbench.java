@@ -14,6 +14,7 @@ package mondrian.gui;
 
 import mondrian.olap.DriverManager;
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
 import mondrian.olap.Util.PropertyList;
 import mondrian.util.UnionIterator;
 
@@ -190,7 +191,11 @@ public class Workbench extends javax.swing.JFrame {
             File file = new File(DB_META_CONFIG_FILE);
             if (file.exists()) {
                 try {
-                    dbMeta = getDbMeta(FileUtils.readFileToString(file));
+                    final String fileContents =
+                        FileUtils.readFileToString(file);
+                    if (!Util.isBlank(fileContents)) {
+                        dbMeta = getDbMeta(fileContents);
+                    }
                 } catch (Exception e) {
                     LOGGER.error("loadDatabaseMeta", e);
                 }
