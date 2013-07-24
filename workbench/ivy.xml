@@ -47,5 +47,10 @@
         <exclude org="jdom" module="jdom"/>
         <exclude org="xom" module="xom"/>
         <exclude org="com.ibm.icu" module="icu4j"/>
+        <!-- Don't pull xerces here. This will get picked by the
+             master mondrian build and will be put in the lib folder
+             of the workbench. -->
+        <exclude org="xerces" module="xercesImpl"/>
+        <exclude org="xml-apis" module="xml-apis"/>
     </dependencies>
 </ivy-module>
