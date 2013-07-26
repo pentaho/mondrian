@@ -10,7 +10,9 @@
 package mondrian.olap4j;
 
 import mondrian.olap.OlapElement;
+import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapMeasure;
+import mondrian.server.Locus;
 
 import org.olap4j.OlapException;
 import org.olap4j.impl.AbstractNamedList;
@@ -34,47 +36,8 @@ class MondrianOlap4jMember
     extends MondrianOlap4jMetadataElement
     implements Member, Named
 {
-    /**
-     * This class encapsulates the logic to get the parent of the current
-     * member instance. We cache the parent because this can potentially get
-     * called in a tight loop and we don't want to call the schema reader each
-     * time.
-     */
-    private final class ParentResolver {
-        private final MondrianOlap4jMember wrapper;
-        private ParentResolver() {
-            // Get the parent from the source member.
-            final mondrian.olap.Member parent =
-                MondrianOlap4jMember.this.member.getParentMember();
-
-            if (parent == null) {
-                wrapper = null;
-                return;
-            }
-
-            // Check the visibility attribute in the current context.
-            final boolean isVisible =
-                olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
-                    .olap4jConnection.getMondrianConnection2().getSchemaReader()
-                        .withLocus().isVisible(parent);
-
-            if (isVisible) {
-                wrapper = new MondrianOlap4jMember(olap4jSchema, parent);
-            } else {
-                wrapper = null;
-            }
-        }
-        /**
-         * This method returns the parent, or null if there aren't any or
-         * the parent isn't visible.
-         */
-        private MondrianOlap4jMember getParentMember() {
-            return wrapper;
-        }
-    }
 
     final mondrian.olap.Member member;
-    final ParentResolver parentResolver;
 
     final MondrianOlap4jSchema olap4jSchema;
 
@@ -87,8 +50,6 @@ class MondrianOlap4jMember
             == this instanceof MondrianOlap4jMeasure;
         this.olap4jSchema = olap4jSchema;
         this.member = mondrianMember;
-        // Now create this handy resolver.
-        this.parentResolver = new ParentResolver();
     }
 
     public boolean equals(Object obj) {
@@ -107,11 +68,20 @@ class MondrianOlap4jMember
     public NamedList<MondrianOlap4jMember> getChildMembers()
         throws OlapException
     {
+        final RolapConnection conn =
+            olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
+                .olap4jConnection.getMondrianConnection();
         final List<mondrian.olap.Member> children =
-            olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection
-                .getMondrianConnection().getSchemaReader()
-                .withLocus().getMemberChildren(
-                    member);
+            Locus.execute(
+                conn,
+                "MondrianOlap4jMember.getChildMembers",
+                new Locus.Action<List<mondrian.olap.Member>>() {
+                    public List<mondrian.olap.Member> execute() {
+                        return
+                            conn.getSchemaReader()
+                                .getMemberChildren(member);
+                    }
+                });
         return new AbstractNamedList<MondrianOlap4jMember>() {
             public String getName(Object member) {
                 return ((MondrianOlap4jMember)member).getName();
@@ -129,14 +99,45 @@ class MondrianOlap4jMember
     }
 
     public int getChildMemberCount() throws OlapException {
-        return olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
-            .olap4jConnection.getMondrianConnection().getSchemaReader()
-            .withLocus()
-            .getMemberChildren(member).size();
+        final RolapConnection conn =
+            olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
+                .olap4jConnection.getMondrianConnection();
+        return
+            Locus.execute(
+                conn,
+                "MondrianOlap4jMember.getChildMemberCount",
+                new Locus.Action<Integer>() {
+                    public Integer execute() {
+                        return
+                            conn.getSchemaReader()
+                                .getMemberChildren(member).size();
+                    }
+                });
     }
 
     public MondrianOlap4jMember getParentMember() {
-        return parentResolver.getParentMember();
+        final mondrian.olap.Member parentMember = member.getParentMember();
+        if (parentMember == null) {
+            return null;
+        }
+        final RolapConnection conn =
+            olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
+                .olap4jConnection.getMondrianConnection2();
+        final boolean isVisible =
+            Locus.execute(
+                conn,
+                "MondrianOlap4jMember.getParentMember",
+                new Locus.Action<Boolean>() {
+                    public Boolean execute() {
+                        return
+                            conn.getSchemaReader()
+                                .isVisible(parentMember);
+                    }
+                });
+        if (!isVisible) {
+            return null;
+        }
+        return new MondrianOlap4jMember(olap4jSchema, parentMember);
     }
 
     public Level getLevel() {
