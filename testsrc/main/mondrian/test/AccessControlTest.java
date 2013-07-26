@@ -3371,6 +3371,39 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
 
+    public void testValidMeasureWithRestrictedCubes() {
+        //http://jira.pentaho.com/browse/MONDRIAN-1616
+        final String roleDefs =
+            "<Role name=\"noBaseCubes\">\n"
+            + " <SchemaGrant access=\"all\">\n"
+            + "  <CubeGrant cube=\"Sales\" access=\"none\" />\n"
+            + "  <CubeGrant cube=\"Sales Ragged\" access=\"none\" />\n"
+            + "  <CubeGrant cube=\"Sales 2\" access=\"none\" />\n"
+            + "  <CubeGrant cube=\"Warehouse\" access=\"none\" />\n"
+            + " </SchemaGrant>\n"
+            + "</Role> ";
+
+        final TestContext testContext = getTestContext().create(
+            null, null, null, null, null, roleDefs).withRole("noBaseCubes");
+
+        testContext.assertQueryReturns(
+            "with member measures.vm as 'validmeasure(measures.[unit sales])' "
+            + "select measures.vm on 0 from [warehouse and sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[vm]}\n"
+            + "Row #0: 266,773\n");
+
+        testContext.assertQueryReturns(
+            "with member measures.vm as 'validmeasure(measures.[warehouse cost])' "
+            + "select measures.vm * {gender.f} on 0 from [warehouse and sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[vm], [Gender].[F]}\n"
+            + "Row #0: 89,043.253\n");
+    }
 
 }
 
