@@ -118,9 +118,9 @@ public class ValidMeasureFunDef extends FunDefBase
         private List<Member> getCalcsMembers(Evaluator evaluator) {
             List<Member> memberList;
             if (calc.isWrapperFor(MemberCalc.class)) {
-                memberList = new ArrayList<Member>(1);
-                memberList.add(
-                    calc.unwrap(MemberCalc.class).evaluateMember(evaluator));
+                memberList = Collections.singletonList(
+                    calc.unwrap(MemberCalc.class).evaluateMember(evaluator)
+                );
             } else {
                 final Member[] tupleMembers =
                     calc.unwrap((TupleCalc.class)).evaluateTuple(evaluator);
