@@ -193,11 +193,18 @@ public class Workbench extends javax.swing.JFrame {
                 try {
                     final String fileContents =
                         FileUtils.readFileToString(file);
-                    if (!Util.isBlank(fileContents)) {
+                    if (Util.isBlank(fileContents)) {
+                        LOGGER.error(
+                            "DB Meta file is empty at: "
+                            + DB_META_CONFIG_FILE);
+                    } else {
                         dbMeta = getDbMeta(fileContents);
                     }
                 } catch (Exception e) {
-                    LOGGER.error("loadDatabaseMeta", e);
+                    LOGGER.error(
+                        "Failed to load DB meta file at: "
+                        + DB_META_CONFIG_FILE,
+                        e);
                 }
             }
         }
