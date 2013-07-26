@@ -34,7 +34,48 @@ class MondrianOlap4jMember
     extends MondrianOlap4jMetadataElement
     implements Member, Named
 {
+    /**
+     * This class encapsulates the logic to get the parent of the current
+     * member instance. We cache the parent because this can potentially get
+     * called in a tight loop and we don't want to call the schema reader each
+     * time.
+     */
+    private final class ParentResolver {
+        private final MondrianOlap4jMember wrapper;
+        private ParentResolver() {
+            // Get the parent from the source member.
+            final mondrian.olap.Member parent =
+                MondrianOlap4jMember.this.member.getParentMember();
+
+            if (parent == null) {
+                wrapper = null;
+                return;
+            }
+
+            // Check the visibility attribute in the current context.
+            final boolean isVisible =
+                olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
+                    .olap4jConnection.getMondrianConnection2().getSchemaReader()
+                        .withLocus().isVisible(parent);
+
+            if (isVisible) {
+                wrapper = new MondrianOlap4jMember(olap4jSchema, parent);
+            } else {
+                wrapper = null;
+            }
+        }
+        /**
+         * This method returns the parent, or null if there aren't any or
+         * the parent isn't visible.
+         */
+        private MondrianOlap4jMember getParentMember() {
+            return wrapper;
+        }
+    }
+
     final mondrian.olap.Member member;
+    final ParentResolver parentResolver;
+
     final MondrianOlap4jSchema olap4jSchema;
 
     MondrianOlap4jMember(
@@ -46,6 +87,8 @@ class MondrianOlap4jMember
             == this instanceof MondrianOlap4jMeasure;
         this.olap4jSchema = olap4jSchema;
         this.member = mondrianMember;
+        // Now create this handy resolver.
+        this.parentResolver = new ParentResolver();
     }
 
     public boolean equals(Object obj) {
@@ -93,16 +136,7 @@ class MondrianOlap4jMember
     }
 
     public MondrianOlap4jMember getParentMember() {
-        final mondrian.olap.Member parentMember = member.getParentMember();
-        if (parentMember == null
-            || !olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
-            .olap4jConnection.getMondrianConnection2().getSchemaReader()
-            .withLocus().isVisible(
-                parentMember))
-        {
-            return null;
-        }
-        return new MondrianOlap4jMember(olap4jSchema, parentMember);
+        return parentResolver.getParentMember();
     }
 
     public Level getLevel() {
