@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -14,8 +14,7 @@ import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.TypeUtil;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapMember;
+import mondrian.rolap.*;
 
 import java.util.*;
 
@@ -65,18 +64,18 @@ public class ValidMeasureFunDef extends FunDefBase
         }
 
         public Object evaluate(Evaluator evaluator) {
-            final List<Member> memberList;
-            if (calc.isWrapperFor(MemberCalc.class)) {
-                memberList = new ArrayList<Member>(1);
-                memberList.add(
-                    calc.unwrap(MemberCalc.class).evaluateMember(evaluator));
-            } else {
-                final Member[] tupleMembers =
-                    calc.unwrap((TupleCalc.class)).evaluateTuple(evaluator);
-                memberList = Arrays.asList(tupleMembers);
-            }
-            RolapCube baseCube = null;
+            RolapCube baseCube;
             RolapCube virtualCube = (RolapCube) evaluator.getCube();
+            final List<Member> memberList = getCalcsMembers(evaluator);
+
+            if (!virtualCube.isVirtual()) {
+                // this is not a virtual cube,
+                // there's nothing for ValidMeasure to do.
+                // just evaluate sub-expression
+                evaluator.setContext(memberList.toArray(
+                    new Member[memberList.size()]));
+                return evaluator.evaluateCurrent();
+            }
             // find the measure in the tuple
             int measurePosition = -1;
             for (int i = 0; i < memberList.size(); i++) {
@@ -85,10 +84,10 @@ public class ValidMeasureFunDef extends FunDefBase
                     break;
                 }
             }
-            // problem: if measure is in two base cubes
-            baseCube =
-                getBaseCubeofMeasure(
-                    evaluator, memberList.get(measurePosition), baseCube);
+
+            baseCube = ((RolapVirtualCubeMeasure)memberList
+                .get(measurePosition)).getCube();
+
             List<Dimension> vMinusBDimensions =
                 getDimensionsToForceToAllLevel(
                     virtualCube, baseCube, memberList);
@@ -116,6 +115,20 @@ public class ValidMeasureFunDef extends FunDefBase
             return evaluator.evaluateCurrent();
         }
 
+        private List<Member> getCalcsMembers(Evaluator evaluator) {
+            List<Member> memberList;
+            if (calc.isWrapperFor(MemberCalc.class)) {
+                memberList = Collections.singletonList(
+                    calc.unwrap(MemberCalc.class).evaluateMember(evaluator)
+                );
+            } else {
+                final Member[] tupleMembers =
+                    calc.unwrap((TupleCalc.class)).evaluateTuple(evaluator);
+                memberList = Arrays.asList(tupleMembers);
+            }
+            return memberList;
+        }
+
         private List<Member> getCalculatedMembersFromContext(
             Evaluator evaluator)
         {
@@ -131,26 +144,6 @@ public class ValidMeasureFunDef extends FunDefBase
 
         public Calc[] getCalcs() {
             return new Calc[]{calc};
-        }
-
-        private RolapCube getBaseCubeofMeasure(
-            Evaluator evaluator, Member member, RolapCube baseCube)
-        {
-            final Cube[] cubes = evaluator.getSchemaReader().getCubes();
-            for (Cube cube1 : cubes) {
-                RolapCube cube = (RolapCube) cube1;
-                if (!cube.isVirtual()) {
-                    for (RolapMember measure : cube.getMeasuresMembers()) {
-                        if (measure.getName().equals(member.getName())) {
-                            baseCube = cube;
-                        }
-                    }
-                }
-                if (baseCube != null) {
-                    break;
-                }
-            }
-            return baseCube;
         }
 
         private List<Dimension> getDimensionsToForceToAllLevel(
