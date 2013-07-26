@@ -765,6 +765,27 @@ public class FunctionTest extends FoodMartTestCase {
             s1);
     }
 
+    public void testValidMeasureNonVirtualCube() {
+        // verify ValidMeasure used outside of a virtual cube
+        // is effectively a no-op.
+        assertQueryReturns(
+            "with member measures.vm as 'ValidMeasure(measures.[Store Sales])'"
+            + " select measures.[vm] on 0 from Sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[vm]}\n"
+            + "Row #0: 565,238.13\n");
+        assertQueryReturns(
+            "with member measures.vm as 'ValidMeasure((gender.f, measures.[Store Sales]))'"
+            + " select measures.[vm] on 0 from Sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[vm]}\n"
+            + "Row #0: 280,226.21\n");
+    }
+
     public void testAncestor() {
         Member member =
             executeSingletonAxis(
