@@ -391,7 +391,21 @@ demo/access/MondrianFoodMart.mdb"/>
     <mkdir dir="${dist.dir}"/>
   </target>
 
-  <target name="resolve" unless="skip.download">
+  <target name="resolve" unless="skip.download" depends="resolve-for-workbench">
+      <!-- Use symbolic links, rather than copying, on unix. -->
+      <condition property="symlink" value="true">
+          <os family="unix"/>
+      </condition>
+      <echo message="symlink=${symlink}"/>
+
+      <!-- Mondrian dependencies. -->
+      <ivy:resolve file="ivy.xml"/>
+      <ivy:retrieve symlink="${symlink}" type="jar,war"
+          pattern="${lib.dir}/[module].[ext]"/>
+      <ivy:retrieve symlink="${symlink}" type="source,javadoc"
+          pattern="${lib.dir}/[module]-[type].[ext]"/>
+  </target>
+  <target name="resolve-for-workbench" unless="skip.workbench">
       <!-- Use symbolic links, rather than copying, on unix. -->
       <condition property="symlink" value="true">
           <os family="unix"/>
@@ -404,14 +418,8 @@ demo/access/MondrianFoodMart.mdb"/>
           pattern="${wb.plugins.dir}/[module].[ext]"/>
       <ivy:retrieve symlink="${symlink}" type="source,javadoc"
           pattern="${wb.plugins.dir}/[module]-[type].[ext]"/>
-
-      <!-- Mondrian dependencies. -->
-      <ivy:resolve file="ivy.xml"/>
-      <ivy:retrieve symlink="${symlink}" type="jar,war"
-          pattern="${lib.dir}/[module].[ext]"/>
-      <ivy:retrieve symlink="${symlink}" type="source,javadoc"
-          pattern="${lib.dir}/[module]-[type].[ext]"/>
   </target>
+
 
   <target name="cmdrunner" depends="jar">
     <property name="crtmp.dir" location="${build.dir}/tmpcmdrunner"/>
