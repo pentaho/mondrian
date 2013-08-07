@@ -405,6 +405,7 @@ demo/access/MondrianFoodMart.mdb"/>
       <ivy:retrieve symlink="${symlink}" type="source,javadoc"
           pattern="${lib.dir}/[module]-[type].[ext]"/>
   </target>
+
   <target name="resolve-for-workbench" depends="prepare" unless="skip.download">
       <!-- Use symbolic links, rather than copying, on unix. -->
       <condition property="symlink" value="true">
@@ -418,6 +419,16 @@ demo/access/MondrianFoodMart.mdb"/>
           pattern="${wb.plugins.dir}/[module].[ext]"/>
       <ivy:retrieve symlink="${symlink}" type="source,javadoc"
           pattern="${wb.plugins.dir}/[module]-[type].[ext]"/>
+  </target>
+
+  <target name="resolve-workbench-runtime-deps" depends="prepare" 
+          unless="skip.download"
+          description="Resolves runtime dependencies not required for compilation.">
+    <ivy:resolve file="workbench/assembly_ivy.xml"/>
+    <ivy:retrieve symlink="${symlink}" type="jar"
+                  pattern="${wb.plugins.dir}/[module].[ext]"/>
+    <ivy:retrieve symlink="${symlink}" type="source,javadoc"
+                  pattern="${wb.plugins.dir}/[module]-[type].[ext]"/>
   </target>
 
 
@@ -1728,8 +1739,9 @@ xalan.jar"/>
     </java>
   </target>
 
+
   <target name="workbench-dist" 
-      depends="version,workbench">
+      depends="resolve-workbench-runtime-deps,version,workbench">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.dir}/${workbench.zip-dist.file}"/>
     <zip destfile="${dist.dir}/${workbench.zip-dist.file}">
