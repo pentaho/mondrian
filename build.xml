@@ -391,7 +391,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <mkdir dir="${dist.dir}"/>
   </target>
 
-  <target name="resolve" unless="skip.download" depends="resolve-for-workbench">
+  <target name="resolve" unless="skip.download" >
       <!-- Use symbolic links, rather than copying, on unix. -->
       <condition property="symlink" value="true">
           <os family="unix"/>
@@ -405,7 +405,7 @@ demo/access/MondrianFoodMart.mdb"/>
       <ivy:retrieve symlink="${symlink}" type="source,javadoc"
           pattern="${lib.dir}/[module]-[type].[ext]"/>
   </target>
-  <target name="resolve-for-workbench" unless="skip.workbench">
+  <target name="resolve-for-workbench" depends="prepare" unless="skip.download">
       <!-- Use symbolic links, rather than copying, on unix. -->
       <condition property="symlink" value="true">
           <os family="unix"/>
@@ -574,7 +574,7 @@ If you wish to build for this JDK, modify ${unix.script}.
       <exclude name="mondrian/olap4j/FactoryJdbc4Plus.java" if="jdk16.not.present"/>
       <exclude name="mondrian/olap4j/FactoryJdbc41Impl.java" if="jdk17.not.present"/>
       <exclude name="mondrian/util/UtilCompatibleJdk16.java" if="jdk15.present"/>
-      <exclude name="mondrian/gui/**/*.java" />
+      <exclude name="mondrian/gui/**/*.java" unless="${include.workbench}" /> 
     </javac>
     <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml"
         todir="${classes.dir}"/>
@@ -1243,30 +1243,45 @@ doc/**/*.xml"
     </tar>
   </target>
 
-  <target name="compileJdk15">
+  <target name="set-compile-args">
+    <property name="compile.default.args" value="-Dskip.download=true compile.java" />
+    <if>
+      <istrue value="${include.workbench}" />
+      <then>
+        <property name="compile.workbench.arg" value="-Dinclude.workbench=true" />
+      </then>
+      <else>
+        <property name="compile.workbench.arg" value="" />
+      </else>
+    </if>
+    <property name="compile.args" value="${compile.workbench.arg} ${compile.default.args}" />
+  </target>
+
+  <target name="compileJdk15" depends="set-compile-args" >
+
     <exec osfamily="unix" failonerror="true" executable="${unix.script}">
-      <arg line="jdk1.5 -Dskip.download=true compile.java"/>
+      <arg line="jdk1.5 ${compile.args}"/>
     </exec>
     <exec osfamily="windows" failonerror="true" dir="." executable="cmd">
-      <arg line="/c .\buildOnJdk.bat jdk1.5 -Dskip.download=true compile.java"/>
+      <arg line="/c .\buildOnJdk.bat jdk1.5 ${compile.args}"/>
     </exec>
   </target>
 
-  <target name="compileJdk16">
+  <target name="compileJdk16" depends="set-compile-args">
     <exec osfamily="unix" failonerror="true" executable="${unix.script}">
-      <arg line="jdk1.6 -Dskip.download=true compile.java"/>
+      <arg line="jdk1.6 ${compile.args}"/>
     </exec>
     <exec osfamily="windows" failonerror="true" dir="." executable="cmd">
-      <arg line="/c .\buildOnJdk.bat jdk1.6 -Dskip.download=true compile.java"/>
+      <arg line="/c .\buildOnJdk.bat jdk1.6 ${compile.args}"/>
     </exec>
   </target>
 
-  <target name="compileJdk17">
+  <target name="compileJdk17" depends="set-compile-args">
     <exec osfamily="unix" failonerror="true" executable="${unix.script}">
-      <arg line="jdk1.7 -Dskip.download=true compile.java"/>
+      <arg line="jdk1.7 ${compile.args}"/>
     </exec>
     <exec osfamily="windows" failonerror="true" dir="." executable="cmd">
-      <arg line="/c .\buildOnJdk.bat jdk1.7 -Dskip.download=true compile.java"/>
+      <arg line="/c .\buildOnJdk.bat jdk1.7 ${compile.args}"/>
     </exec>
   </target>
 
@@ -1664,7 +1679,14 @@ xalan.jar"/>
     <copy file="${war.file}" todir="${mondrian.webapp.deploy}"/>
   </target>
 
-  <target name="workbench" depends="jar">
+  <target name="compile-with-workbench">
+    <echo message="setting include.workbench to true" />
+    <antcall target="compile">
+      <param name="include.workbench" value="true" />
+    </antcall>    
+  </target>
+
+  <target name="workbench" depends="resolve-for-workbench,compile-with-workbench,jar"> 
     <jar jarfile="${workbench.jar.file}" update="true">
       <fileset
           dir="${classes.dir}"
