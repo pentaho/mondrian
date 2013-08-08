@@ -573,6 +573,15 @@ If you wish to build for this JDK, modify ${unix.script}.
 
   <target name="compile.java" depends="apologise" if="java.version.matches.requested">
     <echo>Compiling on JVM Version: ${java.runtime.version}</echo>
+    <condition property="include.gui">
+      <and>
+        <isset property="include.workbench" />
+        <!-- workbench kettle dependencies are incompatible with jdk1.5 -->
+        <isset property="jdk16.present" />
+      </and>
+    </condition>
+    <echo>include.gui=${include.gui}</echo>
+
     <javac
         srcdir="${java.dir}"
         destdir="${classes.dir}"
@@ -585,7 +594,7 @@ If you wish to build for this JDK, modify ${unix.script}.
       <exclude name="mondrian/olap4j/FactoryJdbc4Plus.java" if="jdk16.not.present"/>
       <exclude name="mondrian/olap4j/FactoryJdbc41Impl.java" if="jdk17.not.present"/>
       <exclude name="mondrian/util/UtilCompatibleJdk16.java" if="jdk15.present"/>
-      <exclude name="mondrian/gui/**/*.java" unless="include.workbench" /> 
+      <exclude name="mondrian/gui/**/*.java"                 unless="include.gui" /> 
     </javac>
     <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml"
         todir="${classes.dir}"/>
