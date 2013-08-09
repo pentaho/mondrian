@@ -1860,7 +1860,7 @@ xalan.jar"/>
          Deploys the workbench jar to a maven repository
       ====================================================================-->
 
-  <target name="publish-workbench-jar" depends="install-antcontrib, workbench-dist">
+  <target name="publish-workbench-jar" depends="install-antcontrib, workbench">
     <antcall target="maven-publish-jar">
       <param name="publish.groupId" value="${ivy.artifact.group}" />
       <param name="publish.version" value="${project.revision}" />
