@@ -18,12 +18,15 @@ import mondrian.server.Execution;
 import mondrian.spi.*;
 import mondrian.util.*;
 
+import org.apache.log4j.Logger;
+
 import java.io.PrintWriter;
 import java.sql.Statement;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
+
 
 /**
  * Data structure that identifies which segments contain cells.
@@ -33,6 +36,9 @@ import java.util.concurrent.Future;
  * @author Julian Hyde
  */
 public class SegmentCacheIndexImpl implements SegmentCacheIndex {
+
+    private static final Logger LOGGER =
+        Logger.getLogger(SegmentCacheIndexImpl.class);
 
     private final Map<List, List<SegmentHeader>> bitkeyMap =
         new HashMap<List, List<SegmentHeader>>();
@@ -209,8 +215,10 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         checkThread();
 
         final HeaderInfo headerInfo = headerMap.get(header);
-        assert headerInfo != null
-            : "segment header " + header.getUniqueID() + " is missing";
+        if (headerInfo == null) {
+            LOGGER.trace("loadFailed: Missing header " + header);
+            return;
+        }
         assert headerInfo.slot != null
             : "segment header " + header.getUniqueID() + " is not loading";
         headerInfo.slot.fail(throwable);
