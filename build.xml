@@ -1009,6 +1009,7 @@ workbench/mondrian.properties,
 workbench/readme.txt,
 workbench/workbench.bat,
 workbench/workbench.sh,
+workbench/workbench.command,
 build.xml,
 build.bat,
 build.sh,
@@ -1782,13 +1783,15 @@ xalan.jar"/>
           dir="workbench"
           prefix="${workbench.dist.name}">
             <include name="**/*.sh" />
+      		<include name="**/*.command"/>
             <include name="**/JavaApplicationStub" />
    		</zipfileset>
         <zipfileset
           dir="workbench"
           prefix="${workbench.dist.name}">
-            <include name="**/*" />
-            <exclude name="**/*.sh" />
+            <include name="**/*"/>
+            <exclude name="**/*.sh"/>
+        	<exclude name="**/*.command"/>
             <exclude name="**/plugins/*-source.jar"/>
             <exclude name="**/plugins/*-javadoc.jar"/>
             <exclude name="**/plugins/junit.jar"/>
