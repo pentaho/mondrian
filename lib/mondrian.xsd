@@ -1,1882 +1,1467 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <xsd:element name="Schema" >
-        <xsd:annotation>
-            <xsd:documentation>
-                A schema is a collection of cubes and virtual cubes.
-                It can also contain shared dimensions (for use by those cubes),
-                named sets, roles, and declarations of user-defined functions.
-            </xsd:documentation>
-        </xsd:annotation>
-        <xsd:complexType>
-            <xsd:sequence minOccurs="1" maxOccurs="1">
-                <xsd:element name="Annotations" type="Annotations" minOccurs="0" maxOccurs="1"/>
-                <xsd:element name="Parameter" minOccurs="0" maxOccurs="unbounded">
-                    <xsd:annotation>
-                        <xsd:documentation>
-                            A Parameter defines a schema parameter. It can be referenced from an MDX
-                            statement using the ParamRef  function and, if not final, its value can be overridden.
-                        </xsd:documentation>
-                    </xsd:annotation>
-                    <xsd:complexType>
-                        <xsd:attribute name="name" type="xsd:string" use="required">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Name of this parameter. 
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:attribute>
-                        <xsd:attribute name="description" type="xsd:string" use="optional">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Description of this parameter.  
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:attribute>
-                        <xsd:attribute name="type" use="required">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Indicates the type of this parameter: String, Numeric, Integer,
-                                    Boolean, Date, Time, Timestamp, or Member.  
-                                </xsd:documentation>
-                            </xsd:annotation>
-                            <xsd:simpleType>
-                                <xsd:restriction base="xsd:string">
-                                    <xsd:enumeration value="String"/>
-                                    <xsd:enumeration value="Numeric"/>
-                                    <xsd:enumeration value="Integer"/>
-                                    <xsd:enumeration value="Boolean"/>
-                                    <xsd:enumeration value="Date"/>
-                                    <xsd:enumeration value="Time"/>
-                                    <xsd:enumeration value="Timestamp"/>
-                                    <xsd:enumeration value="Member"/>
-                                </xsd:restriction>
-                            </xsd:simpleType>
-                        </xsd:attribute>
-                        <xsd:attribute name="modifiable" type="xsd:boolean" default="true" use="optional">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    If false, statement cannot change the value of this parameter; the
-                                    parameter becomes effectively constant (provided that its default
-                                    value expression always returns the same value). Default is true. 
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:attribute>
-                        <xsd:attribute name="defaultValue" type="xsd:string" use="optional">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Expression for the default value of this parameter.  
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:attribute>
-                    </xsd:complexType>
-                </xsd:element>
-                <xsd:element name="Dimension" type="SharedDimension" minOccurs="0" maxOccurs="unbounded"/>
-                <xsd:element name="Cube" minOccurs="1" maxOccurs="unbounded">
-                    <xsd:annotation>
-                        <xsd:documentation>
-                            Definition of a cube.
-                        </xsd:documentation>
-                    </xsd:annotation>
-                    <xsd:complexType>
-                        <xsd:sequence>
-                            <xsd:element name="Annotations" type="Annotations" minOccurs="0" maxOccurs="1"/>
-                            <xsd:group ref="FactTable" minOccurs="1" maxOccurs="1">
-                                <xsd:annotation>
-                                    <xsd:documentation>
-                                        The fact table is the source of all measures in this cube.
-                                        If this is a Table and the schema name is not present, table name is left unqualified. 
-                                    </xsd:documentation>
-                                </xsd:annotation>
-                            </xsd:group>
-                            <xsd:choice minOccurs="1" maxOccurs="unbounded">
-                                <xsd:element name="DimensionUsage" type="DimensionUsage"/>
-                                <xsd:element name="Dimension" type="PrivateDimension"/>
-                            </xsd:choice>
-                            <xsd:element name="Measure" minOccurs="1" maxOccurs="unbounded">
-                                <xsd:complexType>
-                                    <xsd:sequence>
-                                        <xsd:element name="Annotations" type="Annotations" minOccurs="0" maxOccurs="1"/>
-                                        <xsd:element name="MeasureExpression" type="ExpressionView" minOccurs="0" maxOccurs="1">
-                                            <xsd:annotation>
-                                                <xsd:documentation>
-                                                    The SQL expression used to calculate a measure.
-                                                    Must be specified if a source column is not specified.
-                                                </xsd:documentation>
-                                            </xsd:annotation>
-                                        </xsd:element>
-                                        <xsd:element name="CalculatedMemberProperty" type="CalculatedMemberProperty" minOccurs="0" maxOccurs="unbounded"/>
-                                    </xsd:sequence>
-                                    <xsd:attribute name="name" type="xsd:string" use="required">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                Name of this measure.
-                                            </xsd:documentation>
-                                        </xsd:annotation>
-                                    </xsd:attribute>
-                                    <xsd:attribute name="column" type="xsd:string" use="optional">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                Column which is source of this measure's values. If not specified,
-                                                a measure expression must be specified.
-                                            </xsd:documentation>
-                                        </xsd:annotation>
-                                    </xsd:attribute>
-                                    <xsd:attribute name="datatype" use="optional">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                The datatype of this measure: String, Numeric, Integer, Boolean, Date, Time or Timestamp.
-                                                The default datatype of a measure is 'Integer' if the measure's aggregator is 'Count', otherwise it is 'Numeric'. 
-                                            </xsd:documentation>
-                                        </xsd:annotation>
-                                        <xsd:simpleType>
-                                            <xsd:restriction base="xsd:string">
-                                                <xsd:enumeration value="String"/>
-                                                <xsd:enumeration value="Numeric"/>
-                                                <xsd:enumeration value="Integer"/>
-                                                <xsd:enumeration value="Boolean"/>
-                                                <xsd:enumeration value="Date"/>
-                                                <xsd:enumeration value="Time"/>
-                                                <xsd:enumeration value="Timestamp"/>
-                                            </xsd:restriction>
-                                        </xsd:simpleType>
-                                    </xsd:attribute>
-                                    <xsd:attribute name="formatString" type="xsd:string" use="optional">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                Format string with which to format cells of this measure.
-                                                For more details, see the mondrian.util.Format class. 
-                                            </xsd:documentation>
-                                        </xsd:annotation>
-                                    </xsd:attribute>
-                                    <xsd:attribute name="aggregator" use="required">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                Aggregation function. Allowed values are "sum", "count", "min", "max", "avg", and "distinct-count".
-                                                ("distinct count" is allowed for backwards compatibility, but is deprecated because XML
-                                                enumerated attributes in a DTD cannot legally contain spaces.) 
-                                            </xsd:documentation>
-                                        </xsd:annotation>
-                                        <xsd:simpleType>
-                                            <xsd:restriction base="xsd:string">
-                                                <xsd:enumeration value="sum"/>
-                                                <xsd:enumeration value="count"/>
-                                                <xsd:enumeration value="min"/>
-                                                <xsd:enumeration value="max"/>
-                                                <xsd:enumeration value="avg"/>
-                                                <xsd:enumeration value="distinct-count"/>
-                                            </xsd:restriction>
-                                        </xsd:simpleType>
-                                    </xsd:attribute>
-                                    <xsd:attribute name="formatter" type="xsd:string" use="optional">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                Name of a formatter class for the appropriate cell being displayed.
-                                                The class must implement the mondrian.olap.CellFormatter interface.
-                                            </xsd:documentation>
-                                        </xsd:annotation>
-                                    </xsd:attribute>
-                                    <xsd:attribute name="caption" type="xsd:string" use="optional">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                A string being displayed instead of the name.
-                                                Can be localized from Properties file using #{propertyname}.
-                                            </xsd:documentation>
-                                        </xsd:annotation>
-                                    </xsd:attribute>
-                                    <xsd:attribute name="description" type="xsd:string" use="optional">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                Description of this measure. Can be localized from Properties file using #{propertyname}.
-                                            </xsd:documentation>
-                                        </xsd:annotation>
-                                    </xsd:attribute>
-                                    <xsd:attribute name="visible" type="xsd:boolean" use="optional" default="true">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                Whether this member is visible in the user-interface. Default true.
-                                            </xsd:documentation>
-                                        </xsd:annotation>
-                                    </xsd:attribute>
-                                </xsd:complexType>
-                            </xsd:element>
-                            <xsd:element name="CalculatedMember" type="CalculatedMember" minOccurs="0" maxOccurs="unbounded">
-                                <xsd:annotation>
-                                    <xsd:documentation>
-                                        Calculated members in this cube.
-                                    </xsd:documentation>
-                                </xsd:annotation>
-                            </xsd:element>
-                            <xsd:element name="NamedSet" type="NamedSet" minOccurs="0" maxOccurs="unbounded">
-                                <xsd:annotation>
-                                    <xsd:documentation>
-                                        Named sets in this virtual cube.
-                                    </xsd:documentation>
-                                </xsd:annotation>
-                            </xsd:element>
-                        </xsd:sequence>
-                        <xsd:attribute name="name" type="xsd:string" use="required">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Name of this cube. 
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:attribute>
-                        <xsd:attribute name="caption" type="xsd:string" use="optional">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    A string being displayed instead of the cube's name. Can be localized from Properties
-                                    file using #{propertyname}.  
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:attribute>
-                        <xsd:attribute name="description" type="xsd:string" use="optional">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Description of this cube. Can be localized from Properties file using #{propertyname}.   
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:attribute>
-                        <xsd:attribute name="defaultMeasure" type="xsd:string" use="optional">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    The name of the measure that would be taken as the default measure of the cube. 
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:attribute>
-                        <xsd:attribute name="cache" type="xsd:boolean" default="true" use="optional">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Should the Fact table data for this Cube be cached by Mondrian or not.
-                                    The default action is to cache the data.  
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:attribute>
-                        <xsd:attribute name="enabled" type="xsd:boolean" default="true" use="optional">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Whether element is enabled - if true, then the Cube is realized
-                                    otherwise it is ignored.   
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:attribute>
-                    </xsd:complexType>
-                </xsd:element>
-                <xsd:element name="VirtualCube" minOccurs="0" maxOccurs="unbounded">
-                    <xsd:annotation>
-                        <xsd:documentation>
-                            Virtual cubes in this schema.
-                            A VirtualCube is a set of dimensions and measures gleaned from other cubes. 
-                        </xsd:documentation>
-                    </xsd:annotation>
-                    <xsd:complexType>
-                        <xsd:sequence>
-                            <xsd:element name="Annotations" type="Annotations" minOccurs="0" maxOccurs="1"/>
-                            <xsd:element name="CubeUsages" minOccurs="1" maxOccurs="1">
-                                <xsd:annotation>
-                                    <xsd:documentation>
-                                        List of base cubes used by the virtual cube. 
-                                    </xsd:documentation>
-                                </xsd:annotation>
-                                <xsd:complexType>
-                                    <xsd:sequence>
-                                        <xsd:element name="CubeUsage" minOccurs="1" maxOccurs="unbounded">
-                                            <xsd:complexType>
-                                                <xsd:attribute name="cubeName" type="xsd:string" use="required">
-                                                    <xsd:annotation>
-                                                        <xsd:documentation>
-                                                            Name of the cube which the virtualCube uses.
-                                                        </xsd:documentation>
-                                                    </xsd:annotation>
-                                                </xsd:attribute>
-                                                <xsd:attribute name="ignoreUnrelatedDimensions" type="xsd:boolean" default="false" use="optional">
-                                                    <xsd:annotation>
-                                                        <xsd:documentation>
-                                                            Unrelated dimensions to measures in this cube will be pushed to top level member.
-                                                        </xsd:documentation>
-                                                    </xsd:annotation>
-                                                </xsd:attribute>
-                                            </xsd:complexType>
-                                        </xsd:element>
-                                    </xsd:sequence>
-                                </xsd:complexType>
-                            </xsd:element>
-                            <xsd:element name="VirtualCubeDimension" minOccurs="1" maxOccurs="unbounded">
-                                <xsd:annotation>
-                                    <xsd:documentation>
-                                        A VirtualCubeDimension is a usage of a Dimension in a VirtualCube. 
-                                    </xsd:documentation>
-                                </xsd:annotation>
-                                <xsd:complexType>
-                                    <xsd:attribute name="cubeName" type="xsd:string">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                Name of the cube which the dimension belongs to, or unspecified if the dimension is shared.
-                                            </xsd:documentation>
-                                        </xsd:annotation>
-                                    </xsd:attribute>
-                                    <xsd:attribute name="name" type="xsd:string">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                Name of the dimension.
-                                            </xsd:documentation>
-                                        </xsd:annotation>
-                                    </xsd:attribute>
-                                </xsd:complexType>
-                            </xsd:element>
-                            <xsd:element name="VirtualCubeMeasure" minOccurs="1" maxOccurs="unbounded">
-                                <xsd:annotation>
-                                    <xsd:documentation>
-                                        A VirtualCubeMeasure is a usage of a Measure in a VirtualCube.
-                                    </xsd:documentation>
-                                </xsd:annotation>
-                                <xsd:complexType>
-                                    <xsd:sequence>
-                                        <xsd:element name="Annotations" type="Annotations" minOccurs="0" maxOccurs="1"/>
-                                    </xsd:sequence>
-                                    <xsd:attribute name="cubeName" type="xsd:string" use="required">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                Name of the cube which the measure belongs to. 
-                                            </xsd:documentation>
-                                        </xsd:annotation>
-                                    </xsd:attribute>
-                                    <xsd:attribute name="name" type="xsd:string" use="required">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                Unique name of the measure within its cube. 
-                                            </xsd:documentation>
-                                        </xsd:annotation>
-                                    </xsd:attribute>
-                                    <xsd:attribute name="visible" type="xsd:boolean" default="true" use="optional">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                Whether this member is visible in the user-interface. Default true.
-                                            </xsd:documentation>
-                                        </xsd:annotation>
-                                    </xsd:attribute>
-                                </xsd:complexType>
-                            </xsd:element>
-                            <xsd:element name="CalculatedMember" type="CalculatedMember" minOccurs="0" maxOccurs="unbounded">
-                                <xsd:annotation>
-                                    <xsd:documentation>
-                                        Calculated members that belong to this virtual cube.
-                                        (Calculated members inherited from other cubes should not be in this list).
-                                    </xsd:documentation>
-                                </xsd:annotation>
-                            </xsd:element>
-                            <xsd:element name="NamedSet" type="NamedSet" minOccurs="0" maxOccurs="unbounded">
-                                <xsd:annotation>
-                                    <xsd:documentation>
-                                        Named sets in this virtual cube.
-                                    </xsd:documentation>
-                                </xsd:annotation>
-                            </xsd:element>
-                        </xsd:sequence>
-                        <xsd:attribute name="enabled" type="xsd:boolean" default="true" use="optional">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Whether this element is enabled - if true, then the Virtual Cube is realized otherwise it is ignored. 
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:attribute>
-                        <xsd:attribute name="name" type="xsd:string" use="required"/>
-                        <xsd:attribute name="defaultMeasure" type="xsd:string" use="optional">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    The name of the measure that would be taken as the default measure of the cube.
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:attribute>
-                        <xsd:attribute name="caption" type="xsd:string" use="optional">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    A string being displayed instead of the cube's name. Can be localized from Properties file using #{propertyname}. 
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:attribute>
-                        <xsd:attribute name="description" type="xsd:string" use="optional">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Description of this virtual cube. Can be localized from Properties file using #{propertyname}. 
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:attribute>
-                    </xsd:complexType>
-                </xsd:element>
-                <xsd:element name="NamedSet" type="NamedSet" minOccurs="0" maxOccurs="unbounded">
-                    <xsd:annotation>
-                        <xsd:documentation>
-                            Named sets in this schema.
-                        </xsd:documentation>
-                    </xsd:annotation>
-                </xsd:element>
-                <xsd:element name="Role" minOccurs="0" maxOccurs="unbounded">
-                    <xsd:annotation>
-                        <xsd:documentation>
-                            A role defines an access-control profile. It has a series of grants (or denials) for schema elements. 
-                        </xsd:documentation>
-                    </xsd:annotation>
-                    <xsd:complexType>
-                        <xsd:sequence>
-                            <xsd:element name="Annotations" type="Annotations" minOccurs="0" maxOccurs="1"/>
-                            <xsd:element name="SchemaGrant" minOccurs="0" maxOccurs="unbounded">
-                                <xsd:annotation>
-                                    <xsd:documentation>
-                                        Grants (or denies) this role access to this schema. access may be "all", "all_dimensions", or "none".
-                                        If access is "all_dimensions", the role has access to all dimensions but still needs explicit access to cubes.
-                                        See mondrian.olap.Role#grant(mondrian.olap.Schema,int). 
-                                    </xsd:documentation>
-                                </xsd:annotation>
-                                <xsd:complexType>
-                                    <xsd:sequence>
-                                        <xsd:element name="CubeGrant" minOccurs="1" maxOccurs="unbounded">
-                                            <xsd:annotation>
-                                                <xsd:documentation>
-                                                    Grants (or denies) this role access to a cube. access may be "all" or "none".
-                                                </xsd:documentation>
-                                            </xsd:annotation>
-                                            <xsd:complexType>
-                                                <xsd:sequence>
-                                                    <xsd:element name="DimensionGrant" minOccurs="0" maxOccurs="unbounded">
-                                                        <xsd:annotation>
-                                                            <xsd:documentation>
-                                                                Grants (or denies) this role access to a dimension. access may be "all" or "none".
-                                                                Note that a role is implicitly given access to a dimension when it is given acess to a cube.
-                                                                See also the "all_dimensions" option of the "SchemaGrant" element.
-                                                            </xsd:documentation>
-                                                        </xsd:annotation>
-                                                        <xsd:complexType>
-                                                            <xsd:attribute name="dimension" type="xsd:string" use="required">
-                                                                <xsd:annotation>
-                                                                    <xsd:documentation>
-                                                                        The unique name of the dimension
-                                                                    </xsd:documentation>
-                                                                </xsd:annotation>
-                                                            </xsd:attribute>
-                                                            <xsd:attribute name="access" use="required">
-                                                                <xsd:annotation>
-                                                                    <xsd:documentation>
-                                                                        Values correspond to Access.
-                                                                    </xsd:documentation>
-                                                                </xsd:annotation>
-                                                                <xsd:simpleType>
-                                                                    <xsd:restriction base="xsd:string">
-                                                                        <xsd:enumeration value="all"/>
-                                                                        <xsd:enumeration value="none"/>
-                                                                    </xsd:restriction>
-                                                                </xsd:simpleType>
-                                                            </xsd:attribute>
-                                                        </xsd:complexType>
-                                                    </xsd:element>
-                                                    <xsd:element name="HierarchyGrant" minOccurs="0" maxOccurs="unbounded">
-                                                        <xsd:annotation>
-                                                            <xsd:documentation>
-                                                                Grants (or denies) this role access to a hierarchy. access may be "all", "custom" or "none".
-                                                                If access is "custom", you may also specify the attributes topLevel, bottomLevel, and the member grants.
-                                                            </xsd:documentation>
-                                                        </xsd:annotation>
-                                                        <xsd:complexType>
-                                                            <xsd:sequence>
-                                                                <xsd:element name="MemberGrant" minOccurs="0" maxOccurs="unbounded">
-                                                                    <xsd:annotation>
-                                                                        <xsd:documentation>
-                                                                            Grants (or denies) this role access to a member. The children of this member inherit that access.
-                                                                            You can implicitly see a member if you can see any of its children.
-                                                                        </xsd:documentation>
-                                                                    </xsd:annotation>
-                                                                    <xsd:complexType>
-                                                                        <xsd:attribute name="member" type="xsd:string">
-                                                                            <xsd:annotation>
-                                                                                <xsd:documentation>
-                                                                                    The unique name of the member
-                                                                                </xsd:documentation>
-                                                                            </xsd:annotation>
-                                                                        </xsd:attribute>
-                                                                        <xsd:attribute name="access" use="required">
-                                                                            <xsd:annotation>
-                                                                                <xsd:documentation>
-                                                                                    Values correspond to Access.
-                                                                                </xsd:documentation>
-                                                                            </xsd:annotation>
-                                                                            <xsd:simpleType>
-                                                                                <xsd:restriction base="xsd:string">
-                                                                                    <xsd:enumeration value="all"/>
-                                                                                    <xsd:enumeration value="none"/>
-                                                                                </xsd:restriction>
-                                                                            </xsd:simpleType>
-                                                                        </xsd:attribute>
-                                                                    </xsd:complexType>
-                                                                </xsd:element>
-                                                            </xsd:sequence>
-                                                            <xsd:attribute name="hierarchy" type="xsd:string" use="required">
-                                                                <xsd:annotation>
-                                                                    <xsd:documentation>
-                                                                        The unique name of the hierarchy
-                                                                    </xsd:documentation>
-                                                                </xsd:annotation>
-                                                            </xsd:attribute>
-                                                            <xsd:attribute name="access" use="required">
-                                                                <xsd:annotation>
-                                                                    <xsd:documentation>
-                                                                        Values correspond to Access.
-                                                                    </xsd:documentation>
-                                                                </xsd:annotation>
-                                                                <xsd:simpleType>
-                                                                    <xsd:restriction base="xsd:string">
-                                                                        <xsd:enumeration value="all"/>
-                                                                        <xsd:enumeration value="none"/>
-                                                                    </xsd:restriction>
-                                                                </xsd:simpleType>
-                                                            </xsd:attribute>
-                                                            <xsd:attribute name="topLevel" type="xsd:string" use="optional">
-                                                                <xsd:annotation>
-                                                                    <xsd:documentation>
-                                                                        Unique name of the highest level of the hierarchy from which this role is allowed to see members.
-                                                                        May only be specified if the HierarchyGrant.access is "custom". If not specified, role can see members up to the top level.
-                                                                    </xsd:documentation>
-                                                                </xsd:annotation>
-                                                            </xsd:attribute>
-                                                            <xsd:attribute name="bottomLevel" type="xsd:string" use="optional">
-                                                                <xsd:annotation>
-                                                                    <xsd:documentation>
-                                                                        Unique name of the lowest level of the hierarchy from which this role is allowed to see members.
-                                                                        May only be specified if the HierarchyGrant.access is "custom". If not specified, role can see members down to the leaf level.
-                                                                    </xsd:documentation>
-                                                                </xsd:annotation>
-                                                            </xsd:attribute>
-                                                            <xsd:attribute name="rollupPolicy" default="full" use="optional">
-                                                                <xsd:annotation>
-                                                                    <xsd:documentation>
-                                                                        Policy which determines how cell values are calculated if not all of the children of the current cell are visible to the current role.
-                                                                        Allowable values are 'full' (the default), 'partial', and 'hidden'.
-                                                                    </xsd:documentation>
-                                                                </xsd:annotation>
-                                                                <xsd:simpleType>
-                                                                    <xsd:restriction base="xsd:string">
-                                                                        <xsd:enumeration value="full"/>
-                                                                        <xsd:enumeration value="partial"/>
-                                                                        <xsd:enumeration value="hidden"/>
-                                                                    </xsd:restriction>
-                                                                </xsd:simpleType>
-                                                            </xsd:attribute>
-                                                        </xsd:complexType>
-                                                    </xsd:element>
-                                                </xsd:sequence>
-                                                <xsd:attribute name="cube" type="xsd:string" use="required">
-                                                    <xsd:annotation>
-                                                        <xsd:documentation>
-                                                            The unique name of the cube
-                                                        </xsd:documentation>
-                                                    </xsd:annotation>
-                                                </xsd:attribute>
-                                                <xsd:attribute name="access" use="required">
-                                                    <xsd:annotation>
-                                                        <xsd:documentation>
-                                                            Values correspond to Access.
-                                                        </xsd:documentation>
-                                                    </xsd:annotation>
-                                                    <xsd:simpleType>
-                                                        <xsd:restriction base="xsd:string">
-                                                            <xsd:enumeration value="all"/>
-                                                            <xsd:enumeration value="none"/>
-                                                        </xsd:restriction>
-                                                    </xsd:simpleType>
-                                                </xsd:attribute>
-                                            </xsd:complexType>
-                                        </xsd:element>
-                                    </xsd:sequence>
-                                    <xsd:attribute name="access" use="required">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                Values correspond to Access.
-                                            </xsd:documentation>
-                                        </xsd:annotation>
-                                        <xsd:simpleType>
-                                            <xsd:restriction base="xsd:string">
-                                                <xsd:enumeration value="all"/>
-                                                <xsd:enumeration value="none"/>
-                                            </xsd:restriction>
-                                        </xsd:simpleType>
-                                    </xsd:attribute>
-                                </xsd:complexType>
-                            </xsd:element>
-                            <xsd:element name="Union">
-                                <xsd:annotation>
-                                    <xsd:documentation>
-                                        Body of a Role definition which defines a Role to be the union of several Roles.
-                                        The RoleUsage elements must refer to Roles that have been declared earlier in this schema file. 
-                                    </xsd:documentation>
-                                </xsd:annotation>
-                                <xsd:complexType>
-                                    <xsd:sequence>
-                                        <xsd:element name="RoleUsage" minOccurs="1" maxOccurs="unbounded">
-                                            <xsd:annotation>
-                                                <xsd:documentation>
-                                                    Usage of a Role in a union Role.
-                                                </xsd:documentation>
-                                            </xsd:annotation>
-                                            <xsd:complexType>
-                                                <xsd:attribute name="roleName" type="xsd:string"/>
-                                            </xsd:complexType>
-                                        </xsd:element>
-                                    </xsd:sequence>
-                                </xsd:complexType>
-                            </xsd:element>
-                        </xsd:sequence>
-                        <xsd:attribute name="name" type="xsd:string" use="required"/>
-                    </xsd:complexType>
-                </xsd:element>
-                <xsd:element name="UserDefinedFunction" minOccurs="0" maxOccurs="unbounded">
-                    <xsd:annotation>
-                        <xsd:documentation>
-                            Declarations of user-defined functions in this schema.
-                            A UserDefinedFunction is a function which extends the MDX language.
-                            It must be implemented by a Java class which implements the interface mondrian.spi.UserDefinedFunction.
-                        </xsd:documentation>
-                    </xsd:annotation>
-                    <xsd:complexType>
-                        <xsd:attribute name="name" type="xsd:string" use="required">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Name with which the user-defined function will be referenced in MDX expressions.
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:attribute>
-                        <xsd:attribute name="className" type="xsd:string" use="required">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Name of the class which implemenets this user-defined function.
-                                    Must implement the mondrian.spi.UserDefinedFunction  interface. 
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:attribute>
-                    </xsd:complexType>
-                </xsd:element>
-            </xsd:sequence>
-            <xsd:attribute name="name" type="xsd:string" use="required">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        Name of this schema
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:attribute>
-            <xsd:attribute name="description" type="xsd:string" use="optional">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        Description of this schema. 
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:attribute>
-            <xsd:attribute name="measuresCaption" type="xsd:string" use="optional">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        Label for the measures dimension.
-                        Can be localized from Properties file using #{propertyname}.
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:attribute>
-            <xsd:attribute name="defaultRole" type="xsd:string" use="optional">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        The name of the default role for connections to this schema
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:attribute>
-        </xsd:complexType>
-    </xsd:element>
-    <xsd:complexType name="Annotations">
-        <xsd:annotation>
-            <xsd:documentation>
-                Contains values of user-defined properties.
-            </xsd:documentation>
-        </xsd:annotation>
-        <xsd:sequence>
-            <xsd:element name="Annotation" minOccurs="1" maxOccurs="unbounded">
-                <xsd:complexType mixed="true">
-                    <xsd:attribute name="name" type="xsd:string"></xsd:attribute>
-                </xsd:complexType>
-            </xsd:element>
-        </xsd:sequence>
-    </xsd:complexType>
-    <xsd:complexType name="SharedDimension">
-        <xsd:annotation>
-            <xsd:documentation>
-                Shared dimensions in this schema.
-                A Dimension is a collection of hierarchies. There are two kinds: a public
-                dimension belongs to a Schema, and be used by several cubes;
-                a private dimension belongs to a Cube.
-                The foreignKey field is only applicable to private dimensions. 
-            </xsd:documentation>
-        </xsd:annotation>
-        <xsd:sequence>
-            <xsd:element name="Annotations" type="Annotations" minOccurs="0" maxOccurs="unbounded"/>
-            <xsd:element name="Hierarchy" type="Hierarchy" minOccurs="1" maxOccurs="unbounded"/>
-        </xsd:sequence>
-        <xsd:attribute name="name" type="xsd:string" use="required">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Name of this dimension
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="type" use="optional" default="Standard">
-            <xsd:annotation>
-                <xsd:documentation>
-                    The dimension's type may be one of "Standard" or "Time".
-                    A time  dimension will allow the use of the MDX time functions
-                    (WTD, YTD, QTD, etc.). Use a standard dimension if the dimension
-                    is not a time-related dimension. The default value is "Standard". 
-                </xsd:documentation>
-            </xsd:annotation>
-            <xsd:simpleType>
-                <xsd:restriction base="xsd:string">
-                    <xsd:enumeration value="Standard"/>
-                    <xsd:enumeration value="TimeDimension"/>
-                </xsd:restriction>
-            </xsd:simpleType>
-        </xsd:attribute>
-        <xsd:attribute name="caption" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    A string being displayed instead of the dimensions's name.
-                    Can be localized from Properties file using #{propertyname}. 
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="description" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Description of this dimension. Can be localized from Properties file using #{propertyname}.  
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-    </xsd:complexType>
-    <xsd:complexType name="PrivateDimension">
-        <xsd:annotation>
-            <xsd:documentation>
-                Private dimensions in the cube.
-                A Dimension is a collection of hierarchies. There are two kinds: a public
-                dimension belongs to a Schema, and be used by several cubes;
-                a private dimension belongs to a Cube.
-                The foreignKey field is only applicable to private dimensions. 
-            </xsd:documentation>
-        </xsd:annotation>
-        <xsd:sequence>
-            <xsd:element name="Annotations" type="Annotations" minOccurs="0" maxOccurs="unbounded"/>
-            <xsd:element name="Hierarchy" type="Hierarchy" minOccurs="1" maxOccurs="unbounded"/>
-        </xsd:sequence>
-        <xsd:attribute name="name" type="xsd:string" use="required">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Name of this dimension
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="type" use="optional" default="Standard">
-            <xsd:annotation>
-                <xsd:documentation>
-                    The dimension's type may be one of "Standard" or "Time".
-                    A time  dimension will allow the use of the MDX time functions
-                    (WTD, YTD, QTD, etc.). Use a standard dimension if the dimension
-                    is not a time-related dimension. The default value is "Standard". 
-                </xsd:documentation>
-            </xsd:annotation>
-            <xsd:simpleType>
-                <xsd:restriction base="xsd:string">
-                    <xsd:enumeration value="Standard"/>
-                    <xsd:enumeration value="TimeDimension"/>
-                </xsd:restriction>
-            </xsd:simpleType>
-        </xsd:attribute>
-        <xsd:attribute name="caption" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    A string being displayed instead of the dimensions's name.
-                    Can be localized from Properties file using #{propertyname}. 
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="description" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Description of this dimension. Can be localized from Properties file using #{propertyname}.  
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="foreignKey" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    The name of the column in the fact table which joins to the leaf level of this dimension.
-                    Required in a private Dimension or a DimensionUsage, but not in a public Dimension.  
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="highCardinality" type="xsd:boolean" default="false" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Flag to mark this dimension as a high cardinality one and avoid caching.   
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-    </xsd:complexType>
-    <xsd:complexType name="DimensionUsage">
-        <xsd:annotation>
-            <xsd:documentation>
-                A DimensionUsage is usage of a shared Dimension within the context of a cube.
-            </xsd:documentation>
-        </xsd:annotation>
-        <xsd:sequence>
-            <xsd:element name="Annotations" type="Annotations" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
-        <xsd:attribute name="name" type="xsd:string" use="required">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Name of the dimension. Must be a dimension in this schema. Case-sensitive.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="source" type="xsd:string" use="required">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Name of the source dimension. Must be a dimension in this schema. Case-sensitive.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="level" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Name of the level to join to. If not specified, joins to the lowest level of the dimension.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="usagePrefix" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    If present, then this is prepended to the Dimension column names
-                    during the building of collapse dimension aggregates allowing 1) different
-                    dimension usages to be disambiguated during aggregate table recognition and
-                    2) multiple shared dimensions that have common column names to be disambiguated. 
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="foreignKey" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    The name of the column in the fact table which joins to the leaf level of this dimension.
-                    Required in a private Dimension or a DimensionUsage, but not in a public Dimension.  
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="highCardinality" type="xsd:boolean" default="false" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Flag to mark this dimension as a high cardinality one and avoid caching.   
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-    </xsd:complexType>
-    <xsd:complexType name="Hierarchy">
-        <xsd:annotation>
-            <xsd:documentation>
-                <![CDATA[
-                Defines a hierarchy.
-                You must specify at most one <Relation> or memberReaderClass.
-                If you specify none, the hierarchy is assumed to come from the same
-                fact table of the current cube.
-                ]]>
-            </xsd:documentation>
-        </xsd:annotation>
-        <xsd:sequence>
-            <xsd:element name="Annotations" type="Annotations" minOccurs="0" maxOccurs="1"/>
-            <xsd:group ref="Relation" minOccurs="0" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        The Table, Join (set of tables), View (SQL statement), or InlineTable which populates this hierarchy. 
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:group>
-            <xsd:element name="Level" minOccurs="1" maxOccurs="unbounded">
-                <xsd:complexType>
-                    <xsd:sequence>
-                        <xsd:element name="Annotations" type="Annotations" minOccurs="0" maxOccurs="1"/>
-                        <xsd:element name="KeyExpression" type="ExpressionView" minOccurs="0" maxOccurs="1">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    The SQL expression used to populate this level's key. 
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:element>
-                        <xsd:element name="NameExpression" type="ExpressionView" minOccurs="0" maxOccurs="1">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    The SQL expression used to populate this level's name.
-                                    If not specified, the level's key is used.  
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:element>
-                        <xsd:element name="CaptionExpression" type="ExpressionView" minOccurs="0" maxOccurs="1">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Expression which forms the caption of members.
-                                    If not specified, the level name is used.  
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:element>
-                        <xsd:element name="OrdinalExpression" type="ExpressionView" minOccurs="0" maxOccurs="1">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    The SQL expression used to populate this level's ordinal.  
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:element>
-                        <xsd:element name="ParentExpression" type="ExpressionView" minOccurs="0" maxOccurs="1">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    The SQL expression used to join to the parent member in a parent-child hierarchy.   
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:element>
-                        <xsd:element name="Closure" minOccurs="0" maxOccurs="1">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Specifies the transitive closure of a parent-child hierarchy. Optional, but recommended
-                                    for better performance. The closure is provided as a set of (parent/child) pairs: since it is
-                                    the transitive closure these are actually (ancestor/descendant) pairs. 
-                                </xsd:documentation>
-                            </xsd:annotation>
-                            <xsd:complexType>
-                                <xsd:sequence>
-                                    <xsd:element name="Table" type="Table" minOccurs="1" maxOccurs="1" />
-                                </xsd:sequence>
-                                <xsd:attribute name="parentColumn" type="xsd:string" use="required"/>
-                                <xsd:attribute name="childColumn" type="xsd:string" use="required"/>
-                            </xsd:complexType>
-                        </xsd:element>
-                        <xsd:element name="Property" minOccurs="0" maxOccurs="unbounded">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Member property. 
-                                </xsd:documentation>
-                            </xsd:annotation>
-                            <xsd:complexType>
-                                <xsd:attribute name="name" type="xsd:string" use="required" />
-                                <xsd:attribute name="column" type="xsd:string" use="required" />
-                                <xsd:attribute name="type" default="String" use="optional">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            Data type of this property: String, Numeric, Integer, Boolean, Date, Time or Timestamp. 
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                    <xsd:simpleType>
-                                        <xsd:restriction base="xsd:string">
-                                            <xsd:enumeration value="String"/>
-                                            <xsd:enumeration value="Numeric"/>
-                                            <xsd:enumeration value="Integer"/>
-                                            <xsd:enumeration value="Boolean"/>
-                                            <xsd:enumeration value="Date"/>
-                                            <xsd:enumeration value="Time"/>
-                                            <xsd:enumeration value="Timestamp"/>
-                                        </xsd:restriction>
-                                    </xsd:simpleType>
-                                </xsd:attribute>
-                                <xsd:attribute name="formatter" type="xsd:string" use="optional">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            Name of a formatter class for the appropriate property value being displayed.
-                                            The class must implement the mondrian.olap.PropertyFormatter interface. 
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                                <xsd:attribute name="caption" type="xsd:string" use="optional">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            A string being displayed instead of the name. Can be localized from Properties
-                                            file using #{propertyname}.
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                                <xsd:attribute name="description" type="xsd:string" use="optional">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            Description of this member property. Can be localized from Properties file using #{propertyname}.
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                                <xsd:attribute name="dependsOnLevelValue" type="xsd:boolean" default="false" use="optional">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            Should be set to true if the value of the property is functionally dependent on the level value.
-                                            This permits the associated property column to be omitted from the GROUP BY clause
-                                            (if the database permits columns in the SELECT that are not in the GROUP BY).
-                                            This can be a significant performance enhancement on some databases, such as MySQL. 
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                            </xsd:complexType>
-                        </xsd:element>
-                    </xsd:sequence>
-                    <xsd:attribute name="approxRowCount" type="xsd:integer" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                The estimated number of members in this level. Setting this property improves
-                                the performance of MDSCHEMA_LEVELS, MDSCHEMA_HIERARCHIES
-                                and MDSCHEMA_DIMENSIONS XMLA requests.
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="name" type="xsd:string" use="required" />
-                    <xsd:attribute name="table" type="xsd:string" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                The name of the table that the column comes from. If this hierarchy
-                                is based upon just one table, defaults to the name of that table;
-                                otherwise, it is required. Can be localized from Properties file using #{propertyname}. 
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="column" type="xsd:string" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                The name of the column which holds the unique identifier of this level.  
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="nameColumn" type="xsd:string" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                The name of the column which holds the user identifier of this level.   
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="ordinalColumn" type="xsd:string" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                The name of the column which holds member ordinals.
-                                If this column is not specified, the key column is used for ordering.    
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="parentColumn" type="xsd:string" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                The name of the column which references the parent member in a parent-child hierarchy.     
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="nullParentValue" type="xsd:string" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                Value which identifies null parents in a parent-child hierarchy. Typical values are 'NULL' and '0'.      
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="type" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                Indicates the type of this level's key column: String, Numeric, Integer, Boolean, Date,
-                                Time or Timestamp. When generating SQL statements, Mondrian encloses values
-                                for String columns in quotation marks, but leaves values for Integer and Numeric columns un-quoted.
-                                Date, Time, and Timestamp values are quoted according to the SQL dialect.
-                                For a SQL-compliant dialect, the values appear prefixed by their typename, for example, "DATE '2006-06-01'".      
-                            </xsd:documentation>
-                        </xsd:annotation>
-                        <xsd:simpleType>
-                            <xsd:restriction base="xsd:string">
-                                <xsd:enumeration value="String"/>
-                                <xsd:enumeration value="Numeric"/>
-                                <xsd:enumeration value="Integer"/>
-                                <xsd:enumeration value="Boolean"/>
-                                <xsd:enumeration value="Date"/>
-                                <xsd:enumeration value="Time"/>
-                                <xsd:enumeration value="Timestamp"/>
-                            </xsd:restriction>
-                        </xsd:simpleType>
-                    </xsd:attribute>
-                    <xsd:attribute name="uniqueMembers" type="xsd:boolean" default="false" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                Whether members are unique across all parents. For example, zipcodes are unique across all states.
-                                The first level's members are always unique.      
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="levelType" default="Regular" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                Whether this is a regular or a time-related level. The value makes a difference to time-related
-                                functions such as YTD (year-to-date).       
-                            </xsd:documentation>
-                        </xsd:annotation>
-                        <xsd:simpleType>
-                            <xsd:restriction base="xsd:string">
-                                <xsd:enumeration value="Regular"/>
-                                <xsd:enumeration value="TimeYears"/>
-                                <xsd:enumeration value="TimeQuarters"/>
-                                <xsd:enumeration value="TimeMonths"/>
-                                <xsd:enumeration value="TimeWeeks"/>
-                                <xsd:enumeration value="TimeDays"/>
-                            </xsd:restriction>
-                        </xsd:simpleType>
-                    </xsd:attribute>
-                    <xsd:attribute name="hideMemberIf" use="optional" default="Never">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                Condition which determines whether a member of this level is hidden. If a hierarchy has one
-                                or more levels with hidden members, then it is possible that not all leaf members are the same
-                                distance from the root, and it is termed a ragged hierarchy.
-                                Allowable values are: Never (a member always appears; the default);
-                                IfBlankName (a member doesn't appear if its name is null or empty); and
-                                IfParentsName (a member appears unless its name matches the parent's.
-                            </xsd:documentation>
-                        </xsd:annotation>
-                        <xsd:simpleType>
-                            <xsd:restriction base="xsd:string">
-                                <xsd:enumeration value="Never"/>
-                                <xsd:enumeration value="IfBlankName"/>
-                                <xsd:enumeration value="IfParentsName"/>
-                            </xsd:restriction>
-                        </xsd:simpleType>
-                    </xsd:attribute>
-                    <xsd:attribute name="formatter" type="xsd:string" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                Name of a formatter class for the member labels being displayed.
-                                The class must implement the mondrian.olap.MemberFormatter interface. 
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="caption" type="xsd:string" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                A string being displayed instead of the level's name. Can be localized from
-                                Properties file using #{propertyname}. 
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="description" type="xsd:string" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                Description of this level. Can be localized from Properties file using #{propertyname}. 
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="captionColumn" type="xsd:string" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                The name of the column which holds the caption for members.
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                </xsd:complexType>
-            </xsd:element>
-            <xsd:element name="MemberReaderParameter" minOccurs="0" maxOccurs="unbounded">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        Not used
-                    </xsd:documentation>
-                </xsd:annotation>
-                <xsd:complexType>
-                    <xsd:attribute name="name" type="xsd:string" use="required"/>
-                    <xsd:attribute name="value" type="xsd:string" use="required"/>
-                </xsd:complexType>
-            </xsd:element>
-        </xsd:sequence>
-        <xsd:attribute name="name" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Name of the hierarchy. If this is not specified, the hierarchy
-                    has the same name as its dimension.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="hasAll" type="xsd:boolean" use="required">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Whether this hierarchy has an 'all' member. 
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="allMemberName" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Name of the 'all' member. If this attribute is not specified,
-                    the all member is named 'All hierarchyName', for example, 'All Store'.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="allMemberCaption" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    A string being displayed instead as the all member's name.
-                    Can be localized from Properties file using #{propertyname}.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="allLevelName" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Name of the 'all' level. If this attribute is not specified, the all member is named '(All)'.
-                    Can be localized from Properties file using #{propertyname}. 
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="primaryKey" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    The name of the column which identifies members, and which is referenced by rows
-                    in the fact table. If not specified, the key of the lowest level is used.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="primaryKeyTable" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    The name of the table which contains primaryKey. If the hierarchy has only one table,
-                    defaults to that; otherwise it is required. 
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="defaultMember" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Default member of this hierarchy. 
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="memberReaderClass" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Name of the custom member reader class. Must implement the
-                    mondrian.rolap.MemberReader interface. 
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="caption" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    A string to be displayed in the user interface. If not specified, the hierarchy's name is used.
-                    Can be localized from Properties file using #{propertyname}.  
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="description" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Description of this hierarchy. Can be localized from Properties file using #{propertyname}.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="uniqueKeyLevelName" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Should be set to the level (if such a level exists) at which depth it is known that all members
-                    have entirely unique rows, allowing SQL GROUP BY clauses to be completely eliminated from the query. 
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-    </xsd:complexType>
-    <xsd:group name="Relation">
-        <xsd:choice>
-            <xsd:element name="Table" type="Table"/>
-            <xsd:element name="View" type="View"/>
-            <xsd:element name="Join">
-                <xsd:complexType>
-                    <xsd:sequence>
-                        <xsd:group ref="Relation" minOccurs="2" maxOccurs="2"/>
-                    </xsd:sequence>
-                    <xsd:attribute name="leftAlias" type="xsd:string">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                Defaults to left's alias if left is a table, otherwise required. 
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="leftKey" type="xsd:string"/>
-                    <xsd:attribute name="rightAlias" type="xsd:string">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                Defaults to right's alias if right is a table, otherwise required.
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="rightKey" type="xsd:string"/>
-                </xsd:complexType>
-            </xsd:element>
-            <xsd:element name="InlineTable">
-                <xsd:complexType>
-                    <xsd:sequence>
-                        <xsd:element name="ColumnDefs" minOccurs="1" maxOccurs="1">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Holder for an array of ColumnDef elements
-                                </xsd:documentation>
-                            </xsd:annotation>
-                            <xsd:complexType>
-                                <xsd:sequence>
-                                    <xsd:element name="ColumnDef" minOccurs="1" maxOccurs="unbounded">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                Column definition for an inline table. 
-                                            </xsd:documentation>
-                                        </xsd:annotation>
-                                        <xsd:complexType>
-                                            <xsd:attribute name="name" type="xsd:string">
-                                                <xsd:annotation>
-                                                    <xsd:documentation>
-                                                        Name of the column. 
-                                                    </xsd:documentation>
-                                                </xsd:annotation>
-                                            </xsd:attribute>
-                                            <xsd:attribute name="type">
-                                                <xsd:annotation>
-                                                    <xsd:documentation>
-                                                        Type of the column: String, Numeric, Integer, Boolean, Date, Time or Timestamp. 
-                                                    </xsd:documentation>
-                                                </xsd:annotation>
-                                                <xsd:simpleType>
-                                                    <xsd:restriction base="xsd:string">
-                                                        <xsd:enumeration value="String" />
-                                                        <xsd:enumeration value="Numeric" />
-                                                        <xsd:enumeration value="Integer" />
-                                                        <xsd:enumeration value="Boolean" />
-                                                        <xsd:enumeration value="Date" />
-                                                        <xsd:enumeration value="Time" />
-                                                        <xsd:enumeration value="Timestamp" />
-                                                    </xsd:restriction>
-                                                </xsd:simpleType>
-                                            </xsd:attribute>
-                                        </xsd:complexType>
-                                        
-                                    </xsd:element>
-                                </xsd:sequence>
-                            </xsd:complexType>
-                        </xsd:element>
-                        <xsd:element name="Rows" minOccurs="1" maxOccurs="1">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    Holder for an array of Row elements
-                                </xsd:documentation>
-                            </xsd:annotation>
-                            <xsd:complexType>
-                                <xsd:sequence>
-                                    <xsd:element name="Row" minOccurs="1" maxOccurs="unbounded">
-                                        <xsd:annotation>
-                                            <xsd:documentation>
-                                                Row definition for an inline table. Must have one Column for each ColumnDef in the InlineTable. 
-                                            </xsd:documentation>
-                                        </xsd:annotation>
-                                        <xsd:complexType>
-                                            <xsd:sequence>
-                                                <xsd:element name="Value" minOccurs="1" maxOccurs="unbounded">
-                                                    <xsd:annotation>
-                                                        <xsd:documentation>
-                                                            Column value for an inline table. The CDATA holds the value of the column.
-                                                        </xsd:documentation>
-                                                    </xsd:annotation>
-                                                    <xsd:complexType mixed="true">
-                                                        <xsd:attribute name="column" type="xsd:string">
-                                                            <xsd:annotation>
-                                                                <xsd:documentation>
-                                                                    Name of the column. 
-                                                                </xsd:documentation>
-                                                            </xsd:annotation>
-                                                        </xsd:attribute>
-                                                    </xsd:complexType>
-                                                </xsd:element>
-                                            </xsd:sequence>
-                                        </xsd:complexType>
-                                    </xsd:element>
-                                </xsd:sequence>
-                            </xsd:complexType>
-                        </xsd:element>
-                    </xsd:sequence>
-                </xsd:complexType>
-            </xsd:element>
-        </xsd:choice>
-    </xsd:group>
-    <xsd:group name="FactTable">
-        <xsd:choice>
-            <xsd:element name="Table" type="Table"/>
-            <xsd:element name="View" type="View"/>
-            
-            
-        </xsd:choice>
-    </xsd:group>
-    <xsd:group name="AggTable">
-        <xsd:annotation>
-            <xsd:documentation>
-                A definition of an aggregate table for a base fact table.
-                This aggregate table must be in the same schema as the base fact table. 
-            </xsd:documentation>
-        </xsd:annotation>
-        <xsd:choice>
-            <xsd:element name="AggName">
-                <xsd:complexType>
-                    <xsd:sequence>
-                        <xsd:element name="AggFactCount" type="AggColumnName" minOccurs="1" maxOccurs="1"/>
-                        <xsd:element name="AggIgnoreColumn" type="AggColumnName" minOccurs="0" maxOccurs="unbounded"/>
-                        <xsd:element name="AggForeignKey" minOccurs="0" maxOccurs="unbounded">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    The name of the column mapping from base fact table foreign key to aggregate table foreign key. 
-                                </xsd:documentation>
-                            </xsd:annotation>
-                            <xsd:complexType>
-                                <xsd:attribute name="factColumn" type="xsd:string" use="required">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            The name of the base fact table foreign key.
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                                <xsd:attribute name="aggColumn" type="xsd:string" use="required">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            The name of the aggregate table foreign key.
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                            </xsd:complexType>
-                        </xsd:element>
-                        <xsd:element name="AggMeasure" minOccurs="1" maxOccurs="unbounded">
-                            <xsd:complexType>
-                                <xsd:attribute name="column" type="xsd:string" use="required">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            The name of the column mapping to the measure name.
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                                <xsd:attribute name="name" type="xsd:string" use="required">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            The name of the Cube measure.
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                            </xsd:complexType>
-                        </xsd:element>
-                        <xsd:element name="AggLevel" minOccurs="0" maxOccurs="unbounded">
-                            <xsd:complexType>
-                                <xsd:attribute name="column" type="xsd:string" use="required">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            The name of the column mapping to the measure name.
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                                <xsd:attribute name="name" type="xsd:string" use="required">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            The name of the Cube measure.
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                            </xsd:complexType>
-                        </xsd:element>
-                    </xsd:sequence>
-                    <xsd:attribute name="name" type="xsd:string" use="required">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                The Table name of a Specific aggregate table.
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="ignorecase" type="xsd:boolean" default="true" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                Whether or not the match should ignore case.
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                </xsd:complexType>
-            </xsd:element>
-            <xsd:element name="AggPattern">
-                <xsd:complexType>
-                    <xsd:sequence>
-                        <xsd:element name="AggFactCount" type="AggColumnName" minOccurs="1" maxOccurs="1"/>
-                        <xsd:element name="AggIgnoreColumn" type="AggColumnName" minOccurs="0" maxOccurs="unbounded"/>
-                        <xsd:element name="AggForeignKey" minOccurs="0" maxOccurs="unbounded">
-                            <xsd:annotation>
-                                <xsd:documentation>
-                                    The name of the column mapping from base fact table foreign key to aggregate table foreign key. 
-                                </xsd:documentation>
-                            </xsd:annotation>
-                            <xsd:complexType>
-                                <xsd:attribute name="factColumn" type="xsd:string" use="required">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            The name of the base fact table foreign key.
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                                <xsd:attribute name="aggColumn" type="xsd:string" use="required">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            The name of the aggregate table foreign key.
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                            </xsd:complexType>
-                        </xsd:element>
-                        <xsd:element name="AggMeasure" minOccurs="1" maxOccurs="unbounded">
-                            <xsd:complexType>
-                                <xsd:attribute name="column" type="xsd:string" use="required">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            The name of the column mapping to the measure name.
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                                <xsd:attribute name="name" type="xsd:string" use="required">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            The name of the Cube measure.
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                            </xsd:complexType>
-                        </xsd:element>
-                        <xsd:element name="AggLevel" minOccurs="0" maxOccurs="unbounded">
-                            <xsd:complexType>
-                                <xsd:attribute name="column" type="xsd:string" use="required">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            The name of the column mapping to the measure name.
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                                <xsd:attribute name="name" type="xsd:string" use="required">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            The name of the Cube measure.
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                            </xsd:complexType>
-                        </xsd:element>
-                        <xsd:element name="AggExclude" minOccurs="0" maxOccurs="unbounded">
-                            <xsd:complexType>
-                                <xsd:attribute name="pattern" type="xsd:string" use="optional">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            A Table pattern not to be matched.
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                                <xsd:attribute name="name" type="xsd:string" use="optional">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            The Table name not to be matched. 
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                                <xsd:attribute name="ignorecase" type="xsd:boolean" default="true" use="optional">
-                                    <xsd:annotation>
-                                        <xsd:documentation>
-                                            Whether or not the match should ignore case.
-                                        </xsd:documentation>
-                                    </xsd:annotation>
-                                </xsd:attribute>
-                            </xsd:complexType>
-                        </xsd:element>
-                    </xsd:sequence>
-                    <xsd:attribute name="pattern" type="xsd:string" use="required">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                A Table pattern used to define a set of aggregate tables.
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="ignorecase" type="xsd:boolean" default="true" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                Whether or not the match should ignore case.
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                </xsd:complexType>
-            </xsd:element>
-        </xsd:choice>
-    </xsd:group>
-    <xsd:complexType name="AggColumnName">
-        <xsd:attribute name="column" type="xsd:string" use="required"/>
-    </xsd:complexType>
-    <xsd:complexType name="SQL" mixed="true">
-        <xsd:attribute name="dialect" type="xsd:string" use="required">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Dialect of SQL the view is intended for. Valid values include, but are not limited to:
-                    * generic
-                    * access
-                    * db2
-                    * derby
-                    * firebird
-                    * hsqldb
-                    * mssql
-                    * mysql
-                    * oracle
-                    * postgres
-                    * sybase
-                    * teradata
-                    * ingres
-                    * infobright
-                    * luciddb
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-    </xsd:complexType>
-    <xsd:complexType name="ExpressionView">
-        <xsd:sequence>
-            <xsd:element name="SQL" type="SQL" minOccurs="1" maxOccurs="unbounded"/>
-        </xsd:sequence>
-    </xsd:complexType>
-    <xsd:complexType name="Table">
-        <xsd:sequence>
-            <xsd:element name="SQL" type="SQL" minOccurs="0" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        The SQL WHERE clause expression to be appended to any select statement 
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-            <xsd:element name="AggExclude" minOccurs="0" maxOccurs="unbounded">
-                <xsd:complexType>
-                    <xsd:attribute name="pattern" type="xsd:string" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                A Table pattern not to be matched. 
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="name" type="xsd:string" use="optional">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                The Table name not to be matched. 
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                    <xsd:attribute name="ignorecase" type="xsd:boolean" use="optional" default="true">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                Whether or not the match should ignore case.  
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                </xsd:complexType>
-            </xsd:element>
-            <xsd:group ref="AggTable" minOccurs="0" maxOccurs="unbounded">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        A definition of an aggregate table for a base fact table.
-                        This aggregate table must be in the same schema as the base fact table. 
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:group>
-            <xsd:element name="Hint" minOccurs="0" maxOccurs="unbounded">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        Dialect-specific table optimization hints.
-                    </xsd:documentation>
-                </xsd:annotation>
-                <xsd:complexType mixed="true">
-                    <xsd:attribute name="type" type="xsd:string" use="required">
-                        <xsd:annotation>
-                            <xsd:documentation>
-                                Type of hint, interpreted and applied on a per-dialect basis.
-                            </xsd:documentation>
-                        </xsd:annotation>
-                    </xsd:attribute>
-                </xsd:complexType>
-            </xsd:element>
-        </xsd:sequence>
-        <xsd:attribute name="name" type="xsd:string" use="required"/>
-        <xsd:attribute name="schema" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Optional qualifier for table. 
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="alias" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Alias to be used with this table when it is used to form queries.
-                    If not specified, defaults to the table name, but in any case, must be unique within the schema.
-                    (You can use the same table in different hierarchies, but it must have different aliases.) 
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-    </xsd:complexType>
-    <xsd:complexType name="View">
-        <xsd:annotation>
-            <xsd:documentation>
-                A collection of SQL statements, one per dialect. 
-            </xsd:documentation>
-        </xsd:annotation>
-        <xsd:sequence>
-            <xsd:element name="SQL" type="SQL" minOccurs="1" maxOccurs="unbounded"/>
-        </xsd:sequence>
-        <xsd:attribute name="alias" type="xsd:string" use="required" />
-    </xsd:complexType>
-    <xsd:complexType name="CalculatedMember">
-        <xsd:sequence>
-            <xsd:element name="Annotations" type="Annotations" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="Formula" minOccurs="0" maxOccurs="1">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        MDX expression which gives the value of this member.
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-            <xsd:element name="CalculatedMemberProperty" type="CalculatedMemberProperty" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
-        <xsd:attribute name="name" type="xsd:string" use="required">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Name of this calculated member.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="formatString" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Format string with which to format cells of this member.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="caption" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    A string being displayed instead of the name. Can be localized from Properties file using #{propertyname}.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="description" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Description of this calculated member. Can be localized from Properties file using #{propertyname}. 
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="formula" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    MDX expression which gives the value of this member. Equivalent to the Formula sub-element.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="dimension" type="xsd:string" use="required">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Name of the dimension which this member belongs to.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="visible" type="xsd:boolean" use="optional" default="true">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Whether this member is visible in the user-interface. Default true.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-    </xsd:complexType>
-    <xsd:complexType name="CalculatedMemberProperty">
-        <xsd:annotation>
-            <xsd:documentation>
-                Property of a calculated member defined against a cube. It must have either an expression or a value.
-            </xsd:documentation>
-        </xsd:annotation>
-        <xsd:attribute name="name" type="xsd:string" use="required">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Name of this member property.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="caption" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    A string being displayed instead of the Properties's name.
-                    Can be localized from Properties file using #{propertyname}.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="description" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Description of this calculated member property. Can be localized from Properties file using #{propertyname}. 
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="expression" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    MDX expression which defines the value of this property.
-                    If the expression is a constant string, you could enclose it in quotes,
-                    or just specify the 'value' attribute instead.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="value" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Value of this property. If the value is not constant,
-                    specify the 'expression' attribute instead.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-    </xsd:complexType>
-    <xsd:complexType name="NamedSet">
-        <xsd:annotation>
-            <xsd:documentation>
-                Defines a named set which can be used in queries in the same way as a set
-                defined using a WITH SET clause. A named set can be defined against a particular cube,
-                or can be global to a schema. If it is defined against a cube, it is only available to queries which use that cube.
-                A named set defined against a cube is not inherited by a virtual cubes defined against that cube.
-                (But you can define a named set against a virtual cube). A named set defined against a schema
-                is available in all cubes and virtual cubes in that schema.
-                However, it is only valid if the cube contains dimensions with the names required to make the formula valid.
-            </xsd:documentation>
-        </xsd:annotation>
-        <xsd:sequence>
-            <xsd:element name="Annotations" type="Annotations" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="Formula" minOccurs="0">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        MDX expression which gives the value of this set.
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-        </xsd:sequence>
-        <xsd:attribute name="name" type="xsd:string" use="required">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Name of this named set.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="caption" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Caption of this named set. Can be localized from Properties file using #{propertyname}.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="description" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    Description of this named set. Can be localized from Properties file using #{propertyname}. 
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="formula" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    MDX expression which gives the value of this set. Equivalent to the Formula sub-element.
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-    </xsd:complexType>
-</xsd:schema>
+<!--
+  XML Schema Definition (XSD) for Mondrian version 4.0.
+  Generated by hand from mondrian.dtd.
+
+  XML model for Mondrian schemas. It is generated from
+  MondrianSchema.xml.
+  See also {@link Mondrian3Def} (generated from
+  Mondrian3Schema.xml), which is the XML model for Mondrian
+  version 3.x schemas.
+-->
+<!-- Child element of a Cube. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:group name="CubeElement">
+        <xs:choice>
+            <xs:element ref="Dimensions"/>
+            <xs:element ref="CalculatedMembers"/>
+            <xs:element ref="NamedSets"/>
+            <xs:element ref="Annotations"/>
+            <xs:element ref="MeasureGroups"/>
+        </xs:choice>
+    </xs:group>
+    <!-- Child element of a Level. -->
+    <xs:group name="LevelElement">
+        <xs:choice>
+            <xs:element ref="Closure"/>
+            <xs:element ref="Annotations"/>
+        </xs:choice>
+    </xs:group>
+    <!-- Child element of a Measure. -->
+    <xs:group name="MeasureElement">
+        <xs:choice>
+            <xs:element ref="CalculatedMemberProperty"/>
+            <xs:element ref="Arguments"/>
+            <xs:element ref="Annotations"/>
+            <xs:element ref="CellFormatter"/>
+        </xs:choice>
+    </xs:group>
+    <!-- Child element of a CalculatedMember. -->
+    <xs:group name="CalculatedMemberElement">
+        <xs:choice>
+            <xs:element ref="CalculatedMemberProperty"/>
+            <xs:element ref="Formula"/>
+            <xs:element ref="Annotations"/>
+            <xs:element ref="CellFormatter"/>
+        </xs:choice>
+    </xs:group>
+    <!-- Child element of a NamedSet. -->
+    <!-- Child element of a Dimension. -->
+    <xs:group name="DimensionElement">
+        <xs:choice>
+            <xs:element ref="Hierarchies"/>
+            <xs:element ref="Attributes"/>
+            <xs:element ref="Annotations"/>
+        </xs:choice>
+    </xs:group>
+    <!-- Child element of a Property. -->
+    <xs:group name="PropertyElement">
+        <xs:choice>
+            <xs:element ref="Annotations"/>
+            <xs:element ref="PropertyFormatter"/>
+        </xs:choice>
+    </xs:group>
+    <!-- Child element of a Schema. -->
+    <xs:group name="SchemaElement">
+        <xs:choice>
+            <xs:element ref="Dimension"/>
+            <xs:element ref="Cube"/>
+            <xs:element ref="NamedSet"/>
+            <xs:element ref="Role"/>
+            <xs:element ref="UserDefinedFunction"/>
+            <xs:element ref="Parameter"/>
+            <xs:element ref="Annotations"/>
+            <xs:element ref="Localization"/>
+            <xs:element ref="PhysicalSchema"/>
+        </xs:choice>
+    </xs:group>
+    <!-- Child element of a MeasureGroup. -->
+    <xs:element name="MeasureGroupElement" abstract="true"/>
+    <!-- Child element of a Table. -->
+    <xs:group name="TableElement">
+        <xs:choice>
+            <xs:element ref="Hints"/>
+            <xs:element ref="ColumnDefs"/>
+            <xs:element ref="Key"/>
+        </xs:choice>
+    </xs:group>
+    <!-- Child element of an InlineTable. -->
+    <xs:group name="InlineTableElement">
+        <xs:choice>
+            <xs:element ref="ColumnDefs"/>
+            <xs:element ref="Rows"/>
+            <xs:element ref="Key"/>
+        </xs:choice>
+    </xs:group>
+    <!-- Child element of a Role. -->
+    <xs:group name="RoleElement">
+        <xs:choice>
+            <xs:element ref="SchemaGrant"/>
+            <xs:element ref="Union"/>
+            <xs:element ref="Annotations"/>
+            <xs:element ref="Script"/>
+        </xs:choice>
+    </xs:group>
+    <!-- Element that contains children. -->
+    <!-- Child element of an Attribute. -->
+    <xs:group name="AttributeElement">
+        <xs:choice>
+            <xs:element ref="Property"/>
+            <xs:element ref="Key"/>
+            <xs:element ref="Name"/>
+            <xs:element ref="OrderBy"/>
+            <xs:element ref="Caption"/>
+            <xs:element ref="Annotations"/>
+            <xs:element ref="MemberFormatter"/>
+        </xs:choice>
+    </xs:group>
+    <!-- Child element of a Hierarchy. -->
+    <xs:group name="HierarchyElement">
+        <xs:choice>
+            <xs:element ref="Level"/>
+            <xs:element ref="Annotations"/>
+        </xs:choice>
+    </xs:group>
+    <!--
+      An element that can occur in a PhysicalSchema. A relation (such as
+      a Table or View) or a Link.
+    -->
+    <xs:element name="PhysicalSchemaElement" abstract="true"/>
+    <!-- A relation (table, inline table, or view) in a PhysicalSchema. -->
+    <!-- Child element of a Query. -->
+    <xs:group name="QueryElement">
+        <xs:choice>
+            <xs:element ref="Key"/>
+            <xs:element ref="ExpressionView"/>
+            <xs:element ref="Annotations"/>
+        </xs:choice>
+    </xs:group>
+    <xs:element name="Expression" abstract="true"/>
+    <xs:complexType name="Expression">
+        <xs:sequence>
+            <xs:element ref="Expression"/>
+        </xs:sequence>
+    </xs:complexType>
+    <!-- An element that can occur in a Localization. -->
+    <xs:element name="LocalizationElement" abstract="true"/>
+    <!--
+      A schema is a collection of cubes.
+      It can also contain shared dimensions (for use by those
+      cubes), named sets, roles, and declarations of
+      user-defined functions.
+    -->
+    <xs:element name="Schema">
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="SchemaElement"/>
+            <xs:attribute name="name" use="required"/>
+            <xs:attribute name="caption"/>
+            <xs:attribute name="description"/>
+            <xs:attribute name="measuresCaption"/>
+            <xs:attribute name="defaultRole"/>
+            <xs:attribute name="quoteSql" default="true">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="missingLink" default="warning">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="ignore"/>
+                        <xs:enumeration value="warning"/>
+                        <xs:enumeration value="error"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="metamodelVersion"/>
+            <xs:attribute name="locales"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      A Dimension is a collection of attributes, some them
+      organized into hierarchies.
+      Dimensions are either defined at the Schema level, or as part of
+      a Cube within a Dimensions element.
+    -->
+    <xs:element name="Dimension">
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="DimensionElement"/>
+            <xs:attribute name="name"/>
+            <xs:attribute name="source"/>
+            <xs:attribute name="visible" default="true">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="caption"/>
+            <xs:attribute name="description"/>
+            <xs:attribute name="type" default="OTHER">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="ACCOUNTS"/>
+                        <xs:enumeration value="BILL_OF_MATERIALS"/>
+                        <xs:enumeration value="CHANNEL"/>
+                        <xs:enumeration value="CURRENCY"/>
+                        <xs:enumeration value="CUSTOMERS"/>
+                        <xs:enumeration value="GEOGRAPHY"/>
+                        <xs:enumeration value="MEASURE"/>
+                        <xs:enumeration value="ORGANIZATION"/>
+                        <xs:enumeration value="OTHER"/>
+                        <xs:enumeration value="PRODUCTS"/>
+                        <xs:enumeration value="PROMOTION"/>
+                        <xs:enumeration value="QUANTITATIVE"/>
+                        <xs:enumeration value="RATES"/>
+                        <xs:enumeration value="SCENARIO"/>
+                        <xs:enumeration value="TIME"/>
+                        <xs:enumeration value="UNKNOWN"/>
+                        <xs:enumeration value="UTILITY"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="table"/>
+            <xs:attribute name="key"/>
+            <xs:attribute name="hanger" default="false">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Array of Dimensions.
+      Note that shared dimensions are direct children of a Schema element.
+      The dimensions of a cube reside in a Dimensions holder element.
+    -->
+    <xs:element name="Dimensions">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Dimension"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!-- Definition of a cube. -->
+    <xs:element name="Cube">
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="CubeElement"/>
+            <xs:attribute name="name" use="required"/>
+            <xs:attribute name="visible" default="true">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="caption"/>
+            <xs:attribute name="description"/>
+            <xs:attribute name="defaultMeasure"/>
+            <xs:attribute name="cache" default="true">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="enabled" default="true">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="enableScenarios" default="false">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <!-- A list of Hierarchy elements. -->
+    <xs:element name="Hierarchies">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Hierarchy"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!-- A list of Attribute elements. -->
+    <xs:element name="Attributes">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Attribute"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      An attribute is a data value.
+      If you are familiar with modeling relational database schemas,
+      then an attribute is the nearest equivalent in the Mondrian
+      schema to a column.
+      Every attribute belongs to a dimension. (So, continuing the
+      analogy, a dimension is the nearest equivalent of a table.)
+      By setting hasHierarchy
+      to true, you can automatically create a Hierarchy that has
+      a single Level based on this attribute, called an attribute
+      hierarchy. An attribute can also be used to build multi-level
+      hierarchies, by including it in a Level.
+    -->
+    <xs:element name="Attribute">
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="AttributeElement"/>
+            <xs:attribute name="name" use="required"/>
+            <xs:attribute name="caption"/>
+            <xs:attribute name="description"/>
+            <xs:attribute name="visible" default="true">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="levelType" default="Regular">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="Regular"/>
+                        <xs:enumeration value="TimeYears"/>
+                        <xs:enumeration value="TimeHalfYear"/>
+                        <xs:enumeration value="TimeQuarters"/>
+                        <xs:enumeration value="TimeMonths"/>
+                        <xs:enumeration value="TimeWeeks"/>
+                        <xs:enumeration value="TimeDays"/>
+                        <xs:enumeration value="TimeHours"/>
+                        <xs:enumeration value="TimeMinutes"/>
+                        <xs:enumeration value="TimeSeconds"/>
+                        <xs:enumeration value="TimeUndefined"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="approxRowCount"/>
+            <xs:attribute name="table"/>
+            <xs:attribute name="keyColumn"/>
+            <xs:attribute name="nameColumn"/>
+            <xs:attribute name="orderByColumn"/>
+            <xs:attribute name="captionColumn"/>
+            <xs:attribute name="datatype" default="String">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="String"/>
+                        <xs:enumeration value="Numeric"/>
+                        <xs:enumeration value="Integer"/>
+                        <xs:enumeration value="Boolean"/>
+                        <xs:enumeration value="Date"/>
+                        <xs:enumeration value="Time"/>
+                        <xs:enumeration value="Timestamp"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="hasHierarchy" default="true">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="hierarchyHasAll" default="true">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="hierarchyCaption"/>
+            <xs:attribute name="hierarchyAllMemberName"/>
+            <xs:attribute name="hierarchyAllMemberCaption"/>
+            <xs:attribute name="hierarchyAllLevelName"/>
+            <xs:attribute name="hierarchyDefaultMember"/>
+        </xs:complexType>
+    </xs:element>
+    <!-- Collection of attributes organized into levels. -->
+    <xs:element name="Hierarchy">
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="HierarchyElement"/>
+            <xs:attribute name="name" use="required"/>
+            <xs:attribute name="visible" default="true">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="hasAll">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="allMemberName"/>
+            <xs:attribute name="allMemberCaption"/>
+            <xs:attribute name="allLevelName"/>
+            <xs:attribute name="defaultMember"/>
+            <xs:attribute name="caption"/>
+            <xs:attribute name="description"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Level">
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="LevelElement"/>
+            <xs:attribute name="name"/>
+            <xs:attribute name="visible" default="true">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="attribute" use="required"/>
+            <xs:attribute name="parentAttribute"/>
+            <xs:attribute name="nullParentValue"/>
+            <xs:attribute name="hideMemberIf" default="Never">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="Never"/>
+                        <xs:enumeration value="IfBlankName"/>
+                        <xs:enumeration value="IfParentsName"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="formatter"/>
+            <xs:attribute name="caption"/>
+            <xs:attribute name="description"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Specifies the transitive closure of a parent-child hierarchy.
+      Optional, but recommended for better performance.
+      The closure is provided as a set of (parent, child) pairs:
+      since it is the transitive closure these are actually (ancestor,
+      descendant) pairs.
+      Each row of the table must be a tuple of the parent-child
+      hierarchy.
+    -->
+    <xs:element name="Closure">
+        <xs:complexType>
+            <xs:attribute name="parentColumn" use="required"/>
+            <xs:attribute name="childColumn" use="required"/>
+            <xs:attribute name="distanceColumn" default="distance"/>
+            <xs:attribute name="table" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <!-- Member property. -->
+    <xs:element name="Property">
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="PropertyElement"/>
+            <xs:attribute name="name"/>
+            <xs:attribute name="attribute" use="required"/>
+            <xs:attribute name="caption"/>
+            <xs:attribute name="description"/>
+            <xs:attribute name="formatter"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="MeasureOrRef">
+        <xs:complexType/>
+    </xs:element>
+    <!--
+      Specifies the column where the aggregation of a given measure is
+      stored in the current aggregate table.
+      Can only occur in a MeasureGroup whose type is 'aggregate'.
+    -->
+    <xs:element name="MeasureRef">
+        <xs:complexType>
+            <xs:attribute name="name" use="required"/>
+            <xs:attribute name="aggColumn" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Measure">
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="MeasureElement"/>
+            <xs:attribute name="name" use="required"/>
+            <xs:attribute name="column"/>
+            <xs:attribute name="table"/>
+            <xs:attribute name="formatString"/>
+            <xs:attribute name="datatype">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="String"/>
+                        <xs:enumeration value="Numeric"/>
+                        <xs:enumeration value="Integer"/>
+                        <xs:enumeration value="Boolean"/>
+                        <xs:enumeration value="Date"/>
+                        <xs:enumeration value="Time"/>
+                        <xs:enumeration value="Timestamp"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="aggregator" use="required"/>
+            <xs:attribute name="formatter"/>
+            <xs:attribute name="caption"/>
+            <xs:attribute name="description"/>
+            <xs:attribute name="visible">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <!-- Collection of CalculatedMember elements. -->
+    <xs:element name="CalculatedMembers">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="CalculatedMember"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="CalculatedMember">
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="CalculatedMemberElement"/>
+            <xs:attribute name="name" use="required"/>
+            <xs:attribute name="formatString"/>
+            <xs:attribute name="caption"/>
+            <xs:attribute name="description"/>
+            <xs:attribute name="formula"/>
+            <xs:attribute name="dimension"/>
+            <xs:attribute name="hierarchy"/>
+            <xs:attribute name="parent"/>
+            <xs:attribute name="visible">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Property of a calculated member defined against a cube.
+      It must have either an expression or a value.
+    -->
+    <xs:element name="CalculatedMemberProperty">
+        <xs:complexType>
+            <xs:attribute name="name" use="required"/>
+            <xs:attribute name="caption"/>
+            <xs:attribute name="description"/>
+            <xs:attribute name="expression"/>
+            <xs:attribute name="value"/>
+        </xs:complexType>
+    </xs:element>
+    <!-- Collection of NamedSet elements. -->
+    <xs:element name="NamedSets">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="NamedSet"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      <p>Defines a named set which can be used in queries in the
+      same way as a set defined using a WITH SET clause.</p>
+      <p>A named set can be defined against a particular cube,
+      or can be global to a schema. If it is defined against a
+      cube, it is only available to queries which use that cube.</p>
+      <p>A named set defined against a schema is available in
+      all cubes in that schema. However, it is
+      only valid if the cube contains dimensions with the names
+      required to make the formula valid.</p>
+    -->
+    <xs:element name="NamedSet">
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="CalculatedMemberElement"/>
+            <xs:attribute name="name" use="required"/>
+            <xs:attribute name="caption"/>
+            <xs:attribute name="description"/>
+            <xs:attribute name="formula"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Formula" type="xs:string"/>
+    <!-- Relation defined by a SQL statement. -->
+    <xs:element name="Query" substitutionGroup="PhysicalSchemaElement">
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="QueryElement"/>
+            <xs:attribute name="alias" use="required"/>
+            <xs:attribute name="keyColumn"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="SQL">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="any">
+                    <xs:attribute name="dialect" default="generic"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Table" substitutionGroup="PhysicalSchemaElement">
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="TableElement"/>
+            <xs:attribute name="name" use="required"/>
+            <xs:attribute name="schema"/>
+            <xs:attribute name="alias"/>
+            <xs:attribute name="keyColumn"/>
+        </xs:complexType>
+    </xs:element>
+    <!-- Collection of hints. -->
+    <xs:element name="Hints">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Hint"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!-- Dialect-specific table optimization hints. -->
+    <xs:element name="Hint">
+        <xs:complexType mixed="true">
+            <xs:attribute name="type" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="InlineTable" substitutionGroup="PhysicalSchemaElement">
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="InlineTableElement"/>
+            <xs:attribute name="alias" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Table for a time dimension that is automatically created and
+      populated.
+      If the ColumnDefs child is specified, then columns are created
+      with the given names and types. Each column must have a 'role'
+      attribute that determines how it is populated.
+      If ColumnDefs is not specified, the following columns
+      will be created:
+      time_id (role JULIAN, the Julian day number, e.g. 12345),
+      the_date (role DATE, e.g. '2012-12-31', a DATE value or the DBMS
+      equivalent),
+      the_day (role DAY_OF_WEEK_NAME, e.g. 'Wednesday'),
+      the_month (role MONTH_NAME, e.g. 'December'),
+      the_year (role YEAR, e.g. 2012),
+      day_of_month (role DAY_OF_MONTH, e.g. '31'),
+      week_of_year (role WEEK_OF_YEAR, e.g. 53),
+      month_of_year (role MONTH, e.g. 12),
+      quarter (role QUARTER, e.g. 4).
+    -->
+    <xs:element name="AutoGeneratedDateTable" substitutionGroup="PhysicalSchemaElement">
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="TableElement"/>
+            <xs:attribute name="startDate" use="required"/>
+            <xs:attribute name="endDate" use="required"/>
+            <xs:attribute name="name" use="required"/>
+            <xs:attribute name="schema"/>
+            <xs:attribute name="alias"/>
+            <xs:attribute name="keyColumn"/>
+        </xs:complexType>
+    </xs:element>
+    <!-- Holder for an array of RealOrCalcColumnDef elements. -->
+    <xs:element name="ColumnDefs">
+        <xs:complexType>
+            <xs:choice maxOccurs="unbounded">
+                <!-- CHANGE BY DS: old: <xs:element minOccurs="0" maxOccurs="unbounded" ref="RealOrCalcColumnDef"/> -->
+                <!-- CalculatedColumnDef add -->
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="ColumnDef"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="CalculatedColumnDef"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="RealOrCalcColumnDef">
+        <xs:complexType>
+            <xs:attribute name="name" use="required"/>
+            <xs:attribute name="type">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="String"/>
+                        <xs:enumeration value="Numeric"/>
+                        <xs:enumeration value="Integer"/>
+                        <xs:enumeration value="Boolean"/>
+                        <xs:enumeration value="Date"/>
+                        <xs:enumeration value="Time"/>
+                        <xs:enumeration value="Timestamp"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="internalType"/>
+        </xs:complexType>
+    </xs:element>
+    <!-- Column definition for a table or inline table. -->
+    <xs:element name="ColumnDef">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="TimeDomain"/>
+            </xs:sequence>
+            <xs:attribute name="name" use="required"/>
+            <xs:attribute name="type">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="String"/>
+                        <xs:enumeration value="Numeric"/>
+                        <xs:enumeration value="Integer"/>
+                        <xs:enumeration value="Boolean"/>
+                        <xs:enumeration value="Date"/>
+                        <xs:enumeration value="Time"/>
+                        <xs:enumeration value="Timestamp"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="internalType"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Specification for how to generate the values of a column in an
+      auto-generated time dimension table.
+    -->
+    <xs:element name="TimeDomain">
+        <xs:complexType>
+            <xs:attribute name="role"/>
+            <xs:attribute name="epoch"/>
+        </xs:complexType>
+    </xs:element>
+    <!-- Column definition that is computed using an expression. -->
+    <xs:element name="CalculatedColumnDef">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="Expression">
+                    <xs:attribute name="name" use="required"/>
+                    <xs:attribute name="type">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:token">
+                                <xs:enumeration value="String"/>
+                                <xs:enumeration value="Numeric"/>
+                                <xs:enumeration value="Integer"/>
+                                <xs:enumeration value="Boolean"/>
+                                <xs:enumeration value="Date"/>
+                                <xs:enumeration value="Time"/>
+                                <xs:enumeration value="Timestamp"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                    <xs:attribute name="internalType"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <!-- Holder for an array of Row elements. -->
+    <xs:element name="Rows">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Row"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Row definition for an inline table.
+      Must have one Column for each ColumnDef in the InlineTable.
+    -->
+    <xs:element name="Row">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Value"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Column value for an inline table.
+      The CDATA holds the value of the column.
+    -->
+    <xs:element name="Value">
+        <xs:complexType mixed="true">
+            <xs:attribute name="column" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      A definition of an aggregate table for a base fact table.
+      This aggregate table must be in the same schema as the
+      base fact table.
+    -->
+    <xs:element name="AggTable">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="AggFactCount"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="AggIgnoreColumn"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="AggForeignKey"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="AggMeasure"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="AggLevel"/>
+            </xs:sequence>
+            <xs:attribute name="ignorecase" default="true">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="AggName">
+        <xs:complexType>
+            <xs:attribute name="name" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="AggPattern">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="AggExclude"/>
+            </xs:sequence>
+            <xs:attribute name="pattern" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="AggExclude">
+        <xs:complexType>
+            <xs:attribute name="pattern"/>
+            <xs:attribute name="name"/>
+            <xs:attribute name="ignorecase" default="true">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="AggColumnName">
+        <xs:complexType>
+            <xs:attribute name="column" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="AggFactCount">
+        <xs:complexType>
+            <xs:attribute name="column" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="AggIgnoreColumn">
+        <xs:complexType/>
+    </xs:element>
+    <!--
+      The name of the column mapping from base fact table foreign key
+      to aggregate table foreign key.
+    -->
+    <xs:element name="AggForeignKey">
+        <xs:complexType>
+            <xs:attribute name="factColumn" use="required"/>
+            <xs:attribute name="aggColumn" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="AggLevel">
+        <xs:complexType>
+            <xs:attribute name="column" use="required"/>
+            <xs:attribute name="name" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="AggMeasure">
+        <xs:complexType>
+            <xs:attribute name="column" use="required"/>
+            <xs:attribute name="name" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <!-- Collection of columns. -->
+    <xs:element name="Columns">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Column"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Definition of the key of a dimension or table.
+      Even though its base class is Columns, and Columns implements
+      the Holder interface, we do not use Key as a holder. This is
+      because a Table can have more than one Key.
+    -->
+    <xs:element name="Key">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Column"/>
+            </xs:sequence>
+            <xs:attribute name="name"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Column that holds the name of an attribute.
+      See also Attribute.nameColumn.
+    -->
+    <xs:element name="Name">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Column"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Column(s) that define the order of members of an attribute.
+      See also Attribute.orderByColumn.
+    -->
+    <xs:element name="OrderBy">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Column"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Column that holds the caption of an attribute.
+      See also Attribute.captionColumn.
+    -->
+    <xs:element name="Caption">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Column"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Column(s) that hold the foreign key from a measure group's
+      fact table to a dimension's table.
+      See also ForeignKeyLink.foreignKeyColumn.
+    -->
+    <xs:element name="ForeignKey">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Column"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Arguments to a measure. For most measures, the argument is a single
+      Column. See also the column attribute of the Measure
+      element.
+    -->
+    <xs:element name="Arguments">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Column"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Reference to a column in an expression, key, or CopyLink.
+      Table name is optional if the column is being used within a
+      table definition. If the column reference is used within a key,
+      the table name, if present, must be the same as the containing
+      table.
+    -->
+    <xs:element name="Column" substitutionGroup="Expression">
+        <xs:complexType>
+            <xs:attribute name="table"/>
+            <xs:attribute name="name" use="required"/>
+            <xs:attribute name="aggColumn"/>
+        </xs:complexType>
+    </xs:element>
+    <!-- A collection of SQL expressions, one per dialect. -->
+    <xs:element name="ExpressionView" substitutionGroup="Expression">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="SQL"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      A role defines an access-control profile. It has a series of grants
+      (or denials) for schema elements.
+    -->
+    <xs:element name="Role">
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="RoleElement"/>
+            <xs:attribute name="name" use="required"/>
+            <xs:attribute name="className"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Grants (or denies) this role access to this schema.
+      access may be "all", "all_dimensions", "custom"
+      or "none".
+      If access is "all_dimensions", the role has access
+      to all dimensions but still needs explicit access to cubes.
+      If access is "custom", no access will be inherited by
+      cubes for which no explicit rule is set.
+      If access is "all_dimensions", an implicut access is
+      given to all dimensions of the schema's cubes, provided the cube's
+      access attribute is either "custom" or "all".
+      See mondrian.olap.Role#grant(mondrian.olap.Schema,int).
+    -->
+    <xs:element name="SchemaGrant">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="CubeGrant"/>
+            </xs:sequence>
+            <xs:attribute name="access" use="required">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="all"/>
+                        <xs:enumeration value="custom"/>
+                        <xs:enumeration value="none"/>
+                        <xs:enumeration value="all_dimensions"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Grants (or denies) this role access to a cube.
+      access may be "all", "custom" or "none".
+      If access is "custom", no access will be inherited
+      by the dimensions of this cube, unless the parent SchemaGrant is
+      set to "ALL_DIMENSIONS".
+      See mondrian.olap.Role#grant(mondrian.olap.Cube,int).
+    -->
+    <xs:element name="CubeGrant">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="DimensionGrant"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="HierarchyGrant"/>
+            </xs:sequence>
+            <xs:attribute name="cube" use="required"/>
+            <xs:attribute name="access" use="required">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="all"/>
+                        <xs:enumeration value="custom"/>
+                        <xs:enumeration value="none"/>
+                        <xs:enumeration value="all_dimensions"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Grants (or denies) this role access to a dimension.
+      access may be "all", "custom" or "none".
+      Note that a role is implicitly given access to a dimension when it
+      is given "ALL" acess to a cube.
+      If access is "custom", no access will be inherited
+      by the hierarchies of this dimension.
+      If the parent schema access is "ALL_DIMENSIONS",
+      this timension will inherit access "ALL".
+      See also the "all_dimensions" option of the "SchemaGrant" element.
+      See mondrian.olap.Role#grant(mondrian.olap.Dimension,int).
+    -->
+    <xs:element name="DimensionGrant">
+        <xs:complexType>
+            <xs:attribute name="dimension" use="required"/>
+            <xs:attribute name="access" use="required">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="all"/>
+                        <xs:enumeration value="custom"/>
+                        <xs:enumeration value="none"/>
+                        <xs:enumeration value="all_dimensions"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Grants (or denies) this role access to a hierarchy.
+      access may be "all", "custom" or "none".
+      If access is "custom", you may also specify the
+      attributes topLevel, bottomLevel, and
+      the member grants.
+      If access is "custom", the child levels of this
+      hierarchy will not inherit access rights from this hierarchy,
+      should there be no explicit rules defined for said child level.
+      See mondrian.olap.Role#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level).
+    -->
+    <xs:element name="HierarchyGrant">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="MemberGrant"/>
+            </xs:sequence>
+            <xs:attribute name="hierarchy" use="required"/>
+            <xs:attribute name="topLevel"/>
+            <xs:attribute name="bottomLevel"/>
+            <xs:attribute name="rollupPolicy"/>
+            <xs:attribute name="access" use="required">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="all"/>
+                        <xs:enumeration value="custom"/>
+                        <xs:enumeration value="none"/>
+                        <xs:enumeration value="all_dimensions"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Grants (or denies) this role access to a member.
+      The children of this member inherit that access.
+      You can implicitly see a member if you can see any of its children.
+      See mondrian.olap.Role#grant(mondrian.olap.Member,int).
+    -->
+    <xs:element name="MemberGrant">
+        <xs:complexType>
+            <xs:attribute name="member" use="required"/>
+            <xs:attribute name="access" use="required">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="all"/>
+                        <xs:enumeration value="none"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Body of a Role definition which defines a Role to be the union
+      of several Roles. The RoleUsage elements must refer to Roles that
+      have been declared earlier in this schema file.
+    -->
+    <xs:element name="Union">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="RoleUsage"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!-- Usage of a Role in a union Role. -->
+    <xs:element name="RoleUsage">
+        <xs:complexType>
+            <xs:attribute name="roleName" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      A UserDefinedFunction is a function which
+      extends the MDX language. It must be implemented by a Java
+      class which implements the interface
+      mondrian.spi.UserDefinedFunction.
+    -->
+    <xs:element name="UserDefinedFunction">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="Script"/>
+            </xs:sequence>
+            <xs:attribute name="name" use="required"/>
+            <xs:attribute name="className"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      A Parameter defines a schema parameter.
+      It can be referenced from an MDX statement using the ParamRef
+      function and, if not final, its value can be overridden.
+    -->
+    <xs:element name="Parameter">
+        <xs:complexType>
+            <xs:attribute name="name" use="required"/>
+            <xs:attribute name="description"/>
+            <xs:attribute name="type" default="String">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="String"/>
+                        <xs:enumeration value="Numeric"/>
+                        <xs:enumeration value="Integer"/>
+                        <xs:enumeration value="Boolean"/>
+                        <xs:enumeration value="Date"/>
+                        <xs:enumeration value="Time"/>
+                        <xs:enumeration value="Timestamp"/>
+                        <xs:enumeration value="Member"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="modifiable" default="true">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="defaultValue"/>
+        </xs:complexType>
+    </xs:element>
+    <!-- Holder for an array of Annotation elements -->
+    <xs:element name="Annotations">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Annotation"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!-- User-defined property value. -->
+    <xs:element name="Annotation">
+        <xs:complexType mixed="true">
+            <xs:attribute name="name" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Script fragment to implement an SPI such as user-defined function,
+      member formatter, cell formatter.
+    -->
+    <xs:element name="Script">
+        <xs:complexType mixed="true">
+            <xs:attribute name="language" default="JavaScript"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Plugin that formats the values of cells.
+      It must be implemented by a Java
+      class which implements the interface
+      mondrian.spi.CellFormatter,
+      or by a script.
+    -->
+    <xs:element name="CellFormatter">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="Script"/>
+            </xs:sequence>
+            <xs:attribute name="className"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Plugin that formats members.
+      It must be implemented by a Java
+      class which implements the interface
+      mondrian.spi.MemberFormatter,
+      or by a script.
+    -->
+    <xs:element name="MemberFormatter">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="Script"/>
+            </xs:sequence>
+            <xs:attribute name="className"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Plugin that formats properties.
+      It must be implemented by a Java
+      class which implements the interface
+      mondrian.spi.PropertyFormatter,
+      or by a script.
+    -->
+    <xs:element name="PropertyFormatter">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="Script"/>
+            </xs:sequence>
+            <xs:attribute name="className"/>
+        </xs:complexType>
+    </xs:element>
+    <!-- Defines localization of this schema. -->
+    <xs:element name="Localization">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="LocalizationElement"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!-- Holder for one or more Locale elements. -->
+    <xs:element name="Locales" substitutionGroup="LocalizationElement">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Locale"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!-- Describes a locale supported by this schema. -->
+    <xs:element name="Locale">
+        <xs:complexType>
+            <xs:attribute name="locale" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <!-- Holder for one or more Translation elements. -->
+    <xs:element name="Translations" substitutionGroup="LocalizationElement">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Translation"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Describes a Translation supported by this schema.
+      The resource file is substituted with the locale.
+      For example, given
+      <Translation path='sales_resource_${locale}.properties'/>,
+      if the current locale is 'fr-FR', Mondrian will look for a file
+      named 'sales_resource_fr_FR.properties'.
+    -->
+    <xs:element name="Translation">
+        <xs:complexType>
+            <xs:attribute name="path" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Definition of the set of tables, columns, and relationships
+      that the cubes and dimensions in this schema are mapped onto.
+    -->
+    <xs:element name="PhysicalSchema">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="PhysicalSchemaElement"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!-- Definition of a link between two tables. -->
+    <xs:element name="Link" substitutionGroup="PhysicalSchemaElement">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="ForeignKey"/>
+            </xs:sequence>
+            <xs:attribute name="source" use="required"/>
+            <xs:attribute name="target" use="required"/>
+            <xs:attribute name="key"/>
+            <xs:attribute name="foreignKeyColumn"/>
+        </xs:complexType>
+    </xs:element>
+    <!-- Holder for one or more MeasureGroup elements. -->
+    <xs:element name="MeasureGroups">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="MeasureGroup"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <!-- Collection of measures that reside in the same fact table. -->
+    <xs:element name="MeasureGroup">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="MeasureGroupElement"/>
+            </xs:sequence>
+            <xs:attribute name="name"/>
+            <xs:attribute name="type" default="fact">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="fact"/>
+                        <xs:enumeration value="aggregate"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="table" use="required"/>
+            <xs:attribute name="ignoreUnrelatedDimensions" default="false">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="approxRowCount"/>
+        </xs:complexType>
+    </xs:element>
+    <!-- Holder element for {@link MondrianDef.Measure} elements. -->
+    <xs:element name="Measures" substitutionGroup="MeasureGroupElement">
+        <xs:complexType>
+            <xs:choice maxOccurs="unbounded">
+                <!-- CHANGED BY DS: old: <xs:element minOccurs="0" maxOccurs="unbounded" ref="MeasureOrRef"/> -->
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Measure"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="MeasureRef"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+    <!-- Holder element for {@link MondrianDef.DimensionLink} elements. -->
+    <xs:element name="DimensionLinks" substitutionGroup="MeasureGroupElement">
+        <xs:complexType>
+            <xs:choice maxOccurs="unbounded">
+                <!-- CHANGED BY DS: old: <xs:element minOccurs="0" maxOccurs="unbounded" ref="DimensionLink"/> -->
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="ForeignKeyLink"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="FactLink"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="NoLink"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="ReferenceLink"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="CopyLink"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Usage of a {@link MondrianDef.Dimension} by a
+      {@link MondrianDef.MeasureGroup}. Describes how the fact table
+      of the measure group is linked to the dimension table.
+      There are subclasses, describing particular ways of linking:
+      ForeignKeyLink, FactLink, ReferenceLink, NoLink.
+    -->
+    <xs:element name="DimensionLink">
+        <xs:complexType>
+            <xs:attribute name="dimension" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Dimension that is linked to a measure group by a foreign key
+      from the fact table to the dimension table. This is the most
+      common form of dimension link.
+      You may specify the foreign key using either the foreignKeyColumn
+      attribute, or a nested ForeignKey element, but not both. The foreign
+      key must contain the same number and type of columns as the key of
+      the linked dimension's key attribute.
+    -->
+    <xs:element name="ForeignKeyLink">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="ForeignKey"/>
+            </xs:sequence>
+            <xs:attribute name="foreignKeyColumn"/>
+            <xs:attribute name="attribute"/>
+            <xs:attribute name="dimension" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Dimension that is trivially linked to a measure group because
+      the dimension table is the fact table. This is also known as
+      a 'degenerate dimension'.
+    -->
+    <xs:element name="FactLink">
+        <xs:complexType>
+            <xs:attribute name="dimension" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Dimension that is linked into a measure group via another dimension.
+      Its key does not join to the fact table, as in a ForeignKeyLink, but
+      instead joins to the key of a given attribute of a given dimension.
+    -->
+    <xs:element name="ReferenceLink">
+        <xs:complexType>
+            <xs:attribute name="viaAttribute"/>
+            <xs:attribute name="viaDimension"/>
+            <xs:attribute name="dimension" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Documents that a dimension is not linked to the current measure
+      group.
+      If Schema.missingLink=ignore then this element is not
+      necessary. However, we recommend that you use
+      Schema.missingLink=warning (the default) and create explicit links
+      for all dimensions.
+    -->
+    <xs:element name="NoLink">
+        <xs:complexType>
+            <xs:attribute name="dimension" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <!--
+      Indicates dimension that is represented by key columns in the fact
+      table; or rather, the aggregate table, since this kind of link may
+      only be used in a MeasureGroup whose type is 'aggregate'.
+    -->
+    <xs:element name="CopyLink">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Column"/>
+            </xs:sequence>
+            <xs:attribute name="dimension" use="required"/>
+            <xs:attribute name="attribute"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="any" mixed="true">
+        <xs:sequence>
+            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="strict"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>
