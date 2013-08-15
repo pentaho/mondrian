@@ -1870,7 +1870,7 @@ xalan.jar"/>
       <param name="publish.artifactId" value="workbench" />
       <param name="publish.file" value="${workbench.jar.file}" />
       <param name="publish.packaging" value="jar" />
-      <param name="publish.generatePom" value="false" />
+      <param name="publish.generatePom" value="${publish.generatePom}" />
     </antcall>
   </target>
 
