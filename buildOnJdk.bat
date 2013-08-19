@@ -36,13 +36,13 @@ rem ======================================================
 rem ===== Don't touch anything below this line ===========
 
 if %1==jdk1.5 (
-set JAVA_HOME=%JAVA_HOME_15%
+set "JAVA_HOME=%JAVA_HOME_15%"
 )
 if %1==jdk1.6 (
-set JAVA_HOME=%JAVA_HOME_16%
+set "JAVA_HOME=%JAVA_HOME_16%"
 )
 if %1==jdk1.7 (
-set JAVA_HOME=%JAVA_HOME_17%
+set "JAVA_HOME=%JAVA_HOME_17%"
 )
 
 set ANT_ARGUMENTS=-Drequested.java.version=%1
