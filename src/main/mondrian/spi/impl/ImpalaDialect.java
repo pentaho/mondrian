@@ -135,9 +135,29 @@ public class ImpalaDialect extends HiveDialect {
         List<String> columnTypes,
         List<String[]> valueList)
     {
-        // TODO: fix this, when Impala has the necessary features. See bug
-        // http://jira.pentaho.com/browse/MONDRIAN-1512.
-        return "";
+        // Impala supports a syntax like:
+        // SELECT * FROM (VALUES <list of tuples>) AS T
+        final StringBuilder buf = new StringBuilder();
+        buf.append("SELECT * FROM (VALUES");
+        for (int i = 0; i < valueList.size(); i++) {
+            if (i > 0) {
+                buf.append(", ");
+            }
+            String[] values = valueList.get(i);
+            buf.append("(");
+            for (int j = 0; j < values.length; j++) {
+                String value = values[j];
+                if (j > 0) {
+                    buf.append(", ");
+                }
+                final String columnType = columnTypes.get(j);
+                Datatype datatype = Datatype.valueOf(columnType);
+                quote(buf, value, datatype);
+            }
+            buf.append(")");
+        }
+        buf.append(") AS T");
+        return buf.toString();
     }
 
     public boolean allowsJoinOn() {
@@ -149,17 +169,14 @@ public class ImpalaDialect extends HiveDialect {
         StringBuilder buf,
         String value)
     {
-        // REVIEW: Are Impala's rules for string literals so very different
-        // from the standard? Or from Hive's?
         String quote = "\'";
         String s0 = value;
 
-        if (value.contains("'")) {
-            quote = "\"";
+        if (s0.contains("\\")) {
+            s0.replaceAll("\\\\", "\\\\");
         }
-
-        if (value.contains(quote)) {
-            s0 = value.replaceAll(quote, "\\\\" + quote);
+        if (s0.contains(quote)) {
+            s0 = s0.replaceAll(quote, "\\\\" + quote);
         }
 
         buf.append(quote);
@@ -222,6 +239,10 @@ public class ImpalaDialect extends HiveDialect {
             quoteStringLiteral(sb, javaRegex.toUpperCase());
         }
         return sb.toString();
+    }
+
+    public boolean allowsDdl() {
+        return true;
     }
 }
 // End ImpalaDialect.java
