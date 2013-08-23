@@ -344,6 +344,13 @@ FNR - headerSkip <= headerCount {
     }
     prevImport = thisImport;
     prevImportGroup = importGroup;
+    lastImport = FNR;
+}
+/./ && !/^import/ && lastImport {
+    if (lastImport != FNR - 2) {
+        error(fname, FNR, "need precisely 1 blank line after last import");
+    }
+    lastImport = 0;
 }
 /^\/\/ Copyright .* Pentaho/ && strict > 1 {
     # We assume that '--strict' is only invoked on files currently being
