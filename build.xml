@@ -29,6 +29,9 @@
   <property name="src.dir" value="src/main/java"/>
   <property name="testsrc.dir" value="src/test/java"/>
   <property name="javacc.src.dir" value="src/main/javacc"/>
+  <property name="classes.dir" value="target/classes"/>
+  <property name="testclasses.dir" value="target/test-classes"/>
+  <property name="testclasses-jdk14.dir" value="target/test-classes-jdk14"/>
 
   <import file="subfloor.xml" />
 
@@ -39,9 +42,6 @@
   <property name="doc.dir" value="doc"/>
   <property name="resource.location" location="resource"/>
   <property name="javadoc.dir" value="${doc.dir}/api"/>
-  <property name="classes.dir" value="target/classes"/>
-  <property name="testclasses.dir" value="target/test-classes"/>
-  <property name="testclasses-jdk14.dir" value="target/test-classes-jdk14"/>
   <property name="build.dir" value="build"/>
   <property name="dist.name" value="${name}-${project.revision}"/>
   <property name="dist.base" value="distribution"/>
@@ -505,11 +505,11 @@ copy"/>
   </target>
 
   <target name="copy">
-    <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml"
+    <copy file="src/main/resources/mondrian/rolap/aggmatcher/DefaultRules.xml"
         todir="${classes.dir}"/>
     <copy file="VERSION.txt"
             todir="${classes.dir}"/>
-    <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml"
+    <copy file="src/main/xom/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml"
         todir="${classes.dir}"/>
     <copy todir="${classes.dir}">
       <fileset
