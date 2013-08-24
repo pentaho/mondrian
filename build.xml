@@ -19,40 +19,29 @@
   <property file="${project.location}/test.properties"/>
   <property file="${project.location}/mondrian.properties"/>
   <property name="project.build.debug" value="on"/>
-  <property name="testsrc.dir" value="${basedir}/testsrc" />
 
   <!--
     ===================================================================
     Set the properties related to paths
     ===================================================================
   -->
-  <!--
-    Set src.dir to an absolute path when building with CruiseControl.
-    Otherwise, set it to a relative path.
-  -->
-  <condition property="src.dir" value="${basedir}/src">
-    <isset property="cruisecontrol" />
-  </condition>
-  <condition property="src.dir" value="src">
-    <not>
-      <isset property="cruisecontrol" />
-    </not>
-  </condition>
+
+  <property name="src.dir" value="src/main/java"/>
+  <property name="testsrc.dir" value="src/test/java"/>
+  <property name="javacc.src.dir" value="src/main/javacc"/>
 
   <import file="subfloor.xml" />
 
-  <property name="testsrc.dir" value="testsrc"/>
-  <property name="testsrc.dir.relative" value="testsrc"/>
-  <property name="java.dir" value="${src.dir}/main"/>
+  <property name="java.dir" value="${src.dir}"/>
   <property name="javatest.dir" value="${testsrc.dir}/main"/>
   <property name="etc.dir" value="${src.dir}/etc"/>
   <property name="lib.dir" value="lib"/>
   <property name="doc.dir" value="doc"/>
   <property name="resource.location" location="resource"/>
   <property name="javadoc.dir" value="${doc.dir}/api"/>
-  <property name="classes.dir" value="classes"/>
-  <property name="testclasses.dir" value="testclasses"/>
-  <property name="testclasses-jdk14.dir" value="testclasses-jdk14"/>
+  <property name="classes.dir" value="target/classes"/>
+  <property name="testclasses.dir" value="target/test-classes"/>
+  <property name="testclasses-jdk14.dir" value="target/test-classes-jdk14"/>
   <property name="build.dir" value="build"/>
   <property name="dist.name" value="${name}-${project.revision}"/>
   <property name="dist.base" value="distribution"/>
@@ -112,17 +101,17 @@
   </condition>
 
   <property name="generated.java.files" value="
-${java.dir}/mondrian/parser/MdxParserImpl.java,
-${java.dir}/mondrian/parser/MdxParserImplTokenManager.java,
-${java.dir}/mondrian/parser/ParseException.java,
-${java.dir}/mondrian/parser/SimpleCharStream.java,
-${java.dir}/mondrian/parser/Token.java,
-${java.dir}/mondrian/parser/TokenMgrError.java,
-${java.dir}/mondrian/olap/Mondrian3Def.java,
-${java.dir}/mondrian/olap/MondrianDef.java,
-${java.dir}/mondrian/olap/MondrianProperties.java,
-${java.dir}/mondrian/resource/MondrianResource*.java,
-${java.dir}/mondrian/xmla/DataSourcesConfig*.java,
+src/main/java/mondrian/parser/MdxParserImpl.java,
+src/main/java/mondrian/parser/MdxParserImplTokenManager.java,
+src/main/java/mondrian/parser/ParseException.java,
+src/main/java/mondrian/parser/SimpleCharStream.java,
+src/main/java/mondrian/parser/Token.java,
+src/main/java/mondrian/parser/TokenMgrError.java,
+src/main/java/mondrian/olap/Mondrian3Def.java,
+src/main/java/mondrian/olap/MondrianDef.java,
+src/main/java/mondrian/olap/MondrianProperties.java,
+src/main/java/mondrian/resource/MondrianResource*.java,
+src/main/java/mondrian/xmla/DataSourcesConfig*.java,
 ${etc.dir}/mondrian/web/jsp/**/*.java"/>
 
   <property name="generated.lib.files" value="
@@ -345,11 +334,11 @@ mondrian/rolap/RolapCubeUsages.java"/>
 
       <!-- Obsolete files. Still worthwhile cleaning them. -->
       <fileset dir="demo/derby/foodmart"/>
-      <fileset dir="${java.dir}" includes="
+      <fileset dir="src/main/java" includes="
 mondrian/gui/MondrianGuiDef.java,
 mondrian/olap/Parser.java,
 mondrian/olap/ParserSym.java"/>
-      <fileset dir="${java.dir}/mondrian/gui"/>
+      <fileset dir="src/main/java/mondrian/gui"/>
     </delete>
   </target>
 
@@ -468,7 +457,7 @@ copy"/>
     <!-- Compile MondrianException first, so that resgen can use
          reflection on it. -->
     <javac
-        srcdir="${java.dir}"
+        srcdir="src/main/java"
         destdir="${classes.dir}"
         debug="${project.build.debug}"
         classpathref="project.build.classpath"
@@ -486,7 +475,7 @@ copy"/>
     </javac>
 
     <resgen
-        srcdir="${java.dir}"
+        srcdir="src/main/java"
         resdir="${classes.dir}"
         style="functor"
         locales="en_US,de_DE,de,es_ES">
@@ -546,41 +535,42 @@ META-INF/**"/>
 
   <target name="parser" depends="define-tasks">
     <javacc
-        target="${java.dir}/mondrian/parser/MdxParser.jj"
+        target="${javacc.src.dir}/mondrian/parser/MdxParser.jj"
+        outputdirectory="${src.dir}/mondrian/parser"
         javacchome="${lib.dir}"/>
   </target>
 
   <target name="def" depends="define-tasks">
     <xomgen
-        model="${java.dir}/mondrian/olap/Mondrian3Schema.xml"
-        destdir="${java.dir}"
+        model="src/main/xom/mondrian/olap/Mondrian3Schema.xml"
+        destdir="src/main/java"
         classname="mondrian.olap.Mondrian3Def"
         dtdname="mondrian3.dtd"/>
-    <copy file="${java.dir}/mondrian/olap/mondrian3.dtd"
+    <copy file="src/main/java/mondrian/olap/mondrian3.dtd"
         todir="${lib.dir}"/>
 
     <xomgen
-        model="${java.dir}/mondrian/olap/MondrianSchema.xml"
-        destdir="${java.dir}"
+        model="src/main/xom/mondrian/olap/MondrianSchema.xml"
+        destdir="src/main/java"
         classname="mondrian.olap.MondrianDef"
         dtdname="mondrian.dtd"/>
-    <copy file="${java.dir}/mondrian/olap/mondrian.dtd"
+    <copy file="src/main/java/mondrian/olap/mondrian.dtd"
         todir="${lib.dir}"/>
 
     <xomgen
-        model="${java.dir}/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml"
-        destdir="${java.dir}"
+        model="src/main/xom/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml"
+        destdir="src/main/java"
         classname="mondrian.rolap.aggmatcher.DefaultDef"
         dtdname="aggregates.dtd"/>
-    <copy file="${java.dir}/mondrian/rolap/aggmatcher/aggregates.dtd"
+    <copy file="src/main/java/mondrian/rolap/aggmatcher/aggregates.dtd"
         todir="${lib.dir}"/>
 
     <xomgen
-        model="${java.dir}/mondrian/xmla/DataSourcesConfig.xml"
-        destdir="${java.dir}"
+        model="src/main/xom/mondrian/xmla/DataSourcesConfig.xml"
+        destdir="src/main/java"
         classname="mondrian.xmla.DataSourcesConfig"
         dtdname="datasourcesconfig.dtd"/>
-    <copy file="${java.dir}/mondrian/xmla/datasourcesconfig.dtd"
+    <copy file="src/main/java/mondrian/xmla/datasourcesconfig.dtd"
         todir="${lib.dir}"/>
   </target>
 
@@ -857,7 +847,7 @@ Built-On: ${build.time}
 Built-By: ${user.name}
 Built-In: ${user.dir}
 </echo>
-   <echo file="${java.dir}/mondrian/olap4j/MondrianOlap4jDriverVersion.java">/*
+   <echo file="src/main/java/mondrian/olap4j/MondrianOlap4jDriverVersion.java">/*
  * Project version information. Generated - do not modify.
  */
 package mondrian.olap4j;
@@ -886,38 +876,38 @@ class MondrianOlap4jDriverVersion {
           dir="."
           prefix="${dist.name}"
           includes="
-${java.dir}/**/*.properties,
-${java.dir}/META-INF/**,
-${java.dir}/mondrian/resource/MondrianResource.xml,
-${java.dir}/mondrian/olap/MondrianSchema.xml,
-${java.dir}/mondrian/olap/Mondrian3Schema.xml,
-${java.dir}/mondrian/olap/MondrianProperties.xml,
-${java.dir}/mondrian/rolap/aggmatcher/DefaultRules.xml,
-${java.dir}/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml,
-${java.dir}/mondrian/xmla/DataSourcesConfig.xml,
-${java.dir}/**/*.java,
-${java.dir}/**/*.jj,
-${java.dir}/**/*.gif,
-${java.dir}/**/*.png,
-${java.dir}/**/*.html,
+src/main/java/**/*.properties,
+src/main/java/META-INF/**,
+src/main/java/mondrian/resource/MondrianResource.xml,
+src/main/java/mondrian/olap/MondrianSchema.xml,
+src/main/java/mondrian/olap/Mondrian3Schema.xml,
+src/main/prop/mondrian/olap/MondrianProperties.xml,
+src/main/java/mondrian/rolap/aggmatcher/DefaultRules.xml,
+src/main/java/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml,
+src/main/java/mondrian/xmla/DataSourcesConfig.xml,
+src/main/java/**/*.java,
+src/main/java/**/*.jj,
+src/main/java/**/*.gif,
+src/main/java/**/*.png,
+src/main/java/**/*.html,
 ${lib.dir}/mondrian.xsd,
-${testsrc.dir.relative}/queryFiles/**/*.xml,
-${testsrc.dir.relative}/**/*.csv,
-${testsrc.dir.relative}/**/*.error,
-${testsrc.dir.relative}/**/*.java,
-${testsrc.dir.relative}/**/*.xml,
-${testsrc.dir.relative}/**/*.html,
-${testsrc.dir.relative}/**/*.txt,
-${testsrc.dir.relative}/**/*.sql,
+src/test/java/queryFiles/**/*.xml,
+src/test/java/**/*.csv,
+src/test/java/**/*.error,
+src/test/java/**/*.java,
+src/test/java/**/*.xml,
+src/test/java/**/*.html,
+src/test/java/**/*.txt,
+src/test/java/**/*.sql,
 ${webapp.dir}/WEB-INF/*.xml,
 ${webapp.dir}/**/*.jsp,
 ${webapp.dir}/WEB-INF/*.xsl,
 ${webapp.dir}/WEB-INF/*.tld,
-${doc.dir}/**/*.css,
-${doc.dir}/**/*.gif,
-${doc.dir}/**/*.png,
-${doc.dir}/**/*.jpeg,
-${doc.dir}/**/*.html,
+doc/**/*.css,
+doc/**/*.gif,
+doc/**/*.png,
+doc/**/*.jpeg,
+doc/**/*.html,
 bin/checkFile.awk,
 bin/checkFile.sh,
 bin/cmdrunner.sh,
@@ -1063,7 +1053,7 @@ must be run under JDK 1.7." />
 
   <target name="compileJdk15">
     <javac
-        srcdir="${java.dir}"
+        srcdir="src/main/java"
         destdir="${classes.dir}"
         debug="${project.build.debug}"
         classpathref="project.build.classpath"
@@ -1084,7 +1074,7 @@ must be run under JDK 1.7." />
 
   <target name="compileJdk16" if="jdk16.or.later.present">
       <javac
-        srcdir="${java.dir}"
+        srcdir="src/main/java"
         destdir="${classes.dir}"
         debug="${project.build.debug}"
         classpathref="project.build.classpath"
@@ -1100,7 +1090,7 @@ must be run under JDK 1.7." />
 
   <target name="compileJdk17" if="jdk17.present">
       <javac
-        srcdir="${java.dir}"
+        srcdir="src/main/java"
         destdir="${classes.dir}"
         debug="${project.build.debug}"
         classpathref="project.build.classpath"
@@ -1201,7 +1191,7 @@ clean against JDK 1.6.">
         classpathref="project.build.test.classpath"
         destdir="${javadoc.dir}"
         packagenames="mondrian.*"
-        overview="${java.dir}/overview.html"
+        overview="src/main/java/overview.html"
         footer="&lt;a href=&quot;http://sourceforge.net/projects/mondrian&quot;&gt;&lt;img src=&quot;http://sflogo.sourceforge.net/sflogo.php?group_id=35302&#38;type=15&quot; width=&quot;150&quot; height=&quot;40&quot; border=&quot;0&quot; alt=&apos;Get Mondrian at SourceForge.net. Fast, secure and free Open Source software downloads&apos;&gt;&lt;/a&gt;"
         author="true"
         source="1.5"
@@ -1222,7 +1212,7 @@ clean against JDK 1.6.">
       <link href="http://www.hydromatic.net/xom/apidocs/"/>
       <link href="http://www.hydromatic.net/resgen/apidocs/"/>
     </javadoc>
-    <copy file="${java.dir}/mondrian/olap/MondrianSchema.xml"
+    <copy file="src/main/xom/mondrian/olap/MondrianSchema.xml"
         todir="${javadoc.dir}/mondrian/olap"/>
   </target>
 

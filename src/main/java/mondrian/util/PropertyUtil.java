@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2011 Pentaho
+// Copyright (C) 2011-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -101,9 +101,9 @@ public class PropertyUtil {
 
     private void generate() {
         final File xmlFile =
-            new File("src/main/mondrian/olap", "MondrianProperties.xml");
+            new File("src/main/prop/mondrian/olap", "MondrianProperties.xml");
         final File javaFile =
-            new File("src/main/mondrian/olap", "MondrianProperties.java");
+            new File("src/main/java/mondrian/olap", "MondrianProperties.java");
         final File propertiesFile =
             new File("mondrian.properties.template");
         final File htmlFile = new File("doc", "properties.html");

@@ -13,6 +13,8 @@ functions.html
 *.properties
 scratch.txt
 
+.idea
+target/
 classes/
 demo/derby/foodmart/
 doc/properties.html
