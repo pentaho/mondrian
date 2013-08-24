@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
+
 import org.w3c.dom.*;
 
 import java.io.*;
@@ -33,6 +34,8 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
+import static org.olap4j.metadata.XmlaConstants.ResponseMimeType;
 
 /**
  * Unit test for refined Mondrian's XML for Analysis API (package
@@ -141,7 +144,7 @@ public class XmlaTest extends TestCase {
             new DefaultXmlaRequest(requestElem, null, null, null, null);
         XmlaResponse response =
             new DefaultXmlaResponse(
-                resBuf, "UTF-8", Enumeration.ResponseMimeType.SOAP);
+                resBuf, "UTF-8", ResponseMimeType.SOAP);
         handler.process(request, response);
 
         return XmlaUtil.stream2Element(
@@ -211,12 +214,12 @@ public class XmlaTest extends TestCase {
         public void testAccept() {
             // simple
             assertEquals(
-                Enumeration.ResponseMimeType.SOAP,
+                ResponseMimeType.SOAP,
                 XmlaUtil.chooseResponseMimeType("application/xml"));
 
             // deal with ",q=<n>" quality codes by ignoring them
             assertEquals(
-                Enumeration.ResponseMimeType.SOAP,
+                ResponseMimeType.SOAP,
                 XmlaUtil.chooseResponseMimeType(
                     "text/html,application/xhtml+xml,"
                     + "application/xml;q=0.9,*/*;q=0.8"));
@@ -229,7 +232,7 @@ public class XmlaTest extends TestCase {
             // quality codes all over the place; return JSON because we see
             // it before application/xml
             assertEquals(
-                Enumeration.ResponseMimeType.JSON,
+                ResponseMimeType.JSON,
                 XmlaUtil.chooseResponseMimeType(
                     "text/html;q=0.9,"
                     + "application/xhtml+xml;q=0.9,"
@@ -239,13 +242,13 @@ public class XmlaTest extends TestCase {
 
             // allow application/soap+xml as synonym for application/xml
             assertEquals(
-                Enumeration.ResponseMimeType.SOAP,
+                ResponseMimeType.SOAP,
                 XmlaUtil.chooseResponseMimeType(
                     "text/html,application/soap+xml"));
 
             // allow text/xml as synonym for application/xml
             assertEquals(
-                Enumeration.ResponseMimeType.SOAP,
+                ResponseMimeType.SOAP,
                 XmlaUtil.chooseResponseMimeType(
                     "text/html,application/soap+xml"));
         }

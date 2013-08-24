@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2012 Pentaho
+// Copyright (C) 2012-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
@@ -50,6 +50,10 @@ abstract class MondrianOlap4jMetadataElement
      * @return The Mondrian metadata element, if any
      */
     protected abstract OlapElement getOlapElement();
+
+    public Object getAnnotations() {
+        throw new UnsupportedOperationException(); // TODO:
+    }
 
     public <T> T unwrap(Class<T> iface) throws SQLException {
         final T t = unwrapImpl(iface);

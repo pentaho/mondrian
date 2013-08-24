@@ -194,6 +194,30 @@ class MondrianOlap4jLevel
     protected OlapElement getOlapElement() {
         return level;
     }
+
+    public String getOrderingProperty() {
+        throw new UnsupportedOperationException(); // TODO:
+    }
+
+    public String getAttributeHierarchyName() {
+        throw new UnsupportedOperationException(); // TODO:
+    }
+
+    public List<Datatype> getKeyTypes() {
+        throw new UnsupportedOperationException(); // TODO:
+    }
+
+    public String getNameSqlColumnName() {
+        throw new UnsupportedOperationException(); // TODO:
+    }
+
+    public String getKeySqlColumnName() {
+        throw new UnsupportedOperationException(); // TODO:
+    }
+
+    public String getUniqueNameSqlColumnName() {
+        throw new UnsupportedOperationException(); // TODO:
+    }
 }
 
 // End MondrianOlap4jLevel.java

@@ -64,6 +64,14 @@ class MondrianOlap4jCube
         return false;
     }
 
+    public NamedList<MeasureGroup> getMeasureGroups() {
+        throw new UnsupportedOperationException(); // TODO:
+    }
+
+    public Cube getBaseCube() {
+        throw new UnsupportedOperationException(); // TODO:
+    }
+
     public NamedList<Dimension> getDimensions() {
         NamedList<MondrianOlap4jDimension> list =
             new NamedListImpl<MondrianOlap4jDimension>();

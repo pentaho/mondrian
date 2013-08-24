@@ -2556,7 +2556,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
         }
 
         public PhysPath done() {
-            return new PhysPath(UnmodifiableArrayList.of(hopList));
+            return new PhysPath(UnmodifiableArrayList.copyOf(hopList));
         }
 
         @SuppressWarnings({

@@ -16,6 +16,8 @@ import mondrian.rolap.RolapConnectionProperties;
 import mondrian.test.DiffRepository;
 import mondrian.test.TestContext;
 
+import org.olap4j.xmla.RowsetDefinition;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;

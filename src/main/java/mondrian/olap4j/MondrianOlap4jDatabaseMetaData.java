@@ -4,12 +4,11 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
 
-import mondrian.olap.MondrianException;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapConnection;
 import mondrian.server.Locus;
@@ -1116,7 +1115,7 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
         String treeOpString;
         if (treeOps != null) {
             final int mask =
-                Member.TreeOp.getDictionary().toMask(treeOps);
+                Member.TreeOp.DICTIONARY.toMask(treeOps);
             treeOpString = String.valueOf(mask);
         } else {
             treeOpString = null;

@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho and others
+// Copyright (C) 2007-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap4j;
@@ -752,7 +752,7 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
     }
 
     public List<String> getAvailableRoleNames() throws OlapException {
-        return UnmodifiableArrayList.of(
+        return UnmodifiableArrayList.copyOf(
             getMondrianConnection().getSchema().roleNames());
     }
 

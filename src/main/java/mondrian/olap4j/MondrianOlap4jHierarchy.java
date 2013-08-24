@@ -11,7 +11,6 @@ package mondrian.olap4j;
 
 import mondrian.olap.LocalizedProperty;
 import mondrian.olap.OlapElement;
-import mondrian.rolap.RolapCubeHierarchy;
 
 import org.olap4j.OlapException;
 import org.olap4j.impl.*;
@@ -131,6 +130,46 @@ class MondrianOlap4jHierarchy
 
     protected OlapElement getOlapElement() {
         return hierarchy;
+    }
+
+    public Member getAllMember() throws OlapException {
+        throw new UnsupportedOperationException(); // TODO:
+    }
+
+    public boolean isReadWrite() {
+        throw new UnsupportedOperationException(); // TODO:
+    }
+
+    public int getOrdinal() {
+        throw new UnsupportedOperationException(); // TODO:
+    }
+
+    public Structure getStructure() {
+        throw new UnsupportedOperationException(); // TODO:
+    }
+
+    public StructureType getStructureType() {
+        throw new UnsupportedOperationException(); // TODO:
+    }
+
+    public int getCardinality() {
+        throw new UnsupportedOperationException(); // TODO:
+    }
+
+    public String getDisplayFolder() {
+        throw new UnsupportedOperationException(); // TODO:
+    }
+
+    public InstanceSelection getInstanceSelection() {
+        throw new UnsupportedOperationException(); // TODO:
+    }
+
+    public GroupingBehavior getGroupingBehavior() {
+        throw new UnsupportedOperationException(); // TODO:
+    }
+
+    public Origin getOrigin() {
+        throw new UnsupportedOperationException(); // TODO:
     }
 }
 

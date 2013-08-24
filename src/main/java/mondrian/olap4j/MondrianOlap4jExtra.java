@@ -14,7 +14,6 @@ import mondrian.olap.Property;
 import mondrian.olap.fun.FunInfo;
 import mondrian.rolap.*;
 import mondrian.xmla.*;
-import mondrian.xmla.RowsetDefinition.MdschemaFunctionsRowset.VarType;
 
 import org.olap4j.*;
 import org.olap4j.metadata.*;
@@ -23,10 +22,13 @@ import org.olap4j.metadata.Hierarchy;
 import org.olap4j.metadata.Level;
 import org.olap4j.metadata.Member;
 import org.olap4j.metadata.Schema;
+import org.olap4j.xmla.XmlaPropertyDefinition;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+
+import static mondrian.xmla.Rowsets.MdschemaFunctionsRowset.VarType;
 
 /**
  * Provides access to internals of mondrian's olap4j driver that are not part
@@ -147,8 +149,7 @@ class MondrianOlap4jExtra extends XmlaHandler.XmlaExtraImpl {
                                 v & Category.Mask));
                     }
 
-                    RowsetDefinition.MdschemaFunctionsRowset.VarType varType =
-                        categoryToVarType(returnCategory);
+                    VarType varType = categoryToVarType(returnCategory);
                     funDefs.add(
                         new FunctionDefinition(
                             fi.getName(),
@@ -252,25 +253,22 @@ class MondrianOlap4jExtra extends XmlaHandler.XmlaExtraImpl {
             olap4jMeasure.member.getPropertyValue(
                 Property.AGGREGATION_TYPE);
         if (aggProp == null) {
-            return
-                RowsetDefinition.MdschemaMeasuresRowset
-                    .MDMEASURE_AGGR_CALCULATED;
+            return Measure.Aggregator.CALCULATED.xmlaOrdinal();
         }
         RolapAggregator agg = (RolapAggregator) aggProp;
         if (agg == RolapAggregator.Sum) {
-            return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_SUM;
+            return Measure.Aggregator.SUM.xmlaOrdinal();
         } else if (agg == RolapAggregator.Count) {
-            return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_COUNT;
+            return Measure.Aggregator.COUNT.xmlaOrdinal();
         } else if (agg == RolapAggregator.Min) {
-            return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_MIN;
+            return Measure.Aggregator.MIN.xmlaOrdinal();
         } else if (agg == RolapAggregator.Max) {
-            return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_MAX;
+            return Measure.Aggregator.MAX.xmlaOrdinal();
         } else if (agg == RolapAggregator.Avg) {
-            return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_AVG;
+            return Measure.Aggregator.AVG.xmlaOrdinal();
         } else {
             // TODO: what are VAR and STD
-            return RowsetDefinition.MdschemaMeasuresRowset
-                .MDMEASURE_AGGR_UNKNOWN;
+            return Measure.Aggregator.UNKNOWN.xmlaOrdinal();
         }
     }
 
@@ -306,8 +304,7 @@ class MondrianOlap4jExtra extends XmlaHandler.XmlaExtraImpl {
     }
 
     public String getCubeType(Cube cube) {
-        return
-            RowsetDefinition.MdschemaCubesRowset.MD_CUBTYPE_CUBE;
+        return Cube.Type.CUBE.xmlaName();
     }
 
     public boolean isLevelUnique(Level level) {
@@ -370,7 +367,7 @@ class MondrianOlap4jExtra extends XmlaHandler.XmlaExtraImpl {
         return MondrianProperties.instance().EnableTotalCount.booleanValue();
     }
 
-    public String getPropertyValue(PropertyDefinition propertyDefinition) {
+    public String getPropertyValue(XmlaPropertyDefinition propertyDefinition) {
         switch (propertyDefinition) {
         case ProviderName:
             return "Mondrian XML for Analysis Provider";

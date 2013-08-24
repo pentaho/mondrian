@@ -9,7 +9,6 @@
 */
 package mondrian.olap4j;
 
-import mondrian.olap.Hierarchy;
 import mondrian.olap.LocalizedProperty;
 import mondrian.olap.OlapElement;
 import mondrian.olap.Role;
