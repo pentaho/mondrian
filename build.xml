@@ -521,8 +521,8 @@ META-INF/**"/>
 
   <target name="compile.tests" depends="info">
     <javac
-        srcdir="${javatest.dir}"
-        destdir="${testclasses.dir}"
+        srcdir="src/test/java"
+        destdir="target/test-classes"
         debug="${project.build.debug}"
         classpathref="project.build.test.classpath"
         includeantruntime="false"

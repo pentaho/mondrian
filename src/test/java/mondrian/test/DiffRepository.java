@@ -142,15 +142,20 @@ public class DiffRepository
     /**
      * Default prefix directories.
      */
-    private static final String[] DefaultPrefixes = {"testsrc", "main"};
+    private static final List<String> JAVA_PREFIXES =
+        Arrays.asList("src", "test", "java");
+
+    private static final List<String> RESOURCE_PREFIXES =
+        Arrays.asList("src", "test", "resources");
 
     private static File findFile(
-        Class clazz, String[] prefixes, final String suffix)
+        Class clazz, List<String> javaPrefixes, List<String> resourcePrefixes,
+        String suffix)
     {
         // The reference file for class "com.foo.Bar" is "com/foo/Bar.ref.xml"
         String rest =
             clazz.getName().replace('.', File.separatorChar) + suffix;
-        File fileBase = getFileBase(clazz, prefixes);
+        File fileBase = getFileBase(clazz, javaPrefixes, resourcePrefixes);
         return new File(fileBase, rest);
     }
 
@@ -159,22 +164,20 @@ public class DiffRepository
      *
      * <p>Deduces the directory based upon the current directory.
      * If the current directory is "/home/jhyde/open/mondrian/intellij",
-     * returns "/home/jhyde/open/mondrian/testsrc".
+     * returns "/home/jhyde/open/mondrian/src/test/resources".
      */
-    private static File getFileBase(Class clazz, String[] prefixes)
+    private static File getFileBase(
+        Class clazz, List<String> javaPrefixes, List<String> resourcePrefixes)
     {
         String javaFileName =
             clazz.getName().replace('.', File.separatorChar) + ".java";
         File file = new File(System.getProperty("user.dir"));
         while (true) {
-            File file2 = file;
-            for (String prefix : prefixes) {
-                file2 = new File(file2, prefix);
-            }
+            File file2 = plus(javaPrefixes, file);
             if (file2.isDirectory()
                 && new File(file2, javaFileName).exists())
             {
-                return file2;
+                return plus(resourcePrefixes, file);
             }
 
             file = file.getParentFile();
@@ -184,21 +187,24 @@ public class DiffRepository
         }
     }
 
+    private static File plus(List<String> prefixes, File file) {
+        File file2 = file;
+        for (String prefix : prefixes) {
+            file2 = new File(file2, prefix);
+        }
+        return file2;
+    }
+
     /**
      * Creates a DiffRepository from a pair of files.
      *
      * @param refFile File containing reference results
      * @param logFile File to contain the actual output of the test run
      * @param baseRepos Base repository to inherit from, or null
-     * @param prefixes List of directories to search in, or null
      */
     public DiffRepository(
-        File refFile, File logFile, DiffRepository baseRepos,
-        String[] prefixes)
+        File refFile, File logFile, DiffRepository baseRepos)
     {
-        if (prefixes == null) {
-            prefixes = DefaultPrefixes;
-        }
         this.baseRepos = baseRepos;
         if (refFile == null) {
             throw new IllegalArgumentException("url must not be null");
@@ -758,11 +764,11 @@ public class DiffRepository
      * Finds the repository instance for a given class, using the default
      * prefixes, and with no parent repository.
      *
-     * @see #lookup(Class, DiffRepository, String[])
+     * @see #lookup(Class, DiffRepository, java.util.List, java.util.List)
      */
     public static DiffRepository lookup(Class clazz)
     {
-        return lookup(clazz, null, null);
+        return lookup(clazz, null, JAVA_PREFIXES, RESOURCE_PREFIXES);
     }
 
     /**
@@ -787,16 +793,19 @@ public class DiffRepository
      * @return The diff repository shared between testcases in this class.
      */
     public static DiffRepository lookup(
-        Class clazz, DiffRepository baseRepos, String[] prefixes)
+        Class clazz, DiffRepository baseRepos, List<String> prefixes,
+        List<String> resourcePrefixes)
     {
         DiffRepository diffRepos = mapClassToRepos.get(clazz);
         if (diffRepos == null) {
             if (prefixes == null) {
-                prefixes = DefaultPrefixes;
+                prefixes = JAVA_PREFIXES;
             }
-            final File refFile = findFile(clazz, prefixes, ".ref.xml");
-            final File logFile = findFile(clazz, prefixes, ".log.xml");
-            diffRepos = new DiffRepository(refFile, logFile, baseRepos, null);
+            final File refFile =
+                findFile(clazz, prefixes, resourcePrefixes, ".ref.xml");
+            final File logFile =
+                findFile(clazz, prefixes, resourcePrefixes, ".log.xml");
+            diffRepos = new DiffRepository(refFile, logFile, baseRepos);
             mapClassToRepos.put(clazz, diffRepos);
         }
         return diffRepos;
