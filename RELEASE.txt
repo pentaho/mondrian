@@ -1,3 +1,50 @@
+Mondrian 3.6.0 production release notes
+=============================================
+
+Introduction
+------------
+
+Mondrian 3.6.0 is a feature feature release based off the previous 3.4.9
+version. It contains all of the previous bug fixes, plus added support for
+native resolution of named sets containing compound expressions.
+
+We have also included some performance enhancements in the core code.
+
+To find out more about Mondrian, go to http://mondrian.pentaho.com.
+
+Contents
+--------
+
+As usual, there are two distributions for this release:
+ * mondrian-<version>.zip contains the FoodMart dataset in
+   SQL and Access format
+ * mondrian-<version>-derby.zip contains the FoodMart
+   dataset as an Apache Derby database
+
+Each distribution contains the full mondrian source code, as
+mondrian-<version>-src.zip, documentation including
+generated API documentation, and a web archive mondrian.war.
+This web archive contains all classes and libraries (jars)
+necessary to run mondrian.
+
+For further installation instructions, see
+http://mondrian.pentaho.com/documentation/installation.php
+or the included file doc/installation.html.
+
+Main functionality in this release
+----------------------------------
+ - Support for native named sets which use the '+' operator.
+ - Faster implementation of olap4j's Member.getParent and some other
+   method calls by using the Locus API.
+ - Various bug fixes form the previous 3.4.X re-releases.
+
+API changes from 3.5.9 to 3.6.0
+---------------------------
+ - None.
+
+See CHANGES.txt for a list of all source code changes
+since the previous release.
+
 Mondrian 3.5.0-GA production release notes
 =============================================
 
@@ -349,6 +396,10 @@ directly from: https://github.com/pentaho/mondrian/tags
 
 Version   Tag         Git Hash
 -------   ---------   ----------------------------------------
+3.5.9     3.5.9-R     187129ca52cb8037b27e9063a3f9d2a66230c67d
+3.5.8     3.5.8-R     643db12c8a8044934fcf9c0bc202be1556c4c254
+3.5.7     3.5.7-R     c15578eaf0ecb3fe10b2848431a508aed1e47e3e
+3.5.6     3.5.6-R     263f9f0b9ecdcbd7dc49460717fa16f193ba89d4
 3.5.5     3.5.5-R     1a6f422f88a285d560dc3d4f903fba756643a080
 3.5.4     3.5.4-R     3c76d436b1324be35c922a2c5fd0495bdd36ebe6
 3.5.3     3.5.3-R     8d01ab45bfd641bc2c489ea3f46a5ba563d557a7
