@@ -42,7 +42,6 @@
   <property name="doc.dir" value="doc"/>
   <property name="resource.location" location="resource"/>
   <property name="javadoc.dir" value="${doc.dir}/api"/>
-  <property name="build.dir" value="build"/>
   <property name="dist.name" value="${name}-${project.revision}"/>
   <property name="dist.base" value="distribution"/>
   <property name="dist.dir" value="dist"/>
@@ -100,7 +99,9 @@
     </not>
   </condition>
 
-  <property name="generated.java.files" value="
+  <!-- All generated files are under target. But this list of files helps us
+       clean out old sandboxes. -->
+  <property name="old.generated.java.files" value="
 src/main/java/mondrian/parser/MdxParserImpl.java,
 src/main/java/mondrian/parser/MdxParserImplTokenManager.java,
 src/main/java/mondrian/parser/ParseException.java,
@@ -325,9 +326,9 @@ mondrian/rolap/RolapCubeUsages.java"/>
       <fileset dir="${lib.dir}" includes="*" excludes="mondrian.xsd,xml-apis.jar"/>
       <fileset dir="${classes.dir}" includes="**/*.class,**/*.properties"/>
       <fileset dir="${testclasses.dir}" includes="**/*.class,**/*.properties"/>
-      <fileset dir="." includes="${generated.java.files},${generated.lib.files},VERSION.txt"/>
+      <fileset dir="." includes="${old.generated.java.files},${generated.lib.files},VERSION.txt"/>
+      <fileset dir="target" />
       <fileset dir="${javadoc.dir}" />
-      <fileset dir="${build.dir}" />
       <fileset dir="${testclasses-jdk14.dir}" />
       <fileset dir="${testsrc.dir}" includes="**/*.log.xml"/>
       <fileset dir="${testsrc.dir}" includes="**/*JUnit.java"/>
@@ -355,7 +356,6 @@ mondrian/olap/ParserSym.java"/>
   <target name="prepare" depends="install-ivy,resolve">
     <mkdir dir="${classes.dir}"/>
     <mkdir dir="${testclasses.dir}"/>
-    <mkdir dir="${build.dir}"/>
     <mkdir dir="${devlib.dir}"/>
     <mkdir dir="${testlib.dir}"/>
     <mkdir dir="${dist.dir}"/>
@@ -377,7 +377,7 @@ mondrian/olap/ParserSym.java"/>
   </target>
 
   <target name="cmdrunner" depends="jar">
-    <property name="crtmp.dir" location="${build.dir}/tmpcmdrunner"/>
+    <property name="crtmp.dir" location="target/tmpcmdrunner"/>
     <mkdir dir="${crtmp.dir}"/>
 
     <unjar src="${lib.dir}/commons-dbcp.jar" dest="${crtmp.dir}"/>
@@ -476,6 +476,7 @@ copy"/>
 
     <resgen
         srcdir="src/main/java"
+        destdir="target/generated-sources/resgen"
         resdir="${classes.dir}"
         style="functor"
         locales="en_US,de_DE,de,es_ES">
@@ -487,6 +488,7 @@ copy"/>
   <target name="generate.properties">
     <!-- Generate MondrianProperties.java,
          mondrian.properties.template, property.html. -->
+    <mkdir dir="${classes.dir}"/>
     <javac
         srcdir="${java.dir}"
         destdir="${classes.dir}"
@@ -513,7 +515,7 @@ copy"/>
         todir="${classes.dir}"/>
     <copy todir="${classes.dir}">
       <fileset
-          dir="${java.dir}"
+          dir="src/main/resources"
           includes="
 META-INF/**"/>
     </copy>
@@ -534,43 +536,47 @@ META-INF/**"/>
   </target>
 
   <target name="parser" depends="define-tasks">
+    <mkdir dir="target/generated-sources/javacc/mondrian/parser"/>
     <javacc
         target="${javacc.src.dir}/mondrian/parser/MdxParser.jj"
-        outputdirectory="${src.dir}/mondrian/parser"
+        outputdirectory="target/generated-sources/javacc/mondrian/parser"
         javacchome="${lib.dir}"/>
   </target>
 
   <target name="def" depends="define-tasks">
+    <mkdir dir="target/generated-sources/xom/mondrian/olap"/>
+    <mkdir dir="target/generated-sources/xom/mondrian/rolap/aggmatcher"/>
+
     <xomgen
         model="src/main/xom/mondrian/olap/Mondrian3Schema.xml"
-        destdir="src/main/java"
+        destdir="target/generated-sources/xom"
         classname="mondrian.olap.Mondrian3Def"
         dtdname="mondrian3.dtd"/>
-    <copy file="src/main/java/mondrian/olap/mondrian3.dtd"
+    <copy file="target/generated-sources/xom/mondrian/olap/mondrian3.dtd"
         todir="${lib.dir}"/>
 
     <xomgen
         model="src/main/xom/mondrian/olap/MondrianSchema.xml"
-        destdir="src/main/java"
+        destdir="target/generated-sources/xom"
         classname="mondrian.olap.MondrianDef"
         dtdname="mondrian.dtd"/>
-    <copy file="src/main/java/mondrian/olap/mondrian.dtd"
+    <copy file="target/generated-sources/xom/mondrian/olap/mondrian.dtd"
         todir="${lib.dir}"/>
 
     <xomgen
         model="src/main/xom/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml"
-        destdir="src/main/java"
+        destdir="target/generated-sources/xom"
         classname="mondrian.rolap.aggmatcher.DefaultDef"
         dtdname="aggregates.dtd"/>
-    <copy file="src/main/java/mondrian/rolap/aggmatcher/aggregates.dtd"
+    <copy file="target/generated-sources/xom/mondrian/rolap/aggmatcher/aggregates.dtd"
         todir="${lib.dir}"/>
 
     <xomgen
         model="src/main/xom/mondrian/xmla/DataSourcesConfig.xml"
-        destdir="src/main/java"
+        destdir="target/generated-sources/xom"
         classname="mondrian.xmla.DataSourcesConfig"
         dtdname="datasourcesconfig.dtd"/>
-    <copy file="src/main/java/mondrian/xmla/datasourcesconfig.dtd"
+    <copy file="target/generated-sources/xom/mondrian/xmla/datasourcesconfig.dtd"
         todir="${lib.dir}"/>
   </target>
 
@@ -847,7 +853,9 @@ Built-On: ${build.time}
 Built-By: ${user.name}
 Built-In: ${user.dir}
 </echo>
-   <echo file="src/main/java/mondrian/olap4j/MondrianOlap4jDriverVersion.java">/*
+   <copy file="VERSION.txt"
+         todir="${classes.dir}"/>
+   <echo file="target/generated-sources/version/mondrian/olap4j/MondrianOlap4jDriverVersion.java">/*
  * Project version information. Generated - do not modify.
  */
 package mondrian.olap4j;
@@ -933,7 +941,7 @@ ${javadoc.dir}/**,
 **/_vti*/*,
 **/*~,
 **/junit-results/**,
-${generated.java.files},
+${old.generated.java.files},
 doc/deployDoc.sh" />
       <zipfileset
           dir="."
@@ -1053,7 +1061,6 @@ must be run under JDK 1.7." />
 
   <target name="compileJdk15">
     <javac
-        srcdir="src/main/java"
         destdir="${classes.dir}"
         debug="${project.build.debug}"
         classpathref="project.build.classpath"
@@ -1061,6 +1068,12 @@ must be run under JDK 1.7." />
         source="1.5"
         target="1.5"
         includeantruntime="false">
+      <src path="src/main/java"/>
+      <src path="target/generated-sources/javacc"/>
+      <src path="target/generated-sources/prop"/>
+      <src path="target/generated-sources/resgen"/>
+      <src path="target/generated-sources/version"/>
+      <src path="target/generated-sources/xom"/>
       <include name="mondrian/**/*.java"/>
       <exclude name="${obsolete.java.files}"/>
       <!-- the following files need to be built under JDK 1.6 or 1.7 -->

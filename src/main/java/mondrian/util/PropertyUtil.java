@@ -103,7 +103,10 @@ public class PropertyUtil {
         final File xmlFile =
             new File("src/main/prop/mondrian/olap", "MondrianProperties.xml");
         final File javaFile =
-            new File("src/main/java/mondrian/olap", "MondrianProperties.java");
+            new File(
+                "target/generated-sources/prop/mondrian/olap",
+                "MondrianProperties.java");
+        javaFile.getParentFile().mkdirs();
         final File propertiesFile =
             new File("mondrian.properties.template");
         final File htmlFile = new File("doc", "properties.html");

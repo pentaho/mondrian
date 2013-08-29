@@ -1,6 +1,3 @@
-testclasses
-testlib
-build
 dev-lib
 dist
 
@@ -14,6 +11,7 @@ functions.html
 scratch.txt
 
 .idea
+mondrian.iml
 target/
 classes/
 demo/derby/foodmart/
@@ -21,9 +19,6 @@ doc/properties.html
 doc/xml_schema.html
 doc/api
 doc/headapi
-intellij/mondrian.ipr
-intellij/mondrian.iml
-intellij/mondrian.iws
 junit-results/
 lib/aggregates.dtd
 lib/datasourcesconfig.dtd
@@ -31,26 +26,4 @@ lib/jpivot.war
 lib/mondrian.dtd
 lib/mondrian3.dtd
 mondrian.properties.template
-src/main/mondrian/olap/MondrianDef.java
-src/main/mondrian/olap/Mondrian3Def.java
-src/main/mondrian/olap/MondrianProperties.java
-src/main/mondrian/olap/mondrian.dtd
-src/main/mondrian/olap/mondrian3.dtd
-src/main/mondrian/olap4j/MondrianOlap4jDriverVersion.java
-src/main/mondrian/parser/MdxParserImpl.java
-src/main/mondrian/parser/MdxParserImplConstants.java
-src/main/mondrian/parser/MdxParserImplTokenManager.java
-src/main/mondrian/parser/ParseException.java
-src/main/mondrian/parser/SimpleCharStream.java
-src/main/mondrian/parser/Token.java
-src/main/mondrian/parser/TokenMgrError.java
-src/main/mondrian/resource/MondrianResource.java
-src/main/mondrian/resource/MondrianResource_de.java
-src/main/mondrian/resource/MondrianResource_de_DE.java
-src/main/mondrian/resource/MondrianResource_en_US.java
-src/main/mondrian/resource/MondrianResource_es_ES.java
-src/main/mondrian/rolap/aggmatcher/DefaultDef.java
-src/main/mondrian/rolap/aggmatcher/aggregates.dtd
-src/main/mondrian/xmla/DataSourcesConfig.java
-src/main/mondrian/xmla/datasourcesconfig.dtd
 

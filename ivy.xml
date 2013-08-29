@@ -71,11 +71,11 @@
         </dependency>
 -->
         <dependency org="org.olap4j" name="olap4j-tck" rev="1.2.0-SNAPSHOT"
-                conf="test->default" changing="true">
+                conf="test->default" changing="true" transitive="false">
             <artifact name="olap4j-tck"/>
         </dependency>
         <dependency org="org.olap4j" name="olap4j-xmla" rev="1.2.0-SNAPSHOT"
-                conf="test->default" changing="true">
+                conf="test->default" changing="true" transitive="false">
             <artifact name="olap4j-xmla"/>
         </dependency>
         <dependency org="org.olap4j" name="olap4j-xmlaserver" rev="${dependency.olap4j-xmlaserver.revision}"/>

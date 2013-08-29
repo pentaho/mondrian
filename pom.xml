@@ -159,7 +159,7 @@
     <dependency>
       <groupId>org.olap4j</groupId>
       <artifactId>olap4j-xmlaserver</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.2.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>xalan</groupId>
@@ -241,7 +241,22 @@
   </repositories>
 
   <build>
+    <defaultGoal>package</defaultGoal>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.8</version>
+        <executions>
+          <execution>
+            <id>properties</id>
+            <goals>
+              <goal>properties</goal>
+            </goals>
+            <phase>initialize</phase>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
@@ -263,8 +278,6 @@
         <configuration>
           <source>1.5</source>
           <target>1.5</target>
-          <!-- JDK 1.5 and 1.6 classes are excluded from JDK 1.7 compile.
-               TODO: task that compiles with appropriate boot class path -->
           <excludes>
             <exclude>**/FactoryJdbc3Impl.java</exclude>
             <exclude>**/FactoryJdbc4Impl.java</exclude>
@@ -273,6 +286,44 @@
             <exclude>**/UtilCompatibleJdk16.java</exclude>
           </excludes>
         </configuration>
+        <executions>
+          <execution>
+            <id>compile-jdk15</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <excludes>
+                <exclude>**/FactoryJdbc4*.java</exclude>
+              </excludes>
+              <includes>
+                <include>**/FactoryJdbc3Impl.java</include>
+              </includes>
+              <compilerArguments>
+                <verbose/>
+                <bootclasspath>${com.sun:rt-jdk1.5:jar}</bootclasspath>
+              </compilerArguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>compile-jdk16</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <excludes>
+                <exclude>**/FactoryJdbc3*.java</exclude>
+              </excludes>
+              <includes>
+                <include>**/FactoryJdbc4Impl.java</include>
+              </includes>
+              <compilerArguments>
+                <verbose/>
+                <bootclasspath>${net.java.openjdk:rt-java6:jar}</bootclasspath>
+              </compilerArguments>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -291,17 +342,39 @@
           <execution>
             <phase>generate-sources</phase>
             <configuration>
-              <tasks>
+              <target>
                 <ant target="def"/>
                 <ant target="generate.properties"/>
                 <ant target="generate.resources"/>
                 <ant target="parser"/>
                 <ant target="version"/>
-              </tasks>
+              </target>
             </configuration>
             <goals>
               <goal>run</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.8</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+              <phase>generate-sources</phase>
+              <goals>
+                <goal>add-source</goal>
+              </goals>
+              <configuration>
+                <sources>
+                    <source>target/generated-sources/prop</source>
+                    <source>target/generated-sources/resgen</source>
+                    <source>target/generated-sources/version</source>
+                    <source>target/generated-sources/xom</source>
+                </sources>
+              </configuration>
           </execution>
         </executions>
       </plugin>
