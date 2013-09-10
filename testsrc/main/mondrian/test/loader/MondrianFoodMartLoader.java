@@ -2076,6 +2076,7 @@ public class MondrianFoodMartLoader {
             case NEOVIEW:
             case VECTORWISE:
             case VERTICA:
+            case INFORMIX:
                 if (trimmedValue.equals("true")) {
                     return "1";
                 } else if (trimmedValue.equals("false")) {
@@ -2324,6 +2325,8 @@ public class MondrianFoodMartLoader {
                     return "DATETIME";
                 case INGRES:
                     return "INGRESDATE";
+                case INFORMIX:
+                    return "DATETIME YEAR TO FRACTION(1)";
                 default:
                     return name;
                 }
