@@ -37,6 +37,20 @@ public class InformixDialect extends JdbcDialectImpl {
     public boolean allowsFromQuery() {
         return false;
     }
+
+    @Override
+    public String generateOrderByNulls(
+        String expr,
+        boolean ascending,
+        boolean collateNullsLast)
+    {
+        return generateOrderByNullsAnsi(expr, ascending, collateNullsLast);
+    }
+
+    @Override
+    public boolean supportsGroupByExpressions() {
+        return false;
+    }
 }
 
 // End InformixDialect.java

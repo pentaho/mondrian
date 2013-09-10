@@ -840,6 +840,10 @@ public class DialectTest extends TestCase {
             s = s.replace(']', '"');
             s = s.replaceAll(" as ", " ");
             break;
+        case INFORMIX:
+            s = s.replace("[", "");
+            s = s.replace("]", "");
+            break;
         default:
             s = s.replace('[', '"');
             s = s.replace(']', '"');
