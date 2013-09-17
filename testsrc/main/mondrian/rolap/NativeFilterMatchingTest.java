@@ -207,17 +207,17 @@ public class NativeFilterMatchingTest extends BatchTestCase {
         // not present in the aggregate table, the SQL should omit the
         // having clause altogether.
 
-        propSaver.set(
-            propSaver.properties.UseAggregates,
-            true);
-        propSaver.set(
-            propSaver.properties.ReadAggregates,
-            true);
+        if (!MondrianProperties.instance().UseAggregates.get()
+            || !MondrianProperties.instance().EnableNativeFilter.get())
+        {
+            // test is not applicable
+            return;
+        }
         propSaver.set(
             propSaver.properties.GenerateFormattedSql,
             true);
 
-        String sqlMysql =
+        String sqlMysqlNoHaving =
             "select\n"
             + "    `agg_c_10_sales_fact_1997`.`the_year` as `c0`,\n"
             + "    `agg_c_10_sales_fact_1997`.`quarter` as `c1`\n"
@@ -235,14 +235,51 @@ public class NativeFilterMatchingTest extends BatchTestCase {
         SqlPattern[] patterns = {
             new SqlPattern(
                 Dialect.DatabaseProduct.MYSQL,
-                sqlMysql,
-                sqlMysql.length())
+                sqlMysqlNoHaving,
+                sqlMysqlNoHaving.length())
         };
 
+        // This query should hit the agg_c_10_sales_fact_1997 agg table,
+        // which has [unit sales] but not [store count], so should
+        // not include the filter condition in the having.
         assertQuerySqlOrNot(
             getTestContext(),
             "select filter(Time.[1997].children,  "
             + "measures.[Sales Count] +  measures.[unit sales] > 0) on 0 "
+            + "from [sales]",
+            patterns,
+            false,
+            true,
+            true);
+
+        String mySqlWithHaving =
+            "select\n"
+            + "    `agg_c_10_sales_fact_1997`.`the_year` as `c0`,\n"
+            + "    `agg_c_10_sales_fact_1997`.`quarter` as `c1`\n"
+            + "from\n"
+            + "    `agg_c_10_sales_fact_1997` as `agg_c_10_sales_fact_1997`\n"
+            + "where\n"
+            + "    (`agg_c_10_sales_fact_1997`.`the_year` = 1997)\n"
+            + "group by\n"
+            + "    `agg_c_10_sales_fact_1997`.`the_year`,\n"
+            + "    `agg_c_10_sales_fact_1997`.`quarter`\n"
+            + "having\n"
+            + "    ((sum(`agg_c_10_sales_fact_1997`.`store_sales`) + sum(`agg_c_10_sales_fact_1997`.`unit_sales`)) > 0)\n"
+            + "order by\n"
+            + "    ISNULL(`agg_c_10_sales_fact_1997`.`the_year`) ASC, `agg_c_10_sales_fact_1997`.`the_year` ASC,\n"
+            + "    ISNULL(`agg_c_10_sales_fact_1997`.`quarter`) ASC, `agg_c_10_sales_fact_1997`.`quarter` ASC";
+
+        patterns[0] = new SqlPattern(
+            Dialect.DatabaseProduct.MYSQL,
+            mySqlWithHaving,
+            mySqlWithHaving.length());
+
+        // both measures are present on the agg table, so this one *should*
+        // include having.
+        assertQuerySqlOrNot(
+            getTestContext(),
+            "select filter(Time.[1997].children,  "
+            + "measures.[Store Sales] +  measures.[unit sales] > 0) on 0 "
             + "from [sales]",
             patterns,
             false,
