@@ -6986,25 +6986,27 @@ public class BasicQueryTest extends FoodMartTestCase {
         assertEquals(1, resultSet.getMetaData().getColumnCount());
         assertEquals("PLAN", resultSet.getMetaData().getColumnName(1));
         assertEquals(Types.VARCHAR, resultSet.getMetaData().getColumnType(1));
-        String s = resultSet.getString(1);
-        TestContext.assertEqualsVerbose(
-            "Axis (COLUMNS):\n"
-            + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Measures].[Unit Sales]>>, resultStyle=MUTABLE_LIST)\n"
-            + "    2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE)\n"
-            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
-            + "\n"
-            + "Axis (ROWS):\n"
-            + "ImmutableIterCalc(name=ImmutableIterCalc, class=class mondrian.olap.fun.FilterFunDef$ImmutableIterCalc, type=SetType<MemberType<hierarchy=[Product].[Products]>>, resultStyle=ITERABLE)\n"
-            + "    Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, type=SetType<MemberType<hierarchy=[Product].[Products]>>, resultStyle=LIST)\n"
-            + "        CurrentMemberFixed(hierarchy=[Product].[Products], name=CurrentMemberFixed, class=class mondrian.olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product].[Products]>, resultStyle=VALUE)\n"
-            + "    >(name=>, class=class mondrian.olap.fun.BuiltinFunTable$63$1, type=BOOLEAN, resultStyle=VALUE)\n"
-            + "        MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, resultStyle=VALUE)\n"
-            + "            Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
-            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=NUMERIC, resultStyle=VALUE_NOT_NULL, value=100.0)\n"
-            + "\n",
+        String s = sanitizeAnonymousInnerClassIDs(resultSet.getString(1));
+        String expected = "Axis (COLUMNS):\n"
+		+ "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Measures].[Unit Sales]>>, resultStyle=MUTABLE_LIST)\n"
+		+ "    2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE)\n"
+		+ "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
+		+ "\n"
+		+ "Axis (ROWS):\n"
+		+ "ImmutableIterCalc(name=ImmutableIterCalc, class=class mondrian.olap.fun.FilterFunDef$ImmutableIterCalc, type=SetType<MemberType<hierarchy=[Product].[Products]>>, resultStyle=ITERABLE)\n"
+		+ "    Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, type=SetType<MemberType<hierarchy=[Product].[Products]>>, resultStyle=LIST)\n"
+		+ "        CurrentMemberFixed(hierarchy=[Product].[Products], name=CurrentMemberFixed, class=class mondrian.olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product].[Products]>, resultStyle=VALUE)\n"
+		+ "    >(name=>, class=class mondrian.olap.fun.BuiltinFunTable$63$1, type=BOOLEAN, resultStyle=VALUE)\n"
+		+ "        MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, resultStyle=VALUE)\n"
+		+ "            Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
+		+ "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=NUMERIC, resultStyle=VALUE_NOT_NULL, value=100.0)\n"
+		+ "\n";
+        // Replace anonymous inner class IDs with placeholders for better expect string comparison
+        expected = sanitizeAnonymousInnerClassIDs(expected);
+		TestContext.assertEqualsVerbose(
+            expected,
             s);
     }
-
     public void testExplainComplex() throws SQLException {
         if (Util.PreJdk15) {
             // Cannot use explain before JDK 1.5. EmptyResultSet relies on
@@ -7040,9 +7042,9 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "explain plan for\n"
                 + mdx);
         assertTrue(resultSet.next());
-        String s = resultSet.getString(1);
+        String s = sanitizeAnonymousInnerClassIDs(resultSet.getString(1));
         TestContext.assertEqualsVerbose(
-            "Axis (FILTER):\n"
+            sanitizeAnonymousInnerClassIDs("Axis (FILTER):\n"
             + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Customer].[Gender].[F]>>, resultStyle=MUTABLE_LIST)\n"
             + "    ()(name=(), class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Customer].[Gender].[F]>, resultStyle=VALUE)\n"
             + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Customer].[Gender].[F]>, resultStyle=VALUE_NOT_NULL, value=[Customer].[Gender].[F])\n"
@@ -7059,7 +7061,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "    1(name=1, class=class mondrian.mdx.NamedSetExpr$1, type=SetType<MemberType<member=[Product].[Products].[Drink]>>, resultStyle=ITERABLE)\n"
             + "    Members(name=Members, class=class mondrian.olap.fun.BuiltinFunTable$27$1, type=SetType<MemberType<hierarchy=[Customer].[Marital Status]>>, resultStyle=MUTABLE_LIST)\n"
             + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=HierarchyType<hierarchy=[Customer].[Marital Status]>, resultStyle=VALUE_NOT_NULL, value=[Customer].[Marital Status])\n"
-            + "\n",
+            + "\n"),
             s);
 
         // Plan after execution, including profiling.
@@ -7077,14 +7079,14 @@ public class BasicQueryTest extends FoodMartTestCase {
             cellSet, new PrintWriter(new StringWriter()));
         cellSet.close();
         final String actual =
-            strings[0].replaceAll(
+            sanitizeAnonymousInnerClassIDs(strings[0].replaceAll(
                 "callMillis=[0-9]+",
                 "callMillis=nnn")
             .replaceAll(
                 "[0-9]+ms",
-                "nnnms");
+                "nnnms"));
         TestContext.assertEqualsVerbose(
-            "Axis (FILTER):\n"
+            sanitizeAnonymousInnerClassIDs("Axis (FILTER):\n"
             + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Customer].[Gender].[F]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=2, elementSquaredCount=2)\n"
             + "    ()(name=(), class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Customer].[Gender].[F]>, resultStyle=VALUE)\n"
             + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Customer].[Gender].[F]>, resultStyle=VALUE_NOT_NULL, value=[Customer].[Gender].[F], callCount=2, callMillis=nnn)\n"
@@ -7101,7 +7103,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "    1(name=1, class=class mondrian.mdx.NamedSetExpr$1, type=SetType<MemberType<member=[Product].[Products].[Drink]>>, resultStyle=ITERABLE)\n"
             + "    Members(name=Members, class=class mondrian.olap.fun.BuiltinFunTable$27$1, type=SetType<MemberType<hierarchy=[Customer].[Marital Status]>>, resultStyle=MUTABLE_LIST)\n"
             + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=HierarchyType<hierarchy=[Customer].[Marital Status]>, resultStyle=VALUE_NOT_NULL, value=[Customer].[Marital Status], callCount=2, callMillis=nnn)\n"
-            + "\n",
+            + "\n"),
             actual);
 
         assertTrue(
@@ -7757,6 +7759,16 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Time].[Time].[1997]}\n"
             + "Row #0: \n");
     }
+
+	/** Replace anonymous inner class IDs with placeholders for better expect string comparison
+	 * @param unsanitizedString -- A string that potentially contains anonymous inner class IDs such as $22
+	 * @return A sanitized string where the class IDs are replaced with the static string '$NN'
+	 */
+	private String sanitizeAnonymousInnerClassIDs(String unsanitizedString) {
+		return unsanitizedString.replaceAll("\\$[0-9]+", "\\$NN");
+	}
+
+
 }
 
 // End BasicQueryTest.java
