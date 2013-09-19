@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.mdx;
@@ -87,24 +87,7 @@ public class NamedSetExpr extends ExpBase implements Exp {
             return null;
         }
 
-        return new AbstractIterCalc(
-            this,
-            new Calc[]{/* todo: compile namedSet.getExp() */})
-        {
-            public TupleIterable evaluateIterable(
-                Evaluator evaluator)
-            {
-                final Evaluator.NamedSetEvaluator eval = getEval(evaluator);
-                return eval.evaluateTupleIterable();
-            }
-
-            public boolean dependsOn(Hierarchy hierarchy) {
-                // Given that a named set is never re-evaluated within the
-                // scope of a query, effectively it's independent of all
-                // dimensions.
-                return false;
-            }
-        };
+        return new NamedSetCalc();
     }
 
     public Evaluator.NamedSetEvaluator getEval(Evaluator evaluator) {
@@ -123,6 +106,27 @@ public class NamedSetExpr extends ExpBase implements Exp {
         return namedSet.getType();
     }
 
+    private class NamedSetCalc extends AbstractIterCalc {
+        public NamedSetCalc() {
+            super(
+                NamedSetExpr.this,
+                new Calc[]{/* todo: compile namedSet.getExp() */});
+        }
+
+        public TupleIterable evaluateIterable(
+            Evaluator evaluator)
+        {
+            final Evaluator.NamedSetEvaluator eval = getEval(evaluator);
+            return eval.evaluateTupleIterable();
+        }
+
+        public boolean dependsOn(Hierarchy hierarchy) {
+            // Given that a named set is never re-evaluated within the
+            // scope of a query, effectively it's independent of all
+            // dimensions.
+            return false;
+        }
+    }
 }
 
 // End NamedSetExpr.java

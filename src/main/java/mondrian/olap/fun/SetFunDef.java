@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -158,18 +158,7 @@ public class SetFunDef extends FunDefBase {
                 };
             } else if (type.getArity() == 1) {
                 final MemberCalc memberCalc = compiler.compileMember(arg);
-                return new AbstractVoidCalc(arg, new Calc[]{memberCalc}) {
-                    final Member[] members = {null};
-                    public void evaluateVoid(Evaluator evaluator) {
-                        // Don't add null or partially null tuple to result.
-                        Member member = memberCalc.evaluateMember(evaluator);
-                        if (member == null || member.isNull()) {
-                            return;
-                        }
-                        members[0] = member;
-                        result.addTuple(members);
-                    }
-                };
+                return new UnarySublistCalc(arg, memberCalc);
             } else {
                 final TupleCalc tupleCalc = compiler.compileTuple(arg);
                 return new AbstractVoidCalc(arg, new Calc[]{tupleCalc}) {
@@ -193,6 +182,29 @@ public class SetFunDef extends FunDefBase {
                 voidCalc.evaluateVoid(evaluator);
             }
             return result.cloneList(-1);
+        }
+
+        private class UnarySublistCalc extends AbstractVoidCalc {
+            final Member[] members = {null};
+            private final MemberCalc memberCalc;
+
+            public UnarySublistCalc(
+                Exp arg,
+                MemberCalc memberCalc)
+            {
+                super(arg, new Calc[]{memberCalc});
+                this.memberCalc = memberCalc;
+            }
+
+            public void evaluateVoid(Evaluator evaluator) {
+                // Don't add null or partially null tuple to result.
+                Member member = memberCalc.evaluateMember(evaluator);
+                if (member == null || member.isNull()) {
+                    return;
+                }
+                members[0] = member;
+                result.addTuple(members);
+            }
         }
     }
 

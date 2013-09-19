@@ -24,6 +24,8 @@ import mondrian.olap.type.Type;
 import java.io.PrintWriter;
 import java.util.*;
 
+import static mondrian.olap.fun.FunUtil.*;
+
 /**
  * <code>BuiltinFunTable</code> contains a list of all built-in MDX functions.
  *
@@ -410,20 +412,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
-                return new AbstractMemberCalc(call, new Calc[] {memberCalc}) {
-                    public Member evaluateMember(Evaluator evaluator) {
-                        Member member = memberCalc.evaluateMember(evaluator);
-                        return lastChild(evaluator, member);
-                    }
-                };
-            }
-
-            Member lastChild(Evaluator evaluator, Member member) {
-                List<Member> children =
-                        evaluator.getSchemaReader().getMemberChildren(member);
-                return (children.size() == 0)
-                        ? member.getHierarchy().getNullMember()
-                        : children.get(children.size() - 1);
+                return new LastChildCalc(call, memberCalc);
             }
         });
 
@@ -488,14 +477,8 @@ public class BuiltinFunTable extends FunTableImpl {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
             {
                 final MemberCalc memberCalc =
-                        compiler.compileMember(call.getArg(0));
-                return new AbstractMemberCalc(call, new Calc[] {memberCalc}) {
-                    public Member evaluateMember(Evaluator evaluator) {
-                        Member member = memberCalc.evaluateMember(evaluator);
-                        return evaluator.getSchemaReader().getLeadMember(
-                            member, 1);
-                    }
-                };
+                    compiler.compileMember(call.getArg(0));
+                return new NextMemberCalc(call, memberCalc);
             }
         });
 
@@ -517,21 +500,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final MemberCalc memberCalc =
                     compiler.compileMember(call.getArg(0));
-                return new AbstractMemberCalc(call, new Calc[] {memberCalc}) {
-                    public Member evaluateMember(Evaluator evaluator) {
-                        Member member = memberCalc.evaluateMember(evaluator);
-                        return memberParent(evaluator, member);
-                    }
-                };
-            }
-
-            Member memberParent(Evaluator evaluator, Member member) {
-                Member parent =
-                    evaluator.getSchemaReader().getMemberParent(member);
-                if (parent == null) {
-                    parent = member.getHierarchy().getNullMember();
-                }
-                return parent;
+                return new ParentCalc(call, memberCalc);
             }
         });
 
@@ -545,14 +514,8 @@ public class BuiltinFunTable extends FunTableImpl {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
             {
                 final MemberCalc memberCalc =
-                        compiler.compileMember(call.getArg(0));
-                return new AbstractMemberCalc(call, new Calc[] {memberCalc}) {
-                    public Member evaluateMember(Evaluator evaluator) {
-                        Member member = memberCalc.evaluateMember(evaluator);
-                        return evaluator.getSchemaReader().getLeadMember(
-                            member, -1);
-                    }
-                };
+                    compiler.compileMember(call.getArg(0));
+                return new PrevMemberCalc(call, memberCalc);
             }
         });
 
@@ -616,14 +579,14 @@ public class BuiltinFunTable extends FunTableImpl {
                             (Aggregator) evaluator.getProperty(
                                 Property.AGGREGATION_TYPE, null);
                         if (aggregator == null) {
-                            throw FunUtil.newEvalException(
+                            throw newEvalException(
                                 null,
                                 "Could not find an aggregator in the current "
                                 + "evaluation context");
                         }
                         Aggregator rollup = aggregator.getRollup();
                         if (rollup == null) {
-                            throw FunUtil.newEvalException(
+                            throw newEvalException(
                                 null,
                                 "Don't know how to rollup aggregator '"
                                 + aggregator + "'");
@@ -658,14 +621,8 @@ public class BuiltinFunTable extends FunTableImpl {
         {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
             {
-                final ListCalc listCalc =
-                        compiler.compileList(call.getArg(0));
-                return new AbstractIntegerCalc(call, new Calc[] {listCalc}) {
-                    public int evaluateInteger(Evaluator evaluator) {
-                        TupleList list = listCalc.evaluateList(evaluator);
-                        return count(evaluator, list, true);
-                    }
-                };
+                final ListCalc listCalc = compiler.compileList(call.getArg(0));
+                return new SetCountCalc(call, listCalc);
             }
         });
 
@@ -704,13 +661,8 @@ public class BuiltinFunTable extends FunTableImpl {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
             {
                 final LevelCalc levelCalc =
-                        compiler.compileLevel(call.getArg(0));
-                return new AbstractIntegerCalc(call, new Calc[] {levelCalc}) {
-                    public int evaluateInteger(Evaluator evaluator) {
-                        final Level level = levelCalc.evaluateLevel(evaluator);
-                        return level.getDepth();
-                    }
-                };
+                    compiler.compileLevel(call.getArg(0));
+                return new LevelOrdinalCalc(call, levelCalc);
             }
         });
 
@@ -736,35 +688,8 @@ public class BuiltinFunTable extends FunTableImpl {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
             {
                 final MemberCalc memberCalc =
-                        compiler.compileMember(call.getArg(0));
-                return new GenericCalc(call) {
-                    public Object evaluate(Evaluator evaluator) {
-                        Member member = memberCalc.evaluateMember(evaluator);
-                        final int savepoint = evaluator.savepoint();
-                        evaluator.setContext(member);
-                        try {
-                            Object value = evaluator.evaluateCurrent();
-                            return value;
-                        } finally {
-                            evaluator.restore(savepoint);
-                        }
-                    }
-
-                    public boolean dependsOn(Hierarchy hierarchy) {
-                        if (super.dependsOn(hierarchy)) {
-                            return true;
-                        }
-                        if (memberCalc.getType().usesHierarchy(
-                                hierarchy, true))
-                        {
-                            return false;
-                        }
-                        return true;
-                    }
-                    public Calc[] getCalcs() {
-                        return new Calc[] {memberCalc};
-                    }
-                };
+                    compiler.compileMember(call.getArg(0));
+                return new MeasureValueCalc(call, memberCalc);
             }
         });
 
@@ -790,24 +715,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final MemberCalc memberCalc =
                     compiler.compileMember(call.getArg(0));
-                return new AbstractListCalc(call, new Calc[] {memberCalc})
-                {
-                    public TupleList evaluateList(Evaluator evaluator) {
-                        Member member = memberCalc.evaluateMember(evaluator);
-                        return new UnaryTupleList(
-                            ascendants(evaluator.getSchemaReader(), member));
-                    }
-                };
-            }
-
-            List<Member> ascendants(SchemaReader schemaReader, Member member) {
-                if (member.isNull()) {
-                    return Collections.emptyList();
-                }
-                final List<Member> result = new ArrayList<Member>();
-                result.add(member);
-                schemaReader.getMemberAncestors(member, result);
-                return result;
+                return new AscendantsCalc(call, memberCalc);
             }
         });
 
@@ -820,28 +728,7 @@ public class BuiltinFunTable extends FunTableImpl {
 
         // <Member>.Children
         builder.define(
-            new FunDefBase(
-                "Children",
-                "Returns the children of a member.",
-                "pxm")
-        {
-            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
-            {
-                final MemberCalc memberCalc =
-                    compiler.compileMember(call.getArg(0));
-                return new AbstractListCalc(
-                    call, new Calc[] {memberCalc}, false)
-                {
-                    public TupleList evaluateList(Evaluator evaluator) {
-                        // Return the list of children. The list is immutable,
-                        // hence 'false' above.
-                        Member member = memberCalc.evaluateMember(evaluator);
-                        return new UnaryTupleList(
-                            getNonEmptyMemberChildren(evaluator, member));
-                    }
-                };
-            }
-        });
+            new ChildrenFunDef());
 
         builder.define(CrossJoinFunDef.Resolver);
         builder.define(NonEmptyCrossJoinFunDef.Resolver);
@@ -943,17 +830,8 @@ public class BuiltinFunTable extends FunTableImpl {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
             {
                 final HierarchyCalc hierarchyCalc =
-                        compiler.compileHierarchy(call.getArg(0));
-                return new AbstractListCalc(
-                    call, new Calc[] {hierarchyCalc})
-                {
-                    public TupleList evaluateList(Evaluator evaluator)
-                    {
-                        Hierarchy hierarchy =
-                            hierarchyCalc.evaluateHierarchy(evaluator);
-                        return hierarchyMembers(hierarchy, evaluator, false);
-                    }
-                };
+                    compiler.compileHierarchy(call.getArg(0));
+                return new HierarchyMembersCalc(call, hierarchyCalc);
             }
         });
 
@@ -967,17 +845,8 @@ public class BuiltinFunTable extends FunTableImpl {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
             {
                 final HierarchyCalc hierarchyCalc =
-                        compiler.compileHierarchy(call.getArg(0));
-                return new AbstractListCalc(
-                    call, new Calc[] {hierarchyCalc})
-                {
-                    public TupleList evaluateList(Evaluator evaluator)
-                    {
-                        Hierarchy hierarchy =
-                            hierarchyCalc.evaluateHierarchy(evaluator);
-                        return hierarchyMembers(hierarchy, evaluator, true);
-                    }
-                };
+                    compiler.compileHierarchy(call.getArg(0));
+                return new HierarchyAllMembersCalc(call, hierarchyCalc);
             }
         });
 
@@ -994,15 +863,8 @@ public class BuiltinFunTable extends FunTableImpl {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
             {
                 final LevelCalc levelCalc =
-                        compiler.compileLevel(call.getArg(0));
-                return new AbstractListCalc(call, new Calc[] {levelCalc})
-                {
-                    public TupleList evaluateList(Evaluator evaluator)
-                    {
-                        Level level = levelCalc.evaluateLevel(evaluator);
-                        return levelMembers(level, evaluator, true);
-                    }
-                };
+                    compiler.compileLevel(call.getArg(0));
+                return new LevelAllMembersCalc(call, levelCalc);
             }
         });
 
@@ -1398,25 +1260,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
-                return new AbstractDoubleCalc(call, new Calc[] {calc0, calc1}) {
-                    public double evaluateDouble(Evaluator evaluator) {
-                        final double v0 = calc0.evaluateDouble(evaluator);
-                        final double v1 = calc1.evaluateDouble(evaluator);
-                        if (v0 == DoubleNull) {
-                            if (v1 == DoubleNull) {
-                                return DoubleNull;
-                            } else {
-                                return v1;
-                            }
-                        } else {
-                            if (v1 == DoubleNull) {
-                                return v0;
-                            } else {
-                                return v0 + v1;
-                            }
-                        }
-                    }
-                };
+                return new AddCalc(call, calc0, calc1);
             }
         });
 
@@ -1431,25 +1275,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
-                return new AbstractDoubleCalc(call, new Calc[] {calc0, calc1}) {
-                    public double evaluateDouble(Evaluator evaluator) {
-                        final double v0 = calc0.evaluateDouble(evaluator);
-                        final double v1 = calc1.evaluateDouble(evaluator);
-                        if (v0 == DoubleNull) {
-                            if (v1 == DoubleNull) {
-                                return DoubleNull;
-                            } else {
-                                return - v1;
-                            }
-                        } else {
-                            if (v1 == DoubleNull) {
-                                return v0;
-                            } else {
-                                return v0 - v1;
-                            }
-                        }
-                    }
-                };
+                return new SubtractCalc(call, calc0, calc1);
             }
         });
 
@@ -1464,19 +1290,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
-                return new AbstractDoubleCalc(call, new Calc[] {calc0, calc1}) {
-                    public double evaluateDouble(Evaluator evaluator) {
-                        final double v0 = calc0.evaluateDouble(evaluator);
-                        final double v1 = calc1.evaluateDouble(evaluator);
-                        // Multiply and divide return null if EITHER arg is
-                        // null.
-                        if (v0 == DoubleNull || v1 == DoubleNull) {
-                            return DoubleNull;
-                        } else {
-                            return v0 * v1;
-                        }
-                    }
-                };
+                return new MultiplyCalc(call, calc0, calc1);
             }
         });
 
@@ -1504,40 +1318,9 @@ public class BuiltinFunTable extends FunTableImpl {
                 // Null. This is only used by certain applications and does not
                 // conform to MSAS behavior.
                 if (!isNullDenominatorProducesNull) {
-                    return new AbstractDoubleCalc(
-                        call, new Calc[] {calc0, calc1})
-                    {
-                        public double evaluateDouble(Evaluator evaluator) {
-                            final double v0 = calc0.evaluateDouble(evaluator);
-                            final double v1 = calc1.evaluateDouble(evaluator);
-                            // Null in numerator always returns DoubleNull.
-                            //
-                            if (v0 == DoubleNull) {
-                                return DoubleNull;
-                            } else if (v1 == DoubleNull) {
-                                // Null only in denominator returns Infinity.
-                                return Double.POSITIVE_INFINITY;
-                            } else {
-                                return v0 / v1;
-                            }
-                        }
-                    };
+                    return new DivideCalc(call, calc0, calc1);
                 } else {
-                    return new AbstractDoubleCalc(
-                        call, new Calc[] {calc0, calc1})
-                    {
-                        public double evaluateDouble(Evaluator evaluator) {
-                            final double v0 = calc0.evaluateDouble(evaluator);
-                            final double v1 = calc1.evaluateDouble(evaluator);
-                            // Null in numerator or denominator returns
-                            // DoubleNull.
-                            if (v0 == DoubleNull || v1 == DoubleNull) {
-                                return DoubleNull;
-                            } else {
-                                return v0 / v1;
-                            }
-                        }
-                    };
+                    return new DivideNullCalc(call, calc0, calc1);
                 }
             }
         });
@@ -1552,16 +1335,7 @@ public class BuiltinFunTable extends FunTableImpl {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
             {
                 final DoubleCalc calc = compiler.compileDouble(call.getArg(0));
-                return new AbstractDoubleCalc(call, new Calc[] {calc}) {
-                    public double evaluateDouble(Evaluator evaluator) {
-                        final double v = calc.evaluateDouble(evaluator);
-                        if (v == DoubleNull) {
-                            return DoubleNull;
-                        } else {
-                            return - v;
-                        }
-                    }
-                };
+                return new NegateCalc(call, calc);
             }
         });
 
@@ -1576,13 +1350,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final StringCalc calc0 = compiler.compileString(call.getArg(0));
                 final StringCalc calc1 = compiler.compileString(call.getArg(1));
-                return new AbstractStringCalc(call, new Calc[] {calc0, calc1}) {
-                    public String evaluateString(Evaluator evaluator) {
-                        final String s0 = calc0.evaluateString(evaluator);
-                        final String s1 = calc1.evaluateString(evaluator);
-                        return s0 + s1;
-                    }
-                };
+                return new ConcatCalc(call, calc0, calc1);
             }
         });
 
@@ -1599,20 +1367,7 @@ public class BuiltinFunTable extends FunTableImpl {
                     compiler.compileBoolean(call.getArg(0));
                 final BooleanCalc calc1 =
                     compiler.compileBoolean(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        boolean b0 = calc0.evaluateBoolean(evaluator);
-                        // don't short-circuit evaluation if we're evaluating
-                        // the axes; that way, we can combine all measures
-                        // referenced in the AND expression in a single query
-                        if (!evaluator.isEvalAxes() && !b0) {
-                            return false;
-                        }
-                        boolean b1 = calc1.evaluateBoolean(evaluator);
-                        return b0 && b1;
-                    }
-                };
+                return new AndCalc(call, calc0, calc1);
             }
         });
 
@@ -1629,20 +1384,7 @@ public class BuiltinFunTable extends FunTableImpl {
                     compiler.compileBoolean(call.getArg(0));
                 final BooleanCalc calc1 =
                     compiler.compileBoolean(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        boolean b0 = calc0.evaluateBoolean(evaluator);
-                        // don't short-circuit evaluation if we're evaluating
-                        // the axes; that way, we can combine all measures
-                        // referenced in the OR expression in a single query
-                        if (!evaluator.isEvalAxes() && b0) {
-                            return true;
-                        }
-                        boolean b1 = calc1.evaluateBoolean(evaluator);
-                        return b0 || b1;
-                    }
-                };
+                return new OrCalc(call, calc0, calc1);
             }
         });
 
@@ -1659,14 +1401,7 @@ public class BuiltinFunTable extends FunTableImpl {
                     compiler.compileBoolean(call.getArg(0));
                 final BooleanCalc calc1 =
                     compiler.compileBoolean(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        final boolean b0 = calc0.evaluateBoolean(evaluator);
-                        final boolean b1 = calc1.evaluateBoolean(evaluator);
-                        return b0 != b1;
-                    }
-                };
+                return new XorCalc(call, calc0, calc1);
             }
         });
 
@@ -1681,11 +1416,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final BooleanCalc calc =
                     compiler.compileBoolean(call.getArg(0));
-                return new AbstractBooleanCalc(call, new Calc[] {calc}) {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        return !calc.evaluateBoolean(evaluator);
-                    }
-                };
+                return new NotCalc(call, calc);
             }
         });
 
@@ -1700,17 +1431,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final StringCalc calc0 = compiler.compileString(call.getArg(0));
                 final StringCalc calc1 = compiler.compileString(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        final String b0 = calc0.evaluateString(evaluator);
-                        final String b1 = calc1.evaluateString(evaluator);
-                        if (b0 == null || b1 == null) {
-                            return BooleanNull;
-                        }
-                        return b0.equals(b1);
-                    }
-                };
+                return new EqStringCalc(call, calc0, calc1);
             }
         });
 
@@ -1725,21 +1446,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        final double v0 = calc0.evaluateDouble(evaluator);
-                        final double v1 = calc1.evaluateDouble(evaluator);
-                        if (Double.isNaN(v0)
-                            || Double.isNaN(v1)
-                            || v0 == DoubleNull
-                            || v1 == DoubleNull)
-                        {
-                            return BooleanNull;
-                        }
-                        return v0 == v1;
-                    }
-                };
+                return new EqNumericCalc(call, calc0, calc1);
             }
         });
 
@@ -1754,17 +1461,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final StringCalc calc0 = compiler.compileString(call.getArg(0));
                 final StringCalc calc1 = compiler.compileString(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        final String b0 = calc0.evaluateString(evaluator);
-                        final String b1 = calc1.evaluateString(evaluator);
-                        if (b0 == null || b1 == null) {
-                            return BooleanNull;
-                        }
-                        return !b0.equals(b1);
-                    }
-                };
+                return new NeStringCalc(call, calc0, calc1);
             }
         });
 
@@ -1779,21 +1476,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        final double v0 = calc0.evaluateDouble(evaluator);
-                        final double v1 = calc1.evaluateDouble(evaluator);
-                        if (Double.isNaN(v0)
-                            || Double.isNaN(v1)
-                            || v0 == DoubleNull
-                            || v1 == DoubleNull)
-                        {
-                            return BooleanNull;
-                        }
-                        return v0 != v1;
-                    }
-                };
+                return new NeNumericCalc(call, calc0, calc1);
             }
         });
 
@@ -1808,21 +1491,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        final double v0 = calc0.evaluateDouble(evaluator);
-                        final double v1 = calc1.evaluateDouble(evaluator);
-                        if (Double.isNaN(v0)
-                            || Double.isNaN(v1)
-                            || v0 == DoubleNull
-                            || v1 == DoubleNull)
-                        {
-                            return BooleanNull;
-                        }
-                        return v0 < v1;
-                    }
-                };
+                return new LtNumericCalc(call, calc0, calc1);
             }
         });
 
@@ -1837,17 +1506,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final StringCalc calc0 = compiler.compileString(call.getArg(0));
                 final StringCalc calc1 = compiler.compileString(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        final String b0 = calc0.evaluateString(evaluator);
-                        final String b1 = calc1.evaluateString(evaluator);
-                        if (b0 == null || b1 == null) {
-                            return BooleanNull;
-                        }
-                        return b0.compareTo(b1) < 0;
-                    }
-                };
+                return new LtStringCalc(call, calc0, calc1);
             }
         });
 
@@ -1862,21 +1521,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        final double v0 = calc0.evaluateDouble(evaluator);
-                        final double v1 = calc1.evaluateDouble(evaluator);
-                        if (Double.isNaN(v0)
-                            || Double.isNaN(v1)
-                            || v0 == DoubleNull
-                            || v1 == DoubleNull)
-                        {
-                            return BooleanNull;
-                        }
-                        return v0 <= v1;
-                    }
-                };
+                return new LeNumericCalc(call, calc0, calc1);
             }
         });
 
@@ -1891,17 +1536,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final StringCalc calc0 = compiler.compileString(call.getArg(0));
                 final StringCalc calc1 = compiler.compileString(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        final String b0 = calc0.evaluateString(evaluator);
-                        final String b1 = calc1.evaluateString(evaluator);
-                        if (b0 == null || b1 == null) {
-                            return BooleanNull;
-                        }
-                        return b0.compareTo(b1) <= 0;
-                    }
-                };
+                return new LeStringCalc(call, calc0, calc1);
             }
         });
 
@@ -1916,21 +1551,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        final double v0 = calc0.evaluateDouble(evaluator);
-                        final double v1 = calc1.evaluateDouble(evaluator);
-                        if (Double.isNaN(v0)
-                            || Double.isNaN(v1)
-                            || v0 == DoubleNull
-                            || v1 == DoubleNull)
-                        {
-                            return BooleanNull;
-                        }
-                        return v0 > v1;
-                    }
-                };
+                return new GtNumericCalc(call, calc0, calc1);
             }
         });
 
@@ -1945,17 +1566,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final StringCalc calc0 = compiler.compileString(call.getArg(0));
                 final StringCalc calc1 = compiler.compileString(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        final String b0 = calc0.evaluateString(evaluator);
-                        final String b1 = calc1.evaluateString(evaluator);
-                        if (b0 == null || b1 == null) {
-                            return BooleanNull;
-                        }
-                        return b0.compareTo(b1) > 0;
-                    }
-                };
+                return new GtStringCalc(call, calc0, calc1);
             }
         });
 
@@ -1970,21 +1581,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final DoubleCalc calc0 = compiler.compileDouble(call.getArg(0));
                 final DoubleCalc calc1 = compiler.compileDouble(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        final double v0 = calc0.evaluateDouble(evaluator);
-                        final double v1 = calc1.evaluateDouble(evaluator);
-                        if (Double.isNaN(v0)
-                            || Double.isNaN(v1)
-                            || v0 == DoubleNull
-                            || v1 == DoubleNull)
-                        {
-                            return BooleanNull;
-                        }
-                        return v0 >= v1;
-                    }
-                };
+                return new GeNumericCalc(call, calc0, calc1);
             }
         });
 
@@ -1999,17 +1596,7 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final StringCalc calc0 = compiler.compileString(call.getArg(0));
                 final StringCalc calc1 = compiler.compileString(call.getArg(1));
-                return new AbstractBooleanCalc(call, new Calc[] {calc0, calc1})
-                {
-                    public boolean evaluateBoolean(Evaluator evaluator) {
-                        final String b0 = calc0.evaluateString(evaluator);
-                        final String b1 = calc1.evaluateString(evaluator);
-                        if (b0 == null || b1 == null) {
-                            return BooleanNull;
-                        }
-                        return b0.compareTo(b1) >= 0;
-                    }
-                };
+                return new GeStringCalc(call, calc0, calc1);
             }
         });
 
@@ -2092,6 +1679,812 @@ public class BuiltinFunTable extends FunTableImpl {
         return instance;
     }
 
+    private static class GtNumericCalc extends AbstractBooleanCalc {
+        private final DoubleCalc calc0;
+        private final DoubleCalc calc1;
+
+        public GtNumericCalc(
+            ResolvedFunCall call,
+            DoubleCalc calc0,
+            DoubleCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public boolean evaluateBoolean(Evaluator evaluator) {
+            final double v0 = calc0.evaluateDouble(evaluator);
+            final double v1 = calc1.evaluateDouble(evaluator);
+            if (Double.isNaN(v0)
+                || Double.isNaN(v1)
+                || v0 == DoubleNull
+                || v1 == DoubleNull)
+            {
+                return BooleanNull;
+            }
+            return v0 > v1;
+        }
+    }
+
+    private static class LeStringCalc extends AbstractBooleanCalc {
+        private final StringCalc calc0;
+        private final StringCalc calc1;
+
+        public LeStringCalc(
+            ResolvedFunCall call,
+            StringCalc calc0,
+            StringCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public boolean evaluateBoolean(Evaluator evaluator) {
+            final String b0 = calc0.evaluateString(evaluator);
+            final String b1 = calc1.evaluateString(evaluator);
+            if (b0 == null || b1 == null) {
+                return BooleanNull;
+            }
+            return b0.compareTo(b1) <= 0;
+        }
+    }
+
+    private static class GtStringCalc extends AbstractBooleanCalc {
+        private final StringCalc calc0;
+        private final StringCalc calc1;
+
+        public GtStringCalc(
+            ResolvedFunCall call,
+            StringCalc calc0,
+            StringCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public boolean evaluateBoolean(Evaluator evaluator) {
+            final String b0 = calc0.evaluateString(evaluator);
+            final String b1 = calc1.evaluateString(evaluator);
+            if (b0 == null || b1 == null) {
+                return BooleanNull;
+            }
+            return b0.compareTo(b1) > 0;
+        }
+    }
+
+    private static class GeNumericCalc extends AbstractBooleanCalc {
+        private final DoubleCalc calc0;
+        private final DoubleCalc calc1;
+
+        public GeNumericCalc(
+            ResolvedFunCall call,
+            DoubleCalc calc0,
+            DoubleCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public boolean evaluateBoolean(Evaluator evaluator) {
+            final double v0 = calc0.evaluateDouble(evaluator);
+            final double v1 = calc1.evaluateDouble(evaluator);
+            if (Double.isNaN(v0)
+                || Double.isNaN(v1)
+                || v0 == DoubleNull
+                || v1 == DoubleNull)
+            {
+                return BooleanNull;
+            }
+            return v0 >= v1;
+        }
+    }
+
+    private static class GeStringCalc extends AbstractBooleanCalc {
+        private final StringCalc calc0;
+        private final StringCalc calc1;
+
+        public GeStringCalc(
+            ResolvedFunCall call,
+            StringCalc calc0,
+            StringCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public boolean evaluateBoolean(Evaluator evaluator) {
+            final String b0 = calc0.evaluateString(evaluator);
+            final String b1 = calc1.evaluateString(evaluator);
+            if (b0 == null || b1 == null) {
+                return BooleanNull;
+            }
+            return b0.compareTo(b1) >= 0;
+        }
+    }
+
+    private static class LeNumericCalc extends AbstractBooleanCalc {
+        private final DoubleCalc calc0;
+        private final DoubleCalc calc1;
+
+        public LeNumericCalc(
+            ResolvedFunCall call,
+            DoubleCalc calc0,
+            DoubleCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public boolean evaluateBoolean(Evaluator evaluator) {
+            final double v0 = calc0.evaluateDouble(evaluator);
+            final double v1 = calc1.evaluateDouble(evaluator);
+            if (Double.isNaN(v0)
+                || Double.isNaN(v1)
+                || v0 == DoubleNull
+                || v1 == DoubleNull)
+            {
+                return BooleanNull;
+            }
+            return v0 <= v1;
+        }
+    }
+
+    private static class LtStringCalc extends AbstractBooleanCalc {
+        private final StringCalc calc0;
+        private final StringCalc calc1;
+
+        public LtStringCalc(
+            ResolvedFunCall call,
+            StringCalc calc0,
+            StringCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public boolean evaluateBoolean(Evaluator evaluator) {
+            final String b0 = calc0.evaluateString(evaluator);
+            final String b1 = calc1.evaluateString(evaluator);
+            if (b0 == null || b1 == null) {
+                return BooleanNull;
+            }
+            return b0.compareTo(b1) < 0;
+        }
+    }
+
+    private static class LtNumericCalc extends AbstractBooleanCalc {
+        private final DoubleCalc calc0;
+        private final DoubleCalc calc1;
+
+        public LtNumericCalc(
+            ResolvedFunCall call,
+            DoubleCalc calc0,
+            DoubleCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public boolean evaluateBoolean(Evaluator evaluator) {
+            final double v0 = calc0.evaluateDouble(evaluator);
+            final double v1 = calc1.evaluateDouble(evaluator);
+            if (Double.isNaN(v0)
+                || Double.isNaN(v1)
+                || v0 == DoubleNull
+                || v1 == DoubleNull)
+            {
+                return BooleanNull;
+            }
+            return v0 < v1;
+        }
+    }
+
+    private static class NeNumericCalc extends AbstractBooleanCalc {
+        private final DoubleCalc calc0;
+        private final DoubleCalc calc1;
+
+        public NeNumericCalc(
+            ResolvedFunCall call,
+            DoubleCalc calc0,
+            DoubleCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public boolean evaluateBoolean(Evaluator evaluator) {
+            final double v0 = calc0.evaluateDouble(evaluator);
+            final double v1 = calc1.evaluateDouble(evaluator);
+            if (Double.isNaN(v0)
+                || Double.isNaN(v1)
+                || v0 == DoubleNull
+                || v1 == DoubleNull)
+            {
+                return BooleanNull;
+            }
+            return v0 != v1;
+        }
+    }
+
+    private static class NeStringCalc extends AbstractBooleanCalc {
+        private final StringCalc calc0;
+        private final StringCalc calc1;
+
+        public NeStringCalc(
+            ResolvedFunCall call,
+            StringCalc calc0,
+            StringCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public boolean evaluateBoolean(Evaluator evaluator) {
+            final String b0 = calc0.evaluateString(evaluator);
+            final String b1 = calc1.evaluateString(evaluator);
+            if (b0 == null || b1 == null) {
+                return BooleanNull;
+            }
+            return !b0.equals(b1);
+        }
+    }
+
+    private static class EqNumericCalc extends AbstractBooleanCalc {
+        private final DoubleCalc calc0;
+        private final DoubleCalc calc1;
+
+        public EqNumericCalc(
+            ResolvedFunCall call,
+            DoubleCalc calc0,
+            DoubleCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public boolean evaluateBoolean(Evaluator evaluator) {
+            final double v0 = calc0.evaluateDouble(evaluator);
+            final double v1 = calc1.evaluateDouble(evaluator);
+            if (Double.isNaN(v0)
+                || Double.isNaN(v1)
+                || v0 == DoubleNull
+                || v1 == DoubleNull)
+            {
+                return BooleanNull;
+            }
+            return v0 == v1;
+        }
+    }
+
+    private static class EqStringCalc extends AbstractBooleanCalc {
+        private final StringCalc calc0;
+        private final StringCalc calc1;
+
+        public EqStringCalc(
+            ResolvedFunCall call,
+            StringCalc calc0,
+            StringCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public boolean evaluateBoolean(Evaluator evaluator) {
+            final String b0 = calc0.evaluateString(evaluator);
+            final String b1 = calc1.evaluateString(evaluator);
+            if (b0 == null || b1 == null) {
+                return BooleanNull;
+            }
+            return b0.equals(b1);
+        }
+    }
+
+    private static class NotCalc extends AbstractBooleanCalc {
+        private final BooleanCalc calc;
+
+        public NotCalc(ResolvedFunCall call, BooleanCalc calc) {
+            super(call, new Calc[]{calc});
+            this.calc = calc;
+        }
+
+        public boolean evaluateBoolean(Evaluator evaluator) {
+            return !calc.evaluateBoolean(evaluator);
+        }
+    }
+
+    private static class XorCalc extends AbstractBooleanCalc {
+        private final BooleanCalc calc0;
+        private final BooleanCalc calc1;
+
+        public XorCalc(
+            ResolvedFunCall call,
+            BooleanCalc calc0,
+            BooleanCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public boolean evaluateBoolean(Evaluator evaluator) {
+            final boolean b0 = calc0.evaluateBoolean(evaluator);
+            final boolean b1 = calc1.evaluateBoolean(evaluator);
+            return b0 != b1;
+        }
+    }
+
+    private static class OrCalc extends AbstractBooleanCalc {
+        private final BooleanCalc calc0;
+        private final BooleanCalc calc1;
+
+        public OrCalc(
+            ResolvedFunCall call,
+            BooleanCalc calc0,
+            BooleanCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public boolean evaluateBoolean(Evaluator evaluator) {
+            boolean b0 = calc0.evaluateBoolean(evaluator);
+            // don't short-circuit evaluation if we're evaluating
+            // the axes; that way, we can combine all measures
+            // referenced in the OR expression in a single query
+            if (!evaluator.isEvalAxes() && b0) {
+                return true;
+            }
+            boolean b1 = calc1.evaluateBoolean(evaluator);
+            return b0 || b1;
+        }
+    }
+
+    private static class AndCalc extends AbstractBooleanCalc {
+        private final BooleanCalc calc0;
+        private final BooleanCalc calc1;
+
+        public AndCalc(
+            ResolvedFunCall call,
+            BooleanCalc calc0,
+            BooleanCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public boolean evaluateBoolean(Evaluator evaluator) {
+            boolean b0 = calc0.evaluateBoolean(evaluator);
+            // don't short-circuit evaluation if we're evaluating
+            // the axes; that way, we can combine all measures
+            // referenced in the AND expression in a single query
+            if (!evaluator.isEvalAxes() && !b0) {
+                return false;
+            }
+            boolean b1 = calc1.evaluateBoolean(evaluator);
+            return b0 && b1;
+        }
+    }
+
+    private static class ConcatCalc extends AbstractStringCalc {
+        private final StringCalc calc0;
+        private final StringCalc calc1;
+
+        public ConcatCalc(
+            ResolvedFunCall call,
+            StringCalc calc0,
+            StringCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public String evaluateString(Evaluator evaluator) {
+            final String s0 = calc0.evaluateString(evaluator);
+            final String s1 = calc1.evaluateString(evaluator);
+            return s0 + s1;
+        }
+    }
+
+    private static class NegateCalc extends AbstractDoubleCalc {
+        private final DoubleCalc calc;
+
+        public NegateCalc(ResolvedFunCall call, DoubleCalc calc) {
+            super(call, new Calc[]{calc});
+            this.calc = calc;
+        }
+
+        public double evaluateDouble(Evaluator evaluator) {
+            final double v = calc.evaluateDouble(evaluator);
+            if (v == DoubleNull) {
+                return DoubleNull;
+            } else {
+                return - v;
+            }
+        }
+    }
+
+    private static class DivideCalc extends AbstractDoubleCalc {
+        private final DoubleCalc calc0;
+        private final DoubleCalc calc1;
+
+        public DivideCalc(
+            ResolvedFunCall call,
+            DoubleCalc calc0,
+            DoubleCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public double evaluateDouble(Evaluator evaluator) {
+            final double v0 = calc0.evaluateDouble(evaluator);
+            final double v1 = calc1.evaluateDouble(evaluator);
+            // Null in numerator always returns DoubleNull.
+            //
+            if (v0 == DoubleNull) {
+                return DoubleNull;
+            } else if (v1 == DoubleNull) {
+                // Null only in denominator returns Infinity.
+                return Double.POSITIVE_INFINITY;
+            } else {
+                return v0 / v1;
+            }
+        }
+    }
+
+    private static class DivideNullCalc extends AbstractDoubleCalc {
+        private final DoubleCalc calc0;
+        private final DoubleCalc calc1;
+
+        public DivideNullCalc(
+            ResolvedFunCall call,
+            DoubleCalc calc0,
+            DoubleCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public double evaluateDouble(Evaluator evaluator) {
+            final double v0 = calc0.evaluateDouble(evaluator);
+            final double v1 = calc1.evaluateDouble(evaluator);
+            // Null in numerator or denominator returns
+            // DoubleNull.
+            if (v0 == DoubleNull || v1 == DoubleNull) {
+                return DoubleNull;
+            } else {
+                return v0 / v1;
+            }
+        }
+    }
+
+    private static class MultiplyCalc extends AbstractDoubleCalc {
+        private final DoubleCalc calc0;
+        private final DoubleCalc calc1;
+
+        public MultiplyCalc(
+            ResolvedFunCall call,
+            DoubleCalc calc0,
+            DoubleCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public double evaluateDouble(Evaluator evaluator) {
+            final double v0 = calc0.evaluateDouble(evaluator);
+            final double v1 = calc1.evaluateDouble(evaluator);
+            // Multiply and divide return null if EITHER arg is
+            // null.
+            if (v0 == DoubleNull || v1 == DoubleNull) {
+                return DoubleNull;
+            } else {
+                return v0 * v1;
+            }
+        }
+    }
+
+    private static class SubtractCalc extends AbstractDoubleCalc {
+        private final DoubleCalc calc0;
+        private final DoubleCalc calc1;
+
+        public SubtractCalc(
+            ResolvedFunCall call,
+            DoubleCalc calc0,
+            DoubleCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public double evaluateDouble(Evaluator evaluator) {
+            final double v0 = calc0.evaluateDouble(evaluator);
+            final double v1 = calc1.evaluateDouble(evaluator);
+            if (v0 == DoubleNull) {
+                if (v1 == DoubleNull) {
+                    return DoubleNull;
+                } else {
+                    return - v1;
+                }
+            } else {
+                if (v1 == DoubleNull) {
+                    return v0;
+                } else {
+                    return v0 - v1;
+                }
+            }
+        }
+    }
+
+    private static class AddCalc extends AbstractDoubleCalc {
+        private final DoubleCalc calc0;
+        private final DoubleCalc calc1;
+
+        public AddCalc(
+            ResolvedFunCall call,
+            DoubleCalc calc0,
+            DoubleCalc calc1)
+        {
+            super(call, new Calc[]{calc0, calc1});
+            this.calc0 = calc0;
+            this.calc1 = calc1;
+        }
+
+        public double evaluateDouble(Evaluator evaluator) {
+            final double v0 = calc0.evaluateDouble(evaluator);
+            final double v1 = calc1.evaluateDouble(evaluator);
+            if (v0 == DoubleNull) {
+                if (v1 == DoubleNull) {
+                    return DoubleNull;
+                } else {
+                    return v1;
+                }
+            } else {
+                if (v1 == DoubleNull) {
+                    return v0;
+                } else {
+                    return v0 + v1;
+                }
+            }
+        }
+    }
+
+    private static class HierarchyMembersCalc extends AbstractListCalc {
+        private final HierarchyCalc hierarchyCalc;
+
+        public HierarchyMembersCalc(
+            ResolvedFunCall call,
+            HierarchyCalc hierarchyCalc)
+        {
+            super(call, new Calc[]{hierarchyCalc});
+            this.hierarchyCalc = hierarchyCalc;
+        }
+
+        public TupleList evaluateList(Evaluator evaluator)
+        {
+            Hierarchy hierarchy =
+                hierarchyCalc.evaluateHierarchy(evaluator);
+            return hierarchyMembers(hierarchy, evaluator, false);
+        }
+    }
+
+    private static class HierarchyAllMembersCalc extends AbstractListCalc {
+        private final HierarchyCalc hierarchyCalc;
+
+        public HierarchyAllMembersCalc(
+            ResolvedFunCall call,
+            HierarchyCalc hierarchyCalc)
+        {
+            super(call, new Calc[]{hierarchyCalc});
+            this.hierarchyCalc = hierarchyCalc;
+        }
+
+        public TupleList evaluateList(Evaluator evaluator)
+        {
+            Hierarchy hierarchy =
+                hierarchyCalc.evaluateHierarchy(evaluator);
+            return hierarchyMembers(hierarchy, evaluator, true);
+        }
+    }
+
+    private static class LevelAllMembersCalc extends AbstractListCalc {
+        private final LevelCalc levelCalc;
+
+        public LevelAllMembersCalc(ResolvedFunCall call, LevelCalc levelCalc) {
+            super(call, new Calc[]{levelCalc});
+            this.levelCalc = levelCalc;
+        }
+
+        public TupleList evaluateList(Evaluator evaluator)
+        {
+            Level level = levelCalc.evaluateLevel(evaluator);
+            return levelMembers(level, evaluator, true);
+        }
+    }
+
+    private static class AscendantsCalc extends AbstractListCalc {
+        private final MemberCalc memberCalc;
+
+        public AscendantsCalc(ResolvedFunCall call, MemberCalc memberCalc) {
+            super(call, new Calc[]{memberCalc});
+            this.memberCalc = memberCalc;
+        }
+
+        public TupleList evaluateList(Evaluator evaluator) {
+            Member member = memberCalc.evaluateMember(evaluator);
+            return new UnaryTupleList(
+                ascendants(evaluator.getSchemaReader(), member));
+        }
+
+        List<Member> ascendants(SchemaReader schemaReader, Member member) {
+            if (member.isNull()) {
+                return Collections.emptyList();
+            }
+            final List<Member> result = new ArrayList<Member>();
+            result.add(member);
+            schemaReader.getMemberAncestors(member, result);
+            return result;
+        }
+    }
+
+    private static class MeasureValueCalc extends GenericCalc {
+        private final MemberCalc memberCalc;
+
+        public MeasureValueCalc(ResolvedFunCall call, MemberCalc memberCalc) {
+            super(call);
+            this.memberCalc = memberCalc;
+        }
+
+        public Object evaluate(Evaluator evaluator) {
+            Member member = memberCalc.evaluateMember(evaluator);
+            final int savepoint = evaluator.savepoint();
+            evaluator.setContext(member);
+            try {
+                Object value = evaluator.evaluateCurrent();
+                return value;
+            } finally {
+                evaluator.restore(savepoint);
+            }
+        }
+
+        public boolean dependsOn(Hierarchy hierarchy) {
+            if (super.dependsOn(hierarchy)) {
+                return true;
+            }
+            if (memberCalc.getType().usesHierarchy(
+                    hierarchy, true))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public Calc[] getCalcs() {
+            return new Calc[] {memberCalc};
+        }
+    }
+
+    private static class LevelOrdinalCalc extends AbstractIntegerCalc {
+        private final LevelCalc levelCalc;
+
+        public LevelOrdinalCalc(ResolvedFunCall call, LevelCalc levelCalc) {
+            super(call, new Calc[]{levelCalc});
+            this.levelCalc = levelCalc;
+        }
+
+        public int evaluateInteger(Evaluator evaluator) {
+            final Level level = levelCalc.evaluateLevel(evaluator);
+            return level.getDepth();
+        }
+    }
+
+    private static class SetCountCalc extends AbstractIntegerCalc {
+        private final ListCalc listCalc;
+
+        public SetCountCalc(ResolvedFunCall call, ListCalc listCalc) {
+            super(call, new Calc[]{listCalc});
+            this.listCalc = listCalc;
+        }
+
+        public int evaluateInteger(Evaluator evaluator) {
+            TupleList list = listCalc.evaluateList(evaluator);
+            return count(evaluator, list, true);
+        }
+    }
+
+    private static class PrevMemberCalc extends AbstractMemberCalc {
+        private final MemberCalc memberCalc;
+
+        public PrevMemberCalc(ResolvedFunCall call, MemberCalc memberCalc) {
+            super(call, new Calc[]{memberCalc});
+            this.memberCalc = memberCalc;
+        }
+
+        public Member evaluateMember(Evaluator evaluator) {
+            Member member = memberCalc.evaluateMember(evaluator);
+            return evaluator.getSchemaReader().getLeadMember(
+                member, -1);
+        }
+    }
+
+    private static class ParentCalc extends AbstractMemberCalc {
+        private final MemberCalc memberCalc;
+
+        public ParentCalc(ResolvedFunCall call, MemberCalc memberCalc) {
+            super(call, new Calc[]{memberCalc});
+            this.memberCalc = memberCalc;
+        }
+
+        public Member evaluateMember(Evaluator evaluator) {
+            Member member = memberCalc.evaluateMember(evaluator);
+            return memberParent(evaluator, member);
+        }
+
+        Member memberParent(Evaluator evaluator, Member member) {
+            Member parent =
+                evaluator.getSchemaReader().getMemberParent(member);
+            if (parent == null) {
+                parent = member.getHierarchy().getNullMember();
+            }
+            return parent;
+        }
+    }
+
+    private static class NextMemberCalc extends AbstractMemberCalc {
+        private final MemberCalc memberCalc;
+
+        public NextMemberCalc(ResolvedFunCall call, MemberCalc memberCalc) {
+            super(call, new Calc[]{memberCalc});
+            this.memberCalc = memberCalc;
+        }
+
+        public Member evaluateMember(Evaluator evaluator) {
+            Member member = memberCalc.evaluateMember(evaluator);
+            return evaluator.getSchemaReader().getLeadMember(
+                member, 1);
+        }
+    }
+
+    private static class LastChildCalc extends AbstractMemberCalc {
+        private final MemberCalc memberCalc;
+
+        public LastChildCalc(ResolvedFunCall call, MemberCalc memberCalc) {
+            super(call, new Calc[]{memberCalc});
+            this.memberCalc = memberCalc;
+        }
+
+        public Member evaluateMember(Evaluator evaluator) {
+            Member member = memberCalc.evaluateMember(evaluator);
+            return lastChild(evaluator, member);
+        }
+
+        Member lastChild(Evaluator evaluator, Member member) {
+            List<Member> children =
+                evaluator.getSchemaReader().getMemberChildren(member);
+            return (children.size() == 0)
+                ? member.getHierarchy().getNullMember()
+                : children.get(children.size() - 1);
+        }
+    }
 }
 
 // End BuiltinFunTable.java
