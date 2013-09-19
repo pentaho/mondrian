@@ -10,6 +10,7 @@
 //
 // ajogleka, 19 December, 2007
 */
+
 package mondrian.olap.fun;
 
 import mondrian.test.FoodMartTestCase;

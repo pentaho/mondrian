@@ -10,6 +10,7 @@
 //
 // jhyde, 1 March, 1999
 */
+
 package mondrian.olap;
 
 /**

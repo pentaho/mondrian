@@ -13,6 +13,7 @@
 //
 // sasebb, 14 December, 2004
 */
+
 package mondrian.test;
 
 import junit.framework.*;

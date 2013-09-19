@@ -10,6 +10,7 @@
 //
 // jhyde, May 2, 2003
 */
+
 package mondrian.xmla;
 
 import org.olap4j.impl.UnmodifiableArrayMap;

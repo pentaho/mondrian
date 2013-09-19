@@ -10,6 +10,7 @@
 // Copyright (C) 2008-2012 Pentaho and others
 // All Rights Reserved.
 */
+
 package mondrian.rolap;
 
 import mondrian.olap.*;

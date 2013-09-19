@@ -10,6 +10,7 @@
 //
 // jhyde, 6 August, 2001
 */
+
 package mondrian.olap;
 
 import java.util.List;

@@ -10,6 +10,7 @@
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
 */
+
 package mondrian.gui;
 
 import java.awt.event.*;

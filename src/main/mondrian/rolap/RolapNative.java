@@ -9,6 +9,7 @@
 // Copyright (C) 2004-2005 TONBELLER AG
 // All Rights Reserved.
 */
+
 package mondrian.rolap;
 
 import mondrian.olap.*;

@@ -8,6 +8,7 @@
 // Copyright (C) 2006-2010 Pentaho
 // All Rights Reserved.
 */
+
 package mondrian.rolap;
 
 import mondrian.rolap.cache.SmartCache;

@@ -9,6 +9,7 @@
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // All Rights Reserved.
 */
+
 package mondrian.gui;
 
 import org.apache.log4j.Logger;

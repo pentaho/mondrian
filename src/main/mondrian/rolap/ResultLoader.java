@@ -10,6 +10,7 @@
 //
 // jhyde, Feb 21, 2003
 */
+
 package mondrian.rolap;
 
 import mondrian.calc.TupleList;

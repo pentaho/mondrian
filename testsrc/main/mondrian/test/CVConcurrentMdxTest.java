@@ -9,6 +9,7 @@
 // All Rights Reserved.
 //
 */
+
 package mondrian.test;
 
 import mondrian.olap.MondrianProperties;

@@ -8,6 +8,7 @@
 // Copyright (C) 2007-2007 Tasecurity Group S.L, Spain
 // All Rights Reserved.
 */
+
 package mondrian.util;
 
 import java.lang.ref.WeakReference;

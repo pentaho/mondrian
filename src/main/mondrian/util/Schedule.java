@@ -8,6 +8,7 @@
 // Copyright (C) 2005-2011 Pentaho
 // All Rights Reserved.
 */
+
 package mondrian.util;
 
 import java.sql.Time;

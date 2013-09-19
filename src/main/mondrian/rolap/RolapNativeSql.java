@@ -8,6 +8,7 @@
 // Copyright (C) 2006-2009 Pentaho
 // All Rights Reserved.
 */
+
 package mondrian.rolap;
 
 import mondrian.mdx.*;

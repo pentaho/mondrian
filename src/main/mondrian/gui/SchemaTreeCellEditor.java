@@ -8,6 +8,7 @@
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 */
+
 package mondrian.gui;
 
 import java.awt.*;

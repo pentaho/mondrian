@@ -8,6 +8,7 @@
 // Copyright (C) 2005-2009 Pentaho and others
 // All Rights Reserved.
 */
+
 package mondrian.calc.impl;
 
 import mondrian.olap.fun.FunUtil;

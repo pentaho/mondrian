@@ -10,6 +10,7 @@
 //
 // jhyde, 29 March, 2002
 */
+
 package mondrian.test;
 
 import mondrian.calc.TupleList;

@@ -10,6 +10,7 @@
 //
 // jhyde, 21 December, 2001
 */
+
 package mondrian.rolap;
 
 import java.util.List;

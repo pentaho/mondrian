@@ -10,6 +10,7 @@
 //
 // jhyde, 30 August, 2001
 */
+
 package mondrian.rolap;
 
 import java.io.Serializable;

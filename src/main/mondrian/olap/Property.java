@@ -10,6 +10,7 @@
 //
 // jhyde, 12 September, 2002
 */
+
 package mondrian.olap;
 
 import mondrian.spi.PropertyFormatter;

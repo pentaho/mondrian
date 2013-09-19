@@ -10,6 +10,7 @@
 //
 // jhyde, 21 January, 1999
 */
+
 package mondrian.test;
 
 import mondrian.calc.impl.ConstantCalcTest;

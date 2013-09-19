@@ -9,6 +9,7 @@
 // Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 */
+
 package mondrian.olap;
 
 import mondrian.calc.Calc;

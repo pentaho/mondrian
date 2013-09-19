@@ -10,6 +10,7 @@
 //
 // jhyde, Dec 23, 2002
 */
+
 package mondrian.util;
 
 import mondrian.olap.MondrianProperties;

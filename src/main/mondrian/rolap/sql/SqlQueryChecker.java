@@ -10,6 +10,7 @@
 //
 // jhyde, Mar 21, 2002
 */
+
 package mondrian.rolap.sql;
 
 /**
