@@ -1,11 +1,11 @@
-/*
+<%--
 * This software is subject to the terms of the Eclipse Public License v1.0
 * Agreement, available at the following URL:
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
-*/
+* Copyright (c) 2002 - 2013 Pentaho Corporation..  All rights reserved.
+--%>
 
 <%@ page session="true" contentType="text/html; charset=ISO-8859-1" %>
 <%@ taglib uri="http://www.tonbeller.com/jpivot" prefix="jp" %>

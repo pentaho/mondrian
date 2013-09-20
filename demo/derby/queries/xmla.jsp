@@ -1,4 +1,4 @@
-/*!
+<%--
 * This program is free software; you can redistribute it and/or modify it under the
 * terms of the GNU Lesser General Public License, version 2.1 as published by the Free Software
 * Foundation.
@@ -13,7 +13,7 @@
 * See the GNU Lesser General Public License for more details.
 *
 * Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
-*/
+--%>
 
 <%@ page session="true" pageEncoding="UTF-8" contentType="text/html; charset=ISO-8859-1" %>
 <%@ taglib uri="http://www.tonbeller.com/jpivot" prefix="jp" %>
