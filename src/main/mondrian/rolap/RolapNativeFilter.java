@@ -90,7 +90,9 @@ public class RolapNativeFilter extends RolapNativeSet {
                 new RolapNativeSql(
                     sqlQuery, aggStar, getEvaluator(), args[0].getLevel());
             String filterSql = sql.generateFilterCondition(filterExpr);
-            sqlQuery.addHaving(filterSql);
+            if (filterSql != null) {
+                sqlQuery.addHaving(filterSql);
+            }
             super.addConstraint(sqlQuery, baseCube, aggStar);
         }
 
