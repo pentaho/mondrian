@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 
@@ -47,9 +47,15 @@ public class RolapNativeSql {
      * the constraints from RolapAggregationManager. Also
      * make sure all measures live in the same star.
      *
+     * @return false if one or more saved measures are not
+     * from the same star (or aggStar if defined), true otherwise.
+     *
      * @see RolapAggregationManager#makeRequest(RolapEvaluator)
      */
     private boolean saveStoredMeasure(RolapStoredMeasure m) {
+        if (aggStar != null && !storedMeasureIsPresentOnAggStar(m)) {
+            return false;
+        }
         if (storedMeasure != null) {
             RolapStar star1 = getStar(storedMeasure);
             RolapStar star2 = getStar(m);
@@ -59,6 +65,13 @@ public class RolapNativeSql {
         }
         this.storedMeasure = m;
         return true;
+    }
+
+    private boolean storedMeasureIsPresentOnAggStar(RolapStoredMeasure m) {
+        RolapStar.Column column =
+            (RolapStar.Column) m.getStarMeasure();
+        int bitPos = column.getBitPosition();
+        return  aggStar.lookupColumn(bitPos) != null;
     }
 
     private RolapStar getStar(RolapStoredMeasure m) {
@@ -284,14 +297,12 @@ public class RolapNativeSql {
                     : rolapLevel.nameExp == null
                         ? rolapLevel.keyExp
                         : rolapLevel.nameExp;
-                /*
-                 * If an aggregation table is used, it might be more efficient
-                 * to use only the aggregate table and not the hierarchy table.
-                 * Try to lookup the column bit key. If that fails, we will
-                 * link the aggregate table to the hierarchy table. If no
-                 * aggregate table is used, we can use the column expression
-                 * directly.
-                 */
+                 // If an aggregation table is used, it might be more efficient
+                 // to use only the aggregate table and not the hierarchy table.
+                 // Try to lookup the column bit key. If that fails, we will
+                 // link the aggregate table to the hierarchy table. If no
+                 // aggregate table is used, we can use the column expression
+                 // directly.
                 String sourceExp;
                 if (aggStar != null
                     && rolapLevel instanceof RolapCubeLevel
