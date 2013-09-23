@@ -135,9 +135,8 @@ public class ImpalaDialect extends HiveDialect {
         List<String> columnTypes,
         List<String[]> valueList)
     {
-        // TODO: fix this, when Impala has the necessary features. See bug
-        // http://jira.pentaho.com/browse/MONDRIAN-1512.
-        return "";
+        return generateInlineGeneric(
+            columnNames, columnTypes, valueList, null, false);
     }
 
     public boolean allowsJoinOn() {
