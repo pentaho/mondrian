@@ -135,29 +135,8 @@ public class ImpalaDialect extends HiveDialect {
         List<String> columnTypes,
         List<String[]> valueList)
     {
-        // Impala supports a syntax like:
-        // SELECT * FROM (VALUES <list of tuples>) AS T
-        final StringBuilder buf = new StringBuilder();
-        buf.append("SELECT * FROM (VALUES");
-        for (int i = 0; i < valueList.size(); i++) {
-            if (i > 0) {
-                buf.append(", ");
-            }
-            String[] values = valueList.get(i);
-            buf.append("(");
-            for (int j = 0; j < values.length; j++) {
-                String value = values[j];
-                if (j > 0) {
-                    buf.append(", ");
-                }
-                final String columnType = columnTypes.get(j);
-                Datatype datatype = Datatype.valueOf(columnType);
-                quote(buf, value, datatype);
-            }
-            buf.append(")");
-        }
-        buf.append(") AS T");
-        return buf.toString();
+        return generateInlineGeneric(
+            columnNames, columnTypes, valueList, null, false);
     }
 
     public boolean allowsJoinOn() {
