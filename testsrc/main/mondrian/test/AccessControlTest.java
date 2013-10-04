@@ -2462,8 +2462,8 @@ public class AccessControlTest extends FoodMartTestCase {
             + "  <SchemaGrant access=\"none\">\n"
             + "    <CubeGrant cube=\"Sales\" access=\"custom\">\n"
             + "      <DimensionGrant dimension=\"[Measures]\" access=\"all\" />\n"
-            + "      <DimensionGrant dimension=\"[Customer]\" access=\"all\" />\n"
-            + "      <DimensionGrant dimension=\"[Promotion]\" access=\"all\" />\n"
+            + "      <HierarchyGrant hierarchy=\"[Customer].[Education Level]\" access=\"all\" />\n"
+            + "      <HierarchyGrant hierarchy=\"[Customer].[Gender]\" access=\"all\" />\n"
             + "    </CubeGrant>\n"
             + "  </SchemaGrant>\n"
             + "</Role>\n"
@@ -2493,8 +2493,8 @@ public class AccessControlTest extends FoodMartTestCase {
             + "[Customer].[Education Level].[Partial College]\n"
             + "[Customer].[Education Level].[Partial High School]");
         context.withRole("Role1").assertAxisThrows(
-            "[Customers].Members",
-            "Mondrian Error:Failed to parse query 'select {[Customers].Members} on columns from Sales'");
+            "[Customer].[Customers].Members",
+            "Mondrian Error:MDX object '[Customer].[Customers]' not found in cube 'Sales'");
         context.withRole("Role2").assertAxisThrows(
             "[Customers].Members",
             "Mondrian Error:Failed to parse query 'select {[Customers].Members} on columns from Sales'");
@@ -2503,12 +2503,12 @@ public class AccessControlTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Education Level].[All Education Levels]}\n"
-            + "{[Education Level].[Bachelors Degree]}\n"
-            + "{[Education Level].[Graduate Degree]}\n"
-            + "{[Education Level].[High School Degree]}\n"
-            + "{[Education Level].[Partial College]}\n"
-            + "{[Education Level].[Partial High School]}\n"
+            + "{[Customer].[Education Level].[All Education Levels]}\n"
+            + "{[Customer].[Education Level].[Bachelors Degree]}\n"
+            + "{[Customer].[Education Level].[Graduate Degree]}\n"
+            + "{[Customer].[Education Level].[High School Degree]}\n"
+            + "{[Customer].[Education Level].[Partial College]}\n"
+            + "{[Customer].[Education Level].[Partial High School]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Row #0: 266,773\n"
