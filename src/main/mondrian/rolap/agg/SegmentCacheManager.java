@@ -1273,8 +1273,8 @@ public class SegmentCacheManager {
      * most typical. If you want another behavior for a particular operation,
      * operate on the workers directly.</p>
      */
-    private static class CompositeSegmentCache implements SegmentCache {
-        private final List<SegmentCacheWorker> workers;
+    static class CompositeSegmentCache implements SegmentCache {
+        final List<SegmentCacheWorker> workers;
 
         public CompositeSegmentCache(List<SegmentCacheWorker> workers) {
             this.workers = workers;
@@ -1348,19 +1348,30 @@ public class SegmentCacheManager {
         }
 
         public void tearDown() {
-            // nothing
+            for (SegmentCacheWorker worker : workers) {
+                worker.shutdown();
+            }
         }
 
         public void addListener(SegmentCacheListener listener) {
-            // nothing
+            for (SegmentCacheWorker worker : workers) {
+                worker.cache.addListener(listener);
+            }
         }
 
         public void removeListener(SegmentCacheListener listener) {
-            // nothing
+            for (SegmentCacheWorker worker : workers) {
+                worker.cache.removeListener(listener);
+            }
         }
 
         public boolean supportsRichIndex() {
-            return false;
+            for (SegmentCacheWorker worker : workers) {
+                if (!worker.supportsRichIndex()) {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 
