@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho
+// Copyright (C) 2011-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -61,26 +61,26 @@ public class NativeFilterMatchingTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customer].[Customers].[USA].[WA].[Issaquah].[Jeanne Derry], [Measures].[*FORMATTED_MEASURE_0]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Los Angeles].[Jeannette Eldridge], [Measures].[*FORMATTED_MEASURE_0]}\n"
             + "{[Customer].[Customers].[USA].[CA].[Burbank].[Jeanne Bohrnstedt], [Measures].[*FORMATTED_MEASURE_0]}\n"
-            + "{[Customer].[Customers].[USA].[OR].[Portland].[Jeanne Zysko], [Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "{[Customer].[Customers].[USA].[WA].[Issaquah].[Jeanne Derry], [Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "{[Customer].[Customers].[USA].[WA].[Lynnwood].[Jeanne Ibarra], [Measures].[*FORMATTED_MEASURE_0]}\n"
             + "{[Customer].[Customers].[USA].[WA].[Everett].[Jeanne McDill], [Measures].[*FORMATTED_MEASURE_0]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[West Covina].[Jeanne Whitaker], [Measures].[*FORMATTED_MEASURE_0]}\n"
             + "{[Customer].[Customers].[USA].[WA].[Everett].[Jeanne Turner], [Measures].[*FORMATTED_MEASURE_0]}\n"
             + "{[Customer].[Customers].[USA].[WA].[Puyallup].[Jeanne Wentz], [Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[West Covina].[Jeanne Whitaker], [Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "{[Customer].[Customers].[USA].[OR].[Portland].[Jeanne Zysko], [Measures].[*FORMATTED_MEASURE_0]}\n"
             + "{[Customer].[Customers].[USA].[OR].[Albany].[Jeannette Bura], [Measures].[*FORMATTED_MEASURE_0]}\n"
-            + "{[Customer].[Customers].[USA].[WA].[Lynnwood].[Jeanne Ibarra], [Measures].[*FORMATTED_MEASURE_0]}\n"
-            + "Row #0: 50\n"
-            + "Row #0: 21\n"
+            + "{[Customer].[Customers].[USA].[CA].[Los Angeles].[Jeannette Eldridge], [Measures].[*FORMATTED_MEASURE_0]}\n"
             + "Row #0: 31\n"
-            + "Row #0: 42\n"
+            + "Row #0: 50\n"
+            + "Row #0: 78\n"
             + "Row #0: 110\n"
-            + "Row #0: 59\n"
             + "Row #0: 42\n"
             + "Row #0: 157\n"
+            + "Row #0: 59\n"
+            + "Row #0: 42\n"
             + "Row #0: 146\n"
-            + "Row #0: 78\n";
+            + "Row #0: 21\n";
         final String query =
             "With\n"
             + "Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Customers], Not IsEmpty ([Measures].[Unit Sales]))'\n"
@@ -126,7 +126,7 @@ public class NativeFilterMatchingTest extends BatchTestCase {
                 ? "select "
                     + "`customer`.`country` as `c0`, `customer`.`state_province` as `c1`, `customer`.`city` as `c2`, `customer`.`customer_id` as `c3`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c4`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c5`, `customer`.`gender` as `c6`, `customer`.`marital_status` as `c7`, `customer`.`education` as `c8`, `customer`.`yearly_income` as `c9` from `customer` as `customer`, `agg_l_03_sales_fact_1997` as `agg_l_03_sales_fact_1997`, `time_by_day` as `time_by_day` where `agg_l_03_sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `agg_l_03_sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 group by `customer`.`country`, `customer`.`state_province`, `customer`.`city`, `customer`.`customer_id`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`), `customer`.`gender`, `customer`.`marital_status`, `customer`.`education`, `customer`.`yearly_income` having NOT(c5 REGEXP '.*jeanne.*')  order by ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC, ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC, ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC, ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC"
                 : "select "
-                    + "`customer`.`country` as `c0`, `customer`.`state_province` as `c1`, `customer`.`city` as `c2`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c3`, `customer`.`customer_id` as `c4` from `sales_fact_1997` as `sales_fact_1997`, `customer` as `customer`, `time_by_day` as `time_by_day` where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 group by `customer`.`country`, `customer`.`state_province`, `customer`.`city`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`), `customer`.`customer_id` having NOT(c3 REGEXP '.*jeanne.*') order by ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC, ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC, ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC, ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC, ISNULL(`customer`.`customer_id`) ASC, `customer`.`customer_id` ASC";
+                    + "`customer`.`country` as `c0`, `customer`.`state_province` as `c1`, `customer`.`city` as `c2`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c3`, `customer`.`customer_id` as `c4` from `sales_fact_1997` as `sales_fact_1997`, `customer` as `customer`, `time_by_day` as `time_by_day` where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 group by `customer`.`country`, `customer`.`state_province`, `customer`.`city`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`), `customer`.`customer_id` having NOT(UPPER(c3) REGEXP '.*JEANNE.*') order by ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC, ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC, ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC, ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC, ISNULL(`customer`.`customer_id`) ASC, `customer`.`customer_id` ASC";
 
         SqlPattern[] patterns = {
             new SqlPattern(

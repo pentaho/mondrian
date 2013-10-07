@@ -8403,7 +8403,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderConstant1() {
-        // sort by customerId (Abel = 7851, Adeline = 6442, Abe = 570)
+        // orderByColumn='full_name'
         assertQueryReturns(
             "select \n"
             + "  Order("
@@ -8416,11 +8416,11 @@ public class FunctionTest extends FoodMartTestCase {
             + "{}\n"
             + "Axis #1:\n"
             + "{[Customer].[Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n"
             + "{[Customer].[Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n"
             + "Row #0: 33\n"
-            + "Row #0: 33\n"
-            + "Row #0: 75\n");
+            + "Row #0: 75\n"
+            + "Row #0: 33\n");
     }
 
     public void testOrderDifferentDim() {
