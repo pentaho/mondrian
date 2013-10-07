@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -27,7 +27,7 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
     public void testGetCubesWithNoHrCubes() {
         String[] expectedCubes = new String[] {
                 "Sales", "Warehouse", "Warehouse and Sales", "Store",
-                "Sales Ragged", "Sales 2"
+                "Sales 2"
         };
 
         Connection connection =
@@ -48,7 +48,7 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
     public void testGetCubesWithNoRole() {
         String[] expectedCubes = new String[] {
                 "Sales", "Warehouse", "Warehouse and Sales", "Store",
-                "Sales Ragged", "Sales 2", "HR"
+                "Sales 2", "HR"
         };
 
         Connection connection = getTestContext().getConnection();
@@ -169,12 +169,13 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
                 }
             }
             assertFalse(dimensions.containsKey("Store")); // denied access
-            assertTrue(dimensions.containsKey("Marital Status")); // implicit
+            assertTrue(dimensions.containsKey("Customer")); // implicit
             assertTrue(dimensions.containsKey("Time")); // implicit
             assertFalse(dimensions.containsKey("Bad dimension")); // not exist
 
             assertFalse(hierarchies.containsKey("[Foo]"));
-            assertTrue(hierarchies.containsKey("[Product]"));
+            assertTrue(hierarchies.containsKey("[Customer].[Marital Status]"));
+            assertTrue(hierarchies.containsKey("[Product].[Products]"));
             assertTrue(hierarchies.containsKey(timeWeekly));
             assertFalse(hierarchies.containsKey("[Time]"));
             assertFalse(hierarchies.containsKey("[Time].[Time]"));
