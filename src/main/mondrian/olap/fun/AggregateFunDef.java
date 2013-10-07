@@ -145,7 +145,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 // very slow.  May want to revisit this if someone
                 // improves the algorithm.
             } else {
-                tupleList = optimizeTupleList(evaluator, tupleList);
+                tupleList = optimizeTupleList(evaluator, tupleList, true);
             }
 
             // Can't aggregate distinct-count values in the same way
@@ -190,8 +190,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
         }
 
         public static TupleList optimizeTupleList(
-            Evaluator evaluator,
-            TupleList tupleList)
+            Evaluator evaluator, TupleList tupleList, boolean checkSize)
         {
             if (!canOptimize(evaluator, tupleList)) {
                 return tupleList;
@@ -212,7 +211,9 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                     tupleList,
                     evaluator.getSchemaReader(),
                     evaluator.getMeasureGroup());
-            checkIfAggregationSizeIsTooLarge(tupleList);
+            if (checkSize) {
+                checkIfAggregationSizeIsTooLarge(tupleList);
+            }
             return tupleList;
         }
 
