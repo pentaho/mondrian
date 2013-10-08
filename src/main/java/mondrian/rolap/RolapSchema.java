@@ -459,9 +459,11 @@ public class RolapSchema extends OlapElementBase implements Schema {
         return funTable;
     }
 
-    public Parameter[] getParameters() {
+    public mondrian.olap.Parameter[] getParameters() {
+        // Use fully-qualified name mondrian.olap.Parameter because JDK 1.8
+        // adds java.lang.reflect.Parameter.
         return parameterList.toArray(
-            new Parameter[parameterList.size()]);
+            new mondrian.olap.Parameter[parameterList.size()]);
     }
 
     /**
