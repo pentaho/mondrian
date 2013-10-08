@@ -119,19 +119,20 @@ public class MondrianServerRegistry {
         Package pakkage = MondrianServerImpl.class.getPackage();
         String implementationVersion = pakkage.getImplementationVersion();
 
-        // Second, try to read VERSION.txt.
+        // Second, try to read VERSION.txt. But don't look directly for
+        // VERSION.txt, because other JARs might have that file.
         String version = "Unknown Version";
         String title = "Unknown Database";
         String vendor = "Unknown Vendor";
-        URL resource =
-            MondrianServerImpl.class.getClassLoader()
-                .getResource("DefaultRules.xml");
+        final String name = "mondrian/server/MondrianServerImpl.class";
+        URL resource = MondrianServerImpl.class.getClassLoader()
+            .getResource(name);
         if (resource != null) {
             try {
                 String path = resource.getPath();
                 String path2 =
                     Util.replace(
-                        path, "DefaultRules.xml", "VERSION.txt");
+                        path, name, "VERSION.txt");
                 URL resource2 =
                     new URL(
                         resource.getProtocol(),
