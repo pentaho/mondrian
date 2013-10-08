@@ -226,7 +226,7 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
     }
 
     static boolean acceptsURL(String url) {
-        return url.startsWith(CONNECT_STRING_PREFIX);
+        return url != null && url.startsWith(CONNECT_STRING_PREFIX);
     }
 
     public OlapStatement createStatement() {

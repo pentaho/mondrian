@@ -160,6 +160,12 @@ version 3.x schemas.</p>
         </Doc>
     </Class>
 
+    <Class class="DataSourceElement">
+        <Doc>
+            Child element of a DataSource.
+        </Doc>
+    </Class>
+
     <Class class="NamedElement">
         <Code><![CDATA[
         String getNameAttribute();
@@ -318,6 +324,7 @@ version 3.x schemas.</p>
                     UserDefinedFunction.class,
                     Parameter.class,
                     PhysicalSchema.class,
+                    DataSource.class,
                     Annotations.class)
                 {
                     SchemaElement[] getArray() {
@@ -347,6 +354,9 @@ version 3.x schemas.</p>
             }
             public PhysicalSchema getPhysicalSchema() {
                 return children.singleton(PhysicalSchema.class);
+            }
+            public NamedList<DataSource> getDataSources() {
+                return children.filterNamed(DataSource.class);
             }
             public Localization getLocalization() {
                 return children.singleton(Localization.class);
@@ -3235,7 +3245,7 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
         </Code>
     </Element>
 
-    <Element type="Annotations" class="Holder,SchemaElement,CubeElement,DimensionElement,HierarchyElement,LevelElement,AttributeElement,MeasureElement,QueryElement,CalculatedMemberElement,RoleElement,PropertyElement">
+    <Element type="Annotations" class="Holder,SchemaElement,CubeElement,DimensionElement,HierarchyElement,LevelElement,AttributeElement,MeasureElement,QueryElement,CalculatedMemberElement,RoleElement,PropertyElement,DataSourceElement">
         <Doc>Holder for an array of Annotation elements</Doc>
         <Array name="array" type="Annotation"/>
         <Code>
@@ -3906,6 +3916,138 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
             <Doc>Columns from the given dimension that are present in this
                 aggregate table.</Doc>
         </Array>
+    </Element>
+
+    <Element type="DataSource" class="NamedElement,SchemaElement">
+        <Doc>
+            Definition of an external data source. Often JDBC, but may also
+            be a custom data source defined using an Optiq schema factory.
+        </Doc>
+        <Attribute name='name' required='true'>
+            <Doc>
+                Name of this data source.
+            </Doc>
+        </Attribute>
+        <Attribute name='type' required='true'>
+            <Doc>
+                Type of this data source.
+            </Doc>
+        </Attribute>
+        <Attribute name='jdbcUser'>
+            <Doc>
+                User name. Only applies to DataSource of type 'jdbc'.
+            </Doc>
+        </Attribute>
+        <Attribute name='jdbcPassword'>
+            <Doc>
+                Password. Only applies to DataSource of type 'jdbc'.
+            </Doc>
+        </Attribute>
+        <Attribute name='jdbcUrl'>
+            <Doc>
+                URL. Only applies to DataSource of type 'jdbc'.
+            </Doc>
+        </Attribute>
+        <Attribute name='jdbcCatalog'>
+            <Doc>
+                Catalog. Only applies to DataSource of type 'jdbc'.
+            </Doc>
+        </Attribute>
+        <Attribute name='jdbcSchema'>
+            <Doc>
+                Schema. Only applies to DataSource of type 'jdbc'.
+            </Doc>
+        </Attribute>
+        <Attribute name='factory'>
+            <Doc>
+                Schema factory for this data source.
+                Set only if the type is 'custom'.
+                Must implement interface net.hydromatic.optiq.SchemaFactory.
+            </Doc>
+        </Attribute>
+        <Array name="childArray" type="DataSourceElement">
+            <Doc>
+                Child elements of this DataSource. Operands (at most once),
+                Annotations (at most once), in any order.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() { return name; }
+
+            private static final DataSourceElement[] EMPTY = {};
+            public final Children<DataSourceElement> children =
+                new Children<DataSourceElement>(
+                    DataSourceElement.class,
+                    Operands.class,
+                    Annotations.class)
+                {
+                    DataSourceElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(DataSourceElement[] ts) {
+                        childArray = ts;
+                    }
+                };
+
+            public NamedList<Operand> getOperands() {
+                return children.only(Operands.EMPTY).list();
+            }
+            public NamedList<Annotation> getAnnotations() {
+                return children.only(Annotations.EMPTY).list();
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Operands" class="Holder,DataSourceElement">
+        <Doc>Holder for an array of Operand elements</Doc>
+        <Array name="array" type="Operand"/>
+        <Code>
+            <![CDATA[
+            private static final Operands EMPTY;
+            static {
+                EMPTY = new Operands();
+                EMPTY.array = new Operand[0];
+            }
+            public Operands copy() {
+                Operands c = new Operands();
+                c.array = array.clone();
+                return c;
+            }
+            public NamedList<Operand> list() {
+                return new NamedListImpl<Operand>(
+                    new MutableArrayList<Operand>() {
+                        protected Operand[] getArray() {
+                            return array == null ? EMPTY.array : array;
+                        }
+                        protected void setArray(Operand[] ts) {
+                            array = ts;
+                        }
+                    }
+                );
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Operand" class="NamedElement">
+        <Doc>
+            Name-value pair that qualifies a data source.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of the operand.
+            </Doc>
+        </Attribute>
+        <CData/>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() {
+                return name;
+            }
+            ]]>
+        </Code>
     </Element>
 
     <!--

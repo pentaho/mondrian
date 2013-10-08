@@ -34,6 +34,7 @@ import mondrian.util.*;
 import mondrian.util.Bug;
 
 import org.apache.commons.collections.map.MultiValueMap;
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.*;
@@ -213,12 +214,14 @@ public class RolapSchemaLoader {
 
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(
-                        "RolapSchema.load: content: \n" + catalogStr);
+                        "RolapSchema.load: content: \n"
+                        + catalogStr);
                 }
             } else {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(
-                        "RolapSchema.load: catalogStr: \n" + catalogStr);
+                        "RolapSchema.load: catalogStr: \n"
+                        + catalogStr);
                 }
 
                 def = xmlParser.parse(catalogStr);
@@ -250,7 +253,8 @@ public class RolapSchemaLoader {
                     useContentChecksum);
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(
-                        "schema after conversion:\n" + xmlSchema.toXML());
+                        "schema after conversion:\n"
+                        + xmlSchema.toXML());
                 }
             } else {
                 checkSchemaVersion(def);
@@ -297,6 +301,13 @@ public class RolapSchemaLoader {
         // larder.)
         final Set<Locale> locales = new HashSet<Locale>();
         loadResources(catalogDirUrl, xmlSchema, locales);
+
+        DataSource x =
+            validateDataSources(dataSource, xmlSchema.getDataSources());
+        if (x != null) {
+            dataSource = x;
+            connectInfo = new Util.PropertyList();
+        }
 
         schema =
             new RolapSchema(
@@ -653,6 +664,79 @@ public class RolapSchemaLoader {
                 "Invalid script language '" + script.language + "'");
         }
         return new Scripts.ScriptDefinition(script.cdata, language);
+    }
+
+    private DataSource validateDataSources(
+        DataSource dataSource,
+        NamedList<MondrianDef.DataSource> xmlDataSources)
+    {
+        if (xmlDataSources != null && !xmlDataSources.isEmpty()) {
+            String s = dataSourcesToJson(xmlDataSources);
+            Hook.DATA_SOURCE.run(s);
+
+            BasicDataSource basicDataSource = new BasicDataSource();
+            basicDataSource.setUrl("jdbc:optiq:");
+            basicDataSource.addConnectionProperty("model", "inline:" + s);
+            return basicDataSource;
+        }
+        return dataSource;
+    }
+
+    private String dataSourcesToJson(
+        NamedList<MondrianDef.DataSource> xmlDataSources)
+    {
+        final JsonBuilder json = new JsonBuilder();
+        Map<String, Object> root = json.map();
+        json.putIf(root, "version", "1.0")
+            .putIf(root, "defaultSchema", xmlDataSources.get(0).name);
+        addSchemas(json, root, xmlDataSources);
+
+        return json.toJsonString(root);
+    }
+
+    private void addSchemas(
+        JsonBuilder json,
+        Map<String, Object> o,
+        NamedList<MondrianDef.DataSource> xmlDataSources)
+    {
+        List<Object> list = json.list();
+        for (MondrianDef.DataSource xmlDataSource : xmlDataSources) {
+            addSchema(json, list, xmlDataSource);
+        }
+        o.put("schemas", list);
+    }
+
+    private void addSchema(
+        JsonBuilder json,
+        List<Object> list,
+        MondrianDef.DataSource xmlDataSource)
+    {
+        final Map<String, Object> map = json.map();
+        json.put(map, "name", xmlDataSource.name)
+            .put(map, "type", xmlDataSource.type)
+            .putIf(map, "jdbcUser", xmlDataSource.jdbcUser)
+            .putIf(map, "jdbcPassword", xmlDataSource.jdbcPassword)
+            .putIf(map, "jdbcUrl", xmlDataSource.jdbcUrl)
+            .putIf(map, "jdbcCatalog", xmlDataSource.jdbcCatalog)
+            .putIf(map, "jdbcSchema", xmlDataSource.jdbcSchema)
+            .putIf(map, "factory", xmlDataSource.factory);
+        addOperands(json, map, xmlDataSource.getOperands());
+        list.add(map);
+    }
+
+    private void addOperands(
+        JsonBuilder json,
+        Map<String, Object> map,
+        NamedList<MondrianDef.Operand> xmlOperands)
+    {
+        if (xmlOperands.isEmpty()) {
+            return;
+        }
+        Map<String, Object> map2 = json.map();
+        for (MondrianDef.Operand xmlOperand : xmlOperands) {
+            map2.put(xmlOperand.name, xmlOperand.cdata);
+        }
+        map.put("operand", map2);
     }
 
     private RolapSchema.PhysSchema validatePhysicalSchema(

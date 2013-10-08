@@ -283,6 +283,7 @@ public class Main extends TestSuite {
             addTest(suite, ParallelTest.class);
             addTest(suite, SchemaVersionTest.class);
             addTest(suite, SchemaTest.class);
+            addTest(suite, DataSourceTest.class);
             addTest(suite, HangerDimensionTest.class);
             addTest(suite, DateTableBuilderTest.class);
             addTest(suite, PerformanceTest.class);
