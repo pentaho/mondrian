@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
+// Copyright (C) 2011-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -29,7 +29,7 @@ public final class SegmentCacheWorker {
     private static final Logger LOGGER =
         Logger.getLogger(SegmentCacheWorker.class);
 
-    private final SegmentCache cache;
+    final SegmentCache cache;
     private final Thread cacheMgrThread;
     private final boolean supportsRichIndex;
 
