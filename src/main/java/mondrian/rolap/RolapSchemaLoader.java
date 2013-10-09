@@ -719,24 +719,55 @@ public class RolapSchemaLoader {
             .putIf(map, "jdbcUrl", xmlDataSource.jdbcUrl)
             .putIf(map, "jdbcCatalog", xmlDataSource.jdbcCatalog)
             .putIf(map, "jdbcSchema", xmlDataSource.jdbcSchema)
-            .putIf(map, "factory", xmlDataSource.factory);
-        addOperands(json, map, xmlDataSource.getOperands());
+            .putIf(map, "factory", xmlDataSource.factory)
+            .putIf(
+                map, "operand", addOperands(json, xmlDataSource.getOperands()))
+            .putIf(map, "tables", addTables(json, xmlDataSource.getTables()));
         list.add(map);
     }
 
-    private void addOperands(
-        JsonBuilder json,
-        Map<String, Object> map,
-        NamedList<MondrianDef.Operand> xmlOperands)
+    private Map<String, Object> addOperands(
+        JsonBuilder json, NamedList<MondrianDef.Operand> xmlOperands)
     {
         if (xmlOperands.isEmpty()) {
-            return;
+            return null;
         }
-        Map<String, Object> map2 = json.map();
+        Map<String, Object> map = json.map();
         for (MondrianDef.Operand xmlOperand : xmlOperands) {
-            map2.put(xmlOperand.name, xmlOperand.cdata);
+            map.put(xmlOperand.name, xmlOperand.cdata);
         }
-        map.put("operand", map2);
+        return map;
+    }
+
+    private List<Object> addTables(
+        JsonBuilder json, NamedList<MondrianDef.DataSourceTable> xmlTables)
+    {
+        if (xmlTables.isEmpty()) {
+            return null;
+        }
+        List<Object> list = json.list();
+        for (MondrianDef.DataSourceTable xmlTable : xmlTables) {
+            addTable(json, list, xmlTable);
+        }
+        return list;
+    }
+
+    private void addTable(
+        JsonBuilder json, List<Object> list,
+        MondrianDef.DataSourceTable xmlTable)
+    {
+        Map<String, Object> map = json.map();
+        json.put(map, "name", xmlTable.name)
+            .putIf(map, "type", xmlTable.type);
+        Map<String, Object> operandsMap =
+            addOperands(json, xmlTable.getOperands());
+        if (operandsMap != null) {
+            json.putIf(map, "sql", operandsMap.remove("sql"));
+        }
+        if (operandsMap != null && !operandsMap.isEmpty()) {
+            json.put(map, "operand", operandsMap);
+        }
+        list.add(map);
     }
 
     private RolapSchema.PhysSchema validatePhysicalSchema(

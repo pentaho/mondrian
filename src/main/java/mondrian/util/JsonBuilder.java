@@ -71,7 +71,7 @@ public class JsonBuilder {
             //noinspection unchecked
             appendList(buf, indent, (List) o);
         } else if (o instanceof String) {
-            Util.singleQuoteString((String) o, buf);
+            buf.append(Util.quoteJavaString((String) o));
         } else {
             assert o instanceof Number || o instanceof Boolean;
             buf.append(o);

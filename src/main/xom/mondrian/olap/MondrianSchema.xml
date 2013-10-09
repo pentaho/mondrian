@@ -166,6 +166,12 @@ version 3.x schemas.</p>
         </Doc>
     </Class>
 
+    <Class class="DataSourceTableElement">
+        <Doc>
+            Child element of a DataSourceTable.
+        </Doc>
+    </Class>
+
     <Class class="NamedElement">
         <Code><![CDATA[
         String getNameAttribute();
@@ -3245,7 +3251,7 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
         </Code>
     </Element>
 
-    <Element type="Annotations" class="Holder,SchemaElement,CubeElement,DimensionElement,HierarchyElement,LevelElement,AttributeElement,MeasureElement,QueryElement,CalculatedMemberElement,RoleElement,PropertyElement,DataSourceElement">
+    <Element type="Annotations" class="Holder,SchemaElement,CubeElement,DimensionElement,HierarchyElement,LevelElement,AttributeElement,MeasureElement,QueryElement,CalculatedMemberElement,RoleElement,PropertyElement,DataSourceElement,DataSourceTableElement">
         <Doc>Holder for an array of Annotation elements</Doc>
         <Array name="array" type="Annotation"/>
         <Code>
@@ -3968,7 +3974,8 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
         <Array name="childArray" type="DataSourceElement">
             <Doc>
                 Child elements of this DataSource. Operands (at most once),
-                Annotations (at most once), in any order.
+                DataSourceTables (at most once), Annotations (at most once),
+                in any order.
             </Doc>
         </Array>
         <Code>
@@ -3980,6 +3987,7 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
                 new Children<DataSourceElement>(
                     DataSourceElement.class,
                     Operands.class,
+                    DataSourceTables.class,
                     Annotations.class)
                 {
                     DataSourceElement[] getArray() {
@@ -3993,6 +4001,9 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
             public NamedList<Operand> getOperands() {
                 return children.only(Operands.EMPTY).list();
             }
+            public NamedList<DataSourceTable> getTables() {
+                return children.only(DataSourceTables.EMPTY).list();
+            }
             public NamedList<Annotation> getAnnotations() {
                 return children.only(Annotations.EMPTY).list();
             }
@@ -4000,7 +4011,7 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
         </Code>
     </Element>
 
-    <Element type="Operands" class="Holder,DataSourceElement">
+    <Element type="Operands" class="Holder,DataSourceElement,DataSourceTableElement">
         <Doc>Holder for an array of Operand elements</Doc>
         <Array name="array" type="Operand"/>
         <Code>
@@ -4031,7 +4042,7 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
         </Code>
     </Element>
 
-    <Element type="Operand" class="NamedElement">
+    <Element type="Operand" class="NamedElement,DataSourceTableElement">
         <Doc>
             Name-value pair that qualifies a data source.
         </Doc>
@@ -4045,6 +4056,90 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
             <![CDATA[
             public String getNameAttribute() {
                 return name;
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="DataSourceTables" class="Holder,DataSourceElement">
+        <Doc>Holder for an array of DataSourceTable elements</Doc>
+        <Array name="array" type="DataSourceTable"/>
+        <Code>
+            <![CDATA[
+            private static final DataSourceTables EMPTY;
+            static {
+                EMPTY = new DataSourceTables();
+                EMPTY.array = new DataSourceTable[0];
+            }
+            public DataSourceTables copy() {
+                DataSourceTables c = new DataSourceTables();
+                c.array = array.clone();
+                return c;
+            }
+            public NamedList<DataSourceTable> list() {
+                return new NamedListImpl<DataSourceTable>(
+                    new MutableArrayList<DataSourceTable>() {
+                        protected DataSourceTable[] getArray() {
+                            return array == null ? EMPTY.array : array;
+                        }
+                        protected void setArray(DataSourceTable[] ts) {
+                            array = ts;
+                        }
+                    }
+                );
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="DataSourceTable" class="NamedElement">
+        <Doc>
+            Table within a DataSource.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of the DataSourceTable.
+            </Doc>
+        </Attribute>
+        <Attribute name="type">
+            <Doc>
+                Type of table. Values are 'custom' and 'view'.
+            </Doc>
+        </Attribute>
+        <Array name="childArray" type="DataSourceTableElement">
+            <Doc>
+                Child elements of this DataSourceTable. Operands (at most once),
+                Annotations (at most once), in any order.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() {
+                return name;
+            }
+
+            private static final DataSourceTableElement[] EMPTY = {};
+            public final Children<DataSourceTableElement> children =
+                new Children<DataSourceTableElement>(
+                    DataSourceTableElement.class,
+                    Operands.class,
+                    Annotations.class)
+                {
+                    DataSourceTableElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(DataSourceTableElement[] ts) {
+                        childArray = ts;
+                    }
+                };
+
+            /** Allowed operands are: "sql" (for type = "view");
+             * "factory" (for type = "custom"). */
+            public NamedList<Operand> getOperands() {
+                return children.only(Operands.EMPTY).list();
+            }
+            public NamedList<Annotation> getAnnotations() {
+                return children.only(Annotations.EMPTY).list();
             }
             ]]>
         </Code>

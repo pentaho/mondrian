@@ -38,7 +38,7 @@ public class DataSourceTest extends FoodMartTestCase {
                 }
             });
         try {
-            getTestContext().withSubstitution(
+            final TestContext testContext = getTestContext().withSubstitution(
                 new Util.Function1<String, String>() {
                     public String apply(String param) {
                         return param.replace(
@@ -51,41 +51,79 @@ public class DataSourceTest extends FoodMartTestCase {
                             + "    <Operands>\n"
                             + "      <Operand name='tableName'>ELVIS</Operand>\n"
                             + "    </Operands>\n"
-                            + "    <Tables>\n"
-                            + "      <Table name='one_two' type='view'>\n"
+                            + "    <DataSourceTables>\n"
+                            + "      <DataSourceTable name='one_two' type='view'>\n"
                             + "        <Operands>\n"
-                            + "          <Operand name='sql'>VALUES (1, 'a'), (2, 'b') AS t (x, y)</Operand>\n"
+                            + "          <Operand name='sql'>SELECT * FROM (VALUES (1, 'a'), (2, 'b')) AS t (x, y)</Operand>\n"
                             + "        </Operands>\n"
-                            + "      </Table>\n"
-                            + "    </Tables>\n"
+                            + "      </DataSourceTable>\n"
+                            + "      <DataSourceTable name='first_5_employee' type='view'>\n"
+                            + "        <Operands>\n"
+                            + "          <Operand name='sql'>SELECT * FROM \"foodmart\".\"employee\" WHERE \"employee_id\" &lt; 5</Operand>\n"
+                            + "        </Operands>\n"
+                            + "      </DataSourceTable>\n"
+                            + "    </DataSourceTables>\n"
                             + "  </DataSource>\n"
-                            + "<PhysicalSchema>\n");
+                            + "<PhysicalSchema>\n")
+                            .replace(
+                                "<Table name='employee'>",
+                                "<Table schema='my' name='first_5_employee' alias='employee'>");
                     }
-                }).assertSimpleQuery();
+                });
+            testContext.assertSimpleQuery();
             String s = list.get(0);
             assertEquals(
                 "{\n"
-                + "  version: '1.0',\n"
-                + "  defaultSchema: 'foodmart',\n"
+                + "  version: \"1.0\",\n"
+                + "  defaultSchema: \"foodmart\",\n"
                 + "  schemas: [\n"
                 + "    {\n"
-                + "      name: 'foodmart',\n"
-                + "      type: 'jdbc',\n"
-                + "      jdbcUser: 'foodmart',\n"
-                + "      jdbcPassword: 'foodmart',\n"
-                + "      jdbcUrl: 'jdbc:mysql://localhost/foodmart'\n"
+                + "      name: \"foodmart\",\n"
+                + "      type: \"jdbc\",\n"
+                + "      jdbcUser: \"foodmart\",\n"
+                + "      jdbcPassword: \"foodmart\",\n"
+                + "      jdbcUrl: \"jdbc:mysql://localhost/foodmart\"\n"
                 + "    },\n"
                 + "    {\n"
-                + "      name: 'my',\n"
-                + "      type: 'custom',\n"
-                + "      factory: 'mondrian.test.DataSourceTest$MySchemaFactory',\n"
+                + "      name: \"my\",\n"
+                + "      type: \"custom\",\n"
+                + "      factory: \"mondrian.test.DataSourceTest$MySchemaFactory\",\n"
                 + "      operand: {\n"
-                + "        tableName: 'ELVIS'\n"
-                + "      }\n"
+                + "        tableName: \"ELVIS\"\n"
+                + "      },\n"
+                + "      tables: [\n"
+                + "        {\n"
+                + "          name: \"one_two\",\n"
+                + "          type: \"view\",\n"
+                + "          sql: \"SELECT * FROM (VALUES (1, 'a'), (2, 'b')) AS t (x, y)\"\n"
+                + "        },\n"
+                + "        {\n"
+                + "          name: \"first_5_employee\",\n"
+                + "          type: \"view\",\n"
+                + "          sql: \"SELECT * FROM \\\"foodmart\\\".\\\"employee\\\" WHERE \\\"employee_id\\\" < 5\"\n"
+                + "        }\n"
+                + "      ]\n"
                 + "    }\n"
                 + "  ]\n"
                 + "}",
                 s);
+
+            // Should return just 5 members, if we have successfully
+            // substituted "employee" table with "first_5_employee".
+            testContext.assertQueryReturns(
+                "select [Employee].[Employees].Members on 0\n"
+                + "from [HR]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Employee].[Employees].[All Employees]}\n"
+                + "{[Employee].[Employees].[Sheri Nowmer]}\n"
+                + "{[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply]}\n"
+                + "{[Employee].[Employees].[Sheri Nowmer].[Michael Spence]}\n"
+                + "Row #0: $14,392,559.99\n"
+                + "Row #0: $473,040.00\n"
+                + "Row #0: $157,680.00\n"
+                + "Row #0: \n");
         } finally {
             hook.close();
         }
