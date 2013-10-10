@@ -1849,13 +1849,7 @@ public class FunUtil extends Util {
                 m1 = m1.getParentMember();
                 m2 = m2.getParentMember();
                 if (equals(m1, m2)) {
-                    final int c = compareSiblingMembers(prev1, prev2);
-                    // compareHierarchically needs to impose a total order;
-                    // cannot return 0 for non-equal members
-//                    assert c != 0
-//                        : "Members " + prev1 + ", " + prev2
-//                        + " are not equal, but compare returned 0.";
-                    return c;
+                    return compareSiblingMembers(prev1, prev2);
                 }
             }
         }

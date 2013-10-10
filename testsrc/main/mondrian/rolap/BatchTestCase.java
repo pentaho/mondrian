@@ -943,15 +943,12 @@ public class BatchTestCase extends FoodMartTestCase {
             if (!listener.isExecuteSql()) {
                 fail("cache is empty: expected SQL query to be executed");
             }
-            if (MondrianProperties.instance().EnableRolapCubeMemberCache.get())
-            {
-                // run once more to make sure that the result comes from cache
-                // now
-                listener.setExecuteSql(false);
-                c.run();
-                if (listener.isExecuteSql()) {
-                    fail("expected result from cache when query runs twice");
-                }
+            // run once more to make sure that the result comes from cache
+            // now
+            listener.setExecuteSql(false);
+            c.run();
+            if (listener.isExecuteSql()) {
+                fail("expected result from cache when query runs twice");
             }
             con.close();
 

@@ -55,7 +55,6 @@ public class MemberCacheControlTest extends FoodMartTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        propSaver.set(propSaver.props.EnableRolapCubeMemberCache, false);
         RolapSchemaPool.instance().clear();
 
         final RolapConnection conn = (RolapConnection) getConnection();
@@ -274,28 +273,6 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         final CacheControl.MemberSet filteredMemberSet =
             cc.filter(orMember.getLevel(), memberSet);
         dr.assertEquals("after", "${after}", filteredMemberSet.toString());
-    }
-
-    /**
-     * Tests that member operations fail if cache is enabled.
-     */
-    public void testMemberOpsFailIfCacheEnabled() {
-        propSaver.set(propSaver.props.EnableRolapCubeMemberCache, true);
-        final TestContext tc = getTestContext();
-        final Connection conn = tc.getConnection();
-        final CacheControl cc = conn.getCacheControl(null);
-        final CacheControl.MemberEditCommand command =
-            cc.createDeleteCommand(findMember(tc, "Sales", "Retail", "OR"));
-        try {
-            cc.execute(command);
-            fail("expected exception");
-        } catch (IllegalArgumentException e) {
-            assertEquals(
-                "Member cache control operations are not allowed unless "
-                + "property mondrian.rolap.EnableRolapCubeMemberCache is "
-                + "false",
-                e.getMessage());
-        }
     }
 
     /**
