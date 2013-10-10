@@ -498,7 +498,7 @@ public class RolapEvaluator implements Evaluator {
         // Note: the body of this function is identical to calling
         // 'setContext(member, true)'. We inline the logic for performance.
 
-        final RolapMemberBase m = (RolapMemberBase) member;
+        final RolapMember m = (RolapMember) member;
         final int ordinal = m.getHierarchy().getOrdinalInCube();
         final RolapMember previous = currentMembers[ordinal];
 
@@ -506,7 +506,7 @@ public class RolapEvaluator implements Evaluator {
         // a mistake to use equals here; we might treat the visual total member
         // 'Gender.All' the same as the true 'Gender.All' because they have the
         // same unique name, and that would be wrong.
-        if (m.same(previous)) {
+        if (same(m, previous)) {
             return previous;
         }
         // We call 'exists' before 'removeCalcMember' for efficiency.
@@ -534,7 +534,7 @@ public class RolapEvaluator implements Evaluator {
     }
 
     public final void setContext(Member member, boolean safe) {
-        final RolapMemberBase m = (RolapMemberBase) member;
+        final RolapMember m = (RolapMember) member;
         final int ordinal = m.getHierarchy().getOrdinalInCube();
         final RolapMember previous = currentMembers[ordinal];
 
@@ -568,6 +568,35 @@ public class RolapEvaluator implements Evaluator {
             addCalculation(m, false);
         }
         nonAllMembers = null;
+    }
+
+    /**
+     * Whether this member is the same as another member.
+     *
+     * <p>Weaker than == but stronger than {@link #equals(Object)}. For
+     * example:</p>
+     *
+     * <ul>
+     *
+     * <li>Returns false when comparing the member [Gender].[F] to the visual
+     * total member [Gender].[F].</li>
+     *
+     * <li>Returns true when applied to the same object.</li>
+     *
+     * </ul>
+     *
+     * @param m0 First member
+     * @param m1 Second member
+     * @return Whether m0 and m1 represent the same MDX object
+     */
+    private static boolean same(RolapMember m0, RolapMember m1) {
+        if (m0 == m1) {
+            return true;
+        }
+        if (m0.getClass() != m1.getClass()) {
+            return false;
+        }
+        return m0.equals(m1);
     }
 
     /**
@@ -637,8 +666,9 @@ public class RolapEvaluator implements Evaluator {
         }
     }
 
-    public final RolapMember getContext(Hierarchy hierarchy) {
-        return currentMembers[((RolapHierarchy) hierarchy).getOrdinalInCube()];
+    public final RolapMember getContext(Hierarchy _hierarchy) {
+        final RolapCubeHierarchy hierarchy = (RolapCubeHierarchy) _hierarchy;
+        return currentMembers[hierarchy.getOrdinalInCube()];
     }
 
     /**
@@ -648,7 +678,7 @@ public class RolapEvaluator implements Evaluator {
      * @param hierarchy Hierarchy
      * @return current member
      */
-    public final RolapMember getContext(RolapHierarchy hierarchy) {
+    public final RolapMember getContext(RolapCubeHierarchy hierarchy) {
         return currentMembers[hierarchy.getOrdinalInCube()];
     }
 

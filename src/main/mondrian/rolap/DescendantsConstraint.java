@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -52,7 +52,7 @@ class DescendantsConstraint implements TupleConstraint {
     public void addLevelConstraint(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        RolapLevel level)
+        RolapCubeLevel level)
     {
         mcc.addLevelConstraint(sqlQuery, starSet, level);
     }

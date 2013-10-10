@@ -268,7 +268,7 @@ public abstract class RolapNativeSet extends RolapNative {
         }
 
         private void addLevel(TupleReader tr, CrossJoinArg arg) {
-            RolapLevel level = arg.getLevel();
+            RolapCubeLevel level = arg.getLevel();
             if (level == null) {
                 // Level can be null if the CrossJoinArg represent
                 // an empty set.
@@ -278,7 +278,7 @@ public abstract class RolapNativeSet extends RolapNative {
                 return;
             }
 
-            RolapHierarchy hierarchy = level.getHierarchy();
+            RolapCubeHierarchy hierarchy = level.getHierarchy();
             MemberReader mr = schemaReader.getMemberReader(hierarchy);
             MemberBuilder mb = mr.getMemberBuilder();
             Util.assertTrue(mb != null, "MemberBuilder not found");
@@ -375,7 +375,7 @@ public abstract class RolapNativeSet extends RolapNative {
     public interface SchemaReaderWithMemberReaderAvailable
         extends SchemaReader
     {
-        MemberReader getMemberReader(Hierarchy hierarchy);
+        MemberReader getMemberReader(RolapCubeHierarchy hierarchy);
     }
 
     private static class SchemaReaderWithMemberReaderCache
@@ -389,12 +389,14 @@ public abstract class RolapNativeSet extends RolapNative {
             super(schemaReader);
         }
 
-        public synchronized MemberReader getMemberReader(Hierarchy hierarchy) {
+        public synchronized MemberReader getMemberReader(
+            RolapCubeHierarchy hierarchy)
+        {
             MemberReader memberReader = hierarchyReaders.get(hierarchy);
             if (memberReader == null) {
                 memberReader =
-                    ((RolapHierarchy) hierarchy).createMemberReader(
-                        schemaReader.getRole());
+                    RolapSchemaLoader.createMemberReader(
+                        hierarchy, schemaReader.getRole());
                 hierarchyReaders.put(hierarchy, memberReader);
             }
             return memberReader;

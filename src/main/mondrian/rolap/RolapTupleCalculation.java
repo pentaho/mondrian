@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2011 Pentaho
+// Copyright (C) 2009-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -25,7 +25,7 @@ import java.util.List;
  * @since May 15, 2009
  */
 class RolapTupleCalculation implements RolapCalculation {
-    private final List<RolapHierarchy> hierarchyList;
+    private final List<RolapCubeHierarchy> hierarchyList;
     private final Calc calc;
     private final int hashCode;
 
@@ -36,7 +36,7 @@ class RolapTupleCalculation implements RolapCalculation {
      * @param calc Compiled scalar expression to compute cell
      */
     public RolapTupleCalculation(
-        List<RolapHierarchy> hierarchyList,
+        List<RolapCubeHierarchy> hierarchyList,
         Calc calc)
     {
         this.hierarchyList = hierarchyList;
@@ -70,7 +70,7 @@ class RolapTupleCalculation implements RolapCalculation {
     public void setContextIn(RolapEvaluator evaluator) {
         // Restore default member for each hierarchy
         // in the tuple.
-        for (RolapHierarchy hierarchy : hierarchyList) {
+        for (RolapCubeHierarchy hierarchy : hierarchyList) {
             final int ordinal = hierarchy.getOrdinalInCube();
             final RolapMember defaultMember =
                 evaluator.root.defaultMembers[ordinal];

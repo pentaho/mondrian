@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -53,7 +53,6 @@ public interface TupleReader {
         /**
          * Creates a new member (together with its properties).
          *
-         *
          * @param parentMember Parent member
          * @param childLevel Child level
          * @param key Member key, per {@link mondrian.rolap.RolapMember.Key}
@@ -67,7 +66,7 @@ public interface TupleReader {
          */
         RolapMember makeMember(
             RolapMember parentMember,
-            RolapLevel childLevel,
+            RolapCubeLevel childLevel,
             Comparable key,
             Object captionValue,
             String nameValue,
@@ -91,10 +90,9 @@ public interface TupleReader {
      * @param level level that the members correspond to
      * @param memberBuilder used to build new members for this level
      * @param srcMembers if set, array of enumerated members that make up
-     *     this level
      */
     void addLevelMembers(
-        RolapLevel level,
+        RolapCubeLevel level,
         MemberBuilder memberBuilder,
         List<RolapMember> srcMembers);
 

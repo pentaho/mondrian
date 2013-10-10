@@ -68,11 +68,13 @@ public class RolapSchema extends OlapElementBase implements Schema {
         new HashMap<String, RolapCube>();
 
     /**
-     * Maps {@link String names of shared dimensions} to {@link
-     * RolapDimension the canonical instance of those dimensions}.
+     * Maps {@link String names of shared dimensions} to the canonical instance
+     * of those dimensions. This instance is a {@link RolapCubeDimension} and
+     * belongs to a dummy cube whose name is the name of the dimension prefixed
+     * with "$", for example "$Store".
      */
-    final Map<String, RolapDimension> mapSharedDimNameToDim =
-        new HashMap<String, RolapDimension>();
+    final Map<String, RolapCubeDimension> sharedDimensions =
+        new HashMap<String, RolapCubeDimension>();
 
     /**
      * The default role for connections to this schema.
@@ -431,13 +433,12 @@ public class RolapSchema extends OlapElementBase implements Schema {
     }
 
     public Dimension[] getSharedDimensions() {
-        Collection<RolapDimension> dimensions =
-            mapSharedDimNameToDim.values();
+        Collection<RolapCubeDimension> dimensions = sharedDimensions.values();
         return dimensions.toArray(new RolapDimension[dimensions.size()]);
     }
 
-    RolapDimension getSharedDimension(final String name) {
-        return mapSharedDimNameToDim.get(name);
+    public NamedList<RolapCubeDimension> getSharedDimensionList() {
+        return new NamedListImpl<RolapCubeDimension>(sharedDimensions.values());
     }
 
     public NamedSet getNamedSet(String name) {
@@ -568,10 +569,10 @@ public class RolapSchema extends OlapElementBase implements Schema {
     }
 
     /**
-     * Creates a {@link MemberReader} with which to Read a hierarchy.
+     * Creates a {@link MemberReader} with which to read a hierarchy.
      */
     MemberReader createMemberReader(
-        final RolapHierarchy hierarchy,
+        final RolapCubeHierarchy hierarchy,
         final String memberReaderClass)
     {
         if (memberReaderClass != null) {
@@ -681,7 +682,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
     private static class HangerMemberSource extends ArrayMemberSource {
         /** Creates a HangerMemberSource. */
         public HangerMemberSource(
-            RolapHierarchy hierarchy,
+            RolapCubeHierarchy hierarchy,
             List<RolapMember> memberList)
         {
             super(hierarchy, memberList);

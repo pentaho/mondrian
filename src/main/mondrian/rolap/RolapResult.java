@@ -50,15 +50,6 @@ public class RolapResult extends ResultBase {
     private final int maxEvalDepth =
             MondrianProperties.instance().MaxEvalDepth.get();
 
-    private final Map<Integer, Boolean> positionsHighCardinality =
-        new HashMap<Integer, Boolean>();
-    private final Map<Integer, TupleCursor> positionsIterators =
-        new HashMap<Integer, TupleCursor>();
-    private final Map<Integer, Integer> positionsIndexes =
-        new HashMap<Integer, Integer>();
-    private final Map<Integer, List<List<Member>>> positionsCurrent =
-        new HashMap<Integer, List<List<Member>>>();
-
     /**
      * Creates a RolapResult.
      *
@@ -376,13 +367,13 @@ public class RolapResult extends ResultBase {
                                     valueCalc, evaluator, tupleList1);
                             }
                         };
-                    final List<RolapHierarchy> hierarchyList =
-                        new AbstractList<RolapHierarchy>() {
-                            final List<Member> pos0 = tupleList1.get(0);
+                    final List<RolapCubeHierarchy> hierarchyList =
+                        new AbstractList<RolapCubeHierarchy>() {
+                            final List<RolapMember> pos0 =
+                                Util.cast(tupleList1.get(0));
 
-                            public RolapHierarchy get(int index) {
-                                return ((RolapMember) pos0.get(index))
-                                    .getHierarchy();
+                            public RolapCubeHierarchy get(int index) {
+                                return pos0.get(index).getHierarchy();
                             }
 
                             public int size() {
@@ -1047,11 +1038,7 @@ public class RolapResult extends ResultBase {
                     // then find or create a CellFormatterValueFormatter
                     // for it. If not, then find or create a Locale based
                     // FormatValueFormatter.
-                    final RolapCube cube = getCube();
-                    Hierarchy measuresHierarchy =
-                        cube.getMeasuresHierarchy();
-                    RolapMeasure m =
-                        (RolapMeasure) revaluator.getContext(measuresHierarchy);
+                    RolapMeasure m = (RolapMeasure) revaluator.getMembers()[0];
                     ValueFormatter valueFormatter = m.getFormatter();
                     if (valueFormatter == null) {
                         cachedFormatString = revaluator.getFormatString();
@@ -1182,12 +1169,12 @@ public class RolapResult extends ResultBase {
     }
 
     private static void processMemberExpr(Object o, List<Member> exprMembers) {
-        if (o instanceof Member && o instanceof RolapCubeMember) {
-            exprMembers.add((Member) o);
-        } else if (o instanceof VisualTotalMember) {
+        if (o instanceof VisualTotalMember) {
             VisualTotalMember member = (VisualTotalMember) o;
             Exp exp = member.getExpression();
             processMemberExpr(exp, exprMembers);
+        } else if (o instanceof RolapMember) {
+            exprMembers.add((Member) o);
         } else if (o instanceof Exp && !(o instanceof MemberExpr)) {
             Exp exp = (Exp)o;
             ResolvedFunCall funCall = (ResolvedFunCall)exp;
@@ -1914,11 +1901,6 @@ public class RolapResult extends ResultBase {
 
         CellInfoPool(int axisLength) {
             this.cellInfoPool = new ObjectPool<CellInfo>();
-            this.cellKeyMaker = createCellKeyMaker(axisLength);
-        }
-
-        CellInfoPool(int axisLength, int initialSize) {
-            this.cellInfoPool = new ObjectPool<CellInfo>(initialSize);
             this.cellKeyMaker = createCellKeyMaker(axisLength);
         }
 

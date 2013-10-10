@@ -15,6 +15,7 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.VisualTotalsFunDef;
+import mondrian.resource.MondrianResource;
 import mondrian.server.Locus;
 import mondrian.spi.PropertyFormatter;
 import mondrian.util.*;
@@ -25,27 +26,149 @@ import org.apache.log4j.Logger;
 import java.math.BigDecimal;
 import java.util.*;
 
-
 /**
- * Basic implementation of a member in a {@link RolapHierarchy}.
+ * Basic implementation of a member in a {@link RolapCubeHierarchy}.
+ *
+ * <p>This class aims to be memory-efficient. There are as few fields as
+ * possible. We pack several properties into the {@link #flags} field, and
+ * we store optional attributes (along with annotations, localized resources and
+ * properties) in the larder. Minimizing the number of fields is also why this
+ * class does not inherit from {@link OlapElementBase}.</p>
+ *
+ * <b>Developers, please do not add fields to this
+ * class without design review</b>.</p>
  *
  * @author jhyde
  * @since 10 August, 2001
  */
 public class RolapMemberBase
-    extends MemberBase
     implements RolapMember
 {
+    protected RolapMember parentMember;
+    protected final RolapCubeLevel level;
+    private String uniqueName;
+
     /**
      * For members of a level with an ordinal expression defined, the
      * value of that expression for this member as retrieved via JDBC;
      * otherwise null.
      */
     private Comparable orderKey;
-    private Boolean isParentChildLeaf;
+
+    /**
+     * Combines member type and other properties, such as whether the member
+     * is the 'all' or 'null' member of its hierarchy and whether it is a
+     * measure or is calculated, into an integer field.
+     *
+     * <p>The fields are:<ul>
+     * <li>bits 0, 1, 2 ({@link MemberBase#FLAG_TYPE_MASK}) are member type;
+     * <li>bit 3 ({@link MemberBase#FLAG_HIDDEN}) is set if the member is
+     *     hidden;
+     * <li>bit 4 ({@link MemberBase#FLAG_ALL}) is set if this is the all member
+     *     of its hierarchy;
+     * <li>bit 5 ({@link MemberBase#FLAG_NULL}) is set if this is the null
+     *     member of its hierarchy;
+     * <li>bit 6 ({@link MemberBase#FLAG_CALCULATED}) is set if this is a
+     *     calculated member.
+     * <li>bit 7 ({@link MemberBase#FLAG_MEASURE}) is set if this is a measure.
+     * <li>bits 8 and 9 support {@link #isParentChildLeaf()}.</li>
+     * <li>bits 10 and 11 support {@link #containsAggregateFunction()}.</li>
+     * </ul>
+     *
+     * NOTE: jhyde, 2007/8/10. It is necessary to cache whether the member is
+     * 'all', 'calculated' or 'null' in the member's state, because these
+     * properties are used so often. If we used a virtual method call - say we
+     * made each subclass implement 'boolean isNull()' - it would be slower.
+     * We use one flags field rather than 4 boolean fields to save space.
+     */
+    protected int flags;
+
+    // Leaf takes bits 8 and 9. Bit 8 is whether known. Bit 9 is yes or no.
+    private static final int LEAF_MASK = (1 << 8) | (1 << 9);
+    private static final int LEAF_YES = (1 << 8) | (1 << 9);
+    private static final int LEAF_NO = (1 << 8);
+
+    // Contains aggregate function takes bits 10 and 11. Bit 10 is whether
+    // known. Bit 11 is yes or no.
+    private static final int AGG_FUN_MASK = (1 << 10) | (1 << 11);
+    private static final int AGG_FUN_YES = (1 << 10) | (1 << 11);
+    private static final int AGG_FUN_NO = (1 << 10);
 
     private static final Logger LOGGER = Logger.getLogger(RolapMember.class);
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+
+    /** Ordinal of the member within the hierarchy. Some member readers do not
+     * use this property; in which case, they should leave it as its default,
+     * -1. */
+    private int ordinal;
+    private final Comparable key;
+
+    /**
+     * Maps property name to property value.
+     *
+     * <p> We expect there to be a lot of members, but few of them will
+     * have properties. So to reduce memory usage, when empty, this is set to
+     * an immutable empty set.
+     */
+    protected Larder larder;
+
+    /**
+     * Creates a RolapMemberBase.
+     *
+     * <p>Larder must contain name (if different from that derived from the
+     * key), caption (if different from that derived from the name),
+     * property values, and annotations. (Only calculated members defined in the
+     * schema have annotations.)</p>
+     *
+     * @param parentMember Parent member
+     * @param level Level this member belongs to
+     * @param key Key to this member in the underlying RDBMS, per
+     *   {@link RolapMember.Key}
+     * @param memberType Type of member
+     * @param uniqueName Unique name of this member
+     * @param larder Larder
+     */
+    protected RolapMemberBase(
+        RolapMember parentMember,
+        RolapCubeLevel level,
+        Comparable key,
+        MemberType memberType,
+        String uniqueName,
+        Larder larder)
+    {
+        assert Key.isValid(key, level, memberType)
+            : "invalid key " + key + " for level " + level;
+        assert larder != null;
+        this.parentMember = parentMember;
+        this.level = level;
+        this.flags = memberType.ordinal()
+            | (memberType == MemberType.ALL ? MemberBase.FLAG_ALL : 0)
+            | (memberType == MemberType.NULL ? MemberBase.FLAG_NULL : 0)
+            | (computeCalculated(memberType) ? MemberBase.FLAG_CALCULATED : 0)
+            | (level.isMeasure() ? MemberBase.FLAG_MEASURE : 0);
+        this.key = key;
+        this.ordinal = -1;
+        this.larder = larder;
+        this.uniqueName = uniqueName;
+    }
+
+    public String getQualifiedName() {
+        return MondrianResource.instance().MdxMemberName.str(getUniqueName());
+    }
+
+    public final String getUniqueName() {
+        return uniqueName;
+    }
+
+    public String getCaption() {
+        // if there is a member formatter for the members level,
+        //  we will call this interface to provide the display string
+        mondrian.spi.MemberFormatter mf = getLevel().getMemberFormatter();
+        if (mf != null) {
+            return mf.formatMember(this);
+        }
+        return Larders.getCaption(this, getLarder());
+    }
 
     /**
      * Sets a member's parent.
@@ -69,80 +192,184 @@ public class RolapMemberBase
         this.parentMember = parentMember;
     }
 
-    /** Ordinal of the member within the hierarchy. Some member readers do not
-     * use this property; in which case, they should leave it as its default,
-     * -1. */
-    private int ordinal;
-    private final Comparable key;
-
-    /**
-     * Maps property name to property value.
-     *
-     * <p> We expect there to be a lot of members, but few of them will
-     * have properties. So to reduce memory usage, when empty, this is set to
-     * an immutable empty set.
-     */
-    protected Larder larder;
-
-    /** TODO: remove this; takes too much space. */
-    private Boolean containsAggregateFunction = null;
-
-    /**
-     * Creates a RolapMemberBase with larder.
-     *
-     * <p>Larder must contain name (if different from that derived from the
-     * key), caption (if different from that derived from the name),
-     * property values, and annotations. (Only calculated members defined in the
-     * schema have annotations.)</p>
-     *
-     * @param parentMember Parent member
-     * @param level Level this member belongs to
-     * @param key Key to this member in the underlying RDBMS, per
-     *   {@link RolapMember.Key}
-     * @param memberType Type of member
-     * @param uniqueName Unique name of this member
-     * @param larder Larder
-     */
-    protected RolapMemberBase(
-        RolapMember parentMember,
-        RolapLevel level,
-        Comparable key,
-        MemberType memberType,
-        String uniqueName,
-        Larder larder)
-    {
-        super(parentMember, level, memberType);
-        assert !(parentMember instanceof RolapCubeMember)
-            || this instanceof RolapCalculatedMember
-            || this instanceof VisualTotalsFunDef.VisualTotalMember;
-        assert Key.isValid(key, level, memberType)
-            : "invalid key " + key + " for level " + level;
-        assert larder != null;
-        this.key = key;
-        this.ordinal = -1;
-        this.larder = larder;
-        this.uniqueName = uniqueName;
+    public String getParentUniqueName() {
+        return parentMember == null
+            ? null
+            : parentMember.getUniqueName();
     }
 
-    protected RolapMemberBase() {
-        super();
-        this.key = null;
+    public MemberType getMemberType() {
+        return MemberBase.MEMBER_TYPE_VALUES[flags & MemberBase.FLAG_TYPE_MASK];
+    }
+
+    public String getDescription() {
+        return Larders.getDescription(getLarder());
+    }
+
+    public boolean isMeasure() {
+        return (flags & MemberBase.FLAG_MEASURE) != 0;
+    }
+
+    public boolean isAll() {
+        return (flags & MemberBase.FLAG_ALL) != 0;
+    }
+
+    public boolean isNull() {
+        return (flags & MemberBase.FLAG_NULL) != 0;
+    }
+
+    public boolean isCalculated() {
+        return (flags & MemberBase.FLAG_CALCULATED) != 0;
+    }
+
+    public boolean isEvaluated() {
+        // should just call isCalculated(), but called in tight loops
+        // and too many subclass implementations for jit to inline properly?
+        return (flags & MemberBase.FLAG_CALCULATED) != 0;
+    }
+
+    public OlapElement lookupChild(
+        SchemaReader schemaReader,
+        Id.Segment childName,
+        MatchType matchType)
+    {
+        return schemaReader.lookupMemberChildByName(
+            this, childName, matchType);
+    }
+
+    // implement Member
+    public boolean isChildOrEqualTo(Member member) {
+        // REVIEW: Using uniqueName to calculate ancestry seems inefficient,
+        //   because we can't afford to store every member's unique name, so
+        //   we want to compute it on the fly
+        assert !Bug.BugSegregateRolapCubeMemberFixed;
+        return (member != null) && isChildOrEqualTo(member.getUniqueName());
+    }
+
+    /**
+     * Returns whether this <code>Member</code>'s unique name is equal to, a
+     * child of, or a descendant of a member whose unique name is
+     * <code>uniqueName</code>.
+     */
+    public boolean isChildOrEqualTo(String uniqueName) {
+        if (uniqueName == null) {
+            return false;
+        }
+
+        return isChildOrEqualTo(this, uniqueName);
+    }
+
+    private static boolean isChildOrEqualTo(
+        RolapMember member,
+        String uniqueName)
+    {
+        while (true) {
+            String thisUniqueName = member.getUniqueName();
+            if (thisUniqueName.equals(uniqueName)) {
+                // found a match
+                return true;
+            }
+            // try candidate's parentMember
+            member = member.getParentMember();
+            if (member == null) {
+                // have reached root
+                return false;
+            }
+        }
+    }
+
+    /**
+     * Computes the value to be returned by {@link #isCalculated()}, so it can
+     * be cached in a variable.
+     *
+     * @param memberType Member type
+     * @return Whether this member is calculated
+     */
+    protected boolean computeCalculated(final MemberType memberType) {
+        // If the member is not created from the "with member ..." MDX, the
+        // calculated will be null. But it may be still a calculated measure
+        // stored in the cube.
+        return isCalculatedInQuery() || memberType == MemberType.FORMULA;
+    }
+
+    public int getSolveOrder() {
+        return -1;
+    }
+
+    /**
+     * Returns the expression by which this member is calculated. The expression
+     * is not null if and only if the member is not calculated.
+     *
+     * @see #isCalculated()
+     */
+    public Exp getExpression() {
+        return null;
+    }
+
+    // implement Member
+    public List<Member> getAncestorMembers() {
+        final SchemaReader schemaReader =
+            getDimension().getSchema().getSchemaReader();
+        final ArrayList<Member> ancestorList = new ArrayList<Member>();
+        schemaReader.getMemberAncestors(this, ancestorList);
+        return ancestorList;
+    }
+
+    public RolapMember getDataMember() {
+        return null;
+    }
+
+    protected Property lookupProperty(String propertyName, boolean matchCase) {
+        return Property.lookup(propertyName, matchCase);
+    }
+
+    public final Object getPropertyValue(String propertyName) {
+        return getPropertyValue(propertyName, true);
+    }
+
+    public final Object getPropertyValue(String propertyName, boolean matchCase)
+    {
+        Property property = lookupProperty(propertyName, matchCase);
+        if (property == null) {
+            return null;
+        }
+        return getPropertyValue(property);
+    }
+
+    public final String getPropertyFormattedValue(String propertyName) {
+        final Property property = lookupProperty(propertyName, true);
+        if (property == null) {
+            return "";
+        }
+        return getPropertyFormattedValue(property);
     }
 
     protected Logger getLogger() {
         return LOGGER;
     }
 
-    public RolapLevel getLevel() {
-        return (RolapLevel) level;
+    public final RolapCube getCube() {
+        return level.cube;
     }
 
-    public RolapHierarchy getHierarchy() {
-        return (RolapHierarchy) level.getHierarchy();
+    public RolapCubeDimension getDimension() {
+        return level.cubeDimension;
     }
 
-    public RolapMember getParentMember() {
-        return (RolapMember) super.getParentMember();
+    public boolean isVisible() {
+        return true;
+    }
+
+    public final RolapCubeLevel getLevel() {
+        return level;
+    }
+
+    public final RolapCubeHierarchy getHierarchy() {
+        return level.cubeHierarchy;
+    }
+
+    public final RolapMember getParentMember() {
+        return parentMember;
     }
 
     // Regular members do not have annotations. Measures and calculated members
@@ -151,25 +378,18 @@ public class RolapMemberBase
         return larder;
     }
 
+    public String toString() {
+        return getUniqueName();
+    }
+
     public int hashCode() {
         return getUniqueName().hashCode();
     }
 
     public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        }
-        if (o instanceof RolapMemberBase && equals((RolapMemberBase) o)) {
-            return true;
-        }
-        if (o instanceof RolapCubeMember
-                && equals(((RolapCubeMember) o).getRolapMember()))
-        {
-            // TODO: remove, RolapCubeMember should never meet RolapMember
-            assert !Bug.BugSegregateRolapCubeMemberFixed;
-            return true;
-        }
-        return false;
+        return o == this
+            || o instanceof RolapMemberBase
+            && equals((RolapMemberBase) o);
     }
 
     public boolean equals(OlapElement o) {
@@ -182,38 +402,6 @@ public class RolapMemberBase
         // Do not use equalsIgnoreCase; unique names should be identical, and
         // hashCode assumes this.
         return this.getUniqueName().equals(that.getUniqueName());
-    }
-
-    /**
-     * Whether this member is the same as another member.
-     *
-     * <p>Weaker than == but stronger than {@link #equals(Object)}. For
-     * example:</p>
-     *
-     * <ul>
-     *
-     * <li>Returns false when comparing the member [Gender].[F] to the visual
-     * total member [Gender].[F].</li>
-     *
-     * <li>Returns true when comparing two {@link RolapCubeMember} wrappers for
-     * [Gender].[F] in the same cube dimension. (Occurs when caching is
-     * disabled.)</li>
-     *
-     * <li>Returns true when applied to the same object.</li>
-     *
-     * </ul>
-     *
-     * @param member Member to compare to.
-     * @return Whether this and member represent the same MDX object
-     */
-    public final boolean same(RolapMember member) {
-        if (this == member) {
-            return true;
-        }
-        if (this.getClass() != member.getClass()) {
-            return false;
-        }
-        return this.equals(member);
     }
 
     /** Call this very sparingly. */
@@ -236,9 +424,9 @@ public class RolapMemberBase
             || this instanceof VisualTotalsFunDef.VisualTotalMember
             || getDataMember() != null)))
         {
-            final RolapHierarchy hierarchy = getHierarchy();
-            final Dimension dimension = hierarchy.getDimension();
-            final RolapLevel level = getLevel();
+            final RolapCubeLevel level = getLevel();
+            final RolapCubeHierarchy hierarchy = level.cubeHierarchy;
+            final RolapCubeDimension dimension = hierarchy.getDimension();
             if (dimension.getDimensionType()
                 == org.olap4j.metadata.Dimension.Type.MEASURE
                 && hierarchy.getName().equals(dimension.getName()))
@@ -289,7 +477,7 @@ public class RolapMemberBase
      */
     protected static String deriveUniqueName(
         RolapMember parentMember,
-        RolapLevel level,
+        RolapCubeLevel level,
         String name,
         boolean calc)
     {
@@ -437,8 +625,7 @@ public class RolapMemberBase
 
             case Property.CHILDREN_CARDINALITY_ORDINAL:
                 return Locus.execute(
-                    ((RolapSchema) level.getDimension().getSchema())
-                        .getInternalConnection(),
+                    level.getDimension().getSchema().getInternalConnection(),
                     "Member.CHILDREN_CARDINALITY",
                     new Locus.Action<Integer>() {
                         public Integer execute() {
@@ -505,11 +692,10 @@ public class RolapMemberBase
         }
     }
 
-    @Override
     public String getLocalized(LocalizedProperty prop, Locale locale) {
-        if (getLevel().resourceMap != null) {
+        if (level.resourceMap != null) {
             final List<Larders.Resource> resources =
-                getLevel().resourceMap.get(uniqueName + ".member");
+                level.resourceMap.get(uniqueName + ".member");
             if (resources != null) {
                 final String resource =
                     Larders.Resource.lookup(prop, locale, resources);
@@ -518,7 +704,7 @@ public class RolapMemberBase
                 }
             }
         }
-        return super.getLocalized(prop, locale);
+        return Larders.get(this, getLarder(), prop, locale);
     }
 
     protected boolean childLevelHasApproxRowCount() {
@@ -526,19 +712,22 @@ public class RolapMemberBase
             > Integer.MIN_VALUE;
     }
 
-    public boolean isAllMember() {
-        return getLevel().getHierarchy().hasAll()
-                && getLevel().getDepth() == 0;
-    }
-
     public Property[] getProperties() {
         return getLevel().getInheritedProperties();
     }
 
+    /**
+     * Returns the ordinal of this member within its hierarchy.
+     * The default implementation returns -1.
+     */
     public int getOrdinal() {
         return ordinal;
     }
 
+    /**
+     * Returns the order key of this member among its siblings.
+     * The default implementation returns null.
+     */
     public Comparable getOrderKey() {
         return orderKey;
     }
@@ -550,7 +739,7 @@ public class RolapMemberBase
     }
 
     void setOrderKey(Comparable orderKey) {
-        assert arity(orderKey) == ((RolapLevel) level).getOrderByKeyArity();
+        assert arity(orderKey) == level.getOrderByKeyArity();
         this.orderKey = orderKey;
     }
 
@@ -654,7 +843,7 @@ public class RolapMemberBase
     }
 
     public boolean isHidden() {
-        final RolapLevel rolapLevel = getLevel();
+        final RolapCubeLevel rolapLevel = getLevel();
         switch (rolapLevel.getHideMemberCondition()) {
         case Never:
             return false;
@@ -716,12 +905,14 @@ public class RolapMemberBase
     }
 
     public boolean isParentChildLeaf() {
-        if (isParentChildLeaf == null) {
-            isParentChildLeaf = getLevel().isParentChild()
+        if ((flags & LEAF_MASK) == 0) {
+            boolean isParentChildLeaf = getLevel().isParentChild()
                 && getDimension().getSchema().getSchemaReader()
                 .getMemberChildren(this).size() == 0;
+            flags |= isParentChildLeaf ? LEAF_YES : LEAF_NO;
+            return isParentChildLeaf;
         }
-        return isParentChildLeaf;
+        return (flags & LEAF_MASK) == LEAF_YES;
     }
 
     /**
@@ -802,8 +993,6 @@ public class RolapMemberBase
         SchemaReader schemaReader,
         Member seedMember)
     {
-        seedMember = RolapUtil.strip((RolapMember) seedMember);
-
         // The following are times for executing different set ordinals
         // algorithms for both the FoodMart Sales cube/Store dimension
         // and a Large Data set with a dimension with about 250,000 members.
@@ -1003,6 +1192,10 @@ public class RolapMemberBase
         }
     }
 
+    public Map<String, Annotation> getAnnotationMap() {
+        return getLarder().getAnnotationMap();
+    }
+
     /**
      * <p>Interface definition for the pluggable factory used to decide
      * which implementation of {@link java.util.Map} to use to store
@@ -1071,11 +1264,13 @@ public class RolapMemberBase
 
     public boolean containsAggregateFunction() {
         // searching for agg functions is expensive, so cache result
-        if (containsAggregateFunction == null) {
-            containsAggregateFunction =
+        if ((flags & AGG_FUN_MASK) == 0) {
+            boolean containsAggregateFunction =
                 foundAggregateFunction(getExpression());
+            flags |= containsAggregateFunction ? AGG_FUN_YES : AGG_FUN_NO;
+            return containsAggregateFunction;
         }
-        return containsAggregateFunction;
+        return (flags & AGG_FUN_MASK) == AGG_FUN_YES;
     }
 
     /**

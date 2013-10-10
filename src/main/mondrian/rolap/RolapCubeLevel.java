@@ -13,6 +13,7 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
 import mondrian.spi.MemberFormatter;
+import mondrian.util.Bug;
 
 import java.util.*;
 
@@ -28,11 +29,11 @@ public class RolapCubeLevel extends RolapLevel {
      * For a parent-child hierarchy with a closure provided by the schema,
      * the equivalent level in the closed hierarchy; otherwise null.
      */
-    private RolapCubeLevel closedPeerCubeLevel;
+    private final RolapCubeLevel closedPeerCubeLevel;
     protected LevelReader levelReader;
-    private final RolapCubeHierarchy cubeHierarchy;
+    final RolapCubeHierarchy cubeHierarchy;
     final RolapCubeDimension cubeDimension;
-    private final RolapCube cube;
+    final RolapCube cube;
     private final RolapCubeLevel parentCubeLevel;
     private RolapCubeLevel childCubeLevel;
 
@@ -44,11 +45,13 @@ public class RolapCubeLevel extends RolapLevel {
      * @param resourceMap Resource map, if there are resources to override
      *                    captions or descriptions of members in this level;
      *                    otherwise null
+     * @param closure Description of closure table, or null
      */
     public RolapCubeLevel(
         RolapLevel level,
         RolapCubeHierarchy cubeHierarchy,
-        Map<String, List<Larders.Resource>> resourceMap)
+        Map<String, List<Larders.Resource>> resourceMap,
+        RolapClosure closure)
     {
         super(
             cubeHierarchy,
@@ -59,7 +62,7 @@ public class RolapCubeLevel extends RolapLevel {
             level.parentAttribute,
             level.getOrderByList(),
             level.nullParentValue,
-            level.closure,
+            closure,
             level.getHideMemberCondition(),
             level.getLarder(),
             resourceMap);
@@ -73,38 +76,24 @@ public class RolapCubeLevel extends RolapLevel {
             parentCubeLevel.childCubeLevel = this;
         }
         attribute = level.getAttribute();
+        closedPeerCubeLevel =
+            closure == null || !Bug.BugMondrian1502Fixed
+                ? null
+                : (RolapCubeLevel) closure.closedPeerLevel;
+
+        assert closure == null
+            || ((RolapCubeLevel) closure.closedPeerLevel).getRolapLevel()
+            == level.closure.closedPeerLevel;
     }
 
     @Override
-    void initLevel(
-        RolapSchemaLoader schemaLoader,
-        boolean closure)
-    {
+    void initLevel(RolapSchemaLoader schemaLoader) {
+        super.initLevel(schemaLoader);
         if (isAll()) {
             this.levelReader = new AllLevelReaderImpl();
         } else if (getLevelType() == org.olap4j.metadata.Level.Type.NULL) {
             this.levelReader = new NullLevelReader();
-        } else if (rolapLevel.hasClosedPeer()) {
-            RolapDimension dimension =
-                rolapLevel.getClosedPeer().getHierarchy().getDimension();
-
-            RolapCubeDimension cubeDimension =
-                new RolapCubeDimension(
-                    schemaLoader,
-                    getCube(),
-                    dimension,
-                    getDimension().getName() + "$Closure",
-                    null,
-                    -1,
-                    getCube().hierarchyList,
-                    Larders.EMPTY);
-
-            schemaLoader.initDimension(cubeDimension);
-            closedPeerCubeLevel =
-                cubeDimension
-                    .getHierarchyList().get(0)
-                    .getLevelList().get(1);
-
+        } else if (hasClosedPeer()) {
             this.levelReader = new ParentChildLevelReaderImpl(this);
         } else {
             this.levelReader = new RegularLevelReader(this);
@@ -113,6 +102,57 @@ public class RolapCubeLevel extends RolapLevel {
 
     LevelReader getLevelReader() {
         return levelReader;
+    }
+
+    public boolean isMeasure() {
+        return cubeHierarchy.getOrdinalInCube() == 0;
+    }
+
+    /**
+     * Determines whether the specified level is too ragged for native
+     * evaluation, which is able to handle one special case of a ragged
+     * hierarchy: when the level specified in the query is the leaf level of
+     * the hierarchy and HideMemberCondition for the level is IfBlankName.
+     * This is true even if higher levels of the hierarchy can be hidden
+     * because even in that case the only column that needs to be read is the
+     * column that holds the leaf. IfParentsName can't be handled even at the
+     * leaf level because in the general case we aren't reading the column
+     * that holds the parent. Also, IfBlankName can't be handled for non-leaf
+     * levels because we would have to read the column for the next level
+     * down for members with blank names.
+     *
+     * @return true if the specified level is too ragged for native
+     *         evaluation.
+     */
+    protected boolean isTooRagged() {
+        // Is this the special case of raggedness that native evaluation
+        // is able to handle?
+        if (getDepth() == getHierarchy().getLevelList().size() - 1) {
+            switch (getHideMemberCondition()) {
+            case Never:
+            case IfBlankName:
+                return false;
+            default:
+                return true;
+            }
+        }
+        // Handle the general case in the traditional way.
+        return getHierarchy().isRagged();
+    }
+
+    /**
+     * Indicates that level is not ragged and not a parent/child level.
+     */
+    public boolean isSimple() {
+        // most ragged hierarchies are not simple -- see isTooRagged.
+        if (isTooRagged()) {
+            return false;
+        }
+        if (isParentChild()) {
+            return false;
+        }
+        // does not work for measures
+        return !isMeasure();
     }
 
     /**
@@ -161,25 +201,30 @@ public class RolapCubeLevel extends RolapLevel {
     }
 
     // override with stricter return type
+    @Override
     public final RolapCubeDimension getDimension() {
         return cubeDimension;
     }
 
     // override with stricter return type
+    @Override
     public final RolapCubeHierarchy getHierarchy() {
         return cubeHierarchy;
     }
 
     // override with stricter return type
+    @Override
     public final RolapCubeLevel getChildLevel() {
         return childCubeLevel;
     }
 
     // override with stricter return type
+    @Override
     public final RolapCubeLevel getParentLevel() {
         return parentCubeLevel;
     }
 
+    @Override
     public String getCaption() {
         return rolapLevel.getCaption();
     }
@@ -202,6 +247,10 @@ public class RolapCubeLevel extends RolapLevel {
                 && getCube().equals(level.getCube());
     }
 
+    /**
+     * Returns true when the level is part of a parent/child hierarchy and has
+     * an equivalent closed level.
+     */
     boolean hasClosedPeer() {
         return closedPeerCubeLevel != null;
     }
@@ -210,11 +259,63 @@ public class RolapCubeLevel extends RolapLevel {
         return closedPeerCubeLevel;
     }
 
+    @Override
     public MemberFormatter getMemberFormatter() {
         return rolapLevel.getMemberFormatter();
     }
 
+    @Override
+    public OlapElement lookupChild(
+        SchemaReader schemaReader, Id.Segment name, MatchType matchType)
+    {
+        if (name instanceof Id.KeySegment) {
+            Id.KeySegment keySegment = (Id.KeySegment) name;
+            List<Comparable> keyValues = new ArrayList<Comparable>();
+            for (Id.NameSegment nameSegment : keySegment.getKeyParts()) {
+                final String keyValue = nameSegment.name;
+                if (RolapUtil.mdxNullLiteral().equalsIgnoreCase(keyValue)) {
+                    keyValues.add(RolapUtil.sqlNullValue);
+                } else {
+                    keyValues.add(keyValue);
+                }
+            }
+            Collections.reverse(keyValues);
+            final List<RolapSchema.PhysColumn> keyExps = attribute.getKeyList();
+            if (keyExps.size() != keyValues.size()) {
+                throw Util.newError(
+                    "Wrong number of values in member key; "
+                        + keySegment + " has " + keyValues.size()
+                        + " values, whereas level's key has " + keyExps.size()
+                        + " columns "
+                        + new AbstractList<String>() {
+                        public String get(int index) {
+                            return keyExps.get(keyExps.size() - 1 - index)
+                                .toSql();
+                        }
 
+                        public int size() {
+                            return keyExps.size();
+                        }
+                    }
+                        + ".");
+            }
+            return cubeHierarchy.getMemberReader().getMemberByKey(
+                this, keyValues);
+        }
+        final List<RolapMember> levelMembers =
+            Util.cast(schemaReader.getLevelMembers(this, true));
+        if (levelMembers.size() > 0) {
+            final RolapMember parent = levelMembers.get(0).getParentMember();
+            return
+                RolapUtil.findBestMemberMatch(
+                    levelMembers,
+                    parent,
+                    this,
+                    name,
+                    matchType);
+        }
+        return null;
+    }
 
     /**
      * Encapsulation of the difference between levels in terms of how
@@ -233,7 +334,7 @@ public class RolapCubeLevel extends RolapLevel {
          * null member)
          */
         boolean constrainRequest(
-            RolapCubeMember member,
+            RolapMember member,
             RolapMeasureGroup measureGroup,
             CellRequest request);
 
@@ -263,7 +364,7 @@ public class RolapCubeLevel extends RolapLevel {
         }
 
         public boolean constrainRequest(
-            RolapCubeMember member,
+            RolapMember member,
             RolapMeasureGroup measureGroup,
             CellRequest request)
         {
@@ -409,27 +510,20 @@ public class RolapCubeLevel extends RolapLevel {
     // final for performance
     static final class ParentChildLevelReaderImpl implements LevelReader {
         private final RegularLevelReader regularLevelReader;
-        private final RolapCubeLevel closedPeerCubeLevel;
-        private final RolapLevel closedPeerLevel;
+        private final RolapCubeLevel closedPeerLevel;
         private final RolapMember wrappedAllMember;
-        private final RolapCubeMember allMember;
 
         ParentChildLevelReaderImpl(RolapCubeLevel cubeLevel)
         {
             this.regularLevelReader = new RegularLevelReader(cubeLevel);
 
             // inline a bunch of fields for performance
-            this.closedPeerCubeLevel = cubeLevel.closedPeerCubeLevel;
-            this.closedPeerLevel = cubeLevel.rolapLevel.getClosedPeer();
-            this.wrappedAllMember =
-                closedPeerLevel.getHierarchy().getDefaultMember();
-            this.allMember =
-                closedPeerCubeLevel.getHierarchy().getDefaultMember();
-            assert allMember.isAll();
+            this.closedPeerLevel = cubeLevel.closedPeerCubeLevel;
+            this.wrappedAllMember = closedPeerLevel.getHierarchy().allMember;
         }
 
         public boolean constrainRequest(
-            RolapCubeMember member,
+            RolapMember member,
             RolapMeasureGroup measureGroup,
             CellRequest request)
         {
@@ -444,7 +538,9 @@ public class RolapCubeLevel extends RolapLevel {
                     member, measureGroup, request);
             } else if (request.drillThrough) {
                 return regularLevelReader.constrainRequest(
-                    member.getDataMember(), measureGroup, request);
+                    member.getDataMember(),
+                    measureGroup,
+                    request);
             } else {
                 // isn't creating a member on the fly a bad idea?
                 RolapMember wrappedMember =
@@ -456,15 +552,8 @@ public class RolapCubeLevel extends RolapLevel {
                         Util.makeFqName(
                             wrappedAllMember.getHierarchy(), member.getName()),
                         Larders.ofName(member.getName()));
-                member =
-                    new RolapCubeMember(
-                        // REVIEW pass the actual parent member instead of the
-                        // 'all member'?
-                        allMember,
-                        wrappedMember, closedPeerCubeLevel);
-
-                return closedPeerCubeLevel.getLevelReader().constrainRequest(
-                    member, measureGroup, request);
+                return closedPeerLevel.getLevelReader().constrainRequest(
+                    wrappedMember, measureGroup, request);
             }
         }
 
@@ -482,7 +571,7 @@ public class RolapCubeLevel extends RolapLevel {
      */
     static final class AllLevelReaderImpl implements LevelReader {
         public boolean constrainRequest(
-            RolapCubeMember member,
+            RolapMember member,
             RolapMeasureGroup measureGroup,
             CellRequest request)
         {
@@ -504,7 +593,7 @@ public class RolapCubeLevel extends RolapLevel {
      */
     static final class NullLevelReader implements LevelReader {
         public boolean constrainRequest(
-            RolapCubeMember member,
+            RolapMember member,
             RolapMeasureGroup measureGroup,
             CellRequest request)
         {

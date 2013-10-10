@@ -19,8 +19,6 @@ import mondrian.spi.SegmentColumn;
 import mondrian.util.ArraySortedSet;
 import mondrian.util.Pair;
 
-import org.eigenbase.util.property.BooleanProperty;
-
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -646,8 +644,8 @@ public class CacheControlImpl implements CacheControl {
             upperInclusive = false;
         }
         return new RangeMemberSet(
-            stripMember((RolapMember) lowerMember), lowerInclusive,
-            stripMember((RolapMember) upperMember), upperInclusive,
+            (RolapMember) lowerMember, lowerInclusive,
+            (RolapMember) upperMember, upperInclusive,
             descendants);
     }
 
@@ -658,11 +656,7 @@ public class CacheControlImpl implements CacheControl {
     }
 
     public MemberSet filter(Level level, MemberSet baseSet) {
-        if (level instanceof RolapCubeLevel) {
-            // be forgiving
-            level = ((RolapCubeLevel) level).getRolapLevel();
-        }
-        return ((MemberSetPlus) baseSet).filter((RolapLevel) level);
+        return ((MemberSetPlus) baseSet).filter((RolapCubeLevel) level);
     }
 
     public void flush(MemberSet memberSet) {
@@ -842,13 +836,6 @@ public class CacheControlImpl implements CacheControl {
     }
 
     public void execute(MemberEditCommand cmd) {
-        final BooleanProperty prop =
-            MondrianProperties.instance().EnableRolapCubeMemberCache;
-        if (prop.get()) {
-            throw new IllegalArgumentException(
-                "Member cache control operations are not allowed unless "
-                + "property " + prop.getPath() + " is false");
-        }
         synchronized (MEMBER_CACHE_LOCK) {
             // Make sure that a Locus is in the Execution stack,
             // since some operations might require DB access.
@@ -1276,7 +1263,7 @@ public class CacheControlImpl implements CacheControl {
          * @param level Level
          * @return Member set with members not at the given level removed
          */
-        MemberSetPlus filter(RolapLevel level);
+        MemberSetPlus filter(RolapCubeLevel level);
     }
 
     /**
@@ -1370,7 +1357,7 @@ public class CacheControlImpl implements CacheControl {
             // nothing
         }
 
-        public MemberSetPlus filter(RolapLevel level) {
+        public MemberSetPlus filter(RolapCubeLevel level) {
             return this;
         }
 
@@ -1386,11 +1373,10 @@ public class CacheControlImpl implements CacheControl {
         public final List<RolapMember> members;
         // the set includes the descendants of all members
         public final boolean descendants;
-        public final RolapHierarchy hierarchy;
+        public final RolapCubeHierarchy hierarchy;
 
         SimpleMemberSet(List<RolapMember> members, boolean descendants) {
             this.members = new ArrayList<RolapMember>(members);
-            stripMemberList(this.members);
             this.descendants = descendants;
             this.hierarchy =
                 members.isEmpty()
@@ -1408,7 +1394,7 @@ public class CacheControlImpl implements CacheControl {
             visitor.visit(this);
         }
 
-        public MemberSetPlus filter(RolapLevel level) {
+        public MemberSetPlus filter(RolapCubeLevel level) {
             List<RolapMember> filteredMembers = new ArrayList<RolapMember>();
             for (RolapMember member : members) {
                 if (member.getLevel().equals(level)) {
@@ -1452,7 +1438,7 @@ public class CacheControlImpl implements CacheControl {
             visitor.visit(this);
         }
 
-        public MemberSetPlus filter(RolapLevel level) {
+        public MemberSetPlus filter(RolapCubeLevel level) {
             final List<MemberSetPlus> filteredItems =
                 new ArrayList<MemberSetPlus>();
             for (MemberSetPlus item : items) {
@@ -1484,7 +1470,7 @@ public class CacheControlImpl implements CacheControl {
         private final RolapMember upperMember;
         private final boolean upperInclusive;
         private final boolean descendants;
-        private final RolapLevel level;
+        private final RolapCubeLevel level;
 
         RangeMemberSet(
             RolapMember lowerMember,
@@ -1499,8 +1485,6 @@ public class CacheControlImpl implements CacheControl {
                 || lowerMember.getLevel() == upperMember.getLevel();
             assert !(lowerMember == null && lowerInclusive);
             assert !(upperMember == null && upperInclusive);
-            assert !(lowerMember instanceof RolapCubeMember);
-            assert !(upperMember instanceof RolapCubeMember);
             this.lowerMember = lowerMember;
             this.lowerInclusive = lowerInclusive;
             this.upperMember = upperMember;
@@ -1544,7 +1528,7 @@ public class CacheControlImpl implements CacheControl {
             visitor.visit(this);
         }
 
-        public MemberSetPlus filter(RolapLevel level) {
+        public MemberSetPlus filter(RolapCubeLevel level) {
             if (level == this.level) {
                 return this;
             } else {
@@ -1553,8 +1537,8 @@ public class CacheControlImpl implements CacheControl {
         }
 
         public MemberSetPlus filter2(
-            RolapLevel seekLevel,
-            RolapLevel level,
+            RolapCubeLevel seekLevel,
+            RolapCubeLevel level,
             RolapMember lower,
             RolapMember upper)
         {
@@ -1664,7 +1648,7 @@ public class CacheControlImpl implements CacheControl {
 
         public AddMemberCommand(RolapMember member) {
             assert member != null;
-            this.member = stripMember(member);
+            this.member = member;
         }
 
         public String toString() {
@@ -1762,7 +1746,7 @@ public class CacheControlImpl implements CacheControl {
         public void commit() {
             for (RolapMember member : members) {
                 // Change member's properties.
-                member = stripMember(member);
+                member = member;
                 final MemberCache memberCache = getMemberCache(member);
                 final Object cacheKey = member.getKeyCompact();
                 final RolapMember cacheMember =
@@ -1775,22 +1759,6 @@ public class CacheControlImpl implements CacheControl {
                 {
                     cacheMember.setProperty(entry.getKey(), entry.getValue());
                 }
-            }
-        }
-    }
-
-    private static RolapMember stripMember(RolapMember member) {
-        if (member instanceof RolapCubeMember) {
-            member = ((RolapCubeMember) member).member;
-        }
-        return member;
-    }
-
-    private static void stripMemberList(List<RolapMember> members) {
-        for (int i = 0; i < members.size(); i++) {
-            RolapMember member = members.get(i);
-            if (member instanceof RolapCubeMember) {
-                members.set(i, ((RolapCubeMember) member).member);
             }
         }
     }

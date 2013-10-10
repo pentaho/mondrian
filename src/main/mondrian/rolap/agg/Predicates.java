@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho
+// Copyright (C) 2011-2013 Pentaho
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -64,8 +64,8 @@ public abstract class Predicates
             || lowerBound.getLevel() == upperBound.getLevel();
         assert lowerBound != null
             || upperBound != null;
-        final RolapLevel level =
-            (lowerBound == null ? upperBound : lowerBound).getLevel();
+        final RolapCubeLevel level =
+            Util.first(lowerBound, upperBound).getLevel();
         if (level.getAttribute().getKeyList().size() == 1) {
             return new RangeColumnPredicate(
                 new PredicateColumn(

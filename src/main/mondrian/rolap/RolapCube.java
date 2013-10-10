@@ -54,9 +54,9 @@ public class RolapCube extends CubeBase {
     /**
      * Role-based cache of calculated members
      */
-    private final SoftSmartCache<Role, List<Member>>
+    private final SoftSmartCache<Role, List<RolapMember>>
         roleToAccessibleCalculatedMembers =
-        new SoftSmartCache<Role, List<Member>>();
+        new SoftSmartCache<Role, List<RolapMember>>();
 
     /**
      * List of named sets.
@@ -131,23 +131,20 @@ public class RolapCube extends CubeBase {
                 null,
                 measuresDimension.getLarder());
         measuresDimension.addHierarchy(measuresHierarchy);
-        measuresHierarchy.initHierarchy(
-            schemaLoader,
-            null,
-            null,
-            null);
+        measuresHierarchy.initHierarchy(schemaLoader, null);
 
+        final List<RolapCubeHierarchy> cubeHierarchyList =
+            new ArrayList<RolapCubeHierarchy>();
         final RolapCubeDimension measuresCubeDimension =
             new RolapCubeDimension(
-                schemaLoader,
                 this,
                 measuresDimension,
                 measuresDimension.getName(),
-                null,
                 0,
-                new ArrayList<RolapCubeHierarchy>(),
                 measuresDimension.getLarder());
-        schemaLoader.initDimension(measuresCubeDimension);
+        schemaLoader.initCubeDimension(
+            measuresCubeDimension, null, cubeHierarchyList);
+
         dimensionList.add(measuresCubeDimension);
         this.measuresHierarchy =
             measuresCubeDimension.getHierarchyList().get(0);
@@ -186,8 +183,7 @@ public class RolapCube extends CubeBase {
      * @see Util#deprecated(Object) make private
      */
     void setMeasuresHierarchyMemberReader(MemberReader memberReader) {
-        this.measuresHierarchy.getRolapHierarchy().setMemberReader(
-            memberReader);
+        this.measuresHierarchy.setMemberReader(memberReader);
         // this invalidates any cached schema reader
         this.schemaReader = null;
     }
@@ -412,7 +408,7 @@ public class RolapCube extends CubeBase {
      * @param hierarchy virtual hierarchy
      * @return base cube hierarchy if found
      */
-    RolapHierarchy findBaseCubeHierarchy(RolapHierarchy hierarchy) {
+    RolapCubeHierarchy findBaseCubeHierarchy(RolapHierarchy hierarchy) {
         for (RolapCubeDimension dimension : dimensionList) {
             if (dimension.getName().equals(
                     hierarchy.getDimension().getName()))
@@ -620,13 +616,14 @@ public class RolapCube extends CubeBase {
         }
 
         public int getLevelCardinality(
-            Level level, boolean approximate,
+            Level _level,
+            boolean approximate,
             boolean materialize)
         {
             int levelCardinality =
                 super.getLevelCardinality(
-                    level, approximate, materialize);
-            levelCardinality += getCalculatedMembers(level).size();
+                    _level, approximate, materialize);
+            levelCardinality += getCalculatedMembers(_level).size();
             return levelCardinality;
         }
 
@@ -671,35 +668,33 @@ public class RolapCube extends CubeBase {
             return list;
         }
 
-        public List<Member> getCalculatedMembers(Level level) {
-            List<Member> list = new ArrayList<Member>();
+        protected List<RolapMember> getCalculatedMembers(RolapCubeLevel level) {
+            List<RolapMember> list = new ArrayList<RolapMember>();
 
             if (getRole().getAccess(level) == Access.NONE) {
                 return list;
             }
 
-            for (Member member : getCalculatedMembers()) {
+            for (RolapMember member : _getCalculatedMembers()) {
                 if (member.getLevel().equals(level)) {
                     list.add(member);
-                }
-                if (member instanceof RolapCubeMember) {
-                    final RolapMember rolapMember =
-                        ((RolapCubeMember) member).getRolapMember();
-                    if (rolapMember.getLevel().equals(level)) {
-                        list.add(rolapMember);
-                    }
                 }
             }
             return list;
         }
 
-        public List<Member> getCalculatedMembers() {
-            List<Member> list =
+        @Override
+        public List<Member> getCalculatedMembers(Level level) {
+            return Util.cast(getCalculatedMembers((RolapCubeLevel) level));
+        }
+
+        protected List<RolapMember> _getCalculatedMembers() {
+            List<RolapMember> list =
                 roleToAccessibleCalculatedMembers.get(getRole());
             if (list == null) {
-                list = new ArrayList<Member>();
+                list = new ArrayList<RolapMember>();
                 for (Formula formula : calculatedMemberList) {
-                    Member member = formula.getMdxMember();
+                    RolapMember member = (RolapMember) formula.getMdxMember();
                     if (getRole().canAccess(member)) {
                         list.add(member);
                     }
@@ -710,6 +705,11 @@ public class RolapCube extends CubeBase {
                 }
             }
             return list;
+        }
+
+        @Override
+        public List<Member> getCalculatedMembers() {
+            return Util.cast(_getCalculatedMembers());
         }
 
         public SchemaReader withoutAccessControl() {

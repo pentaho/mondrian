@@ -9,12 +9,11 @@
 */
 package mondrian.olap4j;
 
-import mondrian.olap.Hierarchy;
 import mondrian.olap.LocalizedProperty;
 import mondrian.olap.OlapElement;
 import mondrian.olap.Role;
 
-import mondrian.rolap.RolapSchema;
+import mondrian.rolap.*;
 
 import org.olap4j.OlapException;
 import org.olap4j.impl.*;
@@ -92,6 +91,10 @@ class MondrianOlap4jSchema
             : olap4jConnection.getMondrianConnection()
                 .getSchemaReader().getCubes())
         {
+            // Hide the dummy cube created for each shared dimension.
+            if (cube.getName().startsWith("$")) {
+                continue;
+            }
             list.add(olap4jConnection.toOlap4j(cube));
         }
         return Olap4jUtil.cast(list);
@@ -112,10 +115,10 @@ class MondrianOlap4jSchema
                 }
             );
         final Role role = olap4jConnection.getMondrianConnection().getRole();
-        for (mondrian.olap.Dimension dim : schema.getSharedDimensions()) {
+        for (RolapCubeDimension dim : schema.getSharedDimensionList()) {
             if (role.canAccess(dim)) {
                 dimensions.add(
-                    olap4jConnection.toOlap4j(dim.getDimension()));
+                    olap4jConnection.toOlap4j(dim));
             }
         }
         NamedList<MondrianOlap4jDimension> list =

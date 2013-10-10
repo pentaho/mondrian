@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.calc.impl;
@@ -229,8 +229,8 @@ public abstract class AbstractCalc implements Calc {
      * <p>The default member is often the 'all' member, so this evaluator is
      * usually the most efficient context in which to evaluate the expression.
      *
-     * @param calc
-     * @param evaluator
+     * @param calc Compiled expression
+     * @param evaluator Evaluation context
      */
     public static Evaluator simplifyEvaluator(Calc calc, Evaluator evaluator) {
         if (evaluator.isNonEmpty()) {
@@ -243,7 +243,7 @@ public abstract class AbstractCalc implements Calc {
         int changeCount = 0;
         Evaluator ev = evaluator;
         final RolapCube cube = ((RolapEvaluator) evaluator).getCube();
-        for (RolapHierarchy hierarchy : cube.getHierarchyList()) {
+        for (RolapCubeHierarchy hierarchy : cube.getHierarchyList()) {
             final Member member = ev.getContext(hierarchy);
             if (member.isAll()) {
                 continue;

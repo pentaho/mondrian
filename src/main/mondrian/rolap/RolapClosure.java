@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2012 Pentaho
+// Copyright (C) 2012-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -25,6 +25,7 @@ public class RolapClosure {
      * the distance of the relation for each parent-child tuple.
      */
     final RolapSchema.PhysColumn distanceColumn;
+
     public RolapClosure(
         RolapLevel closedPeerLevel,
         RolapSchema.PhysColumn distanceColumn)
@@ -33,4 +34,5 @@ public class RolapClosure {
         this.distanceColumn = distanceColumn;
     }
 }
+
 // End RolapClosure.java

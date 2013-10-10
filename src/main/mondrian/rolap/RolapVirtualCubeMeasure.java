@@ -11,7 +11,6 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 
-
 /**
  * Measure which is defined in a virtual cube, and based on a stored measure
  * in one of the virtual cube's base cubes.
@@ -35,7 +34,7 @@ class RolapVirtualCubeMeasure
     RolapVirtualCubeMeasure(
         RolapMeasureGroup measureGroup,
         RolapMember parentMember,
-        RolapLevel level,
+        RolapCubeLevel level,
         RolapStoredMeasure cubeMeasure,
         Larder larder)
     {
@@ -63,10 +62,6 @@ class RolapVirtualCubeMeasure
         return value;
     }
 
-    public RolapCube getCube() {
-        return cubeMeasure.getCube();
-    }
-
     public RolapStar.Measure getStarMeasure() {
         return cubeMeasure.getStarMeasure();
     }
@@ -85,10 +80,6 @@ class RolapVirtualCubeMeasure
 
     public RolapResult.ValueFormatter getFormatter() {
         return cubeMeasure.getFormatter();
-    }
-
-    public Larder getLarder() {
-        return larder;
     }
 }
 

@@ -38,12 +38,10 @@ import java.util.*;
  * objects which represent them may (or may not be) the same. (That's why
  * there's no <code>getCube()</code> method.)</p>
  *
- * <p>Furthermore, since members are created by a {@link MemberReader} which
- * belongs to the {@link RolapHierarchy}, you know the members will be the same
- * too. For example, if you query <code>[Product].[Beer]</code> from the
- * <code>Sales</code> and <code>Warehouse</code> cubes, you will get the
- * same {@link RolapMember} object. But it will be wrapped in a different
- * {@link RolapCubeMember} object.</p>
+ * <p>A {@link RolapDimension} cannot have members. Members belong to a
+ * {@link RolapCubeDimension}, that is, a dimension in the context of a
+ * particular cube, with a well-defined join path to each fact table in the
+ * cube.</p>
  *
  * <p>NOTE: This class must not contain any references to XML (MondrianDef)
  * objects. Put those in {@link mondrian.rolap.RolapSchemaLoader}.</p>

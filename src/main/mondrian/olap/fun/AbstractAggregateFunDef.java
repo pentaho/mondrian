@@ -214,8 +214,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
         for (List<Member> tuple : tuplesForAggregation) {
             List<Member> tupleCopy = tuple;
             for (int j = 0; j < tuple.size(); j++) {
-                final RolapMemberInCube member =
-                    (RolapMemberInCube) tuple.get(j);
+                final RolapMember member = (RolapMember) tuple.get(j);
                 if (nonJoiningDimensions.contains(member.getDimension())) {
                     if (tupleCopy == tuple) {
                         // Avoid making a copy until we have to change a tuple.

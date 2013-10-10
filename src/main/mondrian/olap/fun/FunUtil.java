@@ -1852,9 +1852,9 @@ public class FunUtil extends Util {
                     final int c = compareSiblingMembers(prev1, prev2);
                     // compareHierarchically needs to impose a total order;
                     // cannot return 0 for non-equal members
-                    assert c != 0
-                        : "Members " + prev1 + ", " + prev2
-                        + " are not equal, but compare returned 0.";
+//                    assert c != 0
+//                        : "Members " + prev1 + ", " + prev2
+//                        + " are not equal, but compare returned 0.";
                     return c;
                 }
             }

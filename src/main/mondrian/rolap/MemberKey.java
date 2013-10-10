@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 21 March, 2002
@@ -68,15 +68,15 @@ class MemberKey {
      *
      * @return Member level, or null if is root member
      */
-    public RolapLevel getLevel() {
+    public RolapCubeLevel getLevel() {
         if (parent == null) {
             return null;
         }
-        final RolapLevel level = parent.getLevel();
+        final RolapCubeLevel level = parent.getLevel();
         if (level.isParentChild()) {
             return level;
         }
-        return (RolapLevel) level.getChildLevel();
+        return level.getChildLevel();
     }
 }
 

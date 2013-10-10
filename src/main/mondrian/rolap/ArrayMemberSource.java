@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 22 December, 2001
@@ -28,22 +28,26 @@ import java.util.List;
  */
 abstract class ArrayMemberSource implements MemberSource {
 
-    protected final RolapHierarchy hierarchy;
+    protected final RolapCubeHierarchy hierarchy;
     protected final List<RolapMember> members;
 
-    ArrayMemberSource(RolapHierarchy hierarchy, List<RolapMember> members) {
+    ArrayMemberSource(RolapCubeHierarchy hierarchy, List<RolapMember> members) {
         this.hierarchy = hierarchy;
         this.members = members;
     }
-    public RolapHierarchy getHierarchy() {
+
+    public RolapCubeHierarchy getHierarchy() {
         return hierarchy;
     }
+
     public boolean setCache(MemberCache cache) {
         return false; // we do not support cache writeback
     }
+
     public List<RolapMember> getMembers() {
         return members;
     }
+
     public int getMemberCount() {
         return members.size();
     }

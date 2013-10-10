@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -603,9 +603,7 @@ public class BatchTestCase extends FoodMartTestCase {
         if (hierarchy.getMemberReader() instanceof SmartMemberReader) {
             clear((SmartMemberReader) hierarchy.getMemberReader());
         }
-        clear(
-            (SmartMemberReader)
-            hierarchy.getRolapHierarchy().getMemberReader());
+        clear((SmartMemberReader) hierarchy.getMemberReader());
 
         // Flush the cache, to ensure that the query gets executed.
         for (RolapStar star : cube.getStars()) {

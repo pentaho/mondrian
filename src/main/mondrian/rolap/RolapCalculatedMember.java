@@ -12,7 +12,6 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 
-
 /**
  * A <code>RolapCalculatedMember</code> is a member based upon a
  * {@link Formula}.
@@ -39,7 +38,7 @@ public class RolapCalculatedMember
      */
     RolapCalculatedMember(
         RolapMember parentMember,
-        RolapLevel level,
+        RolapCubeLevel level,
         String name,
         Formula formula)
     {
