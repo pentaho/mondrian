@@ -27,7 +27,8 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
     public void testGetCubesWithNoHrCubes() {
         String[] expectedCubes = new String[] {
                 "Sales", "Warehouse", "Warehouse and Sales", "Store",
-                "Sales 2"
+                "Sales 2", "$Time", "$Product", "$Warehouse",
+                "$Store"
         };
 
         Connection connection =
@@ -48,7 +49,8 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
     public void testGetCubesWithNoRole() {
         String[] expectedCubes = new String[] {
                 "Sales", "Warehouse", "Warehouse and Sales", "Store",
-                "Sales 2", "HR"
+                "Sales 2", "HR", "$Time", "$Product", "$Warehouse",
+                "$Store"
         };
 
         Connection connection = getTestContext().getConnection();
