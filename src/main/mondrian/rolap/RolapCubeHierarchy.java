@@ -60,7 +60,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             uniqueName,
             rolapHierarchy.isVisible(),
             rolapHierarchy.hasAll(),
-            null,
+            rolapHierarchy.closureFor,
             rolapHierarchy.attribute,
             larder);
         this.ordinal = ordinal;
