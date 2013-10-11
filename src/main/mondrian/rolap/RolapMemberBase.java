@@ -693,18 +693,35 @@ public class RolapMemberBase
     }
 
     public String getLocalized(LocalizedProperty prop, Locale locale) {
-        if (level.resourceMap != null) {
-            final List<Larders.Resource> resources =
-                level.resourceMap.get(uniqueName + ".member");
-            if (resources != null) {
-                final String resource =
-                    Larders.Resource.lookup(prop, locale, resources);
-                if (resource != null) {
-                    return resource;
-                }
+        final List<Larders.Resource> resources = getResources();
+        if (resources != null) {
+            final String resource =
+                Larders.Resource.lookup(prop, locale, resources);
+            if (resource != null) {
+                return resource;
             }
         }
         return Larders.get(this, getLarder(), prop, locale);
+    }
+
+    /**
+     * Attempts to retrieve resources defined in the cube namespace
+     * first, falling back to the shared resource if not found.
+     */
+    private List<Larders.Resource> getResources() {
+        // first find the resourceMap.  If the map associated
+        // with the RolapCubeLevel is null, try
+        // the RolapLevel.
+        Map<String, List<Larders.Resource>> map =
+            level.resourceMap != null ? level.resourceMap
+                : level.getRolapLevel().resourceMap;
+        if (map != null) {
+            List<Larders.Resource> resource =
+                map.get(getCube() + "." + uniqueName + ".member");
+            return resource != null ? resource
+                : map.get(uniqueName + ".member");
+        }
+        return null;
     }
 
     protected boolean childLevelHasApproxRowCount() {
