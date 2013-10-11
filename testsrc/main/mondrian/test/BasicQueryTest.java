@@ -1180,7 +1180,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     /**
      * Requires the use of a sparse segment, because the product dimension
-     * has 6 atttributes, the product of whose cardinalities is ~8M. If we
+     * has 6 attributes, the product of whose cardinalities is ~8M. If we
      * use a dense segment, we run out of memory trying to allocate a huge
      * array.
      */

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -41,8 +41,6 @@ class RestrictedMemberReader extends DelegatingMemberReader {
      * @param memberReader Underlying (presumably unrestricted) member reader
      * @param role Role whose access profile to obey. The role must have
      *   restrictions on this hierarchy
-     * @pre role.getAccessDetails(memberReader.getHierarchy()) != null ||
-     *   memberReader.getHierarchy().isRagged()
      */
     RestrictedMemberReader(MemberReader memberReader, Role role) {
         super(memberReader);
@@ -203,7 +201,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         final List<RolapMember> memberList;
         final int topLevelDepth = hierarchyAccess.getTopLevelDepth();
         if (topLevelDepth > 0) {
-            RolapLevel topLevel =
+            RolapCubeLevel topLevel =
                 getHierarchy().getLevelList().get(topLevelDepth);
             memberList = getMembersInLevel(topLevel);
         } else {
@@ -220,7 +218,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
     }
 
     public List<RolapMember> getMembersInLevel(
-        RolapLevel level)
+        RolapCubeLevel level)
     {
         TupleConstraint constraint =
             sqlConstraintFactory.getLevelMembersConstraint(null);
@@ -228,7 +226,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
     }
 
     public List<RolapMember> getMembersInLevel(
-        RolapLevel level, TupleConstraint constraint)
+        RolapCubeLevel level, TupleConstraint constraint)
     {
         if (hierarchyAccess != null) {
             final int depth = level.getDepth();
@@ -248,8 +246,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
     }
 
     public RolapMember getDefaultMember() {
-        RolapMember defaultMember =
-            (RolapMember) getHierarchy().getDefaultMember();
+        RolapMember defaultMember = getHierarchy().getDefaultMember();
         if (defaultMember != null) {
             Access i = hierarchyAccess.getAccess(defaultMember);
             if (i != Access.NONE) {
@@ -257,14 +254,11 @@ class RestrictedMemberReader extends DelegatingMemberReader {
             }
         }
         final List<RolapMember> rootMembers = getRootMembers();
-        final RolapCubeMember rootMember = (RolapCubeMember) rootMembers.get(0);
+        final RolapMember rootMember = rootMembers.get(0);
         if (rootMembers.size() == 1) {
             return rootMembers.get(0);
         } else {
-            return new MultiCardinalityDefaultMember(
-                rootMember.getParentMember(),
-                rootMember.getRolapMember(),
-                rootMember.cubeLevel);
+            return new MultiCardinalityDefaultMember(rootMember);
         }
     }
 
@@ -277,13 +271,9 @@ class RestrictedMemberReader extends DelegatingMemberReader {
      * <p>FIXME: If/when we refactor evaluator to support
      * multi-cardinality default members, we can remove this.
      */
-    static class MultiCardinalityDefaultMember extends RolapCubeMember {
-        protected MultiCardinalityDefaultMember(
-            RolapCubeMember parent,
-            RolapMember member,
-            RolapCubeLevel cubeLevel)
-        {
-            super(parent, member, cubeLevel);
+    static class MultiCardinalityDefaultMember extends DelegatingRolapMember {
+        protected MultiCardinalityDefaultMember(RolapMember member) {
+            super(member);
         }
     }
 

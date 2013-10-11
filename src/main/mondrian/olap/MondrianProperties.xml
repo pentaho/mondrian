@@ -1258,26 +1258,6 @@ desirable.</p>
         <Default>false</Default>
     </PropertyDefinition>
     <PropertyDefinition>
-        <Name>EnableRolapCubeMemberCache</Name>
-        <Path>mondrian.rolap.EnableRolapCubeMemberCache</Path>
-        <Category>Caching</Category>
-        <Description>
-<p>Property that determines whether to cache RolapCubeMember objects,
-each of which associates a member of a shared hierarchy with a
-particular cube in which it is being used.</p>
-
-<p>The default is {@code true}, that is, use a cache. If you wish to use
-the member cache control aspects of {@link mondrian.olap.CacheControl},
-you must set this property to {@code false}.</p>
-
-<p>RolapCubeMember has recently become more lightweight to
-construct, and we may obsolete this cache and this
-property.</p>
-        </Description>
-        <Type>boolean</Type>
-        <Default>true</Default>
-    </PropertyDefinition>
-    <PropertyDefinition>
         <Name>SolveOrderMode</Name>
         <Path>mondrian.rolap.SolveOrderMode</Path>
         <Description>

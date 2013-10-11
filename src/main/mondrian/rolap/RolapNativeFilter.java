@@ -105,7 +105,7 @@ public class RolapNativeFilter extends RolapNativeSet {
         if (!SqlContextConstraint.checkValidContext(
                 evaluator,
                 true,
-                Collections.<RolapLevel>emptyList(),
+                Collections.<RolapCubeLevel>emptyList(),
                 restrictMemberTypes(),
                 measureGroupList))
         {

@@ -7,7 +7,7 @@
 // Copyright (C) 2001-2002 Julian Hyde
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2007-2008 StrateBI
-// Copyright (C) 2008-2012 Pentaho and others
+// Copyright (C) 2008-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -48,37 +48,27 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         }
     }
 
-    // implementes MemberCache
     public boolean isMutable() {
         return false;
     }
 
-    // implementes MemberCache
-    public RolapMember removeMember(RolapLevel level, Object key) {
+    public RolapMember removeMember(RolapCubeLevel level, Object key) {
         return null;
     }
 
-    // implementes MemberCache
-    public RolapMember removeMemberAndDescendants(RolapLevel level, Object key)
-    {
-        return null;
-    }
-
-    // implement MemberReader
-    public RolapHierarchy getHierarchy() {
+    public RolapCubeHierarchy getHierarchy() {
         return source.getHierarchy();
     }
 
-    // implement MemberCache
     public boolean setCache(MemberCache cache) {
         return false;
     }
 
-    public final RolapMember getMember(RolapLevel level, Object key) {
+    public final RolapMember getMember(RolapCubeLevel level, Object key) {
         return getMember(level, key, true);
     }
 
-    public RolapMember getMember(
+    private RolapMember getMember(
         RolapLevel level,
         Object key,
         boolean mustCheckCacheStatus)
@@ -87,9 +77,8 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         return null;
     }
 
-    // implement MemberCache
     public Object putMember(
-        RolapLevel level,
+        RolapCubeLevel level,
         final Object key,
         final RolapMember value)
     {
@@ -97,12 +86,11 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         return value;
     }
 
-    // implement MemberReader
     public List<RolapMember> getMembers() {
         System.out.println("NoCache getMembers");
         List<RolapMember> v = new ArrayList<RolapMember>();
         // todo: optimize by walking to children for members we know about
-        for (RolapLevel level : getHierarchy().getLevelList()) {
+        for (RolapCubeLevel level : getHierarchy().getLevelList()) {
             List<RolapMember> membersInLevel =
                 getMembersInLevel(level);
             v.addAll(membersInLevel);
@@ -116,7 +104,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
     }
 
     public List<RolapMember> getMembersInLevel(
-        final RolapLevel level)
+        final RolapCubeLevel level)
     {
         TupleConstraint constraint =
             sqlConstraintFactory.getLevelMembersConstraint(null);
@@ -124,7 +112,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
     }
 
     public List<RolapMember> getMembersInLevel(
-        final RolapLevel level, final TupleConstraint constraint)
+        final RolapCubeLevel level, final TupleConstraint constraint)
     {
         LOGGER.debug("Entering getMembersInLevel");
         return source.getMembersInLevel(
@@ -132,7 +120,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
     }
 
     public RolapMember getMemberByKey(
-        RolapLevel level, List<Comparable> keyValues)
+        RolapCubeLevel level, List<Comparable> keyValues)
     {
         return source.getMemberByKey(level, keyValues);
     }
@@ -190,7 +178,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
     }
 
     public List<RolapMember> getLevelMembersFromCache(
-        final RolapLevel level,
+        final RolapCubeLevel level,
         final TupleConstraint constraint)
     {
         return null;
@@ -204,7 +192,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
     }
 
     public void putChildren(
-        final RolapLevel level,
+        final RolapCubeLevel level,
         final TupleConstraint constraint,
         final List<RolapMember> children)
     {
@@ -219,8 +207,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
                 RolapMember sibling = null;
                 while (n-- > 0) {
                     if (!iter.hasNext()) {
-                        return (RolapMember) member.getHierarchy()
-                            .getNullMember();
+                        return member.getHierarchy().getNullMember();
                     }
                     sibling = iter.nextMember();
                 }
@@ -230,8 +217,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
                 RolapMember sibling = null;
                 while (n-- > 0) {
                     if (!iter.hasPrevious()) {
-                        return (RolapMember) member.getHierarchy()
-                            .getNullMember();
+                        return member.getHierarchy().getNullMember();
                     }
                     sibling = iter.previousMember();
                 }
@@ -438,15 +424,14 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
     }
 
     public RolapMember getDefaultMember() {
-        RolapMember defaultMember =
-            (RolapMember) getHierarchy().getDefaultMember();
+        RolapMember defaultMember = getHierarchy().getDefaultMember();
         if (defaultMember != null) {
             return defaultMember;
         }
         return getRootMembers().get(0);
     }
 
-    public int getLevelMemberCount(RolapLevel level) {
+    public int getLevelMemberCount(RolapCubeLevel level) {
         // No need to cache the result: the caller saves the result by calling
         // RolapLevel.setApproxRowCount
         return source.getLevelMemberCount(level);

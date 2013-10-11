@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -67,7 +67,7 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
 
     @Override
     public List<RolapMember> getMembersInLevel(
-        RolapLevel level)
+        RolapCubeLevel level)
     {
         return substitute(memberReader.getMembersInLevel(level));
     }
@@ -99,7 +99,7 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
     }
 
     @Override
-    public RolapHierarchy getHierarchy() {
+    public RolapCubeHierarchy getHierarchy() {
         return memberReader.getHierarchy();
     }
 
@@ -180,7 +180,7 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
 
     @Override
     public List<RolapMember> getMembersInLevel(
-        RolapLevel level, TupleConstraint constraint)
+        RolapCubeLevel level, TupleConstraint constraint)
     {
         return substitute(
             memberReader.getMembersInLevel(
@@ -252,7 +252,7 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
 
         public RolapMember makeMember(
             RolapMember parentMember,
-            RolapLevel childLevel,
+            RolapCubeLevel childLevel,
             Comparable key,
             Object captionValue,
             String nameValue,

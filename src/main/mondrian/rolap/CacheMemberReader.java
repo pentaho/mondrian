@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -40,7 +40,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
      * is, a map for each level) rather than using Pair as a compound key. Also,
      * we can use an IdentityHashMap for levels, which should be faster.</p>
      */
-    private final Map<Pair<RolapLevel, Object>, RolapMember> mapKeyToMember;
+    private final Map<Pair<RolapCubeLevel, Object>, RolapMember> mapKeyToMember;
 
     CacheMemberReader(MemberSource source) {
         this.source = source;
@@ -49,16 +49,16 @@ class CacheMemberReader implements MemberReader, MemberCache {
             Util.discard(source.setCache(this));
         }
         this.mapKeyToMember =
-            new HashMap<Pair<RolapLevel, Object>, RolapMember>();
+            new HashMap<Pair<RolapCubeLevel, Object>, RolapMember>();
         this.members = source.getMembers();
         for (int i = 0; i < members.size(); i++) {
-            RolapMember member = RolapUtil.strip(members.get(i));
+            RolapMember member = members.get(i);
             ((RolapMemberBase) member).setOrdinal(i);
         }
     }
 
     // implement MemberReader
-    public RolapHierarchy getHierarchy() {
+    public RolapCubeHierarchy getHierarchy() {
         return source.getHierarchy();
     }
 
@@ -77,7 +77,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
     }
 
     public RolapMember getMemberByKey(
-        RolapLevel level, List<Comparable> keyValues)
+        RolapCubeLevel level, List<Comparable> keyValues)
     {
         assert keyValues.size() == 1;
         return mapKeyToMember.get(keyValues.get(0));
@@ -89,12 +89,12 @@ class CacheMemberReader implements MemberReader, MemberCache {
     }
 
     // implement MemberCache
-    public RolapMember getMember(RolapLevel level, Object key) {
+    public RolapMember getMember(RolapCubeLevel level, Object key) {
         return mapKeyToMember.get(Pair.of(level, key));
     }
 
     public RolapMember getMember(
-        RolapLevel level,
+        RolapCubeLevel level,
         Object key,
         boolean mustCheckCacheStatus)
     {
@@ -102,7 +102,8 @@ class CacheMemberReader implements MemberReader, MemberCache {
     }
 
     // implement MemberCache
-    public Object putMember(RolapLevel level, Object key, RolapMember value) {
+    public Object putMember(RolapCubeLevel level, Object key, RolapMember value)
+    {
         return mapKeyToMember.put(Pair.of(level, key), value);
     }
 
@@ -119,7 +120,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
     // don't need to implement this MemberCache method because we're never
     // used in a context where it is needed
     public void putChildren(
-        RolapLevel level,
+        RolapCubeLevel level,
         TupleConstraint constraint,
         List<RolapMember> children)
     {
@@ -132,12 +133,13 @@ class CacheMemberReader implements MemberReader, MemberCache {
         return false;
     }
 
-    public RolapMember removeMember(RolapLevel level, Object key)
+    public RolapMember removeMember(RolapCubeLevel level, Object key)
     {
         throw new UnsupportedOperationException();
     }
 
-    public RolapMember removeMemberAndDescendants(RolapLevel level, Object key)
+    public RolapMember removeMemberAndDescendants(
+        RolapCubeLevel level, Object key)
     {
         throw new UnsupportedOperationException();
     }
@@ -154,7 +156,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
     // don't need to implement this MemberCache method because we're never
     // used in a context where it is needed
     public List<RolapMember> getLevelMembersFromCache(
-        RolapLevel level,
+        RolapCubeLevel level,
         TupleConstraint constraint)
     {
         return null;
@@ -178,7 +180,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
     }
 
     public List<RolapMember> getMembersInLevel(
-        RolapLevel level)
+        RolapCubeLevel level)
     {
         List<RolapMember> list = new ArrayList<RolapMember>();
         int levelDepth = level.getDepth();
@@ -191,13 +193,13 @@ class CacheMemberReader implements MemberReader, MemberCache {
     }
 
     public List<RolapMember> getMembersInLevel(
-        RolapLevel level,
+        RolapCubeLevel level,
         TupleConstraint constraint)
     {
         return getMembersInLevel(level);
     }
 
-    public int getLevelMemberCount(RolapLevel level) {
+    public int getLevelMemberCount(RolapCubeLevel level) {
         int count = 0;
         int levelDepth = level.getDepth();
         for (Member member : members) {
@@ -231,9 +233,9 @@ class CacheMemberReader implements MemberReader, MemberCache {
         List<RolapMember> parentMembers,
         List<RolapMember> children)
     {
-        for (Member member : members) {
+        for (RolapMember member : members) {
             if (parentMembers.contains(member.getParentMember())) {
-                ((List)children).add(member);
+                children.add(member);
             }
         }
     }
@@ -257,7 +259,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
                     return members.get(ordinal);
                 }
             }
-            return (RolapMember) member.getHierarchy().getNullMember();
+            return member.getHierarchy().getNullMember();
 
         } else {
             for (int ordinal = member.getOrdinal(); ordinal >= 0; ordinal--) {
@@ -267,7 +269,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
                     return members.get(ordinal);
                 }
             }
-            return (RolapMember) member.getHierarchy().getNullMember();
+            return member.getHierarchy().getNullMember();
         }
     }
 
@@ -316,8 +318,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
     }
 
     public RolapMember getDefaultMember() {
-        RolapMember defaultMember =
-            (RolapMember) getHierarchy().getDefaultMember();
+        RolapMember defaultMember = getHierarchy().getDefaultMember();
         if (defaultMember != null) {
             return defaultMember;
         }

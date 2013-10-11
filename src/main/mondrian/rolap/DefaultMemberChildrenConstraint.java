@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -55,7 +55,7 @@ public class DefaultMemberChildrenConstraint
     public void addLevelConstraint(
         SqlQuery query,
         RolapStarSet starSet,
-        RolapLevel level)
+        RolapCubeLevel level)
     {
     }
 

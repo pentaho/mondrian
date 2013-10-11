@@ -11,7 +11,6 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.Level;
 import mondrian.olap.Util;
 import mondrian.rolap.cache.SmartCache;
 import mondrian.rolap.cache.SoftSmartCache;
@@ -37,8 +36,8 @@ public class MemberCacheHelper implements MemberCache {
         mapMemberToChildren;
 
     /** a cache for all members to ensure uniqueness */
-    SmartCache<Pair<RolapLevel, Object>, RolapMember> mapKeyToMember;
-    RolapHierarchy rolapHierarchy;
+    SmartCache<Pair<RolapCubeLevel, Object>, RolapMember> mapKeyToMember;
+    RolapCubeHierarchy rolapHierarchy;
 
     /** maps a level to its members */
     final SmartMemberListCache<RolapLevel, List<RolapMember>>
@@ -49,19 +48,19 @@ public class MemberCacheHelper implements MemberCache {
      *
      * @param rolapHierarchy Hierarchy
      */
-    public MemberCacheHelper(RolapHierarchy rolapHierarchy) {
+    public MemberCacheHelper(RolapCubeHierarchy rolapHierarchy) {
         this.rolapHierarchy = rolapHierarchy;
         this.mapLevelToMembers =
             new SmartMemberListCache<RolapLevel, List<RolapMember>>();
         this.mapKeyToMember =
-            new SoftSmartCache<Pair<RolapLevel, Object>, RolapMember>();
+            new SoftSmartCache<Pair<RolapCubeLevel, Object>, RolapMember>();
         this.mapMemberToChildren =
             new SmartMemberListCache<RolapMember, List<RolapMember>>();
     }
 
     // implement MemberCache
     public RolapMember getMember(
-        RolapLevel level,
+        RolapCubeLevel level,
         Object key)
     {
         return mapKeyToMember.get(Pair.of(level, key));
@@ -70,7 +69,7 @@ public class MemberCacheHelper implements MemberCache {
 
     // implement MemberCache
     public Object putMember(
-        RolapLevel level,
+        RolapCubeLevel level,
         Object key,
         RolapMember value)
     {
@@ -79,7 +78,7 @@ public class MemberCacheHelper implements MemberCache {
 
     /**
      * Deprecated in favor of
-     * {@link #putChildren(RolapLevel, TupleConstraint, List)}
+     * {@link MemberCache#putChildren(RolapCubeLevel, mondrian.rolap.sql.TupleConstraint, java.util.List)}
      */
     @Deprecated
     public void putLevelMembersInCache(
@@ -87,11 +86,11 @@ public class MemberCacheHelper implements MemberCache {
         TupleConstraint constraint,
         List<RolapMember> members)
     {
-        putChildren(level, constraint, members);
+        putChildren((RolapCubeLevel) level, constraint, members);
     }
 
     public void putChildren(
-        RolapLevel level,
+        RolapCubeLevel level,
         TupleConstraint constraint,
         List<RolapMember> members)
     {
@@ -122,7 +121,7 @@ public class MemberCacheHelper implements MemberCache {
     }
 
     public List<RolapMember> getLevelMembersFromCache(
-        RolapLevel level,
+        RolapCubeLevel level,
         TupleConstraint constraint)
     {
         if (constraint == null) {
@@ -137,8 +136,8 @@ public class MemberCacheHelper implements MemberCache {
         mapKeyToMember.clear();
         mapLevelToMembers.clear();
         // We also need to clear the approxRowCount of each level.
-        for (Level level : rolapHierarchy.getLevels()) {
-            ((RolapLevel)level).setApproxRowCount(Integer.MIN_VALUE);
+        for (RolapCubeLevel level : rolapHierarchy.getLevelList()) {
+            level.setApproxRowCount(Integer.MIN_VALUE);
         }
     }
 
@@ -147,13 +146,13 @@ public class MemberCacheHelper implements MemberCache {
         return true;
     }
 
-    public RolapMember removeMember(RolapLevel level, Object key)
+    public RolapMember removeMember(RolapCubeLevel level, Object key)
     {
         // Flush entries from the level-to-members map
         // for member's level and all child levels.
         // Important: Do this even if the member is apparently not in the cache.
         if (level == null) {
-            level = (RolapLevel) this.rolapHierarchy.getLevels()[0];
+            level = this.rolapHierarchy.getLevelList().get(0);
         }
         final RolapLevel levelRef = level;
         mapLevelToMembers.getCache().execute(

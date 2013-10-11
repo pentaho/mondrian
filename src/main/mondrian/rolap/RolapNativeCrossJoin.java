@@ -189,9 +189,9 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         }
 
         // Verify that args are valid
-        List<RolapLevel> levels = new ArrayList<RolapLevel>();
+        List<RolapCubeLevel> levels = new ArrayList<RolapCubeLevel>();
         for (CrossJoinArg cjArg : cjArgs) {
-            RolapLevel level = cjArg.getLevel();
+            RolapCubeLevel level = cjArg.getLevel();
             if (level != null) {
                 // Only add non null levels. These levels have real
                 // constraints.

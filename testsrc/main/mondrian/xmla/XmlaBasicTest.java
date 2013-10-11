@@ -942,16 +942,6 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
             props, getTestContext(), role);
     }
 
-    public void testExecuteBugMondrian762()
-        throws Exception
-    {
-        String requestType = "EXECUTE";
-        Properties props = getDefaultRequestProperties(requestType);
-        propSaver.set(propSaver.props.EnableRolapCubeMemberCache, false);
-        doTest(requestType, props, getTestContext());
-        propSaver.set(propSaver.props.EnableRolapCubeMemberCache, true);
-    }
-
     public void testExecuteBugMondrian1316() throws Exception {
         String requestType = "EXECUTE";
         Properties props = getDefaultRequestProperties(requestType);

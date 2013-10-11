@@ -32,7 +32,7 @@ interface MemberCache {
      * @param key Member key
      * @return member with a given cache key
      */
-    RolapMember getMember(RolapLevel level, Object key);
+    RolapMember getMember(RolapCubeLevel level, Object key);
 
     /**
      * Replaces the {@link RolapMember} with a given key and returns the
@@ -43,11 +43,11 @@ interface MemberCache {
      * @param member new member
      * @return Previous member with that key, or null.
      */
-    Object putMember(RolapLevel level, Object key, RolapMember member);
+    Object putMember(RolapCubeLevel level, Object key, RolapMember member);
 
     /**
      * Returns whether the cache supports removing selected items. If it does,
-     * it is valid to call the {@link #removeMember(RolapLevel, Object)}
+     * it is valid to call the {@link #removeMember(RolapCubeLevel, Object)}
      * method.
      *
      * <p>REVIEW: remove isMutable and move removeMember and
@@ -66,7 +66,7 @@ interface MemberCache {
      * @param key Member key
      * @return previous member with that key, or null
      */
-    RolapMember removeMember(RolapLevel level, Object key);
+    RolapMember removeMember(RolapCubeLevel level, Object key);
 
     /**
      * Returns the children of <code>member</code> if they are currently in the
@@ -97,7 +97,7 @@ interface MemberCache {
      * @return members of level, or null if not in cache
      */
     List<RolapMember> getLevelMembersFromCache(
-        RolapLevel level,
+        RolapCubeLevel level,
         TupleConstraint constraint);
 
     /**
@@ -124,7 +124,7 @@ interface MemberCache {
      * @param children list of children
      */
     void putChildren(
-        RolapLevel level,
+        RolapCubeLevel level,
         TupleConstraint constraint,
         List<RolapMember> children);
 }

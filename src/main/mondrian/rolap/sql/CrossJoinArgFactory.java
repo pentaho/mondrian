@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
@@ -464,7 +464,7 @@ public class CrossJoinArgFactory {
         if (member.isCalculated()) {
             return null;
         }
-        RolapLevel level = member.getLevel();
+        RolapCubeLevel level = member.getLevel();
         level = level.getChildLevel();
         if (level == null || !level.isSimple()) {
             // no child level
@@ -506,7 +506,8 @@ public class CrossJoinArgFactory {
         if (!(args[0] instanceof LevelExpr)) {
             return null;
         }
-        RolapLevel level = (RolapLevel) ((LevelExpr) args[0]).getLevel();
+        final RolapCubeLevel level =
+            (RolapCubeLevel) ((LevelExpr) args[0]).getLevel();
         if (!level.isSimple()) {
             return null;
         }
@@ -525,7 +526,6 @@ public class CrossJoinArgFactory {
             new DescendantsCrossJoinArg(level, null)
         };
     }
-
 
     private static boolean isArgSizeSupported(
         RolapEvaluator evaluator,
@@ -550,8 +550,9 @@ public class CrossJoinArgFactory {
     /**
      * Checks for Descendants(&lt;member&gt;, &lt;Level&gt;)
      *
-     * @return an {@link mondrian.rolap.sql.CrossJoinArg} instance describing the Descendants
-     *         function, or null if <code>fun</code> represents something else.
+     * @return an {@link mondrian.rolap.sql.CrossJoinArg} instance describing
+     * the Descendants function, or null if <code>fun</code> represents
+     * something else.
      */
     private CrossJoinArg[] checkDescendants(
         Role role,
@@ -571,18 +572,17 @@ public class CrossJoinArgFactory {
         if (member.isCalculated()) {
             return null;
         }
-        RolapLevel level = null;
+        final RolapCubeLevel level;
         if ((args[1] instanceof LevelExpr)) {
-            level = (RolapLevel) ((LevelExpr) args[1]).getLevel();
+            level = (RolapCubeLevel) ((LevelExpr) args[1]).getLevel();
         } else if (args[1] instanceof Literal) {
-            List<RolapLevel> levels =
-                Util.cast(member.getHierarchy().getLevelList());
+            List<? extends RolapCubeLevel> levels =
+                member.getHierarchy().getLevelList();
             int currentDepth = member.getDepth();
             Literal descendantsDepth = (Literal) args[1];
             int newDepth = currentDepth + descendantsDepth.getIntValue();
-            if (newDepth < levels.size()) {
-                level = levels.get(newDepth);
-            }
+            assert newDepth < levels.size();
+            level = levels.get(newDepth);
         } else {
             return null;
         }

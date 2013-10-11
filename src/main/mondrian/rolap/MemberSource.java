@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 21 December, 2001
@@ -48,7 +48,8 @@ public interface MemberSource {
     /**
      * Returns the hierarchy that this source is reading for.
      */
-    RolapHierarchy getHierarchy();
+    RolapCubeHierarchy getHierarchy();
+
     /**
      * Sets the cache which this <code>MemberSource</code> will write to.
      *
@@ -65,6 +66,7 @@ public interface MemberSource {
      * @return Whether this <code>MemberSource</code> supports cache-writeback.
      */
     boolean setCache(MemberCache cache);
+
     /**
      * Returns all members of this hierarchy, sorted by ordinal.
      *

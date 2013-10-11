@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -63,18 +63,18 @@ class RangeFunDef extends FunDefBase {
             members[1] = compiler.compileMember(exp1);
         }
 
-        // replace any null types with hierachy null member
+        // replace any null types with hierarchy null member
         // if both objects are null, throw exception
 
         if (members[0] == null && members[1] == null) {
             throw MondrianResource.instance().TwoNullsNotSupported.ex();
         } else if (members[0] == null) {
-            Member nullMember =
+            RolapMember nullMember =
                 ((RolapMember) members[1].evaluate(null)).getHierarchy()
                 .getNullMember();
             members[0] = (MemberCalc)ConstantCalc.constantMember(nullMember);
         } else if (members[1] == null) {
-            Member nullMember =
+            RolapMember nullMember =
                 ((RolapMember) members[0].evaluate(null)).getHierarchy()
                 .getNullMember();
             members[1] = (MemberCalc)ConstantCalc.constantMember(nullMember);

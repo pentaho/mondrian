@@ -3904,7 +3904,7 @@ public class RolapSchemaUpgrader {
         /**
          * The measures level corresponding to the virtual cube
          */
-        private RolapLevel measuresLevel;
+        private RolapCubeLevel measuresLevel;
 
         /**
          * List of measures found
@@ -3918,7 +3918,7 @@ public class RolapSchemaUpgrader {
         public MeasureFinder(
             RolapCube virtualCube,
             RolapCube baseCube,
-            RolapLevel measuresLevel)
+            RolapCubeLevel measuresLevel)
         {
             this.xmlSchema = null; // TODO:
             this.schema = virtualCube.getSchema();

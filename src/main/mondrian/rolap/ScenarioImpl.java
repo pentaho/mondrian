@@ -117,7 +117,7 @@ public final class ScenarioImpl implements Scenario {
             BitKey.Factory.makeBitKey(starColumnCount);
         Object[] keyValues = new Object[starColumnCount];
         for (int i = 1; i < members.size(); i++) {
-            final RolapCubeMember member = (RolapCubeMember) members.get(i);
+            final RolapMember member = members.get(i);
             final List<Comparable> keyList = member.getKeyAsList();
             int j = 0;
             for (RolapSchema.PhysColumn physColumn
@@ -376,7 +376,7 @@ public final class ScenarioImpl implements Scenario {
             membersByOrdinal =
                 memberList.toArray(new Member[memberList.size()]);
             for (RolapMember member : members) {
-                final RolapHierarchy hierarchy = member.getHierarchy();
+                final RolapCubeHierarchy hierarchy = member.getHierarchy();
                 if (hierarchy.isScenario) {
                     assert member.isAll();
                 }
