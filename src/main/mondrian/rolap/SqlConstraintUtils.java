@@ -23,8 +23,6 @@ import mondrian.util.Pair;
 import java.util.*;
 import java.util.regex.Pattern;
 
-
-
 /**
  * Utility class used by implementations of {@link mondrian.rolap.sql.SqlConstraint},
  * used to generate constraints into {@link mondrian.rolap.sql.SqlQuery}.
@@ -541,9 +539,8 @@ public class SqlConstraintUtils {
         // Find out the first(lowest) unique parent level.
         // Only need to compare members up to that level.
         RolapMember member = members.get(0);
-        RolapLevel memberLevel = member.getLevel();
         RolapMember firstUniqueParent = member;
-        RolapLevel firstUniqueParentLevel = null;
+        RolapCubeLevel firstUniqueParentLevel = null;
         for (;
             firstUniqueParent != null
             && true /* TODO: !firstUniqueParent.getLevel().isUnique() */;
@@ -609,14 +606,9 @@ public class SqlConstraintUtils {
             return LiteralStarPredicate.FALSE;
         }
         RolapMember member1 = members.iterator().next();
-        final RolapLevel level = member1.getLevel();
-        RolapSchema.PhysRouter router;
-        if (level instanceof RolapCubeLevel) {
-            router = new RolapSchema.CubeRouter(
-                measureGroup, ((RolapCubeLevel) level).getDimension());
-        } else {
-            router = RolapSchema.NoRouter.INSTANCE;
-        }
+        final RolapCubeLevel level = member1.getLevel();
+        RolapSchema.PhysRouter router =
+            new RolapSchema.CubeRouter(measureGroup, level.getDimension());
         if (i == 1) {
             return Predicates.memberPredicate(
                 router,
@@ -662,7 +654,7 @@ public class SqlConstraintUtils {
         RolapMeasureGroup measureGroup,
         AggStar aggStar,
         List<RolapMember> members,
-        RolapLevel fromLevel,
+        RolapCubeLevel fromLevel,
         boolean restrictMemberTypes,
         boolean exclude)
     {
@@ -726,9 +718,9 @@ public class SqlConstraintUtils {
             // Classify members into List that share the same parent.
             //
             // Using the same example as above, the resulting map will be
-            //   [USA].[CA]->[San Jose]
-            //   [null].[null]->([San Francisco], [Los Angesles])
-            //   [null].[CA]->([San Diego],[Sacramento])
+            //   [USA].[CA] -> [San Jose]
+            //   [null].[null] -> ([San Francisco], [Los Angeles])
+            //   [null].[CA] -> ([San Diego],[Sacramento])
             //
             // The idea is to be able to "compress" the original member list
             // into groups that can use single value IN list for part of the
@@ -766,7 +758,7 @@ public class SqlConstraintUtils {
             condition.append(strip("\n    or "));
         }
 
-        RolapLevel memberLevel = members.get(0).getLevel();
+        RolapCubeLevel memberLevel = members.get(0).getLevel();
 
         // The children for each parent are turned into IN list so they
         // should not contain null.
@@ -786,18 +778,17 @@ public class SqlConstraintUtils {
             // members, outside of the normal rolap star, therefore
             // we need to check the level to see if it is a shared or
             // cube level.
-            if (p instanceof RolapCubeMember) {
-                RolapCubeMember cubeMember = (RolapCubeMember) p;
+            if (Util.deprecated(true, false)) {
                 final RolapAttribute attribute = p.getLevel().getAttribute();
                 for (Pair<RolapSchema.PhysColumn, Comparable> pair
                     : Pair.iterate(
-                        attribute.getKeyList(), cubeMember.getKeyAsList()))
+                        attribute.getKeyList(), p.getKeyAsList()))
                 {
                     final RolapSchema.PhysColumn physColumn = pair.left;
                     final Comparable o = pair.right;
                     final RolapStar.Column column =
                         measureGroup.getRolapStarColumn(
-                            cubeMember.getDimension(), physColumn);
+                            p.getDimension(), physColumn);
                     if (column != null) {
                         if (aggStar != null) {
                             int bitPos = column.getBitPosition();
@@ -854,7 +845,7 @@ public class SqlConstraintUtils {
                 if (levelCount > 0) {
                     condition2.append(strip("\n    and "));
                 }
-                RolapLevel childrenLevel = p.getLevel().getChildLevel();
+                RolapCubeLevel childrenLevel = p.getLevel().getChildLevel();
 
                 if (queryBuilder.getDialect().supportsMultiValueInExpr()
                     && childrenLevel != memberLevel)
@@ -1092,7 +1083,7 @@ public class SqlConstraintUtils {
         RolapMeasureGroup measureGroup,
         AggStar aggStar,
         List<RolapMember> members,
-        RolapLevel fromLevel,
+        RolapCubeLevel fromLevel,
         boolean restrictMemberTypes,
         Map<RolapMember, List<RolapMember>> parentWithNullToChildrenMap)
     {
@@ -1103,27 +1094,20 @@ public class SqlConstraintUtils {
         columnBuf.append("(");
 
         // generate the left-hand side of the IN expression
-        int ordinalInMultiple = 0;
-        RolapMember member = members.get(0);
-        RolapLevel level = member.getLevel();
+        final RolapMember member = members.get(0);
+        final RolapCubeLevel level = member.getLevel();
 
         // this method can be called within the context of shared members,
         // outside of the normal rolap star, therefore we need to
         // check the level to see if it is a shared or cube level.
 
-        final List<RolapStar.Column> columns;
-        if (level instanceof RolapCubeLevel) {
-            final RolapCubeLevel cubeLevel = (RolapCubeLevel) level;
-            columns = new ArrayList<RolapStar.Column>();
-            for (RolapSchema.PhysColumn key : cubeLevel.attribute.getKeyList())
-            {
-                columns.add(
-                    measureGroup.getRolapStarColumn(
-                        cubeLevel.cubeDimension,
-                        key));
-            }
-        } else {
-            columns = null;
+        final List<RolapStar.Column> columns =
+            new ArrayList<RolapStar.Column>();
+        for (RolapSchema.PhysColumn key : level.attribute.getKeyList()) {
+            columns.add(
+                measureGroup.getRolapStarColumn(
+                    level.cubeDimension,
+                    key));
         }
 
         // REVIEW: The following code mostly uses the name column (or name
@@ -1184,11 +1168,11 @@ public class SqlConstraintUtils {
                 continue;
             }
 
-            ordinalInMultiple = 0;
             memberBuf.setLength(0);
             memberBuf.append("(");
 
             boolean containsNull = false;
+            int ordinalInMultiple = 0;
             for (Pair<RolapSchema.PhysColumn, Comparable> pair
                 : Pair.iterate(level.attribute.getKeyList(), m.getKeyAsList()))
             {
@@ -1316,7 +1300,7 @@ public class SqlConstraintUtils {
         RolapMeasureGroup measureGroup,
         AggStar aggStar,
         List<RolapMember> members,
-        RolapLevel fromLevel,
+        RolapCubeLevel fromLevel,
         boolean restrictMemberTypes,
         boolean exclude)
     {
@@ -1350,112 +1334,101 @@ public class SqlConstraintUtils {
             break;
         }
 
-            boolean containsNullKey = false;
-            for (RolapMember member : members2) {
-                m = member;
-                if (m.getKey() == RolapUtil.sqlNullValue) {
-                    containsNullKey = true;
-                }
+        boolean containsNullKey = false;
+        for (RolapMember member : members2) {
+            m = member;
+            if (m.getKey() == RolapUtil.sqlNullValue) {
+                containsNullKey = true;
             }
+        }
 
-            final RolapLevel level = m.getLevel();
-            if (level.getAttribute().getKeyList().size() > 0) {
-                RolapSchema.PhysColumn key =
-                    level.getAttribute().getKeyList().get(0);
-                // this method can be called within the context of shared
-                // members, outside of the normal rolap star, therefore we need
-                // to check the level to see if it is a shared or cube level.
+        assert m != null;
+        final RolapCubeLevel level = m.getLevel();
+        if (level.getAttribute().getKeyList().size() > 0) {
+            RolapSchema.PhysColumn key =
+                level.getAttribute().getKeyList().get(0);
+            // this method can be called within the context of shared
+            // members, outside of the normal rolap star, therefore we need
+            // to check the level to see if it is a shared or cube level.
 
-                String q;
-                final RolapStar.Column column;
-                if (level instanceof RolapCubeLevel) {
-                    assert measureGroup != null;
-                    final RolapCubeLevel cubeLevel = (RolapCubeLevel) level;
-                    column = measureGroup.getRolapStarColumn(
-                        cubeLevel.cubeDimension,
-                        key,
-                        true);
+            String q;
+            if (measureGroup != null) {
+                final RolapStar.Column column =
+                    measureGroup.getRolapStarColumn(
+                        level.cubeDimension, key, true);
 
-                    if (aggStar != null) {
-                        int bitPos = column.getBitPosition();
-                        AggStar.Table.Column aggColumn =
-                            aggStar.lookupColumn(bitPos);
-                        if (aggColumn == null) {
-                            throw Util.newInternal(
-                                "AggStar " + aggStar + " has no column for "
+                if (aggStar != null) {
+                    int bitPos = column.getBitPosition();
+                    AggStar.Table.Column aggColumn =
+                        aggStar.lookupColumn(bitPos);
+                    if (aggColumn == null) {
+                        throw Util.newInternal(
+                            "AggStar " + aggStar + " has no column for "
                                 + column + " (bitPos " + bitPos + ")");
-                        }
-                        AggStar.Table table = aggColumn.getTable();
-                        table.addToFrom(queryBuilder.sqlQuery, false, true);
-                        q = aggColumn.getExpression().toSql();
-                    } else {
-                        RolapStar.Table targetTable = column.getTable();
-                        targetTable.addToFrom(
-                            queryBuilder.sqlQuery, false, true);
-                        q = column.getExpression().toSql();
                     }
+                    AggStar.Table table = aggColumn.getTable();
+                    table.addToFrom(queryBuilder.sqlQuery, false, true);
+                    q = aggColumn.getExpression().toSql();
                 } else {
-                    assert aggStar == null;
-                    // REVIEW: was 'baseCube != null'
-                    column = null;
-                    queryBuilder.addToFrom(key);
-                    if (measureGroup != null) {
-                        key.joinToStarRoot(
-                            queryBuilder.sqlQuery, measureGroup, null);
-                    } else {
-//                    level.getKeyPath().addToFrom(queryBuilder, false);
-                    }
-                    q = key.toSql();
+                    RolapStar.Table targetTable = column.getTable();
+                    targetTable.addToFrom(
+                        queryBuilder.sqlQuery, false, true);
+                    q = column.getExpression().toSql();
                 }
+            } else {
+                assert aggStar == null;
+                queryBuilder.addToFrom(key);
+                q = key.toSql();
+            }
 
-                StarPredicate cc =
-                    getColumnPredicates(
-                        measureGroup,
-                        level.getAttribute().getKeyList().get(0).relation
-                            .getSchema(),
-                        members2);
+            StarPredicate cc =
+                getColumnPredicates(
+                    measureGroup,
+                    level.getAttribute().getKeyList().get(0).relation
+                        .getSchema(),
+                    members2);
 
-                if (!dialect.supportsUnlimitedValueList()
-                    && cc instanceof ListColumnPredicate
-                    && ((ListColumnPredicate) cc).getPredicates().size()
-                       > maxConstraints)
-                {
-                    // Simply get them all, do not create where-clause.
-                    // Below are two alternative approaches (and code). They
-                    // both have problems.
-                } else {
-                    Util.deprecated("obsolete", false);
-                    String where = Predicates.toSql(cc, dialect);
-                    if (!where.equals("true")) {
-                        if (levelCount++ > 0) {
-                            buf.append(
-                                strip(exclude ? "\n    or " : "\n    and "));
-                        }
-                        if (exclude) {
-                            where = "not (" + where + ")";
-                            if (!containsNullKey) {
-                                // Null key fails all filters so should add it
-                                // here if not already excluded. For example, if
-                                // the original exclusion filter is
-                                //
-                                // not(year = '1997' and quarter in ('Q1','Q3'))
-                                //
-                                // then with IS NULL checks added, the filter
-                                // becomes:
-                                //
-                                // (not (year = '1997')
-                                //    or year is null)
-                                // or
-                                // (not (quarter in ('Q1','Q3'))
-                                //    or quarter is null)
-                                where = "(" + where + strip("\n        or (")
-                                    + q + " is null))";
-                            }
-                        }
-                        buf.append(where);
+            if (!dialect.supportsUnlimitedValueList()
+                && cc instanceof ListColumnPredicate
+                && ((ListColumnPredicate) cc).getPredicates().size()
+                > maxConstraints)
+            {
+                // Simply get them all, do not create where-clause.
+                // Below are two alternative approaches (and code). They
+                // both have problems.
+            } else {
+                Util.deprecated("obsolete", false);
+                String where = Predicates.toSql(cc, dialect);
+                if (!where.equals("true")) {
+                    if (levelCount++ > 0) {
+                        buf.append(
+                            strip(exclude ? "\n    or " : "\n    and "));
                     }
+                    if (exclude) {
+                        where = "not (" + where + ")";
+                        if (!containsNullKey) {
+                            // Null key fails all filters so should add it
+                            // here if not already excluded. For example, if
+                            // the original exclusion filter is
+                            //
+                            // not(year = '1997' and quarter in ('Q1','Q3'))
+                            //
+                            // then with IS NULL checks added, the filter
+                            // becomes:
+                            //
+                            // (not (year = '1997')
+                            //    or year is null)
+                            // or
+                            // (not (quarter in ('Q1','Q3'))
+                            //    or quarter is null)
+                            where = "(" + where + strip("\n        or (")
+                                + q + " is null))";
+                        }
+                    }
+                    buf.append(where);
                 }
             }
+        }
     }
 
     /**

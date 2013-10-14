@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -61,7 +61,7 @@ public final class SqlConstraintFactory {
         if (!SqlContextConstraint.checkValidContext(
                 context,
                 true,
-                Collections.<RolapLevel>emptyList(),
+                Collections.<RolapCubeLevel>emptyList(),
                 false,
                 measureGroupList))
         {
@@ -74,7 +74,7 @@ public final class SqlConstraintFactory {
     public TupleConstraint getLevelMembersConstraint(Evaluator context) {
         return getLevelMembersConstraint(
             context,
-            Collections.<RolapLevel>emptyList());
+            Collections.<RolapCubeLevel>emptyList());
     }
 
     /**
@@ -88,7 +88,7 @@ public final class SqlConstraintFactory {
      */
     public TupleConstraint getLevelMembersConstraint(
         Evaluator context,
-        List<RolapLevel> levels)
+        List<RolapCubeLevel> levels)
     {
         assert levels != null;
         if (context == null || !enabled) {

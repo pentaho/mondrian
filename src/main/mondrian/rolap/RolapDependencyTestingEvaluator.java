@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -60,7 +60,7 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
 
     public Object evaluate(
         Calc calc,
-        Hierarchy[] independentHierarchies,
+        RolapCubeHierarchy[] independentHierarchies,
         String mdxString)
     {
         final DteRoot dteRoot =
@@ -293,12 +293,12 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
      */
     private static class DteScalarCalcImpl extends GenericCalc {
         private final Calc calc;
-        private final Hierarchy[] independentHierarchies;
+        private final RolapCubeHierarchy[] independentHierarchies;
         private final String mdxString;
 
         DteScalarCalcImpl(
             Calc calc,
-            Hierarchy[] independentHierarchies,
+            RolapCubeHierarchy[] independentHierarchies,
             String mdxString)
         {
             super(new DummyExp(calc.getType()));
@@ -328,13 +328,13 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
      */
     private static class DteIterCalcImpl extends GenericIterCalc {
         private final Calc calc;
-        private final Hierarchy[] independentHierarchies;
+        private final RolapCubeHierarchy[] independentHierarchies;
         private final boolean mutableList;
         private final String mdxString;
 
         DteIterCalcImpl(
             Calc calc,
-            Hierarchy[] independentHierarchies,
+            RolapCubeHierarchy[] independentHierarchies,
             boolean mutableList,
             String mdxString)
         {
@@ -380,18 +380,18 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
         }
 
         protected Calc afterCompile(Exp exp, Calc calc, boolean mutable) {
-            Hierarchy[] dimensions = getIndependentHierarchies(calc);
+            RolapCubeHierarchy[] hierarchies = getIndependentHierarchies(calc);
             calc = super.afterCompile(exp, calc, mutable);
             if (calc.getType() instanceof SetType) {
                 return new DteIterCalcImpl(
                     calc,
-                    dimensions,
+                    hierarchies,
                     mutable,
                     Util.unparse(exp));
             } else {
                 return new DteScalarCalcImpl(
                     calc,
-                    dimensions,
+                    hierarchies,
                     Util.unparse(exp));
             }
         }
@@ -404,16 +404,16 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
          * @param calc Expression
          * @return List of dimensions that the expression does not depend on
          */
-        private Hierarchy[] getIndependentHierarchies(Calc calc) {
-            List<Hierarchy> list = new ArrayList<Hierarchy>();
+        private RolapCubeHierarchy[] getIndependentHierarchies(Calc calc) {
+            List<RolapCubeHierarchy> list = new ArrayList<RolapCubeHierarchy>();
             final RolapCube cube =
                 (RolapCube) getValidator().getQuery().getCube();
-            for (Hierarchy hierarchy : cube.getHierarchyList()) {
+            for (RolapCubeHierarchy hierarchy : cube.getHierarchyList()) {
                 if (!calc.dependsOn(hierarchy)) {
                     list.add(hierarchy);
                 }
             }
-            return list.toArray(new Hierarchy[list.size()]);
+            return list.toArray(new RolapCubeHierarchy[list.size()]);
         }
     }
 }

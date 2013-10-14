@@ -543,8 +543,6 @@ doExoticTests() {
   # Test case-insensitive
   doTest jdk1.6 oracle mondrian.olap.case.sensitive=false
 
-  # Test with cache of RolapCubeMembers disabled.
-  doTest jdk1.6 oracle mondrian.rolap.EnableRolapCubeMemberCache=false
 
   # Retroweave against jdk1.5 and jdk1.6
   doTest --retroweave jdk1.5 oracle
@@ -702,11 +700,6 @@ doRandom() {
     args="$args mondrian.rolap.star.disableCaching=true"
   fi
 
-  # Test with RolapCubeMember cache disabled
-  if [ "$(maybe 0.3)" ]; then
-    args="$args mondrian.rolap.EnableRolapCubeMemberCache=false"
-  fi
-
   if [ $(maybe 0.5) ]; then
     # Test with pushdown of NON-EMPTY to SQL disabled
     if [ "$(maybe 0.7)" ]; then
@@ -782,7 +775,6 @@ doWorking() {
   doTest jdk1.6 oracle ${ENABLE_NATIVE} ${ENABLE_AGGS}  ${ENABLE_SSAS}
   doTest jdk1.6 mysql  ${ENABLE_NATIVE} ${ENABLE_AGGS}  ${DISABLE_SSAS}
   doTest jdk1.6 mysql  ${ENABLE_NATIVE} ${DISABLE_AGGS} ${DISABLE_SSAS}
-  doTest jdk1.6 mysql  ${ENABLE_NATIVE} ${DISABLE_AGGS} ${DISABLE_SSAS} ${ENABLE_CMCACHE}
   doTest jdk1.6 mysql  ${ENABLE_NATIVE} ${DISABLE_AGGS} ${ENABLE_SSAS}
   doTest jdk1.6 derby  ${ENABLE_NATIVE} ${ENABLE_AGGS}  ${DISABLE_SSAS}
   doTest jdk1.6 derby  ${ENABLE_NATIVE} ${DISABLE_AGGS} ${DISABLE_SSAS}

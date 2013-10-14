@@ -2272,13 +2272,9 @@ public class NonEmptyTest extends BatchTestCase {
         // a shared cache so use the shared smart member reader
         SmartMemberReader smr = getSmartMemberReader("Stores");
         MemberCacheHelper smrch = smr.cacheHelper;
-        MemberCacheHelper rcsmrch =
-            ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader) smr)
-            .getRolapCubeMemberCacheHelper();
         SmartMemberReader ssmr = getSharedSmartMemberReader("Stores");
         MemberCacheHelper ssmrch = ssmr.cacheHelper;
         clearAndHardenCache(smrch);
-        clearAndHardenCache(rcsmrch);
         clearAndHardenCache(ssmrch);
 
         RolapResult result =
@@ -2291,10 +2287,6 @@ public class NonEmptyTest extends BatchTestCase {
         RolapMember sf =
             (RolapMember) result.getAxes()[0].getPositions().get(0).get(0);
         RolapMember ca = sf.getParentMember();
-
-        // convert back to shared members
-        ca = ((RolapCubeMember) ca).getRolapMember();
-        sf = ((RolapCubeMember) sf).getRolapMember();
 
         List<RolapMember> list = ssmrch.mapMemberToChildren.get(
             ca, scf.getMemberChildrenConstraint(null));
@@ -2372,11 +2364,6 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
         SmartMemberReader smr = getSmartMemberReader("Customers");
-        // use the RolapCubeHierarchy's member cache for levels
-        MemberCacheHelper smrch =
-            ((RolapCubeHierarchy.CacheRolapCubeHierarchyMemberReader) smr)
-            .rolapCubeCacheHelper;
-        clearAndHardenCache(smrch);
         MemberCacheHelper smrich = smr.cacheHelper;
         clearAndHardenCache(smrich);
 
@@ -2403,27 +2390,25 @@ public class NonEmptyTest extends BatchTestCase {
 
         // make sure that [Customers].[Name].Members is NOT in cache
         TupleConstraint lmc = scf.getLevelMembersConstraint(null);
-        assertNull(smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc));
+        assertNull(smrich.mapLevelToMembers.get((RolapLevel) nameLevel, lmc));
         // make sure that NON EMPTY [Customers].[Name].Members IS in cache
         context.setNonEmpty(true);
         lmc = scf.getLevelMembersConstraint(context);
         List<RolapMember> list =
-            smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
-        if (propSaver.props.EnableRolapCubeMemberCache.get()) {
-            assertNotNull(list);
-            assertEquals(20, list.size());
-        }
+            smrich.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
+        assertNotNull(list);
+        assertEquals(20, list.size());
+
         // make sure that the parent/child for the context are cached
 
         // [Customers].[USA].[CA].[Burlingame].[Peggy Justice]
-        Member member = r.getAxes()[1].getPositions().get(1).get(0);
-        Member parent = member.getParentMember();
-        parent = ((RolapCubeMember) parent).getRolapMember();
-        member = ((RolapCubeMember) member).getRolapMember();
+        RolapMember member =
+            (RolapMember) r.getAxes()[1].getPositions().get(1).get(0);
+        RolapMember parent = member.getParentMember();
 
         // lookup all children of [Burlingame] -> not in cache
         MemberChildrenConstraint mcc = scf.getMemberChildrenConstraint(null);
-        assertNull(ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc));
+        assertNull(ssmrch.mapMemberToChildren.get(parent, mcc));
 
         if (!Bug.PopulateChildrenCacheOnLevelMembersFixed) {
             return;
@@ -2431,7 +2416,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         // lookup NON EMPTY children of [Burlingame] -> yes these are in cache
         mcc = scf.getMemberChildrenConstraint(context);
-        list = smrich.mapMemberToChildren.get((RolapMember) parent, mcc);
+        list = smrich.mapMemberToChildren.get(parent, mcc);
         assertNotNull(list);
         assertTrue(list.contains(member));
     }
@@ -2439,9 +2424,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testLevelMembersWithoutNonEmpty() {
         SmartMemberReader smr = getSmartMemberReader("Customers");
 
-        MemberCacheHelper smrch =
-            ((RolapCubeHierarchy.CacheRolapCubeHierarchyMemberReader) smr)
-            .rolapCubeCacheHelper;
+        MemberCacheHelper smrch = smr.cacheHelper;
         clearAndHardenCache(smrch);
 
         MemberCacheHelper smrich = smr.cacheHelper;
@@ -2467,10 +2450,9 @@ public class NonEmptyTest extends BatchTestCase {
         TupleConstraint lmc = scf.getLevelMembersConstraint(null);
         List<RolapMember> list =
             smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
-        if (propSaver.props.EnableRolapCubeMemberCache.get()) {
-            assertNotNull(list);
-            assertEquals(10281, list.size());
-        }
+        assertNotNull(list);
+        assertEquals(10281, list.size());
+
         // make sure that NON EMPTY [Customers].[Name].Members is NOT in cache
         context.setNonEmpty(true);
         lmc = scf.getLevelMembersConstraint(context);
@@ -2479,30 +2461,29 @@ public class NonEmptyTest extends BatchTestCase {
         // make sure that the parent/child for the context are cached
 
         // [Customers].[Canada].[BC].[Burnaby]
-        Member member = r.getAxes()[1].getPositions().get(1).get(0);
-        Member parent = member.getParentMember();
+        RolapMember member =
+            (RolapMember) r.getAxes()[1].getPositions().get(1).get(0);
+        RolapMember parent = member.getParentMember();
 
-        parent = ((RolapCubeMember) parent).getRolapMember();
-        member = ((RolapCubeMember) member).getRolapMember();
-
-        if (Bug.PopulateChildrenCacheOnLevelMembersFixed) {
-            // lookup all children of [Burnaby] -> yes, found in cache
-            MemberChildrenConstraint mcc =
-                scf.getMemberChildrenConstraint(null);
-            list = ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc);
-            assertNotNull(list);
-            assertTrue(list.contains(member));
-
-            // lookup NON EMPTY children of [Burlingame] -> not in cache
-            mcc = scf.getMemberChildrenConstraint(context);
-            list = ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc);
-            assertNull(list);
+        if (!Bug.PopulateChildrenCacheOnLevelMembersFixed) {
+            return;
         }
+        // lookup all children of [Burnaby] -> yes, found in cache
+        MemberChildrenConstraint mcc =
+            scf.getMemberChildrenConstraint(null);
+        list = ssmrch.mapMemberToChildren.get(parent, mcc);
+        assertNotNull(list);
+        assertTrue(list.contains(member));
+
+        // lookup NON EMPTY children of [Burlingame] -> not in cache
+        mcc = scf.getMemberChildrenConstraint(context);
+        list = ssmrch.mapMemberToChildren.get(parent, mcc);
+        assertNull(list);
     }
 
     /**
-     * Tests that <Dimension>.Members exploits the same optimization as
-     * <Level>.Members.
+     * Tests that {@code Dimension.Members} exploits the same optimization as
+     * {@code Level.Members}.
      */
     public void testDimensionMembers() {
         // No query should return more than 20 rows. (1 row at 'all' level,
@@ -2605,7 +2586,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     /**
-     * When a member is expanded in JPivot with mulitple hierarchies visible it
+     * When a member is expanded in JPivot with multiple hierarchies visible it
      * generates a
      *   <code>CrossJoin({[member from left hierarchy]}, [member to
      * expand].Children)</code>
@@ -2671,9 +2652,6 @@ public class NonEmptyTest extends BatchTestCase {
         RolapMember peggy =
             (RolapMember) result.getAxes()[1].getPositions().get(1).get(0);
         RolapMember burlingame = peggy.getParentMember();
-
-        peggy = ((RolapCubeMember) peggy).getRolapMember();
-        burlingame = ((RolapCubeMember) burlingame).getRolapMember();
 
         // all children of burlingame are not in cache
         MemberChildrenConstraint mcc = scf.getMemberChildrenConstraint(null);
@@ -4838,13 +4816,13 @@ public class NonEmptyTest extends BatchTestCase {
         RolapCube cube = (RolapCube) con.getSchema().lookupCube("Sales", true);
         RolapSchemaReader schemaReader =
             (RolapSchemaReader) cube.getSchemaReader();
-        RolapHierarchy hierarchy =
-            (RolapHierarchy) cube.lookupHierarchy(
+        RolapCubeHierarchy hierarchy =
+            (RolapCubeHierarchy) cube.lookupHierarchy(
                 new Id.NameSegment(hierName, Id.Quoting.UNQUOTED),
                 false);
         assertNotNull(hierarchy);
-        return (SmartMemberReader)
-            hierarchy.createMemberReader(schemaReader.getRole());
+        return (SmartMemberReader) RolapSchemaLoader.createMemberReader(
+            hierarchy, schemaReader.getRole());
     }
 
     SmartMemberReader getSharedSmartMemberReader(String hierName) {
@@ -4862,10 +4840,9 @@ public class NonEmptyTest extends BatchTestCase {
             (RolapCubeHierarchy) cube.lookupHierarchy(
                 new Id.NameSegment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
-        return (SmartMemberReader) hierarchy.getRolapHierarchy()
-            .createMemberReader(schemaReader.getRole());
+        return (SmartMemberReader) RolapSchemaLoader.createMemberReader(
+            hierarchy, schemaReader.getRole());
     }
-
 
     RolapEvaluator getEvaluator(Result res, int[] pos) {
         while (res instanceof NonEmptyResult) {

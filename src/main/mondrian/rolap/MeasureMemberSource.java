@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 21 December, 2001
@@ -27,7 +27,7 @@ import java.util.List;
  */
 class MeasureMemberSource extends ArrayMemberSource {
     MeasureMemberSource(
-        RolapHierarchy hierarchy,
+        RolapCubeHierarchy hierarchy,
         List<RolapMember> members)
     {
         super(hierarchy, members);

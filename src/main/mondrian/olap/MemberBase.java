@@ -56,18 +56,18 @@ public abstract class MemberBase
      */
     protected final int flags;
 
-    private static final int FLAG_TYPE_MASK = 0x07;
+    public static final int FLAG_TYPE_MASK = 0x07;
     private static final int FLAG_HIDDEN = 0x08;
-    private static final int FLAG_ALL = 0x10;
-    private static final int FLAG_NULL = 0x20;
-    private static final int FLAG_CALCULATED = 0x40;
-    private static final int FLAG_MEASURE = 0x80;
+    public static final int FLAG_ALL = 0x10;
+    public static final int FLAG_NULL = 0x20;
+    public static final int FLAG_CALCULATED = 0x40;
+    public static final int FLAG_MEASURE = 0x80;
 
     /**
      * Cached values of {@link mondrian.olap.Member.MemberType} enumeration.
      * Without caching, get excessive calls to {@link Object#clone}.
      */
-    private static final MemberType[] MEMBER_TYPE_VALUES = MemberType.values();
+    public static final MemberType[] MEMBER_TYPE_VALUES = MemberType.values();
 
     protected MemberBase(
         Member parentMember,

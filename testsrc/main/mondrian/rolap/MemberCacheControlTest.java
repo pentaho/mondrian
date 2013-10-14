@@ -55,7 +55,6 @@ public class MemberCacheControlTest extends FoodMartTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        propSaver.set(propSaver.props.EnableRolapCubeMemberCache, false);
         RolapSchemaPool.instance().clear();
 
         final RolapConnection conn = (RolapConnection) getConnection();
@@ -99,7 +98,8 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             + "        <Property name=\"Has coffee bar\" column=\"coffee_bar\" type=\"Boolean\"/>\n"
             + "        <Property name=\"Street address\" column=\"store_street_address\" type=\"String\"/>\n"
             + "      </Level>\n"
-            + "    </Hierarchy>\n" + "   </Dimension>");
+            + "    </Hierarchy>\n"
+            + "   </Dimension>");
     }
 
     /**
@@ -276,28 +276,6 @@ public class MemberCacheControlTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests that member operations fail if cache is enabled.
-     */
-    public void testMemberOpsFailIfCacheEnabled() {
-        propSaver.set(propSaver.props.EnableRolapCubeMemberCache, true);
-        final TestContext tc = getTestContext();
-        final Connection conn = tc.getConnection();
-        final CacheControl cc = conn.getCacheControl(null);
-        final CacheControl.MemberEditCommand command =
-            cc.createDeleteCommand(findMember(tc, "Sales", "Retail", "OR"));
-        try {
-            cc.execute(command);
-            fail("expected exception");
-        } catch (IllegalArgumentException e) {
-            assertEquals(
-                "Member cache control operations are not allowed unless "
-                + "property mondrian.rolap.EnableRolapCubeMemberCache is "
-                + "false",
-                e.getMessage());
-        }
-    }
-
-    /**
      * Test that edits the properties of a single leaf Member.
      */
     public void testSetPropertyCommandOnLeafMember() {
@@ -423,28 +401,27 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         final TestContext tc = getTestContext();
         final Connection conn = tc.getConnection();
         final CacheControl cc = conn.getCacheControl(null);
-        final RolapCubeMember caCubeMember =
-            (RolapCubeMember) findMember(tc, "Sales", "Retail", "CA");
-        final RolapMember caMember = caCubeMember.member;
+        final RolapMember caMember =
+            findMember(tc, "Sales", "Retail", "CA");
         final RolapMember rootMember = caMember.getParentMember();
-        final RolapHierarchy hierarchy = caMember.getHierarchy();
+        final RolapCubeHierarchy hierarchy = caMember.getHierarchy();
         final RolapMember berkeleyMember =
-            (RolapMember) hierarchy.createMember(
+            hierarchy.createMember(
                 caMember,
                 caMember.getLevel().getChildLevel(),
                 "Berkeley",
                 null);
-        final RolapCubeHierarchy.RolapCubeStoredMeasure unitSalesCubeMember =
-            (RolapCubeHierarchy.RolapCubeStoredMeasure) findMember(
+        final RolapBaseCubeMeasure unitSalesCubeMember =
+            (RolapBaseCubeMeasure) findMember(
                 tc, "Sales", "Measures", "Unit Sales");
-        final RolapCubeMember yearCubeMember =
-            (RolapCubeMember) findMember(
+        final RolapMember yearMember =
+            findMember(
                 tc, "Sales", "Time", "Year", "1997");
         final Member[] cacheRegionMembers =
             new Member[] {
                 unitSalesCubeMember,
-                caCubeMember,
-                yearCubeMember
+                caMember,
+                yearMember
             };
 
         tc.assertQueryReturns(
@@ -637,22 +614,22 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         final TestContext tc = getTestContext();
         final Connection conn = tc.getConnection();
         final CacheControl cc = conn.getCacheControl(null);
-        final RolapCubeMember sfCubeMember =
-            (RolapCubeMember) findMember(
+        final RolapMember sfMember =
+            findMember(
                 tc, "Sales", "Retail", "CA", "San Francisco");
-        final RolapMember caMember = sfCubeMember.member.getParentMember();
-        final RolapHierarchy hierarchy = caMember.getHierarchy();
-        final RolapCubeHierarchy.RolapCubeStoredMeasure unitSalesCubeMember =
-            (RolapCubeHierarchy.RolapCubeStoredMeasure) findMember(
+        final RolapMember caMember = sfMember.getParentMember();
+        final RolapCubeHierarchy hierarchy = caMember.getHierarchy();
+        final RolapBaseCubeMeasure unitSalesCubeMember =
+            (RolapBaseCubeMeasure) findMember(
                 tc, "Sales", "Measures", "Unit Sales");
-        final RolapCubeMember yearCubeMember =
-            (RolapCubeMember) findMember(
+        final RolapMember yearMember =
+            findMember(
                 tc, "Sales", "Time", "Year", "1997");
         final Member[] cacheRegionMembers =
             new Member[] {
                 unitSalesCubeMember,
-                sfCubeMember,
-                yearCubeMember
+                sfMember,
+                yearMember
             };
 
         tc.assertAxisReturns(
@@ -682,7 +659,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
 
         // Now tell the cache that [CA].[San Francisco] has been removed.
         final CacheControl.MemberEditCommand command =
-            cc.createDeleteCommand(sfCubeMember);
+            cc.createDeleteCommand(sfMember);
         cc.execute(command);
 
         // Children of CA should be 4
@@ -708,27 +685,26 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         final TestContext tc = getTestContext();
         final Connection conn = tc.getConnection();
         final CacheControl cc = conn.getCacheControl(null);
-        final RolapCubeMember caCubeMember =
-            (RolapCubeMember) findMember(tc, "Sales", "Retail", "CA");
-        final RolapMember caMember = caCubeMember.member;
-        final RolapHierarchy hierarchy = caMember.getHierarchy();
+        final RolapMember caMember =
+            findMember(tc, "Sales", "Retail", "CA");
+        final RolapCubeHierarchy hierarchy = caMember.getHierarchy();
         final MemberReader memberReader = hierarchy.getMemberReader();
         final MemberCache memberCache =
             ((SmartMemberReader) memberReader).getMemberCache();
         final RolapMember alamedaMember =
-            (RolapMember) hierarchy.createMember(
+            hierarchy.createMember(
                 caMember,
                 caMember.getLevel().getChildLevel(),
                 "Alameda",
                 null);
         final RolapMember sfMember =
-            (RolapMember) hierarchy.createMember(
+            hierarchy.createMember(
                 caMember,
                 caMember.getLevel().getChildLevel(),
                 "San Francisco",
                 null);
         final RolapMember storeMember =
-            (RolapMember) hierarchy.createMember(
+            hierarchy.createMember(
                 sfMember,
                 sfMember.getLevel().getChildLevel(),
                 "Store 14",
@@ -792,21 +768,20 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         final TestContext tc = getTestContext();
         final Connection conn = tc.getConnection();
         final CacheControl cc = conn.getCacheControl(null);
-        final RolapCubeMember caCubeMember =
-            (RolapCubeMember) findMember(tc, "Sales", "Retail", "CA");
-        final RolapMember caMember = caCubeMember.member;
-        final RolapHierarchy hierarchy = caMember.getHierarchy();
+        final RolapMember caMember =
+            findMember(tc, "Sales", "Retail", "CA");
+        final RolapCubeHierarchy hierarchy = caMember.getHierarchy();
         final MemberReader memberReader = hierarchy.getMemberReader();
         final MemberCache memberCache =
             ((SmartMemberReader) memberReader).getMemberCache();
         final RolapMember sfMember =
-            (RolapMember) hierarchy.createMember(
+            hierarchy.createMember(
                 caMember,
                 caMember.getLevel().getChildLevel(),
                 "San Francisco",
                 null);
         final RolapMember storeMember =
-            (RolapMember) hierarchy.createMember(
+            hierarchy.createMember(
                 sfMember,
                 sfMember.getLevel().getChildLevel(),
                 "Store 14",
@@ -881,16 +856,14 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             assertEquals("cannot add null member", e.getMessage());
         }
 
-        final RolapCubeMember alamedaCubeMember =
-            (RolapCubeMember) findMember(
+        final RolapMember alamedaMember =
+            findMember(
                 tc, "Sales", "Retail", "CA", "Alameda");
-        final RolapMember alamedaMember = alamedaCubeMember.member;
         final RolapMember caMember = alamedaMember.getParentMember();
 
-        final RolapCubeMember empCubeMember =
-            (RolapCubeMember) findMember(
+        final RolapMember empMember =
+            findMember(
                 tc, "HR", "Employees", "Sheri Nowmer", "Michael Spence");
-        final RolapMember empMember = empCubeMember.member;
 
         try {
             command = cc.createMoveCommand(null, alamedaMember);
@@ -996,7 +969,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             logger.addAppender(appender);
 
             final Hierarchy storeHierarchy =
-                salesCube.getDimensions()[1].getHierarchies()[0];
+                salesCube.getDimensionList().get(1).getHierarchyList().get(0);
             assertEquals("Store", storeHierarchy.getName());
             final CacheControl.MemberSet storeMemberSet =
                 cacheControl.createMemberSet(
@@ -1092,7 +1065,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             // But you can still use the private all member for purposes like
             // flushing.
             final Hierarchy timeHierarchy =
-                salesCube.getDimensions()[4].getHierarchies()[0];
+                salesCube.getDimensionList().get(4).getHierarchyList().get(0);
             assertEquals("Time", timeHierarchy.getName());
             final CacheControl.MemberSet timeMemberSet =
                 cacheControl.createMemberSet(

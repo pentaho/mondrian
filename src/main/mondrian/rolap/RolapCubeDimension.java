@@ -15,9 +15,6 @@ import mondrian.olap.*;
 import org.olap4j.metadata.*;
 import org.olap4j.metadata.Dimension;
 
-import java.util.*;
-
-
 /**
  * RolapCubeDimension wraps a RolapDimension for a specific Cube.
  *
@@ -25,79 +22,38 @@ import java.util.*;
  */
 public class RolapCubeDimension extends RolapDimension {
 
-    RolapCube cube;
+    final RolapCube cube;
 
-    RolapDimension rolapDimension;
-    int cubeOrdinal;
+    final RolapDimension rolapDimension;
+    final int cubeOrdinal;
 
     /**
      * Creates a RolapCubeDimension.
      *
-     * @param schemaLoader Schema loader
      * @param cube Cube
-     * @param rolapDim Dimension wrapped by this dimension
+     * @param rolapDimension Dimension wrapped by this dimension
      * @param name Name of dimension
-     * @param dimSource Name of source dimension
      * @param cubeOrdinal Ordinal of dimension within cube
-     * @param hierarchyList List of hierarchies in cube
      * @param larder Larder
      */
     public RolapCubeDimension(
-        RolapSchemaLoader schemaLoader,
         RolapCube cube,
-        RolapDimension rolapDim,
+        RolapDimension rolapDimension,
         String name,
-        final String dimSource,
         int cubeOrdinal,
-        List<RolapCubeHierarchy> hierarchyList,
         Larder larder)
     {
         super(
             cube.getSchema(),
             name,
-            rolapDim.isVisible(),
-            rolapDim.getDimensionType(),
-            rolapDim.hanger,
+            rolapDimension.isVisible(),
+            rolapDimension.getDimensionType(),
+            rolapDimension.hanger,
             larder);
-        this.rolapDimension = rolapDim;
+        this.rolapDimension = rolapDimension;
         this.cubeOrdinal = cubeOrdinal;
         this.cube = cube;
-
-        // create new hierarchies
-
-        final int originalSize = hierarchyList.size();
-        for (RolapHierarchy rolapHierarchy : rolapDim.getHierarchyList()) {
-            final String uniqueName =
-                rolapHierarchy.getDimension().isMeasures()
-                    ? rolapHierarchy.getUniqueName()
-                    : Util.makeFqName(this, rolapHierarchy.getName());
-            final RolapCubeHierarchy hierarchy =
-                new RolapCubeHierarchy(
-                    schemaLoader,
-                    this,
-                    rolapHierarchy,
-                    rolapHierarchy.getName(),
-                    uniqueName,
-                    hierarchyList.size(),
-                    schemaLoader.createLarder(
-                        cube + "." + uniqueName + ".hierarchy",
-                        null,
-                        null,
-                        null,
-                        null)
-                        .populate(
-                            Larders.prefix(
-                                rolapHierarchy.getLarder(),
-                                dimSource,
-                                name)).build());
-            hierarchyList.add(hierarchy);
-            if (hierarchy.isScenario) {
-                assert cube.scenarioHierarchy == null;
-                cube.scenarioHierarchy = hierarchy;
-            }
-        }
-        this.hierarchyList.addAll(
-            hierarchyList.subList(originalSize, hierarchyList.size()));
+        this.keyAttribute = rolapDimension.keyAttribute;
     }
 
     public RolapCube getCube() {

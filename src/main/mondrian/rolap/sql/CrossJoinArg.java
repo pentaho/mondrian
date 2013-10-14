@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
@@ -22,7 +22,7 @@ import java.util.List;
 public interface CrossJoinArg {
     CrossJoinArg[] EMPTY_ARRAY = new CrossJoinArg[0];
 
-    RolapLevel getLevel();
+    RolapCubeLevel getLevel();
 
     List<RolapMember> getMembers();
 

@@ -14,7 +14,6 @@ package mondrian.rolap;
 
 import mondrian.calc.ExpCompiler;
 import mondrian.olap.*;
-import mondrian.olap.Member;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
 import mondrian.server.*;
@@ -52,7 +51,7 @@ public class RolapUtil {
     /**
      * Special cell value indicates that the value is not in cache yet.
      */
-    public static final Object valueNotReadyException = new Double(0);
+    public static final Object valueNotReadyException = 0d;
 
     /**
      * Hook to run when a query is executed. This should not be
@@ -61,7 +60,7 @@ public class RolapUtil {
     private static ExecuteQueryHook queryHook = null;
 
     /**
-     * Special value represents a null key.
+     * Special value that represents a null key.
      */
     public static final Comparable<?> sqlNullValue =
         RolapUtilComparable.INSTANCE;
@@ -435,13 +434,14 @@ public class RolapUtil {
      * @param level level of the member
      * @param searchName member name
      * @param matchType match type
+     *
      * @return matching member (if it exists) or the closest matching one
      * in the case of a BEFORE or AFTER search
      */
-    public static Member findBestMemberMatch(
-        List<? extends Member> members,
+    public static RolapMember findBestMemberMatch(
+        List<RolapMember> members,
         RolapMember parent,
-        RolapLevel level,
+        RolapCubeLevel level,
         Id.Segment searchName,
         MatchType matchType)
     {
@@ -460,24 +460,14 @@ public class RolapUtil {
         // create a member corresponding to the member we're trying
         // to locate so we can use it to hierarchically compare against
         // the members array
-        final RolapLevel level2;
-        if (level instanceof RolapCubeLevel
-            && !(parent instanceof RolapCubeMember))
-        {
-            level2 = ((RolapCubeLevel) level).getRolapLevel();
-        } else {
-            level2 = level;
-        }
-        Member searchMember = null;
-        Member bestMatch = null;
-        for (Member member : members) {
+        RolapMember searchMember = null;
+        RolapMember bestMatch = null;
+        for (RolapMember member : members) {
             int rc;
             if (nameSegment.quoting == Id.Quoting.KEY
                 && member instanceof RolapMember)
             {
-                if (((RolapMember) member).getKey().toString().equals(
-                        nameSegment.name))
-                {
+                if (member.getKey().toString().equals(nameSegment.name)) {
                     return member;
                 }
             }
@@ -486,8 +476,8 @@ public class RolapUtil {
             } else {
                 if (searchMember == null) {
                     searchMember =
-                        level2.getHierarchy().createMember(
-                            parent, level2, nameSegment.name, null);
+                        level.getHierarchy().createMember(
+                            parent, level, nameSegment.name, null);
                 }
                 rc =
                     FunUtil.compareSiblingMembers(
@@ -521,50 +511,6 @@ public class RolapUtil {
         return bestMatch;
     }
 
-    public static Mondrian3Def.Relation convertInlineTableToRelation(
-        Mondrian3Def.InlineTable inlineTable,
-        final Dialect dialect)
-    {
-        Util.deprecated("obsolete", false);
-        Mondrian3Def.View view = new Mondrian3Def.View();
-        view.alias = inlineTable.alias;
-
-        final int columnCount = inlineTable.columnDefs.array.length;
-        List<String> columnNames = new ArrayList<String>();
-        List<String> columnTypes = new ArrayList<String>();
-        for (int i = 0; i < columnCount; i++) {
-            columnNames.add(inlineTable.columnDefs.array[i].name);
-            columnTypes.add(inlineTable.columnDefs.array[i].type);
-        }
-        List<String[]> valueList = new ArrayList<String[]>();
-        for (Mondrian3Def.Row row : inlineTable.rows.array) {
-            String[] values = new String[columnCount];
-            for (Mondrian3Def.Value value : row.values) {
-                final int columnOrdinal = columnNames.indexOf(value.column);
-                if (columnOrdinal < 0) {
-                    throw Util.newError(
-                        "Unknown column '" + value.column + "'");
-                }
-                values[columnOrdinal] = value.cdata;
-            }
-            valueList.add(values);
-        }
-        view.addCode(
-            "generic",
-            dialect.generateInline(
-                columnNames,
-                columnTypes,
-                valueList));
-        return view;
-    }
-
-    public static RolapMember strip(RolapMember member) {
-        if (member instanceof RolapCubeMember) {
-            return ((RolapCubeMember) member).getRolapMember();
-        }
-        return member;
-    }
-
     public static ExpCompiler createProfilingCompiler(ExpCompiler compiler) {
         return new RolapProfilingEvaluator.ProfilingEvaluatorCompiler(
             compiler);
@@ -589,69 +535,6 @@ public class RolapUtil {
             inlineTable.physSchema,
             inlineTable.alias,
             sql);
-    }
-
-    /**
-     * Writes to a string and also to an underlying writer.
-     */
-    public static class TeeWriter extends FilterWriter {
-        StringWriter buf = new StringWriter();
-        public TeeWriter(Writer out) {
-            super(out);
-        }
-
-        /**
-         * Returns everything which has been written so far.
-         */
-        public String toString() {
-            return buf.toString();
-        }
-
-        /**
-         * Returns the underlying writer.
-         */
-        public Writer getWriter() {
-            return out;
-        }
-
-        public void write(int c) throws IOException {
-            super.write(c);
-            buf.write(c);
-        }
-
-        public void write(char cbuf[]) throws IOException {
-            super.write(cbuf);
-            buf.write(cbuf);
-        }
-
-        public void write(char cbuf[], int off, int len) throws IOException {
-            super.write(cbuf, off, len);
-            buf.write(cbuf, off, len);
-        }
-
-        public void write(String str) throws IOException {
-            super.write(str);
-            buf.write(str);
-        }
-
-        public void write(String str, int off, int len) throws IOException {
-            super.write(str, off, len);
-            buf.write(str, off, len);
-        }
-    }
-
-    /**
-     * Writer which throws away all input.
-     */
-    private static class NullWriter extends Writer {
-        public void write(char cbuf[], int off, int len) throws IOException {
-        }
-
-        public void flush() throws IOException {
-        }
-
-        public void close() throws IOException {
-        }
     }
 
     /**

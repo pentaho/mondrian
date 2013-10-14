@@ -60,7 +60,7 @@ public class SqlContextConstraint
     public static boolean checkValidContext(
         Evaluator context,
         boolean disallowVirtualCube,
-        List<RolapLevel> levels,
+        List<RolapCubeLevel> levels,
         boolean strict,
         List<RolapMeasureGroup> measureGroupList)
     {
@@ -350,13 +350,13 @@ public class SqlContextConstraint
     public void addLevelConstraint(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        RolapLevel level)
+        RolapCubeLevel level)
     {
         if (!isJoinRequired()) {
             return;
         }
         SqlConstraintUtils.joinLevelTableToFactTable(
-            sqlQuery, starSet, evaluator, (RolapCubeLevel) level);
+            sqlQuery, starSet, evaluator, level);
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(

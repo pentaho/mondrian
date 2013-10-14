@@ -791,26 +791,28 @@ public class RoleImpl implements Role {
          * very often.
          */
         private boolean isSubGrant(Member parentMember) {
-            if (parentsCache.containsKey(parentMember.getUniqueName())) {
+            boolean disableCaching = MondrianProperties
+                .instance().DisableCaching.get();
+            if (!disableCaching
+                && parentsCache.containsKey(parentMember.getUniqueName()))
+            {
                 return parentsCache.get(parentMember.getUniqueName());
             }
+            boolean foundParent = false;
             for (Member m = member; m != null; m = m.getParentMember()) {
                 if (m.equals(parentMember)) {
                     // We have proved that this granted member is a
-                    // descendant of 'member'. Cache it and return.
-                    parentsCache.put(
-                        parentMember.getUniqueName(), Boolean.TRUE);
-                    return true;
+                    // descendant of 'member'.
+                    foundParent = true;
+                    break;
                 }
             }
             // Not a parent. Cache it and return.
-            if (MondrianProperties.instance()
-                .EnableRolapCubeMemberCache.get())
-            {
+            if (!disableCaching) {
                 parentsCache.put(
-                    parentMember.getUniqueName(), Boolean.FALSE);
+                    parentMember.getUniqueName(), foundParent);
             }
-            return false;
+            return foundParent;
         }
     }
 

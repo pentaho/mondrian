@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.calc.impl;
@@ -173,6 +173,7 @@ public class DelegatingExpCompiler implements ExpCompiler {
             Exp e,
             ExpCompiler wrappingCompiler)
         {
+            assert e != null;
             this.e = e;
             this.wrappingCompiler = wrappingCompiler;
         }

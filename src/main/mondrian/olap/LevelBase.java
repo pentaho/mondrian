@@ -24,7 +24,7 @@ public abstract class LevelBase
     extends OlapElementBase
     implements Level
 {
-    protected final Hierarchy hierarchy;
+    public final Hierarchy hierarchy;
     protected final String name;
     protected final String uniqueName;
     protected final int depth;
@@ -71,14 +71,6 @@ public abstract class LevelBase
         return Larders.getDescription(getLarder());
     }
 
-    public Hierarchy getHierarchy() {
-        return hierarchy;
-    }
-
-    public Dimension getDimension() {
-        return hierarchy.getDimension();
-    }
-
     public int getDepth() {
         return depth;
     }
@@ -97,25 +89,6 @@ public abstract class LevelBase
         return (parentDepth >= 0)
             ? levels.get(parentDepth)
             : null;
-    }
-
-    public abstract boolean isAll();
-
-    public boolean isMeasure() {
-        return hierarchy.getName().equals("Measures");
-    }
-
-    public OlapElement lookupChild(
-        SchemaReader schemaReader, Id.Segment s, MatchType matchType)
-    {
-        if (areMembersUnique()
-            && s instanceof Id.NameSegment)
-        {
-            return Util.lookupHierarchyRootMember(
-                schemaReader, hierarchy, ((Id.NameSegment) s), matchType);
-        } else {
-            return null;
-        }
     }
 }
 
