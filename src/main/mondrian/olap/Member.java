@@ -182,6 +182,7 @@ public interface Member extends OlapElement, Comparable, Annotated {
 
     /**
      * Returns the ordinal of the member.
+     * @deprecated Use {@link #getOrderKey()}.
      */
     int getOrdinal();
 
