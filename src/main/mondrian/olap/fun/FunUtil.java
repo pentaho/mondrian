@@ -275,7 +275,30 @@ public class FunUtil extends Util {
         if (dimension.getHierarchyList().size() == 1) {
             return dimension.getHierarchyList().get(0);
         }
+        List<Hierarchy> nonClosureHierarchies =
+            getNonClosureHierarchies(dimension);
+        if (nonClosureHierarchies.size() == 1) {
+            return nonClosureHierarchies.get(0);
+        }
         return null;
+    }
+
+    /**
+     * Returns the list of hierarchies in a dimension, excluding
+     * any with a defined closureFor.
+     */
+    private static List<Hierarchy> getNonClosureHierarchies(
+        Dimension dimension)
+    {
+        List<Hierarchy> hierarchies = new ArrayList<Hierarchy>();
+        for (Hierarchy hierarchy : dimension.getHierarchyList()) {
+            if (hierarchy instanceof RolapHierarchy
+                && ((RolapHierarchy)hierarchy).closureFor == null)
+            {
+                hierarchies.add(hierarchy);
+            }
+        }
+        return hierarchies;
     }
 
     static List<Member> addMembers(

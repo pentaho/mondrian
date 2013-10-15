@@ -64,7 +64,7 @@ public class RolapHierarchy extends HierarchyBase {
     private static final int NULL_LEVEL_CARDINALITY = 1;
     final RolapAttribute attribute;
     private final Larder larder;
-    final RolapHierarchy closureFor;
+    public final RolapHierarchy closureFor;
 
     final NamedList<RolapLevel> levelList = new NamedListImpl<RolapLevel>();
 

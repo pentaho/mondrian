@@ -3630,7 +3630,7 @@ public class RolapSchemaLoader {
         }
 
         final RolapClosure closure =
-            createClosure(cube, relation, xmlLevel, dimension);
+            createClosure(cube, relation, xmlLevel, hierarchy);
 
         final RolapLevel level =
             new RolapLevel(
@@ -3659,12 +3659,13 @@ public class RolapSchemaLoader {
         RolapCube cube,
         RolapSchema.PhysRelation relation,
         MondrianDef.Level xmlLevel,
-        RolapDimension dimension)
+        RolapHierarchy hierarchy)
     {
         final MondrianDef.Closure xmlClosure = xmlLevel.getClosure();
         if (xmlClosure == null) {
             return null;
         }
+        RolapDimension dimension = hierarchy.getDimension();
         final Map<String, RolapAttribute> attributeMap = dimension.attributeMap;
         MondrianDef.Attribute xmlParentAttribute =
             (MondrianDef.Attribute) validator.map.get(
@@ -3795,7 +3796,7 @@ public class RolapSchemaLoader {
                 Util.makeFqName(closureDim, closureDim.getName()),
                 closureDim.isVisible(),
                 true,
-                null, // Not so sure about this.
+                hierarchy, // closureFor hierarchy
                 null,
                 Larders.create(
                     closureDim.getName(),
