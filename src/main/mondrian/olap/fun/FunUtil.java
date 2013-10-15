@@ -1915,9 +1915,16 @@ public class FunUtil extends Util {
             //noinspection unchecked
             return k1.compareTo(k2);
         }
-        int c = Util.compare(m1.getOrdinal(), m2.getOrdinal());
-        if (c != 0) {
-            return c;
+
+        Util.deprecated("ordinal to be replaced with order key", false);
+        int m1Ordinal = m1.getOrdinal();
+        int m2Ordinal = m2.getOrdinal();
+
+        if (m1Ordinal >= 0 && m2Ordinal >= 0) {
+            int c = Util.compare(m1Ordinal, m2Ordinal);
+            if (c != 0) {
+                return c;
+            }
         }
         //noinspection unchecked
         return m1.compareTo(m2);
