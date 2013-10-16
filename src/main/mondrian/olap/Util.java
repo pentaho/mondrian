@@ -3371,11 +3371,7 @@ public class Util extends XOMUtil {
         InputStream in = readVirtualFile(catalogUrl);
         try {
             final byte[] bytes = Util.readFully(in, 1024);
-            final char[] chars = new char[bytes.length];
-            for (int i = 0; i < chars.length; i++) {
-                chars[i] = (char) bytes[i];
-            }
-            return new String(chars);
+            return new String(bytes, "UTF-8");
         } finally {
             if (in != null) {
                 in.close();
