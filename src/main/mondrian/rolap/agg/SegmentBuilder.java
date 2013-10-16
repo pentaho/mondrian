@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.rolap.agg;
 
 import mondrian.olap.Aggregator;
@@ -189,6 +188,8 @@ public class SegmentBuilder {
             int src;
             boolean lostPredicate;
         }
+        assert allHeadersHaveSameDimensionality(map.keySet());
+
         final SegmentHeader firstHeader = map.keySet().iterator().next();
         final AxisInfo[] axes =
             new AxisInfo[keepColumns.size()];
@@ -226,22 +227,26 @@ public class SegmentBuilder {
                     if (axis.requestedValues == null) {
                         filteredValues = values;
                         filteredHasNull = hasNull;
+                    } else if (requestedValues == null) {
+                        // this axis is wildcarded
+                        filteredValues = axis.requestedValues;
+                        filteredHasNull = axis.hasNull;
                     } else {
                         filteredValues = Util.intersect(
-                            values,
+                            requestedValues,
                             axis.requestedValues);
 
                         // SegmentColumn predicates cannot ask for the null
                         // value (at present).
                         filteredHasNull = false;
                     }
-                    axis.valueSet.addAll(filteredValues);
+                    axis.valueSet = filteredValues;
                     axis.hasNull = axis.hasNull || filteredHasNull;
                     if (!Util.equals(axis.requestedValues, requestedValues)) {
                         if (axis.requestedValues == null) {
                             // Downgrade from wildcard to a specific list.
                             axis.requestedValues = requestedValues;
-                        } else {
+                        } else if (requestedValues != null) {
                             // Segment requests have incompatible predicates.
                             // Best we can say is "we must have asked for the
                             // values that came back".
@@ -347,10 +352,11 @@ public class SegmentBuilder {
         // The two methods use different data structures (AxisInfo/SegmentAxis)
         // so combining logic is probably more trouble than it's worth.
         final boolean sparse =
-            bigValueCount.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) > 0
+            bigValueCount.compareTo
+                (BigInteger.valueOf(Integer.MAX_VALUE)) > 0
                 || SegmentLoader.useSparse(
-                    bigValueCount.doubleValue(), cellValues.size());
-
+                    bigValueCount.doubleValue(),
+                    cellValues.size());
         final int[] axisMultipliers =
             computeAxisMultipliers(axisList);
 
@@ -479,6 +485,21 @@ public class SegmentBuilder {
                 Collections.<SegmentColumn>emptyList());
 
         return Pair.of(header, body);
+    }
+
+    private static boolean allHeadersHaveSameDimensionality(
+        Set<SegmentHeader> headers)
+    {
+        final Iterator<SegmentHeader> headerIter = headers.iterator();
+        final SegmentHeader firstHeader = headerIter.next();
+        BitKey bitKey = firstHeader.getConstrainedColumnsBitKey();
+        while (headerIter.hasNext()) {
+            final SegmentHeader nextHeader = headerIter.next();
+            if (!bitKey.equals(nextHeader.getConstrainedColumnsBitKey())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static int[] computeAxisMultipliers(
