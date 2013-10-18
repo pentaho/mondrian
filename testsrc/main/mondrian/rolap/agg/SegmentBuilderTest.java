@@ -153,6 +153,9 @@ public class SegmentBuilderTest extends BatchTestCase {
         // regardless of whether rollup processes them in the order A,B or B,A.
         // MONDRIAN-1729 involved a case where the rollup segment was invalid
         // if processed in a particular order.
+        // This tests a wildcarded segment (on year) rolled up w/ a seg
+        // containing a single val.
+        // The resulting segment contains only empty results (for 1998)
         runRollupTest(
             // queries to populate the cache with segments which will be rolled
             // up
@@ -193,6 +196,8 @@ public class SegmentBuilderTest extends BatchTestCase {
 
     public void testSameRollupRegardlessOfSegmentOrderWithData() {
         // http://jira.pentaho.com/browse/MONDRIAN-1729
+        // Tests a wildcarded segment rolled up w/ a seg containing a single
+        // val.  Both segments are associated w/ non empty results.
         runRollupTest(
             new String[]{
                 "select {{[Product].[Drink].[Alcoholic Beverages]},\n"
@@ -222,6 +227,74 @@ public class SegmentBuilderTest extends BatchTestCase {
             + "ID:[0c3fbbc2a97f4183b7761326ceb76a"
             + "760ebc20550b4f686d129ece11e0dc1e49]\n");
     }
+
+    public void testSameRollupRegardlessOfSegmentOrderNoWildcards() {
+        // http://jira.pentaho.com/browse/MONDRIAN-1729
+        // Tests 2 segments, each w/ no wildcarded values.
+        runRollupTest(
+            new String[]{
+                "select {{[Product].[Drink].[Alcoholic Beverages]},\n"
+                + "{[Product].[Drink].[Beverages]},\n"
+                + "{[Product].[Non-Consumable].[Periodicals]}}\n on 0 from sales",
+                "select "
+                + "\n"
+                + "{[Product].[Drink].[Dairy]}"
+                + "on 0 from sales"},
+            new String[] {
+                "464a73cb907ccee680acd79a3b03181ddc6b8c2d9cf8b75ea81fcc6d634d8d57",
+                "4b7d7b408d42891e03b496368c619e5385a743c72b6e07caa48eacf4adeb9f93"
+            },
+            new String[]{
+                "product_class.product_family"
+            },
+            "*Segment Header\n"
+            + "Schema:[FoodMart]\n"
+            + "Checksum:[9cca66327439577753dd5c3144ab59b5]\n"
+            + "Cube:[Sales]\n"
+            + "Measure:[Unit Sales]\n"
+            + "Axes:[\n"
+            + "    {product_class.product_family=('Drink')}]\n"
+            + "Excluded Regions:[]\n"
+            + "Compound Predicates:[]\n"
+            + "ID:[0c3fbbc2a97f4183b7761326ceb76a"
+            + "760ebc20550b4f686d129ece11e0dc1e49]\n");
+    }
+
+    public void testSameRollupRegardlessOfSegmentOrderThreeSegs() {
+        // http://jira.pentaho.com/browse/MONDRIAN-1729
+        // Tests 3 segments, each w/ no wildcarded values.
+        runRollupTest(
+            new String[]{
+                "select {{[Product].[Drink].[Alcoholic Beverages]},\n"
+                + "{[Product].[Non-Consumable].[Periodicals]}}\n on 0 from sales",
+                "select "
+                + "\n"
+                + "{[Product].[Drink].[Dairy]}"
+                + "on 0 from sales",
+                " select "
+                + "{[Product].[Drink].[Beverages]} on 0 from sales"},
+            new String[] {
+                "464a73cb907ccee680acd79a3b03181ddc6b8c2d9cf8b75ea81fcc6d634d8d57",
+                "9f15599949884e63cf5167e8f857d7da133bb0781602b538f3c0eb00106e5bf4",
+                "2e68abec3aa76aad4d6cd742cfc19e448b48fabf33b3c1cdf1a34062428a71e3"
+            },
+            new String[]{
+                "product_class.product_family"
+            },
+            "*Segment Header\n"
+            + "Schema:[FoodMart]\n"
+            + "Checksum:[9cca66327439577753dd5c3144ab59b5]\n"
+            + "Cube:[Sales]\n"
+            + "Measure:[Unit Sales]\n"
+            + "Axes:[\n"
+            + "    {product_class.product_family=('Drink')}]\n"
+            + "Excluded Regions:[]\n"
+            + "Compound Predicates:[]\n"
+            + "ID:[0c3fbbc2a97f4183b7761326ceb76a"
+            + "760ebc20550b4f686d129ece11e0dc1e49]\n");
+    }
+
+
 
     /**
      * Loads the cache with the results of the queries
@@ -329,6 +402,27 @@ public class SegmentBuilderTest extends BatchTestCase {
                 orderedSet.addAll(list);
                 return orderedSet;
             }
+            public Set<SegmentHeader> keySet() {
+                List<SegmentHeader> list = new ArrayList<SegmentHeader>();
+                list.addAll(super.keySet());
+                Collections.sort(
+                    list,
+                    new Comparator<SegmentHeader>() {
+                        public int compare(
+                            SegmentHeader o1,
+                            SegmentHeader o2)
+                        {
+                            int ret = o1.getUniqueID().compareTo(
+                                o2.getUniqueID());
+                            return order == Order.REVERSE ? ret : -ret;
+                        }
+                    });
+                LinkedHashSet<SegmentHeader>
+                    orderedSet =
+                    new LinkedHashSet<SegmentHeader>();
+                orderedSet.addAll(list);
+                return orderedSet;
+            }
         };
         for (SegmentHeader header : headers) {
             for (String segmentId : segmentIdsToInclude) {
@@ -339,6 +433,7 @@ public class SegmentBuilderTest extends BatchTestCase {
         }
         return testMap;
     }
+
 
     /**
      * Creates a rough segment map for testing purposes, containing

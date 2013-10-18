@@ -189,7 +189,14 @@ public class SegmentBuilder {
             int src;
             boolean lostPredicate;
         }
-        final SegmentHeader firstHeader = map.keySet().iterator().next();
+        assert allHeadersHaveSameDimensionality(map.keySet());
+
+        // store the map values in a list to assure the first header
+        // loaded here is consistent w/ the first segment processed below.
+        List<Map.Entry<SegmentHeader, SegmentBody>>  segments =
+            new ArrayList<Map.Entry<SegmentHeader, SegmentBody>> ();
+        segments.addAll(map.entrySet());
+        final SegmentHeader firstHeader = segments.get(0).getKey();
         final AxisInfo[] axes =
             new AxisInfo[keepColumns.size()];
         int z = 0, j = 0;
@@ -205,7 +212,7 @@ public class SegmentBuilder {
 
         // Compute the sets of values in each axis of the target segment. These
         // are the intersection of the input axes.
-        for (Map.Entry<SegmentHeader, SegmentBody> entry : map.entrySet()) {
+        for (Map.Entry<SegmentHeader, SegmentBody> entry : segments) {
             final SegmentHeader header = entry.getKey();
             for (AxisInfo axis : axes) {
                 final SortedSet<Comparable> values =
@@ -226,6 +233,7 @@ public class SegmentBuilder {
                     if (axis.requestedValues == null) {
                         filteredValues = values;
                         filteredHasNull = hasNull;
+                        axis.column = headerColumn;
                     } else if (requestedValues == null) {
                         // this axis is wildcarded
                         filteredValues = axis.requestedValues;
@@ -335,7 +343,6 @@ public class SegmentBuilder {
         // Build the axis list.
         final List<Pair<SortedSet<Comparable>, Boolean>> axisList =
             new ArrayList<Pair<SortedSet<Comparable>, Boolean>>();
-
         BigInteger bigValueCount = BigInteger.ONE;
         for (AxisInfo axis : axes) {
             axisList.add(Pair.of(axis.valueSet, axis.hasNull));
@@ -352,10 +359,11 @@ public class SegmentBuilder {
         // The two methods use different data structures (AxisInfo/SegmentAxis)
         // so combining logic is probably more trouble than it's worth.
         final boolean sparse =
-            bigValueCount.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) > 0
+            bigValueCount.compareTo
+                (BigInteger.valueOf(Integer.MAX_VALUE)) > 0
                 || SegmentLoader.useSparse(
-                    bigValueCount.doubleValue(), cellValues.size());
-
+                    bigValueCount.doubleValue(),
+                    cellValues.size());
         final int[] axisMultipliers =
             computeAxisMultipliers(axisList);
 
