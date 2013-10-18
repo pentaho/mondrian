@@ -9,7 +9,6 @@
 // Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.ResultStyle;
@@ -277,6 +276,7 @@ public abstract class RolapNativeSet extends RolapNative {
                 // This is used to push down the "1 = 0" predicate
                 // into the emerging CJ so that the entire CJ can
                 // be natively evaluated.
+                tr.incrementEmptySets();
                 return;
             }
 
