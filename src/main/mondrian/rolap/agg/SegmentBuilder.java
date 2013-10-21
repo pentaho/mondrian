@@ -19,6 +19,8 @@ import mondrian.spi.Dialect.Datatype;
 import mondrian.util.ArraySortedSet;
 import mondrian.util.Pair;
 
+import org.olap4j.impl.UnmodifiableArrayList;
+
 import java.lang.ref.WeakReference;
 import java.math.BigInteger;
 import java.util.*;
@@ -194,8 +196,7 @@ public class SegmentBuilder {
         // store the map values in a list to assure the first header
         // loaded here is consistent w/ the first segment processed below.
         List<Map.Entry<SegmentHeader, SegmentBody>>  segments =
-            new ArrayList<Map.Entry<SegmentHeader, SegmentBody>> ();
-        segments.addAll(map.entrySet());
+            UnmodifiableArrayList.of(map.entrySet());
         final SegmentHeader firstHeader = segments.get(0).getKey();
         final AxisInfo[] axes =
             new AxisInfo[keepColumns.size()];
