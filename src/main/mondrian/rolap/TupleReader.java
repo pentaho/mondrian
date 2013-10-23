@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2011 Pentaho and others
+// Copyright (C) 2006-2013 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.TupleList;
@@ -134,6 +133,11 @@ public interface TupleReader {
      * @return Cache key
      */
     Object getCacheKey();
+
+    /**
+     * Indicates that there was an empty argument somewhere in the tuple.
+     */
+    void incrementEmptySets();
 
 }
 

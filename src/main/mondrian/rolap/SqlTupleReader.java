@@ -9,7 +9,6 @@
 // Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.TupleList;
@@ -90,6 +89,7 @@ public class SqlTupleReader implements TupleReader {
      */
     private int missedMemberCount;
     private static final String UNION = "union";
+    private int emptySets = 0;
 
     /**
      * Helper class for SqlTupleReader;
@@ -330,6 +330,10 @@ public class SqlTupleReader implements TupleReader {
 
     public SqlTupleReader(TupleConstraint constraint) {
         this.constraint = constraint;
+    }
+
+    public void incrementEmptySets() {
+        emptySets++;
     }
 
     public void addLevelMembers(
@@ -576,9 +580,9 @@ public class SqlTupleReader implements TupleReader {
         }
 
         TupleList tupleList =
-            n == 1
+            n + emptySets == 1
                 ? new UnaryTupleList(members)
-                : new ListTupleList(n, members);
+                : new ListTupleList(n + emptySets, members);
 
         // need to hierarchize the columns from the enumerated targets
         // since we didn't necessarily add them in the order in which
