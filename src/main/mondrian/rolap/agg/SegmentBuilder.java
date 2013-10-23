@@ -226,22 +226,26 @@ public class SegmentBuilder {
                     if (axis.requestedValues == null) {
                         filteredValues = values;
                         filteredHasNull = hasNull;
+                    } else if (requestedValues == null) {
+                        // this axis is wildcarded
+                        filteredValues = axis.requestedValues;
+                        filteredHasNull = axis.hasNull;
                     } else {
                         filteredValues = Util.intersect(
-                            values,
+                            requestedValues,
                             axis.requestedValues);
 
                         // SegmentColumn predicates cannot ask for the null
                         // value (at present).
                         filteredHasNull = false;
                     }
-                    axis.valueSet.addAll(filteredValues);
+                    axis.valueSet = filteredValues;
                     axis.hasNull = axis.hasNull || filteredHasNull;
                     if (!Util.equals(axis.requestedValues, requestedValues)) {
                         if (axis.requestedValues == null) {
                             // Downgrade from wildcard to a specific list.
                             axis.requestedValues = requestedValues;
-                        } else {
+                        } else if (requestedValues != null) {
                             // Segment requests have incompatible predicates.
                             // Best we can say is "we must have asked for the
                             // values that came back".
@@ -331,6 +335,7 @@ public class SegmentBuilder {
         // Build the axis list.
         final List<Pair<SortedSet<Comparable>, Boolean>> axisList =
             new ArrayList<Pair<SortedSet<Comparable>, Boolean>>();
+
         BigInteger bigValueCount = BigInteger.ONE;
         for (AxisInfo axis : axes) {
             axisList.add(Pair.of(axis.valueSet, axis.hasNull));
@@ -479,6 +484,21 @@ public class SegmentBuilder {
                 Collections.<SegmentColumn>emptyList());
 
         return Pair.of(header, body);
+    }
+
+    private static boolean allHeadersHaveSameDimensionality(
+        Set<SegmentHeader> headers)
+    {
+        final Iterator<SegmentHeader> headerIter = headers.iterator();
+        final SegmentHeader firstHeader = headerIter.next();
+        BitKey bitKey = firstHeader.getConstrainedColumnsBitKey();
+        while (headerIter.hasNext()) {
+            final SegmentHeader nextHeader = headerIter.next();
+            if (!bitKey.equals(nextHeader.getConstrainedColumnsBitKey())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static int[] computeAxisMultipliers(
