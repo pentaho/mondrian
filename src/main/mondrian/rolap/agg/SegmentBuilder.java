@@ -18,6 +18,8 @@ import mondrian.spi.Dialect.Datatype;
 import mondrian.util.ArraySortedSet;
 import mondrian.util.Pair;
 
+import org.olap4j.impl.UnmodifiableArrayList;
+
 import java.lang.ref.WeakReference;
 import java.math.BigInteger;
 import java.util.*;
@@ -190,7 +192,11 @@ public class SegmentBuilder {
         }
         assert allHeadersHaveSameDimensionality(map.keySet());
 
-        final SegmentHeader firstHeader = map.keySet().iterator().next();
+        // store the map values in a list to assure the first header
+        // loaded here is consistent w/ the first segment processed below.
+        List<Map.Entry<SegmentHeader, SegmentBody>>  segments =
+            UnmodifiableArrayList.of(map.entrySet());
+        final SegmentHeader firstHeader = segments.get(0).getKey();
         final AxisInfo[] axes =
             new AxisInfo[keepColumns.size()];
         int z = 0, j = 0;
@@ -206,7 +212,7 @@ public class SegmentBuilder {
 
         // Compute the sets of values in each axis of the target segment. These
         // are the intersection of the input axes.
-        for (Map.Entry<SegmentHeader, SegmentBody> entry : map.entrySet()) {
+        for (Map.Entry<SegmentHeader, SegmentBody> entry : segments) {
             final SegmentHeader header = entry.getKey();
             for (AxisInfo axis : axes) {
                 final SortedSet<Comparable> values =
@@ -227,6 +233,7 @@ public class SegmentBuilder {
                     if (axis.requestedValues == null) {
                         filteredValues = values;
                         filteredHasNull = hasNull;
+                        axis.column = headerColumn;
                     } else if (requestedValues == null) {
                         // this axis is wildcarded
                         filteredValues = axis.requestedValues;
