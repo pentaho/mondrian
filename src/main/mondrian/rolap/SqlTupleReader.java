@@ -90,6 +90,7 @@ public class SqlTupleReader implements TupleReader {
      * manage to load any more members.
      */
     private int missedMemberCount;
+    private int emptySets = 0;
 
     /**
      * Helper class for SqlTupleReader;
@@ -424,6 +425,10 @@ public class SqlTupleReader implements TupleReader {
         this.constraint = constraint;
     }
 
+    public void incrementEmptySets() {
+        emptySets++;
+    }
+
     public void addLevelMembers(
         RolapCubeLevel level,
         MemberBuilder memberBuilder,
@@ -697,9 +702,9 @@ public class SqlTupleReader implements TupleReader {
         }
 
         TupleList tupleList =
-            n == 1
+            n + emptySets == 1
                 ? new UnaryTupleList(members)
-                : new ListTupleList(n, members);
+                : new ListTupleList(n + emptySets, members);
 
         // need to hierarchize the columns from the enumerated targets
         // since we didn't necessarily add them in the order in which

@@ -275,6 +275,7 @@ public abstract class RolapNativeSet extends RolapNative {
                 // This is used to push down the "1 = 0" predicate
                 // into the emerging CJ so that the entire CJ can
                 // be natively evaluated.
+                tr.incrementEmptySets();
                 return;
             }
 

@@ -5001,6 +5001,43 @@ public class NonEmptyTest extends BatchTestCase {
            + "Row #2: \n"
            + "Row #3: \n");
    }
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1658">MONDRIAN-1658</a>
+     *
+     * <p>Error: Tuple length does not match arity
+     *
+     * <p>An empty set argument to crossjoin caused native evaluation to return
+     * an incorrect type which in turn caused the types for each argument to
+     * union to be different
+     *
+     */
+    public void testMondrian1658() {
+        propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
+        String mdx =
+            "Select\n"
+            + "  [Measures].[Unit Sales] on columns,\n"
+            + "  Non Empty \n"
+            + "  Union(\n"
+            + "    {([Gender].[M],[Time].[1997].[Q1])},\n"
+            + "      Union(\n"
+            + "        CrossJoin({[Gender].[F]},{}),\n"
+            + "          {([Gender].[F],[Time].[1997].[Q2])}))\n"
+            + "  on rows\n"
+            + "From [Sales]\n";
+        String expected =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Customer].[Gender].[M], [Time].[Time].[1997].[Q1]}\n"
+            + "{[Customer].[Gender].[F], [Time].[Time].[1997].[Q2]}\n"
+            + "Row #0: 33,381\n"
+            + "Row #1: 30,992\n";
+        assertQueryReturns(mdx, expected);
+    }
 }
 
 // End NonEmptyTest.java
