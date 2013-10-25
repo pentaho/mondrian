@@ -139,6 +139,11 @@ public interface TupleReader {
      */
     Object getCacheKey();
 
+    /**
+     * Indicates that there was an empty argument somewhere in the tuple.
+     */
+    void incrementEmptySets();
+
 }
 
 // End TupleReader.java
