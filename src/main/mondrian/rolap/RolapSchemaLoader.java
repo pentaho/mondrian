@@ -4635,7 +4635,7 @@ public class RolapSchemaLoader {
             return null;
         }
 
-        final List<Formula> calculatedMemberList = new ArrayList<Formula>();
+        final List<Formula> calculatedMemberList = cube.calculatedMemberList;
 
         StringBuilder buf = new StringBuilder(256);
         buf.append("WITH").append(Util.nl);
@@ -5137,8 +5137,8 @@ public class RolapSchemaLoader {
             Collections.singletonList(xmlCalcMember),
             Collections.<MondrianDef.NamedSet>emptyList(),
             memberList,
-            new ArrayList<Formula>(),
-            new ArrayList<Formula>(),
+            cube.calculatedMemberList,
+            cube.namedSetList,
             cube,
             true);
         assert memberList.size() == 1;
