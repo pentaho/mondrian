@@ -519,9 +519,14 @@ public class RolapCube extends CubeBase {
     }
 
     public Member createCalculatedMember(String xml) {
-        loadInProgress = true;
-        Member calculatedMember = new RolapSchemaLoader(schema).createCalculatedMember(this, xml);
-        loadInProgress = false;
+        Member calculatedMember;
+        try {
+            loadInProgress = true;
+            calculatedMember =
+                new RolapSchemaLoader(schema).createCalculatedMember(this, xml);
+        } finally {
+            loadInProgress = false;
+        }
         return calculatedMember;
     }
 
