@@ -4,8 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2012 Pentaho and others
-// All Rights Reserved.
+// Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.rolap.agg;
 
@@ -18,6 +17,8 @@ import mondrian.spi.*;
 import mondrian.spi.Dialect.Datatype;
 import mondrian.util.ArraySortedSet;
 import mondrian.util.Pair;
+
+import org.olap4j.impl.UnmodifiableArrayList;
 
 import java.lang.ref.WeakReference;
 import java.math.BigInteger;
@@ -189,7 +190,13 @@ public class SegmentBuilder {
             int src;
             boolean lostPredicate;
         }
-        final SegmentHeader firstHeader = map.keySet().iterator().next();
+        assert allHeadersHaveSameDimensionality(map.keySet());
+
+        // store the map values in a list to assure the first header
+        // loaded here is consistent w/ the first segment processed below.
+        List<Map.Entry<SegmentHeader, SegmentBody>>  segments =
+            UnmodifiableArrayList.of(map.entrySet());
+        final SegmentHeader firstHeader = segments.get(0).getKey();
         final AxisInfo[] axes =
             new AxisInfo[keepColumns.size()];
         int z = 0, j = 0;
@@ -205,7 +212,7 @@ public class SegmentBuilder {
 
         // Compute the sets of values in each axis of the target segment. These
         // are the intersection of the input axes.
-        for (Map.Entry<SegmentHeader, SegmentBody> entry : map.entrySet()) {
+        for (Map.Entry<SegmentHeader, SegmentBody> entry : segments) {
             final SegmentHeader header = entry.getKey();
             for (AxisInfo axis : axes) {
                 final SortedSet<Comparable> values =
@@ -226,22 +233,27 @@ public class SegmentBuilder {
                     if (axis.requestedValues == null) {
                         filteredValues = values;
                         filteredHasNull = hasNull;
+                        axis.column = headerColumn;
+                    } else if (requestedValues == null) {
+                        // this axis is wildcarded
+                        filteredValues = axis.requestedValues;
+                        filteredHasNull = axis.hasNull;
                     } else {
                         filteredValues = Util.intersect(
-                            values,
+                            requestedValues,
                             axis.requestedValues);
 
                         // SegmentColumn predicates cannot ask for the null
                         // value (at present).
                         filteredHasNull = false;
                     }
-                    axis.valueSet.addAll(filteredValues);
+                    axis.valueSet = filteredValues;
                     axis.hasNull = axis.hasNull || filteredHasNull;
                     if (!Util.equals(axis.requestedValues, requestedValues)) {
                         if (axis.requestedValues == null) {
                             // Downgrade from wildcard to a specific list.
                             axis.requestedValues = requestedValues;
-                        } else {
+                        } else if (requestedValues != null) {
                             // Segment requests have incompatible predicates.
                             // Best we can say is "we must have asked for the
                             // values that came back".
@@ -331,7 +343,6 @@ public class SegmentBuilder {
         // Build the axis list.
         final List<Pair<SortedSet<Comparable>, Boolean>> axisList =
             new ArrayList<Pair<SortedSet<Comparable>, Boolean>>();
-
         BigInteger bigValueCount = BigInteger.ONE;
         for (AxisInfo axis : axes) {
             axisList.add(Pair.of(axis.valueSet, axis.hasNull));
@@ -348,10 +359,11 @@ public class SegmentBuilder {
         // The two methods use different data structures (AxisInfo/SegmentAxis)
         // so combining logic is probably more trouble than it's worth.
         final boolean sparse =
-            bigValueCount.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) > 0
+            bigValueCount.compareTo
+                (BigInteger.valueOf(Integer.MAX_VALUE)) > 0
                 || SegmentLoader.useSparse(
-                    bigValueCount.doubleValue(), cellValues.size());
-
+                    bigValueCount.doubleValue(),
+                    cellValues.size());
         final int[] axisMultipliers =
             computeAxisMultipliers(axisList);
 
@@ -480,6 +492,21 @@ public class SegmentBuilder {
                 Collections.<SegmentColumn>emptyList());
 
         return Pair.of(header, body);
+    }
+
+    private static boolean allHeadersHaveSameDimensionality(
+        Set<SegmentHeader> headers)
+    {
+        final Iterator<SegmentHeader> headerIter = headers.iterator();
+        final SegmentHeader firstHeader = headerIter.next();
+        BitKey bitKey = firstHeader.getConstrainedColumnsBitKey();
+        while (headerIter.hasNext()) {
+            final SegmentHeader nextHeader = headerIter.next();
+            if (!bitKey.equals(nextHeader.getConstrainedColumnsBitKey())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static int[] computeAxisMultipliers(
