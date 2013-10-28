@@ -283,7 +283,6 @@ public abstract class RolapNativeSet extends RolapNative {
             TupleList filteredTupleList =  tupleList.getArity() == 1
                 ? new UnaryTupleList()
                 : new ArrayTupleList(tupleList.getArity());
-            boolean needToFilter = false;
             for (Member member : tupleList.get(0)) {
                 // first look at the members in the first tuple to determine
                 // whether we can short-circuit this check.
@@ -291,27 +290,26 @@ public abstract class RolapNativeSet extends RolapNative {
                 // is not ALL
                 Access hierarchyAccess = role.getAccess(member.getHierarchy());
                 if (hierarchyAccess == Access.CUSTOM) {
-                    needToFilter = true;
+                    // one of the hierarchies has CUSTOM.  Remove all tuples
+                    // with inaccessible members.
+                    for (List<Member> tuple : tupleList) {
+                        for (Member memberInner : tuple) {
+                            if (!role.canAccess(memberInner)) {
+                                filteredTupleList.add(tuple);
+                                break;
+                            }
+                        }
+                    }
+                    for (List<Member> tuple : filteredTupleList) {
+                        tupleList.remove(tuple);
+                    }
+                    return tupleList;
                 } else if (hierarchyAccess == Access.NONE) {
                     // one or more hierarchies in the tuple list is
                     // inaccessible. return an empty list.
                     List<Member> emptyList = Collections.emptyList();
                     return new ListTupleList(tupleList.getArity(), emptyList);
                 }
-            }
-            if (!needToFilter) {
-                return tupleList;
-            }
-            for (List<Member> tuple : tupleList) {
-                for (Member member : tuple) {
-                    if (!role.canAccess(member)) {
-                        filteredTupleList.add(tuple);
-                        break;
-                    }
-                }
-            }
-            for (List<Member> tuple : filteredTupleList) {
-                tupleList.remove(tuple);
             }
             return tupleList;
         }
