@@ -821,12 +821,12 @@ public class RolapMemberBase
      * @return -1 if this is less, 0 if this is the same, 1 if this is greater
      */
     public int compareTo(Object o) {
-        RolapMemberBase other = (RolapMemberBase)o;
-        if (this.key == null || other.key == null) {
+        RolapMember other = (RolapMember)o;
+        if (this.key == null || other.getKey() == null) {
             if (this.key != null) {
                 return 1; // not null is greater than null
             }
-            if (other.key != null) {
+            if (other.getKey() != null) {
                 return -1; // null is less than not null
             }
             // compare by unique name, if both keys are null
@@ -834,7 +834,7 @@ public class RolapMemberBase
         }
         // compare by unique name, if one ore both members are null
         if (this.key == RolapUtil.sqlNullValue
-            || other.key == RolapUtil.sqlNullValue)
+            || other.getKey() == RolapUtil.sqlNullValue)
         {
             return this.getUniqueName().compareTo(other.getUniqueName());
         }
@@ -842,14 +842,14 @@ public class RolapMemberBase
         //  String, Double, Integer should be possible
         //  any key object should be "Comparable"
         // anyway - keys should be of the same class
-        if (this.key.getClass().equals(other.key.getClass())) {
+        if (this.key.getClass().equals(other.getKey().getClass())) {
             if (this.key instanceof String) {
                 // use a special case sensitive compare name which
                 // first compares w/o case, and if 0 compares with case
                 return Util.caseSensitiveCompareName(
-                    (String) this.key, (String) other.key);
+                    (String) this.key, (String) other.getKey());
             } else {
-                return Util.compareKey(this.key, other.key);
+                return Util.compareKey(this.key, other.getKey());
             }
         }
         // Compare by unique name in case of different key classes.
