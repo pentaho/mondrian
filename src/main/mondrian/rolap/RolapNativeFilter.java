@@ -74,10 +74,8 @@ public class RolapNativeFilter extends RolapNativeSet {
                         return super.visit(memberExpr);
                     }
                 });
-            if (mustJoin.get() || super.isJoinRequired()) {
-                return true;
-            }
-            return false;
+            return mustJoin.get()
+                || (getEvaluator().isNonEmpty() && super.isJoinRequired());
         }
 
         public void addConstraint(
@@ -93,7 +91,11 @@ public class RolapNativeFilter extends RolapNativeSet {
             if (filterSql != null) {
                 sqlQuery.addHaving(filterSql);
             }
-            super.addConstraint(sqlQuery, baseCube, aggStar);
+            if (getEvaluator().isNonEmpty() || isJoinRequired()) {
+                // only apply context constraint if non empty, or
+                // if a join is required to fulfill the filter condition
+                super.addConstraint(sqlQuery, baseCube, aggStar);
+            }
         }
 
         public Object getCacheKey() {
