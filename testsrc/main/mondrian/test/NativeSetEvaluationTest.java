@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.test;
 
 import mondrian.olap.MondrianProperties;
@@ -1178,6 +1177,48 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "[*BASE_MEMBERS_Measures] on columns,\n"
             + "Non Empty [*SORTED_ROW_AXIS] on rows\n"
             + "From [Warehouse and Sales]\n");
+    }
+
+    public void testNativeHonorsRoleRestrictions() {
+        // NativeSetEvaluation pushes role restrictions to the where clause
+        // (see SqlConstraintUtils.addRoleAccessConstraints) by
+        // generating an IN expression based on accessible members.
+        // If the number of accessible members in a hierarchy w/ CUSTOM
+        // access exceeds MaxConstraints, it is not possible to
+        // include the full role restriction in the IN clause.
+        // This test verifies only permitted members are returned in this
+        // case.
+        propSaver.set(MondrianProperties.instance().MaxConstraints, 4);
+        String roleDef =
+            "  <Role name=\"Test\">\n"
+            + "    <SchemaGrant access=\"none\">\n"
+            + "      <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "        <HierarchyGrant hierarchy=\"[Product]\" rollupPolicy=\"partial\" access=\"custom\">\n"
+            + "          <MemberGrant member=\"[Product].[Non-Consumable].[Household].[Electrical].[Batteries].[Cormorant].[Cormorant AA-Size Batteries]\" access=\"all\" />\n"
+            + "          <MemberGrant member=\"[Product].[Non-Consumable].[Household].[Electrical].[Batteries].[Cormorant].[Cormorant AA-Size Batteries]\" access=\"all\"/>\n"
+            + "          <MemberGrant member=\"[Product].[Non-Consumable].[Household].[Electrical].[Batteries].[Cormorant].[Cormorant AAA-Size Batteries]\" access=\"all\"/>\n"
+            + "          <MemberGrant member=\"[Product].[Non-Consumable].[Household].[Electrical].[Batteries].[Cormorant].[Cormorant C-Size Batteries]\" access=\"all\"/>\n"
+            + "          <MemberGrant member=\"[Product].[Non-Consumable].[Household].[Electrical].[Batteries].[Denny].[Denny AA-Size Batteries]\" access=\"all\"/>\n"
+            + "          <MemberGrant member=\"[Product].[Non-Consumable].[Household].[Electrical].[Batteries].[Denny].[Denny AAA-Size Batteries]\" access=\"all\"/>\n"
+            + "        </HierarchyGrant>\n"
+            + "      </CubeGrant>\n"
+            + "    </SchemaGrant>\n"
+            + "  </Role>";
+        // The following queries should not include [Denny C-Size Batteries] or
+        // [Denny D-Size Batteries]
+        final TestContext ctx = getTestContext().create(
+            null, null, null, null, null, roleDef).withRole("Test");
+        verifySameNativeAndNot(
+            "select non empty crossjoin([Store].[USA],[Product].[Product Name].members) on 0 from sales",
+            "Native crossjoin mismatch", ctx);
+        verifySameNativeAndNot(
+            "select topcount([Product].[Product Name].members, 6, Measures.[Unit Sales]) on 0 from sales",
+            "Native topcount mismatch", ctx);
+        verifySameNativeAndNot(
+            "select filter([Product].[Product Name].members, Measures.[Unit Sales] > 0) on 0 from sales",
+            "Native native filter mismatch", ctx);
+       
+        propSaver.reset();
     }
 }
 // End NativeSetEvaluationTest.java

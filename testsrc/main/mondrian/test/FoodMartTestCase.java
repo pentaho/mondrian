@@ -5,12 +5,11 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 29 March, 2002
 */
-
 package mondrian.test;
 
 import mondrian.calc.TupleList;
@@ -413,6 +412,38 @@ public class FoodMartTestCase extends TestCase {
             this.query = query;
             this.result = result;
         }
+    }
+
+    /**
+     * Checks whether query produces the same results with the native.* props
+     * enabled as it does with the props disabled
+     * @param query query to run
+     * @param message Message to output on test failure
+     * @param context test context to use
+     */
+    public void verifySameNativeAndNot(
+        String query, String message, TestContext context)
+    {
+        propSaver.set(propSaver.properties.EnableNativeCrossJoin, true);
+        propSaver.set(propSaver.properties.EnableNativeFilter, true);
+        propSaver.set(propSaver.properties.EnableNativeNonEmpty, true);
+        propSaver.set(propSaver.properties.EnableNativeTopCount, true);
+
+        Result resultNative = context.executeQuery(query);
+
+        propSaver.set(propSaver.properties.EnableNativeCrossJoin, false);
+        propSaver.set(propSaver.properties.EnableNativeFilter, false);
+        propSaver.set(propSaver.properties.EnableNativeNonEmpty, false);
+        propSaver.set(propSaver.properties.EnableNativeTopCount, true);
+
+        Result resultNonNative = context.executeQuery(query);
+
+        assertEquals(
+            message,
+            TestContext.toString(resultNative),
+            TestContext.toString(resultNonNative));
+
+        propSaver.reset();
     }
 }
 
