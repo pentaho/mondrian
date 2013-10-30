@@ -111,7 +111,6 @@ public abstract class RolapNativeSet extends RolapNative {
                     || !((MemberListCrossJoinArg) arg).hasCalcMembers())
                 {
                     RolapLevel level = arg.getLevel();
-                    RolapCube baseCube = null; // TODO:
                     if (level == null
                         || levelIsOnBaseCube(starSet.getMeasureGroup(), level))
                     {
@@ -124,6 +123,9 @@ public abstract class RolapNativeSet extends RolapNative {
         private boolean levelIsOnBaseCube(
             final RolapMeasureGroup measureGroup, final RolapLevel level)
         {
+            if (measureGroup == null) {
+                return false;
+            }
             return measureGroup.getPath(
                 level.getHierarchy().getDimension()) != null;
         }
@@ -295,10 +297,6 @@ public abstract class RolapNativeSet extends RolapNative {
             } else {
                 tr.addLevelMembers(level, mb, null);
             }
-        }
-
-        int getMaxRows() {
-            return maxRows;
         }
 
         void setMaxRows(int maxRows) {

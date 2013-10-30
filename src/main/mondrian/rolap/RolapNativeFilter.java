@@ -11,10 +11,17 @@
 */
 package mondrian.rolap;
 
+import mondrian.mdx.MdxVisitorImpl;
+import mondrian.mdx.MemberExpr;
 import mondrian.olap.*;
+import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.sql.DataSource;
 
 /**
  * Computes a Filter(set, condition) in SQL.
@@ -56,11 +63,32 @@ public class RolapNativeFilter extends RolapNativeSet {
         /**
          * {@inheritDoc}
          *
-         * <p>A FilterConstraint always needs to join the fact table because we
-         * want to evaluate the filter expression against a fact.
+         * <p>Overriding isJoinRequired() for native filters because
+         * we have to force a join to the fact table if the filter
+         * expression references a measure.
          */
         public boolean isJoinRequired() {
-            return true;
+            // Use a visitor and check all member expressions.
+            // If any of them is a measure, we will have to
+            // force the join to the fact table. If it is something
+            // else then we don't really care. It will show up in
+            // the evaluator as a non-all member and trigger the
+            // join when we call RolapNativeSet.isJoinRequired().
+            final AtomicBoolean mustJoin = new AtomicBoolean(false);
+            filterExpr.accept(
+                new MdxVisitorImpl() {
+                    public Object visit(MemberExpr memberExpr) {
+                        if (memberExpr.getMember().isMeasure()) {
+                            mustJoin.set(true);
+                            return null;
+                        }
+                        return super.visit(memberExpr);
+                    }
+                });
+            if (mustJoin.get() || super.isJoinRequired()) {
+                return true;
+            }
+            return false;
         }
 
         public void addConstraint(
@@ -84,6 +112,35 @@ public class RolapNativeFilter extends RolapNativeSet {
             if (filterExpr != null) {
                 key.add(filterExpr.toString());
             }
+
+            if (this.getEvaluator() instanceof RolapEvaluator) {
+                key.add(
+                    ((RolapEvaluator)this.getEvaluator())
+                    .getSlicerMembers());
+            }
+
+         // Add restrictions imposed by Role based access filtering
+            SchemaReader schemaReader = this.getEvaluator().getSchemaReader();
+            Member[] mm = this.getEvaluator().getMembers();
+            for (int mIndex = 0; mIndex < mm.length; mIndex++) {
+                if (mm[mIndex] instanceof RolapHierarchy.LimitedRollupMember
+                    || mm[mIndex] instanceof
+                       RestrictedMemberReader.MultiCardinalityDefaultMember)
+                {
+                    List<Level> hierarchyLevels = schemaReader
+                            .getHierarchyLevels(mm[mIndex].getHierarchy());
+                    for (Level affectedLevel : hierarchyLevels) {
+                        List<Member> availableMembers = schemaReader
+                                .getLevelMembers(affectedLevel, false);
+                        for (Member member : availableMembers) {
+                            if (!member.isAll()) {
+                                key.add(member);
+                            }
+                        }
+                    }
+                }
+            }
+
             return key;
         }
     }
@@ -103,11 +160,11 @@ public class RolapNativeFilter extends RolapNativeSet {
         final List<RolapMeasureGroup> measureGroupList =
             new ArrayList<RolapMeasureGroup>();
         if (!SqlContextConstraint.checkValidContext(
-                evaluator,
-                true,
-                Collections.<RolapCubeLevel>emptyList(),
-                restrictMemberTypes(),
-                measureGroupList))
+            evaluator,
+            true,
+            Collections.<RolapCubeLevel>emptyList(),
+            restrictMemberTypes(),
+            measureGroupList))
         {
             return null;
         }
@@ -168,7 +225,6 @@ public class RolapNativeFilter extends RolapNativeSet {
         final int savepoint = evaluator.savepoint();
         try {
             overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
-
             // Now construct the TupleConstraint that contains both the CJ
             // dimensions and the additional filter on them.
             CrossJoinArg[] combinedArgs = cjArgs;
