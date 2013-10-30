@@ -5060,6 +5060,11 @@ public class NonEmptyTest extends BatchTestCase {
             + "[*BASE_MEMBERS_Product] on columns\n"
             + "From [Sales1] \n";
 
+        final String nonEmptyQuery =
+            "Select\n"
+            + "NON EMPTY Filter([Store].[Store State].Members,[Store].CurrentMember.Caption Matches (\"(?i).*CA.*\")) on columns\n"
+            + "From [Sales1] \n";
+
         final String mysql =
             "select\n"
             + "    `store`.`store_country` as `c0`,\n"
@@ -5075,7 +5080,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
             + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
 
-        final String mysqlWithRoles =
+        final String mysqlWithFactJoin =
             "select\n"
             + "    `store`.`store_country` as `c0`,\n"
             + "    `store`.`store_state` as `c1`\n"
@@ -5113,7 +5118,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
             + "    \"store\".\"store_state\" ASC NULLS LAST";
 
-        final String oracleWithRoles =
+        final String oracleWithFactJoin =
             "select\n"
             + "    \"store\".\"store_country\" as \"c0\",\n"
             + "    \"store\".\"store_state\" as \"c1\"\n"
@@ -5143,24 +5148,28 @@ public class NonEmptyTest extends BatchTestCase {
                 Dialect.DatabaseProduct.ORACLE, oracle, oracle)
         };
 
-        final SqlPattern[] patternsWithRoles = {
+        final SqlPattern[] patternsWithFactJoin = {
             new SqlPattern(
                 Dialect.DatabaseProduct.MYSQL,
-                mysqlWithRoles, mysqlWithRoles),
+                mysqlWithFactJoin, mysqlWithFactJoin),
             new SqlPattern(
                 Dialect.DatabaseProduct.ORACLE,
-                oracleWithRoles, oracleWithRoles)
+                oracleWithFactJoin, oracleWithFactJoin)
         };
 
         final TestContext context =
             TestContext.instance().withSchema(schema);
 
-        // Actual tests.
+        // The filter condition does not require a join to the fact table.
         assertQuerySql(context, query, patterns);
+        assertQuerySql(context.withRole("Role1"), query, patterns);
 
-        // Roles must join to the fact table or it will create
-        // a cross join.
-        assertQuerySql(context.withRole("Role1"), query, patternsWithRoles);
+        // in a non-empty context where a role is in effect, the query
+        // will pessimistically join the fact table and apply the
+        // constraint, since the filter condition could be influenced by
+        // role limitations.
+        assertQuerySql(
+            context.withRole("Role1"), nonEmptyQuery, patternsWithFactJoin);
     }
 
     /**
@@ -5219,7 +5228,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
             + "      formatString=\"#,###.00\"/>\n"
             + "  </Cube>\n"
-            + "<Role name=\"Role1\">\n"
+            + "<Role name=\"Role1\" >\n"
             + "  <SchemaGrant access=\"none\">\n"
             + "    <CubeGrant cube=\"Sales1\" access=\"all\">\n"
             + "      <HierarchyGrant hierarchy=\"[Time]\" access=\"custom\" rollupPolicy=\"partial\">\n"
@@ -5237,6 +5246,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "[*BASE_MEMBERS_Product] on columns\n"
             + "From [Sales1] \n";
 
+        final String nonEmptyQuery =
+                "Select\n"
+                + "NON EMPTY Filter([Store].[Store State].Members,[Store].CurrentMember.Caption Matches (\"(?i).*CA.*\")) on columns\n"
+                + "From [Sales1] \n";
+
+
         final String mysql =
             "select\n"
             + "    `store`.`store_country` as `c0`,\n"
@@ -5252,7 +5267,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
             + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
 
-        final String mysqlWithRoles =
+        final String mysqlWithFactJoin =
             "select\n"
             + "    `store`.`store_country` as `c0`,\n"
             + "    `store`.`store_state` as `c1`\n"
@@ -5287,7 +5302,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
             + "    \"store\".\"store_state\" ASC NULLS LAST";
 
-        final String oracleWithRoles =
+        final String oracleWithFactJoin =
             "select\n"
             + "    \"store\".\"store_country\" as \"c0\",\n"
             + "    \"store\".\"store_state\" as \"c1\"\n"
@@ -5314,24 +5329,28 @@ public class NonEmptyTest extends BatchTestCase {
                 Dialect.DatabaseProduct.ORACLE, oracle, oracle)
         };
 
-        final SqlPattern[] patternsWithRoles = {
+        final SqlPattern[] patternsWithFactJoin = {
             new SqlPattern(
                 Dialect.DatabaseProduct.MYSQL,
-                mysqlWithRoles, mysqlWithRoles),
+                mysqlWithFactJoin, mysqlWithFactJoin),
             new SqlPattern(
                 Dialect.DatabaseProduct.ORACLE,
-                oracleWithRoles, oracleWithRoles)
+                oracleWithFactJoin, oracleWithFactJoin)
         };
 
         final TestContext context =
             TestContext.instance().withSchema(schema);
 
-        // Actual tests.
+        // The filter condition does not require a join to the fact table.
         assertQuerySql(context, query, patterns);
+        assertQuerySql(context.withRole("Role1"), query, patterns);
 
-        // Roles must join to the fact table or it will create
-        // a cross join.
-        assertQuerySql(context.withRole("Role1"), query, patternsWithRoles);
+        // in a non-empty context where a role is in effect, the query
+        // will pessimistically join the fact table and apply the
+        // constraint, since the filter condition could be influenced by
+        // role limitations.
+        assertQuerySql(
+            context.withRole("Role1"), nonEmptyQuery, patternsWithFactJoin);
     }
 
 
