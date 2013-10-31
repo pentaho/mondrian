@@ -13,7 +13,7 @@ package mondrian.rolap;
 
 import mondrian.calc.ResultStyle;
 import mondrian.calc.TupleList;
-import mondrian.calc.impl.DelegatingTupleList;
+import mondrian.calc.impl.*;
 import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.cache.*;
@@ -266,7 +266,53 @@ public abstract class RolapNativeSet extends RolapNative {
                     cache.put(key, result);
                 }
             }
-            return result;
+            return filterInaccessibleTuples(result);
+        }
+
+
+        /**
+         * Checks access rights on the members in each tuple in tupleList.
+         */
+        private TupleList filterInaccessibleTuples(TupleList tupleList) {
+            if (constraint.getEvaluator() == null
+                || tupleList.size() == 0)
+            {
+                return tupleList;
+            }
+            Role role = constraint.getEvaluator().getSchemaReader().getRole();
+
+            TupleList filteredTupleList =  tupleList.getArity() == 1
+                ? new UnaryTupleList()
+                : new ArrayTupleList(tupleList.getArity());
+            for (Member member : tupleList.get(0)) {
+                // first look at the members in the first tuple to determine
+                // whether we can short-circuit this check.
+                // We only need to filter the list if hierarchy access
+                // is not ALL
+                Access hierarchyAccess = role.getAccess(member.getHierarchy());
+                if (hierarchyAccess == Access.CUSTOM) {
+                    // one of the hierarchies has CUSTOM.  Remove all tuples
+                    // with inaccessible members.
+                    for (List<Member> tuple : tupleList) {
+                        for (Member memberInner : tuple) {
+                            if (!role.canAccess(memberInner)) {
+                                filteredTupleList.add(tuple);
+                                break;
+                            }
+                        }
+                    }
+                    for (List<Member> tuple : filteredTupleList) {
+                        tupleList.remove(tuple);
+                    }
+                    return tupleList;
+                } else if (hierarchyAccess == Access.NONE) {
+                    // one or more hierarchies in the tuple list is
+                    // inaccessible. return an empty list.
+                    List<Member> emptyList = Collections.emptyList();
+                    return new ListTupleList(tupleList.getArity(), emptyList);
+                }
+            }
+            return tupleList;
         }
 
         private void addLevel(TupleReader tr, CrossJoinArg arg) {

@@ -85,10 +85,8 @@ public class RolapNativeFilter extends RolapNativeSet {
                         return super.visit(memberExpr);
                     }
                 });
-            if (mustJoin.get() || super.isJoinRequired()) {
-                return true;
-            }
-            return false;
+            return mustJoin.get()
+                || (getEvaluator().isNonEmpty() && super.isJoinRequired());
         }
 
         public void addConstraint(
@@ -102,7 +100,11 @@ public class RolapNativeFilter extends RolapNativeSet {
                     args[0].getLevel());
             String filterSql =  sql.generateFilterCondition(filterExpr);
             sqlQuery.addHaving(filterSql);
-            super.addConstraint(sqlQuery, starSet);
+            if (getEvaluator().isNonEmpty() || isJoinRequired()) {
+                // only apply context constraint if non empty, or
+                // if a join is required to fulfill the filter condition
+                super.addConstraint(sqlQuery, starSet);
+            }
         }
 
         public Object getCacheKey() {
@@ -160,11 +162,11 @@ public class RolapNativeFilter extends RolapNativeSet {
         final List<RolapMeasureGroup> measureGroupList =
             new ArrayList<RolapMeasureGroup>();
         if (!SqlContextConstraint.checkValidContext(
-            evaluator,
-            true,
-            Collections.<RolapCubeLevel>emptyList(),
-            restrictMemberTypes(),
-            measureGroupList))
+                evaluator,
+                true,
+                Collections.<RolapCubeLevel>emptyList(),
+                restrictMemberTypes(),
+                measureGroupList))
         {
             return null;
         }

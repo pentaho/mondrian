@@ -5048,6 +5048,12 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testMondrian1133() {
         propSaver.set(
+            propSaver.props.UseAggregates,
+            false);
+        propSaver.set(
+            propSaver.props.ReadAggregates,
+            false);
+        propSaver.set(
             propSaver.props.GenerateFormattedSql,
             true);
         final String schema =
@@ -5076,6 +5082,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "  </Dimension>\n"
             + "  <Cube name=\"Sales1\" defaultMeasure=\"Unit Sales\">\n"
             + "    <Table name=\"sales_fact_1997\">\n"
+            + "        <AggExclude name=\"agg_c_special_sales_fact_1997\" />"
             + "    </Table>\n"
             + "    <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
             + "    <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
@@ -5086,15 +5093,30 @@ public class NonEmptyTest extends BatchTestCase {
             + "    <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
             + "      formatString=\"#,###.00\"/>\n"
             + "  </Cube>\n"
+            + "<Role name=\"Role1\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales1\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Time]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+            + "        <MemberGrant member=\"[Time].[Year].[1997]\" access=\"all\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role> \n"
             + "</Schema>\n";
-        String query =
+
+        final String query =
             "With\n"
             + "Set [*BASE_MEMBERS_Product] as 'Filter([Store].[Store State].Members,[Store].CurrentMember.Caption Matches (\"(?i).*CA.*\"))'\n"
             + "Select\n"
             + "[*BASE_MEMBERS_Product] on columns\n"
             + "From [Sales1] \n";
 
-        String sql =
+        final String nonEmptyQuery =
+            "Select\n"
+            + "NON EMPTY Filter([Store].[Store State].Members,[Store].CurrentMember.Caption Matches (\"(?i).*CA.*\")) on columns\n"
+            + "From [Sales1] \n";
+
+        final String mysql =
             "select\n"
             + "    `store`.`store_country` as `c0`,\n"
             + "    `store`.`store_state` as `c1`\n"
@@ -5109,15 +5131,282 @@ public class NonEmptyTest extends BatchTestCase {
             + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
             + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
 
-        SqlPattern[] patterns = {
+        final String mysqlWithFactJoin =
+            "select\n"
+            + "    `store`.`store_country` as `c0`,\n"
+            + "    `store`.`store_state` as `c1`\n"
+            + "from\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `store` as `store`,\n"
+            + "    `time_by_day` as `time_by_day`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    (`time_by_day`.`the_year` = 1997)\n"
+            + "group by\n"
+            + "    `store`.`store_country`,\n"
+            + "    `store`.`store_state`\n"
+            + "having\n"
+            + "    UPPER(c1) REGEXP '.*CA.*'\n"
+            + "order by\n"
+            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
+            + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
+
+        final String oracle =
+            "select\n"
+            + "    \"store\".\"store_country\" as \"c0\",\n"
+            + "    \"store\".\"store_state\" as \"c1\"\n"
+            + "from\n"
+            + "    \"store\" \"store\"\n"
+            + "group by\n"
+            + "    \"store\".\"store_country\",\n"
+            + "    \"store\".\"store_state\"\n"
+            + "having\n"
+            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "order by\n"
+            + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
+            + "    \"store\".\"store_state\" ASC NULLS LAST";
+
+        final String oracleWithFactJoin =
+            "select\n"
+            + "    \"store\".\"store_country\" as \"c0\",\n"
+            + "    \"store\".\"store_state\" as \"c1\"\n"
+            + "from\n"
+            + "    \"sales_fact_1997\" \"sales_fact_1997\",\n"
+            + "    \"store\" \"store\",\n"
+            + "    \"time_by_day\" \"time_by_day\"\n"
+            + "where\n"
+            + "    \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\"\n"
+            + "and\n"
+            + "    \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\"\n"
+            + "and\n"
+            + "    (\"time_by_day\".\"the_year\" = 1997)\n"
+            + "group by\n"
+            + "    \"store\".\"store_country\",\n"
+            + "    \"store\".\"store_state\"\n"
+            + "having\n"
+            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "order by\n"
+            + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
+            + "    \"store\".\"store_state\" ASC NULLS LAST";
+
+        final SqlPattern[] patterns = {
             new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL, sql, sql)
+                Dialect.DatabaseProduct.MYSQL, mysql, mysql),
+            new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE, oracle, oracle)
+        };
+
+        final SqlPattern[] patternsWithFactJoin = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL,
+                mysqlWithFactJoin, mysqlWithFactJoin),
+            new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE,
+                oracleWithFactJoin, oracleWithFactJoin)
         };
 
         final TestContext context =
             TestContext.instance().legacy().withSchema(schema);
+
+        // The filter condition does not require a join to the fact table.
         assertQuerySql(context, query, patterns);
+        assertQuerySql(context.withRole("Role1"), query, patterns);
+
+        // in a non-empty context where a role is in effect, the query
+        // will pessimistically join the fact table and apply the
+        // constraint, since the filter condition could be influenced by
+        // role limitations.
+        assertQuerySql(
+            context.withRole("Role1"), nonEmptyQuery, patternsWithFactJoin);
     }
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1133">MONDRIAN-1133</a>
+     *
+     * <p>RolapNativeFilter would force the join to the fact table.
+     * Some queries don't need to be joined to it and gain in performance.
+     *
+     * <p>This one is for agg tables turned on.
+     */
+    public void testMondrian1133WithAggs() {
+        propSaver.set(
+            propSaver.props.UseAggregates,
+            true);
+        propSaver.set(
+            propSaver.props.ReadAggregates,
+            true);
+        propSaver.set(
+            propSaver.props.GenerateFormattedSql,
+            true);
+        final String schema =
+            "<?xml version=\"1.0\"?>\n"
+            + "<Schema name=\"custom\">\n"
+            + "  <Dimension name=\"Store\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
+            + "      <Table name=\"store\"/>\n"
+            + "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Store State\" column=\"store_state\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Store City\" column=\"store_city\" uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\">\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Dimension name=\"Time\" type=\"TimeDimension\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"time_id\">\n"
+            + "      <Table name=\"time_by_day\"/>\n"
+            + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+            + "          levelType=\"TimeYears\"/>\n"
+            + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
+            + "          levelType=\"TimeQuarters\"/>\n"
+            + "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n"
+            + "          levelType=\"TimeMonths\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Cube name=\"Sales1\" defaultMeasure=\"Unit Sales\">\n"
+            + "    <Table name=\"sales_fact_1997\">\n"
+            + "        <AggExclude name=\"agg_c_special_sales_fact_1997\" />"
+            + "    </Table>\n"
+            + "    <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
+            + "    <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+            + "    <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "    <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###.00\"/>\n"
+            + "    <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###.00\"/>\n"
+            + "  </Cube>\n";
+        String role =
+            "<Role name=\"Role1\" >\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Time].[Time]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+            + "        <MemberGrant member=\"[Time].[Year].[1997]\" access=\"all\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role> \n";
+
+        final String query =
+            "With\n"
+            + "Set [*BASE_MEMBERS_Product] as 'Filter([Store].Stores.[Store State].Members,[Store].Stores.CurrentMember.Caption Matches (\"(?i).*CA.*\"))'\n"
+            + "Select\n"
+            + "[*BASE_MEMBERS_Product] on columns\n"
+            + "From [Sales] \n";
+
+        final String nonEmptyQuery =
+            "Select\n"
+            + "NON EMPTY Filter([Store].Stores.[Store State].Members,[Store].Stores.CurrentMember.Caption Matches (\"(?i).*CA.*\")) on columns\n"
+            + "From [Sales] \n";
+
+
+        final String mysql =
+            "select\n"
+            + "    `store`.`store_country` as `c0`,\n"
+            + "    `store`.`store_state` as `c1`\n"
+            + "from\n"
+            + "    `store` as `store`\n"
+            + "group by\n"
+            + "    `store`.`store_country`,\n"
+            + "    `store`.`store_state`\n"
+            + "having\n"
+            + "    UPPER(c1) REGEXP '.*CA.*'\n"
+            + "order by\n"
+            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
+            + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
+
+        final String mysqlWithFactJoin =
+            "select\n"
+            + "    `store`.`store_country` as `c0`,\n"
+            + "    `store`.`store_state` as `c1`\n"
+            + "from\n"
+            + "    `store` as `store`,\n"
+            + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`\n"
+            + "where\n"
+            + "    `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+            + "and\n"
+            + "    `agg_c_14_sales_fact_1997`.`the_year` = 1997\n"
+            + "group by\n"
+            + "    `store`.`store_country`,\n"
+            + "    `store`.`store_state`\n"
+            + "having\n"
+            + "    UPPER(c1) REGEXP '.*CA.*'\n"
+            + "order by\n"
+            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
+            + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
+
+        final String oracle =
+            "select\n"
+            + "    \"store\".\"store_country\" as \"c0\",\n"
+            + "    \"store\".\"store_state\" as \"c1\"\n"
+            + "from\n"
+            + "    \"store\" \"store\"\n"
+            + "group by\n"
+            + "    \"store\".\"store_country\",\n"
+            + "    \"store\".\"store_state\"\n"
+            + "having\n"
+            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "order by\n"
+            + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
+            + "    \"store\".\"store_state\" ASC NULLS LAST";
+
+        final String oracleWithFactJoin =
+            "select\n"
+            + "    \"store\".\"store_country\" as \"c0\",\n"
+            + "    \"store\".\"store_state\" as \"c1\"\n"
+            + "from\n"
+            + "    \"store\" \"store\",\n"
+            + "    \"agg_c_14_sales_fact_1997\" \"agg_c_14_sales_fact_1997\"\n"
+            + "where\n"
+            + "    \"agg_c_14_sales_fact_1997\".\"store_id\" = \"store\".\"store_id\"\n"
+            + "and\n"
+            + "    \"agg_c_14_sales_fact_1997\".\"the_year\" = 1997\n"
+            + "group by\n"
+            + "    \"store\".\"store_country\",\n"
+            + "    \"store\".\"store_state\"\n"
+            + "having\n"
+            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "order by\n"
+            + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
+            + "    \"store\".\"store_state\" ASC NULLS LAST";
+
+        final SqlPattern[] patterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL, mysql, mysql),
+            new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE, oracle, oracle)
+        };
+
+        final SqlPattern[] patternsWithFactJoin = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL,
+                mysqlWithFactJoin, mysqlWithFactJoin),
+            new SqlPattern(
+                Dialect.DatabaseProduct.ORACLE,
+                oracleWithFactJoin, oracleWithFactJoin)
+        };
+
+        final TestContext context =
+            TestContext.instance().create(null, null, null, null, null, role);
+
+        // The filter condition does not require a join to the fact table.
+        assertQuerySql(context, query, patterns);
+        assertQuerySql(context.withRole("Role1"), query, patterns);
+
+        // in a non-empty context where a role is in effect, the query
+        // will pessimistically join the fact table and apply the
+        // constraint, since the filter condition could be influenced by
+        // role limitations.
+
+        // Disabled pending MONDRIAN-1784.  SqlTupleReader will not join in the
+        // agg table.
+        // assertQuerySql(
+        //    context.withRole("Role1"), nonEmptyQuery, patternsWithFactJoin);
+    }
+
 }
 
 // End NonEmptyTest.java

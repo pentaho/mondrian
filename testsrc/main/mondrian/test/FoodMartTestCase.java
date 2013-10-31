@@ -415,6 +415,38 @@ public class FoodMartTestCase extends TestCase {
             this.result = result;
         }
     }
+
+    /**
+     * Checks whether query produces the same results with the native.* props
+     * enabled as it does with the props disabled
+     * @param query query to run
+     * @param message Message to output on test failure
+     * @param context test context to use
+     */
+    public void verifySameNativeAndNot(
+        String query, String message, TestContext context)
+    {
+        propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
+        propSaver.set(propSaver.props.EnableNativeFilter, true);
+        propSaver.set(propSaver.props.EnableNativeNonEmpty, true);
+        propSaver.set(propSaver.props.EnableNativeTopCount, true);
+
+        Result resultNative = context.executeQuery(query);
+
+        propSaver.set(propSaver.props.EnableNativeCrossJoin, false);
+        propSaver.set(propSaver.props.EnableNativeFilter, false);
+        propSaver.set(propSaver.props.EnableNativeNonEmpty, false);
+        propSaver.set(propSaver.props.EnableNativeTopCount, true);
+
+        Result resultNonNative = context.executeQuery(query);
+
+        assertEquals(
+            message,
+            TestContext.toString(resultNative),
+            TestContext.toString(resultNonNative));
+
+        propSaver.reset();
+    }
 }
 
 /**
