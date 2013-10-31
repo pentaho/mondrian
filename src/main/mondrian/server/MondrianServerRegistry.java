@@ -80,9 +80,27 @@ public class MondrianServerRegistry {
             final int minorVersion = MondrianServerVersion.MINOR_VERSION;
             logger.debug(String.format("Minor Version: %d", minorVersion));
         }
+        final StringBuilder sb = new StringBuilder();
+        try {
+            Integer.parseInt(MondrianServerVersion.VERSION);
+            sb.append(MondrianServerVersion.VERSION);
+        } catch (NumberFormatException e) {
+            // Version is not a number (e.g. "TRUNK-SNAPSHOT").
+            // Fall back on VersionMajor, VersionMinor, if present.
+            final String versionMajor =
+                String.valueOf(MondrianServerVersion.MAJOR_VERSION);
+            final String versionMinor =
+                String.valueOf(MondrianServerVersion.MINOR_VERSION);
+            if (versionMajor != null) {
+                sb.append(versionMajor);
+            }
+            if (versionMinor != null) {
+                sb.append(".").append(versionMinor);
+            }
+        }
         return new MondrianServer.MondrianVersion() {
             public String getVersionString() {
-                return MondrianServerVersion.VERSION;
+                return sb.toString();
             }
             public String getProductName() {
                 return MondrianServerVersion.NAME;
