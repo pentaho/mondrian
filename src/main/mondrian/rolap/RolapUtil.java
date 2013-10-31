@@ -33,6 +33,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import javax.sql.DataSource;
+import org.apache.commons.collections.comparators.NullComparator;
 
 /**
  * Utility methods for classes in the <code>mondrian.rolap</code> package.
@@ -163,8 +164,16 @@ public class RolapUtil {
     private static final class RolapUtilComparator<T extends Comparable<T>>
         implements Comparator<T>
     {
+
+        private static final NullComparator NULL_COMPARATOR = new NullComparator(false);
+
         public int compare(T o1, T o2) {
             try {
+
+                if (o1 == null || o2 == null) {
+                    return NULL_COMPARATOR.compare(o1, o2);
+                }
+
                 return o1.compareTo(o2);
             } catch (ClassCastException cce) {
                 if (o2 == RolapUtilComparable.INSTANCE) {
