@@ -1116,7 +1116,7 @@ Util.deprecated("obsolete basecube parameter", false);
 
         // lookup RolapHierarchy of base cube that matches this hierarchy
         if (hierarchy instanceof RolapCubeHierarchy) {
-            RolapCubeHierarchy cubeHierarchy = (RolapCubeHierarchy) hierarchy;
+            RolapCubeHierarchy cubeHierarchy = hierarchy;
             cubeDimension = cubeHierarchy.getDimension();
             if (starSet.cube != null
                 && !cubeHierarchy.getCube().equals(starSet.cube))
@@ -1245,7 +1245,7 @@ Util.deprecated("obsolete basecube parameter", false);
                     hierarchy.addToFromInverse(sqlQuery, column);
                 }
 
-                RolapCubeLevel currCubeLevel = (RolapCubeLevel) currLevel;
+                RolapCubeLevel currCubeLevel = currLevel;
                 RolapStar.Column starColumn =
                     currCubeLevel.getBaseStarKeyColumn(
                         measureGroup);
@@ -1623,7 +1623,7 @@ Util.deprecated("obsolete basecube parameter", false);
         }
     }
 
-    static class LevelColumnLayout {
+    public static class LevelColumnLayout {
         // column ordinals where the values of the level's key (possibly
         // compound) are found
         public final int[] keyOrdinals;
@@ -1660,7 +1660,7 @@ Util.deprecated("obsolete basecube parameter", false);
         }
     }
 
-    enum OrderKeySource {
+    public enum OrderKeySource {
         NONE,
         KEY,
         NAME,

@@ -54,7 +54,7 @@ import javax.sql.DataSource;
  * @author jhyde
  * @since 2.3
  */
-public class SqlStatement {
+public class SqlStatement implements DBStatement {
     private static final Logger LOG = Logger.getLogger(SqlStatement.class);
     private static final String TIMING_NAME = "SqlStatement-";
 

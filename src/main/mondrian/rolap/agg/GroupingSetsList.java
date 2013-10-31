@@ -30,7 +30,7 @@ import java.util.*;
  * @author Thiyagu
  * @since 24 May 2007
  */
-final class GroupingSetsList {
+public final class GroupingSetsList {
 
     private final List<RolapStar.Column> rollupColumns;
     private final List<RolapStar.Column[]> groupingSetsColumns;
@@ -211,7 +211,7 @@ final class GroupingSetsList {
      * same dimensionality and identical axis values. A cohort contains
      * corresponding cell values for set of measures.
      */
-    static class Cohort
+    public static class Cohort
     {
         final List<SegmentDataset> segmentDatasetList;
         final SegmentAxis[] axes;

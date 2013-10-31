@@ -793,7 +793,7 @@ public class JdbcSchema {
 
         private boolean allColumnsLoaded;
 
-        private Table(final String name, String tableType) {
+        public Table(final String name, String tableType) {
             this.name = name;
             this.tableUsageType = TableUsageType.UNKNOWN;
             this.tableType = tableType;
@@ -1054,7 +1054,7 @@ public class JdbcSchema {
     private final SortedMap<String, Table> tables =
         new TreeMap<String, Table>();
 
-    JdbcSchema(final DataSource dataSource) {
+    public JdbcSchema(final DataSource dataSource) {
         assert dataSource != null;
         this.dataSource = dataSource;
     }

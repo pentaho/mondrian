@@ -140,6 +140,7 @@ public class Aggregation {
         if (groupingSetsCollector.useGroupingSets()) {
             groupingSetsCollector.add(groupingSet);
         } else {
+            // FIXME MONGO Make this pluggable.
             final SegmentLoader segmentLoader = new SegmentLoader(cacheMgr);
             segmentLoader.load(
                 cellRequestCount,
@@ -248,7 +249,7 @@ public class Aggregation {
             }
 
             // more than one - check for children of same parent
-            double constraintLength = (double) valueCount;
+            double constraintLength = valueCount;
             Member parent = null;
             Level level = null;
             for (int j = 0; j < valueCount; j++) {

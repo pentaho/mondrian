@@ -72,7 +72,7 @@ public interface TupleReader {
             String nameValue,
             Comparable orderKey,
             boolean parentChild,
-            SqlStatement stmt,
+            DBStatement stmt,
             SqlTupleReader.LevelColumnLayout layout)
             throws SQLException;
 

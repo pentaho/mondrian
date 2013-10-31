@@ -31,7 +31,7 @@ import java.util.List;
  * @author jhyde
  * @since 10 August, 2001
  */
-interface MemberReader extends MemberSource {
+public interface MemberReader extends MemberSource {
     /**
      * Returns the member <code>n</code> after <code>member</code> in the same
      * level (or before, if <code>n</code> is negative).

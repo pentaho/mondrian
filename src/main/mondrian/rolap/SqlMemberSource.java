@@ -37,7 +37,7 @@ import javax.sql.DataSource;
  * @author jhyde
  * @since 21 December, 2001
  */
-class SqlMemberSource
+public class SqlMemberSource
     implements MemberReader, SqlTupleReader.MemberBuilder
 {
     private final SqlConstraintFactory sqlConstraintFactory =
@@ -455,7 +455,7 @@ class SqlMemberSource
         return hierarchy.getDimension().getSchema().getDialect();
     }
 
-    static Comparable toComparable(Object value) {
+    public static Comparable toComparable(Object value) {
         if (value == null) {
             return RolapUtil.sqlNullValue;
         } else if (value instanceof byte[]) {
@@ -489,7 +489,7 @@ class SqlMemberSource
         list.add(i + 1, member);
     }
 
-    enum Sgo {
+    public enum Sgo {
         SELECT, SELECT_ORDER, SELECT_GROUP, SELECT_GROUP_ORDER;
 
         public Sgo maybeOrder(boolean needsOrderBy) {
@@ -1214,7 +1214,7 @@ class SqlMemberSource
         String nameValue,
         Comparable orderKey,
         boolean parentChild,
-        SqlStatement stmt,
+        DBStatement stmt,
         SqlTupleReader.LevelColumnLayout layout)
         throws SQLException
     {

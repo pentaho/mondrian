@@ -12,7 +12,6 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.olap.Member;
-import mondrian.olap.Parameter;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
@@ -32,6 +31,8 @@ import org.eigenbase.xom.*;
 import org.olap4j.impl.*;
 import org.olap4j.mdx.IdentifierSegment;
 import org.olap4j.metadata.NamedList;
+
+import com.pentaho.analysis.mongo.MongoDBDialect;
 
 import java.lang.reflect.*;
 import java.sql.*;
@@ -617,7 +618,11 @@ public class RolapSchema extends OlapElementBase implements Schema {
             return new CacheMemberReader(
                 new HangerMemberSource(hierarchy, memberList));
         } else {
-            SqlMemberSource source = new SqlMemberSource(hierarchy);
+
+            // FIXME MONGO Make this pluggable. Should we use the logic
+            // above which uses an attribute of the schema??
+
+            MemberReader source = new SqlMemberSource(hierarchy);
 
             if (MondrianProperties.instance().DisableCaching.get()) {
                 // If the cell cache is disabled, we can't cache
@@ -1375,7 +1380,18 @@ public class RolapSchema extends OlapElementBase implements Schema {
         }
 
         public PhysColumn getColumn(String columnName, boolean fail) {
-            final PhysColumn column = columnsByName.get(columnName);
+            PhysColumn column = columnsByName.get(columnName);
+
+            if (this.physSchema.dialect instanceof MongoDBDialect) {
+                // FIXME MONGO Make this smarter.
+                if (column == null) {
+                    column = new PhysRealColumn(
+                        this, columnName, Dialect.Datatype.String, null, 0);
+                    columnsByName.put(columnName, column);
+                }
+                return column;
+            }
+
             if (column == null && fail) {
                 throw Util.newError(
                     "Column '" + columnName + "' not found in relation '"
