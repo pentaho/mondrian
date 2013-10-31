@@ -49,6 +49,7 @@ src/main/mondrian/resource/MondrianResource_en_US.java
 src/main/mondrian/resource/MondrianResource_es_ES.java
 src/main/mondrian/rolap/aggmatcher/DefaultDef.java
 src/main/mondrian/rolap/aggmatcher/aggregates.dtd
+src/main/mondrian/server/MondrianServerVersion.java
 src/main/mondrian/xmla/DataSourcesConfig.java
 src/main/mondrian/xmla/datasourcesconfig.dtd
 
