@@ -50,12 +50,6 @@ public class ImpalaDialect extends HiveDialect {
             }
         };
 
-    protected String deduceIdentifierQuoteString(
-        DatabaseMetaData databaseMetaData)
-    {
-        return null;
-    }
-
     @Override
     public DatabaseProduct getDatabaseProduct() {
         return DatabaseProduct.IMPALA;
@@ -141,28 +135,6 @@ public class ImpalaDialect extends HiveDialect {
 
     public boolean allowsJoinOn() {
         return false;
-    }
-
-    @Override
-    public void quoteStringLiteral(
-        StringBuilder buf,
-        String value)
-    {
-        String quote = "\'";
-        String s0 = value;
-
-        if (s0.contains("\\")) {
-            s0.replaceAll("\\\\", "\\\\");
-        }
-        if (s0.contains(quote)) {
-            s0 = s0.replaceAll(quote, "\\\\" + quote);
-        }
-
-        buf.append(quote);
-
-        buf.append(s0);
-
-        buf.append(quote);
     }
 
     public boolean allowsRegularExpressionInWhereClause() {

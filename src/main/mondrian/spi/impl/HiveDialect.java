@@ -59,8 +59,30 @@ public class HiveDialect extends JdbcDialectImpl {
         } catch (SQLException e) {
             // Not supported by HiveDatabaseMetaData; do nothing if catch an
             // Exception
-            return "`";
+            return null;
         }
+    }
+
+    @Override
+    public void quoteStringLiteral(
+        StringBuilder buf,
+        String value)
+    {
+        String quote = "\'";
+        String s0 = value;
+
+        if (s0.contains("\\")) {
+            s0.replaceAll("\\\\", "\\\\");
+        }
+        if (s0.contains(quote)) {
+            s0 = s0.replaceAll(quote, "\\\\" + quote);
+        }
+
+        buf.append(quote);
+
+        buf.append(s0);
+
+        buf.append(quote);
     }
 
     protected Set<List<Integer>> deduceSupportedResultSetStyles(
