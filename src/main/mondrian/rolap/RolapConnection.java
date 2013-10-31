@@ -212,10 +212,15 @@ public class RolapConnection extends ConnectionBase {
             java.sql.Statement statement = null;
             Dialect dialect = null;
             try {
+                conn = this.dataSource.getConnection();
                 final String dialectClassName =
                     connectInfo.get(RolapConnectionProperties.Dialect.name());
                 dialect = DialectManager.createDialect(
-                    this.dataSource, null, dialectClassName);
+                    this.dataSource, conn, dialectClassName);
+            } catch (SQLException e) {
+                throw Util.newError(
+                    e,
+                    "Error while creating SQL connection: " + buf);
             } finally {
                 this.dialect = dialect;
                 Util.close(null, statement, conn);
