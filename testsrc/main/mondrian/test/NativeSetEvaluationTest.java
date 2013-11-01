@@ -1194,6 +1194,12 @@ public class NativeSetEvaluationTest extends BatchTestCase {
         // include the full role restriction in the IN clause.
         // This test verifies only permitted members are returned in this
         // case.
+
+        // TODO:  Changes made with commit 51c1ac439 which allow pushdown of
+        // some role access to native topcount/filter have not been merged
+        // to lagunitas.  Without those changes native evaluation is skipped
+        // for the test cases below.   This is covered w/ MONDRIAN-1461
+
         propSaver.set(MondrianProperties.instance().MaxConstraints, 4);
         String roleDef =
             "  <Role name=\"Test\">\n"
