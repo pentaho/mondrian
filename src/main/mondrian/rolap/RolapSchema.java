@@ -31,8 +31,8 @@ import org.eigenbase.xom.*;
 import org.olap4j.impl.*;
 import org.olap4j.mdx.IdentifierSegment;
 import org.olap4j.metadata.NamedList;
-
-import com.pentaho.analysis.mongo.MongoDBDialect;
+// FIXME MONGO need class MongoDBDialect
+//import com.pentaho.analysis.mongo.MongoDBDialect;
 
 import java.lang.reflect.*;
 import java.sql.*;
@@ -1382,7 +1382,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
         public PhysColumn getColumn(String columnName, boolean fail) {
             PhysColumn column = columnsByName.get(columnName);
 
-            if (this.physSchema.dialect instanceof MongoDBDialect) {
+            if (isMongo()) {
                 // FIXME MONGO Make this smarter.
                 if (column == null) {
                     column = new PhysRealColumn(
@@ -1398,6 +1398,12 @@ public class RolapSchema extends OlapElementBase implements Schema {
                     + this + "'");
             }
             return column;
+        }
+
+        private boolean isMongo() {
+            return false;
+            // FIXME MONGO need class MongoDBDialect
+//            return this.physSchema.dialect instanceof MongoDBDialect;
         }
 
         public String getAlias() {
