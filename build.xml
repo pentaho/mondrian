@@ -528,6 +528,12 @@ copy"/>
           includes="
 META-INF/**"/>
     </copy>
+    <copy todir="${testclasses.dir}">
+      <fileset
+          dir="${javatest.dir}"
+          includes="
+META-INF/**"/>
+    </copy>
   </target>
 
   <target name="compile.tests" depends="info">
