@@ -9016,7 +9016,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <HIERARCHY_UNIQUE_NAME>[Product].[Product]</HIERARCHY_UNIQUE_NAME>
                         <HIERARCHY_CAPTION>Product</HIERARCHY_CAPTION>
                         <DIMENSION_TYPE>3</DIMENSION_TYPE>
-                        <HIERARCHY_CARDINALITY>2262</HIERARCHY_CARDINALITY>
+                        <HIERARCHY_CARDINALITY>2256</HIERARCHY_CARDINALITY>
                         <DEFAULT_MEMBER>[Product].[Product].[All Products]</DEFAULT_MEMBER>
                         <ALL_MEMBER>[Product].[Product].[All Products]</ALL_MEMBER>
                         <DESCRIPTION>Sales Cube - Product Hierarchy</DESCRIPTION>

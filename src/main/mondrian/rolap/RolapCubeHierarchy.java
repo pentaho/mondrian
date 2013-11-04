@@ -22,7 +22,7 @@ import java.util.*;
  */
 public class RolapCubeHierarchy extends RolapHierarchy {
 
-    private final RolapCubeDimension cubeDimension;
+    final RolapCubeDimension cubeDimension;
     private final RolapHierarchy rolapHierarchy;
     private final int ordinal;
 

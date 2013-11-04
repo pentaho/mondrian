@@ -16,7 +16,6 @@ import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.rolap.RolapEvaluator;
-import mondrian.rolap.RolapUtil;
 import mondrian.util.CartesianProductList;
 
 import java.util.*;
@@ -804,7 +803,7 @@ public class CrossJoinFunDef extends FunDefBase {
                 }
             }
 
-            List<Member> slicerMembers = null;
+            List<? extends Member> slicerMembers = null;
             if (evaluator instanceof RolapEvaluator) {
                 RolapEvaluator rev = (RolapEvaluator) evaluator;
                 slicerMembers = rev.getSlicerMembers();

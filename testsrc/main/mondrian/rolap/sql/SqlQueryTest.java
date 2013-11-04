@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
@@ -55,7 +55,8 @@ public class SqlQueryTest extends BatchTestCase {
             sqlQuery.addSelect("c1", null);
             sqlQuery.addSelect("c2", null);
             sqlQuery.addGroupingFunction("gf0");
-            sqlQuery.addFromTable("s", "t1", "t1alias", null, null, true);
+            sqlQuery.addFromTable(
+                "s", "t1", "t1alias", null, null, null, null, true);
             sqlQuery.addWhere("a=b");
             ArrayList<String> groupingsetsList = new ArrayList<String>();
             groupingsetsList.add("gs1");
@@ -127,7 +128,8 @@ public class SqlQueryTest extends BatchTestCase {
             sqlQuery.addSelect("c1", null);
             sqlQuery.addSelect("c2", null);
             sqlQuery.addGroupingFunction("gf0");
-            sqlQuery.addFromTable("s", "t1", "t1alias", null, hints, true);
+            sqlQuery.addFromTable(
+                "s", "t1", "t1alias", null, hints, null, null, true);
             sqlQuery.addWhere("a=b");
             SqlPattern[] expected;
             if (!formatted) {
@@ -195,36 +197,23 @@ public class SqlQueryTest extends BatchTestCase {
             "select {[Time].[1997].[Q1],[Time].[1997].[Q2],"
             + "[Time].[1997].[Q3]} on 0 from sales";
 
-        String accessSql =
-            "select `time_by_day`.`the_year` as `c0`, "
-            + "`time_by_day`.`quarter` as `c1`, "
-            + "sum(`sales_fact_1997`.`unit_sales`) as `m0` "
-            + "from `time_by_day` as `time_by_day`, "
-            + "`sales_fact_1997` as `sales_fact_1997` "
-            + "where `sales_fact_1997`.`time_id` = "
-            + "`time_by_day`.`time_id` and "
-            + "`time_by_day`.`the_year` = 1997 group by "
-            + "`time_by_day`.`the_year`, `time_by_day`.`quarter`";
-
         String mysqlSql =
             "select\n"
             + "    `time_by_day`.`the_year` as `c0`,\n"
             + "    `time_by_day`.`quarter` as `c1`,\n"
             + "    sum(`sales_fact_1997`.`unit_sales`) as `m0`\n"
             + "from\n"
-            + "    `time_by_day` as `time_by_day`,\n"
-            + "    `sales_fact_1997` as `sales_fact_1997`\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `time_by_day` as `time_by_day`\n"
             + "where\n"
-            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
-            + "and\n"
             + "    `time_by_day`.`the_year` = 1997\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
             + "group by\n"
             + "    `time_by_day`.`the_year`,\n"
             + "    `time_by_day`.`quarter`";
 
         SqlPattern[] sqlPatterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
             new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
         assertSqlEqualsOptimzePredicates(true, mdx, sqlPatterns);
@@ -271,17 +260,6 @@ public class SqlQueryTest extends BatchTestCase {
         String mdx =
             "select {[Time].[1997].[Q1],[Time].[1997].[Q2],"
             + "[Time].[1997].[Q3]} on 0 from sales";
-        String accessSql =
-            "select `time_by_day`.`the_year` as `c0`, "
-            + "`time_by_day`.`quarter` as `c1`, "
-            + "sum(`sales_fact_1997`.`unit_sales`) as `m0` "
-            + "from `time_by_day` as `time_by_day`, "
-            + "`sales_fact_1997` as `sales_fact_1997` "
-            + "where `sales_fact_1997`.`time_id` = "
-            + "`time_by_day`.`time_id` and `time_by_day`.`the_year` "
-            + "= 1997 and `time_by_day`.`quarter` in "
-            + "('Q1', 'Q2', 'Q3') group by "
-            + "`time_by_day`.`the_year`, `time_by_day`.`quarter`";
 
         String mysqlSql =
             "select\n"
@@ -289,21 +267,19 @@ public class SqlQueryTest extends BatchTestCase {
             + "    `time_by_day`.`quarter` as `c1`,\n"
             + "    sum(`sales_fact_1997`.`unit_sales`) as `m0`\n"
             + "from\n"
-            + "    `time_by_day` as `time_by_day`,\n"
-            + "    `sales_fact_1997` as `sales_fact_1997`\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `time_by_day` as `time_by_day`\n"
             + "where\n"
-            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
-            + "and\n"
             + "    `time_by_day`.`the_year` = 1997\n"
             + "and\n"
             + "    `time_by_day`.`quarter` in ('Q1', 'Q2', 'Q3')\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
             + "group by\n"
             + "    `time_by_day`.`the_year`,\n"
             + "    `time_by_day`.`quarter`";
 
         SqlPattern[] sqlPatterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
             new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
         assertSqlEqualsOptimzePredicates(false, mdx, sqlPatterns);
@@ -337,13 +313,15 @@ public class SqlQueryTest extends BatchTestCase {
             + "    `time_by_day`.`quarter` as `c1`,\n"
             + "    sum(`sales_fact_1997`.`unit_sales`) as `m0`\n"
             + "from\n"
-            + "    `time_by_day` as `time_by_day`,\n"
-            + "    `sales_fact_1997` as `sales_fact_1997`\n"
+
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+                + "    `time_by_day` as `time_by_day`\n"
             + "where\n"
-            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+                + "    `time_by_day`.`the_year` = 1997\n"
             + "and\n"
-            + "    `time_by_day`.`the_year` = 1997\n"
-            + "group by\n"
+
+                + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+                + "group by\n"
             + "    `time_by_day`.`the_year`,\n"
             + "    `time_by_day`.`quarter`";
 
@@ -374,7 +352,8 @@ public class SqlQueryTest extends BatchTestCase {
             SqlQuery sqlQuery = new SqlQuery(getTestContext().getDialect(), b);
             sqlQuery.addSelect("c1", null);
             sqlQuery.addSelect("c2", null);
-            sqlQuery.addFromTable("s", "t1", "t1alias", null, null, true);
+            sqlQuery.addFromTable(
+                "s", "t1", "t1alias", null, null, null, null, true);
             sqlQuery.addWhere("a=b");
             sqlQuery.addGroupingFunction("g1");
             sqlQuery.addGroupingFunction("g2");
@@ -424,7 +403,8 @@ public class SqlQueryTest extends BatchTestCase {
             sqlQuery.addSelect("c1", null);
             sqlQuery.addSelect("c2", null);
             sqlQuery.addSelect("m1", null, "m1");
-            sqlQuery.addFromTable("s", "t1", "t1alias", null, null, true);
+            sqlQuery.addFromTable(
+                "s", "t1", "t1alias", null, null, null, null, true);
             sqlQuery.addWhere("a=b");
             sqlQuery.addGroupingFunction("c0");
             sqlQuery.addGroupingFunction("c1");

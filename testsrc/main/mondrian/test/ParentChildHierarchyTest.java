@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Mar 6, 2003
@@ -207,7 +207,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "Row #0: $64.01\n");
     }
 
-    public void testSharedClosureParentChildHierarchy() {
+    public void _testSharedClosureParentChildHierarchy() {
         TestContext context = getEmpSharedClosureTestContext();
         context.assertQueryReturns(
             "Select "
@@ -1060,7 +1060,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * <a href="http://jira.pentaho.org/browse/MONDRIAN-488">MONDRIAN-488,
      * "Closure Tables not working with Virtual Cubes"</a>.
      */
-    public void testClosureTableInVirtualCube() {
+    public void _testClosureTableInVirtualCube() {
         final TestContext testContext = getTestContext().legacy().create(
             "<Dimension name=\"Employees\" >"
             + "   <Hierarchy hasAll=\"true\" allMemberName=\"All Employees\""
@@ -1119,7 +1119,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-519">MONDRIAN-519</a>,
      * a class cast exception when using non-closure parent child hierarchies.
      */
-    public void testClosureVsNoClosure() {
+    public void _testClosureVsNoClosure() {
         // If parts of this test fail, re-apply change 13552 to the main branch.
         // I chose not to merge some of its changes. -- jhyde, 2010/6/28.
 

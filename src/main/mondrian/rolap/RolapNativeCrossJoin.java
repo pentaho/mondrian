@@ -229,7 +229,7 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         }
 
         // join with fact table will always filter out those members
-        // that dont have a row in the fact table
+        // that don't have a row in the fact table
         if (!evaluator.isNonEmpty()) {
             return null;
         }
@@ -259,8 +259,8 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             }
             evaluator.setContext(evalMembers);
 
-            // Use the combined CrossJoinArg for the tuple constraint,
-            // which will be translated to the SQL WHERE clause.
+            // Use the combined CrossJoinArg for the tuple constraint, which
+            // will be translated to the SQL WHERE clause.
             CrossJoinArg[] cargs = combineArgs(allArgs);
 
             // Now construct the TupleConstraint that contains both the CJ
@@ -269,8 +269,8 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             TupleConstraint constraint =
                 buildConstraint(evaluator, fun, cargs, measureGroupList);
 
-            // Use the just the CJ CrossJoiArg for the evaluator context,
-            // which will be translated to select list in sql.
+            // Use the just the CJ CrossJoiArg for the evaluator context, which
+            // will be translated to select list in sql.
             final SchemaReader schemaReader = evaluator.getSchemaReader();
             return new SetEvaluator(cjArgs, schemaReader, constraint);
         } finally {

@@ -30,11 +30,11 @@ public interface TupleConstraint extends SqlConstraint {
     /**
      * Modifies a Level.Members query.
      *
-     * @param sqlQuery the query to modify
+     * @param queryBuilder Query builder
      * @param starSet Star set
      */
     public void addConstraint(
-        SqlQuery sqlQuery,
+        SqlQueryBuilder queryBuilder,
         RolapStarSet starSet);
 
     /**

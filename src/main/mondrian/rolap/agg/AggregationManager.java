@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 30 August, 2001
@@ -205,8 +205,8 @@ public class AggregationManager extends RolapAggregationManager {
                 request,
                 starPredicateSlicer,
                 countOnly);
-        Pair<String, List<SqlStatement.Type>> pair = spec.generateSqlQuery();
-
+        Pair<String, List<SqlStatement.Type>> pair =
+            spec.generateSqlQuery("drill through");
         if (getLogger().isDebugEnabled()) {
             getLogger().debug(
                 "DrillThroughSQL: "
@@ -320,7 +320,8 @@ public class AggregationManager extends RolapAggregationManager {
         SegmentArrayQuerySpec spec =
             new SegmentArrayQuerySpec(groupingSetsList, compoundPredicateList);
 
-        Pair<String, List<SqlStatement.Type>> pair = spec.generateSqlQuery();
+        Pair<String, List<SqlStatement.Type>> pair =
+            spec.generateSqlQuery("segment array");
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(

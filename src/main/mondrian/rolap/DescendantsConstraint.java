@@ -43,10 +43,10 @@ class DescendantsConstraint implements TupleConstraint {
     }
 
     public void addConstraint(
-        SqlQuery sqlQuery,
+        SqlQueryBuilder queryBuilder,
         RolapStarSet starSet)
     {
-        mcc.addMemberConstraint(sqlQuery, starSet, parentMembers);
+        mcc.addMemberConstraint(queryBuilder, starSet, parentMembers);
     }
 
     public void addLevelConstraint(

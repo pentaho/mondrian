@@ -98,10 +98,10 @@ public abstract class RolapNativeSet extends RolapNative {
         }
 
         public void addConstraint(
-            SqlQuery sqlQuery,
+            SqlQueryBuilder queryBuilder,
             RolapStarSet starSet)
         {
-            super.addConstraint(sqlQuery, starSet);
+            super.addConstraint(queryBuilder, starSet);
             for (CrossJoinArg arg : args) {
                 // if the cross join argument has calculated members in its
                 // enumerated set, ignore the constraint since we won't
@@ -114,7 +114,7 @@ public abstract class RolapNativeSet extends RolapNative {
                     if (level == null
                         || levelIsOnBaseCube(starSet.getMeasureGroup(), level))
                     {
-                        arg.addConstraint(sqlQuery, starSet);
+                        arg.addConstraint(queryBuilder, starSet);
                     }
                 }
             }
@@ -320,7 +320,7 @@ public abstract class RolapNativeSet extends RolapNative {
             if (level == null) {
                 // Level can be null if the CrossJoinArg represent
                 // an empty set.
-                // This is used to push down the "1 = 0" predicate
+                // This is used to push down the "false" predicate
                 // into the emerging CJ so that the entire CJ can
                 // be natively evaluated.
                 tr.incrementEmptySets();

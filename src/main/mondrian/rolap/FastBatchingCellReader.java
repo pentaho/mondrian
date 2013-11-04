@@ -1397,7 +1397,7 @@ class BatchLoader {
             for (int j = 0; j < columns.length; j++) {
                 Set<StarColumnPredicate> valueSet = valueSets[j];
                 final RolapSchema.PhysColumn physColumn =
-                    (RolapSchema.PhysColumn) columns[j].getExpression();
+                    columns[j].getExpression();
 
                 StarColumnPredicate predicate;
                 if (valueSet == null) {
@@ -1772,9 +1772,7 @@ class BatchLoader {
             for (RolapStar.Column column : columns) {
                 final RolapStar.Column newColumn =
                     galaxy.getEquivalentColumn(column, newStar);
-                map.put(
-                    (RolapSchema.PhysColumn) column.getExpression(),
-                    (RolapSchema.PhysColumn) newColumn.getExpression());
+                map.put(column.getExpression(), newColumn.getExpression());
                 newColumnList.add(newColumn);
                 newBitKey.set(newColumn.getBitPosition());
             }

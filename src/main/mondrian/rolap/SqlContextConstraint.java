@@ -40,7 +40,7 @@ public class SqlContextConstraint
     implements MemberChildrenConstraint, TupleConstraint
 {
     private final List<Object> cacheKey;
-    private final Evaluator evaluator;
+    private final RolapEvaluator evaluator;
     private final boolean strict;
     private final List<RolapMeasureGroup> measureGroupList;
 
@@ -58,7 +58,7 @@ public class SqlContextConstraint
      * @return false if constraint will not work for current context
      */
     public static boolean checkValidContext(
-        Evaluator context,
+        RolapEvaluator context,
         boolean disallowVirtualCube,
         List<RolapCubeLevel> levels,
         boolean strict,
@@ -67,7 +67,7 @@ public class SqlContextConstraint
         if (context == null) {
             return false;
         }
-        RolapCube cube = (RolapCube) context.getCube();
+        RolapCube cube = context.getCube();
         if (cube.isVirtual()) {
             if (disallowVirtualCube) {
                 return false;
@@ -225,10 +225,10 @@ public class SqlContextConstraint
      *
      * @param strict defines the behaviour if the evaluator context
      * contains calculated members. If true, an exception is thrown,
-     * otherwise calculated members are silently ignored. The
-     * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, RolapStarSet, RolapMember)}
+     * otherwise calculated members are silently ignored. The methods
+     * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQueryBuilder, RolapStarSet, RolapMember)}
      * and
-     * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, RolapStarSet, java.util.List)}
+     * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQueryBuilder, RolapStarSet, java.util.List)}
      * will
      * {@link Util#deprecated ... what text was removed here?}
      */
@@ -242,10 +242,11 @@ public class SqlContextConstraint
         cacheKey = new ArrayList<Object>();
         cacheKey.add(getClass());
         cacheKey.add(strict);
-        cacheKey.addAll(
-            Arrays.asList(
-                SqlConstraintUtils.removeMultiPositionSlicerMembers(
-                    evaluator.getMembers(), evaluator)));
+        final List<RolapMember> memberList =
+            new ArrayList<RolapMember>(Arrays.asList(evaluator.getMembers()));
+        SqlConstraintUtils.removeMultiPositionSlicerMembers(
+            memberList, evaluator);
+        cacheKey.addAll(memberList);
 
         // Add restrictions imposed by Role based access filtering
         Map<Level, List<RolapMember>> roleMembers =
@@ -265,18 +266,18 @@ public class SqlContextConstraint
         // just the default measure for the entire virtual cube. The commented
         // code in RolapResult() that replaces the default measure seems to
         // do that.
-        cacheKey.addAll(measureGroupList);
         assert measureGroupList != null;
+        cacheKey.addAll(measureGroupList);
         assert Util.isDistinct(measureGroupList) : measureGroupList;
         this.measureGroupList = measureGroupList;
     }
 
     /**
      * Called from MemberChildren: adds <code>parent</code> to the current
-     * context and restricts the SQL resultset to that new context.
+     * context and restricts the SQL result set to that new context.
      */
     public void addMemberConstraint(
-        SqlQuery sqlQuery,
+        SqlQueryBuilder queryBuilder,
         RolapStarSet starSet,
         RolapMember parent)
     {
@@ -287,38 +288,42 @@ public class SqlContextConstraint
         try {
             evaluator.setContext(parent);
             SqlConstraintUtils.addContextConstraint(
-                sqlQuery, starSet, evaluator, strict);
+                queryBuilder, starSet, evaluator, strict);
         } finally {
             evaluator.restore(savepoint);
         }
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Adds <code>parents</code> to the current
-     * context and restricts the SQL resultset to that new context.
+     * context and restricts the SQL result set to that new context.
      */
     public void addMemberConstraint(
-        SqlQuery sqlQuery,
+        SqlQueryBuilder queryBuilder,
         RolapStarSet starSet,
         List<RolapMember> parents)
     {
         SqlConstraintUtils.addContextConstraint(
-            sqlQuery, starSet, evaluator, strict);
+            queryBuilder, starSet, evaluator, strict);
         boolean exclude = false;
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, starSet, parents, true, false, exclude);
+            queryBuilder, starSet, parents, true, false, exclude);
     }
 
     /**
-     * Called from LevelMembers: restricts the SQL resultset to the current
+     * {@inheritDoc}
+     *
+     * Called from LevelMembers: restricts the SQL result set to the current
      * context.
      */
     public void addConstraint(
-        SqlQuery sqlQuery,
+        SqlQueryBuilder queryBuilder,
         RolapStarSet starSet)
     {
         SqlConstraintUtils.addContextConstraint(
-            sqlQuery, starSet, evaluator, strict);
+            queryBuilder, starSet, evaluator, strict);
     }
 
     public boolean isJoinRequired() {

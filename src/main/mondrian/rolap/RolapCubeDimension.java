@@ -105,6 +105,11 @@ public class RolapCubeDimension extends RolapDimension {
     public RolapSchema.PhysPath getKeyPath(RolapSchema.PhysColumn column) {
         return rolapDimension.getKeyPath(column);
     }
+
+    @Override
+    public RolapSchema.PhysRelation getKeyTable() {
+        return rolapDimension.getKeyTable();
+    }
 }
 
 // End RolapCubeDimension.java

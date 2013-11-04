@@ -28,12 +28,12 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      * Modifies a <code>Member.Children</code> query so that only the children
      * of <code>parent</code> will be returned in the result set.
      *
-     * @param sqlQuery the query to modify
+     * @param queryBuilder Query builder
      * @param starSet Star set
      * @param parent the parent member that restricts the returned children
      */
     public void addMemberConstraint(
-        SqlQuery sqlQuery,
+        SqlQueryBuilder queryBuilder,
         RolapStarSet starSet,
         RolapMember parent);
 
@@ -42,12 +42,12 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      * children of <em>all</em> parent members contained in <code>parents</code>
      * will be returned in the result set.
      *
-     * @param sqlQuery Query to modify
+     * @param queryBuilder Query to modify
      * @param starSet Star set
      * @param parents List of parent members that restrict the returned
      */
     public void addMemberConstraint(
-        SqlQuery sqlQuery,
+        SqlQueryBuilder queryBuilder,
         RolapStarSet starSet,
         List<RolapMember> parents);
 

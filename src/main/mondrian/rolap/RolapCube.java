@@ -383,7 +383,7 @@ public class RolapCube extends CubeBase {
 
     List<Member> getMeasures() {
         Util.deprecated("remove either this or getMeasuresMembers?", false);
-        Level measuresLevel =
+        RolapCubeLevel measuresLevel =
             dimensionList.get(0)
                 .getHierarchyList().get(0)
                 .getLevelList().get(0);

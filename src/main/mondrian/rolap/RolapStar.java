@@ -71,9 +71,6 @@ public class RolapStar {
      */
     private final List<AggStar> aggStars = new LinkedList<AggStar>();
 
-    private final Map<RolapSchema.PhysExpr, Column> map =
-        new HashMap<RolapSchema.PhysExpr, Column>();
-
     /**
      * Creates a RolapStar. Please use
      * {@link RolapSchema.RolapStarRegistry#getOrCreateStar} to create a
@@ -218,42 +215,6 @@ public class RolapStar {
 
     private final ThreadLocal<Bar> localBars =
         new BarThreadLocal();
-
-    /**
-     * Returns the column of this RolapStar that holds a given expression.
-     * The same expression may be held in other stars, too, mapped in each case
-     * to a column owned by the respective star. The column represents a
-     * path from the root of the star (its fact table) to the expression.
-     *
-     * <p>TODO: Needs another parameter, PhysPath!
-     * Only (PhysColumn, PhysPath) is unique within a RolapStar.
-     * See {@link mondrian.rolap.RolapMeasureGroup#getRolapStarColumn(RolapCubeDimension, mondrian.rolap.RolapSchema.PhysColumn)}.
-     * Maybe we need a map object that combines (RolapCubeDimension, RolapStar).
-     *
-     * @param expr Expression
-     * @param fail Whether to fail if not found
-     * @return Column representing path from root of star to expression, never
-     * null
-     *
-     * @throws RuntimeException if expression has not previously been registered
-     *     and fail is true
-     */
-    public Column getColumn(
-        RolapSchema.PhysExpr expr,
-        boolean fail)
-    {
-        Util.deprecated("remove", true);
-        final Column column = map.get(expr);
-        if (column == null) {
-            if (fail) {
-                throw new IllegalArgumentException(
-                    "star has no column for " + expr);
-            }
-        } else {
-            assert column.expression.equals(expr);
-        }
-        return column;
-    }
 
     /**
      * Returns the number of columns in the star.
@@ -461,6 +422,43 @@ public class RolapStar {
         return (table == null) ? null : table.lookupColumn(columnName);
     }
 
+    /** Looks up a table by its path. */
+    public Table lookupTable(RolapSchema.PhysPath path) {
+        final List<Table> tables = getTables();
+        for (Table table : tables) {
+            if (table.path.equals(path)) {
+                return table;
+            }
+        }
+        return null;
+    }
+
+    /** Gets a table by its path, creating it if it does not exist. */
+    public Table getTable(RolapSchema.PhysPath path) {
+        RolapStar.Table table = getFactTable();
+        for (RolapSchema.PhysHop hop : path.hopList) {
+            if (hop.link != null) {
+                table = table.findChild(hop, true);
+            }
+        }
+        return table;
+    }
+
+    /** Returns a list of tables in this star. */
+    private List<Table> getTables() {
+        // NOTE: Cheaper to maintain a Map<PhysPath, Table> member?
+        return populateTables(factTable, new ArrayList<Table>());
+    }
+
+    /** Helper for {@link #getTables()}. */
+    private List<Table> populateTables(Table table, List<Table> tables) {
+        tables.add(table);
+        for (Table childTable : table.children) {
+            populateTables(childTable, tables);
+        }
+        return tables;
+    }
+
     /**
      * Used by test code only. (Not safe in general.)
      */
@@ -578,7 +576,7 @@ public class RolapStar {
      */
     public static class Column {
         private final Table table;
-        private final RolapSchema.PhysExpr expression;
+        private final RolapSchema.PhysColumn expression;
         private final Dialect.Datatype datatype;
         protected final SqlStatement.Type internalType;
         private final String name;
@@ -623,7 +621,7 @@ public class RolapStar {
         private Column(
             String name,
             Table table,
-            RolapSchema.PhysExpr expression,
+            RolapSchema.PhysColumn expression,
             Dialect.Datatype datatype,
             SqlStatement.Type internalType,
             Column nameColumn,
@@ -689,13 +687,6 @@ public class RolapStar {
             return table;
         }
 
-        public RolapStar.Column getNameColumn() {
-            Util.deprecated(
-                "nameColumn is redundant - could obsolete it and use RolapLevel.getNameExp then indirect",
-                false);
-            return nameColumn;
-        }
-
         public RolapStar.Column getParentColumn() {
             Util.deprecated(
                 "parentColumn seems to be used ONLY for AggGen; remove it and represent the information outside RolapStar?",
@@ -711,7 +702,7 @@ public class RolapStar {
             return nameColumn != null;
         }
 
-        public RolapSchema.PhysExpr getExpression() {
+        public RolapSchema.PhysColumn getExpression() {
             return expression;
         }
 
@@ -827,7 +818,7 @@ public class RolapStar {
             String cubeName,
             RolapAggregator aggregator,
             Table table,
-            RolapSchema.PhysExpr expression,
+            RolapSchema.PhysColumn expression,
             Dialect.Datatype datatype)
         {
             super(
@@ -991,7 +982,7 @@ public class RolapStar {
         }
 
         private boolean matches(String columnName, Column column) {
-            final RolapSchema.PhysExpr expr = column.getExpression();
+            final RolapSchema.PhysColumn expr = column.getExpression();
             if (expr instanceof RolapSchema.PhysRealColumn) {
                 RolapSchema.PhysRealColumn columnExpr =
                     (RolapSchema.PhysRealColumn) expr;
@@ -1022,7 +1013,7 @@ public class RolapStar {
          *     null)
          */
         public Column lookupColumnByExpression(
-            RolapSchema.PhysExpr expr,
+            RolapSchema.PhysColumn physColumn,
             boolean create,
             String name,
             String property)
@@ -1031,13 +1022,13 @@ public class RolapStar {
                 if (column instanceof Measure) {
                     continue;
                 }
-                if (column.getExpression().equals(expr)) {
+                if (column.getExpression().equals(physColumn)) {
                     return column;
                 }
             }
             if (create) {
-                if (name == null && expr instanceof RolapSchema.PhysColumn) {
-                    name = ((RolapSchema.PhysColumn) expr).name;
+                if (name == null) {
+                    name = physColumn.name;
                 }
                 Column column =
                     new RolapStar.Column(
@@ -1045,11 +1036,11 @@ public class RolapStar {
                             ? name
                             : name + " (" + property + ")",
                         this,
-                        expr,
-                        expr.getDatatype() == null
+                        physColumn,
+                        physColumn.getDatatype() == null
                             ? Dialect.Datatype.Numeric
-                            : expr.getDatatype(),
-                        expr.getInternalType(),
+                            : physColumn.getDatatype(),
+                        physColumn.getInternalType(),
                         // TODO: obsolete nameColumn
                         null,
                         // TODO: obsolete parentColumn
@@ -1129,7 +1120,7 @@ public class RolapStar {
 
         Measure makeMeasure(
             RolapBaseCubeMeasure measure,
-            RolapSchema.PhysExpr expr,
+            RolapSchema.PhysColumn expr,
             boolean rollup)
         {
             Dialect.Datatype datatype =
@@ -1234,33 +1225,6 @@ public class RolapStar {
         }
 
         /**
-         * Adds this table to the FROM clause of a query, and also, if
-         * <code>joinToParent</code>, any join condition.
-         *
-         * @param query Query to add to
-         * @param failIfExists Pass in false if you might have already added
-         *     the table before and if that happens you want to do nothing.
-         * @param joinToParent Pass in true if you are constraining a cell
-         *     calculation, false if you are retrieving members.
-         */
-        public final void addToFrom(
-            SqlQuery query,
-            boolean failIfExists,
-            boolean joinToParent)
-        {
-            Util.deprecated("use PhysPath.addToFrom", false);
-            query.addFrom(relation, alias, failIfExists);
-            if (joinToParent) {
-                if (parent != null) {
-                    parent.addToFrom(query, failIfExists, joinToParent);
-                }
-                if (getLastHop() != null) {
-                    query.addWhere(getLastHop().link.toSql());
-                }
-            }
-        }
-
-        /**
          * Returns a list of child {@link Table}s.
          */
         public List<Table> getChildren() {
@@ -1298,13 +1262,6 @@ public class RolapStar {
             return null;
         }
 
-        /**
-         * Note: I do not think that this is ever true.
-         */
-        public boolean isFunky() {
-            return (relation == null);
-        }
-
         public boolean equals(Object obj) {
             if (!(obj instanceof Table)) {
                 return false;
@@ -1312,6 +1269,7 @@ public class RolapStar {
             Table other = (Table) obj;
             return getAlias().equals(other.getAlias());
         }
+
         public int hashCode() {
             return getAlias().hashCode();
         }
@@ -1330,33 +1288,33 @@ public class RolapStar {
         public void print(PrintWriter pw, String prefix) {
             pw.print(prefix);
             pw.println("Table:");
-            String subprefix = prefix + "  ";
+            String subPrefix = prefix + "  ";
 
-            pw.print(subprefix);
+            pw.print(subPrefix);
             pw.print("alias=");
             pw.println(getAlias());
 
             if (this.relation != null) {
-                pw.print(subprefix);
+                pw.print(subPrefix);
                 pw.print("relation=");
                 pw.println(relation);
             }
 
-            pw.print(subprefix);
+            pw.print(subPrefix);
             pw.println("Columns:");
-            String subsubprefix = subprefix + "  ";
+            String subSubPrefix = subPrefix + "  ";
 
             for (Column column : getColumns()) {
-                column.print(pw, subsubprefix);
+                column.print(pw, subSubPrefix);
                 pw.println();
             }
 
             if (getLastHop() != null) {
-                pw.print(subprefix);
+                pw.print(subPrefix);
                 pw.print(getLastHop());
             }
             for (Table child : getChildren()) {
-                child.print(pw, subprefix);
+                child.print(pw, subPrefix);
             }
         }
 

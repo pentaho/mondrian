@@ -14,7 +14,6 @@ import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -85,37 +84,18 @@ public abstract class Predicates
     }
 
     public static BitKey getBitKey(StarPredicate predicate, RolapStar star) {
+        Util.deprecated("not used", true);
         BitKey bitKey = BitKey.Factory.makeBitKey(star.getColumnCount());
-        for (RolapStar.Column column
-            : Predicates.starify(star, predicate.getColumnList()))
-        {
+        for (PredicateColumn predicateColumn : predicate.getColumnList()) {
+            final RolapSchema.PhysPath path =
+                predicateColumn.router.path(predicateColumn.physColumn);
+            final RolapStar.Table table = star.lookupTable(path);
+            final RolapStar.Column column =
+                table.lookupColumnByExpression(
+                    predicateColumn.physColumn, false, null, null);
             bitKey.set(column.getBitPosition());
         }
         return bitKey;
-    }
-
-    public static List<RolapStar.Column> starify_old(
-        RolapStar star,
-        List<RolapSchema.PhysColumn> columnList)
-    {
-        Util.deprecated("not used", true);
-        List<RolapStar.Column> list = new ArrayList<RolapStar.Column>();
-        for (RolapSchema.PhysColumn column : columnList) {
-            list.add(star.getColumn(column, true));
-        }
-        return list;
-    }
-
-    public static List<RolapStar.Column> starify(
-        RolapStar star,
-        List<PredicateColumn> columnList)
-    {
-        Util.deprecated("not used", true);
-        List<RolapStar.Column> list = new ArrayList<RolapStar.Column>();
-        for (PredicateColumn column : columnList) {
-            list.add(star.getColumn(column.physColumn, true));
-        }
-        return list;
     }
 
     /**
@@ -142,7 +122,6 @@ public abstract class Predicates
         boolean upperStrict)
     {
         RolapMember member = lower != null ? lower : upper;
-        final int size = member.getKeyAsList().size();
         return new MemberTuplePredicate(
             router,
             physSchema,
@@ -166,7 +145,6 @@ public abstract class Predicates
         List<RolapMember> members)
     {
         assert members.size() > 0;
-        final int size = members.get(0).getKeyAsList().size();
         return new MemberTuplePredicate(
             router,
             physSchema,

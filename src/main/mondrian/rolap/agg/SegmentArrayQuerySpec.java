@@ -5,13 +5,14 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
 
 import mondrian.rolap.*;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.sql.*;
+import mondrian.util.Pair;
 
 import java.util.*;
 
@@ -27,7 +28,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     private final Segment segment0;
     private final GroupingSetsList groupingSetsList;
 
-    /*
+    /**
      * Compound member predicates.
      * Each list constrains one dimension.
      */
@@ -87,29 +88,29 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
         return true;
     }
 
-    public int getMeasureCount() {
-        return segments.size();
+    public List<Pair<RolapStar.Measure, String>> getMeasures() {
+        return new AbstractList<Pair<RolapStar.Measure, String>>() {
+            public int size() {
+                return segments.size();
+            }
+
+            public Pair<RolapStar.Measure, String> get(int index) {
+                return Pair.of(segments.get(index).aggMeasure, "m" + index);
+            }
+        };
     }
 
-    public RolapStar.Measure getMeasure(final int i) {
-        return segments.get(i).aggMeasure;
-    }
+    public List<Pair<RolapStar.Column, String>> getColumns() {
+        return new AbstractList<Pair<RolapStar.Column, String>>() {
+            public int size() {
+                return segment0.aggColumns.length;
+            }
 
-    public String getMeasureAlias(final int i) {
-        return "m" + Integer.toString(i);
-    }
-
-    public RolapStar.Column[] getColumns() {
-        return segment0.aggColumns;
-    }
-
-    /**
-     * SqlQuery relies on "c" and index. All this should go into SqlQuery!
-     *
-     * @see mondrian.rolap.sql.SqlQuery#addOrderBy
-     */
-    public String getColumnAlias(final int i) {
-        return "c" + Integer.toString(i);
+            public Pair<RolapStar.Column, String> get(int index) {
+                // FIXME: SqlQuery relies on "c" and index.
+                return Pair.of(segment0.aggColumns[index], "c" + index);
+            }
+        };
     }
 
     public StarColumnPredicate getColumnPredicate(final int i) {
@@ -124,15 +125,16 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
         }
     }
 
-    protected void addGroupingFunction(SqlQuery sqlQuery) {
+    protected void addGroupingFunction(SqlQueryBuilder queryBuilder) {
         List<RolapStar.Column> list = groupingSetsList.getRollupColumns();
         for (RolapStar.Column column : list) {
-            sqlQuery.addGroupingFunction(column.getExpression().toSql());
+            queryBuilder.sqlQuery.addGroupingFunction(
+                column.getExpression().toSql());
         }
     }
 
     protected void addGroupingSets(
-        SqlQuery sqlQuery,
+        SqlQueryBuilder queryBuilder,
         Map<String, String> groupingSetsAliases)
     {
         List<RolapStar.Column[]> groupingSetsColumns =
@@ -148,7 +150,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
                     groupingColumnsExpr.add(columnExpr);
                 }
             }
-            sqlQuery.addGroupingSet(groupingColumnsExpr);
+            queryBuilder.sqlQuery.addGroupingSet(groupingColumnsExpr);
         }
     }
 

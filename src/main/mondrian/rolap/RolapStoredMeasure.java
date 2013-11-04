@@ -29,7 +29,7 @@ public interface RolapStoredMeasure extends RolapMeasure {
      * Returns the expression that the measure is aggregating.
      * @return expression
      */
-    RolapSchema.PhysExpr getExpr();
+    RolapSchema.PhysColumn getExpr();
 
     /**
      * Returns the aggregate function which rolls up this measure: "SUM",

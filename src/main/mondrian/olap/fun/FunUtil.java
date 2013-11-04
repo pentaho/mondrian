@@ -211,17 +211,10 @@ public class FunUtil extends Util {
                 return e;
             }
         }
-        StringBuilder buf = new StringBuilder(64);
-        int k = 0;
-        for (E e : allowedValues.getEnumConstants()) {
-            if (k++ > 0) {
-                buf.append(", ");
-            }
-            buf.append(e.name());
-        }
         throw newEvalException(
             call.getFunDef(),
-            "Allowed values are: {" + buf + "}");
+            "Allowed values are: "
+            + Arrays.toString(allowedValues.getEnumConstants()));
     }
 
     /**

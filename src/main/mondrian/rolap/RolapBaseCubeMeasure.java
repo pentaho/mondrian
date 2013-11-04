@@ -23,7 +23,7 @@ public class RolapBaseCubeMeasure
     /**
      * For SQL generator. Column which holds the value of the measure.
      */
-    private final RolapSchema.PhysExpr expression;
+    private final RolapSchema.PhysColumn expression;
 
     /**
      * For SQL generator. Has values "SUM", "COUNT", etc.
@@ -58,7 +58,7 @@ public class RolapBaseCubeMeasure
         RolapCubeLevel level,
         String key,
         String uniqueName,
-        RolapSchema.PhysExpr expression,
+        RolapSchema.PhysColumn expression,
         final RolapAggregator aggregator,
         Dialect.Datatype datatype,
         Larder larder)
@@ -70,15 +70,14 @@ public class RolapBaseCubeMeasure
         assert measureGroup.getCube() == level.cube;
         RolapSchema.PhysRelation factRelation = measureGroup.getFactRelation();
         assert factRelation != null;
-        assert !(expression instanceof RolapSchema.PhysColumn)
-            || (((RolapSchema.PhysColumn) expression).relation == factRelation)
+        assert expression == null || (expression.relation == factRelation)
             : "inconsistent fact: " + expression + " vs. " + factRelation;
         this.expression = expression;
         this.aggregator = aggregator;
         this.datatype = datatype;
     }
 
-    public RolapSchema.PhysExpr getExpr() {
+    public RolapSchema.PhysColumn getExpr() {
         return expression;
     }
 

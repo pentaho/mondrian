@@ -29,8 +29,7 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
         testContext.assertAxisReturns(
             "Measures.Members",
             "[Measures].[Quantity]\n"
-            + "[Measures].[Sales]\n"
-            + "[Measures].[Fact Count]");
+            + "[Measures].[Sales]");
     }
 
     /**
@@ -66,7 +65,13 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Row #0: 49,578\n"
             + "Row #0: 4,923\n"
             + "Row #0: 37,952\n");
+    }
 
+    public void testMarkets2() {
+        TestContext testContext = getTestContext();
+        if (!testContext.databaseIsValid()) {
+            return;
+        }
         testContext.assertQueryReturns(
             "select Subset([Markets].[Markets].Members, 130, 8) on 0 from [SteelWheelsSales]",
             "Axis #0:\n"
@@ -187,16 +192,19 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
      * @see #testBugMondrian805() duplicate bug MONDRIAN-805
      */
     public void testBugMondrian756() {
-        TestContext testContext0 = getTestContext();
-        if (!testContext0.databaseIsValid()) {
+        TestContext testContext = getTestContext();
+        if (!testContext.databaseIsValid()) {
             return;
         }
         final Util.PropertyList propertyList =
-            testContext0.getConnectionProperties().clone();
+            testContext.getConnectionProperties().clone();
         propertyList.put(
             RolapConnectionProperties.DynamicSchemaProcessor.name(),
             Mondrian756SchemaProcessor.class.getName());
-        TestContext testContext = testContext0.withProperties(propertyList);
+        checkBugMondrian756(testContext.withProperties(propertyList));
+    }
+
+    private void checkBugMondrian756(TestContext testContext) {
         testContext.assertQueryReturns(
             "select NON EMPTY {[Measures].[Quantity]} ON COLUMNS,\n"
             + "NON EMPTY {[Markets].[APAC]} ON ROWS\n"
@@ -276,11 +284,11 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "from [SteelWheelsSales] \n"
             + "WHERE [Order Status].[Cancelled]",
             "Axis #0:\n"
-            + "{[Order Status].[Cancelled]}\n"
+            + "{[Order Status].[Order Status].[Cancelled]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Quantity]}\n"
             + "Axis #2:\n"
-            + "{[Markets].[APAC], [Customers].[All Customers], [Product].[All Products], [Time].[All Years]}\n"
+            + "{[Markets].[Markets].[APAC], [Customers].[Customers].[All Customers], [Product].[Product].[All Products], [Time].[Time].[All Years]}\n"
             + "Row #0: 596\n");
 
         // same query, pivoted
@@ -292,12 +300,11 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "from [SteelWheelsSales] \n"
             + "where [Markets].[APAC]",
             "Axis #0:\n"
-            + "{[Markets].[APAC]}\n"
+            + "{[Markets].[Markets].[APAC]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Quantity]}\n"
             + "Axis #2:\n"
-            + "{[Customers].[All Customers], [Product].[All Products], "
-            + "[Time].[All Years], [Order Status].[Cancelled]}\n"
+            + "{[Customers].[Customers].[All Customers], [Product].[Product].[All Products], [Time].[Time].[All Years], [Order Status].[Order Status].[Cancelled]}\n"
             + "Row #0: 596\n");
     }
 
@@ -471,7 +478,7 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
         testContext.assertQueryReturns(
             "with set [*NATIVE_CJ_SET] as '[*BASE_MEMBERS_Product]' \n"
             + "  set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], "
-            + "[Product].[Products].CurrentMember.OrderKey, BASC)' \n"
+            + "[Product].[Product].CurrentMember.OrderKey, BASC)' \n"
             + "  set [*BASE_MEMBERS_Product] as '[Product].[Line].Members' \n"
             + "  set [*BASE_MEMBERS_Measures] as '{[Measures].[*ZERO]}' \n"
             + "  set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]' \n"
@@ -486,13 +493,13 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Axis #1:\n"
             + "{[Measures].[*ZERO]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Products].[Classic Cars]}\n"
-            + "{[Product].[Products].[Motorcycles]}\n"
-            + "{[Product].[Planes]}\n"
-            + "{[Product].[Products].[Ships]}\n"
-            + "{[Product].[Products].[Trains]}\n"
-            + "{[Product].[Products].[Trucks and Buses]}\n"
-            + "{[Product].[Products].[Vintage Cars]}\n"
+            + "{[Product].[Product].[Classic Cars]}\n"
+            + "{[Product].[Product].[Motorcycles]}\n"
+            + "{[Product].[Product].[Planes]}\n"
+            + "{[Product].[Product].[Ships]}\n"
+            + "{[Product].[Product].[Trains]}\n"
+            + "{[Product].[Product].[Trucks and Buses]}\n"
+            + "{[Product].[Product].[Vintage Cars]}\n"
             + "Row #0: 0\n"
             + "Row #1: 0\n"
             + "Row #2: 0\n"
@@ -579,11 +586,15 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "  member [Measures].[*ZERO] as '0', SOLVE_ORDER = 0\n"
             + "select Crossjoin([*SORTED_COL_AXIS], [*BASE_MEMBERS_Measures]) ON COLUMNS\n"
             + "from [SteelWheelsSales]",
-            "Axis #0:\n" + "{}\n" + "Axis #1:\n"
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
             + "{[Time].[Time].[2003], [Measures].[*ZERO]}\n"
             + "{[Time].[Time].[2004], [Measures].[*ZERO]}\n"
-            + "{[Time].[Time].[2005], [Measures].[*ZERO]}\n" + "Row #0: 0\n"
-            + "Row #0: 0\n" + "Row #0: 0\n");
+            + "{[Time].[Time].[2005], [Measures].[*ZERO]}\n"
+            + "Row #0: 0\n"
+            + "Row #0: 0\n"
+            + "Row #0: 0\n");
     }
 
     public void testMondrian1133() {

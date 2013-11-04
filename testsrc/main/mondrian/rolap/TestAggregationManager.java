@@ -379,7 +379,7 @@ public class TestAggregationManager extends BatchTestCase {
             new ValueColumnPredicate(
                 new PredicateColumn(
                     RolapSchema.BadRouter.INSTANCE,
-                    (RolapSchema.PhysColumn) storeTypeColumn.getExpression()),
+                    storeTypeColumn.getExpression()),
                 value));
         return request;
     }
@@ -417,14 +417,14 @@ public class TestAggregationManager extends BatchTestCase {
                 + "    `agg_c_14_sales_fact_1997`.`the_year` as `c1`,\n"
                 + "    sum(`agg_c_14_sales_fact_1997`.`unit_sales`) as `m0`\n"
                 + "from\n"
-                + "    `store` as `store`,\n"
-                + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`\n"
+                + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
+                + "    `store` as `store`\n"
                 + "where\n"
-                + "    `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
-                + "and\n"
                 + "    `store`.`store_state` in ('CA', 'OR')\n"
                 + "and\n"
                 + "    `agg_c_14_sales_fact_1997`.`the_year` = 1997\n"
+                + "and\n"
+                + "    `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
                 + "group by\n"
                 + "    `store`.`store_state`,\n"
                 + "    `agg_c_14_sales_fact_1997`.`the_year`";
@@ -435,17 +435,17 @@ public class TestAggregationManager extends BatchTestCase {
                 + "    `time_by_day`.`the_year` as `c1`,\n"
                 + "    sum(`sales_fact_1997`.`unit_sales`) as `m0`\n"
                 + "from\n"
-                + "    `store` as `store`,\n"
                 + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+                + "    `store` as `store`,\n"
                 + "    `time_by_day` as `time_by_day`\n"
                 + "where\n"
-                + "    `sales_fact_1997`.`store_id` = `store`.`store_id`\n"
-                + "and\n"
                 + "    `store`.`store_state` in ('CA', 'OR')\n"
                 + "and\n"
-                + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
-                + "and\n"
                 + "    `time_by_day`.`the_year` = 1997\n"
+                + "and\n"
+                + "    `sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+                + "and\n"
+                + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
                 + "group by\n"
                 + "    `store`.`store_state`,\n"
                 + "    `time_by_day`.`the_year`";
@@ -576,61 +576,26 @@ public class TestAggregationManager extends BatchTestCase {
                 list("the_year", "quarter"),
                 list("1997", "Q1"));
 
-        String accessSql =
-            "select"
-            + " `d0` as `c0`,"
-            + " `d1` as `c1`,"
-            + " count(`m0`) as `c2` "
-            + "from ("
-            + "select distinct `time_by_day`.`the_year` as `d0`, "
-            + "`time_by_day`.`quarter` as `d1`, "
-            + "`sales_fact_1997`.`customer_id` as `m0` "
-            + "from "
-            + "`time_by_day` as `time_by_day`, "
-            + "`sales_fact_1997` as `sales_fact_1997` "
-            + "where "
-            + "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and "
-            + "`time_by_day`.`the_year` = 1997 and "
-            + "`time_by_day`.`quarter` = 'Q1'"
-            + ") as `dummyname` "
-            + "group by `d0`, `d1`";
-
         String mysqlSql =
             "select\n"
-            + "    `time_by_day`.`the_year` as `c0`,\n"
-            + "    `time_by_day`.`quarter` as `c1`,\n"
-            + "    count(distinct `sales_fact_1997`.`customer_id`) as `m0`\n"
+            + "    \"time_by_day\".\"the_year\" as \"c0\",\n"
+            + "    \"time_by_day\".\"quarter\" as \"c1\",\n"
+            + "    count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\"\n"
             + "from\n"
-            + "    `time_by_day` as `time_by_day`,\n"
-            + "    `sales_fact_1997` as `sales_fact_1997`\n"
+            + "    \"sales_fact_1997\" as \"sales_fact_1997\",\n"
+            + "    \"time_by_day\" as \"time_by_day\"\n"
             + "where\n"
-            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "    \"time_by_day\".\"the_year\" = 1997\n"
             + "and\n"
-            + "    `time_by_day`.`the_year` = 1997\n"
+            + "    \"time_by_day\".\"quarter\" = \"Q1\"\n"
             + "and\n"
-            + "    `time_by_day`.`quarter` = 'Q1'\n"
+            + "    \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\"\n"
             + "group by\n"
-            + "    `time_by_day`.`the_year`,\n"
-            + "    `time_by_day`.`quarter`";
-
-        String derbySql =
-            "select "
-            + "\"time_by_day\".\"the_year\" as \"c0\", "
-            + "\"time_by_day\".\"quarter\" as \"c1\", "
-            + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
-            + "from "
-            + "\"time_by_day\" as \"time_by_day\", "
-            + "\"sales_fact_1997\" as \"sales_fact_1997\" "
-            + "where "
-            + "\"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and "
-            + "\"time_by_day\".\"the_year\" = 1997 and "
-            + "\"time_by_day\".\"quarter\" = 'Q1' "
-            + "group by \"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\"";
+            + "    \"time_by_day\".\"the_year\",\n"
+            + "    \"time_by_day\".\"quarter\"";
 
         SqlPattern[] patterns = {
-            new SqlPattern(Dialect.DatabaseProduct.ACCESS, accessSql, 26),
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, 26),
-            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql)
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, 26)
         };
 
         assertRequestSql(
@@ -695,75 +660,32 @@ public class TestAggregationManager extends BatchTestCase {
             new SqlPattern(
                 Dialect.DatabaseProduct.MYSQL,
                 "select\n"
-                + "    `time_by_day`.`the_year` as `c0`,\n"
-                + "    `time_by_day`.`quarter` as `c1`,\n"
-                + "    `product_class`.`product_family` as `c2`,\n"
-                + "    count(distinct `sales_fact_1997`.`customer_id`) as `m0`\n"
+                + "    \"time_by_day\".\"the_year\" as \"c0\",\n"
+                + "    \"time_by_day\".\"quarter\" as \"c1\",\n"
+                + "    \"product_class\".\"product_family\" as \"c2\",\n"
+                + "    count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\"\n"
                 + "from\n"
-                + "    `time_by_day` as `time_by_day`,\n"
-                + "    `sales_fact_1997` as `sales_fact_1997`,\n"
-                + "    `product_class` as `product_class`,\n"
-                + "    `product` as `product`\n"
+                + "    \"sales_fact_1997\" as \"sales_fact_1997\",\n"
+                + "    \"time_by_day\" as \"time_by_day\",\n"
+                + "    \"product\" as \"product\",\n"
+                + "    \"product_class\" as \"product_class\"\n"
                 + "where\n"
-                + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+                + "    \"time_by_day\".\"the_year\" = 1997\n"
                 + "and\n"
-                + "    `time_by_day`.`the_year` = 1997\n"
+                + "    \"time_by_day\".\"quarter\" = \"Q1\"\n"
                 + "and\n"
-                + "    `time_by_day`.`quarter` = `Q1`\n"
+                + "    \"product_class\".\"product_family\" = \"Food\"\n"
                 + "and\n"
-                + "    `sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+                + "    \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\"\n"
                 + "and\n"
-                + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+                + "    \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\"\n"
                 + "and\n"
-                + "    `product_class`.`product_family` = `Food`\n"
+                + "    \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\"\n"
                 + "group by\n"
-                + "    `time_by_day`.`the_year`,\n"
-                + "    `time_by_day`.`quarter`,\n"
-                + "    `product_class`.`product_family`",
-                23),
-            new SqlPattern(
-                Dialect.DatabaseProduct.ACCESS,
-                "select"
-                + " `d0` as `c0`,"
-                + " `d1` as `c1`,"
-                + " `d2` as `c2`,"
-                + " count(`m0`) as `c3` "
-                + "from ("
-                + "select distinct `time_by_day`.`the_year` as `d0`,"
-                + " `time_by_day`.`quarter` as `d1`,"
-                + " `product_class`.`product_family` as `d2`,"
-                + " `sales_fact_1997`.`customer_id` as `m0` "
-                + "from `time_by_day` as `time_by_day`,"
-                + " `sales_fact_1997` as `sales_fact_1997`,"
-                + " `product_class` as `product_class`,"
-                + " `product` as `product` "
-                + "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`"
-                + " and `time_by_day`.`the_year` = 1997"
-                + " and `time_by_day`.`quarter` = 'Q1'"
-                + " and `sales_fact_1997`.`product_id` = `product`.`product_id`"
-                + " and `product`.`product_class_id` = `product_class`.`product_class_id`"
-                + " and `product_class`.`product_family` = 'Food') as `dummyname` "
-                + "group by `d0`, `d1`, `d2`",
-                23),
-             new SqlPattern(
-                 Dialect.DatabaseProduct.DERBY,
-                 "select "
-                 + "\"time_by_day\".\"the_year\" as \"c0\", \"time_by_day\".\"quarter\" as \"c1\", "
-                 + "\"product_class\".\"product_family\" as \"c2\", "
-                 + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
-                 + "from "
-                 + "\"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", "
-                 + "\"product_class\" as \"product_class\", \"product\" as \"product\" "
-                 + "where "
-                 + "\"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and "
-                 + "\"time_by_day\".\"the_year\" = 1997 and "
-                 + "\"time_by_day\".\"quarter\" = 'Q1' and "
-                 + "\"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" and "
-                 + "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and "
-                 + "\"product_class\".\"product_family\" = 'Food' "
-                 + "group by \"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\", "
-                 + "\"product_class\".\"product_family\"",
-                 23)
+                + "    \"time_by_day\".\"the_year\",\n"
+                + "    \"time_by_day\".\"quarter\",\n"
+                + "    \"product_class\".\"product_family\"",
+                23)
         };
 
         assertRequestSql(
@@ -2011,8 +1933,9 @@ public class TestAggregationManager extends BatchTestCase {
                         int i = schema.indexOf("</MeasureGroup>");
                         assert i >= 0;
                         i += "</MeasureGroup>".length();
-                        return schema.substring(0, i) + "\n" + measureGroup
-                               + schema.substring(i);
+                        return schema.substring(0, i) + "\n"
+                                + measureGroup
+                                + schema.substring(i);
                     }
                 }
             );

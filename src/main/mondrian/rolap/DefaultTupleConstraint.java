@@ -39,7 +39,7 @@ public class DefaultTupleConstraint implements TupleConstraint {
     }
 
     public void addConstraint(
-        SqlQuery sqlQuery,
+        SqlQueryBuilder queryBuilder,
         RolapStarSet starSet)
     {
     }
