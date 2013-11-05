@@ -9,6 +9,7 @@
 */
 package mondrian.rolap;
 
+import mondrian.rolap.agg.*;
 import mondrian.spi.DataServicesProvider;
 
 /**
@@ -17,6 +18,10 @@ import mondrian.spi.DataServicesProvider;
 public class DefaultDataServicesProvider implements DataServicesProvider {
     public MemberReader getMemberReader(RolapCubeHierarchy hierarchy) {
         return new SqlMemberSource(hierarchy);
+    }
+
+    public SegmentLoader getSegmentLoader(SegmentCacheManager cacheMgr) {
+        return new SegmentLoader(cacheMgr);
     }
 }
 // End DefaultDataServicesProvider.java

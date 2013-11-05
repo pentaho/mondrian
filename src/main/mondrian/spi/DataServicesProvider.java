@@ -10,11 +10,14 @@
 package mondrian.spi;
 
 import mondrian.rolap.*;
+import mondrian.rolap.agg.*;
 
 /**
  * An SPI to provide alternate ways of accessing source data.
  */
 public interface DataServicesProvider {
     MemberReader getMemberReader(RolapCubeHierarchy hierarchy);
+
+    SegmentLoader getSegmentLoader(SegmentCacheManager cacheMgr);
 }
 // End DataServicesProvider.java

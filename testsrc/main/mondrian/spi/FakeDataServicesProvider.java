@@ -10,6 +10,7 @@
 package mondrian.spi;
 
 import mondrian.rolap.*;
+import mondrian.rolap.agg.*;
 
 /**
  * Fake DataServicesProvider so that the locator has something to find
@@ -17,6 +18,10 @@ import mondrian.rolap.*;
  */
 public class FakeDataServicesProvider implements DataServicesProvider {
     public MemberReader getMemberReader(RolapCubeHierarchy hierarchy) {
+        return null;
+    }
+
+    public SegmentLoader getSegmentLoader(SegmentCacheManager cacheMgr) {
         return null;
     }
 }

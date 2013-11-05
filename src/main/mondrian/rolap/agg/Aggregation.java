@@ -14,9 +14,12 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.*;
 import mondrian.rolap.*;
+import mondrian.spi.*;
 
 import java.util.*;
 import java.util.concurrent.Future;
+
+import static mondrian.spi.DataServicesLocator.*;
 
 /**
  * A <code>Aggregation</code> is a pre-computed aggregation over a set of
@@ -140,8 +143,11 @@ public class Aggregation {
         if (groupingSetsCollector.useGroupingSets()) {
             groupingSetsCollector.add(groupingSet);
         } else {
-            // FIXME MONGO Make this pluggable.
-            final SegmentLoader segmentLoader = new SegmentLoader(cacheMgr);
+            DataServicesProvider provider =
+                getDataServicesProvider(
+                    star.getSchema().getDataServiceProviderName());
+            final SegmentLoader segmentLoader =
+                provider.getSegmentLoader(cacheMgr);
             segmentLoader.load(
                 cellRequestCount,
                 new ArrayList<GroupingSet>(
