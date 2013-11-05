@@ -9,8 +9,11 @@
 */
 package mondrian.spi;
 
+import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.*;
+
+import javax.sql.DataSource;
 
 /**
  * An SPI to provide alternate ways of accessing source data.
@@ -19,5 +22,10 @@ public interface DataServicesProvider {
     MemberReader getMemberReader(RolapCubeHierarchy hierarchy);
 
     SegmentLoader getSegmentLoader(SegmentCacheManager cacheMgr);
+
+    DataSource createDataSource(
+        DataSource dataSource,
+        Util.PropertyList connectInfo,
+        StringBuilder builder);
 }
 // End DataServicesProvider.java

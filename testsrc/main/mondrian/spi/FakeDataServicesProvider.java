@@ -9,8 +9,11 @@
 */
 package mondrian.spi;
 
+import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.*;
+
+import javax.sql.DataSource;
 
 /**
  * Fake DataServicesProvider so that the locator has something to find
@@ -22,6 +25,14 @@ public class FakeDataServicesProvider implements DataServicesProvider {
     }
 
     public SegmentLoader getSegmentLoader(SegmentCacheManager cacheMgr) {
+        return null;
+    }
+
+    public DataSource createDataSource(
+        DataSource dataSource,
+        Util.PropertyList connectInfo,
+        StringBuilder builder)
+    {
         return null;
     }
 }
