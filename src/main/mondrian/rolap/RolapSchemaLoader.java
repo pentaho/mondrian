@@ -2754,6 +2754,19 @@ public class RolapSchemaLoader {
                     "key");
                 return null;
             }
+        } else {
+            // degenerate dim, should only be a single attribute
+            if (attributeList.size() > 1) {
+                getHandler().error(
+                    "Dimension " + xmlDimension.name
+                    + " omits a defined key, which is only "
+                    + "valid for degenerate dimensions with a single "
+                    + "attribute.",
+                    xmlDimension,
+                    "key");
+                return null;
+            }
+            dimension.keyAttribute = attributeList.get(0);
         }
 
         // Use a Lazy variable to initialize dimension's key on first use.
