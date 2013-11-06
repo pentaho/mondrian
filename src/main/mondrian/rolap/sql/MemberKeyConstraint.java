@@ -9,7 +9,7 @@
 */
 package mondrian.rolap.sql;
 
-import mondrian.olap.Evaluator;
+import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.util.Pair;
 
@@ -44,14 +44,15 @@ public class MemberKeyConstraint
     }
 
     public void addConstraint(
-        SqlQuery sqlQuery, RolapStarSet baseCube)
+        SqlQueryBuilder queryBuilder, RolapStarSet baseCube)
     {
         for (int i = 0; i < columnList.size(); i++) {
             RolapSchema.PhysColumn expression = columnList.get(i);
             final Comparable value = valueList.get(i);
                 SqlConstraintUtils.constrainLevel2(
-                    sqlQuery,
+                    queryBuilder,
                     expression,
+                    null,
                     value);
         }
     }
@@ -72,7 +73,6 @@ public class MemberKeyConstraint
     public String toString() {
         return "MemberKeyConstraint";
     }
-
 
     public Object getCacheKey() {
         return cacheKey;

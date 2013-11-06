@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 30 August, 2001
@@ -26,11 +26,10 @@ import java.util.List;
  */
 public interface QuerySpec {
     RolapStar getStar();
-    int getMeasureCount();
-    RolapStar.Measure getMeasure(int i);
-    String getMeasureAlias(int i);
-    RolapStar.Column[] getColumns();
-    String getColumnAlias(int i);
+
+    List<Pair<RolapStar.Measure, String>> getMeasures();
+
+    List<Pair<RolapStar.Column, String>> getColumns();
 
     /**
      * Returns the predicate on the <code>i</code>th column.
@@ -43,7 +42,7 @@ public interface QuerySpec {
      */
     StarColumnPredicate getColumnPredicate(int i);
 
-    Pair<String, List<SqlStatement.Type>> generateSqlQuery();
+    Pair<String, List<SqlStatement.Type>> generateSqlQuery(String desc);
 }
 
 // End QuerySpec.java

@@ -348,6 +348,7 @@ public class Util extends XOMUtil {
             maxNbThreads,
             new ThreadFactory() {
                 final AtomicInteger counter = new AtomicInteger(0);
+
                 public Thread newThread(Runnable r) {
                     final Thread thread =
                         Executors.defaultThreadFactory().newThread(r);
@@ -1327,6 +1328,16 @@ public class Util extends XOMUtil {
         }
     }
 
+    /** Call this method to hit a break point. Remove calls to this method
+     * before checking in code. */
+    @Deprecated
+    public static <T> T pauseIf(boolean condition, T... args) {
+        if (condition) {
+            Util.discard(0); // put a breakpoint here
+        }
+        return args.length > 0 ? args[0] : null;
+    }
+
     public static List<Member> addLevelCalculatedMembers(
         SchemaReader reader,
         Level level,
@@ -1551,6 +1562,32 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Converts a list of a string, with commas between elements.
+     *
+     * For example,
+     * <code>commaList(Arrays.asList({"a", "b"}))</code>
+     * returns "a, b".
+     *
+     * @param list List
+     * @return String representation of string
+     */
+    public static <T> String commaList(List<T> list)
+    {
+        if (list.size() == 1) {
+            return list.get(0).toString();
+        }
+        final StringBuilder buf = new StringBuilder();
+        int k = -1;
+        for (T t : list) {
+            if (++k > 0) {
+                buf.append(", ");
+            }
+            buf.append(t);
+        }
+        return buf.toString();
+    }
+
+    /**
      * Makes a name distinct from other names which have already been used
      * and shorter than a length limit, adds it to the list, and returns it.
      *
@@ -1627,6 +1664,7 @@ public class Util extends XOMUtil {
      */
     public static <T> boolean isDistinct(Collection<T> collection) {
         return collection instanceof Set
+            || collection.size() < 2
             || new HashSet<T>(collection).size() == collection.size();
     }
 
@@ -2429,6 +2467,11 @@ public class Util extends XOMUtil {
                 return list.size();
             }
         };
+    }
+
+    /** Returns a list with all elements from {@code from} onwards. */
+    public static <E> List<E> subList(List<E> list, int from) {
+        return list.subList(from, list.size());
     }
 
     public static class ErrorCellValue {

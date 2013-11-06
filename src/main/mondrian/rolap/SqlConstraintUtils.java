@@ -12,11 +12,11 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.rolap.RestrictedMemberReader.MultiCardinalityDefaultMember;
-import mondrian.rolap.RolapSchema.PhysSchemaException;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.rolap.sql.Clause;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.sql.SqlQueryBuilder;
 import mondrian.spi.Dialect;
 import mondrian.util.Pair;
 
@@ -43,20 +43,23 @@ public class SqlConstraintUtils {
      * For every restricting member in the current context, generates
      * a WHERE condition and a join to the fact table.
      *
-     * @param sqlQuery the query to modify
+     * @param queryBuilder Query builder
      * @param starSet Star set
      * @param restrictMemberTypes defines the behavior if the current context
      *   contains calculated members. If true, throws an exception.
      * @param evaluator Evaluator
      */
     public static void addContextConstraint(
-        SqlQuery sqlQuery,
+        SqlQueryBuilder queryBuilder,
         RolapStarSet starSet,
-        Evaluator evaluator,
+        RolapEvaluator evaluator,
         boolean restrictMemberTypes)
     {
         // Add constraint using the current evaluator context
-        Member[] members = evaluator.getNonAllMembers();
+        List<RolapMember> members = Arrays.asList(evaluator.getNonAllMembers());
+        if (queryBuilder.fact != null) {
+            setMeasureForCellRequest(members, queryBuilder.fact);
+        }
 
         if (restrictMemberTypes) {
             if (containsCalculatedMember(members)) {
@@ -68,16 +71,15 @@ public class SqlConstraintUtils {
                     "can not restrict SQL to context with multi-position slicer");
             }
         } else {
-            members = removeCalculatedAndDefaultMembers(members);
-            members = removeMultiPositionSlicerMembers(members, evaluator);
+            members = new ArrayList<RolapMember>(members);
+            removeCalculatedAndDefaultMembers(members);
+            removeMultiPositionSlicerMembers(members, evaluator);
         }
-
-        // make sure the columns we need to constrain can be referenced
-        addConstrainedMembersToFrom(sqlQuery, starSet, members);
 
         // get the constrained columns and their values
         final CellRequest request =
-            RolapAggregationManager.makeRequest(members);
+            RolapAggregationManager.makeRequest(
+                members.toArray(new RolapMember[members.size()]));
         if (request == null) {
             if (restrictMemberTypes) {
                 throw Util.newInternal("CellRequest is null - why?");
@@ -90,7 +92,7 @@ public class SqlConstraintUtils {
         Object[] values = request.getSingleValues();
 
         if (starSet.getAggMeasureGroup() != null) {
-            RolapGalaxy galaxy = ((RolapCube) evaluator.getCube()).galaxy;
+            RolapGalaxy galaxy = evaluator.getCube().galaxy;
             @SuppressWarnings("unchecked")
             final AggregationManager.StarConverter starConverter =
                 new BatchLoader.StarConverterImpl(
@@ -102,14 +104,30 @@ public class SqlConstraintUtils {
         }
 
         // add constraints to where
-        addColumnValueConstraints(sqlQuery, columns, values);
+        addColumnValueConstraints(queryBuilder, Pair.zip(columns, values));
 
         // add role constraints to where
         addRoleAccessConstraints(
-            sqlQuery,
+            queryBuilder,
             starSet,
             restrictMemberTypes,
             evaluator);
+    }
+
+    /**
+     * Replaces the measure in the members list (if present) with
+     * the factCountMeasure associated with the RolapMeasureGroup.
+     */
+    private static void setMeasureForCellRequest(
+        List<RolapMember> members, RolapMeasureGroup fact)
+    {
+        assert fact.factCountMeasure != null;
+        for (int i = 0; i < members.size(); i++) {
+            if (members.get(i).isMeasure()) {
+                members.set(i, fact.factCountMeasure);
+                break;
+            }
+        }
     }
 
     public static Map<Level, List<RolapMember>> getRoleConstraintMembers(
@@ -155,7 +173,7 @@ public class SqlConstraintUtils {
     }
 
     private static void addRoleAccessConstraints(
-        SqlQuery sqlQuery,
+        SqlQueryBuilder queryBuilder,
         RolapStarSet starSet,
         boolean restrictMemberTypes,
         Evaluator evaluator)
@@ -164,11 +182,6 @@ public class SqlConstraintUtils {
             getRoleConstraintMembers(
                 evaluator.getSchemaReader(),
                 evaluator.getMembers());
-        final RolapSchema.SqlQueryBuilder queryBuilder =
-            new RolapSchema.SqlQueryBuilder(
-                sqlQuery,
-                new SqlTupleReader.ColumnLayoutBuilder(),
-                Collections.<List<RolapSchema.PhysColumn>>emptyList());
         for (Map.Entry<Level, List<RolapMember>> entry
             : roleMembers.entrySet())
         {
@@ -182,37 +195,36 @@ public class SqlConstraintUtils {
                 (RolapCubeLevel) entry.getKey(),
                 restrictMemberTypes,
                 false);
+
             if (where.length() > 1) {
                 where.append(")");
                 // The where clause might be null because if the
                 // list of members is greater than the limit
                 // permitted, we won't constrain.
-                addLevelToFrom(sqlQuery, starSet, (RolapLevel) entry.getKey());
                 // add constraints
-                sqlQuery.addWhere(where.toString());
+                queryBuilder.sqlQuery.addWhere(where.toString());
             }
         }
     }
 
     private static void addColumnValueConstraints(
-        SqlQuery sqlQuery,
-        RolapStar.Column[] columns,
-        Object[] values)
+        final SqlQueryBuilder queryBuilder,
+        List<Pair<RolapStar.Column, Object>> columnValues)
     {
         // following code is similar to
         // AbstractQuerySpec#nonDistinctGenerateSQL()
         final StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < columns.length; i++) {
-            RolapStar.Column column = columns[i];
+        for (Pair<RolapStar.Column, Object> columnValue : columnValues) {
+            final RolapStar.Column column = columnValue.left;
             String expr = column.getExpression().toSql();
-            final String value = String.valueOf(values[i]);
+            final String value = String.valueOf(columnValue.right);
             buf.setLength(0);
             if ((RolapUtil.mdxNullLiteral().equalsIgnoreCase(value))
                 || (value.equalsIgnoreCase(RolapUtil.sqlNullValue.toString())))
             {
                 buf.append(expr).append(" is null");
             } else {
-                final Dialect dialect = sqlQuery.getDialect();
+                final Dialect dialect = queryBuilder.getDialect();
                 try {
                     buf.append(expr)
                         .append(" = ");
@@ -222,112 +234,40 @@ public class SqlConstraintUtils {
                     dialect.quoteBooleanLiteral(buf, false);
                 }
             }
-            sqlQuery.addWhere(buf.toString());
+            queryBuilder.addColumn(
+                queryBuilder.column(column.getExpression(), column.getTable()),
+                Clause.FROM);
+            queryBuilder.sqlQuery.addWhere(buf.toString());
         }
-    }
-
-    private static void addConstrainedMembersToFrom(
-        SqlQuery sqlQuery,
-        RolapStarSet starSet,
-        Member[] members)
-    {
-        for (Member member : members) {
-            if (member.isMeasure()
-                || member.getLevel().isAll()
-                || !(member.getLevel() instanceof RolapLevel))
-            {
-                // only looking for constrained members
-                continue;
-            }
-            RolapLevel level = (RolapLevel) member.getLevel();
-            addLevelToFrom(sqlQuery, starSet, level);
-        }
-    }
-
-    private static void addLevelToFrom(
-        SqlQuery sqlQuery,
-        RolapStarSet starSet,
-        RolapLevel level)
-    {
-        RolapDimension dim = level.getDimension();
-        for (RolapSchema.PhysColumn column
-            : level.attribute.getKeyList())
-        {
-            final RolapSchema.PhysPath keyPath =
-                level.getDimension().getKeyPath(column);
-            keyPath.addToFrom(sqlQuery, false);
-        }
-        if (starSet.getMeasureGroup() != null) {
-            RolapSchema.PhysPath path;
-            if (starSet.getAggMeasureGroup() != null) {
-                path = starSet.getAggMeasureGroup().getPath(dim);
-            } else {
-                path = starSet.getMeasureGroup().getPath(dim);
-            }
-            if (path != null) {
-                path.addToFrom(sqlQuery, false);
-            }
-        }
-    }
-
-    private static void addToFrom(
-        SqlQuery sqlQuery,
-        RolapStar.Column column,
-        RolapStarSet starSet)
-    {
-        // not using a path may not work so well in virtual cubes
-        if (column.getExpression() instanceof RolapSchema.PhysColumn) {
-            RolapSchema.PhysColumn physColumn =
-                (RolapSchema.PhysColumn) column.getExpression();
-            RolapSchema.PhysRelation columnRelation = physColumn.relation;
-            RolapSchema.PhysRelation factRelation =
-                starSet.getStar().getFactTable().getRelation();
-            try {
-                RolapSchema.PhysPath path =
-                starSet.getStar().getSchema().getPhysicalSchema().getGraph()
-                    .findPath(factRelation, columnRelation);
-                path.addToFrom(sqlQuery, false);
-                return;
-            } catch (PhysSchemaException e) {
-                throw new MondrianException(e);
-            }
-        }
-        // fallback
-        RolapStar.Table table = column.getTable();
-        table.addToFrom(sqlQuery, false, true);
     }
 
     /**
      * Looks at the given <code>evaluator</code> to determine if it has more
      * than one slicer member from any particular hierarchy.
+     *
      * @param evaluator the evaluator to look at
      * @return <code>true</code> if the evaluator's slicer has more than one
      *  member from any particular hierarchy
      */
-    public static boolean hasMultiPositionSlicer(Evaluator evaluator) {
-        if (evaluator instanceof RolapEvaluator) {
-            Map<Hierarchy, Member> mapOfSlicerMembers =
-                new HashMap<Hierarchy, Member>();
-            for (
-                Member slicerMember
-                : ((RolapEvaluator)evaluator).getSlicerMembers())
-            {
-                Hierarchy hierarchy = slicerMember.getHierarchy();
-                if (mapOfSlicerMembers.containsKey(hierarchy)) {
-                    // We have found a second member in this hierarchy
-                    return true;
-                }
-                mapOfSlicerMembers.put(hierarchy, slicerMember);
+    public static boolean hasMultiPositionSlicer(RolapEvaluator evaluator) {
+        Map<Hierarchy, Member> mapOfSlicerMembers =
+            new HashMap<Hierarchy, Member>();
+        for (RolapMember slicerMember : evaluator.getSlicerMembers()) {
+            Hierarchy hierarchy = slicerMember.getHierarchy();
+            if (mapOfSlicerMembers.containsKey(hierarchy)) {
+                // We have found a second member in this hierarchy
+                return true;
             }
+            mapOfSlicerMembers.put(hierarchy, slicerMember);
         }
         return false;
     }
 
-    protected static Member[] removeMultiPositionSlicerMembers(
-        Member[] members,
+    protected static void removeMultiPositionSlicerMembers(
+        List<RolapMember> memberList,
         Evaluator evaluator)
     {
-        List<Member> slicerMembers = null;
+        List<RolapMember> slicerMembers = null;
         if (evaluator instanceof RolapEvaluator) {
             // get the slicer members from the evaluator
             slicerMembers =
@@ -344,24 +284,24 @@ public class SqlConstraintUtils {
                 }
                 mapOfSlicerMembers.get(hierarchy).add(slicerMember);
             }
-            List<Member> listOfMembers = new ArrayList<Member>();
             // Iterate the given list of members, removing any whose hierarchy
             // has multiple members on the slicer axis
-            for (Member member : members) {
+            for (int i = 0; i < memberList.size(); i++) {
+                RolapMember member = memberList.get(i);
                 Hierarchy hierarchy = member.getHierarchy();
-                if (!mapOfSlicerMembers.containsKey(hierarchy)
-                        || mapOfSlicerMembers.get(hierarchy).size() < 2)
+                if (mapOfSlicerMembers.containsKey(hierarchy)
+                    && mapOfSlicerMembers.get(hierarchy).size() >= 2)
                 {
-                    listOfMembers.add(member);
+                    memberList.remove(i--);
                 }
             }
-            members = listOfMembers.toArray(new Member[listOfMembers.size()]);
         }
-        return members;
     }
 
     /**
-     * Removes calculated and default members from an array.
+     * Removes calculated and default members from a list (except those that are
+     * leaves in a parent-child hierarchy) and with members that are the
+     * default member of their hierarchy.
      *
      * <p>This is required only if the default member is
      * not the ALL member. The time dimension for example, has 1997 as default
@@ -381,38 +321,25 @@ public class SqlConstraintUtils {
      * <p>For calculated members, effect is the same as
      * {@link #removeCalculatedMembers(java.util.List)}.
      *
-     * @param members Array of members
-     * @return Members with calculated members removed (except those that are
-     *    leaves in a parent-child hierarchy) and with members that are the
-     *    default member of their hierarchy
+     * @param memberList Array of members
      */
-    private static Member[] removeCalculatedAndDefaultMembers(
-        Member[] members)
+    private static void removeCalculatedAndDefaultMembers(
+        List<RolapMember> memberList)
     {
-        List<Member> memberList = new ArrayList<Member>(members.length);
-        for (int i = 0; i < members.length; ++i) {
-            Member member = members[i];
+        for (int i = 0; i < memberList.size(); i++) {
+            RolapMember member = memberList.get(i);
             // Skip calculated members (except if leaf of parent-child hier)
             if (member.isCalculated() && !member.isParentChildLeaf()) {
-                continue;
-            }
+                memberList.remove(i--);
 
             // Remove members that are the default for their hierarchy,
             // except for the measures hierarchy.
-            if (i > 0
+            } else if (i > 0
                 && member.getHierarchy().getDefaultMember().equals(member))
             {
-                continue;
+                memberList.remove(i--);
             }
-
-            // These will be handled by addRoleAccessConstraints
-            if (member instanceof MultiCardinalityDefaultMember) {
-                continue;
-            }
-
-            memberList.add(member);
         }
-        return memberList.toArray(new Member[memberList.size()]);
     }
 
     static List<Member> removeCalculatedMembers(List<Member> members) {
@@ -426,6 +353,17 @@ public class SqlConstraintUtils {
     }
 
     public static boolean containsCalculatedMember(Member[] members) {
+        for (Member member : members) {
+            if (member.isCalculated()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean containsCalculatedMember(
+        Iterable<? extends Member> members)
+    {
         for (Member member : members) {
             if (member.isCalculated()) {
                 return true;
@@ -476,13 +414,15 @@ public class SqlConstraintUtils {
     /**
      * Creates a "WHERE parent = value" constraint.
      *
-     * @param sqlQuery the query to modify
+     * @param queryBuilder Query builder
      * @param starSet Star set
      * @param parent the list of parent members
-     * @param restrictMemberTypes defines the behavior if <code>parent</code>
+     * @param restrictMemberTypes defines the behavior if {@code parent}
+     *                            contains calculated members. If true, and one
+     *                            of the members is calculated, throws.
      */
     public static void addMemberConstraint(
-        SqlQuery sqlQuery,
+        SqlQueryBuilder queryBuilder,
         RolapStarSet starSet,
         RolapMember parent,
         boolean restrictMemberTypes)
@@ -490,7 +430,7 @@ public class SqlConstraintUtils {
         List<RolapMember> list = Collections.singletonList(parent);
         boolean exclude = false;
         addMemberConstraint(
-            sqlQuery, starSet, list, restrictMemberTypes, false, exclude);
+            queryBuilder, starSet, list, restrictMemberTypes, false, exclude);
     }
 
     /**
@@ -505,17 +445,17 @@ public class SqlConstraintUtils {
      * OR (level1 = val1b AND level2 = val2b AND ...) OR ..." is generated
      * instead.
      *
-     * @param sqlQuery the query to modify
+     * @param queryBuilder Query builder
      * @param starSet Star set
      * @param members the list of members for this constraint
-     * @param restrictMemberTypes defines the behavior if <code>parents</code>
-     *   contains calculated members.
-     *   If true, and one of the members is calculated, an exception is thrown.
+     * @param restrictMemberTypes defines the behavior if {@code parent}
+     *                            contains calculated members. If true, and one
+     *                            of the members is calculated, throws.
      * @param crossJoin true if constraint is being generated as part of
      * @param exclude whether to exclude the members in the SQL predicate.
      */
     public static void addMemberConstraint(
-        SqlQuery sqlQuery,
+        SqlQueryBuilder queryBuilder,
         RolapStarSet starSet,
         List<RolapMember> members,
         boolean restrictMemberTypes,
@@ -524,15 +464,15 @@ public class SqlConstraintUtils {
     {
         assert starSet != null;
         if (members.size() == 0) {
-            // Generate a predicate which is always false in order to produce
+            // Generate a predicate which is always false
+            // (or, if exclude, always true) in order to produce
             // the empty set.  It would be smarter to avoid executing SQL at
             // all in this case, but doing it this way avoid special-case
             // evaluation code.
-            String predicate = "(1 = 0)";
-            if (exclude) {
-                predicate = "(1 = 1)";
-            }
-            sqlQuery.addWhere(predicate);
+            final StringBuilder buf = new StringBuilder();
+            queryBuilder.sqlQuery.getDialect()
+                .quoteBooleanLiteral(buf, exclude);
+            queryBuilder.sqlQuery.addWhere(buf.toString());
             return;
         }
 
@@ -558,25 +498,22 @@ public class SqlConstraintUtils {
         // If this constraint is part of a native cross join and there
         // are multiple values for the parent members, then we can't
         // use single value IN clauses
-        final RolapSchema.SqlQueryBuilder queryBuilder =
-            new RolapSchema.SqlQueryBuilder(
-                sqlQuery,
-                new SqlTupleReader.ColumnLayoutBuilder(),
-                Collections.<List<RolapSchema.PhysColumn>>emptyList());
+        boolean added = false;
         if (crossJoin
             && true /* TODO: !memberLevel.isUnique() */
             && !membersAreCrossProduct(members))
         {
             assert (member.getParentMember() != null);
-            condition.append(
+            added =
                 constrainMultiLevelMembers(
                     queryBuilder,
+                    condition,
                     starSet.getMeasureGroup(),
                     starSet.getAggStar(),
                     members,
                     firstUniqueParentLevel,
                     restrictMemberTypes,
-                    exclude));
+                    exclude);
         } else {
             generateSingleValueInExpr(
                 condition,
@@ -587,12 +524,13 @@ public class SqlConstraintUtils {
                 firstUniqueParentLevel,
                 restrictMemberTypes,
                 exclude);
+            added = condition.length() > 1;
         }
 
-        if (condition.length() > 1) {
+        if (added) {
             // condition is not empty
             condition.append(")");
-            sqlQuery.addWhere(condition.toString());
+            queryBuilder.sqlQuery.addWhere(condition.toString());
         }
     }
 
@@ -638,6 +576,7 @@ public class SqlConstraintUtils {
      * Adds to the where clause of a query expression matching a specified
      * list of members.
      *
+     *
      * @param queryBuilder query containing the where clause
      * @param measureGroup Measure group
      * @param aggStar aggregate star if available
@@ -646,11 +585,11 @@ public class SqlConstraintUtils {
      * @param restrictMemberTypes defines the behavior when calculated members
      * are present
      * @param exclude whether to exclude the members. Default is false.
-     * @return a non-empty String if SQL is generated for the multi-level
-     * member list.
+     * @return Whether anything was appended to {@code condition}.
      */
-    private static String constrainMultiLevelMembers(
-        RolapSchema.SqlQueryBuilder queryBuilder,
+    private static boolean constrainMultiLevelMembers(
+        SqlQueryBuilder queryBuilder,
+        StringBuilder condition,
         RolapMeasureGroup measureGroup,
         AggStar aggStar,
         List<RolapMember> members,
@@ -658,12 +597,13 @@ public class SqlConstraintUtils {
         boolean restrictMemberTypes,
         boolean exclude)
     {
+        final int initial = condition.length();
+
         // TODO: use fromLevel.
 
         // Use LinkedHashMap so that keySet() is deterministic.
         Map<RolapMember, List<RolapMember>> parentChildrenMap =
             new LinkedHashMap<RolapMember, List<RolapMember>>();
-        StringBuilder condition = new StringBuilder();
         StringBuilder condition1 = new StringBuilder();
         if (exclude) {
             condition.append("not (");
@@ -711,7 +651,7 @@ public class SqlConstraintUtils {
                         members.get(0),
                         fromLevel);
                 }
-                return condition.toString();
+                return condition.length() > initial;
             }
         } else {
             // Multi-value IN list not supported
@@ -800,10 +740,10 @@ public class SqlConstraintUtils {
                                 false,
                                 true);
                         } else {
-                            column.getTable().addToFrom(
-                                queryBuilder.sqlQuery,
-                                false,
-                                true);
+                            queryBuilder.addColumn(
+                                queryBuilder.column(
+                                    physColumn, p.getDimension()),
+                                Clause.FROM);
                         }
                     } else {
                         assert aggStar == null;
@@ -906,7 +846,7 @@ public class SqlConstraintUtils {
             condition.append("))");
         }
 
-        return condition.toString();
+        return condition.length() > initial;
     }
 
     /**
@@ -1036,29 +976,32 @@ public class SqlConstraintUtils {
      * data type, appends 'WHERE FALSE'.
      *
      * @param exp Key expression
-     * @param query the query that the sql expression will be added to
+     * @param dimension Dimension
+     * @param queryBuilder Query that the sql expression will be added to
      * @param columnValue value constraining the level
      */
     public static void constrainLevel2(
-        SqlQuery query,
+        SqlQueryBuilder queryBuilder,
         RolapSchema.PhysColumn exp,
+        RolapCubeDimension dimension,
         Comparable columnValue)
     {
-        String columnString = exp.toSql();
+        final StringBuilder buf = new StringBuilder(exp.toSql());
         if (columnValue == RolapUtil.sqlNullValue) {
-            query.addWhere(columnString + " is null");
+            buf.append(" is null");
         } else {
-            final StringBuilder buf = new StringBuilder();
             try {
-                buf.append(columnString);
                 buf.append(" = ");
-                query.getDialect().quote(buf, columnValue, exp.getDatatype());
+                queryBuilder.getDialect()
+                    .quote(buf, columnValue, exp.getDatatype());
             } catch (NumberFormatException e) {
                 buf.setLength(0);
-                query.getDialect().quoteBooleanLiteral(buf, false);
+                queryBuilder.getDialect().quoteBooleanLiteral(buf, false);
             }
-            query.addWhere(buf.toString());
         }
+        queryBuilder.addColumn(
+            queryBuilder.column(exp, dimension), Clause.FROM);
+        queryBuilder.sqlQuery.addWhere(buf.toString());
     }
 
     /**
@@ -1079,7 +1022,7 @@ public class SqlConstraintUtils {
      *        members
      */
     private static String generateMultiValueInExpr(
-        RolapSchema.SqlQueryBuilder queryBuilder,
+        SqlQueryBuilder queryBuilder,
         RolapMeasureGroup measureGroup,
         AggStar aggStar,
         List<RolapMember> members,
@@ -1113,46 +1056,35 @@ public class SqlConstraintUtils {
         // REVIEW: The following code mostly uses the name column (or name
         // expression) of the level. Shouldn't it use the key column (or key
         // expression)?
-        String columnString;
+        final List<String> columnList = new ArrayList<String>();
         if (columns != null) {
             if (aggStar != null) {
                 // this assumes that the name column is identical to the
                 // id column
-                columnString = null;
                 for (RolapStar.Column column : columns) {
                     int bitPos = column.getBitPosition();
                     AggStar.Table.Column aggColumn =
                         aggStar.lookupColumn(bitPos);
                     AggStar.Table table = aggColumn.getTable();
                     table.addToFrom(queryBuilder.sqlQuery, false, true);
-                    if (columnString == null) {
-                        columnString = "";
-                    } else {
-                        columnString += ", ";
-                    }
-                    columnString += aggColumn.getExpression().toSql();
+                    columnList.add(aggColumn.getExpression().toSql());
                 }
             } else {
-                columnString = null;
                 for (RolapStar.Column column : columns) {
-                    RolapStar.Table targetTable = column.getTable();
-                    targetTable.addToFrom(
-                        queryBuilder.sqlQuery, false, true);
-                    if (columnString == null) {
-                        columnString = "";
-                    } else {
-                        columnString += ", ";
-                    }
-                    columnString += column.getExpression().toSql();
+                    queryBuilder.addColumn(
+                        queryBuilder.column(
+                            column.getExpression(), column.getTable()),
+                        Clause.FROM);
+                    columnList.add(column.getExpression().toSql());
                 }
             }
         } else {
             assert aggStar == null;
             RolapSchema.PhysExpr nameExp = level.getAttribute().getNameExp();
-            columnString = nameExp.toSql();
+            columnList.add(nameExp.toSql());
         }
 
-        columnBuf.append(columnString);
+        columnBuf.append(Util.commaList(columnList));
         columnBuf.append(")");
 
         // generate the RHS of the IN predicate
@@ -1296,7 +1228,7 @@ public class SqlConstraintUtils {
      */
     private static void generateSingleValueInExpr(
         StringBuilder buf,
-        RolapSchema.SqlQueryBuilder queryBuilder,
+        SqlQueryBuilder queryBuilder,
         RolapMeasureGroup measureGroup,
         AggStar aggStar,
         List<RolapMember> members,
@@ -1320,7 +1252,7 @@ public class SqlConstraintUtils {
                 continue;
             }
             if (m.isNull()) {
-                buf.append("1 = 0");
+                dialect.quoteBooleanLiteral(buf, false);
                 return;
             }
             if (m.isCalculated() && !m.isParentChildLeaf()) {
@@ -1370,14 +1302,17 @@ public class SqlConstraintUtils {
                     table.addToFrom(queryBuilder.sqlQuery, false, true);
                     q = aggColumn.getExpression().toSql();
                 } else {
-                    RolapStar.Table targetTable = column.getTable();
-                    targetTable.addToFrom(
-                        queryBuilder.sqlQuery, false, true);
+                    queryBuilder.addColumn(
+                        queryBuilder.column(
+                            column.getExpression(), column.getTable()),
+                        Clause.FROM);
                     q = column.getExpression().toSql();
                 }
             } else {
                 assert aggStar == null;
-                queryBuilder.addToFrom(key);
+                queryBuilder.addRelation(
+                    queryBuilder.table(key.relation, level.cubeDimension),
+                    SqlQueryBuilder.NullJoiner.INSTANCE);
                 q = key.toSql();
             }
 

@@ -650,6 +650,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         String sql = getDrillThroughSql(cell, true, true);
         getTestContext().assertSqlEquals(
             getDiffRepos(), "sql" + compound, sql, 1);
+        assertEquals(41956, cell.getDrillThroughCount());
 
         // A query with a slightly more complex multi-position compound slicer
         result =
@@ -667,6 +668,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         // independent of the time portion of the slicer.
         getTestContext().assertSqlEquals(
             getDiffRepos(), "sql2" + compound, sql2, 1);
+        assertEquals(10430, cell.getDrillThroughCount());
 
         // A query with an even more complex multi-position compound slicer
         // (gender must be in the slicer predicate along with time)
@@ -684,6 +686,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         // independent of the time portion of the slicer.
         getTestContext().assertSqlEquals(
             getDiffRepos(), "sql3" + compound, sql3, 1);
+        assertEquals(20971, cell.getDrillThroughCount());
 
         // A query with a simple multi-position compound slicer with
         // different levels (overlapping)
@@ -700,6 +703,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         // With overlapping slicer members, the first slicer predicate is
         // redundant, but does not affect the query's results
         getTestContext().assertSqlEquals(getDiffRepos(), "sql4", sql4, 1);
+        assertEquals(21588, cell.getDrillThroughCount());
 
         // A query with a simple multi-position compound slicer with
         // different levels (non-overlapping)
@@ -712,7 +716,8 @@ public class DrillThroughTest extends FoodMartTestCase {
         cell = result.getCell(new int[]{0, 0});
         assertTrue(cell.canDrillThrough());
         String sql5 = getDrillThroughSql(cell, true, true);
-        getTestContext().assertSqlEquals(getDiffRepos(), "sql5", sql5, 27402);
+        getTestContext().assertSqlEquals(getDiffRepos(), "sql5", sql5, 1);
+        assertEquals(27402, cell.getDrillThroughCount());
     }
 
     public void testDrillthroughDisable() {

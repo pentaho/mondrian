@@ -166,8 +166,9 @@ public class RolapSchemaReader
         return getMemberChildren(member, null);
     }
 
-    public List<Member> getMemberChildren(Member _member, Evaluator context) {
+    public List<Member> getMemberChildren(Member _member, Evaluator _context) {
         final RolapMember member = (RolapMember) _member;
+        final RolapEvaluator context = (RolapEvaluator) _context;
         MemberChildrenConstraint constraint =
             sqlConstraintFactory.getMemberChildrenConstraint(context);
         List<RolapMember> memberList =
@@ -307,12 +308,13 @@ public class RolapSchemaReader
 
     public List<Member> getMemberChildren(
         List<Member> _members,
-        Evaluator context)
+        Evaluator _context)
     {
         final List<RolapMember> members = Util.cast(_members);
         if (members.size() == 0) {
             return Collections.emptyList();
         }
+        final RolapEvaluator context = (RolapEvaluator) _context;
         MemberChildrenConstraint constraint =
             sqlConstraintFactory.getMemberChildrenConstraint(context);
         final MemberReader memberReader =
@@ -514,8 +516,9 @@ public class RolapSchemaReader
         return members;
     }
 
-    public List<Member> getLevelMembers(Level _level, Evaluator context) {
+    public List<Member> getLevelMembers(Level _level, Evaluator _context) {
         final RolapCubeLevel level = (RolapCubeLevel) _level;
+        final RolapEvaluator context = (RolapEvaluator) _context;
         TupleConstraint constraint =
             sqlConstraintFactory.getLevelMembersConstraint(
                 context,

@@ -534,7 +534,7 @@ public class CrossJoinArgFactory {
         boolean argSizeNotSupported = false;
 
         // Note: arg size 0 is accepted as valid CJ argument
-        // This is used to push down the "1 = 0" predicate
+        // This is used to push down the "false" predicate
         // into the emerging CJ so that the entire CJ can
         // be natively evaluated.
 

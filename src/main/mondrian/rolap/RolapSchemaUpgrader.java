@@ -222,8 +222,16 @@ public class RolapSchemaUpgrader {
         final Map<String, String> dimensionNameFks =
             new LinkedHashMap<String, String>();
         for (Mondrian3Def.CubeDimension dimension : xmlLegacyCube.dimensions) {
-            dimensionNameFks.put(
-                dimension.name, dimension.foreignKey);
+            String foreignKey = dimension.foreignKey;
+            if (foreignKey != null
+                && isDegenerate(dimension, xmlLegacySchema, xmlFact))
+            {
+                // Ignore the foreignKey if the dimension is degenerate (that
+                // is, its hierarchies have no <Table/> element). Turns out
+                // that the SteelWheels schema has this problem.
+                foreignKey = null;
+            }
+            dimensionNameFks.put(dimension.name, foreignKey);
         }
         convertMeasureLinks(
             xmlLegacyCube,
@@ -945,8 +953,8 @@ public class RolapSchemaUpgrader {
             if (relation == null) {
                 continue; // e.g. [Measures] hierarchy
             }
-            final List<RolapCubeLevel> levels =
-                Util.cast(hierarchy.getLevelList());
+            final List<? extends RolapCubeLevel> levels =
+                hierarchy.getLevelList();
 
             HierarchyUsage[] hierarchyUsages = getUsages(hierarchy);
             if (hierarchyUsages.length == 0) {
@@ -984,7 +992,7 @@ public class RolapSchemaUpgrader {
                 // Note also, if the relation (MondrianDef.Relation) is not
                 // a MondrianDef.Join, i.e., the dimension is not a snowflake,
                 // there is a single dimension table, then this is currently
-                // an unsupported configuation and all bets are off.
+                // an unsupported configuration and all bets are off.
                 if (relation instanceof Mondrian3Def.Join) {
                     // RME
                     // take out after things seem to be working
@@ -1374,9 +1382,9 @@ public class RolapSchemaUpgrader {
      */
     private static Mondrian3Def.RelationOrJoin reorder(
         Mondrian3Def.RelationOrJoin relation,
-        List<RolapCubeLevel> levels)
+        List<? extends RolapCubeLevel> levels)
     {
-        // Need at least two levels, with only one level theres nothing to do.
+        // Need at least two levels; with only one level there's nothing to do.
         if (levels.size() < 2) {
             return relation;
         }

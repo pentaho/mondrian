@@ -48,7 +48,7 @@ public abstract class RolapAggregationManager {
      * null.
      *
      * @param members Set of members which constrain the cell
-     * @return Cell request, or null if the requst is unsatisfiable
+     * @return Cell request, or null if the request is unsatisfiable
      */
     public static CellRequest makeRequest(final Member[] members)
     {
@@ -70,10 +70,10 @@ public abstract class RolapAggregationManager {
      *                          queries easier for humans to understand.
      *
      * @param cube              Cube
-     * @return Cell request, or null if the requst is unsatisfiable
+     * @return Cell request, or null if the request is unsatisfiable
      */
     public static DrillThroughCellRequest makeDrillThroughRequest(
-        final Member[] members,
+        final List<RolapMember> members,
         final boolean extendedContext,
         RolapCube cube,
         List<Exp> fieldsList)
@@ -97,7 +97,7 @@ public abstract class RolapAggregationManager {
     public static CellRequest makeRequest(
         RolapEvaluator evaluator)
     {
-        final Member[] currentMembers = evaluator.getNonAllMembers();
+        final RolapMember[] currentMembers = evaluator.getNonAllMembers();
         final List<List<List<Member>>> aggregationLists =
             evaluator.getAggregationLists();
 
@@ -170,6 +170,19 @@ public abstract class RolapAggregationManager {
         RolapCube cube,
         List<Exp> fieldsList)
     {
+        final List<RolapMember> rolapMembers =
+            new ArrayList<RolapMember>((List) Arrays.asList(members));
+        return makeCellRequest(
+            rolapMembers, drillThrough, extendedContext, cube, fieldsList);
+    }
+
+    private static CellRequest makeCellRequest(
+        final List<RolapMember> memberList,
+        boolean drillThrough,
+        final boolean extendedContext,
+        RolapCube cube,
+        List<Exp> fieldsList)
+    {
         // Need cube for drill-through requests
         assert drillThrough == (cube != null);
 
@@ -179,22 +192,22 @@ public abstract class RolapAggregationManager {
 
         final RolapStoredMeasure measure;
         if (drillThrough) {
-            cube = RolapCell.chooseDrillThroughCube(members, cube);
+            cube = RolapCell.chooseDrillThroughCube(memberList, cube);
             if (cube == null) {
                 return null;
             }
-            if (members.length > 0
-                && members[0] instanceof RolapStoredMeasure)
+            if (memberList.size() > 0
+                && memberList.get(0) instanceof RolapStoredMeasure)
             {
-                measure = (RolapStoredMeasure) members[0];
+                measure = (RolapStoredMeasure) memberList.get(0);
             } else {
                 measure = (RolapStoredMeasure) cube.getMeasures().get(0);
             }
         } else {
-            if (members.length > 0
-                && members[0] instanceof RolapStoredMeasure)
+            if (memberList.size() > 0
+                && memberList.get(0) instanceof RolapStoredMeasure)
             {
-                measure = (RolapStoredMeasure) members[0];
+                measure = (RolapStoredMeasure) memberList.get(0);
             } else {
                 return null;
             }
@@ -236,11 +249,11 @@ public abstract class RolapAggregationManager {
             // Sort the members.  Columns will be added to
             // DrillThroughCellRequest which will preserve the order
             // they are added.
-            Arrays.sort(members, new CubeOrderedMemberLevelComparator(
-                cube.getDimensionList()));
+            Collections.sort(
+                memberList,
+                new CubeOrderedMemberLevelComparator(cube.getDimensionList()));
 
             // Iterate over members.
-            List<RolapMember> memberList = (List) Arrays.asList(members);
             for (RolapMember member : memberList) {
                 if (member.getHierarchy().getRolapHierarchy().closureFor
                     != null)
@@ -297,8 +310,7 @@ public abstract class RolapAggregationManager {
             // For each member in the evaluator, we constrain the request.
             CellRequest request =
                 new CellRequest(starMeasure, extendedContext, drillThrough);
-            for (int i = 1; i < members.length; i++) {
-                RolapMember member = (RolapMember) members[i];
+            for (RolapMember member : Util.subList(memberList, 1)) {
                 final RolapCubeLevel level = member.getLevel();
                 final boolean needToReturnNull =
                     level.getLevelReader().constrainRequest(
@@ -886,14 +898,14 @@ public abstract class RolapAggregationManager {
     private static class CubeOrderedMemberLevelComparator
         implements Comparator<Member>
     {
-        private final List<RolapLevel> orderedLevels =
-            new ArrayList<RolapLevel>();
+        private final List<RolapCubeLevel> orderedLevels =
+            new ArrayList<RolapCubeLevel>();
 
         public CubeOrderedMemberLevelComparator(
             List<? extends RolapCubeDimension> dimList)
         {
             for (RolapCubeDimension dim : dimList) {
-                for (RolapHierarchy hier : dim.getHierarchies()) {
+                for (RolapCubeHierarchy hier : dim.getHierarchyList()) {
                     orderedLevels.addAll(hier.getLevelList());
                 }
             }

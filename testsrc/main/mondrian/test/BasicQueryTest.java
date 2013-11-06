@@ -540,8 +540,6 @@ public class BasicQueryTest extends FoodMartTestCase {
                 + "{[Product].[Products].[Food].[Dairy]}\n"
                 + "{[Product].[Products].[Drink].[Dairy]}\n"
                 + "{[Product].[Products].[Non-Consumable].[Checkout]}\n"
-                + "{[Product].[Products].[Drink].[Baking Goods]}\n"
-                + "{[Product].[Products].[Food].[Packaged Foods]}\n"
                 + "Row #0: 2,756.80\n"
                 + "Row #0: 6,941.46\n"
                 + "Row #0: 151.79%\n"
@@ -610,13 +608,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 + "Row #21: 149.34%\n"
                 + "Row #22: 1,525.04\n"
                 + "Row #22: 3,767.71\n"
-                + "Row #22: 147.06%\n"
-                + "Row #23: \n"
-                + "Row #23: \n"
-                + "Row #23: \n"
-                + "Row #24: \n"
-                + "Row #24: \n"
-                + "Row #24: \n");
+                + "Row #22: 147.06%\n");
         } finally {
             context.close();
         }

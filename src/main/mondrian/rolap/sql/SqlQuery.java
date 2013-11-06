@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, Mar 21, 2002
@@ -97,6 +97,8 @@ public class SqlQuery {
      */
     private final List<String> fromAliases;
 
+    private int joinCount;
+
     /** The SQL dialect this query is to be generated in. */
     private final Dialect dialect;
 
@@ -105,6 +107,8 @@ public class SqlQuery {
 
     private final Map<String, String> columnAliases =
         new HashMap<String, String>();
+
+    private final List<String> columnAliases2 = new ArrayList<String>();
 
     private static final String INDENT = "    ";
 
@@ -180,9 +184,11 @@ public class SqlQuery {
      *
      * @pre alias != null
      */
-    public boolean addFromQuery(
+    private boolean addFromQuery(
         final String query,
         final String alias,
+        String parentAlias,
+        String joinCondition,
         final boolean failIfExists)
     {
         assert alias != null;
@@ -208,8 +214,22 @@ public class SqlQuery {
             buf.append(' ');
         }
         dialect.quoteIdentifier(alias, buf);
-        fromAliases.add(alias);
 
+        if (parentAlias != null) {
+            assert fromAliases.contains(parentAlias);
+            assert joinCondition != null;
+            if (dialect.allowsJoinOn()) {
+                buf.append(" on ").append(joinCondition);
+                ++joinCount;
+            } else {
+                where.add(joinCondition);
+            }
+        } else {
+            assert joinCondition == null;
+            assert from.isEmpty() || !dialect.allowsJoinOn();
+        }
+
+        fromAliases.add(alias);
         from.add(buf.toString());
         return true;
     }
@@ -235,6 +255,8 @@ public class SqlQuery {
         final String alias,
         final String filter,
         final Map<String, String> hintMap,
+        final String parentAlias,
+        final String joinCondition,
         final boolean failIfExists)
     {
         if (fromAliases.contains(alias)) {
@@ -257,13 +279,27 @@ public class SqlQuery {
                 buf.append(' ');
             }
             dialect.quoteIdentifier(alias, buf);
-            fromAliases.add(alias);
         }
 
         if (this.allowHints) {
             dialect.appendHintsAfterFromClause(buf, hintMap);
         }
 
+        if (parentAlias != null) {
+            assert fromAliases.contains(parentAlias);
+            assert joinCondition != null;
+            if (dialect.allowsJoinOn()) {
+                buf.append(" on ").append(joinCondition);
+                ++joinCount;
+            } else {
+                where.add(joinCondition);
+            }
+        } else {
+            assert joinCondition == null;
+            assert from.isEmpty() || !dialect.allowsJoinOn();
+        }
+
+        fromAliases.add(alias);
         from.add(buf.toString());
 
         if (filter != null) {
@@ -278,7 +314,7 @@ public class SqlQuery {
         final String alias,
         final boolean failIfExists)
     {
-        addFromQuery(sqlQuery.toString(), alias, failIfExists);
+        addFromQuery(sqlQuery.toString(), alias, null, null, failIfExists);
     }
 
     /**
@@ -297,6 +333,27 @@ public class SqlQuery {
         final String alias,
         final boolean failIfExists)
     {
+        return addFrom_(relation, alias, null, null, failIfExists);
+    }
+
+    public boolean addFrom(
+        RolapSchema.PhysRelation relation,
+        String alias,
+        String parentAlias,
+        String joinCondition,
+        final boolean failIfExists)
+    {
+        return addFrom_(
+            relation, alias, parentAlias, joinCondition, failIfExists);
+    }
+
+    private boolean addFrom_(
+        RolapSchema.PhysRelation relation,
+        String alias,
+        String parentAlias,
+        String joinCondition,
+        final boolean failIfExists)
+    {
         Util.deprecated("alias param probably not necessary", false);
         Util.deprecated(
             "adopt visitor pattern and replace 'instanceof' below", false);
@@ -307,7 +364,8 @@ public class SqlQuery {
                 ? view.getAlias()
                 : alias;
             final String sqlString = view.getSqlString();
-            return addFromQuery(sqlString, viewAlias, false);
+            return addFromQuery(
+                sqlString, viewAlias, parentAlias, joinCondition, false);
 
         } else if (relation instanceof RolapSchema.PhysTable) {
             final RolapSchema.PhysTable table =
@@ -322,6 +380,8 @@ public class SqlQuery {
                 tableAlias,
                 /*table.getFilter()*/null,
                 table.getHintMap(),
+                parentAlias,
+                joinCondition,
                 failIfExists);
         } else if (relation instanceof RolapSchema.PhysInlineTable) {
             final RolapSchema.PhysInlineTable table =
@@ -331,9 +391,10 @@ public class SqlQuery {
             return addFromQuery(
                 physView.getSqlString(),
                 table.getAlias(),
+                parentAlias,
+                joinCondition,
                 failIfExists);
-
-            /*
+/*
         } else if (relation instanceof MondrianDef.Join) {
             final MondrianDef.Join join = (MondrianDef.Join) relation;
             return addJoin(
@@ -356,16 +417,7 @@ public class SqlQuery {
      * column alias.
      */
     public String addSelect(final String expression, SqlStatement.Type type) {
-        // Some DB2 versions (AS/400) throw an error if a column alias is
-        //  *not* used in a subsequent order by (Group by).
-        // Derby fails on 'SELECT... HAVING' if column has alias.
-        switch (dialect.getDatabaseProduct()) {
-        case DB2_AS400:
-        case DERBY:
-            return addSelect(expression, type, null);
-        default:
-            return addSelect(expression, type, nextColumnAlias());
-        }
+        return addSelect(expression, type, null);
     }
 
     /**
@@ -407,8 +459,20 @@ public class SqlQuery {
         final SqlStatement.Type type,
         String alias)
     {
-        buf.setLength(0);
+        if (alias == null) {
+            alias = nextColumnAlias();
+        }
 
+        // Some DB2 versions (AS/400) throw an error if a column alias is
+        // *not* used in a subsequent order by (Group by).
+        // Derby fails on 'SELECT... HAVING' if column has alias.
+        switch (dialect.getDatabaseProduct()) {
+        case DB2_AS400:
+        case DERBY:
+            alias = null;
+        }
+
+        buf.setLength(0);
         buf.append(expression);
         if (alias != null) {
             buf.append(" as ");
@@ -416,13 +480,18 @@ public class SqlQuery {
         }
 
         select.add(buf.toString());
-        addType(type);
+        types.add(type);
+        columnAliases2.add(alias);
         columnAliases.put(expression, alias);
         return alias;
     }
 
     public String getAlias(String expression) {
         return columnAliases.get(expression);
+    }
+
+    public String getAlias(int i) {
+        return columnAliases2.get(i);
     }
 
     public void addWhere(final String expression) {
@@ -491,11 +560,10 @@ public class SqlQuery {
         }
     }
 
-    public String toString()
-    {
-        buf.setLength(0);
-        toBuffer(buf, "");
-        return buf.toString();
+    public String toString() {
+        // Don't use buf. There are problems with reentrancy, especially while
+        // debugging.
+        return toBuffer(new StringBuilder(), "").toString();
     }
 
     /**
@@ -505,12 +573,18 @@ public class SqlQuery {
      * @param buf String builder
      * @param prefix Prefix for each line
      */
-    public void toBuffer(StringBuilder buf, String prefix) {
+    public StringBuilder toBuffer(StringBuilder buf, String prefix) {
         final String first = distinct ? "select distinct " : "select ";
         select.toBuffer(buf, generateFormattedSql, prefix, first, ", ", "", "");
         groupingFunctionsToBuffer(buf, prefix);
+        String fromSep = joinCount > 0 ? " join " : ", ";
+        if (dialect.allowsJoinOn() && from.size() > 1) {
+            if (joinCount <= 0) {
+                throw new AssertionError();
+            }
+        }
         from.toBuffer(
-            buf, generateFormattedSql, prefix, " from ", ", ", "", "");
+            buf, generateFormattedSql, prefix, " from ", fromSep, "", "");
         where.toBuffer(
             buf, generateFormattedSql, prefix, " where ", " and ", "", "");
         if (groupingSets.isEmpty()) {
@@ -530,6 +604,7 @@ public class SqlQuery {
             buf, generateFormattedSql, prefix, " having ", " and ", "", "");
         orderBy.toBuffer(
             buf, generateFormattedSql, prefix, " order by ", ", ", "", "");
+        return buf;
     }
 
     private void groupingFunctionsToBuffer(StringBuilder buf, String prefix) {
@@ -575,10 +650,6 @@ public class SqlQuery {
         // A grouping function will end up in the select clause implicitly. It
         // needs a corresponding type.
         types.add(null);
-    }
-
-    private void addType(SqlStatement.Type type) {
-        types.add(type);
     }
 
     public String toSql() {

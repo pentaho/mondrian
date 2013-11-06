@@ -544,6 +544,12 @@ public class JdbcDialectImpl implements Dialect {
         return buf.toString();
     }
 
+    private String falseLiteral() {
+        final StringBuilder buf = new StringBuilder();
+        quoteBooleanLiteral(buf, false);
+        return buf.toString();
+    }
+
     private String generateInlineEmpty(
         List<String> columnNames,
         List<String> columnTypes,
@@ -551,11 +557,11 @@ public class JdbcDialectImpl implements Dialect {
         boolean cast)
     {
         if (fromClause == null) {
-            fromClause = "where 1 = 0";
+            fromClause = "where " + falseLiteral();
         } else if (fromClause.contains(" where ")) {
-            fromClause += " and 1 = 0";
+            fromClause += " and " + falseLiteral();
         } else {
-            fromClause += " where 1 = 0";
+            fromClause += " where " + falseLiteral();
         }
         return generateInlineGeneric(
             columnNames,
@@ -1412,7 +1418,8 @@ public class JdbcDialectImpl implements Dialect {
             LOGGER.debug("NOT Using " + databaseProduct.name() + " dialect");
             return false;
         } catch (SQLException e) {
-            LOGGER.debug("NOT Using " + databaseProduct.name() + " dialect.", e);
+            LOGGER.debug(
+                "NOT Using " + databaseProduct.name() + " dialect.", e);
             return false;
         } finally {
             Util.close(resultSet, statement, null);

@@ -123,9 +123,7 @@ class RolapDimension extends DimensionBase {
         final RolapSchema.PhysSchemaGraph graph =
             column.relation.getSchema().getGraph();
         try {
-            final RolapSchema.PhysRelation relation =
-                RolapSchemaLoader.uniqueRelation(this);
-            assert relation != null; // should have checked during schema load
+            final RolapSchema.PhysRelation relation = getKeyTable();
             return graph.findPath(relation, column.relation);
         } catch (RolapSchema.PhysSchemaException e) {
             // TODO: pre-compute path for all attributes, so this error could
@@ -145,6 +143,14 @@ class RolapDimension extends DimensionBase {
      */
     void addHierarchy(RolapHierarchy hierarchy) {
         hierarchyList.add(hierarchy);
+    }
+
+    public RolapAttribute getKeyAttribute() {
+        return keyAttribute;
+    }
+
+    public RolapSchema.PhysRelation getKeyTable() {
+        return key.get().relation;
     }
 }
 

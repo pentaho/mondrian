@@ -14,20 +14,20 @@
     `product`.`product_name` as `Product Name`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
-    `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
-    `product_class` as `product_class`,
-    `product` as `product`
+    `time_by_day` as `time_by_day`,
+    `product` as `product`,
+    `product_class` as `product_class`
 where
-    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
-and
     `time_by_day`.`the_year` = 1997
+and
+    `product_class`.`product_family` = 'Drink'
+and
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
     `sales_fact_1997`.`product_id` = `product`.`product_id`
 and
     `product`.`product_class_id` = `product_class`.`product_class_id`
-and
-    `product_class`.`product_family` = 'Drink'
 group by
     `time_by_day`.`the_year`,
     `time_by_day`.`quarter`,
@@ -52,20 +52,20 @@ group by
     `product`.`product_name` as `Product Name`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
-    `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
-    `product_class` as `product_class`,
-    `product` as `product`
+    `time_by_day` as `time_by_day`,
+    `product` as `product`,
+    `product_class` as `product_class`
 where
-    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
-and
     `time_by_day`.`the_year` = 1997
+and
+    `product_class`.`product_family` = 'Drink'
+and
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
     `sales_fact_1997`.`product_id` = `product`.`product_id`
 and
     `product`.`product_class_id` = `product_class`.`product_class_id`
-and
-    `product_class`.`product_family` = 'Drink'
 group by
     `time_by_day`.`the_year`,
     `time_by_day`.`quarter`,
@@ -84,17 +84,17 @@ group by
     `time_by_day`.`the_year` as `Year`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
-    `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
+    `time_by_day` as `time_by_day`,
     `promotion` as `promotion`
 where
-    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
-and
     `time_by_day`.`the_year` = 1997
 and
-    `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`
-and
     ((`promotion`.`media_type` in ('Bulk Mail', 'Cash Register Handout')))
+and
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`
 group by
     `time_by_day`.`the_year`]]>
         </Resource>
@@ -113,20 +113,20 @@ group by
     `product`.`product_name` as `Product Name`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
-    `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
-    `product_class` as `product_class`,
-    `product` as `product`
+    `time_by_day` as `time_by_day`,
+    `product` as `product`,
+    `product_class` as `product_class`
 where
-    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
-and
     `time_by_day`.`the_year` = 1997
+and
+    `product_class`.`product_family` = 'Drink'
+and
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
     `sales_fact_1997`.`product_id` = `product`.`product_id`
 and
     `product`.`product_class_id` = `product_class`.`product_class_id`
-and
-    `product_class`.`product_family` = 'Drink'
 group by
     `time_by_day`.`the_year`,
     `time_by_day`.`quarter`,
@@ -153,20 +153,20 @@ group by
     `product`.`product_name` as `Product Name`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
-    `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
-    `product_class` as `product_class`,
-    `product` as `product`
+    `time_by_day` as `time_by_day`,
+    `product` as `product`,
+    `product_class` as `product_class`
 where
-    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
-and
     `time_by_day`.`the_year` = 1997
+and
+    `product_class`.`product_family` = 'Drink'
+and
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
     `sales_fact_1997`.`product_id` = `product`.`product_id`
 and
     `product`.`product_class_id` = `product_class`.`product_class_id`
-and
-    `product_class`.`product_family` = 'Drink'
 group by
     `time_by_day`.`the_year`,
     `time_by_day`.`quarter`,
@@ -192,24 +192,24 @@ group by
     `product`.`product_id` as `Product Name`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
-    `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
-    `product_class` as `product_class`,
-    `product` as `product`
+    `time_by_day` as `time_by_day`,
+    `product` as `product`,
+    `product_class` as `product_class`
 where
-    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
-and
     `time_by_day`.`the_year` = 1997
 and
     `time_by_day`.`month_of_year` = 12
 and
-    `sales_fact_1997`.`product_id` = `product`.`product_id`
-and
-    `product`.`product_class_id` = `product_class`.`product_class_id`
-and
     `product_class`.`product_family` = 'Drink'
 and
     `product_class`.`product_department` = 'Dairy'
+and
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    `sales_fact_1997`.`product_id` = `product`.`product_id`
+and
+    `product`.`product_class_id` = `product_class`.`product_class_id`
 group by
     `time_by_day`.`the_year`,
     `time_by_day`.`month_of_year`,
@@ -232,15 +232,15 @@ group by
     `time_by_day`.`month_of_year` as `Month`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
-    `store` as `store`,
     `sales_fact_1997` as `sales_fact_1997`,
+    `store` as `store`,
     `time_by_day` as `time_by_day`
 where
-    `sales_fact_1997`.`store_id` = `store`.`store_id`
-and
     `store`.`store_state` = 'CA'
 and
     `store`.`store_city` = 'Beverly Hills'
+and
+    `sales_fact_1997`.`store_id` = `store`.`store_id`
 and
     `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 group by
@@ -266,20 +266,20 @@ group by
     `product`.`product_name` as `Product Name`,
     sum(`sales_fact_1997`.`store_sales`) as `Promotion Sales`
 from
-    `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
-    `product_class` as `product_class`,
-    `product` as `product`
+    `time_by_day` as `time_by_day`,
+    `product` as `product`,
+    `product_class` as `product_class`
 where
-    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
-and
     `time_by_day`.`the_year` = 1997
+and
+    `product_class`.`product_family` = 'Drink'
+and
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
     `sales_fact_1997`.`product_id` = `product`.`product_id`
 and
     `product`.`product_class_id` = `product_class`.`product_class_id`
-and
-    `product_class`.`product_family` = 'Drink'
 group by
     `time_by_day`.`the_year`,
     `time_by_day`.`quarter`,
@@ -300,22 +300,22 @@ group by
     `store`.`store_id` as `Store Id_0`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
-    `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
+    `time_by_day` as `time_by_day`,
     `store_ragged` as `store_ragged`,
     `store` as `store`
 where
-    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
-and
     `store`.`store_id` = 2
-and
-    `sales_fact_1997`.`store_id` = `store_ragged`.`store_id`
 and
     `time_by_day`.`the_year` = 1997
 and
-    `sales_fact_1997`.`store_id` = `store`.`store_id`
-and
     `store_ragged`.`store_id` = 19
+and
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    `sales_fact_1997`.`store_id` = `store_ragged`.`store_id`
+and
+    `sales_fact_1997`.`store_id` = `store`.`store_id`
 group by
     `time_by_day`.`the_year`,
     `store_ragged`.`store_id`,
@@ -334,25 +334,25 @@ group by
     `time_by_day`.`month_of_year` as `Month_1`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
-    `customer` as `customer`,
     `sales_fact_1997` as `sales_fact_1997`,
+    `customer` as `customer`,
     `time_by_day` as `time_by_day`
 where
-    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`
-and
     `time_by_day`.`the_year` = 1997
 and
     `time_by_day`.`quarter` = 'Q4'
 and
     `time_by_day`.`month_of_year` = 12
 and
-    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
-and
     `customer`.`state_province` = 'OR'
 and
     `customer`.`gender` = 'F'
 and
     `customer`.`city` = 'Albany'
+and
+    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`
+and
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 group by
     `customer`.`state_province`,
     `customer`.`city`,
@@ -372,17 +372,17 @@ group by
     `store_ragged`.`store_id` as `Store Id`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
-    `time_by_day` as `time_by_day`,
     `sales_fact_1997` as `sales_fact_1997`,
+    `time_by_day` as `time_by_day`,
     `store_ragged` as `store_ragged`
 where
-    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
-and
     `time_by_day`.`the_year` = 1997
 and
-    `sales_fact_1997`.`store_id` = `store_ragged`.`store_id`
-and
     `store_ragged`.`store_id` = 24
+and
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    `sales_fact_1997`.`store_id` = `store_ragged`.`store_id`
 group by
     `time_by_day`.`the_year`,
     `time_by_day`.`quarter`,
@@ -398,9 +398,9 @@ from
     `sales_fact_1997` as `sales_fact_1997`,
     `time_by_day` as `time_by_day`
 where
-    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+    ((`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q2' and `time_by_day`.`the_year` = 1997))
 and
-    ((`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q2' and `time_by_day`.`the_year` = 1997))]]>
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`]]>
         </Resource>
         <Resource name="sql">
             <![CDATA[
@@ -425,19 +425,19 @@ order by customer.gender ASC, customer.marital_status ASC]]>
     `customer`.`marital_status` as `Marital Status`,
     sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales`
 from
-    `customer` as `customer`,
     `sales_fact_1997` as `sales_fact_1997`,
+    `customer` as `customer`,
     `time_by_day` as `time_by_day`
 where
-    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`
-and
     `customer`.`marital_status` = 'M'
 and
     `customer`.`gender` = 'F'
 and
-    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
-and
     ((`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q2' and `time_by_day`.`the_year` = 1997))
+and
+    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`
+and
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 group by
     `customer`.`gender`,
     `customer`.`marital_status`]]>
@@ -460,11 +460,11 @@ from
     `time_by_day` as `time_by_day`,
     `customer` as `customer`
 where
+    ((`customer`.`gender` = 'F' and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`customer`.`gender` = 'M' and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q2' and `time_by_day`.`the_year` = 1997))
+and
     `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
 and
-    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`
-and
-    ((`customer`.`gender` = 'F' and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`customer`.`gender` = 'M' and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q2' and `time_by_day`.`the_year` = 1997))]]>
+    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`]]>
         </Resource>
         <Resource name="sql4">
             <![CDATA[select
@@ -473,9 +473,9 @@ from
     `sales_fact_1997` as `sales_fact_1997`,
     `time_by_day` as `time_by_day`
 where
-    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+    ((`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`month_of_year` = 1 and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997))
 and
-    ((`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`month_of_year` = 1 and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997))]]>
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`]]>
         </Resource>
         <Resource name="sql5">
             <![CDATA[select
@@ -484,9 +484,9 @@ from
     `sales_fact_1997` as `sales_fact_1997`,
     `time_by_day` as `time_by_day`
 where
-    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+    ((`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`month_of_year` = 1 and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q2' and `time_by_day`.`the_year` = 1997))
 and
-    ((`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`month_of_year` = 1 and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q2' and `time_by_day`.`the_year` = 1997))]]>
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`]]>
         </Resource>
     </TestCase>
 </Root>

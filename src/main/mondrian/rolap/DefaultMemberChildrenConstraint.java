@@ -10,8 +10,7 @@
 */
 package mondrian.rolap;
 
-import mondrian.rolap.sql.MemberChildrenConstraint;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.sql.*;
 
 import java.util.List;
 
@@ -34,22 +33,22 @@ public class DefaultMemberChildrenConstraint
     }
 
     public void addMemberConstraint(
-        SqlQuery sqlQuery,
+        SqlQueryBuilder queryBuilder,
         RolapStarSet starSet,
         RolapMember parent)
     {
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, starSet, parent, true);
+            queryBuilder, starSet, parent, true);
     }
 
     public void addMemberConstraint(
-        SqlQuery sqlQuery,
+        SqlQueryBuilder queryBuilder,
         RolapStarSet starSet,
         List<RolapMember> parents)
     {
         boolean exclude = false;
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, starSet, parents, true, false, exclude);
+            queryBuilder, starSet, parents, true, false, exclude);
     }
 
     public void addLevelConstraint(

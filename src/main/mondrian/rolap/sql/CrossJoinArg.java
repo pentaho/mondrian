@@ -27,7 +27,7 @@ public interface CrossJoinArg {
     List<RolapMember> getMembers();
 
     void addConstraint(
-        SqlQuery sqlQuery,
+        SqlQueryBuilder queryBuilder,
         RolapStarSet starSet);
 
     boolean isPreferInterpreter(boolean joinArg);

@@ -69,7 +69,7 @@ public class MondrianServerRegistry {
     }
 
     public MondrianServer.MondrianVersion getVersion() {
-        if (logger.isDebugEnabled()){
+        if (logger.isDebugEnabled()) {
             logger.debug(" Vendor: " + MondrianServerVersion.VENDOR);
             final String title = MondrianServerVersion.NAME;
             logger.debug("  Title: " + title);

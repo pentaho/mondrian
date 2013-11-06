@@ -671,8 +671,7 @@ public class BatchTestCase extends FoodMartTestCase {
                     new ValueColumnPredicate(
                         new PredicateColumn(
                             RolapSchema.BadRouter.INSTANCE,
-                            (RolapSchema.PhysColumn)
-                                storeTypeColumn.getExpression()),
+                            storeTypeColumn.getExpression()),
                         value));
             }
         }
@@ -1202,8 +1201,7 @@ public class BatchTestCase extends FoodMartTestCase {
                         new ValueColumnPredicate(
                             new PredicateColumn(
                                 RolapSchema.BadRouter.INSTANCE,
-                                (RolapSchema.PhysColumn)
-                                    starColumn[i].getExpression()),
+                                starColumn[i].getExpression()),
                             values.get(i)));
                 }
                 final StarPredicate predicate = Predicates.and(andPredList);

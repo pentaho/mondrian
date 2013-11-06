@@ -53,7 +53,7 @@ import java.util.*;
  * {@code mondrian.rolap.RolapCubeHierarchy.CacheRolapCubeHierarchyMemberReader}
  * obsolete</li>
  *
- * <li>DONE remove {@link MondrianProperties#EnableRolapCubeMemberCache}</li>
+ * <li>TODO remove {@link MondrianProperties#EnableRolapCubeMemberCache}</li>
  *
  * <li>DONE move {@link RolapHierarchy}.memberReader down to
  * {@link RolapCubeHierarchy#memberReader}</li>

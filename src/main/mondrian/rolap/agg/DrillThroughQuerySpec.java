@@ -5,14 +5,14 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
 import mondrian.rolap.*;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.sql.*;
 import mondrian.util.Pair;
 
 import java.util.*;
@@ -28,7 +28,6 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
     private final DrillThroughCellRequest request;
     private final List<StarPredicate> listOfStarPredicates;
     private final List<String> columnNames;
-    private final int maxColumnNameLength;
 
     public DrillThroughQuerySpec(
         DrillThroughCellRequest request,
@@ -43,27 +42,28 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
         } else {
             this.listOfStarPredicates = Collections.emptyList();
         }
-        int tmpMaxColumnNameLength =
+        int maxColumnNameLength =
             getStar().getSqlQueryDialect().getMaxColumnNameLength();
-        if (tmpMaxColumnNameLength == 0) {
+        if (maxColumnNameLength == 0) {
             // From java.sql.DatabaseMetaData: "a result of zero means that
             // there is no limit or the limit is not known"
             maxColumnNameLength = Integer.MAX_VALUE;
-        } else {
-            maxColumnNameLength = tmpMaxColumnNameLength;
         }
-        this.columnNames = computeDistinctColumnNames();
+        this.columnNames =
+            computeDistinctColumnNames(request, maxColumnNameLength);
     }
 
-    private List<String> computeDistinctColumnNames() {
+    private static List<String> computeDistinctColumnNames(
+        DrillThroughCellRequest request, int maxColumnNameLength)
+    {
         final List<String> columnNames = new ArrayList<String>();
         final Set<String> columnNameSet = new HashSet<String>();
 
-        final RolapStar.Column[] columns = getColumns();
-        for (RolapStar.Column column : columns) {
+        for (RolapStar.Column column : request.getConstrainedColumns()) {
             addColumnName(
                 request.getColumnAlias(column),
                 column,
+                maxColumnNameLength,
                 columnNames,
                 columnNameSet);
         }
@@ -71,15 +71,17 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
         addColumnName(
             request.getMeasure().getName(),
             request.getMeasure(),
+            maxColumnNameLength,
             columnNames,
             columnNameSet);
 
         return columnNames;
     }
 
-    private void addColumnName(
+    private static void addColumnName(
         String columnName,
         final RolapStar.Column column,
+        int maxColumnNameLength,
         final List<String> columnNames,
         final Set<String> columnNameSet)
     {
@@ -131,30 +133,43 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
         return request.includeInSelect(measure);
     }
 
-    public int getMeasureCount() {
-        return request.getDrillThroughMeasures().size() > 0
-            ? request.getDrillThroughMeasures().size()
-            : 1;
+    public List<Pair<RolapStar.Measure, String>> getMeasures() {
+        final List<RolapStar.Measure> drillThroughMeasures =
+            request.getDrillThroughMeasures();
+        if (drillThroughMeasures.size() > 0) {
+            return new AbstractList<Pair<RolapStar.Measure, String>>() {
+                public int size() {
+                    return drillThroughMeasures.size();
+                }
+
+                public Pair<RolapStar.Measure, String> get(int index) {
+                    final RolapStar.Measure measure =
+                        drillThroughMeasures.get(index);
+                    return Pair.of(measure, measure.getName());
+                }
+            };
+        } else {
+            return Collections.singletonList(
+                Pair.of(
+                    request.getMeasure(),
+                    Util.last(columnNames)));
+        }
     }
 
-    public RolapStar.Measure getMeasure(final int i) {
-        return request.getDrillThroughMeasures().size() > 0
-            ? request.getDrillThroughMeasures().get(i)
-            : request.getMeasure();
-    }
+    public List<Pair<RolapStar.Column, String>> getColumns() {
+        final RolapStar.Column[] constrainedColumns =
+            request.getConstrainedColumns();
+        return new AbstractList<Pair<RolapStar.Column, String>>() {
+            public int size() {
+                return constrainedColumns.length;
+            }
 
-    public String getMeasureAlias(final int i) {
-        return request.getDrillThroughMeasures().size() > 0
-            ? request.getDrillThroughMeasures().get(i).getName()
-            : columnNames.get(columnNames.size() - 1);
-    }
-
-    public RolapStar.Column[] getColumns() {
-        return request.getConstrainedColumns();
-    }
-
-    public String getColumnAlias(final int i) {
-        return columnNames.get(i);
+            public Pair<RolapStar.Column, String> get(int index) {
+                return Pair.of(
+                    constrainedColumns[index],
+                    columnNames.get(index));
+            }
+        };
     }
 
     public StarColumnPredicate getColumnPredicate(final int i) {
@@ -163,32 +178,44 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
             ? Predicates.wildcard(
                 new PredicateColumn(
                     RolapSchema.BadRouter.INSTANCE,
-                    (RolapSchema.PhysColumn)
-                        request.getConstrainedColumns()[i].getExpression()),
+                    request.getConstrainedColumns()[i].getExpression()),
                 true)
             : constraint;
     }
 
-    public Pair<String, List<SqlStatement.Type>> generateSqlQuery() {
-        SqlQuery sqlQuery = newSqlQuery();
-        nonDistinctGenerateSql(sqlQuery);
-        return sqlQuery.toSqlAndTypes();
+    public Pair<String, List<SqlStatement.Type>> generateSqlQuery(String desc) {
+        SqlQueryBuilder queryBuilder = createQueryBuilder(desc);
+        nonDistinctGenerateSql(queryBuilder);
+        return queryBuilder.toSqlAndTypes();
     }
 
-    protected void addMeasure(final int i, final SqlQuery sqlQuery) {
-        RolapStar.Measure measure = getMeasure(i);
-
+    protected void addMeasure(
+        RolapStar.Measure measure,
+        String alias,
+        final SqlQueryBuilder queryBuilder)
+    {
         if (!isPartOfSelect(measure)) {
             return;
         }
 
-        Util.assertTrue(measure.getTable() == getStar().getFactTable());
-        measure.getTable().addToFrom(sqlQuery, false, true);
+        assert measure.getTable() == getStar().getFactTable();
+        String exprInner;
+        if (measure.getExpression() == null) {
+            exprInner = "*";
+        } else {
+            exprInner = measure.getExpression().toSql();
+            queryBuilder.addColumn(
+                queryBuilder.column(
+                    measure.getExpression(), measure.getTable()),
+                Clause.FROM);
+        }
 
         if (!countOnly) {
-            String expr = measure.getExpression().toSql();
-            expr = measure.getAggregator().getExpression(expr);
-            sqlQuery.addSelect(expr, null, getMeasureAlias(i));
+            String exprOuter = measure.getAggregator().getExpression(exprInner);
+            queryBuilder.sqlQuery.addSelect(
+                exprOuter,
+                measure.getInternalType(),
+                alias);
         }
     }
 

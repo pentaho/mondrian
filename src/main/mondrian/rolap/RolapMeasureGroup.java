@@ -45,18 +45,16 @@ public class RolapMeasureGroup {
     final List<RolapMeasureRef> measureRefList;
     private final Map<RolapDimension, RolapSchema.PhysPath> dimensionMap =
         new HashMap<RolapDimension, RolapSchema.PhysPath>();
-    final Map<RolapMeasure, RolapMeasure> measureReferences =
-        new HashMap<RolapMeasure, RolapMeasure>();
 
     /**
      * As dimensionMap, but keys are dimensions, not cube-dimensions.
      *
-     * see Util#deprecated(Object, boolean) todo cleanup
-      */
+     * @see Util#deprecated(Object, boolean) todo cleanup
+     */
     public final Map<RolapDimension, RolapSchema.PhysPath> dimensionMap2 =
         new HashMap<RolapDimension, RolapSchema.PhysPath>();
 
-    private final Map<RolapCubeDimension, RolapSchema.PhysPath> dimensionMap3 =
+    public final Map<RolapCubeDimension, RolapSchema.PhysPath> dimensionMap3 =
         new HashMap<RolapCubeDimension, RolapSchema.PhysPath>();
 
     /**
@@ -166,18 +164,6 @@ public class RolapMeasureGroup {
      * @return Whether there is a link
      */
     // REVIEW: maybe create a Link class, and return a link or null
-    boolean existsLink(RolapDimension dimension) {
-        if (dimension instanceof RolapCubeDimension) {
-            Util.deprecated(
-                "can we make sure it is never a RolapCubeDimension?", false);
-            RolapCubeDimension rolapCubeDimension =
-                (RolapCubeDimension) dimension;
-            dimension = rolapCubeDimension.rolapDimension;
-            return dimensionMap2.containsKey(dimension);
-        }
-        return dimensionMap.containsKey(dimension);
-    }
-
     boolean existsLink(RolapCubeDimension dimension) {
         return dimensionMap3.containsKey(dimension);
     }

@@ -1218,7 +1218,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
      * occur after a key segment {@code &amp;&amp;CA}.
      *
      * <p>Needs to work regardless of the value of
-     * {@link MondrianProperties#SsasCompatibleNaming}. Mondrian-3 had this
+     * {@code MondrianProperties#SsasCompatibleNaming}. Mondrian-3 had this
      * functionality.</p>
      */
     public void testNameAfterKey() {

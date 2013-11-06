@@ -49,6 +49,11 @@ public class OracleDialect extends JdbcDialectImpl {
         return false;
     }
 
+    @Override
+    public void quoteBooleanLiteral(StringBuilder buf, boolean value) {
+        buf.append(value ? "1 = 1" : "1 = 0");
+    }
+
     public String generateInline(
         List<String> columnNames,
         List<String> columnTypes,
@@ -177,7 +182,8 @@ public class OracleDialect extends JdbcDialectImpl {
                 // measure (whose column names are like "m0", "m1") to integers,
                 // data loss will occur.
                 type = SqlStatement.Type.OBJECT;
-            } else if (scale == -127 && precision ==0) {
+            } else if (scale == -127) {
+                assert precision == 0;
                 type = SqlStatement.Type.INT;
             } else if (scale == 0 && (precision == 38 || precision == 0)) {
                 // NUMBER(38, 0) is conventionally used in

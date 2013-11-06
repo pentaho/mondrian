@@ -90,20 +90,20 @@ public class RolapNativeFilter extends RolapNativeSet {
         }
 
         public void addConstraint(
-            SqlQuery sqlQuery,
+            SqlQueryBuilder queryBuilder,
             RolapStarSet starSet)
         {
             // Use aggregate table to generate filter condition
             RolapNativeSql sql =
                 new RolapNativeSql(
-                    sqlQuery, starSet.getAggStar(), getEvaluator(),
+                    queryBuilder.sqlQuery, starSet.getAggStar(), getEvaluator(),
                     args[0].getLevel());
             String filterSql =  sql.generateFilterCondition(filterExpr);
-            sqlQuery.addHaving(filterSql);
+            queryBuilder.sqlQuery.addHaving(filterSql);
             if (getEvaluator().isNonEmpty() || isJoinRequired()) {
                 // only apply context constraint if non empty, or
                 // if a join is required to fulfill the filter condition
-                super.addConstraint(sqlQuery, starSet);
+                super.addConstraint(queryBuilder, starSet);
             }
         }
 
@@ -227,6 +227,7 @@ public class RolapNativeFilter extends RolapNativeSet {
         final int savepoint = evaluator.savepoint();
         try {
             overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
+
             // Now construct the TupleConstraint that contains both the CJ
             // dimensions and the additional filter on them.
             CrossJoinArg[] combinedArgs = cjArgs;

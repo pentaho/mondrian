@@ -4628,7 +4628,8 @@ public class FunctionTest extends FoodMartTestCase {
     public void testDescendantsMLSelfBefore() {
         assertAxisReturns(
             "Descendants([Time].[1997], [Time].[Quarter], SELF_AND_BEFORE)",
-            year1997 + "\n"
+            year1997
+            + "\n"
             + quarters);
     }
 
@@ -4646,7 +4647,8 @@ public class FunctionTest extends FoodMartTestCase {
     public void testDescendantsMLBeforeAfter() {
         assertAxisReturns(
             "Descendants([Time].[1997], [Time].[Quarter], BEFORE_AND_AFTER)",
-            year1997 + "\n"
+            year1997
+            + "\n"
             + months);
     }
 
@@ -4712,7 +4714,8 @@ public class FunctionTest extends FoodMartTestCase {
     public void testDescendantsMNY() {
         assertAxisReturns(
             "Descendants([Time].[1997], 1, BEFORE_AND_AFTER)",
-            year1997 + "\n"
+            year1997
+            + "\n"
             + months);
     }
 
@@ -8403,24 +8406,33 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderConstant1() {
-        // orderByColumn='full_name'
-        assertQueryReturns(
-            "select \n"
-            + "  Order("
-            + "    {[Customers].[USA].[WA].[Issaquah].[Abe Tramel],"
-            + "     [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young],"
-            + "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]},"
-            + "    [Customers].[USA].OrderKey, BDESC, [Customers].currentMember.OrderKey, BASC) \n"
-            + "on 0 from [Sales]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Customer].[Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n"
-            + "Row #0: 33\n"
-            + "Row #0: 75\n"
-            + "Row #0: 33\n");
+        // sort by customerId (Abel = 7851, Adeline = 6442, Abe = 570)
+        getTestContext()
+            .withSubstitution(
+                new Util.Function1<String, String>() {
+                    public String apply(String param) {
+                        return param.replace(
+                            "<Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='full_name' hasHierarchy='false'/>",
+                            "<Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='customer_id' hasHierarchy='false'/>");
+                    }
+                }
+            ).assertQueryReturns(
+                "select \n"
+                + "  Order("
+                + "    {[Customers].[USA].[WA].[Issaquah].[Abe Tramel],"
+                + "     [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young],"
+                + "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]},"
+                + "    [Customers].[USA].OrderKey, BDESC, [Customers].currentMember.OrderKey, BASC) \n"
+                + "on 0 from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Customer].[Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n"
+                + "{[Customer].[Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n"
+                + "{[Customer].[Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n"
+                + "Row #0: 33\n"
+                + "Row #0: 33\n"
+                + "Row #0: 75\n");
     }
 
     public void testOrderDifferentDim() {

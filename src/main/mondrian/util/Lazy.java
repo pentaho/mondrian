@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2012 Pentaho
+// Copyright (C) 2012-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -12,16 +12,15 @@ package mondrian.util;
 import mondrian.olap.Util;
 
 /**
-* Lazily initialized value.
+ * Lazily initialized value.
  *
  * @author jhyde
  */
 public class Lazy<T> {
-    private final Util.Function0<T> factory;
+    private Util.Function0<T> factory;
     private int state = STATE_INIT;
     private T value;
-    private RuntimeException runtimeException;
-    private Error error;
+    private Throwable throwable;
 
     private static final int STATE_INIT = 0;
     private static final int STATE_SUCCESS = 1;
@@ -52,21 +51,23 @@ public class Lazy<T> {
             try {
                 value = factory.apply();
             } catch (RuntimeException e) {
-                runtimeException = e;
                 state = STATE_RUNTIME_EXCEPTION;
+                throwable = e;
                 throw e;
             } catch (Error e) {
                 state = STATE_ERROR;
-                error = e;
+                throwable = e;
                 throw e;
+            } finally {
+                factory = null; // allow gc, now factory is no longer needed
             }
             return value;
         case STATE_SUCCESS:
             return value;
         case STATE_RUNTIME_EXCEPTION:
-            throw runtimeException;
+            throw (RuntimeException) throwable;
         case STATE_ERROR:
-            throw error;
+            throw (Error) throwable;
         default:
             throw new AssertionError("invalid state " + state);
         }

@@ -48,12 +48,12 @@ public class DescendantsCrossJoinArg implements CrossJoinArg {
     }
 
     public void addConstraint(
-        SqlQuery sqlQuery,
+        SqlQueryBuilder queryBuilder,
         RolapStarSet starSet)
     {
         if (member != null) {
             SqlConstraintUtils.addMemberConstraint(
-                sqlQuery, starSet, member, true);
+                queryBuilder, starSet, member, true);
         }
     }
 

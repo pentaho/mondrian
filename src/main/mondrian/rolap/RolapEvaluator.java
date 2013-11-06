@@ -92,9 +92,9 @@ public class RolapEvaluator implements Evaluator {
      */
     protected final List<List<List<Member>>> aggregationLists;
 
-    private final List<Member> slicerMembers;
+    private final List<RolapMember> slicerMembers;
     private boolean nativeEnabled;
-    private Member[] nonAllMembers;
+    private RolapMember[] nonAllMembers;
     private int commandCount;
     private Object[] commands;
 
@@ -147,7 +147,7 @@ public class RolapEvaluator implements Evaluator {
         currentMembers = parent.currentMembers.clone();
         calculations = parent.calculations.clone();
         calculationCount = parent.calculationCount;
-        slicerMembers = new ArrayList<Member>(parent.slicerMembers);
+        slicerMembers = new ArrayList<RolapMember>(parent.slicerMembers);
 
         commands = new Object[10];
         commands[0] = Command.SAVEPOINT; // sentinel
@@ -194,7 +194,7 @@ public class RolapEvaluator implements Evaluator {
         currentMembers = root.defaultMembers.clone();
         calculations = new RolapCalculation[currentMembers.length];
         calculationCount = 0;
-        slicerMembers = new ArrayList<Member>();
+        slicerMembers = new ArrayList<RolapMember>();
         aggregationLists = null;
 
         commands = new Object[10];
@@ -326,11 +326,11 @@ public class RolapEvaluator implements Evaluator {
         return LOGGER;
     }
 
-    public final Member[] getMembers() {
+    public final RolapMember[] getMembers() {
         return currentMembers;
     }
 
-    public final Member[] getNonAllMembers() {
+    public final RolapMember[] getNonAllMembers() {
         if (nonAllMembers == null) {
             nonAllMembers = new RolapMember[root.nonAllPositionCount];
             for (int i = 0; i < root.nonAllPositionCount; i++) {
@@ -483,14 +483,14 @@ public class RolapEvaluator implements Evaluator {
      */
     public final void setSlicerContext(Member member) {
         setContext(member);
-        slicerMembers.add(member);
+        slicerMembers.add((RolapMember) member);
     }
 
     /**
      * Return the list of slicer members in the current evaluator context.
      * @return slicerMembers
      */
-    public final List<Member> getSlicerMembers() {
+    public final List<RolapMember> getSlicerMembers() {
         return slicerMembers;
     }
 
@@ -858,7 +858,7 @@ public class RolapEvaluator implements Evaluator {
         Object o = defaultValue;
         int maxSolve = Integer.MIN_VALUE;
         int i = -1;
-        for (Member member : getNonAllMembers()) {
+        for (RolapMember member : getNonAllMembers()) {
             i++;
             // more than one usage
             if (member == null) {

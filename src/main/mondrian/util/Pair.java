@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -129,6 +129,57 @@ public class Pair <L, R>
         } else {
             return c1.compareTo(c2);
         }
+    }
+
+    /**
+     * Converts two lists into a list of {@link Pair}s.
+     *
+     * <p>The length of the combined list is the lesser of the lengths of the
+     * source lists. But typically the source lists will be the same length.</p>
+     *
+     * @param ks Left list
+     * @param vs Right list
+     * @return List of pairs
+     */
+    public static <K, V> List<Pair<K, V>> zip(
+        final List<K> ks,
+        final List<V> vs)
+    {
+        return new AbstractList<Pair<K, V>>() {
+            public Pair<K, V> get(int index) {
+                return Pair.of(ks.get(index), vs.get(index));
+            }
+
+            public int size() {
+                return Math.min(ks.size(), vs.size());
+            }
+        };
+    }
+
+    /**
+     * Converts two arrays into a list of {@link Pair}s.
+     *
+     * <p>The length of the combined list is the lesser of the lengths of the
+     * source arrays. But typically the source arrays will be the same
+     * length.</p>
+     *
+     * @param ks Left array
+     * @param vs Right array
+     * @return List of pairs
+     */
+    public static <K, V> List<Pair<K, V>> zip(
+        final K[] ks,
+        final V[] vs)
+    {
+        return new AbstractList<Pair<K, V>>() {
+            public Pair<K, V> get(int index) {
+                return Pair.of(ks[index], vs[index]);
+            }
+
+            public int size() {
+                return Math.min(ks.length, vs.length);
+            }
+        };
     }
 
     /**
