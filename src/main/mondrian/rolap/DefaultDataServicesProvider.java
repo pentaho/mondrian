@@ -11,6 +11,7 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
+import mondrian.rolap.sql.TupleConstraint;
 import mondrian.spi.*;
 import mondrian.spi.impl.JndiDataSourceResolver;
 import mondrian.util.ClassResolver;
@@ -36,6 +37,10 @@ public class DefaultDataServicesProvider implements DataServicesProvider {
 
     public SegmentLoader getSegmentLoader(SegmentCacheManager cacheMgr) {
         return new SegmentLoader(cacheMgr);
+    }
+
+    public SqlTupleReader getTupleReader(TupleConstraint constraint) {
+        return new SqlTupleReader(constraint);
     }
 
     /**

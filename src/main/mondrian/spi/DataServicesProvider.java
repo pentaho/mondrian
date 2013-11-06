@@ -12,6 +12,7 @@ package mondrian.spi;
 import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.*;
+import mondrian.rolap.sql.TupleConstraint;
 
 import javax.sql.DataSource;
 
@@ -27,5 +28,7 @@ public interface DataServicesProvider {
         DataSource dataSource,
         Util.PropertyList connectInfo,
         StringBuilder builder);
+
+    SqlTupleReader getTupleReader(TupleConstraint constraint);
 }
 // End DataServicesProvider.java
