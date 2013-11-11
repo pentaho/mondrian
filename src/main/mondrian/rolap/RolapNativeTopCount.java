@@ -9,14 +9,12 @@
 // Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.mdx.MemberExpr;
 import mondrian.olap.*;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
-import mondrian.spi.Dialect;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,17 +69,19 @@ public class RolapNativeTopCount extends RolapNativeSet {
                 RolapNativeSql sql =
                     new RolapNativeSql(
                         sqlQuery, aggStar, getEvaluator(), null);
-                String orderBySql = sql.generateTopCountOrderBy(orderByExpr);
-                Dialect dialect = sqlQuery.getDialect();
-                boolean nullable = deduceNullability(orderByExpr);
-                if (dialect.requiresOrderByAlias()) {
-                    String alias = sqlQuery.nextColumnAlias();
-                    alias = dialect.quoteIdentifier(alias);
-                    sqlQuery.addSelect(orderBySql, null, alias);
-                    sqlQuery.addOrderBy(alias, ascending, true, nullable);
-                } else {
-                    sqlQuery.addOrderBy(orderBySql, ascending, true, nullable);
-                }
+                final String orderBySql =
+                    sql.generateTopCountOrderBy(orderByExpr);
+                boolean nullable =
+                    deduceNullability(orderByExpr);
+                final String orderByAlias =
+                    sqlQuery.addSelect(orderBySql, null);
+                sqlQuery.addOrderBy(
+                    orderBySql,
+                    orderByAlias,
+                    ascending,
+                    true,
+                    nullable,
+                    true);
             }
             super.addConstraint(sqlQuery, baseCube, aggStar);
         }

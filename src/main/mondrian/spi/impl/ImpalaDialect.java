@@ -1,16 +1,15 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2012-2013 Pentaho and others
+// All Rights Reserved.
 */
-
 package mondrian.spi.impl;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -135,6 +134,28 @@ public class ImpalaDialect extends HiveDialect {
 
     public boolean allowsJoinOn() {
         return false;
+    }
+
+    @Override
+    public void quoteStringLiteral(
+        StringBuilder buf,
+        String value)
+    {
+        String quote = "\'";
+        String s0 = value;
+
+        if (s0.contains("\\")) {
+            s0.replaceAll("\\\\", "\\\\");
+        }
+        if (s0.contains(quote)) {
+            s0 = s0.replaceAll(quote, "\\\\" + quote);
+        }
+
+        buf.append(quote);
+
+        buf.append(s0);
+
+        buf.append(quote);
     }
 
     public boolean allowsRegularExpressionInWhereClause() {
