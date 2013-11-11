@@ -653,7 +653,7 @@ public class RolapUtil {
             if (count == Integer.MAX_VALUE) {
                 return;
             }
-            if (count == 0) {
+            while (count == 0) {
                 try {
                     wait();
                 } catch (InterruptedException e) {
