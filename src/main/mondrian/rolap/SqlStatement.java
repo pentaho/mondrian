@@ -1,30 +1,29 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.rolap;
 
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.olap.Util.Functor1;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.monitor.*;
 import mondrian.server.monitor.SqlStatementEvent.Purpose;
-import mondrian.spi.Dialect;
 import mondrian.util.*;
-
-import org.apache.log4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
+
 import java.sql.*;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.sql.DataSource;
 
@@ -58,14 +57,13 @@ import javax.sql.DataSource;
  * @since 2.3
  */
 public class SqlStatement {
-    private static final Logger LOG = Logger.getLogger(SqlStatement.class);
     private static final String TIMING_NAME = "SqlStatement-";
 
     // used for SQL logging, allows for a SQL Statement UID
     private static final AtomicLong ID_GENERATOR = new AtomicLong();
 
-    private static final RolapUtil.Semaphore querySemaphore =
-        RolapUtil.getQuerySemaphore();
+    private static final Semaphore querySemaphore = new Semaphore(
+        MondrianProperties.instance().QueryLimit.get(), true);
 
     private final DataSource dataSource;
     private Connection jdbcConnection;
@@ -138,7 +136,7 @@ public class SqlStatement {
             locus.execution.checkCancelOrTimeout();
 
             this.jdbcConnection = dataSource.getConnection();
-            querySemaphore.enter();
+            querySemaphore.acquire();
             haveSemaphore = true;
             // Trace start of execution.
             if (RolapUtil.SQL_LOGGER.isDebugEnabled()) {
@@ -282,7 +280,7 @@ public class SqlStatement {
 
         if (haveSemaphore) {
             haveSemaphore = false;
-            querySemaphore.leave();
+            querySemaphore.release();
         }
 
         // According to the JDBC spec, closing a statement automatically closes
