@@ -10,8 +10,11 @@
 package mondrian.spi;
 
 import mondrian.olap.Util;
-import mondrian.rolap.*;
-import mondrian.rolap.agg.*;
+import mondrian.rolap.MemberReader;
+import mondrian.rolap.RolapCubeHierarchy;
+import mondrian.rolap.TupleReader;
+import mondrian.rolap.agg.SegmentCacheManager;
+import mondrian.rolap.agg.SegmentLoader;
 import mondrian.rolap.sql.TupleConstraint;
 
 import javax.sql.DataSource;
@@ -29,6 +32,6 @@ public interface DataServicesProvider {
         Util.PropertyList connectInfo,
         StringBuilder builder);
 
-    SqlTupleReader getTupleReader(TupleConstraint constraint);
+    TupleReader getTupleReader(TupleConstraint constraint);
 }
 // End DataServicesProvider.java

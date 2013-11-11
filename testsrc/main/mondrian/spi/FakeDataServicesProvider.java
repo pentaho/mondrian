@@ -37,7 +37,7 @@ public class FakeDataServicesProvider implements DataServicesProvider {
         return null;
     }
 
-    public SqlTupleReader getTupleReader(TupleConstraint constraint) {
+    public TupleReader getTupleReader(TupleConstraint constraint) {
         return null;
     }
 }

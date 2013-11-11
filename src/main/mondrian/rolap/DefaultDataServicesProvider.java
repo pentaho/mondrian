@@ -39,7 +39,7 @@ public class DefaultDataServicesProvider implements DataServicesProvider {
         return new SegmentLoader(cacheMgr);
     }
 
-    public SqlTupleReader getTupleReader(TupleConstraint constraint) {
+    public TupleReader getTupleReader(TupleConstraint constraint) {
         return new SqlTupleReader(constraint);
     }
 
