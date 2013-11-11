@@ -48,7 +48,6 @@ public class RolapUtil {
         Logger.getLogger("mondrian.profile");
 
     static final Logger LOGGER = Logger.getLogger(RolapUtil.class);
-    private static Semaphore querySemaphore;
 
     /**
      * Special cell value indicates that the value is not in cache yet.
@@ -611,18 +610,6 @@ public class RolapUtil {
     }
 
     /**
-     * Gets the semaphore which controls how many people can run queries
-     * simultaneously.
-     */
-    static synchronized Semaphore getQuerySemaphore() {
-        if (querySemaphore == null) {
-            int queryCount = MondrianProperties.instance().QueryLimit.get();
-            querySemaphore = new Semaphore(queryCount);
-        }
-        return querySemaphore;
-    }
-
-    /**
      * Creates a dummy evaluator.
      */
     public static Evaluator createEvaluator(
@@ -631,45 +618,6 @@ public class RolapUtil {
         Execution dummyExecution = new Execution(statement, 0);
         final RolapResult result = new RolapResult(dummyExecution, false);
         return result.getRootEvaluator();
-    }
-
-    /**
-     * A <code>Semaphore</code> is a primitive for process synchronization.
-     *
-     * <p>Given a semaphore initialized with <code>count</code>, no more than
-     * <code>count</code> threads can acquire the semaphore using the
-     * {@link #enter} method. Waiting threads block until enough threads have
-     * called {@link #leave}.
-     */
-    static class Semaphore {
-        private int count;
-        Semaphore(int count) {
-            if (count < 0) {
-                count = Integer.MAX_VALUE;
-            }
-            this.count = count;
-        }
-        synchronized void enter() {
-            if (count == Integer.MAX_VALUE) {
-                return;
-            }
-            while (count == 0) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    throw Util.newInternal(e, "while waiting for semaphore");
-                }
-            }
-            Util.assertTrue(count > 0);
-            count--;
-        }
-        synchronized void leave() {
-            if (count == Integer.MAX_VALUE) {
-                return;
-            }
-            count++;
-            notify();
-        }
     }
 
     static interface ExecuteQueryHook {
