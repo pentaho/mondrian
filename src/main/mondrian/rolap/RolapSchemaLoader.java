@@ -2757,14 +2757,8 @@ public class RolapSchemaLoader {
         } else {
             // degenerate dim, should only be a single attribute
             if (attributeList.size() > 1) {
-                getHandler().error(
-                    "Dimension " + xmlDimension.name
-                    + " omits a defined key, which is only "
-                    + "valid for degenerate dimensions with a single "
-                    + "attribute.",
-                    xmlDimension,
-                    "key");
-                return null;
+                throw MondrianResource.instance()
+                    .DimensionKeyOmitted.ex(xmlDimension.name);
             }
             dimension.keyAttribute = attributeList.get(0);
         }

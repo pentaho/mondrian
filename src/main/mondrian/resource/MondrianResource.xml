@@ -476,6 +476,12 @@
     <text>The level {0} makes use of the ''parentColumn'' attribute, but a parent member for key {1} is missing. This can be due to the usage of the NativizeSet MDX function with a list of members form a parent-child hierarchy that doesn''t include all parent members in its definition. Using NativizeSet with a parent-child hierarchy requires the parent members to be included in the set, or the hierarchy cannot be properly built natively.</text>
 </message>
 
+<exception id="40390" name="DimensionKeyOmitted">
+  <text>
+    Dimension ''{0}'' omits a defined key, which is only valid for degenerate dimensions with a single attribute.
+  </text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Loader -->
 
