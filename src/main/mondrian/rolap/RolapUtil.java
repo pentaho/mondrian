@@ -10,7 +10,6 @@
 //
 // jhyde, 22 December, 2001
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.ExpCompiler;
@@ -654,7 +653,7 @@ public class RolapUtil {
             if (count == Integer.MAX_VALUE) {
                 return;
             }
-            if (count == 0) {
+            while (count == 0) {
                 try {
                     wait();
                 } catch (InterruptedException e) {
