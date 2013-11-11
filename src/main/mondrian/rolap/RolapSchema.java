@@ -31,6 +31,7 @@ import org.eigenbase.xom.*;
 import org.olap4j.impl.*;
 import org.olap4j.mdx.IdentifierSegment;
 import org.olap4j.metadata.NamedList;
+
 // FIXME MONGO need class MongoDBDialect
 //import com.pentaho.analysis.mongo.MongoDBDialect;
 
@@ -149,6 +150,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
     public final Set<Locale> locales;
 
     final List<String> translations = new ArrayList<String>();
+    private String dataServicesProvider;
 
     /**
      * Creates a schema.
@@ -213,6 +215,8 @@ public class RolapSchema extends OlapElementBase implements Schema {
         } else {
             warningList = null;
         }
+        dataServicesProvider = connectInfo.get(
+            RolapConnectionProperties.DataServicesProvider.name());
     }
 
     public String getUniqueName() {
@@ -618,11 +622,11 @@ public class RolapSchema extends OlapElementBase implements Schema {
             return new CacheMemberReader(
                 new HangerMemberSource(hierarchy, memberList));
         } else {
+            DataServicesProvider provider =
+                DataServicesLocator.getDataServicesProvider(
+                    getDataServiceProviderName());
 
-            // FIXME MONGO Make this pluggable. Should we use the logic
-            // above which uses an attribute of the schema??
-
-            MemberReader source = new SqlMemberSource(hierarchy);
+            MemberReader source = provider.getMemberReader(hierarchy);
 
             if (MondrianProperties.instance().DisableCaching.get()) {
                 // If the cell cache is disabled, we can't cache
@@ -633,6 +637,10 @@ public class RolapSchema extends OlapElementBase implements Schema {
                 return new SmartMemberReader(source);
             }
         }
+    }
+
+    public String getDataServiceProviderName() {
+        return dataServicesProvider;
     }
 
     public SchemaReader getSchemaReader() {
