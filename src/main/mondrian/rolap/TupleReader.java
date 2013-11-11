@@ -144,6 +144,9 @@ public interface TupleReader {
      */
     void incrementEmptySets();
 
+    void setMaxRows(int maxRows);
+
+    int getEnumTargetCount();
 }
 
 // End TupleReader.java

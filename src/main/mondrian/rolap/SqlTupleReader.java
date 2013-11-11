@@ -1473,7 +1473,7 @@ Util.deprecated("obsolete basecube parameter", false);
         return maxRows;
     }
 
-    void setMaxRows(int maxRows) {
+    public void setMaxRows(int maxRows) {
         this.maxRows = maxRows;
     }
 

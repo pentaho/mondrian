@@ -201,7 +201,7 @@ public abstract class RolapNativeSet extends RolapNative {
                 Collections.singletonList(desiredResultStyle));
         }
 
-        protected TupleList executeList(final SqlTupleReader tr) {
+        protected TupleList executeList(final TupleReader tr) {
             tr.setMaxRows(maxRows);
             for (CrossJoinArg arg : args) {
                 addLevel(tr, arg);
