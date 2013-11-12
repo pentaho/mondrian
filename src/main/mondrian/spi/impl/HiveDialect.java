@@ -49,18 +49,7 @@ public class HiveDialect extends JdbcDialectImpl {
     protected String deduceIdentifierQuoteString(
         DatabaseMetaData databaseMetaData)
     {
-        try {
-            final String quoteIdentifierString =
-                databaseMetaData.getIdentifierQuoteString();
-            return "".equals(quoteIdentifierString)
-                // quoting not supported
-                ? null
-                : quoteIdentifierString;
-        } catch (SQLException e) {
-            // Not supported by HiveDatabaseMetaData; do nothing if catch an
-            // Exception
-            return "`";
-        }
+        return null;
     }
 
     protected Set<List<Integer>> deduceSupportedResultSetStyles(
@@ -95,11 +84,26 @@ public class HiveDialect extends JdbcDialectImpl {
         return true;
     }
 
+    @Override
     public boolean requiresOrderByAlias() {
         return true;
     }
 
+    @Override
+    public boolean allowsOrderByAlias() {
+        return true;
+    }
+
+    @Override
+    public boolean requiresGroupByAlias() {
+        return false;
+    }
+
     public boolean requiresUnionOrderByExprToBeInSelectClause() {
+        return false;
+    }
+
+    public boolean requiresUnionOrderByOrdinal() {
         return false;
     }
 

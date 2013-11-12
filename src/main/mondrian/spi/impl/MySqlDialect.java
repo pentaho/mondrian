@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2011 Pentaho
+// Copyright (C) 2002-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -245,10 +245,6 @@ public class MySqlDialect extends JdbcDialectImpl {
                 return "ISNULL(" + expr + ") DESC, " + expr + " DESC";
             }
         }
-    }
-
-    public boolean requiresOrderByAlias() {
-        return true;
     }
 
     public boolean requiresHavingAlias() {

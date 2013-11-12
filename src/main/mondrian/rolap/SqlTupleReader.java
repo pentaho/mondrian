@@ -1072,9 +1072,11 @@ public class SqlTupleReader implements TupleReader {
                 int bitPos = starColumn.getBitPosition();
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
                 String q = aggColumn.generateExprString(sqlQuery);
-                sqlQuery.addSelectGroupBy(q, starColumn.getInternalType());
+                final String qAlias =
+                    sqlQuery.addSelectGroupBy(q, starColumn.getInternalType());
                 if (whichSelect == WhichSelect.ONLY) {
-                    sqlQuery.addOrderBy(q, true, false, true);
+                    sqlQuery.addOrderBy(
+                        q, qAlias, true, false, true, true);
                 }
                 aggColumn.getTable().addToFrom(sqlQuery, false, true);
                 continue;
@@ -1089,13 +1091,16 @@ public class SqlTupleReader implements TupleReader {
                 if (!levelCollapsed) {
                     hierarchy.addToFrom(sqlQuery, parentExp);
                 }
-                String parentSql = parentExp.getExpression(sqlQuery);
-                sqlQuery.addSelectGroupBy(
-                    parentSql, currLevel.getInternalType());
                 if (whichSelect == WhichSelect.LAST
                     || whichSelect == WhichSelect.ONLY)
                 {
-                    sqlQuery.addOrderBy(parentSql, true, false, true, false);
+                    final String parentSql =
+                        parentExp.getExpression(sqlQuery);
+                    final String parentAlias =
+                        sqlQuery.addSelectGroupBy(
+                            parentSql, currLevel.getInternalType());
+                    sqlQuery.addOrderBy(
+                        parentSql, parentAlias, true, false, true, false);
                 }
             }
 
@@ -1114,26 +1119,43 @@ public class SqlTupleReader implements TupleReader {
                 }
             }
 
-            String alias =
+            final String keyAlias =
                 sqlQuery.addSelect(keySql, currLevel.getInternalType());
             if (needsGroupBy) {
-                sqlQuery.addGroupBy(keySql, alias);
+                // We pass both the expression and the alias.
+                // The SQL query will figure out what to use.
+                sqlQuery.addGroupBy(keySql, keyAlias);
             }
 
             if (captionSql != null) {
-                alias = sqlQuery.addSelect(captionSql, null);
+                final String captionAlias =
+                    sqlQuery.addSelect(captionSql, null);
                 if (needsGroupBy) {
-                    sqlQuery.addGroupBy(captionSql, alias);
+                    // We pass both the expression and the alias.
+                    // The SQL query will figure out what to use.
+                    sqlQuery.addGroupBy(captionSql, captionAlias);
                 }
             }
 
+            // Figure out the order-by part
+            final String orderByAlias;
             if (!ordinalSql.equals(keySql)) {
-                alias = sqlQuery.addSelect(ordinalSql, null);
+                orderByAlias = sqlQuery.addSelect(ordinalSql, null);
                 if (needsGroupBy) {
-                    sqlQuery.addGroupBy(ordinalSql, alias);
+                    sqlQuery.addGroupBy(ordinalSql, orderByAlias);
+                }
+                if (whichSelect == WhichSelect.ONLY) {
+                    sqlQuery.addOrderBy(
+                        ordinalSql, orderByAlias, true, false, true, true);
+                }
+            } else {
+                if (whichSelect == WhichSelect.ONLY) {
+                    sqlQuery.addOrderBy(
+                        keySql, keyAlias, true, false, true, true);
                 }
             }
 
+            // Add the contextual level constraints.
             constraint.addLevelConstraint(
                 sqlQuery, baseCube, aggStar, currLevel);
 
@@ -1153,10 +1175,6 @@ public class SqlTupleReader implements TupleReader {
                 sqlQuery.addWhere(condition.toString(sqlQuery));
             }
 
-            if (whichSelect == WhichSelect.ONLY) {
-                sqlQuery.addOrderBy(ordinalSql, true, false, true);
-            }
-
             RolapProperty[] properties = currLevel.getProperties();
             for (RolapProperty property : properties) {
                 final MondrianDef.Expression propExp = property.getExp();
@@ -1172,7 +1190,7 @@ public class SqlTupleReader implements TupleReader {
                 } else {
                     propSql = property.getExp().getExpression(sqlQuery);
                 }
-                alias = sqlQuery.addSelect(propSql, null);
+                final String propAlias = sqlQuery.addSelect(propSql, null);
                 if (needsGroupBy) {
                     // Certain dialects allow us to eliminate properties
                     // from the group by that are functionally dependent
@@ -1180,7 +1198,7 @@ public class SqlTupleReader implements TupleReader {
                     if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
                         || !property.dependsOnLevelValue())
                     {
-                        sqlQuery.addGroupBy(propSql, alias);
+                        sqlQuery.addGroupBy(propSql, propAlias);
                     }
                 }
             }

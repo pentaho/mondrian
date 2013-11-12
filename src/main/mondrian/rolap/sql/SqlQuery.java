@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, Mar 21, 2002
@@ -601,13 +601,14 @@ public class SqlQuery {
         boolean prepend,
         boolean nullable)
     {
-        this.addOrderBy(expr, ascending, prepend, nullable, true);
+        this.addOrderBy(expr, expr, ascending, prepend, nullable, true);
     }
 
     /**
      * Adds an item to the ORDER BY clause.
      *
      * @param expr the expr to order by
+     * @param alias the alias of the column, as returned by addSelect
      * @param ascending sort direction
      * @param prepend whether to prepend to the current list of items
      * @param nullable whether the expression might be null
@@ -615,6 +616,7 @@ public class SqlQuery {
      */
     public void addOrderBy(
         String expr,
+        String alias,
         boolean ascending,
         boolean prepend,
         boolean nullable,
@@ -622,7 +624,9 @@ public class SqlQuery {
     {
         String orderExpr =
             dialect.generateOrderItem(
-                expr,
+                dialect.requiresOrderByAlias()
+                    ? alias
+                    : expr,
                 nullable,
                 ascending,
                 collateNullsLast);
