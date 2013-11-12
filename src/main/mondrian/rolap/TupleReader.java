@@ -73,7 +73,7 @@ public interface TupleReader {
             Comparable orderKey,
             boolean parentChild,
             DBStatement stmt,
-            SqlTupleReader.LevelColumnLayout layout)
+            LevelColumnLayout layout)
             throws SQLException;
 
         /**

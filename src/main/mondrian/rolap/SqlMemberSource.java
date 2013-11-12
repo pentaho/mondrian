@@ -29,6 +29,8 @@ import java.sql.*;
 import java.util.*;
 import javax.sql.DataSource;
 
+import static mondrian.rolap.LevelColumnLayout.OrderKeySource.*;
+
 /**
  * A <code>SqlMemberSource</code> reads members from a SQL database.
  *
@@ -337,15 +339,15 @@ public class SqlMemberSource
                     if (level.isAll()) {
                         continue;
                     }
-                    final SqlTupleReader.LevelColumnLayout levelLayout =
+                    final LevelColumnLayout<Integer> levelLayout =
                         columnLayout.levelLayoutMap.get(level);
                     // TODO: pre-allocate these, one per level; remember to
                     // clone list (using Flat2List or Flat3List if appropriate)
                     final Comparable[] keyValues =
                         new Comparable[level.attribute.getKeyList().size()];
 
-                    for (int i = 0; i < levelLayout.keyOrdinals.length; i++) {
-                        int keyOrdinal = levelLayout.keyOrdinals[i];
+                    for (int i = 0; i < levelLayout.getKeys().size(); i++) {
+                        int keyOrdinal = levelLayout.getKeys().get(i);
                         Comparable value = accessors.get(keyOrdinal).get();
                         keyValues[i] = toComparable(value);
                     }
@@ -362,18 +364,18 @@ public class SqlMemberSource
                     }
                     if (member == null) {
                         final Comparable captionValue;
-                        if (levelLayout.captionOrdinal >= 0) {
+                        if (levelLayout.getCaption() >= 0) {
                             captionValue =
                                 accessors.get(
-                                    levelLayout.captionOrdinal).get();
+                                    levelLayout.getCaption()).get();
                         } else {
                             captionValue = null;
                         }
                         final String nameValue;
                         final Comparable nameObject;
-                        if (levelLayout.nameOrdinal >= 0) {
+                        if (levelLayout.getName() >= 0) {
                             nameObject =
-                                accessors.get(levelLayout.nameOrdinal).get();
+                                accessors.get(levelLayout.getName()).get();
                             nameValue =
                                 nameObject == null
                                     ? null
@@ -407,7 +409,7 @@ public class SqlMemberSource
 
                         order: {
                             Comparable orderKey;
-                            switch (levelLayout.orderBySource) {
+                            switch (levelLayout.getOrderBySource()) {
                             case NONE:
                                 break order;
                             case KEY:
@@ -419,11 +421,12 @@ public class SqlMemberSource
                             case MAPPED:
                                 orderKey =
                                     getCompositeKey(
-                                        accessors, levelLayout.orderByOrdinals);
+                                        accessors, levelLayout.getOrderBys());
                                 break;
                             default:
                                 throw
-                                    Util.unexpected(levelLayout.orderBySource);
+                                    Util.unexpected(
+                                        levelLayout.getOrderBySource());
                             }
                             ((RolapMemberBase) member).setOrderKey(orderKey);
                         }
@@ -431,7 +434,8 @@ public class SqlMemberSource
 
                     int i = 0;
                     for (Property property : level.attribute.getProperties()) {
-                        int propertyOrdinal = levelLayout.propertyOrdinals[i++];
+                        int propertyOrdinal =
+                            levelLayout.getProperties().get(i++);
                         // REVIEW emcdermid 9-Jul-2009:
                         // Should we also look up the value in the
                         // pool here, rather than setting it directly?
@@ -1117,7 +1121,7 @@ public class SqlMemberSource
             ResultSet resultSet = stmt.getResultSet();
             final SqlTupleReader.ColumnLayout fullLayout =
                 layoutBuilder.toLayout();
-            final SqlTupleReader.LevelColumnLayout layout =
+            final LevelColumnLayout<Integer> layout =
                 parentChild
                 && !parentMember.isAll()
                 && childLevel.getParentAttribute() != null
@@ -1137,10 +1141,10 @@ public class SqlMemberSource
                 }
 
                 final Comparable[] keyValues =
-                    new Comparable[layout.keyOrdinals.length];
-                for (int i = 0; i < layout.keyOrdinals.length; i++) {
+                    new Comparable[layout.getKeys().size()];
+                for (int i = 0; i < layout.getKeys().size(); i++) {
                     Comparable value =
-                        accessors.get(layout.keyOrdinals[i]).get();
+                        accessors.get(layout.getKeys().get(i)).get();
                     keyValues[i] = toComparable(value);
                 }
                 RolapMember member =
@@ -1151,16 +1155,16 @@ public class SqlMemberSource
                     final Comparable keyClone =
                         RolapMember.Key.create(keyValues);
                     final Comparable captionValue;
-                    if (layout.captionOrdinal >= 0) {
+                    if (layout.getCaption() >= 0) {
                         captionValue =
-                            accessors.get(layout.captionOrdinal).get();
+                            accessors.get(layout.getCaption()).get();
                     } else {
                         captionValue = null;
                     }
                     final Comparable nameObject;
                     final String nameValue;
-                    if (layout.nameOrdinal >= 0) {
-                        nameObject = accessors.get(layout.nameOrdinal).get();
+                    if (layout.getName() >= 0) {
+                        nameObject = accessors.get(layout.getName()).get();
                         nameValue =
                             nameObject == null
                                 ? RolapUtil.mdxNullLiteral()
@@ -1170,7 +1174,7 @@ public class SqlMemberSource
                         nameValue = null;
                     }
                     final Comparable orderKey;
-                    switch (layout.orderBySource) {
+                    switch (layout.getOrderBySource()) {
                     case NONE:
                         orderKey = null;
                         break;
@@ -1182,10 +1186,10 @@ public class SqlMemberSource
                         break;
                     case MAPPED:
                         orderKey =
-                            getCompositeKey(accessors, layout.orderByOrdinals);
+                            getCompositeKey(accessors, layout.getOrderBys());
                         break;
                     default:
-                        throw Util.unexpected(layout.orderBySource);
+                        throw Util.unexpected(layout.getOrderBySource());
                     }
                     member =
                         makeMember(
@@ -1217,7 +1221,7 @@ public class SqlMemberSource
         Comparable orderKey,
         boolean parentChild,
         DBStatement stmt,
-        SqlTupleReader.LevelColumnLayout layout)
+        LevelColumnLayout layout)
         throws SQLException
     {
         final Larders.LarderBuilder builder = new Larders.LarderBuilder();
@@ -1256,7 +1260,7 @@ public class SqlMemberSource
         }
         final Map<Object, SqlStatement.Accessor> accessors =
             stmt.getAccessors();
-        if (layout.orderBySource != SqlTupleReader.OrderKeySource.NONE) {
+        if (layout.getOrderBySource() != NONE) {
             if (Util.deprecated(true, false)) {
                 // Setting ordinals is wrong unless we're sure we're reading
                 // the whole hierarchy.
@@ -1264,11 +1268,11 @@ public class SqlMemberSource
             }
             member.setOrderKey(orderKey);
         }
-        if (layout.nameOrdinal
-            != layout.keyOrdinals[layout.keyOrdinals.length - 1]
+        if (layout.getName()
+            != layout.getKeys().get(layout.getKeys().size() - 1)
             && false)
         {
-            Comparable name = accessors.get(layout.nameOrdinal).get();
+            Comparable name = accessors.get(layout.getName()).get();
             member.setProperty(
                 Property.NAME,
                 name == null
@@ -1282,7 +1286,7 @@ public class SqlMemberSource
             member.setProperty(
                 property,
                 getPooledValue(
-                    accessors.get(layout.propertyOrdinals[j++]).get()));
+                    accessors.get(layout.getProperties().get(j++)).get()));
         }
         cache.putMember(member.getLevel(), key, member);
         return member;
@@ -1290,16 +1294,16 @@ public class SqlMemberSource
 
     static Comparable getCompositeKey(
         final Map<Object, SqlStatement.Accessor> accessors,
-        final int[] ordinals) throws SQLException
+        final List<Integer> ordinals) throws SQLException
     {
-        switch (ordinals.length) {
+        switch (ordinals.size()) {
         case 0:
             // Yes, there is a case where a level's ordinal is 0-ary. Its key
             // is the same as its parent level. Therefore there is only one
             // child per parent.
             return Util.COMPARABLE_EMPTY_LIST;
         case 1:
-            Comparable o = accessors.get(ordinals[0]).get();
+            Comparable o = accessors.get(ordinals.get(0)).get();
             return toComparable(o);
         default:
             return (Comparable) Util.flatList(
@@ -1307,7 +1311,7 @@ public class SqlMemberSource
                     public Comparable get(int index) {
                         try {
                             final Comparable value =
-                                accessors.get(ordinals[index]).get();
+                                accessors.get(ordinals.get(index)).get();
                             return toComparable(value);
                         } catch (SQLException e) {
                             throw new RuntimeException(e);
@@ -1315,7 +1319,7 @@ public class SqlMemberSource
                     }
 
                     public int size() {
-                        return ordinals.length;
+                        return ordinals.size();
                     }
                 });
         }
