@@ -9,6 +9,7 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
@@ -22,6 +23,7 @@ import java.lang.reflect.Proxy;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.sql.DataSource;
 
@@ -61,8 +63,8 @@ public class SqlStatement {
     // used for SQL logging, allows for a SQL Statement UID
     private static final AtomicLong ID_GENERATOR = new AtomicLong();
 
-    private static final RolapUtil.Semaphore querySemaphore =
-        RolapUtil.getQuerySemaphore();
+    private static final Semaphore querySemaphore = new Semaphore(
+        MondrianProperties.instance().QueryLimit.get(), true);
 
     private final DataSource dataSource;
     private Connection jdbcConnection;
@@ -135,7 +137,7 @@ public class SqlStatement {
             locus.execution.checkCancelOrTimeout();
 
             this.jdbcConnection = dataSource.getConnection();
-            querySemaphore.enter();
+            querySemaphore.acquire();
             haveSemaphore = true;
             // Trace start of execution.
             if (RolapUtil.SQL_LOGGER.isDebugEnabled()) {
@@ -283,7 +285,7 @@ public class SqlStatement {
 
         if (haveSemaphore) {
             haveSemaphore = false;
-            querySemaphore.leave();
+            querySemaphore.release();
         }
 
         // According to the JDBC spec, closing a statement automatically closes
