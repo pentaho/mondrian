@@ -826,7 +826,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{[Product].[Products].[Non-Consumable]}\n");
     }
 
-    public void _testNonCharacterMembers() {
+    public void testNonCharacterMembers() {
         assertQueryReturns(
             "with member [Has Coffee Bar].[Maybe] as \n"
             + "'SUM([Has Coffee Bar].members)' \n"

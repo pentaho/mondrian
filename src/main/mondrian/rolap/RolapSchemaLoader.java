@@ -2754,6 +2754,13 @@ public class RolapSchemaLoader {
                     "key");
                 return null;
             }
+        } else {
+            // degenerate dim, should only be a single attribute
+            if (attributeList.size() > 1) {
+                throw MondrianResource.instance()
+                    .DimensionKeyOmitted.ex(xmlDimension.name);
+            }
+            dimension.keyAttribute = attributeList.get(0);
         }
 
         // Use a Lazy variable to initialize dimension's key on first use.
