@@ -10,7 +10,6 @@
 //
 // jhyde, 21 January, 1999
 */
-
 package mondrian.test;
 
 import mondrian.calc.impl.ConstantCalcTest;
@@ -328,6 +327,8 @@ public class Main extends TestSuite {
             addTest(suite, MultipleColsInTupleAggTest.class);
             addTest(suite, DynamicSchemaProcessorTest.class);
             addTest(suite, MonitorTest.class);
+            addTest(suite, DeadlockTest.class);
+
             addTest(suite, BlockingHashMapTest.class);
             addTest(suite, CodeComplianceTest.class);
 

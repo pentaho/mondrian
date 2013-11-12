@@ -8,7 +8,6 @@
 // Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -238,6 +237,8 @@ public class FastBatchingCellReader implements CellReader {
         final List<CellRequest> cellRequests1 =
             new ArrayList<CellRequest>(cellRequests);
 
+        preloadColumnCardinality(cellRequests1);
+
         for (int iteration = 0;; ++iteration) {
             final BatchLoader.LoadBatchResponse response =
                 cacheMgr.execute(
@@ -444,6 +445,26 @@ public class FastBatchingCellReader implements CellReader {
         dirty = false;
         cellRequests.clear();
         return true;
+    }
+
+    /**
+     * Iterates through cell requests and makes sure .getCardinality has
+     * been called on all constrained columns.  This is a  workaround
+     * to an issue in which cardinality queries can be fired on the Actor
+     * thread, potentially causing a deadlock when interleaved with
+     * other threads that depend both on db connections and Actor responses.
+     *
+     */
+    private void preloadColumnCardinality(List<CellRequest> cellRequests) {
+        List<BitKey> loaded = new ArrayList<BitKey>();
+        for (CellRequest req : cellRequests) {
+            if (!loaded.contains(req.getConstrainedColumnsBitKey())) {
+                for (RolapStar.Column col : req.getConstrainedColumns()) {
+                    col.getCardinality();
+                }
+                loaded.add(req.getConstrainedColumnsBitKey());
+            }
+        }
     }
 
     /**
@@ -992,6 +1013,7 @@ class BatchLoader {
             this.dialect = dialect;
             this.cube = cube;
             this.cellRequests = cellRequests;
+
             if (MDC.getContext() != null) {
                 this.mdc.putAll(MDC.getContext());
             }
