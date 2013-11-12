@@ -5,13 +5,11 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.Exp;
-import mondrian.olap.MondrianException;
 import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
@@ -143,7 +141,10 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             // Add ORDER BY clause to make the results deterministic.
             // Derby has a bug with ORDER BY, so ignore it.
             if (isOrdered()) {
-                sqlQuery.addOrderBy(expr, true, false, false);
+                sqlQuery.addOrderBy(
+                    expr,
+                    alias,
+                    true, false, false, true);
             }
         }
 

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 21 March, 2002
@@ -169,21 +169,8 @@ class AggQuerySpec {
                 sqlQuery.addWhere(where);
             }
 
-            // some DB2 (AS400) versions throw an error, if a column alias is
-            // there and *not* used in a subsequent order by/group by
-            final String alias0;
-            switch (sqlQuery.getDialect().getDatabaseProduct()) {
-            case DB2_AS400:
-            case DB2_OLD_AS400:
-                alias0 = null;
-                break;
-            default:
-                alias0 = getColumnAlias(i);
-                break;
-            }
-
             final String alias =
-                sqlQuery.addSelect(expr, column.getInternalType(), alias0);
+                sqlQuery.addSelect(expr, column.getInternalType());
             if (rollup) {
                 sqlQuery.addGroupBy(expr, alias);
             }

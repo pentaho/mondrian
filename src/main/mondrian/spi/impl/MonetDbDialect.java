@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2013 Pentaho
+// Copyright (C) 2012-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -53,6 +53,11 @@ public class MonetDbDialect extends JdbcDialectImpl {
 
     @Override
     public boolean requiresAliasForFromQuery() {
+        return true;
+    }
+
+    @Override
+    public boolean requiresGroupByAlias() {
         return true;
     }
 
