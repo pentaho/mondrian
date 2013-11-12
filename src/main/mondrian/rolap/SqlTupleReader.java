@@ -209,7 +209,7 @@ public class SqlTupleReader implements TupleReader {
                         continue;
                     }
                     RolapMember parentMember = member;
-                    final List<SqlStatement.Accessor> accessors =
+                    final Map<Object, SqlStatement.Accessor> accessors =
                         stmt.getAccessors();
                     pc:
                     if (parentChild) {

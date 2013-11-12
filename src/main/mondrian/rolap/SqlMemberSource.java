@@ -310,7 +310,8 @@ public class SqlMemberSource
         final SqlTupleReader.ColumnLayout columnLayout =
             layoutBuilder.toLayout();
         try {
-            final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
+            final Map<Object, SqlStatement.Accessor> accessors =
+                stmt.getAccessors();
             List<RolapMember> list = new ArrayList<RolapMember>();
             final Map<Object, RolapMember> map =
                 new HashMap<Object, RolapMember>();
@@ -1111,7 +1112,8 @@ public class SqlMemberSource
         try {
             int limit = MondrianProperties.instance().ResultLimit.get();
 
-            final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
+            final Map<Object, SqlStatement.Accessor> accessors =
+                stmt.getAccessors();
             ResultSet resultSet = stmt.getResultSet();
             final SqlTupleReader.ColumnLayout fullLayout =
                 layoutBuilder.toLayout();
@@ -1252,7 +1254,8 @@ public class SqlMemberSource
                     : new RolapParentChildMemberNoClosure(
                         parentMember, childLevel, key, member);
         }
-        final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
+        final Map<Object, SqlStatement.Accessor> accessors =
+            stmt.getAccessors();
         if (layout.orderBySource != SqlTupleReader.OrderKeySource.NONE) {
             if (Util.deprecated(true, false)) {
                 // Setting ordinals is wrong unless we're sure we're reading
@@ -1286,7 +1289,7 @@ public class SqlMemberSource
     }
 
     static Comparable getCompositeKey(
-        final List<SqlStatement.Accessor> accessors,
+        final Map<Object, SqlStatement.Accessor> accessors,
         final int[] ordinals) throws SQLException
     {
         switch (ordinals.length) {

@@ -7,17 +7,16 @@
 // Copyright (C) 2013-2013 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
-import java.sql.SQLException;
-import java.util.List;
-
 import mondrian.rolap.SqlStatement.Accessor;
+
+import java.sql.SQLException;
+import java.util.*;
 
 // FIXME MONGO DOCUMENT THIS AND ADD MISSING METHODS.
 public interface DBStatement {
     // FIXME MONGO clean this up.
-    public List<Accessor> getAccessors() throws SQLException;
+    public Map<Object, Accessor> getAccessors() throws SQLException;
 }
 // End DBStatement.java
