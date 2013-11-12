@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 12 August, 2001
@@ -30,6 +30,7 @@ import java.lang.ref.SoftReference;
 import java.sql.Connection;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
@@ -877,7 +878,8 @@ public class RolapStar {
          * The estimated cardinality of the column.
          * {@link Integer#MIN_VALUE} means unknown.
          */
-        private int approxCardinality = Integer.MIN_VALUE;
+        private AtomicInteger approxCardinality = new AtomicInteger(
+            Integer.MIN_VALUE);
 
         private Column(
             String name,
@@ -913,7 +915,7 @@ public class RolapStar {
             this.nameColumn = nameColumn;
             this.parentColumn = parentColumn;
             this.usagePrefix = usagePrefix;
-            this.approxCardinality = approxCardinality;
+            this.approxCardinality.set(approxCardinality);
             if (nameColumn != null) {
                 nameColumn.isNameColumn = true;
             }
@@ -1017,12 +1019,12 @@ public class RolapStar {
          * @return the column cardinality.
          */
         public int getCardinality() {
-            if (approxCardinality < 0) {
-                approxCardinality =
+            if (approxCardinality.get() < 0) {
+                approxCardinality.set(
                     table.star.getStatisticsCache().getColumnCardinality(
-                        table.relation, expression, approxCardinality);
+                        table.relation, expression, approxCardinality.get()));
             }
-            return approxCardinality;
+            return approxCardinality.get();
         }
 
         /**
