@@ -364,18 +364,18 @@ public class SqlMemberSource
                     }
                     if (member == null) {
                         final Comparable captionValue;
-                        if (levelLayout.getCaption() >= 0) {
+                        if (levelLayout.getCaptionKey() >= 0) {
                             captionValue =
                                 accessors.get(
-                                    levelLayout.getCaption()).get();
+                                    levelLayout.getCaptionKey()).get();
                         } else {
                             captionValue = null;
                         }
                         final String nameValue;
                         final Comparable nameObject;
-                        if (levelLayout.getName() >= 0) {
+                        if (levelLayout.getNameKey() >= 0) {
                             nameObject =
-                                accessors.get(levelLayout.getName()).get();
+                                accessors.get(levelLayout.getNameKey()).get();
                             nameValue =
                                 nameObject == null
                                     ? null
@@ -421,7 +421,8 @@ public class SqlMemberSource
                             case MAPPED:
                                 orderKey =
                                     getCompositeKey(
-                                        accessors, levelLayout.getOrderBys());
+                                        accessors,
+                                        levelLayout.getOrderByKeys());
                                 break;
                             default:
                                 throw
@@ -435,7 +436,7 @@ public class SqlMemberSource
                     int i = 0;
                     for (Property property : level.attribute.getProperties()) {
                         int propertyOrdinal =
-                            levelLayout.getProperties().get(i++);
+                            levelLayout.getPropertyKeys().get(i++);
                         // REVIEW emcdermid 9-Jul-2009:
                         // Should we also look up the value in the
                         // pool here, rather than setting it directly?
@@ -1155,16 +1156,16 @@ public class SqlMemberSource
                     final Comparable keyClone =
                         RolapMember.Key.create(keyValues);
                     final Comparable captionValue;
-                    if (layout.getCaption() >= 0) {
+                    if (layout.getCaptionKey() >= 0) {
                         captionValue =
-                            accessors.get(layout.getCaption()).get();
+                            accessors.get(layout.getCaptionKey()).get();
                     } else {
                         captionValue = null;
                     }
                     final Comparable nameObject;
                     final String nameValue;
-                    if (layout.getName() >= 0) {
-                        nameObject = accessors.get(layout.getName()).get();
+                    if (layout.getNameKey() >= 0) {
+                        nameObject = accessors.get(layout.getNameKey()).get();
                         nameValue =
                             nameObject == null
                                 ? RolapUtil.mdxNullLiteral()
@@ -1186,7 +1187,7 @@ public class SqlMemberSource
                         break;
                     case MAPPED:
                         orderKey =
-                            getCompositeKey(accessors, layout.getOrderBys());
+                            getCompositeKey(accessors, layout.getOrderByKeys());
                         break;
                     default:
                         throw Util.unexpected(layout.getOrderBySource());
@@ -1268,11 +1269,11 @@ public class SqlMemberSource
             }
             member.setOrderKey(orderKey);
         }
-        if (layout.getName()
+        if (layout.getNameKey()
             != layout.getKeys().get(layout.getKeys().size() - 1)
             && false)
         {
-            Comparable name = accessors.get(layout.getName()).get();
+            Comparable name = accessors.get(layout.getNameKey()).get();
             member.setProperty(
                 Property.NAME,
                 name == null
@@ -1286,7 +1287,7 @@ public class SqlMemberSource
             member.setProperty(
                 property,
                 getPooledValue(
-                    accessors.get(layout.getProperties().get(j++)).get()));
+                    accessors.get(layout.getPropertyKeys().get(j++)).get()));
         }
         cache.putMember(member.getLevel(), key, member);
         return member;

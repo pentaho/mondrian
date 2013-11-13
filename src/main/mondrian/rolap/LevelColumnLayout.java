@@ -41,31 +41,54 @@ public class LevelColumnLayout<T> {
         this.parents = parents;
     }
 
+    /**
+     * Returns the List of keys for accessing database results
+     */
     public List<T> getKeys() {
         return keys;
     }
 
-    public T getName() {
+    /**
+     * Returns the key for accessing the name field in database results
+     */
+    public T getNameKey() {
         return name;
     }
 
-    public T getCaption() {
+    /**
+     * Returns the key for accessing the caption field in database results
+     */
+    public T getCaptionKey() {
         return caption;
     }
 
+    /**
+     * Returns the Order Key Source for database results
+     */
     public OrderKeySource getOrderBySource() {
         return orderBySource;
     }
 
-    public List<T> getOrderBys() {
+    /**
+     * Returns List of keys for orderBy fields in database results
+     */
+    public List<T> getOrderByKeys() {
         return orderBys;
     }
 
-    public List<T> getProperties() {
+    /**
+     * Returns the List of keys for accessing property fields in
+     * database results
+     */
+    public List<T> getPropertyKeys() {
         return properties;
     }
 
-    public List<T> getParents() {
+    /**
+     * Returns the List of keys for accessing parent fields in
+     * database results
+     */
+    public List<T> getParentKeys() {
         return parents;
     }
 
