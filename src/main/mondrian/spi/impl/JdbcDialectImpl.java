@@ -1071,6 +1071,8 @@ public class JdbcDialectImpl implements Dialect {
             return DatabaseProduct.MSSQL;
         } else if (productName.equals("Oracle")) {
             return DatabaseProduct.ORACLE;
+        } else if (upperProductName.indexOf("PHOENIX") >= 0) {
+            return DatabaseProduct.PHOENIX;
         } else if (upperProductName.indexOf("POSTGRE") >= 0) {
             return DatabaseProduct.POSTGRESQL;
         } else if (upperProductName.indexOf("NETEZZA") >= 0) {

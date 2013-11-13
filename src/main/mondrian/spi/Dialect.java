@@ -957,6 +957,7 @@ public interface Dialect {
         NETEZZA,
         NEOVIEW,
         ORACLE,
+        PHOENIX,
         POSTGRESQL,
         REDSHIFT,
         MYSQL,
