@@ -216,11 +216,11 @@ public class SqlTupleReader implements TupleReader {
                     pc:
                     if (parentChild) {
                         Comparable[] parentKeys =
-                            new Comparable[layout.getParents().size()];
-                        for (int j = 0; j < layout.getParents().size();
+                            new Comparable[layout.getParentKeys().size()];
+                        for (int j = 0; j < layout.getParentKeys().size();
                              j++)
                         {
-                            int parentOrdinal = layout.getParents().get(j);
+                            int parentOrdinal = layout.getParentKeys().get(j);
                             Comparable value =
                                 accessors.get(parentOrdinal).get();
                             if (value == null) {
@@ -274,17 +274,17 @@ public class SqlTupleReader implements TupleReader {
                             final Comparable keyClone =
                                 RolapMember.Key.create(keyValues);
                             final Comparable captionValue;
-                            if (layout.getCaption() >= 0) {
+                            if (layout.getCaptionKey() >= 0) {
                                 captionValue =
-                                    accessors.get(layout.getCaption()).get();
+                                    accessors.get(layout.getCaptionKey()).get();
                             } else {
                                 captionValue = null;
                             }
                             final Comparable nameObject;
                             final String nameValue;
-                            if (layout.getName() >= 0) {
+                            if (layout.getNameKey() >= 0) {
                                 nameObject =
-                                    accessors.get(layout.getName()).get();
+                                    accessors.get(layout.getNameKey()).get();
                                 nameValue =
                                     nameObject == null
                                         ? RolapUtil.mdxNullLiteral()
@@ -307,7 +307,7 @@ public class SqlTupleReader implements TupleReader {
                             case MAPPED:
                                 orderKey =
                                     SqlMemberSource.getCompositeKey(
-                                        accessors, layout.getOrderBys());
+                                        accessors, layout.getOrderByKeys());
                                 break;
                             default:
                                 throw Util.unexpected(
