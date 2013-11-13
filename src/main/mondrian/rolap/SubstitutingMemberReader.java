@@ -259,7 +259,7 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
             Comparable orderKey,
             boolean parentChild,
             DBStatement stmt,
-            SqlTupleReader.LevelColumnLayout layout)
+            LevelColumnLayout layout)
             throws SQLException
         {
             return substitute(
