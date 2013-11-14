@@ -1065,7 +1065,11 @@ class BatchLoader {
         }
 
         SegmentLoader getSegmentLoader() {
-            return new SegmentLoader(detailedBatch.getCacheMgr());
+            DataServicesProvider provider =
+                DataServicesLocator.getDataServicesProvider(
+                    detailedBatch.getStar().getSchema()
+                        .getDataServiceProviderName());
+            return provider.getSegmentLoader(detailedBatch.getCacheMgr());
         }
     }
 
