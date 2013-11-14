@@ -173,7 +173,7 @@ public class SegmentLoader {
         }
     }
 
-    private Map<Segment, SegmentWithData> loadImpl(
+    protected Map<Segment, SegmentWithData> loadImpl(
         int cellRequestCount,
         List<GroupingSet> groupingSets,
         List<StarPredicate> compoundPredicateList)
