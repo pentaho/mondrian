@@ -10,7 +10,9 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.*;
+import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.spi.*;
 import mondrian.spi.impl.JndiDataSourceResolver;
@@ -30,6 +32,8 @@ import javax.sql.DataSource;
  */
 public class DefaultDataServicesProvider implements DataServicesProvider {
     private static DataSourceResolver dataSourceResolver;
+    private static JdbcSchema.Factory factory;
+    private static final MondrianResource mres = MondrianResource.instance();
 
     public MemberReader getMemberReader(RolapCubeHierarchy hierarchy) {
         return new SqlMemberSource(hierarchy);
@@ -41,6 +45,38 @@ public class DefaultDataServicesProvider implements DataServicesProvider {
 
     public TupleReader getTupleReader(TupleConstraint constraint) {
         return new SqlTupleReader(constraint);
+    }
+
+    public synchronized JdbcSchema.Factory getJdbcSchemaFactory() {
+        if (factory != null) {
+            return factory;
+        }
+        String className =
+            MondrianProperties.instance().JdbcFactoryClass.get();
+        if (className == null) {
+            factory = new StdFactory();
+        } else {
+            try {
+                Class<?> clz =
+                    ClassResolver.INSTANCE.forName(className, true);
+                factory = (JdbcSchema.Factory) clz.newInstance();
+            } catch (ClassNotFoundException ex) {
+                throw mres.BadJdbcFactoryClassName.ex(className);
+            } catch (InstantiationException ex) {
+                throw mres.BadJdbcFactoryInstantiation.ex(className);
+            } catch (IllegalAccessException ex) {
+                throw mres.BadJdbcFactoryAccess.ex(className);
+            }
+        }
+        return factory;
+    }
+
+    protected static class StdFactory implements JdbcSchema.Factory {
+        StdFactory() {
+        }
+        public JdbcSchema loadDatabase(DataSource dataSource) {
+            return new JdbcSchema(dataSource);
+        }
     }
 
     /**

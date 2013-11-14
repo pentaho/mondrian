@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -14,6 +14,7 @@ import mondrian.olap.*;
 import mondrian.recorder.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
+import mondrian.spi.*;
 
 import org.apache.log4j.Logger;
 
@@ -119,9 +120,12 @@ public class AggTableManager {
     private JdbcSchema getJdbcSchema() {
         DataSource dataSource = schema.getInternalConnection().getDataSource();
 
+        DataServicesProvider provider =
+            DataServicesLocator.getDataServicesProvider(
+                schema.getDataServiceProviderName());
         // This actually just does a lookup or simple constructor invocation,
         // its not expected to fail
-        return JdbcSchema.makeDB(dataSource);
+        return JdbcSchema.makeDB(dataSource, provider.getJdbcSchemaFactory());
     }
 
     /**
@@ -304,9 +308,9 @@ public class AggTableManager {
      * column with the same name and a RolapStar foreign key column becomes a
      * foreign key usage for the column with the same name.
      *
-     * @param dbFactTable
-     * @param star
-     * @param msgRecorder
+     * @param dbFactTable fact table
+     * @param star rolap star
+     * @param msgRecorder message recorder
      */
     void bindToStar(
         final JdbcSchema.Table dbFactTable,

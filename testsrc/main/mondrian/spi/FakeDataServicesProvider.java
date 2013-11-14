@@ -12,6 +12,7 @@ package mondrian.spi;
 import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.*;
+import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.rolap.sql.TupleConstraint;
 
 import javax.sql.DataSource;
@@ -38,6 +39,10 @@ public class FakeDataServicesProvider implements DataServicesProvider {
     }
 
     public TupleReader getTupleReader(TupleConstraint constraint) {
+        return null;
+    }
+
+    public JdbcSchema.Factory getJdbcSchemaFactory() {
         return null;
     }
 }

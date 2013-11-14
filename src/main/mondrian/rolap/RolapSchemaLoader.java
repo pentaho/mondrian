@@ -1462,9 +1462,12 @@ public class RolapSchemaLoader {
      * @return Physical schema
      */
     private RolapSchema.PhysSchema createSyntheticPhysicalSchema() {
+        DataServicesProvider provider =
+            DataServicesLocator.getDataServicesProvider(
+                schema.getDataServiceProviderName());
         return new RolapSchema.PhysSchema(
             schema.getDialect(),
-            schema.getInternalConnection());
+            schema.getInternalConnection(), provider);
     }
 
     /**

@@ -13,9 +13,8 @@ import mondrian.mdx.MdxVisitorImpl;
 import mondrian.mdx.MemberExpr;
 import mondrian.olap.*;
 import mondrian.olap.Id.NameSegment;
-import mondrian.olap.Id.Segment;
 import mondrian.resource.MondrianResource;
-import mondrian.spi.Dialect;
+import mondrian.spi.*;
 import mondrian.util.ByteString;
 import mondrian.util.Pair;
 
@@ -113,10 +112,13 @@ public class RolapSchemaUpgrader {
                     null,
                     null, // no caption available
                     xmlLegacySchema.description));
+        DataServicesProvider provider =
+            DataServicesLocator.getDataServicesProvider(
+                tempSchema.getDataServiceProviderName());
         tempSchema.physicalSchema =
             new RolapSchema.PhysSchema(
                 tempSchema.getDialect(),
-                tempSchema.getInternalConnection());
+                tempSchema.getInternalConnection(), provider);
         RolapSchemaUpgrader upgrader =
             new RolapSchemaUpgrader(
                 loader, tempSchema, tempSchema.physicalSchema);
