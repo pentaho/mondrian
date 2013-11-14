@@ -15,6 +15,7 @@ import mondrian.rolap.RolapCubeHierarchy;
 import mondrian.rolap.TupleReader;
 import mondrian.rolap.agg.SegmentCacheManager;
 import mondrian.rolap.agg.SegmentLoader;
+import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.rolap.sql.TupleConstraint;
 
 import javax.sql.DataSource;
@@ -33,5 +34,7 @@ public interface DataServicesProvider {
         StringBuilder builder);
 
     TupleReader getTupleReader(TupleConstraint constraint);
+
+    JdbcSchema.Factory getJdbcSchemaFactory();
 }
 // End DataServicesProvider.java

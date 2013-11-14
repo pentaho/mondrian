@@ -875,14 +875,19 @@ public class RolapSchema extends OlapElementBase implements Schema {
          * @param dialect Dialect
          * @param internalConnection Internal connection (for data source, and
          *                           accounting of stats queries)
+         * @param dataServicesProvider DataServicesProvider to supply
+         *                             JdbcSchemaFactory
          */
         public PhysSchema(
             Dialect dialect,
-            RolapConnection internalConnection)
+            RolapConnection internalConnection,
+            DataServicesProvider dataServicesProvider)
         {
             this.dialect = dialect;
             this.jdbcSchema =
-                JdbcSchema.makeDB(internalConnection.getDataSource());
+                JdbcSchema.makeDB(
+                    internalConnection.getDataSource(),
+                    dataServicesProvider.getJdbcSchemaFactory());
             jdbcSchema.load();
             statistic = new PhysStatistic(dialect, internalConnection);
         }
