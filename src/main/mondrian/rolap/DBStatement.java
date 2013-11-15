@@ -14,9 +14,14 @@ import mondrian.rolap.SqlStatement.Accessor;
 import java.sql.SQLException;
 import java.util.*;
 
-// FIXME MONGO DOCUMENT THIS AND ADD MISSING METHODS.
+/**
+ * Interface for retrieving a Map of Accessors which access database results
+ */
 public interface DBStatement {
-    // FIXME MONGO clean this up.
+    /**
+     * @return map of Accessors.  the keys are Integers in the default
+     * implementation; other implementations might use Strings
+     */
     public Map<Object, Accessor> getAccessors() throws SQLException;
 }
 // End DBStatement.java
