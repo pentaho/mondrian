@@ -437,7 +437,7 @@ public class JdbcSchema {
             private final Set<UsageType> usageTypes =
                 Olap4jUtil.enumSetNoneOf(UsageType.class);
 
-            private Column(final String name) {
+            public Column(final String name) {
                 this.name = name;
                 this.column =
                     new MondrianDef.Column(
