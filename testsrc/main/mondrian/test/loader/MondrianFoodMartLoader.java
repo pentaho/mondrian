@@ -526,6 +526,8 @@ public class MondrianFoodMartLoader {
             if (analyze) {
                 analyzeTables();
             }
+
+            checkpoint();
         } finally {
             if (connection != null) {
                 connection.close();
@@ -1824,6 +1826,29 @@ public class MondrianFoodMartLoader {
             break;
         default:
             LOGGER.warn("Analyze is not supported for current database.");
+            break;
+        }
+    }
+
+    private void checkpoint() throws SQLException {
+        switch (dialect.getDatabaseProduct()) {
+        case HSQLDB:
+            Statement statement = null;
+            try {
+                LOGGER.info("Checkpoint...");
+                statement = connection.createStatement();
+                statement.execute(
+                    "checkpoint defrag");
+                LOGGER.info("Checkpoint complete.");
+            } finally {
+                if (statement != null) {
+                    try {
+                        statement.close();
+                    } catch (SQLException e) {
+                        // ignore
+                    }
+                }
+            }
             break;
         }
     }
