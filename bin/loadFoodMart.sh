@@ -114,6 +114,23 @@ infobright() {
         -outputJdbcURL="jdbc:mysql://localhost/${datasetLower}?user=foodmart&password=foodmart&characterEncoding=UTF-8"
 }
 
+# Load HBase via Phoenix
+phoenix() {
+    # "-outputJdbcBatchSize=1" is necessary because Phoenix driver
+    # doesn't support batches. Also, you cannot specify "-aggregates"
+    # or "-afterFile", because Phoenix doesn't support INSERT (only
+    # UPSERT).
+    java -cp "${CP}${PS}/usr/local/phoenix-2.1.1/phoenix-2.1.1-client.jar" \
+        mondrian.test.loader.MondrianFoodMartLoader \
+        -verbose -tables -data \
+        -dataset=${dataset} \
+        -jdbcDrivers=com.salesforce.phoenix.jdbc.PhoenixDriver \
+        -inputFile="$inputFile" \
+        -outputJdbcBatchSize=1 \
+        -outputQuoted=${outputQuoted} \
+        -outputJdbcURL="jdbc:phoenix:localhost"
+}
+
 # Load PostgreSQL.
 #
 # To install postgres and its JDBC driver on ubuntu:
@@ -400,6 +417,7 @@ case "$db" in
 (mysql) mysql;;
 (oracle) oracle;;
 (oracleTrickle) oracleTrickle;;
+(phoenix) phoenix;;
 (postgresql) postgresql;;
 (teradata) teradata;;
 (*) error "Unknown database '$db'."; exit 1;;
