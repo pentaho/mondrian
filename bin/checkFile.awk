@@ -109,7 +109,7 @@ FNR == 1 {
     mondrian = _isMondrian(fname);
     prevImport = "";
     prevImportGroup = "";
-    indent = (fname ~ /lambda/ || fname ~ /linq4j/ || fname ~ /optiq/ && fname !~ /eigenbase/) ? 2 : 4;
+    indent = (fname ~ /avatica/ || fname ~ /linq4j/ || fname ~ /optiq/ && fname !~ /eigenbase/) ? 2 : 4;
     cindent = 4;
 
     delete headers;
@@ -163,6 +163,13 @@ FNR - headerSkip <= headerCount {
             printf "0: [%s]\n", $0;
             headerCount = 0; # prevent further errors from this file
         }
+    }
+}
+publicClassBraceLine && FNR == publicClassBraceLine + 1 {
+    # Adopt indent=2 if the first line in the first public class seems
+    # to have indent 2.
+    if (indent == 4 && $0 ~ /^  [^ ]/) {
+        indent = 2;
     }
 }
 /\\n" \+/ {
@@ -803,6 +810,12 @@ length($0) > maxLineLength                      \
         fname, \
         FNR, \
         "Line length (" length($0) ") exceeds " maxLineLength " chars");
+}
+/^public class / {
+    publicClassSeen = 1;
+}
+publicClassSeen && !publicClassBraceLine && /{$/ {
+    publicClassBraceLine = FNR
 }
 /}$/ {
     previousLineEndedInCloseBrace = 2;
