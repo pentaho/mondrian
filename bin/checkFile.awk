@@ -111,6 +111,8 @@ FNR == 1 {
     prevImportGroup = "";
     indent = (fname ~ /avatica/ || fname ~ /linq4j/ || fname ~ /optiq/ && fname !~ /eigenbase/) ? 2 : 4;
     cindent = 4;
+    publicClassBraceLine = 0;
+    publicClassSeen = 0;
 
     delete headers;
     headerSkip = 0;
