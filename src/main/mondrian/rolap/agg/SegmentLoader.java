@@ -376,7 +376,7 @@ public class SegmentLoader {
         }
     }
 
-    public static boolean setAxisDataAndDecideSparseUse(
+    public boolean setAxisDataAndDecideSparseUse(
         SortedSet<Comparable>[] axisValueSets,
         boolean[] axisContainsNull,
         GroupingSetsList groupingSetsList,
@@ -412,7 +412,7 @@ public class SegmentLoader {
         return useSparse(sparse, n, rows);
     }
 
-    public static boolean useSparse(boolean sparse, int n, RowList rows) {
+    public boolean useSparse(boolean sparse, int n, RowList rows) {
         sparse = sparse || useSparse(n, rows.size());
         return sparse;
     }

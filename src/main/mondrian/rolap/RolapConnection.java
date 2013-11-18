@@ -214,6 +214,27 @@ public class RolapConnection extends ConnectionBase {
                     connectInfo.get(RolapConnectionProperties.Dialect.name());
                 dialect = DialectManager.createDialect(
                     this.dataSource, conn, dialectClassName);
+                if (dialect.getDatabaseProduct()
+                    == Dialect.DatabaseProduct.DERBY)
+                {
+                    // Derby requires a little extra prodding to do the
+                    // validation to detect an error.
+                    statement = conn.createStatement();
+                    try {
+                        statement.executeQuery("select * from bogustable");
+                    } catch (SQLException e) {
+                        if (e.getMessage().equals(
+                                "Table/View 'BOGUSTABLE' does not exist."))
+                        {
+                            // Ignore. This exception comes from Derby when the
+                            // connection is valid. If the connection were
+                            // invalid, we would receive an error such as
+                            // "Schema 'BOGUSUSER' does not exist"
+                        } else {
+                            throw e;
+                        }
+                    }
+                }
             } catch (SQLException e) {
                 throw Util.newError(
                     e,

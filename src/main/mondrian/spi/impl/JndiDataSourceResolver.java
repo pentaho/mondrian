@@ -29,15 +29,6 @@ public class JndiDataSourceResolver implements DataSourceResolver {
     }
 
     public DataSource lookup(String dataSourceName) throws NamingException {
-        // FIXME MONGO This needs to be designed with MONDRIAN-1773 in mind.
-        // The DS infos have to be stored somewhere outside of the schema.
-//        +      // TODO: Extend this API
-//        +        if (dataSourceName.equals("mongodb")) {
-//        +          return new MongoDBDataSource();
-//        +        } else {
-//        +          return (DataSource) new InitialContext().lookup(dataSourceName);
-//        +//          return new RolapConnection.DelegatingDataSource((DataSource)new InitialContext().lookup(dataSourceName));
-//        +        }
         return (DataSource) new InitialContext().lookup(dataSourceName);
     }
 }

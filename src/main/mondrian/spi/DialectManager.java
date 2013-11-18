@@ -366,10 +366,9 @@ public abstract class DialectManager {
             Constructor<? extends Dialect> constructor)
         {
             assert constructor != null;
-            // FIXME MONGO This is to be re-evaluated
-//            assert constructor.getParameterTypes().length == 1;
-//            assert constructor.getParameterTypes()[0]
-//                == java.sql.Connection.class;
+            assert constructor.getParameterTypes().length == 1;
+            assert constructor.getParameterTypes()[0]
+                == java.sql.Connection.class;
             this.constructor = constructor;
         }
 
