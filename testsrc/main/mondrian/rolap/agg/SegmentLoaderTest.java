@@ -239,9 +239,10 @@ public class SegmentLoaderTest extends BatchTestCase {
                     getData(true));
             }
 
-            boolean useSparse(boolean sparse, int n, RowList rows) {
-                return true;
-            }
+            //// FIXME MONGO useSpare is static now
+//            boolean useSparse(boolean sparse, int n, RowList rows) {
+//                return true;
+//            }
         };
         final List<Future<Map<Segment, SegmentWithData>>> segmentFutures =
             new ArrayList<Future<Map<Segment, SegmentWithData>>>();

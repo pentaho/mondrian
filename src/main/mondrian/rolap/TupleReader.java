@@ -72,8 +72,8 @@ public interface TupleReader {
             String nameValue,
             Comparable orderKey,
             boolean parentChild,
-            SqlStatement stmt,
-            SqlTupleReader.LevelColumnLayout layout)
+            DBStatement stmt,
+            LevelColumnLayout layout)
             throws SQLException;
 
         /**
@@ -144,6 +144,9 @@ public interface TupleReader {
      */
     void incrementEmptySets();
 
+    void setMaxRows(int maxRows);
+
+    int getEnumTargetCount();
 }
 
 // End TupleReader.java

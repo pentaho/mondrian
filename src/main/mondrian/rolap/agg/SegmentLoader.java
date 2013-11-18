@@ -52,7 +52,7 @@ public class SegmentLoader {
 
     private static final Logger LOGGER = Logger.getLogger(SegmentLoader.class);
 
-    private final SegmentCacheManager cacheMgr;
+    protected final SegmentCacheManager cacheMgr;
 
     /**
      * Creates a SegmentLoader.
@@ -173,7 +173,7 @@ public class SegmentLoader {
         }
     }
 
-    private Map<Segment, SegmentWithData> loadImpl(
+    protected Map<Segment, SegmentWithData> loadImpl(
         int cellRequestCount,
         List<GroupingSet> groupingSets,
         List<StarPredicate> compoundPredicateList)
@@ -229,6 +229,7 @@ public class SegmentLoader {
                 groupingSetsList, rows, groupingDataSetsMap);
 
             setDataToSegments(
+                this.cacheMgr,
                 groupingSetsList,
                 groupingDataSetsMap,
                 segmentMap);
@@ -245,7 +246,10 @@ public class SegmentLoader {
                 stmt.close();
             }
             setFailOnStillLoadingSegments(
-                segmentMap, groupingSetsList, throwable);
+                this.cacheMgr,
+                segmentMap,
+                groupingSetsList,
+                throwable);
         }
     }
 
@@ -256,7 +260,8 @@ public class SegmentLoader {
      * @param header Segment header
      * @param body Segment body
      */
-    private void cacheSegment(
+    private static void cacheSegment(
+        SegmentCacheManager cacheMgr,
         RolapStar star,
         SegmentHeader header,
         SegmentBody body)
@@ -276,7 +281,8 @@ public class SegmentLoader {
         }
     }
 
-    private boolean setFailOnStillLoadingSegments(
+    public static boolean setFailOnStillLoadingSegments(
+        SegmentCacheManager cacheMgr,
         Map<Segment, SegmentWithData> segmentMap,
         GroupingSetsList groupingSetsList,
         Throwable throwable)
@@ -307,7 +313,7 @@ public class SegmentLoader {
      * the row data. If grouping sets is not used, data is loaded on to
      * nonGroupingDataSets.
      */
-    private void loadDataToDataSets(
+    public static void loadDataToDataSets(
         GroupingSetsList groupingSetsList,
         RowList rows,
         Map<BitKey, GroupingSetsList.Cohort> groupingDataSetMap)
@@ -370,7 +376,7 @@ public class SegmentLoader {
         }
     }
 
-    private boolean setAxisDataAndDecideSparseUse(
+    public static boolean setAxisDataAndDecideSparseUse(
         SortedSet<Comparable>[] axisValueSets,
         boolean[] axisContainsNull,
         GroupingSetsList groupingSetsList,
@@ -406,12 +412,13 @@ public class SegmentLoader {
         return useSparse(sparse, n, rows);
     }
 
-    boolean useSparse(boolean sparse, int n, RowList rows) {
-        sparse = sparse || useSparse((double) n, (double) rows.size());
+    public static boolean useSparse(boolean sparse, int n, RowList rows) {
+        sparse = sparse || useSparse(n, rows.size());
         return sparse;
     }
 
-    private void setDataToSegments(
+    public static void setDataToSegments(
+        SegmentCacheManager cacheMgr,
         GroupingSetsList groupingSetsList,
         Map<BitKey, GroupingSetsList.Cohort> datasetsMap,
         Map<Segment, SegmentWithData> segmentSlotMap)
@@ -454,12 +461,12 @@ public class SegmentLoader {
 
                 // Send a message to the agg manager. It will place the segment
                 // in the index.
-                cacheSegment(segment.star, header, body);
+                cacheSegment(cacheMgr, segment.star, header, body);
             }
         }
     }
 
-    private Map<BitKey, GroupingSetsList.Cohort> createDataSetsForGroupingSets(
+    public static Map<BitKey, GroupingSetsList.Cohort> createDataSetsForGroupingSets(
         GroupingSetsList groupingSetsList,
         boolean sparse,
         List<SqlStatement.Type> types)
@@ -490,7 +497,7 @@ public class SegmentLoader {
         return datasetsMap;
     }
 
-    private int calculateMaxDataSize(SegmentAxis[] axes) {
+    static int calculateMaxDataSize(SegmentAxis[] axes) {
         int n = 1;
         for (SegmentAxis axis : axes) {
             n *= axis.getKeys().length;
@@ -498,7 +505,7 @@ public class SegmentLoader {
         return n;
     }
 
-    private GroupingSetsList.Cohort createDataSets(
+    public static GroupingSetsList.Cohort createDataSets(
         boolean sparse,
         List<Segment> segments,
         SegmentAxis[] axes,
@@ -519,7 +526,7 @@ public class SegmentLoader {
         return new GroupingSetsList.Cohort(datasets, axes);
     }
 
-    private void setAxisDataToGroupableList(
+    public static void setAxisDataToGroupableList(
         GroupingSetsList groupingSetsList,
         SortedSet<Comparable> valueSet,
         boolean axisContainsNull,
@@ -836,7 +843,7 @@ public class SegmentLoader {
         return processedRows;
     }
 
-    private void checkResultLimit(int currentCount) {
+    protected static void checkResultLimit(int currentCount) {
         final int limit =
             MondrianProperties.instance().ResultLimit.get();
         if (limit > 0 && currentCount > limit) {
@@ -891,7 +898,7 @@ public class SegmentLoader {
         return stmt.getResultSet();
     }
 
-    SortedSet<Comparable>[] getDistinctValueWorkspace(int arity) {
+    public static SortedSet<Comparable>[] getDistinctValueWorkspace(int arity) {
         // Workspace to build up lists of distinct values for each axis.
         SortedSet<Comparable>[] axisValueSets = new SortedSet[arity];
         for (int i = 0; i < axisValueSets.length; i++) {
@@ -996,7 +1003,7 @@ public class SegmentLoader {
          * @param types Column types
          * @param capacity Initial capacity
          */
-        RowList(List<SqlStatement.Type> types, int capacity) {
+        public RowList(List<SqlStatement.Type> types, int capacity) {
             this.columns = new Column[types.size()];
             this.capacity = capacity;
             for (int i = 0; i < columns.length; i++) {
@@ -1004,7 +1011,7 @@ public class SegmentLoader {
             }
         }
 
-        void createRow() {
+        public void createRow() {
             currentRow = rowCount++;
             if (rowCount > capacity) {
                 capacity *= 3;
@@ -1014,19 +1021,19 @@ public class SegmentLoader {
             }
         }
 
-        void setObject(int column, Object value) {
+        public void setObject(int column, Object value) {
             columns[column].setObject(currentRow, value);
         }
 
-        void setDouble(int column, double value) {
+        public void setDouble(int column, double value) {
             columns[column].setDouble(currentRow, value);
         }
 
-        void setInt(int column, int value) {
+        public void setInt(int column, int value) {
             columns[column].setInt(currentRow, value);
         }
 
-        void setLong(int column, long value) {
+        public void setLong(int column, long value) {
             columns[column].setLong(currentRow, value);
         }
 

@@ -4,13 +4,14 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
 import mondrian.rolap.RolapConnection;
+import mondrian.spi.*;
 import mondrian.test.FoodMartTestCase;
 
 import org.apache.log4j.*;
@@ -66,7 +67,11 @@ public class AggGenTest extends FoodMartTestCase {
         try {
             sqlConnection = dataSource.getConnection();
             DatabaseMetaData dbmeta = sqlConnection.getMetaData();
-            JdbcSchema jdbcSchema = JdbcSchema.makeDB(dataSource);
+            DataServicesProvider provider =
+                DataServicesLocator.getDataServicesProvider(
+                    rolapConn.getSchema().getDataServiceProviderName());
+            JdbcSchema jdbcSchema = JdbcSchema.makeDB(
+                dataSource, provider.getJdbcSchemaFactory());
             final String catalogName = jdbcSchema.getCatalogName();
             final String schemaName = jdbcSchema.getSchemaName();
 

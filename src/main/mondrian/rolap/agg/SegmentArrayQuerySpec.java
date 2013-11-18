@@ -23,7 +23,7 @@ import java.util.*;
  * @author jhyde
  * @author Richard M. Emberson
  */
-class SegmentArrayQuerySpec extends AbstractQuerySpec {
+public class SegmentArrayQuerySpec extends AbstractQuerySpec {
     private final List<Segment> segments;
     private final Segment segment0;
     private final GroupingSetsList groupingSetsList;
@@ -41,7 +41,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
      * @param compoundPredicateList list of predicates representing the
      * compound member constraints
      */
-    SegmentArrayQuerySpec(
+    public SegmentArrayQuerySpec(
         GroupingSetsList groupingSetsList,
         List<StarPredicate> compoundPredicateList)
     {

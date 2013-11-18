@@ -189,7 +189,14 @@ public enum RolapConnectionProperties {
      * connections bearing the same JdbcConnectionUuid point to identical
      * databases without looking at any other properties.
      */
-    JdbcConnectionUuid;
+    JdbcConnectionUuid,
+
+    /**
+     * The "DataServicesProvider" property specifies the full class name for
+     * the {@link mondrian.spi.DataServicesProvider} implementation to be used
+     * for this connection
+     */
+    DataServicesProvider;
 
     /**
      * Any property beginning with this value will be added to the

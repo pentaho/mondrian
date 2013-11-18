@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -13,8 +13,8 @@ package mondrian.rolap.aggmatcher;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
-import mondrian.spi.Dialect;
-import mondrian.util.ClassResolver;
+import mondrian.spi.*;
+import mondrian.util.*;
 
 import org.apache.log4j.Logger;
 
@@ -65,8 +65,9 @@ public class JdbcSchema {
         JdbcSchema loadDatabase(DataSource dataSource);
     }
 
-    private static final Map<DataSource, SoftReference<JdbcSchema>> dbMap =
-        new HashMap<DataSource, SoftReference<JdbcSchema>>();
+    private static final
+    Map<Pair<Factory, DataSource>, SoftReference<JdbcSchema>> dbMap =
+        new HashMap<Pair<Factory, DataSource>, SoftReference<JdbcSchema>>();
 
     /**
      * How often between sweeping through the dbMap looking for nulls.
@@ -74,49 +75,20 @@ public class JdbcSchema {
     private static final int SWEEP_COUNT = 10;
     private static int sweepDBCount = 0;
 
-    public static class StdFactory implements Factory {
-        StdFactory() {
-        }
-        public JdbcSchema loadDatabase(DataSource dataSource) {
-            return new JdbcSchema(dataSource);
-        }
-    }
 
-    private static Factory factory;
-
-    private synchronized static void makeFactory() {
-        if (factory != null) {
-            return;
-        }
-        String className =
-            MondrianProperties.instance().JdbcFactoryClass.get();
-        if (className == null) {
-            factory = new StdFactory();
-        } else {
-            try {
-                Class<?> clz =
-                    ClassResolver.INSTANCE.forName(className, true);
-                factory = (Factory) clz.newInstance();
-            } catch (ClassNotFoundException ex) {
-                throw mres.BadJdbcFactoryClassName.ex(className);
-            } catch (InstantiationException ex) {
-                throw mres.BadJdbcFactoryInstantiation.ex(className);
-            } catch (IllegalAccessException ex) {
-                throw mres.BadJdbcFactoryAccess.ex(className);
-            }
-        }
-    }
 
     /**
      * Creates or retrieves an instance of the JdbcSchema for the given
      * DataSource.
      *
+     *
      * @param dataSource DataSource
+     * @param factory Factory for creating a JdbcSchema
      * @return instance of the JdbcSchema for the given DataSource
      */
-    public static synchronized JdbcSchema makeDB(DataSource dataSource) {
-        makeFactory();
-
+    public static synchronized JdbcSchema makeDB(
+        DataSource dataSource, Factory factory)
+    {
         JdbcSchema db = null;
         SoftReference<JdbcSchema> ref = dbMap.get(dataSource);
         if (ref != null) {
@@ -124,7 +96,9 @@ public class JdbcSchema {
         }
         if (db == null) {
             db = factory.loadDatabase(dataSource);
-            dbMap.put(dataSource, new SoftReference<JdbcSchema>(db));
+            dbMap.put(
+                new Pair<Factory, DataSource>(factory, dataSource),
+                new SoftReference<JdbcSchema>(db));
         }
 
         sweepDB();
@@ -138,8 +112,6 @@ public class JdbcSchema {
      * @param dataSource DataSource
      */
     public static synchronized void clearDB(DataSource dataSource) {
-        makeFactory();
-
         SoftReference<JdbcSchema> ref = dbMap.get(dataSource);
         if (ref != null) {
             JdbcSchema db = ref.get();
@@ -465,7 +437,7 @@ public class JdbcSchema {
             private final Set<UsageType> usageTypes =
                 Olap4jUtil.enumSetNoneOf(UsageType.class);
 
-            private Column(final String name) {
+            public Column(final String name) {
                 this.name = name;
                 this.column =
                     new MondrianDef.Column(
@@ -793,7 +765,7 @@ public class JdbcSchema {
 
         private boolean allColumnsLoaded;
 
-        private Table(final String name, String tableType) {
+        public Table(final String name, String tableType) {
             this.name = name;
             this.tableUsageType = TableUsageType.UNKNOWN;
             this.tableType = tableType;
@@ -1054,7 +1026,7 @@ public class JdbcSchema {
     private final SortedMap<String, Table> tables =
         new TreeMap<String, Table>();
 
-    JdbcSchema(final DataSource dataSource) {
+    public JdbcSchema(final DataSource dataSource) {
         assert dataSource != null;
         this.dataSource = dataSource;
     }
@@ -1274,8 +1246,6 @@ public class JdbcSchema {
 
     public static synchronized void clearAllDBs() {
         dbMap.clear();
-        factory = null;
-        makeFactory();
     }
 }
 

@@ -146,7 +146,17 @@ public abstract class DialectManager {
                 return new ConstructorDialectFactory(constructor);
             }
         } catch (NoSuchMethodException e) {
-            // ignore
+            // if <init>(Connection) does not exist, go for the default
+            // constructor.
+            try {
+                final Constructor<? extends Dialect> constructor =
+                    dialectClass.getConstructor();
+                if (Modifier.isPublic(constructor.getModifiers())) {
+                    return new ConstructorDialectFactory(constructor);
+                }
+            } catch (NoSuchMethodException e2) {
+                // ignore
+            }
         }
 
         // No suitable constructor or factory.
@@ -356,9 +366,10 @@ public abstract class DialectManager {
             Constructor<? extends Dialect> constructor)
         {
             assert constructor != null;
-            assert constructor.getParameterTypes().length == 1;
-            assert constructor.getParameterTypes()[0]
-                == java.sql.Connection.class;
+            // FIXME MONGO This is to be re-evaluated
+//            assert constructor.getParameterTypes().length == 1;
+//            assert constructor.getParameterTypes()[0]
+//                == java.sql.Connection.class;
             this.constructor = constructor;
         }
 
@@ -371,6 +382,27 @@ public abstract class DialectManager {
             if (connection == null) {
                 return JdbcDialectFactory.createDialectHelper(
                     this, dataSource);
+            }
+
+            if (constructor.getParameterTypes().length == 0) {
+                try {
+                    return constructor.newInstance();
+                } catch (InstantiationException e) {
+                    throw Util.newError(
+                        e,
+                        "Error while instantiating dialect of class "
+                        + constructor.getClass());
+                } catch (IllegalAccessException e) {
+                    throw Util.newError(
+                        e,
+                        "Error while instantiating dialect of class "
+                        + constructor.getClass());
+                } catch (InvocationTargetException e) {
+                    throw Util.newError(
+                        e,
+                        "Error while instantiating dialect of class "
+                        + constructor.getClass());
+                }
             }
 
             // Connection is not null. Invoke the constructor.

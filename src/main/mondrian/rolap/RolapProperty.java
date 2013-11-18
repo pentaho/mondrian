@@ -22,7 +22,7 @@ import java.util.Map;
  *
  * @author jhyde
  */
-class RolapProperty extends Property implements Annotated {
+public class RolapProperty extends Property implements Annotated {
 
     private static final Logger LOGGER = Logger.getLogger(RolapProperty.class);
 
@@ -69,6 +69,10 @@ class RolapProperty extends Property implements Annotated {
 
     public Map<String, Annotation> getAnnotationMap() {
         return larder.getAnnotationMap();
+    }
+
+    public RolapAttribute getAttribute() {
+        return attribute;
     }
 
     /**
