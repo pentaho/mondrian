@@ -9,6 +9,9 @@
  */
 package mondrian.spi.impl;
 
+import mondrian.olap.Util;
+import mondrian.spi.StatisticsProvider;
+
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
@@ -17,23 +20,21 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-import mondrian.olap.Util;
-import mondrian.spi.StatisticsProvider;
-
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the Phoenix JDBC driver. Phoenix provides a SQL API on top of
  * HBase that targets low-latency queries without map-reduce.
- * 
+ *
  * @author Benny Chow
  * @since Oct 31, 2013
  */
 public class PhoenixDialect extends JdbcDialectImpl {
 
-  public static final JdbcDialectFactory FACTORY = new JdbcDialectFactory( PhoenixDialect.class,
-      DatabaseProduct.PHOENIX );
+  public static final JdbcDialectFactory FACTORY = new JdbcDialectFactory(
+      PhoenixDialect.class,
+      DatabaseProduct.PHOENIX);
 
-  public PhoenixDialect( Connection connection ) throws SQLException {
-    super( connection );
+  public PhoenixDialect(Connection connection) throws SQLException {
+    super(connection);
   }
 
   @Override
@@ -146,24 +147,23 @@ public class PhoenixDialect extends JdbcDialectImpl {
     return new ArrayList<StatisticsProvider>();
   }
 
-  protected void quoteDateLiteral( StringBuilder buf, String value, Date date ) {
-
+  protected void quoteDateLiteral(StringBuilder buf, String value, Date date) {
    // Phoenix accepts TO_DATE('2008-01-23') but not SQL:2003 format.
-    buf.append( "TO_DATE(" );
-    Util.singleQuoteString( value, buf );
-    buf.append( ", 'yyyy-MM-dd')" );
+    buf.append("TO_DATE(");
+    Util.singleQuoteString(value, buf);
+    buf.append(", 'yyyy-MM-dd')");
   }
 
-  public void quoteTimeLiteral( StringBuilder buf, Time value ) {
-    buf.append( "TO_DATE(" );
-    Util.singleQuoteString( value.toString(), buf );
-    buf.append( ", 'HH:mm:ss')" );
+  public void quoteTimeLiteral(StringBuilder buf, Time value) {
+    buf.append("TO_DATE(");
+    Util.singleQuoteString(value.toString(), buf);
+    buf.append(", 'HH:mm:ss')");
   }
 
-  public void quoteTimestampLiteral( StringBuilder buf, Timestamp value ) {
-    buf.append( "TO_DATE(" );
-    Util.singleQuoteString( value.toString(), buf );
-    buf.append( ", 'yyyy-MM-dd HH:mm:ss.SSS')" );
+  public void quoteTimestampLiteral(StringBuilder buf, Timestamp value) {
+    buf.append("TO_DATE(");
+    Util.singleQuoteString(value.toString(), buf);
+    buf.append(", 'yyyy-MM-dd HH:mm:ss.SSS')");
   }
 
 }
