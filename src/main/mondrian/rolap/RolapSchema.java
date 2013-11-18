@@ -12,7 +12,6 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.olap.Member;
-import mondrian.olap.Parameter;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
@@ -147,6 +146,8 @@ public class RolapSchema extends OlapElementBase implements Schema {
 
     public final Set<Locale> locales;
 
+    private String dataServicesProvider;
+
     /**
      * Creates a schema.
      *
@@ -210,6 +211,8 @@ public class RolapSchema extends OlapElementBase implements Schema {
         } else {
             warningList = null;
         }
+        dataServicesProvider = connectInfo.get(
+            RolapConnectionProperties.DataServicesProvider.name());
     }
 
     public String getUniqueName() {
@@ -615,7 +618,11 @@ public class RolapSchema extends OlapElementBase implements Schema {
             return new CacheMemberReader(
                 new HangerMemberSource(hierarchy, memberList));
         } else {
-            SqlMemberSource source = new SqlMemberSource(hierarchy);
+            DataServicesProvider provider =
+                DataServicesLocator.getDataServicesProvider(
+                    getDataServiceProviderName());
+
+            MemberReader source = provider.getMemberReader(hierarchy);
 
             if (MondrianProperties.instance().DisableCaching.get()) {
                 // If the cell cache is disabled, we can't cache
@@ -626,6 +633,10 @@ public class RolapSchema extends OlapElementBase implements Schema {
                 return new SmartMemberReader(source);
             }
         }
+    }
+
+    public String getDataServiceProviderName() {
+        return dataServicesProvider;
     }
 
     public SchemaReader getSchemaReader() {
@@ -860,14 +871,19 @@ public class RolapSchema extends OlapElementBase implements Schema {
          * @param dialect Dialect
          * @param internalConnection Internal connection (for data source, and
          *                           accounting of stats queries)
+         * @param dataServicesProvider DataServicesProvider to supply
+         *                             JdbcSchemaFactory
          */
         public PhysSchema(
             Dialect dialect,
-            RolapConnection internalConnection)
+            RolapConnection internalConnection,
+            DataServicesProvider dataServicesProvider)
         {
             this.dialect = dialect;
             this.jdbcSchema =
-                JdbcSchema.makeDB(internalConnection.getDataSource());
+                JdbcSchema.makeDB(
+                    internalConnection.getDataSource(),
+                    dataServicesProvider.getJdbcSchemaFactory());
             jdbcSchema.load();
             statistic = new PhysStatistic(dialect, internalConnection);
         }
@@ -1373,7 +1389,8 @@ public class RolapSchema extends OlapElementBase implements Schema {
         }
 
         public PhysColumn getColumn(String columnName, boolean fail) {
-            final PhysColumn column = columnsByName.get(columnName);
+            PhysColumn column = columnsByName.get(columnName);
+
             if (column == null && fail) {
                 throw Util.newError(
                     "Column '" + columnName + "' not found in relation '"

@@ -24,7 +24,7 @@ import java.util.List;
  * @author jhyde
  * @since 22 December, 2001
  */
-interface MemberCache {
+public interface MemberCache {
     /**
      * Retrieves the {@link RolapMember} with a given key.
      *

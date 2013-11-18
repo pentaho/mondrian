@@ -128,7 +128,7 @@ public class RolapMemberBase
      * @param uniqueName Unique name of this member
      * @param larder Larder
      */
-    protected RolapMemberBase(
+    public RolapMemberBase(
         RolapMember parentMember,
         RolapCubeLevel level,
         Comparable key,
@@ -475,7 +475,7 @@ public class RolapMemberBase
      *             hierarchy or a visual total member)
      * @return Unique name of member
      */
-    protected static String deriveUniqueName(
+    public static String deriveUniqueName(
         RolapMember parentMember,
         RolapCubeLevel level,
         String name,
@@ -749,13 +749,13 @@ public class RolapMemberBase
         return orderKey;
     }
 
-    void setOrdinal(int ordinal) {
+    public void setOrdinal(int ordinal) {
         if (this.ordinal == -1) {
             this.ordinal = ordinal;
         }
     }
 
-    void setOrderKey(Comparable orderKey) {
+    public void setOrderKey(Comparable orderKey) {
         assert arity(orderKey) == level.getOrderByKeyArity();
         this.orderKey = orderKey;
     }

@@ -4,14 +4,14 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2012 Pentaho
+// Copyright (C) 2012-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.olap.Util;
 import mondrian.olap.Util.PropertyList;
-import mondrian.spi.DynamicSchemaProcessor;
+import mondrian.spi.*;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 
@@ -161,8 +161,10 @@ public class RolapSchemaPoolTest extends FoodMartTestCase {
 
         Util.PropertyList connectInfoDS = connectInfo.clone();
         final StringBuilder buf = new StringBuilder();
+        DataServicesProvider provider =
+            DataServicesLocator.getDataServicesProvider("");
         DataSource dataSource =
-            RolapConnection.createDataSource(null, connectInfoDS, buf);
+            provider.createDataSource(null, connectInfoDS, buf);
         RolapSchema schemaDS = pool.get(catalogUrl, dataSource, connectInfoDS);
 
         assertTrue(schema == schemaDS);

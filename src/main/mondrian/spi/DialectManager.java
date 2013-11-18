@@ -146,7 +146,17 @@ public abstract class DialectManager {
                 return new ConstructorDialectFactory(constructor);
             }
         } catch (NoSuchMethodException e) {
-            // ignore
+            // if <init>(Connection) does not exist, go for the default
+            // constructor.
+            try {
+                final Constructor<? extends Dialect> constructor =
+                    dialectClass.getConstructor();
+                if (Modifier.isPublic(constructor.getModifiers())) {
+                    return new ConstructorDialectFactory(constructor);
+                }
+            } catch (NoSuchMethodException e2) {
+                // ignore
+            }
         }
 
         // No suitable constructor or factory.
@@ -371,6 +381,27 @@ public abstract class DialectManager {
             if (connection == null) {
                 return JdbcDialectFactory.createDialectHelper(
                     this, dataSource);
+            }
+
+            if (constructor.getParameterTypes().length == 0) {
+                try {
+                    return constructor.newInstance();
+                } catch (InstantiationException e) {
+                    throw Util.newError(
+                        e,
+                        "Error while instantiating dialect of class "
+                        + constructor.getClass());
+                } catch (IllegalAccessException e) {
+                    throw Util.newError(
+                        e,
+                        "Error while instantiating dialect of class "
+                        + constructor.getClass());
+                } catch (InvocationTargetException e) {
+                    throw Util.newError(
+                        e,
+                        "Error while instantiating dialect of class "
+                        + constructor.getClass());
+                }
             }
 
             // Connection is not null. Invoke the constructor.

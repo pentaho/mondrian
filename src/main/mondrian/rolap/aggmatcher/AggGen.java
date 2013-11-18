@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -13,6 +13,7 @@ package mondrian.rolap.aggmatcher;
 import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.spi.*;
 
 import org.apache.log4j.Logger;
 
@@ -152,7 +153,11 @@ public class AggGen {
      * create lost create and insert commands.
      */
     private void init() {
-        JdbcSchema db = JdbcSchema.makeDB(star.getDataSource());
+        DataServicesProvider provider =
+            DataServicesLocator.getDataServicesProvider(
+                star.getSchema().getDataServiceProviderName());
+        JdbcSchema db = JdbcSchema.makeDB(
+            star.getDataSource(), provider.getJdbcSchemaFactory());
         db.load();
 
         JdbcSchema.Table factTable = getTable(db, getFactTableName());
@@ -461,7 +466,7 @@ public class AggGen {
             return false;
         }
 
-        //CG guarantee the columns has been loaded before looking up them
+        // CG guarantee the columns has been loaded before looking up them
         try {
             jt.load();
         } catch (SQLException sqle) {

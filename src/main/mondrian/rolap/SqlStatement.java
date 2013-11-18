@@ -24,6 +24,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.sql.DataSource;
 
@@ -56,7 +57,7 @@ import javax.sql.DataSource;
  * @author jhyde
  * @since 2.3
  */
-public class SqlStatement {
+public class SqlStatement implements DBStatement {
     private static final Logger LOG = Logger.getLogger(SqlStatement.class);
     private static final String TIMING_NAME = "SqlStatement-";
 
@@ -80,7 +81,8 @@ public class SqlStatement {
     public int rowCount;
     private long startTimeNanos;
     private long startTimeMillis;
-    private final List<Accessor> accessors = new ArrayList<Accessor>();
+    private final Map<Object, Accessor> accessors =
+        new HashMap<Object, Accessor>();
     private State state = State.FRESH;
     private final long id;
     private Util.Function1<Statement, Void> callback;
@@ -239,12 +241,15 @@ public class SqlStatement {
             // return something daft like a BigDecimal (does, on the Oracle JDBC
             // driver).
             accessors.clear();
+            Integer index = 0;
             for (Type type : guessTypes()) {
                 // REVIEW: Is caching always needed? Some drivers don't need it;
                 //   some columns are only used once.
                 final boolean caching = true;
-                accessors.add(
+                accessors.put(
+                    index,
                     createAccessor(accessors.size(), type, caching));
+                index++;
             }
         } catch (Throwable e) {
             status = ", failed (" + e + ")";
@@ -468,7 +473,7 @@ public class SqlStatement {
         return types;
     }
 
-    public List<Accessor> getAccessors() throws SQLException {
+    public Map<Object, Accessor> getAccessors() throws SQLException {
         return accessors;
     }
 

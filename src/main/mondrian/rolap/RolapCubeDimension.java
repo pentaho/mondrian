@@ -110,6 +110,10 @@ public class RolapCubeDimension extends RolapDimension {
     public RolapSchema.PhysRelation getKeyTable() {
         return rolapDimension.getKeyTable();
     }
+
+    public RolapAttribute getKeyAttribute() {
+        return keyAttribute;
+    }
 }
 
 // End RolapCubeDimension.java

@@ -35,6 +35,8 @@ import java.sql.SQLException;
 import java.util.*;
 import javax.sql.DataSource;
 
+import static mondrian.rolap.LevelColumnLayout.OrderKeySource.*;
+
 /**
  * Reads the members of a single level (level.members) or of multiple levels
  * (crossjoin).
@@ -204,23 +206,23 @@ public class SqlTupleReader implements TupleReader {
             } else {
                 for (int i = 0; i <= levelDepth; i++) {
                     RolapCubeLevel childLevel = levels[i];
-                    final LevelColumnLayout layout =
+                    final LevelColumnLayout<Integer> layout =
                         columnLayout.levelLayoutMap.get(childLevel);
                     if (childLevel.isAll()) {
                         member = memberBuilder.allMember();
                         continue;
                     }
                     RolapMember parentMember = member;
-                    final List<SqlStatement.Accessor> accessors =
+                    final Map<Object, SqlStatement.Accessor> accessors =
                         stmt.getAccessors();
                     pc:
                     if (parentChild) {
                         Comparable[] parentKeys =
-                            new Comparable[layout.parentOrdinals.length];
-                        for (int j = 0; j < layout.parentOrdinals.length;
+                            new Comparable[layout.getParentKeys().size()];
+                        for (int j = 0; j < layout.getParentKeys().size();
                              j++)
                         {
-                            int parentOrdinal = layout.parentOrdinals[j];
+                            int parentOrdinal = layout.getParentKeys().get(j);
                             Comparable value =
                                 accessors.get(parentOrdinal).get();
                             if (value == null) {
@@ -252,9 +254,9 @@ public class SqlTupleReader implements TupleReader {
                         }
                     }
                     Comparable[] keyValues =
-                        new Comparable[layout.keyOrdinals.length];
-                    for (int j = 0; j < layout.keyOrdinals.length; j++) {
-                        int keyOrdinal = layout.keyOrdinals[j];
+                        new Comparable[layout.getKeys().size()];
+                    for (int j = 0; j < layout.getKeys().size(); j++) {
+                        int keyOrdinal = layout.getKeys().get(j);
                         Comparable value = accessors.get(keyOrdinal).get();
                         keyValues[j] = SqlMemberSource.toComparable(value);
                     }
@@ -274,17 +276,17 @@ public class SqlTupleReader implements TupleReader {
                             final Comparable keyClone =
                                 RolapMember.Key.create(keyValues);
                             final Comparable captionValue;
-                            if (layout.captionOrdinal >= 0) {
+                            if (layout.getCaptionKey() >= 0) {
                                 captionValue =
-                                    accessors.get(layout.captionOrdinal).get();
+                                    accessors.get(layout.getCaptionKey()).get();
                             } else {
                                 captionValue = null;
                             }
                             final Comparable nameObject;
                             final String nameValue;
-                            if (layout.nameOrdinal >= 0) {
+                            if (layout.getNameKey() >= 0) {
                                 nameObject =
-                                    accessors.get(layout.nameOrdinal).get();
+                                    accessors.get(layout.getNameKey()).get();
                                 nameValue =
                                     nameObject == null
                                         ? RolapUtil.mdxNullLiteral()
@@ -294,7 +296,7 @@ public class SqlTupleReader implements TupleReader {
                                 nameValue = null;
                             }
                             final Comparable orderKey;
-                            switch (layout.orderBySource) {
+                            switch (layout.getOrderBySource()) {
                             case NONE:
                                 orderKey = null;
                                 break;
@@ -307,10 +309,11 @@ public class SqlTupleReader implements TupleReader {
                             case MAPPED:
                                 orderKey =
                                     SqlMemberSource.getCompositeKey(
-                                        accessors, layout.orderByOrdinals);
+                                        accessors, layout.getOrderByKeys());
                                 break;
                             default:
-                                throw Util.unexpected(layout.orderBySource);
+                                throw Util.unexpected(
+                                    layout.getOrderBySource());
                             }
                             member = memberBuilder.makeMember(
                                 parentMember, childLevel, keyClone,
@@ -1417,7 +1420,7 @@ public class SqlTupleReader implements TupleReader {
         return maxRows;
     }
 
-    void setMaxRows(int maxRows) {
+    public void setMaxRows(int maxRows) {
         this.maxRows = maxRows;
     }
 
@@ -1469,11 +1472,12 @@ public class SqlTupleReader implements TupleReader {
             return new ColumnLayout(convert(levelLayoutMap.values()));
         }
 
-        private Map<RolapCubeLevel, LevelColumnLayout> convert(
+        private Map<RolapCubeLevel, LevelColumnLayout<Integer>> convert(
             Collection<LevelLayoutBuilder> builders)
         {
-            final Map<RolapCubeLevel, LevelColumnLayout> map =
-                new IdentityHashMap<RolapCubeLevel, LevelColumnLayout>();
+            final Map<RolapCubeLevel, LevelColumnLayout<Integer>> map =
+                new IdentityHashMap<RolapCubeLevel,
+                    LevelColumnLayout<Integer>>();
             for (LevelLayoutBuilder builder : builders) {
                 if (builder != null) {
                     map.put(builder.level, convert(builder));
@@ -1482,7 +1486,7 @@ public class SqlTupleReader implements TupleReader {
             return map;
         }
 
-        private LevelColumnLayout convert(LevelLayoutBuilder builder) {
+        private LevelColumnLayout<Integer> convert(LevelLayoutBuilder builder) {
             return builder == null ? null : builder.toLayout();
         }
 
@@ -1498,7 +1502,7 @@ public class SqlTupleReader implements TupleReader {
     }
 
     /**
-     * Builder for {@link LevelColumnLayout}.
+     * Builder for {@link mondrian.rolap.LevelColumnLayout}.
      *
      * @see Util#deprecated(Object) make top level
      */
@@ -1516,41 +1520,33 @@ public class SqlTupleReader implements TupleReader {
             this.level = level;
         }
 
-        public LevelColumnLayout toLayout() {
+        public LevelColumnLayout<Integer> toLayout() {
             boolean assignOrderKeys =
                 MondrianProperties.instance().CompareSiblingsByOrderKey.get()
                 || Util.deprecated(true, false); // TODO: remove property
 
-            OrderKeySource orderBySource = OrderKeySource.NONE;
+            LevelColumnLayout.OrderKeySource orderBySource = NONE;
             if (assignOrderKeys) {
                 if (orderByOrdinalList.equals(keyOrdinalList)) {
-                    orderBySource = OrderKeySource.KEY;
+                    orderBySource = KEY;
                 } else if (orderByOrdinalList.equals(
                         Collections.singletonList(nameOrdinal)))
                 {
-                    orderBySource = OrderKeySource.NAME;
+                    orderBySource = NAME;
                 } else {
-                    orderBySource = OrderKeySource.MAPPED;
+                    orderBySource = MAPPED;
                 }
             }
-            return new LevelColumnLayout(
-                toArray(keyOrdinalList),
+            return new LevelColumnLayout<Integer>(
+                keyOrdinalList,
                 nameOrdinal,
                 captionOrdinal,
                 orderBySource,
-                orderBySource == OrderKeySource.MAPPED
-                    ? toArray(orderByOrdinalList)
+                orderBySource == MAPPED
+                    ? orderByOrdinalList
                     : null,
-                toArray(propertyOrdinalList),
-                toArray(parentOrdinalList));
-        }
-
-        private static int[] toArray(List<Integer> list) {
-            final int[] ints = new int[list.size()];
-            for (int i = 0; i < ints.length; i++) {
-                ints[i] = list.get(i);
-            }
-            return ints;
+                propertyOrdinalList,
+                parentOrdinalList);
         }
     }
 
@@ -1558,57 +1554,14 @@ public class SqlTupleReader implements TupleReader {
      * Description of where to find attributes within each row.
      */
     static class ColumnLayout {
-        final Map<RolapCubeLevel, LevelColumnLayout> levelLayoutMap;
+        final Map<RolapCubeLevel, LevelColumnLayout<Integer>> levelLayoutMap;
 
         public ColumnLayout(
-            final Map<RolapCubeLevel, LevelColumnLayout> levelLayoutMap)
+            final Map<RolapCubeLevel,
+                LevelColumnLayout<Integer>> levelLayoutMap)
         {
             this.levelLayoutMap = levelLayoutMap;
         }
-    }
-
-    static class LevelColumnLayout {
-        // column ordinals where the values of the level's key (possibly
-        // compound) are found
-        public final int[] keyOrdinals;
-        // column ordinal where the value of the level's name is found
-        public final int nameOrdinal;
-        // column ordinals where the value of the level's caption is found,
-        // or -1 if no caption
-        public final int captionOrdinal;
-        public final OrderKeySource orderBySource;
-        // column ordinals where the ordinal expression is found
-        public final int[] orderByOrdinals;
-        // column ordinals where the values of the level's properties are found
-        public final int[] propertyOrdinals;
-        // column ordinals of the fields that contain this member's parent
-        // member (in a parent child hierarchy)
-        public final int[] parentOrdinals;
-
-        LevelColumnLayout(
-            int[] keyOrdinals,
-            int nameOrdinal,
-            int captionOrdinal,
-            OrderKeySource orderBySource,
-            int[] orderByOrdinals,
-            int[] propertyOrdinals,
-            int[] parentOrdinals)
-        {
-            this.keyOrdinals = keyOrdinals;
-            this.nameOrdinal = nameOrdinal;
-            this.captionOrdinal = captionOrdinal;
-            this.orderBySource = orderBySource;
-            this.orderByOrdinals = orderByOrdinals;
-            this.propertyOrdinals = propertyOrdinals;
-            this.parentOrdinals = parentOrdinals;
-        }
-    }
-
-    enum OrderKeySource {
-        NONE,
-        KEY,
-        NAME,
-        MAPPED
     }
 }
 

@@ -19,7 +19,7 @@ public class RolapClosure {
      * The closed peer level which knows how to link
      * to the closure table when resolving parent-child relations.
      */
-    final RolapLevel closedPeerLevel;
+    public final RolapLevel closedPeerLevel;
     /**
      * A SQL DB column in the closure table which contains
      * the distance of the relation for each parent-child tuple.

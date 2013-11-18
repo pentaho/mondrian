@@ -18,12 +18,14 @@ import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.cache.*;
 import mondrian.rolap.sql.*;
-import mondrian.spi.Dialect;
+import mondrian.spi.*;
 
 import org.apache.log4j.Logger;
 
 import java.util.*;
 import javax.sql.DataSource;
+
+import static mondrian.spi.DataServicesLocator.*;
 
 /**
  * Analyses set expressions and executes them in SQL if possible.
@@ -189,14 +191,17 @@ public abstract class RolapNativeSet extends RolapNative {
             case ITERABLE:
             case MUTABLE_LIST:
             case LIST:
-                return executeList(new SqlTupleReader(constraint));
+                DataServicesProvider provider =
+                    getDataServicesProvider(
+                        schemaReader.getSchema().getDataServiceProviderName());
+                return executeList(provider.getTupleReader(constraint));
             }
             throw ResultStyleException.generate(
                 ResultStyle.ITERABLE_MUTABLELIST_LIST,
                 Collections.singletonList(desiredResultStyle));
         }
 
-        protected TupleList executeList(final SqlTupleReader tr) {
+        protected TupleList executeList(final TupleReader tr) {
             tr.setMaxRows(maxRows);
             for (CrossJoinArg arg : args) {
                 addLevel(tr, arg);

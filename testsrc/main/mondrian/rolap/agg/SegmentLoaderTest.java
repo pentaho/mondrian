@@ -239,7 +239,7 @@ public class SegmentLoaderTest extends BatchTestCase {
                     getData(true));
             }
 
-            boolean useSparse(boolean sparse, int n, RowList rows) {
+            public boolean useSparse(boolean sparse, int n, RowList rows) {
                 return true;
             }
         };

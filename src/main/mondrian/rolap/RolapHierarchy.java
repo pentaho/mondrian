@@ -326,7 +326,7 @@ public class RolapHierarchy extends HierarchyBase {
      * in a parent-child hierarchy, so we only need need to validate the
      * expression once.
      */
-    synchronized Exp getAggregateChildrenExpression() {
+    public synchronized Exp getAggregateChildrenExpression() {
         if (aggregateChildrenExpression == null) {
             UnresolvedFunCall fc = new UnresolvedFunCall(
                 "$AggregateChildren",
