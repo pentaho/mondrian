@@ -73,7 +73,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "    `product`.`product_name`\n"
             + "order by\n"
             // top count Measures.[Store Sales]
-            + "    `c6` DESC,\n"
+            + "    sum(`sales_fact_1997`.`store_sales`) DESC,\n"
             + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC,\n"
             + "    ISNULL(`product_class`.`product_department`) ASC, `product_class`.`product_department` ASC,\n"
             + "    ISNULL(`product_class`.`product_category`) ASC, `product_class`.`product_category` ASC,\n"
@@ -394,7 +394,11 @@ public class NativeSetEvaluationTest extends BatchTestCase {
               + "    `product_class`.`product_department`,\n"
               + "    `product_class`.`product_category`\n"
               + "order by\n"
-              + "    `c3` DESC,\n"
+              + "    sum(`"
+              + (useAggregates
+                  ? "agg_c_14_sales_fact_1997"
+                  : "sales_fact_1997")
+              + "`.`unit_sales`) DESC,\n"
               + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC,\n"
               + "    ISNULL(`product_class`.`product_department`) ASC, `product_class`.`product_department` ASC,\n"
               + "    ISNULL(`product_class`.`product_category`) ASC, `product_class`.`product_category` ASC";
@@ -487,7 +491,11 @@ public class NativeSetEvaluationTest extends BatchTestCase {
               + "    `product_class`.`product_department`,\n"
               + "    `product_class`.`product_category`\n"
               + "order by\n"
-              + "    `c3` DESC,\n"
+              + "    sum(`"
+              + (useAggregates
+                  ? "agg_c_14_sales_fact_1997"
+                  : "sales_fact_1997")
+              + "`.`unit_sales`) DESC,\n"
               + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC,\n"
               + "    ISNULL(`product_class`.`product_department`) ASC, `product_class`.`product_department` ASC,\n"
               + "    ISNULL(`product_class`.`product_category`) ASC, `product_class`.`product_category` ASC";
@@ -579,7 +587,11 @@ public class NativeSetEvaluationTest extends BatchTestCase {
               + "    `product_class`.`product_department`,\n"
               + "    `product_class`.`product_category`\n"
               + "order by\n"
-              + "    `c3` DESC,\n"
+              + "    sum(`"
+              + (useAggregates
+                  ? "agg_c_14_sales_fact_1997"
+                  : "sales_fact_1997")
+              + "`.`unit_sales`) DESC,\n"
               + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC,\n"
               + "    ISNULL(`product_class`.`product_department`) ASC, `product_class`.`product_department` ASC,\n"
               + "    ISNULL(`product_class`.`product_category`) ASC, `product_class`.`product_category` ASC";
@@ -786,7 +798,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "    `product_class`.`product_family`,\n"
             + "    `product_class`.`product_department`\n"
             + "order by\n"
-            + "    `c2` DESC,\n"
+            + "    sum(`agg_pl_01_sales_fact_1997`.`store_sales_sum`) DESC,\n"
             + "    ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC,\n"
             + "    ISNULL(`product_class`.`product_department`) ASC, `product_class`.`product_department` ASC";
 
@@ -1013,7 +1025,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "    `customer`.`education`,\n"
             + "    `customer`.`yearly_income`\n"
             + "order by\n"
-            + "    `c10` DESC,\n"
+            + "    sum(`sales_fact_1997`.`unit_sales`) DESC,\n"
             + "    ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC,\n"
             + "    ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC,\n"
             + "    ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC,\n"
@@ -1098,7 +1110,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "    `customer`.`education`,\n"
             + "    `customer`.`yearly_income`\n"
             + "order by\n"
-            + "    `c10` DESC,\n"
+            + "    sum(`sales_fact_1997`.`unit_sales`) DESC,\n"
             + "    ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC,\n"
             + "    ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC,\n"
             + "    ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC,\n"
