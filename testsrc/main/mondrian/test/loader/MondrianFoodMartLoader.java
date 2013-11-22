@@ -1400,6 +1400,10 @@ public class MondrianFoodMartLoader {
                 // outputJdbcBatchSize=1.
                 try {
                     stmt.execute(sqls.get(0));
+                    switch (dialect.getDatabaseProduct()) {
+                    case PHOENIX:
+                        connection.commit();
+                    }
                 } catch (RuntimeException e) {
                     LOGGER.error("Error in SQL statement: " + sqls.get(0));
                     throw e;
@@ -1849,6 +1853,9 @@ public class MondrianFoodMartLoader {
                     }
                 }
             }
+            break;
+        case PHOENIX:
+            connection.commit();
             break;
         }
     }
