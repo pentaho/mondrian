@@ -12,6 +12,8 @@ package mondrian.test;
 import mondrian.olap.*;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapMeasureGroup;
+import mondrian.rolap.RolapSchema;
+import mondrian.rolap.SqlStatement;
 import mondrian.rolap.aggmatcher.*;
 import mondrian.spi.*;
 import mondrian.spi.PropertyFormatter;
@@ -6196,11 +6198,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "Duplicate table alias 'myfact'.*",
             "<Table name='customer' alias='myfact'/>");
 
-        // REVIEW: location should be "<CalculatedColumnDef
-        // name='state_province'>"?
         assertList.containsError(
             "Duplicate column 'state_province' in table 'customer2'.*",
-            "<ColumnDef name='state_province'/>");
+            "<CalculatedColumnDef name='state_province'>");
         assertList.containsError(
             "Link references unknown source table 'unknownSource'.*",
             "<Link source='unknownSource' target='customer2'/>");
@@ -7801,6 +7801,74 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "[Store].[Store Size in SQFT].[39696]]",
             members.toString());
     }
+
+    public void testColumnDatatypeFromSchemaIsHonored() {
+        // verifies that types set in the schema are loaded and used.
+        TestContext context = getTestContext().withSchema(
+            "<?xml version='1.0'?>\n"
+            + "<Schema name='FoodMart' metamodelVersion='4.0'>"
+            + "<PhysicalSchema>"
+            + "  <Table name='store' keyColumn='store_id'>"
+            + "   <ColumnDefs>"
+            + "  <!-- explicitly set the type and internalType for grocery_sqft -->"
+            + "    <ColumnDef name='grocery_sqft' type='Numeric' internalType='double'/>"
+            + "  <!-- leave the type and internalType unset for frozen_sqft -->"
+            + "    <ColumnDef name='frozen_sqft' />"
+            + "    </ColumnDefs></Table>"
+            + "  <Table name='sales_fact_1997'>"
+            + "  </Table>"
+            + "</PhysicalSchema>"
+            + "<Cube name='Sales'>\n"
+            + "  <Dimensions>"
+            + "    <Dimension name='Store2' table='store' key='Store Id'>\n"
+            + "      <Attributes>"
+            + "       <Attribute name='Grocery Sqft' keyColumn='grocery_sqft' hasHierarchy='true'/>\n"
+            + "       <Attribute name='Frozen Sqft' keyColumn='frozen_sqft' hasHierarchy='true'/>\n"
+            + "       <Attribute name='Store Id' keyColumn='store_id' hasHierarchy='true'/>\n"
+            + "      </Attributes>"
+            + "    </Dimension>\n"
+            + "  </Dimensions>"
+            + "  <MeasureGroups>"
+            + "    <MeasureGroup table='sales_fact_1997'>"
+            + "      <Measures>"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' />\n"
+            + "      </Measures>"
+            + "      <DimensionLinks>"
+            + "        <ForeignKeyLink dimension='Store2' foreignKeyColumn='store_id'/>"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>"
+            + "  </MeasureGroups>"
+            + "</Cube>\n"
+            + "</Schema>");
+        RolapSchema schema = (RolapSchema)context.getConnection().getSchema();
+        SqlStatement.Type sqlStatementType = schema.getCubeList().get(0)
+            .getDimensionList().get(1)
+            .getHierarchyList().get("Grocery Sqft")
+            .getLevelList().get(1)
+            .getAttribute().getNameExp().getInternalType();
+        Dialect.Datatype  dialectType = schema.getCubeList().get(0)
+            .getDimensionList().get(1)
+            .getHierarchyList().get("Grocery Sqft")
+            .getLevelList().get(1)
+            .getAttribute().getNameExp().getDatatype();
+        assertEquals(
+            "internalType should match what was set in the schema",
+            SqlStatement.Type.DOUBLE, sqlStatementType);
+        assertEquals(
+            "dialect type should match what was set in the schema",
+            Dialect.Datatype.Numeric, dialectType);
+
+        dialectType = schema.getCubeList().get(0)
+            .getDimensionList().get(1)
+            .getHierarchyList().get("Frozen Sqft")
+            .getLevelList().get(1)
+            .getAttribute().getNameExp().getDatatype();
+        assertEquals(
+            "The type has not been explicitly set in the schema, "
+            + "so the default type should still be used.",
+            Dialect.Datatype.Integer, dialectType);
+    }
+
 
     // TODO: test that there is an error if we try to define a property
     // that is not functionally dependent on the attribute (e.g. define week as

@@ -1315,7 +1315,14 @@ public class RolapSchemaLoader {
         MondrianDef.Relation table,
         MondrianDef.RealOrCalcColumnDef xmlColumn)
     {
-        if (physRelation.columnsByName.containsKey(xmlColumn.name)) {
+        boolean inlineTable =
+            physRelation instanceof RolapSchema.PhysInlineTable;
+        boolean calcColDef =
+            xmlColumn instanceof MondrianDef.CalculatedColumnDef;
+        if ((inlineTable || calcColDef)
+            && physRelation.columnsByName.containsKey(xmlColumn.name))
+        {
+            // The calc or inlined column is a duplicate.
             handler.warning(
                 "Duplicate column '" + xmlColumn.name
                 + "' in table '" + alias + "'.",
@@ -1324,10 +1331,10 @@ public class RolapSchemaLoader {
             skip.add(xmlColumn);
             return;
         }
-        if (physRelation instanceof RolapSchema.PhysInlineTable) {
+        if (inlineTable) {
             RolapSchema.PhysInlineTable physInlineTable =
                 (RolapSchema.PhysInlineTable) physRelation;
-            if (xmlColumn instanceof MondrianDef.CalculatedColumnDef) {
+            if (calcColDef) {
                 handler.warning(
                     "Cannot define calculated column in inline table",
                     xmlColumn,
@@ -1347,7 +1354,7 @@ public class RolapSchemaLoader {
         }
         final RolapSchema.PhysTable physTable =
             (RolapSchema.PhysTable) physRelation;
-        if (xmlColumn instanceof MondrianDef.CalculatedColumnDef) {
+        if (calcColDef) {
             MondrianDef.CalculatedColumnDef xmlCalcColumnDef =
                 (MondrianDef.CalculatedColumnDef) xmlColumn;
             final List<RolapSchema.PhysExpr> list =
@@ -1420,10 +1427,14 @@ public class RolapSchemaLoader {
                 physRelation.getColumn(
                     xmlColumn.name,
                     true);
-            physColumn.setDatatype(
-                toType(xmlColumn.type));
-            physColumn.setInternalType(
-                toInternalType(xmlColumn.internalType));
+            if (xmlColumn.type != null) {
+                physColumn.setDatatype(
+                    toType(xmlColumn.type));
+            }
+            if (xmlColumn.internalType != null) {
+                physColumn.setInternalType(
+                    toInternalType(xmlColumn.internalType));
+            }
         }
     }
 
