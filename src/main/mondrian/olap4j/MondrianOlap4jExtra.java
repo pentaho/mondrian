@@ -17,6 +17,7 @@ import mondrian.xmla.*;
 import mondrian.xmla.RowsetDefinition.MdschemaFunctionsRowset.VarType;
 
 import org.olap4j.*;
+import org.olap4j.Cell;
 import org.olap4j.metadata.*;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Hierarchy;
@@ -384,6 +385,46 @@ class MondrianOlap4jExtra extends XmlaHandler.XmlaExtraImpl {
     public List<String> getKeywords() {
         MondrianServer mondrianServer = MondrianServer.forId(null);
         return mondrianServer.getKeywords();
+    }
+
+    @Override
+    public boolean canDrillThrough(Cell cell) {
+        return ((MondrianOlap4jCell)cell).canDrillThrough();
+    }
+
+    @Override
+    public int getDrillThroughCount(Cell cell) {
+        return ((MondrianOlap4jCell)cell).getDrillThroughCount();
+    }
+
+    @Override
+    public void flushSchemaCache(OlapConnection conn) throws OlapException {
+        try {
+            conn.unwrap(RolapConnection.class)
+                .getCacheControl(null).flushSchemaCache();
+        } catch (SQLException e) {
+            throw new OlapException(e);
+        }
+    }
+
+    @Override
+    public Object getMemberKey(Member m) throws OlapException {
+        try {
+            return ((MondrianOlap4jMember)m)
+                .unwrap(RolapMemberBase.class).getKey();
+        } catch (SQLException e) {
+            throw new OlapException(e);
+        }
+    }
+
+    @Override
+    public Object getOrderKey(Member m) throws OlapException {
+        try {
+            return ((MondrianOlap4jMember)m)
+                .unwrap(RolapMemberBase.class).getOrderKey();
+        } catch (SQLException e) {
+            throw new OlapException(e);
+        }
     }
 }
 
