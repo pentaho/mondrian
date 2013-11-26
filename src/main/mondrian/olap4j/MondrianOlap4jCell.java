@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho
+// Copyright (C) 2007-2013 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
@@ -117,6 +117,14 @@ class MondrianOlap4jCell implements Cell {
 
     public String getFormattedValue() {
         return cell.getFormattedValue();
+    }
+
+    public boolean canDrillThrough() {
+        return cell.canDrillThrough();
+    }
+
+    public int getDrillThroughCount() {
+        return cell.getDrillThroughCount();
     }
 
     public ResultSet drillThrough() throws OlapException {
