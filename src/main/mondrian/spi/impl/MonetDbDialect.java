@@ -57,11 +57,6 @@ public class MonetDbDialect extends JdbcDialectImpl {
     }
 
     @Override
-    public boolean requiresGroupByAlias() {
-        return true;
-    }
-
-    @Override
     public boolean allowsCompoundCountDistinct() {
         return false;
     }
