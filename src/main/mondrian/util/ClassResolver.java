@@ -44,7 +44,7 @@ public interface ClassResolver {
     Iterable<URL> getResources(String lookupName) throws IOException;
 
     /** Default resolver. */
-    ClassResolver INSTANCE = new ThreadContextClassResolver();
+    ClassResolver INSTANCE = new LocalClassloaderClassResolver();
 
     /** Implementation of {@link ClassResolver} that calls
      * {@link Thread#getContextClassLoader()} on the current thread. */
@@ -52,6 +52,15 @@ public interface ClassResolver {
         protected ClassLoader getClassLoader() {
             return Thread.currentThread().getContextClassLoader();
         }
+    }
+
+    /** Implementation of {@link ClassResolver} that which returns
+     * this class' ClassLoader. */
+    class LocalClassloaderClassResolver extends AbstractClassResolver {
+      final ClassLoader classLoader = getClass().getClassLoader();
+      protected ClassLoader getClassLoader() {
+        return classLoader;
+      }
     }
 
     /** Partial implementation of {@link ClassResolver}. Derived class just

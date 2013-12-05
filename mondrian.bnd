@@ -1,0 +1,5 @@
+Import-Package: !org.junit.*,!junit.*,org.olap4j.driver.xmla;resolution:=optional,org.olap4j.driver.xmla.proxy;resolution:=optional,org.olap4j.test;resolution:=optional,mondrian.xmla,mondrian.xmla.impl,*
+Export-Package: !mondrian.xmla, !mondrian.xmla.*,*
+DynamicImport-Package: *
+Bundle-Name: mondrian
+Bundle-SymbolicName: mondrian

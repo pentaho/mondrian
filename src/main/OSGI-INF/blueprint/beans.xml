@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bp:blueprint xmlns="http://www.springframework.org/schema/beans"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:cm="http://www.eclipse.org/gemini/blueprint/schema/blueprint-compendium"
+           xmlns:bp="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xsi:schemaLocation="
+           http://www.eclipse.org/gemini/blueprint/schema/blueprint-compendium http://www.eclipse.org/gemini/blueprint/schema/blueprint-compendium/gemini-blueprint-compendium.xsd
+           http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
+           default-activation="eager">
+
+<bean class="mondrian.osgi.PropertiesService" id="props">
+  <!-- inject properties -->
+  <property name="properties">
+    <cm:cm-properties persistent-id="mondrian"/>
+  </property>
+
+  <!-- re-inject properties on update -->
+  <cm:managed-properties persistent-id="mondrian" autowire-on-update="true"
+                         update-method="setProperties"/>
+</bean>
+
+<!-- Declare then publish Mondrian Olap4J Driver -->
+<bean class="mondrian.olap4j.MondrianOlap4jDriver" id="driver"/>
+
+<bp:service interface="java.sql.Driver" ref="driver">
+  <bp:service-properties>
+    <entry key="name" value="mondrian4"/>
+  </bp:service-properties>
+</bp:service>
+
+</bp:blueprint>
+
+
