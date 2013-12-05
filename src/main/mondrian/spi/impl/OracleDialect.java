@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.spi.impl;
 
 import mondrian.rolap.SqlStatement;
@@ -136,22 +135,28 @@ public class OracleDialect extends JdbcDialectImpl {
 
     public void quoteDateLiteral(StringBuilder buf, String value) {
         Date date;
+        // the ansi spec for <date string> ::=
+        // <years value> <minus sign> <months value> <minus sign> <days value>
+        final String ansiDateLiteralFormat = "\\d{2,4}-\\d{1,2}-\\d{1,2}";
         try {
               // The format of the 'value' parameter is not certain.
               // Some JDBC drivers will return a timestamp even though
               // we ask for a date (oracle is one of them). We must try to
               // convert both formats.
-            date = Date.valueOf(value);
-        } catch (IllegalArgumentException ex) {
-            try {
-                date =
-                    new Date(Timestamp.valueOf(value).getTime());
-            } catch (IllegalArgumentException ex2) {
-                throw new NumberFormatException(
-                    "Illegal DATE literal:  " + value);
+            if (Pattern.matches(ansiDateLiteralFormat, value)) {
+                date = Date.valueOf(value);
+            } else {
+                date = new Date(Timestamp.valueOf(value).getTime());
             }
+        } catch (IllegalArgumentException ex) {
+            throw new NumberFormatException(
+                "Illegal DATE literal:  " + value);
         }
-        quoteDateLiteral(buf, value, date);
+        // Date.toString formats date in the date escape
+        // format yyyy-mm-dd, which is consistent with the
+        // ansi DATE literal spec.
+        assert Pattern.matches(ansiDateLiteralFormat, date.toString());
+        quoteDateLiteral(buf, date.toString(), date);
     }
 
     /**
