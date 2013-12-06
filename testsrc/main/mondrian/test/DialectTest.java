@@ -1,15 +1,14 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.test;
 
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.SqlStatement;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
@@ -21,6 +20,7 @@ import junit.framework.TestCase;
 
 import java.lang.reflect.*;
 import java.sql.*;
+import java.sql.Connection;
 import java.util.*;
 import javax.sql.DataSource;
 
@@ -585,6 +585,62 @@ public class DialectTest extends TestCase {
             };
             assertQueryFails(sql, errs);
         }
+    }
+
+    public void testDateLiteralString() {
+        // verify correct construction of the date literal string.
+        // With Oracle this can get interesting, because depending on the
+        // driver version the string may be a DATE or a TIMESTAMP.
+        // We need to construct a valid date literal in either case.
+        // See http://jira.pentaho.com/browse/MONDRIAN-1819 and
+        // http://jira.pentaho.com/browse/MONDRIAN-626
+        Dialect oracleDialect = new OracleDialect();
+        StringBuilder buf = new StringBuilder();
+        oracleDialect.quoteDateLiteral(buf, "2003-12-12");
+        assertEquals("DATE '2003-12-12'", buf.toString());
+        buf = new StringBuilder();
+        oracleDialect.quoteDateLiteral(buf, "2007-01-15 00:00:00.0");
+        assertEquals("DATE '2007-01-15'", buf.toString());
+
+        if (getDialect().getDatabaseProduct()
+            != Dialect.DatabaseProduct.ORACLE)
+        {
+            // the following test is specifically for Oracle.
+            return;
+        }
+        final TestContext context = TestContext.instance().withSchema(
+            "<?xml version=\"1.0\"?>\n"
+            + "<Schema name=\"FoodMart\">\n"
+            + "  <Dimension  name=\"Time\" type=\"TimeDimension\">\n"
+            + "    <Hierarchy hasAll='true' primaryKey=\"time_id\">\n"
+            + "      <Table name=\"time_by_day\"/>\n"
+            + "      <Level name=\"Day\"  type=\"Date\" uniqueMembers=\"true\"\n"
+            + "          levelType=\"TimeYears\">\n"
+            + "        <KeyExpression>\n"
+            + "          <SQL>\n"
+            + "            cast(\"the_date\" as DATE)\n"
+            + "          </SQL>\n"
+            + "        </KeyExpression>\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Cube name=\"DateLiteralTest\" defaultMeasure=\"expression\">\n"
+            + "    <Table name=\"sales_fact_1997\" />\n"
+            + "    <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+            + "    <Measure name=\"Unit Sales\" column=\"unit_sales\"  aggregator=\"sum\"\n"
+            + "    formatString=\"Standard\" />\n"
+            + "  </Cube>\n"
+            + "</Schema>\n");
+        // if date literal is incorrect the following query will give the error
+        // ORA-01861: literal does not match format string
+        Result result = context.executeQuery(
+            "select Time.[All Times].FirstChild on 0 from DateLiteralTest");
+        String firstChild =
+            result.getAxes()[0].getPositions().get(0).get(0)
+                .getName().toString();
+        // the member name may have timestamp info, for example if using
+        // Oracle with ojdbc5+.  Make sure it starts w/ the expected date.
+        assertTrue(firstChild.startsWith("1997-01-01"));
     }
 
     public void testResultSetConcurrency() {
