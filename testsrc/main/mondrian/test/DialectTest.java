@@ -9,6 +9,7 @@
 */
 package mondrian.test;
 
+import mondrian.olap.Result;
 import mondrian.olap.Util;
 import mondrian.rolap.SqlStatement;
 import mondrian.spi.Dialect;
@@ -548,6 +549,73 @@ public class DialectTest extends TestCase {
             };
             assertQueryFails(sql, errs);
         }
+    }
+
+    public void testDateLiteralString() {
+        // verify correct construction of the date literal string.
+        // With Oracle this can get interesting, because depending on the
+        // driver version the string may be a DATE or a TIMESTAMP.
+        // We need to construct a valid date literal in either case.
+        // See http://jira.pentaho.com/browse/MONDRIAN-1819 and
+        // http://jira.pentaho.com/browse/MONDRIAN-626
+        if (getDialect().getDatabaseProduct()
+            != Dialect.DatabaseProduct.ORACLE)
+        {
+            // the following test is specifically for Oracle.
+            return;
+        }
+        final TestContext context = TestContext.instance().withSchema(
+            "<?xml version=\"1.0\"?>\n"
+            + "<Schema name=\"FoodMart\" metamodelVersion=\"4.00\">\n"
+            + "  <PhysicalSchema>\n"
+            + "    <Table name='time_by_day'>\n"
+            + "      <Key>\n"
+            + "        <Column name='time_id'/>\n"
+            + "      </Key>\n"
+            + "      <ColumnDefs>\n"
+            + "        <CalculatedColumnDef name='date_datatype' type='Date'>\n"
+            + "          <ExpressionView>\n"
+            + "            <SQL dialect='oracle'>\n"
+            + "              CAST(\"the_date\" as DATE)\n"
+            + "            </SQL>\n"
+            + "          </ExpressionView>\n"
+            + "        </CalculatedColumnDef>\n"
+            + "      </ColumnDefs>\n"
+            + "    </Table>\n"
+            + "    <Table name=\"sales_fact_1997\" alias=\"sales_fact_1997\"/>\n"
+            + "  </PhysicalSchema>\n"
+            + "  <Cube name=\"Sales\" >\n"
+            + "    <Dimensions>\n"
+            + "      <Dimension name=\"Time\" table='time_by_day'  key=\"Time Id\">\n"
+            + "        <Attributes>\n"
+            + "          <Attribute name='Time Id' keyColumn='time_id' hasHierarchy='false'/>\n"
+            + "          <Attribute name=\"Day\" keyColumn='date_datatype' hasHierarchy=\"true\">\n"
+            + "          </Attribute>\n"
+            + "        </Attributes>\n"
+            + "      </Dimension>\n"
+            + "    </Dimensions>\n"
+            + "    <MeasureGroups>\n"
+            + "      <MeasureGroup name=\"Sales\" type=\"fact\"  table=\"sales_fact_1997\">\n"
+            + "        <Measures>\n"
+            + "          <Measure name='Unit Sales' column='unit_sales' aggregator='sum' formatString='Standard'/>\n"
+            + "        </Measures>\n"
+            + "        <DimensionLinks>\n"
+            + "          <ForeignKeyLink dimension=\"Time\" foreignKeyColumn='time_id' />\n"
+            + "        </DimensionLinks>\n"
+            + "      </MeasureGroup>\n"
+            + "    </MeasureGroups>\n"
+            + "  </Cube>\n"
+            + "</Schema>\n");
+        // if date literal is incorrect the following query will give the error
+        // ORA-01861: literal does not match format string
+        Result result = context.executeQuery(
+            "select [Time].[Day].[All Day].FirstChild on 0 from Sales");
+        String firstChild =
+            result.getAxes()[0].getPositions().get(0).get(0)
+                .getName().toString();
+        // the member name may have timestamp info, for example if using
+        // Oracle with ojdbc5+.  Make sure it starts w/ the expected date.
+        assertTrue(firstChild.startsWith("1997-01-01"));
     }
 
     public void testResultSetConcurrency() {
