@@ -9,7 +9,6 @@
 // Copyright (C) 2005-2013 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.mdx.MdxVisitorImpl;
@@ -105,6 +104,7 @@ public class RolapNativeFilter extends RolapNativeSet {
             if (filterExpr != null) {
                 key.add(filterExpr.toString());
             }
+            key.add(getEvaluator().isNonEmpty());
 
             if (this.getEvaluator() instanceof RolapEvaluator) {
                 key.add(

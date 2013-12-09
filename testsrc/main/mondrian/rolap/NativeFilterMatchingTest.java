@@ -295,6 +295,20 @@ public class NativeFilterMatchingTest extends BatchTestCase {
             getTestContext());
     }
 
+    public void testCachedNativeFilter() {
+        // http://jira.pentaho.com/browse/MONDRIAN-1694
+
+        // verify that the RolapNativeSet cached values from NON EMPTY context
+        // are not reused when not NON EMPTY.
+        verifySameNativeAndNot(
+            "select NON EMPTY Filter([Store].[Store Name].Members, Store.CurrentMember.Name matches \"Store.*\") "
+            + " on 0 from sales",
+            "Filter w/ regex.", getTestContext());
+        verifySameNativeAndNot(
+            "select Filter([Store].[Store Name].Members, Store.CurrentMember.Name matches \"Store.*\") "
+            + " on 0 from sales",
+            "Filter w/ regex.", getTestContext());
+    }
 
     public void testMatchesWithAccessControl() {
         String dimension =
