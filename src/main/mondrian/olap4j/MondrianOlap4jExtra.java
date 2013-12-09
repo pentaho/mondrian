@@ -387,17 +387,14 @@ class MondrianOlap4jExtra extends XmlaHandler.XmlaExtraImpl {
         return mondrianServer.getKeywords();
     }
 
-    @Override
     public boolean canDrillThrough(Cell cell) {
         return ((MondrianOlap4jCell)cell).canDrillThrough();
     }
 
-    @Override
     public int getDrillThroughCount(Cell cell) {
         return ((MondrianOlap4jCell)cell).getDrillThroughCount();
     }
 
-    @Override
     public void flushSchemaCache(OlapConnection conn) throws OlapException {
         try {
             conn.unwrap(RolapConnection.class)
@@ -407,7 +404,6 @@ class MondrianOlap4jExtra extends XmlaHandler.XmlaExtraImpl {
         }
     }
 
-    @Override
     public Object getMemberKey(Member m) throws OlapException {
         try {
             return ((MondrianOlap4jMember)m)
@@ -417,7 +413,6 @@ class MondrianOlap4jExtra extends XmlaHandler.XmlaExtraImpl {
         }
     }
 
-    @Override
     public Object getOrderKey(Member m) throws OlapException {
         try {
             return ((MondrianOlap4jMember)m)
