@@ -15,7 +15,10 @@ import mondrian.calc.impl.ConstantCalc;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.olap.type.Type;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,6 +81,38 @@ class CaseMatchFunDef extends FunDefBase {
                 return calcs;
             }
         };
+    }
+
+    /**
+     * Override the default behavior which uses the first arg type as the
+     * result type, in the situation for case we use the third parameter
+     * as the result type.
+     *
+     * @param validator Validator
+     * @param args Arguments to the call to this operator
+     * @return result type of a call this function
+     */
+    public Type getResultType(Validator validator, Exp[] args) {
+        Type thirdArgType =
+            args.length > 2
+            ? args[2].getType()
+            : null;
+        Type type = castType(thirdArgType, getReturnCategory());
+        if (type != null) {
+            return type;
+        }
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        for (int i = 0; i < args.length; i++) {
+          pw.print(" | ");
+          args[i].unparse(pw);
+        }
+
+        throw Util.newInternal(
+            "Cannot deduce type of call to function '" + this.getName()
+                + "' DETAILS(ARGCOUNT: " + args.length + ", PARAMS: "
+                + sw.toString() + ")");
     }
 
     private static class ResolverImpl extends ResolverBase {
