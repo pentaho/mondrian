@@ -293,6 +293,20 @@ public class NativeFilterMatchingTest extends BatchTestCase {
             getTestContext());
     }
 
+    public void testCachedNativeFilter() {
+        // http://jira.pentaho.com/browse/MONDRIAN-1694
+
+        // verify that the RolapNativeSet cached values from NON EMPTY context
+        // are not reused when not NON EMPTY.
+        verifySameNativeAndNot(
+            "select NON EMPTY Filter([Store].Stores.[Store Name].Members, Store.Stores.CurrentMember.Name matches \"Store.*\") "
+            + " on 0 from sales",
+            "NON EMPTY Filter w/ regex.", getTestContext());
+        verifySameNativeAndNot(
+            "select Filter([Store].Stores.[Store Name].Members, Store.Stores.CurrentMember.Name matches \"Store.*\") "
+            + " on 0 from sales",
+            "Regex filter, not NON EMPTY.", getTestContext());
+    }
 
     public void testMatchesWithAccessControl() {
         // TODO:  Changes made with commit 51c1ac439 which allow pushdown of
