@@ -11,7 +11,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="all" level="project" />
     <orderEntry type="library" name="eigenbase-properties" level="project" />
-    <orderEntry type="library" name="jdbcDrivers" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="jdbcDrivers" level="application" />
     <orderEntry type="library" name="olap4j" level="project" />
     <orderEntry type="library" name="olap4j-xmlaserver" level="project" />
   </component>
