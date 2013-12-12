@@ -12,6 +12,7 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 
+import java.sql.Timestamp;
 import java.util.*;
 
 /**
@@ -224,6 +225,8 @@ public interface RolapMember extends Member, RolapCalculation {
             if (key instanceof String
                 || key instanceof Number
                 || key instanceof Boolean
+                || key instanceof Timestamp
+                || key instanceof Date
                 || key == RolapUtil.sqlNullValue)
             {
                 return keyCount == 1
