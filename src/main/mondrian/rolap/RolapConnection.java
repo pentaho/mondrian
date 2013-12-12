@@ -11,12 +11,15 @@
 package mondrian.rolap;
 
 import mondrian.calc.*;
+import mondrian.mdx.MemberExpr;
 import mondrian.olap.*;
 import mondrian.parser.MdxParserValidator;
 import mondrian.resource.MondrianResource;
 import mondrian.server.*;
 import mondrian.spi.*;
 import mondrian.util.*;
+import mondrian.queryplan.QPResult;
+import mondrian.queryplan.QPResult.QPAxis;
 
 import org.apache.log4j.Logger;
 
@@ -491,27 +494,60 @@ public class RolapConnection extends ConnectionBase {
             final Locus locus = new Locus(execution, null, "Loading cells");
             Locus.push(locus);
             Result result;
-            final RolapCube cube = (RolapCube) query.getCube();
-            try {
-                statement.start(execution);
-                for (RolapStar star : cube.getStars()) {
-                    star.clearCachedAggregations(true);
-                }
-                result = new RolapResult(execution, true);
-                int i = 0;
-                for (QueryAxis axis : query.getAxes()) {
-                    if (axis.isNonEmpty()) {
-                        result = new NonEmptyResult(result, execution, i);
-                    }
-                    ++i;
-                }
-            } finally {
-                Locus.pop(locus);
-                for (RolapStar star : cube.getStars()) {
-                    star.clearCachedAggregations(true);
-                }
+            
+            // Example of accessing the Parsed MDX and then returning a stubbed result set.
+            
+            if (true) {
+              
+              // example of traversing the parsed MDX
+
+              System.out.println("Axis Set: " + query.axes[0].getSet().toString());
+
+              // Cube referenced:
+              System.out.println("Cube: " + query.getCube());
+              
+              
+              // Create Stub Result Set
+              
+              QPResult qpresult = new QPResult();
+
+              QPAxis axis = new QPAxis();
+              qpresult.axes.add( axis );
+              
+              // lookup the measure.  Note, we'll need a strategy for creating "Member" 
+              // objects that aren't part of the core cube like measures
+              Exp exp = Util.lookup( query, Util.parseIdentifier("[Measures].[Sales]"), true);
+              axis.poslist.list.get( 0 ).tupleList.add(((MemberExpr)exp).getMember());
+              QPResult.QPCell cell = new QPResult.QPCell();
+              cell.formattedValue = "10,645,949";
+              cell.value = 10645949;
+              qpresult.cells.put(qpresult.getCellKey( new int[]{0} ), cell);
+              
+              result = qpresult;
+            } else {
+            
+              final RolapCube cube = (RolapCube) query.getCube();
+              try {
+                  statement.start(execution);
+                  for (RolapStar star : cube.getStars()) {
+                      star.clearCachedAggregations(true);
+                  }
+                  result = new RolapResult(execution, true);
+                  int i = 0;
+                  for (QueryAxis axis : query.getAxes()) {
+                      if (axis.isNonEmpty()) {
+                          result = new NonEmptyResult(result, execution, i);
+                      }
+                      ++i;
+                  }
+              } finally {
+                  Locus.pop(locus);
+                  for (RolapStar star : cube.getStars()) {
+                      star.clearCachedAggregations(true);
+                  }
+              }
+             statement.end(execution);
             }
-            statement.end(execution);
             return result;
         } catch (ResultLimitExceededException e) {
             // query has been punted

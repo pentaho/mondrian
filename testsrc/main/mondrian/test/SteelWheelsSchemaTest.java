@@ -32,6 +32,17 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "[Measures].[Sales]");
     }
 
+    public void testStub() {
+      TestContext testContext = getTestContext();
+      testContext.assertQueryReturns(
+          "select [Measures].[Sales] on 0 from [SteelWheelsSales]",
+          "Axis #0:\n"
+          + "{}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Sales]}\n"
+          + "Row #0: 10,645,949\n");
+    }
+    
     /**
      * Test case for Infobright issue where [Markets].[All Markets].[Japan]
      * was not found but [Markets].[All Markets].[JAPAN] was OK.
