@@ -52,7 +52,7 @@ public abstract class RolapAggregationManager {
      */
     public static CellRequest makeRequest(final Member[] members)
     {
-        return makeCellRequest(members, false, false, null, null);
+        return makeCellRequest(members, false, false, null, null, null);
     }
 
     /**
@@ -80,7 +80,7 @@ public abstract class RolapAggregationManager {
     {
         assert cube != null;
         return (DrillThroughCellRequest) makeCellRequest(
-            members, true, extendedContext, cube, fieldsList);
+            members, true, extendedContext, cube, fieldsList, null);
     }
 
     /**
@@ -109,7 +109,13 @@ public abstract class RolapAggregationManager {
         int starColumnCount = starMeasure.getStar().getColumnCount();
 
         CellRequest request =
-            makeCellRequest(currentMembers, false, false, null, null);
+            makeCellRequest(
+                currentMembers,
+                false,
+                false,
+                null,
+                null,
+                evaluator);
 
         /*
          * Now setting the compound keys.
@@ -178,7 +184,8 @@ public abstract class RolapAggregationManager {
         boolean drillThrough,
         final boolean extendedContext,
         RolapCube cube,
-        List<Exp> fieldsList)
+        List<Exp> fieldsList,
+        Evaluator evaluator)
     {
         // Need cube for drill-through requests
         assert drillThrough == (cube != null);
@@ -277,7 +284,14 @@ public abstract class RolapAggregationManager {
                     level.getLevelReader().constrainRequest(
                         member, measure.getCube(), request);
                 if (needToReturnNull) {
-                    return null;
+                    // check to see if the current member is part of an ignored
+                    // unrelated dimension
+                    if (evaluator == null
+                        || !evaluator.mightReturnNullForUnrelatedDimension()
+                        || evaluator.needToReturnNullForUnrelatedDimension(
+                            new Member[] {member})) {
+                        return null;
+                    }
                 }
             }
         }
