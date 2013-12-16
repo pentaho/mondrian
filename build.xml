@@ -373,7 +373,7 @@ mondrian/olap/ParserSym.java"/>
     <mkdir dir="${dist.dir}"/>
   </target>
 
-  <target name="resolve" unless="skip.download">
+  <target name="resolve" depends="install-ivy" unless="skip.download">
       <!-- Use symbolic links, rather than copying, on unix. -->
       <condition property="symlink" value="true">
           <os family="unix"/>
@@ -386,6 +386,9 @@ mondrian/olap/ParserSym.java"/>
           pattern="${lib.dir}/[module].[ext]"/>
       <ivy:retrieve symlink="${symlink}" type="source,javadoc"
           pattern="${lib.dir}/[module]-[type].[ext]"/>
+
+      <ivy:resolve file="${ivyfile}" conf="test" />
+      <ivy:retrieve conf="test" pattern="${testlib.dir}/[module]-[revision](-[classifier]).[ext]" symlink="${symlink}" />
   </target>
 
   <target name="cmdrunner" depends="jar">
@@ -523,11 +526,12 @@ copy"/>
             todir="${classes.dir}"/>
     <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml"
         todir="${classes.dir}"/>
-    <copy todir="${classes.dir}">
+    <copy todir="${classes.dir}" overwrite="true">
       <fileset
           dir="${java.dir}"
           includes="
-META-INF/**"/>
+META-INF/**,
+OSGI-INF/**"/>
     </copy>
     <copy todir="${testclasses.dir}">
       <fileset
@@ -1145,7 +1149,8 @@ must be run under JDK 1.7." />
 **/*.class,
 **/*.properties,
 **/*.xml,
-META-INF/**"/>
+META-INF/**,
+OSGI-INF/**"/>
       <zipfileset
           dir="${testclasses.dir}"
           includes="
@@ -1173,8 +1178,18 @@ VERSION.txt"/>
         </section>
       </manifest>
     </jar>
-    <copy file="${jar.file}"
-        tofile="${dist.dir}/${ivy.artifact.id}-${project.revision}.jar"/>
+
+    <!-- Wrap the jar as a bundle using the BND tool. -->
+    <exec executable="java" failonerror="true">
+      <arg value="-jar" />
+      <arg value="lib/bnd.jar" />
+      <arg value="wrap" />
+      <arg value="--properties" />
+      <arg value="mondrian.bnd" />
+      <arg value="--output" />
+      <arg value="${dist.dir}/${ivy.artifact.id}-${project.revision}.jar" />
+      <arg value="${jar.file}" />
+    </exec>
   </target>
 
   <target name="xml_schema"
