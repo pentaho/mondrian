@@ -2826,10 +2826,10 @@ public class RolapSchema extends OlapElementBase implements Schema {
             if (approxRowCount >= 0) {
                 return approxRowCount;
             }
-            if (relation instanceof MondrianDef.Table) {
-                final MondrianDef.Table table = (MondrianDef.Table) relation;
+            if (relation instanceof RolapSchema.PhysTable) {
+                final RolapSchema.PhysTable table = (RolapSchema.PhysTable) relation;
                 return getTableCardinality(
-                    null, table.schema, table.name);
+                        null, table.getSchemaName(), table.name);
             } else {
                 final SqlQuery sqlQuery = new SqlQuery(dialect);
                 sqlQuery.addSelect("1", null);
