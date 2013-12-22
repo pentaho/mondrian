@@ -102,7 +102,7 @@ public class FileRepository implements Repository {
         if (databaseName == null) {
             if (serverInfo.datasourceMap.size() == 0) {
                 throw new OlapException(
-                    "No databases configured on this server");
+                    "Pas de base de donnée configurée sur ce serveur");
             }
             datasourceInfo =
                 serverInfo
@@ -115,14 +115,14 @@ public class FileRepository implements Repository {
                 serverInfo.datasourceMap.get(databaseName);
         }
         if (datasourceInfo == null) {
-            throw Util.newError("Unknown database '" + databaseName + "'");
+            throw Util.newError("Base de donnée inconnue '" + databaseName + "'");
         }
 
         final CatalogInfo catalogInfo;
         if (catalogName == null) {
             if (datasourceInfo.catalogMap.size() == 0) {
                 throw new OlapException(
-                    "No catalogs in the database named "
+                    "Pas de catalogues dans la base de donnée nommée"
                     + datasourceInfo.name);
             }
             catalogInfo =
@@ -136,7 +136,7 @@ public class FileRepository implements Repository {
                 datasourceInfo.catalogMap.get(catalogName);
         }
         if (catalogInfo == null) {
-            throw Util.newError("Unknown catalog '" + catalogName + "'");
+            throw Util.newError("Catalogue inconnu '" + catalogName + "'");
         }
         String connectString = catalogInfo.olap4jConnectString;
 
@@ -160,7 +160,7 @@ public class FileRepository implements Repository {
           ClassResolver.INSTANCE.forName(
               MondrianOlap4jDriver.class.getName(), true);
         } catch (ClassNotFoundException e) {
-            throw new OlapException("Cannot find mondrian olap4j driver.");
+            throw new OlapException("Impossible de trouver le driver mondrian olap4j.");
         }
         // Now create the connection
         final java.sql.Connection connection =
@@ -215,7 +215,7 @@ public class FileRepository implements Repository {
                 {
                     if (databaseInfo.catalogMap.containsKey(xmlCatalog.name)) {
                         throw Util.newError(
-                            "more than one DataSource object has name '"
+                            "Plus d'un objet de la source de donnée a le nom '"
                             + xmlCatalog.name + "'");
                     }
                     String connectString =

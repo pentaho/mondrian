@@ -393,7 +393,7 @@ public class Execution {
             new Locus(
                 this,
                 "Execution.unregisterSegmentRequests",
-                "cleaning up segment registrations");
+                "Nettoyer le segment d'enregistrement");
         final SegmentCacheManager mgr =
             locus.getServer()
                 .getAggregationManager().cacheMgr;

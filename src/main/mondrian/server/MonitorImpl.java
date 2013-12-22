@@ -108,7 +108,7 @@ class MonitorImpl
             }
             ACTOR.eventQueue.put(Pair.<Handler, Message>of(handler, event));
         } catch (InterruptedException e) {
-            throw Util.newError(e, "Exception while sending event " + event);
+            throw Util.newError(e, "Exception pendant l'envoi de lévènement " + event);
         }
     }
 

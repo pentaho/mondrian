@@ -106,7 +106,7 @@ public class DynamicContentFinder
         } catch (Exception e) {
             throw Util.newError(
                 e,
-                "Failed to parse data sources config '" + url + "'");
+                "Erreur dans l'analyse des configurations des sources de données '" + url + "'");
         }
     }
 
