@@ -60,7 +60,7 @@ public class MondrianServerRegistry {
             final LockBox.Entry entry = lockBox.get(instanceId);
             if (entry == null) {
                 throw Util.newError(
-                    "No server instance has id '" + instanceId + "'");
+                    "Aucun server n'a l'id '" + instanceId + "'");
             }
             return (MondrianServer) entry.getValue();
         } else {
@@ -72,13 +72,13 @@ public class MondrianServerRegistry {
         if (logger.isDebugEnabled()){
             logger.debug(" Vendor: " + MondrianServerVersion.VENDOR);
             final String title = MondrianServerVersion.NAME;
-            logger.debug("  Title: " + title);
+            logger.debug("  Titre: " + title);
             final String versionString = MondrianServerVersion.VERSION;
             logger.debug("Version: " + versionString);
             final int majorVersion = MondrianServerVersion.MAJOR_VERSION;
-            logger.debug(String.format("Major Version: %d", majorVersion));
+            logger.debug(String.format("Version Majeure: %d", majorVersion));
             final int minorVersion = MondrianServerVersion.MINOR_VERSION;
-            logger.debug(String.format("Minor Version: %d", minorVersion));
+            logger.debug(String.format("Version Mineure: %d", minorVersion));
         }
         final StringBuilder sb = new StringBuilder();
         try {
