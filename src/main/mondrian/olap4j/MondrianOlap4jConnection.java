@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho and others
+// Copyright (C) 2007-2013 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap4j;
@@ -87,10 +87,13 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
 
     private final MondrianOlap4jDatabaseMetaData olap4jDatabaseMetaData;
 
-    private static final String CONNECT_STRING_PREFIX = "jdbc:mondrian:";
+    private static final String CONNECT_STRING_PREFIX =
+        "jdbc:" + MondrianProperties.instance().JdbcIdentifier.get() + ":";
 
     private static final String ENGINE_CONNECT_STRING_PREFIX =
-        "jdbc:mondrian:engine:";
+        "jdbc:"
+            + MondrianProperties.instance().JdbcIdentifier.get()
+            + ":engine:";
 
     final Factory factory;
     final MondrianOlap4jDriver driver;

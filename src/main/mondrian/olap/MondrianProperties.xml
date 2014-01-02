@@ -1437,4 +1437,17 @@ log4j.configuration=file:log4j.properties</code></blockquote>
         </Description>
         <Type>String</Type>
     </PropertyDefinition>
+    <PropertyDefinition>
+        <Name>JdbcIdentifier</Name>
+        <Path>mondrian.jdbcIdentifier</Path>
+        <Description>
+            Property specifying what JDBC url mondrian should
+            respond to.  The default is "mondrian" which means mondrian will
+            accept urls that start with "jdbc:mondrian"  The purpose
+            of JdbcIdentifier is to allow multiple versions of mondrian to run
+            in the same JVM and have each respond to different urls.
+        </Description>
+        <Type>String</Type>
+        <Default>mondrian</Default>
+    </PropertyDefinition>
 </PropertyDefinitions>
