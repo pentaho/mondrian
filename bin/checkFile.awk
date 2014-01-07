@@ -356,7 +356,7 @@ publicClassBraceLine && FNR == publicClassBraceLine + 1 {
     lastImport = FNR;
 }
 /./ && !/^import/ && lastImport {
-    if (lastImport != FNR - 2) {
+    if (lastImport != FNR - 2 && strict > 1) {
         error(fname, FNR, "need precisely 1 blank line after last import");
     }
     lastImport = 0;
@@ -364,7 +364,7 @@ publicClassBraceLine && FNR == publicClassBraceLine + 1 {
 /^\/\/ Copyright .* Pentaho/ && strict > 1 {
     # We assume that '--strict' is only invoked on files currently being
     # edited. Therefore we would expect the copyright to be current.
-    if ($0 !~ /-2013/) {
+    if ($0 !~ /-2014/) {
         error(fname, FNR, "copyright is not current");
     }
 }
@@ -813,7 +813,7 @@ length($0) > maxLineLength                      \
         FNR, \
         "Line length (" length($0) ") exceeds " maxLineLength " chars");
 }
-/^public class / {
+/^public / {
     publicClassSeen = 1;
 }
 publicClassSeen && !publicClassBraceLine && /{$/ {
