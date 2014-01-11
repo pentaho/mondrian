@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho
+// Copyright (C) 2006-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -191,10 +191,9 @@ public abstract class UnsupportedList<T> implements List<T> {
                 return next;
             } catch (IndexOutOfBoundsException e) {
                 LOGGER.error(
-                    "UnsupportedList.Itr.next: cursor="
-                        +  cursor
-                        + ", size="
-                        + size(), e);
+                    "UnsupportedList.Itr.next: cursor=" +  cursor
+                    + ", size=" + size(),
+                    e);
                 throw new NoSuchElementException();
             }
         }

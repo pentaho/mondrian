@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2013 Pentaho
+// Copyright (C) 2006-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -2162,13 +2162,13 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "  <Attributes>"
                 + "    <Attribute name='Store Type' keyColumn='store_id'>"
                 + "      <Property name='Store Type' attribute='Store Type' column='store_type' formatter='"
-                    + DummyPropertyFormatter.class.getName()
-                    + "'/>"
-                    + "      <Property attribute='Store Manager' column='store_manager'/>"
-                    + "    </Attribute>"
-                    + "    <Attribute name='id' keyColumn='store_id'/>"
-                    + "  </Attributes>"
-                    + "</Dimension>\n");
+                + DummyPropertyFormatter.class.getName()
+                + "'/>"
+                + "      <Property attribute='Store Manager' column='store_manager'/>"
+                + "    </Attribute>"
+                + "    <Attribute name='id' keyColumn='store_id'/>"
+                + "  </Attributes>"
+                + "</Dimension>\n");
         try {
             testContext.assertSimpleQuery();
             fail("expected exception");
@@ -6264,9 +6264,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
         TestContext testContext =
             getTestContext().withSchema(
                 "<Schema metamodelVersion='4.0' name='x'>\n"
-                    + physSchema
-                    + cube
-                    + "</Schema>");
+                + physSchema
+                + cube
+                + "</Schema>");
         testContext.assertErrorList().containsError(
             "Table required. No table is specified or inherited when resolving "
             + "column 'the_year' \\(in Column\\) \\(at ${pos}\\)",

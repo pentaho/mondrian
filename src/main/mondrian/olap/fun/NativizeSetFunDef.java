@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2013 Pentaho and others
+// Copyright (C) 2009-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -307,8 +307,7 @@ public class NativizeSetFunDef extends FunDefBase {
 
         private TupleList evaluateNonNative(Evaluator evaluator) {
             LOGGER.debug(
-                "Disabling native evaluation. originalExp="
-                    + originalExp);
+                "Disabling native evaluation. originalExp=" + originalExp);
             ListCalc calc =
                 compiler.compileList(getOriginalExp(evaluator.getQuery()));
             final int savepoint = evaluator.savepoint();

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -284,10 +284,10 @@ public class RolapCubeLevel extends RolapLevel {
             if (keyExps.size() != keyValues.size()) {
                 throw Util.newError(
                     "Wrong number of values in member key; "
-                        + keySegment + " has " + keyValues.size()
-                        + " values, whereas level's key has " + keyExps.size()
-                        + " columns "
-                        + new AbstractList<String>() {
+                    + keySegment + " has " + keyValues.size()
+                    + " values, whereas level's key has " + keyExps.size()
+                    + " columns "
+                    + new AbstractList<String>() {
                         public String get(int index) {
                             return keyExps.get(keyExps.size() - 1 - index)
                                 .toSql();
@@ -297,7 +297,7 @@ public class RolapCubeLevel extends RolapLevel {
                             return keyExps.size();
                         }
                     }
-                        + ".");
+                    + ".");
             }
             return cubeHierarchy.getMemberReader().getMemberByKey(
                 this, keyValues);

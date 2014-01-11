@@ -73,6 +73,21 @@ function unmatchedOpenParens(s) {
     return 1;
 }
 
+function openMinusClose(s) {
+    o = 0;
+    i = 0;
+    while (++i <= length(s)) {
+        c = substr(s, i, 1);
+        if (c == "(") {
+            ++o;
+        }
+        if (c == ")") {
+            --o;
+        }
+    }
+    return o;
+}
+
 function countLeadingSpaces(str) {
     i = 0;
     while (i < length(str) && substr(str, i + 1, 1) == " ") {
@@ -109,7 +124,7 @@ FNR == 1 {
     mondrian = _isMondrian(fname);
     prevImport = "";
     prevImportGroup = "";
-    indent = (fname ~ /avatica/ || fname ~ /linq4j/ || fname ~ /optiq/ && fname !~ /eigenbase/) ? 2 : 4;
+    indent = (fname ~ /avatica/ || fname ~ /linq4j/ || fname ~ /optiq/ || fname ~ /eigenbase/) ? 2 : 4;
     cindent = 4;
     publicClassBraceLine = 0;
     publicClassSeen = 0;
@@ -242,16 +257,19 @@ publicClassBraceLine && FNR == publicClassBraceLine + 1 {
     gsub(/\/\/.*$/, "// comment", s);
     # line starts with string or plus?
     if (s ~ /^ *string/ \
-        && s !~ /)/)
+        && openMinusClose(s) >= 0)
     {
+#        error(fname, FNR, "start string");
         stringCol = index(s, "string");
-    } else if (s ~ /^ *[+] string/) {
+    } else if (s ~ /^ *[+] /) {
+#        error(fname, FNR, "in string" stringCol);
         if (stringCol != 0 && index(s, "+") != stringCol) {
             error(fname, FNR, "String '+' must be aligned with string on line above");
         }
     } else if (s ~ /comment/) {
         # in comment; string target carries forward
     } else {
+#        error(fname, FNR, "not in string " s)
         stringCol = 0;
     }
 
@@ -813,7 +831,7 @@ length($0) > maxLineLength                      \
         FNR, \
         "Line length (" length($0) ") exceeds " maxLineLength " chars");
 }
-/^public / {
+/^public / || /^class / || /^interface / {
     publicClassSeen = 1;
 }
 publicClassSeen && !publicClassBraceLine && /{$/ {

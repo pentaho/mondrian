@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2013 Pentaho and others
+// Copyright (C) 2010-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -1663,7 +1663,7 @@ public class RolapSchemaLoader {
                 if (!measureNames.add(xmlMeasure.name)) {
                     getHandler().error(
                         "Duplicate measure '" + xmlMeasure.name + "' in cube '"
-                            + measureGroup.getCube().getName() + "'",
+                        + measureGroup.getCube().getName() + "'",
                         xmlMeasure,
                         null);
                     continue;

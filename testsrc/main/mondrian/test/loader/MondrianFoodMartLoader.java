@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho
+// Copyright (C) 2005-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test.loader;
@@ -374,11 +374,11 @@ public class MondrianFoodMartLoader {
                     Class.forName(jdbcDriver);
                     LOGGER.info(
                         "Mondrian: JDBC driver "
-                            + jdbcDriver + " loaded successfully");
+                        + jdbcDriver + " loaded successfully");
                 } catch (ClassNotFoundException e) {
                     LOGGER.warn(
                         "Mondrian: Warning: JDBC driver "
-                            + jdbcDriver + " not found");
+                        + jdbcDriver + " not found");
                 }
             }
         }
@@ -877,12 +877,12 @@ public class MondrianFoodMartLoader {
             + ": loaded " + tableRowCount + " rows.");
         final String sql =
             "LOAD DATA INFILE '"
-                + file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\")
-                + "' INTO TABLE "
-                + (schema != null ? schema + "." : "")
-                + table
-                + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'"
-                + " ESCAPED BY '\\\\'";
+            + file.getAbsolutePath().replaceAll("\\\\", "\\\\\\\\")
+            + "' INTO TABLE "
+            + (schema != null ? schema + "." : "")
+            + table
+            + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'"
+            + " ESCAPED BY '\\\\'";
         Statement statement = null;
         try {
             statement = connection.createStatement();
@@ -1436,7 +1436,7 @@ public class MondrianFoodMartLoader {
                 if (updates < sqls.size()) {
                     throw new RuntimeException(
                         "Failed to execute batch: " + sqls.size() + " versus "
-                            + updates);
+                        + updates);
                 }
             }
             stmt.close();

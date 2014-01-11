@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.tui;
@@ -98,7 +98,7 @@ public class XmlUtil {
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'Body' and apply --> " + LINE_SEP
             + "<xsl:template match='SOAP-ENV:Body'> " + LINE_SEP
-                + "<xsl:apply-templates/> " + LINE_SEP
+            + "<xsl:apply-templates/> " + LINE_SEP
             + "</xsl:template> " + LINE_SEP
             + "<!-- consume 'DiscoverResponse' and apply --> " + LINE_SEP
             + "<xsl:template match='" + xmlaPrefix + ":DiscoverResponse'> "

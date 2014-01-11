@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho
+// Copyright (C) 2007-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun.vba;
@@ -67,7 +67,7 @@ public class VbaTest extends TestCase {
         final String message = e.getClass().getName() + ": " + e.getMessage();
         assertTrue(
             "expected message to contain '" + expected + "', got '"
-                + message + "'",
+            + message + "'",
             message.indexOf(expected) >= 0);
     }
 
