@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import mondrian.rolap.CellKey;
 import org.olap4j.AllocationPolicy;
 import org.olap4j.Scenario;
 
@@ -102,7 +103,7 @@ public class QPResult implements Result {
         return slicerAxis;
     }
 
-    public Map<String, QPCell> cells = new HashMap<String, QPCell>();
+    public Map<CellKey, QPCell> cells = new HashMap<CellKey, QPCell>();
 
     public static class QPCell implements Cell {
 
@@ -182,20 +183,11 @@ public class QPResult implements Result {
 
     }
 
-    public String getCellKey(int[] pos) {
-        String key = "";
-        for (int i = 0; i < pos.length; i++) {
-            key += "," + i;
-        }
-        return key;
-    }
-
-
     @Override
     public Cell getCell( int[] pos ) {
 
         // TODO Auto-generated method stub
-        return cells.get( getCellKey(pos) );
+        return cells.get( CellKey.Generator.newCellKey(pos) );
     }
 
     // implement Result

@@ -14,11 +14,11 @@ import mondrian.calc.*;
 import mondrian.mdx.MemberExpr;
 import mondrian.olap.*;
 import mondrian.parser.MdxParserValidator;
+import mondrian.queryplan.*;
 import mondrian.resource.MondrianResource;
 import mondrian.server.*;
 import mondrian.spi.*;
 import mondrian.util.*;
-import mondrian.queryplan.QPResult;
 import mondrian.queryplan.QPResult.QPAxis;
 
 import org.apache.log4j.Logger;
@@ -453,6 +453,8 @@ public class RolapConnection extends ConnectionBase {
                     });
     }
 
+    private static enum ExecutionMethod { QUERY_PLANNER, ROLAP_RESULT };
+
     private Result executeInternal(final Execution execution) {
         execution.setContextMap();
         final Statement statement = execution.getMondrianStatement();
@@ -494,59 +496,47 @@ public class RolapConnection extends ConnectionBase {
             final Locus locus = new Locus(execution, null, "Loading cells");
             Locus.push(locus);
             Result result;
-            
-            // Example of accessing the Parsed MDX and then returning a stubbed result set.
-            
-            if (true) {
-              
-              // example of traversing the parsed MDX
 
-              System.out.println("Axis Set: " + query.axes[0].getSet().toString());
+            // Default to the legacy method of execution.
+            ExecutionMethod executionMethod = ExecutionMethod.ROLAP_RESULT;
+            QueryPlan plan = QueryPlan.DUMMY;
 
-              // Cube referenced:
-              System.out.println("Cube: " + query.getCube());
-              
-              
-              // Create Stub Result Set
-              
-              QPResult qpresult = new QPResult();
+            // If this connection has the property to enable query planning,
+            // attempt to build a plan.
+            if ("trxue".equals(connectInfo.get(
+                RolapConnectionProperties.EnableQueryPlanner.name()))) {
+                plan = QueryPlanner.build(query);
+                if (plan.isValid()) {
+                    executionMethod = ExecutionMethod.QUERY_PLANNER;
+                }
+            }
 
-              QPAxis axis = new QPAxis();
-              qpresult.axes.add( axis );
-              
-              // lookup the measure.  Note, we'll need a strategy for creating "Member" 
-              // objects that aren't part of the core cube like measures
-              Exp exp = Util.lookup( query, Util.parseIdentifier("[Measures].[Sales]"), true);
-              axis.poslist.list.get( 0 ).tupleList.add(((MemberExpr)exp).getMember());
-              QPResult.QPCell cell = new QPResult.QPCell();
-              cell.formattedValue = "10,645,949";
-              cell.value = 10645949;
-              qpresult.cells.put(qpresult.getCellKey( new int[]{0} ), cell);
-              
-              result = qpresult;
+            if (executionMethod == ExecutionMethod.QUERY_PLANNER) {
+                System.out.println("ExecutionMethod is QUERY_PLANNER");
+                result = plan.execute();
             } else {
-            
-              final RolapCube cube = (RolapCube) query.getCube();
-              try {
-                  statement.start(execution);
-                  for (RolapStar star : cube.getStars()) {
-                      star.clearCachedAggregations(true);
-                  }
-                  result = new RolapResult(execution, true);
-                  int i = 0;
-                  for (QueryAxis axis : query.getAxes()) {
-                      if (axis.isNonEmpty()) {
-                          result = new NonEmptyResult(result, execution, i);
-                      }
-                      ++i;
-                  }
-              } finally {
-                  Locus.pop(locus);
-                  for (RolapStar star : cube.getStars()) {
-                      star.clearCachedAggregations(true);
-                  }
-              }
-             statement.end(execution);
+                System.out.println("ExecutionMethod is ROLAP_RESULT");
+                final RolapCube cube = (RolapCube) query.getCube();
+                try {
+                    statement.start(execution);
+                    for (RolapStar star : cube.getStars()) {
+                        star.clearCachedAggregations(true);
+                    }
+                    result = new RolapResult(execution, true);
+                    int i = 0;
+                    for (QueryAxis axis : query.getAxes()) {
+                        if (axis.isNonEmpty()) {
+                            result = new NonEmptyResult(result, execution, i);
+                        }
+                        ++i;
+                    }
+                } finally {
+                    Locus.pop(locus);
+                    for (RolapStar star : cube.getStars()) {
+                        star.clearCachedAggregations(true);
+                    }
+                }
+                statement.end(execution);
             }
             return result;
         } catch (ResultLimitExceededException e) {
@@ -568,9 +558,14 @@ public class RolapConnection extends ConnectionBase {
             } catch (Exception e1) {
                 queryString = "?";
             }
-            throw Util.newError(
+            // Adding printStackTrace so I don't get caught unawares by unit
+            // tests that indicate they pass because of the testContext.databaseIsValid()
+            // short circuit.
+            final RuntimeException runtimeException = Util.newError(
                 e,
                 "Error while executing query [" + queryString + "]");
+            runtimeException.printStackTrace();
+            throw runtimeException;
         } finally {
             mm.removeListener(listener);
             if (RolapUtil.MDX_LOGGER.isDebugEnabled()) {

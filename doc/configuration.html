@@ -299,6 +299,14 @@ OLE DB connect string syntax specification</a>.</p>
         <td><p>A unique identifier for the connection. If this is set, Mondrian will look at this property and no other to determine whether two 
 data sources should be considered the same. You must ensure that connections will only share a JdbcConnectionUuid if they point to the same database.</p></td>
     </tr>
+    <tr>
+        <td>EnableQueryPlanner</td>
+        <td>No</td>
+        <td><p>Controls whether any query for this connection could potentially go through the query planner code path.
+            If <code>true</code>, every query the connection attempts to execute will be evaluated by <code>RolapConnection.selectExecutionMethod()</code>
+            to determine if it is suitable to attempt to build a query plan and execute it with the alternative execution engine.</p>
+            <p>If <code>false</code>, the default, no queries for this connection can go through the query planner code path.</p></td>
+    </tr>
 </table>
 <p>Connect string properties are also documented in the
 <a href="api/mondrian/rolap/RolapConnectionProperties.html">

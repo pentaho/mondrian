@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_6" inherit-compiler-output="false">
+    <output url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/classes" />
+    <output-test url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/test-classes" />
+    <content url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend">
+      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/generated-sources/antlr4" isTestSource="false" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/src/test/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/generated-sources/proto" isTestSource="false" generated="true" />
+      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/antrun" />
+      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/classes" />
+      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/lib" />
+      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/maven-archiver" />
+      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/test-classes" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="tajo-common" />
+    <orderEntry type="library" name="Maven: com.google.protobuf:protobuf-java:2.5.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-common:2.2.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-annotations:2.2.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.guava:guava:15.0" level="project" />
+    <orderEntry type="library" name="Maven: commons-cli:commons-cli:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.commons:commons-math:2.1" level="project" />
+    <orderEntry type="library" name="Maven: xmlenc:xmlenc:0.52" level="project" />
+    <orderEntry type="library" name="Maven: commons-httpclient:commons-httpclient:3.1" level="project" />
+    <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.1.1" level="project" />
+    <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.4" level="project" />
+    <orderEntry type="library" name="Maven: commons-io:commons-io:2.1" level="project" />
+    <orderEntry type="library" name="Maven: commons-net:commons-net:3.1" level="project" />
+    <orderEntry type="library" name="Maven: javax.servlet:servlet-api:2.5" level="project" />
+    <orderEntry type="library" name="Maven: org.mortbay.jetty:jetty:6.1.14" level="project" />
+    <orderEntry type="library" name="Maven: org.mortbay.jetty:jetty-util:6.1.14" level="project" />
+    <orderEntry type="library" name="Maven: com.sun.jersey:jersey-core:1.9" level="project" />
+    <orderEntry type="library" name="Maven: com.sun.jersey:jersey-json:1.9" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.jettison:jettison:1.1" level="project" />
+    <orderEntry type="library" name="Maven: stax:stax-api:1.0.1" level="project" />
+    <orderEntry type="library" name="Maven: com.sun.xml.bind:jaxb-impl:2.2.3-1" level="project" />
+    <orderEntry type="library" name="Maven: javax.xml.bind:jaxb-api:2.2.2" level="project" />
+    <orderEntry type="library" name="Maven: javax.activation:activation:1.1" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-core-asl:1.8.8" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-mapper-asl:1.8.8" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-jaxrs:1.8.3" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-xc:1.8.3" level="project" />
+    <orderEntry type="library" name="Maven: com.sun.jersey:jersey-server:1.9" level="project" />
+    <orderEntry type="library" name="Maven: asm:asm:3.1" level="project" />
+    <orderEntry type="library" name="Maven: javax.servlet.jsp:jsp-api:2.1" level="project" />
+    <orderEntry type="library" name="Maven: log4j:log4j:1.2.17" level="project" />
+    <orderEntry type="library" name="Maven: net.java.dev.jets3t:jets3t:0.6.1" level="project" />
+    <orderEntry type="library" name="Maven: commons-lang:commons-lang:2.6" level="project" />
+    <orderEntry type="library" name="Maven: commons-configuration:commons-configuration:1.6" level="project" />
+    <orderEntry type="library" name="Maven: commons-collections:commons-collections:3.2.1" level="project" />
+    <orderEntry type="library" name="Maven: commons-digester:commons-digester:1.8" level="project" />
+    <orderEntry type="library" name="Maven: commons-beanutils:commons-beanutils:1.7.0" level="project" />
+    <orderEntry type="library" name="Maven: commons-beanutils:commons-beanutils-core:1.8.0" level="project" />
+    <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.5" level="project" />
+    <orderEntry type="library" name="Maven: org.slf4j:slf4j-log4j12:1.7.5" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.avro:avro:1.7.4" level="project" />
+    <orderEntry type="library" name="Maven: com.thoughtworks.paranamer:paranamer:2.3" level="project" />
+    <orderEntry type="library" name="Maven: org.xerial.snappy:snappy-java:1.0.4.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.commons:commons-compress:1.4.1" level="project" />
+    <orderEntry type="library" name="Maven: org.tukaani:xz:1.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-auth:2.2.0" level="project" />
+    <orderEntry type="library" name="Maven: com.jcraft:jsch:0.1.42" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.zookeeper:zookeeper:3.4.5" level="project" />
+    <orderEntry type="library" name="Maven: commons-logging:commons-logging-api:1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.2.2" level="project" />
+    <orderEntry type="library" name="Maven: joda-time:joda-time:2.3" level="project" />
+    <orderEntry type="module" module-name="tajo-algebra" />
+    <orderEntry type="module" module-name="tajo-catalog-common" />
+    <orderEntry type="module" module-name="tajo-rpc" />
+    <orderEntry type="library" name="Maven: io.netty:netty:3.6.6.Final" level="project" />
+    <orderEntry type="module" module-name="tajo-catalog-client" />
+    <orderEntry type="module" module-name="tajo-catalog-server" />
+    <orderEntry type="library" name="Maven: org.apache.derby:derby:10.8.2.2" level="project" />
+    <orderEntry type="module" module-name="tajo-core-storage" />
+    <orderEntry type="library" name="Maven: org.apache.avro:trevni-core:1.7.3" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.avro:trevni-avro:1.7.3" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.avro:avro-mapred:1.7.3" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.avro:avro-ipc:1.7.3" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.velocity:velocity:1.7" level="project" />
+    <orderEntry type="library" name="Maven: org.mortbay.jetty:servlet-api:2.5-20081211" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.avro:avro-ipc:tests:1.7.3" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-hdfs:2.2.0" level="project" />
+    <orderEntry type="library" name="Maven: commons-daemon:commons-daemon:1.0.13" level="project" />
+    <orderEntry type="module" module-name="tajo-core-pullserver" />
+    <orderEntry type="module" module-name="tajo-client" />
+    <orderEntry type="library" name="Maven: jline:jline:2.11" level="project" />
+    <orderEntry type="module" module-name="tajo-jdbc" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-minicluster:2.2.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-common:test-jar:tests:2.2.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-hdfs:test-jar:tests:2.2.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-yarn-server-tests:test-jar:tests:2.2.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-yarn-server-common:2.2.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-yarn-common:2.2.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-yarn-api:2.2.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.inject.extensions:guice-servlet:3.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.inject:guice:3.0" level="project" />
+    <orderEntry type="library" name="Maven: javax.inject:javax.inject:1" level="project" />
+    <orderEntry type="library" name="Maven: aopalliance:aopalliance:1.0" level="project" />
+    <orderEntry type="library" name="Maven: com.sun.jersey.contribs:jersey-guice:1.9" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-yarn-server-nodemanager:2.2.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-yarn-server-resourcemanager:2.2.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-yarn-server-web-proxy:2.2.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-mapreduce-client-jobclient:test-jar:tests:2.2.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-mapreduce-client-common:2.2.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-yarn-client:2.2.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-mapreduce-client-core:2.2.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-mapreduce-client-shuffle:2.2.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-mapreduce-client-app:2.2.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-mapreduce-client-jobclient:2.2.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-mapreduce-client-hs:2.2.0" level="project" />
+    <orderEntry type="library" name="Maven: com.sun.jersey.jersey-test-framework:jersey-test-framework-grizzly2:1.9" level="project" />
+    <orderEntry type="library" name="Maven: com.sun.jersey.jersey-test-framework:jersey-test-framework-core:1.9" level="project" />
+    <orderEntry type="library" name="Maven: javax.servlet:javax.servlet-api:3.0.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.10" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.hamcrest:hamcrest-core:1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.sun.jersey:jersey-client:1.9" level="project" />
+    <orderEntry type="library" name="Maven: com.sun.jersey:jersey-grizzly2:1.9" level="project" />
+    <orderEntry type="library" name="Maven: org.glassfish.grizzly:grizzly-http:2.1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.glassfish.grizzly:grizzly-framework:2.1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.glassfish.gmbal:gmbal-api-only:3.0.0-b023" level="project" />
+    <orderEntry type="library" name="Maven: org.glassfish.external:management-api:3.0.0-b012" level="project" />
+    <orderEntry type="library" name="Maven: org.glassfish.grizzly:grizzly-http-server:2.1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.glassfish.grizzly:grizzly-rcm:2.1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.glassfish.grizzly:grizzly-http-servlet:2.1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.glassfish:javax.servlet:3.1" level="project" />
+    <orderEntry type="library" name="Maven: org.antlr:antlr4:4.1" level="project" />
+    <orderEntry type="library" name="Maven: org.antlr:antlr4-runtime:4.1" level="project" />
+    <orderEntry type="library" name="Maven: org.abego.treelayout:org.abego.treelayout.core:1.0.1" level="project" />
+    <orderEntry type="library" name="Maven: org.antlr:antlr-runtime:3.5" level="project" />
+    <orderEntry type="library" name="Maven: org.antlr:stringtemplate:3.2.1" level="project" />
+    <orderEntry type="library" name="Maven: antlr:antlr:2.7.7" level="project" />
+    <orderEntry type="library" name="Maven: org.antlr:ST4:4.0.7" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.mockito:mockito-core:1.9.5-rc1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.objenesis:objenesis:1.0" level="project" />
+    <orderEntry type="library" name="Maven: org.dspace.dependencies:dspace-geoip:1.2.3" level="project" />
+    <orderEntry type="library" name="Maven: org.eclipse.jdt:core:3.1.1" level="project" />
+    <orderEntry type="library" name="Maven: org.mortbay.jetty:servlet-api-2.5:6.1.14" level="project" />
+    <orderEntry type="library" name="Maven: org.mortbay.jetty:jsp-2.1:6.1.14" level="project" />
+    <orderEntry type="library" name="Maven: org.mortbay.jetty:jsp-api-2.1:6.1.14" level="project" />
+    <orderEntry type="library" name="Maven: ant:ant:1.6.5" level="project" />
+    <orderEntry type="library" name="Maven: com.codahale.metrics:metrics-core:3.0.1" level="project" />
+    <orderEntry type="library" name="Maven: com.codahale.metrics:metrics-jvm:3.0.1" level="project" />
+    <orderEntry type="library" name="Maven: info.ganglia.gmetric4j:gmetric4j:1.0.3" level="project" />
+    <orderEntry type="library" name="Maven: org.acplt:oncrpc:1.0.7" level="project" />
+  </component>
+</module>
+
