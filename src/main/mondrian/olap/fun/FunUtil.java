@@ -1905,8 +1905,12 @@ public class FunUtil extends Util {
         final Comparable k1 = m1.getOrderKey();
         final Comparable k2 = m2.getOrderKey();
         if ((k1 != null) && (k2 != null)) {
-            //noinspection unchecked
-            return k1.compareTo(k2);
+            if (k1.getClass() == k2.getClass()) {
+                //noinspection unchecked
+                return k1.compareTo(k2);
+            } else {
+                return k2.compareTo(k1);
+            }
         }
 
         Util.deprecated("ordinal to be replaced with order key", false);

@@ -503,7 +503,7 @@ public class RolapConnection extends ConnectionBase {
 
             // If this connection has the property to enable query planning,
             // attempt to build a plan.
-            if ("trxue".equals(connectInfo.get(
+            if ("true".equals(connectInfo.get(
                 RolapConnectionProperties.EnableQueryPlanner.name()))) {
                 plan = QueryPlanner.build(query);
                 if (plan.isValid()) {

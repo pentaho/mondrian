@@ -54,7 +54,17 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
                 + "{}\n"
                 + "Axis #1:\n"
                 + "{[Measures].[Sales]}\n"
-                + "Row #0: 10,645,949\n");
+                + "Axis #2:\n"
+                + "{[Markets].[Markets].[APAC]}\n"
+                + "{[Markets].[Markets].[EMEA]}\n"
+                + "{[Markets].[Markets].[Japan]}\n"
+                + "{[Markets].[Markets].[NA]}\n"
+                + "{[Markets].[Markets].[#null]}\n"
+                + "Row #0: 1,281,706\n"
+                + "Row #1: 5,008,224\n"
+                + "Row #2: 503,958\n"
+                + "Row #3: 3,852,061\n"
+                + "Row #4: \n");
     }
 
     /**
