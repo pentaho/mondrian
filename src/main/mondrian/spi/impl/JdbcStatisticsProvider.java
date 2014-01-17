@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2013 Pentaho
+// Copyright (C) 2012-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -71,7 +71,7 @@ public class JdbcStatisticsProvider implements StatisticsProvider {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
                     "JdbcStatisticsProvider failed to get the cardinality of the table "
-                        + table,
+                    + table,
                     e);
             }
             return -1;
@@ -131,7 +131,7 @@ public class JdbcStatisticsProvider implements StatisticsProvider {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
                     "JdbcStatisticsProvider failed to get the cardinality of the table "
-                        + table,
+                    + table,
                     e);
             }
             return -1;

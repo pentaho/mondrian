@@ -725,7 +725,16 @@ public class RolapSchema extends OlapElementBase implements Schema {
         }
 
         synchronized RolapStar getStar(final String factTableName) {
-            return stars.get(factTableName);
+            for (RolapStar star : getStars()) {
+                final String starFactTable =
+                    star.getFactTable().getTableName();
+                if (starFactTable != null
+                    && starFactTable.equals(factTableName))
+                {
+                    return star;
+                }
+            }
+            return null;
         }
 
         synchronized Collection<RolapStar> getStars() {

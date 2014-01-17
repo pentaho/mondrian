@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2010 Pentaho
+// Copyright (C) 2005-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.i18n;
@@ -75,8 +75,7 @@ public class LocalizingDynamicSchemaProcessor
         } catch (Exception e) {
             LOGGER.warn(
                 "Mondrian: Warning: no suitable locale file found for locale '"
-                    + locale
-                    + "'",
+                + locale + "'",
                 e);
         }
     }

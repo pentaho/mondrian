@@ -4,13 +4,14 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2013 Pentaho
+// Copyright (C) 2007-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
 
-import junit.framework.TestCase;
 import mondrian.olap.Util;
+
+import junit.framework.TestCase;
 
 import java.util.Random;
 import java.util.concurrent.*;
@@ -32,7 +33,6 @@ public class BlockingHashMapTest extends TestCase {
      * that total time to get all values synchronously would (on average) be
      * 50 milliseconds * 100 Getters, and the test will fail if duration
      * is greater than 2 seconds.
-     *
      */
     public void testBlockingHashMap() throws InterruptedException {
         BlockingHashMap<Integer, Integer> map =

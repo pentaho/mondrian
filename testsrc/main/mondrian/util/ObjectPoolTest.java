@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2009 Pentaho and others
+// Copyright (C) 2006-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -243,9 +243,9 @@ public class ObjectPoolTest extends TestCase {
         if (print) {
             System.out.println(
                 "Using " + (usePool ? "ObjectPool" : "HashSet")
-                    + ", density=" + density
-                    + ", " + distinctCount + " distinct entries, "
-                    + hitCount + " hits");
+                + ", density=" + density
+                + ", " + distinctCount + " distinct entries, "
+                + hitCount + " hits");
             System.out.println(
                 entryCount + " adds took " + (t2 - t1) + " milliseconds");
             System.out.println(

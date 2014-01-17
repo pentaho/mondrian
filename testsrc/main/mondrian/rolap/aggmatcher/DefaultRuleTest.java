@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -79,10 +79,8 @@ public class DefaultRuleTest extends TestCase {
         DefaultDef.TableMatch tableMatch = rule.getTableMatch();
         if (tableMatch == null) {
             LOGGER.info(
-                "tableMatch == null for tag="
-                    + tag
-                    + ", tableName="
-                    + tableName);
+                "tableMatch == null for tag=" + tag
+                + ", tableName=" + tableName);
         }
         return tableMatch.getMatcher(tableName);
     }

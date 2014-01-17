@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2012 Pentaho
+// Copyright (C) 2007-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
@@ -190,14 +190,14 @@ abstract class MondrianOlap4jCellSet
                 }
                 throw new IndexOutOfBoundsException(
                     "Cell coordinates (" + getCoordsAsString(pos)
-                        + ") fall outside CellSet bounds ("
-                        + getCoordsAsString(dimensions) + ")");
+                    + ") fall outside CellSet bounds ("
+                    + getCoordsAsString(dimensions) + ")");
             } else if (e.getMessage().indexOf(
                     "coordinates should have dimension") >= 0)
             {
                 throw new IllegalArgumentException(
                     "Cell coordinates should have dimension "
-                        + axisList.size());
+                    + axisList.size());
             } else {
                 throw e;
             }
@@ -243,7 +243,7 @@ abstract class MondrianOlap4jCellSet
         if (coordinates.size() != axes.size()) {
             throw new IllegalArgumentException(
                 "Coordinates have different dimension (" + coordinates.size()
-                    + ") than axes (" + axes.size() + ")");
+                + ") than axes (" + axes.size() + ")");
         }
         int modulo = 1;
         int ordinal = 0;

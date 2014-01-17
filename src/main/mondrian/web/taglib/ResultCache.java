@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.web.taglib;
@@ -128,7 +128,7 @@ public class ResultCache implements HttpSessionBindingListener {
         if (this.connection == null) {
             throw new RuntimeException(
                 "No ROLAP connection from connectString: "
-                    + connectString);
+                + connectString);
         }
     }
 

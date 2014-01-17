@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2013 Pentaho
+// Copyright (C) 2007-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -122,11 +122,9 @@ class DrilldownLevelTopBottomFunDef extends FunDefBase {
                         if (level.getDimension() != member.getDimension()) {
                             throw newEvalException(
                                 DrilldownLevelTopBottomFunDef.this,
-                                "Level '"
-                                    + level.getUniqueName()
-                                    + "' not compatible with member '"
-                                    + member.getUniqueName()
-                                    + "'");
+                                "Level '" + level.getUniqueName()
+                                + "' not compatible with member '"
+                                + member.getUniqueName() + "'");
                         }
                         continue;
                     }

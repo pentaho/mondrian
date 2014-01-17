@@ -205,7 +205,9 @@ class MondrianOlap4jMember
     }
 
     public String getPropertyFormattedValue(Property property) {
-        return member.getPropertyFormattedValue(asd(property));
+        mondrian.olap.Property prop = asd(property);
+        return prop == null ? null
+            : member.getPropertyFormattedValue(prop);
     }
 
     public void setProperty(Property property, Object value)

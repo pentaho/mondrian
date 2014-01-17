@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2013 Pentaho and others
+// Copyright (C) 2010-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -1007,7 +1007,7 @@ public class RolapSchemaUpgrader {
                             "RolapCube.registerDimension: after reorder relation==null");
                         getLogger().debug(
                             "RolapCube.registerDimension: reorder relationTmp1="
-                                + format(relationTmp1));
+                            + format(relationTmp1));
                     }
                 }
 
@@ -1816,7 +1816,7 @@ public class RolapSchemaUpgrader {
             } else {
                 throw Util.needToImplement(
                     "translate xml table to phys table for table type"
-                        + xmlRelation.getClass());
+                    + xmlRelation.getClass());
             }
             physSchema.tablesByName.put(alias, physRelation);
         }
@@ -1961,7 +1961,7 @@ public class RolapSchemaUpgrader {
             } else {
                 throw Util.needToImplement(
                     "translate xml table to phys table for table type"
-                        + xmlLegacyRelation.getClass());
+                    + xmlLegacyRelation.getClass());
             }
             physSchemaConverter.physSchema.tablesByName.put(
                 alias,
@@ -4237,7 +4237,7 @@ public class RolapSchemaUpgrader {
             } else {
                 getLogger().warn(
                     "HierarchyUsage<init>: Unknown cubeDim="
-                        + cubeDim.getClass().getName());
+                    + cubeDim.getClass().getName());
 
                 this.kind = Kind.UNKNOWN;
 

@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2013 Pentaho
+// Copyright (C) 2009-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -579,8 +579,8 @@ public class PerformanceTest extends FoodMartTestCase {
         final TestContext testContext = getTestContext().create(
             null, null, null, null,
             "<UserDefinedFunction name=\"StringMult\" className=\""
-                + CounterUdf.class.getName()
-                + "\"/>\n",
+            + CounterUdf.class.getName()
+            + "\"/>\n",
             null);
 
         // original test case for MONDRIAN-1242; ensures correct result

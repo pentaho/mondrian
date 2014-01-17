@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho
+// Copyright (C) 2005-2014 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -5252,34 +5252,34 @@ public class BasicQueryTest extends FoodMartTestCase {
         final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name='"
-                + cubeName
-                + "'>\n"
-                + "  <MeasureGroups>\n"
-                + "    <MeasureGroup name='sales' table='sales_fact_1997'>\n"
-                + "      <Measures>\n"
-                + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
-                + "      formatString='Standard' visible='false'/>\n"
-                + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'\n"
-                + "      formatString='#,###.00'/>\n"
-                + "  <Measure name='Store Sales' column='store_sales' aggregator='sum'\n"
-                + "      formatString='#,###.00'/>\n"
-                + "  <Measure name='Sales Count' column='product_id' aggregator='count'\n"
-                + "      formatString='#,###'/>\n"
-                + "  <Measure name='Customer Count' column='customer_id'\n"
-                + "      aggregator='distinct-count' formatString='#,###'/>\n"
-                + "      </Measures>\n"
-                + "    </MeasureGroup>\n"
-                + "  </MeasureGroups>"
-                + "  <CalculatedMembers>\n"
-                + "    <CalculatedMember\n"
-                + "        name='Profit'\n"
-                + "        dimension='Measures'\n"
-                + "        visible='false'\n"
-                + "        formula='[Measures].[Store Sales]-[Measures].[Store Cost]'>\n"
-                + "      <CalculatedMemberProperty name='FORMAT_STRING' value='$#,##0.00'/>\n"
-                + "    </CalculatedMember>\n"
-                + "  </CalculatedMembers>\n"
-                + "</Cube>",
+            + cubeName
+            + "'>\n"
+            + "  <MeasureGroups>\n"
+            + "    <MeasureGroup name='sales' table='sales_fact_1997'>\n"
+            + "      <Measures>\n"
+            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
+            + "      formatString='Standard' visible='false'/>\n"
+            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'\n"
+            + "      formatString='#,###.00'/>\n"
+            + "  <Measure name='Store Sales' column='store_sales' aggregator='sum'\n"
+            + "      formatString='#,###.00'/>\n"
+            + "  <Measure name='Sales Count' column='product_id' aggregator='count'\n"
+            + "      formatString='#,###'/>\n"
+            + "  <Measure name='Customer Count' column='customer_id'\n"
+            + "      aggregator='distinct-count' formatString='#,###'/>\n"
+            + "      </Measures>\n"
+            + "    </MeasureGroup>\n"
+            + "  </MeasureGroups>"
+            + "  <CalculatedMembers>\n"
+            + "    <CalculatedMember\n"
+            + "        name='Profit'\n"
+            + "        dimension='Measures'\n"
+            + "        visible='false'\n"
+            + "        formula='[Measures].[Store Sales]-[Measures].[Store Cost]'>\n"
+            + "      <CalculatedMemberProperty name='FORMAT_STRING' value='$#,##0.00'/>\n"
+            + "    </CalculatedMember>\n"
+            + "  </CalculatedMembers>\n"
+            + "</Cube>",
             null, null, null, null);
         SchemaReader scr = testContext.getConnection().getSchema().lookupCube(
             cubeName, true).getSchemaReader(null);

@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -1296,7 +1296,7 @@ public class SqlConstraintUtils {
                     if (aggColumn == null) {
                         throw Util.newInternal(
                             "AggStar " + aggStar + " has no column for "
-                                + column + " (bitPos " + bitPos + ")");
+                            + column + " (bitPos " + bitPos + ")");
                     }
                     AggStar.Table table = aggColumn.getTable();
                     table.addToFrom(queryBuilder.sqlQuery, false, true);
