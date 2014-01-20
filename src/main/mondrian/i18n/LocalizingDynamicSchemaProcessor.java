@@ -17,6 +17,7 @@ import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 import org.apache.log4j.Logger;
 
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
@@ -93,7 +94,10 @@ public class LocalizingDynamicSchemaProcessor
         Util.PropertyList connectInfo,
         InputStream stream) throws Exception
     {
-        setLocale(connectInfo.get("Locale"));
+        setLocale(
+            connectInfo.get("Locale") == null
+                ? Locale.getDefault().toString()
+                : connectInfo.get("Locale"));
 
         loadProperties();
 
