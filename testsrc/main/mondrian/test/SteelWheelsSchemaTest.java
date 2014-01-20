@@ -48,7 +48,7 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
         testContext.assertQueryReturns(
             "SELECT\n" +
                 "{[Measures].[Sales]} ON COLUMNS,\n" +
-                "{[Markets].[Territory].MEMBERS} ON ROWS\n" +
+                "NON EMPTY {[Markets].[Territory].MEMBERS} ON ROWS\n" +
                 "FROM [SteelWheelsSales]",
             "Axis #0:\n"
                 + "{}\n"
@@ -59,12 +59,10 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
                 + "{[Markets].[Markets].[EMEA]}\n"
                 + "{[Markets].[Markets].[Japan]}\n"
                 + "{[Markets].[Markets].[NA]}\n"
-                + "{[Markets].[Markets].[#null]}\n"
                 + "Row #0: 1,281,706\n"
                 + "Row #1: 5,008,224\n"
                 + "Row #2: 503,958\n"
-                + "Row #3: 3,852,061\n"
-                + "Row #4: \n");
+                + "Row #3: 3,852,061\n");
     }
 
     /**
@@ -86,7 +84,7 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Row #0: 4,923\n");
 
         testContext.assertQueryReturns(
-            "select [Markets].[Markets].Children on 0 from [SteelWheelsSales]",
+            "select NON EMPTY [Markets].[Markets].Children on 0 from [SteelWheelsSales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -94,12 +92,10 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "{[Markets].[Markets].[EMEA]}\n"
             + "{[Markets].[Markets].[Japan]}\n"
             + "{[Markets].[Markets].[NA]}\n"
-            + "{[Markets].[Markets].[#null]}\n"
             + "Row #0: 12,878\n"
             + "Row #0: 49,578\n"
             + "Row #0: 4,923\n"
-            + "Row #0: 37,952\n"
-            + "Row #0: \n");
+            + "Row #0: 37,952\n");
     }
 
     public void testMarkets2() {

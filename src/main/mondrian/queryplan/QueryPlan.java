@@ -1,28 +1,27 @@
 package mondrian.queryplan;
 
-import com.google.protobuf.ServiceException;
 import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.rolap.*;
-import mondrian.spi.*;
-import mondrian.spi.MemberFormatter;
 import mondrian.util.Format;
 import org.apache.tajo.algebra.*;
 import org.apache.tajo.client.TajoClient;
 import org.apache.tajo.conf.TajoConf;
 
-import java.io.IOException;
-import java.sql.*;
+import java.sql.ResultSet;
 import java.util.*;
 
 public class QueryPlan {
     public static final QueryPlan DUMMY = new QueryPlan();
     private boolean valid;
+    private boolean foundMeasure;
     private final Query mdxQuery;
     private String planContext;
+    private QPResult qpResult;
 
     private QueryPlan() {
         valid = false;
+        foundMeasure = false;
         mdxQuery = null;
         planContext = null;
     }
@@ -35,52 +34,121 @@ public class QueryPlan {
         this.valid = false;
     }
 
+
+    private static class PlanParts {
+        private PlanParts() {
+            this.sortSpecs = new ArrayList<>();
+            this.relationSet = new LinkedHashSet<>();
+            this.targetSet = new LinkedHashSet<>();
+            this.andExprs = new ArrayList<>();
+            this.groupElements = new ArrayList<>();
+
+            // Create the base Expr of the contextPlan
+            this.rootProjection = new Projection();
+
+            // Create the Aggregation since it is always (?) needed
+            this.aggregation = new Aggregation();
+
+            // Don't forget to set the quals at the end
+            this.filter = new Selection(null);
+
+            this.sort = new Sort(null);
+
+            aggregation.setChild(filter);
+
+            // Don't forget to set the SortSpec[] at the end
+            sort.setChild(aggregation);
+        }
+
+        final Projection rootProjection;
+
+        final Aggregation aggregation;
+
+        final Selection filter;
+
+        final Sort sort;
+
+        final List<Sort.SortSpec> sortSpecs;
+        final Set<Relation> relationSet;
+        final Set<TargetExpr> targetSet;
+        final List<Expr> andExprs;
+        final List<Aggregation.GroupElement> groupElements;
+
+        private Expr buildQual(List<Expr> andExprs) {
+            Iterator<Expr> iter = andExprs.listIterator();
+            if (iter.hasNext()) {
+                Expr expr = iter.next();
+                while (iter.hasNext()) {
+                    Expr next = iter.next();
+                    expr = new BinaryOperator(OpType.And, expr, next);
+                }
+                return expr;
+            } else {
+                return null;
+            }
+        }
+
+        private String compileParts() {
+            // Finalize the contextPlan
+            rootProjection.setTargets(targetSet.toArray(new TargetExpr[targetSet.size()]));
+            RelationList relList = new RelationList(relationSet.toArray(new Relation[relationSet.size()]));
+            if (groupElements.size() > 0) {
+                aggregation.setGroups(groupElements.toArray(new Aggregation.GroupElement[groupElements.size()]));
+                filter.setQual(buildQual(andExprs));
+                rootProjection.setChild(aggregation);
+                filter.setChild(relList);
+            } else {
+                rootProjection.setChild(relList);
+            }
+            if (sortSpecs.size() > 0) {
+                sort.setSortSpecs(sortSpecs.toArray(new Sort.SortSpec[sortSpecs.size()]));
+                rootProjection.setChild(sort);
+            }
+
+            return JsonHelper.toJson(rootProjection);
+        }
+    }
+
     public void build() {
         // Gather some useful objects from the query for inspection.
-        QueryAxis[] axises = mdxQuery.getAxes();
+        QueryAxis[] axes = mdxQuery.getAxes();
         RolapCube cube = (RolapCube)mdxQuery.getCube();
         RolapSchema.PhysSchema physicalSchema = cube.getSchema().getPhysicalSchema();
-        //RolapSchema.PhysSchemaGraph graph = physicalSchema.getGraph();
         List<RolapStar> stars = cube.getStars();
         if (stars.size() > 1) {
             System.err.println("Multiple stars per cube not currently implemented");
         }
         RolapStar star = stars.get(0);
 
-        // Create the base Expr of the contextPlan
-        Projection rootProjection = new Projection();
-
-        // Create the Aggregation since it is always (?) needed
-        Aggregation aggregation = new Aggregation();
-
-        // Don't forget to set the quals at the end
-        Selection filter = new Selection(null);
-
-        aggregation.setChild(filter);
-
-        // Don't forget to set the SortSpec[] at the end
-        Sort sort = new Sort(null);
-        sort.setChild(aggregation);
-        List<Sort.SortSpec> sortSpecs = new ArrayList<>();
-
-
         // Create containers for Expr objects that must be converted to array form later
-        Set<Relation> relationSet = new LinkedHashSet<>();
-        Set<TargetExpr> targetSet = new LinkedHashSet<>();
-        List<Expr> andExprs = new ArrayList<>();
-        List<Aggregation.GroupElement> groupElements = new ArrayList<>();
+        PlanParts planParts = new PlanParts();
 
-            // Add the relation for the fact table
+        // Add the relation for the fact table
         RolapSchema.PhysRelation factRelation = star.getFactTable().getRelation();
-        relationSet.add(new Relation(factRelation.getAlias()));
+        planParts.relationSet.add(new Relation(factRelation.getAlias()));
 
-        // Special case for a query like "select from [SteelWheelSales]"
-        if (axises.length == 0) {
-            planDefaultMeasure(cube, targetSet);
+        // Create the QPResult object for storing static metadata
+        qpResult = new QPResult(axes.length);
+        for (QueryAxis axis : axes) {
+            QPResult.QPAxis qpAxis = new QPResult.QPAxis();
+            qpResult.axes.add(qpAxis);
         }
 
-        for (int i = 0, axisesLength = axises.length; i < axisesLength; i++) {
-            QueryAxis axis = axises[i];
+        for (int axisOrdinal = axes.length - 1; axisOrdinal >= -1; axisOrdinal--) {
+            QPResult.QPAxis qpAxis;
+
+            QueryAxis axis;
+            if (axisOrdinal == -1) {
+                axis = mdxQuery.getSlicerAxis();
+                qpAxis = qpResult.slicerAxis;
+            } else {
+                axis = axes[axisOrdinal];
+                qpAxis = qpResult.axes.get(axisOrdinal);
+            }
+            if (axis == null) continue;
+            QPResult.PositionList positionList = qpAxis.getPositionList();
+
+
             Exp axisSet = axis.getSet();
             if (axisSet instanceof ResolvedFunCall) {
                 ResolvedFunCall axisSetResolvedFunCall = (ResolvedFunCall)axisSet;
@@ -91,9 +159,13 @@ public class QueryPlan {
                 for (Exp arg : axisSetResolvedFunCall.getArgs()) {
                     if (arg instanceof MemberExpr) {
                         Member memberExprMember = ((MemberExpr) arg).getMember();
+                        // I think we put in position 0 because in this case, there can only be a single position.
+                        positionList.get(0).add(memberExprMember);
+
                         if (memberExprMember instanceof RolapBaseCubeMeasure) {
-                            RolapBaseCubeMeasure rolapBaseCubeMeasure = (RolapBaseCubeMeasure) memberExprMember;
-                            planMeasureMember(targetSet, rolapBaseCubeMeasure);
+                            // Can't have Measures dim on multiple axes, so I think a 0 is right here.
+                            planMeasureMember(planParts.targetSet,(RolapBaseCubeMeasure)memberExprMember, 0);
+
                         } else if (memberExprMember instanceof RolapMemberBase) {
                             RolapMemberBase rolapMemberBase = (RolapMemberBase) memberExprMember;
                             RolapAttribute attr = (rolapMemberBase.getLevel()).getAttribute();
@@ -101,7 +173,7 @@ public class QueryPlan {
                             String relationAlias = physColumn.relation.getAlias();
 
                             // Ensure we have this relation and its qual
-                            if (relationSet.add(new Relation(relationAlias))) {
+                            if (planParts.relationSet.add(new Relation(relationAlias))) {
                                 RolapSchema.PhysLink link = null;
                                 Set<RolapSchema.PhysLink> physLinks = physicalSchema.getLinkSet();
                                 for (RolapSchema.PhysLink physLink : physLinks) {
@@ -116,67 +188,44 @@ public class QueryPlan {
                                 }
                                 RolapSchema.PhysColumn foreignKey = getOnlyAllowedElement(link.getColumnList());
                                 RolapSchema.PhysColumn sourceKey = getOnlyAllowedElement(link.getSourceKey().getColumnList());
-                                andExprs.add(new BinaryOperator(OpType.Equals,
+                                planParts.andExprs.add(new BinaryOperator(OpType.Equals,
                                     new ColumnReferenceExpr(factRelation.getAlias(), foreignKey.name),
                                     new ColumnReferenceExpr(relationAlias, sourceKey.name)));
                             }
 
+                            QPResult.MemberColumn relColumn = new QPResult.MemberColumn(axisOrdinal, 0, 0, rolapMemberBase.getUniqueName());
+//                            qpAxis.relationalColumns.add(relColumn);
+
                             // Add a target column reference
-                            ColumnReferenceExpr col = new ColumnReferenceExpr(relationAlias, physColumn.name);
-                            targetSet.add(new TargetExpr(col, memberExprMember.getUniqueName()));
+                            ColumnReferenceExpr colRefExpr = new ColumnReferenceExpr(relationAlias, physColumn.name);
+                            planParts.targetSet.add(new TargetExpr(colRefExpr, relColumn.alias()));
 
                             // Add an Equals predicate for this member
                             LiteralValue value = new LiteralValue(String.valueOf(rolapMemberBase.getKey()), LiteralValue.LiteralType.String);
-                            andExprs.add(new BinaryOperator(OpType.Equals, col, value));
+                            planParts.andExprs.add(new BinaryOperator(OpType.Equals, colRefExpr, value));
 
                             // Add grouping for this target
-                            groupElements.add(new Aggregation.GroupElement(Aggregation.GroupType.OrdinaryGroup, new ColumnReferenceExpr[]{col}));
-
-                            // TODO: I need the default measure here because none was specified.  Need to generify.
-                            planDefaultMeasure(cube, targetSet);
+                            planParts.groupElements.add(new Aggregation.GroupElement(Aggregation.GroupType.OrdinaryGroup, new ColumnReferenceExpr[]{colRefExpr}));
                         } else {
                             System.err.println("Skipping QueryPlan: No implementation for member "+memberExprMember.getClass().getName());
                             return;
                         }
-                    } else if (arg instanceof HierarchyExpr && "Children".equals(axisSetResolvedFunCall.getFunName())) {
-                        RolapCubeHierarchy rolapCubeHierarchy = (RolapCubeHierarchy) ((HierarchyExpr)arg).getHierarchy();
-                        // Get the level just below All.
-                        RolapCubeLevel childrenLevel = rolapCubeHierarchy.getLevelList().get(1);
-                        RolapAttribute attr = childrenLevel.getAttribute();
-                        RolapSchema.PhysColumn physColumn = attr.getNameExp();
-                        String relationAlias = physColumn.relation.getAlias();
+                    } else if (arg instanceof HierarchyExpr) {
+                        if ("Children".equals(axisSetResolvedFunCall.getFunName())) {
+                            RolapCubeHierarchy rolapCubeHierarchy = (RolapCubeHierarchy) ((HierarchyExpr)arg).getHierarchy();
+                            List<? extends RolapCubeLevel> levelList = rolapCubeHierarchy.getLevelList();
+                            // Get the level just below All.  If there isn't one, let it return an empty set.
+                            if (levelList.size() < 2) continue;
+                            RolapCubeLevel childrenLevel = levelList.get(1);
+                            QPResult.MemberColumn relColumn = new QPResult.MemberColumn(axisOrdinal, 0, 0, childrenLevel.getUniqueName());
+                            qpAxis.relationalColumns.add(relColumn);
+                            planLevelMembers(planParts, childrenLevel, physicalSchema, factRelation, relColumn);
 
-                        // Add a target column reference
-                        ColumnReferenceExpr col = new ColumnReferenceExpr(relationAlias, physColumn.name);
-                        targetSet.add(new TargetExpr(col, childrenLevel.getUniqueName()));
-
-                        // Ensure we have this relation and its qual
-                        if (relationSet.add(new Relation(relationAlias))) {
-                            RolapSchema.PhysLink link = null;
-                            Set<RolapSchema.PhysLink> physLinks = physicalSchema.getLinkSet();
-                            for (RolapSchema.PhysLink physLink : physLinks) {
-                                if (physLink.getTo().equals(physColumn.relation) &&
-                                    physLink.getFrom().equals(factRelation)) {
-                                    link = physLink;
-                                    break;
-                                }
-                            }
-                            if (link == null) {
-                                throw new NullPointerException("No relation link found");
-                            }
-                            RolapSchema.PhysColumn foreignKey = getOnlyAllowedElement(link.getColumnList());
-                            RolapSchema.PhysColumn sourceKey = getOnlyAllowedElement(link.getSourceKey().getColumnList());
-                            andExprs.add(new BinaryOperator(OpType.Equals,
-                                new ColumnReferenceExpr(factRelation.getAlias(), foreignKey.name),
-                                new ColumnReferenceExpr(relationAlias, sourceKey.name)));
-                            sortSpecs.add(new Sort.SortSpec(col, true, false));
+                        } else if ("Members".equals(axisSetResolvedFunCall.getFunName())) {
+                            // Not ready yet. (Have you seen the output of that!?)
+                            System.err.println("Skipping QueryPlan: Hierarchy.Members not yet implemented");
+                            return;
                         }
-
-                        // Add grouping for this target
-                        groupElements.add(new Aggregation.GroupElement(Aggregation.GroupType.OrdinaryGroup, new ColumnReferenceExpr[]{col}));
-
-                        // TODO: I need the default measure here because none was specified.  Need to generify.
-                        planDefaultMeasure(cube, targetSet);
                     } else if (arg instanceof ResolvedFunCall) {
                         ResolvedFunCall argResolvedFunCall = (ResolvedFunCall)arg;
                         if (argResolvedFunCall.getArgCount() != 1) {
@@ -184,20 +233,29 @@ public class QueryPlan {
                             return;
                         }
                         if ("Members".equals(argResolvedFunCall.getFunName())) {
-                            Dimension dim = ((DimensionExpr) argResolvedFunCall.getArg(0)).getDimension();
-                            if (dim.isMeasures()) {
-                                for (RolapMember rolapMember : cube.getMeasuresMembers()) {
-                                    if (rolapMember instanceof RolapBaseCubeMeasure) {
-                                        planMeasureMember(targetSet,(RolapBaseCubeMeasure)rolapMember);
-                                    } else {
-                                        System.err.println("Skipping QueryPlan: MeasureMember is not RolapBaseCubeMeasure");
-                                        return;
+                            Exp membersArg = argResolvedFunCall.getArg(0);
+                            if (membersArg instanceof DimensionExpr) {
+                                Dimension dim = ((DimensionExpr) membersArg).getDimension();
+                                if (dim.isMeasures()) {
+                                    List<RolapMember> measuresMembers = cube.getMeasuresMembers();
+                                    int i = 0;
+                                    QPResult.PositionImpl pos = positionList.get(0);
+                                    for (Member member : measuresMembers) {
+                                        RolapBaseCubeMeasure measureMember = (RolapBaseCubeMeasure)member;
+                                        planMeasureMember(planParts.targetSet, measureMember, i++);
+                                        positionList.addPositionWithMember(pos, measureMember);
+                                        pos = null;
                                     }
-
+                                } else {
+                                    System.err.println("Skipping QueryPlan: DimensionExpr Members is not Measures Dim");
+                                    return;
                                 }
-                            } else {
-                                System.err.println("Skipping QueryPlan: DimensionExpr Members is not Measures Dim");
-                                return;
+                            } else if (membersArg instanceof LevelExpr) {
+                                RolapCubeLevel level = (RolapCubeLevel) ((LevelExpr) membersArg).getLevel();
+                                // Probably need to count the levels to make this value work.
+                                QPResult.MemberColumn relColumn = new QPResult.MemberColumn(axisOrdinal, 0, 0, level.getUniqueName());
+                                qpAxis.relationalColumns.add(relColumn);
+                                planLevelMembers(planParts, level, physicalSchema, factRelation, relColumn);
                             }
                         } else {
                             System.err.println("Skipping QueryPlan: argResolvedFunCall not handled");
@@ -210,27 +268,50 @@ public class QueryPlan {
                 System.err.println("Skipping QueryPlan: axisSet is not ResolvedFunCall");
                 return;
             }
-
-
         }
 
-        // Finalize the contextPlan
-        rootProjection.setTargets(targetSet.toArray(new TargetExpr[targetSet.size()]));
-        RelationList relList = new RelationList(relationSet.toArray(new Relation[relationSet.size()]));
-        if (groupElements.size() > 0) {
-            aggregation.setGroups(groupElements.toArray(new Aggregation.GroupElement[groupElements.size()]));
-            filter.setQual(buildQual(andExprs));
-            rootProjection.setChild(aggregation);
-            filter.setChild(relList);
-        } else {
-            rootProjection.setChild(relList);
+        // Check if we saw a measure in one of the axes
+        if (!foundMeasure) {
+            planMeasureMember(planParts.targetSet, (RolapBaseCubeMeasure) cube.getMeasuresHierarchy().getDefaultMember(), 0);
         }
-        if (sortSpecs.size() > 0) {
-            sort.setSortSpecs(sortSpecs.toArray(new Sort.SortSpec[sortSpecs.size()]));
-            rootProjection.setChild(sort);
-        }
-        this.planContext = JsonHelper.toJson(rootProjection);
+
+        this.planContext = planParts.compileParts();
         this.valid = true;
+    }
+
+    private void planLevelMembers(PlanParts planParts, RolapCubeLevel level, RolapSchema.PhysSchema physicalSchema, RolapSchema.PhysRelation factRelation, QPResult.Column relColumn) {
+        RolapAttribute attr = level.getAttribute();
+        RolapSchema.PhysColumn physColumn = attr.getNameExp();
+        String relationAlias = physColumn.relation.getAlias();
+
+        // Add a target column reference
+        ColumnReferenceExpr col = new ColumnReferenceExpr(relationAlias, physColumn.name);
+        planParts.targetSet.add(new TargetExpr(col, relColumn.alias()));
+
+        // Ensure we have this relation and its qual
+        if (planParts.relationSet.add(new Relation(relationAlias))) {
+            RolapSchema.PhysLink link = null;
+            Set<RolapSchema.PhysLink> physLinks = physicalSchema.getLinkSet();
+            for (RolapSchema.PhysLink physLink : physLinks) {
+                if (physLink.getTo().equals(physColumn.relation) &&
+                    physLink.getFrom().equals(factRelation)) {
+                    link = physLink;
+                    break;
+                }
+            }
+            if (link == null) {
+                throw new NullPointerException("No relation link found");
+            }
+            RolapSchema.PhysColumn foreignKey = getOnlyAllowedElement(link.getColumnList());
+            RolapSchema.PhysColumn sourceKey = getOnlyAllowedElement(link.getSourceKey().getColumnList());
+            planParts.andExprs.add(new BinaryOperator(OpType.Equals,
+                new ColumnReferenceExpr(factRelation.getAlias(), foreignKey.name),
+                new ColumnReferenceExpr(relationAlias, sourceKey.name)));
+            planParts.sortSpecs.add(new Sort.SortSpec(col, true, false));
+        }
+
+        // Add grouping for this target
+        planParts.groupElements.add(new Aggregation.GroupElement(Aggregation.GroupType.OrdinaryGroup, new ColumnReferenceExpr[]{col}));
     }
 
     private <T> T getOnlyAllowedElement(List<T> list) {
@@ -244,30 +325,15 @@ public class QueryPlan {
         return list.get(0);
     }
 
-    private Expr buildQual(List<Expr> andExprs) {
-        Iterator<Expr> iter = andExprs.listIterator();
-        if (iter.hasNext()) {
-            Expr expr = iter.next();
-            while (iter.hasNext()) {
-                Expr next = iter.next();
-                expr = new BinaryOperator(OpType.And, expr, next);
-            }
-            return expr;
-        } else {
-            return null;
-        }
-    }
-
-    private void planDefaultMeasure(RolapCube cube, Set<TargetExpr> targetSet) {
-        planMeasureMember(targetSet, (RolapBaseCubeMeasure) cube.getMeasuresHierarchy().getDefaultMember());
-    }
-
-    private void planMeasureMember(Set<TargetExpr> targetSet, RolapBaseCubeMeasure measureMember) {
+    private void planMeasureMember(Set<TargetExpr> targetSet, RolapBaseCubeMeasure measureMember, int measureOrdinal) {
+        foundMeasure = true;
         RolapSchema.PhysColumn physColumn = measureMember.getExpr();
         RolapAggregator agg = measureMember.getAggregator();
         ColumnReferenceExpr col = new ColumnReferenceExpr(physColumn.name);
         GeneralSetFunctionExpr aggFun = new GeneralSetFunctionExpr(agg.getName(),agg.isDistinct(), col);
-        targetSet.add(new TargetExpr(aggFun, measureMember.getName()));
+
+        QPResult.MeasureColumn relCol = new QPResult.MeasureColumn(measureOrdinal, measureMember);
+        targetSet.add(new TargetExpr(aggFun, relCol.alias()));
     }
 
     public boolean isValid() {
@@ -281,139 +347,49 @@ public class QueryPlan {
     public QPResult execute() {
         if (!isValid()) { throw new IllegalStateException(); }
 
-        // Gather some useful objects from the query for inspection.
-        QueryAxis[] axises = mdxQuery.getAxes();
-        RolapCube cube = (RolapCube)mdxQuery.getCube();
-        RolapSchema.PhysSchemaGraph graph = cube.getSchema().getPhysicalSchema().getGraph();
-        List<RolapStar> stars = cube.getStars();
-        if (stars.size() > 1) {
-            System.err.println("Multiple stars per cube not currently implemented");
-        }
-        RolapStar star = stars.get(0);
-
-        // I need a silly number formatter just to be sane.
-        Format numFormatter = new Format("#,###", (Format.FormatLocale) null);
-        QPResult qpresult = new QPResult();
-
-        try {
+        try (
             TajoClient client = new TajoClient(new TajoConf());
-
             ResultSet rs = client.executeQueryAndGetResult(planContext);
-
-            // Create an axis in case we need one.
-            QPResult.QPAxis qpAxis = new QPResult.QPAxis();
-            CellKey cellKey = CellKey.Generator.newCellKey(axises.length);
-
-            // Special case for a query like "select from [SteelWheelSales]"
-            if (axises.length == 0) {
-                RolapMember defaultMember = cube.getMeasuresHierarchy().getDefaultMember();
+        ) {
+            // I need a silly number formatter just to be sane.
+            Format numFormatter = new Format("#,###", (Format.FormatLocale) null);
+            int[] cellKey = new int[qpResult.axes.size()];
+            for (int axisOrdinal = qpResult.axes.size() - 1; axisOrdinal > -1; axisOrdinal--) {
+                QPResult.QPAxis qpAxis = qpResult.axes.get(axisOrdinal);
+                QPResult.PositionList positionList = qpAxis.getPositionList();
+                QPResult.PositionImpl pos = positionList.get(0);
+                rs.beforeFirst();
                 while (rs.next()) {
-                    int measureValue = rs.getInt(defaultMember.getName());
-                    addCell(qpresult, cellKey.copy(), measureValue, numFormatter);
-                }
-            } else {
-                qpresult.axes.add(qpAxis);
-            }
+                    for (QPResult.Column relationalColumn : qpAxis.relationalColumns) {
+                        if (relationalColumn instanceof QPResult.MemberColumn) {
+                            QPResult.MemberColumn memberRelationalColumn = (QPResult.MemberColumn) relationalColumn;
+                            String memberCaption = rs.getString(relationalColumn.alias());
+                            List<Id.Segment> memberFqName = Util.parseIdentifier(
+                                Util.makeFqName(memberRelationalColumn.memberFqName, memberCaption));
+                            MemberExpr memberExpr = (MemberExpr) Util.lookup(mdxQuery, memberFqName, true);
+                            positionList.addPositionWithMember(pos, memberExpr.getMember());
+                            pos = null;
 
-            for (int i = 0, axisesLength = axises.length; i < axisesLength; i++) {
+                        } else if (relationalColumn instanceof QPResult.MeasureColumn) {
 
-                QueryAxis axis = axises[i];
-                Exp axisSet = axis.getSet();
-                if (axisSet instanceof ResolvedFunCall) {
-                    ResolvedFunCall axisSetResolvedFunCall = (ResolvedFunCall)axisSet;
-                    for (Exp arg : axisSetResolvedFunCall.getArgs()) {
-                        if (arg instanceof MemberExpr) {
-                            MemberExpr memberExpr = (MemberExpr)arg;
-                            Member memberExprMember = memberExpr.getMember();
-                            qpAxis.poslist.list.get(0).tupleList.add(memberExprMember);
-                            if (memberExprMember instanceof RolapBaseCubeMeasure) {
-                                RolapBaseCubeMeasure rolapBaseCubeMeasure = (RolapBaseCubeMeasure) memberExprMember;
-                                int j = 0;
-                                while (rs.next()) {
-                                    int value = rs.getInt(rolapBaseCubeMeasure.getName());
-                                    addCell(qpresult, cellKey.copy(), value, numFormatter);
-                                    cellKey.setAxis(i,j++);
-                                }
-                            } else if (memberExprMember instanceof RolapMemberBase) {
-                                RolapBaseCubeMeasure defaultMember = (RolapBaseCubeMeasure) cube.getMeasuresHierarchy().getDefaultMember();
-                                int j = 0;
-                                while (rs.next()) {
-                                    int measureValue = rs.getInt(defaultMember.getName());
-                                    addCell(qpresult, cellKey.copy(), measureValue, numFormatter);
-                                    cellKey.setAxis(i,j++);
-                                }
-                            }
-                        } else if (arg instanceof HierarchyExpr && "Children".equals(axisSetResolvedFunCall.getFunName())) {
-                            RolapBaseCubeMeasure defaultMember = (RolapBaseCubeMeasure) cube.getMeasuresHierarchy().getDefaultMember();
-                            RolapCubeHierarchy rolapCubeHierarchy = (RolapCubeHierarchy) ((HierarchyExpr)arg).getHierarchy();
-                            // Get the level just below All.
-                            RolapCubeLevel childrenLevel = rolapCubeHierarchy.getLevelList().get(1);
-                            String memberLevelName = childrenLevel.getUniqueName();
-                            QPResult.PositionImpl posMembers = qpAxis.poslist.list.get(0);
-                            int j = 0;
-                            while (rs.next()) {
-                                String memberValue = rs.getString(memberLevelName);
-                                List<Id.Segment> memberFqName = Util.parseIdentifier(Util.makeFqName(memberLevelName, memberValue));
-                                MemberExpr memberExpr = (MemberExpr) Util.lookup(mdxQuery, memberFqName, true);
-                                posMembers.tupleList.add(memberExpr.getMember());
-
-                                int measureValue = rs.getInt(defaultMember.getName());
-                                addCell(qpresult, cellKey.copy(), measureValue, numFormatter);
-
-                                posMembers = new QPResult.PositionImpl();
-                                qpAxis.poslist.list.add(posMembers);
-                                cellKey.setAxis(i,++j);
-
-                            }
-                            posMembers.tupleList.add(rolapCubeHierarchy.getNullMember());
-                        } else if (arg instanceof ResolvedFunCall) {
-                            ResolvedFunCall argResolvedFunCall = (ResolvedFunCall)arg;
-                            if ("Members".equals(argResolvedFunCall.getFunName())) {
-                                while (rs.next()) {
-                                    Dimension dim = ((DimensionExpr) argResolvedFunCall.getArg(0)).getDimension();
-                                    if (dim.isMeasures()) {
-                                        QPResult.PositionImpl posMembers = qpAxis.poslist.list.get(0);
-                                        List<RolapMember> measuresMembers = ((RolapCube) mdxQuery.getCube()).getMeasuresMembers();
-                                        for (int j = 0; j < measuresMembers.size(); j++) {
-                                            RolapMember rolapMember = measuresMembers.get(j);
-                                            if (rolapMember instanceof RolapBaseCubeMeasure) {
-                                                posMembers.tupleList.add(rolapMember);
-                                                if (rolapMember instanceof RolapBaseCubeMeasure) {
-                                                    RolapBaseCubeMeasure rolapBaseCubeMeasure = (RolapBaseCubeMeasure) rolapMember;
-                                                    int value = rs.getInt(rolapBaseCubeMeasure.getName());
-                                                    addCell(qpresult, cellKey.copy(), value, numFormatter);
-                                                }
-                                            }
-                                            if (j+1 < measuresMembers.size()) {
-                                                posMembers = new QPResult.PositionImpl();
-                                                qpAxis.poslist.list.add(posMembers);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
                         }
                     }
 
+                    addCell(CellKey.Generator.newCellKey(cellKey), rs.getLong("m0"), numFormatter);
+                    cellKey[cellKey.length-1]++;
                 }
             }
-
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ServiceException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return qpresult;
+
+        return qpResult;
     }
 
-    private void addCell(QPResult qpresult, CellKey key, Object value, Format format) throws SQLException {
+    private void addCell(CellKey key, Object value, Format format) {
         QPResult.QPCell cell = new QPResult.QPCell();
         cell.value = value;
         cell.formattedValue = format == null ? String.valueOf(cell.value) : format.format(cell.value);
-        qpresult.cells.put(key, cell);
+        qpResult.cells.put(key, cell);
     }
 }

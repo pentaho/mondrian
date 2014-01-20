@@ -1909,7 +1909,12 @@ public class FunUtil extends Util {
                 //noinspection unchecked
                 return k1.compareTo(k2);
             } else {
-                return k2.compareTo(k1);
+                if (m1.isNull())
+                    return -1;
+                else if (m2.isNull())
+                    return 1;
+                else
+                    return 0; // Give up.
             }
         }
 

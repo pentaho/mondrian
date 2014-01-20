@@ -1,61 +1,104 @@
 package mondrian.queryplan;
 
 import java.io.PrintWriter;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import mondrian.rolap.CellKey;
+import mondrian.olap.*;
+import mondrian.rolap.*;
 import org.olap4j.AllocationPolicy;
 import org.olap4j.Scenario;
 
 import mondrian.calc.TupleList;
-import mondrian.olap.Axis;
-import mondrian.olap.Cell;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Member;
-import mondrian.olap.Position;
-import mondrian.olap.Query;
-import mondrian.olap.Result;
 
 public class QPResult implements Result {
 
     public static class QPAxis implements Axis {
-
-        public PositionList poslist = null;
-        public QPAxis() {
-            this.poslist = new PositionList();
-            this.poslist.list.add( new PositionImpl() );
-        }
+        private PositionList poslist = new PositionList();
 
         @Override
         public List<Position> getPositions() {
             return poslist;
+        }
+
+        public PositionList getPositionList() {
+            return poslist;
+        }
+
+        public final List<Column> relationalColumns = new ArrayList<>();
+    }
+
+    public static interface Column {
+        public String alias();
+    }
+    public static class MemberColumn implements Column {
+        public final int axisOrdinal;
+        public final int hierarchyOrdinal;
+        public final int levelOrdinal;
+        public final String memberFqName;
+
+        public MemberColumn(int axisOrdinal, int hierarchyOrdinal, int levelOrdinal, String memberFqName) {
+            this.axisOrdinal = axisOrdinal;
+            this.hierarchyOrdinal = hierarchyOrdinal;
+            this.levelOrdinal = levelOrdinal;
+            this.memberFqName = memberFqName;
+        }
+
+
+        public String alias() {
+            return String.format("a%d_h%d_l%d", axisOrdinal, hierarchyOrdinal, levelOrdinal);
+        }
+    }
+    public static class MeasureColumn implements Column {
+        public final int measureOrdinal;
+        public final RolapMeasure measureMember;
+
+        public MeasureColumn(int measureOrdinal, RolapMeasure measureMember) {
+            this.measureOrdinal = measureOrdinal;
+            this.measureMember = measureMember;
+        }
+
+        public String alias() {
+            return String.format("m%d", measureOrdinal);
         }
     }
 
     /**
      * List of positions.
      */
-    public static class PositionList extends AbstractList<Position> {
-        public final List<PositionImpl> list = new ArrayList<PositionImpl>();
+    public static class PositionList extends AbstractList<Position> implements List<Position> {
+        private final List<PositionImpl> list = new ArrayList<>();
 
-        PositionList() {
+        private PositionList() {
+            add(new PositionImpl());
         }
 
         public boolean isEmpty() {
             // may be considerably cheaper than computing size
-            return list.isEmpty();
+            return false;
         }
 
         public int size() {
             return list.size();
         }
 
-        public Position get(int index) {
+        public boolean add(PositionImpl position) {
+            return list.add(position);
+        }
+
+        public void add(int index, PositionImpl position) {
+            list.add(index, position);
+        }
+
+        public PositionImpl get(int index) {
             return list.get(index);
+        }
+
+        public void addPositionWithMember(PositionImpl pos, Member member) {
+            if (pos == null) {
+                pos = new PositionImpl();
+                add(pos);
+            }
+            pos.add(member);
         }
     }
 
@@ -67,19 +110,23 @@ public class QPResult implements Result {
         extends AbstractList<Member>
         implements Position
     {
-        public final List<Member> tupleList = new ArrayList<Member>();
-
-        public Member get(int index) {
-            return tupleList.get(index);
-        }
+        private final List<Member> tupleList = new ArrayList<>();
 
         public int size() {
             return tupleList.size();
         }
+
+        public void add(int index, Member member) {
+            tupleList.add(index, member);
+        }
+
+        public Member get(int index) {
+            return tupleList.get(index);
+        }
     }
 
-    public QPResult() {
-
+    public QPResult(int size) {
+        axes = new ArrayList<>(size);
     }
 
     @Override
@@ -90,20 +137,20 @@ public class QPResult implements Result {
 
     public QPAxis slicerAxis = new QPAxis();
 
-    public List<Axis> axes = new ArrayList<Axis>();
+    public List<QPAxis> axes;
 
     @Override
     public Axis[] getAxes() {
-        return axes.toArray(new Axis[0]);
+        return axes.toArray(new Axis[axes.size()]);
     }
 
     @Override
-    public Axis getSlicerAxis() {
+    public QPAxis getSlicerAxis() {
         // TODO Auto-generated method stub
         return slicerAxis;
     }
 
-    public Map<CellKey, QPCell> cells = new HashMap<CellKey, QPCell>();
+    public Map<CellKey, QPCell> cells = new HashMap<>();
 
     public static class QPCell implements Cell {
 
@@ -114,6 +161,8 @@ public class QPResult implements Result {
             // TODO Auto-generated method stub
             return null;
         }
+
+        public String toString() { return formattedValue; }
 
         @Override
         public Object getValue() {
@@ -253,5 +302,4 @@ public class QPResult implements Result {
     public void close() {
         // TODO Auto-generated method stub
     }
-
 }
