@@ -65,6 +65,26 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
                 + "Row #3: 3,852,061\n");
     }
 
+    public void testQueryPlan2() {
+        TestContext testContext = getTestContext();
+        testContext.assertQueryReturns(
+            "SELECT\n" +
+                "{[Measures].[Sales]} ON COLUMNS,\n" +
+                "NON EMPTY UNION({[Markets].[NA]},[Markets].[NA].Children) ON ROWS\n" +
+                "FROM [SteelWheelsSales]",
+            "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Markets].[Markets].[NA]}\n"
+                + "{[Markets].[Markets].[NA].[Canada]}\n"
+                + "{[Markets].[Markets].[NA].[USA]}\n"
+                + "Row #0: 3,852,061\n"
+                + "Row #1: 224,079\n"
+                + "Row #2: 3,627,983\n");
+    }
+
     /**
      * Test case for Infobright issue where [Markets].[All Markets].[Japan]
      * was not found but [Markets].[All Markets].[JAPAN] was OK.

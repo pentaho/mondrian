@@ -10,6 +10,7 @@
       <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-rpc/target/antrun" />
       <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-rpc/target/classes" />
       <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-rpc/target/maven-archiver" />
+      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-rpc/target/tajo-rpc-0.8.0-SNAPSHOT" />
       <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-rpc/target/test-classes" />
     </content>
     <orderEntry type="inheritedJdk" />
