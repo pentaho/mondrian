@@ -108,6 +108,7 @@
         <dependency org="junit" name="junit" rev="3.8.1" conf="test->default"/>
         <dependency org="xmlunit" name="xmlunit" rev="1.1" conf="test->default"/>
         <dependency org="monetdb" name="monetdb-jdbc" rev="2.6" conf="test->default"/>
+        <dependency org="org.mockito" name="mockito-all" rev="1.8.5" conf="test->default"/>
 
         <!-- Exclusions -->
         <exclude org="avalon-framework" module="avalon-framework"/>
