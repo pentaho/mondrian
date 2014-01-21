@@ -76,7 +76,11 @@
                 conf="test->default" changing="true">
             <artifact name="olap4j-xmla"/>
         </dependency>
-        <dependency org="org.olap4j" name="olap4j-xmlaserver" rev="${dependency.olap4j-xmlaserver.revision}"/>
+        
+        <dependency org="org.olap4j" name="olap4j-xmlaserver" rev="${dependency.olap4j-xmlaserver.revision}"
+            conf="sources->default" changing="true">
+            <artifact name="olap4j-xmlaserver"/>
+        </dependency>
 
         <dependency org="xalan" name="xalan" rev="2.6.0"/>
         <dependency org="xerces" name="xercesImpl" rev="2.9.1"/>
