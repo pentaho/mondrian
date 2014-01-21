@@ -4,12 +4,8 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-<<<<<<< HEAD
-// Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
-=======
-// Copyright (C) 2012-2013 Pentaho and others
+// Copyright (c) 2002-2014 Pentaho Corporation
 // All Rights Reserved.
->>>>>>> [MONDRIAN-1785] Fixes issues with Hive. A lot of SQL related classes had to be fixed. The alias was not used consistently according to the dialect rules. Now all SQL generated uses the aliasses correctly.
 */
 package mondrian.test;
 
@@ -1234,7 +1230,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
         verifySameNativeAndNot(
             "select filter([Product].[Product Name].members, Measures.[Unit Sales] > 0) on 0 from sales",
             "Native native filter mismatch", ctx);
-       
+
         propSaver.reset();
     }
 }
