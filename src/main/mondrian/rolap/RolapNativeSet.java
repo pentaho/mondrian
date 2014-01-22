@@ -6,10 +6,9 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.ResultStyle;
@@ -21,6 +20,7 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.cache.*;
 import mondrian.rolap.sql.*;
 
+import org.apache.commons.collections.*;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -44,6 +44,12 @@ public abstract class RolapNativeSet extends RolapNative {
 
     private SmartCache<Object, TupleList> cache =
         new SoftSmartCache<Object, TupleList>();
+
+    private static final Predicate memberIsHiddenPredicate = new Predicate() {
+        public boolean evaluate(Object o) {
+            return ((Member) o).isHidden();
+        }
+    };
 
     /**
      * Returns whether certain member types (e.g. calculated members) should
@@ -266,7 +272,19 @@ public abstract class RolapNativeSet extends RolapNative {
                     cache.put(key, result);
                 }
             }
-            return result;
+            return removeTuplesWithHiddenMembers(result);
+        }
+
+        private TupleList removeTuplesWithHiddenMembers(TupleList tupleList) {
+            CollectionUtils.filter(
+                tupleList, new Predicate()
+            {
+                public boolean evaluate(Object o) {
+                    return !CollectionUtils.exists(
+                        (List<Member>) o, memberIsHiddenPredicate);
+                }
+            });
+            return tupleList;
         }
 
         private void addLevel(TupleReader tr, CrossJoinArg arg) {
