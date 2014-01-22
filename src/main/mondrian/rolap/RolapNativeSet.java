@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -20,6 +20,7 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.cache.*;
 import mondrian.rolap.sql.*;
 
+import org.apache.commons.collections.*;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -40,6 +41,11 @@ import javax.sql.DataSource;
 public abstract class RolapNativeSet extends RolapNative {
     protected static final Logger LOGGER =
         Logger.getLogger(RolapNativeSet.class);
+    private static final Predicate isMemberHiddenPredicate = new Predicate() {
+        public boolean evaluate(Object o) {
+            return ((Member) o).isHidden();
+        }
+    };
 
     private SmartCache<Object, TupleList> cache =
         new SoftSmartCache<Object, TupleList>();
@@ -265,9 +271,21 @@ public abstract class RolapNativeSet extends RolapNative {
                     cache.put(key, result);
                 }
             }
-            return filterInaccessibleTuples(result);
+            return filterInaccessibleTuples(
+                filterTuplesWithHiddenMembers(result));
         }
 
+
+        private TupleList filterTuplesWithHiddenMembers(TupleList tupleList) {
+            CollectionUtils.filter(
+                tupleList, new Predicate() {
+                public boolean evaluate(Object o) {
+                    return !CollectionUtils.exists(
+                        (List<Member>) o, isMemberHiddenPredicate);
+                }
+            });
+            return tupleList;
+        }
 
         /**
          * Checks access rights on the members in each tuple in tupleList.
