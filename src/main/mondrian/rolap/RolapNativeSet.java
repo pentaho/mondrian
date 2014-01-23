@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -20,11 +20,14 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.cache.*;
 import mondrian.rolap.sql.*;
 
+import org.apache.commons.collections.*;
 import org.apache.log4j.Logger;
 
 import java.util.*;
 
 import javax.sql.DataSource;
+
+import static org.apache.commons.collections.CollectionUtils.*;
 
 /**
  * Analyses set expressions and executes them in SQL if possible.
@@ -268,50 +271,85 @@ public abstract class RolapNativeSet extends RolapNative {
             return filterInaccessibleTuples(result);
         }
 
-
         /**
-         * Checks access rights on the members in each tuple in tupleList.
+         * Checks access rights and hidden status on the members
+         * in each tuple in tupleList.
          */
         private TupleList filterInaccessibleTuples(TupleList tupleList) {
-            if (constraint.getEvaluator() == null
-                || tupleList.size() == 0)
-            {
-                return tupleList;
-            }
-            Role role = constraint.getEvaluator().getSchemaReader().getRole();
-
-            TupleList filteredTupleList =  tupleList.getArity() == 1
-                ? new UnaryTupleList()
-                : new ArrayTupleList(tupleList.getArity());
-            for (Member member : tupleList.get(0)) {
-                // first look at the members in the first tuple to determine
-                // whether we can short-circuit this check.
-                // We only need to filter the list if hierarchy access
-                // is not ALL
-                Access hierarchyAccess = role.getAccess(member.getHierarchy());
-                if (hierarchyAccess == Access.CUSTOM) {
-                    // one of the hierarchies has CUSTOM.  Remove all tuples
-                    // with inaccessible members.
-                    for (List<Member> tuple : tupleList) {
-                        for (Member memberInner : tuple) {
-                            if (!role.canAccess(memberInner)) {
-                                filteredTupleList.add(tuple);
-                                break;
-                            }
-                        }
-                    }
-                    for (List<Member> tuple : filteredTupleList) {
-                        tupleList.remove(tuple);
-                    }
-                    return tupleList;
-                } else if (hierarchyAccess == Access.NONE) {
-                    // one or more hierarchies in the tuple list is
-                    // inaccessible. return an empty list.
-                    List<Member> emptyList = Collections.emptyList();
-                    return new ListTupleList(tupleList.getArity(), emptyList);
-                }
+            if (needsFiltering(tupleList)) {
+                final Predicate memberInaccessible =
+                    memberInaccessiblePredicate();
+                filter(
+                    tupleList, tupleAccessiblePredicate(memberInaccessible));
             }
             return tupleList;
+        }
+
+        private boolean needsFiltering(TupleList tupleList) {
+            return tupleList.size() > 0
+                   && exists(tupleList.get(0), needsFilterPredicate());
+        }
+
+        private Predicate needsFilterPredicate() {
+            return new Predicate() {
+                public boolean evaluate(Object o) {
+                    Member member = (Member) o;
+                    return isRaggedLevel(member.getLevel())
+                           || isCustomAccess(member.getHierarchy());
+                }
+            };
+        }
+
+        private boolean isRaggedLevel(Level level) {
+            if (level instanceof RolapLevel) {
+                return ((RolapLevel) level).getHideMemberCondition()
+                       != RolapLevel.HideMemberCondition.Never;
+            }
+            // don't know if it's ragged, so assume it is.
+            // should not reach here
+            return true;
+        }
+
+        private boolean isCustomAccess(Hierarchy hierarchy) {
+            if (constraint.getEvaluator() == null) {
+                return false;
+            }
+            Access access =
+                constraint
+                    .getEvaluator()
+                    .getSchemaReader()
+                    .getRole()
+                    .getAccess(hierarchy);
+            return access == Access.CUSTOM;
+        }
+
+        private Predicate memberInaccessiblePredicate() {
+            if (constraint.getEvaluator() != null) {
+                return new Predicate() {
+                    public boolean evaluate(Object o) {
+                        Role role =
+                            constraint
+                                .getEvaluator().getSchemaReader().getRole();
+                        Member member = (Member) o;
+                        return member.isHidden() || !role.canAccess(member);
+                    }
+                };
+            }
+            return new Predicate() {
+                public boolean evaluate(Object o) {
+                    return ((Member) o).isHidden();
+                }
+            };
+        }
+
+        private Predicate tupleAccessiblePredicate(
+            final Predicate memberInaccessible)
+        {
+            return new Predicate() {
+                @SuppressWarnings("unchecked")
+                public boolean evaluate(Object o) {
+                    return !exists((List<Member>) o, memberInaccessible);
+                }};
         }
 
         private void addLevel(TupleReader tr, CrossJoinArg arg) {

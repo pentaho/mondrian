@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2014 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.test;
 
 import mondrian.spi.Dialect;
@@ -431,6 +430,132 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Gender4].[M]}\n"
             + "Row #0: 135,215\n");
+    }
+
+    public void testNativeFilterWithHideMemberIfBlankOnLeaf() throws Exception {
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
+            "Sales Ragged",
+            "<Dimension name=\"Store\" foreignKey=\"store_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
+            + "      <Table name=\"store_ragged\"/>\n"
+            + "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"\n"
+            + "          hideMemberIf=\"Never\"/>\n"
+            + "      <Level name=\"Store State\" column=\"store_state\" uniqueMembers=\"true\"\n"
+            + "          hideMemberIf=\"IfParentsName\"/>\n"
+            + "      <Level name=\"Store City\" column=\"store_city\" uniqueMembers=\"false\"\n"
+            + "          hideMemberIf=\"IfBlankName\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>");
+
+        testContext.assertQueryReturns(
+            "SELECT\n"
+            + "[Measures].[Unit Sales] ON COLUMNS\n"
+            + ",FILTER([Store].[Store City].MEMBERS, NOT ISEMPTY ([Measures].[Unit Sales])) ON ROWS\n"
+            + "FROM [Sales Ragged]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[Israel].[Israel].[Haifa]}\n"
+            + "{[Store].[Israel].[Israel].[Tel Aviv]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[USA].[OR].[Portland]}\n"
+            + "{[Store].[USA].[OR].[Salem]}\n"
+            + "{[Store].[USA].[USA].[Washington]}\n"
+            + "{[Store].[USA].[WA].[Bellingham]}\n"
+            + "{[Store].[USA].[WA].[Bremerton]}\n"
+            + "{[Store].[USA].[WA].[Seattle]}\n"
+            + "{[Store].[USA].[WA].[Spokane]}\n"
+            + "Row #0: 2,203\n"
+            + "Row #1: 11,491\n"
+            + "Row #2: 21,333\n"
+            + "Row #3: 25,663\n"
+            + "Row #4: 2,117\n"
+            + "Row #5: 26,079\n"
+            + "Row #6: 41,580\n"
+            + "Row #7: 25,635\n"
+            + "Row #8: 2,237\n"
+            + "Row #9: 24,576\n"
+            + "Row #10: 25,011\n"
+            + "Row #11: 23,591\n");
+    }
+
+    public void testNativeCJWithHideMemberIfBlankOnLeaf() throws Exception {
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
+            "Sales Ragged",
+            "<Dimension name=\"Store\" foreignKey=\"store_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
+            + "      <Table name=\"store_ragged\"/>\n"
+            + "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"\n"
+            + "          hideMemberIf=\"Never\"/>\n"
+            + "      <Level name=\"Store State\" column=\"store_state\" uniqueMembers=\"true\"\n"
+            + "          hideMemberIf=\"IfParentsName\"/>\n"
+            + "      <Level name=\"Store City\" column=\"store_city\" uniqueMembers=\"false\"\n"
+            + "          hideMemberIf=\"IfBlankName\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>");
+
+        testContext.assertQueryReturns(
+            "SELECT\n"
+            + "[Measures].[Unit Sales] ON COLUMNS\n"
+            + ",non empty Crossjoin([Gender].[Gender].members, [Store].[Store City].MEMBERS) ON ROWS\n"
+            + "FROM [Sales Ragged]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[F], [Store].[Israel].[Israel].[Haifa]}\n"
+            + "{[Gender].[F], [Store].[Israel].[Israel].[Tel Aviv]}\n"
+            + "{[Gender].[F], [Store].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Gender].[F], [Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Gender].[F], [Store].[USA].[CA].[San Francisco]}\n"
+            + "{[Gender].[F], [Store].[USA].[OR].[Portland]}\n"
+            + "{[Gender].[F], [Store].[USA].[OR].[Salem]}\n"
+            + "{[Gender].[F], [Store].[USA].[USA].[Washington]}\n"
+            + "{[Gender].[F], [Store].[USA].[WA].[Bellingham]}\n"
+            + "{[Gender].[F], [Store].[USA].[WA].[Bremerton]}\n"
+            + "{[Gender].[F], [Store].[USA].[WA].[Seattle]}\n"
+            + "{[Gender].[F], [Store].[USA].[WA].[Spokane]}\n"
+            + "{[Gender].[M], [Store].[Israel].[Israel].[Haifa]}\n"
+            + "{[Gender].[M], [Store].[Israel].[Israel].[Tel Aviv]}\n"
+            + "{[Gender].[M], [Store].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Gender].[M], [Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Gender].[M], [Store].[USA].[CA].[San Francisco]}\n"
+            + "{[Gender].[M], [Store].[USA].[OR].[Portland]}\n"
+            + "{[Gender].[M], [Store].[USA].[OR].[Salem]}\n"
+            + "{[Gender].[M], [Store].[USA].[USA].[Washington]}\n"
+            + "{[Gender].[M], [Store].[USA].[WA].[Bellingham]}\n"
+            + "{[Gender].[M], [Store].[USA].[WA].[Bremerton]}\n"
+            + "{[Gender].[M], [Store].[USA].[WA].[Seattle]}\n"
+            + "{[Gender].[M], [Store].[USA].[WA].[Spokane]}\n"
+            + "Row #0: 1,019\n"
+            + "Row #1: 5,007\n"
+            + "Row #2: 10,771\n"
+            + "Row #3: 12,089\n"
+            + "Row #4: 1,064\n"
+            + "Row #5: 12,488\n"
+            + "Row #6: 20,548\n"
+            + "Row #7: 12,835\n"
+            + "Row #8: 1,096\n"
+            + "Row #9: 11,640\n"
+            + "Row #10: 13,513\n"
+            + "Row #11: 12,068\n"
+            + "Row #12: 1,184\n"
+            + "Row #13: 6,484\n"
+            + "Row #14: 10,562\n"
+            + "Row #15: 13,574\n"
+            + "Row #16: 1,053\n"
+            + "Row #17: 13,591\n"
+            + "Row #18: 21,032\n"
+            + "Row #19: 12,800\n"
+            + "Row #20: 1,141\n"
+            + "Row #21: 12,936\n"
+            + "Row #22: 11,498\n"
+            + "Row #23: 11,523\n");
     }
 }
 
