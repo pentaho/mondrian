@@ -4,11 +4,11 @@
     <output url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/classes" />
     <output-test url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/test-classes" />
     <content url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend">
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/generated-sources/antlr4" isTestSource="false" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/src/test/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/generated-sources/antlr4" isTestSource="false" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/generated-sources/proto" isTestSource="false" generated="true" />
       <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/antrun" />
       <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/classes" />
@@ -47,7 +47,7 @@
     <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-xc:1.8.3" level="project" />
     <orderEntry type="library" name="Maven: com.sun.jersey:jersey-server:1.9" level="project" />
     <orderEntry type="library" name="Maven: asm:asm:3.1" level="project" />
-    <orderEntry type="library" name="Maven: javax.servlet.jsp:jsp-api:2.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: javax.servlet.jsp:jsp-api:2.1" level="project" />
     <orderEntry type="library" name="Maven: log4j:log4j:1.2.17" level="project" />
     <orderEntry type="library" name="Maven: net.java.dev.jets3t:jets3t:0.6.1" level="project" />
     <orderEntry type="library" name="Maven: commons-lang:commons-lang:2.6" level="project" />
@@ -84,15 +84,15 @@
     <orderEntry type="library" name="Maven: org.apache.velocity:velocity:1.7" level="project" />
     <orderEntry type="library" name="Maven: org.mortbay.jetty:servlet-api:2.5-20081211" level="project" />
     <orderEntry type="library" name="Maven: org.apache.avro:avro-ipc:tests:1.7.3" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-hdfs:2.2.0" level="project" />
-    <orderEntry type="library" name="Maven: commons-daemon:commons-daemon:1.0.13" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-hdfs:2.2.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: commons-daemon:commons-daemon:1.0.13" level="project" />
     <orderEntry type="module" module-name="tajo-core-pullserver" />
     <orderEntry type="module" module-name="tajo-client" />
     <orderEntry type="library" name="Maven: jline:jline:2.11" level="project" />
     <orderEntry type="module" module-name="tajo-jdbc" />
     <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-minicluster:2.2.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-common:test-jar:tests:2.2.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-hdfs:test-jar:tests:2.2.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-hdfs:test-jar:tests:2.2.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-yarn-server-tests:test-jar:tests:2.2.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-yarn-server-common:2.2.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-yarn-common:2.2.0" level="project" />

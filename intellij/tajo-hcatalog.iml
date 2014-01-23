@@ -48,7 +48,7 @@
     <orderEntry type="library" name="Maven: commons-digester:commons-digester:1.8" level="project" />
     <orderEntry type="library" name="Maven: commons-beanutils:commons-beanutils:1.7.0" level="project" />
     <orderEntry type="library" name="Maven: commons-beanutils:commons-beanutils-core:1.8.0" level="project" />
-    <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.5.8" level="project" />
+    <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.6.1" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-log4j12:1.7.5" level="project" />
     <orderEntry type="library" name="Maven: org.apache.avro:avro:1.7.4" level="project" />
     <orderEntry type="library" name="Maven: com.thoughtworks.paranamer:paranamer:2.3" level="project" />
@@ -73,6 +73,50 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.thrift:libthrift:0.9.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.httpcomponents:httpclient:4.1.3" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.httpcomponents:httpcore:4.1.3" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: javax.jdo:jdo2-api:2.3-eb" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: javax.transaction:transaction-api:1.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.hive:hive-exec:0.12.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.iq80.snappy:snappy:0.2" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.json:json:20090211" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: com.googlecode.javaewah:JavaEWAH:0.3.2" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: javolution:javolution:5.5.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: jline:jline:0.9.94" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.hive:hive-metastore:0.12.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.antlr:antlr:3.4" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.antlr:antlr-runtime:3.4" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.antlr:stringtemplate:3.2.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: antlr:antlr:2.7.7" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.antlr:ST4:4.0.4" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: commons-pool:commons-pool:1.5.4" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.datanucleus:datanucleus-api-jdo:3.2.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.datanucleus:datanucleus-core:3.2.2" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.datanucleus:datanucleus-rdbms:3.2.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: javax.jdo:jdo-api:3.0.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: javax.transaction:jta:1.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.hive:hive-cli:0.12.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.hcatalog:hcatalog-core:0.12.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.hadoop:hadoop-mapreduce-client-core:2.2.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.hadoop:hadoop-yarn-common:2.2.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.hadoop:hadoop-yarn-api:2.2.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: com.google.inject.extensions:guice-servlet:3.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: com.google.inject:guice:3.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: javax.inject:javax.inject:1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: aopalliance:aopalliance:1.0" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: com.sun.jersey.jersey-test-framework:jersey-test-framework-grizzly2:1.9" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: com.sun.jersey.jersey-test-framework:jersey-test-framework-core:1.9" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: javax.servlet:javax.servlet-api:3.0.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: com.sun.jersey:jersey-client:1.9" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: com.sun.jersey:jersey-grizzly2:1.9" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.glassfish.grizzly:grizzly-http:2.1.2" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.glassfish.grizzly:grizzly-framework:2.1.2" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.glassfish.gmbal:gmbal-api-only:3.0.0-b023" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.glassfish.external:management-api:3.0.0-b012" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.glassfish.grizzly:grizzly-http-server:2.1.2" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.glassfish.grizzly:grizzly-rcm:2.1.2" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.glassfish.grizzly:grizzly-http-servlet:2.1.2" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.glassfish:javax.servlet:3.1" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: com.sun.jersey.contribs:jersey-guice:1.9" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.hive.hcatalog:hcatalog-core:0.12.0" level="project" />
   </component>
 </module>
 

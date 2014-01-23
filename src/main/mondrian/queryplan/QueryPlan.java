@@ -70,7 +70,7 @@ public class QueryPlan {
 
         final List<Sort.SortSpec> sortSpecs;
         final Set<Relation> relationSet;
-        final Set<TargetExpr> targetSet;
+        final Set<NamedExpr> targetSet;
         final List<Expr> andExprs;
         final List<Aggregation.GroupElement> groupElements;
 
@@ -90,7 +90,7 @@ public class QueryPlan {
 
         private String compileParts() {
             // Finalize the contextPlan
-            rootProjection.setTargets(targetSet.toArray(new TargetExpr[targetSet.size()]));
+            rootProjection.setNamedExprs(targetSet.toArray(new NamedExpr[targetSet.size()]));
             RelationList relList = new RelationList(relationSet.toArray(new Relation[relationSet.size()]));
             if (groupElements.size() > 0) {
                 aggregation.setGroups(groupElements.toArray(new Aggregation.GroupElement[groupElements.size()]));
@@ -198,7 +198,7 @@ public class QueryPlan {
 
                             // Add a target column reference
                             ColumnReferenceExpr colRefExpr = new ColumnReferenceExpr(relationAlias, physColumn.name);
-                            planParts.targetSet.add(new TargetExpr(colRefExpr, relColumn.alias()));
+                            planParts.targetSet.add(new NamedExpr(colRefExpr, relColumn.alias()));
 
                             // Add an Equals predicate for this member
                             LiteralValue value = new LiteralValue(String.valueOf(rolapMemberBase.getKey()), LiteralValue.LiteralType.String);
@@ -286,7 +286,7 @@ public class QueryPlan {
 
         // Add a target column reference
         ColumnReferenceExpr col = new ColumnReferenceExpr(relationAlias, physColumn.name);
-        planParts.targetSet.add(new TargetExpr(col, relColumn.alias()));
+        planParts.targetSet.add(new NamedExpr(col, relColumn.alias()));
 
         // Ensure we have this relation and its qual
         if (planParts.relationSet.add(new Relation(relationAlias))) {
@@ -325,7 +325,7 @@ public class QueryPlan {
         return list.get(0);
     }
 
-    private void planMeasureMember(Set<TargetExpr> targetSet, RolapBaseCubeMeasure measureMember, int measureOrdinal) {
+    private void planMeasureMember(Set<NamedExpr> targetSet, RolapBaseCubeMeasure measureMember, int measureOrdinal) {
         foundMeasure = true;
         RolapSchema.PhysColumn physColumn = measureMember.getExpr();
         RolapAggregator agg = measureMember.getAggregator();
@@ -333,7 +333,7 @@ public class QueryPlan {
         GeneralSetFunctionExpr aggFun = new GeneralSetFunctionExpr(agg.getName(),agg.isDistinct(), col);
 
         QPResult.MeasureColumn relCol = new QPResult.MeasureColumn(measureOrdinal, measureMember);
-        targetSet.add(new TargetExpr(aggFun, relCol.alias()));
+        targetSet.add(new NamedExpr(aggFun, relCol.alias()));
     }
 
     public boolean isValid() {

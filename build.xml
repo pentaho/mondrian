@@ -166,6 +166,19 @@ mondrian/rolap/RolapCubeUsages.java"/>
     <pathelement path="${env.CLASSPATH}"/>
     <pathelement location="${ant.home}/lib/ant.jar"/>
     <pathelement location="${ant.home}/lib/optional.jar"/>
+    <fileset dir="ext-lib">
+        <include name="**/*.jar"/>
+    </fileset>
+<!--
+    <pathelement location="ext-lib/protobuf-java-2.5.0.jar"/>
+    <pathelement location="ext-lib/hadoop-common-2.2.0.jar"/>
+    <pathelement location="ext-lib/tajo-algebra-0.8.0-SNAPSHOT.jar"/>
+    <pathelement location="ext-lib/tajo-client-0.8.0-SNAPSHOT.jar"/>
+    <pathelement location="ext-lib/tajo-common-0.8.0-SNAPSHOT.jar"/>
+    <pathelement location="ext-lib/tajo-rpc-0.8.0-SNAPSHOT.jar"/>
+    <pathelement location="ext-lib/guava-15.0.jar"/>
+    <pathelement location="ext-lib/gson-2.2.2.jar"/>
+-->
   </path>
 
   <path id="project.build.classpath">
@@ -411,6 +424,12 @@ mondrian/olap/ParserSym.java"/>
         <fileset dir="${lib.dir}">
             <include name="**/*.jar"/>
             <exclude name="**/junit.zip"/>
+        </fileset>
+    </unjar>
+
+    <unjar dest="${crtmp.dir}">
+        <fileset dir="ext-lib">
+            <include name="**/*.jar"/>
         </fileset>
     </unjar>
 

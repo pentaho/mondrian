@@ -86,17 +86,21 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="tajo-algebra" target="1.6" />
+      <module name="tajo-catalog" target="1.6" />
       <module name="tajo-catalog-client" target="1.6" />
       <module name="tajo-catalog-common" target="1.6" />
+      <module name="tajo-catalog-drivers" target="1.6" />
       <module name="tajo-catalog-server" target="1.6" />
       <module name="tajo-client" target="1.6" />
       <module name="tajo-common" target="1.6" />
+      <module name="tajo-core" target="1.6" />
       <module name="tajo-core-backend" target="1.6" />
       <module name="tajo-core-pullserver" target="1.6" />
       <module name="tajo-core-storage" target="1.6" />
       <module name="tajo-dist" target="1.6" />
       <module name="tajo-hcatalog" target="1.6" />
       <module name="tajo-jdbc" target="1.6" />
+      <module name="tajo-project" target="1.6" />
       <module name="tajo-rpc" target="1.6" />
     </bytecodeTargetLevel>
   </component>
@@ -198,7 +202,6 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/../../tajo/pom.xml" />
-        <option value="$PROJECT_DIR$/../../tajo/tajo-catalog/tajo-catalog-drivers/tajo-hcatalog/pom.xml" />
       </list>
     </option>
   </component>
@@ -606,19 +609,24 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/mondrian.iml" filepath="$PROJECT_DIR$/mondrian.iml" />
       <module fileurl="file://$PROJECT_DIR$/mondrianTest.iml" filepath="$PROJECT_DIR$/mondrianTest.iml" />
-      <module fileurl="file://$PROJECT_DIR$/tajo-algebra.iml" filepath="$PROJECT_DIR$/tajo-algebra.iml" group="tajo-main and modules" />
-      <module fileurl="file://$PROJECT_DIR$/tajo-catalog-client.iml" filepath="$PROJECT_DIR$/tajo-catalog-client.iml" group="tajo-main and modules/tajo-catalog and modules" />
-      <module fileurl="file://$PROJECT_DIR$/tajo-catalog-common.iml" filepath="$PROJECT_DIR$/tajo-catalog-common.iml" group="tajo-main and modules/tajo-catalog and modules" />
-      <module fileurl="file://$PROJECT_DIR$/tajo-catalog-server.iml" filepath="$PROJECT_DIR$/tajo-catalog-server.iml" group="tajo-main and modules/tajo-catalog and modules" />
-      <module fileurl="file://$PROJECT_DIR$/tajo-client.iml" filepath="$PROJECT_DIR$/tajo-client.iml" group="tajo-main and modules" />
-      <module fileurl="file://$PROJECT_DIR$/tajo-common.iml" filepath="$PROJECT_DIR$/tajo-common.iml" group="tajo-main and modules" />
-      <module fileurl="file://$PROJECT_DIR$/tajo-core-backend.iml" filepath="$PROJECT_DIR$/tajo-core-backend.iml" group="tajo-main and modules/tajo-core and modules" />
-      <module fileurl="file://$PROJECT_DIR$/tajo-core-pullserver.iml" filepath="$PROJECT_DIR$/tajo-core-pullserver.iml" group="tajo-main and modules/tajo-core and modules" />
-      <module fileurl="file://$PROJECT_DIR$/tajo-core-storage.iml" filepath="$PROJECT_DIR$/tajo-core-storage.iml" group="tajo-main and modules/tajo-core and modules" />
-      <module fileurl="file://$PROJECT_DIR$/tajo-dist.iml" filepath="$PROJECT_DIR$/tajo-dist.iml" group="tajo-main and modules" />
-      <module fileurl="file://$PROJECT_DIR$/tajo-hcatalog.iml" filepath="$PROJECT_DIR$/tajo-hcatalog.iml" />
-      <module fileurl="file://$PROJECT_DIR$/tajo-jdbc.iml" filepath="$PROJECT_DIR$/tajo-jdbc.iml" group="tajo-main and modules" />
-      <module fileurl="file://$PROJECT_DIR$/tajo-rpc.iml" filepath="$PROJECT_DIR$/tajo-rpc.iml" group="tajo-main and modules" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-algebra.iml" filepath="$PROJECT_DIR$/tajo-algebra.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-catalog.iml" filepath="$PROJECT_DIR$/tajo-catalog.iml" group="tajo-catalog and modules" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-catalog-client.iml" filepath="$PROJECT_DIR$/tajo-catalog-client.iml" group="tajo-catalog and modules" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-catalog-common.iml" filepath="$PROJECT_DIR$/tajo-catalog-common.iml" group="tajo-catalog and modules" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-catalog-drivers.iml" filepath="$PROJECT_DIR$/tajo-catalog-drivers.iml" group="tajo-catalog and modules/tajo-catalog-drivers and modules" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-catalog-server.iml" filepath="$PROJECT_DIR$/tajo-catalog-server.iml" group="tajo-catalog and modules" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-client.iml" filepath="$PROJECT_DIR$/tajo-client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-common.iml" filepath="$PROJECT_DIR$/tajo-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-core.iml" filepath="$PROJECT_DIR$/tajo-core.iml" group="tajo-core and modules" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-core-backend.iml" filepath="$PROJECT_DIR$/tajo-core-backend.iml" group="tajo-core and modules" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-core-pullserver.iml" filepath="$PROJECT_DIR$/tajo-core-pullserver.iml" group="tajo-core and modules" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-core-storage.iml" filepath="$PROJECT_DIR$/tajo-core-storage.iml" group="tajo-core and modules" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-dist.iml" filepath="$PROJECT_DIR$/tajo-dist.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-hcatalog.iml" filepath="$PROJECT_DIR$/tajo-hcatalog.iml" group="tajo-catalog and modules/tajo-catalog-drivers and modules" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-jdbc.iml" filepath="$PROJECT_DIR$/tajo-jdbc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-main.iml" filepath="$PROJECT_DIR$/tajo-main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-project.iml" filepath="$PROJECT_DIR$/tajo-project.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tajo-rpc.iml" filepath="$PROJECT_DIR$/tajo-rpc.iml" />
     </modules>
   </component>
   <component name="ProjectResources">
@@ -658,6 +666,7 @@
     <mapping directory="$PROJECT_DIR$/../../pentaho-aggdesigner/pentaho-aggdesigner-core" vcs="svn" />
     <mapping directory="$PROJECT_DIR$/../../pentaho-aggdesigner/trunk/pentaho-aggdesigner/pentaho-aggdesigner-core" vcs="svn" />
     <mapping directory="$PROJECT_DIR$/../../pentaho-aggdesigner/trunk/pentaho-aggdesigner/pentaho-aggdesigner-ui" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/../../tajo" vcs="Git" />
   </component>
   <component name="WebServicesPlugin" addRequiredLibraries="true" />
   <component name="com.intellij.jsf.UserDefinedFacesConfigs">
@@ -842,6 +851,17 @@
       </JAVADOC>
       <SOURCES>
         <root url="jar://$MAVEN_REPOSITORY$/com/google/protobuf/protobuf-java/2.5.0/protobuf-java-2.5.0-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: com.googlecode.javaewah:JavaEWAH:0.3.2">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/com/googlecode/javaewah/JavaEWAH/0.3.2/JavaEWAH-0.3.2.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/com/googlecode/javaewah/JavaEWAH/0.3.2/JavaEWAH-0.3.2-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/com/googlecode/javaewah/JavaEWAH/0.3.2/JavaEWAH-0.3.2-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Maven: com.jcraft:jsch:0.1.42">
@@ -1130,6 +1150,17 @@
         <root url="jar://$MAVEN_REPOSITORY$/commons-net/commons-net/3.1/commons-net-3.1-sources.jar!/" />
       </SOURCES>
     </library>
+    <library name="Maven: commons-pool:commons-pool:1.5.4">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/commons-pool/commons-pool/1.5.4/commons-pool-1.5.4.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/commons-pool/commons-pool/1.5.4/commons-pool-1.5.4-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/commons-pool/commons-pool/1.5.4/commons-pool-1.5.4-sources.jar!/" />
+      </SOURCES>
+    </library>
     <library name="Maven: info.ganglia.gmetric4j:gmetric4j:1.0.3">
       <CLASSES>
         <root url="jar://$MAVEN_REPOSITORY$/info/ganglia/gmetric4j/gmetric4j/1.0.3/gmetric4j-1.0.3.jar!/" />
@@ -1174,6 +1205,28 @@
         <root url="jar://$MAVEN_REPOSITORY$/javax/inject/javax.inject/1/javax.inject-1-sources.jar!/" />
       </SOURCES>
     </library>
+    <library name="Maven: javax.jdo:jdo-api:3.0.1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/jdo/jdo-api/3.0.1/jdo-api-3.0.1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/jdo/jdo-api/3.0.1/jdo-api-3.0.1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/jdo/jdo-api/3.0.1/jdo-api-3.0.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: javax.jdo:jdo2-api:2.3-eb">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/jdo/jdo2-api/2.3-eb/jdo2-api-2.3-eb.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/jdo/jdo2-api/2.3-eb/jdo2-api-2.3-eb-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/jdo/jdo2-api/2.3-eb/jdo2-api-2.3-eb-sources.jar!/" />
+      </SOURCES>
+    </library>
     <library name="Maven: javax.servlet.jsp:jsp-api:2.1">
       <CLASSES>
         <root url="jar://$MAVEN_REPOSITORY$/javax/servlet/jsp/jsp-api/2.1/jsp-api-2.1.jar!/" />
@@ -1207,6 +1260,28 @@
         <root url="jar://$MAVEN_REPOSITORY$/javax/servlet/servlet-api/2.5/servlet-api-2.5-sources.jar!/" />
       </SOURCES>
     </library>
+    <library name="Maven: javax.transaction:jta:1.1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/transaction/jta/1.1/jta-1.1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/transaction/jta/1.1/jta-1.1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/transaction/jta/1.1/jta-1.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: javax.transaction:transaction-api:1.1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/transaction/transaction-api/1.1/transaction-api-1.1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/transaction/transaction-api/1.1/transaction-api-1.1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/transaction/transaction-api/1.1/transaction-api-1.1-sources.jar!/" />
+      </SOURCES>
+    </library>
     <library name="Maven: javax.xml.bind:jaxb-api:2.2.2">
       <CLASSES>
         <root url="jar://$MAVEN_REPOSITORY$/javax/xml/bind/jaxb-api/2.2.2/jaxb-api-2.2.2.jar!/" />
@@ -1216,6 +1291,28 @@
       </JAVADOC>
       <SOURCES>
         <root url="jar://$MAVEN_REPOSITORY$/javax/xml/bind/jaxb-api/2.2.2/jaxb-api-2.2.2-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: javolution:javolution:5.5.1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/javolution/javolution/5.5.1/javolution-5.5.1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/javolution/javolution/5.5.1/javolution-5.5.1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/javolution/javolution/5.5.1/javolution-5.5.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: jline:jline:0.9.94">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/jline/jline/0.9.94/jline-0.9.94.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/jline/jline/0.9.94/jline-0.9.94-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/jline/jline/0.9.94/jline-0.9.94-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Maven: jline:jline:2.11">
@@ -1295,6 +1392,17 @@
         <root url="jar://$MAVEN_REPOSITORY$/org/acplt/oncrpc/1.0.7/oncrpc-1.0.7-sources.jar!/" />
       </SOURCES>
     </library>
+    <library name="Maven: org.antlr:antlr-runtime:3.4">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/antlr/antlr-runtime/3.4/antlr-runtime-3.4.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/antlr/antlr-runtime/3.4/antlr-runtime-3.4-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/antlr/antlr-runtime/3.4/antlr-runtime-3.4-sources.jar!/" />
+      </SOURCES>
+    </library>
     <library name="Maven: org.antlr:antlr-runtime:3.5">
       <CLASSES>
         <root url="jar://$MAVEN_REPOSITORY$/org/antlr/antlr-runtime/3.5/antlr-runtime-3.5.jar!/" />
@@ -1326,6 +1434,28 @@
       </JAVADOC>
       <SOURCES>
         <root url="jar://$MAVEN_REPOSITORY$/org/antlr/antlr4/4.1/antlr4-4.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.antlr:antlr:3.4">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/antlr/antlr/3.4/antlr-3.4.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/antlr/antlr/3.4/antlr-3.4-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/antlr/antlr/3.4/antlr-3.4-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.antlr:ST4:4.0.4">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/antlr/ST4/4.0.4/ST4-4.0.4.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/antlr/ST4/4.0.4/ST4-4.0.4-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/antlr/ST4/4.0.4/ST4-4.0.4-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Maven: org.antlr:ST4:4.0.7">
@@ -1691,6 +1821,61 @@
         <root url="jar://$MAVEN_REPOSITORY$/org/apache/hadoop/hadoop-yarn-server-web-proxy/2.2.0/hadoop-yarn-server-web-proxy-2.2.0-sources.jar!/" />
       </SOURCES>
     </library>
+    <library name="Maven: org.apache.hcatalog:hcatalog-core:0.12.0">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/apache/hcatalog/hcatalog-core/0.12.0/hcatalog-core-0.12.0.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/apache/hcatalog/hcatalog-core/0.12.0/hcatalog-core-0.12.0-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/apache/hcatalog/hcatalog-core/0.12.0/hcatalog-core-0.12.0-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.apache.hive.hcatalog:hcatalog-core:0.12.0">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hcatalog/hcatalog-core/0.12.0/hcatalog-core-0.12.0.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hcatalog/hcatalog-core/0.12.0/hcatalog-core-0.12.0-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hcatalog/hcatalog-core/0.12.0/hcatalog-core-0.12.0-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.apache.hive:hive-cli:0.12.0">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-cli/0.12.0/hive-cli-0.12.0.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-cli/0.12.0/hive-cli-0.12.0-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-cli/0.12.0/hive-cli-0.12.0-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.apache.hive:hive-exec:0.12.0">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-exec/0.12.0/hive-exec-0.12.0.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-exec/0.12.0/hive-exec-0.12.0-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-exec/0.12.0/hive-exec-0.12.0-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.apache.hive:hive-metastore:0.12.0">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-metastore/0.12.0/hive-metastore-0.12.0.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-metastore/0.12.0/hive-metastore-0.12.0-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-metastore/0.12.0/hive-metastore-0.12.0-sources.jar!/" />
+      </SOURCES>
+    </library>
     <library name="Maven: org.apache.httpcomponents:httpclient:4.1.3">
       <CLASSES>
         <root url="jar://$MAVEN_REPOSITORY$/org/apache/httpcomponents/httpclient/4.1.3/httpclient-4.1.3.jar!/" />
@@ -1810,6 +1995,39 @@
       </JAVADOC>
       <SOURCES>
         <root url="jar://$MAVEN_REPOSITORY$/org/codehaus/jettison/jettison/1.1/jettison-1.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.datanucleus:datanucleus-api-jdo:3.2.1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-api-jdo/3.2.1/datanucleus-api-jdo-3.2.1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-api-jdo/3.2.1/datanucleus-api-jdo-3.2.1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-api-jdo/3.2.1/datanucleus-api-jdo-3.2.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.datanucleus:datanucleus-core:3.2.2">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-core/3.2.2/datanucleus-core-3.2.2.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-core/3.2.2/datanucleus-core-3.2.2-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-core/3.2.2/datanucleus-core-3.2.2-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.datanucleus:datanucleus-rdbms:3.2.1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-rdbms/3.2.1/datanucleus-rdbms-3.2.1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-rdbms/3.2.1/datanucleus-rdbms-3.2.1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/datanucleus/datanucleus-rdbms/3.2.1/datanucleus-rdbms-3.2.1-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Maven: org.dspace.dependencies:dspace-geoip:1.2.3">
@@ -1933,6 +2151,28 @@
         <root url="jar://$MAVEN_REPOSITORY$/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1-sources.jar!/" />
       </SOURCES>
     </library>
+    <library name="Maven: org.iq80.snappy:snappy:0.2">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/iq80/snappy/snappy/0.2/snappy-0.2.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/iq80/snappy/snappy/0.2/snappy-0.2-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/iq80/snappy/snappy/0.2/snappy-0.2-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.json:json:20090211">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/json/json/20090211/json-20090211.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/json/json/20090211/json-20090211-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/json/json/20090211/json-20090211-sources.jar!/" />
+      </SOURCES>
+    </library>
     <library name="Maven: org.mockito:mockito-core:1.9.5-rc1">
       <CLASSES>
         <root url="jar://$MAVEN_REPOSITORY$/org/mockito/mockito-core/1.9.5-rc1/mockito-core-1.9.5-rc1.jar!/" />
@@ -2043,15 +2283,15 @@
         <root url="jar://$MAVEN_REPOSITORY$/org/objenesis/objenesis/1.0/objenesis-1.0-sources.jar!/" />
       </SOURCES>
     </library>
-    <library name="Maven: org.slf4j:slf4j-api:1.5.8">
+    <library name="Maven: org.slf4j:slf4j-api:1.6.1">
       <CLASSES>
-        <root url="jar://$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.5.8/slf4j-api-1.5.8.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.6.1/slf4j-api-1.6.1.jar!/" />
       </CLASSES>
       <JAVADOC>
-        <root url="jar://$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.5.8/slf4j-api-1.5.8-javadoc.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.6.1/slf4j-api-1.6.1-javadoc.jar!/" />
       </JAVADOC>
       <SOURCES>
-        <root url="jar://$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.5.8/slf4j-api-1.5.8-sources.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.6.1/slf4j-api-1.6.1-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Maven: org.slf4j:slf4j-api:1.6.4">
