@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2009 Pentaho
+// Copyright (C) 2008-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -41,10 +41,6 @@ public class Db2Dialect extends JdbcDialectImpl {
     }
 
     public boolean supportsGroupingSets() {
-        return true;
-    }
-
-    public boolean requiresOrderByAlias() {
         return true;
     }
 }

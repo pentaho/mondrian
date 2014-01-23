@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2013 Pentaho
+// Copyright (C) 2008-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi;
@@ -532,7 +532,7 @@ public interface Dialect {
      *
      * would be legal.</p>
      *
-     * <p>MySQL, DB2 and Ingres are examples of such dialects.</p>
+     * <p>Ingres and Hive are examples of such dialects.</p>
      *
      * @return Whether this Dialect can include expressions in the ORDER BY
      *   clause only by adding an expression to the SELECT clause and using

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -1950,7 +1950,9 @@ public class TestContext {
 
         Assert.assertEquals(transformedExpectedSql, transformedActualSql);
 
-        checkSqlAgainstDatasource(actualSql, expectedRows);
+        if (expectedRows >= 0) {
+            checkSqlAgainstDatasource(actualSql, expectedRows);
+        }
     }
 
     /**
