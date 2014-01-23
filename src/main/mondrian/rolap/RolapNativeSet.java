@@ -27,6 +27,8 @@ import java.util.*;
 
 import javax.sql.DataSource;
 
+import static org.apache.commons.collections.CollectionUtils.*;
+
 /**
  * Analyses set expressions and executes them in SQL if possible.
  * Supports crossjoin, member.children, level.members and member.descendants -
@@ -41,11 +43,6 @@ import javax.sql.DataSource;
 public abstract class RolapNativeSet extends RolapNative {
     protected static final Logger LOGGER =
         Logger.getLogger(RolapNativeSet.class);
-    private static final Predicate isMemberHiddenPredicate = new Predicate() {
-        public boolean evaluate(Object o) {
-            return ((Member) o).isHidden();
-        }
-    };
 
     private SmartCache<Object, TupleList> cache =
         new SoftSmartCache<Object, TupleList>();
@@ -271,65 +268,88 @@ public abstract class RolapNativeSet extends RolapNative {
                     cache.put(key, result);
                 }
             }
-            return filterInaccessibleTuples(
-                filterTuplesWithHiddenMembers(result));
-        }
-
-
-        private TupleList filterTuplesWithHiddenMembers(TupleList tupleList) {
-            CollectionUtils.filter(
-                tupleList, new Predicate() {
-                public boolean evaluate(Object o) {
-                    return !CollectionUtils.exists(
-                        (List<Member>) o, isMemberHiddenPredicate);
-                }
-            });
-            return tupleList;
+            return filterInaccessibleTuples(result);
         }
 
         /**
-         * Checks access rights on the members in each tuple in tupleList.
+         * Checks access rights and hidden status on the members
+         * in each tuple in tupleList.
          */
         private TupleList filterInaccessibleTuples(TupleList tupleList) {
-            if (constraint.getEvaluator() == null
-                || tupleList.size() == 0)
-            {
-                return tupleList;
-            }
-            Role role = constraint.getEvaluator().getSchemaReader().getRole();
-
-            TupleList filteredTupleList =  tupleList.getArity() == 1
-                ? new UnaryTupleList()
-                : new ArrayTupleList(tupleList.getArity());
-            for (Member member : tupleList.get(0)) {
-                // first look at the members in the first tuple to determine
-                // whether we can short-circuit this check.
-                // We only need to filter the list if hierarchy access
-                // is not ALL
-                Access hierarchyAccess = role.getAccess(member.getHierarchy());
-                if (hierarchyAccess == Access.CUSTOM) {
-                    // one of the hierarchies has CUSTOM.  Remove all tuples
-                    // with inaccessible members.
-                    for (List<Member> tuple : tupleList) {
-                        for (Member memberInner : tuple) {
-                            if (!role.canAccess(memberInner)) {
-                                filteredTupleList.add(tuple);
-                                break;
-                            }
-                        }
-                    }
-                    for (List<Member> tuple : filteredTupleList) {
-                        tupleList.remove(tuple);
-                    }
-                    return tupleList;
-                } else if (hierarchyAccess == Access.NONE) {
-                    // one or more hierarchies in the tuple list is
-                    // inaccessible. return an empty list.
-                    List<Member> emptyList = Collections.emptyList();
-                    return new ListTupleList(tupleList.getArity(), emptyList);
-                }
+            if (needsFiltering(tupleList)) {
+                final Predicate memberInaccessible =
+                    memberInaccessiblePredicate();
+                filter(
+                    tupleList, tupleAccessiblePredicate(memberInaccessible));
             }
             return tupleList;
+        }
+
+        private boolean needsFiltering(TupleList tupleList) {
+            return tupleList.size() > 0
+                   && exists(tupleList.get(0), needsFilterPredicate());
+        }
+
+        private Predicate needsFilterPredicate() {
+            return new Predicate() {
+                public boolean evaluate(Object o) {
+                    Member member = (Member) o;
+                    return isRaggedLevel(member.getLevel())
+                           || isCustomAccess(member.getHierarchy());
+                }
+            };
+        }
+
+        private boolean isRaggedLevel(Level level) {
+            if (level instanceof RolapLevel) {
+                return ((RolapLevel) level).getHideMemberCondition()
+                       != RolapLevel.HideMemberCondition.Never;
+            }
+            // don't know if it's ragged, so assume it is.
+            // should not reach here
+            return true;
+        }
+
+        private boolean isCustomAccess(Hierarchy hierarchy) {
+            if (constraint.getEvaluator() == null) {
+                return false;
+            }
+            Access access =
+                constraint
+                    .getEvaluator()
+                    .getSchemaReader()
+                    .getRole()
+                    .getAccess(hierarchy);
+            return access == Access.CUSTOM;
+        }
+
+        private Predicate memberInaccessiblePredicate() {
+            if (constraint.getEvaluator() != null) {
+                return new Predicate() {
+                    public boolean evaluate(Object o) {
+                        Role role =
+                            constraint
+                                .getEvaluator().getSchemaReader().getRole();
+                        Member member = (Member) o;
+                        return member.isHidden() || !role.canAccess(member);
+                    }
+                };
+            }
+            return new Predicate() {
+                public boolean evaluate(Object o) {
+                    return ((Member) o).isHidden();
+                }
+            };
+        }
+
+        private Predicate tupleAccessiblePredicate(
+            final Predicate memberInaccessible)
+        {
+            return new Predicate() {
+                @SuppressWarnings("unchecked")
+                public boolean evaluate(Object o) {
+                    return !exists((List<Member>) o, memberInaccessible);
+                }};
         }
 
         private void addLevel(TupleReader tr, CrossJoinArg arg) {
