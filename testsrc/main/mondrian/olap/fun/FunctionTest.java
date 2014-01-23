@@ -8,7 +8,6 @@
 // Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
@@ -8817,6 +8816,13 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns(
             "StrToMember(\"[Store].[USA].[CA]\").Name",
             "CA");
+    }
+
+    public void testStrToMemberWithMemberKey() {
+       // This keyed expression failed in v3.6
+        assertExprReturns(
+            "StrToMember(\"[Time].[Year].&[1997]\").Name",
+            "1997");
     }
 
     public void testStrToMemberFullyQualifiedName() {

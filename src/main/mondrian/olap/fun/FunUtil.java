@@ -8,7 +8,6 @@
 // Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
@@ -2615,6 +2614,7 @@ public class FunUtil extends Util {
             {
                 @Override
                 public void memberComplete() {
+                    preMemberComplete();
                     members[0] = resolveMember(hierarchyList.get(0));
                     segmentList.clear();
                 }

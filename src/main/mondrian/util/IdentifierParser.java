@@ -10,7 +10,6 @@
 //
 // jhyde, 3 March, 2002
 */
-
 package mondrian.util;
 
 import mondrian.calc.TupleList;
@@ -154,6 +153,11 @@ public class IdentifierParser extends org.olap4j.impl.IdentifierParser {
     public static class MemberListBuilder extends BuilderImpl {
         public final List<Member> memberList = new ArrayList<Member>();
 
+        public void preMemberComplete() {
+               // flushes the subsegments
+               super.memberComplete();
+        }
+
         public MemberListBuilder(
             SchemaReader schemaReader, Cube cube, Hierarchy hierarchy)
         {
@@ -161,6 +165,8 @@ public class IdentifierParser extends org.olap4j.impl.IdentifierParser {
         }
 
         public void memberComplete() {
+            preMemberComplete();
+
             final Member member = resolveMember(hierarchyList.get(0));
             if (!member.isNull()) {
                 memberList.add(member);
