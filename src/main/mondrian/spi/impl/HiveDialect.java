@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2013 Pentaho and others
+// Copyright (C) 2011-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -49,18 +49,7 @@ public class HiveDialect extends JdbcDialectImpl {
     protected String deduceIdentifierQuoteString(
         DatabaseMetaData databaseMetaData)
     {
-        try {
-            final String quoteIdentifierString =
-                databaseMetaData.getIdentifierQuoteString();
-            return "".equals(quoteIdentifierString)
-                // quoting not supported
-                ? null
-                : quoteIdentifierString;
-        } catch (SQLException e) {
-            // Not supported by HiveDatabaseMetaData; do nothing if catch an
-            // Exception
-            return "`";
-        }
+        return null;
     }
 
     protected Set<List<Integer>> deduceSupportedResultSetStyles(
@@ -99,7 +88,15 @@ public class HiveDialect extends JdbcDialectImpl {
         return true;
     }
 
+    public boolean requiresGroupByAlias() {
+        return false;
+    }
+
     public boolean requiresUnionOrderByExprToBeInSelectClause() {
+        return false;
+    }
+
+    public boolean requiresUnionOrderByOrdinal() {
         return false;
     }
 

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
@@ -13,10 +13,17 @@ package mondrian.rolap.sql;
 import mondrian.olap.MondrianProperties;
 import mondrian.rolap.BatchTestCase;
 import mondrian.spi.Dialect;
+import mondrian.spi.impl.JdbcDialectImpl;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
 
-import java.util.*;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 /**
  * Test for <code>SqlQuery</code>.
@@ -91,6 +98,49 @@ public class SqlQueryTest extends BatchTestCase {
         }
     }
 
+    public void testOrderBy() throws SQLException {
+        // Test with requireAlias = true
+        assertEquals(
+            "\norder by\n"
+            + "    CASE WHEN alias IS NULL THEN 1 ELSE 0 END, alias ASC",
+            makeTestSqlQuery("expr", "alias", true, true, true, true)
+                .toString());
+        // requireAlias = false
+        assertEquals(
+            "\norder by\n"
+            + "    CASE WHEN expr IS NULL THEN 1 ELSE 0 END, expr ASC",
+            makeTestSqlQuery("expr", "alias", true, true, true, false)
+                .toString());
+        //  nullable = false
+        assertEquals(
+            "\norder by\n"
+            + "    expr ASC",
+            makeTestSqlQuery("expr", "alias", true, false, true, false)
+                .toString());
+        //  ascending=false, collateNullsLast=false
+        assertEquals(
+            "\norder by\n"
+            + "    CASE WHEN alias IS NULL THEN 0 ELSE 1 END, alias DESC",
+            makeTestSqlQuery("expr", "alias", false, true, false, true)
+                .toString());
+    }
+
+    /**
+     * Builds a SqlQuery with flags set according to params.
+     * Uses a Mockito spy to construct a dialect which will give the desired
+     * boolean value for reqOrderByAlias.
+     */
+    private SqlQuery makeTestSqlQuery(
+        String expr, String alias, boolean ascending,
+        boolean nullable, boolean collateNullsLast, boolean reqOrderByAlias)
+    {
+        JdbcDialectImpl dialect = spy(new JdbcDialectImpl());
+        when(dialect.requiresOrderByAlias()).thenReturn(reqOrderByAlias);
+        SqlQuery query = new SqlQuery(dialect, true);
+        query.addOrderBy(
+            expr, alias, ascending, true, nullable, collateNullsLast);
+        return query;
+    }
 
     public void testToStringForForcedIndexHint() {
         Map<String, String> hints = new HashMap<String, String>();

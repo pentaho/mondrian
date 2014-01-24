@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2013-2013 Pentaho
+// Copyright (C) 2013-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
@@ -285,12 +285,10 @@ public class SqlQueryBuilder {
             sqlQuery.addGroupBy(expString, alias);
             break;
         case SELECT_ORDER:
-            sqlQuery.addOrderBy(expString, true, false, true);
             alias = sqlQuery.addSelect(
                 expString, column.physColumn.getInternalType(), alias0);
             break;
         case SELECT_GROUP_ORDER:
-            sqlQuery.addOrderBy(expString, true, false, true);
             alias = sqlQuery.addSelect(
                 expString, column.physColumn.getInternalType(), alias0);
             sqlQuery.addGroupBy(expString, alias);
@@ -304,7 +302,7 @@ public class SqlQueryBuilder {
         switch (clause) {
         case SELECT_GROUP_ORDER:
         case SELECT_ORDER:
-            sqlQuery.addOrderBy(expString, true, false, true);
+            sqlQuery.addOrderBy(expString, alias, true, false, true, true);
             orderBitSet.set(ordinal);
         }
         return ordinal;
