@@ -27,6 +27,8 @@ import java.util.*;
 
 import javax.sql.DataSource;
 
+import static org.apache.commons.collections.CollectionUtils.*;
+
 /**
  * Analyses set expressions and executes them in SQL if possible.
  * Supports crossjoin, member.children, level.members and member.descendants -
@@ -276,14 +278,40 @@ public abstract class RolapNativeSet extends RolapNative {
 
 
         private TupleList filterTuplesWithHiddenMembers(TupleList tupleList) {
-            CollectionUtils.filter(
-                tupleList, new Predicate() {
-                public boolean evaluate(Object o) {
-                    return !CollectionUtils.exists(
-                        (List<Member>) o, isMemberHiddenPredicate);
-                }
-            });
+            if (needsFilter(tupleList)) {
+                filter(
+                    tupleList, new Predicate() {
+                    public boolean evaluate(Object o) {
+                        return !exists(
+                            (List<Member>) o, isMemberHiddenPredicate);
+                    }
+                });
+            }
             return tupleList;
+        }
+
+        private boolean needsFilter(TupleList tupleList) {
+            return tupleList.size() > 0
+                   && exists(tupleList.get(0), needsFilterPredicate());
+        }
+
+        private Predicate needsFilterPredicate() {
+            return new Predicate() {
+                public boolean evaluate(Object o) {
+                    Member member = (Member) o;
+                    return isRaggedLevel(member.getLevel());
+                }
+            };
+        }
+
+        private boolean isRaggedLevel(Level level) {
+            if (level instanceof RolapLevel) {
+                return ((RolapLevel) level).getHideMemberCondition()
+                       != RolapLevel.HideMemberCondition.Never;
+            }
+            // don't know if it's ragged, so assume it is.
+            // should not reach here
+            return true;
         }
 
         private void addLevel(TupleReader tr, CrossJoinArg arg) {
