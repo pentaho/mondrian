@@ -7473,11 +7473,11 @@ INSERT INTO `quadrant_actuals` (`REGION`,`DEPARTMENT`,`POSITIONTITLE`,`ACTUAL`,`
 
 
 --
--- Definition of table `time`
+-- Definition of table `dim_time`
 --
 
-DROP TABLE IF EXISTS `time`;
-CREATE TABLE `time` (
+DROP TABLE IF EXISTS `dim_time`;
+CREATE TABLE `dim_time` (
   `TIME_ID` varchar(10) collate latin1_general_cs default NULL,
   `MONTH_ID` int(11) default NULL,
   `QTR_ID` int(11) default NULL,
@@ -7489,11 +7489,11 @@ CREATE TABLE `time` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
 
 --
--- Dumping data for table `time`
+-- Dumping data for table `dim_time`
 --
 
-/*!40000 ALTER TABLE `time` DISABLE KEYS */;
-INSERT INTO `time` (`TIME_ID`,`MONTH_ID`,`QTR_ID`,`YEAR_ID`,`MONTH_NAME`,`MONTH_DESC`,`QTR_NAME`,`QTR_DESC`) VALUES 
+/*!40000 ALTER TABLE `dim_time` DISABLE KEYS */;
+INSERT INTO `dim_time` (`TIME_ID`,`MONTH_ID`,`QTR_ID`,`YEAR_ID`,`MONTH_NAME`,`MONTH_DESC`,`QTR_NAME`,`QTR_DESC`) VALUES 
  ('2003-01-06',1,1,2003,'Jan','January','QTR1','Quarter 1'),
  ('2003-01-09',1,1,2003,'Jan','January','QTR1','Quarter 1'),
  ('2003-01-10',1,1,2003,'Jan','January','QTR1','Quarter 1'),
@@ -7759,7 +7759,7 @@ INSERT INTO `time` (`TIME_ID`,`MONTH_ID`,`QTR_ID`,`YEAR_ID`,`MONTH_NAME`,`MONTH_
  ('2005-05-29',5,2,2005,'May','May','QTR2','Quarter 2'),
  ('2005-05-30',5,2,2005,'May','May','QTR2','Quarter 2'),
  ('2005-05-31',5,2,2005,'May','May','QTR2','Quarter 2');
-/*!40000 ALTER TABLE `time` ENABLE KEYS */;
+/*!40000 ALTER TABLE `dim_time` ENABLE KEYS */;
 
 
 --
