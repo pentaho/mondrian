@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -2826,10 +2826,11 @@ public class RolapSchema extends OlapElementBase implements Schema {
             if (approxRowCount >= 0) {
                 return approxRowCount;
             }
-            if (relation instanceof MondrianDef.Table) {
-                final MondrianDef.Table table = (MondrianDef.Table) relation;
+            if (false && relation instanceof RolapSchema.PhysTable) {
+                final RolapSchema.PhysTable table =
+                    (RolapSchema.PhysTable) relation;
                 return getTableCardinality(
-                    null, table.schema, table.name);
+                    null, table.getSchemaName(), table.name);
             } else {
                 final SqlQuery sqlQuery = new SqlQuery(dialect);
                 sqlQuery.addSelect("1", null);
