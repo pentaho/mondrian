@@ -144,6 +144,27 @@ mondrian/rolap/PhysSchemaConverter.java,
 mondrian/rolap/HierarchyUsage.java,
 mondrian/rolap/RolapCubeUsages.java"/>
 
+  <path id="tajo.libs">
+    <fileset dir="${env.TAJO_HOME}">
+        <include name="*.jar"/>
+        <exclude name="*-tests.jar"/>
+    </fileset>
+    <fileset dir="${env.TAJO_HOME}/lib">
+      <include name="*.jar"/>
+    </fileset>
+  </path>
+  <path id="hadoop.libs">
+    <fileset dir="${env.HADOOP_HOME}/share/hadoop/common">
+        <include name="*.jar"/>
+    </fileset>
+    <fileset dir="${env.HADOOP_HOME}/share/hadoop/common/lib">
+        <include name="*.jar"/>
+    </fileset>
+    <fileset dir="${env.HADOOP_HOME}/share/hadoop/hdfs">
+        <include name="*.jar"/>
+    </fileset>
+  </path>
+
   <path id="project.classpath">
     <pathelement location="${lib.dir}/servlet-api.jar"/>
     <pathelement location="${lib.dir}/jsp-api.jar"/>
@@ -166,19 +187,8 @@ mondrian/rolap/RolapCubeUsages.java"/>
     <pathelement path="${env.CLASSPATH}"/>
     <pathelement location="${ant.home}/lib/ant.jar"/>
     <pathelement location="${ant.home}/lib/optional.jar"/>
-    <fileset dir="ext-lib">
-        <include name="**/*.jar"/>
-    </fileset>
-<!--
-    <pathelement location="ext-lib/protobuf-java-2.5.0.jar"/>
-    <pathelement location="ext-lib/hadoop-common-2.2.0.jar"/>
-    <pathelement location="ext-lib/tajo-algebra-0.8.0-SNAPSHOT.jar"/>
-    <pathelement location="ext-lib/tajo-client-0.8.0-SNAPSHOT.jar"/>
-    <pathelement location="ext-lib/tajo-common-0.8.0-SNAPSHOT.jar"/>
-    <pathelement location="ext-lib/tajo-rpc-0.8.0-SNAPSHOT.jar"/>
-    <pathelement location="ext-lib/guava-15.0.jar"/>
-    <pathelement location="ext-lib/gson-2.2.2.jar"/>
--->
+    <path refid="tajo.libs"/>
+    <path refid="hadoop.libs"/>
   </path>
 
   <path id="project.build.classpath">
@@ -337,6 +347,8 @@ mondrian/rolap/RolapCubeUsages.java"/>
   <echo>==============================================================</echo>
   <echo>project.location             = ${project.location}</echo>
   <echo>jdk.home                     = ${env.JAVA_HOME}</echo>
+  <echo>tajo.home                     = ${env.TAJO_HOME}</echo>
+  <echo>hadoop.home                     = ${env.HADOOP_HOME}</echo>
   <echo>log4j.configuration          = ${log4j.configuration}</echo>
   <echo>mondrian.foodmart.catalogURL = ${mondrian.foodmart.catalogURL}</echo>
   <echo>mondrian.foodmart.jdbcURL    = ${mondrian.foodmart.jdbcURL}</echo>

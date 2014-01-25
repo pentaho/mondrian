@@ -24,7 +24,7 @@ public class QPResult implements Result {
             return poslist;
         }
 
-        public final List<Column> relationalColumns = new ArrayList<>();
+        public final List<Column> relationalColumns = new ArrayList<Column>();
     }
 
     public static interface Column {
@@ -66,7 +66,7 @@ public class QPResult implements Result {
      * List of positions.
      */
     public static class PositionList extends AbstractList<Position> implements List<Position> {
-        private final List<PositionImpl> list = new ArrayList<>();
+        private final List<PositionImpl> list = new ArrayList<PositionImpl>();
 
         private PositionList() {
             add(new PositionImpl());
@@ -110,7 +110,7 @@ public class QPResult implements Result {
         extends AbstractList<Member>
         implements Position
     {
-        private final List<Member> tupleList = new ArrayList<>();
+        private final List<Member> tupleList = new ArrayList<Member>();
 
         public int size() {
             return tupleList.size();
@@ -126,7 +126,7 @@ public class QPResult implements Result {
     }
 
     public QPResult(int size) {
-        axes = new ArrayList<>(size);
+        axes = new ArrayList<QPAxis>(size);
     }
 
     @Override
@@ -150,7 +150,7 @@ public class QPResult implements Result {
         return slicerAxis;
     }
 
-    public Map<CellKey, QPCell> cells = new HashMap<>();
+    public Map<CellKey, QPCell> cells = new HashMap<CellKey, QPCell>();
 
     public static class QPCell implements Cell {
 

@@ -8,7 +8,7 @@ import org.apache.tajo.algebra.*;
 import org.apache.tajo.client.TajoClient;
 import org.apache.tajo.conf.TajoConf;
 
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.*;
 
 public class QueryPlan {
@@ -37,11 +37,11 @@ public class QueryPlan {
 
     private static class PlanParts {
         private PlanParts() {
-            this.sortSpecs = new ArrayList<>();
-            this.relationSet = new LinkedHashSet<>();
-            this.targetSet = new LinkedHashSet<>();
-            this.andExprs = new ArrayList<>();
-            this.groupElements = new ArrayList<>();
+            this.sortSpecs = new ArrayList<Sort.SortSpec>();
+            this.relationSet = new LinkedHashSet<Relation>();
+            this.targetSet = new LinkedHashSet<NamedExpr>();
+            this.andExprs = new ArrayList<Expr>();
+            this.groupElements = new ArrayList<Aggregation.GroupElement>();
 
             // Create the base Expr of the contextPlan
             this.rootProjection = new Projection();
@@ -347,10 +347,12 @@ public class QueryPlan {
     public QPResult execute() {
         if (!isValid()) { throw new IllegalStateException(); }
 
-        try (
-            TajoClient client = new TajoClient(new TajoConf());
-            ResultSet rs = client.executeQueryAndGetResult(planContext);
-        ) {
+        TajoClient client = null;
+        ResultSet rs = null;
+        try {
+            client = new TajoClient(new TajoConf());
+            rs = client.executeQueryAndGetResult(planContext);
+
             // I need a silly number formatter just to be sane.
             Format numFormatter = new Format("#,###", (Format.FormatLocale) null);
             int[] cellKey = new int[qpResult.axes.size()];
@@ -381,6 +383,17 @@ public class QueryPlan {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (client != null) {
+                client.close();
+            }
         }
 
         return qpResult;
