@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -443,6 +443,135 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Gender4].[Gender4].[M]}\n"
             + "Row #0: 135,215\n");
+    }
+
+    public void testNativeFilterWithHideMemberIfBlankOnLeaf() throws Exception {
+        TestContext testContext =
+            TestContext.instance().withSalesRagged()
+                .remove("<Level attribute='Store Name' hideMemberIf='Never'/>");
+
+        testContext.assertQueryReturns(
+            "SELECT\n"
+            + "[Measures].[Unit Sales] ON COLUMNS\n"
+            + ",FILTER([Store].[Store City].MEMBERS, NOT ISEMPTY ([Measures].[Unit Sales])) ON ROWS\n"
+            + "FROM [Sales Ragged]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[Stores].[Israel].[Israel].[Haifa]}\n"
+            + "{[Store].[Stores].[Israel].[Israel].[Tel Aviv]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[Stores].[USA].[OR].[Portland]}\n"
+            + "{[Store].[Stores].[USA].[OR].[Salem]}\n"
+            + "{[Store].[Stores].[USA].[USA].[Washington]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Bellingham]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Bremerton]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Seattle]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Spokane]}\n"
+            + "Row #0: 2,203\n"
+            + "Row #1: 11,491\n"
+            + "Row #2: 21,333\n"
+            + "Row #3: 25,663\n"
+            + "Row #4: 2,117\n"
+            + "Row #5: 26,079\n"
+            + "Row #6: 41,580\n"
+            + "Row #7: 25,635\n"
+            + "Row #8: 2,237\n"
+            + "Row #9: 24,576\n"
+            + "Row #10: 25,011\n"
+            + "Row #11: 23,591\n");
+    }
+
+    public void testNativeCJWithHideMemberIfBlankOnLeaf() throws Exception {
+        TestContext testContext = TestContext.instance().withSalesRagged()
+            .remove("<Level attribute='Store Name' hideMemberIf='Never'/>");
+
+        testContext.assertQueryReturns(
+            "SELECT\n"
+            + "[Measures].[Unit Sales] ON COLUMNS\n"
+            + ",non empty Crossjoin([Product].[Products].[Product Family].members, [Store].[Store City].MEMBERS) ON ROWS\n"
+            + "FROM [Sales Ragged]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Products].[Drink], [Store].[Stores].[Israel].[Israel].[Haifa]}\n"
+            + "{[Product].[Products].[Drink], [Store].[Stores].[Israel].[Israel].[Tel Aviv]}\n"
+            + "{[Product].[Products].[Drink], [Store].[Stores].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Product].[Products].[Drink], [Store].[Stores].[USA].[CA].[Los Angeles]}\n"
+            + "{[Product].[Products].[Drink], [Store].[Stores].[USA].[CA].[San Francisco]}\n"
+            + "{[Product].[Products].[Drink], [Store].[Stores].[USA].[OR].[Portland]}\n"
+            + "{[Product].[Products].[Drink], [Store].[Stores].[USA].[OR].[Salem]}\n"
+            + "{[Product].[Products].[Drink], [Store].[Stores].[USA].[USA].[Washington]}\n"
+            + "{[Product].[Products].[Drink], [Store].[Stores].[USA].[WA].[Bellingham]}\n"
+            + "{[Product].[Products].[Drink], [Store].[Stores].[USA].[WA].[Bremerton]}\n"
+            + "{[Product].[Products].[Drink], [Store].[Stores].[USA].[WA].[Seattle]}\n"
+            + "{[Product].[Products].[Drink], [Store].[Stores].[USA].[WA].[Spokane]}\n"
+            + "{[Product].[Products].[Food], [Store].[Stores].[Israel].[Israel].[Haifa]}\n"
+            + "{[Product].[Products].[Food], [Store].[Stores].[Israel].[Israel].[Tel Aviv]}\n"
+            + "{[Product].[Products].[Food], [Store].[Stores].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Product].[Products].[Food], [Store].[Stores].[USA].[CA].[Los Angeles]}\n"
+            + "{[Product].[Products].[Food], [Store].[Stores].[USA].[CA].[San Francisco]}\n"
+            + "{[Product].[Products].[Food], [Store].[Stores].[USA].[OR].[Portland]}\n"
+            + "{[Product].[Products].[Food], [Store].[Stores].[USA].[OR].[Salem]}\n"
+            + "{[Product].[Products].[Food], [Store].[Stores].[USA].[USA].[Washington]}\n"
+            + "{[Product].[Products].[Food], [Store].[Stores].[USA].[WA].[Bellingham]}\n"
+            + "{[Product].[Products].[Food], [Store].[Stores].[USA].[WA].[Bremerton]}\n"
+            + "{[Product].[Products].[Food], [Store].[Stores].[USA].[WA].[Seattle]}\n"
+            + "{[Product].[Products].[Food], [Store].[Stores].[USA].[WA].[Spokane]}\n"
+            + "{[Product].[Products].[Non-Consumable], [Store].[Stores].[Israel].[Israel].[Haifa]}\n"
+            + "{[Product].[Products].[Non-Consumable], [Store].[Stores].[Israel].[Israel].[Tel Aviv]}\n"
+            + "{[Product].[Products].[Non-Consumable], [Store].[Stores].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Product].[Products].[Non-Consumable], [Store].[Stores].[USA].[CA].[Los Angeles]}\n"
+            + "{[Product].[Products].[Non-Consumable], [Store].[Stores].[USA].[CA].[San Francisco]}\n"
+            + "{[Product].[Products].[Non-Consumable], [Store].[Stores].[USA].[OR].[Portland]}\n"
+            + "{[Product].[Products].[Non-Consumable], [Store].[Stores].[USA].[OR].[Salem]}\n"
+            + "{[Product].[Products].[Non-Consumable], [Store].[Stores].[USA].[USA].[Washington]}\n"
+            + "{[Product].[Products].[Non-Consumable], [Store].[Stores].[USA].[WA].[Bellingham]}\n"
+            + "{[Product].[Products].[Non-Consumable], [Store].[Stores].[USA].[WA].[Bremerton]}\n"
+            + "{[Product].[Products].[Non-Consumable], [Store].[Stores].[USA].[WA].[Seattle]}\n"
+            + "{[Product].[Products].[Non-Consumable], [Store].[Stores].[USA].[WA].[Spokane]}\n"
+            + "Row #0: 191\n"
+            + "Row #1: 1,159\n"
+            + "Row #2: 1,945\n"
+            + "Row #3: 2,422\n"
+            + "Row #4: 175\n"
+            + "Row #5: 2,371\n"
+            + "Row #6: 3,735\n"
+            + "Row #7: 2,560\n"
+            + "Row #8: 208\n"
+            + "Row #9: 2,288\n"
+            + "Row #10: 2,213\n"
+            + "Row #11: 2,238\n"
+            + "Row #12: 1,622\n"
+            + "Row #13: 8,192\n"
+            + "Row #14: 15,438\n"
+            + "Row #15: 18,294\n"
+            + "Row #16: 1,555\n"
+            + "Row #17: 18,632\n"
+            + "Row #18: 29,905\n"
+            + "Row #19: 18,369\n"
+            + "Row #20: 1,587\n"
+            + "Row #21: 17,809\n"
+            + "Row #22: 18,159\n"
+            + "Row #23: 16,925\n"
+            + "Row #24: 390\n"
+            + "Row #25: 2,140\n"
+            + "Row #26: 3,950\n"
+            + "Row #27: 4,947\n"
+            + "Row #28: 387\n"
+            + "Row #29: 5,076\n"
+            + "Row #30: 7,940\n"
+            + "Row #31: 4,706\n"
+            + "Row #32: 442\n"
+            + "Row #33: 4,479\n"
+            + "Row #34: 4,639\n"
+            + "Row #35: 4,428\n");
     }
 }
 

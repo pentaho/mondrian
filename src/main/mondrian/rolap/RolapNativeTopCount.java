@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -84,17 +84,19 @@ public class RolapNativeTopCount extends RolapNativeSet {
                     new RolapNativeSql(
                         sqlQuery, starSet.getAggStar(),
                         getEvaluator(), null);
-                String orderBySql = sql.generateTopCountOrderBy(orderByExpr);
-                Dialect dialect = queryBuilder.getDialect();
-                boolean nullable = deduceNullability(orderByExpr);
-                if (dialect.requiresOrderByAlias()) {
-                    String alias = sqlQuery.nextColumnAlias();
-                    alias = dialect.quoteIdentifier(alias);
-                    sqlQuery.addSelect(orderBySql, null, alias);
-                    sqlQuery.addOrderBy(alias, ascending, true, nullable);
-                } else {
-                    sqlQuery.addOrderBy(orderBySql, ascending, true, nullable);
-                }
+                final String orderBySql =
+                    sql.generateTopCountOrderBy(orderByExpr);
+                boolean nullable =
+                    deduceNullability(orderByExpr);
+                final String orderByAlias =
+                    sqlQuery.addSelect(orderBySql, null);
+                sqlQuery.addOrderBy(
+                    orderBySql,
+                    orderByAlias,
+                    ascending,
+                    true,
+                    nullable,
+                    true);
             }
             super.addConstraint(queryBuilder, starSet);
         }

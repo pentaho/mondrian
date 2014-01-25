@@ -205,6 +205,7 @@ mondrian/rolap/RolapCubeUsages.java"/>
       <include name="olap4j-xmla.jar"/>
       <include name="xmlunit.jar"/>
       <include name="junit.jar"/>
+      <include name="mockito-all.jar"/>
     </fileset>
     <!-- this picks up the default log4j.properties -->
     <pathelement path="${basedir}"/>

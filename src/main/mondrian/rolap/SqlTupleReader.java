@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -1076,6 +1076,10 @@ public class SqlTupleReader implements TupleReader {
         int selectOrdinal,
         int selectCount)
     {
+        assert (selectCount > 0 && selectOrdinal >= 0)
+            && (selectOrdinal < selectCount);
+
+        final boolean isUnion = selectCount > 1;
         final SqlQueryBuilder.Joiner joiner =
             SqlQueryBuilder.DimensionJoiner.of(
                 starSet.getMeasureGroup(), level.getDimension());
@@ -1097,7 +1101,6 @@ public class SqlTupleReader implements TupleReader {
         boolean needsGroupBy =
             isGroupByNeeded(
                 sqlQuery, hierarchy, hierarchy.getLevelList(), levelDepth);
-        boolean isUnion = selectCount > 1;
 
         final RolapMeasureGroup measureGroup = starSet.getMeasureGroup();
 
@@ -1129,7 +1132,7 @@ public class SqlTupleReader implements TupleReader {
                         q,
                         starColumn.getExpression().getInternalType());
                 layoutBuilder.register(q, alias);
-                sqlQuery.addOrderBy(q, true, false, true);
+                sqlQuery.addOrderBy(q, alias, true, false, true, true);
                 aggColumn.getTable().addToFrom(sqlQuery, false, true);
                 continue;
             }
@@ -1217,10 +1220,19 @@ public class SqlTupleReader implements TupleReader {
                 addUnionOrderByOrdinal(sqlQuery);
             }
 
-            if (selectOrdinal == 0 && selectCount == 1) {
+            if (!isUnion) {
                 for (RolapSchema.PhysColumn column : currLevel.getOrderByList())
                 {
-                    sqlQuery.addOrderBy(column.toSql(), true, false, true);
+                    if (sqlQuery.getDialect().requiresOrderByAlias()) {
+                        // if order by alias is required the column needs to be
+                        // in the select list with an alias.
+                        queryBuilder.addColumn(
+                            queryBuilder.column(
+                                column, currLevel.cubeDimension),
+                            Clause.SELECT_ORDER, joiner, null);
+                    } else {
+                        sqlQuery.addOrderBy(column.toSql(), true, false, true);
+                    }
                 }
             }
 
@@ -1281,9 +1293,10 @@ public class SqlTupleReader implements TupleReader {
             // query.
             nullable = false;
         }
+        final String ordinal = Integer.toString(
+            sqlQuery.getCurrentSelectListSize());
         sqlQuery.addOrderBy(
-            Integer.toString(
-                sqlQuery.getCurrentSelectListSize()),
+            ordinal, ordinal,
             true, false, nullable, false);
     }
 

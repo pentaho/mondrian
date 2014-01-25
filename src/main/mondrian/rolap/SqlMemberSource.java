@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -249,8 +249,8 @@ public class SqlMemberSource
             if (mustCount[0]) {
                 for (String colDef : columnList) {
                     final String exp = dialect.generateCountExpression(colDef);
-                    sqlQuery.addSelect(exp, null);
-                    sqlQuery.addOrderBy(exp, true, false, true);
+                    String alias = sqlQuery.addSelect(exp, null);
+                    sqlQuery.addOrderBy(exp, alias, true, false, true, true);
                 }
             } else {
                 List<String> list = new ArrayList<String>();
