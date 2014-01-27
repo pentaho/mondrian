@@ -160,9 +160,6 @@ mondrian/rolap/RolapCubeUsages.java"/>
     <fileset dir="${env.HADOOP_HOME}/share/hadoop/common/lib">
         <include name="*.jar"/>
     </fileset>
-    <fileset dir="${env.HADOOP_HOME}/share/hadoop/hdfs">
-        <include name="*.jar"/>
-    </fileset>
   </path>
 
   <path id="project.classpath">
