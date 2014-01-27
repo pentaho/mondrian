@@ -144,6 +144,24 @@ mondrian/rolap/PhysSchemaConverter.java,
 mondrian/rolap/HierarchyUsage.java,
 mondrian/rolap/RolapCubeUsages.java"/>
 
+  <path id="tajo.libs">
+    <fileset dir="${env.TAJO_HOME}">
+        <include name="*.jar"/>
+        <exclude name="*-tests.jar"/>
+    </fileset>
+    <fileset dir="${env.TAJO_HOME}/lib">
+      <include name="*.jar"/>
+    </fileset>
+  </path>
+  <path id="hadoop.libs">
+    <fileset dir="${env.HADOOP_HOME}/share/hadoop/common">
+        <include name="*.jar"/>
+    </fileset>
+    <fileset dir="${env.HADOOP_HOME}/share/hadoop/common/lib">
+        <include name="*.jar"/>
+    </fileset>
+  </path>
+
   <path id="project.classpath">
     <pathelement location="${lib.dir}/servlet-api.jar"/>
     <pathelement location="${lib.dir}/jsp-api.jar"/>
@@ -166,6 +184,8 @@ mondrian/rolap/RolapCubeUsages.java"/>
     <pathelement path="${env.CLASSPATH}"/>
     <pathelement location="${ant.home}/lib/ant.jar"/>
     <pathelement location="${ant.home}/lib/optional.jar"/>
+    <path refid="tajo.libs"/>
+    <path refid="hadoop.libs"/>
   </path>
 
   <path id="project.build.classpath">
@@ -325,6 +345,8 @@ mondrian/rolap/RolapCubeUsages.java"/>
   <echo>==============================================================</echo>
   <echo>project.location             = ${project.location}</echo>
   <echo>jdk.home                     = ${env.JAVA_HOME}</echo>
+  <echo>tajo.home                    = ${env.TAJO_HOME}</echo>
+  <echo>hadoop.home                  = ${env.HADOOP_HOME}</echo>
   <echo>log4j.configuration          = ${log4j.configuration}</echo>
   <echo>mondrian.foodmart.catalogURL = ${mondrian.foodmart.catalogURL}</echo>
   <echo>mondrian.foodmart.jdbcURL    = ${mondrian.foodmart.jdbcURL}</echo>
@@ -415,6 +437,14 @@ mondrian/olap/ParserSym.java"/>
         </fileset>
     </unjar>
 
+    <unjar dest="${crtmp.dir}">
+        <path refid="tajo.libs"/>
+        <path refid="hadoop.libs"/>
+        <path id="driver.classpath">
+          <pathelement path="${driver.classpath}"/>
+        </path>
+    </unjar>
+
     <copy file="./log4j.properties" todir="${crtmp.dir}"/>
 
     <jar destfile="${lib.dir}/cmdrunner.jar" >
@@ -422,6 +452,7 @@ mondrian/olap/ParserSym.java"/>
         <include name="**/*.xml"/>
         <include name="**/*.class"/>
         <include name="**/*.properties"/>
+        <include name="META-INF/services/*"/>
       </fileset>
 
       <manifest>

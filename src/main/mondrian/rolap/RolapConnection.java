@@ -11,12 +11,15 @@
 package mondrian.rolap;
 
 import mondrian.calc.*;
+import mondrian.mdx.MemberExpr;
 import mondrian.olap.*;
 import mondrian.parser.MdxParserValidator;
+import mondrian.queryplan.*;
 import mondrian.resource.MondrianResource;
 import mondrian.server.*;
 import mondrian.spi.*;
 import mondrian.util.*;
+import mondrian.queryplan.QPResult.QPAxis;
 
 import org.apache.log4j.Logger;
 
@@ -450,6 +453,8 @@ public class RolapConnection extends ConnectionBase {
                     });
     }
 
+    private static enum ExecutionMethod { QUERY_PLANNER, ROLAP_RESULT };
+
     private Result executeInternal(final Execution execution) {
         execution.setContextMap();
         final Statement statement = execution.getMondrianStatement();
@@ -491,27 +496,48 @@ public class RolapConnection extends ConnectionBase {
             final Locus locus = new Locus(execution, null, "Loading cells");
             Locus.push(locus);
             Result result;
-            final RolapCube cube = (RolapCube) query.getCube();
-            try {
-                statement.start(execution);
-                for (RolapStar star : cube.getStars()) {
-                    star.clearCachedAggregations(true);
-                }
-                result = new RolapResult(execution, true);
-                int i = 0;
-                for (QueryAxis axis : query.getAxes()) {
-                    if (axis.isNonEmpty()) {
-                        result = new NonEmptyResult(result, execution, i);
-                    }
-                    ++i;
-                }
-            } finally {
-                Locus.pop(locus);
-                for (RolapStar star : cube.getStars()) {
-                    star.clearCachedAggregations(true);
+
+            // Default to the legacy method of execution.
+            ExecutionMethod executionMethod = ExecutionMethod.ROLAP_RESULT;
+            QueryPlan plan = QueryPlan.DUMMY;
+
+            // If this connection has the property to enable query planning,
+            // attempt to build a plan.
+            if ("true".equals(connectInfo.get(
+                RolapConnectionProperties.EnableQueryPlanner.name()))) {
+                plan = QueryPlanner.build(query);
+                if (plan.isValid()) {
+                    executionMethod = ExecutionMethod.QUERY_PLANNER;
                 }
             }
-            statement.end(execution);
+
+            if (executionMethod == ExecutionMethod.QUERY_PLANNER) {
+                System.out.println("ExecutionMethod is QUERY_PLANNER");
+                result = plan.execute();
+            } else {
+                System.out.println("ExecutionMethod is ROLAP_RESULT");
+                final RolapCube cube = (RolapCube) query.getCube();
+                try {
+                    statement.start(execution);
+                    for (RolapStar star : cube.getStars()) {
+                        star.clearCachedAggregations(true);
+                    }
+                    result = new RolapResult(execution, true);
+                    int i = 0;
+                    for (QueryAxis axis : query.getAxes()) {
+                        if (axis.isNonEmpty()) {
+                            result = new NonEmptyResult(result, execution, i);
+                        }
+                        ++i;
+                    }
+                } finally {
+                    Locus.pop(locus);
+                    for (RolapStar star : cube.getStars()) {
+                        star.clearCachedAggregations(true);
+                    }
+                }
+                statement.end(execution);
+            }
             return result;
         } catch (ResultLimitExceededException e) {
             // query has been punted
@@ -532,9 +558,14 @@ public class RolapConnection extends ConnectionBase {
             } catch (Exception e1) {
                 queryString = "?";
             }
-            throw Util.newError(
+            // Adding printStackTrace so I don't get caught unawares by unit
+            // tests that indicate they pass because of the testContext.databaseIsValid()
+            // short circuit.
+            final RuntimeException runtimeException = Util.newError(
                 e,
                 "Error while executing query [" + queryString + "]");
+            runtimeException.printStackTrace();
+            throw runtimeException;
         } finally {
             mm.removeListener(listener);
             if (RolapUtil.MDX_LOGGER.isDebugEnabled()) {

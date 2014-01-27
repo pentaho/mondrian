@@ -11,9 +11,27 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="all" level="project" />
     <orderEntry type="library" name="eigenbase-properties" level="project" />
-    <orderEntry type="library" name="jdbcDrivers" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="jdbcDrivers" level="application" />
     <orderEntry type="library" name="olap4j" level="project" />
     <orderEntry type="library" name="olap4j-xmlaserver" level="project" />
+    <orderEntry type="module" module-name="tajo-algebra" />
+    <orderEntry type="module" module-name="tajo-catalog-client" />
+    <orderEntry type="module" module-name="tajo-catalog-common" />
+    <orderEntry type="module" module-name="tajo-core-storage" />
+    <orderEntry type="module" module-name="tajo-hcatalog" />
+    <orderEntry type="module" module-name="tajo-rpc" />
+    <orderEntry type="module" module-name="tajo-client" />
+    <orderEntry type="module" module-name="tajo-common" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../hadoop-2.2.0/share/hadoop/common/hadoop-common-2.2.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="Maven: com.google.protobuf:protobuf-java:2.5.0" level="project" />
   </component>
 </module>
 

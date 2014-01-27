@@ -859,6 +859,10 @@ public class RolapSchema extends OlapElementBase implements Schema {
         final Dialect dialect;
         final JdbcSchema jdbcSchema;
 
+        public Set<PhysLink> getLinkSet() {
+            return linkSet;
+        }
+
         final Set<PhysLink> linkSet = new HashSet<PhysLink>();
 
         private final Map<PhysRelation, List<PhysLink>> hardLinksFrom =
@@ -1887,6 +1891,11 @@ public class RolapSchema extends OlapElementBase implements Schema {
      */
     public static class PhysKey {
         final PhysRelation relation;
+
+        public List<PhysColumn> getColumnList() {
+            return columnList;
+        }
+
         final List<PhysColumn> columnList;
         final String name;
 
@@ -1950,6 +1959,14 @@ public class RolapSchema extends OlapElementBase implements Schema {
         public final PhysRelation targetRelation;
         final List<PhysColumn> columnList;
         public final String sql;
+
+        public PhysKey getSourceKey() {
+            return sourceKey;
+        }
+
+        public List<PhysColumn> getColumnList() {
+            return columnList;
+        }
 
         /**
          * Creates a link from {@code targetTable} to {@code sourceTable} over

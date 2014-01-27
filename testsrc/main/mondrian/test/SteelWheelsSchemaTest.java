@@ -32,6 +32,59 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "[Measures].[Sales]");
     }
 
+    public void testStub() {
+      TestContext testContext = getTestContext();
+      testContext.assertQueryReturns(
+          "select [Measures].[Sales] on 0 from [SteelWheelsSales]",
+          "Axis #0:\n"
+          + "{}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Sales]}\n"
+          + "Row #0: 10,645,949\n");
+    }
+
+    public void testQueryPlan1() {
+        TestContext testContext = getTestContext();
+        testContext.assertQueryReturns(
+            "SELECT\n" +
+                "{[Measures].[Sales]} ON COLUMNS,\n" +
+                "NON EMPTY {[Markets].[Territory].MEMBERS} ON ROWS\n" +
+                "FROM [SteelWheelsSales]",
+            "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Markets].[Markets].[APAC]}\n"
+                + "{[Markets].[Markets].[EMEA]}\n"
+                + "{[Markets].[Markets].[Japan]}\n"
+                + "{[Markets].[Markets].[NA]}\n"
+                + "Row #0: 1,281,706\n"
+                + "Row #1: 5,008,224\n"
+                + "Row #2: 503,958\n"
+                + "Row #3: 3,852,061\n");
+    }
+
+    public void testQueryPlan2() {
+        TestContext testContext = getTestContext();
+        testContext.assertQueryReturns(
+            "SELECT\n" +
+                "{[Measures].[Sales]} ON COLUMNS,\n" +
+                "NON EMPTY UNION({[Markets].[NA]},[Markets].[NA].Children) ON ROWS\n" +
+                "FROM [SteelWheelsSales]",
+            "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Markets].[Markets].[NA]}\n"
+                + "{[Markets].[Markets].[NA].[Canada]}\n"
+                + "{[Markets].[Markets].[NA].[USA]}\n"
+                + "Row #0: 3,852,061\n"
+                + "Row #1: 224,079\n"
+                + "Row #2: 3,627,983\n");
+    }
+
     /**
      * Test case for Infobright issue where [Markets].[All Markets].[Japan]
      * was not found but [Markets].[All Markets].[JAPAN] was OK.
@@ -51,16 +104,14 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Row #0: 4,923\n");
 
         testContext.assertQueryReturns(
-            "select [Markets].[Markets].Children on 0 from [SteelWheelsSales]",
+            "select NON EMPTY [Markets].[Markets].Children on 0 from [SteelWheelsSales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Markets].[Markets].[#null]}\n"
             + "{[Markets].[Markets].[APAC]}\n"
             + "{[Markets].[Markets].[EMEA]}\n"
             + "{[Markets].[Markets].[Japan]}\n"
             + "{[Markets].[Markets].[NA]}\n"
-            + "Row #0: \n"
             + "Row #0: 12,878\n"
             + "Row #0: 49,578\n"
             + "Row #0: 4,923\n"

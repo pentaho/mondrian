@@ -97,7 +97,7 @@ in its entirety will be run.</p>
         <Path>mondrian.test.connectString</Path>
         <Category>Testing</Category>
         <Description>
-<p>Property containing the connect string which regresssion tests should
+<p>Property containing the connect string which regression tests should
 use to connect to the database.</p>
 
 <p>Format is specified in {@link Util#parseConnectString(String)}.</p>
@@ -844,7 +844,7 @@ limit on the number of rows returned by XML/A drill through request.
         <Description>
 <p>Max number of constraints in a single 'IN' SQL clause.</p>
 
-<p>This value may be variant among database prodcuts and their runtime
+<p>This value may vary among database products and their runtime
 settings. Oracle, for example, gives the error "ORA-01795: maximum
 number of expressions in a list is 1000".</p>
 
@@ -932,8 +932,8 @@ value of 0 (the default), indicates no timeout.</p>
         <Description>
 <p>Property that defines the interval value (in milliseconds) between
 polling operations performed by the RolapConnection shepherd thread.
-This controls query timeouts and calcelation, so a small value
-(a few miliseconds) is best. Setting this to a value higher than
+This controls query timeouts and cancellation, so a small value
+(a few milliseconds) is best. Setting this to a value higher than
 mondrian.rolap.queryTimeout will result the timeout not being enforced
 as expected.</p>
 
@@ -1188,7 +1188,7 @@ dimension is in the tuple during aggregation.</p>
 
 <p>If there are unrelated dimensions to a measure in context during
 aggregation, the measure is ignored in the evaluation context. This
-behaviour kicks in only if the cubeusage for this measure has
+behaviour kicks in only if the cube usage for this measure has
 IgnoreUnrelatedDimensions attribute set to false.</p>
 
 <p>For example, Gender doesn't join with [Warehouse Sales] measure.</p>
@@ -1209,7 +1209,7 @@ SUM({Product.members * Gender.members})    9,290,730.03</code></blockquote>
 
 <p>On a report where Gender M, F and All members exist a user will see a
 large aggregated value compared to the aggregated value that can be
-arrived at by suming up values against Gender M and F. This can be
+arrived at by summing up values against Gender M and F. This can be
 confusing to the user. This feature can be used to eliminate such a
 situation.</p>
         </Description>

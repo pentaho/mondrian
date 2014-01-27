@@ -196,7 +196,19 @@ public enum RolapConnectionProperties {
      * the {@link mondrian.spi.DataServicesProvider} implementation to be used
      * for this connection
      */
-    DataServicesProvider;
+    DataServicesProvider,
+
+    /**
+     * The "EnableQueryPlanner" property controls whether any query for this
+     * connection could potentially go through the query planner code path.
+     * If <code>true</code>, every query the connection attempts to execute
+     * will be evaluated by <code>RolapConnection.selectExecutionMethod()</code>
+     * to determine if it is suitable to attempt to build a query plan and
+     * execute it with the alternative execution engine.
+     * <p>If <code>false</code>, the default, no queries for this connection
+     * can go through the query planner code path.
+     */
+    EnableQueryPlanner;
 
     /**
      * Any property beginning with this value will be added to the
