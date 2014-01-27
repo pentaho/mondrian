@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_6" inherit-compiler-output="false">
-    <output url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/classes" />
-    <output-test url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/test-classes" />
-    <content url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend">
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/src/test/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/src/main/resources" type="java-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/src/test/resources" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/generated-sources/antlr4" isTestSource="false" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/generated-sources/proto" isTestSource="false" generated="true" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/antrun" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/classes" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/lib" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/maven-archiver" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-core/tajo-core-backend/target/test-classes" />
+    <output url="file://$MODULE_DIR$/../../incubator-tajo/tajo-core/tajo-core-backend/target/classes" />
+    <output-test url="file://$MODULE_DIR$/../../incubator-tajo/tajo-core/tajo-core-backend/target/test-classes" />
+    <content url="file://$MODULE_DIR$/../../incubator-tajo/tajo-core/tajo-core-backend">
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-core/tajo-core-backend/target/generated-sources/antlr4" isTestSource="false" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-core/tajo-core-backend/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-core/tajo-core-backend/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-core/tajo-core-backend/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-core/tajo-core-backend/src/test/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-core/tajo-core-backend/target/generated-sources/proto" isTestSource="false" generated="true" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-core/tajo-core-backend/target/antrun" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-core/tajo-core-backend/target/classes" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-core/tajo-core-backend/target/lib" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-core/tajo-core-backend/target/maven-archiver" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-core/tajo-core-backend/target/test-classes" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

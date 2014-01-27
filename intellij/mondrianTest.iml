@@ -19,6 +19,7 @@
     <orderEntry type="library" name="olap4j-tck" level="project" />
     <orderEntry type="library" name="olap4j-xmla" level="project" />
     <orderEntry type="library" name="olap4j-xmlaserver" level="project" />
+    <orderEntry type="library" name="Maven: org.mockito:mockito-core:1.9.5-rc1" level="project" />
   </component>
 </module>
 

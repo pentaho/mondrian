@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_6" inherit-compiler-output="false">
-    <output url="file://$MODULE_DIR$/../../tajo/tajo-jdbc/target/classes" />
-    <output-test url="file://$MODULE_DIR$/../../tajo/tajo-jdbc/target/test-classes" />
-    <content url="file://$MODULE_DIR$/../../tajo/tajo-jdbc">
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-jdbc/src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-jdbc/src/main/resources" type="java-resource" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-jdbc/target" />
+    <output url="file://$MODULE_DIR$/../../incubator-tajo/tajo-jdbc/target/classes" />
+    <output-test url="file://$MODULE_DIR$/../../incubator-tajo/tajo-jdbc/target/test-classes" />
+    <content url="file://$MODULE_DIR$/../../incubator-tajo/tajo-jdbc">
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-jdbc/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-jdbc/src/main/resources" type="java-resource" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-jdbc/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

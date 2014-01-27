@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_6" inherit-compiler-output="false">
-    <output url="file://$MODULE_DIR$/../../tajo/tajo-rpc/target/classes" />
-    <output-test url="file://$MODULE_DIR$/../../tajo/tajo-rpc/target/test-classes" />
-    <content url="file://$MODULE_DIR$/../../tajo/tajo-rpc">
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-rpc/src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-rpc/src/test/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-rpc/target/generated-sources/proto" isTestSource="false" generated="true" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-rpc/target/antrun" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-rpc/target/classes" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-rpc/target/maven-archiver" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-rpc/target/tajo-rpc-0.8.0-SNAPSHOT" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-rpc/target/test-classes" />
+    <output url="file://$MODULE_DIR$/../../incubator-tajo/tajo-rpc/target/classes" />
+    <output-test url="file://$MODULE_DIR$/../../incubator-tajo/tajo-rpc/target/test-classes" />
+    <content url="file://$MODULE_DIR$/../../incubator-tajo/tajo-rpc">
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-rpc/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-rpc/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-rpc/target/generated-sources/proto" isTestSource="false" generated="true" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-rpc/target/antrun" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-rpc/target/classes" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-rpc/target/maven-archiver" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-rpc/target/tajo-rpc-0.8.0-SNAPSHOT" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-rpc/target/test-classes" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

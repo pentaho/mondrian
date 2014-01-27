@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_6" inherit-compiler-output="false">
-    <output url="file://$MODULE_DIR$/../../tajo/tajo-dist/target/classes" />
-    <output-test url="file://$MODULE_DIR$/../../tajo/tajo-dist/target/test-classes" />
-    <content url="file://$MODULE_DIR$/../../tajo/tajo-dist">
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-dist/target" />
+    <output url="file://$MODULE_DIR$/../../incubator-tajo/tajo-dist/target/classes" />
+    <output-test url="file://$MODULE_DIR$/../../incubator-tajo/tajo-dist/target/test-classes" />
+    <content url="file://$MODULE_DIR$/../../incubator-tajo/tajo-dist">
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-dist/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

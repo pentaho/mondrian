@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_6" inherit-compiler-output="false">
-    <output url="file://$MODULE_DIR$/../../tajo/tajo-catalog/tajo-catalog-server/target/classes" />
-    <output-test url="file://$MODULE_DIR$/../../tajo/tajo-catalog/tajo-catalog-server/target/test-classes" />
-    <content url="file://$MODULE_DIR$/../../tajo/tajo-catalog/tajo-catalog-server">
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-catalog/tajo-catalog-server/src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-catalog/tajo-catalog-server/target/generated-sources/proto" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-catalog/tajo-catalog-server/src/test/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-catalog/tajo-catalog-server/src/test/resources" type="java-test-resource" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-catalog/tajo-catalog-server/target/antrun" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-catalog/tajo-catalog-server/target/classes" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-catalog/tajo-catalog-server/target/lib" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-catalog/tajo-catalog-server/target/maven-archiver" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-catalog/tajo-catalog-server/target/test-classes" />
+    <output url="file://$MODULE_DIR$/../../incubator-tajo/tajo-catalog/tajo-catalog-server/target/classes" />
+    <output-test url="file://$MODULE_DIR$/../../incubator-tajo/tajo-catalog/tajo-catalog-server/target/test-classes" />
+    <content url="file://$MODULE_DIR$/../../incubator-tajo/tajo-catalog/tajo-catalog-server">
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-catalog/tajo-catalog-server/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-catalog/tajo-catalog-server/target/generated-sources/proto" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-catalog/tajo-catalog-server/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-catalog/tajo-catalog-server/src/test/resources" type="java-test-resource" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-catalog/tajo-catalog-server/target/antrun" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-catalog/tajo-catalog-server/target/classes" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-catalog/tajo-catalog-server/target/lib" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-catalog/tajo-catalog-server/target/maven-archiver" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-catalog/tajo-catalog-server/target/test-classes" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

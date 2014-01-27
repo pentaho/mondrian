@@ -452,6 +452,7 @@ mondrian/olap/ParserSym.java"/>
         <include name="**/*.xml"/>
         <include name="**/*.class"/>
         <include name="**/*.properties"/>
+        <include name="META-INF/services/*"/>
       </fileset>
 
       <manifest>

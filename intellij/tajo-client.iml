@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_6" inherit-compiler-output="false">
-    <output url="file://$MODULE_DIR$/../../tajo/tajo-client/target/classes" />
-    <output-test url="file://$MODULE_DIR$/../../tajo/tajo-client/target/test-classes" />
-    <content url="file://$MODULE_DIR$/../../tajo/tajo-client">
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-client/src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-client/src/main/resources" type="java-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/../../tajo/tajo-client/target/generated-sources/proto" isTestSource="false" generated="true" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-client/target/antrun" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-client/target/classes" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-client/target/lib" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-client/target/maven-archiver" />
-      <excludeFolder url="file://$MODULE_DIR$/../../tajo/tajo-client/target/tajo-client-0.8.0-SNAPSHOT" />
+    <output url="file://$MODULE_DIR$/../../incubator-tajo/tajo-client/target/classes" />
+    <output-test url="file://$MODULE_DIR$/../../incubator-tajo/tajo-client/target/test-classes" />
+    <content url="file://$MODULE_DIR$/../../incubator-tajo/tajo-client">
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-client/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-client/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-client/target/generated-sources/proto" isTestSource="false" generated="true" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-client/target/antrun" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-client/target/classes" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-client/target/lib" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-client/target/maven-archiver" />
+      <excludeFolder url="file://$MODULE_DIR$/../../incubator-tajo/tajo-client/target/tajo-client-0.8.0-SNAPSHOT" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
