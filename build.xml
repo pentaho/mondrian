@@ -441,9 +441,8 @@ mondrian/olap/ParserSym.java"/>
     </unjar>
 
     <unjar dest="${crtmp.dir}">
-        <fileset dir="ext-lib">
-            <include name="**/*.jar"/>
-        </fileset>
+        <path refid="tajo.libs"/>
+        <path refid="hadoop.libs"/>
     </unjar>
 
     <copy file="./log4j.properties" todir="${crtmp.dir}"/>
