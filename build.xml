@@ -578,7 +578,7 @@ META-INF/**"/>
     </copy>
   </target>
 
-  <target name="compile.tests" depends="info">
+  <target name="compile.tests" depends="info" unless="tests.skip">
     <javac
         srcdir="${javatest.dir}"
         destdir="${testclasses.dir}"
