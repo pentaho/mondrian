@@ -154,8 +154,13 @@ mondrian/rolap/RolapCubeUsages.java"/>
     </fileset>
   </path>
   <path id="hadoop.libs">
+    <fileset dir="${env.HADOOP_HOME}/share/hadoop/hdfs">
+        <include name="*.jar"/>
+        <exclude name="*-tests.jar"/>
+    </fileset>
     <fileset dir="${env.HADOOP_HOME}/share/hadoop/common">
         <include name="*.jar"/>
+        <exclude name="*-tests.jar"/>
     </fileset>
     <fileset dir="${env.HADOOP_HOME}/share/hadoop/common/lib">
         <include name="*.jar"/>
