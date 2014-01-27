@@ -415,6 +415,15 @@
         <root url="jar://$PROJECT_DIR$/../lib/junit-source.jar!/" />
       </SOURCES>
     </library>
+    <library name="mockito-all-1.8.5">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/../test-lib/mockito-all-1.8.5.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$PROJECT_DIR$/../test-lib/mockito-all-1.8.5.jar!/" />
+      </SOURCES>
+    </library>
     <library name="olap4j">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/../lib/olap4j.jar!/" />
