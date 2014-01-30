@@ -4,13 +4,14 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2013 Pentaho
+// Copyright (C) 2007-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
 
 import mondrian.olap.Result;
 import mondrian.olap.Util;
+import mondrian.rolap.RolapMember;
 import mondrian.rolap.SqlStatement;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
@@ -617,6 +618,130 @@ public class DialectTest extends TestCase {
         // Oracle with ojdbc5+.  Make sure it starts w/ the expected date.
         assertTrue(firstChild.startsWith("1997-01-01"));
     }
+
+    public void testBigInt() {
+        if (getDialect().getDatabaseProduct()
+            != Dialect.DatabaseProduct.VERTICA)
+        {
+            // currently only checks VERTICA
+            // Once MONDRIAN-1890 is fixed this test should minimally cover
+            // Oracle and MySQL as well.
+            return;
+        }
+        final TestContext context = TestContext.instance().withSchema(
+            "<?xml version=\"1.0\"?>\n"
+            + "<Schema name=\"FoodMart\" metamodelVersion=\"4.00\">\n"
+            + "  <PhysicalSchema>\n"
+            + "    <Table name='store'>\n"
+            + "      <Key>\n"
+            + "        <Column name='store_id'/>\n"
+            + "      </Key>\n"
+            + "      <ColumnDefs>\n"
+            + "        <CalculatedColumnDef name='long_sqft' >\n"
+            + "          <ExpressionView>\n"
+            + "            <SQL dialect='vertica'>\n"
+            + "            coalesce(cast(\"store_sqft\" as BIGINT) + "
+            + Integer.MAX_VALUE + ", 0)"
+            + "            </SQL>\n"
+            + "          </ExpressionView>\n"
+            + "        </CalculatedColumnDef>\n"
+            + "      </ColumnDefs>\n"
+            + "    </Table>\n"
+            + "    <Table name=\"sales_fact_1997\" alias=\"sales_fact_1997\">\n"
+            + "      <ColumnDefs>\n"
+            + "        <CalculatedColumnDef name='big_unit_sales' >\n"
+            + "          <ExpressionView>\n"
+            + "            <SQL dialect='vertica'>\n"
+            + "   CAST(\"unit_sales\" + 2147483647 AS NUMBER(22)) \n"
+            + "            </SQL>\n"
+            + "          </ExpressionView>\n"
+            + "        </CalculatedColumnDef>\n"
+            + "      </ColumnDefs>\n"
+            + "    </Table>\n"
+            + "  </PhysicalSchema>\n"
+            + "  <Cube name=\"BigIntTest\" >\n"
+            + "    <Dimensions>\n"
+            + "  <Dimension name=\"StoreSqft\" table='store' key='Store Id'>\n"
+            + "        <Attributes>\n"
+            + "          <Attribute name='Store Id'  keyColumn='store_id' hasHierarchy='false'/>\n"
+            + "          <Attribute name=\"StoreSqft\" keyColumn='long_sqft' hasHierarchy=\"true\">\n"
+            + "          </Attribute>\n"
+            + "        </Attributes>\n"
+            + "      </Dimension>\n"
+            + "    </Dimensions>\n"
+            + "    <MeasureGroups>\n"
+            + "      <MeasureGroup name=\"Sales\" type=\"fact\"  table=\"sales_fact_1997\">\n"
+            + "        <Measures>\n"
+            + "          <Measure name='Big Unit Sales' column='big_unit_sales' aggregator='sum' formatString='Standard'/>\n"
+            + "        </Measures>\n"
+            + "        <DimensionLinks>\n"
+            + "          <ForeignKeyLink dimension=\"StoreSqft\" foreignKeyColumn='store_id' />\n"
+            + "        </DimensionLinks>\n"
+            + "      </MeasureGroup>\n"
+            + "    </MeasureGroups>\n"
+            + "  </Cube>\n"
+            + "</Schema>\n");
+        Result result = context.executeQuery(
+            "select [StoreSqft].[StoreSqft].[All StoreSqft].children on 0 from BigIntTest");
+        RolapMember secondChild =
+            (RolapMember) result.getAxes()[0].getPositions().get(1).get(0);
+
+        assertTrue(secondChild.getKey() instanceof Long);
+        assertEquals(2147503966L, ((Long) secondChild.getKey()).longValue());
+
+        context.assertQueryReturns(
+            "select [StoreSqft].[StoreSqft].[All StoreSqft].children on 0, "
+            + "{measures.[Big Unit Sales]} on 1 from BigIntTest",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[StoreSqft].[StoreSqft].[0]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147503966]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147504862]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147506125]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147506759]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147507240]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147507245]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147507335]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147507406]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147508244]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147511341]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147511853]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147513915]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147514231]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147514444]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147517505]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147518099]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147518438]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147520156]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147522029]}\n"
+            + "{[StoreSqft].[StoreSqft].[2147523343]}\n"
+            + "Axis #2:\n"
+            + "{[Measures].[Big Unit Sales]}\n"
+            + "Row #0: 28,101,971,043,971\n"
+            + "Row #0: 17,746,804,884,887\n"
+            + "Row #0: 17,085,379,920,543\n"
+            + "Row #0: 2,845,415,834,392\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: 17,624,398,316,592\n"
+            + "Row #0: 14,635,101,075,638\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: 28,662,464,278,089\n"
+            + "Row #0: 2,963,527,435,097\n"
+            + "Row #0: 15,884,936,560,450\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: 24,017,457,143,305\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: 16,913,581,228,348\n");
+    }
+
+
 
     public void testResultSetConcurrency() {
         int[] Types = {

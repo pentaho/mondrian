@@ -4,13 +4,14 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2013 Pentaho
+// Copyright (C) 2008-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import mondrian.rolap.SqlStatement;
+
+import java.sql.*;
 import java.util.List;
 
 /**
@@ -61,6 +62,17 @@ public class VerticaDialect extends JdbcDialectImpl {
         return generateInlineGeneric(
             columnNames, columnTypes, valueList, null, false);
     }
+
+    public SqlStatement.Type getType(
+        ResultSetMetaData metaData, int columnIndex)
+        throws SQLException
+    {
+        // BIGINT->LONG should be the general rule, not just for Vertica,
+        // see MONDRIAN-1890
+        return metaData.getColumnType(columnIndex + 1) == Types.BIGINT
+            ? SqlStatement.Type.LONG : super.getType(metaData, columnIndex);
+    }
+
 }
 
 // End VerticaDialect.java
