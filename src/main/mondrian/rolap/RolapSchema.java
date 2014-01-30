@@ -2826,7 +2826,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
             if (approxRowCount >= 0) {
                 return approxRowCount;
             }
-            if (false && relation instanceof RolapSchema.PhysTable) {
+            if (relation instanceof RolapSchema.PhysTable) {
                 final RolapSchema.PhysTable table =
                     (RolapSchema.PhysTable) relation;
                 return getTableCardinality(
