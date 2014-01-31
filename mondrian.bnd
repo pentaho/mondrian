@@ -3,3 +3,4 @@ Export-Package: !mondrian.xmla, !mondrian.xmla.*,*
 DynamicImport-Package: *
 Bundle-Name: mondrian
 Bundle-SymbolicName: mondrian
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.5))"
