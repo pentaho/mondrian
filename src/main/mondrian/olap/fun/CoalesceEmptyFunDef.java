@@ -45,7 +45,7 @@ public class CoalesceEmptyFunDef extends FunDefBase {
             public Object evaluate(Evaluator evaluator) {
                 for (Calc calc : calcs) {
                     final Object o = calc.evaluate(evaluator);
-                    if (o != null) {
+                    if (o != null && !Util.isEmpty(o.toString())) {
                         return o;
                     }
                 }

@@ -5360,6 +5360,23 @@ public class FunctionTest extends FoodMartTestCase {
             0.001);
     }
 
+    /**
+     * Have CoalesceEmpty treat empty strings as null
+     */
+    public void testCoalesceEmptyEmptyString() {
+        Result result = executeQuery(
+            "with\n"
+            + "    member Measures.[EmptyStr] as 'CoalesceEmpty(\"\",\"NotEmpty\")'\n"
+            + "select \n"
+            + "    {Measures.[EmptyStr]} on columns,\n"
+            + "    {[Store].[All Stores].[USA].[WA]} on rows\n"
+            + "from \n"
+            + "    [Sales]");
+        Object value = result.getCell(new int[]{0, 0}).getValue();
+        assertEquals(
+            "CoalesceEmpty failed to replace empty string", "NotEmpty", value);
+    }
+
     public void testBrokenContextBug() {
         Result result = executeQuery(
             "with\n"
