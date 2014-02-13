@@ -402,7 +402,7 @@ demo/access/MondrianFoodMart.mdb"/>
 
       <!-- Mondrian dependencies. -->
       <ivy:resolve file="ivy.xml"/>
-      <ivy:retrieve symlink="${symlink}" type="jar,war"
+      <ivy:retrieve symlink="${symlink}" type="jar,war,bundle"
           pattern="${lib.dir}/[module].[ext]"/>
       <ivy:retrieve symlink="${symlink}" type="source,javadoc"
           pattern="${lib.dir}/[module]-[type].[ext]"/>
