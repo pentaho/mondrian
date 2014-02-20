@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -17,7 +17,7 @@ import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.RolapHierarchy;
+import mondrian.rolap.*;
 import mondrian.util.*;
 
 import org.apache.commons.collections.ComparatorUtils;
@@ -1904,7 +1904,7 @@ public class FunUtil extends Util {
         }
         final Comparable k1 = m1.getOrderKey();
         final Comparable k2 = m2.getOrderKey();
-        if ((k1 != null) && (k2 != null)) {
+        if (notNull(k1) && notNull(k2)) {
             //noinspection unchecked
             return k1.compareTo(k2);
         }
@@ -1923,7 +1923,11 @@ public class FunUtil extends Util {
         return m1.compareTo(m2);
     }
 
-    /**
+  private static boolean notNull(Comparable k) {
+    return k != null && k != RolapUtil.sqlNullValue;
+  }
+
+  /**
      * Returns whether one of the members in a tuple is null.
      */
     public static boolean tupleContainsNullMember(Member[] tuple) {
