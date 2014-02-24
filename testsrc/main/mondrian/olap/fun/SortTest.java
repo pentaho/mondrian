@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -160,6 +160,66 @@ public class SortTest extends FoodMartTestCase
             + "Row #12: 2\n"
             + "Row #13: Infinity\n"
             + "Row #13: 1\n");
+    }
+
+    public void testSortWithSomeNullValues() throws Exception {
+        assertQueryReturns(
+            "WITH\n"
+            + "SET [*SORTED_ROW_AXIS] AS "
+            + "'ORDER([Store].[Store Size in SQFT].[Store Sqft].MEMBERS,"
+            + "[Store].[Store Size in SQFT].CURRENTMEMBER.ORDERKEY,DESC)'\n"
+            + "MEMBER [Measures].[*ZERO] AS '0', SOLVE_ORDER=0\n"
+            + "SELECT\n"
+            + "{[Measures].[*ZERO]} ON COLUMNS\n"
+            + ",[*SORTED_ROW_AXIS] ON ROWS\n"
+            + "FROM [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*ZERO]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[Store Size in SQFT].[39696]}\n"
+            + "{[Store].[Store Size in SQFT].[38382]}\n"
+            + "{[Store].[Store Size in SQFT].[36509]}\n"
+            + "{[Store].[Store Size in SQFT].[34791]}\n"
+            + "{[Store].[Store Size in SQFT].[34452]}\n"
+            + "{[Store].[Store Size in SQFT].[33858]}\n"
+            + "{[Store].[Store Size in SQFT].[30797]}\n"
+            + "{[Store].[Store Size in SQFT].[30584]}\n"
+            + "{[Store].[Store Size in SQFT].[30268]}\n"
+            + "{[Store].[Store Size in SQFT].[28206]}\n"
+            + "{[Store].[Store Size in SQFT].[27694]}\n"
+            + "{[Store].[Store Size in SQFT].[24597]}\n"
+            + "{[Store].[Store Size in SQFT].[23759]}\n"
+            + "{[Store].[Store Size in SQFT].[23688]}\n"
+            + "{[Store].[Store Size in SQFT].[23598]}\n"
+            + "{[Store].[Store Size in SQFT].[23593]}\n"
+            + "{[Store].[Store Size in SQFT].[23112]}\n"
+            + "{[Store].[Store Size in SQFT].[22478]}\n"
+            + "{[Store].[Store Size in SQFT].[21215]}\n"
+            + "{[Store].[Store Size in SQFT].[20319]}\n"
+            + "{[Store].[Store Size in SQFT].[#null]}\n"
+            + "Row #0: 0\n"
+            + "Row #1: 0\n"
+            + "Row #2: 0\n"
+            + "Row #3: 0\n"
+            + "Row #4: 0\n"
+            + "Row #5: 0\n"
+            + "Row #6: 0\n"
+            + "Row #7: 0\n"
+            + "Row #8: 0\n"
+            + "Row #9: 0\n"
+            + "Row #10: 0\n"
+            + "Row #11: 0\n"
+            + "Row #12: 0\n"
+            + "Row #13: 0\n"
+            + "Row #14: 0\n"
+            + "Row #15: 0\n"
+            + "Row #16: 0\n"
+            + "Row #17: 0\n"
+            + "Row #18: 0\n"
+            + "Row #19: 0\n"
+            + "Row #20: 0\n");
     }
 }
 

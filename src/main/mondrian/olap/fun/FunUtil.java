@@ -3601,7 +3601,7 @@ public class FunUtil extends Util {
             }
             final Comparable thisKey = this.member.getOrderKey();
             final Comparable otherKey = otherMember.getOrderKey();
-            if ((thisKey != null) && (otherKey != null)) {
+            if (notNull(thisKey) && notNull(otherKey)) {
                 return thisKey.compareTo(otherKey);
             } else {
                 return this.member.compareTo(otherMember);
