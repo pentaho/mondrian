@@ -990,6 +990,8 @@ doc/deployDoc.sh" />
 
     <property name="mondrian.foodmart.loaderBatchSize" value="50" />
     <property name="mondrian.foodmart.jdbcSchema" value="" />
+    <property name="mondrian.foodmart.inputFile" value="jar:file:lib/mondrian-data-foodmart.jar!/data.sql" />
+    <property name="mondrian.foodmart.afterFile" value="jar:file:lib/mondrian-data-foodmart.jar!/after.sql" />
 
     <java classname="mondrian.test.loader.MondrianFoodMartLoader"
             classpathref="project.test.classpath"
@@ -1003,6 +1005,8 @@ doc/deployDoc.sh" />
         <arg value="-outputJdbcPassword=${mondrian.foodmart.jdbcPassword}"/>
         <arg value="-outputJdbcSchema=${mondrian.foodmart.jdbcSchema}"/>
         <arg value="-outputJdbcBatchSize=${mondrian.foodmart.loaderBatchSize}"/>
+        <arg value="-inputFile=${mondrian.foodmart.inputFile}"/>
+        <arg value="-afterFile=${mondrian.foodmart.afterFile}"/>
     </java>
 
   </target>
