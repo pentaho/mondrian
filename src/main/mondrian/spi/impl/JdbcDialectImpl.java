@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2012 Pentaho
+// Copyright (C) 2008-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -134,6 +134,18 @@ public class JdbcDialectImpl implements Dialect {
         this.permitsSelectNotInGroupBy =
             deduceSupportsSelectNotInGroupBy(connection);
         this.statisticsProviders = computeStatisticsProviders();
+    }
+
+    public JdbcDialectImpl() {
+        quoteIdentifierString = "";
+        productName = "";
+        productVersion = "";
+        supportedResultSetTypes = null;
+        readOnly = true;
+        maxColumnNameLength = 0;
+        databaseProduct = null;
+        permitsSelectNotInGroupBy = true;
+        statisticsProviders = null;
     }
 
     public DatabaseProduct getDatabaseProduct() {
