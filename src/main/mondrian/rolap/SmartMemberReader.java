@@ -380,7 +380,7 @@ public class SmartMemberReader implements MemberReader {
             getMemberChildren(
                 startMember.getParentMember(),
                 list,
-                new ChildrenRangeConstraint(
+                new LevelDateRangeConstraint(
                     startMember.getKey(),
                     endMember.getKey()));
             return;
