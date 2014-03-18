@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -3259,6 +3259,78 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Row #0: 89,043.253\n");
     }
 
+    public void testMondrian936() throws Exception {
+        final TestContext testContext = TestContext.instance().create(
+            null, null, null, null, null,
+            "<Role name=\"test\">\n"
+            + " <SchemaGrant access=\"none\">\n"
+            + "   <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "     <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\"\n"
+            + "         topLevel=\"[Store].[Store Country]\" rollupPolicy=\"partial\">\n"
+            + "       <MemberGrant member=\"[Store].[All Stores]\" access=\"none\"/>\n"
+            + "       <MemberGrant member=\"[Store].[USA].[CA].[Los Angeles]\" access=\"all\"/>\n"
+            + "       <MemberGrant member=\"[Store].[USA].[CA].[Alameda]\" access=\"all\"/>\n"
+            + "       <MemberGrant member=\"[Store].[USA].[CA].[Beverly Hills]\"\n"
+            + "access=\"all\"/>\n"
+            + "       <MemberGrant member=\"[Store].[USA].[CA].[San Francisco]\"\n"
+            + "access=\"all\"/>\n"
+            + "       <MemberGrant member=\"[Store].[USA].[CA].[San Diego]\" access=\"all\"/>\n"
+            + "\n"
+            + "       <MemberGrant member=\"[Store].[USA].[OR].[Portland]\" access=\"all\"/>\n"
+            + "       <MemberGrant member=\"[Store].[USA].[OR].[Salem]\" access=\"all\"/>\n"
+            + "     </HierarchyGrant>\n"
+            + "   </CubeGrant>\n"
+            + " </SchemaGrant>\n"
+            + "</Role>");
+
+        testContext.withRole("test").assertQueryReturns(
+            "select {[Measures].[Unit Sales]} on columns, "
+            + "                 {[Product].[Food].[Baked Goods].[Bread]} on rows "
+            + "                 from [Sales] "
+            + " where { [Store].[USA].[OR], [Store].[USA].[CA]} ", "Axis #0:\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Food].[Baked Goods].[Bread]}\n"
+            + "Row #0: 4,163\n");
+
+        // changing ordering of members in the slicer should not change
+        // result
+        testContext.withRole("test").assertQueryReturns(
+            "select {[Measures].[Unit Sales]} on columns, "
+            + "                 {[Product].[Food].[Baked Goods].[Bread]} on rows "
+            + "                 from [Sales] "
+            + " where { [Store].[USA].[CA], [Store].[USA].[OR]} ", "Axis #0:\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Food].[Baked Goods].[Bread]}\n"
+            + "Row #0: 4,163\n");
+
+
+        Result result = testContext.withRole("test").executeQuery(
+            "with member store.aggCaliforniaOregon as "
+            + "'aggregate({ [Store].[USA].[CA], [Store].[USA].[OR]})'"
+            + " select store.aggCaliforniaOregon on 0 from sales");
+
+        String valueAggMember = result
+            .getCell(new int[] {0}).getFormattedValue();
+
+        result = testContext.withRole("test").executeQuery(
+            " select from sales where "
+            + "{ [Store].[USA].[CA], [Store].[USA].[OR]}");
+
+        String valueSlicerAgg = result
+            .getCell(new int[] {}).getFormattedValue();
+
+        // aggregating CA & OR in a calc member should produce same result
+        // as aggregating in the slicer.
+        assertTrue(valueAggMember.equals(valueSlicerAgg));
+    }
 }
 
 // End AccessControlTest.java

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -324,7 +324,7 @@ public class RolapResult extends ResultBase {
 
             // throws exception if number of members exceeds limit
             axisMembers.checkLimit();
-
+            Axis savedSlicerAxis;
             /////////////////////////////////////////////////////////////////
             // Execute Slicer
             //
@@ -342,7 +342,12 @@ public class RolapResult extends ResultBase {
                 // axes are generally small.
                 TupleList tupleList =
                     TupleCollections.materialize(tupleIterable, true);
+
                 this.slicerAxis = new RolapAxis(tupleList);
+                // the slicerAxis may be overwritten during slicer execution
+                // if there is a compound slicer.  Save it so that it can be
+                // reverted before completing result construction.
+                savedSlicerAxis = this.slicerAxis;
 
                 // Use the context created by the slicer for the other
                 // axes.  For example, "select filter([Customers], [Store
@@ -361,6 +366,8 @@ public class RolapResult extends ResultBase {
                         new ValueCalc(
                             new DummyExp(new ScalarType()));
                     final TupleList tupleList1 = tupleList;
+
+
                     final Calc calc =
                         new GenericCalc(
                             new DummyExp(query.slicerCalc.getType()))
@@ -383,8 +390,16 @@ public class RolapResult extends ResultBase {
                                 return pos0.size();
                             }
                         };
-                    evaluator.addCalculation(
-                        new RolapTupleCalculation(hierarchyList, calc), true);
+
+                    // replace the slicer set with a placeholder to avoid
+                    // interaction between the aggregate calc we just created
+                    // and any calculated members that might be present in
+                    // the slicer.
+                    // Arbitrarily picks the first dim of the first tuple
+                    // to use as placeholder.
+                    Member placeholder = setPlaceholderSlicerAxis(
+                        (RolapMember)tupleList.get(0).get(0), calc);
+                    evaluator.setContext(placeholder);
                 }
             } while (phase());
 
@@ -464,6 +479,9 @@ public class RolapResult extends ResultBase {
             if (this.cellInfos.size() > 10000) {
                 this.cellInfos.trimToSize();
             }
+            // revert the slicer axis so that the original slicer
+            // can be included in the result.
+            this.slicerAxis  = savedSlicerAxis;
         } catch (ResultLimitExceededException ex) {
             // If one gets a ResultLimitExceededException, then
             // don't count on anything being worth caching.
@@ -493,6 +511,44 @@ public class RolapResult extends ResultBase {
                 LOGGER.debug("RolapResult<init>: " + Util.printMemory());
             }
         }
+    }
+
+    /**
+     * Sets slicerAxis to a dummy placeholder RolapAxis containing
+     * a single item TupleList with the null member of hierarchy.
+     * This is used with compound slicer evaluation to avoid the slicer
+     * tuple list from interacting with the aggregate calc which rolls up
+     * the set.  This member will contain the AggregateCalc which rolls
+     * up the set on the slicer.
+     */
+    private Member setPlaceholderSlicerAxis(
+        final RolapMember member, final Calc calc)
+    {
+        ValueFormatter formatter;
+        if (member.getDimension().isMeasures()) {
+            formatter = ((RolapMeasure)member).getFormatter();
+        } else {
+            formatter = null;
+        }
+
+        CompoundSlicerRolapMember placeholderMember =
+            new CompoundSlicerRolapMember(
+                (RolapMember)member.getHierarchy().getNullMember(),
+                calc, formatter);
+
+
+        placeholderMember.setProperty(
+            Property.FORMAT_STRING.getName(),
+            member.getPropertyValue(Property.FORMAT_STRING.getName()));
+        placeholderMember.setProperty(
+            Property.FORMAT_EXP_PARSED.getName(),
+            member.getPropertyValue(Property.FORMAT_EXP_PARSED.getName()));
+
+        TupleList dummyList = TupleCollections.createList(1);
+        dummyList.addTuple(placeholderMember);
+
+        this.slicerAxis = new RolapAxis(dummyList);
+        return placeholderMember;
     }
 
     private boolean phase() {
@@ -2029,6 +2085,51 @@ public class RolapResult extends ResultBase {
         return list;
     }
 
+    /**
+     * Member which holds the AggregateCalc used when evaluating
+     * a compound slicer.  This is used to better handle some cases
+     * where calculated members elsewhere in the query can override
+     * the context of the slicer members.
+     * See MONDRIAN-1226.
+     */
+    private class CompoundSlicerRolapMember extends DelegatingRolapMember
+    implements RolapMeasure
+    {
+        private final Calc calc;
+        private final ValueFormatter valueFormatter;
+
+        public CompoundSlicerRolapMember(
+            RolapMember placeholderMember, Calc calc, ValueFormatter formatter)
+        {
+            super(placeholderMember);
+            this.calc = calc;
+            valueFormatter = formatter;
+        }
+
+        @Override
+        public boolean isEvaluated() {
+            return true;
+        }
+
+        @Override
+        public Exp getExpression() {
+            return new DummyExp(calc.getType());
+        }
+
+        @Override
+        public Calc getCompiledExpression(RolapEvaluatorRoot root) {
+            return calc;
+        }
+
+        @Override
+        public int getSolveOrder() {
+            return 0;
+        }
+
+        public ValueFormatter getFormatter() {
+            return valueFormatter;
+        }
+    }
 }
 
 // End RolapResult.java
