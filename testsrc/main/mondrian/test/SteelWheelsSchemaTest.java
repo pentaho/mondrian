@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2013 Pentaho and others
+// Copyright (C) 2011-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -1679,6 +1679,45 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Row #0: 337,018\n"
             + "Row #1: 9,237\n"
             + "Row #1: 929,829\n");
+    }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1750">MONDRIAN-1750</a>
+     *
+     * Compound slicer getting applied to CurrentDateMember
+     */
+    public void testMondrian1750() throws Exception {
+        getTestContext().assertQueryReturns(
+            "with member [Measures].[CYQ] as\n"
+            + "'Aggregate(CurrentDateMember([Time],\"[Ti\\me]\\.[Year\\s]\\.[yyyy]\", BEFORE), [Quantity])'\n"
+            + "select\n"
+            + "{[Measures].[Quantity], [Measures].[CYQ]} on columns,\n"
+            + "{[Markets].[Territory].Members} on rows\n"
+            + "from [SteelWheelsSales]\n"
+            + "where {[Time].[Years].[2004], [Time].[Years].[2005]}\n",
+            "Axis #0:\n"
+            + "{[Time].[2004]}\n"
+            + "{[Time].[2005]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Quantity]}\n"
+            + "{[Measures].[CYQ]}\n"
+            + "Axis #2:\n"
+            + "{[Markets].[#null]}\n"
+            + "{[Markets].[APAC]}\n"
+            + "{[Markets].[EMEA]}\n"
+            + "{[Markets].[Japan]}\n"
+            + "{[Markets].[NA]}\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #1: 9,349\n"
+            + "Row #1: 3,411\n"
+            + "Row #2: 32,867\n"
+            + "Row #2: 9,237\n"
+            + "Row #3: 2,072\n"
+            + "Row #3: 380\n"
+            + "Row #4: 24,604\n"
+            + "Row #4: 6,447\n");
     }
 }
 
