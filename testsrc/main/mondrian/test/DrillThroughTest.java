@@ -13,12 +13,12 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 
 import java.sql.*;
 import javax.sql.DataSource;
-
 
 /**
  * Test generation of SQL to access the fact table data underlying an MDX
@@ -202,6 +202,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         getTestContext().assertSqlEquals(
             "select\n"
             + "    time_by_day.the_year as Year,\n"
+            + "    promotion.media_type as Media Type,\n"
             + "    sales_fact_1997.unit_sales as Unit Sales\n"
             + "from\n"
             + "    time_by_day =as= time_by_day,\n"
