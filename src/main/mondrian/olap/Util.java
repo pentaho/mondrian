@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.olap;
 
 import mondrian.mdx.*;
@@ -757,18 +756,13 @@ public class Util extends XOMUtil {
                 // mondrian-3.x. To be removed in mondrian-4, when
                 // SsasCompatibleNaming=true is the only option.
                 final Id.KeySegment keySegment = (Id.KeySegment) names.get(i);
-                name = keySegment.getKeyParts().get(0);
-                final List<Member> levelMembers =
-                    schemaReader.getLevelMembers(
-                        (Level) parent, false);
-                child = null;
-                for (Member member : levelMembers) {
-                    if (((RolapMember) member).getKey().toString().equals(
-                            name.getName()))
-                    {
-                        child = member;
-                        break;
-                    }
+                child =
+                    schemaReader.getElementChild(parent, keySegment, matchType);
+                name = null;
+                if (child != null) {
+                    name =
+                        (Id.NameSegment) Id.NameSegment
+                            .toList(child.getName()).get(0);
                 }
             } else {
                 name = null;
@@ -4266,7 +4260,7 @@ public class Util extends XOMUtil {
 
     public static <T> Functor1<T, T> identityFunctor() {
         //noinspection unchecked
-        return (Functor1) IDENTITY_FUNCTOR;
+        return IDENTITY_FUNCTOR;
     }
 
     private static final Functor1 IDENTITY_FUNCTOR =
@@ -4278,12 +4272,12 @@ public class Util extends XOMUtil {
 
     public static <PT> Functor1<Boolean, PT> trueFunctor() {
         //noinspection unchecked
-        return (Functor1) TRUE_FUNCTOR;
+        return TRUE_FUNCTOR;
     }
 
     public static <PT> Functor1<Boolean, PT> falseFunctor() {
         //noinspection unchecked
-        return (Functor1) FALSE_FUNCTOR;
+        return FALSE_FUNCTOR;
     }
 
     private static final Functor1 TRUE_FUNCTOR =

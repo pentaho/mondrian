@@ -6,10 +6,9 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -1305,6 +1304,20 @@ public class SqlConstraintUtils {
             query.getDialect().quote(buf, columnValue, datatype);
             return buf.toString();
         }
+    }
+
+    public static String constrainDateRange(
+        SqlQuery query,
+        MondrianDef.Expression exp,
+        Dialect.Datatype datatype,
+        Object startValue,
+        Object endValue)
+    {
+        return query.getDialect().generateTimeRange(
+            datatype,
+            exp.getExpression(query),
+            startValue,
+            endValue);
     }
 
     /**

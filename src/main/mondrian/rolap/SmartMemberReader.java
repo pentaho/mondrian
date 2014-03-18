@@ -6,10 +6,9 @@
 //
 // Copyright (C) 2001-2005 Julian Hyde
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.Access;
@@ -19,6 +18,7 @@ import mondrian.olap.Util;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
+import mondrian.spi.Dialect;
 import mondrian.util.ConcatenableList;
 
 import java.util.*;
@@ -363,10 +363,30 @@ public class SmartMemberReader implements MemberReader {
         if (compare(startMember, endMember, false) > 0) {
             return;
         }
-        list.add(startMember);
         if (startMember.equals(endMember)) {
+            list.add(startMember);
             return;
         }
+
+        final Dialect.Datatype type =
+            startMember.getLevel().getDatatype();
+        if (Util.equals(
+                startMember.getParentMember(),
+                endMember.getParentMember())
+            && (type.equals(Dialect.Datatype.Date)
+                || type.equals(Dialect.Datatype.Time)
+                || type.equals(Dialect.Datatype.Timestamp)))
+        {
+            getMemberChildren(
+                startMember.getParentMember(),
+                list,
+                new ChildrenRangeConstraint(
+                    startMember.getKey(),
+                    endMember.getKey()));
+            return;
+        }
+
+        list.add(startMember);
         SiblingIterator siblings = new SiblingIterator(this, startMember);
         while (siblings.hasNext()) {
             final RolapMember member = siblings.nextMember();

@@ -1,0 +1,9 @@
+# native_date_range_test.csv
+## TableName: fact_with_date
+## ColumnNames: date_col,unit_sales
+## ColumnTypes: DATE,INTEGER
+## NosOfRows: 4
+2010-03-20,10
+2010-03-21,20
+2010-03-22,40
+2010-03-23,80

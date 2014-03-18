@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -92,9 +92,6 @@ class SqlMemberSource
         RolapLevel level,
         List<Comparable> keyValues)
     {
-        if (level.isAll()) {
-            return null;
-        }
         List<Dialect.Datatype> datatypeList = new ArrayList<Dialect.Datatype>();
         List<MondrianDef.Expression> columnList =
             new ArrayList<MondrianDef.Expression>();

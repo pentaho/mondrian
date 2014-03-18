@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2002-2013 Pentaho and others
+// Copyright (C) 2002-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -312,6 +312,23 @@ public class MySqlDialect extends JdbcDialectImpl {
         } else {
             quoteStringLiteral(sb, javaRegex.toUpperCase());
         }
+        return sb.toString();
+    }
+
+    public String generateTimeRange(
+        Datatype type,
+        String expression,
+        Object startValue,
+        Object endValue)
+    {
+        final StringBuilder sb = new StringBuilder();
+
+        sb.append(expression);
+        sb.append(" BETWEEN ");
+        quote(sb, startValue, type);
+        sb.append(" AND ");
+        quote(sb, endValue, type);
+
         return sb.toString();
     }
 }
