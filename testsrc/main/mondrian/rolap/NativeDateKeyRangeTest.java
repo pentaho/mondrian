@@ -34,10 +34,18 @@ public class NativeDateKeyRangeTest extends BatchTestCase {
         + "</Cube>\n";
 
     public void testDateRangeOnAxis() throws Exception {
-        propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
-        final String mdx =
+        // Test using keys for member names
+        runDateRangeOnAxis(
             "select {[TimeDate].[DateLevel].&[1942-10-08] : [TimeDate].[DateLevel].&[1967-06-20]} on 0\n"
-            + "from [date_cube]";
+            + "from [date_cube]");
+        // Test using the member name
+        runDateRangeOnAxis(
+            "select {[TimeDate].[DateLevel].[1942-10-08] : [TimeDate].[DateLevel].[1967-06-20]} on 0\n"
+            + "from [date_cube]");
+    }
+
+    public void runDateRangeOnAxis(String mdx) throws Exception {
+        propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
 
         final TestContext tc = getTestContext().create(
             null,
@@ -139,10 +147,18 @@ public class NativeDateKeyRangeTest extends BatchTestCase {
     }
 
     public void testTimeRangeOnAxis() throws Exception {
+        // Try with keys
+        runTimeRangeOnAxis(
+            "select {[TimeStamp].[DateLevel].&[1995-01-01 00:00:00.0] : [TimeStamp].[DateLevel].&[1997-01-01 00:00:00.0]} on 0\n"
+            + "from [date_cube]");
+        // Try with names
+        runTimeRangeOnAxis(
+            "select {[TimeStamp].[DateLevel].[1995-01-01 00:00:00.0] : [TimeStamp].[DateLevel].[1997-01-01 00:00:00.0]} on 0\n"
+            + "from [date_cube]");
+    }
+
+    public void runTimeRangeOnAxis(String mdx) throws Exception {
         propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
-        final String mdx =
-            "select {[TimeStamp].[DateLevel].&[1995-01-01 00:00:00] : [TimeStamp].[DateLevel].&[1997-01-01 00:00:00]} on 0\n"
-            + "from [date_cube]";
 
         final TestContext tc = getTestContext().create(
             null,
@@ -156,7 +172,7 @@ public class NativeDateKeyRangeTest extends BatchTestCase {
             + "from\n"
             + "    `employee` as `employee`\n"
             + "where\n"
-            + "    `employee`.`hire_date` = TIMESTAMP '1997-01-01 00:00:00'\n"
+            + "    `employee`.`hire_date` = TIMESTAMP '1997-01-01 00:00:00.0'\n"
             + "group by\n"
             + "    `employee`.`hire_date`\n"
             + "order by\n"

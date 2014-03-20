@@ -908,6 +908,17 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             return getMembersInLevel(cubeLevels[0]);
         }
 
+        public RolapMember getMemberByKey(
+            RolapLevel level,
+            List<Comparable> keyValues)
+        {
+            return
+                createAncestorMembers(
+                    this,
+                    (RolapCubeLevel) level,
+                    super.getMemberByKey(level, keyValues));
+        }
+
         protected void readMemberChildren(
             List<RolapMember> parentMembers,
             List<RolapMember> children,

@@ -583,6 +583,28 @@ public class RolapLevel extends LevelBase {
             return getHierarchy().getMemberReader().getMemberByKey(
                 this, keyValues);
         }
+
+        // Try to fetch the children by name if we can.
+        // Better than doing a full scan.
+        if (isUnique()
+            && ((getKeyExp() != null
+                    && Util.equals(getKeyExp(), getNameExp()))
+                || (getKeyExp() != null && getNameExp() == null)))
+        {
+            // Now we know that the name is the same as the key,
+            // so let's try that before a full scan.
+            final RolapMember memberByKey =
+                getHierarchy().getMemberReader().getMemberByKey(
+                    this,
+                    Arrays.asList((Comparable)((Id.NameSegment)name).name));
+            if (memberByKey != null
+                && memberByKey.getName().equals(((Id.NameSegment)name).name))
+            {
+                return memberByKey;
+            }
+        }
+
+        // OK we have to load all members and search.
         List<Member> levelMembers = schemaReader.getLevelMembers(this, true);
         if (levelMembers.size() > 0) {
             Member parent = levelMembers.get(0).getParentMember();

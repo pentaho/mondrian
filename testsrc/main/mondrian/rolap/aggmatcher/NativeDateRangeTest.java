@@ -53,7 +53,7 @@ public class NativeDateRangeTest extends AggTableTestCase {
         }
 
         final String mdx =
-            "select {[FooTime].[DateLevel].&[2010-03-21] : [FooTime].[DateLevel].&[2010-03-22]} on 0\n"
+            "select {[FooTime].[DateLevel].[2010-03-21] : [FooTime].[DateLevel].[2010-03-22]} on 0\n"
             + "from [date_cube]";
 
         final TestContext context = getTestContext();
