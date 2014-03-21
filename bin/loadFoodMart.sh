@@ -101,6 +101,17 @@ mysql() {
         -outputJdbcURL="jdbc:mysql://localhost/${datasetLower}?user=foodmart&password=foodmart"
 }
 
+nuodb() {
+    java -cp "${CP}${PS}/opt/nuodb/jar/nuodbjdbc.jar" \
+         mondrian.test.loader.MondrianFoodMartLoader \
+         -verbose -aggregates -tables -data -indexes \
+         -jdbcDrivers=com.nuodb.jdbc.Driver \
+         -inputFile=demo/FoodMartCreateData.sql \
+         -outputJdbcURL="jdbc:com.nuodb://localhost/foodmart?schema=mondrian" \
+         -outputJdbcUser=foodmart \
+         -outputJdbcPassword=foodmart
+}
+
 infobright() {
     # As mysql, but '-indexes' option removed because infobright doesn't support them.
     java -cp "${CP}${PS}/usr/local/mysql-connector-java-3.1.12/mysql-connector-java-3.1.12-bin.jar" \
@@ -365,6 +376,7 @@ luciddb \
 monetdb \
 mongodb \
 mysql \
+nuodb \
 oracle \
 oracleTrickle \
 phoenix \
@@ -419,6 +431,7 @@ case "$db" in
 (monetdb) monetdb;;
 (mongodb) mongodb;;
 (mysql) mysql;;
+(nuodb) nuodb;;
 (oracle) oracle;;
 (oracleTrickle) oracleTrickle;;
 (phoenix) phoenix;;

@@ -1106,7 +1106,7 @@ public class JdbcDialectImpl implements Dialect {
         } else if (upperProductName.indexOf("VECTORWISE") >= 0) {
             return DatabaseProduct.VECTORWISE;
         } else {
-            return DatabaseProduct.UNKNOWN;
+            return DatabaseProduct.getDatabaseProduct(upperProductName);
         }
     }
 
