@@ -1,29 +1,30 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.test;
 
 import mondrian.olap.*;
 import mondrian.olap.Category;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Level;
+import mondrian.rolap.RolapConnectionProperties;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.spi.Dialect;
 import mondrian.spi.PropertyFormatter;
 import mondrian.util.Bug;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.*;
 import org.apache.log4j.varia.LevelRangeFilter;
 
 import org.olap4j.metadata.NamedList;
 
-import java.io.StringWriter;
+import java.io.*;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -4760,6 +4761,34 @@ public class SchemaTest extends FoodMartTestCase {
             + "Row #0: $7,473.54\n"
             + "Row #1: $180,599.76\n"
             + "Row #2: $83,479.14\n");
+    }
+
+    public void testMultiByteSchemaReadFromFile() throws IOException {
+        String rawSchema = TestContext.getRawFoodMartSchema().replace(
+            "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">",
+            "<Hierarchy name=\"地域\" hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">");
+        File schemaFile = File.createTempFile("multiByteSchema", ",xml");
+        schemaFile.deleteOnExit();
+        FileOutputStream output = new FileOutputStream(schemaFile);
+        IOUtils.write(rawSchema, output);
+        output.close();
+        TestContext context = getTestContext();
+        final Util.PropertyList properties =
+            context.getConnectionProperties().clone();
+        properties.put(
+            RolapConnectionProperties.Catalog.name(),
+            schemaFile.getAbsolutePath());
+        context.withProperties(properties).assertQueryReturns(
+            "select [Gender].members on 0 from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender.地域].[All Gender]}\n"
+            + "{[Gender.地域].[F]}\n"
+            + "{[Gender.地域].[M]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: 131,558\n"
+            + "Row #0: 135,215\n");
     }
 }
 
