@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.olap;
 
 import mondrian.mdx.*;
@@ -21,6 +20,7 @@ import mondrian.spi.UserDefinedFunction;
 import mondrian.util.*;
 
 import org.apache.commons.collections.keyvalue.AbstractMapEntry;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.vfs.*;
 import org.apache.commons.vfs.provider.http.HttpFileObject;
 import org.apache.log4j.Logger;
@@ -3370,16 +3370,9 @@ public class Util extends XOMUtil {
     {
         InputStream in = readVirtualFile(catalogUrl);
         try {
-            final byte[] bytes = Util.readFully(in, 1024);
-            final char[] chars = new char[bytes.length];
-            for (int i = 0; i < chars.length; i++) {
-                chars[i] = (char) bytes[i];
-            }
-            return new String(chars);
+            return IOUtils.toString(in);
         } finally {
-            if (in != null) {
-                in.close();
-            }
+            IOUtils.closeQuietly(in);
         }
     }
 
