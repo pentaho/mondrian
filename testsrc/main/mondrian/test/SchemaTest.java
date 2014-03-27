@@ -10,10 +10,7 @@
 package mondrian.test;
 
 import mondrian.olap.*;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapMeasureGroup;
-import mondrian.rolap.RolapSchema;
-import mondrian.rolap.SqlStatement;
+import mondrian.rolap.*;
 import mondrian.rolap.aggmatcher.*;
 import mondrian.spi.*;
 import mondrian.spi.PropertyFormatter;
@@ -21,6 +18,7 @@ import mondrian.util.*;
 
 import junit.framework.Assert;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.SimpleLayout;
@@ -34,7 +32,7 @@ import org.olap4j.metadata.Database;
 import org.olap4j.metadata.MetadataElement;
 import org.olap4j.metadata.NamedList;
 
-import java.io.StringWriter;
+import java.io.*;
 import java.sql.*;
 import java.sql.Connection;
 import java.util.*;
@@ -7867,6 +7865,57 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "The type has not been explicitly set in the schema, "
             + "so the default type should still be used.",
             Dialect.Datatype.Integer, dialectType);
+    }
+
+    public void testMultiByteSchemaReadFromFile() throws IOException {
+        String rawSchema = getTestContext().getRawSchema().replace(
+            "<Attribute name='Department Description' keyColumn='department_id'/>",
+            "<Attribute name='Department Description' keyColumn='department_id' hasHierarchy='false'/>")
+            .replace(
+                "<Hierarchy name='Department'>",
+                "<Hierarchy name='地域'>");
+        File schemaFile = File.createTempFile("multiByteSchema", ",xml");
+        schemaFile.deleteOnExit();
+        FileOutputStream output = new FileOutputStream(schemaFile);
+        IOUtils.write(rawSchema, output);
+        IOUtils.closeQuietly(output);
+        TestContext context = getTestContext();
+        final Util.PropertyList properties =
+            context.getConnectionProperties().clone();
+        properties.put(
+            RolapConnectionProperties.Catalog.name(),
+            schemaFile.getAbsolutePath());
+        context.withProperties(properties).assertQueryReturns(
+            "select [Department].members on 0 from [HR]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Department].[地域].[All 地域s]}\n"
+            + "{[Department].[地域].[1]}\n"
+            + "{[Department].[地域].[2]}\n"
+            + "{[Department].[地域].[3]}\n"
+            + "{[Department].[地域].[4]}\n"
+            + "{[Department].[地域].[5]}\n"
+            + "{[Department].[地域].[11]}\n"
+            + "{[Department].[地域].[14]}\n"
+            + "{[Department].[地域].[15]}\n"
+            + "{[Department].[地域].[16]}\n"
+            + "{[Department].[地域].[17]}\n"
+            + "{[Department].[地域].[18]}\n"
+            + "{[Department].[地域].[19]}\n"
+            + "Row #0: $39,431.67\n"
+            + "Row #0: $2,376.00\n"
+            + "Row #0: $428.76\n"
+            + "Row #0: $739.80\n"
+            + "Row #0: $72.36\n"
+            + "Row #0: $832.68\n"
+            + "Row #0: $5,984.28\n"
+            + "Row #0: $874.80\n"
+            + "Row #0: $9,190.80\n"
+            + "Row #0: $5,765.23\n"
+            + "Row #0: $5,873.04\n"
+            + "Row #0: $5,641.52\n"
+            + "Row #0: $1,652.40\n");
     }
 
 
