@@ -159,6 +159,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${lib.dir}/jsp-api.jar"/>
     <pathelement location="${lib.dir}/commons-dbcp.jar"/>
     <pathelement location="${lib.dir}/commons-collections.jar"/>
+    <pathelement location="${lib.dir}/commons-io.jar"/>
     <pathelement location="${lib.dir}/commons-logging.jar"/>
     <pathelement location="${lib.dir}/commons-math.jar"/>
     <pathelement location="${lib.dir}/commons-pool.jar"/>
@@ -179,7 +180,6 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${wb.plugins.dir}/kettle-core.jar"/>
     <pathelement location="${wb.plugins.dir}/pentaho-xul-core.jar"/>
     <pathelement location="${wb.plugins.dir}/pentaho-xul-swing.jar"/>
-    <pathelement location="${wb.plugins.dir}/commons-io.jar"/>
   </path>
 
   <path id="project.build.classpath">
