@@ -1360,6 +1360,7 @@ Revision is $Id$
                 <li>hsqldb</li>
                 <li>mssql</li>
                 <li>mysql</li>
+                <li>nuodb</li>
                 <li>oracle</li>
                 <li>postgres</li>
                 <li>sybase</li>

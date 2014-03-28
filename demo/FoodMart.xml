@@ -337,6 +337,9 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
       <SQL dialect="db2">
 (case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
       </SQL>
+      <SQL dialect="nuodb">
+(case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
+      </SQL>
       <SQL dialect="generic">
 (case when sales_fact_1997.promotion_id = 0 then 0 else sales_fact_1997.store_sales end)
       </SQL>

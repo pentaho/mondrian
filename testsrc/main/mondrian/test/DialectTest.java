@@ -148,6 +148,13 @@ public class DialectTest extends TestCase {
                 databaseMetaData.getDatabaseProductName()
                     .indexOf("Netezza") >= 0);
             break;
+        case NUODB:
+            // Dialect has identified that it is NUODB.
+            assertTrue(dialect instanceof NuoDbDialect);
+            assertTrue(
+                    databaseMetaData.getDatabaseProductName()
+                            .contains("NuoDB"));
+            break;
         default:
             // Neither MySQL nor Infobright.
             assertFalse(dialect instanceof MySqlDialect);
@@ -193,7 +200,9 @@ public class DialectTest extends TestCase {
                 // monetdb
                 "syntax error, unexpected ',', expecting '\\)' in: \"select count\\(distinct \"customer_id\",\"",
                 // SQL server 2008
-                "Incorrect syntax near ','."
+                "Incorrect syntax near ','.",
+                // NuoDB
+                "(?s).*expected closing parenthesis got ,.*"
             };
             assertQueryFails(sql, errs);
         }
@@ -544,7 +553,9 @@ public class DialectTest extends TestCase {
                 // monetdb
                 "syntax error, unexpected IDENT, expecting SCOLON in: \"select \"customer_id\",",
                 // impala
-                "(?s).*Encountered: IDENTIFIER.*Expected: DIV, HAVING, LIMIT, ORDER, UNION, COMMA.*"
+                "(?s).*Encountered: IDENTIFIER.*Expected: DIV, HAVING, LIMIT, ORDER, UNION, COMMA.*",
+                // NuoDB
+                "(?s).*expected end of statement got SETS.*"
             };
             assertQueryFails(sql, errs);
         }
@@ -582,7 +593,9 @@ public class DialectTest extends TestCase {
                 // SQL server 2008
                 "An expression of non-boolean type specified in a context where a condition is expected, near ','.",
                 // impala
-                "(?s).*Encountered: COMMA.*Expected: BETWEEN, DIV, IS, IN, LIKE, NOT, REGEXP, RLIKE.*"
+                "(?s).*Encountered: COMMA.*Expected: BETWEEN, DIV, IS, IN, LIKE, NOT, REGEXP, RLIKE.*",
+                // NuoDB
+                "(?s).*Operator in list does not support multi-column operands.*"
             };
             assertQueryFails(sql, errs);
         }
@@ -1144,7 +1157,9 @@ public class DialectTest extends TestCase {
                 // SQL Server 2008
                 "Column 'time_by_day.the_month' is invalid in the select list because it is not contained in either an aggregate function or the GROUP BY clause.",
                 // impala
-                "(?s).*select list expression not produced by aggregation output.*missing from GROUP BY clause.*"
+                "(?s).*select list expression not produced by aggregation output.*missing from GROUP BY clause.*",
+                // NuoDB
+                "(?s).*scolumn mondrian.time_by_day.the_month must appear in the GROUP BY clause or be used in an aggregate function.*"
             };
             assertQueryFails(sql, errs);
         }
