@@ -830,6 +830,7 @@ public interface Dialect {
         MONETDB,
         NETEZZA,
         NEOVIEW,
+        NUODB,
         ORACLE,
         POSTGRESQL,
         REDSHIFT,
