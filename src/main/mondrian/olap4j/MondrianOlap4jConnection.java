@@ -279,6 +279,7 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
     public void close() throws SQLException {
         if (isClosed.get() == false) {
             mondrianConnection.close();
+            isClosed.set(true);
         }
     }
 
