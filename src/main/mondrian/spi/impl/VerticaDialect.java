@@ -60,6 +60,11 @@ public class VerticaDialect extends JdbcDialectImpl {
     }
 
     @Override
+    public boolean allowsCountDistinctWithOtherAggs() {
+      return false;
+    }
+
+    @Override
     public boolean supportsResultSetConcurrency(int type, int concurrency) {
         return false;
     }

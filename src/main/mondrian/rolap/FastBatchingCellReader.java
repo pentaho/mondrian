@@ -1277,7 +1277,9 @@ class BatchLoader {
                 distinctMeasureCount > 0
                 && !dialect.allowsCountDistinct()
                 || distinctMeasureCount > 1
-                   && !dialect.allowsMultipleCountDistinct();
+                   && !dialect.allowsMultipleCountDistinct()
+                || distinctMeasureCount > 0
+                   && !dialect.allowsCountDistinctWithOtherAggs();
 
             if (tooManyDistinctMeasures) {
                 doSpecialHandlingOfDistinctCountMeasures(

@@ -348,6 +348,17 @@ public interface Dialect {
     boolean allowsMultipleDistinctSqlMeasures();
 
     /**
+     * Returns whether this Dialect supports distinct
+     * aggregations with other aggregations in the same query.
+     *  
+     * This may be enabled for performance reasons (Vertica)
+     *
+     * @return whether this Dialect supports more than one distinct
+     * aggregation in the same query
+     */
+    boolean allowsCountDistinctWithOtherAggs();
+
+    /**
      * Generates a SQL statement to represent an inline dataset.
      *
      * <p>For example, for Oracle, generates
