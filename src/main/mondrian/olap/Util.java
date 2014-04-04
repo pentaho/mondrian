@@ -708,7 +708,7 @@ public class Util extends XOMUtil {
         } else if (t1 == null) {
             return 1;
         } else {
-            return t0.compareTo(t1);
+            return RolapUtil.ROLAP_COMPARATOR.compare(t0, t1);
         }
     }
 
