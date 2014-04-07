@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 22 December, 2001
@@ -30,6 +30,8 @@ import java.sql.SQLException;
 import java.util.*;
 
 import javax.sql.DataSource;
+
+import static mondrian.olap.fun.FunUtil.*;
 
 /**
  * Utility methods for classes in the <code>mondrian.rolap</code> package.
@@ -479,7 +481,7 @@ public class RolapUtil {
                             parent, level, nameSegment.name, null);
                 }
                 rc =
-                    FunUtil.compareSiblingMembers(
+                    compareSiblingMembersByName(
                         member,
                         searchMember);
             }
@@ -489,7 +491,7 @@ public class RolapUtil {
             if (matchType == MatchType.BEFORE) {
                 if (rc < 0
                     && (bestMatch == null
-                        || FunUtil.compareSiblingMembers(member, bestMatch)
+                        || compareSiblingMembersByName(member, bestMatch)
                         > 0))
                 {
                     bestMatch = member;
@@ -497,7 +499,7 @@ public class RolapUtil {
             } else if (matchType == MatchType.AFTER) {
                 if (rc > 0
                     && (bestMatch == null
-                        || FunUtil.compareSiblingMembers(member, bestMatch)
+                        || compareSiblingMembersByName(member, bestMatch)
                         < 0))
                 {
                     bestMatch = member;

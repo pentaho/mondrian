@@ -1235,6 +1235,7 @@ public class SqlMemberSource
         assert parentMember == null
             || parentMember.getLevel().getDepth() == childLevel.getDepth() - 1
             || childLevel.isParentChild();
+        setOrderKey(orderKey, layout, member);
         if (parentChild) {
             // Create a 'public' and a 'data' member. The public member is
             // calculated, and its value is the aggregation of the data member
@@ -1247,17 +1248,10 @@ public class SqlMemberSource
                         parentMember, childLevel, key, member)
                     : new RolapParentChildMemberNoClosure(
                         parentMember, childLevel, key, member);
+            setOrderKey(orderKey, layout, member);
         }
         final Map<Object, SqlStatement.Accessor> accessors =
             stmt.getAccessors();
-        if (layout.getOrderBySource() != NONE) {
-            if (Util.deprecated(true, false)) {
-                // Setting ordinals is wrong unless we're sure we're reading
-                // the whole hierarchy.
-                member.setOrdinal(lastOrdinal++);
-            }
-            member.setOrderKey(orderKey);
-        }
         if (layout.getNameKey()
             != layout.getKeys().get(layout.getKeys().size() - 1)
             && false)
@@ -1280,6 +1274,19 @@ public class SqlMemberSource
         }
         cache.putMember(member.getLevel(), key, member);
         return member;
+    }
+
+    private void setOrderKey(
+        Comparable orderKey, LevelColumnLayout layout, RolapMemberBase member)
+    {
+        if (layout.getOrderBySource() != NONE) {
+            if (Util.deprecated(true, false)) {
+                // Setting ordinals is wrong unless we're sure we're reading
+                // the whole hierarchy.
+                member.setOrdinal(lastOrdinal++);
+            }
+            member.setOrderKey(orderKey);
+        }
     }
 
     static Comparable getCompositeKey(
