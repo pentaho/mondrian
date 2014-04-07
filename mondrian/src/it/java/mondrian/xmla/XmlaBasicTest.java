@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.xmla;
@@ -997,6 +997,17 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
         doTest(requestType, props, testContext);
+    }
+
+    /**
+     * MONDRIAN-2379: "Axes with empty sets cause NPE in XmlaHandler"</a>.
+     * @throws Exception
+     */
+    public void testEmptySet() throws Exception {
+      TestContext context = getTestContext().withCube("Sales");
+      String requestType = "EXECUTE";
+      Properties props = getDefaultRequestProperties(requestType);
+      doTest(requestType, props, context);
     }
 
     private void doTestExecuteContent(
