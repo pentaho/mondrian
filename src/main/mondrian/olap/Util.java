@@ -1098,7 +1098,7 @@ public class Util extends XOMUtil {
             if (matchType.isExact() || hierarchy.hasAll()) {
                 rc = rootMember.getName().compareToIgnoreCase(memberName.name);
             } else {
-                rc = FunUtil.compareSiblingMembers(
+                rc = FunUtil.compareSiblingMembersByName(
                     rootMember,
                     searchMember);
             }
@@ -1109,7 +1109,7 @@ public class Util extends XOMUtil {
                 if (matchType == MatchType.BEFORE) {
                     if (rc < 0
                         && (bestMatch == -1
-                            || FunUtil.compareSiblingMembers(
+                            || FunUtil.compareSiblingMembersByName(
                                 rootMember,
                                 rootMembers.get(bestMatch)) > 0))
                     {
@@ -1118,7 +1118,7 @@ public class Util extends XOMUtil {
                 } else if (matchType == MatchType.AFTER) {
                     if (rc > 0
                         && (bestMatch == -1
-                            || FunUtil.compareSiblingMembers(
+                            || FunUtil.compareSiblingMembersByName(
                                 rootMember,
                                 rootMembers.get(bestMatch)) < 0))
                     {

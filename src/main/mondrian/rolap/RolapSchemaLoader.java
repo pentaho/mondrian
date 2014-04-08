@@ -1677,6 +1677,7 @@ public class RolapSchemaLoader {
                 }
                 if (measure.getOrdinal() == -1) {
                     measure.setOrdinal(nonSystemMeasures().size());
+                    measure.setOrderKey(nonSystemMeasures().size());
                 }
                 if (measure.getAggregator() == RolapAggregator.Count) {
                     measureGroup.factCountMeasure = measure;
@@ -2390,9 +2391,10 @@ public class RolapSchemaLoader {
                     && expr.endsWith("\""))
                 {
                     try {
-                        measure.setOrdinal(
-                            Integer.valueOf(
-                                expr.substring(1, expr.length() - 1)));
+                        Integer ordinal = Integer.valueOf(
+                            expr.substring(1, expr.length() - 1));
+                        measure.setOrdinal(ordinal);
+                        measure.setOrderKey(ordinal);
                     } catch (NumberFormatException e) {
                         Util.discard(e);
                     }

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -199,14 +199,26 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         String name,
         Formula formula)
     {
+        return createMember(_parent, _level, name, formula, name);
+    }
+
+    public RolapMember createMember(
+        Member _parent,
+        Level _level,
+        String name,
+        Formula formula,
+        Comparable orderKey)
+    {
         final RolapCubeLevel level = (RolapCubeLevel) _level;
         final RolapMember parent = (RolapMember) _parent;
         if (formula == null) {
-            return new RolapMemberBase(
+            RolapMemberBase rolapMemberBase = new RolapMemberBase(
                 parent, level, name, MemberType.REGULAR,
                 RolapMemberBase.deriveUniqueName(
                     parent, level, name, false),
                 Larders.ofName(name));
+            rolapMemberBase.setOrderKey(orderKey);
+            return rolapMemberBase;
         } else if (level.isMeasure()) {
             return new RolapCalculatedMeasure(
                 parent, level, name, formula);

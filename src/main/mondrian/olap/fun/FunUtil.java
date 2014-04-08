@@ -1872,16 +1872,8 @@ public class FunUtil extends Util {
     }
 
     /**
-     * Compares two members which are known to have the same parent.
-     *
-     * First, compare by ordinal.
-     * This is only valid now we know they're siblings, because
-     * ordinals are only unique within a parent.
-     * If the dimension does not use ordinals, both ordinals
-     * will be -1.
-     *
-     * <p>If the ordinals do not differ, compare using regular member
-     * comparison.
+     * Compares two members which are known to have the same parent using their
+     * order keys.
      *
      * @param m1 First member
      * @param m2 Second member
@@ -1904,28 +1896,34 @@ public class FunUtil extends Util {
         }
         final Comparable k1 = m1.getOrderKey();
         final Comparable k2 = m2.getOrderKey();
-        if (notNull(k1) && notNull(k2)) {
-            //noinspection unchecked
-            return k1.compareTo(k2);
-        }
-
-        Util.deprecated("ordinal to be replaced with order key", false);
-        int m1Ordinal = m1.getOrdinal();
-        int m2Ordinal = m2.getOrdinal();
-
-        if (m1Ordinal >= 0 && m2Ordinal >= 0) {
-            int c = Util.compare(m1Ordinal, m2Ordinal);
-            if (c != 0) {
-                return c;
-            }
-        }
-        //noinspection unchecked
-        return m1.compareTo(m2);
+        return Util.compare(k1, k2);
     }
 
-  private static boolean notNull(Comparable k) {
-    return k != null && k != RolapUtil.sqlNullValue;
-  }
+    /**
+     * Compares two members which are known to have the same parent by their
+     * names.
+     *
+     * @param m1 First member
+     * @param m2 Second member
+     * @return -1 if m1 collates less than m2,
+     *   1 if m1 collates after m2,
+     *   0 if m1 == m2.
+     */
+    public static int compareSiblingMembersByName(Member m1, Member m2) {
+        // calculated members collate after non-calculated
+        final boolean calculated1 = m1.isCalculatedInQuery();
+        final boolean calculated2 = m2.isCalculatedInQuery();
+        if (calculated1) {
+            if (!calculated2) {
+                return 1;
+            }
+        } else {
+            if (calculated2) {
+                return -1;
+            }
+        }
+        return m1.getName().compareTo(m2.getName());
+    }
 
   /**
      * Returns whether one of the members in a tuple is null.
@@ -3601,11 +3599,7 @@ public class FunUtil extends Util {
             }
             final Comparable thisKey = this.member.getOrderKey();
             final Comparable otherKey = otherMember.getOrderKey();
-            if (notNull(thisKey) && notNull(otherKey)) {
-                return thisKey.compareTo(otherKey);
-            } else {
-                return this.member.compareTo(otherMember);
-            }
+            return Util.compare(thisKey, otherKey);
         }
     }
 

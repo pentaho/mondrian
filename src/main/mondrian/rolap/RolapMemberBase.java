@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -555,6 +555,9 @@ public class RolapMemberBase
             }
             final double d = Double.parseDouble(ordinal);
             setOrdinal((int) d);
+            if (isMeasure()) {
+                setOrderKey((int) d);
+            }
         }
 
         larder = Larders.set(larder, property, value);
@@ -756,7 +759,11 @@ public class RolapMemberBase
     }
 
     public void setOrderKey(Comparable orderKey) {
-        assert arity(orderKey) == level.getOrderByKeyArity();
+        if (!level.isMeasure()) {
+            assert arity(orderKey) == level.getOrderByKeyArity();
+        } else {
+            assert arity(orderKey) == 1;
+        }
         this.orderKey = orderKey;
     }
 
