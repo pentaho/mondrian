@@ -1,18 +1,34 @@
-<!--
-  == This software is subject to the terms of the Eclipse Public License v1.0
-  == Agreement, available at the following URL:
-  == http://www.eclipse.org/legal/epl-v10.html.
-  == You must accept the terms of that agreement to use this software.
-  ==
-  == Copyright (C) 2008-2013 Pentaho Corporation
-  == All Rights Reserved.
+<!--===========================================================================
+Copyright (c) 2008-2009, Pentaho Engineering Team
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the Pentaho Corporation nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY Pentaho Engineering Team ''AS IS'' AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL <copyright holder> BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ============================================================================-->
 <!--===========================================================================
     == SUBFLOOR ==
     
-    $Rev: 113 $
-    $Date: 2010-09-03 15:02:57 -0400 (Fri, 03 Sep 2010) $
-    Project Home: http://code.google.com/p/subfloor/
+    $Date: Wed Nov  6 16:13:57 UTC 2013 $
+    Project Home: https://github.com/pentaho/subfloor/
     
     This file contains the default implementation of the ant tasks to 
     perform a build. This file should be included by the build.xml file 
@@ -139,9 +155,10 @@ TYPICAL TARGET SEQUENCE
   <property name="javac.deprecation"
             value="true"
             description="Indicates whether source should be compiled with deprecation information" />
-  <property name="javac.source" value="1.5" description="Provide source compatibility with specified release" />
-  <property name="javac.target" value="1.5" description="Generate class files for specific VM version" />
+  <property name="javac.source" value="6" description="Provide source compatibility with specified release" />
+  <property name="javac.target" value="6" description="Generate class files for specific VM version" />
   <property name="javac.maxmemory" value="256M" description="Max memory alloted to java compile" />
+  <property name="javac.xlint" value="-Xlint:all" />
 
   <!-- Third party Ant tasks and tools properties -->
   <property name="subfloor.resources.dir"
@@ -160,10 +177,16 @@ TYPICAL TARGET SEQUENCE
             value="true"
             description="Prefer SVNKit binding over the command line client for native svn support (defaults to true)" />
   <property name="ivy.url"
-            value="http://repo2.maven.org/maven2/org/apache/ivy/ivy/2.2.0/ivy-2.2.0.jar"
+            value="http://repo.pentaho.org/artifactory/repo/org/apache/ivy/ivy/2.3.0/ivy-2.3.0.jar"
             description="The URL to the current release of Apache IVY" />
+	
+  <!-- Enunciate properties -->
+  <property name="enunciate.home" value="${basedir}/enunciate" />
+  <property name="enunciate.bin.dir" value="${bin.dir}/enunciate" />
+
 
   <!-- Test properties -->
+  <property name="junit.base.dir" value="${basedir}" description="Directory in which the junit test VM will be invoked" />
   <property name="testsrc.dir" value="${basedir}/test-src" description="Directory that hosts the test source files" />
   <property name="testlib.dir"
             value="${basedir}/test-lib"
@@ -184,13 +207,20 @@ TYPICAL TARGET SEQUENCE
             value="${testreports.dir}/html"
             description="Unit test html reports are placed here" />
   <property name="junit.haltonfailure" value="no" description="Fail the build if a test fails" />
+  <property name="junit.haltonerror" value="no" description="Fail the build if a error occurs" />
   <property name="junit.maxmemory" value="256M" description="Heap size when Junit is run in fork mode" />
+  <property name="junit.forkmode" 
+            value="perTest" 
+            description="Defines whether JUnit forks a new JVM for each test. Use 'once' for faster test runs, and 'perTest' for complete tests."/>
   <property name="headless.unittest" value="true" description="Runs the unit tests in headless mode" />
 
   <!-- Code Coverage properties -->
   <property name="instrumented.classes.dir"
             value="${testbin.dir}/instrumented-classes"
             description="Directory where instrumented project classes are placed for use by code coverage utility" />
+  <property name="cobertura.version"
+            value="1.9.4.1"
+            description="The version of cobertura to use for code coverage" />
   <property name="cobertura.data.dir"
             value="${testbin.dir}/cobertura-bin"
             description="Temporary data directory used by Cobertura" />
@@ -350,17 +380,17 @@ TYPICAL TARGET SEQUENCE
 
   <!-- Setup the classpath used for testing -->
   <path id="test.classpath">
+    <pathelement path="${testclasses.dir}" />
+    <pathelement path="${classes.dir}" />
     <fileset dir="${devlib.dir}">
-      <include name="**/*.jar" />
-    </fileset>
-    <fileset dir="${lib.dir}">
       <include name="**/*.jar" />
     </fileset>
     <fileset dir="${testlib.dir}">
       <include name="**/*.jar" />
     </fileset>
-    <pathelement path="${testclasses.dir}" />
-    <pathelement path="${classes.dir}" />
+    <fileset dir="${lib.dir}">
+      <include name="**/*.jar" />
+    </fileset>
   </path>
 
 
@@ -672,6 +702,11 @@ TYPICAL TARGET SEQUENCE
   <target name="resolve-test" depends="resolve-init">
     <ivy:resolve file="${ivyfile}" conf="test" />
     <ivy:retrieve conf="test" pattern="${testlib.dir}/[module]-[revision](-[classifier]).[ext]" symlink="${ivy.use.symlinks.internal}" />
+  </target>
+
+  <target name="resolve-enunciate" depends="resolve-init">
+    <ivy:resolve file="${ivyfile}" conf="enunciate" />
+    <ivy:retrieve conf="enunciate" pattern="${basedir}/enunciate/lib/[module]-[revision](-[classifier]).[ext]" />
   </target>
 
   <target name="resolve-codegen" depends="resolve-init">
@@ -1136,6 +1171,7 @@ TYPICAL TARGET SEQUENCE
         <path refid="classpath" />
       </classpath>
       <src path="${src.dir}" />
+      <compilerarg value="${javac.xlint}" />
     </javac>
   </target>
 
@@ -1353,9 +1389,12 @@ TYPICAL TARGET SEQUENCE
       ====================================================================-->
   <target name="test" depends="compile,compile-tests, init-test-reports" description="Compiles and runs unit tests">
     <junit maxmemory="${junit.maxmemory}"
+           dir="${junit.base.dir}"
            fork="yes"
+           forkmode="${junit.forkmode}"
            failureProperty="test.failed"
            haltonfailure="${junit.haltonfailure}"
+           haltonerror="${junit.haltonerror}"
            printsummary="yes">
       <sysproperty key="java.awt.headless" value="${headless.unittest}" />
       
@@ -1440,7 +1479,7 @@ TYPICAL TARGET SEQUENCE
   <target name="javadoc" depends="javadoc.init, compile">
     <javadoc destdir="${javadoc.dir}/docs/api"
              access="public"
-             source="1.5"
+             source="6"
              use="true"
              notree="false"
              nonavbar="false"
@@ -1454,11 +1493,51 @@ TYPICAL TARGET SEQUENCE
              packagenames="${javadoc.packagenames}"
              sourcepath="${src.dir}"
              doctitle="${impl.title} documentation">
-      <link href="http://java.sun.com/j2se/1.5.0/docs/api/" />
+      <link href="http://docs.oracle.com/javase/6/docs/api/" />
       <classpath refid="classpath" />
     </javadoc>
   </target>
 
+  	
+  <!--=======================================================================
+	enunciate
+        
+	Generates enunciate documentation for the resoruce 
+	classes comprising the BIServer REST api
+  ====================================================================-->
+  <target name="enunciate" depends="resolve-enunciate">
+    <path id="enunciate.classpath">
+      <fileset dir="${lib.dir}">
+        <include name="*.jar" />
+      	<exclude name="saxon*.jar" />
+      </fileset>
+      <dirset dir="${classes.dir}" />
+      <fileset dir="${dist.dir}">
+        <include name="*.jar" />
+      </fileset>
+      <fileset dir="${enunciate.home}/lib">
+        <include name="*.jar" />
+      </fileset>
+    </path>
+
+    <taskdef name="enunciate" classname="org.codehaus.enunciate.main.EnunciateTask">
+      <classpath refid="enunciate.classpath" />
+    </taskdef>
+
+    <enunciate dir="${basedir}/src" 
+               configFile="${basedir}/enunciate.xml" 
+               generateDir="${enunciate.bin.dir}/generate" 
+               compileDir="${enunciate.bin.dir}/compile" 
+               buildDir="${enunciate.bin.dir}/build" 
+               packageDir="${enunciate.bin.dir}/package" 
+               verbose="true">
+      <include name="**/*.java" />
+      <!-- have to exclude class that contains jersey multipart endpoint until http://jira.codehaus.org/browse/ENUNCIATE-537 is fixed -->
+      
+      <classpath refid="enunciate.classpath" />
+      <export artifactId="docs" destination="${dist.dir}/${enunciate.packagename}.zip" />
+    </enunciate>
+  </target>
 
   <!--=======================================================================
       dist-javadoc
@@ -1554,7 +1633,7 @@ TYPICAL TARGET SEQUENCE
       Downloads and installs Cobertura ant tasks
       ====================================================================-->
   <target name="install-cobertura" depends="install-ivy">
-    <taskdef-with-ivy organisation="net.sourceforge.cobertura" module="cobertura" revision="1.9.4.1" resource="tasks.properties" classname="net.sourceforge.cobertura.ant.InstrumentTask"/>
+    <taskdef-with-ivy organisation="net.sourceforge.cobertura" module="cobertura" revision="${cobertura.version}" resource="tasks.properties" classname="net.sourceforge.cobertura.ant.InstrumentTask"/>
   </target>
 
 
@@ -1608,13 +1687,16 @@ TYPICAL TARGET SEQUENCE
           depends="init-test-reports,install-cobertura,compile,compile-tests,cobertura.instrument-classes">
     <mkdir dir="${instrumented.classes.dir}" />
     <path id="cobertura.classpath">
-      <fileset dir="${subfloor.resources.dir}/cobertura">
+      <fileset dir="${subfloor.resources.dir}/cobertura-${cobertura.version}">
         <include name="*.jar" />
       </fileset>
     </path>
     <junit fork="yes"
+           forkmode="${junit.forkmode}"
+           dir="${junit.base.dir}"
            maxmemory="${junit.maxmemory}"
            failureProperty="test.failed"
+           haltonerror="${junit.haltonerror}"
            haltonfailure="${junit.haltonfailure}">
       <sysproperty key="java.awt.headless" value="${headless.unittest}" />
 
@@ -1631,8 +1713,6 @@ TYPICAL TARGET SEQUENCE
         original (uninstrumented) classes.  This is important.
       -->
       <classpath location="${instrumented.classes.dir}" />
-      <classpath location="${classes.dir}" />
-      <classpath location="${testclasses.dir}" />
       <classpath refid="test.classpath" />
       <classpath refid="cobertura.classpath" />
 
@@ -1702,13 +1782,13 @@ TYPICAL TARGET SEQUENCE
     <dot-classpath>
       <!-- Include all lib dirs -->
       <classpath>
-        <fileset dir="${lib.dir}">
-          <include name="*.jar" />
-        </fileset>
         <fileset dir="${devlib.dir}">
           <include name="*.jar" />
         </fileset>
         <fileset dir="${testlib.dir}">
+          <include name="*.jar" />
+        </fileset>
+        <fileset dir="${lib.dir}">
           <include name="*.jar" />
         </fileset>
       </classpath>
