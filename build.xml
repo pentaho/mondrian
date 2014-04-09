@@ -770,6 +770,7 @@ in {mondrian.foodmart.jdbcURL}."
         fork="yes"
         maxmemory="768m">
       <arg value="${test.args}"/>
+      <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8787" />-->
       <jvmarg line="${junit.jvmargs}"/>
       <sysproperty key="log4j.configuration"
           value="${log4j.configuration}"/>
@@ -1153,6 +1154,7 @@ buildOnJdk.sh" />
     <java classname="mondrian.test.loader.MondrianFoodMartLoader"
             classpathref="project.test.classpath"
             fork="yes">
+        <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8787" />-->
         <arg value="-tables"/>
         <arg value="-data"/>
         <arg value="-indexes"/>
