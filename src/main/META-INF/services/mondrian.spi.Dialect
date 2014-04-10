@@ -15,6 +15,7 @@ mondrian.spi.impl.MicrosoftSqlServerDialect
 mondrian.spi.impl.MySqlDialect
 mondrian.spi.impl.MonetDbDialect
 mondrian.spi.impl.NeoviewDialect
+mondrian.spi.impl.NuoDbDialect
 mondrian.spi.impl.NetezzaDialect
 mondrian.spi.impl.OracleDialect
 mondrian.spi.impl.PostgreSqlDialect

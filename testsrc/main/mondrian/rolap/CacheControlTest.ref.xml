@@ -5,7 +5,7 @@
             <![CDATA[Cache state before flush:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -13,13 +13,13 @@ Axes:[
     {customer.gender=('M')}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[b70a039adfe811d6fed1c5b5de9eda03416bbb1eed70db8589ad788bc4ded83a]
+ID:[f357b0fe61c757fc0eb38052bcbb30f705ed5ab187e90183ef250e61d2dda8e6]
 
 
 Cache state after flush:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -27,7 +27,7 @@ Axes:[
     {customer.gender=('M')}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[b70a039adfe811d6fed1c5b5de9eda03416bbb1eed70db8589ad788bc4ded83a]
+ID:[f357b0fe61c757fc0eb38052bcbb30f705ed5ab187e90183ef250e61d2dda8e6]
 
 
 ]]>
@@ -36,7 +36,7 @@ ID:[b70a039adfe811d6fed1c5b5de9eda03416bbb1eed70db8589ad788bc4ded83a]
             <![CDATA[Cache state before flush:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -44,13 +44,13 @@ Axes:[
     {customer.gender=('M')}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[b70a039adfe811d6fed1c5b5de9eda03416bbb1eed70db8589ad788bc4ded83a]
+ID:[f357b0fe61c757fc0eb38052bcbb30f705ed5ab187e90183ef250e61d2dda8e6]
 
 
 discard segment - it cannot be constrained and maintain consistency:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -58,7 +58,7 @@ Axes:[
     {customer.gender=('M')}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[b70a039adfe811d6fed1c5b5de9eda03416bbb1eed70db8589ad788bc4ded83a]
+ID:[f357b0fe61c757fc0eb38052bcbb30f705ed5ab187e90183ef250e61d2dda8e6]
 
 Cache state after flush:
 
@@ -70,7 +70,7 @@ Cache state after flush:
             <![CDATA[Cache state before flush:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -78,13 +78,13 @@ Axes:[
     {time_by_day.the_year=('1997')}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[247b8a6562d3147e730bdca37fb2d0f72432a7fdf660466e2a52fdbda2458f28]
+ID:[1491d28d8de0649874b1c13ef4f142406776a2ed46ad27fd21dff9e9306c75d7]
 
 
 discard segment - it cannot be constrained and maintain consistency:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -92,7 +92,7 @@ Axes:[
     {time_by_day.the_year=('1997')}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[247b8a6562d3147e730bdca37fb2d0f72432a7fdf660466e2a52fdbda2458f28]
+ID:[1491d28d8de0649874b1c13ef4f142406776a2ed46ad27fd21dff9e9306c75d7]
 
 Cache state after flush:
 
@@ -136,7 +136,20 @@ Cache state after flush:
             <![CDATA[Cache state before flush:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {time_by_day.the_year=(*)}
+    {time_by_day.quarter=(*)}
+    {product_class.product_family=(*)}]
+Excluded Regions:[]
+Compound Predicates:[]
+ID:[3f56e62eefe37a256c465b15833d8e8ceaefe459a47bc4993f5c29a35841e691]
+
+*Segment Header
+Schema:[FoodMart]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -144,11 +157,11 @@ Axes:[
     {product_class.product_family=(*)}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[9b6c2d415dd8ad40a17f038bac6c555a42af4ff67f9aad2406a8d978ff7fbeac]
+ID:[4e39edcfd80d58026f86a65910eeb6f52b42c1b1e5ebb42aad7330c42533cb91]
 
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -158,26 +171,26 @@ Axes:[
     {product_class.product_family=(*)}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[e0d0ea8082b763afd72039787d4be521ead1e64d6ccb2b5af5d7a6678694d0ba]
-
-*Segment Header
-Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
-Cube:[Sales]
-Measure:[Unit Sales]
-Axes:[
-    {time_by_day.the_year=(*)}
-    {time_by_day.quarter=(*)}
-    {product_class.product_family=(*)}]
-Excluded Regions:[]
-Compound Predicates:[]
-ID:[f9bb2f4725e2f3d7f6a78cac9778617bceb3c4c85e3e514aab762fb76cea59de]
+ID:[553c83653cceb316152659fc76d70c1dd136d43bd4d6bde9d70182a9bb156a0e]
 
 
 Cache state after flush:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {time_by_day.the_year=(*)}
+    {product_class.product_family=(*)}]
+Excluded Regions:[
+    {time_by_day.the_year=('1997')}]
+Compound Predicates:[]
+ID:[ce10f2a556362bcb0e55c45ac7e4a9639a8e86c316edfc7dfa89a5ffca606d91]
+
+*Segment Header
+Schema:[FoodMart]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -188,11 +201,11 @@ Excluded Regions:[
     {time_by_day.quarter=('Q1')}
     {time_by_day.the_year=('1997')}]
 Compound Predicates:[]
-ID:[93459d65707a8ebcf63b0b65aa4fbd5096c72a8172984309a8457806b6269e3c]
+ID:[6adbb9ef03f10010c9a80c0ea73149b5ae6bc08efe7d4a9a69a603a6bab86745]
 
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -204,20 +217,7 @@ Excluded Regions:[
     {time_by_day.quarter=('Q1')}
     {time_by_day.the_year=('1997')}]
 Compound Predicates:[]
-ID:[1da41878da0451653428b227ba0da35636252b751764d92f63af8f15631936e5]
-
-*Segment Header
-Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
-Cube:[Sales]
-Measure:[Unit Sales]
-Axes:[
-    {time_by_day.the_year=(*)}
-    {product_class.product_family=(*)}]
-Excluded Regions:[
-    {time_by_day.the_year=('1997')}]
-Compound Predicates:[]
-ID:[5a9d6415e07c44af851f6d7881fc4bc9c341d5d228e5e96222adf653647a2d9a]
+ID:[6e89fb579e87b09bc5d74b9e56a3290122c6d8ff0bb37fbe2f31cafb7aef76fb]
 
 
 ]]>
@@ -226,7 +226,20 @@ ID:[5a9d6415e07c44af851f6d7881fc4bc9c341d5d228e5e96222adf653647a2d9a]
             <![CDATA[Cache state before flush:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {time_by_day.the_year=(*)}
+    {product_class.product_family=(*)}]
+Excluded Regions:[
+    {time_by_day.the_year=('1997')}]
+Compound Predicates:[]
+ID:[ce10f2a556362bcb0e55c45ac7e4a9639a8e86c316edfc7dfa89a5ffca606d91]
+
+*Segment Header
+Schema:[FoodMart]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -237,11 +250,11 @@ Excluded Regions:[
     {time_by_day.quarter=('Q1')}
     {time_by_day.the_year=('1997')}]
 Compound Predicates:[]
-ID:[93459d65707a8ebcf63b0b65aa4fbd5096c72a8172984309a8457806b6269e3c]
+ID:[6adbb9ef03f10010c9a80c0ea73149b5ae6bc08efe7d4a9a69a603a6bab86745]
 
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -253,41 +266,13 @@ Excluded Regions:[
     {time_by_day.quarter=('Q1')}
     {time_by_day.the_year=('1997')}]
 Compound Predicates:[]
-ID:[1da41878da0451653428b227ba0da35636252b751764d92f63af8f15631936e5]
-
-*Segment Header
-Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
-Cube:[Sales]
-Measure:[Unit Sales]
-Axes:[
-    {time_by_day.the_year=(*)}
-    {product_class.product_family=(*)}]
-Excluded Regions:[
-    {time_by_day.the_year=('1997')}]
-Compound Predicates:[]
-ID:[5a9d6415e07c44af851f6d7881fc4bc9c341d5d228e5e96222adf653647a2d9a]
+ID:[6e89fb579e87b09bc5d74b9e56a3290122c6d8ff0bb37fbe2f31cafb7aef76fb]
 
 
 Cache state after flush:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
-Cube:[Sales]
-Measure:[Unit Sales]
-Axes:[
-    {time_by_day.the_year=(*)}
-    {time_by_day.quarter=(*)}
-    {product_class.product_family=(*)}]
-Excluded Regions:[
-    {time_by_day.the_year=('1997')}
-    {time_by_day.quarter=('Q1')}]
-Compound Predicates:[]
-ID:[94d11e314e2e335b0e26033a152521e0fc629157612a5468e6f3a1b7677aa24e]
-
-*Segment Header
-Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -299,11 +284,11 @@ Excluded Regions:[
     {time_by_day.the_year=('1997')}
     {time_by_day.quarter=('Q1')}]
 Compound Predicates:[]
-ID:[310824d3219b7f434f5ca0844b32aa77eaf7406faffc65d201635ddfb9516e94]
+ID:[a9dc097cb9ab0675a75af4bba24b00a8864bd2e48be7995a25ee1df9583228ad]
 
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -312,7 +297,22 @@ Axes:[
 Excluded Regions:[
     {time_by_day.the_year=('1997')}]
 Compound Predicates:[]
-ID:[5a9d6415e07c44af851f6d7881fc4bc9c341d5d228e5e96222adf653647a2d9a]
+ID:[ce10f2a556362bcb0e55c45ac7e4a9639a8e86c316edfc7dfa89a5ffca606d91]
+
+*Segment Header
+Schema:[FoodMart]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {time_by_day.the_year=(*)}
+    {time_by_day.quarter=(*)}
+    {product_class.product_family=(*)}]
+Excluded Regions:[
+    {time_by_day.the_year=('1997')}
+    {time_by_day.quarter=('Q1')}]
+Compound Predicates:[]
+ID:[05582bf973493f48952432d4a37c583e2e84e3e9c17928dbbc8b576e35f2fccd]
 
 
 ]]>
@@ -321,22 +321,7 @@ ID:[5a9d6415e07c44af851f6d7881fc4bc9c341d5d228e5e96222adf653647a2d9a]
             <![CDATA[Cache state before flush:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
-Cube:[Sales]
-Measure:[Unit Sales]
-Axes:[
-    {time_by_day.the_year=(*)}
-    {time_by_day.quarter=(*)}
-    {product_class.product_family=(*)}]
-Excluded Regions:[
-    {time_by_day.the_year=('1997')}
-    {time_by_day.quarter=('Q1')}]
-Compound Predicates:[]
-ID:[94d11e314e2e335b0e26033a152521e0fc629157612a5468e6f3a1b7677aa24e]
-
-*Segment Header
-Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -348,11 +333,11 @@ Excluded Regions:[
     {time_by_day.the_year=('1997')}
     {time_by_day.quarter=('Q1')}]
 Compound Predicates:[]
-ID:[310824d3219b7f434f5ca0844b32aa77eaf7406faffc65d201635ddfb9516e94]
+ID:[a9dc097cb9ab0675a75af4bba24b00a8864bd2e48be7995a25ee1df9583228ad]
 
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -361,13 +346,41 @@ Axes:[
 Excluded Regions:[
     {time_by_day.the_year=('1997')}]
 Compound Predicates:[]
-ID:[5a9d6415e07c44af851f6d7881fc4bc9c341d5d228e5e96222adf653647a2d9a]
+ID:[ce10f2a556362bcb0e55c45ac7e4a9639a8e86c316edfc7dfa89a5ffca606d91]
+
+*Segment Header
+Schema:[FoodMart]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {time_by_day.the_year=(*)}
+    {time_by_day.quarter=(*)}
+    {product_class.product_family=(*)}]
+Excluded Regions:[
+    {time_by_day.the_year=('1997')}
+    {time_by_day.quarter=('Q1')}]
+Compound Predicates:[]
+ID:[05582bf973493f48952432d4a37c583e2e84e3e9c17928dbbc8b576e35f2fccd]
 
 
 Cache state after flush:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {time_by_day.the_year=(*)}
+    {product_class.product_family=(*)}]
+Excluded Regions:[
+    {time_by_day.the_year=('1997')}]
+Compound Predicates:[]
+ID:[ce10f2a556362bcb0e55c45ac7e4a9639a8e86c316edfc7dfa89a5ffca606d91]
+
+*Segment Header
+Schema:[FoodMart]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -378,11 +391,11 @@ Excluded Regions:[
     {time_by_day.quarter=('Q1')}
     {time_by_day.the_year=('1997')}]
 Compound Predicates:[]
-ID:[93459d65707a8ebcf63b0b65aa4fbd5096c72a8172984309a8457806b6269e3c]
+ID:[6adbb9ef03f10010c9a80c0ea73149b5ae6bc08efe7d4a9a69a603a6bab86745]
 
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -394,20 +407,7 @@ Excluded Regions:[
     {time_by_day.quarter=('Q1')}
     {time_by_day.the_year=('1997')}]
 Compound Predicates:[]
-ID:[1da41878da0451653428b227ba0da35636252b751764d92f63af8f15631936e5]
-
-*Segment Header
-Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
-Cube:[Sales]
-Measure:[Unit Sales]
-Axes:[
-    {time_by_day.the_year=(*)}
-    {product_class.product_family=(*)}]
-Excluded Regions:[
-    {time_by_day.the_year=('1997')}]
-Compound Predicates:[]
-ID:[5a9d6415e07c44af851f6d7881fc4bc9c341d5d228e5e96222adf653647a2d9a]
+ID:[6e89fb579e87b09bc5d74b9e56a3290122c6d8ff0bb37fbe2f31cafb7aef76fb]
 
 
 ]]>
@@ -416,7 +416,20 @@ ID:[5a9d6415e07c44af851f6d7881fc4bc9c341d5d228e5e96222adf653647a2d9a]
             <![CDATA[Cache state before flush:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {time_by_day.the_year=(*)}
+    {product_class.product_family=(*)}]
+Excluded Regions:[
+    {time_by_day.the_year=('1997')}]
+Compound Predicates:[]
+ID:[ce10f2a556362bcb0e55c45ac7e4a9639a8e86c316edfc7dfa89a5ffca606d91]
+
+*Segment Header
+Schema:[FoodMart]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -427,58 +440,11 @@ Excluded Regions:[
     {time_by_day.quarter=('Q1')}
     {time_by_day.the_year=('1997')}]
 Compound Predicates:[]
-ID:[93459d65707a8ebcf63b0b65aa4fbd5096c72a8172984309a8457806b6269e3c]
+ID:[6adbb9ef03f10010c9a80c0ea73149b5ae6bc08efe7d4a9a69a603a6bab86745]
 
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
-Cube:[Sales]
-Measure:[Unit Sales]
-Axes:[
-    {time_by_day.the_year=(*)}
-    {time_by_day.quarter=(*)}
-    {time_by_day.month_of_year=(*)}
-    {product_class.product_family=(*)}]
-Excluded Regions:[
-    {time_by_day.quarter=('Q1')}
-    {time_by_day.the_year=('1997')}]
-Compound Predicates:[]
-ID:[1da41878da0451653428b227ba0da35636252b751764d92f63af8f15631936e5]
-
-*Segment Header
-Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
-Cube:[Sales]
-Measure:[Unit Sales]
-Axes:[
-    {time_by_day.the_year=(*)}
-    {product_class.product_family=(*)}]
-Excluded Regions:[
-    {time_by_day.the_year=('1997')}]
-Compound Predicates:[]
-ID:[5a9d6415e07c44af851f6d7881fc4bc9c341d5d228e5e96222adf653647a2d9a]
-
-
-discard segment - it cannot be constrained and maintain consistency:
-*Segment Header
-Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
-Cube:[Sales]
-Measure:[Unit Sales]
-Axes:[
-    {time_by_day.the_year=(*)}
-    {time_by_day.quarter=(*)}
-    {product_class.product_family=(*)}]
-Excluded Regions:[
-    {time_by_day.quarter=('Q1')}
-    {time_by_day.the_year=('1997')}]
-Compound Predicates:[]
-ID:[93459d65707a8ebcf63b0b65aa4fbd5096c72a8172984309a8457806b6269e3c]
-
-discard segment - it cannot be constrained and maintain consistency:
-*Segment Header
-Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -490,12 +456,13 @@ Excluded Regions:[
     {time_by_day.quarter=('Q1')}
     {time_by_day.the_year=('1997')}]
 Compound Predicates:[]
-ID:[1da41878da0451653428b227ba0da35636252b751764d92f63af8f15631936e5]
+ID:[6e89fb579e87b09bc5d74b9e56a3290122c6d8ff0bb37fbe2f31cafb7aef76fb]
+
 
 discard segment - it cannot be constrained and maintain consistency:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -504,7 +471,40 @@ Axes:[
 Excluded Regions:[
     {time_by_day.the_year=('1997')}]
 Compound Predicates:[]
-ID:[5a9d6415e07c44af851f6d7881fc4bc9c341d5d228e5e96222adf653647a2d9a]
+ID:[ce10f2a556362bcb0e55c45ac7e4a9639a8e86c316edfc7dfa89a5ffca606d91]
+
+discard segment - it cannot be constrained and maintain consistency:
+*Segment Header
+Schema:[FoodMart]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {time_by_day.the_year=(*)}
+    {time_by_day.quarter=(*)}
+    {product_class.product_family=(*)}]
+Excluded Regions:[
+    {time_by_day.quarter=('Q1')}
+    {time_by_day.the_year=('1997')}]
+Compound Predicates:[]
+ID:[6adbb9ef03f10010c9a80c0ea73149b5ae6bc08efe7d4a9a69a603a6bab86745]
+
+discard segment - it cannot be constrained and maintain consistency:
+*Segment Header
+Schema:[FoodMart]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {time_by_day.the_year=(*)}
+    {time_by_day.quarter=(*)}
+    {time_by_day.month_of_year=(*)}
+    {product_class.product_family=(*)}]
+Excluded Regions:[
+    {time_by_day.quarter=('Q1')}
+    {time_by_day.the_year=('1997')}]
+Compound Predicates:[]
+ID:[6e89fb579e87b09bc5d74b9e56a3290122c6d8ff0bb37fbe2f31cafb7aef76fb]
 
 Cache state after flush:
 
@@ -518,7 +518,20 @@ Cache state after flush:
 Cache state before flush:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {time_by_day.the_year=(*)}
+    {time_by_day.quarter=(*)}
+    {product_class.product_family=(*)}]
+Excluded Regions:[]
+Compound Predicates:[]
+ID:[3f56e62eefe37a256c465b15833d8e8ceaefe459a47bc4993f5c29a35841e691]
+
+*Segment Header
+Schema:[FoodMart]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -526,11 +539,11 @@ Axes:[
     {product_class.product_family=(*)}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[9b6c2d415dd8ad40a17f038bac6c555a42af4ff67f9aad2406a8d978ff7fbeac]
+ID:[4e39edcfd80d58026f86a65910eeb6f52b42c1b1e5ebb42aad7330c42533cb91]
 
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -540,26 +553,13 @@ Axes:[
     {product_class.product_family=(*)}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[e0d0ea8082b763afd72039787d4be521ead1e64d6ccb2b5af5d7a6678694d0ba]
-
-*Segment Header
-Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
-Cube:[Sales]
-Measure:[Unit Sales]
-Axes:[
-    {time_by_day.the_year=(*)}
-    {time_by_day.quarter=(*)}
-    {product_class.product_family=(*)}]
-Excluded Regions:[]
-Compound Predicates:[]
-ID:[f9bb2f4725e2f3d7f6a78cac9778617bceb3c4c85e3e514aab762fb76cea59de]
+ID:[553c83653cceb316152659fc76d70c1dd136d43bd4d6bde9d70182a9bb156a0e]
 
 
 Cache state after flush:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -572,11 +572,11 @@ Excluded Regions:[
     {time_by_day.the_year=('1997')}
     {time_by_day.quarter=('Q1')}]
 Compound Predicates:[]
-ID:[cc8b54a5c067c148311feaa7d1472907b404976176f337ab8a6da98654817d8d]
+ID:[911252fd235d00f61ef86e00e0ff75ac00d15f89c712849c82afa4a2c15ef3c5]
 
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -588,11 +588,11 @@ Excluded Regions:[
     {time_by_day.the_year=('1997')}
     {time_by_day.quarter=('Q1')}]
 Compound Predicates:[]
-ID:[42b0b72666d9a38854c8d81d3d83fb15717e66fcc39ae69e1f84e29b57a4b38b]
+ID:[920401958a06f450aca08b3b3b29e16f9a0b5c7c67d466df5af609e6db3d669e]
 
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -602,7 +602,7 @@ Excluded Regions:[
     {product_class.product_family=('Drink')}
     {time_by_day.the_year=('1997')}]
 Compound Predicates:[]
-ID:[7c0974ede00b9ad6b7d8fcc6419063aa059b59ad4c1bfcee98d0047cddb906c4]
+ID:[16a470a7930f93300aa03b44712682f4a180b5cb100a32d415341b5d228e40e6]
 
 
 ]]>
@@ -610,7 +610,7 @@ ID:[7c0974ede00b9ad6b7d8fcc6419063aa059b59ad4c1bfcee98d0047cddb906c4]
         <Resource name="output2">
             <![CDATA[*Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -623,11 +623,11 @@ Excluded Regions:[
     {time_by_day.the_year=('1997')}
     {time_by_day.quarter=('Q1')}]
 Compound Predicates:[]
-ID:[cc8b54a5c067c148311feaa7d1472907b404976176f337ab8a6da98654817d8d]
+ID:[911252fd235d00f61ef86e00e0ff75ac00d15f89c712849c82afa4a2c15ef3c5]
 
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -637,24 +637,11 @@ Axes:[
     {product_class.product_family=(*)}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[e0d0ea8082b763afd72039787d4be521ead1e64d6ccb2b5af5d7a6678694d0ba]
+ID:[553c83653cceb316152659fc76d70c1dd136d43bd4d6bde9d70182a9bb156a0e]
 
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
-Cube:[Sales]
-Measure:[Unit Sales]
-Axes:[
-    {time_by_day.the_year=(*)}
-    {time_by_day.quarter=(*)}
-    {product_class.product_family=(*)}]
-Excluded Regions:[]
-Compound Predicates:[]
-ID:[f9bb2f4725e2f3d7f6a78cac9778617bceb3c4c85e3e514aab762fb76cea59de]
-
-*Segment Header
-Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -666,23 +653,24 @@ Excluded Regions:[
     {time_by_day.the_year=('1997')}
     {time_by_day.quarter=('Q1')}]
 Compound Predicates:[]
-ID:[42b0b72666d9a38854c8d81d3d83fb15717e66fcc39ae69e1f84e29b57a4b38b]
+ID:[920401958a06f450aca08b3b3b29e16f9a0b5c7c67d466df5af609e6db3d669e]
 
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
     {time_by_day.the_year=(*)}
+    {time_by_day.quarter=(*)}
     {product_class.product_family=(*)}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[9b6c2d415dd8ad40a17f038bac6c555a42af4ff67f9aad2406a8d978ff7fbeac]
+ID:[3f56e62eefe37a256c465b15833d8e8ceaefe459a47bc4993f5c29a35841e691]
 
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -692,7 +680,19 @@ Excluded Regions:[
     {product_class.product_family=('Drink')}
     {time_by_day.the_year=('1997')}]
 Compound Predicates:[]
-ID:[7c0974ede00b9ad6b7d8fcc6419063aa059b59ad4c1bfcee98d0047cddb906c4]
+ID:[16a470a7930f93300aa03b44712682f4a180b5cb100a32d415341b5d228e40e6]
+
+*Segment Header
+Schema:[FoodMart]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {time_by_day.the_year=(*)}
+    {product_class.product_family=(*)}]
+Excluded Regions:[]
+Compound Predicates:[]
+ID:[4e39edcfd80d58026f86a65910eeb6f52b42c1b1e5ebb42aad7330c42533cb91]
 
 ]]>
         </Resource>
@@ -702,7 +702,20 @@ ID:[7c0974ede00b9ad6b7d8fcc6419063aa059b59ad4c1bfcee98d0047cddb906c4]
             <![CDATA[Cache state before flush:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {time_by_day.the_year=(*)}
+    {time_by_day.quarter=(*)}
+    {product_class.product_family=(*)}]
+Excluded Regions:[]
+Compound Predicates:[]
+ID:[3f56e62eefe37a256c465b15833d8e8ceaefe459a47bc4993f5c29a35841e691]
+
+*Segment Header
+Schema:[FoodMart]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -710,11 +723,11 @@ Axes:[
     {product_class.product_family=(*)}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[9b6c2d415dd8ad40a17f038bac6c555a42af4ff67f9aad2406a8d978ff7fbeac]
+ID:[4e39edcfd80d58026f86a65910eeb6f52b42c1b1e5ebb42aad7330c42533cb91]
 
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -724,11 +737,13 @@ Axes:[
     {product_class.product_family=(*)}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[e0d0ea8082b763afd72039787d4be521ead1e64d6ccb2b5af5d7a6678694d0ba]
+ID:[553c83653cceb316152659fc76d70c1dd136d43bd4d6bde9d70182a9bb156a0e]
 
+
+discard segment - it cannot be constrained and maintain consistency:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -737,13 +752,12 @@ Axes:[
     {product_class.product_family=(*)}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[f9bb2f4725e2f3d7f6a78cac9778617bceb3c4c85e3e514aab762fb76cea59de]
-
+ID:[3f56e62eefe37a256c465b15833d8e8ceaefe459a47bc4993f5c29a35841e691]
 
 discard segment - it cannot be constrained and maintain consistency:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -751,12 +765,12 @@ Axes:[
     {product_class.product_family=(*)}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[9b6c2d415dd8ad40a17f038bac6c555a42af4ff67f9aad2406a8d978ff7fbeac]
+ID:[4e39edcfd80d58026f86a65910eeb6f52b42c1b1e5ebb42aad7330c42533cb91]
 
 discard segment - it cannot be constrained and maintain consistency:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -766,21 +780,7 @@ Axes:[
     {product_class.product_family=(*)}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[e0d0ea8082b763afd72039787d4be521ead1e64d6ccb2b5af5d7a6678694d0ba]
-
-discard segment - it cannot be constrained and maintain consistency:
-*Segment Header
-Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
-Cube:[Sales]
-Measure:[Unit Sales]
-Axes:[
-    {time_by_day.the_year=(*)}
-    {time_by_day.quarter=(*)}
-    {product_class.product_family=(*)}]
-Excluded Regions:[]
-Compound Predicates:[]
-ID:[f9bb2f4725e2f3d7f6a78cac9778617bceb3c4c85e3e514aab762fb76cea59de]
+ID:[553c83653cceb316152659fc76d70c1dd136d43bd4d6bde9d70182a9bb156a0e]
 
 Cache state after flush:
 
@@ -796,7 +796,20 @@ Cache state after flush:
         <Resource name="output3">
             <![CDATA[*Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {time_by_day.the_year=(*)}
+    {time_by_day.quarter=(*)}
+    {product_class.product_family=(*)}]
+Excluded Regions:[]
+Compound Predicates:[]
+ID:[3f56e62eefe37a256c465b15833d8e8ceaefe459a47bc4993f5c29a35841e691]
+
+*Segment Header
+Schema:[FoodMart]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -804,11 +817,11 @@ Axes:[
     {product_class.product_family=(*)}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[9b6c2d415dd8ad40a17f038bac6c555a42af4ff67f9aad2406a8d978ff7fbeac]
+ID:[4e39edcfd80d58026f86a65910eeb6f52b42c1b1e5ebb42aad7330c42533cb91]
 
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -818,20 +831,7 @@ Axes:[
     {product_class.product_family=(*)}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[e0d0ea8082b763afd72039787d4be521ead1e64d6ccb2b5af5d7a6678694d0ba]
-
-*Segment Header
-Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
-Cube:[Sales]
-Measure:[Unit Sales]
-Axes:[
-    {time_by_day.the_year=(*)}
-    {time_by_day.quarter=(*)}
-    {product_class.product_family=(*)}]
-Excluded Regions:[]
-Compound Predicates:[]
-ID:[f9bb2f4725e2f3d7f6a78cac9778617bceb3c4c85e3e514aab762fb76cea59de]
+ID:[553c83653cceb316152659fc76d70c1dd136d43bd4d6bde9d70182a9bb156a0e]
 
 ]]>
         </Resource>

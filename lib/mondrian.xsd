@@ -1616,6 +1616,7 @@
                     * hsqldb
                     * mssql
                     * mysql
+                    * nuodb
                     * oracle
                     * postgres
                     * sybase
