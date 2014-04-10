@@ -172,8 +172,18 @@ public class SegmentBuilderTest extends BatchTestCase {
                 + "[Time].[1998].[Q4].[10], [Time].[1998].[Q4].[11], [Time].[1998].[Q4].[12]}"
                 + "on 0 from sales"},
             new String[] {
-                "26f2dc1bd8a454424158c348d0e3c64e3c20e00fa807d56442b8a580728e9953",
-                "b76369e0fb17e67bc777aa1e5d2d2d81627992488eb70bb45432ecb6ff6752c9"
+                "78a261a0d167093d12cc2f279d1a8a19cc9d7050ad004ef8fee38ca45cc08101",
+                    /* ^^^
+                        {time_by_day.the_year=('1998')}
+                        {time_by_day.quarter=('Q1','Q2','Q3')}
+                        {time_by_day.month_of_year=('2','3','4','5','6','7')}]
+                     */
+                "c99bd7b377b7181a9438adf47834fd2f3b5cb086614c587bd2dd9a94396a541d"
+                    /* ^^^
+                        {time_by_day.the_year=(*)}
+                        {time_by_day.quarter=('Q1','Q3','Q4')}
+                        {time_by_day.month_of_year=('1','8','9','10','11','12')}]
+                     */
             },
             new String[]{
                 // rollup columns
@@ -183,7 +193,7 @@ public class SegmentBuilderTest extends BatchTestCase {
             // expected header of the rolled up segment
             "*Segment Header\n"
             + "Schema:[FoodMart]\n"
-            + "Checksum:[9cca66327439577753dd5c3144ab59b5]\n"
+            + "Checksum:[7b4af973b0d21f364b0a746f5565cb03]\n"
             + "Cube:[Sales]\n"
             + "Measure:[Unit Sales]\n"
             + "Axes:[\n"
@@ -191,7 +201,7 @@ public class SegmentBuilderTest extends BatchTestCase {
             + "    {time_by_day.quarter=('Q1','Q3')}]\n"
             + "Excluded Regions:[]\n"
             + "Compound Predicates:[]\n"
-            + "ID:[3be3399cef4616f7718611775b3409c88a931b4f4642a8bcaa81740c884c3d3b]\n");
+            + "ID:[685502fc54fc3d05e4438ee812b26799a05e25fbbdd6c75b0133d62480bcbd98]\n");
     }
 
     public void testSameRollupRegardlessOfSegmentOrderWithData() {
@@ -209,23 +219,34 @@ public class SegmentBuilderTest extends BatchTestCase {
                 + "{[Product].[Drink].[Dairy]}"
                 + "on 0 from sales"},
             new String[] {
-              "464a73cb907ccee680acd79a3b03181ddc6b8c2d9cf8b75ea81fcc6d634d8d57",
-              "38fec44b20434448aa8c6191ac34ca96157e6db5bb50586d4dc4a55d7385a0f0"
+              "6fa249f861b66fef01fc8ad41e116d1a1316563c440e7c8df8fd5457713e3fc6",
+                /* ^^^
+                    {time_by_day.the_year=('1997')}
+                    {product_class.product_family=(*)}
+                    {product_class.product_department=('Alcoholic Beverages',
+                     'Baked Goods','Beverages','Periodicals')}]
+
+                 */
+              "28998f37f3a12b6b566e5542c1de63ad89c7c024cded868476745f4a2eb2724e"
+                /* ^^^
+                    {time_by_day.the_year=('1997')}
+                    {product_class.product_family=('Drink')}
+                    {product_class.product_department=('Dairy')}]
+                 */
             },
             new String[]{
                 "product_class.product_family"
             },
             "*Segment Header\n"
             + "Schema:[FoodMart]\n"
-            + "Checksum:[9cca66327439577753dd5c3144ab59b5]\n"
+            + "Checksum:[7b4af973b0d21f364b0a746f5565cb03]\n"
             + "Cube:[Sales]\n"
             + "Measure:[Unit Sales]\n"
             + "Axes:[\n"
             + "    {product_class.product_family=('Drink')}]\n"
             + "Excluded Regions:[]\n"
             + "Compound Predicates:[]\n"
-            + "ID:[0c3fbbc2a97f4183b7761326ceb76a"
-            + "760ebc20550b4f686d129ece11e0dc1e49]\n");
+            + "ID:[360a78a6503ae823650bbfd528bd3014e77d09c2cc0815f5eac90e8d7d46a474]\n");
     }
 
     public void testSameRollupRegardlessOfSegmentOrderNoWildcards() {
@@ -241,23 +262,33 @@ public class SegmentBuilderTest extends BatchTestCase {
                 + "{[Product].[Drink].[Dairy]}"
                 + "on 0 from sales"},
             new String[] {
-                "464a73cb907ccee680acd79a3b03181ddc6b8c2d9cf8b75ea81fcc6d634d8d57",
-                "4b7d7b408d42891e03b496368c619e5385a743c72b6e07caa48eacf4adeb9f93"
+                "348d8b84a4322bce4abaa6f22fffb43beeaa005bb84eee2fe95c52e8467c9e17",
+                    /* ^^^
+                        {time_by_day.the_year=('1997')}
+                        {product_class.product_family=('Drink','Non-Consumable')}
+                        {product_class.product_department=('Alcoholic Beverages',
+                         'Beverages','Periodicals')}]
+                     */
+                "28998f37f3a12b6b566e5542c1de63ad89c7c024cded868476745f4a2eb2724e"
+                    /* ^^^
+                        {time_by_day.the_year=('1997')}
+                        {product_class.product_family=('Drink')}
+                        {product_class.product_department=('Dairy')}]
+                     */
             },
             new String[]{
                 "product_class.product_family"
             },
             "*Segment Header\n"
             + "Schema:[FoodMart]\n"
-            + "Checksum:[9cca66327439577753dd5c3144ab59b5]\n"
+            + "Checksum:[7b4af973b0d21f364b0a746f5565cb03]\n"
             + "Cube:[Sales]\n"
             + "Measure:[Unit Sales]\n"
             + "Axes:[\n"
             + "    {product_class.product_family=('Drink')}]\n"
             + "Excluded Regions:[]\n"
             + "Compound Predicates:[]\n"
-            + "ID:[0c3fbbc2a97f4183b7761326ceb76a"
-            + "760ebc20550b4f686d129ece11e0dc1e49]\n");
+            + "ID:[360a78a6503ae823650bbfd528bd3014e77d09c2cc0815f5eac90e8d7d46a474]\n");
     }
 
     public void testSameRollupRegardlessOfSegmentOrderThreeSegs() {
@@ -274,24 +305,41 @@ public class SegmentBuilderTest extends BatchTestCase {
                 " select "
                 + "{[Product].[Drink].[Beverages]} on 0 from sales"},
             new String[] {
-                "464a73cb907ccee680acd79a3b03181ddc6b8c2d9cf8b75ea81fcc6d634d8d57",
-                "9f15599949884e63cf5167e8f857d7da133bb0781602b538f3c0eb00106e5bf4",
-                "2e68abec3aa76aad4d6cd742cfc19e448b48fabf33b3c1cdf1a34062428a71e3"
+                "28998f37f3a12b6b566e5542c1de63ad89c7c024cded868476745f4a2eb2724e",
+                    /* ^^^
+                        {time_by_day.the_year=('1997')}
+                        {product_class.product_family=('Drink')}
+                        {product_class.product_department=('Dairy')}]
+
+                     */
+                "c5e912e9af50f82339c8bc2e3806e0b6d1e4e2029c3b1ae9ebef504d0799037b",
+                    /* ^^^
+                        {time_by_day.the_year=('1997')}
+                        {product_class.product_family=('Drink')}
+                        {product_class.product_department=('Beverages')}]
+
+                     */
+                "bdf9f996de66edb6477d4ae016a1a4a6508c324c8641833e03bb2b869dc83d77"
+                    /* ^^^
+                        {time_by_day.the_year=('1997')}
+                        {product_class.product_family=('Drink','Non-Consumable')}
+                        {product_class.product_department=('Alcoholic Beverages','Periodicals')}]
+
+                     */
             },
             new String[]{
                 "product_class.product_family"
             },
             "*Segment Header\n"
             + "Schema:[FoodMart]\n"
-            + "Checksum:[9cca66327439577753dd5c3144ab59b5]\n"
+            + "Checksum:[7b4af973b0d21f364b0a746f5565cb03]\n"
             + "Cube:[Sales]\n"
             + "Measure:[Unit Sales]\n"
             + "Axes:[\n"
             + "    {product_class.product_family=('Drink')}]\n"
             + "Excluded Regions:[]\n"
             + "Compound Predicates:[]\n"
-            + "ID:[0c3fbbc2a97f4183b7761326ceb76a"
-            + "760ebc20550b4f686d129ece11e0dc1e49]\n");
+            + "ID:[360a78a6503ae823650bbfd528bd3014e77d09c2cc0815f5eac90e8d7d46a474]\n");
     }
 
 
@@ -431,6 +479,7 @@ public class SegmentBuilderTest extends BatchTestCase {
                 }
             }
         }
+        assertFalse(String.format("SegmentMap is empty. No segmentIds matched test parameters. Full segment cache: %s", headers), testMap.isEmpty());
         return testMap;
     }
 
