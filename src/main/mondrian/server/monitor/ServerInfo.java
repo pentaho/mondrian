@@ -1,12 +1,12 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2011-2014 Pentaho
+// All Rights Reserved.
 */
-
 package mondrian.server.monitor;
 
 /**
@@ -162,36 +162,140 @@ public class ServerInfo extends Info {
         this.cellCoordinateCount = cellCoordinateCount;
     }
 
-    public int cellCacheMissCount() {
+    public int getCellCacheMissCount() {
         return cellCacheRequestCount - cellCacheHitCount;
     }
 
     /**
      * @return number of SQL statements currently executing
      */
-    public int sqlStatementCurrentlyOpenCount() {
+    public int getSqlStatementCurrentlyOpenCount() {
         return sqlStatementStartCount - sqlStatementEndCount;
     }
 
     /**
      * @return number of statements currently executing
      */
-    public int statementCurrentlyExecutingCount() {
+    public int getStatementCurrentlyExecutingCount() {
         return executeStartCount - executeEndCount;
     }
 
     /**
      * @return number of statements currently open
      */
-    public int statementCurrentlyOpenCount() {
+    public int getStatementCurrentlyOpenCount() {
         return statementStartCount - statementEndCount;
     }
 
     /**
      * @return number of connections currently open
      */
-    public int connectionCurrentlyOpenCount() {
+    public int getConnectionCurrentlyOpenCount() {
         return connectionStartCount - connectionEndCount;
+    }
+
+    public int getConnectionStartCount() {
+        return connectionStartCount;
+    }
+
+    public int getConnectionEndCount() {
+        return connectionEndCount;
+    }
+
+    public int getStatementStartCount() {
+        return statementStartCount;
+    }
+
+    public int getStatementEndCount() {
+        return statementEndCount;
+    }
+
+    public int getSqlStatementStartCount() {
+        return sqlStatementStartCount;
+    }
+
+    public int getSqlStatementExecuteCount() {
+        return sqlStatementExecuteCount;
+    }
+
+    public int getSqlStatementEndCount() {
+        return sqlStatementEndCount;
+    }
+
+    public long getSqlStatementRowFetchCount() {
+        return sqlStatementRowFetchCount;
+    }
+
+    public long getSqlStatementExecuteNanos() {
+        return sqlStatementExecuteNanos;
+    }
+
+    public int getSqlStatementCellRequestCount() {
+        return sqlStatementCellRequestCount;
+    }
+
+    public int getCellCacheRequestCount() {
+        return cellCacheRequestCount;
+    }
+
+    public int getCellCacheHitCount() {
+        return cellCacheHitCount;
+    }
+
+    public int getCellCachePendingCount() {
+        return cellCachePendingCount;
+    }
+
+    public int getExecuteStartCount() {
+        return executeStartCount;
+    }
+
+    public int getExecuteEndCount() {
+        return executeEndCount;
+    }
+
+    public long getJvmHeapBytesUsed() {
+        return jvmHeapBytesUsed;
+    }
+
+    public long getJvmHeapBytesCommitted() {
+        return jvmHeapBytesCommitted;
+    }
+
+    public long getJvmHeapBytesMax() {
+        return jvmHeapBytesMax;
+    }
+
+    public int getSegmentCount() {
+        return segmentCount;
+    }
+
+    public int getSegmentCreateCount() {
+        return segmentCreateCount;
+    }
+
+    public int getSegmentCreateViaExternalCount() {
+        return segmentCreateViaExternalCount;
+    }
+
+    public int getSegmentDeleteViaExternalCount() {
+        return segmentDeleteViaExternalCount;
+    }
+
+    public int getSegmentCreateViaRollupCount() {
+        return segmentCreateViaRollupCount;
+    }
+
+    public int getSegmentCreateViaSqlCount() {
+        return segmentCreateViaSqlCount;
+    }
+
+    public int getCellCount() {
+        return cellCount;
+    }
+
+    public int getCellCoordinateCount() {
+        return cellCoordinateCount;
     }
 }
 

@@ -1,17 +1,18 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2006-2014 Pentaho
+// All Rights Reserved.
 */
-
 package mondrian.server;
 
 import mondrian.olap.MondrianException;
 import mondrian.olap.MondrianServer;
-import mondrian.olap4j.CatalogFinder;
+import mondrian.olap.Util;
+import mondrian.olap4j.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapResultShepherd;
@@ -20,16 +21,20 @@ import mondrian.rolap.agg.AggregationManager;
 import mondrian.server.monitor.*;
 import mondrian.spi.CatalogLocator;
 import mondrian.util.LockBox;
-import mondrian.xmla.XmlaHandler;
+import mondrian.xmla.*;
 
 import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.log4j.Logger;
 
 import org.olap4j.OlapConnection;
 
+import java.lang.management.ManagementFactory;
+import java.lang.ref.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.management.*;
 
 /**
  * Implementation of {@link mondrian.olap.MondrianServer}.
@@ -183,6 +188,11 @@ class MondrianServerImpl
         this.aggMgr = new AggregationManager(this);
 
         this.shepherd = new RolapResultShepherd();
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("new MondrianServer: id=" + id);
+        }
+        registerMBean();
     }
 
     @Override
@@ -311,6 +321,13 @@ class MondrianServerImpl
 
     @Override
     synchronized public void addConnection(RolapConnection connection) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                "addConnection "
+                + ", id=" + id
+                + ", statements=" + statementMap.size()
+                + ", connections=" + connectionMap.size());
+        }
         if (shutdown) {
             throw new MondrianException("Server already shutdown.");
         }
@@ -326,6 +343,13 @@ class MondrianServerImpl
 
     @Override
     synchronized public void removeConnection(RolapConnection connection) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                "removeConnection "
+                + ", id=" + id
+                + ", statements=" + statementMap.size()
+                + ", connections=" + connectionMap.size());
+        }
         if (shutdown) {
             throw new MondrianException("Server already shutdown.");
         }
@@ -350,6 +374,13 @@ class MondrianServerImpl
         if (shutdown) {
             throw new MondrianException("Server already shutdown.");
         }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                "addStatement "
+                + ", id=" + id
+                + ", statements=" + statementMap.size()
+                + ", connections=" + connectionMap.size());
+        }
         statementMap.put(
             statement.getId(),
             statement);
@@ -365,6 +396,13 @@ class MondrianServerImpl
 
     @Override
     synchronized public void removeStatement(Statement statement) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                "removeStatement "
+                + ", id=" + id
+                + ", statements=" + statementMap.size()
+                + ", connections=" + connectionMap.size());
+        }
         if (shutdown) {
             throw new MondrianException("Server already shutdown.");
         }
@@ -406,6 +444,33 @@ class MondrianServerImpl
         // No pre-configured response; XMLA servlet will connect to get
         // data source info.
         return null;
+    }
+
+    /**
+     * Registers the MonitorImpl associated with this server
+     * as an MBean accessible via JMX.
+     */
+    private void registerMBean() {
+        if (Util.PreJdk16) {
+            LOGGER.info(
+                "JMX is supported in Mondrian only on Java 6+.");
+            return;
+        }
+        MBeanServer mbs =
+            ManagementFactory.getPlatformMBeanServer();
+        try {
+            ObjectName mxbeanName = new ObjectName(
+                "mondrian.server:type=Server-" + id);
+            mbs.registerMBean(getMonitor(), mxbeanName);
+        } catch (MalformedObjectNameException e) {
+            LOGGER.warn("Failed to register JMX MBean", e);
+        } catch (NotCompliantMBeanException e) {
+            LOGGER.warn("Failed to register JMX MBean", e);
+        } catch (InstanceAlreadyExistsException e) {
+            LOGGER.warn("Failed to register JMX MBean", e);
+        } catch (MBeanRegistrationException e) {
+            LOGGER.warn("Failed to register JMX MBean", e);
+        }
     }
 }
 
