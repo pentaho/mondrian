@@ -4,13 +4,14 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2013 Pentaho
+// Copyright (C) 2006-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server;
 
 import mondrian.olap.MondrianException;
 import mondrian.olap.MondrianServer;
+import mondrian.olap.Util;
 import mondrian.olap4j.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapConnection;
@@ -27,10 +28,13 @@ import org.apache.log4j.Logger;
 
 import org.olap4j.OlapConnection;
 
+import java.lang.management.ManagementFactory;
 import java.lang.ref.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.management.*;
 
 /**
  * Implementation of {@link mondrian.olap.MondrianServer}.
@@ -192,6 +196,7 @@ class MondrianServerImpl
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("new MondrianServer: id=" + id);
         }
+        registerMBean();
     }
 
     @Override
@@ -496,6 +501,33 @@ class MondrianServerImpl
 
         public MondrianServerXmlaRequest(Locus locus) {
             this.locus = locus;
+        }
+    }
+
+    /**
+     * Registers the MonitorImpl associated with this server
+     * as an MBean accessible via JMX.
+     */
+    private void registerMBean() {
+        if (Util.PreJdk16) {
+            LOGGER.info(
+                "JMX is supported in Mondrian only on Java 6+.");
+            return;
+        }
+        MBeanServer mbs =
+            ManagementFactory.getPlatformMBeanServer();
+        try {
+            ObjectName mxbeanName = new ObjectName(
+                "mondrian.server:type=Server-" + id);
+            mbs.registerMBean(getMonitor(), mxbeanName);
+        } catch (MalformedObjectNameException e) {
+            LOGGER.warn("Failed to register JMX MBean", e);
+        } catch (NotCompliantMBeanException e) {
+            LOGGER.warn("Failed to register JMX MBean", e);
+        } catch (InstanceAlreadyExistsException e) {
+            LOGGER.warn("Failed to register JMX MBean", e);
+        } catch (MBeanRegistrationException e) {
+            LOGGER.warn("Failed to register JMX MBean", e);
         }
     }
 }

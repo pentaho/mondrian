@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2013 Pentaho
+// Copyright (C) 2011-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server.monitor;
@@ -42,6 +42,38 @@ public class ConnectionInfo extends Info {
         this.statementEndCount = statementEndCount;
         this.executeStartCount = executeStartCount;
         this.executeEndCount = executeEndCount;
+    }
+
+    public int getStatementStartCount() {
+        return statementStartCount;
+    }
+
+    public int getCellCacheHitCount() {
+        return cellCacheHitCount;
+    }
+
+    public int getCellCacheRequestCount() {
+        return cellCacheRequestCount;
+    }
+
+    public int getCellCacheMissCount() {
+        return cellCacheMissCount;
+    }
+
+    public int getCellCachePendingCount() {
+        return cellCachePendingCount;
+    }
+
+    public int getStatementEndCount() {
+        return statementEndCount;
+    }
+
+    public int getExecuteStartCount() {
+        return executeStartCount;
+    }
+
+    public int getExecuteEndCount() {
+        return executeEndCount;
     }
 }
 

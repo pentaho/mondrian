@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2013 Pentaho
+// Copyright (C) 2011-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server.monitor;
@@ -28,6 +28,15 @@ public class SqlStatementInfo extends Info {
         this.sqlStatementId = sqlStatementId;
         this.sql = sql;
     }
+
+    public long getSqlStatementId() {
+        return sqlStatementId;
+    }
+
+    public String getSql() {
+        return sql;
+    }
+
 }
 
 // End SqlStatementInfo.java
