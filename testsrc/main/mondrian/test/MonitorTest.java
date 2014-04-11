@@ -1,12 +1,12 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2011-2014 Pentaho
+// All Rights Reserved.
 */
-
 package mondrian.test;
 
 import mondrian.olap.MondrianServer;
@@ -66,17 +66,17 @@ public class MonitorTest extends FoodMartTestCase {
 
         println(
             "# stmts open: "
-            + server.statementCurrentlyOpenCount());
+            + server.getStatementCurrentlyOpenCount());
 
         println(
             "# connections open: "
-            + server.connectionCurrentlyOpenCount());
+            + server.getConnectionCurrentlyOpenCount());
 
         println("# rows fetched: " + server.sqlStatementRowFetchCount);
 
         println(
             "# sql stmts open: "
-            + server.sqlStatementCurrentlyOpenCount());
+            + server.getSqlStatementCurrentlyOpenCount());
 
         // # sql stmts by category (cell query, member query, other)
         //  -- if you want to do this, capture sql statement events
@@ -86,21 +86,22 @@ public class MonitorTest extends FoodMartTestCase {
         // cell cache hits
         final List<ConnectionInfo> connections = monitor.getConnections();
         ConnectionInfo lastConnection = connections.get(connections.size() - 1);
-        final List<StatementInfo> statements = monitor.getStatements();
-        StatementInfo lastStatement = statements.get(statements.size() - 1);
+
+        // Cannot reliably retrieve the last statement, since statements are
+        // removed from the map on completion.
+        //final List<StatementInfo> statements = monitor.getStatements();
+        //StatementInfo lastStatement = statements.get(statements.size() - 1);
+
         println(
             "# cell cache requests, misses, hits; "
             + "by server, connection, mdx statement: "
             + server.cellCacheRequestCount
-            + ", " + server.cellCacheMissCount()
+            + ", " + server.getCellCacheMissCount()
             + ", " + server.cellCacheHitCount
             + "; " + lastConnection.cellCacheRequestCount
             + ", " + (lastConnection.cellCacheRequestCount
                       - lastConnection.cellCacheHitCount)
-            + ", " + lastConnection.cellCacheHitCount
-            + "; " + lastStatement.cellCacheRequestCount
-            + ", " + lastStatement.cellCacheMissCount
-            + ", " + lastStatement.cellCacheHitCount);
+            + ", " + lastConnection.cellCacheHitCount);
 
         // cache misses in the last minute
         // cache hits in the last minute
@@ -109,10 +110,10 @@ public class MonitorTest extends FoodMartTestCase {
 
         println(
             "number of mdx statements currently open: "
-            + server.statementCurrentlyOpenCount());
+            + server.getStatementCurrentlyOpenCount());
         println(
             "number of mdx statements currently executing: "
-            + server.statementCurrentlyExecutingCount());
+            + server.getStatementCurrentlyExecutingCount());
 
         println(
             "jvm memory: " + server.jvmHeapBytesUsed
@@ -127,7 +128,6 @@ public class MonitorTest extends FoodMartTestCase {
             + ", average cell dimensionality: "
             + ((float) server.cellCoordinateCount / (float) server.cellCount));
 
-        println("Statement: " + lastStatement);
         println("Connection: " + lastConnection);
         println("Server: " + server);
 

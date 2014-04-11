@@ -1,12 +1,12 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2011-2014 Pentaho
+// All Rights Reserved.
 */
-
 package mondrian.server.monitor;
 
 /**
@@ -65,8 +65,64 @@ public class StatementInfo extends Info {
     /**
      * @return Whether the statement is currently executing.
      */
-    public boolean executing() {
+    public boolean getExecuting() {
         return executeStartCount > executeEndCount;
+    }
+
+    public long getStatementId() {
+        return statementId;
+    }
+
+    public int getExecuteStartCount() {
+        return executeStartCount;
+    }
+
+    public int getExecuteEndCount() {
+        return executeEndCount;
+    }
+
+    public int getPhaseCount() {
+        return phaseCount;
+    }
+
+    public long getCellCacheRequestCount() {
+        return cellCacheRequestCount;
+    }
+
+    public long getCellCacheHitCount() {
+        return cellCacheHitCount;
+    }
+
+    public long getCellCacheMissCount() {
+        return cellCacheMissCount;
+    }
+
+    public long getCellCachePendingCount() {
+        return cellCachePendingCount;
+    }
+
+    public int getSqlStatementStartCount() {
+        return sqlStatementStartCount;
+    }
+
+    public int getSqlStatementExecuteCount() {
+        return sqlStatementExecuteCount;
+    }
+
+    public int getSqlStatementEndCount() {
+        return sqlStatementEndCount;
+    }
+
+    public long getSqlStatementRowFetchCount() {
+        return sqlStatementRowFetchCount;
+    }
+
+    public long getSqlStatementExecuteNanos() {
+        return sqlStatementExecuteNanos;
+    }
+
+    public int getCellRequestCount() {
+        return cellRequestCount;
     }
 }
 
