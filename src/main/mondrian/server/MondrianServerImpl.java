@@ -518,7 +518,7 @@ class MondrianServerImpl
             ManagementFactory.getPlatformMBeanServer();
         try {
             ObjectName mxbeanName = new ObjectName(
-                "mondrian.server:type=Server-" + id);
+                "mondrian4.server:type=Server-" + id);
             mbs.registerMBean(getMonitor(), mxbeanName);
         } catch (MalformedObjectNameException e) {
             LOGGER.warn("Failed to register JMX MBean", e);
