@@ -23,7 +23,7 @@
         <ibiblio name="pentaho-mvn" m2compatible="true" root="${pentaho.resolve.repo}" />
       </dual>
       <resolver ref="public" />
-      <ibiblio name="public-maven" root="{public.resolve.repo}" m2compatible="true" />
+      <ibiblio name="public-maven" root="${public.resolve.repo}" m2compatible="true" />
     </chain>
   </resolvers>
   <caches lockStrategy="artifact-lock" resolutionCacheDir="${ivy.default.ivy.user.dir}/resol-cache${env.EXECUTOR_NUMBER}" />
