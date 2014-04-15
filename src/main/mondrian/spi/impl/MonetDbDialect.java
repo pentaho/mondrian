@@ -41,6 +41,10 @@ public class MonetDbDialect extends JdbcDialectImpl {
         super(connection);
     }
 
+    public MonetDbDialect() {
+        super();
+    }
+
     @Override
     public boolean allowsMultipleDistinctSqlMeasures() {
         return false;
@@ -97,6 +101,8 @@ public class MonetDbDialect extends JdbcDialectImpl {
                 logTypeInfo(metaData, columnIndex, SqlStatement.Type.DOUBLE);
                 return SqlStatement.Type.DOUBLE;
             }
+        } else if (columnType == Types.BOOLEAN) {
+            return SqlStatement.Type.OBJECT;
         }
         return super.getType(metaData, columnIndex);
     }
