@@ -152,8 +152,8 @@ public class DialectTest extends TestCase {
             // Dialect has identified that it is NUODB.
             assertTrue(dialect instanceof NuoDbDialect);
             assertTrue(
-                    databaseMetaData.getDatabaseProductName()
-                            .contains("NuoDB"));
+                databaseMetaData.getDatabaseProductName()
+                    .contains("NuoDB"));
             break;
         default:
             // Neither MySQL nor Infobright.
@@ -1517,6 +1517,14 @@ public class DialectTest extends TestCase {
                     .withScale(0)
                     .build(),
                 0) == SqlStatement.Type.INT);
+    }
+
+    public void testMonetBooleanColumn() throws SQLException {
+        ResultSetMetaData resultSet = new MockResultSetMetadata()
+            .withColumnType(Types.BOOLEAN).build();
+        MonetDbDialect monetDbDialect = new MonetDbDialect();
+        SqlStatement.Type type = monetDbDialect.getType(resultSet, 0);
+        assertEquals(SqlStatement.Type.OBJECT, type);
     }
 
 
