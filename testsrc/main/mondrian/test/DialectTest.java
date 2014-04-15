@@ -1394,6 +1394,14 @@ public class DialectTest extends TestCase {
                 0) == SqlStatement.Type.INT);
     }
 
+    public void testMonetBooleanColumn() throws SQLException {
+        ResultSetMetaData resultSet = new MockResultSetMetadata()
+            .withColumnType(Types.BOOLEAN).build();
+        MonetDbDialect monetDbDialect = new MonetDbDialect();
+        SqlStatement.Type type = monetDbDialect.getType(resultSet, 0);
+        assertEquals(SqlStatement.Type.OBJECT, type);
+    }
+
     public static class MockResultSetMetadata
         extends DelegatingInvocationHandler
     {
