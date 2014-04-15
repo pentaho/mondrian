@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2013 Pentaho and others
+// Copyright (C) 2012-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -39,6 +39,10 @@ public class MonetDbDialect extends JdbcDialectImpl {
      */
     public MonetDbDialect(Connection connection) throws SQLException {
         super(connection);
+    }
+
+    public MonetDbDialect() {
+        super();
     }
 
     @Override
@@ -92,6 +96,8 @@ public class MonetDbDialect extends JdbcDialectImpl {
                 logTypeInfo(metaData, columnIndex, SqlStatement.Type.DOUBLE);
                 return SqlStatement.Type.DOUBLE;
             }
+        } else if (columnType == Types.BOOLEAN) {
+            return SqlStatement.Type.OBJECT;
         }
         return super.getType(metaData, columnIndex);
     }
