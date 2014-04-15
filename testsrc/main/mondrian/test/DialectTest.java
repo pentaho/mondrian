@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.test;
 
@@ -1392,6 +1392,14 @@ public class DialectTest extends TestCase {
                     .withScale(0)
                     .build(),
                 0) == SqlStatement.Type.INT);
+    }
+
+    public void testMonetBooleanColumn() throws SQLException {
+        ResultSetMetaData resultSet = new MockResultSetMetadata()
+            .withColumnType(Types.BOOLEAN).build();
+        MonetDbDialect monetDbDialect = new MonetDbDialect();
+        SqlStatement.Type type = monetDbDialect.getType(resultSet, 0);
+        assertEquals(SqlStatement.Type.OBJECT, type);
     }
 
     public static class MockResultSetMetadata
