@@ -13,10 +13,12 @@ package mondrian.olap.fun;
 
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.RolapConnection;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 import mondrian.udf.*;
 import mondrian.util.Bug;
+import mondrian.xmla.PropertyDefinition;
 
 import junit.framework.Assert;
 import junit.framework.ComparisonFailure;
@@ -139,6 +141,32 @@ public class FunctionTest extends FoodMartTestCase {
             + "[measures].[foo] on columns, "
             + "[time].[1997].children on rows "
             + "from [sales]");
+    }
+
+    public void testCustomData() {
+        TestContext testContextCustomData = new TestContext() {};
+
+        ((RolapConnection)testContextCustomData.getConnection()).
+            setCustomData("User1");                
+
+        // Should return User1 from CustomData
+        testContextCustomData.assertQueryReturns(
+            "WITH MEMBER [Measures].CustomData0 AS CustomData() "
+            + "SELECT [Measures].CustomData0 ON COLUMNS FROM [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[CustomData0]}\n"
+            + "Row #0: User1\n");
+        // Should return empty row no CustomData defined
+        assertQueryReturns(
+            "WITH MEMBER [Measures].CustomData0 AS CustomData() "
+            + "SELECT [Measures].CustomData0 ON COLUMNS FROM [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[CustomData0]}\n"
+            + "Row #0: \n");
     }
 
     /**

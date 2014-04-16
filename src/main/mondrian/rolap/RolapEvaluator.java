@@ -5,12 +5,11 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 10 August, 2001
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.Calc;
@@ -20,6 +19,7 @@ import mondrian.olap.fun.FunUtil;
 import mondrian.server.Statement;
 import mondrian.spi.Dialect;
 import mondrian.util.Format;
+import mondrian.xmla.PropertyDefinition;
 
 import org.apache.log4j.Logger;
 
@@ -655,6 +655,7 @@ public class RolapEvaluator implements Evaluator {
         // Get the member in the current context which is (a) calculated, and
         // (b) has the highest solve order. If there are no calculated members,
         // go ahead and compute the cell.
+
         RolapCalculation maxSolveMember;
         switch (calculationCount) {
         case 0:
@@ -889,6 +890,10 @@ public class RolapEvaluator implements Evaluator {
 
     public final Locale getConnectionLocale() {
         return root.connection.getLocale();
+    }
+
+    public final String getConnectionCustomData() {
+        return root.connection.getCustomData();
     }
 
     public final String format(Object o) {

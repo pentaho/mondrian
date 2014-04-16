@@ -232,7 +232,15 @@ public enum PropertyDefinition {
         XmlaConstants.Access.Read,
         "false",
         XmlaConstants.Method.DISCOVER_AND_EXECUTE,
-        "");
+        ""),
+
+    CustomData(
+        RowsetDefinition.Type.String,
+        null,
+        XmlaConstants.Access.Read,
+        "",
+        XmlaConstants.Method.DISCOVER,
+        "CustomData.");
 
     final RowsetDefinition.Type type;
     final Set<? extends Enum> enumSet;

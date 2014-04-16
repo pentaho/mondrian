@@ -21,6 +21,7 @@ import mondrian.olap.fun.vba.Excel;
 import mondrian.olap.fun.vba.Vba;
 import mondrian.olap.type.LevelType;
 import mondrian.olap.type.Type;
+import mondrian.xmla.PropertyDefinition;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -1172,6 +1173,23 @@ public class BuiltinFunTable extends FunTableImpl {
                         final Member member =
                                 memberCalc.evaluateMember(evaluator);
                         return member.getCaption();
+                    }
+                };
+            }
+        });
+
+        // CustomData
+        builder.define(
+            new FunDefBase(
+                "CustomData",
+                "Returns a string from CustomData connection string property.",
+                "fS")
+        {
+            public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
+            {
+                return new AbstractStringCalc(call, new Calc[]{}) {
+                    public String evaluateString(Evaluator evaluator) {
+                        return evaluator.getConnectionCustomData();
                     }
                 };
             }

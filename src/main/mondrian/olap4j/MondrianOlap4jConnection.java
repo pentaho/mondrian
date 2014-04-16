@@ -4,9 +4,8 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.olap4j;
 
 import mondrian.mdx.*;
@@ -15,6 +14,7 @@ import mondrian.olap.Member;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.rolap.*;
 import mondrian.util.Bug;
+import mondrian.xmla.PropertyDefinition;
 import mondrian.xmla.XmlaHandler;
 
 import org.olap4j.Axis;
@@ -666,6 +666,11 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
 
     public Locale getLocale() {
         return mondrianConnection.getLocale();
+    }
+
+    public void setCustomData(String value) throws OlapException
+    {
+        mondrianConnection.setCustomData(value);
     }
 
     public void setRoleName(String roleName) throws OlapException {

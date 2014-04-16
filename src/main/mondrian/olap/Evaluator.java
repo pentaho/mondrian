@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.olap;
 
 import mondrian.calc.ParameterSlot;
@@ -282,6 +281,11 @@ public interface Evaluator {
      * Returns the connection's locale.
      */
     Locale getConnectionLocale();
+
+    /**
+     * Returns the custom data from connection string.
+     */
+    String getConnectionCustomData();
 
     /**
      * Retrieves the value of property <code>name</code>. If more than one

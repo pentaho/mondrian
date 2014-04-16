@@ -75,6 +75,8 @@ public class RolapConnection extends ConnectionBase {
     private final int id;
     private final Statement internalStatement;
 
+    private String customData;
+
     /**
      * Creates a connection.
      *
@@ -560,6 +562,14 @@ public class RolapConnection extends ConnectionBase {
             throw new IllegalArgumentException("locale must not be null");
         }
         this.locale = locale;
+    }
+
+    public String getCustomData() {
+        return customData;
+    }
+
+    public void setCustomData(String customData) {
+        this.customData = customData;
     }
 
     public SchemaReader getSchemaReader() {

@@ -13,6 +13,8 @@ package mondrian.xmla;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.olap4j.MondrianOlap4jConnection;
+import mondrian.rolap.RolapConnection;
 import mondrian.util.CompositeList;
 import mondrian.xmla.impl.DefaultSaxWriter;
 
@@ -174,12 +176,26 @@ public class XmlaHandler {
             }
         }
 
-        return
-            getConnection(
-                databaseName,
-                catalogName,
-                request.getRoleName(),
-                props);
+        OlapConnection connection = getConnection(
+            databaseName,
+            catalogName,
+            request.getRoleName(),
+            props);
+
+
+        final String customData = request.getProperties().get(
+            PropertyDefinition.CustomData.name());
+
+        if (customData != null) {
+            try {
+                ((MondrianOlap4jConnection)connection).setCustomData(
+                    customData);
+            } catch (OlapException e) {
+                //ignore
+            }
+        }
+
+        return connection;
     }
 
     private enum SetType {

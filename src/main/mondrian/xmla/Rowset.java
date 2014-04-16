@@ -148,6 +148,8 @@ abstract class Rowset implements XmlaConstants {
             break;
         case Catalog:
             break;
+        case CustomData:
+            break;
         case LocaleIdentifier:
             if (value != null) {
                 try {
