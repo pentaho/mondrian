@@ -41,11 +41,10 @@ public class ImpalaDialect extends HiveDialect {
     public static final JdbcDialectFactory FACTORY =
         new JdbcDialectFactory(
             ImpalaDialect.class,
-            DatabaseProduct.HIVE)
+            DatabaseProduct.IMPALA)
         {
             protected boolean acceptsConnection(Connection connection) {
-                return super.acceptsConnection(connection)
-                    && isDatabase(DatabaseProduct.IMPALA, connection);
+                return isDatabase(DatabaseProduct.IMPALA, connection);
             }
         };
 
