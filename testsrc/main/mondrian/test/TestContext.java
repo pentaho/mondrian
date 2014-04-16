@@ -2924,6 +2924,13 @@ public class TestContext {
                 }
             };
         }
+
+        /**
+         * Proxy for {@link java.sql.Connection#createStatement()}
+         */
+        public Statement createStatement() throws SQLException {
+            throw new SQLException();
+        }
     }
 
     /**
