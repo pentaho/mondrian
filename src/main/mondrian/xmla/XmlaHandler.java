@@ -174,12 +174,24 @@ public class XmlaHandler {
             }
         }
 
-        return
-            getConnection(
-                databaseName,
-                catalogName,
-                request.getRoleName(),
-                props);
+        OlapConnection connection = getConnection(
+            databaseName,
+            catalogName,
+            request.getRoleName(),
+            props);
+
+        String roleName = request.getProperties().get(
+            PropertyDefinition.Roles.name());
+
+        if (roleName != null) {
+            try {
+                connection.setRoleName(roleName);
+            } catch (OlapException e) {
+                // ignore
+            }
+        }
+
+        return connection;
     }
 
     private enum SetType {

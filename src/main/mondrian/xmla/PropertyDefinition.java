@@ -232,7 +232,15 @@ public enum PropertyDefinition {
         XmlaConstants.Access.Read,
         "false",
         XmlaConstants.Method.DISCOVER_AND_EXECUTE,
-        "");
+        ""),
+
+    Roles(
+        RowsetDefinition.Type.String,
+        null,
+        XmlaConstants.Access.Read,
+        "",
+        XmlaConstants.Method.DISCOVER,
+        "List of roles.");
 
     final RowsetDefinition.Type type;
     final Set<? extends Enum> enumSet;

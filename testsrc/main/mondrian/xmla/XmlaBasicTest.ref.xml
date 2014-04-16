@@ -13159,6 +13159,14 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IsRequired>false</IsRequired>
                         <Value>false</Value>
                     </row>
+                    <row>
+                        <PropertyName>Roles</PropertyName>
+                        <PropertyDescription>List of roles.</PropertyDescription>
+                        <PropertyType>string</PropertyType>
+                        <PropertyAccessType>Read</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value/>
+                    </row>
                 </root>
             </cxmla:return>
         </cxmla:DiscoverResponse>

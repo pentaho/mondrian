@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
 */
 
 package mondrian.olap4j;
@@ -677,8 +677,23 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
             this.roleNames = Collections.emptyList();
             connection1.setRole(role);
         } else {
-            setRoleNames(Collections.singletonList(roleName));
+            setRoleNames(getRolesFromString(roleName));
         }
+    }
+
+    private List<String> getRolesFromString(String roleName) {
+        List<String> listRoles = new LinkedList<String>();
+
+        String roles[] = roleName.split(",");
+
+        if (roles != null) {
+            for (String role : roles) {
+                listRoles.add(role);
+            }
+        } else {
+            listRoles.add(roleName);
+        }
+        return listRoles;
     }
 
     /**
