@@ -941,7 +941,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Employee Salary]}\n"
             + "Axis #2:\n"
             + "{[Employees].[All Employees]}\n"
-            + "Row #0: \n");
+            + "Row #0: $39,431.67\n");
 
         assertQueryReturns(
             "select \n"
@@ -954,7 +954,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Position].[All Position]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Employee Salary]}\n"
-            + "Row #0: \n");
+            + "Row #0: $39,431.67\n");
     }
 
     /**

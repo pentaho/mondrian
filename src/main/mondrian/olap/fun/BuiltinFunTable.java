@@ -298,7 +298,8 @@ public class BuiltinFunTable extends FunTableImpl {
                 return new AbstractMemberCalc(call, new Calc[] {memberCalc}) {
                     public Member evaluateMember(Evaluator evaluator) {
                         Member member = memberCalc.evaluateMember(evaluator);
-                        return member.getDataMember();
+                        return member.getDataMember() == null
+                            ? member : member.getDataMember();
                     }
                 };
             }
