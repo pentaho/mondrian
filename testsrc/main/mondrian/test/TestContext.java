@@ -2107,6 +2107,13 @@ public class TestContext {
         public DatabaseMetaData getMetaData() {
             return metaData;
         }
+
+        /**
+         * Proxy for {@link java.sql.Connection#createStatement()}
+         */
+        public Statement createStatement() throws SQLException {
+            throw new SQLException();
+        }
     }
 
     // Public only because required for reflection to work.
