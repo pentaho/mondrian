@@ -97,7 +97,18 @@ class CaseTestFunDef extends FunDefBase {
             int j = 0;
             int clauseCount = args.length / 2;
             int mismatchingArgs = 0;
-            int returnType = args[1].getCategory();
+            int returnType = -1;
+            for (int i = 1; i < args.length; i++) {
+                //If argument return type is null try next one
+                if (args[i].getCategory() != 16) {
+                    returnType = args[i].getCategory();
+                    break;
+                }
+            }
+            if (returnType == -1) {
+                return null;
+            }
+
             for (int i = 0; i < clauseCount; i++) {
                 if (!validator.canConvert(
                         j, args[j++], Category.Logical, conversions))

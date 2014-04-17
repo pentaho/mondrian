@@ -356,6 +356,59 @@ public class FunctionTest extends FoodMartTestCase {
         }
     }
 
+    public void testCaseNull() {
+        // works
+        assertExprReturns(
+            "CASE 2 WHEN 1 THEN \"first\" WHEN 4 THEN \"second\" WHEN 3 THEN \"third\" ELSE NULL END",
+            "");
+        // fails
+        assertExprReturns(
+            "CASE 2 WHEN 1 THEN NULL WHEN 4 THEN \"second\" WHEN 3 THEN \"third\" ELSE NULL END",
+            "");
+        // works
+        assertExprReturns(
+            "CASE WHEN 1=0 THEN \"first\" WHEN 1=4 THEN \"second\" WHEN 1=2 THEN \"third\" ELSE NULL END",
+            "");
+        // fails
+        assertExprReturns(
+            "CASE WHEN 1=0 THEN \"first\" WHEN 1=4 THEN \"second\" WHEN 1=2 THEN \"third\" ELSE NULL END",
+            "");
+        // This works because NULL is not the first attribute in the return
+        assertQueryReturns(
+            "WITH\n"
+            + " MEMBER [Product].[CaseTest] AS\n"
+            + " 'CASE\n"
+            + " WHEN [Gender].CurrentMember IS [Gender].[M] THEN [Gender].[F]\n"
+            + " ELSE NULL\n"
+            + " END'\n"
+            + "                \n"
+            + "SELECT {[Product].[CaseTest]} ON 0, {[Gender].[F]} ON 1 FROM Sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product].[CaseTest]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[F]}\n"
+            + "Row #0: \n");
+        // This fails
+        assertQueryReturns(
+            "WITH\n"
+            + " MEMBER [Product].[CaseTest] AS\n"
+            + " 'CASE\n"
+            + " WHEN [Gender].CurrentMember IS [Gender].[F] THEN NULL\n"
+            + " ELSE [Gender].[F]\n"
+            + " END'\n"
+            + "                \n"
+            + "SELECT {[Product].[CaseTest]} ON 0, {[Gender].[F]} ON 1 FROM Sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product].[CaseTest]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[F]}\n"
+            + "Row #0: \n");
+    }
+
     /**
      * Tests use of NULL literal to generate a null cell value.
      * Testcase is from bug 1440344.
