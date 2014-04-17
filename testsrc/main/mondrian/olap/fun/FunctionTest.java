@@ -5864,6 +5864,27 @@ public class FunctionTest extends FoodMartTestCase {
             "xxx");
     }
 
+    public void testDateProperties() {
+        TestContext testContext =
+            TestContext.instance().createSubstitutingCube(
+                "Sales",
+                "<Dimension name=\"Time2\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
+                + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
+                + "      <Table name=\"time_by_day\"/>\n"
+                + "      <Level name=\"Year2\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+                + "          levelType=\"TimeYears\"/>\n"
+                + "      <Level name=\"Quarter2\" column=\"quarter\" uniqueMembers=\"false\"\n"
+                + "          levelType=\"TimeQuarters\"/>\n"
+                + "      <Level name=\"Month2\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n"
+                + "          levelType=\"TimeMonths\">\n"
+                + "          <Property name=\"The Date\" column=\"the_date\" type=\"Timestamp\"/>\n"
+                + "      </Level>\n"
+                + "    </Hierarchy>\n"
+                + "</Dimension>");
+        testContext.assertExprReturns(
+            "Month([Time2].[1997].[Q1].[1].Properties(\"The Date\"))", "1");
+    }
+
     public void testPropertiesExpr() {
         assertExprReturns(
             "[Store].[USA].[CA].[Beverly Hills].[Store 6].Properties(\"Store Type\")",
