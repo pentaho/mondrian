@@ -1057,7 +1057,9 @@ public class JdbcDialectImpl implements Dialect {
             }
         } else if (upperProductName.indexOf("FIREBIRD") >= 0) {
             return DatabaseProduct.FIREBIRD;
-        } else if (productName.equals("Hive")) {
+        } else if (upperProductName.equals("HIVE")
+            || upperProductName.equals("APACHE HIVE"))
+        {
             return DatabaseProduct.HIVE;
         } else if (productName.startsWith("Informix")) {
             return DatabaseProduct.INFORMIX;
