@@ -66,6 +66,17 @@ public class RolapUtil {
     public static final Comparable<?> sqlNullValue =
         RolapUtilComparable.INSTANCE;
 
+    public static Util.Functor1<Void, java.sql.Statement> getDefaultCallback(
+        final Locus locus)
+    {
+        return new Util.Functor1<Void, java.sql.Statement>() {
+            public Void apply(java.sql.Statement stmt) {
+                locus.execution.registerStatement(locus, stmt);
+                return null;
+            }
+        };
+    }
+
     /**
      * Wraps a schema reader in a proxy so that each call to schema reader
      * has a locus for profiling purposes.
@@ -289,7 +300,9 @@ public class RolapUtil {
         String sql,
         Locus locus)
     {
-        return executeQuery(dataSource, sql, null, 0, 0, locus, -1, -1, null);
+        return executeQuery(
+            dataSource, sql, null, 0, 0, locus, -1, -1,
+            getDefaultCallback(locus));
     }
 
     /**
@@ -330,7 +343,10 @@ public class RolapUtil {
         SqlStatement stmt =
             new SqlStatement(
                 dataSource, sql, types, maxRowCount, firstRowOrdinal, locus,
-                resultSetType, resultSetConcurrency, callback);
+                resultSetType, resultSetConcurrency,
+                callback == null
+                    ? getDefaultCallback(locus)
+                    : callback);
         stmt.execute();
         return stmt;
     }
