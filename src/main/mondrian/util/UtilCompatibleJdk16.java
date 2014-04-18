@@ -65,16 +65,21 @@ public class UtilCompatibleJdk16 extends UtilCompatibleJdk15 {
             // synchronized internally and won't return until the query
             // completes.
             stmt.cancel();
-        } catch (Exception e) {
+        } catch (Throwable t) {
             // We crush this one. A lot of drivers will complain if cancel() is
             // called on a closed statement, but a call to isClosed() isn't
             // thread safe and might block. See above.
+
+            // Also, we MUST catch all throwables. Some drivers (ie. Hive)
+            // will choke on canceled queries and throw a OutOfMemoryError.
+            // We can't protect ourselves against this. That's a bug on their
+            // side.
             if (LOGGER.isTraceEnabled()) {
                 LOGGER.trace(
                     MondrianResource.instance()
                         .ExecutionStatementCleanupException
-                            .ex(e.getMessage(), e),
-                    e);
+                            .ex(t.getMessage(), t),
+                    t);
             }
         }
     }

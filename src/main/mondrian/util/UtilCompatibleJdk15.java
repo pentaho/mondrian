@@ -140,10 +140,15 @@ public class UtilCompatibleJdk15 implements UtilCompatible {
     public void cancelStatement(Statement stmt) {
         try {
             stmt.cancel();
-        } catch (Exception e) {
+        } catch (Throwable t) {
             // We can't call stmt.isClosed(); the method doesn't exist until
             // JDK 1.6. So, mask out the error.
-            if (e.getMessage().equals(
+
+            // Also, we MUST catch all throwables. Some drivers (ie. Hive)
+            // will choke on canceled queries and throw a OutOfMemoryError.
+            // We can't protect ourselves against this. That's a bug on their
+            // side.
+            if (t.getMessage().equals(
                     "org.apache.commons.dbcp.DelegatingStatement is closed."))
             {
                 return;
@@ -152,8 +157,8 @@ public class UtilCompatibleJdk15 implements UtilCompatible {
                 LOGGER.debug(
                     MondrianResource.instance()
                         .ExecutionStatementCleanupException
-                            .ex(e.getMessage(), e),
-                    e);
+                            .ex(t.getMessage(), t),
+                    t);
             }
         }
     }
