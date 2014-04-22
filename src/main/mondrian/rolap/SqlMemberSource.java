@@ -474,24 +474,6 @@ public class SqlMemberSource
         }
     }
 
-    /**
-     * Adds <code>member</code> just before the first element in
-     * <code>list</code> which has the same parent.
-     */
-    private void addAsOldestSibling(
-        List<RolapMember> list,
-        RolapMember member)
-    {
-        int i = list.size();
-        while (--i >= 0) {
-            RolapMember sibling = list.get(i);
-            if (sibling.getParentMember() != member.getParentMember()) {
-                break;
-            }
-        }
-        list.add(i + 1, member);
-    }
-
     private String makeKeysSql(
         SqlTupleReader.ColumnLayoutBuilder layoutBuilder,
         List<RolapSchema.PhysColumn> keyList)
@@ -727,7 +709,9 @@ public class SqlMemberSource
             Util.transform(fn, member.getLevel().attribute.getKeyList()),
             member.getDimension(),
             Clause.FROM,
-            SqlQueryBuilder.NullJoiner.INSTANCE);
+            SqlQueryBuilder.NullJoiner.INSTANCE,
+            false);
+
 
         return projectProperties(
             layoutBuilder, queryBuilder, level,
@@ -751,7 +735,7 @@ public class SqlMemberSource
             levelLayout.orderByOrdinalList.add(
                 queryBuilder.addColumn(
                     queryBuilder.column(fn.apply(key), dimension),
-                    Clause.SELECT_GROUP_ORDER, joiner, null));
+                    Clause.SELECT_GROUP_ORDER, joiner, null, false));
         }
 
         for (RolapSchema.PhysColumn column : level.attribute.getKeyList()) {
@@ -759,7 +743,7 @@ public class SqlMemberSource
             levelLayout.keyOrdinalList.add(
                 queryBuilder.addColumn(
                     queryBuilder.column(fn.apply(column), dimension),
-                    Clause.SELECT_GROUP, joiner, null));
+                    Clause.SELECT_GROUP, joiner, null, false));
         }
 
         if (level.attribute.getNameExp() != null) {
@@ -1186,14 +1170,7 @@ public class SqlMemberSource
                             parentMember, childLevel, keyClone, captionValue,
                             nameValue, orderKey, parentChild, stmt, layout);
                 }
-                if (Util.deprecated(false, false)
-                    /* value == RolapUtil.sqlNullValue */)
-                {
-                    children.toArray();
-                    addAsOldestSibling(children, member);
-                } else {
-                    children.add(member);
-                }
+                children.add(member);
             }
         } catch (SQLException e) {
             throw stmt.handle(e);

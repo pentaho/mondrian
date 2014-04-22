@@ -244,8 +244,20 @@ public class SqlQueryBuilder {
         Clause clause,
         Joiner joiner)
     {
+        addColumns(columns, dimension, clause, joiner, true);
+    }
+
+    public void addColumns(
+        Iterable<? extends RolapSchema.PhysColumn> columns,
+        RolapCubeDimension dimension,
+        Clause clause,
+        Joiner joiner,
+        boolean collateNullsLast)
+    {
         for (RolapSchema.PhysColumn physColumn : columns) {
-            addColumn(column(physColumn, dimension), clause, joiner, null);
+            addColumn(
+                column(physColumn, dimension),
+                clause, joiner, null, collateNullsLast);
         }
     }
 
@@ -255,6 +267,13 @@ public class SqlQueryBuilder {
 
     public int addColumn(
         Column column, Clause clause, Joiner joiner, String alias0)
+    {
+        return addColumn(column, clause, joiner, alias0, true);
+    }
+
+    public int addColumn(
+        Column column, Clause clause,
+        Joiner joiner, String alias0, boolean collateNullsLast)
     {
         if (column == null) {
             return -1;
@@ -302,7 +321,8 @@ public class SqlQueryBuilder {
         switch (clause) {
         case SELECT_GROUP_ORDER:
         case SELECT_ORDER:
-            sqlQuery.addOrderBy(expString, alias, true, false, true, true);
+            sqlQuery.addOrderBy(
+                expString, alias, true, false, true, collateNullsLast);
             orderBitSet.set(ordinal);
         }
         return ordinal;
