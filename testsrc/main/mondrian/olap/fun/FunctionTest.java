@@ -6270,6 +6270,28 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns(NullNumericExpr + " + 0", "0");
     }
 
+    public void testStringConcatenatesOperation() {
+        assertExprReturns(
+            "[Time].[Year].Dimension.UniqueName + \" \" + [Time].[Year].Dimension.Caption ",
+            "[Time] Time");
+        // String + null
+        assertExprReturns(
+            "[Time].[Year].Dimension.UniqueName + NULL",
+            "[Time]");
+        // null + String
+        assertExprReturns(
+            "NULL + [Time].[Year].Dimension.UniqueName",
+            "[Time]");
+        // String + empty
+        assertExprReturns(
+            "[Time].[Year].Dimension.UniqueName + \"\"",
+            "[Time]");
+        // empty + String
+        assertExprReturns(
+            "\"\" + [Time].[Year].Dimension.UniqueName",
+            "[Time]");
+    }
+
     public void testMinus() {
         assertExprReturns("1-3", "-2");
         assertExprReturns("5 - " + NullNumericExpr, "5"); // 5 - null --> 5
