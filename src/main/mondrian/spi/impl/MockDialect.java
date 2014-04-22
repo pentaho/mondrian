@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2013-2013 Pentaho
+// Copyright (C) 2013-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -14,6 +14,8 @@ import mondrian.util.DelegatingInvocationHandler;
 
 import java.lang.reflect.Proxy;
 import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Creates a mock {@link Dialect} for purposes such as testing.
@@ -55,6 +57,10 @@ public class MockDialect {
         /** Proxy for {@link java.sql.Connection#getMetaData()}. */
         public DatabaseMetaData getMetaData() {
             return metaData;
+        }
+
+        public Statement createStatement() throws SQLException {
+            throw new SQLException();
         }
     }
 
