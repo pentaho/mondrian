@@ -8,11 +8,11 @@
 				</Table>
 				<Level name="Territory" column="TERRITORY" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never">
 				</Level>
-				<Level name="Country" column="COUNTRY" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never">
+				<Level name="Country" column="COUNTRY" type="String" uniqueMembers="false" levelType="Regular" hideMemberIf="Never">
 				</Level>
-				<Level name="State Province" column="STATE" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never">
+				<Level name="State Province" column="STATE" type="String" uniqueMembers="false" levelType="Regular" hideMemberIf="Never">
 				</Level>
-				<Level name="City" column="CITY" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never">
+				<Level name="City" column="CITY" type="String" uniqueMembers="false" levelType="Regular" hideMemberIf="Never">
 				</Level>
 			</Hierarchy>
 		</Dimension>

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 30 August, 2001
@@ -311,6 +311,12 @@ public abstract class RolapAggregationManager {
             CellRequest request =
                 new CellRequest(starMeasure, extendedContext, drillThrough);
             for (RolapMember member : Util.subList(memberList, 1)) {
+                if (
+                    member instanceof
+                        RestrictedMemberReader.MultiCardinalityDefaultMember)
+                {
+                    continue;
+                }
                 final RolapCubeLevel level = member.getLevel();
                 final boolean needToReturnNull =
                     level.getLevelReader().constrainRequest(

@@ -88,7 +88,7 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Row #0: 895\n"
             + "Row #0: 4,923\n"
             + "Row #0: 596\n"
-            + "Row #0: 58,396\n"
+            + "Row #0: 596\n"
             + "Row #0: 596\n"
             + "Row #0: 1,842\n"
             + "Row #0: 692\n"
