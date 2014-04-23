@@ -563,7 +563,7 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Date]}\n"
             + "Axis #2:\n"
-            + "{[Orders].[10421]}\n"
+            + "{[Orders].[Orders].[10421]}\n"
             + "Row #0: 2005-05-29\n");
     }
 
