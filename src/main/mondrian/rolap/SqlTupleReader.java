@@ -357,6 +357,8 @@ public class SqlTupleReader implements TupleReader {
                         // we haven't seen this one before, so add it.
                         if (siblings.get(i) != null) {
                             if (keyValues == null) {
+                                // TODO:  keyValues is never null.
+                                // This mishandles null keys.
                                 addAsOldestSibling(siblings.get(i), member);
                             } else {
                                 siblings.get(i).add(member);
