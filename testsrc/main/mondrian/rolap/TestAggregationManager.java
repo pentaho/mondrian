@@ -883,32 +883,27 @@ public class TestAggregationManager extends BatchTestCase {
                 aggConstraint);
 
         String mysqlSql =
-            "select `product_class`.`product_family` as `c0`, "
-            + "count(distinct `sales_fact_1997`.`customer_id`) as `m0` "
-            + "from `product_class` as `product_class`, `product` as `product`, "
-            + "`sales_fact_1997` as `sales_fact_1997`, `time_by_day` as `time_by_day` "
-            + "where `sales_fact_1997`.`product_id` = `product`.`product_id` and "
-            + "`product`.`product_class_id` = `product_class`.`product_class_id` and "
-            + "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and "
-            + "(((`time_by_day`.`the_year`, `time_by_day`.`quarter`, `time_by_day`.`month_of_year`) "
-            + "in ((1997, 'Q1', 1), (1997, 'Q3', 7)))) "
-            + "group by `product_class`.`product_family`";
-
-        String derbySql =
-            "select \"product_class\".\"product_family\" as \"c0\", "
-            + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
-            + "from \"product_class\" as \"product_class\", \"product\" as \"product\", "
-            + "\"sales_fact_1997\" as \"sales_fact_1997\", \"time_by_day\" as \"time_by_day\" "
-            + "where \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" and "
-            + "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and "
-            + "\"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and "
-            + "((\"time_by_day\".\"the_year\" = 1997 and \"time_by_day\".\"quarter\" = 'Q1' and \"time_by_day\".\"month_of_year\" = 1) or "
-            + "(\"time_by_day\".\"the_year\" = 1997 and \"time_by_day\".\"quarter\" = 'Q3' and \"time_by_day\".\"month_of_year\" = 7)) "
-            + "group by \"product_class\".\"product_family\"";
+            "select\n"
+            + "    `product_class`.`product_family` as `c0`,\n"
+            + "    count(distinct `sales_fact_1997`.`customer_id`) as `m0`\n"
+            + "from\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `product` as `product`,\n"
+            + "    `product_class` as `product_class`,\n"
+            + "    `time_by_day` as `time_by_day`\n"
+            + "where\n"
+            + "    (((`time_by_day`.`the_year`, `time_by_day`.`month_of_year`, `time_by_day`.`quarter`) in ((1997, 1, 'Q1'), (1997, 7, 'Q3'))))\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+            + "and\n"
+            + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "group by\n"
+            + "    `product_class`.`product_family`";
 
         SqlPattern[] patterns = {
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql),
-            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql)
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)
         };
 
         assertRequestSql(
