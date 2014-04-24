@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -670,12 +670,43 @@ public class BatchTestCase extends FoodMartTestCase {
                     storeTypeColumn,
                     new ValueColumnPredicate(
                         new PredicateColumn(
-                            RolapSchema.BadRouter.INSTANCE,
+                            getRouter(testContext, cube, column),
                             storeTypeColumn.getExpression()),
                         value));
             }
         }
         return request;
+    }
+
+    private static RolapSchema.PhysRouter getRouter(
+        TestContext testContext, String cube, String column)
+    {
+        RolapCube rolapCube = getCube(testContext, cube);
+        RolapCubeDimension dim = lookupDimension(rolapCube, column);
+        if (dim != null) {
+            // assumes the first measure group.
+            return new RolapSchema.CubeRouter(
+                rolapCube.getMeasureGroups().get(0), dim);
+        }
+        return RolapSchema.BadRouter.INSTANCE;
+    }
+
+    private static RolapCubeDimension lookupDimension(
+        RolapCube cube, String column)
+    {
+        for (RolapCubeDimension dim : cube.getDimensionList()) {
+            for (RolapHierarchy hier : dim.getHierarchies()) {
+                for (RolapLevel level :  hier.getLevelList()) {
+                    if (level.getAttribute().getNameExp() != null
+                        && level.getAttribute().getNameExp()
+                        .toSql().equals(column))
+                    {
+                        return dim;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     protected static CellRequest createRequest(
@@ -715,7 +746,7 @@ public class BatchTestCase extends FoodMartTestCase {
 
         request.addAggregateList(
             aggConstraint.getBitKey(star),
-            aggConstraint.toPredicate(star));
+            aggConstraint.toPredicate(star, cube, testContext));
 
         return request;
     }
@@ -1183,14 +1214,15 @@ public class BatchTestCase extends FoodMartTestCase {
             return star.getBitKey(tables, columns);
         }
 
-        StarPredicate toPredicate(RolapStar star) {
+        StarPredicate toPredicate(
+            RolapStar star, String cubeName, TestContext testContext)
+        {
             RolapStar.Column starColumn[] = new RolapStar.Column[tables.size()];
             for (int i = 0; i < tables.size(); i++) {
                 String table = tables.get(i);
                 String column = columns.get(i);
                 starColumn[i] = star.lookupColumn(table, column);
             }
-
             List<StarPredicate> orPredList = new ArrayList<StarPredicate>();
             for (List<String> values : valueList) {
                 assert values.size() == tables.size();
@@ -1200,7 +1232,9 @@ public class BatchTestCase extends FoodMartTestCase {
                     andPredList.add(
                         new ValueColumnPredicate(
                             new PredicateColumn(
-                                RolapSchema.BadRouter.INSTANCE,
+                                getRouter(
+                                    testContext, cubeName,
+                                    starColumn[i].getExpression().toSql()),
                                 starColumn[i].getExpression()),
                             values.get(i)));
                 }
