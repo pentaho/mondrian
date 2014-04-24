@@ -1350,7 +1350,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         synchronized RolapStar getOrCreateStar(
             final MondrianDef.Relation fact)
         {
-            String factTableName = fact.toString();
+            final String factTableName = fact.getAlias();
             RolapStar star = stars.get(factTableName);
             if (star == null) {
                 star = makeRolapStar(fact);
