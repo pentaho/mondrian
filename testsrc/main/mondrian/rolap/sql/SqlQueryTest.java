@@ -282,7 +282,7 @@ public class SqlQueryTest extends BatchTestCase {
             + "    `employee`.`employee_id`,\n"
             + "    `employee`.`full_name`\n"
             + "order by\n"
-            + "    ISNULL(`employee`.`employee_id`) ASC, `employee`.`employee_id` ASC";
+            + "    `employee`.`employee_id` ASC";
 
         final String mdx =
             "SELECT "
