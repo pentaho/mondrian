@@ -1016,12 +1016,12 @@ public class MemberCacheControlTest extends FoodMartTestCase {
                         // Check that <Member>.Children uses cache when applied
                         // to regular member.
                         testContext.assertAxisReturns(
-                            "[Store].[USA].[CA].Children",
-                            "[Store].[USA].[CA].[Alameda]\n"
-                            + "[Store].[USA].[CA].[Beverly Hills]\n"
-                            + "[Store].[USA].[CA].[Los Angeles]\n"
-                            + "[Store].[USA].[CA].[San Diego]\n"
-                            + "[Store].[USA].[CA].[San Francisco]");
+                            "[Store].[Store].[USA].[CA].Children",
+                            "[Store].[Store].[USA].[CA].[Alameda]\n"
+                            + "[Store].[Store].[USA].[CA].[Beverly Hills]\n"
+                            + "[Store].[Store].[USA].[CA].[Los Angeles]\n"
+                            + "[Store].[Store].[USA].[CA].[San Diego]\n"
+                            + "[Store].[Store].[USA].[CA].[San Francisco]");
                     }
                 });
 
@@ -1034,12 +1034,12 @@ public class MemberCacheControlTest extends FoodMartTestCase {
                         // Check that <Member>.Children uses cache when applied
                         // to regular member.
                         testContext.assertAxisReturns(
-                            "[Store].[USA].[CA].Children",
-                            "[Store].[USA].[CA].[Alameda]\n"
-                            + "[Store].[USA].[CA].[Beverly Hills]\n"
-                            + "[Store].[USA].[CA].[Los Angeles]\n"
-                            + "[Store].[USA].[CA].[San Diego]\n"
-                            + "[Store].[USA].[CA].[San Francisco]");
+                            "[Store].[Store].[USA].[CA].Children",
+                            "[Store].[Store].[USA].[CA].[Alameda]\n"
+                            + "[Store].[Store].[USA].[CA].[Beverly Hills]\n"
+                            + "[Store].[Store].[USA].[CA].[Los Angeles]\n"
+                            + "[Store].[Store].[USA].[CA].[San Diego]\n"
+                            + "[Store].[Store].[USA].[CA].[San Francisco]");
                     }
                 });
 
@@ -1093,10 +1093,10 @@ public class MemberCacheControlTest extends FoodMartTestCase {
                     public void run() {
                         // Check that <Level>.Members uses cache.
                         testContext.assertAxisReturns(
-                            "[Time].[1997].[Q2].Children",
-                            "[Time].[1997].[Q2].[4]\n"
-                            + "[Time].[1997].[Q2].[5]\n"
-                            + "[Time].[1997].[Q2].[6]");
+                            "[Time].[Time].[1997].[Q2].Children",
+                            "[Time].[Time].[1997].[Q2].[4]\n"
+                            + "[Time].[Time].[1997].[Q2].[5]\n"
+                            + "[Time].[Time].[1997].[Q2].[6]");
                     }
                 });
         } finally {
