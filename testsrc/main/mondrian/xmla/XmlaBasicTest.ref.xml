@@ -5321,6 +5321,24 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>Ancestor</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>Ancestors</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the set of all ancestors of a specified member at a specified level or at a specified distance from the member</DESCRIPTION>
+                        <PARAMETER_LIST>Member, Level</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Ancestors</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Ancestors</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the set of all ancestors of a specified member at a specified level or at a specified distance from the member</DESCRIPTION>
+                        <PARAMETER_LIST>Member, Numeric Expression</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Ancestors</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>AND</FUNCTION_NAME>
                         <DESCRIPTION>Returns the conjunction of two conditions.</DESCRIPTION>
                         <PARAMETER_LIST>Logical Expression, Logical Expression</PARAMETER_LIST>
