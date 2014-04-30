@@ -5864,6 +5864,12 @@ public class FunctionTest extends FoodMartTestCase {
             "xxx");
     }
 
+    public void testPropertiesWithTYPED() {
+        assertExprReturns(
+            "[Store].[USA].[CA].[Beverly Hills].[Store 6].Properties(\"Store Type\", TYPED)",
+            "Gourmet Supermarket");
+    }
+
     public void testPropertiesExpr() {
         assertExprReturns(
             "[Store].[USA].[CA].[Beverly Hills].[Store 6].Properties(\"Store Type\")",

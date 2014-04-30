@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 
@@ -25,7 +25,13 @@ import java.util.List;
  * @since Mar 23, 2006
  */
 class PropertiesFunDef extends FunDefBase {
-    static final ResolverImpl Resolver = new ResolverImpl();
+    static final ResolverImpl Resolver = new ResolverImpl(
+        "Properties",
+        "<Member>.Properties(<String> [,TYPED])",
+        "Returns the value of a member property.",
+        new String[] {"mvS", "mvSy"},
+        PropertiesFunDef.class,
+        new String[]{"TYPED"});
 
     public PropertiesFunDef(
         String name,
@@ -36,6 +42,10 @@ class PropertiesFunDef extends FunDefBase {
         int[] parameterTypes)
     {
         super(name, signature, description, syntax, returnType, parameterTypes);
+    }
+
+    public PropertiesFunDef(FunDef dummyFunDef) {
+        super(dummyFunDef);
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
@@ -70,17 +80,22 @@ class PropertiesFunDef extends FunDefBase {
     /**
      * Resolves calls to the <code>PROPERTIES</code> MDX function.
      */
-    private static class ResolverImpl extends ResolverBase {
+    private static class ResolverImpl extends ReflectiveMultiResolver {
         private static final int[] PARAMETER_TYPES = {
-            Category.Member, Category.String
+                Category.Member, Category.String
         };
 
-        private ResolverImpl() {
+        private static final int[] PARAMETER_TYPES_TYPED = {
+            Category.Member, Category.String, Category.Symbol
+        };
+
+        public ResolverImpl(
+            String name, String signature, String description,
+            String[] signatures, Class clazz, String[] reservedWords)
+        {
             super(
-                "Properties",
-                "<Member>.Properties(<String Expression>)",
-                "Returns the value of a member property.",
-                Syntax.Method);
+                name, signature, description, signatures,
+                clazz, reservedWords);
         }
 
         private boolean matches(
@@ -107,13 +122,18 @@ class PropertiesFunDef extends FunDefBase {
             Validator validator,
             List<Conversion> conversions)
         {
-            if (!matches(args, PARAMETER_TYPES, validator, conversions)) {
+            if (!matches(args, args.length == 2
+                ? PARAMETER_TYPES : PARAMETER_TYPES_TYPED,
+                validator, conversions))
+            {
                 return null;
             }
+
             int returnType = deducePropertyCategory(args[0], args[1]);
             return new PropertiesFunDef(
                 getName(), getSignature(), getDescription(), getSyntax(),
-                returnType, PARAMETER_TYPES);
+                returnType, args.length == 2
+                ? PARAMETER_TYPES : PARAMETER_TYPES_TYPED);
         }
 
         /**
