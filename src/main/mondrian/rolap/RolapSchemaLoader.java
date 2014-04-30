@@ -4154,7 +4154,7 @@ public class RolapSchemaLoader {
         case Date:
         case Time:
         case Timestamp:
-            return Property.Datatype.TYPE_OTHER;
+            return Property.Datatype.TYPE_TIMESTAMP;
         case Integer:
         case Numeric:
             return Property.Datatype.TYPE_NUMERIC;
