@@ -659,7 +659,7 @@ public abstract class RolapAggregationManager {
      * @param measureGroup Measure group
      * @return compound predicate for a tuple or a member
      */
-    private static StarPredicate makeCompoundPredicate(
+    static StarPredicate makeCompoundPredicate(
         Map<BitKey, List<RolapMember[]>> compoundGroupMap,
         RolapMeasureGroup measureGroup)
     {
