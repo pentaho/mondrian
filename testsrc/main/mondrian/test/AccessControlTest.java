@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho
+// Copyright (C) 2005-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -1517,31 +1517,31 @@ public class AccessControlTest extends FoodMartTestCase {
         // of visible children [Store].[CA] and [Store].[OR].[Portland].
         final TestContext testContext =
             goodmanContext(Role.RollupPolicy.PARTIAL);
-        testContext.assertQueryReturns(
-            query,
-            "Axis #0:\n"
-            + "{[Time].[Time].[1997]}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "Axis #2:\n"
-            + "{[Store].[Stores].[All Stores]}\n"
-            + "{[Store].[Stores].[USA]}\n"
-            + "{[Store].[Stores].[USA].[CA]}\n"
-            + "{[Store].[Stores].[USA].[CA].[Alameda]}\n"
-            + "{[Store].[Stores].[USA].[CA].[Beverly Hills]}\n"
-            + "{[Store].[Stores].[USA].[CA].[Los Angeles]}\n"
-            + "{[Store].[Stores].[USA].[CA].[San Diego]}\n"
-            + "{[Store].[Stores].[USA].[CA].[San Francisco]}\n"
-            + "{[Store].[Stores].[USA].[OR]}\n"
-            + "Row #0: 74,748\n"
-            + "Row #1: 74,748\n"
-            + "Row #2: 74,748\n"
-            + "Row #3: \n"
-            + "Row #4: 21,333\n"
-            + "Row #5: 25,663\n"
-            + "Row #6: 25,635\n"
-            + "Row #7: 2,117\n"
-            + "Row #8: 26,079\n");
+            testContext.assertQueryReturns(
+                query,
+                "Axis #0:\n"
+                + "{[Time].[Time].[1997]}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Store].[Stores].[All Stores]}\n"
+                + "{[Store].[Stores].[USA]}\n"
+                + "{[Store].[Stores].[USA].[CA]}\n"
+                + "{[Store].[Stores].[USA].[CA].[Alameda]}\n"
+                + "{[Store].[Stores].[USA].[CA].[Beverly Hills]}\n"
+                + "{[Store].[Stores].[USA].[CA].[Los Angeles]}\n"
+                + "{[Store].[Stores].[USA].[CA].[San Diego]}\n"
+                + "{[Store].[Stores].[USA].[CA].[San Francisco]}\n"
+                + "{[Store].[Stores].[USA].[OR]}\n"
+                + "Row #0: 100,827\n"
+                + "Row #1: 100,827\n"
+                + "Row #2: 74,748\n"
+                + "Row #3: \n"
+                + "Row #4: 21,333\n"
+                + "Row #5: 25,663\n"
+                + "Row #6: 25,635\n"
+                + "Row #7: 2,117\n"
+                + "Row #8: 26,079\n");
 
         goodmanContext(Role.RollupPolicy.FULL).assertQueryReturns(
             query,
@@ -3236,6 +3236,33 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Row #4: 65,336\n"
             + "Row #5: 66,222\n");
     }
+
+    public void testRoleWithMixedAccess() throws Exception {
+        final String mdx =
+            "select NON EMPTY { CrossJoin([Product].[Products].[Drink], measures.[customer count])} on 0 from [Sales]";
+        final TestContext context =
+            TestContext.instance().create(
+                null, null, null, null, null,
+                " <Role name='foodAndDrink'>\n"
+                + " <SchemaGrant access='all'>\n"
+                + " <CubeGrant cube='Sales' access='all'>\n"
+                + " <HierarchyGrant hierarchy='[Products]' access='custom' rollupPolicy='partial'>\n"
+                + " <MemberGrant member='[Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine]' "
+                + "access='all'/>\n"
+                + " <MemberGrant member='[Product].[Products].[Drink].[Beverages].[Hot Beverages]' access='all'/>\n"
+                + " </HierarchyGrant>\n"
+                + " </CubeGrant>\n"
+                + " </SchemaGrant>\n"
+                + " </Role>\n").withRole("foodAndDrink");
+        context.assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product].[Products].[Drink], [Measures].[Customer Count]}\n"
+            + "Row #0: 2,240\n");
+    }
+
 
     public void testRollupPolicyWithNative() {
         // Verifies limited role-restricted results using

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -296,9 +296,9 @@ public class RolapHierarchy extends HierarchyBase {
                 } finally {
                     evaluator.restore(savepoint);
                 }
-                // Now pass it recursively to this method.
-                return getLowestMembersForAccess(evaluator, hAccess, newList);
             }
+            // Now pass it recursively to this method.
+            return getLowestMembersForAccess(evaluator, hAccess, newList);
         }
         return currentList;
     }
