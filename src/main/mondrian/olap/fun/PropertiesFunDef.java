@@ -37,6 +37,10 @@ class PropertiesFunDef extends FunDefBase {
         super(name, signature, description, syntax, returnType, parameterTypes);
     }
 
+    public PropertiesFunDef(FunDef dummyFunDef) {
+        super(dummyFunDef);
+    }
+
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final MemberCalc memberCalc = compiler.compileMember(call.getArg(0));
         final StringCalc stringCalc = compiler.compileString(call.getArg(1));
@@ -67,17 +71,25 @@ class PropertiesFunDef extends FunDefBase {
     /**
      * Resolves calls to the <code>PROPERTIES</code> MDX function.
      */
-    private static class ResolverImpl extends ResolverBase {
+    private static class ResolverImpl extends ReflectiveMultiResolver
+    {
         private static final int[] PARAMETER_TYPES = {
             Category.Member, Category.String
         };
 
-        private ResolverImpl() {
+        private static final int[] PARAMETER_TYPES_TYPED = {
+            Category.Member, Category.String, Category.Symbol
+        };
+
+        public ResolverImpl() {
             super(
                 "Properties",
-                "<Member>.Properties(<String Expression>)",
+                "<Member>.Properties(<String> [,TYPED])",
                 "Returns the value of a member property.",
-                Syntax.Method);
+                new String[] {"mvS", "mvSy"},
+                PropertiesFunDef.class,
+                new String[]{"TYPED"}
+            );
         }
 
         private boolean matches(
@@ -90,8 +102,8 @@ class PropertiesFunDef extends FunDefBase {
                 return false;
             }
             for (int i = 0; i < args.length; i++) {
-                if (!validator.canConvert(
-                        i, args[i], parameterTypes[i], conversions))
+                if (!validator.canConvert(i,
+                    args[i], parameterTypes[i], conversions))
                 {
                     return false;
                 }
@@ -104,13 +116,17 @@ class PropertiesFunDef extends FunDefBase {
             Validator validator,
             List<Conversion> conversions)
         {
-            if (!matches(args, PARAMETER_TYPES, validator, conversions)) {
+            if (!matches(args, args.length == 2
+                ? PARAMETER_TYPES
+                : PARAMETER_TYPES_TYPED, validator, conversions))
+            {
                 return null;
             }
             int returnType = deducePropertyCategory(args[0], args[1]);
             return new PropertiesFunDef(
                 getName(), getSignature(), getDescription(), getSyntax(),
-                returnType, PARAMETER_TYPES);
+                returnType, args.length == 2
+                ? PARAMETER_TYPES : PARAMETER_TYPES_TYPED);
         }
 
         /**
@@ -135,11 +151,9 @@ class PropertiesFunDef extends FunDefBase {
             if (hierarchy == null) {
                 return Category.Value;
             }
-            List<? extends Level> levels = hierarchy.getLevelList();
-            Property property =
-                lookupProperty(
-                    levels.get(levels.size() - 1),
-                    propertyName);
+            Level[] levels = hierarchy.getLevels();
+            Property property = lookupProperty(
+                levels[levels.length - 1], propertyName);
             if (property == null) {
                 // we'll likely get a runtime error
                 return Category.Value;

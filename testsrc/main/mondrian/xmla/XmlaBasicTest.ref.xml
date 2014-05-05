@@ -7870,8 +7870,17 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     <row>
                         <FUNCTION_NAME>Properties</FUNCTION_NAME>
                         <DESCRIPTION>Returns the value of a member property.</DESCRIPTION>
-                        <PARAMETER_LIST>(none)</PARAMETER_LIST>
-                        <RETURN_TYPE>1</RETURN_TYPE>
+                        <PARAMETER_LIST>String</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>Properties</CAPTION>
+                    </row>
+                    <row>
+                        <FUNCTION_NAME>Properties</FUNCTION_NAME>
+                        <DESCRIPTION>Returns the value of a member property.</DESCRIPTION>
+                        <PARAMETER_LIST>String, Symbol</PARAMETER_LIST>
+                        <RETURN_TYPE>12</RETURN_TYPE>
                         <ORIGIN>1</ORIGIN>
                         <INTERFACE_NAME/>
                         <CAPTION>Properties</CAPTION>
