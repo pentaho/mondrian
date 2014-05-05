@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2013 Pentaho
+// Copyright (C) 2006-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -24,7 +24,7 @@ import java.util.Arrays;
  * @author avix
  */
 class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
-    private final String childName;
+    final String childName;
     private final Object cacheKey;
 
     /**

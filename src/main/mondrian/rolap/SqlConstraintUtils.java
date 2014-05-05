@@ -855,7 +855,7 @@ public class SqlConstraintUtils {
      * @return true if the members comprise the cross product of all unique
      * member keys referenced at each level
      */
-    private static boolean membersAreCrossProduct(List<RolapMember> members)
+    public static boolean membersAreCrossProduct(List<RolapMember> members)
     {
         int crossProdSize = getNumUniqueMemberKeys(members);
         for (Collection<RolapMember> parents = getUniqueParentMembers(members);
