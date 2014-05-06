@@ -8819,6 +8819,24 @@ public class FunctionTest extends FoodMartTestCase {
             "CA");
     }
 
+    public void testMembersString() {
+        assertExprReturns(
+            "Members(\"[Time].[Year].[1997]\").Name",
+            "1997");
+
+        assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+            + "NON EMPTY {Members('[Product].[All Products].[Food]')} ON ROWS \n"
+            + "from [Sales] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Food]}\n"
+            + "Row #0: 191,940\n");
+    }
+
     public void testStrToMemberFullyQualifiedName() {
         assertExprReturns(
             "StrToMember(\"[Store].[All Stores].[USA].[CA]\").Name",
