@@ -5,12 +5,11 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho
+// Copyright (C) 2005-2014 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
 */
-
 package mondrian.test;
 
 import mondrian.olap.*;
@@ -1407,6 +1406,99 @@ public class DrillThroughTest extends FoodMartTestCase {
                 e.getMessage().contains(
                     "Can't perform drillthrough operations because"));
         }
+    }
+
+    /**
+     * Tests that dialects that require alias in order by are correctly quoted
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1983">MONDRIAN-1983</a>.
+     */
+    public void testColumnAliasQuotedInOrderBy() throws Exception {
+        Result result = executeQuery(
+            "WITH\n"
+            + "SET [*NATIVE_CJ_SET] AS 'FILTER([*BASE_MEMBERS__Customers_], NOT ISEMPTY ([Measures].[Unit Sales]))'\n"
+            + "SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+            + "SET [*BASE_MEMBERS__Customers_] AS '[Customers].[Name].MEMBERS'\n"
+            + "SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Customers].CURRENTMEMBER)})'\n"
+            + "SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],"
+            + "[Customers].CURRENTMEMBER.ORDERKEY,BASC,"
+            + "ANCESTOR([Customers].CURRENTMEMBER,[Customers].[City]).ORDERKEY,BASC)'\n"
+            + "MEMBER [Measures].[*FORMATTED_MEASURE_0] AS '[Measures].[Unit Sales]',"
+            + " FORMAT_STRING = 'Standard', SOLVE_ORDER=500\n"
+            + "SELECT\n"
+            + "FILTER([*BASE_MEMBERS__Measures_],([Measures].CurrentMember Is [Measures].[*FORMATTED_MEASURE_0])) ON COLUMNS\n"
+            + ",FILTER([*SORTED_ROW_AXIS],([Customers].CurrentMember Is [Customers].[USA].[CA].[San Gabriel].[A. Joyce Jarvis])) ON ROWS\n"
+            + "FROM [Sales]");
+        Cell cell = result.getCell(new int[]{0, 0});
+        String sql = cell.getDrillThroughSQL(true);
+        String expectedSql;
+        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        case VECTORWISE:
+            expectedSql =
+                "select \"store\".\"store_country\" as \"Store Country\","
+                + " \"store\".\"store_state\" as \"Store State\","
+                + " \"store\".\"store_city\" as \"Store City\","
+                + " \"store\".\"store_name\" as \"Store Name\","
+                + " \"store\".\"store_sqft\" as \"Store Sqft\","
+                + " \"store\".\"store_type\" as \"Store Type\","
+                + " \"time_by_day\".\"the_year\" as \"Year\","
+                + " \"time_by_day\".\"quarter\" as \"Quarter\","
+                + " \"time_by_day\".\"month_of_year\" as \"Month\","
+                + " \"time_by_day\".\"week_of_year\" as \"Week\","
+                + " \"time_by_day\".\"day_of_month\" as \"Day\","
+                + " \"product_class\".\"product_family\" as \"Product Family\","
+                + " \"product_class\".\"product_department\" as \"Product Department\", "
+                + "\"product_class\".\"product_category\" as \"Product Category\","
+                + " \"product_class\".\"product_subcategory\" as \"Product Subcategory\","
+                + " \"product\".\"brand_name\" as \"Brand Name\","
+                + " \"product\".\"product_name\" as \"Product Name\","
+                + " \"promotion\".\"media_type\" as \"Media Type\","
+                + " \"promotion\".\"promotion_name\" as \"Promotion Name\", "
+                + "fullname as \"Name\", "
+                + "\"customer\".\"customer_id\" as \"Name (Key)\","
+                + " \"customer\".\"education\" as \"Education Level\","
+                + " \"customer\".\"gender\" as \"Gender\","
+                + " \"customer\".\"marital_status\" as \"Marital Status\","
+                + " \"customer\".\"yearly_income\" as \"Yearly Income\","
+                + " \"sales_fact_1997\".\"unit_sales\" as \"Unit Sales\""
+                + " from \"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\","
+                + " \"time_by_day\" as \"time_by_day\", \"product_class\" as \"product_class\","
+                + " \"product\" as \"product\", \"promotion\" as \"promotion\","
+                + " \"customer\" as \"customer\" "
+                + "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" "
+                + "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
+                + "and \"time_by_day\".\"the_year\" = 1997 "
+                + "and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" "
+                + "and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" "
+                + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
+                + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "and \"customer\".\"customer_id\" = 665 "
+                + "order by \"Store Country\" ASC, "
+                + "\"Store State\" ASC, \"Store City\" ASC, "
+                + "\"Store Name\" ASC, \"Store Sqft\" ASC, "
+                + "\"Store Type\" ASC, \"Year\" ASC,"
+                + " \"Quarter\" ASC, "
+                + "\"Month\" ASC, "
+                + "\"Week\" ASC, "
+                + "\"Day\" ASC, "
+                + "\"Product Family\" ASC, "
+                + "\"Product Department\" ASC, "
+                + "\"Product Category\" ASC, "
+                + "\"Product Subcategory\" ASC, "
+                + "\"Brand Name\" ASC, "
+                + "\"Product Name\" ASC, "
+                + "\"Media Type\" ASC, "
+                + "\"Promotion Name\" ASC, "
+                + "\"Name\" ASC, "
+                + "\"Name (Key)\" ASC, "
+                + "\"Education Level\" ASC, "
+                + "\"Gender\" ASC, "
+                + "\"Marital Status\" ASC, "
+                + "\"Yearly Income\" ASC";
+            break;
+        default:
+            return;
+        }
+        getTestContext().assertSqlEquals(expectedSql, sql, 11);
     }
 }
 
