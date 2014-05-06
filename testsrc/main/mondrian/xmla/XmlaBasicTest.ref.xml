@@ -5069,6 +5069,15 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>+</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>+</FUNCTION_NAME>
+                        <DESCRIPTION>Concatenates two strings</DESCRIPTION>
+                        <PARAMETER_LIST>String, String</PARAMETER_LIST>
+                        <RETURN_TYPE>8</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>+</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>-</FUNCTION_NAME>
                         <DESCRIPTION>Subtracts two numbers.</DESCRIPTION>
                         <PARAMETER_LIST>Numeric Expression, Numeric Expression</PARAMETER_LIST>

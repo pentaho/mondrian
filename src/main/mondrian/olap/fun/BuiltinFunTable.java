@@ -1387,6 +1387,43 @@ public class BuiltinFunTable extends FunTableImpl {
         //
         // OPERATORS
 
+        // <String Expression> + <String Expression>
+        builder.define(
+            new FunDefBase(
+                "+",
+                "Concatenates two strings",
+                "iSSS")
+        {
+            public Calc compileCall(
+                ResolvedFunCall call, ExpCompiler compiler)
+            {
+                final StringCalc calc0 = compiler.compileString(call.getArg(0));
+                final StringCalc calc1 = compiler.compileString(call.getArg(1));
+
+                return new AbstractStringCalc(call, new Calc[] {calc0, calc1}) {
+                    public String evaluateString(Evaluator evaluator) {
+                        // In sql operations when concatenating
+                        // a string with null the return value is null
+                        // but in mdx specs for microsoft this isn't the
+                        // behavior concatenating a string with null will
+                        // return the string value this function was
+                        // implemented respecting microsoft specs.
+                        final String s0 = calc0.evaluateString(evaluator);
+                        final String s1 = calc1.evaluateString(evaluator);
+
+                        if (s0 == null && s1 == null) {
+                            return null;
+                        } else if (s0 == null) {
+                            return s1;
+                        } else if (s1 == null) {
+                            return s0;
+                        }
+                        return s0 + s1;
+                    }
+                };
+            }
+        });
+
         // <Numeric Expression> + <Numeric Expression>
         builder.define(
             new FunDefBase(

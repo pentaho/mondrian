@@ -6306,6 +6306,28 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #0: 10,280\n");
     }
 
+    public void testStringConcatenatesOperation() {
+        assertExprReturns(
+            "[Time].[Year].Dimension.UniqueName + \" \" + [Time].[Year].Dimension.Caption ",
+            "[Time] Time");
+        // String + null
+        assertExprReturns(
+            "[Time].[Year].Dimension.UniqueName + NULL",
+            "[Time]");
+        // null + String
+        assertExprReturns(
+            "NULL + [Time].[Year].Dimension.UniqueName",
+            "[Time]");
+        // String + empty
+        assertExprReturns(
+            "[Time].[Year].Dimension.UniqueName + \"\"",
+            "[Time]");
+        // empty + String
+        assertExprReturns(
+            "\"\" + [Time].[Year].Dimension.UniqueName",
+            "[Time]");
+    }
+
     public void testPlus() {
         getTestContext().assertExprDependsOn(
             "1 + 2", Collections.<String>emptySet());
@@ -7521,7 +7543,7 @@ public class FunctionTest extends FoodMartTestCase {
                   + "            ImmutableMemberListCalc(name=ImmutableMemberListCalc, class=class mondrian.olap.fun.FilterFunDef$ImmutableMemberListCalc, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST)\n"
                   + "                Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=LIST)\n"
                   + "                    CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian.olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n"
-                  + "                >(name=>, class=class mondrian.olap.fun.BuiltinFunTable$63$1, type=BOOLEAN, resultStyle=VALUE)\n"
+                  + "                >(name=>, class=class mondrian.olap.fun.BuiltinFunTable$64$1, type=BOOLEAN, resultStyle=VALUE)\n"
                   + "                    MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, resultStyle=VALUE)\n"
                   + "                        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
                   + "                    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=NUMERIC, resultStyle=VALUE_NOT_NULL, value=1000.0)\n"
@@ -7534,7 +7556,7 @@ public class FunctionTest extends FoodMartTestCase {
                   + "        ImmutableIterCalc(name=ImmutableIterCalc, class=class mondrian.olap.fun.FilterFunDef$ImmutableIterCalc, type=SetType<MemberType<hierarchy=[Product].[Products]>>, resultStyle=ITERABLE)\n"
                   + "            Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, type=SetType<MemberType<hierarchy=[Product].[Products]>>, resultStyle=LIST)\n"
                   + "                CurrentMemberFixed(hierarchy=[Product].[Products], name=CurrentMemberFixed, class=class mondrian.olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product].[Products]>, resultStyle=VALUE)\n"
-                  + "            >(name=>, class=class mondrian.olap.fun.BuiltinFunTable$63$1, type=BOOLEAN, resultStyle=VALUE)\n"
+                  + "            >(name=>, class=class mondrian.olap.fun.BuiltinFunTable$64$1, type=BOOLEAN, resultStyle=VALUE)\n"
                   + "                MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, resultStyle=VALUE)\n"
                   + "                    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
                   + "                Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=NUMERIC, resultStyle=VALUE_NOT_NULL, value=1000.0)\n"
