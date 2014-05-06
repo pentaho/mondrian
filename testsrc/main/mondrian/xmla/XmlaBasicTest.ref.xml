@@ -7025,6 +7025,15 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <CAPTION>IsEmpty</CAPTION>
                     </row>
                     <row>
+                        <FUNCTION_NAME>IsLeaf</FUNCTION_NAME>
+                        <DESCRIPTION>Returns whether a specified member is a leaf member.</DESCRIPTION>
+                        <PARAMETER_LIST>Member</PARAMETER_LIST>
+                        <RETURN_TYPE>11</RETURN_TYPE>
+                        <ORIGIN>1</ORIGIN>
+                        <INTERFACE_NAME/>
+                        <CAPTION>IsLeaf</CAPTION>
+                    </row>
+                    <row>
                         <FUNCTION_NAME>Item</FUNCTION_NAME>
                         <DESCRIPTION>Returns a member from the tuple specified in &lt;Tuple&gt;. The member to be returned is specified by the zero-based position of the member in the set in &lt;Index&gt;.</DESCRIPTION>
                         <PARAMETER_LIST>Tuple, Numeric Expression</PARAMETER_LIST>

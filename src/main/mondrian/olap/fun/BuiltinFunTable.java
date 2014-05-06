@@ -240,6 +240,7 @@ public class BuiltinFunTable extends FunTableImpl {
         builder.define(IsEmptyFunDef.FunctionResolver);
         builder.define(IsEmptyFunDef.PostfixResolver);
         builder.define(IsNullFunDef.Resolver);
+        builder.define(IsLeafFunDef.Resolver);
         IsFunDef.define(builder);
         builder.define(AsFunDef.RESOLVER);
 
