@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap.agg;
 
 import mondrian.olap.MondrianException;
@@ -111,10 +110,10 @@ public class SegmentLoader {
                         cacheMgr.getIndexRegistry().getIndex(segment.star);
                     index.add(
                         segment.getHeader(),
-                        true,
                         new SegmentBuilder.StarSegmentConverter(
                             segment.measure,
-                            compoundPredicateList));
+                            compoundPredicateList),
+                        true);
                     // Make sure that we are registered as a client of
                     // the segment by invoking getFuture.
                     Util.discard(
@@ -408,7 +407,7 @@ public class SegmentLoader {
     }
 
     boolean useSparse(boolean sparse, int n, RowList rows) {
-        sparse = sparse || useSparse((double) n, (double) rows.size());
+        sparse = sparse || useSparse(n, rows.size());
         return sparse;
     }
 

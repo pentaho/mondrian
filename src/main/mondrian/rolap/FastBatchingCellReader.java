@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -341,17 +341,15 @@ public class FastBatchingCellReader implements CellReader {
                                 SegmentCacheIndex index =
                                     cacheMgr.getIndexRegistry()
                                     .getIndex(segmentWithData.getStar());
-                                boolean added = index.add(
+                                index.add(
                                     segmentWithData.getHeader(),
-                                    true,
                                     response.converterMap.get(
                                         SegmentCacheIndexImpl
                                             .makeConverterKey(
-                                                segmentWithData.getHeader())));
-                                if (added) {
-                                    index.loadSucceeded(
-                                        segmentWithData.getHeader(), body);
-                                }
+                                                segmentWithData.getHeader())),
+                                    true);
+                                index.loadSucceeded(
+                                    segmentWithData.getHeader(), body);
                                 return null;
                             }
                             public Locus getLocus() {
@@ -668,30 +666,32 @@ class BatchLoader {
         // segment.)
 
         if (!headersInCache.isEmpty()) {
-            final SegmentHeader headerInCache = headersInCache.get(0);
+            for (SegmentHeader headerInCache : headersInCache) {
+                final Future<SegmentBody> future =
+                    index.getFuture(locus.execution, headerInCache);
 
-            final Future<SegmentBody> future =
-                index.getFuture(locus.execution, headerInCache);
+                if (future != null) {
+                    // Segment header is in cache, body is being loaded.
+                    // Worker will need to wait for load to complete.
+                    futures.put(headerInCache, future);
+                } else {
+                    // Segment is in cache.
+                    cacheHeaders.add(headerInCache);
+                }
 
-            if (future != null) {
-                // Segment header is in cache, body is being loaded. Worker will
-                // need to wait for load to complete.
-                futures.put(headerInCache, future);
-            } else {
-                // Segment is in cache.
-                cacheHeaders.add(headerInCache);
+                index.setConverter(
+                    headerInCache.schemaName,
+                    headerInCache.schemaChecksum,
+                    headerInCache.cubeName,
+                    headerInCache.rolapStarFactTableName,
+                    headerInCache.measureName,
+                    headerInCache.compoundPredicates,
+                    converter);
+
+                converterMap.put(
+                    SegmentCacheIndexImpl.makeConverterKey(request, key),
+                    converter);
             }
-            index.setConverter(
-                headerInCache.schemaName,
-                headerInCache.schemaChecksum,
-                headerInCache.cubeName,
-                headerInCache.rolapStarFactTableName,
-                headerInCache.measureName,
-                headerInCache.compoundPredicates,
-                converter);
-            converterMap.put(
-                SegmentCacheIndexImpl.makeConverterKey(request, key),
-                converter);
             return true;
         }
 
