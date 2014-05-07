@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -316,17 +316,51 @@ public class RolapSchema implements Schema {
         }
     }
 
-    protected void finalCleanUp() {
+    protected void flushSegments() {
+        final RolapConnection internalConnection = getInternalConnection();
+        if (internalConnection != null) {
+            final CacheControl cc = internalConnection.getCacheControl(null);
+            for (RolapCube cube : getCubeList()) {
+                cc.flush(cc.createMeasuresRegion(cube));
+            }
+        }
+    }
+
+    /**
+     * Clears the cache of JDBC tables for the aggs.
+     */
+    protected void flushJdbcSchema() {
+        // Cleanup the agg table manager's caches.
         if (aggTableManager != null) {
             aggTableManager.finalCleanUp();
             aggTableManager = null;
         }
     }
 
+    /**
+     * Performs a sweep of the JDBC tables caches and the segment data.
+     * Only called internally when a schema and it's data must be refreshed.
+     */
+    protected void finalCleanUp() {
+        // Cleanup the segment data.
+        flushSegments();
+
+        // De-register our indexes of segments
+        for (Cube cube : getCubes()) {
+            MondrianServer.forConnection(internalConnection)
+                .getAggregationManager().cacheMgr.getIndexRegistry()
+                    .clearIndex(((RolapCube)cube).getStar());
+        }
+
+        // Cleanup the agg JDBC cache
+        flushJdbcSchema();
+    }
+
     protected void finalize() throws Throwable {
         try {
             super.finalize();
-            finalCleanUp();
+            // Only clear the JDBC cache to prevent leaks.
+            flushJdbcSchema();
         } catch (Throwable t) {
             LOGGER.info(
                 MondrianResource.instance()
