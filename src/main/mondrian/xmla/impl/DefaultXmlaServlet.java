@@ -1,12 +1,13 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2001-2005 Julian Hyde
+// Copyright (C) 2005-2014 Pentaho and others
+// All Rights Reserved.
 */
-
 package mondrian.xmla.impl;
 
 import mondrian.xmla.*;
@@ -539,10 +540,8 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
                     ? charEncoding
                     : response.getCharacterEncoding();
 
-            /*
-             * Since we just reset response, encoding and content-type were
-             * reset too
-             */
+            // Since we just reset response, encoding and content-type were
+            // reset too
             if (charEncoding != null) {
                 response.setCharacterEncoding(charEncoding);
             }
@@ -556,13 +555,11 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
                 break;
             }
 
-            /*
-             * The setCharacterEncoding, setContentType, or setLocale method
-             * must be called BEFORE getWriter or getOutputStream and before
-             * committing the response for the character encoding to be used.
-             *
-             * @see javax.servlet.ServletResponse
-             */
+             // The setCharacterEncoding, setContentType, or setLocale method
+             // must be called BEFORE getWriter or getOutputStream and before
+             // committing the response for the character encoding to be used.
+             //
+             // @see javax.servlet.ServletResponse
             OutputStream outputStream = response.getOutputStream();
 
 
@@ -658,8 +655,8 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
                 }
                 outputStream.flush();
             } catch (IOException ioe) {
-                LOGGER.error(
-                    "Damn exception when transferring bytes over sockets",
+                LOGGER.warn(
+                    "Exception when transferring bytes over sockets",
                     ioe);
             }
         } catch (XmlaException xex) {
