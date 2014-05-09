@@ -783,7 +783,7 @@ public class RolapResult extends ResultBase {
             if (d.getDimensionType() == DimensionType.TimeDimension) {
                 continue;
             }
-            if (!em.isAll()) {
+            if (!em.isAll() && !h.isDefaultMemberExplicit()) {
                 List<Member> rootMembers =
                     schemaReader.getHierarchyRootMembers(h);
                 if (em.isMeasure()) {

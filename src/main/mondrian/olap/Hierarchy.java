@@ -56,6 +56,11 @@ public interface Hierarchy extends OlapElement, Annotated {
     boolean hasAll();
 
     /**
+     * True if the default member was explicitly defined in the schema.
+     */
+    boolean isDefaultMemberExplicit();
+
+    /**
      * Creates a member of this hierarchy. If this is the measures hierarchy, a
      * calculated member is created, and <code>formula</code> must not be null.
      */

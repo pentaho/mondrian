@@ -353,6 +353,11 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         return currentDefaultMember;
     }
 
+    @Override
+    public boolean isDefaultMemberExplicit() {
+        return rolapHierarchy.isDefaultMemberExplicit();
+    }
+
     /**
      * Looks up a {@link RolapCubeMember} corresponding to a {@link RolapMember}
      * of the underlying hierarchy. Safe to be called while the hierarchy is

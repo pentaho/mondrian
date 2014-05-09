@@ -656,6 +656,10 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #0: TV\n");
     }
 
+    /**
+     * This bug is directly linked to the current behavior in RolapResult.loadSpecialMembers()
+     * Without grabbing all the root members of the Promotions dimension, unexpected behavior occurs.
+     */
     public void testBug1515302() {
         TestContext ctx = TestContext.instance().create(
             null,
@@ -730,6 +734,60 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #15: 65\n"
             + "Row #16: 3\n"
             + "Row #17: 366\n");
+    }
+
+    /**
+     * This is a companion to the previous test.  It demonstrates the narrowing behavior
+     * if the default member is explicitly set for Promotions.
+     */
+    public void testExplicitDefaultMemberBehavior() {
+        TestContext ctx = TestContext.instance().create(
+            null,
+            "<Cube name=\"Bug1515302\"> \n"
+            + "  <Table name=\"sales_fact_1997\"/> \n"
+            + "  <Dimension name=\"Promotions\" foreignKey=\"promotion_id\"> \n"
+            + "    <Hierarchy hasAll=\"false\" primaryKey=\"promotion_id\" defaultMember=\"[Promotions].[Bag Stuffers]\"> \n"
+            + "      <Table name=\"promotion\"/> \n"
+            + "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\"/> \n"
+            + "    </Hierarchy> \n"
+            + "  </Dimension> \n"
+            + "  <Dimension name=\"Customers\" foreignKey=\"customer_id\"> \n"
+            + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKey=\"customer_id\"> \n"
+            + "      <Table name=\"customer\"/> \n"
+            + "      <Level name=\"Country\" column=\"country\" uniqueMembers=\"true\"/> \n"
+            + "      <Level name=\"State Province\" column=\"state_province\" uniqueMembers=\"true\"/> \n"
+            + "      <Level name=\"City\" column=\"city\" uniqueMembers=\"false\"/> \n"
+            + "      <Level name=\"Name\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/> \n"
+            + "    </Hierarchy> \n"
+            + "  </Dimension> \n"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"/> \n"
+            + "</Cube> \n",
+            null,
+            null,
+            null,
+            null);
+
+        ctx.assertQueryReturns(
+            "select {[Measures].[Unit Sales]} on columns, "
+            + "non empty crossjoin({[Promotions].[Big Promo]}, "
+            + "Descendants([Customers].[USA], [City], "
+            + "SELF_AND_BEFORE)) on rows "
+            + "from [Bug1515302]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Anacortes]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Bellingham]}\n"
+            + "{[Promotions].[Big Promo], [Customers].[USA].[WA].[Sedro Woolley]}\n"
+            + "Row #0: 1,789\n"
+            + "Row #1: 1,789\n"
+            + "Row #2: 20\n"
+            + "Row #3: 15\n"
+            + "Row #4: 3\n");
     }
 
     /**

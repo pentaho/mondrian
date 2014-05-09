@@ -513,6 +513,10 @@ public class RolapHierarchy extends HierarchyBase {
         return xmlHierarchy;
     }
 
+    public boolean isDefaultMemberExplicit() {
+        return defaultMemberName != null;
+    }
+
     public Member getDefaultMember() {
         // use lazy initialization to get around bootstrap issues
         if (defaultMember == null) {
