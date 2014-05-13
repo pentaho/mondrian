@@ -280,30 +280,38 @@ public class JdbcMetaData {
                     continue;
                 }
 
-                DbTable dbt;
+                DbTable dbt = null;
 
                 /* Note: Imported keys are foreign keys which are primary keys
                  * of in some other tables; Exported keys are primary keys which
                  * are referenced as foreign keys in other tables.
                  */
-                ResultSet rs_fks = md.getImportedKeys(null, dbs.name, tbname);
                 try {
-                    if (rs_fks.next()) {
-                        dbt = new FactTable();
-                        do {
-                            ((FactTable) dbt).addFks(
-                                rs_fks.getString("FKCOLUMN_NAME"),
-                                rs_fks.getString("pktable_name"));
-                        } while (rs_fks.next());
-                    } else {
-                        dbt = new DbTable();
-                    }
-                } finally {
+                    ResultSet rs_fks = md.getImportedKeys(null, dbs.name, tbname);
                     try {
-                        rs_fks.close();
-                    } catch (Exception e) {
-                        // ignore
+                        if (rs_fks.next()) {
+                            dbt = new FactTable();
+                            do {
+                                ((FactTable) dbt).addFks(
+                                    rs_fks.getString("FKCOLUMN_NAME"),
+                                    rs_fks.getString("pktable_name"));
+                            } while (rs_fks.next());
+                        } else {
+                            dbt = new DbTable();
+                        }
+                    } finally {
+                        try {
+                            rs_fks.close();
+                        } catch (Exception e) {
+                            // ignore
+                        }
                     }
+                } catch (Exception e) {
+                  // this fails in some cases (Redshift)
+                  LOGGER.warn("unable to process foreign keys", e);
+                  if (dbt == null) {
+                    dbt = new FactTable();
+                  }
                 }
                 dbt.schemaName = dbs.name;
                 dbt.name = tbname;
