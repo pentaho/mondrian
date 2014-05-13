@@ -545,6 +545,45 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #0: false\n");
     }
 
+    /**
+     * This tests the fix for MONDRIAN-1825
+     */
+    public void testCaseTypes() {
+      assertQueryReturns(
+          "WITH SET [Example Set] AS "
+          + "'CASE WHEN 1=1 THEN {[Time].[1997].[Q4].[10]} ELSE {[Time].[1997].[Q4].[11]} END'\n"
+          + "SELECT [Example Set] on columns from [Sales]",
+          "Axis #0:\n"
+          + "{}\n"
+          + "Axis #1:\n"
+          + "{[Time].[1997].[Q4].[10]}\n"
+          + "Row #0: 19,958\n");
+
+      assertQueryReturns(
+          "WITH SET [Example Set] AS "
+          + "'CASE 1 WHEN 1 THEN {[Time].[1997].[Q4].[10]} ELSE {[Time].[1997].[Q4].[11]} END'\n"
+          + "SELECT [Example Set] on columns from [Sales]",
+          "Axis #0:\n"
+          + "{}\n"
+          + "Axis #1:\n"
+          + "{[Time].[1997].[Q4].[10]}\n"
+          + "Row #0: 19,958\n");
+
+      // test negative cases
+
+      assertQueryThrows(
+          "WITH SET [Example Set] AS "
+          + "'CASE 1 WHEN 1 THEN 1 ELSE 2 END'\n"
+          + "SELECT [Example Set] on columns from [Sales]",
+          "must be a set");
+
+      assertQueryThrows(
+          "WITH SET [Example Set] AS "
+          + "'CASE WHEN 1=1 THEN 1 ELSE 2 END'\n"
+          + "SELECT [Example Set] on columns from [Sales]",
+          "must be a set");
+    }
+
     public void testIsEmpty()
     {
         assertBooleanExprReturns("[Gender].[All Gender].Parent IS NULL", true);
@@ -9460,7 +9499,7 @@ public class FunctionTest extends FoodMartTestCase {
             // 'DependencyTestingCalc' instances embedded in it.
             return;
         }
-        TestContext.assertEqualsVerbose(expectedCalc, actualCalc);
+        TestContext.assertEqualsWithoutAnon(expectedCalc, actualCalc);
     }
 
     /**
@@ -9481,7 +9520,7 @@ public class FunctionTest extends FoodMartTestCase {
             // 'DependencyTestingCalc' instances embedded in it.
             return;
         }
-        TestContext.assertEqualsVerbose(expectedCalc, actualCalc);
+        TestContext.assertEqualsWithoutAnon(expectedCalc, actualCalc);
     }
 
     /**

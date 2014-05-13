@@ -7395,7 +7395,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         assertEquals("PLAN", resultSet.getMetaData().getColumnName(1));
         assertEquals(Types.VARCHAR, resultSet.getMetaData().getColumnType(1));
         String s = resultSet.getString(1);
-        TestContext.assertEqualsVerbose(
+        TestContext.assertEqualsWithoutAnon(
             "Axis (COLUMNS):\n"
             + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Measures].[Unit Sales]>>, resultStyle=MUTABLE_LIST)\n"
             + "    2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE)\n"
@@ -7447,7 +7447,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             statement.executeQuery("explain plan for\n" + mdx);
         assertTrue(resultSet.next());
         String s = resultSet.getString(1);
-        TestContext.assertEqualsVerbose(
+        TestContext.assertEqualsWithoutAnon(
             "Axis (FILTER):\n"
             + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Gender].[F]>>, resultStyle=MUTABLE_LIST)\n"
             + "    ()(name=(), class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Gender].[F]>, resultStyle=VALUE)\n"
@@ -7489,7 +7489,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             .replaceAll(
                 "[0-9]+ms",
                 "nnnms");
-        TestContext.assertEqualsVerbose(
+        TestContext.assertEqualsWithoutAnon(
             "Axis (FILTER):\n"
             + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Gender].[F]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=2, elementSquaredCount=2)\n"
             + "    ()(name=(), class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Gender].[F]>, resultStyle=VALUE)\n"

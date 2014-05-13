@@ -1123,6 +1123,29 @@ public class TestContext {
     }
 
     /**
+     * Checks that an actual string matches an expected string, removing
+     * anonymous functions.
+     *
+     * <p>If they do not, throws a {@link junit.framework.ComparisonFailure}
+     * and prints the difference, including the actual string as an easily
+     * pasted Java string literal.
+     */
+    public static void assertEqualsWithoutAnon(
+        String expected,
+        String actual)
+    {
+        assertEqualsVerbose(
+            removeAnonymousSubstrings(expected),
+            removeAnonymousSubstrings(actual),
+            true,
+            null);
+    }
+
+    private static String removeAnonymousSubstrings(String str) {
+      return str.replaceAll("\\$\\d+", "");
+    }
+
+    /**
      * Checks that an actual string matches an expected string.
      *
      * <p>If they do not, throws a {@link junit.framework.ComparisonFailure} and
