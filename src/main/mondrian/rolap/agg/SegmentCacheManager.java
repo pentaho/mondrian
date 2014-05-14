@@ -943,6 +943,8 @@ public class SegmentCacheManager {
         private final BlockingHashMap<Command<?>, Pair<Object, Throwable>>
             responseMap =
             new BlockingHashMap<Command<?>, Pair<Object, Throwable>>(1000);
+        
+        private volatile boolean shutdown = false;
 
         public void run() {
             try {
@@ -967,9 +969,21 @@ public class SegmentCacheManager {
                                     command,
                                     Pair.of(null, (Throwable) e));
                             } catch (PleaseShutdownException e) {
+                                // on shutdown, stop accepting new queue elements,
+                                // then drain the existing queue putting errors
+                                // in the responseMap
+                                shutdown = true;
                                 responseMap.put(
                                     command,
                                     Pair.of(null, (Throwable) null));
+                                List<Pair<Handler, Message>> pendingQueue = new ArrayList<Pair<Handler,Message>>(eventQueue.size());
+                                eventQueue.drainTo(pendingQueue);
+                                for (Pair<Handler, Message> queueElement : pendingQueue) {
+                                    if (queueElement.getValue() instanceof Command<?>) {
+                                        responseMap.put((Command<?>)queueElement.getValue(), 
+                                                        Pair.of(null, (Throwable)Util.newError("Actor queue already shut down")));
+                                    }
+                                }
                                 return; // exit event loop
                             } catch (Throwable e) {
                                 responseMap.put(
@@ -999,6 +1013,9 @@ public class SegmentCacheManager {
         }
 
         <T> T execute(Handler handler, Command<T> command) {
+            if (shutdown) {
+                throw Util.newError("Command submitted after shutdown " + command);
+            }
             try {
                 eventQueue.put(Pair.<Handler, Message>of(handler, command));
             } catch (InterruptedException e) {
@@ -1024,6 +1041,9 @@ public class SegmentCacheManager {
         }
 
         public void event(Handler handler, Event event) {
+            if (shutdown) {
+                throw Util.newError("Event submitted after shutdown " + event);
+            }
             try {
                 eventQueue.put(Pair.<Handler, Message>of(handler, event));
             } catch (InterruptedException e) {
