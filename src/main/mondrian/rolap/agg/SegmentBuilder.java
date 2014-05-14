@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.rolap.agg;
 
@@ -347,9 +347,6 @@ public class SegmentBuilder {
         for (AxisInfo axis : axes) {
             axisList.add(Pair.of(axis.valueSet, axis.hasNull));
             int size = axis.values.length;
-            if (axis.hasNull) {
-                ++size;
-            }
             bigValueCount = bigValueCount.multiply(
                 BigInteger.valueOf(axis.hasNull ? size + 1 : size));
         }
@@ -516,7 +513,9 @@ public class SegmentBuilder {
         int multiplier = 1;
         for (int i = axes.size() - 1; i >= 0; --i) {
             axisMultipliers[i] = multiplier;
-            multiplier *= axes.get(i).left.size();
+            // if the nullAxisFlag is set we need to offset by 1.
+            int nullAxisAdjustment = axes.get(i).right ? 1 : 0;
+            multiplier *= (axes.get(i).left.size() + nullAxisAdjustment);
         }
         return axisMultipliers;
     }
