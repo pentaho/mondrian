@@ -450,7 +450,7 @@ public class RolapHierarchy extends HierarchyBase {
             this.exp = exp;
         }
 
-        public boolean equals(OlapElement o) {
+        public boolean equals(Object o) {
             return o instanceof LimitedRollupMember
                 && ((LimitedRollupMember) o).member.equals(member);
         }
