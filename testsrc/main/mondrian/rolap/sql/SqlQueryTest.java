@@ -20,6 +20,8 @@ import mondrian.test.TestContext;
 import java.sql.SQLException;
 import java.util.*;
 
+import static mondrian.spi.Dialect.DatabaseProduct.MYSQL;
+import static mondrian.spi.Dialect.DatabaseProduct.POSTGRESQL;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -41,7 +43,7 @@ public class SqlQueryTest extends BatchTestCase {
         // This test warns of missing sql patterns for MYSQL.
         final Dialect dialect = getTestContext().getDialect();
         if (prop.WarnIfNoPatternForDialect.get().equals("ANY")
-            || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MYSQL)
+            || dialect.getDatabaseProduct() == MYSQL)
         {
             prop.WarnIfNoPatternForDialect.set(
                 dialect.getDatabaseProduct().toString());
@@ -167,12 +169,12 @@ public class SqlQueryTest extends BatchTestCase {
 
         SqlPattern[] unformattedSqlPatterns = {
             new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL,
+                MYSQL,
                 unformattedMysql,
                 null)};
         SqlPattern[] formattedSqlPatterns = {
             new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL,
+                MYSQL,
                 formattedMysql,
                 null)};
 
@@ -276,7 +278,7 @@ public class SqlQueryTest extends BatchTestCase {
         SqlPattern[] sqlPatterns = {
             new SqlPattern(
                 Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
+            new SqlPattern(MYSQL, mysqlSql, mysqlSql)};
 
         assertSqlEqualsOptimzePredicates(true, mdx, sqlPatterns);
     }
@@ -356,7 +358,7 @@ public class SqlQueryTest extends BatchTestCase {
         SqlPattern[] sqlPatterns = {
             new SqlPattern(
                 Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
+            new SqlPattern(MYSQL, mysqlSql, mysqlSql)};
 
         assertSqlEqualsOptimzePredicates(false, mdx, sqlPatterns);
     }
@@ -397,7 +399,7 @@ public class SqlQueryTest extends BatchTestCase {
         SqlPattern[] sqlPatterns = {
             new SqlPattern(
                 Dialect.DatabaseProduct.ACCESS, accessSql, accessSql),
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
+            new SqlPattern(MYSQL, mysqlSql, mysqlSql)};
 
         assertSqlEqualsOptimzePredicates(true, mdx, sqlPatterns);
         assertSqlEqualsOptimzePredicates(false, mdx, sqlPatterns);
@@ -644,7 +646,7 @@ public class SqlQueryTest extends BatchTestCase {
             + "order by \"store\".\"store_type\" ASC";
 
         SqlPattern[] patterns = {
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, sqlMySql, sqlMySql),
+            new SqlPattern(MYSQL, sqlMySql, sqlMySql),
             new SqlPattern(
                 Dialect.DatabaseProduct.ORACLE, sqlOracle, sqlOracle),
         };
@@ -688,7 +690,7 @@ public class SqlQueryTest extends BatchTestCase {
             new SqlPattern(
                 Dialect.DatabaseProduct.ORACLE, forbiddenSqlOracle, null),
             new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL, forbiddenSqlMysql, null)
+                MYSQL, forbiddenSqlMysql, null)
         };
 
         final TestContext testContext =
@@ -707,6 +709,52 @@ public class SqlQueryTest extends BatchTestCase {
             true,
             true,
             true);
+    }
+
+    public void testLimitedRollupMemberRetrievableFromCache() throws Exception {
+        final String mdx =
+            "select NON EMPTY { [Store].[Store].[Store State].members } on 0 from [Sales]";
+        final TestContext context =
+            TestContext.instance().create(
+                null, null, null, null, null,
+                " <Role name='justCA'>\n"
+                + " <SchemaGrant access='all'>\n"
+                + " <CubeGrant cube='Sales' access='all'>\n"
+                + " <HierarchyGrant hierarchy='[Store]' access='custom' rollupPolicy='partial'>\n"
+                + " <MemberGrant member='[Store].[USA].[CA]' access='all'/>\n"
+                + " </HierarchyGrant>\n"
+                + " </CubeGrant>\n"
+                + " </SchemaGrant>\n"
+                + " </Role>\n").withRole("justCA");
+
+        String pgSql =
+            "select \"store\".\"store_country\" as \"c0\","
+            + " \"store\".\"store_state\" as \"c1\""
+            + " from \"sales_fact_1997\" as \"sales_fact_1997\","
+            + " \"store\" as \"store\" "
+            + "where (\"store\".\"store_country\" = 'USA') "
+            + "and (\"store\".\"store_state\" = 'CA') "
+            + "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" "
+            + "group by \"store\".\"store_country\", \"store\".\"store_state\" "
+            + "order by \"store\".\"store_country\" ASC NULLS LAST,"
+            + " \"store\".\"store_state\" ASC NULLS LAST";
+        SqlPattern pgPattern =
+            new SqlPattern(POSTGRESQL, pgSql, pgSql.length());
+        String mySql =
+            "select `store`.`store_country` as `c0`,"
+            + " `store`.`store_state` as `c1`"
+            + " from `store` as `store`, `sales_fact_1997` as `sales_fact_1997` "
+            + "where `sales_fact_1997`.`store_id` = `store`.`store_id` "
+            + "and `store`.`store_country` = 'USA' "
+            + "and `store`.`store_state` = 'CA' "
+            + "group by `store`.`store_country`, `store`.`store_state` "
+            + "order by ISNULL(`store`.`store_country`) ASC,"
+            + " `store`.`store_country` ASC,"
+            + " ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
+        SqlPattern myPattern = new SqlPattern(MYSQL, mySql, mySql.length());
+        SqlPattern[] patterns = {pgPattern, myPattern};
+        context.executeQuery(mdx);
+        assertQuerySqlOrNot(context, mdx, patterns, true, false, false);
     }
 }
 
