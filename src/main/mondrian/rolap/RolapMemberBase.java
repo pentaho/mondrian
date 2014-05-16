@@ -320,7 +320,21 @@ public class RolapMemberBase
     }
 
     protected Property lookupProperty(String propertyName, boolean matchCase) {
-        return Property.lookup(propertyName, matchCase);
+        Property prop = Property.lookup(propertyName, matchCase);
+        if (prop == null && getLevel().getProperties() != null) {
+            for (Property matchProp : getLevel().getProperties()) {
+                if (matchCase) {
+                    if (matchProp.getName().equals(propertyName)) {
+                      return matchProp;
+                    }
+                } else {
+                    if (matchProp.getName().equalsIgnoreCase(propertyName)) {
+                      return matchProp;
+                    }
+                }
+            }
+        }
+        return prop;
     }
 
     public final Object getPropertyValue(String propertyName) {
