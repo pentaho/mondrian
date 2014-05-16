@@ -117,7 +117,11 @@ abstract class AbstractSegmentBody implements SegmentBody {
                 }
                 int k = ordinals.length - 1;
                 while (k >= 0) {
-                    if (ordinals[k] < axisValueSets[k].size() - 1) {
+                    int j = 1;
+                    if (nullAxisFlags[k]) {
+                        j = 0;
+                    }
+                    if (ordinals[k] < axisValueSets[k].size() - j) {
                         ++ordinals[k];
                         break;
                     } else {
