@@ -7749,6 +7749,66 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Time].[Time].[1997]}\n"
             + "Row #0: \n");
     }
+
+    public void testMondrian1432()
+    {
+        TestContext testContext = getTestContext()
+            .insertCalculatedColumnDef(
+                "sales_fact_1997",
+                "<CalculatedColumnDef name='zero' type='Numeric'>\n"
+                + "    <ExpressionView>\n"
+                + "        <SQL dialect='generic'>0</SQL>\n"
+                + "    </ExpressionView>\n"
+                + "</CalculatedColumnDef>\n")
+            .insertCube(
+                "<Cube name='FooBar'>\n"
+                + "  <Dimensions>"
+                + "    <Dimension name='Gender' table='customer' key='Name' >\n"
+                + "  <Attributes>    "
+                + " <Attribute name='Gender' keyColumn='gender'/>"
+                + "<Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='full_name' hasHierarchy='false'/>"
+                + " </Attributes>    "
+                + "    </Dimension>\n"
+                + "  </Dimensions>"
+                + "  <MeasureGroups>"
+                + "    <MeasureGroup table='sales_fact_1997'>"
+                + "      <Measures>"
+                + "        <Measure name='zero' aggregator='sum' column='zero'>\n"
+                + "        </Measure>\n"
+                + "      </Measures>"
+                + "      <DimensionLinks>\n"
+                + "        <ForeignKeyLink dimension='Gender' foreignKeyColumn='customer_id'/>\n"
+                + "      </DimensionLinks>\n"
+                + "    </MeasureGroup>"
+                + "  </MeasureGroups>"
+                + "</Cube>");
+
+
+        testContext.assertQueryReturns(
+            "select "
+            + "Crossjoin([Gender].[Gender].[Gender].Members, [Measures].[zero]) ON COLUMNS\n"
+            + "from [FooBar] "
+            + "  \n",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[Gender].[F], [Measures].[zero]}\n"
+            + "{[Gender].[Gender].[M], [Measures].[zero]}\n"
+            + "Row #0: 0\n"
+            + "Row #0: 0\n");
+        testContext.assertQueryReturns(
+            "select [Measures].[zero] ON COLUMNS,\n"
+            + "  {[Gender].[All Gender]}  ON ROWS\n"
+            + "from [FooBar] "
+            + " ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[zero]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[Gender].[All Gender]}\n"
+            + "Row #0: 0\n");
+    }
 }
 
 // End BasicQueryTest.java
