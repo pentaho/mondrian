@@ -522,7 +522,9 @@ public class SegmentBuilder {
         int multiplier = 1;
         for (int i = axes.size() - 1; i >= 0; --i) {
             axisMultipliers[i] = multiplier;
-            multiplier *= axes.get(i).left.size();
+            // if the nullAxisFlag is set we need to offset by 1.
+            int nullAxisAdjustment = axes.get(i).right ? 1 : 0;
+            multiplier *= (axes.get(i).left.size() + nullAxisAdjustment);
         }
         return axisMultipliers;
     }
