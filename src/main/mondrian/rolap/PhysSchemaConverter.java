@@ -12,6 +12,7 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.rolap.RolapSchema.PhysColumn;
 import mondrian.rolap.RolapSchema.PhysKey;
+import mondrian.rolap.sql.SqlQuery;
 
 import org.eigenbase.xom.*;
 
@@ -145,7 +146,10 @@ class PhysSchemaConverter extends RolapSchemaLoader.PhysSchemaBuilder {
             new MondrianDef.ExpressionView();
         MondrianDef.SQL sql = new MondrianDef.SQL();
         sql.children = new NodeDef[]{new TextDef(physView.getSqlString())};
-        sql.dialect = physView.physSchema.dialect.toString();
+        sql.dialect = SqlQuery.getBestName(physView.physSchema.dialect);
+
+        // note that this is a lossy conversion, we lose all the dialects other
+        // than the active dialect.
         expressionView.expressions = new MondrianDef.SQL[]{sql};
         xmlQuery.children.add(expressionView);
         xmlTables.put(physView.getAlias(), xmlQuery);

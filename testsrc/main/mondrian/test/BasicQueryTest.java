@@ -7381,6 +7381,11 @@ public class BasicQueryTest extends FoodMartTestCase {
      * at the same time.
      */
     public void testConcurrentStatementRun_2() throws Exception {
+        // skip this test for all classes inheriting basic query test,
+        // the count might get off otherwise.
+        if (!this.getClass().getName().equals("mondrian.test.BasicQueryTest")) {
+            return;
+        }
         // timeout is issued after 2 seconds so the test query needs to
         // run for at least that long; it will because the query references
         // a Udf that has a 1 ms sleep in it; and there are enough rows
@@ -7618,18 +7623,15 @@ public class BasicQueryTest extends FoodMartTestCase {
             getTestContext().withSchema(
                 "<Schema name=\"Foo\">\n"
                 + "  <Cube name=\"Bar\">\n"
-                + "    <Table name=\"warehouse\">\n"
-                + "      <SQL>sleep(0.1) = 0</SQL>\n"
-                + "    </Table>   \n"
+                + "    <View alias=\"warehouse\">\n"
+                + "      <SQL dialect=\"generic\">select *, 1 as one from warehouse where sleep(0.1) = 0</SQL>\n"
+                + "    </View>   \n"
                 + " <Dimension name=\"Dim\">\n"
                 + "   <Hierarchy hasAll=\"true\">\n"
                 + "     <Level name=\"Level\" column=\"warehouse_id\"/>\n"
                 + "      </Hierarchy>\n"
                 + " </Dimension>\n"
-                + " <Measure name=\"Measure\" aggregator=\"sum\">\n"
-                + "   <MeasureExpression>\n"
-                + "     <SQL>1</SQL>\n"
-                + "   </MeasureExpression>\n"
+                + " <Measure name=\"Measure\" aggregator=\"sum\" column=\"one\" >\n"
                 + " </Measure>\n"
                 + "  </Cube>\n"
                 + "</Schema>\n");

@@ -1896,6 +1896,9 @@ public class FunUtil extends Util {
         }
         final Comparable k1 = m1.getOrderKey();
         final Comparable k2 = m2.getOrderKey();
+        if (k1 instanceof String && k2 instanceof String) {
+            return Util.caseSensitiveCompareName((String)k1, (String)k2);
+        }
         return Util.compare(k1, k2);
     }
 
