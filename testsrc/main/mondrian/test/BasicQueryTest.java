@@ -7381,6 +7381,11 @@ public class BasicQueryTest extends FoodMartTestCase {
      * at the same time.
      */
     public void testConcurrentStatementRun_2() throws Exception {
+        // skip this test for all classes inheriting basic query test,
+        // the count might get off otherwise.
+        if (!this.getClass().getName().equals("mondrian.test.BasicQueryTest")) {
+            return;
+        }
         // timeout is issued after 2 seconds so the test query needs to
         // run for at least that long; it will because the query references
         // a Udf that has a 1 ms sleep in it; and there are enough rows
