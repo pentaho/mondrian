@@ -1976,6 +1976,11 @@ public class RolapSchemaUpgrader {
         MondrianDef.Table xmlTable = new MondrianDef.Table();
         xmlTable.name = xmlLegacyTable.name;
         xmlTable.alias = xmlLegacyTable.alias;
+        if (xmlLegacyTable.filter != null) {
+            throw Util.needToImplement(
+                "translate xml table SQL filter for table '"
+                + xmlLegacyTable + "'");
+        }
         return xmlTable;
     }
 
