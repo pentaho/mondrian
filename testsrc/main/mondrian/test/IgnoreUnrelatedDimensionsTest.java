@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -165,6 +165,28 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "Axis #2:\n"
             + "{[Gender].[Gender].[G]}\n"
             + "Row #0: 30,405.602\n");
+    }
+
+    /**
+     * Without a fix for MONDRIAN-1837, this result of the following query
+     * would be empty.
+     */
+    public void testIgnoreUnrelatedDimsOnSlicer() {
+      boolean origIgnoreMeasure =
+          prop.IgnoreMeasureForNonJoiningDimension.get();
+      prop.IgnoreMeasureForNonJoiningDimension.set(true);
+        final TestContext context = TestContext.instance().legacy().create(
+            null, cubeSales3, cubeWarehouseAndSales3, null, null, null);
+        context.assertQueryReturns(
+            "SELECT "
+            + "{[Measures].[Warehouse Sales]} ON 0"
+            + " FROM [WAREHOUSE AND SALES 3] where ([Gender].[M])",
+            "Axis #0:\n"
+            + "{[Gender].[Gender].[M]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Warehouse Sales]}\n"
+            + "Row #0: 196,770.888\n");
+        prop.IgnoreMeasureForNonJoiningDimension.set(origIgnoreMeasure);
     }
 
     public void testTotalingForValidAndNonValidMeasuresWithJoiningDimensions() {
