@@ -242,6 +242,12 @@ public class NonCollapsedAggTest extends AggTableTestCase {
             + "Row #1: 121\n");
     }
 
+    /**
+     * TODO: Note that this test fails because we have not implemented an
+     * aggregation detector in Mondrian 4.0.
+     *
+     * @throws Exception
+     */
     public void testComplexJoinDefaultRecognizer() throws Exception {
         if (!isApplicable()) {
             return;
