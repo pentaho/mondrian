@@ -483,6 +483,7 @@ public class RolapSchemaUpgrader {
                 copyLink.dimension = level.dimension;
                 copyLinks.put(level.dimension, copyLink);
                 copyLink.columnRefs = new MondrianDef.Column[0];
+                xmlDimensionLinks.list().add(copyLink);
             }
             final MondrianDef.Column column = new MondrianDef.Column();
             column.aggColumn = sanitizer.apply(xmlLegacyLevel.column);
