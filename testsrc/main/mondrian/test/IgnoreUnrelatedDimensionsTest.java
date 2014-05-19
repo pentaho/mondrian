@@ -175,6 +175,28 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "Row #0: 30,405.602\n");
     }
 
+    /**
+     * Without a fix for MONDRIAN-1837, this result of the following query
+     * would be empty.
+     */
+    public void testIgnoreUnrelatedDimsOnSlicer() {
+      boolean origIgnoreMeasure =
+          prop.IgnoreMeasureForNonJoiningDimension.get();
+      prop.IgnoreMeasureForNonJoiningDimension.set(true);
+        final TestContext context = TestContext.instance().create(
+            null, cubeSales3, cubeWarehouseAndSales3, null, null, null);
+        context.assertQueryReturns(
+            "SELECT "
+            + "{[Measures].[Warehouse Sales]} ON 0"
+            + " FROM [WAREHOUSE AND SALES 3] where ([Gender].[M])",
+            "Axis #0:\n"
+            + "{[Gender].[M]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Warehouse Sales]}\n"
+            + "Row #0: 196,770.888\n");
+        prop.IgnoreMeasureForNonJoiningDimension.set(origIgnoreMeasure);
+    }
+
     public void testTotalingForValidAndNonValidMeasuresWithJoiningDimensions() {
         assertQueryReturns(
             "WITH MEMBER [Measures].[Unit Sales VM] AS "
