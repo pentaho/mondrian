@@ -2464,6 +2464,10 @@ public class RolapSchemaLoader {
 
         if (xmlForeignKeyLink.attribute == null) {
             keyAttribute = dimension.rolapDimension.keyAttribute;
+            // Note, with the current logic related to degenerate dims and
+            // single attribute dimensions in getOrCreateDimension, this
+            // codepath can never be reached. Leaving here in case that logic
+            // eventually changes.
             if (keyAttribute == null) {
                 getHandler().error(
                     "Dimension '"
@@ -2773,8 +2777,11 @@ public class RolapSchemaLoader {
         } else {
             // degenerate dim, should only be a single attribute
             if (attributeList.size() > 1) {
-                throw MondrianResource.instance()
-                    .DimensionKeyOmitted.ex(xmlDimension.name);
+                getHandler().error(
+                    MondrianResource.instance()
+                    .DimensionKeyOmitted.ex(xmlDimension.name),
+                    validator.getXmls(dimension),
+                    null);
             }
             dimension.keyAttribute = attributeList.get(0);
         }

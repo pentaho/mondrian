@@ -7071,6 +7071,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 "<Dimension name='Store2'>\n"
                 + "  <Attributes>\n"
                 + "    <Attribute name='Store Id' table='store' keyColumn='store_id'/>\n"
+                + "    <Attribute name='Store Name' table='store' keyColumn='store_name'/>\n"
                 + "  </Attributes>\n"
                 + "</Dimension>",
                 null, null, null,
@@ -7078,8 +7079,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
                     "Sales",
                     "<ForeignKeyLink dimension='Store2' foreignKeyColumn='store_id'/>"));
         testContext.assertErrorList().containsError(
-            "Dimension 'Store2' is used in a dimension link but has no key attribute. Please specify key. \\(in ForeignKeyLink\\) \\(at ${pos}\\)",
-            "<ForeignKeyLink dimension='Store2' foreignKeyColumn='store_id'/>");
+            "mondrian.olap.MondrianException: Mondrian Error:Dimension 'Store2' omits a defined key, which is only valid for degenerate dimensions with a single attribute. \\(in Dimension 'Store2'\\) \\(at ${pos}\\)",
+            "<Dimension name='Store2'>");
     }
 
     /**
