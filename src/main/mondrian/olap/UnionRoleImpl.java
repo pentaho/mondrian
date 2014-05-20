@@ -288,26 +288,13 @@ class UnionRoleImpl implements Role {
         }
 
         public boolean hasInaccessibleDescendants(Member member) {
-            // If any of the roles return all the members,
-            // we assume that all descendants are accessible when
-            // we create a union of these roles.
-            final Access unionAccess = getAccess(member);
-            if (unionAccess == Access.ALL) {
-                return false;
-            }
-            if (unionAccess == Access.NONE) {
-                return true;
-            }
+            // if any of the roles have inaccessible members, so do we.
             for (HierarchyAccess hierarchyAccess : list) {
-                if (hierarchyAccess.getAccess(member) == Access.CUSTOM
-                    && !hierarchyAccess.hasInaccessibleDescendants(member))
-                {
-                    return false;
+                if (hierarchyAccess.hasInaccessibleDescendants(member)) {
+                    return true;
                 }
             }
-            // All of the roles have restricted the descendants in
-            // some way.
-            return true;
+            return false;
         }
 
         private boolean isTopLeveRestricted() {
