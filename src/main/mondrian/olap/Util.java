@@ -37,6 +37,8 @@ import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
@@ -3323,7 +3325,20 @@ public class Util extends XOMUtil {
         }
 
         File userDir = new File("").getAbsoluteFile();
-        FileObject file = fsManager.resolveFile(userDir, url);
+
+        // try to encode the url before use
+        String newUrl;
+        try{
+          String protocol = url.substring( 0, url.indexOf( ":/" ) + 2 );
+          String datasourceName = url.substring( protocol.length() );
+          newUrl = protocol + URLEncoder.encode( datasourceName, Charset.defaultCharset().name() );
+        }
+        catch( Exception e ){
+          // if something fails, just try with the original string
+          newUrl = url;
+        }
+
+        FileObject file = fsManager.resolveFile(userDir, newUrl );
         FileContent fileContent = null;
         try {
             // Because of VFS caching, make sure we refresh to get the latest
