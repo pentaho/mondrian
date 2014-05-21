@@ -1304,7 +1304,7 @@ property.</p>
 Property that controls the behavior of
 {@link Property#SOLVE_ORDER solve order} of calculated members and sets.
 
-<p>Valid values are "absolute" and "scoped" (the default). See
+<p>Valid values are "scoped" and "absolute" (the default). See
 {@link mondrian.olap.SolveOrderMode} for details.</p>
         </Description>
         <Type>String</Type>
