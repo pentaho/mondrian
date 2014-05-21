@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2013 Pentaho
+// Copyright (C) 2005-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -105,7 +105,9 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                     null,
                     "Don't know how to rollup aggregator '" + aggregator + "'");
             }
-            if (aggregator != RolapAggregator.DistinctCount) {
+            if (aggregator != RolapAggregator.DistinctCount
+                && aggregator != RolapAggregator.Avg)
+            {
                 final int savepoint = evaluator.savepoint();
                 try {
                     evaluator.setNonEmpty(false);
