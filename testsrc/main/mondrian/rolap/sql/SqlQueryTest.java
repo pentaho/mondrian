@@ -756,6 +756,48 @@ public class SqlQueryTest extends BatchTestCase {
         context.executeQuery(mdx);
         assertQuerySqlOrNot(context, mdx, patterns, true, false, false);
     }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1869">MONDRIAN-1869</a>
+     *
+     * <p>Avg Aggregates need to be computed in SQL to get correct values.
+     */
+    public void testAvgAggregator() {
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+        TestContext context = getTestContext().createSubstitutingCube(
+            "Sales",
+            null,
+            " <Measure name=\"Avg Sales\" column=\"unit_sales\" aggregator=\"avg\"\n"
+            + " formatString=\"#.###\"/>",
+            null,
+            null);
+        String mdx = "select measures.[avg sales] on 0 from sales"
+                       + " where { time.[1997].q1, time.[1997].q2.[4] }";
+        context.assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[1997].[Q2].[4]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Avg Sales]}\n"
+            + "Row #0: 3.069\n");
+        String sql =
+            "select\n"
+            + "    avg(`sales_fact_1997`.`unit_sales`) as `m0`\n"
+            + "from\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    ((`time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) "
+            + "or (`time_by_day`.`month_of_year` = 4 and `time_by_day`.`quarter` = 'Q2' "
+            + "and `time_by_day`.`the_year` = 1997))";
+        SqlPattern mySqlPattern =
+            new SqlPattern(Dialect.DatabaseProduct.MYSQL, sql, sql.length());
+        assertQuerySql(context, mdx, new SqlPattern[]{mySqlPattern});
+    }
 }
 
 // End SqlQueryTest.java
