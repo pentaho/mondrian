@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2013 Pentaho and others
+// Copyright (C) 2009-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -793,7 +793,7 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "where ([Measures].[Avg Unit Sales], [Customers].[OR and CA])",
             "Axis #0:\n"
             + "{[Measures].[Avg Unit Sales], [Customers].[Customers].[OR and CA]}\n"
-            + "3.094");
+            + "3.092");
     }
 
     /**
