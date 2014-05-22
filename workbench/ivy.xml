@@ -49,6 +49,8 @@
         <!-- Pentaho Application Launcher -->
         <dependency org="pentaho" name="pentaho-application-launcher" rev="${dependency.pentaho-launcher.revision}" changing="true"/>
 
+        <!-- ESAPI -->
+        <dependency org="org.owasp.esapi" name="esapi" rev="2.0.1" transitive="false"/>
 
         <!--Exclusions-->
         <exclude org="jaxme" module="jaxme-api"/>

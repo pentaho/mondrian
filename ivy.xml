@@ -73,8 +73,6 @@
                 conf="test->default" changing="true">
             <artifact name="olap4j-xmla"/>
         </dependency>
-        <!-- ESAPI -->
-        <dependency org="org.owasp.esapi" name="esapi" rev="2.0.1"/>
 
         <!-- REVIEW: try xalan 2.6.0? -->
         <dependency org="xalan" name="xalan" rev="2.6.0"/>
