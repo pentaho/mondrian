@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
@@ -1229,7 +1228,7 @@ public class FunUtil extends Util {
         } else if (p >= 1.0) {
             return asArray[length - 1];
         } else if (length == 1) {
-            return asArray[0] * p;
+            return asArray[0];
         } else if (p == 0.5) {
             // Special case for median.
             if ((length & 1) == 1) {
