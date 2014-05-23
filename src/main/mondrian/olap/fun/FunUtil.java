@@ -1197,7 +1197,7 @@ public class FunUtil extends Util {
         } else if (p >= 1.0) {
             return asArray[length - 1];
         } else if (length == 1) {
-            return asArray[0] * p;
+            return asArray[0];
         } else if (p == 0.5) {
             // Special case for median.
             if ((length & 1) == 1) {
