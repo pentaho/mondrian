@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
@@ -3298,6 +3297,10 @@ public class FunctionTest extends FoodMartTestCase {
             "MEDIAN({[Store].[All Stores].[USA].children},"
             + "[Measures].[Store Sales])",
             "159,167.84");
+        // single value
+        assertExprReturns(
+            "MEDIAN({[Store].[All Stores].[USA]}, [Measures].[Store Sales])",
+            "565,238.13");
     }
 
     public void testMedian2() {
@@ -3409,13 +3412,13 @@ public class FunctionTest extends FoodMartTestCase {
     public void testPercentileBugMondrian1045() {
         assertExprReturns(
             "Percentile({[Store].[All Stores].[USA]}, [Measures].[Store Sales], 50)",
-            "282,619.07");
+            "565,238.13");
         assertExprReturns(
             "Percentile({[Store].[All Stores].[USA]}, [Measures].[Store Sales], 40)",
-            "226,095.25");
+            "565,238.13");
         assertExprReturns(
             "Percentile({[Store].[All Stores].[USA]}, [Measures].[Store Sales], 95)",
-            "536,976.22");
+            "565,238.13");
     }
 
     public void testMin() {
