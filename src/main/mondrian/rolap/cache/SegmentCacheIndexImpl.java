@@ -24,6 +24,7 @@ import java.io.PrintWriter;
 import java.sql.Statement;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 
@@ -114,7 +115,9 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
 
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(
-                "SegmentCacheIndexImpl.locate:"
+                "SegmentCacheIndexImpl("
+                + System.identityHashCode(this)
+                + ")locate:"
                 + "\nschemaName:" + schemaName
                 + "\nschemaChecksum:" + schemaChecksum
                 + "\ncubeName:" + cubeName
@@ -137,7 +140,10 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
                 compoundPredicates);
         final List<SegmentHeader> headerList = bitkeyMap.get(starKey);
         if (headerList == null) {
-            LOGGER.trace("SegmentCacheIndexImpl.locate:NOMATCH");
+            LOGGER.trace(
+                "SegmentCacheIndexImpl("
+                + System.identityHashCode(this)
+                + ").locate:NOMATCH");
             return Collections.emptyList();
         }
         for (SegmentHeader header : headerList) {
@@ -152,7 +158,10 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         }
         if (LOGGER.isTraceEnabled()) {
             final StringBuilder sb =
-                new StringBuilder("SegmentCacheIndexImpl.locate:MATCH");
+                new StringBuilder(
+                    "SegmentCacheIndexImpl("
+                    + System.identityHashCode(this)
+                    + ").locate:MATCH");
             for (SegmentHeader header : list) {
                 sb.append("\n");
                 sb.append(header.toString());
@@ -170,7 +179,9 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         checkThread();
 
         LOGGER.debug(
-            "SegmentCacheIndexImpl.add:\n"
+            "SegmentCacheIndexImpl("
+            + System.identityHashCode(this)
+            + ").add:\n"
             + header.toString());
 
         HeaderInfo headerInfo = headerMap.get(header);
@@ -229,6 +240,11 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
     {
         checkThread();
 
+        LOGGER.trace(
+            "SegmentCacheIndexImpl.update: Updating header from:\n"
+            + oldHeader.toString()
+            + "\n\nto\n\n"
+            + newHeader.toString());
         final HeaderInfo headerInfo = headerMap.get(oldHeader);
         headerMap.remove(oldHeader);
         headerMap.put(newHeader, headerInfo);
@@ -286,21 +302,34 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
     public void remove(SegmentHeader header) {
         checkThread();
 
-        LOGGER.debug(
-            "SegmentCacheIndexImpl.remove:\n"
-            + header.toString());
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(
+                "SegmentCacheIndexImpl("
+                + System.identityHashCode(this)
+                + ").remove:\n"
+                + header.toString(),
+                new Throwable("Removal."));
+        } else {
+            LOGGER.debug(
+                "SegmentCacheIndexImpl.remove:\n"
+                + header.toString());
+        }
 
         final HeaderInfo headerInfo = headerMap.get(header);
         if (headerInfo == null) {
             LOGGER.debug(
-                "SegmentCacheIndexImpl.remove:UNKNOWN HEADER");
+                "SegmentCacheIndexImpl("
+                + System.identityHashCode(this)
+                + ").remove:UNKNOWN HEADER");
             return;
         }
         if (headerInfo.slot != null && !headerInfo.slot.isDone()) {
             // Cannot remove while load is pending; flag for removal after load
             headerInfo.removeAfterLoad = true;
             LOGGER.debug(
-                "SegmentCacheIndexImpl.remove:DEFFERED");
+                "SegmentCacheIndexImpl("
+                + System.identityHashCode(this)
+                + ").remove:DEFFERED");
             return;
         }
 
