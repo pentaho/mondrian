@@ -1145,6 +1145,79 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "Row #0: 28\n");
     }
 
+
+
+    public void testConstraintCacheIncludesMultiPositionSlicer() {
+        assertQueryReturns(
+            "select non empty [Customers].[USA].[WA].[Spokane].children  on 0, "
+            + "Time.[1997].[Q1].[1] * [Store].[USA].[WA].[Spokane] * Gender.F * [Marital Status].M on 1 from sales where\n"
+            + "{[Product].[Food].[Snacks].[Candy].[Gum].[Atomic].[Atomic Bubble Gum],\n"
+            + "[Product].[Food].[Snacks].[Candy].[Gum].[Choice].[Choice Bubble Gum]}",
+            "Axis #0:\n"
+            + "{[Product].[Food].[Snacks].[Candy].[Gum].[Atomic].[Atomic Bubble Gum]}\n"
+            + "{[Product].[Food].[Snacks].[Candy].[Gum].[Choice].[Choice Bubble Gum]}\n"
+            + "Axis #1:\n"
+            + "{[Customers].[USA].[WA].[Spokane].[David Cocadiz]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Peter Von Breymann]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997].[Q1].[1], [Store].[USA].[WA].[Spokane], [Gender].[F], [Marital Status].[M]}\n"
+            + "Row #0: 4\n"
+            + "Row #0: 3\n");
+        assertQueryReturns(
+            "select non empty [Customers].[USA].[WA].[Spokane].children on 0, "
+            + "Time.[1997].[Q1].[1] * [Store].[USA].[WA].[Spokane] * Gender.F *"
+            + "[Marital Status].M on 1 from sales where "
+            + "   { [Product].[Food], [Product].[Drink] }",
+            "Axis #0:\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Drink]}\n"
+            + "Axis #1:\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Abbie Carlbon]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Bob Alexander]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Dauna Barton]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[David Cocadiz]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[David Hassard]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Dawn Laner]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Donna Weisinger]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Fran McEvilly]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[James Horvat]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[John Lenorovitz]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Linda Combs]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Luther Moran]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Martha Griego]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Peter Von Breymann]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Richard Callahan]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Robert Vaughn]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Shirley Gottbehuet]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Stanley Marks]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Suzanne Davis]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Takiko Collins]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Virginia Bell]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997].[Q1].[1], [Store].[USA].[WA].[Spokane], [Gender].[F], [Marital Status].[M]}\n"
+            + "Row #0: 25\n"
+            + "Row #0: 17\n"
+            + "Row #0: 17\n"
+            + "Row #0: 30\n"
+            + "Row #0: 16\n"
+            + "Row #0: 9\n"
+            + "Row #0: 6\n"
+            + "Row #0: 12\n"
+            + "Row #0: 61\n"
+            + "Row #0: 15\n"
+            + "Row #0: 20\n"
+            + "Row #0: 27\n"
+            + "Row #0: 36\n"
+            + "Row #0: 22\n"
+            + "Row #0: 32\n"
+            + "Row #0: 2\n"
+            + "Row #0: 30\n"
+            + "Row #0: 19\n"
+            + "Row #0: 27\n"
+            + "Row #0: 3\n"
+            + "Row #0: 7\n");
+    }
+
     /**
      * This is a test for
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-1630">MONDRIAN-1630</a>
