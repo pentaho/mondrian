@@ -757,7 +757,7 @@ public class SegmentBuilder {
      * and a list of {@link StarPredicate}.
      */
     public static class StarSegmentConverter implements SegmentConverter {
-        private final WeakReference<RolapStar.Measure> measure;
+        private final RolapStar.Measure measure;
         private final List<StarPredicate> compoundPredicateList;
 
         public StarSegmentConverter(
@@ -775,7 +775,7 @@ public class SegmentBuilder {
             // It is harmless to use a weak reference here because
             // the measure is referenced by cubes and what-not,
             // so it can't be GC'd before its time has come.
-            this.measure = new WeakReference<RolapStar.Measure>(measure);
+            this.measure = measure;
             this.compoundPredicateList = compoundPredicateList;
         }
 
@@ -783,18 +783,15 @@ public class SegmentBuilder {
             SegmentHeader header,
             SegmentBody body)
         {
-            RolapStar.Measure m1 = measure.get();
-            assert m1 != null
-                : "Invalid state. A reference to the measure object was picked up by GC but the index wasn't cleared. This shouldn't happen.";
             final Segment segment =
                 toSegment(
                     header,
-                    m1.getStar(),
+                    measure.getStar(),
                     header.getConstrainedColumnsBitKey(),
                     getConstrainedColumns(
-                        m1.getStar(),
+                        measure.getStar(),
                         header.getConstrainedColumnsBitKey()),
-                    m1,
+                    measure,
                     compoundPredicateList);
             return addData(segment, body);
         }
