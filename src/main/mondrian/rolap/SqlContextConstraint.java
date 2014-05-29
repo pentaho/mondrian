@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2013 Pentaho and others
+// Copyright (C) 2006-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.mdx.MemberExpr;
@@ -218,7 +217,7 @@ public class SqlContextConstraint
 
         members.addAll(
             Arrays.asList(
-                SqlConstraintUtils.removeMultiPositionSlicerMembers(
+                SqlConstraintUtils.expandMultiPositionSlicerMembers(
                     evaluator.getMembers(), evaluator)));
 
         // Now we'll need to expand the aggregated members
