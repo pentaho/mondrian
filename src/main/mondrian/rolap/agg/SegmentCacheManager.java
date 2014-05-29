@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2013 Pentaho
+// Copyright (C) 2011-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -24,7 +24,6 @@ import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.concurrent.*;
 
 /**
@@ -613,36 +612,60 @@ public class SegmentCacheManager {
         public void visit(ExternalSegmentCreatedEvent event) {
             final SegmentCacheIndex index =
                 event.cacheMgr.indexRegistry.getIndex(event.header);
-            if (index != null) {
-                index.add(event.header, false, null);
-                event.monitor.sendEvent(
-                    new CellCacheSegmentCreateEvent(
-                        event.timestamp,
-                        event.serverId,
-                        event.connectionId,
-                        event.statementId,
-                        event.executionId,
-                        event.header.getConstrainedColumns().size(),
-                        0,
-                        CellCacheEvent.Source.EXTERNAL));
+            if (index == null) {
+                LOGGER.debug(
+                    "SegmentCacheManager.Handler.visitExternalCreated:"
+                    + "No index found for external SegmentHeader:"
+                    + event.header);
+                return;
             }
+            final RolapStar star = getStar(event.header);
+            if (star == null) {
+                // TODO FIXME this happens when a cache event comes
+                // in but the rolap schema pool was cleared.
+                // we should find a way to trigger the init remotely.
+                return;
+            }
+
+            // Index the new segment
+            index.add(
+                event.header,
+                getConverter(star, event.header),
+                false);
+
+            // Put an event on the monitor.
+            event.monitor.sendEvent(
+                new CellCacheSegmentCreateEvent(
+                    event.timestamp,
+                    event.serverId,
+                    event.connectionId,
+                    event.statementId,
+                    event.executionId,
+                    event.header.getConstrainedColumns().size(),
+                    0,
+                    CellCacheEvent.Source.EXTERNAL));
         }
 
         public void visit(ExternalSegmentDeletedEvent event) {
             final SegmentCacheIndex index =
                 event.cacheMgr.indexRegistry.getIndex(event.header);
-            if (index != null) {
-                index.remove(event.header);
-                event.monitor.sendEvent(
-                    new CellCacheSegmentDeleteEvent(
-                        event.timestamp,
-                        event.serverId,
-                        event.connectionId,
-                        event.statementId,
-                        event.executionId,
-                        event.header.getConstrainedColumns().size(),
-                        CellCacheEvent.Source.EXTERNAL));
+            if (index == null) {
+                LOGGER.debug(
+                    "SegmentCacheManager.Handler.visitExternalDeleted:"
+                    + "No index found for external SegmentHeader:"
+                    + event.header);
+                return;
             }
+            index.remove(event.header);
+            event.monitor.sendEvent(
+                new CellCacheSegmentDeleteEvent(
+                    event.timestamp,
+                    event.serverId,
+                    event.connectionId,
+                    event.statementId,
+                    event.executionId,
+                    event.header.getConstrainedColumns().size(),
+                    CellCacheEvent.Source.EXTERNAL));
         }
     }
 
@@ -775,8 +798,19 @@ public class SegmentCacheManager {
                     }
                     continue;
                 }
+
+                // Build the new header's dimensionality
                 final SegmentHeader newHeader =
                     header.constrain(flushRegion);
+
+                // Update the segment index.
+                for (RolapStar star : starList) {
+                    SegmentCacheIndex index =
+                        cacheMgr.indexRegistry.getIndex(star);
+                    index.update(header, newHeader);
+                }
+
+                // Update all of the cache workers.
                 for (final SegmentCacheWorker worker
                     : cacheMgr.segmentCacheWorkers)
                 {
@@ -798,12 +832,6 @@ public class SegmentCacheManager {
                                 return existed;
                             }
                         });
-                }
-                for (RolapStar star : starList) {
-                    SegmentCacheIndex index =
-                        cacheMgr.indexRegistry.getIndex(star);
-                    index.remove(header);
-                    index.add(newHeader, false, null);
                 }
             }
 
@@ -1469,21 +1497,42 @@ public class SegmentCacheManager {
     /**
      * Registry of all the indexes that were created for this
      * cache manager, per {@link RolapStar}.
+     *
+     * The index is based off the checksum of the schema.
      */
     public class SegmentCacheIndexRegistry {
-        private final Map<RolapStar, SegmentCacheIndex> indexes =
-            new WeakHashMap<RolapStar, SegmentCacheIndex>();
+
+        private final Map<ByteString, SegmentCacheIndex> indexes =
+            Collections.synchronizedMap(
+                new HashMap<ByteString, SegmentCacheIndex>());
 
         /**
          * Returns the {@link SegmentCacheIndex} for a given
          * {@link RolapStar}.
          */
         public SegmentCacheIndex getIndex(RolapStar star) {
-            if (!indexes.containsKey(star)) {
-                indexes.put(star, new SegmentCacheIndexImpl(thread));
+            LOGGER.trace(
+                "SegmentCacheManager.SegmentCacheIndexRegistry.getIndex:"
+                + System.identityHashCode(star));
+
+            if (!indexes.containsKey(star.getSchema().getChecksum())) {
+                final SegmentCacheIndexImpl index =
+                    new SegmentCacheIndexImpl(thread);
+                LOGGER.trace(
+                    "SegmentCacheManager.SegmentCacheIndexRegistry.getIndex:"
+                    + "Creating New Index "
+                    + System.identityHashCode(index));
+                indexes.put(star.getSchema().getChecksum(), index);
             }
-            return indexes.get(star);
+            final SegmentCacheIndex index =
+                indexes.get(star.getSchema().getChecksum());
+            LOGGER.trace(
+                "SegmentCacheManager.SegmentCacheIndexRegistry.getIndex:"
+                + "Returning Index "
+                + System.identityHashCode(index));
+            return index;
         }
+
         /**
          * Returns the {@link SegmentCacheIndex} for a given
          * {@link SegmentHeader}.
@@ -1493,38 +1542,37 @@ public class SegmentCacheManager {
         {
             // First we check the indexes that already exist.
             // This is fast.
-            for (Entry<RolapStar, SegmentCacheIndex> entry
-                : indexes.entrySet())
-            {
-                final String factTableName =
-                    entry.getKey().getFactTable().getTableName();
-                final ByteString schemaChecksum =
-                    entry.getKey().getSchema().getChecksum();
-                if (!factTableName.equals(header.rolapStarFactTableName)) {
-                    continue;
-                }
-                if (!schemaChecksum.equals(header.schemaChecksum)) {
-                    continue;
-                }
-                return entry.getValue();
+            if (indexes.containsKey(header.schemaChecksum)) {
+                return indexes.get(header.schemaChecksum);
             }
+
             // The index doesn't exist. Let's create it.
-            for (RolapSchema schema : RolapSchema.getRolapSchemas()) {
-                if (!schema.getChecksum().equals(header.schemaChecksum)) {
-                    continue;
-                }
-                // We have a schema match.
-                RolapStar star =
-                    schema.getStar(header.rolapStarFactTableName);
+            final RolapStar star = getStar(header);
+            if (star == null) {
+                // TODO FIXME this happens when a cache event comes
+                // in but the rolap schema pool was cleared.
+                // we should find a way to trigger the init remotely.
+                return null;
+            } else {
                 return getIndex(star);
             }
-            return null;
         }
         public void cancelExecutionSegments(Execution exec) {
             for (SegmentCacheIndex index : indexes.values()) {
                 index.cancel(exec);
             }
         }
+    }
+
+    static RolapStar getStar(SegmentHeader header) {
+        for (RolapSchema schema : RolapSchema.getRolapSchemas()) {
+            if (!schema.getChecksum().equals(header.schemaChecksum)) {
+                continue;
+            }
+            // We have a schema match.
+            return schema.getStar(header.rolapStarFactTableName);
+        }
+        return null;
     }
 
     /**

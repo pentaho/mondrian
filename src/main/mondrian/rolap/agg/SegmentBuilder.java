@@ -13,7 +13,6 @@ import mondrian.olap.Aggregator;
 import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.Segment.ExcludedRegion;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.*;
 import mondrian.spi.Dialect.Datatype;
 import mondrian.util.ArraySortedSet;
@@ -21,7 +20,6 @@ import mondrian.util.Pair;
 
 import org.olap4j.impl.UnmodifiableArrayList;
 
-import java.lang.ref.WeakReference;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.Map.Entry;
@@ -762,25 +760,14 @@ public class SegmentBuilder {
      * and a list of {@link StarPredicate}.
      */
     public static class StarSegmentConverter implements SegmentConverter {
-        private final WeakReference<RolapStar.Measure> measure;
+        private final RolapStar.Measure measure;
         private final List<StarPredicate> compoundPredicateList;
 
         public StarSegmentConverter(
             RolapStar.Measure measure,
             List<StarPredicate> compoundPredicateList)
         {
-             // The measure is wrapped in a weak reference because
-             // converters are put into the SegmentCacheIndex,
-             // but the registry of indexes is based as a weak
-             // list of the RolapStars.
-             // Simply put, the fact that converters have a hard
-             // link on the measure would prevents the GC from
-             // ever cleaning the registry. The circular references
-             // are a well known issue with weak lists.
-             // It is harmless to use a weak reference here because
-             // the measure is referenced by cubes and what-not,
-             // so it can't be GC'd before its time has come.
-            this.measure = new WeakReference<RolapStar.Measure>(measure);
+            this.measure = measure;
             this.compoundPredicateList = compoundPredicateList;
         }
 
@@ -788,18 +775,15 @@ public class SegmentBuilder {
             SegmentHeader header,
             SegmentBody body)
         {
-            RolapStar.Measure m1 = measure.get();
-            assert m1 != null
-                : "Invalid state. A reference to the measure object was picked up by GC but the index wasn't cleared. This shouldn't happen.";
             final Segment segment =
                 toSegment(
                     header,
-                    m1.getStar(),
+                    measure.getStar(),
                     header.getConstrainedColumnsBitKey(),
                     getConstrainedColumns(
-                        m1.getStar(),
+                        measure.getStar(),
                         header.getConstrainedColumnsBitKey()),
-                    m1,
+                    measure,
                     compoundPredicateList);
             return addData(segment, body);
         }

@@ -110,10 +110,10 @@ public class SegmentLoader {
                         cacheMgr.getIndexRegistry().getIndex(segment.star);
                     index.add(
                         segment.getHeader(),
-                        true,
                         new SegmentBuilder.StarSegmentConverter(
                             segment.measure,
-                            compoundPredicateList));
+                            compoundPredicateList),
+                        true);
                     // Make sure that we are registered as a client of
                     // the segment by invoking getFuture.
                     Util.discard(

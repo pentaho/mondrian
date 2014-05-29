@@ -242,17 +242,44 @@ public class RolapSchema extends OlapElementBase implements Schema {
         throw new UnsupportedOperationException();
     }
 
-    protected void finalCleanUp() {
+    protected void flushSegments() {
+        final RolapConnection internalConnection = getInternalConnection();
+        if (internalConnection != null) {
+            final CacheControl cc = internalConnection.getCacheControl(null);
+            for (RolapCube cube : getCubeList()) {
+                cc.flush(cc.createMeasuresRegion(cube));
+            }
+        }
+    }
+
+    /**
+     * Clears the cache of JDBC tables for the aggs.
+     */
+    protected void flushJdbcSchema() {
+        // Cleanup the agg table manager's caches.
         if (aggTableManager != null) {
             aggTableManager.finalCleanUp();
             aggTableManager = null;
         }
     }
 
+    /**
+     * Performs a sweep of the JDBC tables caches and the segment data.
+     * Only called internally when a schema and it's data must be refreshed.
+     */
+    protected void finalCleanUp() {
+        // Cleanup the segment data.
+        flushSegments();
+
+        // Cleanup the agg JDBC cache
+        flushJdbcSchema();
+    }
+
     protected void finalize() throws Throwable {
         try {
             super.finalize();
-            finalCleanUp();
+            // Only clear the JDBC cache to prevent leaks.
+            flushJdbcSchema();
         } catch (Throwable t) {
             LOGGER.info(
                 MondrianResource.instance()
