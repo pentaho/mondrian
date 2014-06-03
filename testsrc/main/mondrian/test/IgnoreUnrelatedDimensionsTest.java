@@ -66,11 +66,6 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             MondrianProperties.instance().EnableNonEmptyOnAllAxis, true);
     }
 
-    protected void tearDown() throws Exception {
-        propSaver.reset();
-        super.tearDown();
-    }
-
     public TestContext getTestContext() {
         return TestContext.instance().create(
             null,
