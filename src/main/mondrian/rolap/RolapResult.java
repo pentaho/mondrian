@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.*;
@@ -376,8 +375,12 @@ public class RolapResult extends ResultBase {
                             new DummyExp(query.slicerCalc.getType()))
                         {
                             public Object evaluate(Evaluator evaluator) {
+                                TupleList list =
+                                    AbstractAggregateFunDef
+                                        .processUnrelatedDimensions(
+                                            tupleList1, evaluator);
                                 return AggregateFunDef.AggregateCalc.aggregate(
-                                    valueCalc, evaluator, tupleList1);
+                                    valueCalc, evaluator, list);
                             }
                         };
                     final List<RolapHierarchy> hierarchyList =
