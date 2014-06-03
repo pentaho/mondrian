@@ -345,13 +345,6 @@ public class RolapSchema implements Schema {
         // Cleanup the segment data.
         flushSegments();
 
-        // De-register our indexes of segments
-        for (Cube cube : getCubes()) {
-            MondrianServer.forConnection(internalConnection)
-                .getAggregationManager().cacheMgr.getIndexRegistry()
-                    .clearIndex(((RolapCube)cube).getStar());
-        }
-
         // Cleanup the agg JDBC cache
         flushJdbcSchema();
     }

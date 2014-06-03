@@ -24,7 +24,6 @@ import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.concurrent.*;
 
 /**
@@ -1515,26 +1514,39 @@ public class SegmentCacheManager {
     /**
      * Registry of all the indexes that were created for this
      * cache manager, per {@link RolapStar}.
+     *
+     * The index is based off the checksum of the schema.
      */
     public class SegmentCacheIndexRegistry {
-        private final Map<RolapStar, SegmentCacheIndex> indexes =
-            new WeakHashMap<RolapStar, SegmentCacheIndex>();
-        /**
-         * Removes a star from the registry.
-         */
-        public void clearIndex(RolapStar star) {
-            indexes.remove(star);
-        }
+        private final Map<ByteString, SegmentCacheIndex> indexes =
+            Collections.synchronizedMap(
+                new HashMap<ByteString, SegmentCacheIndex>());
 
         /**
          * Returns the {@link SegmentCacheIndex} for a given
          * {@link RolapStar}.
          */
         public SegmentCacheIndex getIndex(RolapStar star) {
-            if (!indexes.containsKey(star)) {
-                indexes.put(star, new SegmentCacheIndexImpl(thread));
+            LOGGER.trace(
+                "SegmentCacheManager.SegmentCacheIndexRegistry.getIndex:"
+                + System.identityHashCode(star));
+
+            if (!indexes.containsKey(star.getSchema().getChecksum())) {
+                final SegmentCacheIndexImpl index =
+                    new SegmentCacheIndexImpl(thread);
+                LOGGER.trace(
+                    "SegmentCacheManager.SegmentCacheIndexRegistry.getIndex:"
+                    + "Creating New Index "
+                    + System.identityHashCode(index));
+                indexes.put(star.getSchema().getChecksum(), index);
             }
-            return indexes.get(star);
+            final SegmentCacheIndex index =
+                indexes.get(star.getSchema().getChecksum());
+            LOGGER.trace(
+                "SegmentCacheManager.SegmentCacheIndexRegistry.getIndex:"
+                + "Returning Index "
+                + System.identityHashCode(index));
+            return index;
         }
 
         /**
@@ -1546,21 +1558,10 @@ public class SegmentCacheManager {
         {
             // First we check the indexes that already exist.
             // This is fast.
-            for (Entry<RolapStar, SegmentCacheIndex> entry
-                : indexes.entrySet())
-            {
-                final String factTableName =
-                    entry.getKey().getFactTable().getTableName();
-                final ByteString schemaChecksum =
-                    entry.getKey().getSchema().getChecksum();
-                if (!factTableName.equals(header.rolapStarFactTableName)) {
-                    continue;
-                }
-                if (!schemaChecksum.equals(header.schemaChecksum)) {
-                    continue;
-                }
-                return entry.getValue();
+            if (indexes.containsKey(header.schemaChecksum)) {
+                return indexes.get(header.schemaChecksum);
             }
+
             // The index doesn't exist. Let's create it.
             final RolapStar star = getStar(header);
             if (star == null) {
