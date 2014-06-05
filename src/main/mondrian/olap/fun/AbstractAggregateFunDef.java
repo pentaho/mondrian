@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2013 Pentaho
+// Copyright (C) 2002-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -135,7 +135,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
      * @param evaluator Evaluator
      * @return list of members or tuples
      */
-    private static TupleList processUnrelatedDimensions(
+    public static TupleList processUnrelatedDimensions(
         TupleList tuplesForAggregation,
         Evaluator evaluator)
     {
@@ -143,18 +143,23 @@ public class AbstractAggregateFunDef extends FunDefBase {
             return tuplesForAggregation;
         }
 
-        RolapMember measure = (RolapMember) evaluator.getMembers()[0];
+        RolapMember measure = getRolapMeasureForUnrelatedDimCheck(
+            evaluator, tuplesForAggregation);
 
         if (measure.isCalculated()) {
             return tuplesForAggregation;
         }
 
-        RolapMeasureGroup measureGroup = evaluator.getMeasureGroup();
         final List<RolapMeasureGroup> cubeMeasureGroups =
-            ((RolapCube) evaluator.getCube()).getMeasureGroups();
-        if (measureGroup != null && cubeMeasureGroups != null
-            && cubeMeasureGroups.size() > 1)
-        {
+        ((RolapCube) evaluator.getCube()).getMeasureGroups();
+
+        if (cubeMeasureGroups != null && cubeMeasureGroups.size() > 1) {
+            // this should be a safe cast since we've eliminated calcs above
+            RolapMeasureGroup measureGroup =
+                ((RolapBaseCubeMeasure)measure).getMeasureGroup();
+            if (measureGroup == null) {
+                return tuplesForAggregation;
+            }
             if (measureGroup.ignoreUnrelatedDimensions) {
                 return ignoreUnrelatedDimensions(
                     tuplesForAggregation, measureGroup);
@@ -166,6 +171,37 @@ public class AbstractAggregateFunDef extends FunDefBase {
             }
         }
         return tuplesForAggregation;
+    }
+
+    /**
+     * Returns the measure to use when determining which dimensions
+     * are unrelated.  Most of the time this is the measure in context,
+     * except 2 cases:
+     * 1)  When a measure is included in a compound slicer
+     * 2)  When one or more measures are included in the first parameter
+     *     of Aggregate.
+     *      e.g. Aggregate( Crossjoin( {Time.[1997]}, {measures.[Unit Sales]})
+     * In both cases the measure(s) will be present in tuplesForAggregation.
+     */
+    private static RolapMember getRolapMeasureForUnrelatedDimCheck(
+        Evaluator evaluator, TupleList tuplesForAggregation)
+    {
+        RolapMember measure = (RolapMember)evaluator.getMembers()[0];
+        if (tuplesForAggregation != null
+            && tuplesForAggregation.size() > 0)
+        {
+            // this looks for the measure in the first tuple, with the
+            // assumption that there is a single measure in all tuples.
+            // This assumption is incorrect in the unusual case where
+            // a set of measures is used as the first param in an aggregate
+            // function.
+            for (Member tupMember : tuplesForAggregation.get(0)) {
+                if (tupMember.isMeasure()) {
+                    measure = (RolapMember)tupMember;
+                }
+            }
+        }
+        return measure;
     }
 
     /**
