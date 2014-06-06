@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 22 December, 2001
@@ -636,7 +636,7 @@ public class RolapUtil {
         return result.getRootEvaluator();
     }
 
-    static interface ExecuteQueryHook {
+    public static interface ExecuteQueryHook {
         void onExecuteQuery(String sql);
     }
 

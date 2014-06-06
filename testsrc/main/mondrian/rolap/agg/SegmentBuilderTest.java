@@ -40,7 +40,7 @@ public class SegmentBuilderTest extends BatchTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        propSaver.reset();
+        RolapUtil.setHook(null);
     }
 
     public void testRollupWithNullAxisVals() {
@@ -404,6 +404,138 @@ public class SegmentBuilderTest extends BatchTestCase {
                 new HashSet<String>(Arrays.asList("col1", "col2", "col3")),
                 null, RolapAggregator.Sum, Dialect.Datatype.Numeric);
         assertTrue(rollup.right instanceof DenseDoubleSegmentBody);
+    }
+
+    public void testOverlappingSegments() {
+        // MONDRIAN-2107
+        // The segments created by the first 2 queries below overlap on
+        //  [1997].[Q1].[1].  The rollup of these two segments should not
+        // doubly-add that cell.
+        // Also, these two segments have predicates optimized for 'quarter'
+        // since 3 out of 4 quarters are present.  This means the
+        //  header.getValues() will be null.  This has the potential
+        // to cause issues with rollup since one segment body will have
+        // 3 values for quarter, the other segment body will have a different
+        // set of values.
+        getTestContext().flushSchemaCache();
+        TestContext context = getTestContext().withFreshConnection();
+
+        context.executeQuery(
+            "select "
+            + "{[Time].[1997].[Q1].[1], [Time].[1997].[Q1].[2], [Time].[1997].[Q1].[3], "
+            + "[Time].[1997].[Q2].[4], [Time].[1997].[Q2].[5], [Time].[1997].[Q2].[6],"
+            + "[Time].[1997].[Q3].[7]} on 0 from sales");
+        context.executeQuery(
+            "select "
+            + "{[Time].[1997].[Q1].[1], [Time].[1997].[Q3].[8], [Time].[1997].[Q3].[9], "
+            + "[Time].[1997].[Q4].[10], [Time].[1997].[Q4].[11], [Time].[1997].[Q4].[12],"
+            + "[Time].[1998].[Q1].[1], [Time].[1998].[Q3].[8], [Time].[1998].[Q3].[9], "
+            + "[Time].[1998].[Q4].[10], [Time].[1998].[Q4].[11], [Time].[1998].[Q4].[12]}"
+            + "on 0 from sales");
+
+        RolapUtil.setHook(
+            new RolapUtil.ExecuteQueryHook()
+        {
+            public void onExecuteQuery(String sql) {
+                //  We shouldn't see a sum of unit_sales in SQL if using rollup.
+                assertFalse(
+                    "Expected cells to be pulled from cache",
+                    sql.matches(".*sum\\([^ ]+unit_sales.*"));
+            }
+        });
+        context.assertQueryReturns(
+            "select [Time].[1997].children on 0 from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[1997].[Q2]}\n"
+            + "{[Time].[1997].[Q3]}\n"
+            + "{[Time].[1997].[Q4]}\n"
+            + "Row #0: 66,291\n"
+            + "Row #0: 62,610\n"
+            + "Row #0: 65,848\n"
+            + "Row #0: 72,024\n");
+    }
+
+    public void testNonOverlappingRollupWithUnconstrainedColumn() {
+        // MONDRIAN-2107
+        // The two segments loaded by the 1st 2 queries will have predicates
+        // optimized for Name.  Prior to the fix for 2107 this would
+        // result in roughly half of the customers having empty results
+        // for the 3rd query, since the values of only one of the two
+        // segments would be loaded into the AxisInfo.
+        getTestContext().flushSchemaCache();
+        TestContext context = getTestContext().withFreshConnection();
+        final String query = "select customers.[name].members on 0 from sales";
+        propSaver.set(propSaver.properties.EnableInMemoryRollup, false);
+        Result result = context.executeQuery(query);
+
+        getTestContext().flushSchemaCache();
+        context = getTestContext().withFreshConnection();
+        propSaver.set(propSaver.properties.EnableInMemoryRollup, true);
+        context.executeQuery(
+            "select "
+            + "{[customers].[name].members} on 0 from sales where gender.f");
+        context.executeQuery(
+            "select "
+            + "{[customers].[name].members} on 0 from sales where gender.m");
+
+        RolapUtil.setHook(
+            new RolapUtil.ExecuteQueryHook()
+        {
+            public void onExecuteQuery(String sql) {
+                //  We shouldn't see a sum of unit_sales in SQL if using rollup.
+                assertFalse(
+                    "Expected cells to be pulled from cache",
+                    sql.matches(".*sum\\([^ ]+unit_sales.*"));
+            }
+        });
+
+        context.assertQueryReturns(
+            query,
+            context.toString(result));
+    }
+
+    public void testNonOverlappingRollupWithUnconstrainedColumnAndHasNull() {
+        // MONDRIAN-2107
+        // Creates 10 segments, one for each city, with various sets
+        // of [Store Sqft].  Some contain NULL, some do not.
+        // Results from rollup should match results from a query not pulling
+        // from cache.
+        String[] states = {"[Canada].BC", "[USA].CA", "[Mexico].DF",
+            "[Mexico].Guerrero", "[Mexico].Jalisco", "[USA].[OR]",
+            "[Mexico].Veracruz", "[USA].WA", "[Mexico].Yucatan",
+            "[Mexico].Zacatecas"};
+        getTestContext().flushSchemaCache();
+        TestContext context = getTestContext().withFreshConnection();
+        final String query =
+            "select [Store Size in SQFT].[Store Sqft].members on 0 from sales";
+
+        Result result = context.executeQuery(query);
+        getTestContext().flushSchemaCache();
+        context = getTestContext().withFreshConnection();
+        for (String state : states) {
+            context.executeQuery(
+                String.format(
+                    "select "
+                    + "{[Store Size in SQFT].[Store Sqft].members} on 0 "
+                    + "from sales where store.%s", state));
+        }
+        RolapUtil.setHook(
+            new RolapUtil.ExecuteQueryHook()
+        {
+            public void onExecuteQuery(String sql) {
+                //  We shouldn't see a sum of unit_sales in SQL if using rollup.
+                assertFalse(
+                    "Expected cell to be pulled from cache",
+                    sql.matches(".*sum\\([^ ]+unit_sales.*"));
+            }
+        });
+
+        context.assertQueryReturns(
+            query,
+            context.toString(result));
     }
 
     public void testBadRollupCausesGreaterThan12Iterations() {
