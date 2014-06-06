@@ -18,6 +18,8 @@ import mondrian.spi.Dialect.Datatype;
 import mondrian.util.ArraySortedSet;
 import mondrian.util.Pair;
 
+import org.apache.log4j.Logger;
+
 import org.olap4j.impl.UnmodifiableArrayList;
 
 import java.math.BigInteger;
@@ -32,6 +34,8 @@ import java.util.Map.Entry;
  * @author LBoudreau
  */
 public class SegmentBuilder {
+    private static final Logger LOGGER =
+        Logger.getLogger(SegmentBuilder.class);
     /**
      * Converts a segment plus a {@link SegmentBody} into a
      * {@link mondrian.rolap.agg.SegmentWithData}.
@@ -168,6 +172,25 @@ public class SegmentBuilder {
             compoundPredicates);
     }
 
+    private static List<Comparable> getColumnValsAtCellKey(
+        SegmentBody body, CellKey cellKey)
+    {
+        List<Comparable> columnValues = new ArrayList<Comparable>();
+        for (int i = 0; i < body.getAxisValueSets().length; i++) {
+            List<Comparable> columnVals = new ArrayList<Comparable>();
+            columnVals.addAll(body.getAxisValueSets()[i]);
+            int valCoord = body.getNullAxisFlags()[i]
+                ? cellKey.getAxis(i) - 1
+                : cellKey.getAxis(i);
+            if (valCoord >= 0) {
+                columnValues.add(columnVals.get(valCoord));
+            } else {
+                columnValues.add(null);
+            }
+        }
+        return columnValues;
+    }
+
     /**
      * Given a collection of segments, all of the same dimensionality, rolls up
      * to create a segment with reduced dimensionality.
@@ -237,7 +260,17 @@ public class SegmentBuilder {
                 } else {
                     final SortedSet<Comparable> filteredValues;
                     final boolean filteredHasNull;
-                    if (axis.requestedValues == null) {
+                    if (axis.requestedValues == null
+                        && requestedValues == null)
+                    {
+                        // there are 2+ segments that are unconstrained for
+                        // this axis.  While unconstrained, individually
+                        // they may not have all values present.
+                        // Make sure we don't lose any values.
+                        filteredValues = axis.valueSet;
+                        filteredValues.addAll(new TreeSet<Comparable>(values));
+                        filteredHasNull = hasNull || axis.hasNull;
+                    } else if (axis.requestedValues == null) {
                         filteredValues = values;
                         filteredHasNull = hasNull;
                         axis.column = headerColumn;
@@ -290,6 +323,9 @@ public class SegmentBuilder {
         // a stripe of values from the and add them up into a single cell.
         final Map<CellKey, List<Object>> cellValues =
             new HashMap<CellKey, List<Object>>();
+        List<List<Comparable>> addedIntersections =
+            new ArrayList<List<Comparable>>();
+
         for (Map.Entry<SegmentHeader, SegmentBody> entry : map.entrySet()) {
             final int[] pos = new int[axes.length];
             final Comparable[][] valueArrays =
@@ -302,8 +338,8 @@ public class SegmentBuilder {
             for (SortedSet<Comparable> set : body.getAxisValueSets()) {
                 valueArrays[z] = keepColumns.contains(
                     firstHeader.getConstrainedColumns().get(z).columnExpression)
-                        ? set.toArray(new Comparable[set.size()])
-                        : null;
+                    ? set.toArray(new Comparable[set.size()])
+                    : null;
                 ++z;
             }
             Map<CellKey, Object> v = body.getValueMap();
@@ -343,7 +379,14 @@ public class SegmentBuilder {
                 if (!cellValues.containsKey(ck)) {
                     cellValues.put(ck, new ArrayList<Object>());
                 }
-                cellValues.get(ck).add(vEntry.getValue());
+                List<Comparable> colValues =  getColumnValsAtCellKey(
+                    body, vEntry.getKey());
+                if (!addedIntersections.contains(colValues)) {
+                    // only add the cell value if we haven't already.
+                    // there is a potential double add if segments overlap
+                    cellValues.get(ck).add(vEntry.getValue());
+                    addedIntersections.add(colValues);
+                }
             }
         }
 
@@ -364,9 +407,11 @@ public class SegmentBuilder {
         // The two methods use different data structures (AxisInfo/SegmentAxis)
         // so combining logic is probably more trouble than it's worth.
         final boolean sparse =
-            bigValueCount.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) > 0
+            bigValueCount.compareTo(
+                BigInteger.valueOf(Integer.MAX_VALUE)) > 0
                 || SegmentLoader.useSparse(
-                    bigValueCount.doubleValue(), cellValues.size());
+                    bigValueCount.doubleValue(),
+                    cellValues.size());
 
         final int[] axisMultipliers =
             computeAxisMultipliers(axisList);
@@ -425,7 +470,7 @@ public class SegmentBuilder {
                         nullValues,
                         ints,
                         axisList);
-                  break;
+                break;
             case Numeric:
                 final double[] doubles = new double[valueCount];
                 nullValues = Util.bitSetBetween(0, valueCount);
@@ -494,7 +539,47 @@ public class SegmentBuilder {
                 firstHeader.rolapStarFactTableName,
                 targetBitkey,
                 Collections.<SegmentColumn>emptyList());
-
+        if (LOGGER.isDebugEnabled()) {
+            StringBuilder builder = new StringBuilder();
+            builder.append("Rolling up segments with parameters: \n");
+            builder.append("keepColumns=" + keepColumns + "\n");
+            builder.append("aggregator=" + rollupAggregator + "\n");
+            builder.append("datatype=" + datatype + "\n");
+            for (Map.Entry<SegmentHeader, SegmentBody > segment : segments) {
+                builder.append(segment.getKey() + "\n");
+                builder.append(segment.getValue().toString());
+            }
+            builder.append("AxisInfos constructed:");
+            for (AxisInfo axis : axes) {
+                SortedSet<Comparable> colVals = axis.column.getValues();
+                builder.append(
+                    String.format(
+                        "column.columnExpression=%s\n"
+                        + "column.valueCount=%s\n"
+                        + "column.values=%s\n"
+                        + "requestedValues=%s\n"
+                        + "valueSet=%s\n"
+                        + "values=%s\n"
+                        + "hasNull=%b\n"
+                        + "src=%d\n"
+                        + "lostPredicate=%b\n",
+                        axis.column.columnExpression,
+                        axis.column.getValueCount(),
+                        Arrays.toString(
+                            colVals == null ? null
+                                : colVals.toArray()),
+                        axis.requestedValues,
+                        axis.valueSet,
+                        Arrays.asList(axis.values),
+                        axis.hasNull,
+                        axis.src,
+                        axis.lostPredicate));
+            }
+            builder.append("Resulted in Segment:  \n");
+            builder.append(header);
+            builder.append(body.toString());
+            LOGGER.debug(builder.toString());
+        }
         return Pair.of(header, body);
     }
 

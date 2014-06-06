@@ -549,7 +549,7 @@ public class RolapUtil {
         return result.getRootEvaluator();
     }
 
-    static interface ExecuteQueryHook {
+    public static interface ExecuteQueryHook {
         void onExecuteQuery(String sql);
     }
 
