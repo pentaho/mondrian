@@ -1768,9 +1768,14 @@ xalan.jar"/>
     </java>
   </target>
 
+	
+  <target name="resolve-oss-licenses" depends="install-ivy">
+    <ivy:resolve file="${ivyfile}" conf="oss-licenses" />
+    <ivy:retrieve conf="oss-licenses" pattern="${bin.dir}/[module].[ext]" />
+  </target>
 
   <target name="workbench-dist" 
-      depends="resolve-workbench-runtime-deps,version,workbench">
+      depends="resolve-workbench-runtime-deps,resolve-oss-licenses,version,workbench">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.dir}/${workbench.zip-dist.file}"/>
     <zip destfile="${dist.dir}/${workbench.zip-dist.file}">
@@ -1820,6 +1825,7 @@ xalan.jar"/>
           dir="src/main"
           prefix="${workbench.dist.name}/src"
           includes="mondrian/gui/**/*"/>
+    	<zipfileset src="${bin.dir}/oss-licenses.zip" prefix="${workbench.dist.name}" includes="PentahoSchemaWorkbench_OSS_Licenses.html"/>
     </zip>
   </target>
 
