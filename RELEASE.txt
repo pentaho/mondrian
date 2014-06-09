@@ -1,3 +1,44 @@
+
+Mondrian 3.7.0 production release notes
+=============================================
+
+This release is a maintenance release. It contains all of the fixes
+from our prior service packs of the 3.6.X code line. It also addresses
+a lot of issues around compound slicers as well as in-memory rollup
+optimizations.
+
+We have also introduced a few select new features that the team would like
+to test in the community in the hope of growing them organically.
+
+To find out more about Mondrian, go to http://mondrian.pentaho.com.
+
+For further installation instructions, see
+http://mondrian.pentaho.com/documentation/installation.php
+or the included file doc/installation.html.
+
+New features in this release
+----------------------------------
+ - Beta support for JMX monitoring.
+ - Support for olap4j 1.2.0.
+ - Support for NuoDB
+
+API changes from 3.6.X to 3.7.X
+----------------------------------
+ - None.
+
+Notable bug fixes
+----------------------------------
+ - Fixes issues around in-memory rollups.
+ - Fixes issues with Impala and Hive dialects.
+ - Fixes issues where using roles would prevent all of the members from
+   being cached and retrieved correctly.
+ - Fixes arithmetic errors when compound slicers are used.
+ - Fixes concurrency issues with the segment indexes and external caches.
+
+See CHANGES.txt for a list of all source code changes
+since the previous release.
+
+
 Mondrian 3.6.0 production release notes
 =============================================
 
@@ -396,6 +437,22 @@ directly from: https://github.com/pentaho/mondrian/tags
 
 Version   Tag         Git Hash
 -------   ---------   ----------------------------------------
+
+3.6.7     3.6.7-R     6c8436dac24b08c32a84234ded106cd8a6b74f88
+3.6.6     3.6.6-R     a1486a6a56e7ee0055c91d7bd44bd5091ce84092
+3.6.5     3.6.5-R     56609c22ea7e2edc46c67bc83d2f245e52bd732e
+3.6.4     3.6.4-R     e9b291fb5ae82862e37037befcd2d3504592f209
+3.6.3     3.6.3-R     8e4009ff39cb9e5e60a67d3f1a674f4a01b6e45e
+3.6.2     3.6.2-R     19ed7f14a3aada13dc15adb4109f1b3b415d7a55
+3.6.1     3.6.1-R     ae6d1a41a351e5dc43f627ae6bba98de99487207
+3.6.0.1   3.6.0.1-R   9dc5a6a639b3f47b1c2addb90d159c008a61e8b0
+3.6.0     3.6.0-R     7fb96718a2ca652b864c7a22ffbd2023172f4445
+
+3.5.14    3.5.14-R    7734f8fb5312abe9a086e9c4bbd9bea1dedf7ac9
+3.5.13    3.5.13-R    b831b0ed8e63e2108b952aed12eb74b70ff2cd9c
+3.5.12    3.5.12-R    cf469ac137ad48ca4fc48272590f8e720ae392e7
+3.5.11    3.5.11-R    2fc917a5640cc35ca68670b86505fd7748553af7
+3.5.10    3.5.10-R    097264aa7e11d89881c2c9a8d54961b122620788
 3.5.9     3.5.9-R     187129ca52cb8037b27e9063a3f9d2a66230c67d
 3.5.8     3.5.8-R     643db12c8a8044934fcf9c0bc202be1556c4c254
 3.5.7     3.5.7-R     c15578eaf0ecb3fe10b2848431a508aed1e47e3e
