@@ -33,6 +33,7 @@
         <conf name="default-jdk1.4"/>
         <conf name="sources"/>
         <conf name="dist"/>
+        <conf name="oss-licenses" />
         <conf name="test" visibility="private"/>
     </configurations>
 
@@ -101,6 +102,11 @@
         <dependency org="com.tonbeller" name="jpivot" rev="1.8.0-100420" conf="dist->default">
             <artifact name="jpivot" type="war"/>
         </dependency>
+        
+        <!--  OSS Licenses file -->
+	    <dependency org="pentaho" name="oss-licenses" rev="${dependency.oss-licenses.revision}" conf="oss-licenses->default">
+		   <artifact name="oss-licenses" type="zip" />
+	    </dependency>
 
         <!-- Test Jars -->
         <dependency org="junit" name="junit" rev="3.8.1" conf="test->default"/>
