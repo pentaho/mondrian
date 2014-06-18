@@ -5,16 +5,16 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 28 September, 2002
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
+import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.server.*;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
@@ -23,6 +23,10 @@ import mondrian.test.TestContext;
 import org.olap4j.impl.Olap4jUtil;
 
 import java.util.*;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit test for {@link AggregationManager}.
@@ -2687,6 +2691,282 @@ public class TestAggregationManager extends BatchTestCase {
                     sqlMysqlTooLowSegmentQuery.length())
             },
             false, false, true);
+    }
+
+    public void testAggStarWithIgnoredColumnsRequiresRollup() {
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+        propSaver.set(propSaver.properties.ReadAggregates, true);
+        propSaver.set(propSaver.properties.UseAggregates, true);
+        final TestContext context =
+            TestContext.instance().withSchema(
+                "<Schema name=\"FoodMart\">"
+                + "  <Dimension name=\"Time\" type=\"TimeDimension\">\n"
+                + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
+                + "      <Table name=\"time_by_day\"/>\n"
+                + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+                + "          levelType=\"TimeYears\"/>\n"
+                + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
+                + "          levelType=\"TimeQuarters\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">\n"
+                + "  <Table name=\"sales_fact_1997\">\n"
+                + "    <AggExclude name=\"agg_c_special_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_lc_100_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_lc_10_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_pc_10_sales_fact_1997\" />\n"
+                + "    <AggName name=\"agg_c_10_sales_fact_1997\">\n"
+                + "        <AggFactCount column=\"FACT_COUNT\"/>\n"
+                + "        <AggIgnoreColumn column=\"Quarter\"/>\n"
+                + "        <AggIgnoreColumn column=\"MONTH_OF_YEAR\"/>\n"
+                + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_sales\" />\n"
+                + "        <AggLevel name=\"[Time].[Year]\" column=\"the_year\" />\n"
+                + "    </AggName>\n"
+                + "  </Table>\n"
+                + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+                + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+                + "      formatString=\"Standard\"/>\n"
+                + "</Cube>\n"
+                + "</Schema>");
+        RolapStar star = context.getConnection().getSchemaReader()
+            .getSchema().getStar("sales_fact_1997");
+        AggStar aggStarSpy = spy(
+            getAggStar(star, "agg_c_10_sales_fact_1997"));
+        // make sure the test AggStar will be prioritized first
+        when(aggStarSpy.getSize()).thenReturn(0);
+        context.getConnection().getSchemaReader()
+            .getSchema().getStar("sales_fact_1997").addAggStar(aggStarSpy);
+        boolean[] rollup = { false };
+        AggStar returnedStar = AggregationManager
+            .findAgg(
+                star, aggStarSpy.getLevelBitKey(),
+                aggStarSpy.getMeasureBitKey(), rollup);
+        assertTrue(
+            "Rollup should be true since AggStar has ignored columns ",
+            rollup[0]);
+        assertEquals(aggStarSpy, returnedStar);
+        assertTrue(
+            "Columns marked with AggIgnoreColumn, so AggStar "
+            + ".hasIgnoredColumns() should be true",
+            aggStarSpy.hasIgnoredColumns());
+        String sqlMysql =
+            "select\n"
+            + "    `agg_c_10_sales_fact_1997`.`the_year` as `c0`,\n"
+            + "    sum(`agg_c_10_sales_fact_1997`.`unit_sales`) as `m0`\n"
+            + "from\n"
+            + "    `agg_c_10_sales_fact_1997` as `agg_c_10_sales_fact_1997`\n"
+            + "where\n"
+            + "    `agg_c_10_sales_fact_1997`.`the_year` = 1997\n"
+            + "group by\n"
+            + "    `agg_c_10_sales_fact_1997`.`the_year`";
+        String sqlOra =
+            "select\n"
+            + "    \"agg_c_10_sales_fact_1997\".\"the_year\" as \"c0\",\n"
+            + "    sum(\"agg_c_10_sales_fact_1997\".\"unit_sales\") as \"m0\"\n"
+            + "from\n"
+            + "    \"agg_c_10_sales_fact_1997\" \"agg_c_10_sales_fact_1997\"\n"
+            + "where\n"
+            + "    \"agg_c_10_sales_fact_1997\".\"the_year\" = 1997\n"
+            + "group by\n"
+            + "    \"agg_c_10_sales_fact_1997\".\"the_year\"";
+        assertQuerySqlOrNot(
+            context,
+            "select Time.[1997] on 0 from sales",
+            new SqlPattern[]{
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL,
+                    sqlMysql,
+                    sqlMysql.length()),
+                new SqlPattern(
+                    Dialect.DatabaseProduct.ORACLE,
+                    sqlOra,
+                    sqlOra.length())},
+            false, false, true);
+    }
+
+    public void testAggStarWithUnusedColumnsRequiresRollup() {
+        propSaver.set(propSaver.properties.ReadAggregates, true);
+        propSaver.set(propSaver.properties.UseAggregates, true);
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+        final TestContext context =
+            TestContext.instance().withSchema(
+                "<Schema name=\"FoodMart\">"
+                + "<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">\n"
+                + "  <Table name=\"sales_fact_1997\" />\n"
+                + "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">\n"
+                + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
+                + "      <Table name=\"customer\"/>\n"
+                + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+                + "      formatString=\"Standard\"/>\n"
+                + "</Cube>\n"
+                + "</Schema>");
+        RolapStar star = context.getConnection().getSchemaReader()
+            .getSchema().getStar("sales_fact_1997");
+        AggStar aggStarSpy = spy(
+            getAggStar(star, "agg_c_special_sales_fact_1997"));
+        // make sure the test AggStar will be prioritized first
+        when(aggStarSpy.getSize()).thenReturn(0);
+        context.getConnection().getSchemaReader()
+            .getSchema().getStar("sales_fact_1997").addAggStar(aggStarSpy);
+
+        boolean[] rollup = { false };
+        AggStar returnedStar = AggregationManager
+            .findAgg(
+                star, aggStarSpy.getLevelBitKey(),
+                aggStarSpy.getMeasureBitKey(), rollup);
+        assertTrue(
+            "Rollup should be true since AggStar has ignored columns ",
+            rollup[0]);
+        assertEquals(aggStarSpy, returnedStar);
+        assertTrue(
+            "Unused columns are present, should be marked as "
+            + "having ignored columns.", aggStarSpy.hasIgnoredColumns());
+
+        String sqlOra =
+            "select\n"
+            + "    \"customer\".\"gender\" as \"c0\",\n"
+            + "    sum(\"agg_c_special_sales_fact_1997\".\"unit_sales_sum\") as \"m0\"\n"
+            + "from\n"
+            + "    \"customer\" \"customer\",\n"
+            + "    \"agg_c_special_sales_fact_1997\" \"agg_c_special_sales_fact_1997\"\n"
+            + "where\n"
+            + "    \"agg_c_special_sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\"\n"
+            + "group by\n"
+            + "    \"customer\".\"gender\"";
+        String sqlMysql =
+            "select\n"
+            + "    `customer`.`gender` as `c0`,\n"
+            + "    sum(`agg_c_special_sales_fact_1997`.`unit_sales_sum`) as `m0`\n"
+            + "from\n"
+            + "    `customer` as `customer`,\n"
+            + "    `agg_c_special_sales_fact_1997` as `agg_c_special_sales_fact_1997`\n"
+            + "where\n"
+            + "    `agg_c_special_sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "group by\n"
+            + "    `customer`.`gender`";
+        assertQuerySqlOrNot(
+            context,
+            "select gender.gender.members on 0 from sales",
+            new SqlPattern[]{
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL,
+                    sqlMysql,
+                    sqlMysql.length()),
+                new SqlPattern(
+                    Dialect.DatabaseProduct.ORACLE,
+                    sqlOra,
+                    sqlOra.length())},
+            false, false, true);
+    }
+
+
+    public void testAggStarWithIgnoredColumnsAndCountDistinct() {
+        propSaver.set(propSaver.properties.ReadAggregates, true);
+        propSaver.set(propSaver.properties.UseAggregates, true);
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+        final TestContext context =
+            TestContext.instance().withSchema(
+                "<Schema name=\"FoodMart\">"
+                + "  <Dimension name=\"Time\" type=\"TimeDimension\">\n"
+                + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
+                + "      <Table name=\"time_by_day\"/>\n"
+                + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+                + "          levelType=\"TimeYears\"/>\n"
+                + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
+                + "          levelType=\"TimeQuarters\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">\n"
+                + "  <Table name=\"sales_fact_1997\">\n"
+                + "    <AggExclude name=\"agg_c_special_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_lc_100_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_lc_10_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_pc_10_sales_fact_1997\" />\n"
+                + "    <AggName name=\"agg_g_ms_pcat_sales_fact_1997\">\n"
+                + "        <AggFactCount column=\"FACT_COUNT\"/>\n"
+                + "        <AggIgnoreColumn column=\"Quarter\"/>\n"
+                + "        <AggIgnoreColumn column=\"MONTH_OF_YEAR\"/>\n"
+                + "        <AggMeasure name=\"[Measures].[Customer Count]\" column=\"customer_count\" />\n"
+                + "        <AggLevel name=\"[Time].[Year]\" column=\"the_year\" />\n"
+                + "    </AggName>\n"
+                + "  </Table>\n"
+                + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+                + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+                + "      formatString=\"Standard\"/>\n"
+                + "  <Measure name=\"Customer Count\" column=\"customer_id\" aggregator=\"distinct-count\"\n"
+                + "      formatString=\"Standard\"/>\n"
+                + "</Cube>\n"
+                + "</Schema>");
+        RolapStar star = context.getConnection().getSchemaReader()
+            .getSchema().getStar("sales_fact_1997");
+        AggStar aggStarSpy = spy(
+            getAggStar(star, "agg_g_ms_pcat_sales_fact_1997"));
+        // make sure the test AggStar will be prioritized first
+        when(aggStarSpy.getSize()).thenReturn(0);
+        context.getConnection().getSchemaReader()
+            .getSchema().getStar("sales_fact_1997").addAggStar(aggStarSpy);
+        boolean[] rollup = { false };
+        AggStar returnedStar = AggregationManager
+            .findAgg(
+                star, aggStarSpy.getLevelBitKey(),
+                aggStarSpy.getMeasureBitKey(), rollup);
+        assertNull(
+            "Should not find an agg star given that ignored or unused "
+            + "columns are present, and loading distinct count measure",
+            returnedStar);
+        String sqlOra =
+            "select\n"
+            + "    \"time_by_day\".\"the_year\" as \"c0\",\n"
+            + "    count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\"\n"
+            + "from\n"
+            + "    \"time_by_day\" \"time_by_day\",\n"
+            + "    \"sales_fact_1997\" \"sales_fact_1997\"\n"
+            + "where\n"
+            + "    \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\"\n"
+            + "and\n"
+            + "    \"time_by_day\".\"the_year\" = 1997\n"
+            + "group by\n"
+            + "    \"time_by_day\".\"the_year\"";
+        String sqlMysql =
+            "select\n"
+            + "    `time_by_day`.`the_year` as `c0`,\n"
+            + "    count(distinct `sales_fact_1997`.`customer_id`) as `m0`\n"
+            + "from\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `time_by_day`.`the_year` = 1997\n"
+            + "group by\n"
+            + "    `time_by_day`.`the_year`";
+        assertQuerySqlOrNot(
+            context,
+            "select Time.[1997] on 0 from sales where "
+            + "measures.[Customer Count]",
+            new SqlPattern[]{
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL,
+                    sqlMysql,
+                    sqlMysql.length()),
+                new SqlPattern(
+                    Dialect.DatabaseProduct.ORACLE,
+                    sqlOra,
+                    sqlOra.length())},
+            false, false, true);
+    }
+
+
+    private AggStar getAggStar(RolapStar star, String aggStarName) {
+        for (AggStar aggStar : star.getAggStars()) {
+            if (aggStar.getFactTable().getName().equals(aggStarName)) {
+                return aggStar;
+            }
+        }
+        return null;
     }
 
 }
