@@ -130,6 +130,48 @@ public class VisualTotalsTest extends TestCase {
         assertEquals("*Subtotal - Bread", member.getName());
         assertEquals("*Subtotal - Bread", member.getCaption());
     }
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-939">
+     * MONDRIAN-939, "VisualTotals returning incorrect values with aggregate members"</a>.
+     *
+     * @throws java.sql.SQLException on error
+     */
+    public void testVisualTotalsAggregatedMemberBug() throws SQLException {
+        CellSet cellSet =
+            TestContext.instance().executeOlap4jQuery(
+                " with  member [Gender].[YTD] as 'AGGREGATE(YTD(),[Gender].[M])'" 
+            	+ "  select " 
+            	+ " {[Time].[1997]," 
+            	+ " [Time].[1997].[Q1],[Time].[1997].[Q2],[Time].[1997].[Q3],[Time].[1997].[Q4]} ON COLUMNS, " 
+            	+ " {[Gender].[M],[Gender].[YTD]} ON ROWS" 
+            	+ " FROM [Sales]");
+        String s = TestContext.toString(cellSet);
+        TestContext.assertEqualsVerbose( 
+        	     "Axis #0:\n"
+        	     + "{}\n"
+        	     + "Axis #1:\n"
+        	     + "{[Time].[1997]}\n"
+        	     + "{[Time].[1997].[Q1]}\n"
+        	     + "{[Time].[1997].[Q2]}\n"
+        	     + "{[Time].[1997].[Q3]}\n"
+        	     + "{[Time].[1997].[Q4]}\n"
+        	     + "Axis #2:\n"
+        	     + "{[Gender].[M]}\n"
+        	     + "{[Gender].[YTD]}\n"
+        	     + "Row #0: 135,215\n"
+        	     + "Row #0: 33,381\n"
+        	     + "Row #0: 31,618\n"
+        	     + "Row #0: 33,249\n"
+        	     + "Row #0: 36,967\n"
+        	     + "Row #1: 135,215\n"
+        	     + "Row #1: 33,381\n"
+        	     + "Row #1: 64,999\n"
+        	     + "Row #1: 98,248\n"
+        	     + "Row #1: 135,215\n"
+        		,s); 
+    }
+    
 }
 
 // End VisualTotalsTest.java

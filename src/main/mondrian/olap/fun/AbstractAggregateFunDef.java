@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
@@ -14,8 +13,7 @@ import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.mdx.UnresolvedFunCall;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapMember;
+import mondrian.rolap.*;
 
 import java.util.*;
 
@@ -136,7 +134,7 @@ public class AbstractAggregateFunDef extends FunDefBase {
      * @param evaluator Evaluator
      * @return list of members or tuples
      */
-    private static TupleList processUnrelatedDimensions(
+    public static TupleList processUnrelatedDimensions(
         TupleList tuplesForAggregation,
         Evaluator evaluator)
     {
@@ -144,15 +142,20 @@ public class AbstractAggregateFunDef extends FunDefBase {
             return tuplesForAggregation;
         }
 
-        RolapMember measure = (RolapMember) evaluator.getMembers()[0];
+        RolapMember measure = getRolapMeasureForUnrelatedDimCheck(
+            evaluator, tuplesForAggregation);
 
         if (measure.isCalculated()) {
             return tuplesForAggregation;
         }
 
         RolapCube virtualCube = (RolapCube) evaluator.getCube();
-        RolapCube baseCube = (RolapCube) evaluator.getMeasureCube();
-        if (virtualCube.isVirtual() && baseCube != null) {
+        if (virtualCube.isVirtual()) {
+            // this should be a safe cast since we've eliminated calcs above
+            RolapCube baseCube = ((RolapStoredMeasure)measure).getCube();
+            if (baseCube == null) {
+                return tuplesForAggregation;
+            }
             if (virtualCube.shouldIgnoreUnrelatedDimensions(baseCube.getName()))
             {
                 return ignoreUnrelatedDimensions(
@@ -168,12 +171,43 @@ public class AbstractAggregateFunDef extends FunDefBase {
     }
 
     /**
+     * Returns the measure to use when determining which dimensions
+     * are unrelated.  Most of the time this is the measure in context,
+     * except 2 cases:
+     * 1)  When a measure is included in a compound slicer
+     * 2)  When one or more measures are included in the first parameter
+     *     of Aggregate.
+     *      e.g. Aggregate( Crossjoin( {Time.[1997]}, {measures.[Unit Sales]})
+     * In both cases the measure(s) will be present in tuplesForAggregation.
+     */
+    private static RolapMember getRolapMeasureForUnrelatedDimCheck(
+        Evaluator evaluator, TupleList tuplesForAggregation)
+    {
+        RolapMember measure = (RolapMember)evaluator.getMembers()[0];
+        if (tuplesForAggregation != null
+            && tuplesForAggregation.size() > 0)
+        {
+            // this looks for the measure in the first tuple, with the
+            // assumption that there is a single measure in all tuples.
+            // This assumption is incorrect in the unusual case where
+            // a set of measures is used as the first param in an aggregate
+            // function.
+            for (Member tupMember : tuplesForAggregation.get(0)) {
+                if (tupMember.isMeasure()) {
+                    measure = (RolapMember)tupMember;
+                }
+            }
+        }
+        return measure;
+    }
+
+    /**
      * If a non joining dimension exists in the aggregation list then return
      * an empty list else return the original list.
      *
      * @param tuplesForAggregation is a list of members or tuples used in
      * computing the aggregate
-     * @param baseCube
+     * @param baseCube the cube to scan for nonjoining dimensions.
      * @return list of members or tuples
      */
     private static TupleList ignoreMeasureForNonJoiningDimension(

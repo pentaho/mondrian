@@ -1,18 +1,19 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2011-2014 Pentaho
+// All Rights Reserved.
 */
-
 package mondrian.server;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapUtil;
 import mondrian.server.monitor.*;
+import mondrian.server.monitor.MonitorMXBean;
 import mondrian.util.*;
 
 import org.apache.log4j.Logger;
@@ -59,7 +60,7 @@ import java.util.concurrent.BlockingQueue;
  * </ul>
  */
 class MonitorImpl
-    implements Monitor
+    implements Monitor, MonitorMXBean
 {
     private static final Logger LOGGER = Logger.getLogger(MonitorImpl.class);
     private final Handler handler = new Handler();

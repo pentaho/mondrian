@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.rolap.agg;
 
 import mondrian.rolap.CellKey;
@@ -117,7 +116,11 @@ abstract class AbstractSegmentBody implements SegmentBody {
                 }
                 int k = ordinals.length - 1;
                 while (k >= 0) {
-                    if (ordinals[k] < axisValueSets[k].size() - 1) {
+                    int j = 1;
+                    if (nullAxisFlags[k]) {
+                        j = 0;
+                    }
+                    if (ordinals[k] < axisValueSets[k].size() - j) {
                         ++ordinals[k];
                         break;
                     } else {

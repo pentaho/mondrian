@@ -11,4 +11,4 @@ The version is described in VERSION.txt.
 
 Home page: http://mondrian.pentaho.com
 Project home: http://sourceforge.net/projects/mondrian/
-Email: jhyde@pentaho.com
+Email: mondrian@pentaho.org

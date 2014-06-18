@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 22 December, 2001
@@ -65,6 +65,17 @@ public class RolapUtil {
      */
     public static final Comparable<?> sqlNullValue =
         RolapUtilComparable.INSTANCE;
+
+    public static Util.Functor1<Void, java.sql.Statement> getDefaultCallback(
+        final Locus locus)
+    {
+        return new Util.Functor1<Void, java.sql.Statement>() {
+            public Void apply(java.sql.Statement stmt) {
+                locus.execution.registerStatement(locus, stmt);
+                return null;
+            }
+        };
+    }
 
     /**
      * Wraps a schema reader in a proxy so that each call to schema reader
@@ -289,7 +300,9 @@ public class RolapUtil {
         String sql,
         Locus locus)
     {
-        return executeQuery(dataSource, sql, null, 0, 0, locus, -1, -1, null);
+        return executeQuery(
+            dataSource, sql, null, 0, 0, locus, -1, -1,
+            getDefaultCallback(locus));
     }
 
     /**
@@ -330,7 +343,10 @@ public class RolapUtil {
         SqlStatement stmt =
             new SqlStatement(
                 dataSource, sql, types, maxRowCount, firstRowOrdinal, locus,
-                resultSetType, resultSetConcurrency, callback);
+                resultSetType, resultSetConcurrency,
+                callback == null
+                    ? getDefaultCallback(locus)
+                    : callback);
         stmt.execute();
         return stmt;
     }
@@ -620,7 +636,7 @@ public class RolapUtil {
         return result.getRootEvaluator();
     }
 
-    static interface ExecuteQueryHook {
+    public static interface ExecuteQueryHook {
         void onExecuteQuery(String sql);
     }
 

@@ -37,6 +37,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Implementation of {@link org.olap4j.OlapConnection}
@@ -74,6 +75,9 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
      * and these will throw if the connection has been closed.
      */
     private RolapConnection mondrianConnection;
+
+    private final AtomicBoolean isClosed =
+        new AtomicBoolean(false);
 
     /**
      * Map from mondrian schema objects to olap4j schemas.
@@ -273,15 +277,14 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
     }
 
     public void close() throws SQLException {
-        if (mondrianConnection != null) {
-            RolapConnection c = mondrianConnection;
-            mondrianConnection = null;
-            c.close();
+        if (isClosed.get() == false) {
+            mondrianConnection.close();
+            isClosed.set(true);
         }
     }
 
     public boolean isClosed() throws SQLException {
-        return mondrianConnection == null;
+        return isClosed.get();
     }
 
     public OlapDatabaseMetaData getMetaData() {

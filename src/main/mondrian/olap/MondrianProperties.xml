@@ -204,6 +204,15 @@ mondrian.foodmart.jdbcPassword=foodmart<br/>
 mondrian.jdbcDrivers=com.mysql.jdbc.Driver<br/>
 driver.classpath=D:/mysql-connector-3.1.12</code></blockquote>
 
+<h3> NuoDB</h3>
+<blockquote><code>
+mondrian.foodmart.jdbcURL=jdbc:com.nuodb://localhost/foodmart?schema=mondrian<br/>
+mondrian.foodmart.jdbcUser=foodmart<br/>
+mondrian.foodmart.jdbcPassword=foodmart<br/>
+mondrian.jdbcDrivers=com.nuodb.jdbc.Driver<br/>
+mondrian.foodmart.jdbcSchema=mondrian<br/>
+driver.classpath=/opt/nuodb/jar/nuodbjdbc.jar</code></blockquote>
+
 <h3>Infobright</h3>
 <p>As MySQL. (Infobright uses a MySQL driver, version 5.1 and later.)</p>
 
@@ -958,10 +967,10 @@ as expected.</p>
         <Path>mondrian.rolap.maxQueryThreads</Path>
         <Description>
 <p>Maximum number of MDX query threads per Mondrian server instance.
-Defaults to 10.</p>
+Defaults to 20.</p>
         </Description>
         <Type>int</Type>
-        <Default>10</Default>
+        <Default>20</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>SegmentCacheManagerNumberSqlThreads</Name>
@@ -1295,7 +1304,7 @@ property.</p>
 Property that controls the behavior of
 {@link Property#SOLVE_ORDER solve order} of calculated members and sets.
 
-<p>Valid values are "absolute" and "scoped" (the default). See
+<p>Valid values are "scoped" and "absolute" (the default). See
 {@link mondrian.olap.SolveOrderMode} for details.</p>
         </Description>
         <Type>String</Type>

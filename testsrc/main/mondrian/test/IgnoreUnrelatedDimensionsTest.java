@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.test;
 
 import mondrian.olap.MondrianProperties;
@@ -23,14 +22,16 @@ import mondrian.olap.MondrianProperties;
  */
 public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
 
-    // TODO: use propSaver to restore property values
-    boolean originalNonEmptyFlag;
-    private final MondrianProperties prop = MondrianProperties.instance();
-
     private static final String cubeSales3 =
         "<Cube name=\"Sales 3\">\n"
         + "   <Table name=\"sales_fact_1997\"/>\n"
         + "   <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+        + "   <Dimension name=\"Education Level\" foreignKey=\"customer_id\">\n"
+        + "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"
+        + "      <Table name=\"customer\"/>\n"
+        + "      <Level name=\"Education Level\" column=\"education\" uniqueMembers=\"true\"/>\n"
+        + "    </Hierarchy>\n"
+        + "  </Dimension>\n"
         + "   <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n"
         + "   <Dimension name=\"Gender\" foreignKey=\"customer_id\">\n"
         + "     <Hierarchy hasAll=\"true\" defaultMember=\"[Gender].[F]\" "
@@ -47,26 +48,22 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
     private static final String cubeWarehouseAndSales3 =
         "<VirtualCube name=\"Warehouse and Sales 3\" defaultMeasure=\"Store Invoice\">\n"
         + "  <CubeUsages>\n"
-        + "   <CubeUsage cubeName=\"Sales 3\" ignoreUnrelatedDimensions=\"true\"/>\n"
+        + "   <CubeUsage cubeName=\"Sales 3\" ignoreUnrelatedDimensions=\"false\"/>\n"
         + "   <CubeUsage cubeName=\"Warehouse\" ignoreUnrelatedDimensions=\"true\"/></CubeUsages>\n"
         + "  <VirtualCubeDimension cubeName=\"Sales 3\" name=\"Gender\"/>\n"
+        + "  <VirtualCubeDimension cubeName=\"Sales 3\" name=\"Education Level\"/>\n"
         + "  <VirtualCubeDimension name=\"Product\"/>\n"
         + "  <VirtualCubeDimension name=\"Time\"/>\n"
         + "  <VirtualCubeDimension cubeName=\"Warehouse\" name=\"Warehouse\"/>\n"
-        + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>\n"
+        + "  <VirtualCubeMeasure cubeName=\"Sales 3\" name=\"[Measures].[Unit Sales]\"/>\n"
         + "  <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Store Invoice]\"/>\n"
         + "  <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n"
         + "</VirtualCube>";
 
     protected void setUp() throws Exception {
         super.setUp();
-        originalNonEmptyFlag = prop.EnableNonEmptyOnAllAxis.get();
-        prop.EnableNonEmptyOnAllAxis.set(true);
-    }
-
-    protected void tearDown() throws Exception {
-        prop.EnableNonEmptyOnAllAxis.set(originalNonEmptyFlag);
-        super.tearDown();
+        propSaver.set(
+            MondrianProperties.instance().EnableNonEmptyOnAllAxis, true);
     }
 
     public TestContext getTestContext() {
@@ -173,6 +170,136 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "Axis #2:\n"
             + "{[Gender].[G]}\n"
             + "Row #0: 30,405.602\n");
+    }
+
+    /**
+     * Without a fix for MONDRIAN-1837, this result of the following query
+     * would be empty.
+     */
+    public void testIgnoreUnrelatedDimsOnSlicer() {
+        propSaver.set(
+            MondrianProperties.instance().IgnoreMeasureForNonJoiningDimension,
+            true);
+        final TestContext context = TestContext.instance().create(
+            null, cubeSales3, cubeWarehouseAndSales3, null, null, null);
+        context.assertQueryReturns(
+            "SELECT "
+            + "{[Measures].[Warehouse Sales]} ON 0"
+            + " FROM [WAREHOUSE AND SALES 3] where ([Gender].[M])",
+            "Axis #0:\n"
+            + "{[Gender].[M]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Warehouse Sales]}\n"
+            + "Row #0: 196,770.888\n");
+    }
+
+
+    public void testIgnoreUnrelatedDimsOnCompoundSlicer() {
+        // MONDRIAN-2072
+        propSaver.set(
+            MondrianProperties.instance().IgnoreMeasureForNonJoiningDimension,
+            true);
+        final TestContext context = TestContext.instance().create(
+            null, cubeSales3, cubeWarehouseAndSales3, null, null, null);
+        context.assertQueryReturns(
+            "SELECT "
+            + "{[Measures].[Warehouse Sales]} ON 0"
+            + " FROM [WAREHOUSE AND SALES 3] where "
+            + "{[Education Level].[Graduate Degree],"
+            + "[Education Level].[High School Degree]}",
+            "Axis #0:\n"
+            + "{[Education Level].[Graduate Degree]}\n"
+            + "{[Education Level].[High School Degree]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Warehouse Sales]}\n"
+            + "Row #0: 196,770.888\n");
+    }
+
+    public void testRelatedAndUnrelatedDimsOnCompoundSlicer() {
+        // MONDRIAN-2072
+        propSaver.set(
+            MondrianProperties.instance().IgnoreMeasureForNonJoiningDimension,
+            true);
+        final TestContext context = TestContext.instance().create(
+            null, cubeSales3, cubeWarehouseAndSales3, null, null, null);
+        context.assertQueryReturns(
+            "SELECT "
+            + "{[Measures].[Warehouse Sales]} ON 0"
+            + " FROM [WAREHOUSE AND SALES 3] where "
+            + "Crossjoin( {[Education Level].[Graduate Degree],"
+            + "[Education Level].[High School Degree]},"
+            + "  {[Warehouse].[USA].[WA], [Warehouse].[USA].[CA]} )",
+            "Axis #0:\n"
+            + "{[Education Level].[Graduate Degree], [Warehouse].[USA].[WA]}\n"
+            + "{[Education Level].[Graduate Degree], [Warehouse].[USA].[CA]}\n"
+            + "{[Education Level].[High School Degree], [Warehouse].[USA].[WA]}\n"
+            + "{[Education Level].[High School Degree], [Warehouse].[USA].[CA]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Warehouse Sales]}\n"
+            + "Row #0: 157,935.834\n");
+    }
+
+    public void testPartiallyRelatedMeasureWithCompoundSlicer() {
+        // MONDRIAN-2072
+        propSaver.set(
+            MondrianProperties.instance().IgnoreMeasureForNonJoiningDimension,
+            true);
+        final TestContext context = TestContext.instance().create(
+            null, cubeSales3, cubeWarehouseAndSales3, null, null, null);
+        // Should equal the [Unit Sales] of [Graduate Degree] and
+        // [High School Degree] (with default Gender.F),
+        //  plus the total [warehouse sales].
+        context.assertQueryReturns(
+            "with member measures.bothCubes as "
+            + "'measures.[unit sales] + measures.[warehouse sales]'"
+            + " SELECT "
+            + "{[Measures].[bothCubes]} ON 0"
+            + " FROM [WAREHOUSE AND SALES 3] where "
+            + " {[Education Level].[Graduate Degree],"
+            + "[Education Level].[High School Degree]} ",
+            "Axis #0:\n"
+            + "{[Education Level].[Graduate Degree]}\n"
+            + "{[Education Level].[High School Degree]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[bothCubes]}\n"
+            + "Row #0: 243,135\n");
+        // [Sales] does not ignoreUnrelatedDimensions, so the [Unit Sales]
+        // part of the formula below should result in NULL given the
+        // [Warehouse] dim in the slicer.
+        context.assertQueryReturns(
+            "with member measures.bothCubes as "
+            + "'measures.[unit sales] + measures.[warehouse sales]'"
+            + " SELECT "
+            + "{[Measures].[bothCubes]} ON 0"
+            + " FROM [WAREHOUSE AND SALES 3] where "
+            + "Crossjoin( {[Education Level].[Graduate Degree],"
+            + "[Education Level].[High School Degree]},"
+            + "  {[Warehouse].[USA].[WA], [Warehouse].[USA].[CA]} )",
+            "Axis #0:\n"
+            + "{[Education Level].[Graduate Degree], [Warehouse].[USA].[WA]}\n"
+            + "{[Education Level].[Graduate Degree], [Warehouse].[USA].[CA]}\n"
+            + "{[Education Level].[High School Degree], [Warehouse].[USA].[WA]}\n"
+            + "{[Education Level].[High School Degree], [Warehouse].[USA].[CA]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[bothCubes]}\n"
+            + "Row #0: 157,936\n");
+    }
+
+    public void testNonJoiningDimWithMeasureInCompoundSlicer() {
+        // MONDRIAN-2072
+        propSaver.set(
+            MondrianProperties.instance().IgnoreMeasureForNonJoiningDimension,
+            true);
+        getTestContext().assertQueryReturns(
+            " SELECT "
+            + " FROM [WAREHOUSE AND SALES2] where "
+            + "crossjoin( measures.[warehouse sales], "
+            + " {[Education Level].[Graduate Degree],"
+            + "[Education Level].[High School Degree]}) ",
+            "Axis #0:\n"
+            + "{[Measures].[Warehouse Sales], [Education Level].[Graduate Degree]}\n"
+            + "{[Measures].[Warehouse Sales], [Education Level].[High School Degree]}\n"
+            + "196,770.888");
     }
 
     public void testTotalingForValidAndNonValidMeasuresWithJoiningDimensions() {
@@ -328,9 +455,11 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
     }
 
     public void testUnrelatedDimPropOverridesIgnoreMeasure() {
-        boolean origIgnoreMeasure =
-            prop.IgnoreMeasureForNonJoiningDimension.get();
-        prop.IgnoreMeasureForNonJoiningDimension.set(true);
+        propSaver.set(
+            MondrianProperties.instance().IgnoreMeasureForNonJoiningDimension,
+            true);
+
+
         assertQueryReturns(
             "WITH\n"
             + "MEMBER [Measures].[Total Sales] AS '[Measures].[Store Sales] + "
@@ -358,7 +487,6 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "{[Product].[AggSP1_2]}\n"
             + "Row #0: 762,009.02\n"
             + "Row #1: 762,009.02\n");
-        prop.IgnoreMeasureForNonJoiningDimension.set(origIgnoreMeasure);
     }
 
 }

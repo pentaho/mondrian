@@ -1,12 +1,12 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2014 Pentaho Corporation.
+// All Rights Reserved.
 */
-
 package mondrian.rolap.cache;
 
 import mondrian.rolap.BitKey;
@@ -103,18 +103,24 @@ public interface SegmentCacheIndex {
     /**
      * Adds a header to the index.
      *
-     * <p>If {@code loading} is true, there must follow a call to
-     * {@link #loadSucceeded} or {@link #loadFailed}.</p>
-     *
      * @param header Segment header
      * @param loading Whether segment is pending a load from SQL
      * @param converter Segment converter
-     * @return True or false, if a new element was inserted into the index.
      */
-    boolean add(
+    void add(
         SegmentHeader header,
-        boolean loading,
-        SegmentBuilder.SegmentConverter converter);
+        SegmentBuilder.SegmentConverter converter,
+        boolean loading);
+
+    /**
+     * Updates a header in the index. This is required when some of the
+     * excluded regions have changed.
+     * @param oldHeader The old header to replace.
+     * @param newHeader The new header to use instead.
+     */
+    public void update(
+        SegmentHeader oldHeader,
+        SegmentHeader newHeader);
 
     /**
      * Changes the state of a header from loading to loaded.

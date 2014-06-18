@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.test;
 
 import mondrian.olap.*;
@@ -1679,6 +1678,49 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Row #0: 337,018\n"
             + "Row #1: 9,237\n"
             + "Row #1: 929,829\n");
+    }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1750">MONDRIAN-1750</a>
+     *
+     * Compound slicer getting applied to CurrentDateMember
+     */
+    public void testMondrian1750() throws Exception {
+        TestContext testContext = getTestContext();
+        if (!testContext.databaseIsValid()) {
+            return;
+        }
+        testContext.assertQueryReturns(
+            "with member [Measures].[CYQ] as\n"
+            + "'Aggregate(CurrentDateMember([Time],\"[Ti\\me]\\.[Year\\s]\\.[yyyy]\", BEFORE), [Quantity])'\n"
+            + "select\n"
+            + "{[Measures].[Quantity], [Measures].[CYQ]} on columns,\n"
+            + "{[Markets].[Territory].Members} on rows\n"
+            + "from [SteelWheelsSales]\n"
+            + "where {[Time].[Years].[2004], [Time].[Years].[2005]}\n",
+            "Axis #0:\n"
+            + "{[Time].[2004]}\n"
+            + "{[Time].[2005]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Quantity]}\n"
+            + "{[Measures].[CYQ]}\n"
+            + "Axis #2:\n"
+            + "{[Markets].[#null]}\n"
+            + "{[Markets].[APAC]}\n"
+            + "{[Markets].[EMEA]}\n"
+            + "{[Markets].[Japan]}\n"
+            + "{[Markets].[NA]}\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #1: 9,349\n"
+            + "Row #1: 3,411\n"
+            + "Row #2: 32,867\n"
+            + "Row #2: 9,237\n"
+            + "Row #3: 2,072\n"
+            + "Row #3: 380\n"
+            + "Row #4: 24,604\n"
+            + "Row #4: 6,447\n");
     }
 }
 

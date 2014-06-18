@@ -542,7 +542,7 @@ public class SqlConstraintUtils {
         return uniqueMembers.toArray(new Member[uniqueMembers.size()]);
     }
 
-    protected static Member[] removeMultiPositionSlicerMembers(
+    protected static Member[] expandMultiPositionSlicerMembers(
         Member[] members,
         Evaluator evaluator)
     {
@@ -572,6 +572,8 @@ public class SqlConstraintUtils {
                         || mapOfSlicerMembers.get(hierarchy).size() < 2)
                 {
                     listOfMembers.add(member);
+                } else {
+                    listOfMembers.addAll(mapOfSlicerMembers.get(hierarchy));
                 }
             }
             members = listOfMembers.toArray(new Member[listOfMembers.size()]);

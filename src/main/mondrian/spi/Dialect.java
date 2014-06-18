@@ -851,6 +851,7 @@ public interface Dialect {
         MONETDB,
         NETEZZA,
         NEOVIEW,
+        NUODB,
         ORACLE,
         POSTGRESQL,
         REDSHIFT,
@@ -879,6 +880,15 @@ public interface Dialect {
             default:
                 return this;
             }
+        }
+
+        public static DatabaseProduct getDatabaseProduct(String name) {
+            for (DatabaseProduct databaseProduct : values()) {
+                if (databaseProduct.name().equalsIgnoreCase(name)) {
+                    return databaseProduct;
+                }
+            }
+            return UNKNOWN;
         }
     }
 

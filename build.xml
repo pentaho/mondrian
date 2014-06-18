@@ -159,6 +159,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${lib.dir}/jsp-api.jar"/>
     <pathelement location="${lib.dir}/commons-dbcp.jar"/>
     <pathelement location="${lib.dir}/commons-collections.jar"/>
+    <pathelement location="${lib.dir}/commons-io.jar"/>
     <pathelement location="${lib.dir}/commons-logging.jar"/>
     <pathelement location="${lib.dir}/commons-math.jar"/>
     <pathelement location="${lib.dir}/commons-pool.jar"/>
@@ -179,7 +180,6 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${wb.plugins.dir}/kettle-core.jar"/>
     <pathelement location="${wb.plugins.dir}/pentaho-xul-core.jar"/>
     <pathelement location="${wb.plugins.dir}/pentaho-xul-swing.jar"/>
-    <pathelement location="${wb.plugins.dir}/commons-io.jar"/>
   </path>
 
   <path id="project.build.classpath">
@@ -770,6 +770,7 @@ in {mondrian.foodmart.jdbcURL}."
         fork="yes"
         maxmemory="768m">
       <arg value="${test.args}"/>
+      <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8787" />-->
       <jvmarg line="${junit.jvmargs}"/>
       <sysproperty key="log4j.configuration"
           value="${log4j.configuration}"/>
@@ -1153,6 +1154,7 @@ buildOnJdk.sh" />
     <java classname="mondrian.test.loader.MondrianFoodMartLoader"
             classpathref="project.test.classpath"
             fork="yes">
+        <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8787" />-->
         <arg value="-tables"/>
         <arg value="-data"/>
         <arg value="-indexes"/>
@@ -1766,9 +1768,14 @@ xalan.jar"/>
     </java>
   </target>
 
+	
+  <target name="resolve-oss-licenses" depends="install-ivy">
+    <ivy:resolve file="${ivyfile}" conf="oss-licenses" />
+    <ivy:retrieve conf="oss-licenses" pattern="${bin.dir}/[module].[ext]" />
+  </target>
 
   <target name="workbench-dist" 
-      depends="resolve-workbench-runtime-deps,version,workbench">
+      depends="resolve-workbench-runtime-deps,resolve-oss-licenses,version,workbench">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.dir}/${workbench.zip-dist.file}"/>
     <zip destfile="${dist.dir}/${workbench.zip-dist.file}">
@@ -1818,6 +1825,7 @@ xalan.jar"/>
           dir="src/main"
           prefix="${workbench.dist.name}/src"
           includes="mondrian/gui/**/*"/>
+    	<zipfileset src="${bin.dir}/oss-licenses.zip" prefix="${workbench.dist.name}" includes="PentahoSchemaWorkbench_OSS_Licenses.html"/>
     </zip>
   </target>
 
