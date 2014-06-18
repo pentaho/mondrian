@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.rolap.agg;
 
 import mondrian.calc.TupleList;
@@ -1112,9 +1111,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         // directly into optimizeChildren like some of the tests below rather
         // than using SQL pattern verification.
         SqlPattern[] patterns = {
-            /*
-            new SqlPattern(SqlPattern.Dialect.DERBY, derbySql, derbySql),
-            */
             new SqlPattern(
                 Dialect.DatabaseProduct.ACCESS, accessSql, accessSql)};
 
@@ -1550,9 +1546,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "      <AggExclude name=\"agg_pl_01_sales_fact_1997\"/>"
             + "      <AggName name=\"agg_c_10_sales_fact_1997\">"
             + "           <AggFactCount column=\"FACT_COUNT\"/>"
-            + "           <AggIgnoreColumn column=\"store_sales\"/>"
-            + "           <AggIgnoreColumn column=\"store_cost\"/>"
-            + "           <AggIgnoreColumn column=\"unit_sales\"/>"
+            + "           <AggMeasure name=\"[Measures].[Store Sales]\" column=\"store_sales\"/>"
+            + "           <AggMeasure name=\"[Measures].[Store Cost]\" column=\"store_cost\"/>"
+            + "           <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_sales\"/>"
             + "           <AggMeasure name=\"[Measures].[Customer Count]\" column=\"customer_count\" />"
             + "           <AggLevel name=\"[Time].[Year]\" column=\"the_year\" />"
             + "           <AggLevel name=\"[Time].[Quarter]\" column=\"quarter\" />"
@@ -1560,6 +1556,12 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "      </AggName>"
             + "  </Table>"
             + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/> "
+            + "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###.00\"/>\n"
+            + "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###.00\"/>"
             + "  <Measure name=\"Customer Count\" column=\"customer_id\" aggregator=\"distinct-count\" formatString=\"#,###\" />"
             + "</Cube>";
         final String query =
