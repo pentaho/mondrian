@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2013 Pentaho and others
+// Copyright (C) 2009-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -431,18 +431,14 @@ public class FilterTest extends BatchTestCase {
             + "    `customer` as `customer`,\n"
             + "    `time_by_day` as `time_by_day`\n"
             + "where\n"
-            + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
-            + "and\n"
-            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
-            + "and\n"
             + "    (`customer`.`country` = 'USA')\n"
             + "and\n"
             + "    ((not (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' or `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q3')\n"
-            + "        or (`time_by_day`.`the_year` is null))\n"
-            + "    or (not (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' or `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q3')\n"
-            + "        or (`time_by_day`.`quarter` is null))\n"
-            + "    or (not (`time_by_day`.`the_year` = 1997)\n"
             + "        or (`time_by_day`.`the_year` is null)))\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
             + "group by\n"
             + "    `customer`.`country`,\n"
             + "    `time_by_day`.`the_year`,\n"
