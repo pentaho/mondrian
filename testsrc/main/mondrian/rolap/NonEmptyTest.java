@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -4102,13 +4102,14 @@ public class NonEmptyTest extends BatchTestCase {
             + "WHERE \n"
             + "  [Store].[Store Size in SQFT].[All Store Size in SQFTs].[~Missing ]";
 
+        TestContext context = getTestContext().withFreshConnection();
         // run an mdx query with the default NullMemberRepresentation
-        executeQuery(preMdx);
+        context.executeQuery(preMdx);
 
         propSaver.set(propSaver.props.NullMemberRepresentation, "~Missing ");
         propSaver.set(propSaver.props.EnableNonEmptyOnAllAxis, true);
         RolapUtil.reloadNullLiteral();
-        executeQuery(mdx);
+        context.executeQuery(mdx);
     }
 
     /**
