@@ -389,10 +389,8 @@ public class RolapResult extends ResultBase {
                     // interaction between the aggregate calc we just created
                     // and any calculated members that might be present in
                     // the slicer.
-                    // Arbitrarily picks the first dim of the first tuple
-                    // to use as placeholder.
                     Member placeholder = setPlaceholderSlicerAxis(
-                        (RolapMember)tupleList.get(0).get(0), calc);
+                        tupleList, calc);
                     evaluator.setContext(placeholder);
                 }
             } while (phase());
@@ -509,15 +507,18 @@ public class RolapResult extends ResultBase {
 
     /**
      * Sets slicerAxis to a dummy placeholder RolapAxis containing
-     * a single item TupleList with the null member of hierarchy.
+     * a single item TupleList with the all member of hierarchy.
      * This is used with compound slicer evaluation to avoid the slicer
      * tuple list from interacting with the aggregate calc which rolls up
      * the set.  This member will contain the AggregateCalc which rolls
      * up the set on the slicer.
      */
     private Member setPlaceholderSlicerAxis(
-        final RolapMember member, final Calc calc)
+        final TupleList tupleList, final Calc calc)
     {
+        // Arbitrarily picks the first dim of the first tuple
+        // to use as placeholder.
+        RolapMember member =  (RolapMember)tupleList.get(0).get(0);
         ValueFormatter formatter;
         if (member.getDimension().isMeasures()) {
             formatter = ((RolapMeasure)member).getFormatter();
@@ -527,9 +528,9 @@ public class RolapResult extends ResultBase {
 
         CompoundSlicerRolapMember placeholderMember =
             new CompoundSlicerRolapMember(
-                (RolapMember)member.getHierarchy().getNullMember(),
+                tupleList,
+                member.getHierarchy().getAllMember(),
                 calc, formatter);
-
 
         placeholderMember.setProperty(
             Property.FORMAT_STRING.getName(),
@@ -1988,13 +1989,42 @@ public class RolapResult extends ResultBase {
     {
         private final Calc calc;
         private final ValueFormatter valueFormatter;
+        private final TupleList tupleList;
 
         public CompoundSlicerRolapMember(
+            TupleList tupleList,
             RolapMember placeholderMember, Calc calc, ValueFormatter formatter)
         {
             super(placeholderMember);
             this.calc = calc;
             valueFormatter = formatter;
+            this.tupleList = tupleList;
+        }
+
+        public boolean equals(Object o) {
+            if (!(o instanceof CompoundSlicerRolapMember)) {
+                return false;
+            }
+            TupleList otherTupleList =
+                ((CompoundSlicerRolapMember)o).tupleList;
+            if (this.tupleList.size() != otherTupleList.size()) {
+                return false;
+            }
+            for (int i = 0; i < tupleList.size(); i++) {
+                if (!otherTupleList.get(0).equals(tupleList.get(0))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = 17;
+            for (List<Member> tuple : tupleList) {
+                result = 31 * result + Arrays.hashCode(tuple.toArray());
+            }
+            return result;
         }
 
         @Override
