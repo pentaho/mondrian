@@ -1274,11 +1274,8 @@ public class SqlConstraintUtils {
             }
         }
 
-        assert m != null;
         final RolapCubeLevel level = m.getLevel();
-        if (level.getAttribute().getKeyList().size() > 0) {
-            RolapSchema.PhysColumn key =
-                level.getAttribute().getKeyList().get(0);
+        for (RolapSchema.PhysColumn key : level.getAttribute().getKeyList()) {
             // this method can be called within the context of shared
             // members, outside of the normal rolap star, therefore we need
             // to check the level to see if it is a shared or cube level.
@@ -1362,6 +1359,9 @@ public class SqlConstraintUtils {
                     }
                     buf.append(where);
                 }
+            }
+            if (!exclude) {
+                break;
             }
         }
     }
