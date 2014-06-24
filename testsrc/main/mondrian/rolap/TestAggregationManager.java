@@ -1534,174 +1534,92 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     /**
-     * Test case for
-     * <a href="http://jira.pentaho.com/browse/MONDRIAN-812">bug MONDRIAN-812,
-     * "Issues with aggregate table recognition when using
-     * &lt;KeyExpression&gt;&lt;SQL&gt; ... &lt;/SQL&gt;&lt;/KeyExpression&gt;
-     * to define a level"</a>. Using a key expression for a level
-     * element would make aggregate tables fail to be used.
+     * Validates that sql expressions can be used with aggregate copy links.
+     * This is an adaptation from a test for MONDRIAN-812 which had specifically
+     * tested a bug in the DefaultRecognizer, which is no longer used.
      */
-    public void testLevelKeyAsSqlExpWithAgg() {
-        final boolean p;
-        final TestContext testContext0 = getTestContext();
-        final Dialect dialect = testContext0.getDialect();
-        switch (dialect.getDatabaseProduct()) {
-        case POSTGRESQL:
-            // Results are slightly different order on Postgres. It collates
-            // "Sale Winners" before "Sales Days", because " " < "A".
-            p = true;
-            break;
-        default:
-            p = false;
-            break;
-        }
+    public void testAttrKeyAsSqlExprWithAgg()
+    {
         propSaver.set(propSaver.props.UseAggregates, true);
         propSaver.set(propSaver.props.ReadAggregates, true);
-        final String mdxQuery =
-            "select non empty{[Promotions].[All Promotions].Children} ON rows, "
-            + "non empty {[Store].[All Stores]} ON columns "
-            + "from [Sales] "
-            + "where {[Measures].[Unit Sales]}";
-        // Provoke an error in the key resolution to prove it uses it.
-        final String colName = dialect.quoteIdentifier("promotion_name");
-        TestContext testContext = TestContext.instance().createSubstitutingCube(
-            "Sales",
-            "<Dimension name=\"Promotions\" foreignKey=\"promotion_id\">\n"
-            + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Promotions\" primaryKey=\"promotion_id\" defaultMember=\"[All Promotions]\">\n"
-            + "    <Table name=\"promotion\"/>\n"
-            + "    <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\">\n"
-            + "      <KeyExpression><SQL>ERROR_TEST_FUNCTION_NAME("
-            + colName
-            + ")</SQL></KeyExpression>\n"
-            + "    </Level>\n"
-            + "  </Hierarchy>\n"
-            + "</Dimension>");
-        testContext.assertQueryThrows(
-            mdxQuery,
-            "ERROR_TEST_FUNCTION_NAME");
-        // Run for real this time
-        testContext = TestContext.instance().createSubstitutingCube(
-            "Sales",
-            "<Dimension name=\"Promotions\" foreignKey=\"promotion_id\">\n"
-            + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Promotions\" primaryKey=\"promotion_id\" defaultMember=\"[All Promotions]\">\n"
-            + "    <Table name=\"promotion\"/>\n"
-            + "    <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\">\n"
-            + "      <KeyExpression><SQL>RTRIM("
-            + colName + ")</SQL></KeyExpression>\n"
-            + "    </Level>\n"
-            + "  </Hierarchy>\n"
-            + "</Dimension>");
+        TestContext testContext = getTestContext()
+            .replace(
+                "<Table name='agg_c_special_sales_fact_1997'/>",
+                "<Table name='agg_c_special_sales_fact_1997'>"
+                +    "<ColumnDefs>"
+                + "<CalculatedColumnDef name='qtr_expression_agg' type='String'>\n"
+                + "    <ExpressionView>\n"
+                + "        <SQL dialect='generic'>lower(time_quarter)</SQL>\n"
+                + "    </ExpressionView>\n"
+                + "</CalculatedColumnDef>"
+                + "<CalculatedColumnDef name='unit_sales_negative' type='Integer'>\n"
+                + "    <ExpressionView>\n"
+                + "        <SQL dialect='generic'>unit_sales_sum * -1</SQL>\n"
+                + "    </ExpressionView>\n"
+                + "</CalculatedColumnDef>"
+                + "</ColumnDefs></Table>")
+            .insertCalculatedColumnDef(
+                "time_by_day",
+                "<ColumnDefs>"
+                + "<CalculatedColumnDef name='qtr_expression' type='String'>\n"
+                + "    <ExpressionView>\n"
+                + "        <SQL dialect='generic'>lower(quarter)</SQL>\n"
+                + "    </ExpressionView>\n"
+                + "</CalculatedColumnDef>"
+                + "</ColumnDefs>")
+            .insertCube(
+                "<Cube name='FooBar'>\n"
+                + "  <Dimensions>"
+                + "    <Dimension name='Time2' table='time_by_day' key='Time Id' >\n"
+                + "  <Attributes>    "
+                + " <Attribute name='Time Id' keyColumn='time_id' hasHierarchy='false'/>"
+                + " <Attribute name='qtr' keyColumn='qtr_expression' hasHierarchy='true'/>"
+                + "  </Attributes>    "
+                + "    </Dimension>\n"
+                + "  </Dimensions>"
+                + "  <MeasureGroups>"
+                + "    <MeasureGroup table='sales_fact_1997'>"
+                + "      <Measures>"
+                + "        <Measure name='Unit Sales' aggregator='sum' column='unit_sales'>\n"
+                + "        </Measure>\n"
+                + "      </Measures>"
+                + "      <DimensionLinks>\n"
+                + "        <ForeignKeyLink dimension='Time2' foreignKeyColumn='time_id'/>\n"
+                + "      </DimensionLinks>\n"
+                + "    </MeasureGroup>"
+                + "            <MeasureGroup table='agg_c_special_sales_fact_1997' type='aggregate'>\n"
+                + "                <Measures>\n"
+                + "                    <MeasureRef name='Fact Count' aggColumn='fact_count'/>\n"
+                + "                    <MeasureRef name='Unit Sales' aggColumn='unit_sales_negative'/>\n"
+                + "                </Measures>\n"
+                + "                <DimensionLinks>\n"
+                + "                    <CopyLink dimension='Time2' attribute='Month'>\n"
+                + "                        <Column aggColumn='qtr_expression_agg' table='time_by_day' name='qtr_expression'/>\n"
+                + "                    </CopyLink>\n"
+                + "                </DimensionLinks>\n"
+                + "            </MeasureGroup>\n"
+                + "  </MeasureGroups>"
+                + "</Cube>");
+        // the expression for the measure column multiplies by -1,
+        // so we can verifyresults are coming from the agg table.
         testContext.assertQueryReturns(
-            "select non empty{[Promotions].[All Promotions].Children} ON rows, "
-            + "non empty {[Store].[All Stores]} ON columns "
-            + "from [Sales] "
-            + "where {[Measures].[Unit Sales]}",
+            "select "
+            + "Time2.qtr.members ON COLUMNS\n"
+            + "from [FooBar] "
+            + "  \n",
             "Axis #0:\n"
-            + "{[Measures].[Unit Sales]}\n"
+            + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[All Stores]}\n"
-            + "Axis #2:\n"
-            + "{[Promotions].[Bag Stuffers]}\n"
-            + "{[Promotions].[Best Savings]}\n"
-            + "{[Promotions].[Big Promo]}\n"
-            + "{[Promotions].[Big Time Discounts]}\n"
-            + "{[Promotions].[Big Time Savings]}\n"
-            + "{[Promotions].[Bye Bye Baby]}\n"
-            + "{[Promotions].[Cash Register Lottery]}\n"
-            + "{[Promotions].[Dimes Off]}\n"
-            + "{[Promotions].[Dollar Cutters]}\n"
-            + "{[Promotions].[Dollar Days]}\n"
-            + "{[Promotions].[Double Down Sale]}\n"
-            + "{[Promotions].[Double Your Savings]}\n"
-            + "{[Promotions].[Free For All]}\n"
-            + "{[Promotions].[Go For It]}\n"
-            + "{[Promotions].[Green Light Days]}\n"
-            + "{[Promotions].[Green Light Special]}\n"
-            + "{[Promotions].[High Roller Savings]}\n"
-            + "{[Promotions].[I Cant Believe It Sale]}\n"
-            + "{[Promotions].[Money Savers]}\n"
-            + "{[Promotions].[Mystery Sale]}\n"
-            + "{[Promotions].[No Promotion]}\n"
-            + "{[Promotions].[One Day Sale]}\n"
-            + "{[Promotions].[Pick Your Savings]}\n"
-            + "{[Promotions].[Price Cutters]}\n"
-            + "{[Promotions].[Price Destroyers]}\n"
-            + "{[Promotions].[Price Savers]}\n"
-            + "{[Promotions].[Price Slashers]}\n"
-            + "{[Promotions].[Price Smashers]}\n"
-            + "{[Promotions].[Price Winners]}\n"
-            + (p ? "" : "{[Promotions].[Sale Winners]}\n")
-            + "{[Promotions].[Sales Days]}\n"
-            + "{[Promotions].[Sales Galore]}\n"
-            + (!p ? "" : "{[Promotions].[Sale Winners]}\n")
-            + "{[Promotions].[Save-It Sale]}\n"
-            + "{[Promotions].[Saving Days]}\n"
-            + "{[Promotions].[Savings Galore]}\n"
-            + "{[Promotions].[Shelf Clearing Days]}\n"
-            + "{[Promotions].[Shelf Emptiers]}\n"
-            + "{[Promotions].[Super Duper Savers]}\n"
-            + "{[Promotions].[Super Savers]}\n"
-            + "{[Promotions].[Super Wallet Savers]}\n"
-            + "{[Promotions].[Three for One]}\n"
-            + "{[Promotions].[Tip Top Savings]}\n"
-            + "{[Promotions].[Two Day Sale]}\n"
-            + "{[Promotions].[Two for One]}\n"
-            + "{[Promotions].[Unbeatable Price Savers]}\n"
-            + "{[Promotions].[Wallet Savers]}\n"
-            + "{[Promotions].[Weekend Markdown]}\n"
-            + "{[Promotions].[You Save Days]}\n"
-            + "Row #0: 901\n"
-            + "Row #1: 2,081\n"
-            + "Row #2: 1,789\n"
-            + "Row #3: 932\n"
-            + "Row #4: 700\n"
-            + "Row #5: 921\n"
-            + "Row #6: 4,792\n"
-            + "Row #7: 1,219\n"
-            + "Row #8: 781\n"
-            + "Row #9: 1,652\n"
-            + "Row #10: 1,959\n"
-            + "Row #11: 843\n"
-            + "Row #12: 1,638\n"
-            + "Row #13: 689\n"
-            + "Row #14: 1,607\n"
-            + "Row #15: 436\n"
-            + "Row #16: 2,654\n"
-            + "Row #17: 253\n"
-            + "Row #18: 899\n"
-            + "Row #19: 1,021\n"
-            + "Row #20: 195,448\n"
-            + "Row #21: 1,973\n"
-            + "Row #22: 323\n"
-            + "Row #23: 1,624\n"
-            + "Row #24: 2,173\n"
-            + "Row #25: 4,094\n"
-            + "Row #26: 1,148\n"
-            + "Row #27: 504\n"
-            + "Row #28: 1,294\n"
-            + (p
-                ? ("Row #29: 2,055\n"
-                   + "Row #30: 2,572\n"
-                   + "Row #31: 444\n")
-                : ("Row #29: 444\n"
-                   + "Row #30: 2,055\n"
-                   + "Row #31: 2,572\n"))
-            + "Row #32: 2,203\n"
-            + "Row #33: 1,446\n"
-            + "Row #34: 1,382\n"
-            + "Row #35: 754\n"
-            + "Row #36: 2,118\n"
-            + "Row #37: 2,628\n"
-            + "Row #38: 2,497\n"
-            + "Row #39: 1,183\n"
-            + "Row #40: 1,155\n"
-            + "Row #41: 525\n"
-            + "Row #42: 2,053\n"
-            + "Row #43: 335\n"
-            + "Row #44: 2,100\n"
-            + "Row #45: 916\n"
-            + "Row #46: 914\n"
-            + "Row #47: 3,145\n");
+            + "{[Time2].[qtr].[All qtr]}\n"
+            + "{[Time2].[qtr].[q1]}\n"
+            + "{[Time2].[qtr].[q2]}\n"
+            + "{[Time2].[qtr].[q3]}\n"
+            + "{[Time2].[qtr].[q4]}\n"
+            + "Row #0: -266,773\n"
+            + "Row #0: -66,291\n"
+            + "Row #0: -62,610\n"
+            + "Row #0: -65,848\n"
+            + "Row #0: -72,024\n");
     }
 
     /**
