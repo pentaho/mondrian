@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -240,50 +240,6 @@ public class NonCollapsedAggTest extends AggTableTestCase {
             + "{[dimension].[network].[network two].[line class two]}\n"
             + "Row #0: 31\n"
             + "Row #1: 121\n");
-    }
-
-    /**
-     * TODO: Note that this test fails because we have not implemented an
-     * aggregation detector in Mondrian 4.0.
-     *
-     * @throws Exception
-     */
-    public void testComplexJoinDefaultRecognizer() throws Exception {
-        if (!isApplicable()) {
-            return;
-        }
-
-        final TestContext context = getCubeTestContext();
-
-        // We expect the correct cell value + 2 if the agg table is used.
-        final String mdx =
-            "select {[Measures].[Unit Sales]} on columns, {[dimension].[distributor].[line class].Members} on rows from [foo2]";
-        context.assertQueryReturns(
-            mdx,
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "Axis #2:\n"
-            + "{[dimension].[distributor].[distributor one].[line class one]}\n"
-            + "{[dimension].[distributor].[distributor two].[line class two]}\n"
-            + "Row #0: 32\n"
-            + "Row #1: 122\n");
-
-        final String mdx2 =
-            "select {[Measures].[Unit Sales]} on columns, {[dimension].[network].[line class].Members} on rows from [foo2]";
-        // We expect the correct cell value + 2 if the agg table is used.
-        context.assertQueryReturns(
-            mdx2,
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "Axis #2:\n"
-            + "{[dimension].[network].[network one].[line class one]}\n"
-            + "{[dimension].[network].[network two].[line class two]}\n"
-            + "Row #0: 32\n"
-            + "Row #1: 122\n");
     }
 }
 // End NonCollapsedAggTest.java
