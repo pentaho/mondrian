@@ -1658,9 +1658,9 @@ public class AccessControlTest extends FoodMartTestCase {
             + "            member=\"[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz]\"\n"
             + "            access=\"all\"/>\n"
             + "      </HierarchyGrant>\n"
-            + "      <HierarchyGrant hierarchy=\"[Stores]\" access=\"custom\"\n"
+            + "      <HierarchyGrant hierarchy=\"[Time]\" access=\"custom\"\n"
             + "                      rollupPolicy=\"partial\">\n"
-            + "        <MemberGrant member=\"[Store].[All Stores].[USA].[CA]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Time].[1997].[Q1]\" access=\"all\"/>\n"
             + "      </HierarchyGrant>\n"
             + "    </CubeGrant>\n"
             + "  </SchemaGrant>\n"
@@ -1668,18 +1668,18 @@ public class AccessControlTest extends FoodMartTestCase {
             .withRole("Buggy Role");
 
         final String mdx = "select\n"
-            + "  {[Measures].[Number of Employees]} on columns,\n"
-            + "  {[Stores]} on rows\n"
+            + "  {[Measures].[Org Salary]} on columns,\n"
+            + "  {[Time].[Time].[1997]} on rows\n"
             + "from HR";
         testContext.assertQueryReturns(
             mdx,
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Measures].[Number of Employees]}\n"
+            + "{[Measures].[Org Salary]}\n"
             + "Axis #2:\n"
-            + "{[Store].[Stores].[All Stores]}\n"
-            + "Row #0: 1\n");
+            + "{[Time].[Time].[1997]}\n"
+            + "Row #0: $208.17\n");
         checkQuery(testContext, mdx);
 
         final String mdx2 = "select\n"
@@ -1693,7 +1693,7 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Number of Employees]}\n"
             + "Axis #2:\n"
-            + "{[Employees].[All Employees]}\n"
+            + "{[Employee].[Employees].[All Employees]}\n"
             + "Row #0: 1\n");
         checkQuery(testContext, mdx2);
     }
