@@ -3223,6 +3223,15 @@ public class RolapSchemaUpgrader {
                         Collections.singletonList(
                             physClosureTable.getColumn(
                                 xmlLegacyLevel.closure.childColumn, true)));
+                // add link between closure and dim relation
+                physSchemaConverter.physSchema.addLink(
+                    relation.lookupKey(
+                        Collections.singletonList(
+                            relation.getColumn(keyColumn.name, false)), false),
+                    physClosureTable,
+                    Collections.singletonList(
+                        physClosureTable.getColumn(
+                            xmlLegacyLevel.closure.childColumn, true)), false);
                 if (links != null) {
                     for (Link link : links) {
                         physSchemaConverter.physSchema.addLink(
