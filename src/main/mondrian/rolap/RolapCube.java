@@ -3039,8 +3039,10 @@ public class RolapCube extends CubeBase {
                 RolapCalculatedMember calcMember =
                     (RolapCalculatedMember) member;
                 Formula formula = calcMember.getFormula();
+                if (!calcMembersSeen.contains(calcMember)) {
+                  calcMembersSeen.add(calcMember);
+                }
                 formula.accept(this);
-                calcMembersSeen.add(calcMember);
 
                 // now that we've located all measures referenced in the
                 // calculated member's formula, resolve the calculated
