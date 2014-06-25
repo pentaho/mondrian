@@ -10,13 +10,19 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.*;
+import java.io.IOException;
+import java.util.List;
+
+import mondrian.olap.Axis;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Position;
+import mondrian.olap.Property;
+import mondrian.olap.Result;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
 import mondrian.util.Bug;
-
-import java.util.List;
 
 /**
  * Unit tests for virtual cubes.
@@ -1442,6 +1448,30 @@ public class VirtualCubeTest extends BatchTestCase {
             "[[Promotions].[Promotions].[Bag Stuffers], [Marital Status].[Marital Status].[M]]",
             result.getAxes()[1].getPositions().get(0).toString());
         assertEquals(96, result.getAxes()[1].getPositions().size());
+    }
+
+    /**
+     * <p>MONDRIAN-1061</p>
+     * <p>recursive members for 4.0 schema version</p>
+     * @throws IOException 
+     */
+    public void testVirtualCubeRecursiveMember() throws IOException {
+      TestContext context = getTestContext().modern();
+      String query = "select {[RECURSIVE]} on rows, {[Time].[1998].Children} on columns from [Warehouse and Sales]";
+      final String expected = "Axis #0:\n"
+        + "{}\n"
+        + "Axis #1:\n"
+        + "{[Time].[Time].[1998].[Q1]}\n"
+        + "{[Time].[Time].[1998].[Q2]}\n"
+        + "{[Time].[Time].[1998].[Q3]}\n"
+        + "{[Time].[Time].[1998].[Q4]}\n"
+        + "Axis #2:\n"
+        + "{[Measures].[RECURSIVE]}\n"
+        + "Row #0: 72,024\n"
+        + "Row #0: 72,024\n"
+        + "Row #0: 72,024\n"
+        + "Row #0: 72,024\n";
+      context.assertQueryReturns(query, expected);
     }
 }
 

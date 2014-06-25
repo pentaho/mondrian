@@ -740,8 +740,12 @@
             <CalculatedMember name='Profit Per Unit Shipped' dimension='Measures'>
                 <Formula>[Measures].[Profit] / [Measures].[Units Shipped]</Formula>
             </CalculatedMember>
-        </CalculatedMembers>
-
+			<CalculatedMember name='RECURSIVE' dimension='Measures'
+				formula='COALESCEEMPTY((Measures.[Unit Sales], [Time].[Time].CurrentMember),	(Measures.[RECURSIVE], [Time].[Time].CurrentMember.PrevMember))'
+				visible='true'>
+				<CalculatedMemberProperty name='FORMAT_STRING' value='#,##'/>
+			</CalculatedMember>
+		</CalculatedMembers>
     </Cube>
 
     <Cube name='HR'>
