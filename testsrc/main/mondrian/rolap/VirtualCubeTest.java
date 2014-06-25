@@ -11,12 +11,17 @@
 
 package mondrian.rolap;
 
-import mondrian.olap.*;
+import java.util.List;
+
+import mondrian.olap.Axis;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Position;
+import mondrian.olap.Property;
+import mondrian.olap.Result;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
-
-import java.util.List;
 
 /**
  * Unit tests for virtual cubes.
@@ -1498,6 +1503,84 @@ public class VirtualCubeTest extends BatchTestCase {
             "[[Promotions].[Bag Stuffers], [Marital Status].[M]]",
             result.getAxes()[1].getPositions().get(0).toString());
         assertEquals(96, result.getAxes()[1].getPositions().size());
+    }
+
+    /**
+     * <p>MONDRIAN-1061</p>
+     * <p>The idea is that [recurse] is a calculated member uses
+     * <br>
+     * <code>CoalesceEmpty((Measures.[Unit Sales], [Time].CurrentMember ) ,
+     * (Measures.[recurse],[Time].CurrentMember.PrevMember)))</code>
+     * <br>
+     *  ...calculation.
+     * Food mart have no data for 1998 quarter,
+     * So this way we expect:
+     * <ul>
+     * <li>not to fall into StackOverflow for recursive calculation when member
+     * is referenced in VirtualCube.
+     * <li>check that CoalesceEmpty calculated correctly (repeatable values from
+     * previous not null result)
+     * </ul></p>
+     */
+    public void testVirtualCubeRecursiveMember() {
+      final String schema = "<Schema name=\"FoodMart\">"
+          + "<Dimension type=\"TimeDimension\" highCardinality=\"false\" name=\"Time\">"
+          + "<Hierarchy visible=\"true\" hasAll=\"false\" primaryKey=\"time_id\">"
+          + "<Table name=\"time_by_day\">"
+          + "</Table>"
+          + "<Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\" levelType=\"TimeYears\">"
+          + "</Level>"
+          + "<Level name=\"Quarter\" column=\"quarter\" type=\"String\" uniqueMembers=\"false\" levelType=\"TimeQuarters\">"
+          + "</Level>"
+          + "</Hierarchy>"
+          + "</Dimension>"
+          + "<Cube name=\"Sales\" visible=\"true\" defaultMeasure=\"Unit Sales\" >"
+          + "<Table name=\"sales_fact_1997\">"
+          + "<AggName name=\"agg_c_special_sales_fact_1997\">"
+          + "<AggFactCount column=\"FACT_COUNT\">"
+          + "</AggFactCount>"
+          + "<AggMeasure column=\"UNIT_SALES_SUM\" name=\"[Measures].[Unit Sales]\">"
+          + "</AggMeasure>"
+          + "<AggLevel column=\"TIME_YEAR\" name=\"[Time].[Year]\">"
+          + "</AggLevel>"
+          + "</AggName>"
+          + "</Table>"
+          + "<DimensionUsage source=\"Time\" name=\"Time\" foreignKey=\"time_id\" highCardinality=\"false\">"
+          + "</DimensionUsage>"
+          + "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\">"
+          + "</Measure>"
+          + "<CalculatedMember name=\"recurse\" dimension=\"Measures\" visible=\"true\">"
+          + "<Formula>"
+          + "<![CDATA[(CoalesceEmpty((Measures.[Unit Sales], [Time].CurrentMember ) ,"
+          + "(Measures.[recurse],[Time].CurrentMember.PrevMember)))]]>"
+          + "</Formula>"
+          + "</CalculatedMember>"
+          + "</Cube>"
+          + "<VirtualCube enabled=\"true\" name=\"Warehouse and Sales\" defaultMeasure=\"Store Sales\" visible=\"true\">"
+          + "<VirtualCubeDimension visible=\"true\" highCardinality=\"false\" name=\"Time\">"
+          + "</VirtualCubeDimension>"
+          + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[recurse]\" visible=\"true\">"
+          + "</VirtualCubeMeasure>"
+          + "</VirtualCube>"
+          + "</Schema>";
+      TestContext context = getTestContext().withSchema(schema);
+      final String query = "SELECT {[Time].[1998].Children} on columns,"
+          + " {[recurse]} on rows "
+          + "FROM [Warehouse and Sales]";
+      final String expected = "Axis #0:\n"
+        + "{}\n"
+        + "Axis #1:\n"
+        + "{[Time].[1998].[Q1]}\n"
+        + "{[Time].[1998].[Q2]}\n"
+        + "{[Time].[1998].[Q3]}\n"
+        + "{[Time].[1998].[Q4]}\n"
+        + "Axis #2:\n"
+        + "{[Measures].[recurse]}\n"
+        + "Row #0: 72,024\n"
+        + "Row #0: 72,024\n"
+        + "Row #0: 72,024\n"
+        + "Row #0: 72,024\n";
+      context.assertQueryReturns(query, expected);
     }
 }
 
