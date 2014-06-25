@@ -13,10 +13,21 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.spi.Dialect;
+import mondrian.test.DelegatingTestContext;
+import mondrian.test.Main;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
+
+import junit.framework.Assert;
 
 /**
  * Unit tests for virtual cubes.
@@ -1498,6 +1509,70 @@ public class VirtualCubeTest extends BatchTestCase {
             "[[Promotions].[Bag Stuffers], [Marital Status].[M]]",
             result.getAxes()[1].getPositions().get(0).toString());
         assertEquals(96, result.getAxes()[1].getPositions().size());
+    }
+
+    /**
+     * <p>MONDRIAN-1061</p>
+     * 
+     * <p>The idea is that [recurse] is a calculated uses
+     * <br>
+     * <code>CoalesceEmpty((Measures.[Unit Sales], [Time].CurrentMember ) , (Measures.[recurse],[Time].CurrentMember.PrevMember)))</code>
+     * <br>
+     *  ...calculation. See related FoodMartRecursion.xml file in this test package.
+     * Food mart have no data for 1998 quarter,
+     * So this way we expect:
+     * <ul>
+     * <li>not to fall into StackOverflow for recursive calculation when member is referenced from VirtualCube.
+     * <li> check that CoalesceEmpty calculated correctly.
+     * </ul>
+     * Since food mart have static data we can rely this queries will return constant results.</p>
+     * 
+     */
+    public void testVirtualCubeRecursiveMember() {
+      LocalDelegatingTestContext context = new LocalDelegatingTestContext( this.getTestContext() );
+      // used to fail here with StackOverflow.
+      Result rs1 = context.executeQuery( "SELECT {[Time].[1998].Children} on columns," +
+          " {[recurse], [no-recurse]} on rows " +
+          "FROM [Warehouse and Sales]" );
+      Result rs2 = context.executeQuery( "SELECT {[Time].[1997].Children} on columns," +
+        " {[recurse], [no-recurse]} on rows " +
+        "FROM [Warehouse and Sales]" );
+      
+      String val_1998_Q1_rs1_recursion = rs1.getCell( new int[]{ 1, 0 } ).getFormattedValue();
+      String val_1998_Q1_rs1_no_recursion = rs1.getCell( new int[]{ 1, 1 } ).getFormattedValue();
+      String val_1997_Q4_rs2_recursion = rs2.getCell( new int[]{ 3 , 0 } ).getFormattedValue();
+      String val_1997_Q1_rs2_no_recursion = rs2.getCell( new int[]{ 3 , 1 } ).getFormattedValue();
+      
+      assertEquals( "Same result for last quarter of 1997",
+          val_1997_Q4_rs2_recursion,
+          val_1997_Q1_rs2_no_recursion );
+      
+      assertTrue( "Empty result for 1st quarter of 1998 " , val_1998_Q1_rs1_no_recursion.isEmpty() );
+      
+      assertEquals( "When using CoalesceEmpty(...) it is previous member",
+          val_1998_Q1_rs1_recursion, val_1997_Q1_rs2_no_recursion );
+    }
+
+    class LocalDelegatingTestContext extends DelegatingTestContext {
+      
+      protected LocalDelegatingTestContext( TestContext context ) {
+        super( context );
+      }
+      
+      @Override     
+      public Util.PropertyList getConnectionProperties() {
+        Util.PropertyList propertyList = super.getConnectionProperties();        
+        // now replace default mondrian schema with custom one recursive.
+        // nasty hardcode path from the root of project since can't use class loaders (see build.xml)
+        File file = new File( "testsrc/main/mondrian/rolap", "FoodMartRecursion.xml" );
+        if ( !file.exists() || !file.canRead() ) {
+          throw new RuntimeException( "Can't access testsrc/main/mondrian/rolap/FoodMartRecursion.xml, " +
+          "this file exists: " + file.exists() + ", and we can read it: " + file.canRead() );
+        }        
+        URI uri = file.toURI();
+        propertyList.put( "catalog", uri.toString() );        
+        return propertyList;     
+      }
     }
 }
 

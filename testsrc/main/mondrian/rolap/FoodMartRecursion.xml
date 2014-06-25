@@ -1,0 +1,86 @@
+<Schema name="FoodMart">
+    <Dimension type="TimeDimension" visible="true" highCardinality="false" name="Time">
+        <Hierarchy visible="true" hasAll="false" primaryKey="time_id">
+            <Table name="time_by_day">
+            </Table>
+            <Level name="Year" visible="true" column="the_year" type="Numeric" uniqueMembers="true" levelType="TimeYears" hideMemberIf="Never">
+            </Level>
+            <Level name="Quarter" visible="true" column="quarter" type="String" uniqueMembers="false" levelType="TimeQuarters" hideMemberIf="Never">
+            </Level>
+            <Level name="Month" visible="true" column="month_of_year" type="Numeric" uniqueMembers="false" levelType="TimeMonths" hideMemberIf="Never">
+            </Level>
+        </Hierarchy>
+        <Hierarchy name="Weekly" visible="true" hasAll="true" primaryKey="time_id">
+            <Table name="time_by_day">
+            </Table>
+            <Level name="Year" visible="true" column="the_year" type="Numeric" uniqueMembers="true" levelType="TimeYears" hideMemberIf="Never">
+            </Level>
+            <Level name="Week" visible="true" column="week_of_year" type="Numeric" uniqueMembers="false" levelType="TimeWeeks" hideMemberIf="Never">
+            </Level>
+            <Level name="Day" visible="true" column="day_of_month" type="Numeric" uniqueMembers="false" levelType="TimeDays" hideMemberIf="Never">
+            </Level>
+        </Hierarchy>
+    </Dimension>
+    <Cube name="Sales" visible="true" defaultMeasure="Unit Sales" cache="true" enabled="true">
+        <Table name="sales_fact_1997">
+            <AggExclude name="agg_c_special_sales_fact_1997" ignorecase="true">
+            </AggExclude>
+            <AggExclude name="agg_lc_100_sales_fact_1997" ignorecase="true">
+            </AggExclude>
+            <AggExclude name="agg_lc_10_sales_fact_1997" ignorecase="true">
+            </AggExclude>
+            <AggExclude name="agg_pc_10_sales_fact_1997" ignorecase="true">
+            </AggExclude>
+            <AggName name="agg_c_special_sales_fact_1997" ignorecase="true">
+                <AggFactCount column="FACT_COUNT">
+                </AggFactCount>
+                <AggIgnoreColumn column="foo">
+                </AggIgnoreColumn>
+                <AggIgnoreColumn column="bar">
+                </AggIgnoreColumn>
+                <AggForeignKey factColumn="product_id" aggColumn="PRODUCT_ID">
+                </AggForeignKey>
+                <AggForeignKey factColumn="customer_id" aggColumn="CUSTOMER_ID">
+                </AggForeignKey>
+                <AggForeignKey factColumn="promotion_id" aggColumn="PROMOTION_ID">
+                </AggForeignKey>
+                <AggForeignKey factColumn="store_id" aggColumn="STORE_ID">
+                </AggForeignKey>
+                <AggMeasure column="UNIT_SALES_SUM" name="[Measures].[Unit Sales]">
+                </AggMeasure>
+                <AggMeasure column="STORE_COST_SUM" name="[Measures].[Store Cost]">
+                </AggMeasure>
+                <AggMeasure column="STORE_SALES_SUM" name="[Measures].[Store Sales]">
+                </AggMeasure>
+                <AggLevel column="TIME_YEAR" name="[Time].[Year]">
+                </AggLevel>
+                <AggLevel column="TIME_QUARTER" name="[Time].[Quarter]">
+                </AggLevel>
+                <AggLevel column="TIME_MONTH" name="[Time].[Month]">
+                </AggLevel>
+            </AggName>
+        </Table>
+        <DimensionUsage source="Time" name="Time" visible="true" foreignKey="time_id" highCardinality="false">
+        </DimensionUsage>
+        <Measure name="Unit Sales" column="unit_sales" formatString="Standard" aggregator="sum">
+        </Measure>
+        <CalculatedMember name="recurse" formatString="" formula="" dimension="Measures" visible="true">
+            <Formula>
+                <![CDATA[(CoalesceEmpty((Measures.[Unit Sales], [Time].CurrentMember ) , (Measures.[recurse],[Time].CurrentMember.PrevMember)))]]>
+            </Formula>
+        </CalculatedMember>
+        <CalculatedMember name="no-recurse" formatString="" formula="" dimension="Measures" visible="true">
+        	<Formula>
+                <![CDATA[(Measures.[Unit Sales], [Time].CurrentMember )]]>
+            </Formula>        
+        </CalculatedMember>
+    </Cube>
+    <VirtualCube enabled="true" name="Warehouse and Sales" defaultMeasure="Store Sales" visible="true">
+        <VirtualCubeDimension visible="true" highCardinality="false" name="Time">
+        </VirtualCubeDimension>
+        <VirtualCubeMeasure cubeName="Sales" name="[Measures].[recurse]" visible="true">
+        </VirtualCubeMeasure>
+        <VirtualCubeMeasure cubeName="Sales" name="[Measures].[no-recurse]" visible="true">
+        </VirtualCubeMeasure>
+    </VirtualCube>
+</Schema>
