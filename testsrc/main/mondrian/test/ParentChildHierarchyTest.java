@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho
+// Copyright (C) 2005-2014 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Mar 6, 2003
@@ -1010,18 +1010,18 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Employees].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro].[Bunny McCown].[Nancy Miller]}\n"
-            + "{[Employees].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro].[Bunny McCown].[Wanda Hollar]}\n"
-            + "{[Employees].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[Corinne Zugschwert]}\n"
-            + "{[Employees].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[Michelle Adams]}\n"
-            + "{[Employees].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[Donahue Steen]}\n"
-            + "{[Employees].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Anne Tuck].[John Baker]}\n"
-            + "Row #0: $148.20\n"
-            + "Row #0: $80.36\n"
-            + "Row #0: $159.60\n"
-            + "Row #0: $155.04\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Donna Arnold].[Doris Carter]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Roberta Damstra].[Phyllis Burchett]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Roberta Damstra].[Jennifer Cooper]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Roberta Damstra].[Jessica Olguin]}\n"
+            + "{[Employees].[Employees].[Sheri Nowmer].[Roberta Damstra].[Peggy Petty]}\n"
+            + "Row #0: $193.80\n"
+            + "Row #0: $60.00\n"
+            + "Row #0: $120.00\n"
             + "Row #0: $152.76\n"
-            + "Row #0: $186.96\n");
+            + "Row #0: $120.00\n"
+            + "Row #0: $182.40\n");
     }
 
     public void testLevelMembers() {
