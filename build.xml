@@ -1955,57 +1955,89 @@ xalan.jar"/>
   </target>
 
 	
-	  <!-- ======================================== EULA assembly packaging ========================================= -->
+	<!-- ======================================== EULA assembly packaging ========================================= -->
 
-		<property name="pentaho-eula-assembly-pom.version" value="1.0.9" />
+	<target name="package-eula">
 
-		<target name="package-eula" depends="install-antcontrib">
+		<property name="pentaho.resolve.repo" value="http://nexus.pentaho.org:8081/content/groups/omni" />
 
-			<if>
-				<not>
-					<available file="${dist.dir}/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" type="file" />
-				</not>
-				<then>
-					<get src="http://repo.pentaho.org/artifactory/private-release/com/pentaho/pentaho-eula-assembly-pom/${pentaho-eula-assembly-pom.version}/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" 
-		              dest="${dist.dir}/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" 
+		<get
+			src="${pentaho.resolve.repo}/ant-contrib/ant-contrib/1.0b3/ant-contrib-1.0b3.jar"
+			dest="dist/ant-contrib-1.0b3.jar"
+			verbose="true"
+		/>
+		<taskdef resource="net/sf/antcontrib/antlib.xml" classpath="dist/ant-contrib-1.0b3.jar" />
+
+		<condition property="isWindows">
+		    <os family="windows" />
+		</condition>
+		
+		<if>
+			<not>
+				<isset property="pentaho-eula-assembly-pom.version"/>
+			</not>
+			<then>
+				<property name="pentaho-eula-assembly-pom.version" value="1.0.13" />
+				<echo>pentaho-eula-assembly-pom.version not set, assuming default of ${pentaho-eula-assembly-pom.version}</echo>
+			</then>
+		</if>
+		
+		<if>
+			<not>
+				<isset property="artifactName"/>
+			</not>
+			<then>
+				<property name="artifactName" value="${package.basename}" />
+				<echo>artifactName not set, assuming default of ${artifactName}</echo>
+			</then>
+		</if>
+		
+		<if>
+			<not>
+				<available file="dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" type="file" />
+			</not>
+			<then>
+				<get src="${pentaho.resolve.repo}/com/pentaho/pentaho-eula-assembly-pom/${pentaho-eula-assembly-pom.version}/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" 
+		              dest="dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" 
 		              verbose="true" />
-				</then>
-			</if>
+			</then>
+		</if>
 
-			<echo>
+		<echo>
 		          mvn
-		          -f
-		          ${dist.dir}/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml
+		          -f dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml
 		          -DartifactName=${artifactName}
-		          -Ddist.dir=${dist.dir}
+		          -Ddist.dir=
 		          package
-		        </echo>
-			<if>
-				<isset property="isWindows" />
-				<then>
-					<exec executable="cmd">
-						<arg value="/c" />
-						<arg value="mvn.bat" />
-						<arg value="-f" />
-						<arg value="${dist.dir}/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" />
-						<arg value="-DartifactName=${artifactName}" />
-						<arg value="-Ddist.dir=${dist.dir}" />
-						<arg value="package" />
-					</exec>
-				</then>
-				<else>
-					<exec executable="mvn">
-						<arg value="-f" />
-						<arg value="${dist.dir}/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" />
-						<arg value="-DartifactName=${artifactName}" />
-						<arg value="-Ddist.dir=${dist.dir}" />
-						<arg value="package" />
-					</exec>
-				</else>
-			</if>
+		</echo>
+		<if>
+			<isset property="isWindows" />
+			<then>
+				<exec executable="cmd">
+					<arg value="/c" />
+					<arg value="mvn.bat" />
+					<arg value="-f" />
+					<arg value="dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" />
+					<arg value="-DartifactName=${artifactName}" />
+					<arg value="-Ddist.dir=" />
+					<arg value="package" />
+				</exec>
+			</then>
+			<else>
+				<exec executable="mvn">
+					<arg value="-f" />
+					<arg value="dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" />
+					<arg value="-DartifactName=${artifactName}" />
+					<arg value="-Ddist.dir=" />
+					<arg value="package" />
+				</exec>
+			</else>
+		</if>
+		
+		<delete file="dist/ant-contrib-1.0b3.jar" />
 
-		</target>	
-
+	</target>
+	
 
 </project>
 
