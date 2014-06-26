@@ -370,10 +370,14 @@ public class SmartMemberReader implements MemberReader {
 
         final Dialect.Datatype type =
             startMember.getLevel().getDatatype();
+        // TODO Optimize this.
+        // It's very ugly and makes little baby Jesus cry.
         if (Util.equals(
                 // Both must have the same parent
                 startMember.getParentMember(),
                 endMember.getParentMember())
+                // Null parents won't work.
+            && startMember.getParentMember() != null
                 // Time is ok. It's always ordered right.
             && ((type.equals(Dialect.Datatype.Date)
                 || type.equals(Dialect.Datatype.Time)
