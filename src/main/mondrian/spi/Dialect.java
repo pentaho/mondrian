@@ -764,8 +764,8 @@ public interface Dialect {
         String javaRegExp);
 
     /**
-     * Must generate an expression representing the range between two
-     * time units. Must be inclusive.
+     * Must generate an expression representing the range between two units.
+     * Must be inclusive.
      * <p>In the general case, we will generate SQL like this:
      * <code>[expr] >= [startValue] AND [expr] <= [endValue]</code>
      * @param type The datatype of the keys.
@@ -778,7 +778,7 @@ public interface Dialect {
      * @return A String representation of a predicate which constrains the
      * expression to the specified bounds.
      */
-    String generateTimeRange(
+    String generateRange(
         Datatype type,
         String expression,
         Object startValue,

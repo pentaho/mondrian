@@ -916,7 +916,7 @@ public class JdbcDialectImpl implements Dialect {
         return null;
     }
 
-    public String generateTimeRange(
+    public String generateRange(
         Datatype type,
         String expression,
         Object startValue,

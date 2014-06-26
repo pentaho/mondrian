@@ -1308,14 +1308,14 @@ public class SqlConstraintUtils {
         }
     }
 
-    public static String constrainDateRange(
+    public static String constrainMemberRange(
         SqlQuery query,
         MondrianDef.Expression exp,
         Dialect.Datatype datatype,
         Object startValue,
         Object endValue)
     {
-        return query.getDialect().generateTimeRange(
+        return query.getDialect().generateRange(
             datatype,
             exp.getExpression(query),
             startValue,

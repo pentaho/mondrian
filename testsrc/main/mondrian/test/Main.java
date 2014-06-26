@@ -207,7 +207,7 @@ public class Main extends TestSuite {
             addTest(suite, SegmentBuilderTest.class);
             addTest(suite, NativeFilterMatchingTest.class);
             addTest(suite, NativeDateRangeTest.class);
-            addTest(suite, NativeDateKeyRangeTest.class);
+            addTest(suite, NativeRangeTest.class);
             addTest(suite, RolapConnectionTest.class);
             addTest(suite, FilteredIterableTest.class);
             addTest(suite, HighDimensionsTest.class);

@@ -315,7 +315,7 @@ public class MySqlDialect extends JdbcDialectImpl {
         return sb.toString();
     }
 
-    public String generateTimeRange(
+    public String generateRange(
         Datatype type,
         String expression,
         Object startValue,

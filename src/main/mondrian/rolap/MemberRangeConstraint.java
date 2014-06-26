@@ -11,16 +11,15 @@ package mondrian.rolap;
 
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
-import mondrian.spi.Dialect;
 
 import java.util.Arrays;
 
-class LevelDateRangeConstraint extends DefaultMemberChildrenConstraint {
+class MemberRangeConstraint extends DefaultMemberChildrenConstraint {
     private final Object cacheKey;
     private Object startKey;
     private Object endKey;
 
-    public LevelDateRangeConstraint(
+    public MemberRangeConstraint(
         Object startKey,
         Object endKey)
     {
@@ -28,7 +27,7 @@ class LevelDateRangeConstraint extends DefaultMemberChildrenConstraint {
         this.endKey = endKey;
         this.cacheKey =
             Arrays.asList(
-                LevelDateRangeConstraint.class,
+                MemberRangeConstraint.class,
                 startKey,
                 endKey);
     }
@@ -40,9 +39,9 @@ class LevelDateRangeConstraint extends DefaultMemberChildrenConstraint {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof LevelDateRangeConstraint
+        return obj instanceof MemberRangeConstraint
             && getCacheKey().equals(
-                ((LevelDateRangeConstraint) obj).getCacheKey());
+                ((MemberRangeConstraint) obj).getCacheKey());
     }
 
     public void addLevelConstraint(
@@ -51,12 +50,9 @@ class LevelDateRangeConstraint extends DefaultMemberChildrenConstraint {
         AggStar aggStar,
         RolapLevel level)
     {
-        assert level.getDatatype().equals(Dialect.Datatype.Date)
-            || level.getDatatype().equals(Dialect.Datatype.Time)
-            || level.getDatatype().equals(Dialect.Datatype.Timestamp);
         super.addLevelConstraint(query, baseCube, aggStar, level);
         query.addWhere(
-            SqlConstraintUtils.constrainDateRange(
+            SqlConstraintUtils.constrainMemberRange(
                 query,
                 level.keyExp,
                 level.getDatatype(),
@@ -65,7 +61,7 @@ class LevelDateRangeConstraint extends DefaultMemberChildrenConstraint {
     }
 
     public String toString() {
-        return "LevelDateRangeConstraint(" + startKey + ", " + endKey + ")";
+        return "MemberRangeConstraint(" + startKey + ", " + endKey + ")";
     }
 
     public Object getCacheKey() {
@@ -73,4 +69,4 @@ class LevelDateRangeConstraint extends DefaultMemberChildrenConstraint {
     }
 
 }
-// End LevelDateRangeConstraint.java
+// End MemberRangeConstraint.java

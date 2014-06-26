@@ -371,16 +371,23 @@ public class SmartMemberReader implements MemberReader {
         final Dialect.Datatype type =
             startMember.getLevel().getDatatype();
         if (Util.equals(
+                // Both must have the same parent
                 startMember.getParentMember(),
                 endMember.getParentMember())
-            && (type.equals(Dialect.Datatype.Date)
+                // Time is ok. It's always ordered right.
+            && ((type.equals(Dialect.Datatype.Date)
                 || type.equals(Dialect.Datatype.Time)
-                || type.equals(Dialect.Datatype.Timestamp)))
+                || type.equals(Dialect.Datatype.Timestamp))
+                // If the order key is the same as the member's
+                // key, we're also good to go.
+                || (Util.equals(
+                    startMember.getLevel().keyExp,
+                    startMember.getLevel().ordinalExp))))
         {
             getMemberChildren(
                 startMember.getParentMember(),
                 list,
-                new LevelDateRangeConstraint(
+                new MemberRangeConstraint(
                     startMember.getKey(),
                     endMember.getKey()));
             return;
