@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.Connection;
@@ -1971,6 +1970,171 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)};
 
         assertQuerySql(query, patterns);
+    }
+
+    public void testAggregateDistinctCount2ndParameter() {
+        // simple case of count distinct measure as second argument to
+        // Aggregate().  Should apply distinct-count aggregator (MONDRIAN-2016)
+        assertQueryReturns(
+            "with\n"
+            + "  set periods as [Time].[1997].[Q1].[1] : [Time].[1997].[Q4].[10]\n"
+            + "  member [Time].[agg] as Aggregate(periods, [Measures].[Customer Count])\n"
+            + "select\n"
+            + "  [Time].[agg]  ON COLUMNS,\n"
+            + "  [Gender].[M] on ROWS\n"
+            + "FROM [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[agg]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[M]}\n"
+            + "Row #0: 2,651\n");
+        assertQueryReturns(
+            "WITH MEMBER [Measures].[My Distinct Count] AS \n"
+            + "'AGGREGATE([1997].Children, [Measures].[Customer Count])' \n"
+            + "SELECT {[Measures].[My Distinct Count], [Measures].[Customer Count]} ON COLUMNS,\n"
+            + "{[1997].Children} ON ROWS\n"
+            + "FROM Sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[My Distinct Count]}\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[1997].[Q2]}\n"
+            + "{[Time].[1997].[Q3]}\n"
+            + "{[Time].[1997].[Q4]}\n"
+            + "Row #0: 5,581\n"
+            + "Row #0: 2,981\n"
+            + "Row #1: 5,581\n"
+            + "Row #1: 2,973\n"
+            + "Row #2: 5,581\n"
+            + "Row #2: 3,026\n"
+            + "Row #3: 5,581\n"
+            + "Row #3: 3,261\n");
+    }
+
+    public void testCountDistinctAggWithOtherCountDistinctInContext() {
+        // tests that Aggregate( <set>, <count-distinct measure>) aggregates
+        // the correct measure when a *different* count-distinct measure is
+        // in context (MONDRIAN-2128)
+        TestContext testContext = TestContext.instance().create(
+            null,
+            "<Cube name=\"2CountDistincts\" defaultMeasure=\"Store Count\">\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "    <DimensionUsage name=\"Time\" source=\"Time\" "
+            + "foreignKey=\"time_id\"/>"
+            + "  <DimensionUsage name=\"Store\" source=\"Store\" "
+            + "foreignKey=\"store_id\"/>\n"
+            + "    <DimensionUsage name=\"Product\" source=\"Product\" "
+            + "  foreignKey=\"product_id\"/>"
+            + "  <Measure name=\"Store Count\" column=\"store_id\" "
+            + "aggregator=\"distinct-count\"/>\n"
+            + "  <Measure name=\"Customer Count\" column=\"customer_id\" "
+            + "aggregator=\"distinct-count\"/>\n"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" "
+            + "aggregator=\"sum\"/>\n"
+            + "</Cube>",
+            null,
+            null,
+            null,
+            null);
+        // We should get the same answer whether the default [Store Count]
+        // measure is in context or [Unit Sales].  The measure specified in the
+        // second param of Aggregate() should be used.
+        final String queryStoreCountInContext =
+            "with member Store.agg as "
+            + "'aggregate({[Store].[USA].[CA],[Store].[USA].[OR]}, "
+            + "           measures.[Customer Count])'"
+            + " select Store.agg on 0 from [2CountDistincts] ";
+        final String queryUnitSalesInContext =
+            "with member Store.agg as "
+            + "'aggregate({[Store].[USA].[CA],[Store].[USA].[OR]}, "
+            + "           measures.[Customer Count])'"
+            + " select Store.agg on 0 from [2CountDistincts] where "
+            + "measures.[Unit Sales] ";
+        assertQueriesReturnSimilarResults(
+            queryStoreCountInContext, queryUnitSalesInContext, testContext);
+
+        final String queryCAORRollup =
+            "with member measures.agg as "
+            + "'aggregate({[Store].[USA].[CA],[Store].[USA].[OR]}, "
+            + "           measures.[Customer Count])'"
+            + " select {measures.agg, measures.[Customer Count]} on 0,  "
+            + " [Product].[All Products].children on 1 "
+            + "from [2CountDistincts] ";
+        testContext.assertQueryReturns(
+            queryCAORRollup,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[agg]}\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "Row #0: 2,243\n"
+            + "Row #0: 3,485\n"
+            + "Row #1: 3,711\n"
+            + "Row #1: 5,525\n"
+            + "Row #2: 2,957\n"
+            + "Row #2: 4,468\n");
+
+        // [Customer Count] should override context
+        testContext.assertQueryReturns(
+            "with member Store.agg as "
+            + "'aggregate({[Store].[USA].[CA],[Store].[USA].[OR]}, "
+            + "           measures.[Customer Count])'"
+            + " select {measures.[Store Count], measures.[Customer Count]} on 0,  "
+            + " [Store].agg on 1 "
+            + "from [2CountDistincts] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Count]}\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[agg]}\n"
+            + "Row #0: 3,753\n"
+            + "Row #0: 3,753\n");
+        // aggregate should pick up measure in context
+        testContext.assertQueryReturns(
+            "with member Store.agg as "
+            + "'aggregate({[Store].[USA].[CA],[Store].[USA].[OR]})'"
+            + " select {measures.[Store Count], measures.[Customer Count]} on 0,  "
+            + " [Store].agg on 1 "
+            + "from [2CountDistincts] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Count]}\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[agg]}\n"
+            + "Row #0: 6\n"
+            + "Row #0: 3,753\n");
+    }
+
+    public void testContextSetCorrectlyWith2ParamAggregate() {
+        // Aggregate with a second parameter may change context.  Verify
+        // the evaluator is restored.   The query below would return
+        // the [Unit Sales] value instead of [Store Sales] if context was
+        // not restored.
+        assertQueryReturns(
+            "with \n"
+            + "member Store.cond as 'iif( \n"
+            + "aggregate({[Store].[All Stores].[USA]}, measures.[unit sales])\n"
+            + " > 70000, (Store.[All Stores], measures.currentMember), 0)'\n"
+            + "select Store.cond on 0 from sales\n"
+            + "where measures.[store sales]\n",
+            "Axis #0:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #1:\n"
+            + "{[Store].[cond]}\n"
+            + "Row #0: 565,238.13\n");
     }
 
     public void testAggregateDistinctCountInDimensionFilter() {
