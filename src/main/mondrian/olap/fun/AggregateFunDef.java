@@ -1,21 +1,23 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
 import mondrian.calc.impl.*;
+import mondrian.mdx.MemberExpr;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.Role.RollupPolicy;
 import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.RolapEvaluator;
+
+import org.apache.log4j.Logger;
 
 import org.eigenbase.util.property.IntegerProperty;
 
@@ -31,7 +33,8 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
 
     private static final String TIMING_NAME =
         AggregateFunDef.class.getSimpleName();
-
+    private static final Logger LOGGER =
+        Logger.getLogger(AggregateFunDef.class);
     static final ReflectiveMultiResolver resolver =
         new ReflectiveMultiResolver(
             "Aggregate", "Aggregate(<Set>[, <Numeric Expression>])",
@@ -48,31 +51,61 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
         super(dummyFunDef);
     }
 
+    private Member getMember(Exp exp) {
+        if (exp instanceof MemberExpr) {
+            Member m = ((MemberExpr)exp).getMember();
+            if (m.isMeasure() && !m.isCalculated()) {
+                return m;
+            }
+        }
+        // Since the expression is not a base measure, we won't
+        // attempt to determine the aggregator and will simply sum.
+        LOGGER.warn(
+            "Unable to determine aggregator for non-base measures "
+            + "in 2nd parameter of Aggregate(), summing: " + exp.toString());
+        return null;
+    }
+
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc = compiler.compileList(call.getArg(0));
         final Calc calc =
             call.getArgCount() > 1
-            ? compiler.compileScalar(call.getArg(1), true)
-            : new ValueCalc(call);
-        return new AggregateCalc(call, listCalc, calc);
+                ? compiler.compileScalar(call.getArg(1), true)
+                : new ValueCalc(call);
+        final Member member =
+            call.getArgCount() > 1 ? getMember(call.getArg(1)) : null;
+        return new AggregateCalc(call, listCalc, calc, member);
     }
 
     public static class AggregateCalc extends GenericCalc {
         private final ListCalc listCalc;
         private final Calc calc;
+        private final Member member;
 
-        public AggregateCalc(Exp exp, ListCalc listCalc, Calc calc) {
+        public AggregateCalc(
+            Exp exp, ListCalc listCalc, Calc calc, Member member)
+        {
             super(exp, new Calc[]{listCalc, calc});
             this.listCalc = listCalc;
             this.calc = calc;
+            this.member = member;
+        }
+
+        public AggregateCalc(Exp exp, ListCalc listCalc, Calc calc) {
+            this(exp, listCalc, calc, null);
         }
 
         public Object evaluate(Evaluator evaluator) {
             evaluator.getTiming().markStart(TIMING_NAME);
+            final int savepoint = evaluator.savepoint();
             try {
                 TupleList list = evaluateCurrentList(listCalc, evaluator);
+                if (member != null) {
+                    evaluator.setContext(member);
+                }
                 return aggregate(calc, evaluator, list);
             } finally {
+                evaluator.restore(savepoint);
                 evaluator.getTiming().markEnd(TIMING_NAME);
             }
         }
