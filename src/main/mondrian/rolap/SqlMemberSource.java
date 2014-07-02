@@ -1101,7 +1101,7 @@ public class SqlMemberSource
                 && childLevel.getParentAttribute() != null
                 && childLevel.getClosure() != null
                     ? fullLayout.levelLayoutMap.get(
-                        childLevel.getClosure().closedPeerLevel)
+                        childLevel.getClosure().closedPeerLevel.getChildLevel())
                     : fullLayout.levelLayoutMap.get(
                         childLevel);
             assert layout != null
@@ -1432,7 +1432,8 @@ public class SqlMemberSource
         RolapCubeLevel level = member.getLevel();
 
         final RolapClosure closure = level.getClosure();
-        if (level.isParentChild() && closure != null) {
+        boolean haveClosure = level.isParentChild() && closure != null;
+        if (haveClosure) {
             level =
                 Util.first(
                     (RolapCubeLevel) closure.closedPeerLevel,
@@ -1441,10 +1442,10 @@ public class SqlMemberSource
 
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
 
+        RolapAttribute attribute =
+            haveClosure ? level.getAttribute() : level.getParentAttribute();
         for (Pair<RolapSchema.PhysColumn, Comparable> pair
-            : Pair.iterate(
-                level.getParentAttribute().getKeyList(),
-                member.getKeyAsList()))
+            : Pair.iterate(attribute.getKeyList(), member.getKeyAsList()))
         {
             RolapSchema.PhysColumn parentKey = pair.left;
             final Comparable keyVal = pair.right;
@@ -1465,8 +1466,10 @@ public class SqlMemberSource
                 closure.distanceColumn.toSql() + " = 1");
         }
 
+        RolapCubeLevel cubeLevel =
+            haveClosure ? level.getChildLevel() : level;
         return projectProperties(
-            layoutBuilder, queryBuilder, level,
+            layoutBuilder, queryBuilder, cubeLevel,
             member.getLevel().attribute.getProperties(),
             Util.<RolapSchema.PhysColumn>identityFunctor());
     }

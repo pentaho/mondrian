@@ -108,7 +108,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 RolapCubeLevel closedPeerCubeLevel =
                     cubeDimension
                         .getHierarchyList().get(0)
-                        .getLevelList().get(2);
+                        .getLevelList().get(1);
 
                 closure =
                     new RolapClosure(

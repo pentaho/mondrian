@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2013 Pentaho
+// Copyright (C) 2006-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -438,14 +438,6 @@ public class Bug {
      * SqlTupleReader doesn't use aggregate tables in lagunitas
      */
     public static final boolean BugMondrian1372Fixed = Enable;
-
-    /**
-     * Whether
-     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1502">bug MONDRIAN-1502,
-     * Parent-child hierarchies don't use closure tables in lagunitas</a> is
-     * fixed.
-     */
-    public static final boolean BugMondrian1502Fixed = false;
 }
 
 // End Bug.java

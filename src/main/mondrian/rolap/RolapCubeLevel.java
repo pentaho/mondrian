@@ -77,7 +77,7 @@ public class RolapCubeLevel extends RolapLevel {
         }
         attribute = level.getAttribute();
         closedPeerCubeLevel =
-            closure == null || !Bug.BugMondrian1502Fixed
+            closure == null
                 ? null
                 : (RolapCubeLevel) closure.closedPeerLevel;
 
