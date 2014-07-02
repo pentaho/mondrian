@@ -5,12 +5,11 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 30 August, 2001
 */
-
 package mondrian.rolap.agg;
 
 import mondrian.olap.CacheControl;
@@ -378,9 +377,19 @@ public class AggregationManager extends RolapAggregationManager {
                 // the agg stars levels, or if the agg star is not
                 // fully collapsed.
                 rollup[0] = !aggStar.isFullyCollapsed()
+                    || aggStar.hasIgnoredColumns()
                     || (levelBitKey.isEmpty()
                     || !aggStar.getLevelBitKey().equals(levelBitKey));
                 return aggStar;
+            } else if (aggStar.hasIgnoredColumns()) {
+                // we cannot safely pull a distinct count from an agg
+                // table if ignored columns are present since granularity
+                // may not be at the level of the dc measure
+                LOGGER.info(
+                    aggStar.getFactTable().getName()
+                    + " cannot be used for distinct-count measures since it has"
+                    + " unused or ignored columns.");
+                continue;
             }
 
             // If there are distinct measures, we can only rollup in limited

@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
@@ -757,6 +756,8 @@ abstract class Recognizer {
                     dbFactTable.getName(),
                     aggColumn.getName());
                 unusedColumnMsgs.put(aggColumn.getName(), msg);
+                // since the column has no usage it will be ignored
+                makeIgnore(aggColumn);
             }
         }
         for (String msg : unusedColumnMsgs.values()) {

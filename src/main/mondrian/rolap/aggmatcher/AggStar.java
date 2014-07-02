@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
@@ -55,6 +54,7 @@ import javax.sql.DataSource;
  */
 public class AggStar {
     private static final Logger LOGGER = Logger.getLogger(AggStar.class);
+    private boolean hasIgnoredColumns;
 
     static Logger getLogger() {
         return LOGGER;
@@ -110,6 +110,8 @@ public class AggStar {
             JdbcSchema.Table.Column.Usage usage = it.next();
             aggStarFactTable.loadLevel(usage);
         }
+        aggStar.hasIgnoredColumns =
+            dbTable.getColumnUsages(UsageType.IGNORE).hasNext();
 
         // 5. for each distinct-count measure, populate a list of the levels
         //    which it is OK to roll up
@@ -449,6 +451,10 @@ public class AggStar {
 
     private static final Logger JOIN_CONDITION_LOGGER =
             Logger.getLogger(AggStar.Table.JoinCondition.class);
+
+    public boolean hasIgnoredColumns() {
+        return hasIgnoredColumns;
+    }
 
     /**
      * Base Table class for the FactTable and DimTable classes.
