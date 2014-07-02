@@ -222,7 +222,7 @@
       </row>
       <row>
         <_x005b_Employee_x005d_._x005b_Employees_x005d_._x005b_Employee_x0020_Id_x005d_._x005b_MEMBER_CAPTION_x005d_>Sheri Nowmer</_x005b_Employee_x005d_._x005b_Employees_x005d_._x005b_Employee_x0020_Id_x005d_._x005b_MEMBER_CAPTION_x005d_>
-        <_x005b_Measures_x005d_._x005b_Org_x0020_Salary_x005d_ xsi:type="xsd:double">39431.67120000001</_x005b_Measures_x005d_._x005b_Org_x0020_Salary_x005d_>
+        <_x005b_Measures_x005d_._x005b_Org_x0020_Salary_x005d_ xsi:type="xsd:double">39431.6712</_x005b_Measures_x005d_._x005b_Org_x0020_Salary_x005d_>
       </row>
     </root>
   </xmla:return>
@@ -518,7 +518,7 @@
           <FormatString>Currency</FormatString>
         </Cell>
         <Cell CellOrdinal="1">
-          <Value xsi:type="xsd:double">39431.67120000001</Value>
+          <Value xsi:type="xsd:double">39431.6712</Value>
           <FmtValue>$39,431.67</FmtValue>
           <FormatString>Currency</FormatString>
         </Cell>

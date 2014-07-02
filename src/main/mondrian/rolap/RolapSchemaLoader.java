@@ -1763,6 +1763,15 @@ public class RolapSchemaLoader {
                         measureGroup,
                         dimension,
                         (MondrianDef.ForeignKeyLink) xmlDimensionLink);
+                    RolapCubeDimension closedDimension =
+                        findClosedPeerDimension(dimension);
+                    if (closedDimension != null) {
+                        addForeignKeyLink(
+                            fact,
+                            measureGroup,
+                            closedDimension,
+                            (MondrianDef.ForeignKeyLink) xmlDimensionLink);
+                    }
                 } else if (xmlDimensionLink
                     instanceof MondrianDef.FactLink)
                 {
@@ -1935,6 +1944,19 @@ public class RolapSchemaLoader {
         }
 
         return cube;
+    }
+
+    private RolapCubeDimension findClosedPeerDimension(
+        RolapCubeDimension dimension)
+    {
+        for (RolapCubeHierarchy hierarchy : dimension.getHierarchyList()) {
+            for (RolapCubeLevel level : hierarchy.getLevelList()) {
+                if (level.hasClosedPeer()) {
+                    return level.getClosedPeer().getDimension();
+                }
+            }
+        }
+        return null;
     }
 
     Larders.LarderBuilder createLarder(
@@ -2124,7 +2146,12 @@ public class RolapSchemaLoader {
     {
         final RolapCubeLevel peer = level.getClosedPeer();
         if (peer != null) {
-            registerLevel(measureGroup, peer);
+            RolapAttribute attribute = peer.getAttribute();
+            registerAttribute(
+                measureGroup,
+                peer.getDimension(),
+                attribute,
+                dimensionPaths.get(Pair.of(measureGroup, peer.getDimension())));
         }
     }
 
@@ -3879,7 +3906,7 @@ public class RolapSchemaLoader {
                     null,
                     Integer.MIN_VALUE);
         }
-        return new RolapClosure(closureLevel2, distanceExpr);
+        return new RolapClosure(closureLevel1, distanceExpr);
     }
 
     private void copyAnnotations(
