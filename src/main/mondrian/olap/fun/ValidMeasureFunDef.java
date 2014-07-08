@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -14,6 +14,7 @@ import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.TypeUtil;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 
 import java.util.*;
@@ -124,6 +125,14 @@ public class ValidMeasureFunDef extends FunDefBase
         }
 
         private RolapMeasureGroup getMeasureGroup(Member member) {
+            if (!RolapStoredMeasure.class
+                .isAssignableFrom(member.getClass()))
+            {
+                // Cannot use calculated members in ValidMeasure.
+                throw MondrianResource.instance()
+                    .ValidMeasureUsingCalculatedMember
+                    .ex(member.getUniqueName());
+            }
             return ((RolapStoredMeasure) member).getMeasureGroup();
         }
 

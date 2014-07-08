@@ -292,6 +292,9 @@
     <text>The RETURN clause can only contain dimensions, hierarchies, levels and measures. The expression ''{0}'' is of type ''{1}''.</text>
 </exception>
 
+<exception id="350670" name="ValidMeasureUsingCalculatedMember">
+    <text>The function ValidMeasure cannot be used with the measure ''{0}'' because it is a calculated member. The function should be used to wrap the base measure in the source cube.</text>
+</exception>
 <!-- ====================================================================== -->
 <!-- Connectivity errors -->
 
