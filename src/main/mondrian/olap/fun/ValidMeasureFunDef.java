@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2013 Pentaho and others
+// Copyright (C) 2002-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -14,6 +14,7 @@ import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.TypeUtil;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 
 import java.util.*;
@@ -85,8 +86,18 @@ public class ValidMeasureFunDef extends FunDefBase
                 }
             }
 
-            baseCube = ((RolapVirtualCubeMeasure)memberList
-                .get(measurePosition)).getCube();
+            final Member vcMeasure = memberList.get(measurePosition);
+
+            if (!RolapVirtualCubeMeasure.class
+                .isAssignableFrom(vcMeasure.getClass()))
+            {
+                // Cannot use calculated members in ValidMeasure.
+                throw MondrianResource.instance()
+                    .ValidMeasureUsingCalculatedMember
+                    .ex(vcMeasure.getUniqueName());
+            }
+
+            baseCube = ((RolapVirtualCubeMeasure)vcMeasure).getCube();
 
             List<Dimension> vMinusBDimensions =
                 getDimensionsToForceToAllLevel(
@@ -119,8 +130,7 @@ public class ValidMeasureFunDef extends FunDefBase
             List<Member> memberList;
             if (calc.isWrapperFor(MemberCalc.class)) {
                 memberList = Collections.singletonList(
-                    calc.unwrap(MemberCalc.class).evaluateMember(evaluator)
-                );
+                    calc.unwrap(MemberCalc.class).evaluateMember(evaluator));
             } else {
                 final Member[] tupleMembers =
                     calc.unwrap((TupleCalc.class)).evaluateTuple(evaluator);
