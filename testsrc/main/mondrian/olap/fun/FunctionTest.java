@@ -786,6 +786,31 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #0: 280,226.21\n");
     }
 
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-2109">MONDRIAN-2109</a>
+     *
+     * <p>We can't allow calculated members in ValidMeasure so a proper message
+     * must be returned.
+     */
+    public void testValidMeasureCalculatedMemberMeasure() {
+        // Check for failure.
+        assertQueryThrows(
+            "with member measures.calc as 'measures.[Warehouse sales]' \n"
+            + "member measures.vm as 'ValidMeasure(measures.calc)' \n"
+            + "select from [warehouse and sales]\n"
+            + "where (measures.vm ,gender.f) \n",
+            "The function ValidMeasure cannot be used with the measure '[Measures].[calc]' because it is a calculated member.");
+        // Check the working version
+        assertQueryReturns(
+            "with \n"
+            + "member measures.vm as 'ValidMeasure(measures.[warehouse sales])' \n"
+            + "select from [warehouse and sales] where (measures.vm, gender.f) \n",
+            "Axis #0:\n"
+            + "{[Measures].[vm], [Gender].[F]}\n"
+            + "196,770.888");
+    }
+
     public void testAncestor() {
         Member member =
             executeSingletonAxis(
