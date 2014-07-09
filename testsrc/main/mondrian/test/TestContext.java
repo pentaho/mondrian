@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 
@@ -25,7 +25,6 @@ import mondrian.rolap.*;
 import mondrian.spi.*;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 import mondrian.util.DelegatingInvocationHandler;
-
 import junit.framework.*;
 import junit.framework.Test;
 
@@ -42,6 +41,7 @@ import java.net.URL;
 import java.sql.*;
 import java.util.*;
 import java.util.regex.Pattern;
+
 import javax.sql.DataSource;
 
 /**
@@ -731,10 +731,7 @@ public class TestContext {
     public void assertExprThrows(String expression, String pattern) {
         Throwable throwable = null;
         try {
-            String cubeName = getDefaultCubeName();
-            if (cubeName.indexOf(' ') >= 0) {
-                cubeName = Util.quoteMdxIdentifier(cubeName);
-            }
+            String cubeName = getDefaultCubeMdxName();
             expression = Util.replace(expression, "'", "''");
             Result result = executeQuery(
                 "with member [Measures].[Foo] as '"
@@ -765,6 +762,17 @@ public class TestContext {
     }
 
     /**
+     * @return the name of the default cube, quoted if needed.
+     */
+    protected String getDefaultCubeMdxName() {
+        String cubeName = getDefaultCubeName();
+        if (cubeName.indexOf(' ') >= 0 && !cubeName.startsWith("[")) {
+            cubeName = Util.quoteMdxIdentifier(cubeName);
+        }
+        return cubeName;
+    }
+
+    /**
      * Executes the expression in the context of the cube indicated by
      * <code>cubeName</code>, and returns the result as a Cell.
      *
@@ -778,10 +786,7 @@ public class TestContext {
     }
 
     private String generateExpression(String expression) {
-        String cubeName = getDefaultCubeName();
-        if (cubeName.indexOf(' ') >= 0) {
-            cubeName = Util.quoteMdxIdentifier(cubeName);
-        }
+        String cubeName = getDefaultCubeMdxName();
         return
             "with member [Measures].[Foo] as "
             + Util.singleQuoteString(expression)
@@ -958,10 +963,7 @@ public class TestContext {
      * @return String form of the program
      */
     public String compileExpression(String expression, final boolean scalar) {
-        String cubeName = getDefaultCubeName();
-        if (cubeName.indexOf(' ') >= 0) {
-            cubeName = Util.quoteMdxIdentifier(cubeName);
-        }
+        String cubeName = getDefaultCubeMdxName();
         final String queryString;
         if (scalar) {
             queryString =
@@ -999,7 +1001,7 @@ public class TestContext {
      *   member. Throws otherwise.
      */
     public Member executeSingletonAxis(String expression) {
-        final String cubeName = getDefaultCubeName();
+        final String cubeName = getDefaultCubeMdxName();
         Result result = executeQuery(
             "select {" + expression + "} on columns from " + cubeName);
         Axis axis = result.getAxes()[0];
@@ -1030,7 +1032,7 @@ public class TestContext {
     public Axis executeAxis(String expression) {
         Result result = executeQuery(
             "select {" + expression
-            + "} on columns from " + getDefaultCubeName());
+            + "} on columns from " + getDefaultCubeMdxName());
         return result.getAxes()[0];
     }
 
@@ -1046,7 +1048,7 @@ public class TestContext {
         Throwable throwable = null;
         Connection connection = getConnection();
         try {
-            final String cubeName = getDefaultCubeName();
+            final String cubeName = getDefaultCubeMdxName();
             final String queryString =
                     "select {" + expression + "} on columns from " + cubeName;
             Query query = connection.parseQuery(queryString);
@@ -1992,10 +1994,7 @@ public class TestContext {
     public boolean databaseIsValid() {
         try {
             Connection connection = getConnection();
-            String cubeName = getDefaultCubeName();
-            if (cubeName.indexOf(' ') >= 0) {
-                cubeName = Util.quoteMdxIdentifier(cubeName);
-            }
+            String cubeName = getDefaultCubeMdxName();
             Query query = connection.parseQuery("select from " + cubeName);
             Result result = connection.execute(query);
             Util.discard(result);
