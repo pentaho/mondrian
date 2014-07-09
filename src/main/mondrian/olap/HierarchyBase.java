@@ -161,7 +161,7 @@ public abstract class HierarchyBase
         Id.Segment s,
         MatchType matchType)
     {
-        OlapElement oe;
+        OlapElement oe = null;
         if (s instanceof Id.NameSegment) {
             Id.NameSegment nameSegment = (Id.NameSegment) s;
             oe = Util.lookupHierarchyLevel(this, nameSegment.getName());
@@ -169,10 +169,18 @@ public abstract class HierarchyBase
                 oe = Util.lookupHierarchyRootMember(
                     schemaReader, this, nameSegment, matchType);
             }
-        } else {
+        } else if (s instanceof Id.KeySegment) {
+            final Id.KeySegment keySegment = (Id.KeySegment) s;
+            if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+                // In SSAS a search on the hierarchy can get keys from any level
+                // giving precedence to those closer to the root
+                return lookupKeyFromHierarchy(
+                    schemaReader,
+                    keySegment,
+                    matchType);
+            }
             // Key segment searches bottom level by default. For example,
             // [Products].&[1] is shorthand for [Products].[Product Name].&[1].
-            final Id.KeySegment keySegment = (Id.KeySegment) s;
             oe = levels[levels.length - 1]
                 .lookupChild(schemaReader, keySegment, matchType);
         }
@@ -192,6 +200,30 @@ public abstract class HierarchyBase
             getLogger().debug(buf.toString());
         }
         return oe;
+    }
+
+    /**
+     * Ssas-compatible lookup from hierarchy.
+     * <br>
+     * Tries every level from closest to farthest from root, bypassing
+     * trivially incompatible keys.
+     */
+    private OlapElement lookupKeyFromHierarchy(
+        final SchemaReader schemaReader,
+        final Id.KeySegment key,
+        final MatchType matchType)
+    {
+        final int startLevel = hasAll ? 1 : 0;
+        OlapElement member = null;
+        for (int i = startLevel; i < levels.length; i++) {
+            if (Util.isKeyCompatible(key, levels[i])) {
+                member = levels[i].lookupChild(schemaReader, key, matchType);
+                if (member != null) {
+                    return member;
+                }
+            }
+        }
+        return null;
     }
 
     public String getAllMemberName() {

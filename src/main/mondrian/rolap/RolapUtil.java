@@ -23,7 +23,6 @@ import mondrian.spi.Dialect;
 import mondrian.util.ClassResolver;
 
 import org.apache.log4j.Logger;
-
 import org.eigenbase.util.property.StringProperty;
 
 import java.io.*;
@@ -449,10 +448,14 @@ public class RolapUtil {
         Id.Segment searchName,
         MatchType matchType)
     {
-        if (!(searchName instanceof Id.NameSegment)) {
+        if (!matchType.isExact() && !(searchName instanceof Id.NameSegment)) {
+            // no support for other match types with keys
             return null;
         }
-        final Id.NameSegment nameSegment = (Id.NameSegment) searchName;
+        final Id.NameSegment nameSegment =
+            (searchName instanceof Id.NameSegment)
+                ? (Id.NameSegment) searchName
+                : searchName.getKeyParts().get(0);
         switch (matchType) {
         case FIRST:
             return members.get(0);
@@ -478,6 +481,8 @@ public class RolapUtil {
                 {
                     return member;
                 }
+                // rest is only valid if we're sure key==name
+                continue;
             }
             if (matchType.isExact()) {
                 rc = Util.compareName(member.getName(), nameSegment.name);
@@ -705,6 +710,7 @@ public class RolapUtil {
             }
         }
     }
+
 }
 
 // End RolapUtil.java

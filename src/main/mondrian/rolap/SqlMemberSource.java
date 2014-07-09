@@ -5,14 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.calc.TupleList;
 import mondrian.olap.*;
-import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
@@ -101,7 +100,7 @@ class SqlMemberSource
         for (RolapLevel x = level;; x = (RolapLevel) x.getParentLevel()) {
             columnList.add(x.getKeyExp());
             datatypeList.add(x.getDatatype());
-            if (x.isUnique()) {
+            if (x.isUnique() || x.getParentLevel() == null) {
                 break;
             }
         }

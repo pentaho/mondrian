@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
 
@@ -564,6 +564,9 @@ public class RolapLevel extends LevelBase {
             }
             final List<MondrianDef.Expression> keyExps = getInheritedKeyExps();
             if (keyExps.size() != keyValues.size()) {
+                if (isSilentKeyMismatchError()) {
+                    return null;
+                }
                 throw Util.newError(
                     "Wrong number of values in member key; "
                     + keySegment + " has " + keyValues.size()
@@ -597,6 +600,35 @@ public class RolapLevel extends LevelBase {
         return null;
     }
 
+    /**
+     * Checks if the number of key elements and datatypes are compatible.
+     * @param key member key
+     * @return true if the given key is compatible with this level
+     */
+    public boolean isKeyCompatible(Id.KeySegment key) {
+        List<Dialect.Datatype>
+            dataTypes = getKeyDataTypes();
+        // key length
+        if (key.getKeyParts().size() != dataTypes.size()) {
+            return false;
+        }
+        // key element types
+        for (int i = 0; i < dataTypes.size(); i++) {
+            if (dataTypes.get(i).isNumeric()) {
+                try {
+                    String value = key.getKeyParts().get(i).getName();
+                    // allow null key for all types
+                    if (!RolapUtil.mdxNullLiteral().equalsIgnoreCase(value)) {
+                        Double.valueOf(key.getKeyParts().get(i).getName());
+                    }
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     private List<MondrianDef.Expression> getInheritedKeyExps() {
         final List<MondrianDef.Expression> list =
             new ArrayList<MondrianDef.Expression>();
@@ -605,11 +637,32 @@ public class RolapLevel extends LevelBase {
             if (keyExp1 != null) {
                 list.add(keyExp1);
             }
-            if (x.isUnique()) {
+            if (x.isUnique() || x.getParentLevel() == null) {
                 break;
             }
         }
         return list;
+    }
+
+    private List<Dialect.Datatype> getKeyDataTypes() {
+        List<Dialect.Datatype> result = new ArrayList<Dialect.Datatype>();
+        for (RolapLevel x = this;; x = (RolapLevel) x.getParentLevel()) {
+            result.add(x.getDatatype());
+            if (x.isUnique() || x.getParentLevel() == null) {
+                break;
+            }
+        }
+        return result;
+    }
+
+    private boolean isSilentKeyMismatchError() {
+        // can't be sure, so if there is chance error has to be ignored
+        // need to omit exception
+        return MondrianProperties.instance().SsasCompatibleNaming.get()
+            && (MondrianProperties.instance()
+                    .IgnoreInvalidMembersDuringQuery.get()
+                || MondrianProperties.instance()
+                    .IgnoreInvalidMembers.get());
     }
 
     /**

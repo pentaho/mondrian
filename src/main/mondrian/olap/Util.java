@@ -772,7 +772,7 @@ public class Util extends XOMUtil {
                 }
             } else {
                 name = null;
-                child = schemaReader.getElementChild(parent, name, matchType);
+                child = null;
             }
             // if we're doing a non-exact match, and we find a non-exact
             // match, then for an after match, return the first child
@@ -1235,6 +1235,14 @@ public class Util extends XOMUtil {
             m = children.get(0);
         }
         return m;
+    }
+
+    /**
+     * Checks if the number of key elements and datatypes are valid for level.
+     */
+    public static boolean isKeyCompatible(Id.KeySegment key, Level level) {
+        RolapLevel rolapLevel = (RolapLevel) level;
+        return rolapLevel.isKeyCompatible(key);
     }
 
     /**

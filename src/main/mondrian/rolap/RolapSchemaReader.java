@@ -492,6 +492,14 @@ public class RolapSchemaReader
             {
                 constraint = sqlConstraintFactory.getChildByNameConstraint(
                     (RolapMember) parent, (Id.NameSegment) childName);
+            } else if (childName instanceof Id.KeySegment
+                && parent.getLevel().getChildLevel() != null
+                && MondrianProperties.instance().SsasCompatibleNaming.get())
+            {
+                return (Member) parent.getLevel().getChildLevel().lookupChild(
+                    this,
+                    childName,
+                    matchType);
             } else {
                 constraint =
                     sqlConstraintFactory.getMemberChildrenConstraint(null);
