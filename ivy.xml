@@ -69,11 +69,11 @@
                     m:classifier="sources"/>
         </dependency>
         <dependency org="org.olap4j" name="olap4j-tck" rev="${dependency.olap4j.revision}"
-                conf="test->default" changing="true">
+                conf="test->default" changing="true" transitive="false">
             <artifact name="olap4j-tck"/>
         </dependency>
         <dependency org="org.olap4j" name="olap4j-xmla" rev="${dependency.olap4j.revision}"
-                conf="test->default" changing="true">
+                conf="test->default" changing="true" transitive="false">
             <artifact name="olap4j-xmla"/>
         </dependency>
         
