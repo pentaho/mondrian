@@ -6,11 +6,9 @@
 *
 * Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.test;
 
 import mondrian.olap.*;
-import mondrian.util.Bug;
 
 import java.sql.SQLException;
 
@@ -165,7 +163,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "      <Level name=\"Country\" column=\"country\" uniqueMembers=\"true\"/>\n"
             + "      <Level name=\"State Province\" column=\"state_province\" uniqueMembers=\"true\"/>\n"
             + "      <Level name=\"City\" column=\"city\" uniqueMembers=\"false\"/>\n"
-            + "      <Level name=\"Name\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Name\" nameColumn=\"fullname\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
             + "    </Hierarchy>\n"
             /*
             + "    <Hierarchy name=\"Gender\" hasAll=\"true\" "
@@ -785,48 +783,48 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
     }
 
     public void testMemberAddressedByLevelAndKey() {
-        if (!MEMBER_NAMING_IMPL) {
-            return;
-        }
         // [dimension].[hierarchy].[level].&[key]
         // (Returns 31, 5368)
+        String timeByWeek = TestContext.hierarchyName("Time", "Time By Week");
         runQ(
-            "select {[Time].[Time By Week].[Week].[31]} on 0\n"
+            "select {" + timeByWeek + ".[Week].&[31]} on 0\n"
             + "from [Warehouse and Sales]");
     }
 
     public void testMemberAddressedByCompoundKey() {
-        if (!MEMBER_NAMING_IMPL) {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
             return;
         }
         // compound key
         // SSAS2005 returns 1 row
-        runQ(
-            "select [Time].[Time By Week].[Year2].[1998].&[30]&[1998] on 0\n"
-            + "from [Warehouse and Sales]");
+        String timeByWeek = TestContext.hierarchyName("Time", "Time By Week");
+        assertAxisReturns(
+            timeByWeek + ".[Year2].[1998].&[30]&[1998]",
+            timeByWeek + ".[1998].[30]");
     }
 
     public void testMemberAddressedByPartialCompoundKey() {
-        if (!MEMBER_NAMING_IMPL) {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
             return;
         }
+        propSaver.set(
+            MondrianProperties.instance().IgnoreInvalidMembersDuringQuery,
+            true);
         // compound key, partially specified
         // SSAS2005 returns 0 rows but no error
-        runQ(
-            "select [Time].[Time By Week].[Year2].[1998].&[30] on 0\n"
-            + "from [Warehouse and Sales]");
+        assertAxisReturns(
+            "[Time].[Time By Week].[Year2].[1998].&[30]",
+            "");
     }
 
     public void testMemberAddressedByNonUniqueName() {
-        if (!MEMBER_NAMING_IMPL) {
-            return;
-        }
         // address member by non-unique name
         // [dimension].[hierarchy].[level].[name]
         // SSAS2005 returns first member that matches, 1997.January
-        runQ(
-            "select [Time].[Time2].[Month].[January] on 0\n"
-            + "from [Warehouse and Sales]");
+        String time2 = TestContext.hierarchyName("Time", "Time2");
+        assertAxisReturns(
+            time2 + ".[Month].[January]",
+            time2 + ".[1997].[Q1].[January]");
     }
 
     public void testMemberAddressedByLevelAndCompoundKey() {
@@ -841,15 +839,19 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
     }
 
     public void testMemberAddressedByLevelAndName() {
-        if (!MEMBER_NAMING_IMPL) {
-            return;
-        }
         // similarly
         // [dimension].[level].[member name]
-        runQ(
-            "with member [Measures].[Foo] as ' [Store].[Store City].[Month].[January].UniqueName '\n"
+        String time2 = TestContext.hierarchyName("Time", "Time2");
+        assertQueryReturns(
+            "with member [Measures].[Foo] as ' "
+            + time2 + ".[Month].[January].UniqueName '\n"
             + "select [Measures].[Foo] on 0\n"
-            + "from [Warehouse and Sales]");
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Foo]}\n"
+            + "Row #0: " + time2 + ".[1997].[Q1].[January]\n");
     }
 
     public void testFoo31() {
@@ -1362,11 +1364,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
             return;
         }
-        getTestContext()
-            .withCube("[Warehouse and Sales]")
-            .assertAxisReturns(
-                "[Store].[Stores].[Store City].&[San Francisco]&CA.Parent",
-                "[Store].[Stores].[USA].[CA]");
+        assertAxisReturns(
+            "[Store].[Stores].[Store City].&[San Francisco]&CA.Parent",
+            "[Store].[Stores].[USA].[CA]");
     }
 
     public void testCompoundKeyNull() {
@@ -1785,6 +1785,58 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Time].[Time2].[Foo]}\n"
             + "Row #0: 332,621\n");
+    }
+
+    /**
+     * Testcase for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1991">MONDRIAN-1991</a>
+     * <br>
+     * Basic use cases.
+     */
+    public void testKeyLookupSsas() {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            return;
+        }
+        assertAxisReturns(
+            "[Customer].&[USA].&[CA]",
+            "[Customer].[USA].[CA]");
+        assertAxisReturns(
+            "[Customer].&[USA]",
+            "[Customer].[USA]");
+        assertAxisReturns(
+            "[Customer].&[USA].[CA]",
+            "[Customer].[USA].[CA]");
+        assertAxisReturns(
+            "[Customer].[USA].&[CA]",
+            "[Customer].[USA].[CA]");
+    }
+
+    /**
+     * Testcase for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1991">MONDRIAN-1991</a>
+     * <br>
+     * SSAS lenient key lookup from hierarchy
+     */
+    public void testKeyLookupFromHierarchy() {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            return;
+        }
+        // bottom level
+        assertAxisReturns(
+            "[Customer].&[371]",
+            "[Customer].[USA].[CA].[Berkeley].[Judith Frazier]");
+        // top level
+        assertAxisReturns(
+            "[Customer].&[USA]",
+            "[Customer].[USA]");
+        // mid level
+        assertAxisReturns(
+            "[Customer].&[CA]",
+            "[Customer].[USA].[CA]");
+        // mid level, compound key
+        assertAxisReturns(
+            "[Customer].&[Berkeley]&[CA]",
+            "[Customer].[USA].[CA].[Berkeley]");
     }
 
     /**
