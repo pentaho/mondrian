@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2012 Pentaho and others
+// Copyright (C) 2012-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -21,20 +21,22 @@ public class ClosureSqlTest extends BatchTestCase {
             "select {Hierarchize([Employee].[Employees].Members)} on columns from [HR]";
         final String mySql =
             "select\n"
-            + "    `employee_closure`.`employee_id` as `c0`,\n"
-            + "    `employee`.`full_name` as `c1`\n"
+            + "    `employee_closure`.`supervisor_id` as `c0`,\n"
+            + "    `time_by_day`.`the_year` as `c1`,\n"
+            + "    sum(`salary`.`salary_paid`) as `m0`\n"
             + "from\n"
-            + "    `employee` as `employee`,\n"
-            + "    `employee_closure` as `employee_closure`\n"
+            + "    `salary` as `salary`,\n"
+            + "    `employee_closure` as `employee_closure`,\n"
+            + "    `time_by_day` as `time_by_day`\n"
             + "where\n"
-            + "    `employee_closure`.`employee_id` = `employee`.`employee_id`\n"
+            + "    `time_by_day`.`the_year` = 1997\n"
             + "and\n"
-            + "    `employee_closure`.`supervisor_id` = 42\n"
+            + "    `salary`.`employee_id` = `employee_closure`.`employee_id`\n"
             + "and\n"
-            + "    `employee_closure`.`distance` = 1\n"
+            + "    `salary`.`pay_date` = `time_by_day`.`the_date`\n"
             + "group by\n"
-            + "    `employee_closure`.`employee_id`,\n"
-            + "    `employee`.`full_name`";
+            + "    `employee_closure`.`supervisor_id`,\n"
+            + "    `time_by_day`.`the_year`";
         assertQuerySql(getTestContext(), mdx, mySql);
     }
 
