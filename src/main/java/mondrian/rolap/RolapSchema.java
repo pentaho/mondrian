@@ -12,6 +12,7 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.olap.Member;
+import mondrian.olap.Parameter;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
