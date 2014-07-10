@@ -254,7 +254,7 @@ mondrian/rolap/RolapCubeUsages.java"/>
     <pathelement path="${driver.classpath}"/>
   </path>
 
-  <target name="define-tasks"> <!-- depends="prepare" -->
+  <target name="define-tasks" depends="prepare">
     <taskdef name="xomgen" classname="org.eigenbase.xom.XOMGenTask">
       <classpath refid="project.classpath"/>
     </taskdef>
