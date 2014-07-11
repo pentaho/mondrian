@@ -6116,6 +6116,7 @@ public class RolapSchemaLoader {
                     lookup(cube.getSchemaReader(), cubeHierarchy);
                 if (member != null) {
                     setDefaultMember(cubeHierarchy, member);
+                    cubeHierarchy.setDefaultMemberExplicit(true);
                 } else {
                     ++failureCount;
                 }

@@ -36,6 +36,11 @@ public class RolapCubeHierarchy extends RolapHierarchy {
     RolapMember defaultMember;
 
     /**
+     * true if the default member was explicitly specified in the schema.
+     */
+    boolean defaultMemberExplicit = false;
+
+    /**
      * Creates a RolapCubeHierarchy.
      *
      * @param schemaLoader Schema loader
@@ -242,6 +247,14 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         if (member != null) {
             this.defaultMember = member;
         }
+    }
+
+    public boolean isDefaultMemberExplicit() {
+        return defaultMemberExplicit;
+    }
+
+    public void setDefaultMemberExplicit(boolean defaultMemberExplicit) {
+        this.defaultMemberExplicit = defaultMemberExplicit;
     }
 
     void setMemberReader(MemberReader memberReader) {
