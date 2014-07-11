@@ -17,7 +17,6 @@ import org.olap4j.*;
 import org.olap4j.mdx.*;
 import org.olap4j.metadata.*;
 import org.olap4j.metadata.Cube;
-import org.olap4j.metadata.Member;
 import org.olap4j.metadata.Schema;
 
 import java.sql.SQLException;
@@ -171,12 +170,12 @@ public class I18nTest extends FoodMartTestCase {
                 + "    <Locale locale='de-DE'/>\n"
                 + "  </Locales>\n"
                 + "  <Translations>\n"
-                + "    <Translation path='target/test-classes/mondrian/test/I18nTest_${locale}.properties'/>\n"
+                + "    <Translation path='../target/test-classes/mondrian/test/I18nTest_${locale}.properties'/>\n"
                 + "  </Translations>\n"
                 + "</Localization>\n")
             .assertErrorList().containsError(
                 "(?s).*Error reading resource file.*",
-                "<Translation path='target/test-classes/mondrian/test/I18nTest_${locale}.properties'/>");
+                "<Translation path='../target/test-classes/mondrian/test/I18nTest_${locale}.properties'/>");
     }
 
     /** Unit test for captions and descriptions loaded from resource file. */
@@ -191,7 +190,7 @@ public class I18nTest extends FoodMartTestCase {
                     + "    <Locale locale='fr-CA'/>\n"
                     + "  </Locales>\n"
                     + "  <Translations>\n"
-                    + "    <Translation path='target/test-classes/mondrian/test/I18nTest_${locale}.properties'/>\n"
+                    + "    <Translation path='../target/test-classes/mondrian/test/I18nTest_${locale}.properties'/>\n"
                     + "  </Translations>\n"
                     + "</Localization>\n")
                 .getOlap4jConnection();

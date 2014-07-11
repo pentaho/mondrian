@@ -4,7 +4,8 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
+// Copyright (C) 2002-2014 Pentaho
+// All Rights Reserved.
 */
 package mondrian.spi.impl;
 
@@ -18,18 +19,18 @@ import java.util.List;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the NuoDB database.
- * In order to use NuoDB with Pentaho Mondrian users can only use NuoDB
+ *
+ * <p>In order to use NuoDB with Pentaho Mondrian users can only use NuoDB
  * version 2.0.4 or newer.
  *
  * @author rbuck
  * @since Mar 20, 2014
  */
 public class NuoDbDialect extends JdbcDialectImpl {
-
     public static final JdbcDialectFactory FACTORY =
-            new JdbcDialectFactory(
-                    NuoDbDialect.class,
-                    DatabaseProduct.NUODB);
+        new JdbcDialectFactory(
+            NuoDbDialect.class,
+            DatabaseProduct.NUODB);
 
     /**
      * Creates a NuoDbDialect.
@@ -41,7 +42,9 @@ public class NuoDbDialect extends JdbcDialectImpl {
     }
 
     /**
-     * In order to generate a SQL statement to represent an inline dataset
+     * {@inheritDoc}
+     *
+     * <p>In order to generate a SQL statement to represent an inline dataset,
      * NuoDB requires that you use FROM DUAL.
      *
      * @param columnNames the list of column names
@@ -50,14 +53,20 @@ public class NuoDbDialect extends JdbcDialectImpl {
      * @return the generated SQL statement for an inline dataset
      */
     @Override
-    public String generateInline(List<String> columnNames, List<String> columnTypes, List<String[]> valueList) {
+    public String generateInline(
+        List<String> columnNames,
+        List<String> columnTypes,
+        List<String[]> valueList)
+    {
         return generateInlineGeneric(
-                columnNames, columnTypes, valueList,
-                " FROM DUAL", false);
+            columnNames, columnTypes, valueList,
+            " FROM DUAL", false);
     }
 
     /**
-     * NuoDB does not yet support ANSI SQL:2003 for DATE literals so we have
+     * {@inheritDoc}
+     *
+     * <p>NuoDB does not yet support ANSI SQL:2003 for DATE literals so we have
      * to cast dates using a function.
      *
      * @param buf   Buffer to append to
@@ -65,14 +74,21 @@ public class NuoDbDialect extends JdbcDialectImpl {
      * @param date  Value as date
      */
     @Override
-    protected void quoteDateLiteral(StringBuilder buf, String value, Date date) {
+    protected void quoteDateLiteral(
+        StringBuilder buf,
+        String value,
+        Date date)
+    {
         buf.append("DATE(");
         Util.singleQuoteString(value, buf);
         buf.append(")");
     }
 
     /**
-     * The NuoDB JDBC driver lists " " as the string to use for quoting, but we
+     * {@inheritDoc}
+     *
+     * <p>The NuoDB JDBC driver lists " " as the string to use for quoting,
+     * but we
      * know better. Ideally the quotation character ought to have been "`" but
      * if that is used and a generated query uses non quoted object names, not-
      * found exceptions will occur for the object. So we here fall back to using
@@ -84,8 +100,11 @@ public class NuoDbDialect extends JdbcDialectImpl {
      * @return the quotation character
      */
     @Override
-    protected String deduceIdentifierQuoteString(DatabaseMetaData databaseMetaData) {
-        String identifierQuoteString = super.deduceIdentifierQuoteString(databaseMetaData);
+    protected String deduceIdentifierQuoteString(
+        DatabaseMetaData databaseMetaData)
+    {
+        String identifierQuoteString =
+            super.deduceIdentifierQuoteString(databaseMetaData);
         if (" ".equals(identifierQuoteString)) {
             identifierQuoteString = "\"";
         }
@@ -94,4 +113,3 @@ public class NuoDbDialect extends JdbcDialectImpl {
 }
 
 // End NuoDbDialect.java
-

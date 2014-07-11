@@ -63,6 +63,7 @@ doCheck() {
     */mondrian/olap/MondrianProperties.java| \
     */mondrian/olap/Parser.java| \
     */mondrian/olap/ParserSym.java| \
+    */mondrian/server/MondrianServerVersion.java| \
     */mondrian/parser/ParseException.java| \
     */mondrian/parser/Token.java| \
     */mondrian/parser/TokenMgrError.java| \

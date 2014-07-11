@@ -36,7 +36,6 @@
   <import file="subfloor.xml" />
 
   <property name="java.dir" value="${src.dir}"/>
-  <property name="javatest.dir" value="${testsrc.dir}/main"/>
   <property name="etc.dir" value="${src.dir}/etc"/>
   <property name="lib.dir" value="lib"/>
   <property name="doc.dir" value="doc"/>
@@ -513,7 +512,7 @@ copy"/>
   </target>
 
   <target name="copy">
-    <copy file="src/main/resources/mondrian/rolap/aggmatcher/DefaultRules.xml"
+    <copy file="src/main/xom/mondrian/rolap/aggmatcher/DefaultRules.xml"
         todir="${classes.dir}"/>
     <copy file="VERSION.txt"
             todir="${classes.dir}"/>
@@ -528,7 +527,7 @@ OSGI-INF/**"/>
     </copy>
     <copy todir="${testclasses.dir}">
       <fileset
-          dir="${javatest.dir}"
+          dir="src/test/resources"
           includes="
 META-INF/**"/>
     </copy>
@@ -1208,7 +1207,7 @@ clean against JDK 1.6.">
          apparent workaround, to use an embedded <fileset> element, caused more
          problems than it solved. -->
     <javadoc
-        sourcepath="${java.dir}${ps}${javatest.dir}"
+        sourcepath="src/main/java${ps}src/test/java"
         maxmemory="1024m"
         classpathref="project.build.test.classpath"
         destdir="${javadoc.dir}"
