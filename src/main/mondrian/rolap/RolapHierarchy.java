@@ -193,6 +193,10 @@ public class RolapHierarchy extends HierarchyBase {
         return ((RolapDimension) dimension).schema;
     }
 
+    public boolean isDefaultMemberExplicit() {
+        throw new UnsupportedOperationException();
+    }
+
     public RolapMember getDefaultMember() {
         throw new UnsupportedOperationException();
     }

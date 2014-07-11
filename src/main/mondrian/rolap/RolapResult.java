@@ -781,6 +781,9 @@ public class RolapResult extends ResultBase {
                         measureMembers.add(mm);
                     }
                 } else {
+                    if (h.isDefaultMemberExplicit()) {
+                        continue;
+                    }
                     if (h.hasAll()) {
                         for (Member m : rootMembers) {
                             if (m.isAll()) {
