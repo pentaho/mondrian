@@ -211,6 +211,7 @@
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
       <version>5.1.31</version>
+      <!--<version>3.1.12</version>-->
       <scope>test</scope>
     </dependency>
 <!--
@@ -428,6 +429,45 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>properties-maven-plugin</artifactId>
+        <version>1.0-alpha-2</version>
+        <executions>
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>read-project-properties</goal>
+            </goals>
+            <configuration>
+              <files>
+                <file>mondrian.properties</file>
+                <file>build.properties</file>
+              </files>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.17</version>
+        <configuration>
+          <includes>
+            <include>mondrian/test/Main.java</include>
+          </includes>
+          <systemPropertyVariables>
+            <log4j.configuration>${log4j.configuration}</log4j.configuration>
+            <mondrian.jdbcDrivers>${mondrian.jdbcDrivers}</mondrian.jdbcDrivers>
+            <mondrian.foodmart.jdbcURL>${mondrian.foodmart.jdbcURL}</mondrian.foodmart.jdbcURL>
+            <mondrian.test.foodmart.catalogURL>${mondrian.test.foodmart.catalogURL}</mondrian.test.foodmart.catalogURL>
+            <mondrian.test.connectString>${mondrian.test.connectString}</mondrian.test.connectString>
+            <!-- tests require en_US locale -->
+            <user.language>en</user.language>
+            <user.region>US</user.region>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
     </plugins>
 
     <!-- TODO: xom task that reads src/main/xom -->
@@ -444,6 +484,15 @@
         <filtering>true</filtering>
       </resource>
     </resources>
+
+    <testResources>
+      <testResource>
+        <directory>${project.basedir}</directory>
+        <includes>
+          <include>log4j.properties</include>
+        </includes>
+      </testResource>
+    </testResources>
   </build>
 
 </project>

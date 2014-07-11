@@ -849,7 +849,7 @@ class MondrianOlap4jDriverVersion {
 }
 
 // End MondrianOlap4jDriverVersion.java</echo>
-       <echo file="${java.dir}/mondrian/server/MondrianServerVersion.java">/*
+       <echo file="target/generated-sources/version/mondrian/server/MondrianServerVersion.java">/*
  * Project version information. Generated - do not modify.
  */
 package mondrian.server;
