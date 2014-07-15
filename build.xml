@@ -1169,7 +1169,7 @@ VERSION.txt"/>
 
   <target name="xml_schema"
       description="Generates xml_schema.html from MondrianSchema.xml">
-    <xslt in="src/main/mondrian/olap/MondrianSchema.xml"
+    <xslt in="src/main/xom/mondrian/olap/MondrianSchema.xml"
         out="doc/xml_schema.html"
         style="misc/Meta.xsl"/>
   </target>
