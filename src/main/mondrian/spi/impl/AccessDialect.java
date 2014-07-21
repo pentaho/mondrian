@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.spi.impl;
 
 import java.sql.*;
@@ -42,28 +41,6 @@ public class AccessDialect extends JdbcDialectImpl {
 
     public String caseWhenElse(String cond, String thenExpr, String elseExpr) {
         return "IIF(" + cond + "," + thenExpr + "," + elseExpr + ")";
-    }
-
-    public void quoteDateLiteral(StringBuilder buf, String value) {
-        Date date;
-        try {
-            /*
-             * The format of the 'value' parameter is not certain.
-             * Some JDBC drivers will return a timestamp even though
-             * we ask for a date (access is one of them). We must try to
-             * convert both formats.
-             */
-            date = Date.valueOf(value);
-        } catch (IllegalArgumentException ex) {
-            try {
-                date =
-                    new Date(Timestamp.valueOf(value).getTime());
-            } catch (IllegalArgumentException ex2) {
-                throw new NumberFormatException(
-                    "Illegal DATE literal:  " + value);
-            }
-        }
-        quoteDateLiteral(buf, value, date);
     }
 
     protected void quoteDateLiteral(
