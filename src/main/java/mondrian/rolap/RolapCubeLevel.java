@@ -265,7 +265,7 @@ public class RolapCubeLevel extends RolapLevel {
     }
 
     @Override
-    public OlapElement lookupChild(
+    public RolapMember lookupChild(
         SchemaReader schemaReader, Id.Segment name, MatchType matchType)
     {
         if (name instanceof Id.KeySegment) {
