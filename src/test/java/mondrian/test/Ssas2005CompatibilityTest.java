@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2013 Pentaho
+// Copyright (C) 2008-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -709,25 +709,19 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
     }
 
     public void testMemberAddressedByLevelAndKey() {
-        if (!MEMBER_NAMING_IMPL) {
-            return;
-        }
         // [dimension].[hierarchy].[level].&[key]
         // (Returns 31, 5368)
-        runQ(
-            "select {[Time].[Time By Week].[Week].[31]} on 0\n"
-            + "from [Warehouse and Sales]");
+        assertAxisReturns(
+            "[Time].[Time By Week].[Week].&[31]&[1998]",
+            "[Time].[Time By Week].[1998].[31]");
     }
 
     public void testMemberAddressedByCompoundKey() {
-        if (!MEMBER_NAMING_IMPL) {
-            return;
-        }
         // compound key
         // SSAS2005 returns 1 row
-        runQ(
-            "select [Time].[Time By Week].[Year2].[1998].&[30]&[1998] on 0\n"
-            + "from [Warehouse and Sales]");
+        assertAxisReturns(
+            "[Time].[Time By Week].[Year2].[1998].&[30]&[1998]",
+            "[Time].[Time By Week].[1998].[30]");
     }
 
     public void testMemberAddressedByPartialCompoundKey() {
@@ -742,15 +736,12 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
     }
 
     public void testMemberAddressedByNonUniqueName() {
-        if (!MEMBER_NAMING_IMPL) {
-            return;
-        }
         // address member by non-unique name
         // [dimension].[hierarchy].[level].[name]
         // SSAS2005 returns first member that matches, 1997.January
-        runQ(
-            "select [Time].[Time2].[Month].[January] on 0\n"
-            + "from [Warehouse and Sales]");
+        assertAxisReturns(
+            "[Time].[Time2].[Month].[January]",
+            "[Time].[Time2].[1997].[Q1].[January]");
     }
 
     public void testMemberAddressedByLevelAndCompoundKey() {
@@ -765,15 +756,18 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
     }
 
     public void testMemberAddressedByLevelAndName() {
-        if (!MEMBER_NAMING_IMPL) {
-            return;
-        }
         // similarly
         // [dimension].[level].[member name]
-        runQ(
-            "with member [Measures].[Foo] as ' [Store].[Store City].[Month].[January].UniqueName '\n"
+        assertQueryReturns(
+            "with member [Measures].[Foo] as ' "
+            + "[Time].[Month].[January].UniqueName '\n"
             + "select [Measures].[Foo] on 0\n"
-            + "from [Warehouse and Sales]");
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Foo]}\n"
+            + "Row #0: [Time].[Time2].[1997].[Q1].[January]\n");
     }
 
     public void testFoo31() {
@@ -1710,6 +1704,53 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "{[Measures].[Foo]}\n"
             + "1");
     }
+
+    /**
+     * Testcase for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1991">MONDRIAN-1991</a>
+     * <br>
+     * Basic use cases.
+     */
+    public void testKeyLookupSsas() {
+        assertAxisReturns(
+            "[Customer].&[USA]",
+            "[Customer].[Customer].[USA]");
+        assertAxisReturns(
+            "[Customer].&[USA].&[CA]",
+            "[Customer].[Customer].[USA].[CA]");
+        assertAxisReturns(
+            "[Customer].&[USA].[CA]",
+            "[Customer].[Customer].[USA].[CA]");
+        assertAxisReturns(
+            "[Customer].[USA].&[CA]",
+            "[Customer].[Customer].[USA].[CA]");
+    }
+
+    /**
+     * Testcase for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1991">MONDRIAN-1991</a>
+     * <br>
+     * SSAS lenient key lookup from hierarchy
+     */
+    public void testKeyLookupFromHierarchy() {
+        // bottom level
+        assertAxisReturns(
+            "[Customer].[Customer].&[371]",
+            "[Customer].[Customer].[USA].[CA].[Berkeley].[371]");
+        // top level
+        assertAxisReturns(
+            "[Customer].[Customer].&[USA]",
+            "[Customer].[Customer].[USA]");
+        // mid level
+        assertAxisReturns(
+            "[Customer].[Customer].&[CA]",
+            "[Customer].[Customer].[USA].[CA]");
+        // mid level, compound key
+        assertAxisReturns(
+            "[Customer].[Customer].&[Berkeley]&[CA]",
+            "[Customer].[Customer].[USA].[CA].[Berkeley]");
+    }
+
 }
 
 // End Ssas2005CompatibilityTest.java
