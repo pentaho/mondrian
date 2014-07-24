@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho
+// Copyright (C) 2005-2014 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.*;
@@ -693,16 +692,13 @@ public class RolapSchemaReader
             }
         }
 
-        // Scan through mondrian and system properties.
+        // Scan through mondrian properties.
         List<Property> propertyList =
             MondrianProperties.instance().getPropertyList();
         for (Property property : propertyList) {
             if (property.getPath().equals(name)) {
                 return new SystemPropertyParameter(name, false);
             }
-        }
-        if (System.getProperty(name) != null) {
-            return new SystemPropertyParameter(name, true);
         }
 
         return null;
@@ -740,13 +736,11 @@ public class RolapSchemaReader
     }
 
     /**
-     * Implementation of {@link Parameter} which is sourced from system
-     * propertes (see {@link System#getProperties()} or mondrian properties
-     * (see {@link MondrianProperties}.
+     * Implementation of {@link Parameter} which is sourced from mondrian
+     * properties (see {@link MondrianProperties}.
      * <p/>
      * <p>The name of the property is the same as the key into the
-     * {@link java.util.Properties} object; for example "java.version" or
-     * "mondrian.trace.level".
+     * {@link java.util.Properties} object; for example "mondrian.trace.level".
      */
     private static class SystemPropertyParameter
         extends ParameterImpl
