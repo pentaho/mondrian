@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2014 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.test;
 
 import mondrian.olap.*;
@@ -1081,12 +1080,12 @@ public class ParameterTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests getting a java system property.
+     * Tests getting a java system property is not possible
      */
-    public void testSystemPropsGetJava() {
-        final String javaVersion = System.getProperty("java.version");
-        assertExprReturns(
-            "ParamRef(\"java.version\")", javaVersion);
+    public void testSystemPropsNotAvailable() {
+        assertExprThrows(
+            "ParamRef(\"java.version\")",
+            "Unknown parameter 'java.version'");
     }
 
     /**
