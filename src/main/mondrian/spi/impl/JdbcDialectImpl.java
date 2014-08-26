@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.spi.impl;
 
 import mondrian.olap.MondrianProperties;
@@ -23,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Implementation of {@link Dialect} based on a JDBC connection and metadata.
@@ -424,14 +424,19 @@ public class JdbcDialectImpl implements Dialect {
         // RolapSchemaReader.lookupMemberChildByName looks for
         // NumberFormatException to suppress it, so that is why
         // we convert the exception here.
-        final Date date;
+        Date date;
         try {
-            date = Date.valueOf(value);
+              date = Date.valueOf(value);
         } catch (IllegalArgumentException ex) {
-            throw new NumberFormatException(
-                "Illegal DATE literal:  " + value);
+            // MONDRIAN-2038
+            try {
+                date = new Date(Timestamp.valueOf(value).getTime());
+            } catch (IllegalArgumentException ex2) {
+                throw new NumberFormatException(
+                    "Illegal DATE literal:  " + value);
+            }
         }
-        quoteDateLiteral(buf, value, date);
+        quoteDateLiteral(buf, date.toString(), date);
     }
 
     /**
@@ -1163,7 +1168,8 @@ public class JdbcDialectImpl implements Dialect {
             LOGGER.debug("NOT Using " + databaseProduct.name() + " dialect");
             return false;
         } catch (SQLException e) {
-            LOGGER.debug("NOT Using " + databaseProduct.name() + " dialect.", e);
+            LOGGER.debug(
+                "NOT Using " + databaseProduct.name() + " dialect.", e);
             return false;
         } finally {
             Util.close(resultSet, statement, null);
