@@ -890,7 +890,7 @@
 
 <exception id="8500200" name="SqlQueryLimitReached">
     <text>
-        The number of concurrent SQL statements which can be used simultaneously by this Mondrian server instance has been reached. Set ''mondrian.rolap.maxSqlQueryThreads'' to change the current limit.
+        The number of concurrent SQL statements which can be used simultaneously by this Mondrian server instance has been reached. Set ''mondrian.rolap.maxSqlThreads'' to change the current limit.
     </text>
 </exception>
 
