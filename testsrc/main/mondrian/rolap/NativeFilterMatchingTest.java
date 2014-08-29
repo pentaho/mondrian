@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2013 Pentaho Corporation.  All rights reserved.
+// Copyright (c) 2002-2014 Pentaho Corporation.  All rights reserved.
 */
 package mondrian.rolap;
 
@@ -361,9 +361,34 @@ public class NativeFilterMatchingTest extends BatchTestCase {
             "Filter on partially accessible set of tuples.", context);
     }
 
+    /**
+     * http://jira.pentaho.com/browse/MONDRIAN-2049
+     * Native filter in Mondrian does not include compound slicers
+     * in the constraint
+     */
+    public void testNativeFilterWithCompoundSlicer() {
+      assertQueryReturns(
+          "with member measures.avgQtrs as 'avg( filter( time.quarter.members, measures.[unit sales] > 80))' "
+          + "select measures.avgQtrs * gender.members on 0 from sales where head( product.[product name].members, 3)",
+          "Axis #0:\n"
+          + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
+          + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
+          + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl].[Pearl Imported Beer]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[avgQtrs], [Gender].[All Gender]}\n"
+          + "{[Measures].[avgQtrs], [Gender].[F]}\n"
+          + "{[Measures].[avgQtrs], [Gender].[M]}\n"
+          + "Row #0: 111\n"
+          + "Row #0: \n"
+          + "Row #0: \n");
+    }
 
+  public void testNativeFilterWithCompoundSlicerUsingAggregates() {
+    propSaver.set(propSaver.properties.UseAggregates, true);
+    propSaver.set(propSaver.properties.ReadAggregates, true);
 
-
+    testNativeFilterWithCompoundSlicer();
+  }
 }
 
 // End NativeFilterMatchingTest.java
