@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.*;
@@ -713,10 +712,14 @@ public class RolapHierarchy extends HierarchyBase {
                 table != null ? table.getAlias() : null,
                 failIfExists);
         if (tableAdded && table != null) {
-            RolapStar.Condition joinCondition = table.getJoinCondition();
-            if (joinCondition != null) {
-                query.addWhere(joinCondition);
-            }
+            RolapStar.Condition joinCondition;
+            do {
+                joinCondition = table.getJoinCondition();
+                if (joinCondition != null) {
+                    query.addWhere(joinCondition);
+                }
+                table = table.getParentTable();
+            } while (joinCondition != null);
         }
     }
 
