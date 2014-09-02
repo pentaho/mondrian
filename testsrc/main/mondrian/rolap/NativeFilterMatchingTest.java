@@ -367,28 +367,40 @@ public class NativeFilterMatchingTest extends BatchTestCase {
      * in the constraint
      */
     public void testNativeFilterWithCompoundSlicer() {
-      assertQueryReturns(
-          "with member measures.avgQtrs as 'avg( filter( time.quarter.members, measures.[unit sales] > 80))' "
-          + "select measures.avgQtrs * gender.members on 0 from sales where head( product.[product name].members, 3)",
-          "Axis #0:\n"
-          + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
-          + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-          + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl].[Pearl Imported Beer]}\n"
-          + "Axis #1:\n"
-          + "{[Measures].[avgQtrs], [Gender].[All Gender]}\n"
-          + "{[Measures].[avgQtrs], [Gender].[F]}\n"
-          + "{[Measures].[avgQtrs], [Gender].[M]}\n"
-          + "Row #0: 111\n"
-          + "Row #0: \n"
-          + "Row #0: \n");
+    assertQueryReturns(
+        "with member measures.avgQtrs as 'avg( filter( time.quarter.members, measures.[unit sales] > 80))' "
+        + "select measures.avgQtrs * gender.members on 0 from sales where head( product.[product name].members, 3)",
+        "Axis #0:\n"
+        + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
+        + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
+        + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl].[Pearl Imported Beer]}\n"
+        + "Axis #1:\n"
+        + "{[Measures].[avgQtrs], [Gender].[All Gender]}\n"
+        + "{[Measures].[avgQtrs], [Gender].[F]}\n"
+        + "{[Measures].[avgQtrs], [Gender].[M]}\n"
+        + "Row #0: 111\n"
+        + "Row #0: \n"
+        + "Row #0: \n");
     }
 
-  public void testNativeFilterWithCompoundSlicerUsingAggregates() {
-    propSaver.set(propSaver.properties.UseAggregates, true);
-    propSaver.set(propSaver.properties.ReadAggregates, true);
+    public void testNativeFilterWithCompoundSlicerUsingAggregates() {
+        propSaver.set(propSaver.properties.UseAggregates, true);
+        propSaver.set(propSaver.properties.ReadAggregates, true);
 
-    testNativeFilterWithCompoundSlicer();
-  }
+        testNativeFilterWithCompoundSlicer();
+    }
+
+    public void testNativeFilterWithCompoundSlicerDifferentProducts() {
+        assertQueryReturns(
+            "with member measures.avgQtrs as 'count(filter(Customers.[Name].members, [Unit Sales] > 0))' "
+            + "select measures.avgQtrs on 0 from sales where ( {[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer], [Product].[Food].[Baked Goods].[Bread].[Muffins]} )",
+            "Axis #0:\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]}\n"
+            + "{[Product].[Food].[Baked Goods].[Bread].[Muffins]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[avgQtrs]}\n"
+            + "Row #0: 1,281\n");
+    }
 }
 
 // End NativeFilterMatchingTest.java
