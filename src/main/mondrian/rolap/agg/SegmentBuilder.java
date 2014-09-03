@@ -4,8 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2013 Pentaho and others
-// All Rights Reserved.
+// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.rolap.agg;
 
@@ -19,10 +18,13 @@ import mondrian.spi.Dialect.Datatype;
 import mondrian.util.ArraySortedSet;
 import mondrian.util.Pair;
 
+import org.apache.log4j.Logger;
+
 import org.olap4j.impl.UnmodifiableArrayList;
 
 import java.lang.ref.WeakReference;
 import java.math.BigInteger;
+
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -34,6 +36,8 @@ import java.util.Map.Entry;
  * @author LBoudreau
  */
 public class SegmentBuilder {
+    private static final Logger LOGGER =
+        Logger.getLogger(SegmentBuilder.class);
     /**
      * Converts a segment plus a {@link SegmentBody} into a
      * {@link mondrian.rolap.agg.SegmentWithData}.
@@ -231,7 +235,17 @@ public class SegmentBuilder {
                 } else {
                     final SortedSet<Comparable> filteredValues;
                     final boolean filteredHasNull;
-                    if (axis.requestedValues == null) {
+                    if (axis.requestedValues == null
+                        && requestedValues == null)
+                    {
+                        // there are 2+ segments that are unconstrained for
+                        // this axis.  While unconstrained, individually
+                        // they may not have all values present.
+                        // Make sure we don't lose any values.
+                        filteredValues = axis.valueSet;
+                        filteredValues.addAll(new TreeSet<Comparable>(values));
+                        filteredHasNull = hasNull || axis.hasNull;
+                    } else if (axis.requestedValues == null) {
                         filteredValues = values;
                         filteredHasNull = hasNull;
                         axis.column = headerColumn;
@@ -284,6 +298,9 @@ public class SegmentBuilder {
         // a stripe of values from the and add them up into a single cell.
         final Map<CellKey, List<Object>> cellValues =
             new HashMap<CellKey, List<Object>>();
+        List<List<Comparable>> addedIntersections =
+            new ArrayList<List<Comparable>>();
+
         for (Map.Entry<SegmentHeader, SegmentBody> entry : map.entrySet()) {
             final int[] pos = new int[axes.length];
             final Comparable[][] valueArrays =
@@ -337,7 +354,14 @@ public class SegmentBuilder {
                 if (!cellValues.containsKey(ck)) {
                     cellValues.put(ck, new ArrayList<Object>());
                 }
-                cellValues.get(ck).add(vEntry.getValue());
+                List<Comparable> colValues =  getColumnValsAtCellKey(
+                    body, vEntry.getKey());
+                if (!addedIntersections.contains(colValues)) {
+                    // only add the cell value if we haven't already.
+                    // there is a potential double add if segments overlap
+                    cellValues.get(ck).add(vEntry.getValue());
+                    addedIntersections.add(colValues);
+                }
             }
         }
 
@@ -348,9 +372,6 @@ public class SegmentBuilder {
         for (AxisInfo axis : axes) {
             axisList.add(Pair.of(axis.valueSet, axis.hasNull));
             int size = axis.values.length;
-            if (axis.hasNull) {
-                ++size;
-            }
             bigValueCount = bigValueCount.multiply(
                 BigInteger.valueOf(axis.hasNull ? size + 1 : size));
         }
@@ -472,6 +493,7 @@ public class SegmentBuilder {
             new ArrayList<SegmentColumn>();
         for (int i = 0; i < axes.length; i++) {
             AxisInfo axisInfo = axes[i];
+
             constrainedColumns.add(
                 new SegmentColumn(
                     axisInfo.column.getColumnExpression(),
@@ -491,8 +513,66 @@ public class SegmentBuilder {
                 firstHeader.rolapStarFactTableName,
                 targetBitkey,
                 Collections.<SegmentColumn>emptyList());
-
+        if (LOGGER.isDebugEnabled()) {
+            StringBuilder builder = new StringBuilder();
+            builder.append("Rolling up segments with parameters: \n");
+            builder.append("keepColumns=" + keepColumns + "\n");
+            builder.append("aggregator=" + rollupAggregator + "\n");
+            builder.append("datatype=" + datatype + "\n");
+            for (Map.Entry<SegmentHeader, SegmentBody > segment : segments) {
+                builder.append(segment.getKey() + "\n");
+            }
+            builder.append("AxisInfos constructed:");
+            for (AxisInfo axis : axes) {
+                SortedSet<Comparable> colVals = axis.column.getValues();
+                builder.append(
+                    String.format(
+                        "column.columnExpression=%s\n"
+                        + "column.valueCount=%s\n"
+                        + "column.values=%s\n"
+                        + "requestedValues=%s\n"
+                        + "valueSet=%s\n"
+                        + "values=%s\n"
+                        + "hasNull=%b\n"
+                        + "src=%d\n"
+                        + "lostPredicate=%b\n",
+                        axis.column.columnExpression,
+                        axis.column.getValueCount(),
+                        Arrays.toString(
+                            colVals == null ? null
+                            : colVals.toArray()),
+                        axis.requestedValues,
+                        axis.valueSet,
+                        Arrays.asList(axis.values),
+                        axis.hasNull,
+                        axis.src,
+                        axis.lostPredicate));
+            }
+            builder.append("Resulted in Segment:  \n");
+            builder.append(header);
+            builder.append(body.toString());
+            LOGGER.debug(builder.toString());
+        }
         return Pair.of(header, body);
+    }
+
+    private static List<Comparable> getColumnValsAtCellKey(
+        SegmentBody body, CellKey cellKey)
+    {
+        List<Comparable> columnValues = new ArrayList<Comparable>();
+        for (int i = 0; i < body.getAxisValueSets().length; i++) {
+            List<Comparable> columnVals = new ArrayList<Comparable>();
+            columnVals.addAll(body.getAxisValueSets()[i]);
+            int valCoord = body.getNullAxisFlags()[i]
+                ? cellKey.getAxis(i) - 1
+                : cellKey.getAxis(i);
+            if (valCoord >= 0) {
+                columnValues.add(columnVals.get(valCoord));
+            } else {
+                columnValues.add(null);
+            }
+        }
+        return columnValues;
     }
 
     private static boolean allHeadersHaveSameDimensionality(
@@ -517,7 +597,9 @@ public class SegmentBuilder {
         int multiplier = 1;
         for (int i = axes.size() - 1; i >= 0; --i) {
             axisMultipliers[i] = multiplier;
-            multiplier *= axes.get(i).left.size();
+            // if the nullAxisFlag is set we need to offset by 1.
+            int nullAxisAdjustment = axes.get(i).right ? 1 : 0;
+            multiplier *= (axes.get(i).left.size() + nullAxisAdjustment);
         }
         return axisMultipliers;
     }
