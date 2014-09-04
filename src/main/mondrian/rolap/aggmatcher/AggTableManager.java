@@ -8,7 +8,6 @@
 // Copyright (C) 2005-2011 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.MondrianDef;
@@ -188,8 +187,7 @@ public class AggTableManager {
                         group.validate(msgRecorder);
                     }
 
-                    String factTableName = star.getFactTable().getAlias();
-
+                    String factTableName = getFactTableName(star);
                     JdbcSchema.Table dbFactTable = db.getTable(factTableName);
                     if (dbFactTable == null) {
                         msgRecorder.reportWarning(
@@ -294,6 +292,18 @@ public class AggTableManager {
                     msgRecorder.getErrorCount());
             }
         }
+    }
+
+    /**
+     * Returns the fact table name if it is not null
+     * and fact table alias otherwise in a given {@link RolapStar}.
+     * @param star
+     * @return the fact table name
+     */
+    private String getFactTableName(RolapStar star) {
+      String factTableName = star.getFactTable().getTableName();
+      return
+         factTableName == null ? star.getFactTable().getAlias() : factTableName;
     }
 
     private Collection<RolapStar> getStars() {
