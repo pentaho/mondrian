@@ -1031,6 +1031,10 @@ public class SchemaTest extends FoodMartTestCase {
      * and multiple column names
      */
     public void testMultipleDimensionUsages() {
+      if (!Bug.BugMondrian361Fixed) {
+        propSaver.set(propSaver.properties.UseAggregates, false);
+        propSaver.set(propSaver.properties.ReadAggregates, false);
+    }
         final TestContext testContext = TestContext.instance().create(
             null,
 
@@ -1067,6 +1071,10 @@ public class SchemaTest extends FoodMartTestCase {
      * and multiple column names
      */
     public void testMultipleDimensionHierarchyCaptionUsages() {
+      if (!Bug.BugMondrian361Fixed) {
+        propSaver.set(propSaver.properties.UseAggregates, false);
+        propSaver.set(propSaver.properties.ReadAggregates, false);
+    }
         final TestContext testContext = TestContext.instance().create(
             null,
 
@@ -2310,6 +2318,10 @@ public class SchemaTest extends FoodMartTestCase {
      * Verifies that RolapHierarchy.tableExists() supports views.
      */
     public void testLevelTableAttributeAsView() {
+      if (!Bug.BugMondrian361Fixed) {
+        propSaver.set(propSaver.properties.UseAggregates, false);
+        propSaver.set(propSaver.properties.ReadAggregates, false);
+    }
         final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"GenderCube\">\n"

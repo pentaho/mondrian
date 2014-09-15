@@ -895,12 +895,24 @@ abstract class Recognizer {
                 continue;
             }
             RolapStar cubeStar = cube.getStar();
-            String factTableName = cubeStar.getFactTable().getAlias();
+            String factTableName = getFactTableName(cubeStar);
             if (name.equals(factTableName)) {
                 list.add(cube);
             }
         }
         return list;
+    }
+
+    /**
+     * Returns the fact table name if it is not null
+     * and fact table alias otherwise in a given {@link RolapStar}.
+     * @param star
+     * @return the fact table name
+     */
+    private String getFactTableName(RolapStar star) {
+      String factTableName = star.getFactTable().getTableName();
+      return
+         factTableName == null ? star.getFactTable().getAlias() : factTableName;
     }
 
     /**
