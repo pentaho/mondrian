@@ -1443,6 +1443,56 @@ public class VirtualCubeTest extends BatchTestCase {
             result.getAxes()[1].getPositions().get(0).toString());
         assertEquals(96, result.getAxes()[1].getPositions().size());
     }
+
+    /**
+     * <p>MONDRIAN-1061</p>
+     * <p>recursive members for 4.0 schema version</p>
+     * @throws IOException
+     */
+    public void testVirtualCubeRecursiveMember() {
+      String cube = "<Cube name='MONDRIAN-1062' defaultMeasure='Unit Sales'>"
+         + "<Dimensions>"
+         + "<Dimension source='Time'/>"
+         + "</Dimensions>"
+         + "<MeasureGroups>"
+         + "<MeasureGroup name='Sales' table='sales_fact_1997'>"
+         + "<Measures>"
+         + "<Measure name='Unit Sales' column='unit_sales' aggregator='sum' formatString='Standard'/>"
+         + "</Measures>"
+         + "<DimensionLinks>"
+         + "<ForeignKeyLink dimension='Time' foreignKeyColumn='time_id'/>"
+         + "</DimensionLinks>"
+         + "</MeasureGroup>"
+         + "</MeasureGroups>"
+    + "<CalculatedMembers>"
+    + "<CalculatedMember name='RECURSIVE' dimension='Measures' "
+    + "formula='COALESCEEMPTY((Measures.[Unit Sales], [Time].[Time].CurrentMember), "
+    + "(Measures.[RECURSIVE], [Time].[Time].CurrentMember.PrevMember))'"
+    + " visible='true'>"
+    + "<CalculatedMemberProperty name='FORMAT_STRING' value='#,##' />"
+    + "</CalculatedMember>"
+    + "</CalculatedMembers>"
+    + "</Cube>";
+      TestContext context = TestContext.instance()
+          .create(null, cube, null, null, null, null);
+      String query = "select {[RECURSIVE]} on rows, "
+          + "{[Time].[1998].Children} on columns "
+          + "from [MONDRIAN-1062]";
+      final String expected = "Axis #0:\n"
+        + "{}\n"
+        + "Axis #1:\n"
+        + "{[Time].[Time].[1998].[Q1]}\n"
+        + "{[Time].[Time].[1998].[Q2]}\n"
+        + "{[Time].[Time].[1998].[Q3]}\n"
+        + "{[Time].[Time].[1998].[Q4]}\n"
+        + "Axis #2:\n"
+        + "{[Measures].[RECURSIVE]}\n"
+        + "Row #0: 72,024\n"
+        + "Row #0: 72,024\n"
+        + "Row #0: 72,024\n"
+        + "Row #0: 72,024\n";
+      context.assertQueryReturns(query, expected);
+    }
 }
 
 // End VirtualCubeTest.java
