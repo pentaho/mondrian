@@ -18,6 +18,7 @@ import mondrian.spi.Dialect;
 import mondrian.spi.PropertyFormatter;
 import mondrian.util.Bug;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.*;
 import org.apache.log4j.varia.LevelRangeFilter;
 
@@ -4767,20 +4768,26 @@ public class SchemaTest extends FoodMartTestCase {
     public void testMultiByteSchemaReadFromFile() throws IOException {
         String rawSchema = TestContext.getRawFoodMartSchema().replace(
             "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">",
-            "<Hierarchy name=\"\u00E9\" hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">");
+            "<Hierarchy name=\"地域\" hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">");
+        File schemaFile = File.createTempFile("multiByteSchema", ",xml");
+        schemaFile.deleteOnExit();
+        FileOutputStream output = new FileOutputStream(schemaFile);
+        IOUtils.write(rawSchema, output);
+        output.close();
+        TestContext context = getTestContext();
         final Util.PropertyList properties =
-            TestContext.instance().getConnectionProperties().clone();
+            context.getConnectionProperties().clone();
         properties.put(
-            RolapConnectionProperties.CatalogContent.name(),
-            rawSchema);
-        TestContext.instance().withProperties(properties).assertQueryReturns(
+            RolapConnectionProperties.Catalog.name(),
+            schemaFile.getAbsolutePath());
+        context.withProperties(properties).assertQueryReturns(
             "select [Gender].members on 0 from sales",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender.\u00E9].[All Gender]}\n"
-            + "{[Gender.\u00E9].[F]}\n"
-            + "{[Gender.\u00E9].[M]}\n"
+            + "{[Gender.地域].[All Gender]}\n"
+            + "{[Gender.地域].[F]}\n"
+            + "{[Gender.地域].[M]}\n"
             + "Row #0: 266,773\n"
             + "Row #0: 131,558\n"
             + "Row #0: 135,215\n");
