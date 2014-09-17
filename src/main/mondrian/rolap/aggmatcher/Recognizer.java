@@ -638,9 +638,7 @@ abstract class Recognizer {
                     msgRecorder.throwRTException();
                 }
 
-
                 RolapStar.Column rc = descTable.lookupColumn(factColumnName);
-
 
                 if (rc == null) {
                     rc = lookupInChildren(descTable, factColumnName);
@@ -895,12 +893,20 @@ abstract class Recognizer {
                 continue;
             }
             RolapStar cubeStar = cube.getStar();
-            String factTableName = cubeStar.getFactTable().getAlias();
+            String factTableName = getFactTableName(cubeStar);
             if (name.equals(factTableName)) {
                 list.add(cube);
             }
         }
         return list;
+    }
+
+    private String getFactTableName(RolapStar star) {
+        String factTableName = star.getFactTable().getTableName();
+        return
+            factTableName == null
+                ? star.getFactTable().getAlias()
+                : factTableName;
     }
 
     /**

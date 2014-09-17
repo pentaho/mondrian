@@ -18,7 +18,6 @@ import mondrian.spi.Dialect;
 import mondrian.spi.PropertyFormatter;
 import mondrian.util.Bug;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.*;
 import org.apache.log4j.varia.LevelRangeFilter;
 
@@ -1027,15 +1026,15 @@ public class SchemaTest extends FoodMartTestCase {
 
     /**
      * Test Multiple DimensionUsages on same Dimension.
-     * Alias the fact table to avoid issues with aggregation rules
-     * and multiple column names
      */
     public void testMultipleDimensionUsages() {
         final TestContext testContext = TestContext.instance().create(
             null,
-
             "<Cube name=\"Sales Two Dimensions\">\n"
-            + "  <Table name=\"sales_fact_1997\" alias=\"sales_fact_1997_mdu\"/>\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude pattern=\"agg_c_10_sales_fact_1997\"/>\n"
+            + "    <AggExclude pattern=\"agg_g_ms_pcat_sales_fact_1997\"/>\n"
+            + "  </Table>\n"
             + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
             + "  <DimensionUsage name=\"Time2\" source=\"Time\" foreignKey=\"product_id\"/>\n"
             + "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
@@ -1063,15 +1062,15 @@ public class SchemaTest extends FoodMartTestCase {
 
     /**
      * Test Multiple DimensionUsages on same Dimension.
-     * Alias the fact table to avoid issues with aggregation rules
-     * and multiple column names
      */
     public void testMultipleDimensionHierarchyCaptionUsages() {
         final TestContext testContext = TestContext.instance().create(
             null,
-
             "<Cube name=\"Sales Two Dimensions\">\n"
-            + "  <Table name=\"sales_fact_1997\" alias=\"sales_fact_1997_mdu\"/>\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude pattern=\"agg_c_10_sales_fact_1997\"/>\n"
+            + "    <AggExclude pattern=\"agg_g_ms_pcat_sales_fact_1997\"/>\n"
+            + "  </Table>\n"
             + "  <DimensionUsage name=\"Time\" caption=\"TimeOne\" source=\"Time\" foreignKey=\"time_id\"/>\n"
             + "  <DimensionUsage name=\"Time2\" caption=\"TimeTwo\" source=\"Time\" foreignKey=\"product_id\"/>\n"
             + "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
@@ -2313,7 +2312,9 @@ public class SchemaTest extends FoodMartTestCase {
         final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"GenderCube\">\n"
-            + "  <Table name=\"sales_fact_1997\" alias=\"sales_fact_1997_gender\"/>\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude pattern=\"agg_g_ms_pcat_sales_fact_1997\"/>\n"
+            + "  </Table>\n"
             + "<Dimension name=\"Gender2\" foreignKey=\"customer_id\">\n"
             + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
             + "    <View alias=\"gender2\">\n"
@@ -4766,26 +4767,20 @@ public class SchemaTest extends FoodMartTestCase {
     public void testMultiByteSchemaReadFromFile() throws IOException {
         String rawSchema = TestContext.getRawFoodMartSchema().replace(
             "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">",
-            "<Hierarchy name=\"地域\" hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">");
-        File schemaFile = File.createTempFile("multiByteSchema", ",xml");
-        schemaFile.deleteOnExit();
-        FileOutputStream output = new FileOutputStream(schemaFile);
-        IOUtils.write(rawSchema, output);
-        output.close();
-        TestContext context = getTestContext();
+            "<Hierarchy name=\"\u00E9\" hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">");
         final Util.PropertyList properties =
-            context.getConnectionProperties().clone();
+            TestContext.instance().getConnectionProperties().clone();
         properties.put(
-            RolapConnectionProperties.Catalog.name(),
-            schemaFile.getAbsolutePath());
-        context.withProperties(properties).assertQueryReturns(
+            RolapConnectionProperties.CatalogContent.name(),
+            rawSchema);
+        TestContext.instance().withProperties(properties).assertQueryReturns(
             "select [Gender].members on 0 from sales",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender.地域].[All Gender]}\n"
-            + "{[Gender.地域].[F]}\n"
-            + "{[Gender.地域].[M]}\n"
+            + "{[Gender.\u00E9].[All Gender]}\n"
+            + "{[Gender.\u00E9].[F]}\n"
+            + "{[Gender.\u00E9].[M]}\n"
             + "Row #0: 266,773\n"
             + "Row #0: 131,558\n"
             + "Row #0: 135,215\n");
