@@ -1027,15 +1027,15 @@ public class SchemaTest extends FoodMartTestCase {
 
     /**
      * Test Multiple DimensionUsages on same Dimension.
-     * Alias the fact table to avoid issues with aggregation rules
-     * and multiple column names
      */
     public void testMultipleDimensionUsages() {
         final TestContext testContext = TestContext.instance().create(
             null,
-
             "<Cube name=\"Sales Two Dimensions\">\n"
-            + "  <Table name=\"sales_fact_1997\" alias=\"sales_fact_1997_mdu\"/>\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude pattern=\"agg_c_10_sales_fact_1997\"/>\n"
+            + "    <AggExclude pattern=\"agg_g_ms_pcat_sales_fact_1997\"/>\n"
+            + "  </Table>\n"
             + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
             + "  <DimensionUsage name=\"Time2\" source=\"Time\" foreignKey=\"product_id\"/>\n"
             + "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
@@ -1063,15 +1063,15 @@ public class SchemaTest extends FoodMartTestCase {
 
     /**
      * Test Multiple DimensionUsages on same Dimension.
-     * Alias the fact table to avoid issues with aggregation rules
-     * and multiple column names
      */
     public void testMultipleDimensionHierarchyCaptionUsages() {
         final TestContext testContext = TestContext.instance().create(
             null,
-
             "<Cube name=\"Sales Two Dimensions\">\n"
-            + "  <Table name=\"sales_fact_1997\" alias=\"sales_fact_1997_mdu\"/>\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude pattern=\"agg_c_10_sales_fact_1997\"/>\n"
+            + "    <AggExclude pattern=\"agg_g_ms_pcat_sales_fact_1997\"/>\n"
+            + "  </Table>\n"
             + "  <DimensionUsage name=\"Time\" caption=\"TimeOne\" source=\"Time\" foreignKey=\"time_id\"/>\n"
             + "  <DimensionUsage name=\"Time2\" caption=\"TimeTwo\" source=\"Time\" foreignKey=\"product_id\"/>\n"
             + "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
@@ -2313,7 +2313,9 @@ public class SchemaTest extends FoodMartTestCase {
         final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"GenderCube\">\n"
-            + "  <Table name=\"sales_fact_1997\" alias=\"sales_fact_1997_gender\"/>\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude pattern=\"agg_g_ms_pcat_sales_fact_1997\"/>\n"
+            + "  </Table>\n"
             + "<Dimension name=\"Gender2\" foreignKey=\"customer_id\">\n"
             + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
             + "    <View alias=\"gender2\">\n"
