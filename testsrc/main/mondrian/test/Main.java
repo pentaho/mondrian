@@ -202,6 +202,7 @@ public class Main extends TestSuite {
                 addTest(suite, QueryAllTest.class, "suite");
                 addTest(suite, QueryAllVCTest.class, "suite");
                 addTest(suite, Base64Test.class);
+                addTest(suite, CodeComplianceTest.class);
                 return suite;
             }
             addTest(suite, SegmentBuilderTest.class);
@@ -331,7 +332,6 @@ public class Main extends TestSuite {
             addTest(suite, DeadlockTest.class);
 
             addTest(suite, BlockingHashMapTest.class);
-            addTest(suite, CodeComplianceTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {
