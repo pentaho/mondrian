@@ -608,12 +608,15 @@ public class DialectTest extends TestCase {
         // We need to construct a valid date literal in either case.
         // See http://jira.pentaho.com/browse/MONDRIAN-1819 and
         // http://jira.pentaho.com/browse/MONDRIAN-626
-        Dialect oracleDialect = new OracleDialect();
+        //
+        // verify jdbc dialect - some jdbc drivers return TIMESTAMP too
+        // http://jira.pentaho.com/browse/MONDRIAN-2038
+        Dialect jdbcDialect = new JdbcDialectImpl();
         StringBuilder buf = new StringBuilder();
-        oracleDialect.quoteDateLiteral(buf, "2003-12-12");
+        jdbcDialect.quoteDateLiteral(buf, "2003-12-12");
         assertEquals("DATE '2003-12-12'", buf.toString());
         buf = new StringBuilder();
-        oracleDialect.quoteDateLiteral(buf, "2007-01-15 00:00:00.0");
+        jdbcDialect.quoteDateLiteral(buf, "2007-01-15 00:00:00.0");
         assertEquals("DATE '2007-01-15'", buf.toString());
 
         if (getDialect().getDatabaseProduct()
