@@ -1530,7 +1530,16 @@ public class DialectTest extends TestCase {
         assertEquals(SqlStatement.Type.OBJECT, type);
     }
 
-
+    public void testHiveTimestampQuoteLiteral() throws SQLException {
+      /*MONDRIAN-2208*/
+      Dialect hiveDbDialect =
+          TestContext.getFakeDialect(Dialect.DatabaseProduct.HIVE);
+      StringBuilder buf = new StringBuilder();
+      hiveDbDialect.quoteTimestampLiteral( buf, "2014-10-29 10:27:55.12");
+      assertEquals( 
+          "TIMESTAMP literal for Hive requires special syntax (cast)",
+          "cast( '2014-10-29 10:27:55.12' as timestamp )", buf.toString());
+    }
 
     public static class MockResultSetMetadata
         extends DelegatingInvocationHandler
@@ -1587,7 +1596,6 @@ public class DialectTest extends TestCase {
             return scale;
         }
     }
-
 }
 
 // End DialectTest.java
