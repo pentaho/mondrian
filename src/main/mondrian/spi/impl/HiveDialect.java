@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2013 Pentaho and others
+// Copyright (C) 2011-2014 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -155,6 +155,21 @@ public class HiveDialect extends JdbcDialectImpl {
 
     public boolean allowsJoinOn() {
         return false;
+    }
+    
+    public void quoteTimestampLiteral(
+        StringBuilder buf,
+        String value)
+    {
+        try {
+            Timestamp.valueOf(value);
+        } catch (IllegalArgumentException ex) {
+            throw new NumberFormatException(
+                "Illegal TIMESTAMP literal:  " + value);
+        }
+        buf.append("cast( ");
+        Util.singleQuoteString(value, buf);
+        buf.append(" as timestamp )");
     }
 }
 
