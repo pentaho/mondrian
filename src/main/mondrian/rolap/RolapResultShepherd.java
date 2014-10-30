@@ -57,8 +57,12 @@ public class RolapResultShepherd {
         final int maximumPoolSize = property.get();
         executor =
             Util.getExecutorService(
+                 // We use the same value for coreSize and maxSize
+                // because that's the behavior we want. All extra
+                // tasks will be put on an unbounded queue.
                 maximumPoolSize,
-                0, 1,
+                maximumPoolSize,
+                1,
                 "mondrian.rolap.RolapResultShepherd$executor",
                 new RejectedExecutionHandler() {
                     public void rejectedExecution(
