@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.MondrianDef;
@@ -149,6 +148,13 @@ public class AggTableManager {
         JdbcSchema.removeDB(dataSource);
     }
 
+    private String getFactTableName(RolapStar star) {
+        String factTableName = star.getFactTable().getTableName();
+        return
+            factTableName == null
+                ? star.getFactTable().getAlias()
+                : factTableName;
+    }
 
     /**
      * This method loads and/or reloads the aggregate tables.
@@ -188,7 +194,7 @@ public class AggTableManager {
                         group.validate(msgRecorder);
                     }
 
-                    String factTableName = star.getFactTable().getAlias();
+                    String factTableName = getFactTableName(star);
 
                     JdbcSchema.Table dbFactTable = db.getTable(factTableName);
                     if (dbFactTable == null) {
@@ -322,10 +328,6 @@ public class AggTableManager {
      * example, a measure in the RolapStar becomes a measure usage for the
      * column with the same name and a RolapStar foreign key column becomes a
      * foreign key usage for the column with the same name.
-     *
-     * @param dbFactTable
-     * @param star
-     * @param msgRecorder
      */
     void bindToStar(
         final JdbcSchema.Table dbFactTable,

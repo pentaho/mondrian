@@ -8159,6 +8159,50 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Gender].[All Gender]}\n"
             + "Row #0: " + returnedValue + "\n");
     }
+
+    /**
+     * This test is disabled by default because we can't set the max number
+     * of SQL threads dynamically. The test still works when run standalone.
+     */
+    public void _testSqlPoolAndQueue() throws Exception {
+        // We use 10 SQL threads and the query needs about 30-ish.
+        // If the bug exists, it'll fail.
+        propSaver.set(
+            propSaver.properties.SegmentCacheManagerNumberSqlThreads, 10);
+        final String mdx =
+            "with set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS__Promotion Media_], NonEmptyCrossJoin([*BASE_MEMBERS__Customers_], NonEmptyCrossJoin([*BASE_MEMBERS__Yearly Income_], NonEmptyCrossJoin([*BASE_MEMBERS__Gender_], NonEmptyCrossJoin([*BASE_MEMBERS__Education Level_], NonEmptyCrossJoin([*BASE_MEMBERS__Store Type_], [*BASE_MEMBERS__Promotions_]))))))'\n"
+            + "  set [*BASE_MEMBERS__Gender_] as '[Gender].[Gender].Members'\n"
+            + "  set [*SORTED_COL_AXIS] as 'Order([*CJ_COL_AXIS], [Promotion Media].CurrentMember.OrderKey, BASC)'\n"
+            + "  set [*BASE_MEMBERS__Promotions_] as '{[Promotions].[No Promotion]}'\n"
+            + "  set [*NATIVE_MEMBERS__Promotions_] as 'Generate([*NATIVE_CJ_SET], {[Promotions].CurrentMember})'\n"
+            + "  set [*BASE_MEMBERS__Customers_] as '{[Customers].[USA].[WA].[Spokane], [Customers].[USA].[WA].[Olympia], [Customers].[USA].[WA].[Port Orchard], [Customers].[USA].[WA].[Bremerton], [Customers].[USA].[WA].[Puyallup], [Customers].[USA].[WA].[Yakima], [Customers].[USA].[WA].[Tacoma], [Customers].[USA].[WA].[Burien]}'\n"
+            + "  set [*BASE_MEMBERS__Yearly Income_] as '[Yearly Income].[Yearly Income].Members'\n"
+            + "  set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], [Customers].CurrentMember.OrderKey, BASC, Ancestor([Customers].CurrentMember, [Customers].[State Province]).OrderKey, BASC, [Yearly Income].CurrentMember.OrderKey, BASC, [Gender].CurrentMember.OrderKey, BASC, [Education Level].CurrentMember.OrderKey, BASC)'\n"
+            + "  set [*NATIVE_MEMBERS__Store Type_] as 'Generate([*NATIVE_CJ_SET], {[Store Type].CurrentMember})'\n"
+            + "  set [*CJ_COL_AXIS] as 'Generate([*NATIVE_CJ_SET], {[Promotion Media].CurrentMember})'\n"
+            + "  set [*BASE_MEMBERS__Store Type_] as '{[Store Type].[Supermarket]}'\n"
+            + "  set [*BASE_MEMBERS__Measures_] as '{[Measures].[Customer Count]}'\n"
+            + "  set [*BASE_MEMBERS__Education Level_] as '{[Education Level].[Bachelors Degree], [Education Level].[Graduate Degree]}'\n"
+            + "  set [*CJ_SLICER_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Store Type].CurrentMember, [Promotions].CurrentMember)})'\n"
+            + "  set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Customers].CurrentMember, [Yearly Income].CurrentMember, [Gender].CurrentMember, [Education Level].CurrentMember)})'\n"
+            + "  set [*BASE_MEMBERS__Promotion Media_] as '[Promotion Media].[Media Type].Members'\n"
+            + "  member [Promotion Media].[*TOTAL_MEMBER_SEL~AGG] as 'Aggregate(Generate([*NATIVE_CJ_SET], {[Promotion Media].CurrentMember}))', SOLVE_ORDER = (- 104)\n"
+            + "  member [Promotion Media].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Generate([*NATIVE_CJ_SET], {[Promotion Media].CurrentMember}))', SOLVE_ORDER = 96\n"
+            + "  member [Yearly Income].[*DEFAULT_MEMBER] as '[Yearly Income].DefaultMember', SOLVE_ORDER = (- 400)\n"
+            + "  member [Yearly Income].[*TOTAL_MEMBER_SEL~AGG] as 'Aggregate(Generate(Exists([*NATIVE_CJ_SET], {[Customers].CurrentMember}), {([Customers].CurrentMember, [Yearly Income].CurrentMember, [Gender].CurrentMember, [Education Level].CurrentMember)}))', SOLVE_ORDER = (- 101)\n"
+            + "  member [Yearly Income].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Generate(Exists([*NATIVE_CJ_SET], {[Customers].CurrentMember}), {([Customers].CurrentMember, [Yearly Income].CurrentMember, [Gender].CurrentMember, [Education Level].CurrentMember)}))', SOLVE_ORDER = 99\n"
+            + "  member [Gender].[*DEFAULT_MEMBER] as '[Gender].DefaultMember', SOLVE_ORDER = (- 400)\n"
+            + "  member [Gender].[*TOTAL_MEMBER_SEL~AGG] as 'Aggregate(Generate(Exists([*NATIVE_CJ_SET], {([Customers].CurrentMember, [Yearly Income].CurrentMember)}), {([Customers].CurrentMember, [Yearly Income].CurrentMember, [Gender].CurrentMember, [Education Level].CurrentMember)}))', SOLVE_ORDER = (- 102)\n"
+            + "  member [Gender].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Generate(Exists([*NATIVE_CJ_SET], {([Customers].CurrentMember, [Yearly Income].CurrentMember)}), {([Customers].CurrentMember, [Yearly Income].CurrentMember, [Gender].CurrentMember, [Education Level].CurrentMember)}))', SOLVE_ORDER = 98\n"
+            + "  member [Education Level].[*DEFAULT_MEMBER] as '[Education Level].DefaultMember', SOLVE_ORDER = (- 400)\n"
+            + "  member [Customers].[*TOTAL_MEMBER_SEL~AGG] as 'Aggregate(Generate([*NATIVE_CJ_SET], {([Customers].CurrentMember, [Yearly Income].CurrentMember, [Gender].CurrentMember, [Education Level].CurrentMember)}))', SOLVE_ORDER = (- 100)\n"
+            + "  member [Customers].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Generate([*NATIVE_CJ_SET], {([Customers].CurrentMember, [Yearly Income].CurrentMember, [Gender].CurrentMember, [Education Level].CurrentMember)}))', SOLVE_ORDER = 100\n"
+            + "select Union(Crossjoin({[Promotion Media].[*TOTAL_MEMBER_SEL~AGG]}, [*BASE_MEMBERS__Measures_]), Union(Crossjoin({[Promotion Media].[*TOTAL_MEMBER_SEL~SUM]}, [*BASE_MEMBERS__Measures_]), Crossjoin([*SORTED_COL_AXIS], [*BASE_MEMBERS__Measures_]))) ON COLUMNS,\n"
+            + "  NON EMPTY Union(Crossjoin({[Customers].[*TOTAL_MEMBER_SEL~AGG]}, {([Yearly Income].[*DEFAULT_MEMBER], [Gender].[*DEFAULT_MEMBER], [Education Level].[*DEFAULT_MEMBER])}), Union(Crossjoin(Crossjoin(Generate([*NATIVE_CJ_SET], {([Customers].CurrentMember, [Yearly Income].CurrentMember)}), {[Gender].[*TOTAL_MEMBER_SEL~AGG]}), {[Education Level].[*DEFAULT_MEMBER]}), Union(Crossjoin(Crossjoin(Generate([*NATIVE_CJ_SET], {[Customers].CurrentMember}), {[Yearly Income].[*TOTAL_MEMBER_SEL~AGG]}), {([Gender].[*DEFAULT_MEMBER], [Education Level].[*DEFAULT_MEMBER])}), Union(Crossjoin({[Customers].[*TOTAL_MEMBER_SEL~SUM]}, {([Yearly Income].[*DEFAULT_MEMBER], [Gender].[*DEFAULT_MEMBER], [Education Level].[*DEFAULT_MEMBER])}), Union(Crossjoin(Crossjoin(Generate([*NATIVE_CJ_SET], {([Customers].CurrentMember, [Yearly Income].CurrentMember)}), {[Gender].[*TOTAL_MEMBER_SEL~SUM]}), {[Education Level].[*DEFAULT_MEMBER]}), Union(Crossjoin(Crossjoin(Generate([*NATIVE_CJ_SET], {[Customers].CurrentMember}), {[Yearly Income].[*TOTAL_MEMBER_SEL~SUM]}), {([Gender].[*DEFAULT_MEMBER], [Education Level].[*DEFAULT_MEMBER])}), [*SORTED_ROW_AXIS])))))) ON ROWS\n"
+            + "from [Sales]\n"
+            + "where [*CJ_SLICER_AXIS]\n";
+        executeQuery(mdx);
+    }
 }
 
 // End BasicQueryTest.java

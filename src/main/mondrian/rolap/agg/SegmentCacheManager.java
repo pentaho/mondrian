@@ -216,9 +216,14 @@ public class SegmentCacheManager {
      */
     public final ExecutorService cacheExecutor =
         Util.getExecutorService(
+            // We use the same value for coreSize and maxSize
+            // because that's the behavior we want. All extra
+            // tasks will be put on an unbounded queue.
             MondrianProperties.instance()
                 .SegmentCacheManagerNumberCacheThreads.get(),
-            0, 1,
+            MondrianProperties.instance()
+                .SegmentCacheManagerNumberCacheThreads.get(),
+            1,
             "mondrian.rolap.agg.SegmentCacheManager$cacheExecutor",
             new RejectedExecutionHandler() {
                 public void rejectedExecution(
@@ -238,9 +243,14 @@ public class SegmentCacheManager {
      */
     public final ExecutorService sqlExecutor =
         Util.getExecutorService(
+             // We use the same value for coreSize and maxSize
+            // because that's the behavior we want. All extra
+            // tasks will be put on an unbounded queue.
             MondrianProperties.instance()
                 .SegmentCacheManagerNumberSqlThreads.get(),
-            0, 1,
+            MondrianProperties.instance()
+                .SegmentCacheManagerNumberSqlThreads.get(),
+            1,
             "mondrian.rolap.agg.SegmentCacheManager$sqlExecutor",
             new RejectedExecutionHandler() {
                 public void rejectedExecution(

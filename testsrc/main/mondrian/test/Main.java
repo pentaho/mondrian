@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1998-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 21 January, 1999
@@ -202,6 +202,7 @@ public class Main extends TestSuite {
                 addTest(suite, QueryAllTest.class, "suite");
                 addTest(suite, QueryAllVCTest.class, "suite");
                 addTest(suite, Base64Test.class);
+                addTest(suite, CodeComplianceTest.class);
                 return suite;
             }
             addTest(suite, SegmentBuilderTest.class);
@@ -288,6 +289,7 @@ public class Main extends TestSuite {
             addTest(suite, ParallelTest.class);
             addTest(suite, SchemaVersionTest.class);
             addTest(suite, SchemaTest.class);
+            addTest(suite, DefaultRecognizerTest.class);
             addTest(suite, PerformanceTest.class);
             // GroupingSetQueryTest must be run before any test derived from
             // CsvDBTestCase
@@ -330,7 +332,6 @@ public class Main extends TestSuite {
             addTest(suite, DeadlockTest.class);
 
             addTest(suite, BlockingHashMapTest.class);
-            addTest(suite, CodeComplianceTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {
