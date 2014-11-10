@@ -196,7 +196,7 @@ public class FileRepository implements Repository {
                         "URL",
                         xmlDataSource.getURL(),
                         "DataSourceInfo",
-                        xmlDataSource.getDataSourceName(),
+                        xmlDataSource.getDataSourceInfo(),
                         "ProviderName",
                         xmlDataSource.getProviderName(),
                         "ProviderType",
