@@ -41,7 +41,7 @@ public class FileRepository implements Repository {
     private static final Object SERVER_INFO_LOCK = new Object();
     private final RepositoryContentFinder repositoryContentFinder;
 
-    private static final Logger LOGGER = Logger.getLogger(MondrianServer.class);
+	private static final Logger LOGGER = Logger.getLogger(MondrianServer.class);
 
     private static final ScheduledExecutorService executorService =
         Util.getScheduledExecutorService(
@@ -173,13 +173,13 @@ public class FileRepository implements Repository {
         repositoryContentFinder.shutdown();
     }
 
-    private ServerInfo getServerInfo() {
+    ServerInfo getServerInfo() {
         synchronized (SERVER_INFO_LOCK) {
             if (this.serverInfo != null) {
                 return this.serverInfo;
             }
 
-            final String content = repositoryContentFinder.getContent();
+            final String content = getRepositoryContentFinder().getContent();
             DataSourcesConfig.DataSources xmlDataSources =
                 XmlaSupport.parseDataSources(content, LOGGER);
             ServerInfo serverInfo = new ServerInfo();
@@ -281,12 +281,20 @@ public class FileRepository implements Repository {
             schema);
     }
 
-    private static class ServerInfo {
+    // Class is defined as package-protected in order to be accessible by unit tests
+    static class ServerInfo {
         private Map<String, DatabaseInfo> datasourceMap =
             new HashMap<String, DatabaseInfo>();
+
+        // Method is created to variable has been been accessible by unit tests
+		Map<String, DatabaseInfo> getDatasourceMap() {
+			return datasourceMap;
+		}
+        
     }
 
-    private static class DatabaseInfo {
+    // Class is defined as package-protected in order to be accessible by unit tests
+    static class DatabaseInfo {
         private final String name;
         private final Map<String, Object> properties;
         private Map<String, CatalogInfo> catalogMap =
@@ -296,6 +304,12 @@ public class FileRepository implements Repository {
             this.name = name;
             this.properties = properties;
         }
+
+        // Method is created to variable has been been accessible by unit tests
+		Map<String, Object> getProperties() {
+			return properties;
+		}
+        
     }
 
     private static class CatalogInfo {
@@ -335,6 +349,11 @@ public class FileRepository implements Repository {
             return rolapSchema;
         }
     }
+    
+    // Method is defined as package-protected in order to be accessible by unit tests
+    RepositoryContentFinder getRepositoryContentFinder() {
+		return repositoryContentFinder;
+	}
 }
 
 // End FileRepository.java
