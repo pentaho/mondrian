@@ -6,7 +6,6 @@
 *
 * Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.server;
 
 import mondrian.olap.*;
@@ -41,7 +40,7 @@ public class FileRepository implements Repository {
     private static final Object SERVER_INFO_LOCK = new Object();
     private final RepositoryContentFinder repositoryContentFinder;
 
-	private static final Logger LOGGER = Logger.getLogger(MondrianServer.class);
+    private static final Logger LOGGER = Logger.getLogger(MondrianServer.class);
 
     private static final ScheduledExecutorService executorService =
         Util.getScheduledExecutorService(
@@ -281,19 +280,20 @@ public class FileRepository implements Repository {
             schema);
     }
 
-    // Class is defined as package-protected in order to be accessible by unit tests
+    // Class is defined as package-protected in order to be accessible by unit
+    // tests
     static class ServerInfo {
         private Map<String, DatabaseInfo> datasourceMap =
             new HashMap<String, DatabaseInfo>();
 
         // Method is created to variable has been been accessible by unit tests
-		Map<String, DatabaseInfo> getDatasourceMap() {
-			return datasourceMap;
-		}
-        
+        Map<String, DatabaseInfo> getDatasourceMap() {
+           return datasourceMap;
+        }
     }
 
-    // Class is defined as package-protected in order to be accessible by unit tests
+    // Class is defined as package-protected in order to be accessible by unit
+    // tests
     static class DatabaseInfo {
         private final String name;
         private final Map<String, Object> properties;
@@ -306,10 +306,9 @@ public class FileRepository implements Repository {
         }
 
         // Method is created to variable has been been accessible by unit tests
-		Map<String, Object> getProperties() {
-			return properties;
-		}
-        
+        Map<String, Object> getProperties() {
+            return properties;
+        }
     }
 
     private static class CatalogInfo {
@@ -349,11 +348,12 @@ public class FileRepository implements Repository {
             return rolapSchema;
         }
     }
-    
-    // Method is defined as package-protected in order to be accessible by unit tests
+
+    // Method is defined as package-protected in order to be accessible by unit
+    // tests
     RepositoryContentFinder getRepositoryContentFinder() {
-		return repositoryContentFinder;
-	}
+        return repositoryContentFinder;
+    }
 }
 
 // End FileRepository.java
