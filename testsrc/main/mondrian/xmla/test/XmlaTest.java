@@ -16,11 +16,9 @@ import mondrian.test.TestContext;
 import mondrian.xmla.*;
 import mondrian.xmla.impl.DefaultXmlaRequest;
 import mondrian.xmla.impl.DefaultXmlaResponse;
-
 import junit.framework.*;
 
 import org.apache.log4j.Logger;
-
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.w3c.dom.*;
@@ -28,7 +26,9 @@ import org.w3c.dom.*;
 import java.io.*;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Pattern;
+
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -54,6 +54,8 @@ public class XmlaTest extends TestCase {
     }
 
     private static final XmlaTestContext context = new XmlaTestContext();
+    
+    private static final String DATA_SOURCE_INFO_RESPONSE_PROP = "data.source.info.response";
 
     private XmlaHandler handler;
     private MondrianServer server;
@@ -103,6 +105,15 @@ public class XmlaTest extends TestCase {
         DiffRepository diffRepos = getDiffRepos();
         String request = diffRepos.expand(null, "${request}");
         String expectedResponse = diffRepos.expand(null, "${response}");
+        
+        Properties props = new Properties();
+   		XmlaTestContext s = new XmlaTestContext();              
+           String con = s.getConnectString();        
+           props.setProperty(DATA_SOURCE_INFO_RESPONSE_PROP, con);
+           
+           expectedResponse = Util.replaceProperties( 
+           		expectedResponse, Util.toMap( props ) );
+        
         Element requestElem = XmlaUtil.text2Element(
             XmlaTestContext.xmlFromTemplate(
                 request, XmlaTestContext.ENV));
