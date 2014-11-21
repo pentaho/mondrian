@@ -14,11 +14,10 @@ import mondrian.rolap.RolapConnectionProperties;
 import mondrian.test.*;
 import mondrian.tui.*;
 import mondrian.util.LockBox;
-
+import mondrian.xmla.test.XmlaTestContext;
 import junit.framework.AssertionFailedError;
 
 import org.olap4j.metadata.XmlaConstants;
-
 import org.custommonkey.xmlunit.XMLAssert;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
@@ -53,6 +52,9 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     public static final String REQUEST_TYPE_PROP =
         "request.type";// data.source.info
     public static final String DATA_SOURCE_INFO_PROP = "data.source.info";
+    
+    private static final String DATA_SOURCE_INFO_RESPONSE_PROP = "data.source.info.response";
+    
     public static final String DATA_SOURCE_INFO = "FoodMart";// catalog
     public static final String CATALOG_PROP     = "catalog";
     public static final String CATALOG_NAME_PROP = "catalog.name";
@@ -248,7 +250,8 @@ System.out.println("Got CONTINUE");
             XmlaRequestCallback.EXPECT_100_CONTINUE);
 
         Properties props = new Properties();
-        try {
+        addDatasourceInfoResponseKey(props);
+        try {	
             doTest(req, props);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -261,12 +264,20 @@ System.out.println("Got CONTINUE");
             getSessionId(Action.CREATE);
         }
         Properties props = new Properties();
+        addDatasourceInfoResponseKey(props);
         try {
             doTest(props);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+    
+	protected void addDatasourceInfoResponseKey(Properties props) {
+		XmlaTestContext s = new XmlaTestContext();              
+        String con = s.getConnectString();
+        
+        props.setProperty(DATA_SOURCE_INFO_RESPONSE_PROP, con);
+	}
 
     static class CallBack implements XmlaRequestCallback {
         public CallBack() {
