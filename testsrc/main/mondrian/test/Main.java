@@ -32,6 +32,7 @@ import mondrian.util.*;
 import mondrian.xmla.*;
 import mondrian.xmla.impl.DynamicDatasourceXmlaServletTest;
 import mondrian.xmla.test.XmlaTest;
+import mondrian.server.FileRepositoryTest;
 
 import junit.framework.Test;
 import junit.framework.*;
@@ -332,6 +333,7 @@ public class Main extends TestSuite {
             addTest(suite, DeadlockTest.class);
 
             addTest(suite, BlockingHashMapTest.class);
+            addTest(suite, FileRepositoryTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {

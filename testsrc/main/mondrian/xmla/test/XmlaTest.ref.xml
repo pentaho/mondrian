@@ -161,7 +161,7 @@
         <DataSourceName>FoodMart</DataSourceName>
         <DataSourceDescription>Mondrian FoodMart Test data source</DataSourceDescription>
         <URL>http://localhost:8080/mondrian/xmla</URL>
-        <DataSourceInfo>FoodMart</DataSourceInfo>
+        <DataSourceInfo>${data.source.info.response}</DataSourceInfo>
         <ProviderName>Mondrian</ProviderName>
         <ProviderType>MDP</ProviderType>
         <AuthenticationMode>Unauthenticated</AuthenticationMode>
