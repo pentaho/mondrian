@@ -101,7 +101,13 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
     public void testDDatasource() throws Exception {
         String requestType = "DISCOVER_DATASOURCES";
-        doTestRT(requestType, TestContext.instance());
+        
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+        addDatasourceInfoResponseKey(props);
+
+        doTest(requestType, props, TestContext.instance());
     }
 
     public void testDEnumerators() throws Exception {
