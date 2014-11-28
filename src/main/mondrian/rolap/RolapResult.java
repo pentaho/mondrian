@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -363,37 +363,39 @@ public class RolapResult extends ResultBase {
                             slicerEvaluator,
                             tupleList,
                             false);
+                    evaluator.setSlicerTuples(tupleList);
 
                     final Calc valueCalc =
                         new ValueCalc(
                             new DummyExp(new ScalarType()));
-                    final TupleList tupleList1 = tupleList;
 
+                    final List<Member> prevSlicerMembers =
+                        new ArrayList<Member>();
 
                     final Calc calc =
                         new GenericCalc(
                             new DummyExp(query.slicerCalc.getType()))
                         {
                             public Object evaluate(Evaluator evaluator) {
-                                TupleList list =
-                                    AbstractAggregateFunDef
-                                        .processUnrelatedDimensions(
-                                            tupleList1, evaluator);
+                                TupleList list = AbstractAggregateFunDef
+                                    .processUnrelatedDimensions(
+                                        ((RolapEvaluator) evaluator)
+                                            .getOptimizedSlicerTuples(null),
+                                        evaluator);
+                                for (Member member : prevSlicerMembers) {
+                                    if (evaluator.getContext(
+                                            member.getHierarchy())
+                                        instanceof CompoundSlicerRolapMember)
+                                    {
+                                        evaluator.setContext(member);
+                                    }
+                                }
                                 return AggregateFunDef.AggregateCalc.aggregate(
                                     valueCalc, evaluator, list);
                             }
-                        };
-                    final List<RolapHierarchy> hierarchyList =
-                        new AbstractList<RolapHierarchy>() {
-                            final List<Member> pos0 = tupleList1.get(0);
-
-                            public RolapHierarchy get(int index) {
-                                return ((RolapMember) pos0.get(index))
-                                    .getHierarchy();
-                            }
-
-                            public int size() {
-                                return pos0.size();
+                            // depend on the full evaluation context
+                            public boolean dependsOn(Hierarchy hierarchy) {
+                                return true;
                             }
                         };
 
@@ -403,8 +405,19 @@ public class RolapResult extends ResultBase {
                     // the slicer.
                     // Arbitrarily picks the first dim of the first tuple
                     // to use as placeholder.
+                    if (tupleList.get(0).size() > 1) {
+                        for (int i = 1; i < tupleList.get(0).size(); i++) {
+                            Member placeholder = setPlaceholderSlicerAxis(
+                                (RolapMember) tupleList.get(0).get(i),
+                                calc,
+                                false);
+                            prevSlicerMembers.add(
+                                evaluator.setContext(placeholder));
+                        }
+                    }
+
                     Member placeholder = setPlaceholderSlicerAxis(
-                        (RolapMember)tupleList.get(0).get(0), calc);
+                        (RolapMember)tupleList.get(0).get(0), calc, true);
                     evaluator.setContext(placeholder);
                 }
             } while (phase());
@@ -528,7 +541,7 @@ public class RolapResult extends ResultBase {
      * up the set on the slicer.
      */
     private Member setPlaceholderSlicerAxis(
-        final RolapMember member, final Calc calc)
+        final RolapMember member, final Calc calc, boolean setAxis)
     {
         ValueFormatter formatter;
         if (member.getDimension().isMeasures()) {
@@ -550,10 +563,11 @@ public class RolapResult extends ResultBase {
             Property.FORMAT_EXP_PARSED.getName(),
             member.getPropertyValue(Property.FORMAT_EXP_PARSED.getName()));
 
-        TupleList dummyList = TupleCollections.createList(1);
-        dummyList.addTuple(placeholderMember);
-
-        this.slicerAxis = new RolapAxis(dummyList);
+        if (setAxis) {
+            TupleList dummyList = TupleCollections.createList(1);
+            dummyList.addTuple(placeholderMember);
+            this.slicerAxis = new RolapAxis(dummyList);
+        }
         return placeholderMember;
     }
 
@@ -981,6 +995,8 @@ public class RolapResult extends ResultBase {
         if (contextEvaluator != null && contextEvaluator.isEvalAxes()) {
             evaluator.setEvalAxes(true);
             evaluator.setContext(contextEvaluator.getMembers());
+            evaluator.setSlicerTuples(
+                ((RolapEvaluator) contextEvaluator).getSlicerTuples());
         }
 
         final int savepoint = evaluator.savepoint();
@@ -2143,7 +2159,7 @@ public class RolapResult extends ResultBase {
      * the context of the slicer members.
      * See MONDRIAN-1226.
      */
-    private class CompoundSlicerRolapMember extends DelegatingRolapMember
+    public class CompoundSlicerRolapMember extends DelegatingRolapMember
     implements RolapMeasure
     {
         private final Calc calc;

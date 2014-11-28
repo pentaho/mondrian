@@ -18,9 +18,7 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.sql.DataSource;
@@ -91,25 +89,6 @@ public class RolapNativeFilter extends RolapNativeSet {
             String filterSql = sql.generateFilterCondition(filterExpr);
             if (filterSql != null) {
                 sqlQuery.addHaving(filterSql);
-
-              final List<RolapMember> slicerMembers = Util
-                  .cast(((RolapEvaluator) getEvaluator()).getSlicerMembers());
-              if (!slicerMembers.isEmpty()) {
-                Map<RolapLevel, List<RolapMember>> slicerMap =
-                    new HashMap<RolapLevel, List<RolapMember>>();
-                for (RolapMember rolapMember : slicerMembers) {
-                  final RolapLevel level = rolapMember.getLevel();
-                  if (!slicerMap.containsKey(level)) {
-                    slicerMap.put(level, new ArrayList<RolapMember>());
-                  }
-                  slicerMap.get(level).add(rolapMember);
-                }
-                for (List<RolapMember> slicersLevel : slicerMap.values()) {
-                  SqlConstraintUtils.addMemberConstraint(
-                      sqlQuery, baseCube, aggStar, slicersLevel,
-                      false, true, false);
-                }
-              }
             }
 
             if (getEvaluator().isNonEmpty() || isJoinRequired()) {

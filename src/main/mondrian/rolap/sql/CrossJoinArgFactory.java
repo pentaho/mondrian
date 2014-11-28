@@ -66,7 +66,8 @@ public class CrossJoinArgFactory {
     private Set<CrossJoinArg> stripConflictingArgs(Set<CrossJoinArg> joinArgs) {
         Set<Hierarchy> skip = new HashSet<Hierarchy>();
         Set<Hierarchy> encountered = new HashSet<Hierarchy>();
-        Set<CrossJoinArg> result = new HashSet<CrossJoinArg>();
+        // linked to keep arg order for sql
+        Set<CrossJoinArg> result = new LinkedHashSet<CrossJoinArg>();
         for (CrossJoinArg arg : joinArgs) {
             if (arg.getLevel() == null) {
                 continue;
