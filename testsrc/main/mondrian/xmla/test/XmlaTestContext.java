@@ -115,6 +115,10 @@ public class XmlaTestContext {
             + "          <Catalog name='FoodMart'><Definition>"
             + catalogUrl
             + "</Definition></Catalog>"
+            + "<Catalog name='__1'>"
+            + "<DataSourceInfo>Provider=mondrian;Jdbc='jdbc:derby:non-existing-db'</DataSourceInfo>"
+            + "<Definition>" + catalogUrl + "</Definition>"
+            + "</Catalog>"
             + "       </Catalogs>"
             + "   </DataSource>"
             + "</DataSources>";
