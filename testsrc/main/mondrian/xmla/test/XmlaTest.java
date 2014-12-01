@@ -1,24 +1,28 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2002-2014 Pentaho and others
+// All Rights Reserved.
 */
-
 package mondrian.xmla.test;
 
 import mondrian.olap.*;
+import mondrian.olap.Util.PropertyList;
+import mondrian.rolap.RolapConnectionProperties;
 import mondrian.server.StringRepositoryContentFinder;
 import mondrian.test.DiffRepository;
 import mondrian.test.TestContext;
 import mondrian.xmla.*;
 import mondrian.xmla.impl.DefaultXmlaRequest;
 import mondrian.xmla.impl.DefaultXmlaResponse;
+
 import junit.framework.*;
 
 import org.apache.log4j.Logger;
+
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.w3c.dom.*;
@@ -54,8 +58,9 @@ public class XmlaTest extends TestCase {
     }
 
     private static final XmlaTestContext context = new XmlaTestContext();
-    
-    private static final String DATA_SOURCE_INFO_RESPONSE_PROP = "data.source.info.response";
+
+    private static final String DATA_SOURCE_INFO_RESPONSE_PROP =
+        "data.source.info.response";
 
     private XmlaHandler handler;
     private MondrianServer server;
@@ -105,15 +110,19 @@ public class XmlaTest extends TestCase {
         DiffRepository diffRepos = getDiffRepos();
         String request = diffRepos.expand(null, "${request}");
         String expectedResponse = diffRepos.expand(null, "${response}");
-        
+
         Properties props = new Properties();
-   		XmlaTestContext s = new XmlaTestContext();              
-           String con = s.getConnectString();        
-           props.setProperty(DATA_SOURCE_INFO_RESPONSE_PROP, con);
-           
-           expectedResponse = Util.replaceProperties( 
-           		expectedResponse, Util.toMap( props ) );
-        
+        XmlaTestContext s = new XmlaTestContext();
+           String con = s.getConnectString();
+           PropertyList pl = Util.parseConnectString(con);
+           pl.remove(RolapConnectionProperties.Jdbc.name());
+           pl.remove(RolapConnectionProperties.JdbcUser.name());
+           pl.remove(RolapConnectionProperties.JdbcPassword.name());
+           props.setProperty(DATA_SOURCE_INFO_RESPONSE_PROP, pl.toString());
+           expectedResponse =
+               Util.replaceProperties(
+                   expectedResponse, Util.toMap(props));
+
         Element requestElem = XmlaUtil.text2Element(
             XmlaTestContext.xmlFromTemplate(
                 request, XmlaTestContext.ENV));

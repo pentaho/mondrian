@@ -1,25 +1,30 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2002-2014 Pentaho and others
+// All Rights Reserved.
 */
-
 package mondrian.xmla;
 
 import mondrian.olap.*;
+import mondrian.olap.Util.PropertyList;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.test.*;
 import mondrian.tui.*;
 import mondrian.util.LockBox;
 import mondrian.xmla.test.XmlaTestContext;
+
 import junit.framework.AssertionFailedError;
 
 import org.olap4j.metadata.XmlaConstants;
+
 import org.custommonkey.xmlunit.XMLAssert;
+
 import org.w3c.dom.*;
+
 import org.xml.sax.SAXException;
 
 import java.io.*;
@@ -52,9 +57,10 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     public static final String REQUEST_TYPE_PROP =
         "request.type";// data.source.info
     public static final String DATA_SOURCE_INFO_PROP = "data.source.info";
-    
-    private static final String DATA_SOURCE_INFO_RESPONSE_PROP = "data.source.info.response";
-    
+
+    private static final String DATA_SOURCE_INFO_RESPONSE_PROP =
+        "data.source.info.response";
+
     public static final String DATA_SOURCE_INFO = "FoodMart";// catalog
     public static final String CATALOG_PROP     = "catalog";
     public static final String CATALOG_NAME_PROP = "catalog.name";
@@ -251,7 +257,7 @@ System.out.println("Got CONTINUE");
 
         Properties props = new Properties();
         addDatasourceInfoResponseKey(props);
-        try {	
+        try {
             doTest(req, props);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -271,13 +277,16 @@ System.out.println("Got CONTINUE");
             throw new RuntimeException(e);
         }
     }
-    
-	protected void addDatasourceInfoResponseKey(Properties props) {
-		XmlaTestContext s = new XmlaTestContext();              
+
+    protected void addDatasourceInfoResponseKey(Properties props) {
+        XmlaTestContext s = new XmlaTestContext();
         String con = s.getConnectString();
-        
-        props.setProperty(DATA_SOURCE_INFO_RESPONSE_PROP, con);
-	}
+        PropertyList pl = Util.parseConnectString(con);
+        pl.remove(RolapConnectionProperties.Jdbc.name());
+        pl.remove(RolapConnectionProperties.JdbcUser.name());
+        pl.remove(RolapConnectionProperties.JdbcPassword.name());
+        props.setProperty(DATA_SOURCE_INFO_RESPONSE_PROP, pl.toString());
+    }
 
     static class CallBack implements XmlaRequestCallback {
         public CallBack() {
