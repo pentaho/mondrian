@@ -210,10 +210,18 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
         for (String catalogName
             : catalogFinder.getCatalogNames(mondrianConnection))
         {
-            final Map<String, RolapSchema> schemaMap =
-                catalogFinder.getRolapSchemas(
-                    mondrianConnection,
-                    catalogName);
+            final Map<String, RolapSchema> schemaMap;
+            try {
+              schemaMap =
+                  catalogFinder.getRolapSchemas(
+                      mondrianConnection,
+                      catalogName);
+             } catch(Exception e) { 
+               // for some reason such generic interface as repository does not throw an excpetion of ny kind
+               // so have to catch Exception
+               // LOGGER.warn( "Can't get Rolap Schemas for catalog:" + catalogName + ". Skipping...", e );
+               continue;
+            }
             olap4jCatalogs.add(
                 new MondrianOlap4jCatalog(
                     olap4jDatabaseMetaData,
