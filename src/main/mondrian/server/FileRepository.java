@@ -124,11 +124,11 @@ public class FileRepository implements Repository {
                     "No catalogs in the database named "
                     + datasourceInfo.name);
             }
-            for(CatalogInfo catalogInfo: datasourceInfo.catalogMap.values()) {
+            for (CatalogInfo catalogInfo : datasourceInfo.catalogMap.values()) {
               try {
-                return getConnection( catalogInfo, server, roleName, props );
-              } catch(Exception e) {
-                LOGGER.warn( "Failed getting connection. Skipping", e );
+                return getConnection(catalogInfo, server, roleName, props);
+              } catch (Exception e) {
+                LOGGER.warn("Failed getting connection. Skipping", e);
               }
             }
         } else {
@@ -139,11 +139,17 @@ public class FileRepository implements Repository {
           }
           return getConnection(namedCatalogInfo, server, roleName, props);
         }
-        
-        throw Util.newError( "No suitable connection found" );
+
+        throw Util.newError("No suitable connection found");
     }
 
-    private OlapConnection getConnection( CatalogInfo catalogInfo, MondrianServer server, String roleName, Properties props ) throws SQLException {
+    private OlapConnection getConnection(
+        CatalogInfo catalogInfo,
+        MondrianServer server,
+        String roleName,
+        Properties props)
+        throws SQLException
+    {
       String connectString = catalogInfo.olap4jConnectString;
 
       // Save the server for the duration of the call to 'getConnection'.
