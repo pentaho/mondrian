@@ -1,10 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2002-2014 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.server;
 
@@ -44,8 +45,8 @@ public class FileRepositoryTest extends TestCase {
                 + "</DataSources>\n";
 
         FileRepository fileRepositoryMock = mock(FileRepository.class);
-        RepositoryContentFinder repositoryContentFinderMock = mock(
-                RepositoryContentFinder.class);
+        RepositoryContentFinder repositoryContentFinderMock =
+            mock(RepositoryContentFinder.class);
 
         doReturn(repositoryContentFinderMock).when(fileRepositoryMock)
                 .getRepositoryContentFinder();
@@ -53,17 +54,14 @@ public class FileRepositoryTest extends TestCase {
 
         doCallRealMethod().when(fileRepositoryMock).getServerInfo();
 
-        FileRepository.ServerInfo serverInfo = fileRepositoryMock
-                .getServerInfo();
+        FileRepository.ServerInfo serverInfo =
+            fileRepositoryMock.getServerInfo();
 
-        // in reality DATASOURCE_NAME is Provider=Mondrian for example
-        FileRepository.DatabaseInfo databaseInfo = (FileRepository
-                .DatabaseInfo) serverInfo
-                          .getDatasourceMap().get(datasourceNameStub);
+        FileRepository.DatabaseInfo databaseInfo =
+            serverInfo.getDatasourceMap().get(datasourceNameStub);
 
-        assertTrue(databaseInfo.getProperties().containsValue(datasourceInfoStub));
+        assertTrue(
+            databaseInfo.getProperties().containsValue(datasourceInfoStub));
      }
-
 }
-
-//End FileRepositoryTest.java
+// End FileRepositoryTest.java

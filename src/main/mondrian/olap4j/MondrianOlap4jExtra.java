@@ -1,16 +1,17 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2002-2014 Pentaho and others
+// All Rights Reserved.
 */
-
 package mondrian.olap4j;
 
 import mondrian.olap.*;
 import mondrian.olap.Property;
+import mondrian.olap.Util.PropertyList;
 import mondrian.olap.fun.FunInfo;
 import mondrian.rolap.*;
 import mondrian.xmla.RowsetDefinition;
@@ -28,6 +29,7 @@ import org.olap4j.metadata.Schema;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Provides access to internals of mondrian's olap4j driver that are not part
@@ -144,7 +146,7 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
                             fi.getName(),
                             description,
                             buf.toString(),
-                            //TODO: currently FunInfo can not tell us which
+                            // TODO: currently FunInfo can not tell us which
                             // functions are MDX and which are UDFs.
                             varType.ordinal(),
                             1,
@@ -210,7 +212,7 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
         } else if (agg == RolapAggregator.Avg) {
             return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_AVG;
         } else {
-            //TODO: what are VAR and STD
+            // TODO: what are VAR and STD
             return RowsetDefinition.MdschemaMeasuresRowset
                 .MDMEASURE_AGGR_UNKNOWN;
         }
@@ -285,7 +287,30 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
         MondrianServer server =
             MondrianServer.forConnection(
                 olap4jConnection.getMondrianConnection());
-        return server.getDatabases(olap4jConnection.getMondrianConnection());
+        final List<Map<String, Object>> databases =
+            server.getDatabases(olap4jConnection.getMondrianConnection());
+
+        // We can't let JdbcPassword leak out of the public API, so we remove
+        // it here. This is only called by the XMLA servlets.
+        for (Map<String, Object> db : databases) {
+            String dsi = (String) db.get("DataSourceInfo");
+
+            if (dsi == null) {
+                break;
+            }
+
+            PropertyList pl = Util.parseConnectString(dsi);
+
+            boolean removed =
+                pl.remove(RolapConnectionProperties.Jdbc.name());
+            removed |= pl.remove(RolapConnectionProperties.JdbcUser.name());
+            removed |= pl.remove(RolapConnectionProperties.JdbcPassword.name());
+
+            if (removed) {
+                db.put("DataSourceInfo", pl.toString());
+            }
+        }
+        return databases;
     }
 
     public Map<String, Object> getAnnotationMap(MetadataElement element)
