@@ -18,12 +18,13 @@ import mondrian.olap.fun.*;
 import mondrian.olap.fun.vba.ExcelTest;
 import mondrian.olap.fun.vba.VbaTest;
 import mondrian.olap.type.TypeTest;
+import mondrian.olap4j.XmlaExtraTest;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.*;
 import mondrian.rolap.sql.SelectNotInGroupByTest;
 import mondrian.rolap.sql.SqlQueryTest;
-import mondrian.test.build.CodeComplianceTest;
+import mondrian.server.FileRepositoryTest;
 import mondrian.test.clearview.*;
 import mondrian.test.comp.ResultComparatorTest;
 import mondrian.udf.CurrentDateMemberUdfTest;
@@ -331,7 +332,8 @@ public class Main extends TestSuite {
             addTest(suite, DeadlockTest.class);
 
             addTest(suite, BlockingHashMapTest.class);
-            addTest(suite, CodeComplianceTest.class);
+            addTest(suite, FileRepositoryTest.class);
+            addTest(suite, XmlaExtraTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {

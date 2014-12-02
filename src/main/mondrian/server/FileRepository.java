@@ -1,12 +1,12 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2005-2014 Pentaho and others
+// All Rights Reserved.
 */
-
 package mondrian.server;
 
 import mondrian.olap.*;
@@ -173,13 +173,13 @@ public class FileRepository implements Repository {
         repositoryContentFinder.shutdown();
     }
 
-    private ServerInfo getServerInfo() {
+    ServerInfo getServerInfo() {
         synchronized (SERVER_INFO_LOCK) {
             if (this.serverInfo != null) {
                 return this.serverInfo;
             }
 
-            final String content = repositoryContentFinder.getContent();
+            final String content = getRepositoryContentFinder().getContent();
             DataSourcesConfig.DataSources xmlDataSources =
                 XmlaSupport.parseDataSources(content, LOGGER);
             ServerInfo serverInfo = new ServerInfo();
@@ -196,7 +196,7 @@ public class FileRepository implements Repository {
                         "URL",
                         xmlDataSource.getURL(),
                         "DataSourceInfo",
-                        xmlDataSource.getDataSourceName(),
+                        xmlDataSource.getDataSourceInfo(),
                         "ProviderName",
                         xmlDataSource.getProviderName(),
                         "ProviderType",
@@ -281,12 +281,21 @@ public class FileRepository implements Repository {
             schema);
     }
 
-    private static class ServerInfo {
+    // Class is defined as package-protected in order to be accessible by unit
+    // tests
+    static class ServerInfo {
         private Map<String, DatabaseInfo> datasourceMap =
             new HashMap<String, DatabaseInfo>();
+
+        // Method is created to variable has been been accessible by unit tests
+        Map<String, DatabaseInfo> getDatasourceMap() {
+           return datasourceMap;
+        }
     }
 
-    private static class DatabaseInfo {
+    // Class is defined as package-protected in order to be accessible by unit
+    // tests
+    static class DatabaseInfo {
         private final String name;
         private final Map<String, Object> properties;
         private Map<String, CatalogInfo> catalogMap =
@@ -295,6 +304,11 @@ public class FileRepository implements Repository {
         DatabaseInfo(String name, Map<String, Object> properties) {
             this.name = name;
             this.properties = properties;
+        }
+
+        // Method is created to variable has been been accessible by unit tests
+        Map<String, Object> getProperties() {
+            return properties;
         }
     }
 
@@ -334,6 +348,12 @@ public class FileRepository implements Repository {
             }
             return rolapSchema;
         }
+    }
+
+    // Method is defined as package-protected in order to be accessible by unit
+    // tests
+    RepositoryContentFinder getRepositoryContentFinder() {
+        return repositoryContentFinder;
     }
 }
 
