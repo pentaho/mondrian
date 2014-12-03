@@ -118,54 +118,66 @@ public class FileRepository implements Repository {
             throw Util.newError("Unknown database '" + databaseName + "'");
         }
 
-        final CatalogInfo catalogInfo;
         if (catalogName == null) {
             if (datasourceInfo.catalogMap.size() == 0) {
                 throw new OlapException(
                     "No catalogs in the database named "
                     + datasourceInfo.name);
             }
-            catalogInfo =
-                datasourceInfo
-                    .catalogMap
-                    .values()
-                    .iterator()
-                    .next();
+            for (CatalogInfo catalogInfo : datasourceInfo.catalogMap.values()) {
+              try {
+                return getConnection(catalogInfo, server, roleName, props);
+              } catch (Exception e) {
+                LOGGER.warn("Failed getting connection. Skipping", e);
+              }
+            }
         } else {
-            catalogInfo =
+          CatalogInfo namedCatalogInfo =
                 datasourceInfo.catalogMap.get(catalogName);
-        }
-        if (catalogInfo == null) {
+          if (namedCatalogInfo == null) {
             throw Util.newError("Unknown catalog '" + catalogName + "'");
+          }
+          return getConnection(namedCatalogInfo, server, roleName, props);
         }
-        String connectString = catalogInfo.olap4jConnectString;
 
-        // Save the server for the duration of the call to 'getConnection'.
-        final LockBox.Entry entry =
-            MondrianServerRegistry.INSTANCE.lockBox.register(server);
+        throw Util.newError("No suitable connection found");
+    }
 
-        final Properties properties = new Properties();
-        properties.setProperty(
-            RolapConnectionProperties.Instance.name(),
-            entry.getMoniker());
-        if (roleName != null) {
-            properties.setProperty(
-                RolapConnectionProperties.Role.name(),
-                roleName);
-        }
-        properties.putAll(props);
-        // Make sure we load the Mondrian driver into
-        // the ClassLoader.
-        try {
-          ClassResolver.INSTANCE.forName(
-              MondrianOlap4jDriver.class.getName(), true);
-        } catch (ClassNotFoundException e) {
-            throw new OlapException("Cannot find mondrian olap4j driver.");
-        }
-        // Now create the connection
-        final java.sql.Connection connection =
-            java.sql.DriverManager.getConnection(connectString, properties);
-        return ((OlapWrapper) connection).unwrap(OlapConnection.class);
+    private OlapConnection getConnection(
+        CatalogInfo catalogInfo,
+        MondrianServer server,
+        String roleName,
+        Properties props)
+        throws SQLException
+    {
+      String connectString = catalogInfo.olap4jConnectString;
+
+      // Save the server for the duration of the call to 'getConnection'.
+      final LockBox.Entry entry =
+          MondrianServerRegistry.INSTANCE.lockBox.register(server);
+
+      final Properties properties = new Properties();
+      properties.setProperty(
+          RolapConnectionProperties.Instance.name(),
+          entry.getMoniker());
+      if (roleName != null) {
+          properties.setProperty(
+              RolapConnectionProperties.Role.name(),
+              roleName);
+      }
+      properties.putAll(props);
+      // Make sure we load the Mondrian driver into
+      // the ClassLoader.
+      try {
+        ClassResolver.INSTANCE.forName(
+            MondrianOlap4jDriver.class.getName(), true);
+      } catch (ClassNotFoundException e) {
+          throw new OlapException("Cannot find mondrian olap4j driver.");
+      }
+
+      final java.sql.Connection connection =
+          java.sql.DriverManager.getConnection(connectString, properties);
+      return ((OlapWrapper) connection).unwrap(OlapConnection.class);
     }
 
     public void shutdown() {
