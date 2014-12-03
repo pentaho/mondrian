@@ -280,7 +280,7 @@ System.out.println("Got CONTINUE");
 
     protected void addDatasourceInfoResponseKey(Properties props) {
         XmlaTestContext s = new XmlaTestContext();
-        String con = s.getConnectString();
+        String con = s.getConnectString().replaceAll("&amp;","&");
         PropertyList pl = Util.parseConnectString(con);
         pl.remove(RolapConnectionProperties.Jdbc.name());
         pl.remove(RolapConnectionProperties.JdbcUser.name());
