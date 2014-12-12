@@ -13,7 +13,7 @@ package mondrian.olap;
  * <code>DelegatingRole</code> implements {@link Role} by
  * delegating all methods to an underlying {@link Role}.
  *
- * <p>It is a convenient base class if you want to override just a few of
+ * <p>This is a convenient base class if you want to override just a few of
  * {@link Role}'s methods.
  *
  * @author Richard M. Emberson
@@ -25,7 +25,7 @@ public class DelegatingRole implements Role {
     /**
      * Creates a DelegatingRole.
      *
-     * @param role Underlying role
+     * @param role Underlying role.
      */
     public DelegatingRole(Role role) {
         assert role != null;

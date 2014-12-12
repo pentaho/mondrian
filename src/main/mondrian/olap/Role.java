@@ -19,7 +19,8 @@ package mondrian.olap;
  *
  * <p>At present, the only way to create a role is programmatically. You then
  * add appropriate permissions, and associate the role with a connection.
- * Queries executed for the duration of the connection will b.
+ * Queries executed for the duration of the connection will be using the role
+ * for security control.
  *
  * <p>Mondrian does not have any notion of a 'user'. It is the client
  * application's responsibility to create a role appropriate for the user who
@@ -64,8 +65,8 @@ public interface Role {
          * <p>For these purposes, children which are below the bottom level are
          * regarded as visible.</p>
          *
-         * @param member Member
-         * @return current role's access to member
+         * @param member Member.
+         * @return Return current role's access to member.
          */
         Access getAccess(Member member);
 
@@ -73,7 +74,7 @@ public interface Role {
          * Returns the depth of the highest level to which the current Role has
          * access. The 'all' level, if present, has a depth of zero.
          *
-         * @return depth of the highest accessible level
+         * @return Returns depth of the highest accessible level.
          */
         int getTopLevelDepth();
 
@@ -81,7 +82,7 @@ public interface Role {
          * Returns the depth of the lowest level to which the current Role has
          * access. The 'all' level, if present, has a depth of zero.
          *
-         * @return depth of the lowest accessible level
+         * @return Returns depth of the lowest accessible level.
          */
         int getBottomLevelDepth();
 
@@ -89,7 +90,7 @@ public interface Role {
          * Returns the policy by which cell values are calculated if not all
          * of a member's children are visible.
          *
-         * @return rollup policy
+         * @return Returns rollup policy.
          */
         RollupPolicy getRollupPolicy();
 
@@ -101,7 +102,7 @@ public interface Role {
          * bottom level are ignored.
          *
          * @param member Member
-         * @return whether a descendant is inaccessible
+         * @return Returns whether a descendant is inaccessible.
          */
         boolean hasInaccessibleDescendants(Member member);
     }

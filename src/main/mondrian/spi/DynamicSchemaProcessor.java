@@ -45,10 +45,10 @@ public interface DynamicSchemaProcessor {
      * <p>An implementation should generally interpret the URL string as
      * an Apache VFS (virtual file system) URL.
      *
-     * @param schemaUrl the URL of the catalog
-     * @param connectInfo Connection properties
-     * @return the modified schema
-     * @throws Exception if an error occurs
+     * @param schemaUrl The URL of the catalog.
+     * @param connectInfo Connection properties.
+     * @return Returns the modified schema.
+     * @throws Exception if an error occurs.
      */
     public String processSchema(
         String schemaUrl,
