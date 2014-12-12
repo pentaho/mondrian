@@ -19,7 +19,6 @@ import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 import java.lang.reflect.*;
-import java.math.BigInteger;
 import java.sql.*;
 import java.sql.Connection;
 import java.util.*;
@@ -711,6 +710,7 @@ public class DialectTest extends TestCase {
             + "      </SQL>\n"
             + "      </MeasureExpression>\n"
             + "      </Measure>\n"
+            + "  <Measure name=\"Pass Agg enabled\" column=\"store_cost\" aggregator=\"sum\"/>\n"
             + "  </Cube>\n"
             + "</Schema>\n");
         Result result = context.executeQuery(
