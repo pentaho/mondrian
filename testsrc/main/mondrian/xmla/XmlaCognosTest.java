@@ -4,9 +4,8 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.xmla;
 
 import mondrian.olap.MondrianProperties;
@@ -44,12 +43,29 @@ public class XmlaCognosTest extends XmlaBaseTestCase {
             Dialect dialect = TestContext.instance().getDialect();
             switch (dialect.getDatabaseProduct()) {
             case DERBY:
+            case VERTICA:
                 content = Util.replace(
                     content,
                     "<Value xsi:type=\"xsd:double\">",
                     "<Value xsi:type=\"xsd:int\">");
                 break;
             }
+        } else if ("testCognosMDXSuiteHR_001".equals(testCaseName)
+            && filename.equals("response")
+            && TestContext.instance().getDialect().getDatabaseProduct()
+                .equals(Dialect.DatabaseProduct.VERTICA))
+        {
+            content = content.replaceAll(
+                "(<Cell CellOrdinal=\\\"(?:5|6|7|8|9|10|12|14|15|16|17|19|21|22|24)\\\">\\s*"
+                + "<Value xsi:type=\\\"xsd):double", "$1:int");
+        } else if ("testCognosMDXSuiteHR_002".equals(testCaseName)
+            && filename.equals("response")
+            && TestContext.instance().getDialect().getDatabaseProduct()
+                .equals(Dialect.DatabaseProduct.VERTICA))
+        {
+            content = content.replaceAll(
+                "(<Cell CellOrdinal=\\\"(?:1|2|3|4|5|7|9|10|11|12|13|14|16|18|19|20|21|22|23|25|27|28|29|30|32|34|35|37)\\\">\\s*"
+                + "<Value xsi:type=\\\"xsd):double", "$1:int");
         }
         return content;
     }

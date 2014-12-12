@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.xmla;
 
 import mondrian.olap.*;
@@ -101,7 +100,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
     public void testDDatasource() throws Exception {
         String requestType = "DISCOVER_DATASOURCES";
-        
+
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
@@ -653,6 +652,18 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
                     content,
                     " sql:field=\"Day\" type=\"xsd:decimal\"",
                     " sql:field=\"Day\" type=\"xsd:integer\"");
+                break;
+            case VERTICA:
+                // vertica has no int32, bigint is being translated to
+                // integer in sqlToXsdType
+                content = Util.replace(
+                    content,
+                    "type=\"xsd:int\"",
+                    "type=\"xsd:integer\"");
+                content = Util.replace(
+                    content,
+                    "type=\"xsd:decimal\"",
+                    "type=\"xsd:double\"");
                 break;
             case ACCESS:
                 content = Util.replace(
