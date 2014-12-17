@@ -4,9 +4,8 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.xmla;
 
 import mondrian.olap.Util;
@@ -58,6 +57,7 @@ public class XmlaExcel2007Test extends XmlaBaseTestCase {
             Dialect dialect = TestContext.instance().getDialect();
             switch (dialect.getDatabaseProduct()) {
             case MYSQL:
+            case VERTICA:
                 content =
                     foo(content, "Has_x0020_coffee_x0020_bar", "1", "true");
                 content =

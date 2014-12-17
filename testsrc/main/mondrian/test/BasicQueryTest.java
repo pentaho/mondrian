@@ -8128,7 +8128,11 @@ public class BasicQueryTest extends FoodMartTestCase {
                 + " <MeasureExpression>\n"
                 + " <SQL dialect='generic'>\n"
                 + " NULL"
-                + " </SQL></MeasureExpression></Measure>",
+                + " </SQL>"
+                + " <SQL dialect='vertica'>\n"
+                + " NULL::FLOAT"
+                + " </SQL>"
+                + "</MeasureExpression></Measure>",
                 null, null);
         testContext.executeQuery(
             "select "

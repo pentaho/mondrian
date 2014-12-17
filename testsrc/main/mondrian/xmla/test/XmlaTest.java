@@ -113,15 +113,15 @@ public class XmlaTest extends TestCase {
 
         Properties props = new Properties();
         XmlaTestContext s = new XmlaTestContext();
-           String con = s.getConnectString();
-           PropertyList pl = Util.parseConnectString(con);
-           pl.remove(RolapConnectionProperties.Jdbc.name());
-           pl.remove(RolapConnectionProperties.JdbcUser.name());
-           pl.remove(RolapConnectionProperties.JdbcPassword.name());
-           props.setProperty(DATA_SOURCE_INFO_RESPONSE_PROP, pl.toString());
-           expectedResponse =
-               Util.replaceProperties(
-                   expectedResponse, Util.toMap(props));
+        String con = s.getConnectString().replaceAll("&amp;","&");
+        PropertyList pl = Util.parseConnectString(con);
+        pl.remove(RolapConnectionProperties.Jdbc.name());
+        pl.remove(RolapConnectionProperties.JdbcUser.name());
+        pl.remove(RolapConnectionProperties.JdbcPassword.name());
+        props.setProperty(DATA_SOURCE_INFO_RESPONSE_PROP, pl.toString());
+        expectedResponse =
+            Util.replaceProperties(
+                expectedResponse, Util.toMap(props));
 
         Element requestElem = XmlaUtil.text2Element(
             XmlaTestContext.xmlFromTemplate(
