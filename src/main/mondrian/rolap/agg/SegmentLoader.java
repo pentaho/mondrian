@@ -674,10 +674,18 @@ public class SegmentLoader {
             processedTypes = types;
         }
         final RowList processedRows = new RowList(processedTypes, 100);
+        final int checkCancelPeriod =
+            MondrianProperties.instance().CancelPhaseInterval.get();
 
         while (rawRows.next()) {
             checkResultLimit(++stmt.rowCount);
             processedRows.createRow();
+            // Check if the MDX query was canceled.
+            if (checkCancelPeriod > 0
+                && stmt.rowCount % checkCancelPeriod == 0)
+            {
+                Locus.peek().execution.checkCancelOrTimeout();
+            }
 
             // get the columns
             int columnIndex = 0;
