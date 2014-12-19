@@ -29,7 +29,6 @@ import org.apache.log4j.Logger;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
 
 import javax.sql.DataSource;
@@ -416,6 +415,8 @@ public class SqlTupleReader implements TupleReader {
             }
 
             int limit = MondrianProperties.instance().ResultLimit.get();
+            final int checkCancelPeriod =
+                MondrianProperties.instance().CancelPhaseInterval.get();
             int fetchCount = 0;
 
             // determine how many enum targets we have
@@ -440,6 +441,13 @@ public class SqlTupleReader implements TupleReader {
                     // result limit exceeded, throw an exception
                     throw MondrianResource.instance().MemberFetchLimitExceeded
                         .ex((long) limit);
+                }
+
+                // Check if the MDX query was canceled.
+                if (checkCancelPeriod > 0
+                    && stmt.rowCount % checkCancelPeriod == 0)
+                {
+                    Locus.peek().execution.checkCancelOrTimeout();
                 }
 
                 if (enumTargetCount == 0) {

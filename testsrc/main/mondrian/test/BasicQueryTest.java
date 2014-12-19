@@ -10,7 +10,6 @@
 //
 // jhyde, Feb 14, 2003
 */
-
 package mondrian.test;
 
 import mondrian.calc.ResultStyle;
@@ -21,7 +20,9 @@ import mondrian.olap.*;
 import mondrian.olap.Position;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
+import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapSchema;
+import mondrian.rolap.RolapUtil;
 import mondrian.server.Execution;
 import mondrian.spi.*;
 import mondrian.spi.impl.JdbcStatisticsProvider;
@@ -29,6 +30,10 @@ import mondrian.spi.impl.SqlStatisticsProvider;
 import mondrian.util.Bug;
 
 import junit.framework.Assert;
+
+import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LoggingEvent;
 
 import org.eigenbase.util.property.StringProperty;
 
@@ -42,6 +47,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -6083,6 +6089,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         executeAndCancel(query, 2000);
     }
 
+
     private void executeAndCancel(String queryString, int waitMillis)
     {
         final TestContext tc = TestContext.instance().create(
@@ -6140,6 +6147,189 @@ public class BasicQueryTest extends FoodMartTestCase {
                 + throwables[0]);
         }
         TestContext.checkThrowable(throwable, "canceled");
+    }
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-2161">
+     * MONDRIAN-2161
+     * </a>.<br>
+     * Tests cancelation after executing sql for readTuples
+     */
+    public void testCancelSqlFetchReadTuples() throws Exception {
+        // 512 rows
+        final int cancelInterval = 50;
+        final String query =
+            "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
+            + "  {[Product].members} ON ROWS\n"
+            + "FROM [Sales]";
+        propSaver.set(props.CancelPhaseInterval, cancelInterval);
+        final String triggerSql = "product_name";
+
+        Long rows = executeAndCancelAtSqlFetch(
+            query, triggerSql,
+            "SqlTupleReader.readTuples [[Product].[Product Name]]");
+         Assert.assertEquals(
+             "Query not aborted at first interval",
+             new Long(cancelInterval), rows);
+    }
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-2161">
+     * MONDRIAN-2161
+     * </a>.<br>
+     * Tests cancelation after executing sql for SegmentLoader
+     */
+    public void testCancelSqlFetchSegmentLoad() throws Exception {
+          // 512 rows
+          final int cancelInterval = 101;
+          propSaver.set(props.CancelPhaseInterval, cancelInterval);
+          // this will avoid spamming output with cache failures, but should
+          // also work without side effects with cache enabled
+          propSaver.set(props.DisableCaching, true);
+          final String query =
+              "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
+              + "  {[Product].members} ON ROWS\n"
+              + "FROM [Sales]";
+          final String triggerSql = "product_name";
+
+        Long rows = executeAndCancelAtSqlFetch(
+            query, triggerSql,
+            "Segment.load");
+         Assert.assertEquals(
+             "Query not aborted at first interval",
+             new Long(cancelInterval), rows);
+    }
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-2161">
+     * MONDRIAN-2161
+     * </a>.<br>
+     * Tests cancelation after executing sql for getMemberChildren
+     */
+    public void testCancelSqlFetchMemberChildren() throws Exception {
+        // 106 rows
+        final int cancelInterval = 33;
+        final String query =
+            "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
+            + "  {[Customers].[Mexico].[Guerrero].[Acapulco].Children} ON ROWS\n"
+            + "FROM [Sales]";
+        propSaver.set(props.CancelPhaseInterval, cancelInterval);
+
+        Long rows = executeAndCancelAtSqlFetch(
+            query, "customer_id", "SqlMemberSource.getMemberChildren");
+        Assert.assertEquals(
+            "Query not aborted at first interval",
+            new Long(cancelInterval), rows);
+    }
+
+    private Long executeAndCancelAtSqlFetch(
+        final String query, final String triggerSql, final String component)
+        throws Exception
+    {
+        // avoid cache to ensure sql executes
+        TestContext context = getTestContext().withFreshConnection();
+        context.flushSchemaCache();
+
+        RolapConnection conn =  (RolapConnection) context.getConnection();
+        final mondrian.server.Statement stmt = conn.getInternalStatement();
+        // use the logger to block and trigger cancelation at the right time
+        Logger sqlLog = RolapUtil.SQL_LOGGER;
+        propSaver.setAtLeast(sqlLog, org.apache.log4j.Level.DEBUG);
+        final Execution exec = new Execution(stmt, 50000);
+        final CountDownLatch okToGo = new CountDownLatch(1);
+        SqlCancelingAppender canceler =
+            new SqlCancelingAppender(component, triggerSql, exec, okToGo);
+        stmt.setQuery(conn.parseQuery(query));
+        sqlLog.addAppender(canceler);
+        try {
+            conn.execute(exec);
+            Assert.fail("Query not canceled.");
+        } catch (QueryCanceledException e) {
+            // 5 sec just in case it all goes wrong
+            if (!okToGo.await(5, TimeUnit.SECONDS)) {
+                Assert.fail("Timeout reading sql statement end from log.");
+            }
+            return canceler.rows;
+        } finally {
+            sqlLog.removeAppender(canceler);
+            context.close();
+        }
+        return null;
+    }
+
+    /**
+     * Listens to sql log for a specific query, cancels mdx when it's
+     * executed and reads number of fetched rows.
+     */
+    private static class SqlCancelingAppender extends AppenderSkeleton {
+        private String trigger;
+        private Pattern stmtNbrGetter, stmtCanceler, stmtRowCounter;
+        private int state = 0;
+        Long rows = null;
+        Execution exec;
+        CountDownLatch latch;
+
+        SqlCancelingAppender(
+            String comp, String trigger, Execution exec, CountDownLatch latch)
+        {
+            super();
+            this.trigger = trigger;
+            this.latch = latch;
+            // capture stalked statement's number
+            stmtNbrGetter = Pattern.compile(
+                "^([0-9]*):\\s*"
+                    + Pattern.quote(comp) + "\\s*: executing sql ");
+            this.exec = exec;
+        }
+
+        @Override
+        protected synchronized void append(LoggingEvent event) {
+            String msg = event.getMessage().toString();
+            if (state == 0
+                && msg.contains(trigger))
+            {
+                Matcher matcher = stmtNbrGetter.matcher(msg);
+                if (matcher.find()) {
+                    // get sql statement number
+                    String stmt = matcher.group(1);
+                    // log entry to trigger cancel
+                    stmtCanceler =
+                        Pattern.compile("^" + stmt + ":\\s*,\\s*exec\\s");
+                    // log entry to find fetched rows
+                    stmtRowCounter = Pattern.compile(
+                        "^" + stmt + ":\\s*,[^,]*,\\s+([0-9]*)\\s+rows\\s*$");
+                    state = 1;
+                }
+            } else if (state == 1) {
+                if (stmtCanceler.matcher(msg).find()) {
+                    // sql in fetch phase
+                    // cancel the mdx query
+                    exec.cancel();
+                    state = 2;
+                }
+            } else if (state == 2) {
+                Matcher matcher = stmtRowCounter.matcher(msg);
+                if (matcher.find()) {
+                    rows = new Long(matcher.group(1));
+                    // invalidate
+                    state++;
+                    // release test
+                    latch.countDown();
+                }
+            }
+        }
+
+        @Override
+        public void close() {
+        }
+
+        @Override
+        public boolean requiresLayout() {
+            return false;
+        }
     }
 
     public void testQueryTimeout() {
