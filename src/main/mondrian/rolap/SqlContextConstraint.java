@@ -91,6 +91,15 @@ public class SqlContextConstraint
             query.setBaseCubes(baseCubeList);
         }
 
+        if (SqlConstraintUtils.measuresConflictWithMembers(
+                context.getQuery().getMeasuresMembers(), context.getMembers()))
+        {
+            // one or more dimension members referenced within measure calcs
+            // conflict with the context members.  Not safe to apply
+            // SqlContextConstraint.
+            return false;
+        }
+
         // may return more rows than requested?
         if (!strict) {
             return true;

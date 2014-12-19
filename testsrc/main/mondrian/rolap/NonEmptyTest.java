@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho
+// Copyright (C) 2005-2014 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -3511,7 +3511,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "Member [Store].[*CTX_METRIC_MEMBER_SEL~MAX] as 'Max([*NATIVE_MEMBERS_Store])' "
             + "Member [Measures].[*Unit Sales_SEL~MAX] as '([Measures].[Unit Sales],[Education Level].CurrentMember,[Product].[*CTX_METRIC_MEMBER_SEL~MAX],[Store].[*CTX_METRIC_MEMBER_SEL~MAX])' "
             + "Select "
-            + "CrossJoin(Generate([*METRIC_CJ_SET], {([Store].CurrentMember)}),[*BASE_MEMBERS_Measures]) on columns, "
+            + "Non Empty CrossJoin(Generate([*METRIC_CJ_SET], {([Store].CurrentMember)}),[*BASE_MEMBERS_Measures]) on columns, "
             + "Non Empty Generate([*METRIC_CJ_SET], {([Education Level].CurrentMember,[Product].CurrentMember)}) on rows "
             + "From [Sales]");
     }
@@ -5551,6 +5551,214 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #1: 30,992\n";
         assertQueryReturns(mdx, expected);
     }
+
+    public void testMondrian2202WithConflictingMemberInSlicer() {
+        // Validates correct behavior of the crossjoin optimizer and
+        // native non empty when a calculated member should override the
+        // slicer context.
+        // In this case the YTD measure should have a value for each
+        // of the 5 [Booker] products, even though not all of them have
+        // data in the context of the slicer.
+
+        String[] referencesToTimeMember = new String[] {
+            "[Time].[1997].[Q3].[9]",
+            "[Time].[Time].CurrentMember",
+            "[Time].[1997].[Q4].[10].PrevMember"
+        };
+
+        for (String timeMember : referencesToTimeMember) {
+            assertQueryReturns(
+                "with member [Measures].[YTD Unit Sales] as "
+                + "'Sum(Ytd(" + timeMember + "), [Measures].[Unit Sales])'\n"
+                + "select\n"
+                + "{[Measures].[YTD Unit Sales]}\n"
+                + "ON COLUMNS,\n"
+                + "NON EMPTY Crossjoin(\n"
+                + "{[Customers].[All Customers]}\n"
+                + ", [Product].[Drink].[Dairy].[Dairy].[Milk].[Booker].Children) ON ROWS\n"
+                + "from [Sales]\n"
+                + "where\n"
+                + "{ [Time].[1997].[Q3].[9]}",
+                "Axis #0:\n"
+                + "{[Time].[1997].[Q3].[9]}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[YTD Unit Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Customers].[All Customers], [Product].[Drink].[Dairy].[Dairy].[Milk].[Booker].[Booker 1% Milk]}\n"
+                + "{[Customers].[All Customers], [Product].[Drink].[Dairy].[Dairy].[Milk].[Booker].[Booker 2% Milk]}\n"
+                + "{[Customers].[All Customers], [Product].[Drink].[Dairy].[Dairy].[Milk].[Booker].[Booker Buttermilk]}\n"
+                + "{[Customers].[All Customers], [Product].[Drink].[Dairy].[Dairy].[Milk].[Booker].[Booker Chocolate Milk]}\n"
+                + "{[Customers].[All Customers], [Product].[Drink].[Dairy].[Dairy].[Milk].[Booker].[Booker Whole Milk]}\n"
+                + "Row #0: 147\n"
+                + "Row #1: 136\n"
+                + "Row #2: 84\n"
+                + "Row #3: 94\n"
+                + "Row #4: 101\n");
+        }
+    }
+
+    public void testMondrian2202WithCrossjoin() {
+        // the [overrideContext] measure should have a value for the tuple
+        // on rows, given it overrides the time member on the axis.
+        assertQueryReturns(
+            "WITH  member measures.[overrideContext] as '( measures.[unit sales], Time.[1997].Q1 )'\n"
+            + "SELECT measures.[overrideContext] on 0, \n"
+            + "NON EMPTY crossjoin( Time.[1998].Q1, [Marital Status].[M]) on 1\n"
+            + "FROM sales\n",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[overrideContext]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1998].[Q1], [Marital Status].[M]}\n"
+            + "Row #0: 33,101\n");
+        // same thing w/ nonemptycrossjoin().
+        assertQueryReturns(
+            "WITH  member measures.[overrideContext] as '( measures.[unit sales], Time.[1997].Q1 )'\n"
+            + "SELECT measures.[overrideContext] on 0, \n"
+            + "NonEmptyCrossjoin( Time.[1998].Q1, [Marital Status].[M]) on 1\n"
+            + "FROM sales\n",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[overrideContext]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1998].[Q1], [Marital Status].[M]}\n"
+            + "Row #0: 33,101\n");
+    }
+
+    public void testMondrian2202WithAggTopCountSet() {
+        // in slicer
+        assertQueryReturns(
+            "with member measures.top5Prod as "
+            + "'aggregate(topcount("
+            + "crossjoin( {time.[1997]}, product.[product name].members), 5, measures.[unit sales]), measures.[unit sales])'"
+            + " select measures.top5Prod on 0, non empty crossjoin({[Marital Status].[M]}, gender.gender.members) on 1"
+            + " from sales where time.[1998].[Q1]",
+            "Axis #0:\n"
+            + "{[Time].[1998].[Q1]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[top5Prod]}\n"
+            + "Axis #2:\n"
+            + "{[Marital Status].[M], [Gender].[F]}\n"
+            + "{[Marital Status].[M], [Gender].[M]}\n"
+            + "Row #0: 398\n"
+            + "Row #1: 385\n");
+        // in CJ
+        assertQueryReturns(
+            "with member measures.top5Prod as "
+            + "'aggregate(topcount("
+            + "crossjoin( {time.[1997]}, product.[product name].members), 5, measures.[unit sales]), measures.[unit sales])'"
+            + " select measures.top5Prod on 0, non empty crossjoin({[Time].[1998].[Q1]}, gender.gender.members) on 1"
+            + " from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[top5Prod]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1998].[Q1], [Gender].[F]}\n"
+            + "{[Time].[1998].[Q1], [Gender].[M]}\n"
+            + "Row #0: 699\n"
+            + "Row #1: 699\n");
+    }
+
+    public void testMondrian2202WithParameter() {
+        assertQueryReturns(
+            "WITH "
+            + "member measures.[overrideContext] as "
+            + "'( measures.[unit sales], "
+            + "Parameter(\"timeParam\",[Time],[Time].[1997].[Q1],\"?\") )'\n"
+            + "SELECT measures.[overrideContext] on 0, \n"
+            + "NON EMPTY crossjoin( Time.[1998].Q1, [Marital Status].[M]) on 1\n"
+            + "FROM sales\n",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[overrideContext]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1998].[Q1], [Marital Status].[M]}\n"
+            + "Row #0: 33,101\n");
+        assertQueryReturns(
+            "WITH member Time.param as 'Parameter(\"timeParam\",[Time],[Time].[1997].[Q1],\"?\")' "
+            + "member measures.[overrideContext] as '( measures.[unit sales], Time.param )'\n"
+            + "SELECT measures.[overrideContext] on 0, \n"
+            + "NON EMPTY crossjoin( Time.[1998].Q1, [Marital Status].[M]) on 1\n"
+            + "FROM sales\n",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[overrideContext]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1998].[Q1], [Marital Status].[M]}\n"
+            + "Row #0: 33,101\n");
+    }
+
+    public void testMondrian2202WithFilter() {
+        // Validates correct results when a filtered set contains a member
+        // overriden by the filter condition.
+        // (This worked before the fix for MONDRIAN-2202, since
+        // RolapNativeSql cannot nativize tuple calculations.)
+        assertQueryReturns(
+            "WITH  member measures.[overrideContext] as "
+            + " '( measures.[unit sales], Time.[1997].Q1 )'\n"
+            + "SELECT measures.[overrideContext] on 0, \n"
+            + "filter ( Crossjoin(Time.[1998].Q1, [Marital Status].[marital status].members), "
+            + "measures.[overrideContext] >= 0) on 1\n"
+            + "FROM sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[overrideContext]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1998].[Q1], [Marital Status].[M]}\n"
+            + "{[Time].[1998].[Q1], [Marital Status].[S]}\n"
+            + "Row #0: 33,101\n"
+            + "Row #1: 33,190\n");
+    }
+
+    public void testMondrian2202WithTopCount() {
+        // Validates correct results when a topcount set contains a member
+        // overriden by the filter condition.
+        // (This worked before the fix for MONDRIAN-2202, since
+        // RolapNativeSql cannot nativize tuple calculations.)
+        assertQueryReturns(
+            "WITH  member measures.[overrideContext] as "
+            + " '( measures.[unit sales], Time.[1997].Q1 )'\n"
+            + "SELECT measures.[overrideContext] on 0, \n"
+            + "TopCount ( Crossjoin(Time.[1998].Q1.children, "
+            + "[Marital Status].[marital status].members), "
+            + "2, measures.[overrideContext] ) on 1\n"
+            + "FROM sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[overrideContext]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1998].[Q1].[1], [Marital Status].[S]}\n"
+            + "{[Time].[1998].[Q1].[2], [Marital Status].[S]}\n"
+            + "Row #0: 33,190\n"
+            + "Row #1: 33,190\n");
+    }
+
+    public void testMondrian2202WithMeasureContainingCJ() {
+        // NECJ nested within a measure expression
+        assertQueryReturns(
+            "with  "
+            + " member gender.agg as 'aggregate(NonEmptyCrossJoin({Gender.F}, {[Marital Status].[Marital Status].members}))' "
+            + "member measures.lastYear as '(parallelperiod([Time].[Year], 1, [Time].CurrentMember), Measures.[unit sales])' "
+            + "member measures.ratioCurrentOverAgg as 'Measures.[Unit Sales] / (gender.agg, Measures.[Unit Sales])' "
+            + " select gender.agg on 0, {measures.lastYear, measures.ratioCurrentOverAgg} on 1 from sales where [Time].[1998].[Q2]",
+            "Axis #0:\n"
+            + "{[Time].[1998].[Q2]}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[agg]}\n"
+            + "Axis #2:\n"
+            + "{[Measures].[lastYear]}\n"
+            + "{[Measures].[ratioCurrentOverAgg]}\n"
+            + "Row #0: 30,992\n"
+            + "Row #1: \n");
+    }
+
 }
 
 // End NonEmptyTest.java
