@@ -5597,6 +5597,8 @@ public class NonEmptyTest extends BatchTestCase {
         }
     }
 
+
+
     public void testMondrian2202WithCrossjoin() {
         // the [overrideContext] measure should have a value for the tuple
         // on rows, given it overrides the time member on the axis.
@@ -5625,6 +5627,34 @@ public class NonEmptyTest extends BatchTestCase {
             + "Axis #2:\n"
             + "{[Time].[1998].[Q1], [Marital Status].[M]}\n"
             + "Row #0: 33,101\n");
+    }
+
+
+    public void testMondrian2202WithLevelMembers() {
+        // verifies SqlConstraintFactory.getLevelMembersConstraint() doesn't
+        // generate a conflicting constraint.  Since CJAF attempts to collect
+        // constraints from all axes, it's possible for it to construct
+        // a constraint which includes the same hierarchy more than once.
+        // In this case it would result in
+        //    (year = 1997 AND year = 1998)
+        // if potential conflicts aren't removed.
+        assertQueryReturns(
+            "WITH  member measures.[overrideContext] as '( measures.[unit sales], Time.[1997].Q1 )'\n"
+            + "SELECT measures.[overrideContext] on 0, \n"
+            + "NON EMPTY [Marital Status].[Marital Status].members on 1,\n"
+            + "NON EMPTY Time.[1998].Q1 on 2\n"
+            + "FROM sales\n",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[overrideContext]}\n"
+            + "Axis #2:\n"
+            + "{[Marital Status].[M]}\n"
+            + "{[Marital Status].[S]}\n"
+            + "Axis #3:\n"
+            + "{[Time].[1998].[Q1]}\n"
+            + "Row #0: 33,101\n"
+            + "Row #1: 33,190\n");
     }
 
     public void testMondrian2202WithAggTopCountSet() {
