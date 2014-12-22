@@ -49,7 +49,7 @@ public class MemberExtractingVisitor extends MdxVisitorImpl {
         "Ytd", "Mtd", "Qtd", "Wtd", "BottomCount", "TopCount", "ClosingPeriod",
         "Cousin", "FirstChild", "FirstSibling", "LastChild", "LastPeriods",
         "LastSibling", "ParallelPeriod", "PeriodsToDate", "Parent",
-        "PrevMember", "NextMember"
+        "PrevMember", "NextMember", "Head", "Tail"
     };
     private static final List<String> blacklist = Collections.unmodifiableList(
         Arrays.asList(unsafeFuncNames));
