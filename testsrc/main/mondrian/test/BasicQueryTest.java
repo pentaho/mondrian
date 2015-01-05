@@ -8397,6 +8397,59 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "where [*CJ_SLICER_AXIS]\n";
         executeQuery(mdx);
     }
+
+    /**
+     * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-1925">
+     * MONDRIAN-1925: NameExpression within snowflake dimension causes exception
+     * </a>
+     */
+    public void testNameExpressionSnowflake() {
+        TestContext testContext =
+            getTestContext().createSubstitutingCube(
+                "Sales",
+                "<Dimension foreignKey=\"product_id\" type=\"StandardDimension\" visible=\"true\" highCardinality=\"false\" name=\"Example\">\n"
+                + "  <Hierarchy name=\"Example Hierarchy\" visible=\"true\" hasAll=\"true\" allMemberName=\"All\" allMemberCaption=\"All\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+                + "    <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+                + "      <Table name=\"product\">\n"
+                + "      </Table>\n"
+                + "         <Table name=\"product_class\">\n"
+                + "      </Table>\n"
+                + "    </Join>\n"
+                + "    <Level name=\"IsZero\" visible=\"true\" table=\"product\" column=\"product_id\" type=\"Integer\" uniqueMembers=\"false\" levelType=\"Regular\" hideMemberIf=\"Never\">\n"
+                + "      <NameExpression>\n"
+                + "        <SQL dialect=\"generic\">\n"
+                + "          <![CDATA[case when product.product_id=0 then 'Zero' else 'Non-Zero' end]]>\n"
+                + "        </SQL>\n"
+                + "      </NameExpression>\n"
+                + "    </Level>\n"
+                + "    <Level name=\"SubCat\" visible=\"true\" table=\"product_class\" column=\"product_class_id\" type=\"String\" uniqueMembers=\"false\" levelType=\"Regular\" hideMemberIf=\"Never\">\n"
+                + "      <NameExpression>\n"
+                + "        <SQL dialect=\"generic\">\n"
+                + "          <![CDATA[product_class.product_subcategory]]>\n"
+                + "        </SQL>\n"
+                + "      </NameExpression>\n"
+                + "    </Level>\n"
+                + "    <Level name=\"ProductName\" visible=\"true\" table=\"product\" column=\"product_id\" type=\"Integer\" uniqueMembers=\"false\" levelType=\"Regular\" hideMemberIf=\"Never\">\n"
+                + "      <NameExpression>\n"
+                + "        <SQL dialect=\"generic\">\n"
+                + "          <![CDATA[product.product_name]]>\n"
+                + "        </SQL>\n"
+                + "      </NameExpression>\n"
+                + "    </Level>\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>\n",
+                null,
+                null, null);
+        testContext.assertAxisReturns(
+            "[Example.Example Hierarchy].[Non-Zero]",
+            "[Example.Example Hierarchy].[Non-Zero]");
+        testContext.assertAxisReturns(
+            "[Example.Example Hierarchy].[Non-Zero].Children",
+            "[Example.Example Hierarchy].[Non-Zero].[Juice]");
+        testContext.assertAxisReturns(
+            "[Example.Example Hierarchy].[Non-Zero].[Juice].Children",
+            "[Example.Example Hierarchy].[Non-Zero].[Juice].[Washington Berry Juice]");
+    }
 }
 
 // End BasicQueryTest.java
