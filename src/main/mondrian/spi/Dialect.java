@@ -6,7 +6,6 @@
 *
 * Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.spi;
 
 import mondrian.rolap.SqlStatement;
@@ -346,6 +345,17 @@ public interface Dialect {
      * measures in one query.
      */
     boolean allowsMultipleDistinctSqlMeasures();
+
+    /**
+     * Returns whether this Dialect supports distinct
+     * aggregations with other aggregations in the same query.
+     *
+     * This may be enabled for performance reasons (Vertica)
+     *
+     * @return whether this Dialect supports more than one distinct
+     * aggregation in the same query
+     */
+    boolean allowsCountDistinctWithOtherAggs();
 
     /**
      * Generates a SQL statement to represent an inline dataset.
