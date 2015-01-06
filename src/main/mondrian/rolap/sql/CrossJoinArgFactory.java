@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2011 Pentaho and others
+// Copyright (C) 2006-2014 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap.sql;
 
 import mondrian.calc.*;
@@ -53,7 +52,39 @@ public class CrossJoinArgFactory {
                 }
             }
         }
-        return joinArgs;
+        return stripConflictingArgs(joinArgs);
+    }
+
+    /**
+     * Construct a set of CJ args that exclude any duplicates.  This avoids
+     * construction of conflicting constraints when the same hierarchy is
+     * nested on more than one axis (e.g. when appearing in a both a
+     * calculation and explicitly referenced.)
+     * It's not safe to include the CJ constraint in such a case because
+     * we can't guess which set of members can be used in the sql constraint.
+     */
+    private Set<CrossJoinArg> stripConflictingArgs(Set<CrossJoinArg> joinArgs) {
+        Set<Hierarchy> skip = new HashSet<Hierarchy>();
+        Set<Hierarchy> encountered = new HashSet<Hierarchy>();
+        Set<CrossJoinArg> result = new HashSet<CrossJoinArg>();
+        for (CrossJoinArg arg : joinArgs) {
+            if (arg.getLevel() == null) {
+                continue;
+            }
+            Hierarchy level =  arg.getLevel().getHierarchy();
+            if (encountered.contains(level) && arg.getMembers() != null) {
+                skip.add(level);
+            }
+            encountered.add(level);
+        }
+        for (CrossJoinArg arg : joinArgs) {
+            if (arg.getLevel() != null
+                && !skip.contains(arg.getLevel().getHierarchy()))
+            {
+                result.add(arg);
+            }
+        }
+        return result;
     }
 
     /**
@@ -247,9 +278,9 @@ public class CrossJoinArgFactory {
         List<CrossJoinArg> argList = new ArrayList<CrossJoinArg>();
         for (List<RolapMember> memberList : memberLists.values()) {
             if (memberList.size() == countNonLiteralMeasures(args)) {
-                //when the memberList and args list have the same length
-                //it means there must have been a constraint on each measure
-                //for this dimension.
+                // when the memberList and args list have the same length
+                // it means there must have been a constraint on each measure
+                // for this dimension.
                 final CrossJoinArg cjArg =
                     MemberListCrossJoinArg.create(
                         evaluator,
@@ -791,9 +822,6 @@ public class CrossJoinArgFactory {
      * Check whether the predicate is an IN or IS predicate and can be
      * natively evaluated.
      *
-     * @param evaluator
-     * @param predicateCall
-     * @param exclude
      * @return the array of CrossJoinArg containing the predicate.
      */
     private CrossJoinArg[] checkFilterPredicateInIs(

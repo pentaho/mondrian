@@ -12,12 +12,11 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.olap.fun.AggregateFunDef;
-import mondrian.olap.fun.ParenthesesFunDef;
+import mondrian.olap.fun.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggStar;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.sql.*;
 import mondrian.spi.Dialect;
 import mondrian.util.FilteredIterableList;
 
@@ -1718,6 +1717,71 @@ public class SqlConstraintUtils {
 
         return condition;
     }
+
+    /**
+     * Returns true if any measure calculations in the first arg references
+     * a dimension member with corresponding members in the second arg
+     * which conflict with that member.   A member "conflicts" if the
+     * member referenced by the measure is not equal to or children of the
+     * corresponding dimension member.
+     * For example,
+     * given ( [unit sales], [Time].[1997].Q1 ) in the measures
+     * set, if the member [Time].[1997].[Q2] is in the members set this
+     * would conflict, since Q1 is not equal to or a child of Q2.
+     *
+     * This method is used in native evaluation to determine whether any
+     * measures in the query could conflict with the SQL constraint
+     * being constructed.
+     */
+    public static boolean measuresConflictWithMembers(
+        Set<Member> measures, Member[] members)
+    {
+        Set<Member> membersNestedInMeasures = new HashSet<Member>();
+
+        for (Member m : measures) {
+            if (m.isCalculated()) {
+                Exp exp = m.getExpression();
+                exp.accept(
+                    new MemberExtractingVisitor(
+                        membersNestedInMeasures, null, false));
+            }
+        }
+        for (Member memberCheckedForConflict : members) {
+            for (Member memberInMeasure : membersNestedInMeasures) {
+                final boolean sameHierarchy =
+                    memberInMeasure.getHierarchy()
+                        .equals(memberCheckedForConflict.getHierarchy());
+                final boolean childOrEqual =
+                    memberCheckedForConflict.isAll()
+                        || memberInMeasure
+                            .isChildOrEqualTo(memberCheckedForConflict);
+                if (sameHierarchy && !childOrEqual) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean measuresConflictWithMembers(
+        Set<Member> measuresMembers, CrossJoinArg[] cjArgs)
+    {
+        return measuresConflictWithMembers(
+            measuresMembers, getCJArgMembers(cjArgs));
+    }
+
+    private static Member[] getCJArgMembers(CrossJoinArg[] cjArgs) {
+        Set<Member> members = new HashSet<Member>();
+        for (CrossJoinArg arg : cjArgs) {
+            if (arg.getMembers() != null) {
+                members.addAll(arg.getMembers());
+            }
+        }
+        return members.toArray(new Member[members.size()]);
+    }
+
+
+
 }
 
 // End SqlConstraintUtils.java
