@@ -1169,30 +1169,38 @@ public class DrillThroughTest extends FoodMartTestCase {
         // independent of the time portion of the slicer
         switch (getTestContext().getDialect().getDatabaseProduct()) {
         case MYSQL:
-            expectedSql = "select\n"
-                + "    time_by_day.the_year as Year,\n"
-                + "    time_by_day.quarter as Quarter,\n"
+            expectedSql =
+                "select\n"
                 + "    customer.gender as Gender,\n"
                 + "    customer.marital_status as Marital Status,\n"
+                + "    time_by_day.the_year as Year,\n"
+                + "    time_by_day.quarter as Quarter,\n"
                 + "    sales_fact_1997.unit_sales as Unit Sales\n"
                 + "from\n"
-                + "    time_by_day as time_by_day,\n"
+                + "    customer as customer,\n"
                 + "    sales_fact_1997 as sales_fact_1997,\n"
-                + "    customer as customer\n"
+                + "    time_by_day as time_by_day\n"
                 + "where\n"
-                + "    sales_fact_1997.time_id = time_by_day.time_id\n"
-                + "and\n"
                 + "    sales_fact_1997.customer_id = customer.customer_id\n"
                 + "and\n"
-                + "    (((time_by_day.the_year, time_by_day.quarter, customer.gender, customer.marital_status) in ((1997, 'Q1', 'F', 'M'), (1997, 'Q2', 'F', 'M'))))";
+                + "    customer.gender = 'F'\n"
+                + "and\n"
+                + "    customer.marital_status = 'M'\n"
+                + "and\n"
+                + "    sales_fact_1997.time_id = time_by_day.time_id\n"
+                + "and\n"
+                + "    (((time_by_day.the_year, time_by_day.quarter) in ((1997, 'Q1'), (1997, 'Q2'))))\n"
+                + "order by\n"
+                + "    customer.gender ASC,\n"
+                + "    customer.marital_status ASC";
             break;
         case ORACLE:
             expectedSql =
                 "select\n"
+                + "    customer.gender as Gender,\n"
                 + "    customer.marital_status as Marital Status,\n"
                 + "    time_by_day.the_year as Year,\n"
                 + "    time_by_day.quarter as Quarter,\n"
-                + "    customer.gender as Gender,\n"
                 + "    sales_fact_1997.unit_sales as Unit Sales\n"
                 + "from\n"
                 + "    customer customer,\n"
@@ -1201,10 +1209,15 @@ public class DrillThroughTest extends FoodMartTestCase {
                 + "where\n"
                 + "    sales_fact_1997.customer_id = customer.customer_id\n"
                 + "and\n"
+                + "    customer.gender = 'F'\n"
+                + "and\n"
+                + "    customer.marital_status = 'M'\n"
+                + "and\n"
                 + "    sales_fact_1997.time_id = time_by_day.time_id\n"
                 + "and\n"
-                + "    ((customer.marital_status = 'M' and customer.gender = 'F' and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (customer.marital_status = 'M' and customer.gender = 'F' and time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))\n"
+                + "    ((time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))\n"
                 + "order by\n"
+                + "    customer.gender ASC,\n"
                 + "    customer.marital_status ASC";
             break;
         default:

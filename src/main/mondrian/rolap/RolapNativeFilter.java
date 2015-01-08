@@ -195,6 +195,19 @@ public class RolapNativeFilter extends RolapNativeSet {
         final int savepoint = evaluator.savepoint();
         try {
             overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
+
+            // no need to have any context if there is no measure, we are doing
+            // a filter only on the current dimension. This prevents
+            // SqlContextConstraint from expanding unnecessary calculated
+            // members on the
+            // slicer calling expandSupportedCalculatedMembers
+            if (!evaluator.isNonEmpty() && sql.getStoredMeasure() == null) {
+                // No need to have anything on the context
+                for (Member m : evaluator.getMembers()) {
+                    evaluator.setContext(
+                        m.getLevel().getHierarchy().getDefaultMember());
+                }
+            }
             // Now construct the TupleConstraint that contains both the CJ
             // dimensions and the additional filter on them.
             CrossJoinArg[] combinedArgs = cjArgs;
