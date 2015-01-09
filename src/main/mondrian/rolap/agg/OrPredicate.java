@@ -222,7 +222,7 @@ public class OrPredicate extends ListPredicate {
         //  examples:
         //   (country IN (USA, Canada))
         //
-        //   ((country, satte) in ((USA, CA), (USA, OR)))
+        //   ((country, state) in ((USA, CA), (USA, OR)))
         //
         // (2) child level can be translated to IN list: this allows IN list
         // predicates generated such as:

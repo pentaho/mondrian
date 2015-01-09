@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -236,6 +236,7 @@ public class RolapResult extends ResultBase {
                 Collections.emptyList();
 
             // Initial evaluator, to execute slicer.
+            // Used by named sets in slicer
             slicerEvaluator = evaluator.push();
 
             /////////////////////////////////////////////////////////////////
@@ -275,6 +276,118 @@ public class RolapResult extends ResultBase {
             slicerEvaluator = evaluator.push();
 
             /////////////////////////////////////////////////////////////////
+            // Execute Slicer
+            //
+            Axis savedSlicerAxis;
+            RolapEvaluator internalSlicerEvaluator;
+            do {
+                TupleIterable tupleIterable =
+                    evalExecute(
+                        nonAllMembers,
+                        nonAllMembers.size() - 1,
+                        savedEvaluator,
+                        query.getSlicerAxis(),
+                        query.slicerCalc);
+                // Materialize the iterable as a list. Although it may take
+                // memory, we need the first member below, and besides, slicer
+                // axes are generally small.
+                TupleList tupleList =
+                    TupleCollections.materialize(tupleIterable, true);
+
+                this.slicerAxis = new RolapAxis(tupleList);
+                // the slicerAxis may be overwritten during slicer execution
+                // if there is a compound slicer.  Save it so that it can be
+                // reverted before completing result construction.
+                savedSlicerAxis = this.slicerAxis;
+
+                // Use the context created by the slicer for the other
+                // axes.  For example, "select filter([Customers], [Store
+                // Sales] > 100) on columns from Sales where
+                // ([Time].[1998])" should show customers whose 1998 (not
+                // total) purchases exceeded 100.
+                internalSlicerEvaluator = this.evaluator;
+                if (tupleList.size() > 1) {
+                    tupleList =
+                        removeUnaryMembersFromTupleList(
+                            tupleList, evaluator);
+                    tupleList =
+                        AggregateFunDef.AggregateCalc.optimizeTupleList(
+                            evaluator,
+                            tupleList,
+                            false);
+                    evaluator.setSlicerTuples(tupleList);
+
+                    final Calc valueCalc =
+                        new ValueCalc(
+                            new DummyExp(new ScalarType()));
+
+                    final List<Member> prevSlicerMembers =
+                        new ArrayList<Member>();
+
+                    final Calc calcCached =
+                        new GenericCalc(
+                            new DummyExp(query.slicerCalc.getType()))
+                        {
+                            public Object evaluate(Evaluator evaluator) {
+                                TupleList list = AbstractAggregateFunDef
+                                    .processUnrelatedDimensions(
+                                        ((RolapEvaluator) evaluator)
+                                            .getOptimizedSlicerTuples(null),
+                                        evaluator);
+                                for (Member member : prevSlicerMembers) {
+                                    if (evaluator.getContext(
+                                            member.getHierarchy())
+                                        instanceof CompoundSlicerRolapMember)
+                                    {
+                                        evaluator.setContext(member);
+                                    }
+                                }
+                                return AggregateFunDef.AggregateCalc.aggregate(
+                                    valueCalc, evaluator, list);
+                            }
+                            // depend on the full evaluation context
+                            public boolean dependsOn(Hierarchy hierarchy) {
+                                return true;
+                            }
+                        };
+
+                    final ExpCacheDescriptor cacheDescriptor =
+                        new ExpCacheDescriptor(
+                            query.getSlicerAxis().getSet(),
+                            calcCached,
+                            evaluator);
+                    // generate a cached calculation for slicer aggregation
+                    final Calc calc = new CacheCalc(
+                        query.getSlicerAxis().getSet(),
+                        cacheDescriptor);
+
+                    // replace the slicer set with a placeholder to avoid
+                    // interaction between the aggregate calc we just created
+                    // and any calculated members that might be present in
+                    // the slicer.
+                    // Arbitrarily picks the first dim of the first tuple
+                    // to use as placeholder.
+                    if (tupleList.get(0).size() > 1) {
+                        for (int i = 1; i < tupleList.get(0).size(); i++) {
+                            Member placeholder = setPlaceholderSlicerAxis(
+                                (RolapMember)tupleList.get(0).get(i),
+                                calc,
+                                false);
+                            prevSlicerMembers.add(
+                                evaluator.setContext(placeholder));
+                        }
+                    }
+
+                    Member placeholder = setPlaceholderSlicerAxis(
+                        (RolapMember)tupleList.get(0).get(0), calc, true);
+                    evaluator.setContext(placeholder);
+                }
+            } while (phase());
+
+            // final slicerEvaluator
+            slicerEvaluator = evaluator.push();
+
+            /////////////////////////////////////////////////////////////////
             // Determine Axes
             //
             boolean changed = false;
@@ -290,12 +403,12 @@ public class RolapResult extends ResultBase {
             }
 
             if (!axisMembers.isEmpty()) {
-                for (Member m : axisMembers) {
-                    if (m.isMeasure()) {
-                        // A Measure was explicitly declared on an
-                        // axis, don't need to worry about Measures
-                        // for this query.
-                        measureMembers.clear();
+            for (Member m : axisMembers) {
+                if (m.isMeasure()) {
+                    // A Measure was explicitly declared on an
+                    // axis, don't need to worry about Measures
+                    // for this query.
+                    measureMembers.clear();
                     }
                 }
                 changed = replaceNonAllMembers(nonAllMembers, axisMembers);
@@ -326,88 +439,6 @@ public class RolapResult extends ResultBase {
 
             // throws exception if number of members exceeds limit
             axisMembers.checkLimit();
-            Axis savedSlicerAxis;
-            /////////////////////////////////////////////////////////////////
-            // Execute Slicer
-            //
-            RolapEvaluator slicerEvaluator;
-            do {
-                TupleIterable tupleIterable =
-                    evalExecute(
-                        nonAllMembers,
-                        nonAllMembers.size() - 1,
-                        savedEvaluator,
-                        query.getSlicerAxis(),
-                        query.slicerCalc);
-                // Materialize the iterable as a list. Although it may take
-                // memory, we need the first member below, and besides, slicer
-                // axes are generally small.
-                TupleList tupleList =
-                    TupleCollections.materialize(tupleIterable, true);
-
-                this.slicerAxis = new RolapAxis(tupleList);
-                // the slicerAxis may be overwritten during slicer execution
-                // if there is a compound slicer.  Save it so that it can be
-                // reverted before completing result construction.
-                savedSlicerAxis = this.slicerAxis;
-
-                // Use the context created by the slicer for the other
-                // axes.  For example, "select filter([Customers], [Store
-                // Sales] > 100) on columns from Sales where
-                // ([Time].[1998])" should show customers whose 1998 (not
-                // total) purchases exceeded 100.
-                slicerEvaluator = this.evaluator;
-                if (tupleList.size() > 1) {
-                    tupleList =
-                        AggregateFunDef.AggregateCalc.optimizeTupleList(
-                            slicerEvaluator,
-                            tupleList,
-                            false);
-
-                    final Calc valueCalc =
-                        new ValueCalc(
-                            new DummyExp(new ScalarType()));
-                    final TupleList tupleList1 = tupleList;
-
-
-                    final Calc calc =
-                        new GenericCalc(
-                            new DummyExp(query.slicerCalc.getType()))
-                        {
-                            public Object evaluate(Evaluator evaluator) {
-                                TupleList list =
-                                    AbstractAggregateFunDef
-                                        .processUnrelatedDimensions(
-                                            tupleList1, evaluator);
-                                return AggregateFunDef.AggregateCalc.aggregate(
-                                    valueCalc, evaluator, list);
-                            }
-                        };
-                    final List<RolapHierarchy> hierarchyList =
-                        new AbstractList<RolapHierarchy>() {
-                            final List<Member> pos0 = tupleList1.get(0);
-
-                            public RolapHierarchy get(int index) {
-                                return ((RolapMember) pos0.get(index))
-                                    .getHierarchy();
-                            }
-
-                            public int size() {
-                                return pos0.size();
-                            }
-                        };
-
-                    // replace the slicer set with a placeholder to avoid
-                    // interaction between the aggregate calc we just created
-                    // and any calculated members that might be present in
-                    // the slicer.
-                    // Arbitrarily picks the first dim of the first tuple
-                    // to use as placeholder.
-                    Member placeholder = setPlaceholderSlicerAxis(
-                        (RolapMember)tupleList.get(0).get(0), calc);
-                    evaluator.setContext(placeholder);
-                }
-            } while (phase());
 
             /////////////////////////////////////////////////////////////////
             // Execute Axes
@@ -470,7 +501,8 @@ public class RolapResult extends ResultBase {
             final Locus locus = new Locus(execution, null, "Loading cells");
             Locus.push(locus);
             try {
-                executeBody(slicerEvaluator, query, new int[axes.length]);
+                executeBody(
+                    internalSlicerEvaluator, query, new int[axes.length]);
             } finally {
                 Locus.pop(locus);
             }
@@ -528,7 +560,7 @@ public class RolapResult extends ResultBase {
      * up the set on the slicer.
      */
     private Member setPlaceholderSlicerAxis(
-        final RolapMember member, final Calc calc)
+        final RolapMember member, final Calc calc, boolean setAxis)
     {
         ValueFormatter formatter;
         if (member.getDimension().isMeasures()) {
@@ -550,10 +582,11 @@ public class RolapResult extends ResultBase {
             Property.FORMAT_EXP_PARSED.getName(),
             member.getPropertyValue(Property.FORMAT_EXP_PARSED.getName()));
 
-        TupleList dummyList = TupleCollections.createList(1);
-        dummyList.addTuple(placeholderMember);
-
-        this.slicerAxis = new RolapAxis(dummyList);
+        if (setAxis) {
+            TupleList dummyList = TupleCollections.createList(1);
+            dummyList.addTuple(placeholderMember);
+            this.slicerAxis = new RolapAxis(dummyList);
+        }
         return placeholderMember;
     }
 
@@ -563,11 +596,75 @@ public class RolapResult extends ResultBase {
                 batchingReader.getHitCount(),
                 batchingReader.getMissCount(),
                 batchingReader.getPendingCount());
+                // flush the expression cache during each
+                // phase of loading aggregations
+                evaluator.clearExpResultCache(false);
 
             return batchingReader.loadAggregations();
         } else {
             return false;
         }
+    }
+
+    /**
+     * This function removes single instance members from the compound slicer,
+     * enabling more regular slicer behavior for those members. For instance,
+     * calculated members can override the context of these members correctly.
+     *
+     * @param tupleList The list to shrink.
+     * @param evaluator The slicer evaluator.
+     * @return a new list of tuples reduced in size.
+     */
+    private TupleList removeUnaryMembersFromTupleList(
+        TupleList tupleList, RolapEvaluator evaluator)
+    {
+        // we can remove any unary coordinates from the compound slicer, and
+        // account for them in the slicer evaluator.
+
+        // First, determine if there are any unary members within the tuples.
+        List<Member> first = null;
+        boolean unary[] = null;
+        for (List<Member> tuple : tupleList) {
+            if (first == null) {
+                first = tuple;
+                unary = new boolean[tuple.size()];
+                for (int i = 0 ; i < unary.length; i++) {
+                    unary[i] = true;
+                }
+            } else {
+                for (int i = 0; i < tuple.size(); i++) {
+                    if (unary[i] && !tuple.get(i).equals(first.get(i))) {
+                        unary[i] = false;
+                    }
+                }
+            }
+        }
+        int toRemove = 0;
+        for (int i = 0; i < unary.length; i++) {
+            if (unary[i]) {
+                evaluator.setContext(first.get(i));
+                toRemove++;
+            }
+        }
+
+        // remove the unnecessary members from the compound slicer
+        if (toRemove > 0) {
+          TupleList newList =
+              new ListTupleList(
+                  tupleList.getArity() - toRemove,
+                  new ArrayList<Member>());
+          for (List<Member> tuple : tupleList) {
+              List<Member> ntuple = new ArrayList<Member>();
+              for (int i = 0; i < tuple.size(); i++) {
+                  if (!unary[i]) {
+                      ntuple.add(tuple.get(i));
+                  }
+              }
+              newList.add(ntuple);
+          }
+          tupleList = newList;
+        }
+        return tupleList;
     }
 
     @Override
@@ -980,7 +1077,6 @@ public class RolapResult extends ResultBase {
         RolapEvaluator evaluator = slicerEvaluator.push();
         if (contextEvaluator != null && contextEvaluator.isEvalAxes()) {
             evaluator.setEvalAxes(true);
-            evaluator.setContext(contextEvaluator.getMembers());
         }
 
         final int savepoint = evaluator.savepoint();
@@ -2143,7 +2239,7 @@ public class RolapResult extends ResultBase {
      * the context of the slicer members.
      * See MONDRIAN-1226.
      */
-    private class CompoundSlicerRolapMember extends DelegatingRolapMember
+    public class CompoundSlicerRolapMember extends DelegatingRolapMember
     implements RolapMeasure
     {
         private final Calc calc;

@@ -1171,10 +1171,10 @@ public class DrillThroughTest extends FoodMartTestCase {
         case MYSQL:
             expectedSql =
                 "select\n"
+                + "    customer.gender as Gender,\n"
                 + "    customer.marital_status as Marital Status,\n"
                 + "    time_by_day.the_year as Year,\n"
                 + "    time_by_day.quarter as Quarter,\n"
-                + "    customer.gender as Gender,\n"
                 + "    sales_fact_1997.unit_sales as Unit Sales\n"
                 + "from\n"
                 + "    customer as customer,\n"
@@ -1183,21 +1183,24 @@ public class DrillThroughTest extends FoodMartTestCase {
                 + "where\n"
                 + "    sales_fact_1997.customer_id = customer.customer_id\n"
                 + "and\n"
+                + "    customer.gender = 'F'\n"
+                + "and\n"
                 + "    customer.marital_status = 'M'\n"
                 + "and\n"
                 + "    sales_fact_1997.time_id = time_by_day.time_id\n"
                 + "and\n"
-                + "    (((time_by_day.the_year, time_by_day.quarter, customer.gender) in ((1997, 'Q1', 'F'), (1997, 'Q2', 'F'))))\n"
+                + "    (((time_by_day.the_year, time_by_day.quarter) in ((1997, 'Q1'), (1997, 'Q2'))))\n"
                 + "order by\n"
+                + "    customer.gender ASC,\n"
                 + "    customer.marital_status ASC";
             break;
         case ORACLE:
             expectedSql =
                 "select\n"
+                + "    customer.gender as Gender,\n"
                 + "    customer.marital_status as Marital Status,\n"
                 + "    time_by_day.the_year as Year,\n"
                 + "    time_by_day.quarter as Quarter,\n"
-                + "    customer.gender as Gender,\n"
                 + "    sales_fact_1997.unit_sales as Unit Sales\n"
                 + "from\n"
                 + "    customer customer,\n"
@@ -1206,12 +1209,15 @@ public class DrillThroughTest extends FoodMartTestCase {
                 + "where\n"
                 + "    sales_fact_1997.customer_id = customer.customer_id\n"
                 + "and\n"
+                + "    customer.gender = 'F'\n"
+                + "and\n"
                 + "    customer.marital_status = 'M'\n"
                 + "and\n"
                 + "    sales_fact_1997.time_id = time_by_day.time_id\n"
                 + "and\n"
-                + "    ((customer.gender = 'F' and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (customer.gender = 'F' and time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))\n"
+                + "    ((time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))\n"
                 + "order by\n"
+                + "    customer.gender ASC,\n"
                 + "    customer.marital_status ASC";
             break;
         default:
