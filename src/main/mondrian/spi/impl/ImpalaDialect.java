@@ -4,13 +4,12 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2013 Pentaho and others
+// Copyright (C) 2012-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,6 +35,12 @@ public class ImpalaDialect extends HiveDialect {
      */
     public ImpalaDialect(Connection connection) throws SQLException {
         super(connection);
+    }
+
+    protected String deduceIdentifierQuoteString(
+        DatabaseMetaData databaseMetaData)
+    {
+        return "`";
     }
 
     public static final JdbcDialectFactory FACTORY =
