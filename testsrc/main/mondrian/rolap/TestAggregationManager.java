@@ -2381,42 +2381,43 @@ public class TestAggregationManager extends BatchTestCase {
             + "{[Measures].[Unit Sales]} on columns "
             + "from [SuperSales]";
 
-        final String sqlMysql =
-            "select\n"
-            + "    `agg_c_14_sales_fact_1997`.`the_year` as `c0`,\n"
-            + "    `agg_c_14_sales_fact_1997`.`quarter` as `c1`,\n"
-            + "    `agg_c_14_sales_fact_1997`.`month_of_year` as `c2`,\n"
-            + "    `store`.`store_country` as `c3`\n"
-            + "from\n"
-            + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
-            + "    `store` as `store`\n"
-            + "where\n"
-            + "    `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
-            + "group by\n"
-            + "    `agg_c_14_sales_fact_1997`.`the_year`,\n"
-            + "    `agg_c_14_sales_fact_1997`.`quarter`,\n"
-            + "    `agg_c_14_sales_fact_1997`.`month_of_year`,\n"
-            + "    `store`.`store_country`\n"
-            + "order by\n"
-            + "    ISNULL(`agg_c_14_sales_fact_1997`.`the_year`) ASC, `agg_c_14_sales_fact_1997`.`the_year` ASC,\n"
-            + "    ISNULL(`agg_c_14_sales_fact_1997`.`quarter`) ASC, `agg_c_14_sales_fact_1997`.`quarter` ASC,\n"
-            + "    ISNULL(`agg_c_14_sales_fact_1997`.`month_of_year`) ASC, `agg_c_14_sales_fact_1997`.`month_of_year` ASC,\n"
-            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC";
-
         final TestContext context =
                 TestContext.instance().withSchema(schema);
 
-        assertQuerySqlOrNot(
-            context,
-            mdx,
-            new SqlPattern[] {
-                new SqlPattern(
-                    Dialect.DatabaseProduct.MYSQL,
-                    sqlMysql,
-                    sqlMysql.length())
-            },
-            false, false, true);
+        if (MondrianProperties.instance().EnableNativeCrossJoin.get()) {
+            final String sqlMysql =
+                "select\n"
+                + "    `agg_c_14_sales_fact_1997`.`the_year` as `c0`,\n"
+                + "    `agg_c_14_sales_fact_1997`.`quarter` as `c1`,\n"
+                + "    `agg_c_14_sales_fact_1997`.`month_of_year` as `c2`,\n"
+                + "    `store`.`store_country` as `c3`\n"
+                + "from\n"
+                + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
+                + "    `store` as `store`\n"
+                + "where\n"
+                + "    `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+                + "group by\n"
+                + "    `agg_c_14_sales_fact_1997`.`the_year`,\n"
+                + "    `agg_c_14_sales_fact_1997`.`quarter`,\n"
+                + "    `agg_c_14_sales_fact_1997`.`month_of_year`,\n"
+                + "    `store`.`store_country`\n"
+                + "order by\n"
+                + "    ISNULL(`agg_c_14_sales_fact_1997`.`the_year`) ASC, `agg_c_14_sales_fact_1997`.`the_year` ASC,\n"
+                + "    ISNULL(`agg_c_14_sales_fact_1997`.`quarter`) ASC, `agg_c_14_sales_fact_1997`.`quarter` ASC,\n"
+                + "    ISNULL(`agg_c_14_sales_fact_1997`.`month_of_year`) ASC, `agg_c_14_sales_fact_1997`.`month_of_year` ASC,\n"
+                + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC";
 
+            assertQuerySqlOrNot(
+                context,
+                mdx,
+                new SqlPattern[] {
+                    new SqlPattern(
+                        Dialect.DatabaseProduct.MYSQL,
+                        sqlMysql,
+                        sqlMysql.length())
+                },
+                false, false, true);
+        }
         context.assertQueryReturns(
             mdx,
             "Axis #0:\n"

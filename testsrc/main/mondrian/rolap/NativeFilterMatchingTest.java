@@ -366,74 +366,78 @@ public class NativeFilterMatchingTest extends BatchTestCase {
         final String mdx =
             "with member measures.avgQtrs as 'avg( filter( time.quarter.members, measures.[unit sales] > 80))' "
             + "select measures.avgQtrs * gender.members on 0 from sales where head( product.[product name].members, 3)";
-        final String sqlMysql =
-            propSaver.properties.UseAggregates.get() == false
-                ? "select\n"
-                + "    `time_by_day`.`the_year` as `c0`,\n"
-                + "    `time_by_day`.`quarter` as `c1`\n"
-                + "from\n"
-                + "    `time_by_day` as `time_by_day`,\n"
-                + "    `sales_fact_1997` as `sales_fact_1997`,\n"
-                + "    `product` as `product`,\n"
-                + "    `customer` as `customer`\n"
-                + "where\n"
-                + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
-                + "and\n"
-                + "    `sales_fact_1997`.`product_id` = `product`.`product_id`\n"
-                + "and\n"
-                + "    `product`.`product_name` in ('Good Imported Beer', 'Good Light Beer', 'Pearl Imported Beer')\n"
-                + "and\n"
-                + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
-                + "and\n"
-                + "    `customer`.`gender` = 'M'\n"
-                + "group by\n"
-                + "    `time_by_day`.`the_year`,\n"
-                + "    `time_by_day`.`quarter`\n"
-                + "having\n"
-                + "    (sum(`sales_fact_1997`.`unit_sales`) > 80)\n"
-                + "order by\n"
-                + "    ISNULL(`time_by_day`.`the_year`) ASC, `time_by_day`.`the_year` ASC,\n"
-                + "    ISNULL(`time_by_day`.`quarter`) ASC, `time_by_day`.`quarter` ASC"
 
-                : "select\n"
-                + "    `agg_c_14_sales_fact_1997`.`the_year` as `c0`,\n"
-                + "    `agg_c_14_sales_fact_1997`.`quarter` as `c1`\n"
-                + "from\n"
-                + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
-                + "    `product` as `product`,\n"
-                + "    `customer` as `customer`\n"
-                + "where\n"
-                + "    `agg_c_14_sales_fact_1997`.`product_id` = `product`.`product_id`\n"
-                + "and\n"
-                + "    `product`.`product_name` in ('Good Imported Beer', 'Good Light Beer', 'Pearl Imported Beer')\n"
-                + "and\n"
-                + "    `agg_c_14_sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
-                + "and\n"
-                + "    `customer`.`gender` = 'M'\n"
-                + "group by\n"
-                + "    `agg_c_14_sales_fact_1997`.`the_year`,\n"
-                + "    `agg_c_14_sales_fact_1997`.`quarter`\n"
-                + "having\n"
-                + "    (sum(`agg_c_14_sales_fact_1997`.`unit_sales`) > 80)\n"
-                + "order by\n"
-                + "    ISNULL(`agg_c_14_sales_fact_1997`.`the_year`) ASC, `agg_c_14_sales_fact_1997`.`the_year` ASC,\n"
-                + "    ISNULL(`agg_c_14_sales_fact_1997`.`quarter`) ASC, `agg_c_14_sales_fact_1997`.`quarter` ASC";
-        final SqlPattern[] patterns =
-            new SqlPattern[] {
-                new SqlPattern(
-                    Dialect.DatabaseProduct.MYSQL,
-                    sqlMysql,
-                    sqlMysql.length())};
+        if (MondrianProperties.instance().EnableNativeFilter.get()
+            && MondrianProperties.instance().EnableNativeNonEmpty.get())
+        {
+            final String sqlMysql =
+                propSaver.properties.UseAggregates.get() == false
+                    ? "select\n"
+                    + "    `time_by_day`.`the_year` as `c0`,\n"
+                    + "    `time_by_day`.`quarter` as `c1`\n"
+                    + "from\n"
+                    + "    `time_by_day` as `time_by_day`,\n"
+                    + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+                    + "    `product` as `product`,\n"
+                    + "    `customer` as `customer`\n"
+                    + "where\n"
+                    + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+                    + "and\n"
+                    + "    `sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+                    + "and\n"
+                    + "    `product`.`product_name` in ('Good Imported Beer', 'Good Light Beer', 'Pearl Imported Beer')\n"
+                    + "and\n"
+                    + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+                    + "and\n"
+                    + "    `customer`.`gender` = 'M'\n"
+                    + "group by\n"
+                    + "    `time_by_day`.`the_year`,\n"
+                    + "    `time_by_day`.`quarter`\n"
+                    + "having\n"
+                    + "    (sum(`sales_fact_1997`.`unit_sales`) > 80)\n"
+                    + "order by\n"
+                    + "    ISNULL(`time_by_day`.`the_year`) ASC, `time_by_day`.`the_year` ASC,\n"
+                    + "    ISNULL(`time_by_day`.`quarter`) ASC, `time_by_day`.`quarter` ASC"
 
-        // Make sure the tuples list is using the HAVING clause.
-        assertQuerySqlOrNot(
-            getTestContext(),
-            mdx,
-            patterns,
-            false,
-            true,
-            true);
+                    : "select\n"
+                    + "    `agg_c_14_sales_fact_1997`.`the_year` as `c0`,\n"
+                    + "    `agg_c_14_sales_fact_1997`.`quarter` as `c1`\n"
+                    + "from\n"
+                    + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
+                    + "    `product` as `product`,\n"
+                    + "    `customer` as `customer`\n"
+                    + "where\n"
+                    + "    `agg_c_14_sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+                    + "and\n"
+                    + "    `product`.`product_name` in ('Good Imported Beer', 'Good Light Beer', 'Pearl Imported Beer')\n"
+                    + "and\n"
+                    + "    `agg_c_14_sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+                    + "and\n"
+                    + "    `customer`.`gender` = 'M'\n"
+                    + "group by\n"
+                    + "    `agg_c_14_sales_fact_1997`.`the_year`,\n"
+                    + "    `agg_c_14_sales_fact_1997`.`quarter`\n"
+                    + "having\n"
+                    + "    (sum(`agg_c_14_sales_fact_1997`.`unit_sales`) > 80)\n"
+                    + "order by\n"
+                    + "    ISNULL(`agg_c_14_sales_fact_1997`.`the_year`) ASC, `agg_c_14_sales_fact_1997`.`the_year` ASC,\n"
+                    + "    ISNULL(`agg_c_14_sales_fact_1997`.`quarter`) ASC, `agg_c_14_sales_fact_1997`.`quarter` ASC";
+            final SqlPattern[] patterns =
+                new SqlPattern[] {
+                    new SqlPattern(
+                        Dialect.DatabaseProduct.MYSQL,
+                        sqlMysql,
+                        sqlMysql.length())};
 
+            // Make sure the tuples list is using the HAVING clause.
+            assertQuerySqlOrNot(
+                getTestContext(),
+                mdx,
+                patterns,
+                false,
+                true,
+                true);
+        }
         // Make sure the numbers are right
         assertQueryReturns(
             mdx,
@@ -457,46 +461,49 @@ public class NativeFilterMatchingTest extends BatchTestCase {
         final String mdx =
             "with member measures.avgQtrs as 'avg( filter( time.quarter.members, measures.[unit sales] > 80))' "
             + "select measures.avgQtrs * gender.members on 0 from sales where head( product.[product name].members, 3)";
-        final String sqlMysql =
-            "select\n"
-            + "    `agg_c_14_sales_fact_1997`.`the_year` as `c0`,\n"
-            + "    `agg_c_14_sales_fact_1997`.`quarter` as `c1`\n"
-            + "from\n"
-            + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
-            + "    `product` as `product`,\n"
-            + "    `customer` as `customer`\n"
-            + "where\n"
-            + "    `agg_c_14_sales_fact_1997`.`product_id` = `product`.`product_id`\n"
-            + "and\n"
-            + "    `product`.`product_name` in ('Good Imported Beer', 'Good Light Beer', 'Pearl Imported Beer')\n"
-            + "and\n"
-            + "    `agg_c_14_sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
-            + "and\n"
-            + "    `customer`.`gender` = 'M'\n"
-            + "group by\n"
-            + "    `agg_c_14_sales_fact_1997`.`the_year`,\n"
-            + "    `agg_c_14_sales_fact_1997`.`quarter`\n"
-            + "having\n"
-            + "    (sum(`agg_c_14_sales_fact_1997`.`unit_sales`) > 80)\n"
-            + "order by\n"
-            + "    ISNULL(`agg_c_14_sales_fact_1997`.`the_year`) ASC, `agg_c_14_sales_fact_1997`.`the_year` ASC,\n"
-            + "    ISNULL(`agg_c_14_sales_fact_1997`.`quarter`) ASC, `agg_c_14_sales_fact_1997`.`quarter` ASC";
-        final SqlPattern[] patterns =
-            new SqlPattern[] {
-                new SqlPattern(
-                    Dialect.DatabaseProduct.MYSQL,
-                    sqlMysql,
-                    sqlMysql.length())};
+        if (MondrianProperties.instance().EnableNativeFilter.get()
+            && MondrianProperties.instance().EnableNativeNonEmpty.get())
+        {
+            final String sqlMysql =
+                "select\n"
+                + "    `agg_c_14_sales_fact_1997`.`the_year` as `c0`,\n"
+                + "    `agg_c_14_sales_fact_1997`.`quarter` as `c1`\n"
+                + "from\n"
+                + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
+                + "    `product` as `product`,\n"
+                + "    `customer` as `customer`\n"
+                + "where\n"
+                + "    `agg_c_14_sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+                + "and\n"
+                + "    `product`.`product_name` in ('Good Imported Beer', 'Good Light Beer', 'Pearl Imported Beer')\n"
+                + "and\n"
+                + "    `agg_c_14_sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+                + "and\n"
+                + "    `customer`.`gender` = 'M'\n"
+                + "group by\n"
+                + "    `agg_c_14_sales_fact_1997`.`the_year`,\n"
+                + "    `agg_c_14_sales_fact_1997`.`quarter`\n"
+                + "having\n"
+                + "    (sum(`agg_c_14_sales_fact_1997`.`unit_sales`) > 80)\n"
+                + "order by\n"
+                + "    ISNULL(`agg_c_14_sales_fact_1997`.`the_year`) ASC, `agg_c_14_sales_fact_1997`.`the_year` ASC,\n"
+                + "    ISNULL(`agg_c_14_sales_fact_1997`.`quarter`) ASC, `agg_c_14_sales_fact_1997`.`quarter` ASC";
+            final SqlPattern[] patterns =
+                new SqlPattern[] {
+                    new SqlPattern(
+                        Dialect.DatabaseProduct.MYSQL,
+                        sqlMysql,
+                        sqlMysql.length())};
 
-        // Make sure the tuples list is using the HAVING clause.
-        assertQuerySqlOrNot(
-            getTestContext(),
-            mdx,
-            patterns,
-            false,
-            true,
-            true);
-
+            // Make sure the tuples list is using the HAVING clause.
+            assertQuerySqlOrNot(
+                getTestContext(),
+                mdx,
+                patterns,
+                false,
+                true,
+                true);
+        }
         // Make sure the numbers are right
         assertQueryReturns(
             mdx,
@@ -518,129 +525,132 @@ public class NativeFilterMatchingTest extends BatchTestCase {
         final String mdx =
             "with member [measures].[avgQtrs] as 'count(filter([Customers].[Name].Members, [Measures].[Unit Sales] > 0))' "
             + "select [measures].[avgQtrs] on 0 from sales where ( {[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer], [Product].[Food].[Baked Goods].[Bread].[Muffins]} )";
-        final String sqlMysql =
-            propSaver.properties.UseAggregates.get() == false
-                ? "select\n"
-                + "    `customer`.`country` as `c0`,\n"
-                + "    `customer`.`state_province` as `c1`,\n"
-                + "    `customer`.`city` as `c2`,\n"
-                + "    `customer`.`customer_id` as `c3`,\n"
-                + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c4`,\n"
-                + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c5`,\n"
-                + "    `customer`.`gender` as `c6`,\n"
-                + "    `customer`.`marital_status` as `c7`,\n"
-                + "    `customer`.`education` as `c8`,\n"
-                + "    `customer`.`yearly_income` as `c9`\n"
-                + "from\n"
-                + "    `customer` as `customer`,\n"
-                + "    `sales_fact_1997` as `sales_fact_1997`,\n"
-                + "    `time_by_day` as `time_by_day`,\n"
-                + "    `product_class` as `product_class`,\n"
-                + "    `product` as `product`\n"
-                + "where\n"
-                + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
-                + "and\n"
-                + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
-                + "and\n"
-                + "    `time_by_day`.`the_year` = 1997\n"
-                + "and\n"
-                + "    `sales_fact_1997`.`product_id` = `product`.`product_id`\n"
-                //
-                + "and\n"
-                + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
-                + "and\n"
-                + "    `product_class`.`product_family` in ('Drink', 'Food')\n"
-                + "and\n"
-                + "    `product_class`.`product_department` in ('Alcoholic Beverages', 'Baked Goods')\n"
-                + "and\n"
-                + "    `product_class`.`product_category` in ('Beer and Wine', 'Bread')\n"
-                + "and\n"
-                + "    `product_class`.`product_subcategory` in ('Beer', 'Muffins')\n"
-                + "group by\n"
-                + "    `customer`.`country`,\n"
-                + "    `customer`.`state_province`,\n"
-                + "    `customer`.`city`,\n"
-                + "    `customer`.`customer_id`,\n"
-                + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`),\n"
-                + "    `customer`.`gender`,\n"
-                + "    `customer`.`marital_status`,\n"
-                + "    `customer`.`education`,\n"
-                + "    `customer`.`yearly_income`\n"
-                + "having\n"
-                + "    (sum(`sales_fact_1997`.`unit_sales`) > 0)\n"
-                // ^^^^ This is what we are interested in. ^^^^
-                + "order by\n"
-                + "    ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC,\n"
-                + "    ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC,\n"
-                + "    ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC,\n"
-                + "    ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC"
+        if (MondrianProperties.instance().EnableNativeFilter.get()
+            && MondrianProperties.instance().EnableNativeNonEmpty.get())
+        {
+            final String sqlMysql =
+                propSaver.properties.UseAggregates.get() == false
+                    ? "select\n"
+                    + "    `customer`.`country` as `c0`,\n"
+                    + "    `customer`.`state_province` as `c1`,\n"
+                    + "    `customer`.`city` as `c2`,\n"
+                    + "    `customer`.`customer_id` as `c3`,\n"
+                    + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c4`,\n"
+                    + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c5`,\n"
+                    + "    `customer`.`gender` as `c6`,\n"
+                    + "    `customer`.`marital_status` as `c7`,\n"
+                    + "    `customer`.`education` as `c8`,\n"
+                    + "    `customer`.`yearly_income` as `c9`\n"
+                    + "from\n"
+                    + "    `customer` as `customer`,\n"
+                    + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+                    + "    `time_by_day` as `time_by_day`,\n"
+                    + "    `product_class` as `product_class`,\n"
+                    + "    `product` as `product`\n"
+                    + "where\n"
+                    + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+                    + "and\n"
+                    + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+                    + "and\n"
+                    + "    `time_by_day`.`the_year` = 1997\n"
+                    + "and\n"
+                    + "    `sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+                    //
+                    + "and\n"
+                    + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+                    + "and\n"
+                    + "    `product_class`.`product_family` in ('Drink', 'Food')\n"
+                    + "and\n"
+                    + "    `product_class`.`product_department` in ('Alcoholic Beverages', 'Baked Goods')\n"
+                    + "and\n"
+                    + "    `product_class`.`product_category` in ('Beer and Wine', 'Bread')\n"
+                    + "and\n"
+                    + "    `product_class`.`product_subcategory` in ('Beer', 'Muffins')\n"
+                    + "group by\n"
+                    + "    `customer`.`country`,\n"
+                    + "    `customer`.`state_province`,\n"
+                    + "    `customer`.`city`,\n"
+                    + "    `customer`.`customer_id`,\n"
+                    + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`),\n"
+                    + "    `customer`.`gender`,\n"
+                    + "    `customer`.`marital_status`,\n"
+                    + "    `customer`.`education`,\n"
+                    + "    `customer`.`yearly_income`\n"
+                    + "having\n"
+                    + "    (sum(`sales_fact_1997`.`unit_sales`) > 0)\n"
+                    // ^^^^ This is what we are interested in. ^^^^
+                    + "order by\n"
+                    + "    ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC,\n"
+                    + "    ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC,\n"
+                    + "    ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC,\n"
+                    + "    ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC"
 
-                : "select\n"
-                + "    `customer`.`country` as `c0`,\n"
-                + "    `customer`.`state_province` as `c1`,\n"
-                + "    `customer`.`city` as `c2`,\n"
-                + "    `customer`.`customer_id` as `c3`,\n"
-                + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c4`,\n"
-                + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c5`,\n"
-                + "    `customer`.`gender` as `c6`,\n"
-                + "    `customer`.`marital_status` as `c7`,\n"
-                + "    `customer`.`education` as `c8`,\n"
-                + "    `customer`.`yearly_income` as `c9`\n"
-                + "from\n"
-                + "    `customer` as `customer`,\n"
-                + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
-                + "    `product_class` as `product_class`,\n"
-                + "    `product` as `product`\n"
-                + "where\n"
-                + "    `agg_c_14_sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
-                + "and\n"
-                + "    `agg_c_14_sales_fact_1997`.`the_year` = 1997\n"
-                + "and\n"
-                + "    `agg_c_14_sales_fact_1997`.`product_id` = `product`.`product_id`\n"
-                + "and\n"
-                + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
-                + "and\n"
-                + "    `product_class`.`product_family` in ('Drink', 'Food')\n"
-                + "and\n"
-                + "    `product_class`.`product_department` in ('Alcoholic Beverages', 'Baked Goods')\n"
-                + "and\n"
-                + "    `product_class`.`product_category` in ('Beer and Wine', 'Bread')\n"
-                + "and\n"
-                + "    `product_class`.`product_subcategory` in ('Beer', 'Muffins')\n"
-                + "group by\n"
-                + "    `customer`.`country`,\n"
-                + "    `customer`.`state_province`,\n"
-                + "    `customer`.`city`,\n"
-                + "    `customer`.`customer_id`,\n"
-                + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`),\n"
-                + "    `customer`.`gender`,\n"
-                + "    `customer`.`marital_status`,\n"
-                + "    `customer`.`education`,\n"
-                + "    `customer`.`yearly_income`\n"
-                + "having\n"
-                + "    (sum(`agg_c_14_sales_fact_1997`.`unit_sales`) > 0)\n"
-                // ^^^^ This is what we are interested in. ^^^^
-                + "order by\n"
-                + "    ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC,\n"
-                + "    ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC,\n"
-                + "    ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC,\n"
-                + "    ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC";
-        final SqlPattern[] patterns =
-            new SqlPattern[] {
-                new SqlPattern(
-                    Dialect.DatabaseProduct.MYSQL,
-                    sqlMysql,
-                    sqlMysql.length())};
+                    : "select\n"
+                    + "    `customer`.`country` as `c0`,\n"
+                    + "    `customer`.`state_province` as `c1`,\n"
+                    + "    `customer`.`city` as `c2`,\n"
+                    + "    `customer`.`customer_id` as `c3`,\n"
+                    + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c4`,\n"
+                    + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c5`,\n"
+                    + "    `customer`.`gender` as `c6`,\n"
+                    + "    `customer`.`marital_status` as `c7`,\n"
+                    + "    `customer`.`education` as `c8`,\n"
+                    + "    `customer`.`yearly_income` as `c9`\n"
+                    + "from\n"
+                    + "    `customer` as `customer`,\n"
+                    + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
+                    + "    `product_class` as `product_class`,\n"
+                    + "    `product` as `product`\n"
+                    + "where\n"
+                    + "    `agg_c_14_sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+                    + "and\n"
+                    + "    `agg_c_14_sales_fact_1997`.`the_year` = 1997\n"
+                    + "and\n"
+                    + "    `agg_c_14_sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+                    + "and\n"
+                    + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+                    + "and\n"
+                    + "    `product_class`.`product_family` in ('Drink', 'Food')\n"
+                    + "and\n"
+                    + "    `product_class`.`product_department` in ('Alcoholic Beverages', 'Baked Goods')\n"
+                    + "and\n"
+                    + "    `product_class`.`product_category` in ('Beer and Wine', 'Bread')\n"
+                    + "and\n"
+                    + "    `product_class`.`product_subcategory` in ('Beer', 'Muffins')\n"
+                    + "group by\n"
+                    + "    `customer`.`country`,\n"
+                    + "    `customer`.`state_province`,\n"
+                    + "    `customer`.`city`,\n"
+                    + "    `customer`.`customer_id`,\n"
+                    + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`),\n"
+                    + "    `customer`.`gender`,\n"
+                    + "    `customer`.`marital_status`,\n"
+                    + "    `customer`.`education`,\n"
+                    + "    `customer`.`yearly_income`\n"
+                    + "having\n"
+                    + "    (sum(`agg_c_14_sales_fact_1997`.`unit_sales`) > 0)\n"
+                    // ^^^^ This is what we are interested in. ^^^^
+                    + "order by\n"
+                    + "    ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC,\n"
+                    + "    ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC,\n"
+                    + "    ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC,\n"
+                    + "    ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC";
+            final SqlPattern[] patterns =
+                new SqlPattern[] {
+                    new SqlPattern(
+                        Dialect.DatabaseProduct.MYSQL,
+                        sqlMysql,
+                        sqlMysql.length())};
 
-        // Make sure the tuples list is using the HAVING clause.
-        assertQuerySqlOrNot(
-            getTestContext(),
-            mdx,
-            patterns,
-            false,
-            true,
-            true);
-
+            // Make sure the tuples list is using the HAVING clause.
+            assertQuerySqlOrNot(
+                getTestContext(),
+                mdx,
+                patterns,
+                false,
+                true,
+                true);
+        }
         // Make sure the numbers are right
         assertQueryReturns(
             mdx,

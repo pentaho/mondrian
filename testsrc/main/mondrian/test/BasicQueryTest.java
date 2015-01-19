@@ -6237,7 +6237,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         final mondrian.server.Statement stmt = conn.getInternalStatement();
         // use the logger to block and trigger cancelation at the right time
         Logger sqlLog = RolapUtil.SQL_LOGGER;
-        propSaver.setAtLeast(sqlLog, org.apache.log4j.Level.DEBUG);
+        propSaver.set(sqlLog, org.apache.log4j.Level.DEBUG);
         final Execution exec = new Execution(stmt, 50000);
         final CountDownLatch okToGo = new CountDownLatch(1);
         SqlCancelingAppender canceler =
@@ -8404,6 +8404,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * </a>
      */
     public void testNameExpressionSnowflake() {
+        Dialect dialect = getTestContext().getDialect();
         TestContext testContext =
             getTestContext().createSubstitutingCube(
                 "Sales",
@@ -8418,21 +8419,21 @@ public class BasicQueryTest extends FoodMartTestCase {
                 + "    <Level name=\"IsZero\" visible=\"true\" table=\"product\" column=\"product_id\" type=\"Integer\" uniqueMembers=\"false\" levelType=\"Regular\" hideMemberIf=\"Never\">\n"
                 + "      <NameExpression>\n"
                 + "        <SQL dialect=\"generic\">\n"
-                + "          <![CDATA[case when product.product_id=0 then 'Zero' else 'Non-Zero' end]]>\n"
+                + "          <![CDATA[case when " + dialect.quoteIdentifier("product","product_id") + "=0 then 'Zero' else 'Non-Zero' end]]>\n"
                 + "        </SQL>\n"
                 + "      </NameExpression>\n"
                 + "    </Level>\n"
                 + "    <Level name=\"SubCat\" visible=\"true\" table=\"product_class\" column=\"product_class_id\" type=\"String\" uniqueMembers=\"false\" levelType=\"Regular\" hideMemberIf=\"Never\">\n"
                 + "      <NameExpression>\n"
                 + "        <SQL dialect=\"generic\">\n"
-                + "          <![CDATA[product_class.product_subcategory]]>\n"
+                + "          <![CDATA[" + dialect.quoteIdentifier("product_class","product_subcategory") + "]]>\n"
                 + "        </SQL>\n"
                 + "      </NameExpression>\n"
                 + "    </Level>\n"
                 + "    <Level name=\"ProductName\" visible=\"true\" table=\"product\" column=\"product_id\" type=\"Integer\" uniqueMembers=\"false\" levelType=\"Regular\" hideMemberIf=\"Never\">\n"
                 + "      <NameExpression>\n"
                 + "        <SQL dialect=\"generic\">\n"
-                + "          <![CDATA[product.product_name]]>\n"
+                + "          <![CDATA["+ dialect.quoteIdentifier("product","product_name") + "]]>\n"
                 + "        </SQL>\n"
                 + "      </NameExpression>\n"
                 + "    </Level>\n"
