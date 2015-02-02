@@ -434,6 +434,17 @@ public class TestContext {
             s = s.substring(0, i)
                 + measureDefs
                 + s.substring(i);
+
+            // Same for VirtualCubeMeasure
+            if (i == end) {
+                i = s.indexOf("<VirtualCubeMeasure", h);
+                if (i < 0 || i > end) {
+                    i = end;
+                }
+                s = s.substring(0, i)
+                    + measureDefs
+                    + s.substring(i);
+            }
         }
 
         // Add calculated member definitions, if specified.
