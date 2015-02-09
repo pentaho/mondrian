@@ -1582,6 +1582,26 @@ public class VirtualCubeTest extends BatchTestCase {
         + "Row #0: 72,024\n";
       context.assertQueryReturns(query, expected);
     }
+
+    public void testCrossjoinOptimizerWithVirtualCube() {
+        final TestContext context =
+            TestContext.instance().createSubstitutingCube(
+                "Warehouse and Sales",
+                null,
+                "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Customer Count]\"/>",
+                null,
+                null);
+
+        context.assertQueryReturns(
+            "WITH member measures.ratio as 'measures.[Store Cost]/measures.[warehouse cost]' "
+            + " member [marital status].agg as 'aggregate({[marital status].M})' "
+            + " select non empty [Warehouse].[USA] "
+            + " * {[marital status].[marital status].members, [marital status].agg }  on 0 "
+            + "FROM [warehouse and sales] where [measures].[Customer Count]",
+            "Axis #0:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Axis #1:\n");
+    }
 }
 
 // End VirtualCubeTest.java
