@@ -174,12 +174,23 @@ public class XmlaHandler {
             }
         }
 
-        return
+        OlapConnection connection =
             getConnection(
                 databaseName,
                 catalogName,
                 request.getRoleName(),
                 props);
+
+        String localeIdentifier = request.getProperties().get(
+                PropertyDefinition.LocaleIdentifier.name());
+        if (localeIdentifier != null) {
+            Locale locale = Util.parseLocale(localeIdentifier);
+            if (locale != null) {
+                connection.setLocale(locale);
+            }
+        }
+
+        return connection;
     }
 
     private enum SetType {
