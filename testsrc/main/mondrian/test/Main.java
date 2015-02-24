@@ -22,6 +22,7 @@ import mondrian.olap4j.XmlaExtraTest;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.*;
+import mondrian.rolap.sql.CrossJoinArgFactoryTest;
 import mondrian.rolap.sql.SelectNotInGroupByTest;
 import mondrian.rolap.sql.SqlQueryTest;
 import mondrian.server.FileRepositoryTest;
@@ -336,6 +337,7 @@ public class Main extends TestSuite {
             addTest(suite, BlockingHashMapTest.class);
             addTest(suite, FileRepositoryTest.class);
             addTest(suite, XmlaExtraTest.class);
+            addTest(suite, CrossJoinArgFactoryTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {
