@@ -3098,7 +3098,13 @@ public class MondrianFoodMartLoader {
         String columnType = column.typeName;
 
         if (columnValue == null) {
-            return "NULL";
+            switch (dialect.getDatabaseProduct()) {
+            // Sybase only accepts nulls as 0x00.
+            case SYBASE:
+                return "0x00";
+            default:
+                return "NULL";
+            }
         }
 
         /*
@@ -3138,6 +3144,7 @@ public class MondrianFoodMartLoader {
             case DB2_OLD_AS400:
             case FIREBIRD:
             case MSSQL:
+            case SYBASE:
             case DERBY:
             case TERADATA:
             case INGRES:
@@ -3315,6 +3322,7 @@ public class MondrianFoodMartLoader {
                 case INFOBRIGHT:
                     return "TINYINT(1)";
                 case MSSQL:
+                case SYBASE:
                     return "BIT";
                 default:
                     return Smallint.name;
@@ -3344,6 +3352,7 @@ public class MondrianFoodMartLoader {
                 case MSSQL:
                 case MYSQL:
                 case INFOBRIGHT:
+                case SYBASE:
                     return "DATETIME";
                 case INGRES:
                     return "INGRESDATE";
