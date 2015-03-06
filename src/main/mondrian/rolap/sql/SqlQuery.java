@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, Mar 21, 2002
@@ -823,60 +823,6 @@ public class SqlQuery {
             }
             joinOnClauses.add(
                 new JoinOnClause(condition, leftAlias, rightAlias));
-        }
-
-        public void toBuffer(StringBuilder buf, List<String> fromAliases) {
-            int n = 0;
-            for (int i = 0; i < size(); i++) {
-                final String s = get(i);
-                final String alias = fromAliases.get(i);
-                if (n++ == 0) {
-                    buf.append(" from ");
-                    buf.append(s);
-                } else {
-                    // Add "JOIN t ON (a = b ,...)" to the FROM clause. If there
-                    // is no JOIN clause matching this alias (or no JOIN clauses
-                    // at all), append just ", t".
-                    appendJoin(fromAliases.subList(0, i), s, alias, buf);
-                }
-            }
-        }
-
-        void appendJoin(
-            final List<String> addedTables,
-            final String from,
-            final String alias,
-            final StringBuilder buf)
-        {
-            int n = 0;
-            // first check when the current table is on the left side
-            for (JoinOnClause joinOnClause : joinOnClauses) {
-                // the first table was added before join, it has to be handled
-                // specially: Table.column = expression
-                if ((addedTables.size() == 1
-                     && addedTables.get(0).equals(joinOnClause.left)
-                     && joinOnClause.left.equals(joinOnClause.right))
-                    || (alias.equals(joinOnClause.left)
-                        && addedTables.contains(joinOnClause.right))
-                    || (alias.equals(joinOnClause.right)
-                        && addedTables.contains(joinOnClause.left)))
-                {
-                    if (n++ == 0) {
-                        buf.append(" join ").append(from).append(" on ");
-                    } else {
-                        buf.append(" and ");
-                    }
-                    buf.append(joinOnClause.condition);
-                }
-            }
-            if (n == 0) {
-                // No "JOIN ... ON" clause matching this alias (or maybe no
-                // JOIN ... ON clauses at all, if this is a database that
-                // doesn't support ANSI-join syntax). Append an old-style FROM
-                // item separated by a comma.
-                buf.append(joinOnClauses.isEmpty() ? ", " : " cross join ")
-                    .append(from);
-            }
         }
     }
 
