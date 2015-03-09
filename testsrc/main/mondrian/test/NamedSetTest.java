@@ -5,12 +5,11 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2015 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
 */
-
 package mondrian.test;
 
 import mondrian.olap.Result;
@@ -1070,6 +1069,38 @@ public class NamedSetTest extends FoodMartTestCase {
             + "Row #8: 68,755\n"
             + "Row #8: 8\n"
             + "Row #8: ([Gender].[M], [Marital Status].[S])\n");
+    }
+
+
+    public void testNamedSetWithCompoundSlicer() {
+        // MONDRIAN-1654
+        final String mdx = "with set [FilteredNamedSet] as "
+            + "'Filter([Customers].[Name].Members, "
+            + "measures.[Unit Sales] > 200)' select FilteredNamedSet on 0 from "
+            + "sales where {Time.[1997].Q1, TIme.[1997].Q2}";
+        assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[1997].[Q2]}\n"
+            + "Axis #1:\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Daniel Thompson]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Dauna Barton]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Emily Barela]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Grace McLaughlin]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Joann Mramor]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Mary Francis Benigar]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Matt Bellah]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Wildon Cameron]}\n"
+            + "Row #0: 202\n"
+            + "Row #0: 218\n"
+            + "Row #0: 215\n"
+            + "Row #0: 228\n"
+            + "Row #0: 227\n"
+            + "Row #0: 257\n"
+            + "Row #0: 258\n"
+            + "Row #0: 227\n");
+        verifySameNativeAndNot(mdx, "", getTestContext());
     }
 
     /**

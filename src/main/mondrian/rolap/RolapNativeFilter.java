@@ -18,9 +18,7 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.sql.DataSource;
@@ -91,25 +89,6 @@ public class RolapNativeFilter extends RolapNativeSet {
             String filterSql = sql.generateFilterCondition(filterExpr);
             if (filterSql != null) {
                 sqlQuery.addHaving(filterSql);
-
-              final List<RolapMember> slicerMembers = Util
-                  .cast(((RolapEvaluator) getEvaluator()).getSlicerMembers());
-              if (!slicerMembers.isEmpty()) {
-                Map<RolapLevel, List<RolapMember>> slicerMap =
-                    new HashMap<RolapLevel, List<RolapMember>>();
-                for (RolapMember rolapMember : slicerMembers) {
-                  final RolapLevel level = rolapMember.getLevel();
-                  if (!slicerMap.containsKey(level)) {
-                    slicerMap.put(level, new ArrayList<RolapMember>());
-                  }
-                  slicerMap.get(level).add(rolapMember);
-                }
-                for (List<RolapMember> slicersLevel : slicerMap.values()) {
-                  SqlConstraintUtils.addMemberConstraint(
-                      sqlQuery, baseCube, aggStar, slicersLevel,
-                      false, true, false);
-                }
-              }
             }
 
             if (getEvaluator().isNonEmpty() || isJoinRequired()) {
@@ -216,6 +195,19 @@ public class RolapNativeFilter extends RolapNativeSet {
         final int savepoint = evaluator.savepoint();
         try {
             overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
+
+            // no need to have any context if there is no measure, we are doing
+            // a filter only on the current dimension. This prevents
+            // SqlContextConstraint from expanding unnecessary calculated
+            // members on the
+            // slicer calling expandSupportedCalculatedMembers
+            if (!evaluator.isNonEmpty() && sql.getStoredMeasure() == null) {
+                // No need to have anything on the context
+                for (Member m : evaluator.getMembers()) {
+                    evaluator.setContext(
+                        m.getLevel().getHierarchy().getDefaultMember());
+                }
+            }
             // Now construct the TupleConstraint that contains both the CJ
             // dimensions and the additional filter on them.
             CrossJoinArg[] combinedArgs = cjArgs;

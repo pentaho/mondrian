@@ -6,29 +6,27 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.olap.fun.AggregateFunDef;
-import mondrian.olap.fun.ParenthesesFunDef;
+import mondrian.olap.fun.*;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.RolapStar.Column;
+import mondrian.rolap.RolapStar.Table;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggStar;
-import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.sql.*;
 import mondrian.spi.Dialect;
 import mondrian.util.FilteredIterableList;
-
 import mondrian.calc.*;
 import mondrian.mdx.*;
 
 import org.apache.log4j.Logger;
 
 import java.util.*;
-
-
 
 /**
  * Utility class used by implementations of {@link mondrian.rolap.sql.SqlConstraint},
@@ -63,6 +61,352 @@ public class SqlConstraintUtils {
         RolapCube baseCube,
         boolean restrictMemberTypes)
     {
+        if (baseCube == null && evaluator instanceof RolapEvaluator) {
+            baseCube = ((RolapEvaluator) evaluator).getCube();
+        }
+
+        RolapEvaluator rEvaluator = (RolapEvaluator) evaluator;
+        // decide if we should use the tuple-based version instead
+        TupleList slicerTuples = rEvaluator.getOptimizedSlicerTuples(baseCube);
+        boolean disjointSlicerTuples = false;
+        if (slicerTuples != null && slicerTuples.size() > 0
+            && (SqlConstraintUtils.isDisjointTuple(slicerTuples)
+                || rEvaluator.isMultiLevelSlicerTuple()))
+        {
+            disjointSlicerTuples = true;
+        }
+
+        // find columns affected by context members
+        final CellRequest request =
+            makeContextMembersRequest(
+                evaluator,
+                restrictMemberTypes,
+                disjointSlicerTuples);
+        if (request == null) {
+            if (restrictMemberTypes) {
+                throw Util.newInternal("CellRequest is null - why?");
+            }
+            // One or more of the members was null or calculated, so the
+            // request is impossible to satisfy.
+            return;
+        }
+        if (disjointSlicerTuples) {
+            LOG.warn("Using tuple-based native slicer.");
+            addContextConstraintTuples(
+                sqlQuery,
+                aggStar,
+                (RolapEvaluator) evaluator,
+                baseCube,
+                restrictMemberTypes,
+                request,
+                slicerTuples);
+            return;
+        }
+
+        RolapStar.Column[] columns = request.getConstrainedColumns();
+        Object[] values = request.getSingleValues();
+
+        Map<MondrianDef.Expression, Set<RolapMember>> mapOfSlicerMembers = null;
+        HashMap<MondrianDef.Expression, Boolean> done =
+            new HashMap<MondrianDef.Expression, Boolean>();
+
+        for (int i = 0; i < columns.length; i++) {
+            final RolapStar.Column column = columns[i];
+            final String value = String.valueOf(values[i]);
+
+            // choose from agg or regular star
+            String expr = getColumnExpr(sqlQuery, aggStar, column);
+
+            if ((RolapUtil.mdxNullLiteral().equalsIgnoreCase(value))
+                || (value.equalsIgnoreCase(RolapUtil.sqlNullValue.toString())))
+            {
+                sqlQuery.addWhere(expr, " is ", RolapUtil.sqlNullLiteral);
+            } else {
+                if (column.getDatatype().isNumeric()) {
+                    // make sure it can be parsed
+                    Double.valueOf(value);
+                }
+
+                if (mapOfSlicerMembers == null) {
+                    mapOfSlicerMembers = getSlicerMemberMap(evaluator);
+                }
+
+                final MondrianDef.Expression keyForSlicerMap =
+                    column.getExpression();
+
+                if (mapOfSlicerMembers.containsKey(keyForSlicerMap)) {
+                    if (!done.containsKey(keyForSlicerMap)) {
+                        Set<RolapMember> slicerMembersSet =
+                            mapOfSlicerMembers.get(keyForSlicerMap);
+
+                        // get only constraining members
+                        // TODO: can we do this right at getSlicerMemberMap?
+                        List<RolapMember> slicerMembers =
+                            getNonAllMembers(slicerMembersSet);
+
+                        if (slicerMembers.size() > 0) {
+                            // get level
+                            final int levelIndex = slicerMembers.get(0)
+                                .getHierarchy()
+                                .getLevels().length - 1;
+                            RolapLevel levelForWhere =
+                                (RolapLevel) slicerMembers.get(0)
+                                .getHierarchy()
+                                .getLevels()[levelIndex];
+                            // build where constraint
+                            final String where =
+                                generateSingleValueInExpr(
+                                    sqlQuery, baseCube,
+                                    aggStar, slicerMembers,
+                                    levelForWhere,
+                                    restrictMemberTypes, false, false);
+                            if (!where.equals("")) {
+                                // The where clause might be null because if the
+                                // list of members is greater than the limit
+                                // permitted, we won't constraint.
+                                sqlQuery.addWhere(where);
+                            }
+                        } else {
+                            addSimpleColumnConstraint(
+                                sqlQuery,
+                                column, expr, value);
+                        }
+                        done.put(keyForSlicerMap, Boolean.TRUE);
+                    }
+                    // if done, no op
+                } else {
+                    // column not constrained by slicer
+                    addSimpleColumnConstraint(sqlQuery, column, expr, value);
+                }
+            }
+        }
+
+        // force Role based Access filtering
+        addRoleAccessConstraints(
+            sqlQuery,
+            aggStar,
+            restrictMemberTypes,
+            baseCube,
+            evaluator);
+    }
+
+    /**
+     * Same as {@link addConstraint} but uses tuples
+     */
+    private static void addContextConstraintTuples(
+        SqlQuery sqlQuery,
+        AggStar aggStar,
+        RolapEvaluator evaluator,
+        RolapCube baseCube,
+        boolean restrictMemberTypes,
+        final CellRequest request,
+        TupleList slicerTuples)
+    {
+        assert slicerTuples != null;
+        assert slicerTuples.size() > 0;
+
+        StarPredicate tupleListPredicate =
+            getSlicerTuplesPredicate(
+                slicerTuples, baseCube, aggStar, sqlQuery, evaluator);
+
+        // get columns constrained by slicer
+        BitKey slicerBitKey = tupleListPredicate.getConstrainedColumnBitKey();
+        // constrain context members not in slicer tuples
+        RolapStar.Column[] columns = request.getConstrainedColumns();
+        Object[] values = request.getSingleValues();
+        for (int i = 0; i < columns.length; i++) {
+            final RolapStar.Column column = columns[i];
+            final String value = String.valueOf(values[i]);
+            if (!slicerBitKey.get(column.getBitPosition())) {
+                // column not constrained by tupleSlicer
+                String expr = getColumnExpr(sqlQuery, aggStar, column);
+                addSimpleColumnConstraint(sqlQuery, column, expr, value);
+            }
+            // ok to ignore otherwise, using optimizedSlicerTuples
+            // that shouldn't have overridden tuples
+        }
+
+        // add our slicer tuples
+        StringBuilder buffer = new StringBuilder();
+        tupleListPredicate.toSql(sqlQuery, buffer);
+        sqlQuery.addWhere(buffer.toString());
+
+        // force Role based Access filtering
+        addRoleAccessConstraints(
+            sqlQuery,
+            aggStar,
+            restrictMemberTypes,
+            baseCube,
+            evaluator);
+    }
+
+    public static boolean useTupleSlicer(RolapEvaluator evaluator) {
+        return evaluator.isDisjointSlicerTuple()
+            || evaluator.isMultiLevelSlicerTuple();
+    }
+
+    /**
+     * Creates a predicate for the slicer tuple list
+     */
+    private static StarPredicate getSlicerTuplesPredicate(
+        TupleList tupleList,
+        RolapCube baseCube,
+        AggStar aggStar,
+        SqlQuery sqlQuery,
+        RolapEvaluator evaluator)
+    {
+        List<StarPredicate> tupleListPredicate = new ArrayList<StarPredicate>();
+        for (List<Member> tuple : tupleList) {
+            tupleListPredicate.add(
+                getTupleConstraint(
+                    tuple, baseCube, aggStar, sqlQuery, evaluator));
+        }
+        return new OrPredicate(tupleListPredicate);
+    }
+
+    public static boolean isDisjointTuple(TupleList tupleList) {
+        // This assumes the same level for each hierarchy;
+        // won't work if the level restriction is eliminated
+        List<Set<Member>> counters =
+            new ArrayList<Set<Member>>(tupleList.getArity());
+        for (int i = 0; i < tupleList.size(); i++) {
+            final List<Member> tuple = tupleList.get(i);
+            for (int j = 0; j < tupleList.getArity(); j++) {
+                final Member member = tuple.get(j);
+                if (i == 0) {
+                    counters.add(new HashSet<Member>());
+                }
+                counters.get(j).add(member);
+            }
+        }
+        int piatory = 1;
+        for (Set<Member> counter : counters) {
+            piatory *= counter.size();
+        }
+        return tupleList.size() < piatory;
+    }
+
+    public static boolean hasMultipleLevelSlicer(Evaluator evaluator) {
+        Map<Dimension, Level> levels = new HashMap<Dimension, Level>();
+        List<Member> slicerMembers =
+            expandSupportedCalculatedMembers(
+                ((RolapEvaluator) evaluator).getSlicerMembers(),
+                evaluator);
+        for (Member member : slicerMembers) {
+            if (member.isAll()) {
+                continue;
+            }
+            Level before = levels.put(member.getDimension(), member.getLevel());
+            if (before != null && !before.equals(member.getLevel())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Creates constraint on a single tuple
+     */
+    private static AndPredicate getTupleConstraint(
+        List<Member> tuple,
+        RolapCube baseCube,
+        AggStar aggStar,
+        SqlQuery sqlQuery,
+        RolapEvaluator evaluator)
+    {
+        List<StarPredicate> predicateList = new ArrayList<StarPredicate>();
+        //Member[] members = expandSupportedCalculatedMembers(tuple, evaluator);
+        for (Member member : tuple) {
+            addMember(
+                (RolapMember) member,
+                predicateList,
+                baseCube,
+                aggStar,
+                sqlQuery);
+        }
+        return new AndPredicate(predicateList);
+    }
+
+    /**
+     * add single member constraint to predicate list
+     */
+    private static void addMember(
+        RolapMember member,
+        List<StarPredicate> predicateList,
+        RolapCube baseCube,
+        AggStar aggStar,
+        SqlQuery sqlQuery)
+    {
+        ArrayList<MemberColumnPredicate> memberList =
+          new ArrayList<MemberColumnPredicate>();
+        // add parents until a unique level is reached
+        for (RolapMember currMember = member;
+            currMember != null;
+            currMember = currMember.getParentMember())
+        {
+            if (currMember.isAll()) {
+                continue;
+            }
+            RolapLevel level = currMember.getLevel();
+            RolapStar.Column column =
+                getLevelColumn(level, baseCube, aggStar, sqlQuery);
+            ((RolapCubeLevel) level).getBaseStarKeyColumn(baseCube);
+            memberList.add(new MemberColumnPredicate(column, currMember));
+            if (level.isUnique()) {
+                break;
+            }
+        }
+        for (int i = memberList.size() - 1; i >= 0 ; i--) {
+            predicateList.add(memberList.get(i));
+        }
+    }
+
+    /**
+     * Gets the column, using AggStar if available, and ensures the table is in
+     * the query.
+     */
+    private static RolapStar.Column getLevelColumn(
+        RolapLevel level,
+        RolapCube baseCube,
+        AggStar aggStar,
+        SqlQuery sqlQuery)
+    {
+        final RolapStar.Column column =
+                ((RolapCubeLevel) level).getBaseStarKeyColumn(baseCube);
+        if (aggStar != null) {
+            int bitPos = column.getBitPosition();
+            final AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+            AggStar.Table table = aggColumn.getTable();
+            table.addToFrom(sqlQuery, false, true);
+            // create a delegate to use the aggregated column's expression
+            return new Column(aggColumn.getDatatype()) {
+                public String generateExprString(SqlQuery query) {
+                    // used by predicates for sql generation
+                    return aggColumn.generateExprString(query);
+                }
+                public int getBitPosition() {
+                    // this is the same as the one in RolapStar.Column
+                    return aggColumn.getBitPosition();
+                }
+                public Table getTable() {
+                    return column.getTable();
+                }
+
+                public RolapStar getStar() {
+                    return column.getStar();
+                }
+            };
+        } else {
+            column.getTable().addToFrom(sqlQuery, false, true);
+            return column;
+        }
+    }
+
+    private static CellRequest makeContextMembersRequest(
+        Evaluator evaluator,
+        boolean restrictMemberTypes,
+        boolean isTuple)
+    {
         // Add constraint using the current evaluator context
         Member[] members = evaluator.getNonAllMembers();
 
@@ -71,15 +415,8 @@ public class SqlConstraintUtils {
         // only one member per ordinal in cube.
         // This follows the same line of thought as the setContext in
         // RolapEvaluator.
-
-        members = expandSupportedCalculatedMembers(members, evaluator);
+        members = expandSupportedCalculatedMembers(members, evaluator, isTuple);
         members = getUniqueOrdinalMembers(members);
-
-        if (baseCube == null
-            && evaluator instanceof RolapEvaluator)
-        {
-            baseCube = ((RolapEvaluator)evaluator).getCube();
-        }
 
         if (restrictMemberTypes) {
             if (containsCalculatedMember(members, true)) {
@@ -92,134 +429,68 @@ public class SqlConstraintUtils {
 
         final CellRequest request =
             RolapAggregationManager.makeRequest(members);
-        if (request == null) {
-            if (restrictMemberTypes) {
-                throw Util.newInternal("CellRequest is null - why?");
-            }
-            // One or more of the members was null or calculated, so the
-            // request is impossible to satisfy.
-            return;
+        return request;
+    }
+
+    /**
+     * Get the column expression from the AggStar if provided or the regular
+     * table if not, and ensure table is in From
+     */
+    public static String getColumnExpr(
+        SqlQuery sqlQuery,
+        AggStar aggStar,
+        RolapStar.Column column)
+    {
+        final String expr;
+        if (aggStar != null) {
+            int bitPos = column.getBitPosition();
+            AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+            AggStar.Table table = aggColumn.getTable();
+            table.addToFrom(sqlQuery, false, true);
+            expr = aggColumn.generateExprString(sqlQuery);
+        } else {
+            RolapStar.Table table = column.getTable();
+            table.addToFrom(sqlQuery, false, true);
+            expr = column.generateExprString(sqlQuery);
         }
-        RolapStar.Column[] columns = request.getConstrainedColumns();
-        Object[] values = request.getSingleValues();
+        return expr;
+    }
 
-        Map<MondrianDef.Expression, Set<RolapMember>> mapOfSlicerMembers = null;
+    /**
+     * @return only non-all members
+     */
+    private static List<RolapMember> getNonAllMembers(
+        Collection<RolapMember> slicerMembersSet)
+    {
+        List<RolapMember> slicerMembers =
+            new ArrayList<RolapMember>(slicerMembersSet);
 
-        HashMap<MondrianDef.Expression, Boolean> done =
-            new HashMap<MondrianDef.Expression, Boolean>();
-        // following code is similar to
-        // AbstractQuerySpec#nonDistinctGenerateSQL()
-        for (int i = 0; i < columns.length; i++) {
-            RolapStar.Column column = columns[i];
-
-            String expr;
-            if (aggStar != null) {
-                int bitPos = column.getBitPosition();
-                AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
-                AggStar.Table table = aggColumn.getTable();
-                table.addToFrom(sqlQuery, false, true);
-                expr = aggColumn.generateExprString(sqlQuery);
-            } else {
-                RolapStar.Table table = column.getTable();
-                table.addToFrom(sqlQuery, false, true);
-                expr = column.generateExprString(sqlQuery);
-            }
-
-            final String value = String.valueOf(values[i]);
-            if ((RolapUtil.mdxNullLiteral().equalsIgnoreCase(value))
-                || (value.equalsIgnoreCase(RolapUtil.sqlNullValue.toString())))
-            {
-                sqlQuery.addWhere(
-                    expr,
-                    " is ",
-                    RolapUtil.sqlNullLiteral);
-            } else {
-                if (column.getDatatype().isNumeric()) {
-                    // make sure it can be parsed
-                    Double.valueOf(value);
-                }
-
-                if (mapOfSlicerMembers == null) {
-                    mapOfSlicerMembers = getSlicerMemberMap(evaluator);
-                }
-
-                MondrianDef.Expression keyForSlicerMap =
-                        column.getExpression();
-
-                if (mapOfSlicerMembers.containsKey(keyForSlicerMap)) {
-                    if (!done.containsKey(keyForSlicerMap)) {
-                        Set<RolapMember> slicerMembersSet =
-                                mapOfSlicerMembers.get(keyForSlicerMap);
-                        List<RolapMember> slicerMembers =
-                                new ArrayList<RolapMember>(slicerMembersSet);
-
-                        // search and destroy [all](s)
-                        List<RolapMember> allMembers =
-                            new ArrayList<RolapMember>();
-                        for (RolapMember slicerMember : slicerMembers) {
-                            if (slicerMember.isAll()) {
-                                allMembers.add(slicerMember);
-                            }
-                        }
-                        if (allMembers.size() > 0) {
-                            slicerMembers.removeAll(allMembers);
-                        }
-
-                        if (slicerMembers.size() > 0) {
-                            int levelIndex = slicerMembers.get(0)
-                                    .getHierarchy()
-                                    .getLevels().length;
-                            RolapLevel levelForWhere =
-                                    (RolapLevel) slicerMembers.get(0)
-                                    .getHierarchy()
-                                    .getLevels()[levelIndex - 1];
-                            final String where =
-                                    generateSingleValueInExpr(
-                                        sqlQuery, baseCube,
-                                        aggStar, slicerMembers,
-                                        levelForWhere,
-                                        restrictMemberTypes, false, false);
-                            if (!where.equals("")) {
-                                // The where clause might be null because if the
-                                // list of members is greater than the limit
-                                // permitted, we won't constraint.
-                                sqlQuery.addWhere(where);
-                            }
-                        } else {
-                            // No extra slicers.... just use the = method
-                            final StringBuilder buf = new StringBuilder();
-                            sqlQuery.getDialect().quote(
-                                buf, value,
-                                column.getDatatype());
-                            sqlQuery.addWhere(
-                                expr,
-                                " = ",
-                                buf.toString());
-                        }
-                        done.put(keyForSlicerMap, Boolean.TRUE);
-                    }
-
-                } else {
-                    // apply constraints not in the slicer
-                    final StringBuilder buf = new StringBuilder();
-                    sqlQuery.getDialect().quote(
-                        buf, value,
-                        column.getDatatype());
-                    sqlQuery.addWhere(
-                        expr,
-                        " = ",
-                        buf.toString());
-                }
+        // search and destroy [all](s)
+        List<RolapMember> allMembers = new ArrayList<RolapMember>();
+        for (RolapMember slicerMember : slicerMembers) {
+            if (slicerMember.isAll()) {
+                allMembers.add(slicerMember);
             }
         }
+        if (allMembers.size() > 0) {
+            slicerMembers.removeAll(allMembers);
+        }
+        return slicerMembers;
+    }
 
-        // force Role based Access filtering
-        addRoleAccessConstraints(
-            sqlQuery,
-            aggStar,
-            restrictMemberTypes,
-            baseCube,
-            evaluator);
+    /**
+     * add 'expr = value' to where
+     */
+    private static void addSimpleColumnConstraint(
+        SqlQuery sqlQuery,
+        RolapStar.Column column,
+        String expr,
+        final String value)
+    {
+        // No extra slicers.... just use the = method
+        final StringBuilder buf = new StringBuilder();
+        sqlQuery.getDialect().quote(buf, value, column.getDatatype());
+        sqlQuery.addWhere(expr, " = ", buf.toString());
     }
 
     public static Map<Level, List<RolapMember>> getRoleConstraintMembers(
@@ -236,15 +507,14 @@ public class SqlConstraintUtils {
                    RestrictedMemberReader.MultiCardinalityDefaultMember)
             {
                 // iterate relevant levels to get accessible members
-                List<Level> hierarchyLevels = schemaReader
-                        .getHierarchyLevels(member.getHierarchy());
+                List<Level> hierarchyLevels =
+                    schemaReader.getHierarchyLevels(member.getHierarchy());
                 for (Level affectedLevel : hierarchyLevels) {
                     List<RolapMember> slicerMembers =
                         new ArrayList<RolapMember>();
                     boolean hasCustom = false;
                     List<Member> availableMembers =
-                        schemaReader
-                            .getLevelMembers(affectedLevel, false);
+                        schemaReader.getLevelMembers(affectedLevel, false);
                     for (Member availableMember : availableMembers) {
                         if (!availableMember.isAll()) {
                             slicerMembers.add((RolapMember) availableMember);
@@ -323,20 +593,21 @@ public class SqlConstraintUtils {
     {
         Map<MondrianDef.Expression, Set<RolapMember>> mapOfSlicerMembers =
             new HashMap<MondrianDef.Expression, Set<RolapMember>>();
+        List<Member> slicerMembers =
+            ((RolapEvaluator) evaluator).getSlicerMembers();
+        List<Member> expandedSlicers =
+            evaluator.isEvalAxes()
+                ? expandSupportedCalculatedMembers(
+                    slicerMembers,
+                    evaluator.push())
+                : slicerMembers;
 
-        if (evaluator.isEvalAxes()) {
-            Member[] expandedSlicers =
-                expandSupportedCalculatedMembers(
-                    ((RolapEvaluator)evaluator).getSlicerMembers(),
-                    evaluator.push());
-
-            if (hasMultiPositionSlicer(expandedSlicers)) {
-                for (Member slicerMember : expandedSlicers) {
-                    if (slicerMember.isMeasure()) {
-                        continue;
-                    }
-                    addSlicedMemberToMap(mapOfSlicerMembers, slicerMember);
+        if (hasMultiPositionSlicer(expandedSlicers)) {
+            for (Member slicerMember : expandedSlicers) {
+                if (slicerMember.isMeasure()) {
+                    continue;
                 }
+                addSlicedMemberToMap(mapOfSlicerMembers, slicerMember);
             }
         }
         return mapOfSlicerMembers;
@@ -351,29 +622,28 @@ public class SqlConstraintUtils {
         Map<MondrianDef.Expression, Set<RolapMember>> mapOfSlicerMembers,
         Member slicerMember)
     {
-        if (slicerMember == null || slicerMember.isAll()
+        if (slicerMember == null
+            || slicerMember.isAll()
             || slicerMember.isNull())
         {
             return;
         }
         assert slicerMember instanceof RolapMember;
-        MondrianDef.Expression expression = ((RolapLevel)slicerMember
-            .getLevel()).getKeyExp();
+        MondrianDef.Expression expression =
+            ((RolapLevel) slicerMember.getLevel()).getKeyExp();
         if (!mapOfSlicerMembers.containsKey(expression)) {
             mapOfSlicerMembers.put(
                 expression, new LinkedHashSet<RolapMember>());
         }
-        mapOfSlicerMembers.get(expression).add((RolapMember)slicerMember);
+        mapOfSlicerMembers.get(expression).add((RolapMember) slicerMember);
         addSlicedMemberToMap(
             mapOfSlicerMembers, slicerMember.getParentMember());
     }
 
-    private static boolean hasMultiPositionSlicer(Member[] slicerMembers) {
+    public static boolean hasMultiPositionSlicer(List<Member> slicerMembers) {
         Map<Hierarchy, Member> mapOfSlicerMembers =
             new HashMap<Hierarchy, Member>();
-        for (
-            Member slicerMember : slicerMembers)
-        {
+        for (Member slicerMember : slicerMembers) {
             Hierarchy hierarchy = slicerMember.getHierarchy();
             if (mapOfSlicerMembers.containsKey(hierarchy)) {
                 // We have found a second member in this hierarchy
@@ -384,20 +654,44 @@ public class SqlConstraintUtils {
         return false;
     }
 
-
-    public static Member[] expandSupportedCalculatedMembers(
-        List<Member> listOfMembers,
+    public static List<Member> expandSupportedCalculatedMembers(
+        List<Member> members,
         Evaluator evaluator)
     {
-        return expandSupportedCalculatedMembers(
-            listOfMembers.toArray(
-                new Member[listOfMembers.size()]),
-                evaluator);
+        ArrayList<Member> expanded = new ArrayList<Member>();
+        for (Member member : members) {
+            if (member.isCalculated()
+                && isSupportedCalculatedMember(member))
+            {
+                expanded.addAll(
+                    expandExpressions(member, null, evaluator));
+            } else if (member instanceof RolapResult.CompoundSlicerRolapMember)
+            {
+                // if the slicer is disjoint, it handles the SQL generation in
+                // a different way
+                expanded.add(
+                    replaceCompoundSlicerPlaceholder(
+                        member,
+                        (RolapEvaluator) evaluator));
+            } else {
+                // just add the member
+                expanded.add(member);
+            }
+        }
+        return expanded;
     }
 
     public static Member[] expandSupportedCalculatedMembers(
         Member[] members,
         Evaluator evaluator)
+    {
+        return expandSupportedCalculatedMembers(members, evaluator, false);
+    }
+
+    public static Member[] expandSupportedCalculatedMembers(
+        Member[] members,
+        Evaluator evaluator,
+        boolean disjointSlicerTuples)
     {
         ArrayList<Member> listOfMembers = new ArrayList<Member>();
         for (Member member : members) {
@@ -406,6 +700,16 @@ public class SqlConstraintUtils {
             {
                 listOfMembers.addAll(
                     expandExpressions(member, null, evaluator));
+            } else if (member instanceof RolapResult.CompoundSlicerRolapMember)
+            {
+                // if the slicer is disjoint, it handles the SQL generation in
+                // a different way
+                if (!disjointSlicerTuples) {
+                    listOfMembers.add(
+                        replaceCompoundSlicerPlaceholder(
+                            member,
+                            (RolapEvaluator) evaluator));
+                }
             } else {
                 // just add the member
                 listOfMembers.add(member);
@@ -413,6 +717,18 @@ public class SqlConstraintUtils {
         }
         members = listOfMembers.toArray(new Member[listOfMembers.size()]);
         return members;
+    }
+
+    private static Member replaceCompoundSlicerPlaceholder(
+        Member member,
+        RolapEvaluator evaluator)
+    {
+        for (Member slicerMember : evaluator.getSlicerMembers()) {
+            if (slicerMember.getHierarchy().equals(member.getHierarchy())) {
+                return slicerMember;
+            }
+        }
+        return member;
     }
 
     public static List<Member> expandExpressions(
@@ -569,7 +885,8 @@ public class SqlConstraintUtils {
             for (Member member : members) {
                 Hierarchy hierarchy = member.getHierarchy();
                 if (!mapOfSlicerMembers.containsKey(hierarchy)
-                        || mapOfSlicerMembers.get(hierarchy).size() < 2)
+                    || mapOfSlicerMembers.get(hierarchy).size() < 2
+                    || member instanceof RolapResult.CompoundSlicerRolapMember)
                 {
                     listOfMembers.add(member);
                 } else {
@@ -1718,6 +2035,71 @@ public class SqlConstraintUtils {
 
         return condition;
     }
+
+    /**
+     * Returns true if any measure calculations in the first arg references
+     * a dimension member with corresponding members in the second arg
+     * which conflict with that member.   A member "conflicts" if the
+     * member referenced by the measure is not equal to or children of the
+     * corresponding dimension member.
+     * For example,
+     * given ( [unit sales], [Time].[1997].Q1 ) in the measures
+     * set, if the member [Time].[1997].[Q2] is in the members set this
+     * would conflict, since Q1 is not equal to or a child of Q2.
+     *
+     * This method is used in native evaluation to determine whether any
+     * measures in the query could conflict with the SQL constraint
+     * being constructed.
+     */
+    public static boolean measuresConflictWithMembers(
+        Set<Member> measures, Member[] members)
+    {
+        Set<Member> membersNestedInMeasures = new HashSet<Member>();
+
+        for (Member m : measures) {
+            if (m.isCalculated()) {
+                Exp exp = m.getExpression();
+                exp.accept(
+                    new MemberExtractingVisitor(
+                        membersNestedInMeasures, null, false));
+            }
+        }
+        for (Member memberCheckedForConflict : members) {
+            for (Member memberInMeasure : membersNestedInMeasures) {
+                final boolean sameHierarchy =
+                    memberInMeasure.getHierarchy()
+                        .equals(memberCheckedForConflict.getHierarchy());
+                final boolean childOrEqual =
+                    memberCheckedForConflict.isAll()
+                        || memberInMeasure
+                            .isChildOrEqualTo(memberCheckedForConflict);
+                if (sameHierarchy && !childOrEqual) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean measuresConflictWithMembers(
+        Set<Member> measuresMembers, CrossJoinArg[] cjArgs)
+    {
+        return measuresConflictWithMembers(
+            measuresMembers, getCJArgMembers(cjArgs));
+    }
+
+    private static Member[] getCJArgMembers(CrossJoinArg[] cjArgs) {
+        Set<Member> members = new HashSet<Member>();
+        for (CrossJoinArg arg : cjArgs) {
+            if (arg.getMembers() != null) {
+                members.addAll(arg.getMembers());
+            }
+        }
+        return members.toArray(new Member[members.size()]);
+    }
+
+
+
 }
 
 // End SqlConstraintUtils.java

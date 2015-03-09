@@ -5,14 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2013 Pentaho
+// Copyright (C) 2006-2014 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.olap.fun.NonEmptyCrossJoinFunDef;
+import mondrian.olap.fun.*;
 import mondrian.rolap.sql.*;
 
 import java.util.*;
@@ -174,6 +173,16 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             }
         }
 
+        if (SqlConstraintUtils.measuresConflictWithMembers(
+                evaluator.getQuery().getMeasuresMembers(), cjArgs))
+        {
+            alertCrossJoinNonNative(
+                evaluator,
+                fun,
+                "One or more calculated measures conflict with crossjoin args");
+            return null;
+        }
+
         if (cube.isVirtual()
             && !evaluator.getQuery().nativeCrossJoinVirtualCube())
         {
@@ -226,7 +235,6 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             // copy of the evaluator.
             TupleConstraint constraint =
                 buildConstraint(evaluator, fun, cargs);
-
             // Use the just the CJ CrossJoiArg for the evaluator context,
             // which will be translated to select list in sql.
             final SchemaReader schemaReader = evaluator.getSchemaReader();
@@ -235,6 +243,17 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             evaluator.restore(savepoint);
         }
     }
+
+    private Set<Member> getCJArgMembers(CrossJoinArg[] cjArgs) {
+        Set<Member> members = new HashSet<Member>();
+         for (CrossJoinArg arg : cjArgs) {
+             if (arg.getMembers() != null) {
+                 members.addAll(arg.getMembers());
+             }
+         }
+         return members;
+    }
+
 
     CrossJoinArg[] combineArgs(
         List<CrossJoinArg[]> allArgs)

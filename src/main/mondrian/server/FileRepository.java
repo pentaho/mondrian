@@ -326,7 +326,6 @@ public class FileRepository implements Repository {
 
     private static class CatalogInfo {
         private final String connectString;
-        private RolapSchema rolapSchema; // populated on demand
         private final String olap4jConnectString;
         private final CatalogLocator locator;
 
@@ -344,21 +343,18 @@ public class FileRepository implements Repository {
         }
 
         private RolapSchema getRolapSchema() {
-            if (rolapSchema == null) {
-                RolapConnection rolapConnection = null;
-                try {
-                    rolapConnection =
-                        (RolapConnection)
-                            DriverManager.getConnection(
-                                connectString, this.locator);
-                    rolapSchema = rolapConnection.getSchema();
-                } finally {
-                    if (rolapConnection != null) {
-                        rolapConnection.close();
-                    }
+            RolapConnection rolapConnection = null;
+            try {
+                rolapConnection =
+                    (RolapConnection)
+                        DriverManager.getConnection(
+                            connectString, this.locator);
+                return rolapConnection.getSchema();
+            } finally {
+                if (rolapConnection != null) {
+                    rolapConnection.close();
                 }
             }
-            return rolapSchema;
         }
     }
 
