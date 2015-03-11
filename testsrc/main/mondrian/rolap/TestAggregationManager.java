@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 28 September, 2002
@@ -1282,6 +1282,7 @@ public class TestAggregationManager extends BatchTestCase {
     public void testOrdinalExprAggTuplesAndChildren() {
         // this verifies that we can load properties, ordinals, etc out of
         // agg tables in member lookups (tuples and children)
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
         if (!(MondrianProperties.instance().UseAggregates.get()
                 && MondrianProperties.instance().ReadAggregates.get()))
         {
@@ -1344,7 +1345,32 @@ public class TestAggregationManager extends BatchTestCase {
         SqlPattern[] patterns = {
             new SqlPattern(
                 ACCESS_MYSQL,
-                "select `agg_g_ms_pcat_sales_fact_1997`.`product_family` as `c0`, `agg_g_ms_pcat_sales_fact_1997`.`product_department` as `c1`, `product_class`.`product_category` as `c2`, `product_class`.`product_family` as `c3`, `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c4` from `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997`, `product_class` as `product_class` where `product_class`.`product_category` = `agg_g_ms_pcat_sales_fact_1997`.`product_category` and (`agg_g_ms_pcat_sales_fact_1997`.`product_category` = 'Meat' and `agg_g_ms_pcat_sales_fact_1997`.`product_department` = 'Deli' and `agg_g_ms_pcat_sales_fact_1997`.`product_family` = 'Food') and (`agg_g_ms_pcat_sales_fact_1997`.`gender` = 'M') group by `agg_g_ms_pcat_sales_fact_1997`.`product_family`, `agg_g_ms_pcat_sales_fact_1997`.`product_department`, `product_class`.`product_category`, `product_class`.`product_family`, `agg_g_ms_pcat_sales_fact_1997`.`gender` order by ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_family`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`product_family` ASC, ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_department`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`product_department` ASC, ISNULL(`product_class`.`product_category`) ASC, `product_class`.`product_category` ASC, ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
+                "select\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_family` as `c0`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_department` as `c1`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_category` as `c2`,\n"
+                + "    `product_class`.`product_family` as `c3`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c4`\n"
+                + "from\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997`,\n"
+                + "    `product_class` as `product_class`\n"
+                + "where\n"
+                + "    `product_class`.`product_category` = `agg_g_ms_pcat_sales_fact_1997`.`product_category`\n"
+                + "and\n"
+                + "    (`agg_g_ms_pcat_sales_fact_1997`.`product_category` = 'Meat' and `agg_g_ms_pcat_sales_fact_1997`.`product_department` = 'Deli' and `agg_g_ms_pcat_sales_fact_1997`.`product_family` = 'Food')\n"
+                + "and\n"
+                + "    (`agg_g_ms_pcat_sales_fact_1997`.`gender` = 'M')\n"
+                + "group by\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_family`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_department`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_category`,\n"
+                + "    `product_class`.`product_family`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`gender`\n"
+                + "order by\n"
+                + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_family`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`product_family` ASC,\n"
+                + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_department`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`product_department` ASC,\n"
+                + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_category`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`product_category` ASC,\n"
+                + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
                 null)
         };
 
