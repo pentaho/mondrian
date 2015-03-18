@@ -618,6 +618,8 @@ META-INF/**"/>
     <javac
         srcdir="${javatest.dir}"
         destdir="${testclasses.dir}"
+        fork="yes"
+        executable="${env.JAVA_HOME_17}/bin/javac"
         debug="${project.build.debug}"
         classpathref="project.build.test.classpath"
         includeantruntime="false"
