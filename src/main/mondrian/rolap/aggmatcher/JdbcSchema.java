@@ -1220,7 +1220,7 @@ public class JdbcSchema {
         try {
             conn = getDataSource().getConnection();
             final DatabaseMetaData databaseMetaData = conn.getMetaData();
-            String[] tableTypes = { "TABLE", "VIEW" };
+            String[] tableTypes = { "TABLE", "VIEW", "MATERIALIZED VIEW" };
             if (databaseMetaData.getDatabaseProductName().toUpperCase().indexOf(
                     "VERTICA") >= 0)
             {

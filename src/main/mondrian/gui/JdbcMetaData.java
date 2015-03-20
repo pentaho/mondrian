@@ -266,7 +266,7 @@ public class JdbcMetaData {
             // Tables and views can be used
             try {
                 rs = md.getTables(
-                    null, dbs.name, null, new String[]{"TABLE", "VIEW"});
+                    null, dbs.name, null, new String[]{"TABLE", "VIEW", "MATERIALIZED VIEW"});
             } catch (Exception e) {
                 // this is a workaround for databases that throw an exception
                 // when views are requested.
