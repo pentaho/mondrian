@@ -57,7 +57,7 @@
         <dependency org="sun" name="jlfgr" rev="1.0"/>
         <dependency org="javax.servlet" name="jsp-api" rev="2.0" transitive="false"/>
         <dependency org="javax.servlet" name="servlet-api" rev="2.4" transitive="false"/>
-        <dependency org="log4j" name="log4j" rev="1.2.14"/>
+        <dependency org="log4j" name="log4j" rev="1.2.16"/>
         <dependency org="org.olap4j" name="olap4j" rev="${dependency.olap4j-core.revision}">
             <artifact name="olap4j"/>
         </dependency>
@@ -113,7 +113,16 @@
         <dependency org="xmlunit" name="xmlunit" rev="1.1" conf="test->default"/>
         <dependency org="monetdb" name="monetdb-jdbc" rev="2.6" conf="test->default"/>
         <dependency org="org.mockito" name="mockito-all" rev="1.8.5" conf="test->default"/>
-
+		
+		
+		<!-- Cube Management CRUD API Jars -->
+        <dependency org="com.sun.jersey" name="jersey-bundle" rev="1.19"/>
+        <dependency org="com.sun.jersey" name="jersey-json" rev="1.19"/>
+        <dependency org="asm" name="asm" rev="3.3.1"/>
+        
+        
+        
+        
         <!-- Exclusions -->
         <exclude org="avalon-framework" module="avalon-framework"/>
         <exclude org="commons-discovery" module="commons-discovery"/>

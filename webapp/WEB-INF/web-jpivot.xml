@@ -27,7 +27,7 @@ All Rights Reserved.
 
   <context-param>
     <param-name>connectString</param-name>
-    <param-value>@mondrian.webapp.connectString@</param-value>
+    <param-value>Provider=mondrian;Jdbc=jdbc:mysql://localhost:3306/foodmart;JdbcUser=foodmart;JdbcPassword=temp;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=com.mysql.jdbc.Driver</param-value>
   </context-param>
 
   <!-- optional
@@ -79,7 +79,7 @@ All Rights Reserved.
     <servlet-class>mondrian.web.servlet.MdxQueryServlet</servlet-class>
     <init-param>
       <param-name>connectString</param-name>
-      <param-value>@mondrian.webapp.connectString@</param-value>
+      <param-value>Provider=mondrian;Jdbc=jdbc:mysql://localhost:3306/foodmart?user=foodmart&#38;password=temp;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=com.mysql.jdbc.Driver</param-value>
     </init-param>
   </servlet>
 
@@ -88,7 +88,8 @@ All Rights Reserved.
     <servlet-class>mondrian.xmla.impl.DynamicDatasourceXmlaServlet</servlet-class>
     <init-param>
       <param-name>DataSourcesConfig</param-name>
-      <param-value>/WEB-INF/datasources.xml</param-value>
+      <!--<param-value>/WEB-INF/datasources.xml</param-value> Sayan edit-->
+      <param-value>file:/home/shazra/apache-tomcat-8.0.20/webapps/mondrian/WEB-INF/datasources.xml</param-value>
     </init-param>
     <!-- 
       This is an example of how to add a callback to the XML/A servlet.
