@@ -338,6 +338,7 @@ public class Main extends TestSuite {
             addTest(suite, FileRepositoryTest.class);
             addTest(suite, XmlaExtraTest.class);
             addTest(suite, CrossJoinArgFactoryTest.class);
+            addTest(suite, UnionFunDefTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {
