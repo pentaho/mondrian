@@ -8,7 +8,6 @@
 // Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.Calc;
@@ -162,7 +161,7 @@ public class RolapMemberBase
     }
 
     public int hashCode() {
-        return getUniqueName().hashCode();
+        return  super.hashCode();
     }
 
     public boolean equals(Object o) {
