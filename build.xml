@@ -174,9 +174,6 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${lib.dir}/xalan.jar"/>
     <pathelement location="${lib.dir}/xercesImpl.jar"/>
     <pathelement location="${lib.dir}/validation-api.jar"/>
-  	<pathelement location="${lib.dir}/jersey-bundle.jar"/>
-  	<pathelement location="${lib.dir}/jersey-json.jar"/>
-  	<pathelement location="${lib.dir}/asm.jar"/>
     <pathelement path="${env.CLASSPATH}"/>
     <pathelement location="${ant.home}/lib/ant.jar"/>
     <pathelement location="${ant.home}/lib/optional.jar"/>
@@ -184,6 +181,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${wb.plugins.dir}/kettle-core.jar"/>
     <pathelement location="${wb.plugins.dir}/pentaho-xul-core.jar"/>
     <pathelement location="${wb.plugins.dir}/pentaho-xul-swing.jar"/>
+    <pathelement location="${lib.dir}/jersey-bundle.jar"/>
   </path>
 
   <path id="project.build.classpath">
@@ -616,25 +614,18 @@ META-INF/**"/>
     </copy>
   </target>
 	
-	<target name="compile.java.cubecrud">
-		<pathconvert property="expanded.main.class.path" refid="project.build.classpath"/>
-	    <echo>Classpath is: ${expanded.main.class.path}</echo>
+	
+	<target name="compile.java.cubecrud" depends="apologise" if="java.version.matches.requested">
+	    <echo>Compiling on JVM Version: ${java.runtime.version}</echo>
 	    <javac
-	    	fork="yes"
-	    	executable="${env.JAVA_HOME_17}/bin/javac"
 	        srcdir="${java.cubecrud.dir}"
 	        destdir="${classes.dir}"
+	    	fork="yes"
+	    	executable="${env.JAVA_HOME_17}/bin/javac"
 	        debug="${project.build.debug}"
 	        classpathref="project.build.classpath"
-	        includeantruntime="false">	      
-	    </javac>
-	   
-	    <copy todir="${classes.dir}">
-	      <fileset
-	          dir="${java.cubecrud.dir}"
-	          includes="**"
-	      />
-	    </copy>
+	        includeantruntime="false">	     
+	    </javac>	    
 	  </target>
 
   <target name="compile.tests" depends="info">
@@ -642,9 +633,9 @@ META-INF/**"/>
   	<echo message="Test Classpath: ${test.classpath.formatted}" /> 
     <javac
         srcdir="${javatest.dir}"
-        destdir="${testclasses.dir}"
         fork="yes"
         executable="${env.JAVA_HOME_17}/bin/javac"
+        destdir="${testclasses.dir}"
         debug="${project.build.debug}"
         classpathref="project.build.test.classpath"
         includeantruntime="false"
@@ -1643,7 +1634,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <webinf dir="${build.dir}/mondrian/WEB-INF" excludes="web.xml"/>
       <fileset dir="${build.dir}/mondrian" excludes="WEB-INF/**/*,*.jsp"/>
       <fileset dir="${webapp.dir}" includes="*.*"/>
-      <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,olap4j-xmla.jar,eigenbase-*.jar,xalan.jar,xmlunit.jar,*.dtd,commons-io.jar,mysql-connector-java-5.1.34.jar"/>
+      <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,olap4j-xmla.jar,eigenbase-*.jar,xalan.jar,xmlunit.jar,*.dtd,jersey-bundle.jar"/>
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
       <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
       <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>

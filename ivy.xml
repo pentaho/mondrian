@@ -79,6 +79,11 @@
         <dependency org="xalan" name="xalan" rev="2.6.0"/>
         <dependency org="xerces" name="xercesImpl" rev="2.9.1"/>
 
+
+        <!-- Cube CRUD management-->
+        <dependency org="com.sun.jersey" name="jersey-bundle" rev="1.19" />
+        
+
         <!-- JDK 1.4 backwards compatibility jars -->
         <dependency org="backport-util-concurrent" 
                 name="backport-util-concurrent" rev="3.1"
@@ -113,16 +118,7 @@
         <dependency org="xmlunit" name="xmlunit" rev="1.1" conf="test->default"/>
         <dependency org="monetdb" name="monetdb-jdbc" rev="2.6" conf="test->default"/>
         <dependency org="org.mockito" name="mockito-all" rev="1.8.5" conf="test->default"/>
-		
-		
-		<!-- Cube Management CRUD API Jars -->
-        <dependency org="com.sun.jersey" name="jersey-bundle" rev="1.19"/>
-        <dependency org="com.sun.jersey" name="jersey-json" rev="1.19"/>
-        <dependency org="asm" name="asm" rev="3.3.1"/>
-        
-        
-        
-        
+
         <!-- Exclusions -->
         <exclude org="avalon-framework" module="avalon-framework"/>
         <exclude org="commons-discovery" module="commons-discovery"/>
