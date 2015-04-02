@@ -455,7 +455,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
       Runs a typical build process (cobertura+sonar)
       ====================================================================-->
-  <target name="build-sonar" depends="clean-all,resolve,sonar,dist-source,dist"/>
+  <target name="build-sonar" depends="clean-all,resolve,dist,dist-source,sonar"/>
 
 
   <!--=======================================================================
@@ -517,15 +517,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       Set junit.available if junit Test class in the classpath or if
       the junit jar is in the testlib.dir or lib.dir
       ====================================================================-->
-  <target name="junit.exists-check" unless="junit.available">
+  <target name="junit.exists-check" depends="install-antcontrib" unless="junit.available">
     <condition property="junit.available">
       <or>
-        <!-- In the ant classpath? -->
+        <!-- junit 4x -->
         <available classname="org.junit.Test"/>
+        <!-- junit 3x -->
+        <available classname="junit.framework.Test"/>
         <and>
           <!-- In the test-lib dir? -->
           <available file="${testlib.dir}"/>
-          <available classname="org.junit.runner.JUnitCore">
+          <or>
+          <!-- junit 4x -->
+          <available classname="org.junit.Test">
             <classpath>
               <fileset dir="${testlib.dir}">
                 <include name="**/junit*.jar"/>
@@ -535,11 +539,31 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
               </fileset>
             </classpath>
           </available>
+          <!-- junit 3x -->
+          <available classname="junit.framework.Test">
+            <classpath>
+              <fileset dir="${testlib.dir}">
+                <include name="**/junit*.jar"/>
+              </fileset>
+              <fileset dir="${lib.dir}">
+                <include name="**/junit*.jar"/>
+              </fileset>
+            </classpath>
+          </available>
+          </or>
         </and>
       </or>
     </condition>
+    <if>
+      <istrue value="${junit.available}"/>
+      <then>
+        <echo>junit.available=${junit.available}</echo>
+      </then>
+      <else>
+        <echo>junit.available=false</echo>
+      </else>
+    </if>
   </target>
-
 
   <!--=======================================================================
       antcontrib.download-check
@@ -1483,6 +1507,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <target name="init-tests" depends="clean-tests,junit.exists-check">
     <mkdir dir="${testclasses.dir}"/>
     <mkdir dir="${testsrc.dir}"/>
+    <!-- Sonar will fail if no src or classes dir -->
+    <mkdir dir="${src.dir}"/>
+    <mkdir dir="${classes.dir}"/>
   </target>
 
 
@@ -1742,7 +1769,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       ====================================================================-->
   <target name="jacoco" depends="install-jacoco,compile,compile-tests, init-test-reports"
           description="Compiles and runs unit tests with Jacoco code coverage." if="junit.available">
-
 
     <taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask">
       <classpath>
@@ -2237,7 +2263,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
   Also, SCM_BRANCH is a required parameter.
   ====================================================================-->
-  <target name="sonar" depends="install-sonar, jacoco ">
+  <target name="sonar" depends="install-sonar,jacoco">
 
     <path id="sonar.classpath">
       <fileset dir="${subfloor.resources.dir}/sonar-ant-task-${sonar-ant-task-version}">
