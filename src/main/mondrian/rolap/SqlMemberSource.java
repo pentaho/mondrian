@@ -244,13 +244,6 @@ class SqlMemberSource
                 hierarchy.addToFrom(sqlQuery, level2.getKeyExp());
 
                 String keyExp = level2.getKeyExp().getExpression(sqlQuery);
-                if (columnCount > 0
-                    && !sqlQuery.getDialect().allowsCompoundCountDistinct()
-                    && sqlQuery.getDialect().getDatabaseProduct()
-                    == Dialect.DatabaseProduct.SYBASE)
-                {
-                    keyExp = "convert(varchar, " + columnList + ")";
-                }
                 columnList.add(keyExp);
 
                 if (level2.isUnique()) {

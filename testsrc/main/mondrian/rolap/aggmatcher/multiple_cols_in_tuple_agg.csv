@@ -38,17 +38,17 @@
 11,5
 # product dimension t1
 ## TableName: product_csv
-## ColumnNames: prod_id,prod_cat,name1
-## ColumnTypes: INTEGER,INTEGER,VARCHAR(30)
+## ColumnNames: prod_id,prod_cat,name1,color
+## ColumnTypes: INTEGER,INTEGER,VARCHAR(30),VARCHAR(30)
 ## NosOfRows: 8
-1,1,One
-2,1,Two
-3,2,Three
-4,2,Four
-5,3,Five
-6,3,Six
-7,4,Seven
-8,4,Eight
+1,1,One,Blue
+2,1,Two,Black
+3,2,Three,Brown
+4,2,Four,Purple
+5,3,Five,Olive
+6,3,Six,Orange
+7,4,Seven,Cyan
+8,4,Eight,Pink
 # product dimension t2
 ## TableName: product_cat
 ## ColumnNames: prod_cat,cat,name2,ord,cap
@@ -65,3 +65,16 @@
 ## NosOfRows: 2
 1,Cat One,2,COne
 2,Cat Two,1,CTwo
+# aggregate over prod_id
+## TableName: test_lp_xx2_fact
+## ColumnNames: prodname,amount,fact_count
+## ColumnTypes: VARCHAR(30),INTEGER,INTEGER
+## NosOfRows: 8
+One,9,2
+Two,6,2
+Three,9,2
+Four,9,2
+Five,9,2
+Six,8,2
+Seven,8,2
+Eight,8,2
