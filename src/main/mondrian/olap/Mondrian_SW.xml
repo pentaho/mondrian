@@ -1418,6 +1418,7 @@
             <Value>greenplum</Value>
             <Value>vectorwise</Value>
             <Value>hive</Value>
+            <Value>sparksql</Value>
         </Attribute>
         <CData/>
         <Code><![CDATA[

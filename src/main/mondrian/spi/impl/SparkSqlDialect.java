@@ -1,0 +1,176 @@
+/*
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2011-2014 Pentaho and others
+// All Rights Reserved.
+*/
+package mondrian.spi.impl;
+
+import mondrian.olap.Util;
+
+import java.sql.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * Implementation of {@link mondrian.spi.Dialect} for the SparkSql database.
+ *
+ * @author Hongwei Fu
+ * @since Jan 10, 2011
+ */
+public class SparkSqlDialect extends JdbcDialectImpl {
+    private static final int MAX_COLUMN_NAME_LENGTH = 128;
+
+    public static final JdbcDialectFactory FACTORY =
+        new JdbcDialectFactory(
+            SparkSqlDialect.class,
+            DatabaseProduct.SPARKSQL)
+        {
+            protected boolean acceptsConnection(Connection connection) {
+                return super.acceptsConnection(connection);
+            }
+        };
+
+    /**
+     * Creates a SparkSqlDialect.
+     *
+     * @param connection Connection
+     *
+     * @throws java.sql.SQLException on error
+     */
+    public SparkSqlDialect(Connection connection) throws SQLException {
+        super(connection);
+    }
+
+    protected String deduceIdentifierQuoteString(
+        DatabaseMetaData databaseMetaData)
+    {
+        return null;
+    }
+
+    protected Set<List<Integer>> deduceSupportedResultSetStyles(
+        DatabaseMetaData databaseMetaData)
+    {
+        // SparkSql don't support this, so just return an empty set.
+        return Collections.emptySet();
+    }
+
+    protected boolean deduceReadOnly(DatabaseMetaData databaseMetaData) {
+        try {
+            return databaseMetaData.isReadOnly();
+        } catch (SQLException e) {
+            // SparkSql is read only (as of release 0.7)
+            return true;
+        }
+    }
+
+    protected int deduceMaxColumnNameLength(DatabaseMetaData databaseMetaData) {
+        try {
+            return databaseMetaData.getMaxColumnNameLength();
+        } catch (SQLException e) {
+            return MAX_COLUMN_NAME_LENGTH;
+        }
+    }
+
+    public boolean allowsCompoundCountDistinct() {
+        return true;
+    }
+
+    public boolean requiresAliasForFromQuery() {
+        return true;
+    }
+
+    @Override
+    public boolean requiresOrderByAlias() {
+        return true;
+    }
+
+    @Override
+    public boolean allowsOrderByAlias() {
+        return true;
+    }
+
+    @Override
+    public boolean requiresGroupByAlias() {
+        return false;
+    }
+
+    public boolean requiresUnionOrderByExprToBeInSelectClause() {
+        return false;
+    }
+
+    public boolean requiresUnionOrderByOrdinal() {
+        return false;
+    }
+
+    public String generateInline(
+        List<String> columnNames,
+        List<String> columnTypes,
+        List<String[]> valueList)
+    {
+        return "select * from ("
+            + generateInlineGeneric(
+                columnNames, columnTypes, valueList, " from dual", false)
+            + ") x limit " + valueList.size();
+    }
+
+    protected void quoteDateLiteral(
+        StringBuilder buf,
+        String value,
+        Date date)
+    {
+        // SparkSql doesn't support Date type; treat date as a string '2008-01-23'
+        Util.singleQuoteString(value, buf);
+    }
+
+    @Override
+    protected String generateOrderByNulls(
+        String expr,
+        boolean ascending,
+        boolean collateNullsLast)
+    {
+        // In SparkSql, Null values are worth negative infinity.
+        if (collateNullsLast) {
+            if (ascending) {
+                return "ISNULL(" + expr + ") ASC, " + expr + " ASC";
+            } else {
+                return expr + " DESC";
+            }
+        } else {
+            if (ascending) {
+                return expr + " ASC";
+            } else {
+                return "ISNULL(" + expr + ") DESC, " + expr + " DESC";
+            }
+        }
+    }
+
+    public boolean allowsAs() {
+        return false;
+    }
+
+    public boolean allowsJoinOn() {
+        return false;
+    }
+    
+    public void quoteTimestampLiteral(
+        StringBuilder buf,
+        String value)
+    {
+        try {
+            Timestamp.valueOf(value);
+        } catch (IllegalArgumentException ex) {
+            throw new NumberFormatException(
+                "Illegal TIMESTAMP literal:  " + value);
+        }
+        buf.append("cast( ");
+        Util.singleQuoteString(value, buf);
+        buf.append(" as timestamp )");
+    }
+}
+
+// End SparkSqlDialect.java

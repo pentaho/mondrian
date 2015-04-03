@@ -1070,7 +1070,9 @@ public class JdbcDialectImpl implements Dialect {
             || upperProductName.equals("APACHE HIVE"))
         {
             return DatabaseProduct.HIVE;
-        } else if (productName.startsWith("Informix")) {
+        } else if (upperProductName.equals("SPARK SQL")) {
+            return DatabaseProduct.SPARKSQL;
+        }else if (productName.startsWith("Informix")) {
             return DatabaseProduct.INFORMIX;
         } else if (upperProductName.equals("INGRES")) {
             return DatabaseProduct.INGRES;
