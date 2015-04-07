@@ -53,7 +53,8 @@ import org.apache.log4j.Logger;
 @Path("/")
 public class RequestProcessEngine {	
 	private static final org.apache.log4j.Logger LOGGER = Logger.getLogger(RequestProcessEngine.class);
-	final static String DATASOURCE_PATH = "/home/shazra/apache-tomcat-8.0.20/webapps/mondrian/WEB-INF/datasources.xml";	
+	final static String DATASOURCE_PATH = System.getProperty("user.dir").substring(0, System.getProperty("user.dir").length()-3) +
+			"webapps/mondrian/WEB-INF/datasources.xml";	
     String result= "";
     static boolean isPresentCubeHand= false;
     static boolean isPresentCatalogHand= false;
@@ -91,7 +92,9 @@ public class RequestProcessEngine {
 	@GET
 	@Produces("application/xml")
 	public String getAllCubes() {
-		String result = getCube(DATASOURCE_PATH, "", "");
+		System.out.println("Datasource = " + DATASOURCE_PATH);
+		System.out.println("Current user dir is =" + System.getProperty("user.dir"));
+		String result = getCube(DATASOURCE_PATH, "", "");		
 		LOGGER.info(result);
 		LOGGER.info("user dir=" + System.getProperty("user.dir"));
 		return result;
