@@ -52,7 +52,7 @@ import org.apache.log4j.Logger;
 
 @Path("/")
 public class RequestProcessEngine {	
-	private static final Logger LOGGER = Logger.getLogger(RequestProcessEngine.class);
+	private static final org.apache.log4j.Logger LOGGER = Logger.getLogger(RequestProcessEngine.class);
 	final static String DATASOURCE_PATH = "/home/shazra/apache-tomcat-8.0.20/webapps/mondrian/WEB-INF/datasources.xml";	
     String result= "";
     static boolean isPresentCubeHand= false;
@@ -225,118 +225,151 @@ public class RequestProcessEngine {
 	
 	
 	private String getCube(String fileName, final String cubeNameToSearch, final String catalogNameToSearch){
-        try {        	
+        try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser saxParser = factory.newSAXParser();
             boolean searchForCatalog = false;
             DefaultHandler handler = new DefaultHandler() {
-
                 boolean bCatalog = false;
                 boolean bDefinition = false;
+                boolean bDataSourceInfo = false;
+                boolean isGlobalDataSourcePresent = false;
+                String globalDataSourceInfo = "";
+                String localDataSourceInfo = null;
                 String catalogName = "";
                 public void startElement(String uri, String localName,String qName,
                                          Attributes attributes) throws SAXException {
-
                     if (qName.equalsIgnoreCase("Catalog")) {
                         catalogName = attributes.getValue("name");
                         LOGGER.info("catalog names =" + catalogName);
                         LOGGER.info("Attributes = " + attributes.getValue("name"));
                         if (catalogNameToSearch == null || "".equalsIgnoreCase(catalogNameToSearch))
                         {
-                        	bCatalog = true;
+                            bCatalog = true;
                         }
                         else if (catalogNameToSearch.equalsIgnoreCase(catalogName))
-                        {                        	
-                        	bCatalog = true;
+                        {
+                            bCatalog = true;
                         }
                     }
-
                     if (qName.equalsIgnoreCase("Definition")) {
                         bDefinition = true;
                     }
+                    if (qName.equalsIgnoreCase("DataSourceInfo")) {
+                        bDataSourceInfo = true;
+                    }
 
                 }
-
                 public void endElement(String uri, String localName,
                                        String qName) throws SAXException {
+                    if (qName.equalsIgnoreCase("DataSourceInfo")) {
+                        bDataSourceInfo = false;
+                    }
+
+                    if (qName.equalsIgnoreCase("Catalog")) {
+                        bCatalog = false;
+                        localDataSourceInfo = null;
+                    }
+
+                    if (qName.equalsIgnoreCase("Definition")) {
+                        bDefinition = false;
+                    }
                 }
-
                 public void characters(char ch[], int start, int length) throws SAXException {
-
                     if (bCatalog) {
                         String tempStr = new String(ch, start, length);
-                        tempStr = tempStr.replaceAll("\n", "").trim();                   
+                        tempStr = tempStr.replaceAll("\n", "").trim();
+                    }
+                    if (bDefinition){
+                        if (catalogNameToSearch != null && !"".equalsIgnoreCase(catalogNameToSearch))
+                        {
+                            if (bCatalog) {
+                                String defStr = new String(ch, start, length);
+                                defStr = defStr.replaceAll("\n", "").trim();
+                                LOGGER.info("Definition : " + defStr);
+                                String tempOutput = "";
+                                try {
+                                    if ("".equalsIgnoreCase(cubeNameToSearch)) {
+                                        tempOutput = parseCubeXml(defStr, "");
+                                    } else {
+                                        tempOutput = parseCubeXml(defStr,
+                                                cubeNameToSearch);
+                                    }
+                                    if (!"".equalsIgnoreCase(tempOutput)) {
+                                        if (localDataSourceInfo !=null && !"".equalsIgnoreCase(localDataSourceInfo)){
+                                            tempOutput = "<Catalog name=\""
+                                                    + catalogName + "\" datasourceinfo=\"" + localDataSourceInfo + "\">"
+                                                    + tempOutput + "</Catalog>";
+                                        }
+                                        else
+                                        {
+                                            tempOutput = "<Catalog name=\""
+                                                    + catalogName + "\" datasourceinfo=\"" + globalDataSourceInfo + "\">"
+                                                    + tempOutput + "</Catalog>";
+                                        }
+                                    }
+                                    result = result + tempOutput;
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                        else{
+                            String defStr = new String(ch, start, length);
+                            defStr = defStr.replaceAll("\n", "").trim();
+                            LOGGER.info("Definition : " + defStr);
+                            String tempOutput = "";
+                            try {
+                                if ("".equalsIgnoreCase(cubeNameToSearch)) {
+                                    tempOutput = parseCubeXml(defStr, "");
+                                } else {
+                                    tempOutput = parseCubeXml(defStr,
+                                            cubeNameToSearch);
+                                }
+                                if (!"".equalsIgnoreCase(tempOutput)) {
+                                    if (localDataSourceInfo !=null && !"".equalsIgnoreCase(localDataSourceInfo)){
+                                        tempOutput = "<Catalog name=\""
+                                                + catalogName + "\" datasourceinfo=\"" + localDataSourceInfo + "\">"
+                                                + tempOutput + "</Catalog>";
+                                    }
+                                    else
+                                    {
+                                        tempOutput = "<Catalog name=\""
+                                                + catalogName + "\" datasourceinfo=\"" + globalDataSourceInfo + "\">"
+                                                + tempOutput + "</Catalog>";
+                                    }
+                                }
+                                result = result + tempOutput;
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
 
-                    if (bDefinition){
-                    	if (catalogNameToSearch != null && !"".equalsIgnoreCase(catalogNameToSearch))
-                    	{                    		
-                    		if (bCatalog) {
-								String defStr = new String(ch, start, length);
-								defStr = defStr.replaceAll("\n", "").trim();
-								LOGGER.info("Definition : " + defStr);
-								String tempOutput = "";
-								try {
-									if ("".equalsIgnoreCase(cubeNameToSearch)) {
-										tempOutput = parseCubeXml(defStr, "");
-									} else {
-										tempOutput = parseCubeXml(defStr,
-												cubeNameToSearch);
-									}
-									if (!"".equalsIgnoreCase(tempOutput)) {
-										tempOutput = "<Catalog name=\""
-												+ catalogName + "\">"
-												+ tempOutput + "</Catalog>";
-									}
-									result = result + tempOutput;
 
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
-							}							
-                    	}
-                    	else{
-                    		String defStr = new String(ch, start, length);
-							defStr = defStr.replaceAll("\n", "").trim();
-							LOGGER.info("Definition : " + defStr);
-							String tempOutput = "";
-							try {
-								if ("".equalsIgnoreCase(cubeNameToSearch)) {
-									tempOutput = parseCubeXml(defStr, "");
-								} else {
-									tempOutput = parseCubeXml(defStr,
-											cubeNameToSearch);
-								}
-								if (!"".equalsIgnoreCase(tempOutput)) {
-									tempOutput = "<Catalog name=\""
-											+ catalogName + "\">"
-											+ tempOutput + "</Catalog>";
-								}
-								result = result + tempOutput;
-
-							} catch (Exception e) {
-								e.printStackTrace();
-							}						
-						
-                    	}
-                    	bDefinition = false;
-                    	bCatalog = false;
+                    if (bDataSourceInfo){
+                        if (bCatalog && isGlobalDataSourcePresent){
+                            localDataSourceInfo = new String(ch, start, length);
+                            localDataSourceInfo = localDataSourceInfo.replaceAll("\n", "").trim();
+                            System.out.println("local......." + localDataSourceInfo);
+                        }
+                        else if (!isGlobalDataSourcePresent){
+                            isGlobalDataSourcePresent = true;
+                            globalDataSourceInfo = new String(ch, start, length);
+                            globalDataSourceInfo = globalDataSourceInfo.replaceAll("\n", "").trim();
+                            System.out.println("global......." + globalDataSourceInfo);
+                        }
                     }
 
                 }
-
             };
-
             saxParser.parse(fileName, handler);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
         result = wrapperOutput(result);
-
         return result;
-
-    }
+        }
 	
 	 private static String wrapperOutput(String output){
 	    	String finalResult = "";
