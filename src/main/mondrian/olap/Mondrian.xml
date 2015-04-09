@@ -1370,6 +1370,7 @@ Revision is $Id$
                 <li>luciddb</li>
                 <li>vertica</li>
                 <li>neoview</li>
+                <li>sparksql</li>
                 </ul>
             </Doc>
         </Attribute>
