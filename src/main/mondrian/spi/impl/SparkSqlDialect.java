@@ -49,7 +49,7 @@ public class SparkSqlDialect extends JdbcDialectImpl {
     protected String deduceIdentifierQuoteString(
         DatabaseMetaData databaseMetaData)
     {
-        return null;
+        return "`";
     }
 
     protected Set<List<Integer>> deduceSupportedResultSetStyles(
