@@ -106,6 +106,10 @@ All Rights Reserved.
 	<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
 	<load-on-startup>1</load-on-startup>	
 	</servlet>
+  <servlet-mapping>
+    <servlet-name>Cube Management Web Application</servlet-name>
+    <url-pattern>/cubecrudapi/*</url-pattern>
+  </servlet-mapping>
 
   <!-- jfreechart provided servlet -->
   <servlet>
