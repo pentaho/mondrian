@@ -1604,7 +1604,15 @@ Assumes that mondrian.jar exists (use 'jar' target)">
     <mkdir dir="${build.dir}/mondrian" />
     <delete file="${war.file}"/>
     <unzip src="${lib.dir}/jpivot.war" dest="${build.dir}/mondrian"/>
-
+  	<delete>
+  		<fileset dir="${build.dir}/mondrian/WEB-INF/lib"/>
+  	</delete>
+  	<copy todir="${build.dir}/mondrian/WEB-INF/lib">
+  		<fileset dir="${lib.dir}" />
+  	</copy>
+  		
+  	
+  		
     <!-- Remove the jpivot stuff we intend to overwrite. -->
     <delete>
       <fileset dir="${build.dir}/mondrian" includes="index.jsp,xmla.jsp"/>
@@ -1634,7 +1642,8 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <webinf dir="${build.dir}/mondrian/WEB-INF" excludes="web.xml"/>
       <fileset dir="${build.dir}/mondrian" excludes="WEB-INF/**/*,*.jsp"/>
       <fileset dir="${webapp.dir}" includes="*.*"/>
-      <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,olap4j-xmla.jar,eigenbase-*.jar,xalan.jar,xmlunit.jar,*.dtd,jersey-bundle.jar"/>
+      <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,olap4j-xmla.jar,eigenbase-*.jar,xalan.jar,xmlunit.jar,
+      	*.dtd,jersey-bundle.jar,mysql-connector-java.jar,log4j.jar"/>
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
       <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
       <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>
