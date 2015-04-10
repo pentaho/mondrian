@@ -99,7 +99,13 @@ All Rights Reserved.
     </init-param>
     -->
   </servlet>
-
+	
+	<!-- Cube Management REST API -->
+	<servlet>
+	<servlet-name>Cube Management Web Application</servlet-name>
+	<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+	<load-on-startup>1</load-on-startup>	
+	</servlet>
 
   <!-- jfreechart provided servlet -->
   <servlet>
