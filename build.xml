@@ -1604,12 +1604,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
     <mkdir dir="${build.dir}/mondrian" />
     <delete file="${war.file}"/>
     <unzip src="${lib.dir}/jpivot.war" dest="${build.dir}/mondrian"/>
-  	<delete>
-  		<fileset dir="${build.dir}/mondrian/WEB-INF/lib"/>
-  	</delete>
-  	<copy todir="${build.dir}/mondrian/WEB-INF/lib">
-  		<fileset dir="${lib.dir}" />
-  	</copy>
+  	
   		
   	
   		
@@ -1620,6 +1615,12 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <fileset dir="${build.dir}/mondrian/WEB-INF/queries" includes="xmla.jsp,*.xml"/>
       <fileset dir="${build.dir}/mondrian/WEB-INF/lib" includes="${name}.jar,eigenbase-*.jar,*.xml,mondrian.dtd"/>
     </delete>
+  	<delete>
+  		<fileset dir="${build.dir}/mondrian/WEB-INF/lib" includes="log*.jar"/>
+  	</delete>
+  	<!--<copy todir="${build.dir}/mondrian/WEB-INF/lib">
+  		<fileset dir="${lib.dir}" includes="log4j.jar,commons-io.jar,xml-apis.jar,mysql-connector-java.jar"/>
+  	</copy> -->
 
     <mkdir dir="${lib.dir}" />
 
@@ -1643,7 +1644,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <fileset dir="${build.dir}/mondrian" excludes="WEB-INF/**/*,*.jsp"/>
       <fileset dir="${webapp.dir}" includes="*.*"/>
       <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,olap4j-xmla.jar,eigenbase-*.jar,xalan.jar,xmlunit.jar,
-      	*.dtd,jersey-bundle.jar,mysql-connector-java.jar,log4j.jar"/>
+      	*.dtd,jersey-bundle.jar,mysql-connector-java.jar,log4j.jar,commons-io.jar,xml-apis.jar"/>
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
       <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
       <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>
