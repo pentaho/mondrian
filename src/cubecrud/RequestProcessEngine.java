@@ -237,8 +237,8 @@ public class RequestProcessEngine {
                 boolean bDefinition = false;
                 boolean bDataSourceInfo = false;
                 boolean isGlobalDataSourcePresent = false;
-                String globalDataSourceInfo = "";
-                String localDataSourceInfo = null;
+                StringBuilder globalDataSourceInfo = new StringBuilder(); // Had to use this as sax parser escapes the special strings and visits each part of the string.
+                StringBuilder localDataSourceInfo = new StringBuilder();
                 String catalogName = "";
                 public void startElement(String uri, String localName,String qName,
                                          Attributes attributes) throws SAXException {
@@ -266,12 +266,20 @@ public class RequestProcessEngine {
                 public void endElement(String uri, String localName,
                                        String qName) throws SAXException {
                     if (qName.equalsIgnoreCase("DataSourceInfo")) {
-                        bDataSourceInfo = false;
+                    	 bDataSourceInfo = false;
+                         if ("".equalsIgnoreCase(catalogName)){ // Checks whether it is a global datasourceinfo or not as ...if it is a global none of the catalogs are reached hence the name will be empty.
+
+                    		isGlobalDataSourcePresent = true;
+                    	}   
                     }
 
                     if (qName.equalsIgnoreCase("Catalog")) {
                         bCatalog = false;
-                        localDataSourceInfo = null;
+                        LOGGER.info("Before deleting ....datasourceinfo =" + localDataSourceInfo);
+                        if ( localDataSourceInfo.length() > 0 )
+                        {
+                            localDataSourceInfo = localDataSourceInfo.delete(0, localDataSourceInfo.length());
+                        }
                     }
 
                     if (qName.equalsIgnoreCase("Definition")) {
@@ -299,7 +307,7 @@ public class RequestProcessEngine {
                                                 cubeNameToSearch);
                                     }
                                     if (!"".equalsIgnoreCase(tempOutput)) {
-                                        if (localDataSourceInfo !=null && !"".equalsIgnoreCase(localDataSourceInfo)){
+                                    	if (localDataSourceInfo.length() != 0){
                                             tempOutput = "<Catalog name=\""
                                                     + catalogName + "\" datasourceinfo=\"" + localDataSourceInfo + "\">"
                                                     + tempOutput + "</Catalog>";
@@ -330,7 +338,7 @@ public class RequestProcessEngine {
                                             cubeNameToSearch);
                                 }
                                 if (!"".equalsIgnoreCase(tempOutput)) {
-                                    if (localDataSourceInfo !=null && !"".equalsIgnoreCase(localDataSourceInfo)){
+                                	if (localDataSourceInfo.length() != 0){
                                         tempOutput = "<Catalog name=\""
                                                 + catalogName + "\" datasourceinfo=\"" + localDataSourceInfo + "\">"
                                                 + tempOutput + "</Catalog>";
@@ -352,14 +360,15 @@ public class RequestProcessEngine {
 
                     if (bDataSourceInfo){
                         if (bCatalog && isGlobalDataSourcePresent){
-                            localDataSourceInfo = new String(ch, start, length);
-                            localDataSourceInfo = localDataSourceInfo.replaceAll("\n", "").trim();
+                            String localDataSourceInfoTemp = new String(ch, start, length);
+                            localDataSourceInfoTemp = localDataSourceInfoTemp.replaceAll("\n", "").trim();
+                            localDataSourceInfo.append(localDataSourceInfoTemp);
                             System.out.println("local......." + localDataSourceInfo);
                         }
                         else if (!isGlobalDataSourcePresent){
-                            isGlobalDataSourcePresent = true;
-                            globalDataSourceInfo = new String(ch, start, length);
-                            globalDataSourceInfo = globalDataSourceInfo.replaceAll("\n", "").trim();
+                            String globalDataSourceInfoTemp = new String(ch, start, length);
+                            globalDataSourceInfoTemp = globalDataSourceInfoTemp.replaceAll("\n", "").trim();
+                            globalDataSourceInfo.append(globalDataSourceInfoTemp);
                             System.out.println("global......." + globalDataSourceInfo);
                         }
                     }
