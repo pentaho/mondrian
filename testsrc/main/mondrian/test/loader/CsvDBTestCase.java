@@ -5,13 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.test.loader;
 
 import mondrian.olap.Schema;
+import mondrian.rolap.BatchTestCase;
 import mondrian.spi.Dialect;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
@@ -33,7 +33,7 @@ import java.sql.SQLException;
  *
  * @author Richard M. Emberson
  */
-public abstract class CsvDBTestCase extends FoodMartTestCase {
+public abstract class CsvDBTestCase extends BatchTestCase {
 
     private CsvDBLoader loader;
     private CsvDBLoader.Table[] tables;
