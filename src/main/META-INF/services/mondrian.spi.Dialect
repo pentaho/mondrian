@@ -19,6 +19,7 @@ mondrian.spi.impl.NuoDbDialect
 mondrian.spi.impl.NetezzaDialect
 mondrian.spi.impl.OracleDialect
 mondrian.spi.impl.PostgreSqlDialect
+mondrian.spi.impl.PrestoDialect
 mondrian.spi.impl.RedshiftDialect
 mondrian.spi.impl.SqlStreamDialect
 mondrian.spi.impl.SybaseDialect

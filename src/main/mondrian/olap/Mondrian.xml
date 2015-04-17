@@ -1363,6 +1363,7 @@ Revision is $Id$
                 <li>nuodb</li>
                 <li>oracle</li>
                 <li>postgres</li>
+                <li>presto</li>
                 <li>sybase</li>
                 <li>teradata</li>
                 <li>ingres</li>

@@ -1389,6 +1389,7 @@
                 <li>mysql</li>
                 <li>oracle</li>
                 <li>postgres</li>
+                <li>presto</li>
                 <li>sybase</li>
                 <li>teradata</li>
                 <li>ingres</li>
@@ -1408,6 +1409,7 @@
             <Value>mysql</Value>
             <Value>oracle</Value>
             <Value>postgres</Value>
+            <Value>presto</Value>
             <Value>sybase</Value>
             <Value>teradata</Value>
             <Value>ingres</Value>

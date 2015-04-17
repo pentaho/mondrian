@@ -843,6 +843,7 @@ public interface Dialect {
         NUODB,
         ORACLE,
         POSTGRESQL,
+        PRESTO,
         REDSHIFT,
         MYSQL,
         SQLSTREAM,
