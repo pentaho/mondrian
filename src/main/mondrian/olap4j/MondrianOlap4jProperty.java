@@ -24,7 +24,7 @@ import java.util.*;
  * @author jhyde
  * @since Nov 12, 2007
  */
-class MondrianOlap4jProperty implements Property, Named {
+class MondrianOlap4jProperty implements IMondrianOlap4jProperty, Named {
     /**
      * Map of member properties that are built into Mondrian but are not in the
      * olap4j standard.
@@ -77,6 +77,14 @@ class MondrianOlap4jProperty implements Property, Named {
         this.property = property;
     }
 
+    mondrian.olap.Level level;
+
+    MondrianOlap4jProperty
+        (mondrian.olap.Property property, mondrian.olap.Level level) {
+        this(property);
+        this.level = level;
+    }
+
     public Datatype getDatatype() {
         switch (property.getType()) {
         case TYPE_BOOLEAN:
@@ -123,6 +131,11 @@ class MondrianOlap4jProperty implements Property, Named {
     public ContentType getContentType() {
         return ContentType.REGULAR;
     }
+
+    public mondrian.olap.Level getLevel() {
+        return level;
+    }
+
 }
 
 // End MondrianOlap4jProperty.java
