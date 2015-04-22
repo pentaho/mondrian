@@ -69,11 +69,10 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
                     (UnresolvedFunCall)
                         Util.lookup(
                             cellSetMetaData.query, id.getSegments(), true);
+                Level level = ((LevelExpr) call.getArg(0)).getLevel();
                 olap4jProperty =
                     new MondrianOlap4jProperty(
-                        Util.lookupProperty(
-                            ((LevelExpr) call.getArg(0)).getLevel(),
-                            call.getFunName()));
+                        Util.lookupProperty(level, call.getFunName()), level);
             }
             propertyList.add(olap4jProperty);
         }

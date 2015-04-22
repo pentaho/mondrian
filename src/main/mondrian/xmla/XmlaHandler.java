@@ -13,6 +13,7 @@ package mondrian.xmla;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.olap4j.IMondrianOlap4jProperty;
 import mondrian.util.CompositeList;
 import mondrian.xmla.impl.DefaultSaxWriter;
 
@@ -2036,25 +2037,40 @@ public class XmlaHandler {
         }
 
         private void writeHierarchyInfo(
-            SaxWriter writer,
-            List<Hierarchy> hierarchies,
-            List<Property> props)
-        {
-            writer.startSequence(null, "HierarchyInfo");
-            for (Hierarchy hierarchy : hierarchies) {
-                writer.startElement(
-                    "HierarchyInfo",
-                    "name", hierarchy.getName());
-                for (final Property prop : props) {
-                    final String encodedProp =
-                        encoder.encode(prop.getName());
-                    final Object[] attributes = getAttributes(prop, hierarchy);
-                    writer.element(encodedProp, attributes);
+                SaxWriter writer,
+                List<Hierarchy> hierarchies,
+                List<Property> props)
+            {
+                writer.startSequence(null, "HierarchyInfo");
+                for (Hierarchy hierarchy : hierarchies) {
+                    writer.startElement(
+                        "HierarchyInfo", "name", hierarchy.getName());
+                    for (final Property prop : props) {
+                        if (prop instanceof IMondrianOlap4jProperty) {
+                            IMondrianOlap4jProperty currentProperty =
+                                (IMondrianOlap4jProperty) prop;
+                            String thisHierarchyName = hierarchy.getName();
+                            String thatHierarchiName = currentProperty.getLevel()
+                                .getHierarchy().getName();
+                            if (thisHierarchyName.equals(thatHierarchiName)) {
+                                final String encodedProp = encoder
+                                    .encode(prop.getName());
+                                final Object[] attributes = getAttributes(
+                                    prop, hierarchy);
+                                writer.element(encodedProp, attributes);
+                            }
+                        } else {
+                            final String encodedProp = encoder.encode(
+                                prop.getName());
+                            final Object[] attributes = getAttributes(
+                                prop, hierarchy);
+                            writer.element(encodedProp, attributes);
+                        }
+                    }
+                    writer.endElement(); // HierarchyInfo
                 }
-                writer.endElement(); // HierarchyInfo
+                writer.endSequence(); // "HierarchyInfo"
             }
-            writer.endSequence(); // "HierarchyInfo"
-        }
 
         private Object[] getAttributes(Property prop, Hierarchy hierarchy) {
             Property longProp = longProps.get(prop.getName());
