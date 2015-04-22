@@ -1,19 +1,23 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2005-2015 Pentaho
+// All Rights Reserved.
 */
-
 package mondrian.olap4j;
 
 import org.olap4j.impl.Named;
 import org.olap4j.metadata.Datatype;
 import org.olap4j.metadata.Property;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Implementation of {@link org.olap4j.metadata.Property}
