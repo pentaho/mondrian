@@ -1439,6 +1439,29 @@ only if external statistics were not available.</p>
     </PropertyDefinition>
 
     <PropertyDefinition>
+        <Name>LevelPreCacheThreshold</Name>
+        <Path>mondrian.rolap.precache.threshold</Path>
+        <Description>
+            <p>
+                Property which governs whether child members or members of a level are precached
+                when child or level members are requested within a
+                query expression.  For example,
+                if an expression references two child members in the store dimension,
+                like <code>{ [Store].[USA].[CA], [Store].[USA].[OR] }</code>, precaching will
+                load *all* children under [USA] rather than just the 2 requested.
+                The threshold value is
+                compared against the cardinality of the level to determine
+                whether or not precaching should be performed.  If cardinality is
+                lower than the threshold value Mondrian will precache.  Setting
+                this property to 0 effectively disables precaching.
+            </p>
+        </Description>
+        <Core>true</Core>
+        <Type>int</Type>
+        <Default>300</Default>
+    </PropertyDefinition>
+
+    <PropertyDefinition>
         <Name>WebappDeploy</Name>
         <Path>mondrian.webapp.deploy</Path>
         <Description>

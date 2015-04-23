@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2007-2008 Bart Pappyn
-// Copyright (C) 2007-2012 Pentaho
+// Copyright (C) 2007-2015 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -29,7 +28,7 @@ import java.util.*;
  * @author Bart Pappyn
  * @since Jan 05, 2007
  */
-public class DataSourceChangeListenerTest extends FoodMartTestCase {
+public class DataSourceChangeListenerTest extends BatchTestCase {
 
     public DataSourceChangeListenerTest() {
         super();
@@ -72,29 +71,17 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         // tests.
         SmartMemberReader smr = getSmartMemberReader("Store");
         MemberCacheHelper smrch = (MemberCacheHelper)smr.getMemberCache();
-        smrch.mapLevelToMembers.setCache(
-            new HardSmartCache<Pair<RolapLevel, Object>, List<RolapMember>>());
-        smrch.mapMemberToChildren.setCache(
-            new HardSmartCache<Pair<RolapMember, Object>, List<RolapMember>>());
-        smrch.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
 
         MemberCacheHelper rcsmrch =
             ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader) smr)
                 .getRolapCubeMemberCacheHelper();
-        rcsmrch.mapLevelToMembers.setCache(
-            new HardSmartCache<Pair<RolapLevel, Object>, List<RolapMember>>());
-        rcsmrch.mapMemberToChildren.setCache(
-            new HardSmartCache<Pair<RolapMember, Object>, List<RolapMember>>());
-        rcsmrch.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
 
         SmartMemberReader ssmr = getSharedSmartMemberReader("Store");
         MemberCacheHelper ssmrch = (MemberCacheHelper)ssmr.getMemberCache();
-        ssmrch.mapLevelToMembers.setCache(
-            new HardSmartCache<Pair<RolapLevel, Object>, List<RolapMember>>());
-        ssmrch.mapMemberToChildren.setCache(
-            new HardSmartCache<Pair<RolapMember, Object>, List<RolapMember>>());
-        ssmrch.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
 
+        clearAndHardenCache(ssmrch);
+        clearAndHardenCache(rcsmrch);
+        clearAndHardenCache(smrch);
 
         // Create a dummy DataSource which will throw a 'bomb' if it is asked
         // to execute a particular SQL statement, but will otherwise behave
@@ -138,17 +125,9 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             assertEquals("[]", s3);
 
             // Manually clear the cache to make compare sql result later on
-            smrch.mapKeyToMember.clear();
-            smrch.mapLevelToMembers.clear();
-            smrch.mapMemberToChildren.clear();
-
-            ssmrch.mapKeyToMember.clear();
-            ssmrch.mapLevelToMembers.clear();
-            ssmrch.mapMemberToChildren.clear();
-
-            rcsmrch.mapKeyToMember.clear();
-            rcsmrch.mapLevelToMembers.clear();
-            rcsmrch.mapMemberToChildren.clear();
+            clearAndHardenCache(smrch);
+            clearAndHardenCache(ssmrch);
+            clearAndHardenCache(rcsmrch);
 
             // Run query again, to make sure only cache is used
             Result r4 = executeQuery(
@@ -457,7 +436,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             }
         }
         if (!messages.isEmpty()) {
-            TestCase.fail(messages.size() + " threads failed\n" + messages);
+            fail(messages.size() + " threads failed\n" + messages);
         }
     }
 
@@ -501,10 +480,10 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         }
     }
 
-    Result executeQuery(String mdx, Connection connection) {
-        Query query = connection.parseQuery(mdx);
-        return connection.execute(query);
-    }
+//    Result executeQuery(String mdx, Connection connection) {
+//        Query query = connection.parseQuery(mdx);
+//        return connection.execute(query);
+//    }
 
     SmartMemberReader getSmartMemberReader(String hierName) {
         Connection con = getTestContext().getConnection();

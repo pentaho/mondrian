@@ -5,13 +5,10 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2015 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
-
-import java.util.List;
 
 import mondrian.olap.Axis;
 import mondrian.olap.Member;
@@ -22,6 +19,8 @@ import mondrian.olap.Result;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
+
+import java.util.List;
 
 /**
  * Unit tests for virtual cubes.
@@ -995,18 +994,16 @@ public class VirtualCubeTest extends BatchTestCase {
             null,
             null);
 
-        /*
-         * This test case does not actually reject the dimension constraint from
-         * an unrelated base cube. The reason is that the constraint contains an
-         * AllLevel member. Even though semantically constraining Cells using an
-         * non-existent dimension perhaps does not make sense; however, in the
-         * case where the constraint contains AllLevel member, the constraint
-         * can be considered "always true".
-         *
-         * See the next test case for a constraint that does not contain
-         * AllLevel member and hence cannot be satisfied. The cell should be
-         * empty.
-         */
+//       This test case does not actually reject the dimension constraint from
+//       an unrelated base cube. The reason is that the constraint contains an
+//       AllLevel member. Even though semantically constraining Cells using an
+//       non-existent dimension perhaps does not make sense; however, in the
+//       case where the constraint contains AllLevel member, the constraint
+//       can be considered "always true".
+//
+//       See the next test case for a constraint that does not contain
+//       AllLevel member and hence cannot be satisfied. The cell should be
+//       empty.
         testContext.assertQueryReturns(
             "with member [Warehouse].[x] as 'Aggregate([Warehouse].members)'\n"
             + "member [Measures].[foo] AS '([Warehouse].[x],[Measures].[Customer Count])'\n"
@@ -1359,6 +1356,10 @@ public class VirtualCubeTest extends BatchTestCase {
             // Generated SQL is different if NON EMPTY is evaluated in memory.
             return;
         }
+        // we want to make sure a SqlConstraint is used for retrieving
+        // [Product Family].members
+        propSaver.set(propSaver.properties.LevelPreCacheThreshold, 0);
+
         propSaver.set(propSaver.properties.GenerateFormattedSql, true);
         String query =
             "with "

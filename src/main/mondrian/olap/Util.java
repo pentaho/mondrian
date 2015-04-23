@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -2062,6 +2062,38 @@ public class Util extends XOMUtil {
             throw unexpected(segment.getQuoting());
         }
     }
+
+    public static boolean matches(
+        Member member, List<Id.Segment> nameParts)
+    {
+        if (Util.equalName(Util.implode(nameParts),
+            member.getUniqueName()))
+        {
+            // exact match
+            return true;
+        }
+        Id.Segment segment = nameParts.get(nameParts.size() - 1);
+        while (member.getParentMember() != null) {
+            if (!segment.matches(member.getName())) {
+                return false;
+            }
+            member = member.getParentMember();
+            nameParts = nameParts.subList(0, nameParts.size() - 1);
+            segment = nameParts.get(nameParts.size() - 1);
+        }
+        if (segment.matches(member.getName())) {
+            return Util.equalName(
+                member.getHierarchy().getUniqueName(),
+                Util.implode(nameParts.subList(0, nameParts.size() - 1)));
+        } else if (member.isAll()) {
+            return Util.equalName(
+                member.getHierarchy().getUniqueName(),
+                Util.implode(nameParts));
+        } else {
+            return false;
+        }
+    }
+
 
     public static RuntimeException newElementNotFoundException(
         int category,
