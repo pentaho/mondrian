@@ -1,19 +1,23 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2005-2015 Pentaho
+// All Rights Reserved.
 */
-
 package mondrian.olap4j;
 
 import org.olap4j.impl.Named;
 import org.olap4j.metadata.Datatype;
 import org.olap4j.metadata.Property;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Implementation of {@link org.olap4j.metadata.Property}
@@ -24,7 +28,7 @@ import java.util.*;
  * @author jhyde
  * @since Nov 12, 2007
  */
-class MondrianOlap4jProperty implements Property, Named {
+class MondrianOlap4jProperty implements IMondrianOlap4jProperty, Named {
     /**
      * Map of member properties that are built into Mondrian but are not in the
      * olap4j standard.
@@ -77,6 +81,14 @@ class MondrianOlap4jProperty implements Property, Named {
         this.property = property;
     }
 
+    mondrian.olap.Level level;
+
+    MondrianOlap4jProperty
+        (mondrian.olap.Property property, mondrian.olap.Level level) {
+        this(property);
+        this.level = level;
+    }
+
     public Datatype getDatatype() {
         switch (property.getType()) {
         case TYPE_BOOLEAN:
@@ -123,6 +135,11 @@ class MondrianOlap4jProperty implements Property, Named {
     public ContentType getContentType() {
         return ContentType.REGULAR;
     }
+
+    public mondrian.olap.Level getLevel() {
+        return level;
+    }
+
 }
 
 // End MondrianOlap4jProperty.java
