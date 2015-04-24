@@ -182,7 +182,6 @@ public class MemberCacheHelperTest extends TestCase {
             // here's a workaround.
             when(member.compareTo(any(RolapMember.class))).thenAnswer(
                 new Answer<Object>() {
-                    @Override
                     public Object answer(InvocationOnMock invocation)
                         throws Throwable
                     {

@@ -259,7 +259,6 @@ public final class IdBatchResolver {
         filter(
             children, new Predicate() {
             // remove children we can't support
-                @Override
                 public boolean evaluate(Object theId)
                 {
                     Id id = (Id)theId;
@@ -272,7 +271,6 @@ public final class IdBatchResolver {
                 children, new Transformer()
             {
                 // convert the collection to a list of NameSegments
-            @Override
             public Object transform(Object theId) {
                 Id id = (Id)theId;
                 return getLastSegment(id);
@@ -343,7 +341,6 @@ public final class IdBatchResolver {
         return CollectionUtils.collect(
             Arrays.asList(olapElements),
             new Transformer() {
-                @Override
                 public Object transform(Object o) {
                     return uniqueName ? ((OlapElement)o).getUniqueName()
                         : ((OlapElement)o).getName();
