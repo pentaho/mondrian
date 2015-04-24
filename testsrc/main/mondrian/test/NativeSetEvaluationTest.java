@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation
+// Copyright (c) 2002-2015 Pentaho Corporation
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -657,6 +657,11 @@ public class NativeSetEvaluationTest extends BatchTestCase {
      * make it more permissable.
      */
     public void testLoopDetection() {
+        // Note that this test will fail if the query below is executed
+        // non-natively, or if the level.members expressions are replaced
+        // with enumerated sets.
+        // See http://jira.pentaho.com/browse/MONDRIAN-2337
+        propSaver.set(propSaver.properties.LevelPreCacheThreshold, 0);
         if (!MondrianProperties.instance().EnableNativeTopCount.get()) {
             return;
         }

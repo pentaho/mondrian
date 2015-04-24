@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -80,15 +79,10 @@ public class SqlConstraintFactory {
         Evaluator context,
         Level[] levels)
     {
-        if (context == null) {
-            return DefaultTupleConstraint.instance();
-        }
-        if (!enabled(context)) {
-            return DefaultTupleConstraint.instance();
-        }
-        if (!SqlContextConstraint.isValidContext(
-                context, false, levels, false))
-        {
+        // consider refactoring to eliminate unnecessary array
+        assert levels == null || levels.length == 1
+            : "Multi-element Level arrays are not expected here.";
+        if (useDefaultTupleConstraint(context, levels)) {
             return DefaultTupleConstraint.instance();
         }
         if (context.isNonEmpty()) {
@@ -105,16 +99,95 @@ public class SqlConstraintFactory {
         return new SqlContextConstraint((RolapEvaluator) context, false);
     }
 
+    private boolean useDefaultTupleConstraint(
+        Evaluator context, Level[] levels)
+    {
+        if (context == null) {
+            return true;
+        }
+        if (!enabled(context)) {
+            return true;
+        }
+        if (!SqlContextConstraint.isValidContext(
+                context, false, levels, false))
+        {
+            return true;
+        }
+        final int threshold = MondrianProperties.instance()
+            .LevelPreCacheThreshold.get();
+        if (threshold <= 0) {
+            return false;
+        }
+        if (levels != null) {
+            long totalCard = 1;
+            for (Level level : levels) {
+                totalCard *=
+                    getLevelCardinality((RolapLevel) level);
+                if (totalCard > threshold) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public MemberChildrenConstraint getChildByNameConstraint(
         RolapMember parent,
         Id.NameSegment childName)
     {
         // Ragged hierarchies span multiple levels, so SQL WHERE does not work
         // there
-        if (!enabled || parent.getHierarchy().isRagged()) {
+        if (useDefaultMemberChildrenConstraint(parent)) {
             return DefaultMemberChildrenConstraint.instance();
         }
         return new ChildByNameConstraint(childName);
+    }
+
+    public MemberChildrenConstraint getChildrenByNamesConstraint(
+        RolapMember parent,
+        List<Id.NameSegment> childNames)
+    {
+        if (useDefaultMemberChildrenConstraint(parent)) {
+            return DefaultMemberChildrenConstraint.instance();
+        }
+        return new ChildByNameConstraint(childNames);
+    }
+
+    private boolean useDefaultMemberChildrenConstraint(RolapMember parent) {
+        int threshold = MondrianProperties.instance()
+            .LevelPreCacheThreshold.get();
+        return !enabled
+            || parent.getHierarchy().isRagged()
+            || (!isDegenerate(parent.getLevel())
+            && threshold > 0
+            && getChildLevelCardinality(parent) < threshold);
+    }
+
+    private boolean isDegenerate(Level level) {
+        if (level instanceof RolapCubeLevel) {
+            RolapCubeHierarchy hier = (RolapCubeHierarchy)level
+                .getHierarchy();
+            return hier.isUsingCubeFact();
+        }
+        return false;
+    }
+
+    private int getChildLevelCardinality(RolapMember parent) {
+        RolapLevel level = (RolapLevel)parent.getLevel().getChildLevel();
+        if (level == null) {
+            // couldn't determine child level, give most pessimistic answer
+            return Integer.MAX_VALUE;
+        }
+        return getLevelCardinality(level);
+    }
+
+    private int getLevelCardinality(RolapLevel level) {
+        return getSchemaReader(level)
+            .getLevelCardinality(level, true, true);
+    }
+
+    private SchemaReader getSchemaReader(RolapLevel level) {
+        return level.getHierarchy().getRolapSchema().getSchemaReader();
     }
 
     /**

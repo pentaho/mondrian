@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2015 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.olap;
 
 import mondrian.calc.Calc;
@@ -461,13 +460,21 @@ public interface SchemaReader {
         MatchType matchType);
 
     /**
+     * Finds a list of child members with the given names.
+     */
+    List<Member> lookupMemberChildrenByNames(
+        Member parent,
+        List<Id.NameSegment> childNames,
+        MatchType matchType);
+
+    /**
      * Returns an object which can evaluate an expression in native SQL, or
      * null if this is not possible.
      *
      * @param fun Function
      * @param args Arguments to the function
      * @param evaluator Evaluator, provides context
-     * @param calc
+     * @param calc the calc to be natively evaluated
      */
     NativeEvaluator getNativeSetEvaluator(
         FunDef fun,
