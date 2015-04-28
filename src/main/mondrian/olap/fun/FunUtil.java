@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -323,7 +323,9 @@ public class FunUtil extends Util {
     {
         List<Member> clone = new ArrayList<Member>();
         for (Member member : memberList) {
-            if (member.isCalculated()) {
+            if (member.isCalculated()
+                && !member.isParentChildPhysicalMember())
+            {
                 continue;
             }
             clone.add(member);
@@ -349,7 +351,9 @@ public class FunUtil extends Util {
             outer:
             for (List<Member> members : memberList) {
                 for (Member member : members) {
-                    if (member.isCalculated()) {
+                    if (member.isCalculated()
+                        && !member.isParentChildPhysicalMember())
+                    {
                         continue outer;
                     }
                 }
@@ -3383,6 +3387,10 @@ public class FunUtil extends Util {
         }
 
         public boolean isParentChildLeaf() {
+            return false;
+        }
+
+        public boolean isParentChildPhysicalMember() {
             return false;
         }
 

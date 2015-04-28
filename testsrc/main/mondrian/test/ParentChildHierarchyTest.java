@@ -5,12 +5,11 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho
+// Copyright (C) 2005-2015 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Mar 6, 2003
 */
-
 package mondrian.test;
 
 import mondrian.olap.*;
@@ -179,6 +178,52 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "</Hierarchy>"
             + "</Dimension>",
             null);
+    }
+
+    public void testDotMembersNoClosure() {
+        TestContext context =
+            getTestContext().createSubstitutingCube(
+                "HR",
+                "<Dimension name=\"EmployeesNoClosure\" foreignKey=\"employee_id\">\n"
+                + "<Hierarchy hasAll=\"true\" allMemberName=\"All Employees\" primaryKey=\"employee_id\">\n"
+                + "<Table name=\"employee\"/>\n"
+                + "<Level name=\"Employee Id\" uniqueMembers=\"true\" type=\"Numeric\" column=\"employee_id\" nameColumn=\"full_name\" parentColumn=\"supervisor_id\" nullParentValue=\"0\">\n"
+                + "<Property name=\"Marital Status\" column=\"marital_status\"/>\n"
+                + "<Property name=\"Position Title\" column=\"position_title\"/>\n"
+                + "<Property name=\"Gender\" column=\"gender\"/>\n"
+                + "<Property name=\"Salary\" column=\"salary\"/>\n"
+                + "<Property name=\"Education Level\" column=\"education_level\"/>\n"
+                + "<Property name=\"Management Role\" column=\"management_role\"/>\n"
+                + "</Level>\n"
+                + "</Hierarchy>\n"
+                + "</Dimension>\n");
+        context.assertQueryReturns(
+            "WITH\n"
+            + "SET [*NATIVE_CJ_SET] AS 'Head(FILTER([*BASE_MEMBERS__EmployeesNoClosure_], NOT ISEMPTY ([Measures].[Count])), 5)'\n"
+            + "SET [*BASE_MEMBERS__EmployeesNoClosure_] AS '[EmployeesNoClosure].[Employee Id].MEMBERS'\n"
+            + "SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+            + "SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([EmployeesNoClosure].CURRENTMEMBER)})'\n"
+            + "SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],[EmployeesNoClosure].CURRENTMEMBER.ORDERKEY,ASC)'\n"
+            + "MEMBER [Measures].[*FORMATTED_MEASURE_0] AS '[Measures].[Count]', FORMAT_STRING = '#,#', SOLVE_ORDER=500\n"
+            + "SELECT\n"
+            + "[*BASE_MEMBERS__Measures_] ON COLUMNS\n"
+            + ",[*SORTED_ROW_AXIS] ON ROWS\n"
+            + "FROM [HR]\n",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "Axis #2:\n"
+            + "{[EmployeesNoClosure].[Sheri Nowmer]}\n"
+            + "{[EmployeesNoClosure].[Sheri Nowmer].[Derrick Whelply]}\n"
+            + "{[EmployeesNoClosure].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]}\n"
+            + "{[EmployeesNoClosure].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro]}\n"
+            + "{[EmployeesNoClosure].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro].[Bunny McCown]}\n"
+            + "Row #0: 7,392\n"
+            + "Row #1: 7,236\n"
+            + "Row #2: 948\n"
+            + "Row #3: 48\n"
+            + "Row #4: 36\n");
     }
 
     /**

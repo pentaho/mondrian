@@ -11,6 +11,8 @@
 */
 package mondrian.rolap;
 
+import mondrian.calc.*;
+import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.*;
 import mondrian.resource.MondrianResource;
@@ -21,8 +23,6 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
 import mondrian.spi.Dialect;
 import mondrian.util.FilteredIterableList;
-import mondrian.calc.*;
-import mondrian.mdx.*;
 
 import org.apache.log4j.Logger;
 
@@ -952,7 +952,7 @@ public class SqlConstraintUtils {
             members,
             new FilteredIterableList.Filter<Member>() {
                 public boolean accept(final Member m) {
-                    return !m.isCalculated() || m.isParentChildLeaf();
+                    return !m.isCalculated() || m.isParentChildPhysicalMember();
                 }
             });
     }
