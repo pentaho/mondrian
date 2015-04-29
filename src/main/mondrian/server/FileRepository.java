@@ -143,7 +143,7 @@ public class FileRepository implements Repository {
         throw Util.newError("No suitable connection found");
     }
 
-    private OlapConnection getConnection(
+    OlapConnection getConnection(
         CatalogInfo catalogInfo,
         MondrianServer server,
         String roleName,
@@ -310,7 +310,7 @@ public class FileRepository implements Repository {
     static class DatabaseInfo {
         private final String name;
         private final Map<String, Object> properties;
-        private Map<String, CatalogInfo> catalogMap =
+        Map<String, CatalogInfo> catalogMap =
             new HashMap<String, CatalogInfo>();
 
         DatabaseInfo(String name, Map<String, Object> properties) {
@@ -324,7 +324,7 @@ public class FileRepository implements Repository {
         }
     }
 
-    private static class CatalogInfo {
+    static class CatalogInfo {
         private final String connectString;
         private final String olap4jConnectString;
         private final CatalogLocator locator;
