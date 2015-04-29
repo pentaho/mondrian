@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -57,6 +56,11 @@ public class DelegatingRolapMember extends RolapMemberBase {
 
     public boolean isParentChildLeaf() {
         return member.isParentChildLeaf();
+    }
+
+    @Override
+    public boolean isParentChildPhysicalMember() {
+        return member.isParentChildPhysicalMember();
     }
 
     public void setName(String name) {

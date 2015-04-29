@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.olap;
 
 import mondrian.resource.MondrianResource;
@@ -278,6 +277,10 @@ public abstract class MemberBase
 
     public String getPropertyFormattedValue(String propertyName) {
         return getPropertyValue(propertyName).toString();
+    }
+
+    public boolean isParentChildPhysicalMember() {
+        return false;
     }
 
     public boolean isParentChildLeaf() {
