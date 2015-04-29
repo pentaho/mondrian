@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -899,6 +899,17 @@ public class SqlConstraintUtils {
         }
     }
 
+    public static String constrainLevel(
+        RolapSchema.PhysColumn exp,
+        Dialect dialect,
+        String columnValue,
+        boolean caseSensitive)
+    {
+        return constrainLevel(
+            exp, dialect,
+            new String[]{columnValue}, caseSensitive);
+    }
+
     /**
      * Generates a SQL expression constraining a level's key by some value.
      *
@@ -913,62 +924,95 @@ public class SqlConstraintUtils {
     public static String constrainLevel(
         RolapSchema.PhysColumn exp,
         Dialect dialect,
-        String columnValue,
+        String[] columnValue,
         boolean caseSensitive)
     {
         // this method can be called within the context of shared members,
         // outside of the normal rolap star, therefore we need to
         // check the level to see if it is a shared or cube level.
-
         Util.deprecated(
             "TODO unify inside-star and outside-star code paths",
             false);
-        Dialect.Datatype datatype = exp.getDatatype();
-        String columnString = exp.toSql();
+        return getColumnValueConstraint(
+            dialect, columnValue,
+            caseSensitive, exp.toSql(), exp.getDatatype());
+    }
 
+    private static String getColumnValueConstraint(
+        Dialect dialect, String[] columnValues, boolean caseSensitive,
+        String columnString, Dialect.Datatype datatype)
+    {
         String constraint;
-        if (RolapUtil.mdxNullLiteral().equalsIgnoreCase(columnValue)) {
-            constraint = columnString + " is null";
-        } else {
-            if (datatype.isNumeric()) {
-                // A numeric data type deserves a numeric value.
-                try {
-                    Double.valueOf(columnValue);
-                } catch (NumberFormatException e) {
-                    // Trying to equate a numeric column to a non-numeric value,
-                    // for example
-                    //
-                    //    WHERE int_column = 'Foo Bar'
-                    //
-                    // It's clearly impossible to match, so convert condition
-                    // to FALSE. We used to play games like
-                    //
-                    //   WHERE Upper(int_column) = Upper('Foo Bar')
-                    //
-                    // but Postgres in particular didn't like that. And who can
-                    // blame it.
-                    return RolapUtil.SQL_FALSE_LITERAL;
-                }
-            }
-            final StringBuilder buf = new StringBuilder();
-            dialect.quote(buf, columnValue, datatype);
-            String value = buf.toString();
-            if (caseSensitive && datatype == Dialect.Datatype.String) {
-                // Some databases (like DB2) compare case-sensitive. We convert
-                // the value to upper-case in the DBMS (e.g. UPPER('Foo'))
-                // rather than in Java (e.g. 'FOO') in case the DBMS is running
-                // a different locale.
-                if (!MondrianProperties.instance().CaseSensitive.get()) {
-                    columnString = dialect.toUpper(columnString);
-                    value = dialect.toUpper(value);
-                }
-            }
+        List<String> values = new ArrayList<String>();
+        boolean containsNull = false;
 
-            constraint = columnString + " = " + value;
+
+        for (String columnValue : columnValues) {
+            if (RolapUtil.mdxNullLiteral().equalsIgnoreCase(columnValue)) {
+                containsNull = true;
+                //constraint = columnString + " is " + RolapUtil.sqlNullLiteral;
+            } else {
+                if (datatype.isNumeric()) {
+                    // make sure it can be parsed
+                    Double.valueOf(columnValue);
+                }
+                final StringBuilder buf = new StringBuilder();
+                dialect.quote(buf, columnValue, datatype);
+                String value = buf.toString();
+                if (caseSensitive && datatype == Dialect.Datatype.String) {
+                    // Some databases (like DB2) compare case-sensitive.
+                    // We convert
+                    // the value to upper-case in the DBMS (e.g. UPPER('Foo'))
+                    // rather than in Java (e.g. 'FOO') in case the DBMS is
+                    // running  a different locale.
+                    if (!MondrianProperties.instance().CaseSensitive.get()) {
+                        value = dialect.toUpper(value);
+                    }
+                }
+                values.add(value);
+            }
         }
 
+        if (caseSensitive && datatype == Dialect.Datatype.String
+            && !MondrianProperties.instance().CaseSensitive.get())
+        {
+            columnString = dialect.toUpper(columnString);
+        }
+
+        if (values.size() == 1) {
+            if (containsNull) {
+                constraint = columnString + " IS NULL";
+            } else {
+                constraint = columnString + " = " + values.get(0);
+            }
+        } else {
+            StringBuilder builder = new StringBuilder();
+            builder.append("( ");
+            if (values.size() > 0) {
+                builder.append(columnString)
+                    .append(" IN (");
+                for (int i = 0; i < values.size(); i++) {
+                    String value = values.get(i);
+                    builder.append(value);
+                    if (i < values.size() - 1) {
+                        builder.append(",");
+                    }
+                }
+                builder.append(")");
+            }
+            if (containsNull) {
+                if (values.size() > 0) {
+                    builder.append(" OR ");
+                }
+                builder.append(columnString)
+                    .append(" IS NULL ");
+            }
+            builder.append(")");
+            constraint = builder.toString();
+        }
         return constraint;
     }
+
 
     /**
      * Generates a SQL expression constraining a level by some value,

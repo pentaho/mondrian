@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2013 Pentaho and others
+// Copyright (C) 2006-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -32,6 +32,13 @@ public final class SqlConstraintFactory {
      * singleton
      */
     private SqlConstraintFactory() {
+    }
+
+    private boolean enabled(final Evaluator context) {
+        if (context != null) {
+            return enabled && context.nativeEnabled();
+        }
+        return enabled;
     }
 
     public static SqlConstraintFactory instance() {
@@ -89,13 +96,7 @@ public final class SqlConstraintFactory {
         }
         final List<RolapMeasureGroup> measureGroupList =
             new ArrayList<RolapMeasureGroup>();
-        if (!SqlContextConstraint.checkValidContext(
-                context,
-                false,
-                levels,
-                false,
-                measureGroupList))
-        {
+        if (useDefaultTupleConstraint(context, levels, measureGroupList)) {
             return DefaultTupleConstraint.instance();
         }
         if (context.isNonEmpty()) {
@@ -114,16 +115,116 @@ public final class SqlConstraintFactory {
             context, measureGroupList, false);
     }
 
+    private boolean useDefaultTupleConstraint(
+        Evaluator context,  List<RolapCubeLevel> levels,
+        List<RolapMeasureGroup> measureGroupList)
+    {
+        if (!SqlContextConstraint.checkValidContext(
+                (RolapEvaluator) context, false, levels,
+                false, measureGroupList))
+        {
+            return true;
+        }
+        final int threshold = MondrianProperties.instance()
+            .LevelPreCacheThreshold.get();
+        if (threshold <= 0) {
+            return false;
+        }
+        if (levels != null) {
+            long totalCard = 1;
+            for (Level level : levels) {
+                totalCard *=
+                    getLevelCardinality((RolapLevel) level);
+                if (totalCard > threshold) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+
     public MemberChildrenConstraint getChildByNameConstraint(
         RolapMember parent,
         Id.NameSegment childName)
     {
         // Ragged hierarchies span multiple levels, so SQL WHERE does not work
         // there
-        if (!enabled || parent.getHierarchy().isRagged()) {
+        if (useDefaultMemberChildrenConstraint(parent)) {
             return DefaultMemberChildrenConstraint.instance();
         }
         return new ChildByNameConstraint(childName);
+    }
+
+    public MemberChildrenConstraint getChildrenByNamesConstraint(
+        RolapMember parent,
+        List<Id.NameSegment> childNames)
+    {
+        if (useDefaultMemberChildrenConstraint(parent)) {
+            return DefaultMemberChildrenConstraint.instance();
+        }
+        return new ChildByNameConstraint(childNames);
+    }
+
+    private boolean useDefaultMemberChildrenConstraint(RolapMember parent) {
+        int threshold = MondrianProperties.instance()
+            .LevelPreCacheThreshold.get();
+        return !enabled
+            || parent.getHierarchy().isRagged()
+            || (!isDegenerate(parent.getLevel())
+            && threshold > 0
+            && getChildLevelCardinality(parent) < threshold);
+    }
+
+    private boolean isDegenerate(Level level) {
+        if (level instanceof RolapCubeLevel) {
+            RolapCubeHierarchy hier = (RolapCubeHierarchy)level
+                .getHierarchy();
+            for (RolapMeasureGroup measureGroup
+                : hier.getCube().getMeasureGroups())
+            {
+                RolapSchema.PhysRelation relation =
+                    measureGroup.getFactRelation();
+                final RolapSchema.PhysPath path = measureGroup.getPath(
+                    (RolapDimension) level.getDimension());
+                if (measureGroup.aggregate || path == null) {
+                    continue;
+                }
+                List<RolapSchema.PhysHop> hops = path.hopList;
+                if (hops.size() > 1
+                    || !relation.equals(hops.get(0).relation))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private int getChildLevelCardinality(RolapMember parent) {
+        RolapLevel level = parent.getLevel().getChildLevel();
+        if (level == null) {
+            // couldn't determine child level, give most pessimistic answer
+            return Integer.MAX_VALUE;
+        }
+        return getLevelCardinality(level);
+    }
+
+    private int getLevelCardinality(RolapLevel level) {
+        if (level.isParentChild()) {
+            // .getLevelCardinality returns cardinality of the level's key,
+            // which can be inflated for P-C.  Return a conservative value
+            // instead.
+            return Integer.MAX_VALUE;
+        } else {
+            return getSchemaReader(level)
+                .getLevelCardinality(level, true, true);
+        }
+    }
+
+    private SchemaReader getSchemaReader(RolapLevel level) {
+        return level.getHierarchy().getRolapSchema().getSchemaReader();
     }
 
     /**

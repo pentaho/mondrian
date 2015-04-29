@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho
+// Copyright (C) 2005-2015 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -1340,6 +1340,9 @@ public class VirtualCubeTest extends BatchTestCase {
      * cube is correct.  The joins shouldn't be cartesian product.
      */
     public void testNonEmptyConstraintOnVirtualCubeWithCalcMeasure() {
+        // we want to make sure a SqlConstraint is used for retrieving
+        // [Product Family].members
+        propSaver.set(propSaver.props.LevelPreCacheThreshold, 0);
         if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {
             // Generated SQL is different if NON EMPTY is evaluated in memory.
             return;

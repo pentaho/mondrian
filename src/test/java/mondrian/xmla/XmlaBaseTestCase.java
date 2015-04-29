@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2013 Pentaho and others
+// Copyright (C) 2006-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.xmla;
@@ -132,7 +132,7 @@ System.out.println("requestText=" + requestText);
         }
 
         Document gotDoc = XmlUtil.parse(bytes);
-        gotDoc = replaceLastSchemaUpdateDate(gotDoc);
+        gotDoc = cleanseOutput(gotDoc);
         String gotStr = XmlUtil.toString(gotDoc, true);
         gotStr = maskVersion(gotStr);
         gotStr = testContext.upgradeActual(gotStr);
@@ -142,7 +142,7 @@ System.out.println("requestText=" + requestText);
             }
             return;
         }
-        expectedDoc = replaceLastSchemaUpdateDate(expectedDoc);
+        expectedDoc = cleanseOutput(expectedDoc);
         String expectedStr = XmlUtil.toString(expectedDoc, true);
         try {
             XMLAssert.assertXMLEqual(expectedStr, gotStr);
@@ -164,6 +164,11 @@ System.out.println("requestText=" + requestText);
                 throw e;
             }
         }
+    }
+
+    private Document cleanseOutput(Document gotDoc) {
+        return replaceMemberOrdinal(
+            replaceLastSchemaUpdateDate(gotDoc));
     }
 
     public void doTest(Properties props) throws Exception {
@@ -319,6 +324,23 @@ System.out.println("Got CONTINUE");
             Node node = elements.item(i);
             node.getFirstChild().setNodeValue(
                 LAST_SCHEMA_UPDATE_DATE);
+        }
+        return doc;
+    }
+
+    /**
+     * The MEMBER_ORDINAL property is unreliable since it's dependent
+     * on the sequence in which members are loaded, which is inconsistent
+     * unless the complete dimension is loaded.  The property has been
+     * deprecated.
+     * @return doc with MEMBER_ORDINAL set to -1
+     */
+    protected Document replaceMemberOrdinal(Document doc) {
+        NodeList elements =
+            doc.getElementsByTagName(Property.MEMBER_ORDINAL.getCaption());
+        for (int i = 0; i < elements.getLength(); i++) {
+            Node node = elements.item(i);
+            node.getFirstChild().setNodeValue("-1");
         }
         return doc;
     }

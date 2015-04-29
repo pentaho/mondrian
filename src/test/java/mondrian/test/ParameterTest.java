@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho
+// Copyright (C) 2005-2015 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -558,7 +558,7 @@ public class ParameterTest extends FoodMartTestCase {
         Assert.assertEquals("Q", parameters[3].getName());
         final Member member =
             query.getSchemaReader(true).getMemberByUniqueName(
-                Id.Segment.toList("Gender", "M"), true);
+                Id.Segment.toList("Customer", "Gender", "M"), true);
         parameters[2].setValue(member);
         TestContext.assertEqualsVerbose(
             "with member [Measures].[A string] as 'Parameter(\"S\", STRING, (\"x\" || \"y\"), \"A string parameter\")'\n"
