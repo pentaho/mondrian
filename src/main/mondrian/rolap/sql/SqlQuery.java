@@ -19,6 +19,7 @@ import mondrian.spi.DialectManager;
 import mondrian.util.Pair;
 
 import java.util.*;
+
 import javax.sql.DataSource;
 
 /**
@@ -1012,8 +1013,20 @@ public class SqlQuery {
         }
 
         private static String getBestName(Dialect dialect) {
-            return dialect.getDatabaseProduct().getFamily().name()
-                .toLowerCase();
+          final String dialectName = dialect.getDatabaseProduct().getFamily()
+              .name().toLowerCase();
+          if (dialectName.equals("postgresql")) {
+              //Luc Boudreau's comment
+              // Special case for the discrepancy between the value used
+              // in schemas and the actual name of the dialect. The former is
+              // 'postgresql' while the later is 'postgres'.
+              // We can't change the schemas or we will break compatibility,
+              // so we have to switch it here.
+              // This needs to be fixed post 4.0.
+              return "postgres";
+           } else {
+             return dialectName;
+           }
         }
     }
 

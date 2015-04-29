@@ -22,6 +22,7 @@ import mondrian.olap4j.XmlaExtraTest;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.*;
+import mondrian.rolap.sql.CodeSetTest;
 import mondrian.rolap.sql.CrossJoinArgFactoryTest;
 import mondrian.rolap.sql.SelectNotInGroupByTest;
 import mondrian.rolap.sql.SqlQueryTest;
@@ -36,7 +37,6 @@ import mondrian.util.*;
 import mondrian.xmla.*;
 import mondrian.xmla.impl.DynamicDatasourceXmlaServletTest;
 import mondrian.xmla.test.XmlaTest;
-
 import junit.framework.Test;
 import junit.framework.*;
 
@@ -360,6 +360,7 @@ public class Main extends TestSuite {
 
             addTest(suite, FastBatchingCellReaderTest.class);
             addTest(suite, SqlQueryTest.class);
+            addTest(suite, CodeSetTest.class);
 
             if (MondrianProperties.instance().EnableNativeCrossJoin.get()) {
                 addTest(suite, BatchedFillTest.class, "suite");
