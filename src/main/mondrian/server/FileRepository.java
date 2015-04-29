@@ -9,22 +9,39 @@
 */
 package mondrian.server;
 
-import mondrian.olap.*;
+import mondrian.olap.DriverManager;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.MondrianServer;
+import mondrian.olap.Util;
+import mondrian.olap.Util.PropertyList;
 import mondrian.olap4j.MondrianOlap4jDriver;
-import mondrian.rolap.*;
+import mondrian.rolap.RolapConnection;
+import mondrian.rolap.RolapConnectionProperties;
+import mondrian.rolap.RolapSchema;
 import mondrian.spi.CatalogLocator;
 import mondrian.tui.XmlaSupport;
-import mondrian.util.*;
+import mondrian.util.ClassResolver;
+import mondrian.util.LockBox;
+import mondrian.util.Pair;
 import mondrian.xmla.DataSourcesConfig;
 
 import org.apache.log4j.Logger;
 
-import org.olap4j.*;
+import org.olap4j.OlapConnection;
+import org.olap4j.OlapException;
+import org.olap4j.OlapWrapper;
 import org.olap4j.impl.Olap4jUtil;
 
 import java.sql.SQLException;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Implementation of {@link mondrian.server.Repository} that reads
@@ -98,7 +115,7 @@ public class FileRepository implements Repository {
         throws SQLException
     {
         final ServerInfo serverInfo = getServerInfo();
-        final DatabaseInfo datasourceInfo;
+        DatabaseInfo datasourceInfo;
         if (databaseName == null) {
             if (serverInfo.datasourceMap.size() == 0) {
                 throw new OlapException(
@@ -113,7 +130,32 @@ public class FileRepository implements Repository {
         } else {
             datasourceInfo =
                 serverInfo.datasourceMap.get(databaseName);
+
+            // For legacy, we have to check if the DataSourceInfo matches.
+            // We used to mix up DS Info and DS names. The behavior above is
+            // the right one. The one below is not.
+            // Note also that the DSInfos we sent to the client had the
+            // JDBC properties removed for security. We have to account for
+            // that here as well.
+            if (datasourceInfo == null) {
+                for (DatabaseInfo infos
+                    : serverInfo.datasourceMap.values())
+                {
+                    PropertyList pl =
+                        Util.parseConnectString(
+                            (String) infos.properties.get("DataSourceInfo"));
+
+                    pl.remove(RolapConnectionProperties.Jdbc.name());
+                    pl.remove(RolapConnectionProperties.JdbcUser.name());
+                    pl.remove(RolapConnectionProperties.JdbcPassword.name());
+
+                    if (pl.toString().equals(databaseName)) {
+                        datasourceInfo = infos;
+                    }
+                }
+            }
         }
+
         if (datasourceInfo == null) {
             throw Util.newError("Unknown database '" + databaseName + "'");
         }
