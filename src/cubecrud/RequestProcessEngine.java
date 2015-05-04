@@ -66,8 +66,8 @@ import org.xml.sax.helpers.DefaultHandler;
 @Path("/")
 public class RequestProcessEngine {	
 	private static final org.apache.log4j.Logger LOGGER = Logger.getLogger(RequestProcessEngine.class);
-	final static String DATASOURCE_PATH = System.getProperty("user.dir").substring(0, System.getProperty("user.dir").length()-3) +
-			"webapps/mondrian/WEB-INF/datasources.xml";	
+	final static String DATASOURCE_PATH = System.getProperty("user.dir") +
+			"/webapps/mondrian/WEB-INF/datasources.xml";	
     String result= "";
     static boolean isPresentCubeHand= false;
     static boolean isPresentCatalogHand= false;
