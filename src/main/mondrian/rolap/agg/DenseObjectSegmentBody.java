@@ -53,7 +53,7 @@ class DenseObjectSegmentBody extends AbstractSegmentBody {
 
     @Override
     protected int getSize() {
-        return values.length; // TODO: subtract number of nulls?
+        return values.length;
     }
 }
 
