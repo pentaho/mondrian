@@ -579,7 +579,9 @@ If you wish to build for this JDK, modify ${unix.script}.
       <and>
         <isset property="include.workbench" />
         <!-- workbench kettle dependencies are incompatible with jdk1.5 -->
-        <isset property="jdk16.present" />
+        <not>
+          <isset property="jdk15.present" />	
+        </not>
       </and>
     </condition>
     <echo>include.gui=${include.gui}</echo>
