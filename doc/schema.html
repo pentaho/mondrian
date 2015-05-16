@@ -612,9 +612,10 @@ cannot be performed when using <code>highCardinality="true"</code>.
 <h1>3.3.2 The 'all' member<a name="The_all_member">&nbsp;</a></h1>
 
 <p>By default, every hierarchy contains a top level called '<code>(All)</code>', which contains a single
-member called '<code>(All {<i>hierarchyName</i>})</code>'. This member is parent of all other members
-of the hierarchy, and thus represents a grand total. It is also the default member of the hierarchy; that is, the member
-which is used for calculating cell values when the hierarchy is not included on an axis or in the slicer. The
+member called by default '<code>(All {<i>hierarchyName</i>}s)</code>' (note the "s" appended to the end). 
+For example, if your hierarchy is called <code>Store</code>, the 'all' member will be called <code>(All Stores)</code>, unless
+this name is overridden through the <code>allMemberName</code> or <code>allLevelName</code> attributes.
+This member is parent of all other members of the hierarchy, and thus represents a grand total. It is also the default member of the hierarchy; that is, the member which is used for calculating cell values when the hierarchy is not included on an axis or in the slicer. The
 <code>allMemberName</code> and <code>allLevelName</code> attributes override the default
 names of the all level and all member.</p>
 
