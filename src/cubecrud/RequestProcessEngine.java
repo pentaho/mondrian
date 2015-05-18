@@ -140,6 +140,7 @@ public class RequestProcessEngine {
 				
 		LOGGER.info("Input xml---" + inputXml);
 		String result = "<output>"+ addCube(inputXml, catalogName, cubeName) +"</output>";
+		LOGGER.info("response xml = " + result);
 		return result;
 	}
 	
@@ -392,13 +393,13 @@ public class RequestProcessEngine {
                                     if (!"".equalsIgnoreCase(tempOutput)) {
                                     	if (localDataSourceInfo.length() != 0){
                                             tempOutput = "<Catalog name=\""
-                                                    + catalogName + "\" datasourceinfo=\"" + localDataSourceInfo + "\">"
+                                                    + catalogName + "\" datasourceinfo=\"" + localDataSourceInfo.toString().replaceAll("&", "&#38;") + "\">"
                                                     + tempOutput + "</Catalog>";
                                         }
                                         else
                                         {
                                             tempOutput = "<Catalog name=\""
-                                                    + catalogName + "\" datasourceinfo=\"" + globalDataSourceInfo + "\">"
+                                                    + catalogName + "\" datasourceinfo=\"" + globalDataSourceInfo.toString().replaceAll("&", "&#38;") + "\">"
                                                     + tempOutput + "</Catalog>";
                                         }
                                     }
@@ -423,13 +424,13 @@ public class RequestProcessEngine {
                                 if (!"".equalsIgnoreCase(tempOutput)) {
                                 	if (localDataSourceInfo.length() != 0){
                                         tempOutput = "<Catalog name=\""
-                                                + catalogName + "\" datasourceinfo=\"" + localDataSourceInfo + "\">"
+                                                + catalogName + "\" datasourceinfo=\"" + localDataSourceInfo.toString().replaceAll("&", "&#38;") + "\">"
                                                 + tempOutput + "</Catalog>";
                                     }
                                     else
                                     {
                                         tempOutput = "<Catalog name=\""
-                                                + catalogName + "\" datasourceinfo=\"" + globalDataSourceInfo + "\">"
+                                                + catalogName + "\" datasourceinfo=\"" + globalDataSourceInfo.toString().replaceAll("&", "&#38;") + "\">"
                                                 + tempOutput + "</Catalog>";
                                     }
                                 }
@@ -529,7 +530,7 @@ public class RequestProcessEngine {
 							else if (ni.getNodeName().equalsIgnoreCase("Cube"))
 							{
 								NamedNodeMap nmapAttr = ni.getAttributes();
-								String cubeNameFromXml = nmapAttr.getNamedItem("name").getNodeValue();
+					 			String cubeNameFromXml = nmapAttr.getNamedItem("name").getNodeValue();
 								if ("".equalsIgnoreCase(cubeNameFromXml))
 								{
 									return "Invalid Input Request | Cube name is missing";
@@ -653,7 +654,7 @@ public class RequestProcessEngine {
 				{
 					Node catalogsNode = nodeList.item(0);
 					String xmlForCatalog ="<Catalog name=\""+ catalogName +"\"><DataSourceInfo>" + 
-					dataSourceInfo.replace("&", "&#38;") + "</DataSourceInfo><Definition>"
+					dataSourceInfo.replaceAll("&", "&#38;") + "</DataSourceInfo><Definition>"
 							+ newCatalogDefFileName + "</Definition></Catalog>";
 					
 					Element e1 = createDOM(xmlForCatalog);
