@@ -1644,7 +1644,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <fileset dir="${build.dir}/mondrian" excludes="WEB-INF/**/*,*.jsp"/>
       <fileset dir="${webapp.dir}" includes="*.*"/>
       <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,olap4j-xmla.jar,eigenbase-*.jar,xalan.jar,xmlunit.jar,
-      	*.dtd,jersey-bundle.jar,mysql-connector-java.jar,log4j.jar,commons-io.jar,xml-apis.jar"/>
+      	*.dtd,jersey-bundle.jar,mysql-connector-java.jar,log4j.jar,commons-io.jar,xml-apis.jar,postgresql.jar"/>
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
       <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
       <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>

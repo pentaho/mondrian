@@ -1,25 +1,21 @@
 package cubecrud;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.QueryParam;
-
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
-import javax.ws.rs.core.Context;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -35,6 +31,12 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
+import mondrian.olap.CacheControl;
+import mondrian.olap.CacheControl.CellRegion;
+import mondrian.olap.Cube;
+import mondrian.rolap.RolapSchema;
+
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -45,9 +47,20 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import org.apache.log4j.Logger;
 
+/**
+ *
+ * This class provides a REST API for cube management in the Mondrian  
+ * and also has functionality to invalidate the cache in Mondrian after
+ * data change in database.
+ * 
+ */
 
+/** 
+ *
+ * @author SHazra
+ * 
+ */
 
 
 @Path("/")
@@ -129,6 +142,76 @@ public class RequestProcessEngine {
 		String result = "<output>"+ addCube(inputXml, catalogName, cubeName) +"</output>";
 		return result;
 	}
+	
+	@Path("/invalidatecache/catalog/{c}")
+	@PUT
+	@Produces("application/xml")
+	@Consumes("text/plain")
+	public String invalidateCacheCatalog(@PathParam("c") String catalogName) throws SQLException {
+    	boolean isCatalogFound = false;
+		try {
+		System.out.println("Inside invalidate cache with catalog name=" + catalogName);
+		for (RolapSchema schema : RolapSchema.getRolapSchemas()) {
+            if (schema.getName().equals(catalogName)) {
+            	isCatalogFound = true;
+            	LOGGER.debug("schema is same as catalog and is flushing the schema");
+                schema.getInternalConnection().getCacheControl(null)
+                    .flushSchemaCache();                 
+            }
+        }
+		if (!isCatalogFound)
+		{
+			return "<output>Catalog " + catalogName + " was not found </output>";
+		}
+
+     
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			LOGGER.error("Error in RequestProcessEngine | invalidateCache " + e.getMessage());
+			e.printStackTrace();			
+			return "<output>Error in clearing cache for catalog " + catalogName + " | " + e.getMessage() 
+					+ "</output>";
+		}
+		return "<output>Cache clearance for Catalog " + catalogName + " is successful</output>";
+	}
+	
+	@Path("/invalidatecache/cube/{c}")
+	@PUT
+	@Produces("application/xml")
+	@Consumes("text/plain")
+	public String invalidateCacheCube(@PathParam("c") String cubeName) throws SQLException {
+    	// Warning: Leads to inconsistency in the view if the atomicity of the flush and DB update
+		// are not taken in to account
+		boolean isCubePresent = false;
+		try {		
+		for (RolapSchema schema : RolapSchema.getRolapSchemas()) {
+        	Cube [] cubeArr = schema.getCubes();
+        	CacheControl cacheControlObj = schema.getInternalConnection().getCacheControl(null);
+          for (Cube cube : cubeArr)
+          {
+        	  if (cube.getName().equals(cubeName)) {
+        		isCubePresent = true;
+              	LOGGER.debug("cube entered is same as cube and is flushing the cube");                
+                cacheControlObj.flush(cacheControlObj.createMeasuresRegion(cube));                
+              }
+          }            
+        }
+		if (!isCubePresent)
+		{
+			return "<output>Cube " + cubeName + " was not found </output>";
+		}
+
+     
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			LOGGER.error("Error in RequestProcessEngine | invalidateCache " + e.getMessage());
+			e.printStackTrace();			
+			return "<output>Error in clearing cache for cube " + cubeName + " | " + e.getMessage() 
+					+ "</output>";
+		}
+		return "<output>Cache clearance for Cube " + cubeName + " is successful</output>";
+	}
+	
 	
 	private static String parseCubeXml(String fileName, String cubeName){
         StreamResult result = null;

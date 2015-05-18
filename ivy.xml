@@ -82,7 +82,9 @@
 
         <!-- Cube CRUD management-->
         <dependency org="com.sun.jersey" name="jersey-bundle" rev="1.19" />
-        
+        <!-- Database drivers-->
+		<dependency org="mysql" name="mysql-connector-java" rev="5.1.35" />
+		<dependency org="postgresql" name="postgresql" rev="9.1-901-1.jdbc4"/>
 
         <!-- JDK 1.4 backwards compatibility jars -->
         <dependency org="backport-util-concurrent" 
