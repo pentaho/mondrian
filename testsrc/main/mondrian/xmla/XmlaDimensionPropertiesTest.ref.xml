@@ -197,7 +197,6 @@
                                     <LName name="[Store Type].[LEVEL_UNIQUE_NAME]"/>
                                     <LNum name="[Store Type].[LEVEL_NUMBER]"/>
                                     <DisplayInfo name="[Store Type].[DISPLAY_INFO]"/>
-                                    <Store_x0020_Manager name="[Store Type].[Store Manager]" type="xsd:string"/>
                                 </HierarchyInfo>
                                 <HierarchyInfo name="Store">
                                     <UName name="[Store].[MEMBER_UNIQUE_NAME]"/>
@@ -239,7 +238,6 @@
                                         <LName>[Store Type].[Store Type]</LName>
                                         <LNum>1</LNum>
                                         <DisplayInfo>0</DisplayInfo>
-                                        <Store_x0020_Manager>Williams</Store_x0020_Manager>
                                     </Member>
                                     <Member Hierarchy="Store">
                                         <UName>[Store].[USA]</UName>
@@ -282,11 +280,11 @@
         <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
         <Command>
         <Statement>        
-SELECT [Pay Type] ON COLUMNS,
- CrossJoin([Store Type].[Deluxe Supermarket], [Store].[Store Country].[USA])  
- DIMENSION PROPERTIES [Store].[Store Name].[Store Manager], [Store Type].[Store Type].[Store Manager] ON ROWS 
-FROM HR
-         </Statement>
+            SELECT [Pay Type] ON COLUMNS,
+            CrossJoin([Store Type].[Deluxe Supermarket], [Store].[Store Country].[USA])  
+            DIMENSION PROPERTIES [Store].[Store Name].[Store Manager] ON ROWS 
+            FROM HR
+        </Statement>
         </Command>
         <Properties>
           <PropertyList>
@@ -568,12 +566,10 @@ FROM HR
         <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
         <Command>
         <Statement>        
-SELECT [Pay Type] ON COLUMNS,
- [Store].[Store Country].[USA]  
- DIMENSION PROPERTIES [Store].[Store Name].[Store Manager], 
- [Store Type].[Store Type].[Store Manager] ON ROWS 
-FROM HR
-         </Statement>
+            SELECT [Pay Type] ON COLUMNS,
+            [Store].[Store Country].[USA] DIMENSION PROPERTIES [Store].[Store Name].[Store Manager] ON ROWS 
+            FROM HR
+        </Statement>
         </Command>
         <Properties>
           <PropertyList>
