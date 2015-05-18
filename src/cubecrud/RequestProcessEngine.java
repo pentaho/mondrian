@@ -904,7 +904,10 @@ public class RequestProcessEngine {
 	    		e.printStackTrace();
 	    	}
 	    	finally{
-	    		bw.close();
+	    		if (bw != null)
+	    		{
+	    			bw.close();
+	    		}	    		
 	    	}
 	    	return createSucc;
 	    }
