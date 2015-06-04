@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.rolap.agg;
 
@@ -15,6 +15,12 @@ import mondrian.test.*;
 import mondrian.util.*;
 
 import java.util.*;
+
+import static mondrian.util.Pair.of;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonMap;
+import static java.util.Collections.singleton;
 
 /**
  * <p>Test for <code>SegmentBuilder</code>.</p>
@@ -404,6 +410,60 @@ public class SegmentBuilderTest extends BatchTestCase {
                 new HashSet<String>(Arrays.asList("col1", "col2", "col3")),
                 null, RolapAggregator.Sum, Dialect.Datatype.Numeric);
         assertTrue(rollup.right instanceof DenseDoubleSegmentBody);
+    }
+
+    public void testRollupWithDenseIntBody() {
+      //
+      //  We have the following data:
+      //
+      //           1 _ _
+      //    col2   1 2 _
+      //           1 _ 1
+      //            col1
+      //   So, after rolling it up with the SUM function, we expect to get
+      //
+      //           3 2 1
+      //            col1
+      //
+      String[][] colValues = dummyColumnValues(2, 3);
+      int[] values = {1, 1, 1, 0, 2, 0, 1};
+
+      BitSet nulls = new BitSet();
+      for (int i = 0; i < values.length; i++) {
+        if (values[i] == 0) {
+          nulls.set(i);
+        }
+      }
+
+      List<Pair<SortedSet<Comparable>, Boolean>> axes =
+          new ArrayList<Pair<SortedSet<Comparable>, Boolean>>();
+      List<SegmentColumn> segmentColumns = new ArrayList<SegmentColumn>();
+      for (int i = 0; i < colValues.length; i++) {
+        axes.add(of(toSortedSet(colValues[i]), false));
+        segmentColumns.add(new SegmentColumn(
+            "col" + (i + 1),
+            colValues[i].length,
+            toSortedSet(colValues[i])));
+      }
+      SegmentHeader header = makeDummySegmentHeader(segmentColumns);
+      SegmentBody body = new DenseIntSegmentBody(nulls, values, axes);
+      Map<SegmentHeader, SegmentBody> segmentsMap = singletonMap(header, body);
+
+      Pair<SegmentHeader, SegmentBody> rollup =
+          SegmentBuilder.rollup(
+              segmentsMap, singleton("col1"),
+              null, RolapAggregator.Sum, Dialect.Datatype.Numeric);
+
+      double[] result = (double[])rollup.right.getValueArray();
+      double[] expected = {3, 2, 1};
+      assertEquals(expected.length, result.length);
+      for (int i = 0; i < expected.length; i++) {
+        double exp = expected[i];
+        double act = result[i];
+        assertTrue(
+            String.format("%d %f %f", i, exp, act),
+            Math.abs(exp - act) < 1e-6);
+      }
     }
 
     public void testOverlappingSegments() {
@@ -951,19 +1011,25 @@ public class SegmentBuilderTest extends BatchTestCase {
             cells[i] = MOCK_CELL_VALUE; // assign a non-null val
         }
         return Pair.<SegmentHeader, SegmentBody>of(
-            new SegmentHeader(
-                "dummySchemaName",
-                new ByteString(new byte[]{}),
-                "dummyCubeName",
-                "dummyMeasureName",
-                constrainedColumns,
-                Collections.<String>emptyList(),
-                "dummyFactTable",
-                BitKey.Factory.makeBitKey(3),
-                Collections.<SegmentColumn>emptyList()),
+            makeDummySegmentHeader(constrainedColumns),
             new DenseObjectSegmentBody(
                 cells,
                 axes));
+    }
+
+    private SegmentHeader makeDummySegmentHeader(
+        List<SegmentColumn> constrainedColumns)
+    {
+        return new SegmentHeader(
+            "dummySchemaName",
+            new ByteString(new byte[0]),
+            "dummyCubeName",
+            "dummyMeasureName",
+            constrainedColumns,
+            Collections.<String>emptyList(),
+            "dummyFactTable",
+            BitKey.Factory.makeBitKey(3),
+            Collections.<SegmentColumn>emptyList());
     }
 
     private String [][] dummyColumnValues(int cols, int numVals) {
@@ -976,7 +1042,10 @@ public class SegmentBuilderTest extends BatchTestCase {
         return dummyColVals;
     }
 
-
+  private static SortedSet<Comparable> toSortedSet(Comparable... comparables) {
+    List<Comparable> list = asList(comparables);
+    return new TreeSet<Comparable>(list);
+  }
 
 }
 
