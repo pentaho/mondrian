@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.rolap.agg;
 
@@ -56,7 +56,7 @@ abstract class AbstractSegmentBody implements SegmentBody {
                     }
 
                     public int size() {
-                        return getSize();
+                        return getEffectiveSize();
                     }
                 };
             }
@@ -74,7 +74,23 @@ abstract class AbstractSegmentBody implements SegmentBody {
             + "of native values");
     }
 
+    /**
+     * Returns the overall amount of stored elements, including those,
+     * that are considered to be <tt>null</tt>.
+     * @return      the size of stored data
+     */
     protected abstract int getSize();
+
+    /**
+     * Returns the amount of non-null elements. This amount is equal to
+     * number of elements that
+     * <code>getValueMap().entrySet().iterator()</code> is returned.
+     * By default the method executes <code>getSize()</code>.
+     * @return      the effective size of stored data
+     */
+    protected int getEffectiveSize() {
+      return getSize();
+    }
 
     protected abstract Object getObject(int i);
 
