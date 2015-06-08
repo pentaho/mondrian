@@ -60,7 +60,7 @@ class DenseDoubleSegmentBody extends AbstractSegmentBody {
 
     @Override
     protected int getSize() {
-        return values.length; // - nullValues.cardinality();
+        return values.length;
     }
 
     @Override
