@@ -68,6 +68,10 @@
     <text>member ''{0}''</text>
 </message>
 
+<message id="340000" name="HighCardinalityInDimension">
+    <text>The highCardinality attribute specified on dimension ''{0}'' is deprecated and will be removed in future versions of Mondrian.The feature will produce wrong results in some scenarios and should be used with caution.</text>
+</message>
+
 <exception id="350000" name="WhileParsingMdx">
     <text>Error while parsing MDX statement ''{0}''</text>
 </exception>
