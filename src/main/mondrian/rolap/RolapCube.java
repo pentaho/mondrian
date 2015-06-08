@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.Calc;
@@ -183,6 +182,12 @@ public class RolapCube extends CubeBase {
 
         for (int i = 0; i < dimensions.length; i++) {
             MondrianDef.CubeDimension xmlCubeDimension = dimensions[i];
+            if (xmlCubeDimension.highCardinality) {
+                LOGGER.warn(
+                    MondrianResource.instance()
+                        .HighCardinalityInDimension.str(
+                            xmlCubeDimension.getName()));
+            }
             // Look up usages of shared dimensions in the schema before
             // consulting the XML schema (which may be null).
             RolapCubeDimension dimension =
@@ -1832,7 +1837,7 @@ public class RolapCube extends CubeBase {
                 // same set of levels.
                 RolapStar.Column parentColumn = null;
 
-                //RME
+                // RME
                 // If the level name is not null, then we need only register
                 // those columns for that level and above.
                 if (levelName != null) {
@@ -1926,7 +1931,7 @@ public class RolapCube extends CubeBase {
      * Formats a {@link mondrian.olap.MondrianDef.RelationOrJoin}, indenting
      * joins for readability.
      *
-     * @param relation
+     * @param relation A table or a join
      */
     private static String format(MondrianDef.RelationOrJoin relation) {
         StringBuilder buf = new StringBuilder();
@@ -2012,8 +2017,8 @@ public class RolapCube extends CubeBase {
          * Finds a RelNode by table name or, if that fails, by table alias
          * from a map of RelNodes.
          *
-         * @param table
-         * @param map
+         * @param table Is supposed a {@link MondrianDef.Table}
+         * @param map Names of tables and {@link RelNode} pairs
          */
         private static RelNode lookup(
             MondrianDef.Relation table,
@@ -2146,8 +2151,8 @@ public class RolapCube extends CubeBase {
      * in the relation there is not a level. In these cases, this method simply
      * return the original relation.
      *
-     * @param relation
-     * @param levels
+     * @param relation A table or a join
+     * @param levels Levels in hierarchy
      */
     private static MondrianDef.RelationOrJoin reorder(
         MondrianDef.RelationOrJoin relation,
@@ -2196,8 +2201,8 @@ public class RolapCube extends CubeBase {
      * certain cases where we do not want to (read: can not) do reordering, for
      * instance, when closures are involved.
      *
-     * @param relation
-     * @param map
+     * @param relation A table or a join
+     * @param map Names of tables and {@link RelNode} pairs
      */
     private static boolean validateNodes(
         MondrianDef.RelationOrJoin relation,
@@ -2226,8 +2231,8 @@ public class RolapCube extends CubeBase {
      * lower levels (greater level depth, i.e., Day is lower than Month) to the
      * left of tables with high levels.
      *
-     * @param relation
-     * @param map
+     * @param relation is a table or a join
+     * @param map Names of tables and {@link RelNode} pairs
      */
     private static int leftToRight(
         MondrianDef.RelationOrJoin relation,
@@ -2278,7 +2283,7 @@ public class RolapCube extends CubeBase {
      * Transforms so that all joins have a table as their left child and either
      * a table of child join on the right.
      *
-     * @param relation
+     * @param relation A table or a join
      */
     private static void topToBottom(MondrianDef.RelationOrJoin relation) {
         if (relation instanceof MondrianDef.Table) {
@@ -2312,7 +2317,7 @@ public class RolapCube extends CubeBase {
     /**
      * Copies a {@link mondrian.olap.MondrianDef.RelationOrJoin}.
      *
-     * @param relation
+     * @param relation A table or a join
      */
     private static MondrianDef.RelationOrJoin copy(
         MondrianDef.RelationOrJoin relation)
@@ -2345,8 +2350,8 @@ public class RolapCube extends CubeBase {
      * the tables with the given tableName (or table alias). The matching table
      * only appears once in the relation.
      *
-     * @param relation
-     * @param tableName
+     * @param relation A table or a join
+     * @param tableName Table name in relation
      */
     private static MondrianDef.RelationOrJoin snip(
         MondrianDef.RelationOrJoin relation,

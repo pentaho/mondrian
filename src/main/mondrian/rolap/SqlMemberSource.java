@@ -22,6 +22,8 @@ import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.spi.Dialect;
 import mondrian.util.*;
 
+import org.apache.log4j.Logger;
+
 import org.eigenbase.util.property.StringProperty;
 
 import java.sql.*;
@@ -40,6 +42,8 @@ import javax.sql.DataSource;
 class SqlMemberSource
     implements MemberReader, SqlTupleReader.MemberBuilder
 {
+    private static final Logger LOGGER =
+        Logger.getLogger(SqlMemberSource.class);
     private final SqlConstraintFactory sqlConstraintFactory =
         SqlConstraintFactory.instance();
     private final RolapHierarchy hierarchy;
@@ -520,10 +524,17 @@ RME is this right
         if (level.isAll()) {
             return Collections.singletonList(hierarchy.getAllMember());
         }
-        final TupleReader tupleReader =
-            level.getDimension().isHighCardinality()
+        Dimension dimension = level.getDimension();
+        boolean isHighCardinality = dimension.isHighCardinality();
+        final TupleReader tupleReader = isHighCardinality
                 ? new HighCardSqlTupleReader(constraint)
                 : new SqlTupleReader(constraint);
+        if (isHighCardinality) {
+            LOGGER.warn(
+                MondrianResource.instance()
+                    .HighCardinalityInDimension.str(
+                        dimension.getUniqueName()));
+        }
         tupleReader.addLevelMembers(level, this, null);
         final TupleList tupleList =
             tupleReader.readMembers(dataSource, null, null);
