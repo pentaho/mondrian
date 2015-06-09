@@ -5,14 +5,14 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho
+// Copyright (C) 2005-2015 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.xmla;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.olap4j.IMondrianOlap4jProperty;
 import mondrian.util.CompositeList;
 import mondrian.xmla.impl.DefaultSaxWriter;
 
@@ -2043,17 +2043,42 @@ public class XmlaHandler {
             writer.startSequence(null, "HierarchyInfo");
             for (Hierarchy hierarchy : hierarchies) {
                 writer.startElement(
-                    "HierarchyInfo",
-                    "name", hierarchy.getName());
+                    "HierarchyInfo", "name", hierarchy.getName());
                 for (final Property prop : props) {
-                    final String encodedProp =
-                        encoder.encode(prop.getName());
-                    final Object[] attributes = getAttributes(prop, hierarchy);
-                    writer.element(encodedProp, attributes);
+                    if (prop instanceof IMondrianOlap4jProperty) {
+                        writeProperty(writer, hierarchy, prop);
+                    } else {
+                        writeElement(writer, hierarchy, prop);
+                    }
                 }
-                writer.endElement(); // HierarchyInfo
+                writer.endElement();
             }
             writer.endSequence(); // "HierarchyInfo"
+        }
+
+        private void writeProperty(
+            SaxWriter writer, Hierarchy hierarchy,
+            final Property prop)
+        {
+            IMondrianOlap4jProperty currentProperty =
+                (IMondrianOlap4jProperty) prop;
+            String thisHierarchyName = hierarchy.getName();
+            String thatHierarchiName = currentProperty.getLevel()
+                .getHierarchy().getName();
+            if (thisHierarchyName.equals(thatHierarchiName)) {
+                writeElement(writer, hierarchy, prop);
+            }
+        }
+
+        private void writeElement(
+            SaxWriter writer, Hierarchy hierarchy,
+            final Property prop)
+        {
+            final String encodedProp = encoder
+                .encode(prop.getName());
+            final Object[] attributes = getAttributes(
+                prop, hierarchy);
+            writer.element(encodedProp, attributes);
         }
 
         private Object[] getAttributes(Property prop, Hierarchy hierarchy) {
@@ -2228,43 +2253,49 @@ public class XmlaHandler {
         }
 
         private void writeMember(
-            SaxWriter writer,
-            Member member,
-            Position prevPosition,
-            Position nextPosition,
-            int k,
-            List<Property> props)
+            SaxWriter writer, Member member, Position prevPosition,
+            Position nextPosition, int k, List<Property> props)
             throws OlapException
         {
             writer.startElement(
-                "Member",
-                "Hierarchy", member.getHierarchy().getName());
-            for (Property prop : props) {
-                Object value;
-                Property longProp = longProps.get(prop.getName());
-                if (longProp == null) {
-                    longProp = prop;
-                }
+                "Member", "Hierarchy", member.getHierarchy().getName());
+            for (final Property prop : props) {
+                Object value = null;
+                Property longProp = (longProps.get(prop.getName()) != null)
+                    ? longProps.get(prop.getName()) : prop;
                 if (longProp == StandardMemberProperty.DISPLAY_INFO) {
-                    Integer childrenCard =
-                        (Integer) member.getPropertyValue(
+                    Integer childrenCard = (Integer) member
+                        .getPropertyValue(
                             StandardMemberProperty.CHILDREN_CARDINALITY);
                     value = calculateDisplayInfo(
-                        prevPosition,
-                        nextPosition,
-                        member, k, childrenCard);
+                        prevPosition, nextPosition, member, k, childrenCard);
                 } else if (longProp == StandardMemberProperty.DEPTH) {
                     value = member.getDepth();
                 } else {
-                    value = member.getPropertyValue(longProp);
+                    value = (longProp instanceof IMondrianOlap4jProperty)
+                        ? getCurrentHierarchyProperty(member, longProp)
+                        : member.getPropertyValue(longProp);
                 }
                 if (value != null) {
-                    writer.textElement(
-                        encoder.encode(prop.getName()), value);
+                    writer.textElement(encoder.encode(prop.getName()), value);
                 }
             }
-
             writer.endElement(); // Member
+        }
+
+        private Object getCurrentHierarchyProperty(
+            Member member, Property longProp) throws OlapException
+        {
+            IMondrianOlap4jProperty currentProperty =
+                (IMondrianOlap4jProperty) longProp;
+            String thisHierarchyName = member.getHierarchy().getName();
+            String thatHierarchyName = currentProperty.getLevel()
+                .getHierarchy().getName();
+            if (thisHierarchyName.equals(thatHierarchyName)) {
+                return member.getPropertyValue(currentProperty);
+            }
+            // if property doesn't belong to current hierarchy return null
+            return null;
         }
 
         private void slicerAxis(

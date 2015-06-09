@@ -298,9 +298,14 @@ public class SqlStatement {
         }
 
         long endTime = System.currentTimeMillis();
-        long totalMs = endTime - startTimeMillis;
-        String status =
-            ", exec+fetch " + totalMs + " ms, " + rowCount + " rows";
+        long totalMs;
+        if (startTimeMillis == 0) {
+            // execution didn't start at all
+            totalMs = 0;
+        } else {
+            totalMs = endTime - startTimeMillis;
+        }
+        String status = formatTimingStatus(totalMs, rowCount);
 
         locus.execution.getQueryTiming().markFull(
             TIMING_NAME + locus.component, totalMs);
@@ -334,6 +339,10 @@ public class SqlStatement {
                 rowCount,
                 false,
                 null));
+    }
+
+    String formatTimingStatus(long totalMs, int rowCount) {
+        return ", exec+fetch " + totalMs + " ms, " + rowCount + " rows";
     }
 
     public ResultSet getResultSet() {

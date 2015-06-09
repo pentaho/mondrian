@@ -271,6 +271,7 @@ public class Main extends TestSuite {
             addTest(suite, XmlaTests.class);
             addTest(suite, DynamicDatasourceXmlaServletTest.class);
             addTest(suite, XmlaTest.class, "suite");
+            addTest(suite, XmlaDimensionPropertiesTest.class);
             if (isRunOnce()) {
                 addTest(suite, TestCalculatedMembers.class);
             }
@@ -342,6 +343,7 @@ public class Main extends TestSuite {
             addTest(suite, IdBatchResolverTest.class);
             addTest(suite, MemberCacheHelperTest.class);
             addTest(suite, EffectiveMemberCacheTest.class);
+            addTest(suite, SqlStatementTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {
@@ -360,6 +362,7 @@ public class Main extends TestSuite {
 
             addTest(suite, FastBatchingCellReaderTest.class);
             addTest(suite, SqlQueryTest.class);
+            addTest(suite, CodeSetTest.class);
 
             if (MondrianProperties.instance().EnableNativeCrossJoin.get()) {
                 addTest(suite, BatchedFillTest.class, "suite");

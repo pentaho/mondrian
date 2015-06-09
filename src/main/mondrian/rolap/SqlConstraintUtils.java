@@ -952,7 +952,7 @@ public class SqlConstraintUtils {
             members,
             new FilteredIterableList.Filter<Member>() {
                 public boolean accept(final Member m) {
-                    return !m.isCalculated() || m.isParentChildLeaf();
+                    return !m.isCalculated() || m.isParentChildPhysicalMember();
                 }
             });
     }

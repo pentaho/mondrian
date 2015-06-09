@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1999-2005 Julian Hyde
-// Copyright (C) 2005-2010 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.olap;
 
 import java.util.List;
@@ -61,7 +60,19 @@ public interface Member extends OlapElement, Comparable, Annotated {
      */
     MemberType getMemberType();
 
+    /**
+     * @return True when the member is a leaf member, meaning it has no children
+     */
     boolean isParentChildLeaf();
+
+    /**
+     * @return True when the member is part of a Parent-Child hierarchy and it
+     * is a physical member. In a Parent Child Hierarchy without a closure
+     * table, each member needs to be treated as calculated.  We need a way to
+     * distinguish between true calculated members and physical members that
+     * exist in the source data
+     */
+    boolean isParentChildPhysicalMember();
 
     enum MemberType {
         UNKNOWN,
