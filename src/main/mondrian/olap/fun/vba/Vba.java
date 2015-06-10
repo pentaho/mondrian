@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.olap.fun.vba;
 
 import mondrian.olap.InvalidArgumentException;
@@ -17,6 +16,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.concurrent.TimeUnit.*;
 import static mondrian.olap.fun.JavaFunDef.*;
 
 /**
@@ -691,8 +691,8 @@ public class Vba {
     // public void chDrive(String drive)
     // public String curDir$(Object drive)
     // public Object curDir(Object drive)
-    // public String dir(Object pathName, FileAttribute attributes /* default
-    // FileAttribute.Normal */)
+    // public String dir(Object pathName, FileAttribute attributes // default
+    // FileAttribute.Normal //)
     // public boolean EOF(int fileNumber)
     // public int fileAttr(int fileNumber, int returnType /* default 1 */)
     // public void fileCopy(String source, String destination)
@@ -1295,15 +1295,15 @@ public class Vba {
     // public String inputBox(Object prompt, Object title, Object Default,
     // Object xPos, Object yPos, Object helpFile, Object context)
     // public String macScript(String script)
-    // public MsgBoxResult msgBox(Object prompt, MsgBoxStyle buttons /* default
-    // MsgBoxStyle.OKOnly */, Object title, Object helpFile, Object context)
+    // public MsgBoxResult msgBox(Object prompt, MsgBoxStyle buttons // default
+    // MsgBoxStyle.OKOnly //, Object title, Object helpFile, Object context)
     // public Object partition(Object number, Object start, Object stop, Object
     // interval)
     // public void saveSetting(String appName, String section, String key,
     // String setting)
     // public void sendKeys(String string, Object wait)
-    // public double shell(Object pathName, AppWinStyle windowStyle /* default
-    // AppWinStyle.MinimizedFocus */)
+    // public double shell(Object pathName, AppWinStyle windowStyle // default
+    // AppWinStyle.MinimizedFocus //)
     // public Object Switch(Object varExpr)
 
     // Mathematical
@@ -1458,11 +1458,11 @@ public class Vba {
         return new String(new char[] { (char) charCode });
     }
 
-    // public Object filter(Object sourceArray, String match, boolean include /*
-    // default 1 */, int compare /* default BinaryCompare */)
+    // public Object filter(Object sourceArray, String match, boolean include //
+    // default 1 //, int compare // default BinaryCompare //)
     // public String format$(Object expression, Object format, int
-    // firstDayOfWeek /* default Sunday */, int firstWeekOfYear /* default
-    // FirstJan1 */)
+    // firstDayOfWeek // default Sunday //, int firstWeekOfYear // default
+    // FirstJan1 //)
 
     @FunctionName("FormatCurrency")
     @Signature(
@@ -2210,8 +2210,8 @@ public class Vba {
         return string(number, ' ');
     }
 
-    // public Object split(String expression, Object delimiter, int limit /*
-    // default -1 */, int compare /* default BinaryCompare */)
+    // public Object split(String expression, Object delimiter, int limit //
+    // default -1 //, int compare // default BinaryCompare //)
 
     @FunctionName("StrComp")
     @Signature("StrComp(string1, string2[, compare])")
@@ -2333,6 +2333,94 @@ public class Vba {
     // public Object input(int number, int fileNumber)
     // public void width(int fileNumber, int width)
 
+    /**
+     * This function tries to emulate the behaviour of DateDiff function
+     * from VBA. See a table of its results
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-2319">here</a>.
+     * @param cal1  calendar, representing the first instant
+     * @param cal2  calendar, representing the second instant
+     * @return      difference in days with respect to the behaviour of
+     *              DateDiff function
+     */
+    static int computeDiffInDays(Calendar cal1, Calendar cal2) {
+        boolean inverse;
+        // first, put preceding instant to the second side
+        // so, that cal1 >= cal2
+        if (cal1.getTimeInMillis() >= cal2.getTimeInMillis()) {
+            inverse = false;
+        } else {
+            inverse = true;
+            Calendar tmp = cal1;
+            cal1 = cal2;
+            cal2 = tmp;
+        }
+
+        // compute the difference in days by normalising input values
+        // and calculate the difference between their Julian day numbers
+        Calendar floored1 = Interval.y.floor(cal1);
+        Calendar ceiled2 = Interval.y.floor(cal2);
+        if (ceiled2.getTimeInMillis() != cal2.getTimeInMillis()) {
+            ceiled2.add(Calendar.DATE, 1);
+        }
+        int delta = computeJdn(floored1) - computeJdn(ceiled2);
+
+        // take care of the rest of data, as we get 5 p.m. for instance
+        int rest1 = computeDelta(cal1, floored1);
+        int rest2 = computeDelta(ceiled2, cal2);
+        if (MILLISECONDS.toDays(rest1 + rest2) >= 1) {
+            delta++;
+        }
+
+        return inverse ? -delta : delta;
+    }
+
+    /**
+     * Returns the Julian Day Number from a Gregorian day.
+     * The algorithm is taken from Wikipedia: <a
+     * href="http://en.wikipedia.org/wiki/Julian_day">Julian Day</a>
+     *
+     * @param calendar  calendar
+     * @return the Julian day number
+     */
+    private static int computeJdn(Calendar calendar) {
+        final int year = calendar.get(Calendar.YEAR);
+        final int month = calendar.get(Calendar.MONTH) + 1;
+        final int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int a = (14 - month) / 12;
+        int y = year + 4800 - a;
+        int m = month + 12 * a - 3;
+        int jdn = day + (153 * m + 2) / 5
+          + 365 * y + y / 4 - y / 100 + y / 400 - 32045;
+        return jdn;
+    }
+
+    /**
+     * Computes the difference in milliseconds between two instants, that
+     * have not more than 24 hours difference
+     * @param after         following instant
+     * @param before        preceding step
+     * @return  difference in milliseconds
+     */
+    private static int computeDelta(Calendar after, Calendar before) {
+        int hAfter = after.get(Calendar.HOUR_OF_DAY);
+        int hBefore = before.get(Calendar.HOUR_OF_DAY);
+        if (after.get(Calendar.DATE) > before.get(Calendar.DATE)) {
+            hAfter += 24;
+        }
+
+        long result = HOURS.toMillis(hAfter - hBefore);
+
+        result += MINUTES.toMillis(
+            after.get(Calendar.MINUTE) - before.get(Calendar.MINUTE));
+        result += SECONDS.toMillis(
+            after.get(Calendar.SECOND) - before.get(Calendar.SECOND));
+        result += MILLISECONDS.toMillis(
+            after.get(Calendar.MILLISECOND) - before.get(Calendar.MILLISECOND));
+
+        assert (result <= 24 * 60 * 60 * 1000);
+        return (int) result;
+    }
+
     // ~ Inner classes
 
     private enum Interval {
@@ -2340,7 +2428,7 @@ public class Vba {
         q("Quarter", -1),
         m("Month", Calendar.MONTH),
         y("Day of year", Calendar.DAY_OF_YEAR),
-        d("Day", Calendar.DAY_OF_MONTH),
+        d("Day", Calendar.DAY_OF_YEAR),
         w("Weekday", Calendar.DAY_OF_WEEK),
         ww("Week", Calendar.WEEK_OF_YEAR),
         h("Hour", Calendar.HOUR_OF_DAY),
@@ -2431,6 +2519,9 @@ public class Vba {
             switch (this) {
             case q:
                 return m.diff(calendar1, calendar2, firstDayOfWeek) / 3;
+            case y:
+            case d:
+                return computeDiffInDays(calendar1, calendar2);
             default:
                 return floor(calendar1).get(dateField)
                         - floor(calendar2).get(dateField);
