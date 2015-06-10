@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1998-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 21 January, 1999
@@ -211,6 +211,8 @@ public class Main extends TestSuite {
                 return suite;
             }
             addTest(suite, SegmentBuilderTest.class);
+            addTest(suite, DenseDoubleSegmentBodyTest.class);
+            addTest(suite, DenseIntSegmentBodyTest.class);
             addTest(suite, NativeFilterMatchingTest.class);
             addTest(suite, RolapConnectionTest.class);
             addTest(suite, FilteredIterableTest.class);
