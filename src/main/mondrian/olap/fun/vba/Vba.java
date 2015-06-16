@@ -16,7 +16,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.util.concurrent.TimeUnit.*;
 import static mondrian.olap.fun.JavaFunDef.*;
 
 /**
@@ -2367,7 +2366,7 @@ public class Vba {
         // take care of the rest of data, as we get 5 p.m. for instance
         int rest1 = computeDelta(cal1, floored1);
         int rest2 = computeDelta(ceiled2, cal2);
-        if (MILLISECONDS.toDays(rest1 + rest2) >= 1) {
+        if ((rest1 + rest2) / MILLIS_IN_A_DAY >= 1) {
             delta++;
         }
 
@@ -2408,16 +2407,16 @@ public class Vba {
             hAfter += 24;
         }
 
-        long result = HOURS.toMillis(hAfter - hBefore);
+        long result = (1000L * 60 * 60) * (hAfter - hBefore);
 
-        result += MINUTES.toMillis(
-            after.get(Calendar.MINUTE) - before.get(Calendar.MINUTE));
-        result += SECONDS.toMillis(
-            after.get(Calendar.SECOND) - before.get(Calendar.SECOND));
-        result += MILLISECONDS.toMillis(
-            after.get(Calendar.MILLISECOND) - before.get(Calendar.MILLISECOND));
+        result += (1000L * 60)
+            * (after.get(Calendar.MINUTE) - before.get(Calendar.MINUTE));
+        result += 1000L
+            * (after.get(Calendar.SECOND) - before.get(Calendar.SECOND));
+        result +=
+            after.get(Calendar.MILLISECOND) - before.get(Calendar.MILLISECOND);
 
-        assert (result <= 24 * 60 * 60 * 1000);
+        assert (result <= MILLIS_IN_A_DAY);
         return (int) result;
     }
 
