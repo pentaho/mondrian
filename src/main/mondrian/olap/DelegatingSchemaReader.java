@@ -6,10 +6,9 @@
 //
 // Copyright (C) 2003-2005 Julian Hyde
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2015 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.olap;
 
 import mondrian.calc.Calc;
@@ -262,6 +261,13 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
     {
         return schemaReader.lookupMemberChildByName(
             member, memberName, matchType);
+    }
+
+    public List<Member> lookupMemberChildrenByNames(
+        Member parent, List<Id.NameSegment> childNames, MatchType matchType)
+    {
+        return schemaReader.lookupMemberChildrenByNames(
+            parent, childNames, matchType);
     }
 
     public NativeEvaluator getNativeSetEvaluator(

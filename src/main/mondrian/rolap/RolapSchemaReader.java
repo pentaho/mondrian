@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho
+// Copyright (C) 2005-2015 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -523,6 +523,19 @@ public class RolapSchemaReader
                 + "\", exception: " + e.getMessage());
         }
         return null;
+    }
+
+    public List<Member> lookupMemberChildrenByNames(
+        Member parent, List<Id.NameSegment> childNames, MatchType matchType)
+    {
+        MemberChildrenConstraint constraint = sqlConstraintFactory
+            .getChildrenByNamesConstraint(
+                (RolapMember) parent, childNames);
+        List<RolapMember> children =
+            internalGetMemberChildren(parent, constraint);
+        List<Member> childMembers = new ArrayList<Member>();
+        childMembers.addAll(children);
+        return childMembers;
     }
 
     public Member getCalculatedMember(List<Id.Segment> nameParts) {

@@ -1504,6 +1504,19 @@ public class SqlConstraintUtils {
         }
     }
 
+    public static String constrainLevel(
+        RolapLevel level,
+        SqlQuery query,
+        RolapCube baseCube,
+        AggStar aggStar,
+        String columnValue,
+        boolean caseSensitive)
+    {
+        return constrainLevel(
+            level, query, baseCube, aggStar,
+            new String[] {columnValue}, caseSensitive);
+    }
+
     /**
      * Generates a sql expression constraining a level by some value
      *
@@ -1522,7 +1535,7 @@ public class SqlConstraintUtils {
         SqlQuery query,
         RolapCube baseCube,
         AggStar aggStar,
-        String columnValue,
+        String[] columnValue,
         boolean caseSensitive)
     {
         // this method can be called within the context of shared members,
@@ -1570,30 +1583,84 @@ public class SqlConstraintUtils {
 
         String constraint;
 
-        if (RolapUtil.mdxNullLiteral().equalsIgnoreCase(columnValue)) {
-            constraint = columnString + " is " + RolapUtil.sqlNullLiteral;
-        } else {
-            if (datatype.isNumeric()) {
-                // make sure it can be parsed
-                Double.valueOf(columnValue);
-            }
-            final StringBuilder buf = new StringBuilder();
-            query.getDialect().quote(buf, columnValue, datatype);
-            String value = buf.toString();
-            if (caseSensitive && datatype == Dialect.Datatype.String) {
-                // Some databases (like DB2) compare case-sensitive. We convert
-                // the value to upper-case in the DBMS (e.g. UPPER('Foo'))
-                // rather than in Java (e.g. 'FOO') in case the DBMS is running
-                // a different locale.
-                if (!MondrianProperties.instance().CaseSensitive.get()) {
-                    columnString = query.getDialect().toUpper(columnString);
-                    value = query.getDialect().toUpper(value);
-                }
-            }
+        constraint = getColumnValueConstraint(
+            query, columnValue,
+            caseSensitive, columnString, datatype);
 
-            constraint = columnString + " = " + value;
+        return constraint;
+    }
+
+    private static String getColumnValueConstraint(
+        SqlQuery query, String[] columnValues, boolean caseSensitive,
+        String columnString, Dialect.Datatype datatype)
+    {
+        String constraint;
+        List<String> values = new ArrayList<String>();
+        boolean containsNull = false;
+
+        for (String columnValue : columnValues) {
+            if (RolapUtil.mdxNullLiteral().equalsIgnoreCase(columnValue)) {
+                containsNull = true;
+                //constraint = columnString + " is " + RolapUtil.sqlNullLiteral;
+            } else {
+                if (datatype.isNumeric()) {
+                    // make sure it can be parsed
+                    Double.valueOf(columnValue);
+                }
+                final StringBuilder buf = new StringBuilder();
+                query.getDialect().quote(buf, columnValue, datatype);
+                String value = buf.toString();
+                if (caseSensitive && datatype == Dialect.Datatype.String) {
+                    // Some databases (like DB2) compare case-sensitive.
+                    // We convert
+                    // the value to upper-case in the DBMS (e.g. UPPER('Foo'))
+                    // rather than in Java (e.g. 'FOO') in case the DBMS is
+                    // running  a different locale.
+                    if (!MondrianProperties.instance().CaseSensitive.get()) {
+                        value = query.getDialect().toUpper(value);
+                    }
+                }
+                values.add(value);
+            }
         }
 
+        if (caseSensitive && datatype == Dialect.Datatype.String
+            && !MondrianProperties.instance().CaseSensitive.get())
+        {
+            columnString = query.getDialect().toUpper(columnString);
+        }
+
+        if (values.size() == 1) {
+            if (containsNull) {
+                constraint = columnString + " IS " + RolapUtil.sqlNullLiteral;
+            } else {
+                constraint = columnString + " = " + values.get(0);
+            }
+        } else {
+            StringBuilder builder = new StringBuilder();
+            builder.append("( ");
+            if (values.size() > 0) {
+                builder.append(columnString)
+                    .append(" IN (");
+                for (int i = 0; i < values.size(); i++) {
+                    String value = values.get(i);
+                    builder.append(value);
+                    if (i < values.size() - 1) {
+                        builder.append(",");
+                    }
+                }
+                builder.append(")");
+            }
+            if (containsNull) {
+                if (values.size() > 0) {
+                    builder.append(" OR ");
+                }
+                builder.append(columnString)
+                    .append(" IS NULL ");
+            }
+            builder.append(")");
+            constraint = builder.toString();
+        }
         return constraint;
     }
 
