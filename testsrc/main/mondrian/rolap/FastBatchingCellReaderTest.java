@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.rolap;
 
@@ -2451,6 +2451,23 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             RolapAggregator.Max.aggregate(
                 Arrays.asList(intSet4),
                 Dialect.Datatype.Integer));
+    }
+
+    /**
+     * Tests if UdfResolver processes CellRequestQuantumExceededException.
+     * It should be catch in {@mondrian.rolap.RolapResult}.
+     * No exceptions should be throw outside
+     *
+     * @see <a href="http://jira.pentaho.com/browse/MONDRIAN-2251">Jira
+     *      issue</a>
+     */
+    public void testCellBatchSizeWithUdf() {
+        propSaver.properties.CellBatchSize.set(1);
+        assertQueryReturns(
+            "select lastnonempty([education level].members, measures.[unit sales]) on 0 from sales",
+            "Axis #0:\n" + "{}\n" + "Axis #1:\n"
+            + "{[Education Level].[Partial High School]}\n"
+            + "Row #0: 79,155\n");
     }
 }
 
