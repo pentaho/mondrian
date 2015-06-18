@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2015 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
@@ -16,6 +15,7 @@ import mondrian.calc.impl.*;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
+import mondrian.rolap.agg.CellRequestQuantumExceededException;
 import mondrian.spi.UserDefinedFunction;
 
 import java.util.*;
@@ -196,6 +196,9 @@ public class UdfResolver implements Resolver {
         public Object evaluate(Evaluator evaluator) {
             try {
                 return udf.execute(evaluator, args);
+            } catch (CellRequestQuantumExceededException e) {
+                // Is assumed will be processed in mondrian.rolap.RolapResult
+                throw e;
             } catch (Exception e) {
                 return FunUtil.newEvalException(
                     "Exception while executing function " + udf.getName(),
