@@ -2344,8 +2344,8 @@ public class Vba {
     static int computeDiffInDays(Calendar cal1, Calendar cal2) {
         boolean inverse;
         // first, put preceding instant to the second side
-        // so, that cal1 >= cal2
-        if (cal1.getTimeInMillis() >= cal2.getTimeInMillis()) {
+        // so, that cal2 >= cal1
+        if (cal2.getTimeInMillis() >= cal1.getTimeInMillis()) {
             inverse = false;
         } else {
             inverse = true;
@@ -2356,16 +2356,16 @@ public class Vba {
 
         // compute the difference in days by normalising input values
         // and calculate the difference between their Julian day numbers
-        Calendar floored1 = Interval.y.floor(cal1);
-        Calendar ceiled2 = Interval.y.floor(cal2);
-        if (ceiled2.getTimeInMillis() != cal2.getTimeInMillis()) {
-            ceiled2.add(Calendar.DATE, 1);
+        Calendar floored2 = Interval.y.floor(cal2);
+        Calendar ceiled1 = Interval.y.floor(cal1);
+        if (ceiled1.getTimeInMillis() != cal1.getTimeInMillis()) {
+            ceiled1.add(Calendar.DATE, 1);
         }
-        int delta = computeJdn(floored1) - computeJdn(ceiled2);
+        int delta = computeJdn(floored2) - computeJdn(ceiled1);
 
         // take care of the rest of data, as we get 5 p.m. for instance
-        int rest1 = computeDelta(cal1, floored1);
-        int rest2 = computeDelta(ceiled2, cal2);
+        int rest1 = computeDelta(cal2, floored2);
+        int rest2 = computeDelta(ceiled1, cal1);
         if ((rest1 + rest2) / MILLIS_IN_A_DAY >= 1) {
             delta++;
         }
