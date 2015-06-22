@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -1308,6 +1307,23 @@ public class CacheControlTest extends FoodMartTestCase {
     // todo: test which tries to constraint on calc member. Should get error.
 
     // todo: test which tries to constrain on member of parent-child hierarchy
+
+    public void testMondrian2366() {
+        String mdx =
+            "select filter( gender.gender.members, measures.[Unit Sales] > 0) on 0 from sales ";
+        mondrian.olap.Result rest = executeQuery(mdx);
+        RolapCube cube = (RolapCube) rest.getQuery().getCube();
+        RolapConnection con = (RolapConnection) rest.getQuery().getConnection();
+        CacheControl cacheControl = con.getCacheControl(null);
+
+        for (RolapHierarchy hier : cube.getHierarchies()) {
+            if (hier.hasAll()) {
+                cacheControl.flush(
+                    cacheControl.createMemberSet(hier.getAllMember(), true));
+            }
+        }
+        executeQuery(mdx);
+    }
 }
 
 // End CacheControlTest.java
