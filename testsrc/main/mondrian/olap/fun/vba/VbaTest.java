@@ -352,8 +352,8 @@ public class VbaTest extends TestCase {
         Date date = toDate("2001/01/01 05:00:00");
         Date after24hours = toDate("2001/01/02 05:00:00");
         for (String i : new String[] {"y", "d"}) {
-            assertEquals(i, -1, Vba.dateDiff(i, date, after24hours));
-            assertEquals(i, 1, Vba.dateDiff(i, after24hours, date));
+            assertEquals(i, 1, Vba.dateDiff(i, date, after24hours));
+            assertEquals(i, -1, Vba.dateDiff(i, after24hours, date));
         }
     }
 
@@ -361,8 +361,8 @@ public class VbaTest extends TestCase {
         Date dstIn2015 = toDate("2015/03/08 00:00:00");
         Date nextDay = toDate("2015/03/09 00:00:00");
         for (String i : new String[] {"y", "d"}) {
-            assertEquals(i, -1, Vba.dateDiff(i, dstIn2015, nextDay));
-            assertEquals(i, 1, Vba.dateDiff(i, nextDay, dstIn2015));
+            assertEquals(i, 1, Vba.dateDiff(i, dstIn2015, nextDay));
+            assertEquals(i, -1, Vba.dateDiff(i, nextDay, dstIn2015));
         }
     }
 
@@ -370,8 +370,8 @@ public class VbaTest extends TestCase {
         Date date = toDate("2001/01/01 00:00:00");
         Date nextDay = toDate("2001/01/02 00:00:00");
         for (String i : new String[] {"y", "d"}) {
-            assertEquals(i, -1, Vba.dateDiff(i, date, nextDay));
-            assertEquals(i, 1, Vba.dateDiff(i, nextDay, date));
+            assertEquals(i, 1, Vba.dateDiff(i, date, nextDay));
+            assertEquals(i, -1, Vba.dateDiff(i, nextDay, date));
         }
     }
 
@@ -379,8 +379,8 @@ public class VbaTest extends TestCase {
         Date date = toDate("2001/01/01 00:00:00");
         Date nextMonth = toDate("2001/02/01 00:00:00");
         for (String i : new String[] {"y", "d"}) {
-            assertEquals(i, -31, Vba.dateDiff(i, date, nextMonth));
-            assertEquals(i, 31, Vba.dateDiff(i, nextMonth, date));
+            assertEquals(i, 31, Vba.dateDiff(i, date, nextMonth));
+            assertEquals(i, -31, Vba.dateDiff(i, nextMonth, date));
         }
     }
 
@@ -388,8 +388,8 @@ public class VbaTest extends TestCase {
         Date date = toDate("2001/01/01 00:00:00");
         Date nextMonth = toDate("2002/01/01 00:00:00");
         for (String i : new String[] {"y", "d"}) {
-            assertEquals(i, -365, Vba.dateDiff(i, date, nextMonth));
-            assertEquals(i, 365, Vba.dateDiff(i, nextMonth, date));
+            assertEquals(i, 365, Vba.dateDiff(i, date, nextMonth));
+            assertEquals(i, -365, Vba.dateDiff(i, nextMonth, date));
         }
     }
 
@@ -397,8 +397,8 @@ public class VbaTest extends TestCase {
         Date date = toDate("2001/12/01 00:00:00");
         Date nextMonth = toDate("2002/01/01 00:00:00");
         for (String i : new String[] {"y", "d"}) {
-            assertEquals(i, -31, Vba.dateDiff(i, date, nextMonth));
-            assertEquals(i, 31, Vba.dateDiff(i, nextMonth, date));
+            assertEquals(i, 31, Vba.dateDiff(i, date, nextMonth));
+            assertEquals(i, -31, Vba.dateDiff(i, nextMonth, date));
         }
     }
 
