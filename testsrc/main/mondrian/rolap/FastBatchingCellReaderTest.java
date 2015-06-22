@@ -2462,7 +2462,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
      *      issue</a>
      */
     public void testCellBatchSizeWithUdf() {
-        propSaver.properties.CellBatchSize.set(1);
+        propSaver.set(MondrianProperties.instance().CellBatchSize, 1);
         assertQueryReturns(
             "select lastnonempty([education level].members, measures.[unit sales]) on 0 from sales",
             "Axis #0:\n" + "{}\n" + "Axis #1:\n"
