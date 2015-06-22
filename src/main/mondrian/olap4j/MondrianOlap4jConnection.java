@@ -169,11 +169,6 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
 
         this.mondrianServer =
             MondrianServer.forConnection(mondrianConnection);
-        final CatalogFinder catalogFinder =
-            (CatalogFinder) mondrianServer;
-
-        NamedList<MondrianOlap4jCatalog> olap4jCatalogs = new
-            NamedListImpl<MondrianOlap4jCatalog>();
         this.olap4jDatabases =
             new NamedListImpl<MondrianOlap4jDatabase>();
 
@@ -202,7 +197,6 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
         final MondrianOlap4jDatabase database =
             new MondrianOlap4jDatabase(
                 this,
-                olap4jCatalogs,
                 String.valueOf(dbpropsMap.get("DataSourceName")),
                 String.valueOf(dbpropsMap.get("DataSourceDescription")),
                 String.valueOf(dbpropsMap.get("ProviderName")),
@@ -211,32 +205,6 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
                 pTypes,
                 aModes);
         this.olap4jDatabases.add(database);
-
-        for (String catalogName
-            : catalogFinder.getCatalogNames(mondrianConnection))
-        {
-            final Map<String, RolapSchema> schemaMap;
-            try {
-              schemaMap =
-                  catalogFinder.getRolapSchemas(
-                      mondrianConnection,
-                      catalogName);
-            } catch (Exception e) {
-                LOGGER.warn(
-                    "Can't get Rolap Schemas for catalog:"
-                    + catalogName
-                    + ". Skipping...",
-                    e);
-               continue;
-            }
-            olap4jCatalogs.add(
-                new MondrianOlap4jCatalog(
-                    olap4jDatabaseMetaData,
-                    catalogName,
-                    database,
-                    schemaMap));
-        }
-
         this.olap4jSchema = toOlap4j(mondrianConnection.getSchema());
     }
 
@@ -330,6 +298,32 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
         return getOlapCatalog().getSchemas();
     }
 
+    protected NamedList<MondrianOlap4jSchema> getSchemas(MondrianOlap4jCatalog olap4jCatalog) {
+        NamedList<MondrianOlap4jSchema> olap4jSchemas = new NamedListImpl<MondrianOlap4jSchema>();
+        if (olap4jCatalog == null) {
+            return olap4jSchemas;
+        }
+        final CatalogFinder catalogFinder =
+                (CatalogFinder) mondrianServer;
+        final Map<String, RolapSchema> rolapSchemas =
+                catalogFinder.getRolapSchemas(
+                    mondrianConnection,
+                    olap4jCatalog.getName());
+        for (Map.Entry<String, RolapSchema> entry : rolapSchemas.entrySet()) {
+            String schemaName = entry.getKey();
+            final mondrian.olap.Schema schema = entry.getValue();
+            if (schemaName == null) {
+                schemaName = schema.getName();
+            }
+            MondrianOlap4jSchema olap4jSchema =
+                new MondrianOlap4jSchema(
+                        olap4jCatalog, schemaName, schema);
+            olap4jSchemas.add(olap4jSchema);
+            schemaMap.put(schema, olap4jSchema);
+        }
+        return olap4jSchemas;
+    }
+
     public void setCatalog(String catalogName) throws OlapException {
         // no op
     }
@@ -344,6 +338,27 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
 
     public NamedList<Catalog> getOlapCatalogs() throws OlapException {
         return getOlapDatabase().getCatalogs();
+    }
+
+    protected NamedList<MondrianOlap4jCatalog> getCatalogs(String databaseName) {
+        NamedList<MondrianOlap4jCatalog> olap4jCatalogs = new NamedListImpl<MondrianOlap4jCatalog>();
+        MondrianOlap4jDatabase database = olap4jDatabases.get(databaseName);
+        if (database == null) {
+            return olap4jCatalogs;
+        }
+
+        final CatalogFinder catalogFinder =
+                (CatalogFinder) mondrianServer;
+        for (String catalogName
+                : catalogFinder.getCatalogNames(mondrianConnection))
+        {
+            MondrianOlap4jCatalog olap4jCatalog = new MondrianOlap4jCatalog(
+                    olap4jDatabaseMetaData,
+                    catalogName,
+                    database);
+            olap4jCatalogs.add(olap4jCatalog);
+        }
+        return olap4jCatalogs;
     }
 
     public void setDatabase(String databaseName) throws OlapException {
@@ -539,9 +554,41 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
     {
         MondrianOlap4jSchema olap4jSchema = schemaMap.get(schema);
         if (olap4jSchema == null) {
-            throw new RuntimeException("schema not registered: " + schema);
+            loadSchemasForMyCatalog();
+            olap4jSchema = schemaMap.get(schema);
+            if (olap4jSchema == null) {
+                loadAllSchemas();
+                olap4jSchema = schemaMap.get(schema);
+                if (olap4jSchema == null) {
+                    throw new RuntimeException("schema not registered: " + schema);
+                }
+            }
         }
         return olap4jSchema;
+    }
+
+    private void loadSchemasForMyCatalog() {
+        String catalogName =
+            (String) mondrianConnection.getProperty(
+                RolapConnectionProperties.CatalogName.name());
+        if (catalogName == null) {
+            return;
+        }
+        for (MondrianOlap4jDatabase database : this.olap4jDatabases) {
+            for (MondrianOlap4jCatalog catalog : database.getOlap4jCatalogs()) {
+                if (catalog.getName().equals(catalogName)) {
+                    getSchemas(catalog);
+                }
+            }
+        }
+    }
+
+    private void loadAllSchemas() {
+        for (MondrianOlap4jDatabase database : this.olap4jDatabases) {
+            for (MondrianOlap4jCatalog catalog : database.getOlap4jCatalogs()) {
+                getSchemas(catalog);
+            }
+        }
     }
 
     Type toOlap4j(mondrian.olap.type.Type type) {

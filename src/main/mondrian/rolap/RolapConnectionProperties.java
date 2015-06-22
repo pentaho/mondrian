@@ -84,8 +84,7 @@ public enum RolapConnectionProperties {
     CatalogContent,
 
     /**
-     * The "CatalogName" property is not used. If, in future, we support
-     * multiple catalogs, this property will specify which catalog to use.
+     * This property specifies which catalog is used by the connection.
      * See also {@link #Catalog}.
      */
     CatalogName,

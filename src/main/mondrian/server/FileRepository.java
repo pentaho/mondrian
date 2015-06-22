@@ -202,6 +202,9 @@ public class FileRepository implements Repository {
       properties.setProperty(
           RolapConnectionProperties.Instance.name(),
           entry.getMoniker());
+      if (catalogInfo.name != null) {
+          properties.setProperty(RolapConnectionProperties.CatalogName.name(), catalogInfo.name);
+      }
       if (roleName != null) {
           properties.setProperty(
               RolapConnectionProperties.Role.name(),
@@ -367,6 +370,7 @@ public class FileRepository implements Repository {
     }
 
     static class CatalogInfo {
+        private final String name;
         private final String connectString;
         private final String olap4jConnectString;
         private final CatalogLocator locator;
@@ -376,6 +380,7 @@ public class FileRepository implements Repository {
             String connectString,
             CatalogLocator locator)
         {
+	    this.name = name;
             this.connectString = connectString;
             this.locator = locator;
             this.olap4jConnectString =

@@ -30,7 +30,7 @@ class MondrianOlap4jDatabase
     extends MondrianOlap4jMetadataElement
     implements Database, Named
 {
-    private final NamedList<MondrianOlap4jCatalog> catalogs;
+    private NamedList<MondrianOlap4jCatalog> catalogs;
     private final MondrianOlap4jConnection olap4jConnection;
     private final String name;
     private final String description;
@@ -44,7 +44,6 @@ class MondrianOlap4jDatabase
      * Creates a MondrianOlap4jDatabase.
      *
      * @param olap4jConnection Connection
-     * @param catalogs List of catalogs
      * @param name Name of database
      * @param description Description of database
      * @param providerName Provider name
@@ -55,7 +54,6 @@ class MondrianOlap4jDatabase
      */
     MondrianOlap4jDatabase(
         MondrianOlap4jConnection olap4jConnection,
-        NamedList<MondrianOlap4jCatalog> catalogs,
         String name,
         String description,
         String providerName,
@@ -74,7 +72,6 @@ class MondrianOlap4jDatabase
             Collections.unmodifiableList(providerType);
         this.authenticationMode =
             Collections.unmodifiableList(authenticationMode);
-        this.catalogs = Olap4jUtil.unmodifiableNamedList(catalogs);
     }
 
     public List<AuthenticationMode> getAuthenticationModes()
@@ -84,7 +81,14 @@ class MondrianOlap4jDatabase
     }
 
     public NamedList<Catalog> getCatalogs() throws OlapException {
-        return Olap4jUtil.cast(catalogs);
+        return Olap4jUtil.cast(getOlap4jCatalogs());
+    }
+
+    protected NamedList<MondrianOlap4jCatalog> getOlap4jCatalogs() {
+        if (this.catalogs == null) {
+            this.catalogs = this.olap4jConnection.getCatalogs(this.name);
+        }
+        return this.catalogs;
     }
 
     public String getDescription() throws OlapException {
