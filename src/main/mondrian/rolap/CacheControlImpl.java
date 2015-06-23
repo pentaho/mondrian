@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -623,6 +622,8 @@ public class CacheControlImpl implements CacheControl {
     public void flush(MemberSet memberSet) {
         // REVIEW How is flush(s) different to executing createDeleteCommand(s)?
         synchronized (MEMBER_CACHE_LOCK) {
+            // firstly clear all cache associated with native sets
+            connection.getSchema().getNativeRegistry().flushAllNativeSetCache();
             final List<CellRegion> cellRegionList = new ArrayList<CellRegion>();
             ((MemberSetPlus) memberSet).accept(
                 new MemberSetVisitorImpl() {
