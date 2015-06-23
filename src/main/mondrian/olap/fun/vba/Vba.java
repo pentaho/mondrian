@@ -425,6 +425,10 @@ public class Vba {
         int firstDayOfWeek, FirstWeekOfYear firstWeekOfYear)
     {
         Interval interval = Interval.valueOf(intervalName);
+        if (interval == Interval.d) {
+            // MONDRIAN-2319
+            interval = Interval.y;
+        }
         Calendar calendar1 = Calendar.getInstance();
         firstWeekOfYear.apply(calendar1);
         calendar1.setTime(date1);
@@ -2427,7 +2431,7 @@ public class Vba {
         q("Quarter", -1),
         m("Month", Calendar.MONTH),
         y("Day of year", Calendar.DAY_OF_YEAR),
-        d("Day", Calendar.DAY_OF_YEAR),
+        d("Day", Calendar.DAY_OF_MONTH),
         w("Weekday", Calendar.DAY_OF_WEEK),
         ww("Week", Calendar.WEEK_OF_YEAR),
         h("Hour", Calendar.HOUR_OF_DAY),
@@ -2519,7 +2523,6 @@ public class Vba {
             case q:
                 return m.diff(calendar1, calendar2, firstDayOfWeek) / 3;
             case y:
-            case d:
                 return computeDiffInDays(calendar1, calendar2);
             default:
                 return floor(calendar1).get(dateField)
