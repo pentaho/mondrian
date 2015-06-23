@@ -5,15 +5,15 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Pentaho and others
+// Copyright (C) 2006-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -27,10 +27,7 @@ public class RolapNativeRegistry extends RolapNative {
 
     public RolapNativeRegistry() {
         super.setEnabled(true);
-
-        /*
-         * Mondrian functions which might be evaluated natively.
-         */
+        // Mondrian functions which might be evaluated natively.
         register("NonEmptyCrossJoin".toUpperCase(), new RolapNativeCrossJoin());
         register("CrossJoin".toUpperCase(), new RolapNativeCrossJoin());
         register("TopCount".toUpperCase(), new RolapNativeTopCount());
@@ -81,6 +78,19 @@ public class RolapNativeRegistry extends RolapNative {
     void useHardCache(boolean hard) {
         for (RolapNative rn : nativeEvaluatorMap.values()) {
             rn.useHardCache(hard);
+        }
+    }
+
+    void flushAllNativeSetCache() {
+        for (String key : nativeEvaluatorMap.keySet()) {
+            RolapNative currentRolapNative = nativeEvaluatorMap.get(key);
+            if (currentRolapNative instanceof RolapNativeSet
+                && currentRolapNative != null)
+            {
+                RolapNativeSet currentRolapNativeSet =
+                    (RolapNativeSet) currentRolapNative;
+                currentRolapNativeSet.flushCache();
+            }
         }
     }
 }
