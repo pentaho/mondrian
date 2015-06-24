@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2014 Pentaho
+// Copyright (C) 2006-2015 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -202,10 +202,10 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
                 levels.toArray(new RolapLevel[levels.size()]),
                 restrictMemberTypes()))
         {
-            // Missing join conditions due to non-conforming dimensions
-            // meant native evaluation would have led to a true cross
-            // product, which we want to defer instead of pushing it down;
-            // so no need to alert
+            alertCrossJoinNonNative(
+                evaluator,
+                fun,
+                "Slicer context does not support native crossjoin.");
             return null;
         }
 
