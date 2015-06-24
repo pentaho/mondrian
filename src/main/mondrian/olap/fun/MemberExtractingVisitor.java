@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.olap.fun;
 
@@ -49,7 +49,7 @@ public class MemberExtractingVisitor extends MdxVisitorImpl {
         "Ytd", "Mtd", "Qtd", "Wtd", "BottomCount", "TopCount", "ClosingPeriod",
         "Cousin", "FirstChild", "FirstSibling", "LastChild", "LastPeriods",
         "LastSibling", "ParallelPeriod", "PeriodsToDate", "Parent",
-        "PrevMember", "NextMember", "Head", "Tail", "Ancestor", "Ancestors"
+        "PrevMember", "NextMember", "Ancestor", "Ancestors"
     };
     private static final List<String> blacklist = Collections.unmodifiableList(
         Arrays.asList(unsafeFuncNames));
