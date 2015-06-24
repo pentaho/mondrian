@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.olap.fun.vba;
 
 import mondrian.olap.InvalidArgumentException;
@@ -317,8 +316,127 @@ public class VbaTest extends TestCase {
         assertEquals("2008/04/24 19:10:36", Vba.dateAdd("s", -9, SAMPLE_DATE));
     }
 
+    public void testAddDate_Days_NextYear() throws Exception {
+        Date dec31 = toDate("2001/12/31");
+        for (String i : new String[] {"y", "d"}) {
+            assertEquals("2002/01/01 00:00:00", Vba.dateAdd(i, 1, dec31));
+        }
+    }
+
+    public void testAddDate_Days_PreviousMonth() throws Exception {
+        Date dec31 = toDate("2001/12/31");
+        for (String i : new String[] {"y", "d"}) {
+            assertEquals("2001/11/30 00:00:00", Vba.dateAdd(i, -31, dec31));
+        }
+    }
+
+    public void testAddDate_Days_NextMonth() throws Exception {
+        Date jan1 = toDate("2001/01/01");
+        for (String i : new String[] {"y", "d"}) {
+            assertEquals("2001/02/01 00:00:00", Vba.dateAdd(i, 31, jan1));
+        }
+    }
+
+    public void testAddDate_Days_PreviousYear() throws Exception {
+        Date jan1 = toDate("2001/01/01");
+        for (String i : new String[] {"y", "d"}) {
+            assertEquals("2000/12/31 00:00:00", Vba.dateAdd(i, -1, jan1));
+        }
+    }
+
+    public void testAddDate_Days_LeapYear() throws Exception {
+        Date feb28 = toDate("2012/02/28");
+        Date mar1 = toDate("2012/03/01");
+        for (String i : new String[] {"y", "d"}) {
+            assertEquals("2012/02/29 00:00:00", Vba.dateAdd(i, 1, feb28));
+            assertEquals("2012/02/29 00:00:00", Vba.dateAdd(i, -1, mar1));
+        }
+    }
+
     public void testDateDiff() {
         // TODO:
+    }
+
+    public void testDateDiff_Days_SameDay() throws Exception {
+        Date date = toDate("2000/01/01 00:00:00");
+        Date lastSecondOfDate = toDate("2000/01/01 23:59:59");
+        for (String i : new String[] {"y", "d"}) {
+            assertEquals(i, 0, Vba.dateDiff(i, date, date));
+            assertEquals(i, 0, Vba.dateDiff(i, date, lastSecondOfDate));
+            assertEquals(i, 0, Vba.dateDiff(i, lastSecondOfDate, date));
+        }
+    }
+
+    public void testDateDiff_Days_LessThanOneDaySameYear() throws Exception {
+        Date date = toDate("2001/01/01 05:00:00");
+        Date nextDay = toDate("2001/01/02 00:00:00");
+        for (String i : new String[] {"y", "d"}) {
+            assertEquals(i, 0, Vba.dateDiff(i, date, nextDay));
+            assertEquals(i, 0, Vba.dateDiff(i, nextDay, date));
+        }
+    }
+
+    public void testDateDiff_Days_LessThanOneDaySpanYear() throws Exception {
+        Date date = toDate("2001/12/31 05:00:00");
+        Date nextMonth = toDate("2002/01/01 00:00:00");
+        for (String i : new String[] {"y", "d"}) {
+            assertEquals(i, 0, Vba.dateDiff(i, date, nextMonth));
+            assertEquals(i, 0, Vba.dateDiff(i, nextMonth, date));
+        }
+    }
+
+    public void testDateDiff_Days_24hours() throws Exception {
+        Date date = toDate("2001/01/01 05:00:00");
+        Date after24hours = toDate("2001/01/02 05:00:00");
+        for (String i : new String[] {"y", "d"}) {
+            assertEquals(i, 1, Vba.dateDiff(i, date, after24hours));
+            assertEquals(i, -1, Vba.dateDiff(i, after24hours, date));
+        }
+    }
+
+    public void testDateDiff_Days_DST() throws Exception {
+        Date dstIn2015 = toDate("2015/03/08 00:00:00");
+        Date nextDay = toDate("2015/03/09 00:00:00");
+        for (String i : new String[] {"y", "d"}) {
+            assertEquals(i, 1, Vba.dateDiff(i, dstIn2015, nextDay));
+            assertEquals(i, -1, Vba.dateDiff(i, nextDay, dstIn2015));
+        }
+    }
+
+    public void testDateDiff_Days_NextDay() throws Exception {
+        Date date = toDate("2001/01/01 00:00:00");
+        Date nextDay = toDate("2001/01/02 00:00:00");
+        for (String i : new String[] {"y", "d"}) {
+            assertEquals(i, 1, Vba.dateDiff(i, date, nextDay));
+            assertEquals(i, -1, Vba.dateDiff(i, nextDay, date));
+        }
+    }
+
+    public void testDateDiff_Days_NextMonth() throws Exception {
+        Date date = toDate("2001/01/01 00:00:00");
+        Date nextMonth = toDate("2001/02/01 00:00:00");
+        for (String i : new String[] {"y", "d"}) {
+            assertEquals(i, 31, Vba.dateDiff(i, date, nextMonth));
+            assertEquals(i, -31, Vba.dateDiff(i, nextMonth, date));
+        }
+    }
+
+    public void testDateDiff_Days_NextYear() throws Exception {
+        Date date = toDate("2001/01/01 00:00:00");
+        Date nextMonth = toDate("2002/01/01 00:00:00");
+        for (String i : new String[] {"y", "d"}) {
+            assertEquals(i, 365, Vba.dateDiff(i, date, nextMonth));
+            assertEquals(i, -365, Vba.dateDiff(i, nextMonth, date));
+        }
+    }
+
+    public void testDateDiff_Days_FromDecToJan() throws Exception {
+        Date date = toDate("2001/12/01 00:00:00");
+        Date nextMonth = toDate("2002/01/01 00:00:00");
+        for (String i : new String[] {"y", "d"}) {
+            assertEquals(i, 31, Vba.dateDiff(i, date, nextMonth));
+            assertEquals(i, -31, Vba.dateDiff(i, nextMonth, date));
+        }
     }
 
     public void testDatePart2() {
@@ -386,6 +504,12 @@ public class VbaTest extends TestCase {
         }
     }
 
+    public void testDatePart_Y_vs_D() throws Exception {
+        Date dec1 = toDate("2001/12/01");
+        assertEquals(335, Vba.datePart("y", dec1));
+        assertEquals(1, Vba.datePart("d", dec1));
+    }
+
     public void testDate() {
         final Date date = Vba.date();
         assertNotNull(date);
@@ -408,6 +532,17 @@ public class VbaTest extends TestCase {
             new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.US);
         final String dateString = dateFormat.format(date);
         assertEquals(expected, dateString);
+    }
+
+    private static Date toDate(String dateString) throws Exception {
+        String pattern;
+        if (dateString.contains(":")) {
+            pattern = "yyyy/MM/dd HH:mm:ss";
+        } else {
+            pattern = "yyyy/MM/dd";
+        }
+        SimpleDateFormat dateFormat = new SimpleDateFormat(pattern, Locale.US);
+        return dateFormat.parse(dateString);
     }
 
     public void testFormatDateTime() {
