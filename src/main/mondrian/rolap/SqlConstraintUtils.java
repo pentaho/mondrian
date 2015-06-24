@@ -2122,7 +2122,6 @@ public class SqlConstraintUtils {
         Set<Member> measures, Member[] members)
     {
         Set<Member> membersNestedInMeasures = new HashSet<Member>();
-
         for (Member m : measures) {
             if (m.isCalculated()) {
                 Exp exp = m.getExpression();
@@ -2131,18 +2130,9 @@ public class SqlConstraintUtils {
                         membersNestedInMeasures, null, false));
             }
         }
-        for (Member memberCheckedForConflict : members) {
-            for (Member memberInMeasure : membersNestedInMeasures) {
-                final boolean sameHierarchy =
-                    memberInMeasure.getHierarchy()
-                        .equals(memberCheckedForConflict.getHierarchy());
-                final boolean childOrEqual =
-                    memberCheckedForConflict.isAll()
-                        || memberInMeasure
-                            .isChildOrEqualTo(memberCheckedForConflict);
-                if (sameHierarchy && !childOrEqual) {
-                    return true;
-                }
+        for (Member memberInMeasure : membersNestedInMeasures) {
+            if (!anyMemberOverlaps(members, memberInMeasure)) {
+                return true;
             }
         }
         return false;
@@ -2155,6 +2145,42 @@ public class SqlConstraintUtils {
             measuresMembers, getCJArgMembers(cjArgs));
     }
 
+    /**
+     * Compares the array of members against memberInMeasure, returning
+     * true if any of the members are of the same hierarchy and
+     * is either [All] or a equal to or a child of memberInMeasure.
+     *
+     * This is used to identify whether whether the memberInMeasure
+     * is "overlapped" by any of the members.  For native evaluation
+     * we need to make sure that a member included as a result of
+     * a calculated measure does not fall outside of the set of members
+     * that will be used to constrain the native query, in which case
+     * we may exclude members incorrectly.
+     */
+    private static boolean anyMemberOverlaps(
+        Member[] members, Member memberInMeasure)
+    {
+        boolean memberIsCovered = false;
+        boolean encounteredHierarchy = false;
+        for (Member memberCheckedForConflict : members) {
+            final boolean sameHierarchy =
+                memberInMeasure.getHierarchy()
+                    .equals(memberCheckedForConflict.getHierarchy());
+            boolean childOrEqual = false;
+            if (sameHierarchy) {
+                encounteredHierarchy = true;
+                childOrEqual = memberCheckedForConflict.isAll()
+                    || memberInMeasure
+                    .isChildOrEqualTo(memberCheckedForConflict);
+            }
+            if (sameHierarchy && childOrEqual) {
+                memberIsCovered = true;
+                break;
+            }
+        }
+        return !encounteredHierarchy || memberIsCovered;
+    }
+
     private static Member[] getCJArgMembers(CrossJoinArg[] cjArgs) {
         Set<Member> members = new HashSet<Member>();
         for (CrossJoinArg arg : cjArgs) {
@@ -2164,9 +2190,6 @@ public class SqlConstraintUtils {
         }
         return members.toArray(new Member[members.size()]);
     }
-
-
-
 }
 
 // End SqlConstraintUtils.java
