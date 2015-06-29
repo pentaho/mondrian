@@ -45,7 +45,7 @@
         <dependency org="commons-logging" name="commons-logging" rev="1.1.1"/>
         <dependency org="commons-math" name="commons-math" rev="1.1"/>
         <dependency org="commons-pool" name="commons-pool" rev="1.2"/>
-        <dependency org="commons-vfs" name="commons-vfs" rev="20100924-pentaho" transitive="false"/>
+        <dependency org="org.apache.commons" name="commons-vfs2" rev="2.0" transitive="false" />
         <dependency org="javacup" name="javacup" rev="10k"/>
         <dependency org="net.java.dev.javacc" name="javacc" rev="5.0"/>
         <dependency org="dom4j" name="dom4j" rev="1.6.1"/>

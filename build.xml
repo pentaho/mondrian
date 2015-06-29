@@ -354,7 +354,7 @@ demo/FoodMartCreateData.sql"/>
     <unjar src="${lib.dir}/commons-collections.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/commons-logging.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/commons-pool.jar" dest="${crtmp.dir}"/>
-    <unjar src="${lib.dir}/commons-vfs.jar" dest="${crtmp.dir}"/>
+    <unjar src="${lib.dir}/commons-vfs2.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/eigenbase-properties.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/eigenbase-resgen.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/eigenbase-xom.jar" dest="${crtmp.dir}"/>
