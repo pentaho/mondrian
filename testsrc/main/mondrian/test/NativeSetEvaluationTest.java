@@ -9,8 +9,12 @@
 */
 package mondrian.test;
 
+import mondrian.olap.CacheControl;
 import mondrian.olap.MondrianProperties;
 import mondrian.rolap.BatchTestCase;
+import mondrian.rolap.RolapConnection;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapHierarchy;
 import mondrian.spi.Dialect;
 import mondrian.spi.Dialect.DatabaseProduct;
 
@@ -1527,5 +1531,57 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "Row #0: 12,334\n");
     }
 
+    /**
+     * tests if cache associated with Native Sets is flushed.
+     *
+     * @see <a href="http://jira.pentaho.com/browse/MONDRIAN-2366">Jira issue</a>
+     */
+    public void testNativeSetsCacheClearing() {
+        final String mdx =
+            "select filter( gender.gender.members, measures.[Unit Sales] > 0) on 0 from sales ";
+
+        final String query = "select\n"
+            + "    `customer`.`gender` as `c0`\n"
+            + "from\n"
+            + "    `customer` as `customer`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `time_by_day` as `time_by_day`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `time_by_day`.`the_year` = 1997\n"
+            + "group by\n"
+            + "    `customer`.`gender`\n"
+            + "having\n"
+            + "    (sum(`sales_fact_1997`.`unit_sales`) > 0)\n"
+            + "order by\n"
+            + "    ISNULL(`customer`.`gender`) ASC, `customer`.`gender` ASC";
+
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+        SqlPattern mysqlPattern =
+            new SqlPattern(
+                DatabaseProduct.MYSQL,
+                query,
+                null);
+        mondrian.olap.Result rest = executeQuery(mdx);
+        RolapCube cube = (RolapCube) rest.getQuery().getCube();
+        RolapConnection con = (RolapConnection) rest.getQuery().getConnection();
+        CacheControl cacheControl = con.getCacheControl(null);
+
+        for (RolapHierarchy hier : cube.getHierarchies()) {
+            if (hier.hasAll()) {
+                cacheControl.flush(
+                    cacheControl.createMemberSet(hier.getAllMember(), true));
+            }
+        }
+        SqlPattern[] patterns = new SqlPattern[]{mysqlPattern};
+        if (propSaver.properties.EnableNativeFilter.get()) {
+            assertQuerySqlOrNot(
+                getTestContext(), mdx, patterns, false, false, false);
+        }
+    }
 }
+
 // End NativeSetEvaluationTest.java
