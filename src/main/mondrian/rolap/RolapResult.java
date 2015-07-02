@@ -1313,18 +1313,23 @@ public class RolapResult extends ResultBase {
     {
         Boolean highCardinality =
             positionsHighCardinality.get(axisOrdinal);
-        if (highCardinality == null) {
-            highCardinality = false;
-            //noinspection LoopStatementThatDoesntLoop
-            for (List<Member> tuple : tupleList) {
-                if (!tuple.isEmpty()) {
-                    highCardinality =
-                        tuple.get(0).getDimension().isHighCardinality();
-                }
-                break;
-            }
-            positionsHighCardinality.put(axisOrdinal, highCardinality);
+        if (highCardinality != null) {
+            return highCardinality;
         }
+        highCardinality = false;
+        //noinspection LoopStatementThatDoesntLoop
+        List <Member> tuple = tupleList.get(0);
+        if (!tuple.isEmpty()) {
+            Dimension dimension = tuple.get(0).getDimension();
+            highCardinality = dimension.isHighCardinality();
+            if (highCardinality) {
+                LOGGER.warn(
+                    MondrianResource.instance()
+                        .HighCardinalityInDimension.str(
+                            dimension.getUniqueName()));
+            }
+        }
+        positionsHighCardinality.put(axisOrdinal, highCardinality);
         return highCardinality;
     }
 

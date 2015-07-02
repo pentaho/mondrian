@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -15,10 +15,17 @@ import mondrian.calc.impl.*;
 import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapEvaluator;
+import mondrian.rolap.RolapSchema;
 import mondrian.util.CartesianProductList;
 
+import org.apache.log4j.Logger;
+
+import sun.security.action.GetLongAction;
+
 import java.util.*;
+
 
 /**
  * Definition of the <code>CrossJoin</code> MDX function.
@@ -27,6 +34,9 @@ import java.util.*;
  * @since Mar 23, 2006
  */
 public class CrossJoinFunDef extends FunDefBase {
+    private static final Logger LOGGER =
+        Logger.getLogger(CrossJoinFunDef.class);
+
     static final ReflectiveMultiResolver Resolver =
         new ReflectiveMultiResolver(
             "Crossjoin",
@@ -464,7 +474,12 @@ public class CrossJoinFunDef extends FunDefBase {
             final Object o = list.get(0);
             if (o instanceof Member) {
                 // Cannot optimize high cardinality dimensions
-                if (((Member)o).getDimension().isHighCardinality()) {
+                Dimension dimension = ((Member)o).getDimension();
+                if (dimension.isHighCardinality()) {
+                    LOGGER.warn(
+                        MondrianResource.instance()
+                            .HighCardinalityInDimension.str(
+                                dimension.getUniqueName()));
                     return list;
                 }
             }
