@@ -1594,7 +1594,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <fileset dir="${build.dir}/mondrian" includes="index.jsp,xmla.jsp"/>
       <fileset dir="${build.dir}/mondrian/WEB-INF" includes="web.xml,datasources.xml,mondrian.properties"/>
       <fileset dir="${build.dir}/mondrian/WEB-INF/queries" includes="xmla.jsp,*.xml"/>
-      <fileset dir="${build.dir}/mondrian/WEB-INF/lib" includes="${name}.jar,eigenbase-*.jar,*.xml,mondrian.dtd"/>
+      <fileset dir="${build.dir}/mondrian/WEB-INF/lib" includes="${name}.jar,eigenbase-*.jar,log4j-*.jar,commons-collections-*.jar,commons-dbcp-*.jar,commons-logging-*.jar,commons-math-*.jar,commons-pool-*.jar,commons-vfs-*.jar,*.xml,mondrian.dtd"/>
     </delete>
 
     <mkdir dir="${lib.dir}" />
@@ -1618,7 +1618,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <webinf dir="${build.dir}/mondrian/WEB-INF" excludes="web.xml"/>
       <fileset dir="${build.dir}/mondrian" excludes="WEB-INF/**/*,*.jsp"/>
       <fileset dir="${webapp.dir}" includes="*.*"/>
-      <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,olap4j-xmla.jar,eigenbase-*.jar,xalan.jar,xmlunit.jar,*.dtd"/>
+      <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,olap4j-xmla.jar,eigenbase-*.jar,log4j.jar,commons-*.jar,xalan.jar,xmlunit.jar,*.dtd"/>
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
       <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
       <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>
@@ -1643,7 +1643,7 @@ Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded data
       <fileset dir="${build.dir}/mondrian-embedded" includes="index.jsp,xmla.jsp"/>
       <fileset dir="${build.dir}/mondrian-embedded/WEB-INF" includes="datasources.xml,mondrian.properties"/>
       <fileset dir="${build.dir}/mondrian-embedded/WEB-INF/queries" includes="*.jsp,*.xml"/>
-      <fileset dir="${build.dir}/mondrian-embedded/WEB-INF/lib" includes="${name}.jar,eigenbase-*.jar,*.xml"/>
+      <fileset dir="${build.dir}/mondrian-embedded/WEB-INF/lib" includes="${name}.jar,eigenbase-*.jar,log4j-*.jar,commons-collections-*.jar,commons-dbcp-*.jar,commons-logging-*.jar,commons-math-*.jar,commons-pool-*.jar,commons-vfs-*.jar,*.xml"/>
     </delete>
 
     <mkdir dir="${lib.dir}" />
@@ -1676,7 +1676,7 @@ Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded data
 
       <fileset dir="${build.dir}/mondrian-embedded" excludes="busy.jsp,WEB-INF/**/*"/>
       <fileset dir="${webapp.dir}" excludes="index.jsp,testpage.jsp,WEB-INF/**/*"/>
-      <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,olap4j-xmla.jar,eigenbase-*.jar,xalan.jar,xmlunit.jar,derby.jar,*.dtd"/>
+      <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,olap4j-xmla.jar,eigenbase-*.jar,log4j.jar,commons-*.jar,xalan.jar,xmlunit.jar,derby.jar,*.dtd"/>
       <classes dir="${demo.dir}/derby" includes="foodmart/**/*.*"/>
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
       <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
