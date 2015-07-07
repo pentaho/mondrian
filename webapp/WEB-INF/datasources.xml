@@ -44,10 +44,7 @@
 
              Catalogs can override the connect string with their own
              <DataSourceInfo> element.
-          -->
-        <DataSourceInfo>JdbcDrivers=com.mysql.jdbc.Driver;Provider=Mondrian;Jdbc=jdbc:mysql://localhost:3306/foodmart?user=foodmart&#38;password=temp;Catalog=file:/media/shazra/shome2/softwares/apache-tomcat-7.0.61/webapps/mondrian/WEB-INF/queries/FoodMart.xml;</DataSourceInfo>
-
-        <!-- 
+        
              Provider name must be 'Mondrian'.
         -->
         <ProviderName>Mondrian</ProviderName>
@@ -80,15 +77,9 @@
                      you would use this element if the catalogs have
                      different JDBC data sources.
                 
-                
-                <DataSourceInfo>JdbcDrivers=com.mysql.jdbc.Driver;Provider=mondrian;Jdbc=jdbc:mysql://localhost:3306/foodmart?user=foodmart&#38;password=temp;</DataSourceInfo>
-                 -->
-
-                <!-- 
-                    URI of the schema definition file.
-                -->
-                <!--<Definition>/WEB-INF/queries/FoodMart.xml</Definition> -->
-                <Definition>/media/shazra/shome2/softwares/apache-tomcat-7.0.61/webapps/mondrian/WEB-INF/queries/FoodMart.xml</Definition>
+            -->                
+            <DataSourceInfo>JdbcDrivers=org.postgresql.Driver;Provider=Mondrian;Jdbc=jdbc:postgresql://localhost:3306/foodmart?user=postgres&#38;password=password;Catalog=file://var/lib/tomcat7/webapps/mondrian/WEB-INF/queries/FoodMart.xml;</DataSourceInfo>
+            <Definition>/var/lib/tomcat7/webapps/mondrian/WEB-INF/queries/FoodMart.xml</Definition>            
             </Catalog>
         </Catalogs>
 
