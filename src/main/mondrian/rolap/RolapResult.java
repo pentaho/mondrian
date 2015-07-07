@@ -1318,8 +1318,10 @@ public class RolapResult extends ResultBase {
         }
         highCardinality = false;
         //noinspection LoopStatementThatDoesntLoop
-        List <Member> tuple = tupleList.get(0);
-        if (!tuple.isEmpty()) {
+        List<Member> tuple = !tupleList.isEmpty()
+            ? tupleList.get(0)
+            : null;
+        if (tuple != null && !tuple.isEmpty()) {
             Dimension dimension = tuple.get(0).getDimension();
             highCardinality = dimension.isHighCardinality();
             if (highCardinality) {
