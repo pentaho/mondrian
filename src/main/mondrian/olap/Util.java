@@ -24,9 +24,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.vfs.*;
 import org.apache.commons.vfs.provider.http.HttpFileObject;
 import org.apache.log4j.Logger;
-
 import org.eigenbase.xom.XOMUtil;
-
 import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.mdx.*;
 
@@ -88,22 +86,6 @@ public class Util extends XOMUtil {
     public static final UUID JVM_INSTANCE_UUID = UUID.randomUUID();
 
     /**
-     * Whether we are running a version of Java before 1.5.
-     *
-     * <p>If (but not only if) this variable is true, {@link #Retrowoven} will
-     * also be true.
-     */
-    public static final boolean PreJdk15 =
-        System.getProperty("java.version").startsWith("1.4");
-
-    /**
-     * Whether we are running a version of Java before 1.6.
-     */
-    public static final boolean PreJdk16 =
-        PreJdk15
-        || System.getProperty("java.version").startsWith("1.5");
-
-    /**
      * Whether this is an IBM JVM.
      */
     public static final boolean IBM_JVM =
@@ -145,15 +127,7 @@ public class Util extends XOMUtil {
     public static final boolean DEBUG = false;
 
     static {
-        String className;
-        if (PreJdk15 || Retrowoven) {
-            className = "mondrian.util.UtilCompatibleJdk14";
-        } else if (PreJdk16) {
-            className = "mondrian.util.UtilCompatibleJdk15";
-        } else {
-            className = "mondrian.util.UtilCompatibleJdk16";
-        }
-        compatible = ClassResolver.INSTANCE.instantiateSafe(className);
+        compatible = new UtilCompatibleJdk16();
     }
 
     public static boolean isNull(Object o) {
@@ -231,12 +205,6 @@ public class Util extends XOMUtil {
         final String name,
         RejectedExecutionHandler rejectionPolicy)
     {
-        if (Util.PreJdk16) {
-            // On JDK1.5, if you specify corePoolSize=0, nothing gets executed.
-            // Bummer.
-            corePoolSize = Math.max(corePoolSize, 1);
-        }
-
         // We must create a factory where the threads
         // have the right name and are marked as daemon threads.
         final ThreadFactory factory =
@@ -3699,19 +3667,6 @@ public class Util extends XOMUtil {
         // Find a constructor.
         Constructor<?> constructor;
         Object[] args = {};
-
-        // 0. Check that class is public and top-level or static.
-        // Before JDK 1.5, inner classes are impossible; retroweaver cannot
-        // handle the getEnclosingClass method, so skip the check.
-        if (!Modifier.isPublic(udfClass.getModifiers())
-            || (!PreJdk15
-                && udfClass.getEnclosingClass() != null
-                && !Modifier.isStatic(udfClass.getModifiers())))
-        {
-            throw MondrianResource.instance().UdfClassMustBePublicAndStatic.ex(
-                functionName,
-                className);
-        }
 
         // 1. Look for a constructor "public Udf(String name)".
         try {

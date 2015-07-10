@@ -11,7 +11,6 @@ package mondrian.server;
 
 import mondrian.olap.MondrianException;
 import mondrian.olap.MondrianServer;
-import mondrian.olap.Util;
 import mondrian.olap4j.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapConnection;
@@ -29,7 +28,6 @@ import org.apache.log4j.Logger;
 import org.olap4j.OlapConnection;
 
 import java.lang.management.ManagementFactory;
-import java.lang.ref.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -451,11 +449,6 @@ class MondrianServerImpl
      * as an MBean accessible via JMX.
      */
     private void registerMBean() {
-        if (Util.PreJdk16) {
-            LOGGER.info(
-                "JMX is supported in Mondrian only on Java 6+.");
-            return;
-        }
         MBeanServer mbs =
             ManagementFactory.getPlatformMBeanServer();
         try {

@@ -233,10 +233,8 @@ public abstract class MondrianPropertiesBase extends TriggerableProperties {
                 count++;
             }
         }
-        if (populateCount++ == 0) {
-            LOGGER.info(
-                "Mondrian: loaded " + count + " system properties");
-        }
+        LOGGER.info(
+            "Mondrian: loaded " + count + " system properties");
     }
 
     /**

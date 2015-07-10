@@ -9,8 +9,6 @@
 
 package mondrian.util;
 
-import mondrian.olap.Util;
-
 import junit.framework.TestCase;
 
 import java.util.*;
@@ -49,10 +47,6 @@ public class ObjectPoolTest extends TestCase {
     }
 
     public void testString() throws Exception {
-        // for reasons unknown this fails with java4
-        if (Util.PreJdk15) {
-            return;
-        }
         ObjectPool<String> strings = new ObjectPool<String>();
         int nos = 100000;
         String[] ss1 = genStringsArray(nos);
@@ -271,12 +265,12 @@ public class ObjectPoolTest extends TestCase {
     }
     private static KeyValue[] genKeyValueArray(int nos) {
         List<KeyValue> l = genKeyValueList(nos);
-        return (KeyValue[]) l.toArray(new KeyValue[l.size()]);
+        return l.toArray(new KeyValue[l.size()]);
     }
     private static List<KeyValue> genKeyValueList(int nos) {
         List<KeyValue> l = new ArrayList<KeyValue>(nos);
         for (int i = 0; i < nos; i++) {
-            l.add(new KeyValue((long)i, Integer.valueOf(i)));
+            l.add(new KeyValue(i, Integer.valueOf(i)));
         }
         return l;
     }

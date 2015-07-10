@@ -634,10 +634,6 @@ public class UtilTestCase extends TestCase {
         for (Class<Driver> driverClass : list) {
             expectedClassNames.remove(driverClass.getName());
         }
-        if (Util.PreJdk15) {
-            // JDK only discovers services from jars in JDK 1.5 and later.
-            return;
-        }
         assertTrue(expectedClassNames.toString(), expectedClassNames.isEmpty());
     }
 
@@ -1357,11 +1353,6 @@ public class UtilTestCase extends TestCase {
      * Unit test for {@link Triple}.
      */
     public void testTriple() {
-        if (Util.PreJdk15) {
-            // Boolean is not Comparable until JDK 1.5. Triple works, but this
-            // test does not.
-            return;
-        }
         final Triple<Integer, String, Boolean> triple0 =
             Triple.of(5, "foo", true);
         final Triple<Integer, String, Boolean> triple1 =
@@ -1492,18 +1483,15 @@ public class UtilTestCase extends TestCase {
         assertEquals(
             Pair.of(4L, TimeUnit.MILLISECONDS),
             Util.parseInterval("4ms", null));
-        if (!Util.PreJdk16) {
-            // JDK1.5 does not have TimeUnit.MINUTES, .HOURS or .DAYS.
-            assertEquals(
-                Pair.of(5L, TimeUnit.valueOf("MINUTES")),
-                Util.parseInterval("5m", null));
-            assertEquals(
-                Pair.of(6L, TimeUnit.valueOf("HOURS")),
-                Util.parseInterval("6h", null));
-            assertEquals(
-                Pair.of(7L, TimeUnit.valueOf("DAYS")),
-                Util.parseInterval("7d", null));
-        }
+        assertEquals(
+            Pair.of(5L, TimeUnit.valueOf("MINUTES")),
+            Util.parseInterval("5m", null));
+        assertEquals(
+            Pair.of(6L, TimeUnit.valueOf("HOURS")),
+            Util.parseInterval("6h", null));
+        assertEquals(
+            Pair.of(7L, TimeUnit.valueOf("DAYS")),
+            Util.parseInterval("7d", null));
         // negative
         assertEquals(
             Pair.of(-8L, TimeUnit.SECONDS),
