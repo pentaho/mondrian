@@ -993,9 +993,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             "Failed to load formatter class 'java.lang.String' for member '[Measures].[Foo]'.");
         assertQueryThrows(
             query,
-            Util.PreJdk15
-            ? "java.lang.ClassCastException"
-            : "java.lang.ClassCastException: java.lang.String");
+            "java.lang.ClassCastException: java.lang.String");
     }
 
     public void testCalcMemberCustomFormatterInNonMeasureInQuery() {

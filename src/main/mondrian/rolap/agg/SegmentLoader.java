@@ -902,10 +902,7 @@ public class SegmentLoader {
         // Workspace to build up lists of distinct values for each axis.
         SortedSet<Comparable>[] axisValueSets = new SortedSet[arity];
         for (int i = 0; i < axisValueSets.length; i++) {
-            axisValueSets[i] =
-                Util.PreJdk15
-                    ? new TreeSet<Comparable>(BooleanComparator.INSTANCE)
-                    : new TreeSet<Comparable>();
+            axisValueSets[i] = new TreeSet<Comparable>();
         }
         return axisValueSets;
     }
@@ -1394,13 +1391,7 @@ public class SegmentLoader {
             new BooleanComparator();
 
         private BooleanComparator() {
-            if (Util.PreJdk15) {
-                // This class exists to work around the fact that Boolean is not
-                // Comparable until JDK 1.5.
-                assert !(Comparable.class.isAssignableFrom(Boolean.class));
-            } else {
-                assert Comparable.class.isAssignableFrom(Boolean.class);
-            }
+            assert Comparable.class.isAssignableFrom(Boolean.class);
         }
 
         public int compare(Object o1, Object o2) {

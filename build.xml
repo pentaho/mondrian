@@ -8,7 +8,8 @@
   == Copyright (C) 2005-2012 Pentaho and others
   == All Rights Reserved.
   -->
-<project name="mondrian" default="all" xmlns:ivy="antlib:org.apache.ivy.ant">
+<project name="mondrian" default="help" xmlns:ivy="antlib:org.apache.ivy.ant">
+
   <property environment="env"/>
 
   <property name="project.location" location="${basedir}"/>
@@ -17,7 +18,7 @@
   <property file="${project.location}/test.properties"/>
   <property file="${project.location}/mondrian.properties"/>
   <property name="project.build.debug" value="on"/>
-  <property name="testsrc.dir" value="${basedir}/testsrc" />
+  <property name="testsrc.dir" value="${basedir}/testsrc/main" />
 
   <!--
     ===================================================================
@@ -37,88 +38,56 @@
     </not>
   </condition>
 
-  <import file="subfloor.xml" />
-
+  <property name="build.dir" value="build"/>
+  <property name="bin.dir" value="build"/>
   <property name="testsrc.dir" value="testsrc"/>
   <property name="testsrc.dir.relative" value="testsrc"/>
   <property name="java.dir" value="${src.dir}/main"/>
-  <property name="javatest.dir" value="${testsrc.dir}/main"/>
-  <property name="etc.dir" value="${src.dir}/etc"/>
+  <property name="javatest.dir" value="${testsrc.dir}"/>
   <property name="lib.dir" value="lib"/>
   <property name="wb.plugins.dir" value="workbench/plugins"/>
   <property name="doc.dir" value="doc"/>
-  <property name="resource.location" location="resource"/>
   <property name="javadoc.dir" value="${doc.dir}/api"/>
-  <property name="classes.dir" value="classes"/>
-  <property name="testclasses.dir" value="testclasses"/>
-  <property name="testclasses-jdk14.dir" value="testclasses-jdk14"/>
-  <property name="build.dir" value="build"/>
+  <property name="classes.dir" value="${build.dir}/classes"/>
+  <property name="testclasses.dir" value="${build.dir}/testclasses"/>
   <property name="dist.name" value="${name}-${project.revision}"/>
-  <property name="embedded.dist.name" value="${name}-${project.revision}-embedded"/>
   <property name="dist.base" value="distribution"/>
   <property name="dist.dir" value="dist"/>
   <property name="demo.dir" value="demo"/>
-  <property name="webapp.dir" value="webapp"/>
   <property name="dist.src.file" value="${dist.dir}/${dist.name}-src.zip"/>
   <property name="dist.bin.file" value="${dist.dir}/${dist.name}.zip"/>
-  <property name="dist.bin.derby.file" value="${dist.dir}/${dist.name}-derby.zip"/>
   <property name="dist.doc.file" value="${dist.dir}/doc.tar.gz"/>
   <property name="jar.file" value="${lib.dir}/${name}.jar"/>
-  <property name="jar-jdk14.file" value="${lib.dir}/${name}-jdk14.jar" />
   <property name="workbench.jar.file" value="${lib.dir}/workbench.jar"/>
   <property name="workbench.dist.name" value="workbench-${project.revision}"/>
   <property name="workbench.zip-dist.file" value="${workbench.dist.name}.zip"/>
   <property name="workbench.main.class" value="mondrian.gui.Workbench"/>
   <property name="resource.jar.file" value="${lib.dir}/eigenbase-resgen.jar"/>
   <property name="xom.jar.file" value="${lib.dir}/eigenbase-xom.jar"/>
-  <property name="war.file" value="${lib.dir}/${name}.war"/>
-  <property name="war.embeddedDb.file" value="${lib.dir}/${name}-embedded.war"/>
   <property name="jdk.home" value="${env.JAVA_HOME}"/>
 
+  <!-- Override this to tell Subfloor how to run the junit & jacoco -->
+  <property name="junit.test.pattern" value="mondrian/test/Main.java"/>
+
+  <!-- Map some mondrian.* properties to junit.sysprop.*
+       so they get passed to the test fork (see subfloor) -->
+  <property name="junit.sysprop.mondrian.jdbcDrivers"
+      value="${mondrian.jdbcDrivers}"/>
+  <property name="junit.sysprop.mondrian.foodmart.jdbcURL"
+      value="${mondrian.foodmart.jdbcURL}"/>
+  <property name="junit.sysprop.mondrian.foodmart.jdbcUser"
+      value="${mondrian.foodmart.jdbcUser}"/>
+  <property name="junit.sysprop.mondrian.foodmart.jdbcPassword"
+      value="${mondrian.foodmart.jdbcPassword}"/>
+  <property name="junit.sysprop.mondrian.test.foodmart.catalogURL"
+      value="${mondrian.foodmart.catalogURL}"/>
+
+  <!-- tests require en_US locale -->
+  <property name="junit.sysprop.user.language" value="en"/>
+  <property name="junit.sysprop.user.region" value="US"/>
+
+
   <property name="log4j.configuration" value="log4j.properties" />
-  
-  <property name="mondrian.webapp.deploy" value="${env.JBOSS_HOME}/server/default/deploy"/>
-  <property name="mondrian.retroweave" value="false"
-      description="Tells mondrian to use retroweaver even if the JDK is later than 1.4"/>
-  <property name="unix.script" value="${basedir}/buildOnJdk.sh"/>
-  <!--
-    Set properties that are needed for the retroweaver tasks
-    to run correctly under CruiseControl.
-  -->
-  <property name="jar.file.location" location="${lib.dir}/${name}.jar"/>
-  <property name="jar-jdk14.file.location" location="${lib.dir}/${name}-jdk14.jar" />
-  <condition property="in.jar.file" value="${jar.file.location}">
-    <isset property="cruisecontrol" />
-  </condition>
-  <condition property="in.jar.file" value="${jar.file}">
-    <not>
-      <isset property="cruisecontrol" />
-    </not>
-  </condition>
-  <condition property="out.jar.file" value="${jar-jdk14.file.location}">
-    <isset property="cruisecontrol" />
-  </condition>
-  <condition property="out.jar.file" value="${jar-jdk14.file}">
-    <not>
-      <isset property="cruisecontrol" />
-    </not>
-  </condition>
-  <condition property="olap4j.in.jar.file" value="${lib.location}/olap4j.jar">
-    <isset property="cruisecontrol" />
-  </condition>
-  <condition property="olap4j.in.jar.file" value="${lib.dir}/olap4j.jar">
-    <not>
-      <isset property="cruisecontrol" />
-    </not>
-  </condition>
-  <condition property="olap4j.out.jar.file" value="${lib.location}/olap4j-jdk14.jar">
-    <isset property="cruisecontrol" />
-  </condition>
-  <condition property="olap4j.out.jar.file" value="${lib.dir}/olap4j-jdk14.jar">
-    <not>
-      <isset property="cruisecontrol" />
-    </not>
-  </condition>
 
   <property name="generated.java.files" value="
 ${java.dir}/mondrian/olap/Parser.java,
@@ -140,168 +109,20 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   <property name="generated.lib.files" value="
 ${lib.dir}/mondrian.jar,
 ${lib.dir}/workbench.jar,
-${jar-jdk14.file},
-${lib.dir}/olap4j-jdk14.jar,
-${lib.dir}/mondrian.war,
 ${lib.dir}/mondrian.xml,
-${lib.dir}/mondrian-embedded.war,
-${lib.dir}/web.xml,
-${lib.dir}/index.jsp,
 ${lib.dir}/*.dtd,
 VERSION.txt,
 ${doc.dir}/properties.html,
 mondrian.properties.template,
-demo/FoodMartCreateData.sql,
-demo/access/MondrianFoodMart.mdb"/>
-
-  <path id="project.classpath">
-    <pathelement location="${lib.dir}/servlet-api.jar"/>
-    <pathelement location="${lib.dir}/jsp-api.jar"/>
-    <pathelement location="${lib.dir}/commons-dbcp.jar"/>
-    <pathelement location="${lib.dir}/commons-collections.jar"/>
-    <pathelement location="${lib.dir}/commons-io.jar"/>
-    <pathelement location="${lib.dir}/commons-logging.jar"/>
-    <pathelement location="${lib.dir}/commons-math.jar"/>
-    <pathelement location="${lib.dir}/commons-pool.jar"/>
-    <pathelement location="${lib.dir}/commons-vfs.jar"/>
-    <pathelement location="${lib.dir}/eigenbase-properties.jar"/>
-    <pathelement location="${lib.dir}/eigenbase-resgen.jar"/>
-    <pathelement location="${lib.dir}/eigenbase-xom.jar"/>
-    <pathelement location="${lib.dir}/javacup.jar"/>
-    <pathelement location="${lib.dir}/log4j.jar"/>
-    <pathelement location="${lib.dir}/olap4j.jar"/>
-    <pathelement location="${lib.dir}/xalan.jar"/>
-    <pathelement location="${lib.dir}/xercesImpl.jar"/>
-    <pathelement location="${lib.dir}/validation-api.jar"/>
-    <pathelement path="${env.CLASSPATH}"/>
-    <pathelement location="${ant.home}/lib/ant.jar"/>
-    <pathelement location="${ant.home}/lib/optional.jar"/>
-    <pathelement location="${wb.plugins.dir}/kettle-dbdialog.jar"/>
-    <pathelement location="${wb.plugins.dir}/kettle-core.jar"/>
-    <pathelement location="${wb.plugins.dir}/pentaho-xul-core.jar"/>
-    <pathelement location="${wb.plugins.dir}/pentaho-xul-swing.jar"/>
-  </path>
-
-  <path id="project.build.classpath">
-    <pathelement location="${classes.dir}"/>
-    <path refid="project.classpath"/>
-  </path>
-
-  <path id="project.build.test.classpath-jdk15">
-    <pathelement location="${classes.dir}"/>
-    <path refid="project.classpath"/>
-    <pathelement location="${testclasses.dir}"/>
-    <fileset dir="${lib.dir}">
-      <include name="olap4j-tck.jar"/>
-      <include name="olap4j-xmla.jar"/>
-      <include name="derby.jar"/>
-      <include name="xmlunit.jar"/>
-      <include name="junit.jar"/>
-      <include name="mockito-all.jar"/>
-    </fileset>
-    <!-- this picks up the default log4j.properties -->
-    <pathelement path="${basedir}"/>
-  </path>
-
-  <path id="project.build.test.classpath-jdk14">
-    <pathelement location="${jar-jdk14.file}"/>
-    <pathelement location="${lib.dir}/olap4j-jdk14.jar"/>
-    <path refid="project.classpath"/>
-    <pathelement location="${testclasses-jdk14.dir}"/>
-    <fileset dir="${lib.dir}">
-      <include name="olap4j-tck.jar"/>
-      <include name="olap4j-xmla.jar"/>
-      <include name="derby.jar"/>
-      <include name="xmlunit.jar"/>
-      <include name="junit.jar"/>
-      <include name="xml-apis.jar"/>
-    </fileset>
-    <pathelement location="${lib.dir}/retroweaver-rt.jar" />
-    <pathelement location="${lib.dir}/backport-util-concurrent.jar" />
-    <!-- this picks up the default log4j.properties -->
-    <pathelement path="${basedir}"/>
-  </path>
-
-  <condition property="jdk" id="jdk" value="jdk14">
-    <or>
-      <contains string="${java.version}" substring="1.4." />
-      <equals arg1="${mondrian.retroweave}" arg2="true" />
-    </or>
-  </condition>
-
-  <condition property="jdk" id="jdk" value="jdk15">
-    <not>
-      <or>
-        <contains string="${java.version}" substring="1.4." />
-        <equals arg1="${mondrian.retroweave}" arg2="true" />
-      </or>
-    </not>
-  </condition>
-
-  <condition property="jdk15.present">
-    <contains string="${java.version}" substring="1.5." />
-  </condition>
-
-  <condition property="jdk15.not.present">
-    <not>
-      <contains string="${java.version}" substring="1.5." />
-    </not>
-  </condition>
-
-  <condition property="jdk16.present">
-    <contains string="${java.version}" substring="1.6." />
-  </condition>
-
-  <condition property="jdk16.not.present">
-    <not>
-      <contains string="${java.version}" substring="1.6." />
-    </not>
-  </condition>
-
-  <condition property="jdk17.present">
-    <contains string="${java.version}" substring="1.7." />
-  </condition>
-
-  <condition property="jdk17.not.present">
-    <not>
-      <contains string="${java.version}" substring="1.7." />
-    </not>
-  </condition>
-
-  <condition property="java.version.matches.requested">
-    <or>
-      <not>
-        <isset property="requested.java.version"/>
-      </not>
-      <matches pattern="^${requested.java.version}.*" string="jdk${java.runtime.version}" />
-    </or>
-  </condition>
-
-  <path id="project.build.test.classpath" refid="project.build.test.classpath-${jdk}"/>
-
-  <path id="project.test.classpath">
-    <path refid="project.build.test.classpath"/>
-    <pathelement path="${driver.classpath}"/>
-  </path>
-
-  <target name="define-tasks" depends="prepare">
-    <taskdef name="javacup" classname="java_cup.JavaCUPTask">
-      <classpath refid="project.classpath"/>
-    </taskdef>
-
-    <taskdef name="xomgen" classname="org.eigenbase.xom.XOMGenTask">
-      <classpath refid="project.classpath"/>
-    </taskdef>
-
-    <taskdef name="resgen" classname="org.eigenbase.resgen.ResourceGenTask">
-      <classpath refid="project.build.classpath"/>
-    </taskdef>
-  </target>
+demo/FoodMartCreateData.sql"/>
 
   <!--
     ===================================================================
-    Properties for running the FoodMart test. (Override them by
-    editing test.properties)
+    Properties for running the FoodMart test. Override them by
+    editing test.properties, mondrian.properties, or plain System
+    properties*.
+    
+    * only for mondrian.* properties from System are passed
     ===================================================================
   -->
 
@@ -326,21 +147,105 @@ demo/access/MondrianFoodMart.mdb"/>
 
   <!-- Arguments to the java process spawned by the junit task. -->
   <property name="junit.jvmargs" value="-ea -esa -Xmx1024m"/>
+  <property name="junit.maxmemory" value="1024M"/>
+
+  <!--
+      ===================================================================
+      Now import subfloor. All properties must be overridden first
+      =================================================================== -->
+  <import file="subfloor.xml" />
+
+
+  <!-- Define some classpaths -->
+  <path id="classpath.custom" description="Adds WB dependencies">
+    <pathelement location="${wb.plugins.dir}/kettle-dbdialog.jar"/>
+    <pathelement location="${wb.plugins.dir}/kettle-core.jar"/>
+    <pathelement location="${wb.plugins.dir}/pentaho-xul-core.jar"/>
+    <pathelement location="${wb.plugins.dir}/pentaho-xul-swing.jar"/>
+  </path>
+
+  <path id="project.build.classpath" description="The classpath for resgen">
+    <pathelement location="${classes.dir}"/>
+    <path refid="classpath"/>
+  </path>
+
+  <path id="test.classpath.custom" description="Adds the db driver class to the test classpath">
+    <pathelement path="${driver.classpath}"/>
+  </path>
+
+  <target name="define-tasks" depends="prepare">
+    <taskdef name="javacup" classname="java_cup.JavaCUPTask">
+      <classpath refid="classpath"/>
+    </taskdef>
+
+    <taskdef name="xomgen" classname="org.eigenbase.xom.XOMGenTask">
+      <classpath refid="classpath"/>
+    </taskdef>
+
+    <taskdef name="resgen" classname="org.eigenbase.resgen.ResourceGenTask">
+      <classpath refid="project.build.classpath"/>
+    </taskdef>
+  </target>
 
   <target name="help">
     <echo>
       You must specify a specific project target when using the ANT build.
       Targets are one of the following:
-      - all
-          Cleans, compiles all classes, and runs a simple test.
+
+      - binzip
+          Compiles Mondrian and wraps everything in a neat little package.
+
+      - workbench-dist
+          Compiles PSW and wraps everything in a neat little package.
+
       - compile
           Compiles functional classes only.
+
+      - jar
+          Creates a Mondrain jar.
+
+      - workbench
+          Creates Mondrain and workbench jars.
+
       - clean
           Deletes build output.
+
+      - clean-deep
+          Clean build output and generated sources.
+
       - test
-          Runs a simple test.
+          Runs the tests.
+
+      - jacoco
+          Runs the tests with jacoco to measure coverage.
+
       - info
           shows configuration info
+
+      To run the tests, you must have FoodMart available in a database.
+      You can pass the DB configuration through the command line arguments,
+      like so:
+
+          ant -Dmondrian.foodmart.jdbcURL="jdbc:mysql://localhost/foodmart" \
+              -Dmondrian.foodmart.jdbcUser=foodmart \
+              -Dmondrian.foodmart.jdbcPassword=foodmart \
+              -Dmondrian.jdbcDrivers=com.mysql.jdbc.Driver \
+              -Ddriver.classpath="/opt/mysql-connector-java-5.1.25-bin.jar" 
+              test
+
+      Alternatively, these can be written to a file at the root of the project.
+      Create a file 'mondrian.properties' containing this:
+
+          mondrian.foodmart.jdbcURL=jdbc:mysql://localhost/foodmart
+          mondrian.foodmart.jdbcUser=foodmart
+          mondrian.foodmart.jdbcPassword=foodmart
+          mondrian.jdbcDrivers=com.mysql.jdbc.Driver
+          driver.classpath=/opt/mysql-connector-java-5.1.25-bin.jar
+
+      To load foodmart into your DB, you can call the 'load-foodmart' target
+      before 'test'.
+
+      The parameters can be adjusted to point to a different DB than MySQL.
     </echo>
   </target>
 
@@ -358,7 +263,7 @@ demo/access/MondrianFoodMart.mdb"/>
   <echo>==============================================================</echo>
   </target>
 
-  <target name="clean">
+  <target name="clean" depends="subfloor.clean">
     <delete includeEmptyDirs="true" quiet="true">
       <fileset dir="${lib.dir}" includes="*" excludes="mondrian.xsd,xml-apis.jar"/>
       <fileset dir="${classes.dir}" includes="**/*.class,**/*.properties"/>
@@ -366,8 +271,6 @@ demo/access/MondrianFoodMart.mdb"/>
       <fileset dir="." includes="${generated.java.files},${generated.lib.files},VERSION.txt"/>
       <fileset dir="demo/derby/foodmart"/>
       <fileset dir="${javadoc.dir}" />
-      <fileset dir="${build.dir}" />
-      <fileset dir="${testclasses-jdk14.dir}" />
       <fileset dir="${testsrc.dir}" includes="**/*.log.xml"/>
       <fileset dir="${testsrc.dir}" includes="**/*JUnit.java"/>
       <fileset dir="${wb.plugins.dir}" includes="*.jar"/>
@@ -387,10 +290,10 @@ demo/access/MondrianFoodMart.mdb"/>
   <target name="prepare" depends="install-ivy,resolve">
     <mkdir dir="${classes.dir}"/>
     <mkdir dir="${testclasses.dir}"/>
-    <mkdir dir="${build.dir}"/>
     <mkdir dir="${devlib.dir}"/>
     <mkdir dir="${testlib.dir}"/>
     <mkdir dir="${dist.dir}"/>
+    <mkdir dir="${bin.dir}"/>
   </target>
 
   <target name="resolve" unless="skip.download" >
@@ -470,51 +373,33 @@ demo/access/MondrianFoodMart.mdb"/>
       <manifest>
         <attribute name="Main-Class" value="mondrian.tui.CmdRunner"/>
         <attribute name="Built-By" value="${user.name}"/>
-<!--
-        <attribute name="Class-Path" value="${jar.classpath}"/>
-        <section name="${jar.package}">
-          <attribute name="Specification-Title" value="${component.title}"/>
-          <attribute name="Specification-Version" value="${component.version}"/>
-          <attribute name="Specification-Vendor" value="${company.name}"/>
-          <attribute name="Implementation-Title" value="${component.title}"/>
-          <attribute name="Implementation-Version" value="${component.build}"/>
-          <attribute name="Implementation-Vendor" value="${company.name}"/>
-        </section>
--->
       </manifest>
     </jar>
 
     <delete dir="${crtmp.dir}" quiet="true"/>
   </target>
 
-  <target name="cmdrunner-run" depends="jar,compile.tests">
-    <java fork="yes" classpathref="project.test.classpath" classname="mondrian.tui.CmdRunner">
+  <target name="cmdrunner-run" depends="jar">
+    <java fork="yes" classpathref="test.classpath" classname="mondrian.tui.CmdRunner">
         <sysproperty key="log4j.configuration" value="${log4j.configuration}"/>
         <!-- <arg value="-d"/> -->
     </java>
   </target>
 
-
-    <target name="all" depends="
-compile,
-compile.tests,
-unzip-databases"/>
-
-    <target name="unzip-databases" depends="
-unzip-FoodMartCreateData,
-unzip-FoodMartAccessDB,
-unzip-FoodMartDerbyDB"/>
-
-  <target name="compile" depends="
+  <target name="compile.pre" depends="
 version,
 prepare,
 parser,
 generate.resources,
 generate.properties,
 def,
-compileJdk15,
-compileJdk16,
-compileJdk17"/>
+subfloor.compile.pre"/>
+
+  <target name="compile" depends="init, compile.pre, compile.java, compile.post">
+    <!-- TODO This needs to be cleaned up. Mondrian entirely bypasses the
+    compile target of subfloor. It shouldn't need to, but that's for
+    another day. -->
+  </target>
 
   <target name="generate.resources" depends="define-tasks">
 
@@ -526,8 +411,8 @@ compileJdk17"/>
         debug="${project.build.debug}"
         classpathref="project.build.classpath"
         includeantruntime="false"
-        source="1.5"
-        target="1.5">
+        source="${javac.source}"
+        target="${javac.target}">
       <include name="mondrian/olap/MondrianException.java" />
       <include name="mondrian/olap/ResultLimitExceededException.java" />
       <include name="mondrian/olap/InvalidHierarchyException.java" />
@@ -556,8 +441,8 @@ compileJdk17"/>
         debug="${project.build.debug}"
         classpathref="project.build.classpath"
         includeantruntime="false"
-        source="1.5"
-        target="1.5">
+        source="${javac.source}"
+        target="${javac.target}">
       <include name="mondrian/util/PropertyUtil.java" />
     </javac>
 
@@ -566,23 +451,17 @@ compileJdk17"/>
         fork="no"/>
   </target>
 
-  <target name="apologise" unless="java.version.matches.requested">
+  <!--target name="apologise" unless="java.version.matches.requested">
     <echo>Actual JVM Version (${java.runtime.version}) does not match
 requested (${requested.java.version}); skipping compile for this JDK.
 If you wish to build for this JDK, modify ${unix.script}.
     </echo>
-  </target>
+  </target-->
 
-  <target name="compile.java" depends="apologise" if="java.version.matches.requested">
+  <target name="compile.java">
     <echo>Compiling on JVM Version: ${java.runtime.version}</echo>
     <condition property="include.gui">
-      <and>
-        <isset property="include.workbench" />
-        <!-- workbench kettle dependencies are incompatible with jdk1.5 -->
-        <not>
-          <isset property="jdk15.present" />	
-        </not>
-      </and>
+      <isset property="include.workbench" />
     </condition>
     <echo>include.gui=${include.gui}</echo>
 
@@ -591,13 +470,10 @@ If you wish to build for this JDK, modify ${unix.script}.
         destdir="${classes.dir}"
         debug="${project.build.debug}"
         classpathref="project.build.classpath"
+        source="${javac.source}"
+        target="${javac.target}"
         includeantruntime="false">
       <include name="mondrian/**/*.java"/>
-      <exclude name="mondrian/olap4j/FactoryJdbc3Impl.java" if="jdk15.not.present"/>
-      <exclude name="mondrian/olap4j/FactoryJdbc4Impl.java" if="jdk16.not.present"/>
-      <exclude name="mondrian/olap4j/FactoryJdbc4Plus.java" if="jdk16.not.present"/>
-      <exclude name="mondrian/olap4j/FactoryJdbc41Impl.java" if="jdk17.not.present"/>
-      <exclude name="mondrian/util/UtilCompatibleJdk16.java" if="jdk15.present"/>
       <exclude name="mondrian/gui/**/*.java"                 unless="include.gui" /> 
     </javac>
     <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml"
@@ -612,21 +488,6 @@ If you wish to build for this JDK, modify ${unix.script}.
           includes="
 META-INF/**"/>
     </copy>
-  </target>
-
-  <target name="compile.tests" depends="info">
-  	<pathconvert property="test.classpath.formatted" pathsep="${line.separator} " refid="test.classpath" />
-  	<echo message="Test Classpath: ${test.classpath.formatted}" /> 
-    <javac
-        srcdir="${javatest.dir}"
-        destdir="${testclasses.dir}"
-        debug="${project.build.debug}"
-        classpathref="project.build.test.classpath"
-        includeantruntime="false"
-        source="1.5"
-        target="1.5">
-        <include name="mondrian/**/*.java"/>
-    </javac>
   </target>
 
   <target name="parser" depends="define-tasks">
@@ -703,45 +564,27 @@ META-INF/**"/>
         <isset property="mondrian.foodmart.jdbcPassword"/>
       </not>
     </condition>
+
     <property name="mondrian.test.connectString"
         value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}'${jdbcUser}${jdbcPassword};Catalog='${mondrian.foodmart.catalogURL}'"/>
+
+    <!-- Make sure it is added by subfloor when running tests -->
+    <property name="junit.sysprop.mondrian.test.connectString"
+      value="${mondrian.test.connectString}" />
   </target>
 
-  <target name="FoodMartTest"
-      description="Runs a few queries using the FoodMart schema."
-      depends="set.connectString">
-    <java classpathref="project.classpath" classname="mondrian.test.Main"
-        fork="yes" maxmemory="768m">
-
-      <sysproperty key="mondrian.jdbcDrivers"
-          value="${mondrian.jdbcDrivers}"/>
-      <sysproperty key="mondrian.test.foodmart.catalogURL"
-          value="${mondrian.foodmart.catalogURL}"/>
-
-      <!-- mondrian.test.connectString is the mondrian connect-string.
-           Provider must be 'mondrian'. -->
-      <sysproperty key="mondrian.test.connectString"
-          value="${mondrian.test.connectString}"/>
-
-    </java>
+  <target name="test" depends="info,subfloor.test">
+    <!-- Add 'info' before 'test' -->
+  </target>
+  
+  <target name="jacoco" depends="info,subfloor.jacoco">
+    <!-- Add 'info' before 'jacoco' -->
   </target>
 
-  <target name="test"
-      description="Runs all JUnit tests."
-      depends="compile,compile.tests,unzip-databases,set.connectString"
-      unless="tests.skip">
-    <antcall target="test-nobuild"/>
+  <target name="compile-tests" depends="subfloor.compile-tests,set.connectString">
   </target>
 
-  <target name="cobertura" unless="tests.skip">
-    <antcall target="subfloor.cobertura"/>
-  </target>
-
-  <target name="cobertura.test-instrumented" unless="tests.skip">
-    <antcall target="subfloor.cobertura.test-instrumented"/>
-  </target>
-
-	<condition property="tests.skip" value="true">
+  <condition property="tests.skip" value="true">
     <isset property="mondrian.tests.skip"/>
   </condition>
 
@@ -750,185 +593,10 @@ META-INF/**"/>
     <antcall target="test-only"/>
   </target>
 
-  <target name="test-nobuild">
-    <property name="test.args" value=""/>
-    <antcall target="test-only"/>
-  </target>
-
-  <target name="test-only"
-      depends="set.connectString"
-      description="
-Runs all JUnit tests, using the given database connection
-in {mondrian.foodmart.jdbcURL}."
-    unless="tests.skip">
-    <echo>Connecting to ${mondrian.foodmart.jdbcURL}</echo>
-    <echo>Connect String: ${mondrian.test.connectString}</echo>
-    <delete quiet="true">
-      <fileset dir="${testsrc.dir}" includes="**/*.log.xml"/>
-    </delete>
-    <java
-        classpathref="project.test.classpath"
-        classname="mondrian.test.Main"
-        fork="yes"
-        maxmemory="768m">
-      <arg value="${test.args}"/>
-      <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8787" />-->
-      <jvmarg line="${junit.jvmargs}"/>
-      <sysproperty key="log4j.configuration"
-          value="${log4j.configuration}"/>
-      <sysproperty key="mondrian.jdbcDrivers"
-          value="${mondrian.jdbcDrivers}"/>
-      <sysproperty key="mondrian.foodmart.jdbcURL"
-          value="${mondrian.foodmart.jdbcURL}"/>
-      <sysproperty key="mondrian.test.foodmart.catalogURL"
-          value="${mondrian.foodmart.catalogURL}"/>
-      <sysproperty key="mondrian.test.connectString"
-          value="${mondrian.test.connectString}"/>
-      <sysproperty key="mondrian.test.Class"
-          value="${mondrian.test.Class}"/>
-      <sysproperty key="mondrian.test.Name"
-          value="${mondrian.test.Name}"/>
-      <!-- tests require en_US locale -->
-      <sysproperty key="user.language" value="en"/>
-      <sysproperty key="user.region" value="US"/>
-
-    </java>
-  </target>
-
-  <target name="junit-main" depends="compile,compile.tests,set.connectString" unless="tests.skip">
-    <mkdir dir="junit-results"/>
-    <junit printsummary="yes" fork="yes" haltonfailure="no" haltonerror="no">
-        <classpath>
-            <path refid="project.test.classpath"/>
-        </classpath>
-
-        <jvmarg line="${junit.jvmargs}"/>
-
-      <sysproperty key="log4j.configuration"
-          value="${log4j.configuration}"/>
-      <sysproperty key="mondrian.jdbcDrivers"
-          value="${mondrian.jdbcDrivers}"/>
-      <sysproperty key="mondrian.foodmart.jdbcURL"
-          value="${mondrian.foodmart.jdbcURL}"/>
-      <sysproperty key="mondrian.test.foodmart.catalogURL"
-          value="${mondrian.foodmart.catalogURL}"/>
-      <sysproperty key="mondrian.test.connectString"
-          value="${mondrian.test.connectString}"/>
-      <sysproperty key="mondrian.test.Class"
-          value="${mondrian.test.Class}"/>
-      <sysproperty key="mondrian.test.Name"
-          value="${mondrian.test.Name}"/>
-      <!-- tests require en_US locale -->
-      <sysproperty key="user.language" value="en"/>
-      <sysproperty key="user.region" value="US"/>
-
-        <formatter type="xml" />
-
-        <batchtest fork="yes" todir="junit-results">
-            <fileset dir="${testclasses.dir}">
-              <include name="mondrian/test/Main.class" />
-            </fileset>
-        </batchtest>
-    </junit>
-
-    <junitreport todir="junit-results">
-      <fileset dir="junit-results">
-        <include name="TEST-*.xml"/>
-      </fileset>
-      <report format="frames" todir="junit-results/html"/>
-    </junitreport>
-
-  </target>
-
-  <target name="junit-cachehit" depends="compile,compile.tests,set.connectString" unless="tests.skip">
-    <junit printsummary="yes" fork="yes" haltonfailure="no" haltonerror="no" showoutput="yes">
-        <classpath>
-            <path refid="project.test.classpath"/>
-        </classpath>
-        <sysproperty key="log4j.configuration"
-          value="${log4j.configuration}"/>
-        <sysproperty key="mondrian.jdbcDrivers"
-            value="${mondrian.jdbcDrivers}"/>
-        <sysproperty key="mondrian.test.connectString"
-            value="${mondrian.test.connectString}"/>
-        <sysproperty key="mondrian.test.foodmart.catalogURL"
-            value="${mondrian.foodmart.catalogURL}"/>
-        <formatter type="xml" />
-        <batchtest fork="yes">
-            <fileset dir="${testclasses.dir}">
-              <include name="mondrian/test/CacheHitTest.class" />
-            </fileset>
-        </batchtest>
-    </junit>
-  </target>
-
-  <target name="junit-cvconcurrent" depends="compile,compile.tests,set.connectString" unless="tests.skip">
-    <junit printsummary="yes" fork="yes" haltonfailure="no" haltonerror="no" showoutput="yes">
-        <classpath>
-            <path refid="project.test.classpath"/>
-        </classpath>
-        <sysproperty key="log4j.configuration"
-          value="${log4j.configuration}"/>
-        <sysproperty key="mondrian.jdbcDrivers"
-            value="${mondrian.jdbcDrivers}"/>
-        <sysproperty key="mondrian.test.connectString"
-            value="${mondrian.test.connectString}"/>
-        <sysproperty key="mondrian.test.foodmart.catalogURL"
-            value="${mondrian.foodmart.catalogURL}"/>
-        <formatter type="xml" />
-        <batchtest fork="yes">
-            <fileset dir="${testclasses.dir}">
-              <include name="mondrian/test/CVConcurrentMdxTest.class" />
-            </fileset>
-        </batchtest>
-    </junit>
-  </target>
-
-  <macrodef name="genJUnit">
-    <attribute name="path"/>
-    <attribute name="packagename"/>
-    <attribute name="testname"/>
-    <sequential>
-      <xslt style="${testsrc.dir}/xsl/generateDiffRepositoryJUnit.xsl"
-        in="@{path}@{testname}.ref.xml"
-        out="@{path}@{testname}JUnit.java">
-        <param name="reffile"
-          expression="${testsrc.dir}/main/mondrian/test/clearview/@{testname}.ref.xml"/>
-        <param name="packagename"
-          expression="@{packagename}"/>
-        <param name="classname"
-          expression="@{testname}JUnit"/>
-      </xslt>
-    </sequential>
-  </macrodef>
-
-  <target name="generateDiffRepositoryJUnit"
-    description="Generates explicit Java testcases from .ref.xml files">
-
-    <!-- generate clearview junit code files -->
-    <property name="path" value="${testsrc.dir}/main/mondrian/test/clearview/"/>
-    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="CVBasicTest"/>
-    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="MetricFilterTest"/>
-    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="MiscTest"/>
-    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="PredicateFilterTest"/>
-    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="SummaryTest"/>
-    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="SummaryMetricPercentTest"/>
-    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="TopBottomTest"/>
-    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="GrandTotalTest"/>
-    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="SubTotalTest"/>
-    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="BatchedFillTest"/>
-    <genJUnit path="${path}" packagename="mondrian.test.clearview" testname="HangerDimensionTest"/>
-  </target>
-
-  <target name="etags">
-    <exec dir="${project.location}" executable="find" output="javaFiles">
-      <arg line=". -name &quot;*.java&quot; -print"/>
-    </exec>
-    <exec dir="${project.location}" executable="ctags">
-      <arg line="-e"/>
-      <arg line="-L javaFiles"/>
-    </exec>
-    <delete file="${project.location}/javaFiles" quiet="true"/>
+  <target name="junit-main" depends="" unless="tests.skip">
+    <echo>The target 'junit-main' was replaced by 'test'.
+      Please call this one instead.</echo>
+    <antcall target="test"/>
   </target>
 
   <target name="version">
@@ -1063,79 +731,12 @@ buildOnJdk.sh" />
     </zip>
   </target>
 
-  <target name="check-FoodMartCreateData-uptodate">
-    <condition property="FoodMartCreateData.uptodate">
-      <or>
-        <not>
-          <available file="demo/FoodMartCreateData.zip"/>
-        </not>
-        <uptodate
-            srcfile="demo/FoodMartCreateData.zip"
-            targetfile="demo/FoodMartCreateData.sql"/>
-      </or>
-    </condition>
-  </target>
-
-  <target name="unzip-FoodMartCreateData"
-      depends="check-FoodMartCreateData-uptodate"
-      unless="FoodMartCreateData.uptodate">
-    <unzip src="demo/FoodMartCreateData.zip" dest="demo">
-      <patternset includes="FoodMartCreateData.sql"/>
-    </unzip>
-    <touch file="demo/FoodMartCreateData.sql"/>
-  </target>
-
-  <target name="check-FoodMartAccessDB-uptodate">
-    <condition property="FoodMartAccessDB.uptodate">
-      <or>
-        <not>
-          <available file="demo/access/MondrianFoodMart-Access.zip"/>
-        </not>
-        <uptodate
-            srcfile="demo/access/MondrianFoodMart-Access.zip"
-            targetfile="demo/access/MondrianFoodMart.mdb"/>
-      </or>
-    </condition>
-  </target>
-
-  <target name="unzip-FoodMartAccessDB"
-      depends="check-FoodMartAccessDB-uptodate"
-      unless="FoodMartAccessDB.uptodate">
-    <unzip src="demo/access/MondrianFoodMart-Access.zip" dest="demo/access">
-      <patternset includes="MondrianFoodMart.mdb"/>
-    </unzip>
-    <touch file="demo/access/MondrianFoodMart.mdb"/>
-  </target>
-
-  <target name="check-FoodMartDerbyDB-uptodate">
-    <condition property="FoodMartDerbyDB.uptodate">
-      <or>
-        <not>
-          <available file="demo/derby/derby-foodmart.zip"/>
-        </not>
-        <uptodate
-            srcfile="demo/derby/derby-foodmart.zip"
-            targetfile="demo/derby/foodmart/service.properties"/>
-      </or>
-    </condition>
-  </target>
-
-  <target name="unzip-FoodMartDerbyDB"
-      depends="check-FoodMartDerbyDB-uptodate"
-      unless="FoodMartDerbyDB.uptodate">
-    <unzip src="demo/derby/derby-foodmart.zip" dest="demo/derby">
-      <patternset includes="**/*.*"/>
-    </unzip>
-    <touch file="demo/derby/foodmart/service.properties"/>
-  </target>
-
-    
   <target name="load-foodmart"
-        depends="info"
+        depends="info,compile,compile-tests"
         description="load the foodmart database from the data file using the Mondrian loader. Assumes empty database exists">
 
     <available classname="${mondrian.jdbcDrivers}"
-           classpathref="project.test.classpath" property="driver.present.for.load-foodmart"/>
+           classpathref="test.classpath" property="driver.present.for.load-foodmart"/>
 
     <echo message="Driver present: ${driver.present.for.load-foodmart}"/>
     <!--
@@ -1154,7 +755,7 @@ buildOnJdk.sh" />
     <property name="mondrian.foodmart.jdbcSchema" value="" />
 
     <java classname="mondrian.test.loader.MondrianFoodMartLoader"
-            classpathref="project.test.classpath"
+            classpathref="test.classpath"
             fork="yes">
         <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8787" />-->
         <arg value="-tables"/>
@@ -1170,23 +771,8 @@ buildOnJdk.sh" />
      
   </target>
 
-  <target name="release" depends="clean-deep, binzip, binDerbyzip"/>
-
-  <target name="upload">
-    <ftp server="upload.sourceforge.net"
-        userid="anonymous"
-        password="${user.name}@users.sourceforge.net"
-        remotedir="incoming"
-        verbose="yes">
-      <fileset dir=".">
-        <include name="${dist.bin.file}"/>
-        <include name="${dist.bin.derby.file}"/>
-      </fileset>
-    </ftp>
-  </target>
-
   <target name="binzip"
-      depends="version,war,srczip,javadoc,xml_schema,retroweave,unzip-FoodMartCreateData,unzip-FoodMartAccessDB">
+      depends="clean-deep,srczip,jar,javadoc,xml_schema">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
     <zip zipfile="${dist.bin.file}">
@@ -1199,15 +785,9 @@ ${doc.dir}/**/*.html,
 ${doc.dir}/**/*.css,
 ${doc.dir}/**/*.png,
 ${doc.dir}/api/**/*.xml,
-${war.file},
-${jar.file},
-${jar-jdk14.file},
-${lib.dir}/olap4j-jdk14.jar,
-${lib.dir}/retroweaver-rt.jar,
 lib/*.dtd,
 demo/FoodMart.xml,
-demo/FoodMartCreateData.sql,
-demo/access/MondrianFoodMart.mdb,
+demo/FoodMartCreateData.zip,
 LICENSE.html,
 README.txt,
 VERSION.txt"
@@ -1219,42 +799,10 @@ ${doc.dir}/api/src-html/**/*"/>
       <zipfileset
           dir="${dist.dir}"
           prefix="${dist.name}"
-          includes="${dist.name}-src.zip"/>
-    </zip>
-  </target>
-
-  <target name="binDerbyzip"
-      depends="version,derby-war,srczip,javadoc,xml_schema,unzip-FoodMartDerbyDB">
-    <mkdir dir="${dist.dir}" />
-    <delete file="${dist.bin.derby.file}"/>
-    <zip zipfile="${dist.bin.derby.file}">
-      <zipfileset
-          dir="."
-          prefix="${embedded.dist.name}"
-          includes="
-${doc.dir}/**/*.jpg,
-${doc.dir}/**/*.html,
-${doc.dir}/**/*.css,
-${doc.dir}/**/*.png,
-${doc.dir}/api/**/*.xml,
-${war.embeddedDb.file},
-${jar.file},
-${jar-jdk14.file},
-${lib.dir}/olap4j-jdk14.jar,
-${lib.dir}/retroweaver-rt.jar,
-lib/*.dtd,
-demo/FoodMart.xml,
-LICENSE.html,
-README.txt,
-VERSION.txt"
-          excludes="
-**/*~,
-**/_vti*/*,
-**/*.psp,
-${doc.dir}/api/src-html/**/*"/>
+          includes="${dist.name}.jar"/>
       <zipfileset
           dir="${dist.dir}"
-          prefix="${embedded.dist.name}"
+          prefix="${dist.name}"
           includes="${dist.name}-src.zip"/>
     </zip>
   </target>
@@ -1285,49 +833,7 @@ doc/**/*.xml"
     </tar>
   </target>
 
-  <target name="set-compile-args">
-    <property name="compile.default.args" value="-Dskip.download=true compile.java" />
-    <if>
-      <istrue value="${include.workbench}" />
-      <then>
-        <property name="compile.workbench.arg" value="-Dinclude.workbench=true" />
-      </then>
-      <else>
-        <property name="compile.workbench.arg" value="" />
-      </else>
-    </if>
-    <property name="compile.args" value="${compile.workbench.arg} ${compile.default.args}" />
-  </target>
-
-  <target name="compileJdk15" depends="set-compile-args" >
-
-    <exec osfamily="unix" failonerror="true" executable="${unix.script}">
-      <arg line="jdk1.5 ${compile.args}"/>
-    </exec>
-    <exec osfamily="windows" failonerror="true" dir="." executable="cmd">
-      <arg line="/c .\buildOnJdk.bat jdk1.5 ${compile.args}"/>
-    </exec>
-  </target>
-
-  <target name="compileJdk16" depends="set-compile-args">
-    <exec osfamily="unix" failonerror="true" executable="${unix.script}">
-      <arg line="jdk1.6 ${compile.args}"/>
-    </exec>
-    <exec osfamily="windows" failonerror="true" dir="." executable="cmd">
-      <arg line="/c .\buildOnJdk.bat jdk1.6 ${compile.args}"/>
-    </exec>
-  </target>
-
-  <target name="compileJdk17" depends="set-compile-args">
-    <exec osfamily="unix" failonerror="true" executable="${unix.script}">
-      <arg line="jdk1.7 ${compile.args}"/>
-    </exec>
-    <exec osfamily="windows" failonerror="true" dir="." executable="cmd">
-      <arg line="/c .\buildOnJdk.bat jdk1.7 ${compile.args}"/>
-    </exec>
-  </target>
-
-  <target name="jar" depends="version,compile,compile.tests">
+  <target name="jar" depends="version,compile">
     <mkdir dir="${lib.dir}" />
     <jar
         destfile="${jar.file}"
@@ -1411,20 +917,16 @@ clean against JDK 1.6.">
       <fileset dir="${testclasses.dir}" includes="**/package.html"/>
     </delete>
     <property name="ps" value="${path.separator}"/>
-    <!-- Javadoc gives warnings on JDK 1.5 and JDK 1.6 (due to classes that
-         depends on JDBC 4.1) but succeeds with no warnings on JDK 1.7. The
-         apparent workaround, to use an embedded <fileset> element, caused more
-         problems than it solved. -->
     <javadoc
         sourcepath="${java.dir}${ps}${javatest.dir}"
         maxmemory="1024m"
-        classpathref="project.build.test.classpath"
+        classpathref="test.classpath"
         destdir="${javadoc.dir}"
         packagenames="mondrian.*"
         overview="${java.dir}/overview.html"
         footer="&lt;a href=&quot;http://sourceforge.net/projects/mondrian&quot;&gt;&lt;img src=&quot;http://sflogo.sourceforge.net/sflogo.php?group_id=35302&#38;type=15&quot; width=&quot;150&quot; height=&quot;40&quot; border=&quot;0&quot; alt=&apos;Get Mondrian at SourceForge.net. Fast, secure and free Open Source software downloads&apos;&gt;&lt;/a&gt;"
         author="true"
-        source="1.5"
+        source="${javac.source}"
         access="${access}"
         Windowtitle="Mondrian OLAP Engine, version ${project.revision}"
         additionalparam="${additionalparam}"
@@ -1465,13 +967,13 @@ diagrams and hyperlinks to source code">
     <javadoc
         sourcepath="${java.dir}"
         maxmemory="1024m"
-        classpathref="project.build.test.classpath"
+        classpathref="test.classpath"
         destdir="${javadoc.dir}"
         packagenames="mondrian.*"
         overview="${java.dir}/overview.html"
         footer="&lt;a href=&quot;http://sourceforge.net/projects/mondrian&quot;&gt;&lt;img src=&quot;http://sflogo.sourceforge.net/sflogo.php?group_id=35302&#38;type=15&quot; width=&quot;150&quot; height=&quot;40&quot; border=&quot;0&quot; alt=&apos;Get Mondrian at SourceForge.net. Fast, secure and free Open Source software downloads&apos;&gt;&lt;/a&gt;"
         author="true"
-        source="1.5"
+        source="${javac.source}"
         access="package"
         Windowtitle="Mondrian OLAP Engine, version ${project.revision}"
         additionalparam="-linksource"
@@ -1519,39 +1021,6 @@ diagrams and hyperlinks to source code">
         <linecontainsregexp>
             <regexp pattern=":[0-9]+: "/>
         </linecontainsregexp>
-        <!-- ignore: unwrap does not exist until JDK1.6 -->
-        <linecontains negate="true">
-          <contains value="Tag @link: can't find unwrap(Class)"/>
-        </linecontains>
-        <!-- ignore: Statement.closeOnCompletion does not exist until JDK1.7 -->
-        <linecontains negate="true">
-          <contains value="Tag @link: can't find closeOnCompletion()"/>
-        </linecontains>
-        <!-- ignore: ResultSet.isClosed does not exist until JDK1.6 -->
-        <linecontains negate="true">
-          <contains value="Tag @link: can't find isClosed()"/>
-        </linecontains>
-        <!-- ignore: FactoryJdbc4Impl is only built in JDK1.6 -->
-        <linecontains negate="true">
-          <contains value="FactoryJdbc4Impl.java"/>
-        </linecontains>
-        <!-- ignore: FactoryJdbc41Impl is only built in JDK1.7 -->
-        <linecontains negate="true">
-          <contains value="FactoryJdbc41Impl.java"/>
-        </linecontains>
-        <!-- ignore: FactoryJdbc4Plus is only built in JDK1.6 -->
-        <linecontains negate="true">
-          <contains value="FactoryJdbc4Plus.java"/>
-        </linecontains>
-        <!-- ignore: UtilCompatibleJdk16 is only built in JDK1.6 -->
-        <linecontains negate="true">
-          <contains value="UtilCompatibleJdk16.java"/>
-        </linecontains>
-        <!-- ignore complaints about a variant of Arrays.binarySearch introduced
-             in JDK1.6 -->
-        <linecontains negate="true">
-          <contains value="Tag @link: can't find binarySearch"/>
-        </linecontains>
         <striplinebreaks />
       </filterchain>
     </loadfile>
@@ -1574,151 +1043,6 @@ diagrams and hyperlinks to source code">
     <exec osfamily="unix" executable="${basedir}/bin/checkFile.sh" failonerror="true">
         <arg line="--under ."/>
     </exec>
-  </target>
-
-  <target name="war" depends="jar,compile.tests" description="
-Creates mondrian.war based upon jpivot.war.
-Assumes that mondrian.jar exists (use 'jar' target)">
-
-    <!-- The Ant war task was doing funny things with update="yes" so piece the mondrian.war
-         together from the jpivot.war and Mondrian specific settings -->
-
-    <filterset filtersfile="mondrian.properties" onmissingfiltersfile="warn"/>
-    <delete dir="${build.dir}/mondrian" />
-    <mkdir dir="${build.dir}/mondrian" />
-    <delete file="${war.file}"/>
-    <unzip src="${lib.dir}/jpivot.war" dest="${build.dir}/mondrian"/>
-
-    <!-- Remove the jpivot stuff we intend to overwrite. -->
-    <delete>
-      <fileset dir="${build.dir}/mondrian" includes="index.jsp,xmla.jsp"/>
-      <fileset dir="${build.dir}/mondrian/WEB-INF" includes="web.xml,datasources.xml,mondrian.properties"/>
-      <fileset dir="${build.dir}/mondrian/WEB-INF/queries" includes="xmla.jsp,*.xml"/>
-      <fileset dir="${build.dir}/mondrian/WEB-INF/lib" includes="${name}.jar,eigenbase-*.jar,*.xml,mondrian.dtd"/>
-    </delete>
-
-    <mkdir dir="${lib.dir}" />
-
-    <!-- Build the WEB-INF directory. -->
-    <copy file="${webapp.dir}/WEB-INF/web-jpivot.xml"
-        tofile="${build.dir}/mondrian/WEB-INF/web.xml" />
-    <copy todir="${build.dir}/mondrian/WEB-INF">
-      <fileset
-          dir="${webapp.dir}/WEB-INF"
-          includes="mondrian.properties,datasources.xml,*.xsl,*.tld,**/*.jsp"/>
-    </copy>
-
-    <!-- our FoodMart.xml may be newer than jpivot's -->
-    <copy
-        file="${demo.dir}/FoodMart.xml"
-        todir="${build.dir}/mondrian/WEB-INF/queries" />
-
-    <war warfile="${war.file}"
-        webxml="${build.dir}/mondrian/WEB-INF/web.xml">
-      <webinf dir="${build.dir}/mondrian/WEB-INF" excludes="web.xml"/>
-      <fileset dir="${build.dir}/mondrian" excludes="WEB-INF/**/*,*.jsp"/>
-      <fileset dir="${webapp.dir}" includes="*.*"/>
-      <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,olap4j-xmla.jar,eigenbase-*.jar,xalan.jar,xmlunit.jar,*.dtd"/>
-      <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
-      <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
-      <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>
-      <classes dir="${testclasses.dir}" includes="mondrian/test/DiffRepository.*"/>
-    </war>
-  </target>
-
-  <target name="deploy-war" depends="war" description="Deploy WAR with JPivot to web server">
-    <copy file="${war.file}" todir="${mondrian.webapp.deploy}"/>
-  </target>
-
-  <target name="derby-war" depends="jar,compile.tests,unzip-FoodMartDerbyDB" description="
-Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded database.">
-    <filterset filtersfile="mondrian.properties" onmissingfiltersfile="warn"/>
-    <delete dir="${build.dir}/mondrian-embedded" />
-    <mkdir dir="${build.dir}/mondrian-embedded" />
-    <delete file="${war.embeddedDb.file}"/>
-    <unzip src="${lib.dir}/jpivot.war" dest="${build.dir}/mondrian-embedded"/>
-
-    <!-- Remove the jpivot stuff we intend to overwrite. -->
-    <delete>
-      <fileset dir="${build.dir}/mondrian-embedded" includes="index.jsp,xmla.jsp"/>
-      <fileset dir="${build.dir}/mondrian-embedded/WEB-INF" includes="datasources.xml,mondrian.properties"/>
-      <fileset dir="${build.dir}/mondrian-embedded/WEB-INF/queries" includes="*.jsp,*.xml"/>
-      <fileset dir="${build.dir}/mondrian-embedded/WEB-INF/lib" includes="${name}.jar,eigenbase-*.jar,*.xml"/>
-    </delete>
-
-    <mkdir dir="${lib.dir}" />
-
-    <!-- Build the WEB-INF directory. -->
-    <copy file="${webapp.dir}/WEB-INF/web-jpivot.xml"
-        filtering="true"
-        tofile="${build.dir}/mondrian-embedded/WEB-INF/web.xml" />
-    <copy todir="${build.dir}/mondrian-embedded/WEB-INF">
-      <fileset
-          dir="${webapp.dir}/WEB-INF"
-          includes="mondrian.properties,datasources.xml,*.xsl,*.tld,**/*.jsp"/>
-    </copy>
-
-    <!-- our FoodMart.xml may be newer than jpivot's -->
-    <copy
-        file="${demo.dir}/FoodMart.xml"
-        todir="${build.dir}/mondrian-embedded/WEB-INF/queries" />
-
-    <copy
-        todir="${build.dir}/mondrian-embedded/WEB-INF">
-      <fileset
-          dir="${demo.dir}/derby"
-          includes="queries/*.jsp,datasources.xml,mondrian.properties"/>
-    </copy>
-
-    <war warfile="${war.embeddedDb.file}"
-        webxml="${demo.dir}/derby/web.xml">
-      <webinf dir="${build.dir}/mondrian-embedded/WEB-INF" excludes="web.xml"/>
-
-      <fileset dir="${build.dir}/mondrian-embedded" excludes="busy.jsp,WEB-INF/**/*"/>
-      <fileset dir="${webapp.dir}" excludes="index.jsp,testpage.jsp,WEB-INF/**/*"/>
-      <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,olap4j-xmla.jar,eigenbase-*.jar,xalan.jar,xmlunit.jar,derby.jar,*.dtd"/>
-      <classes dir="${demo.dir}/derby" includes="foodmart/**/*.*"/>
-      <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
-      <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
-      <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>
-    </war>
-  </target>
-
-  <target name="deploy-derby-war" depends="derby-war" description="Deploy WAR with JPivot to web server">
-    <mkdir dir="${mondrian.webapp.deploy}/${name}-embedded" />
-    <unzip src="${war.embeddedDb.file}" dest="${mondrian.webapp.deploy}/${name}-embedded" overwrite="true"/>
-  </target>
-
-  <target name="war-no-jpivot" depends="jar" description="
-Creates mondrian.war.
-Assumes that mondrian.jar exists (use 'jar' target),
-and lib contains ant.jar, junit.jar etc.">
-    <filterset filtersfile="mondrian.properties" onmissingfiltersfile="warn"/>
-    <mkdir dir="${lib.dir}" />
-    <delete file="${war.file}"/>
-    <delete file="${lib.dir}/web.xml"/>
-    <copy file="${webapp.dir}/WEB-INF/web.xml"
-        filtering="true" todir="${lib.dir}"/>
-    <war warfile="${war.file}"
-        webxml="${lib.dir}/web.xml">
-      <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml"/>
-      <webinf dir="${demo.dir}" includes="FoodMart.xml"/>
-      <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*"/>
-      <lib dir="${lib.dir}" includes="
-${name}.jar,
-javacup.jar,
-olap4j.jar,
-olap4j-xmla.jar,
-eigenbase-*.jar,
-xalan.jar"/>
-    </war>
-  </target>
-
-  <target name="deploy-no-jpivot-war" depends="war-no-jpivot" description="Deploy standalone WAR to web server">
-    <delete>
-      <fileset dir="${mondrian.webapp.deploy}" includes="${war.file}"/>
-    </delete>
-    <copy file="${war.file}" todir="${mondrian.webapp.deploy}"/>
   </target>
 
   <target name="compile-with-workbench">
@@ -1749,7 +1073,7 @@ xalan.jar"/>
 
   <path id="workbench.run.classpath">
     <pathelement path="${workbench.jar.file}"/>
-    <path refid="project.test.classpath"/>
+    <path refid="test.classpath"/>
     <pathelement path="lib/jlfgr.jar"/>
   </path>
 
@@ -1770,7 +1094,7 @@ xalan.jar"/>
     </java>
   </target>
 
-	
+    
   <target name="resolve-oss-licenses" depends="install-ivy">
     <ivy:resolve file="${ivyfile}" conf="oss-licenses" />
     <ivy:retrieve conf="oss-licenses" pattern="${bin.dir}/[module].[ext]" />
@@ -1782,111 +1106,58 @@ xalan.jar"/>
     <delete file="${dist.dir}/${workbench.zip-dist.file}"/>
     <zip destfile="${dist.dir}/${workbench.zip-dist.file}">
         <zipfileset dir="." prefix="${workbench.dist.name}" filemode="755" includes="*.sh"/>
-	    <zipfileset dir="."  prefix="${workbench.dist.name}" includes="
-				${doc.dir}/**/*.pdf,
-				lib/mondrian.jar,
-				lib/workbench.jar,
-				lib/log4j.jar,
-				lib/x*.jar,
-				lib/eigenbase*.jar,
-				lib/commons*.jar,
-				lib/javacup.jar,
-				lib/jlfgr.jar,
-				lib/olap4j.jar,
-				lib/pentaho-application-launcher.jar,
-				lib/*.dtd,
-				lib/*.xsd,
-				demo/FoodMart.xml,
-				LICENSE.html"
-          		excludes="
-				**/*~,
-				**/_vti*/*,
-				**/*.psp,
-	    		**/*.sh,
-	    		**/JavaApplicationStub,
-				${doc.dir}/api/src-html/**/*"/>
-      	<zipfileset filemode="755"
+        <zipfileset dir="."  prefix="${workbench.dist.name}" includes="
+                ${doc.dir}/**/*.pdf,
+                lib/mondrian.jar,
+                lib/workbench.jar,
+                lib/log4j.jar,
+                lib/x*.jar,
+                lib/eigenbase*.jar,
+                lib/commons*.jar,
+                lib/javacup.jar,
+                lib/jlfgr.jar,
+                lib/olap4j.jar,
+                lib/pentaho-application-launcher.jar,
+                lib/*.dtd,
+                lib/*.xsd,
+                demo/FoodMart.xml,
+                LICENSE.html"
+                  excludes="
+                **/*~,
+                **/_vti*/*,
+                **/*.psp,
+                **/*.sh,
+                **/JavaApplicationStub,
+                ${doc.dir}/api/src-html/**/*"/>
+          <zipfileset filemode="755"
           dir="workbench"
           prefix="${workbench.dist.name}">
             <include name="**/*.sh" />
-      		<include name="**/*.command"/>
+              <include name="**/*.command"/>
             <include name="**/JavaApplicationStub" />
-   		</zipfileset>
+           </zipfileset>
         <zipfileset
           dir="workbench"
           prefix="${workbench.dist.name}">
             <include name="**/*"/>
             <exclude name="**/*.sh"/>
-        	<exclude name="**/*.command"/>
+            <exclude name="**/*.command"/>
             <exclude name="**/plugins/*-source.jar"/>
             <exclude name="**/plugins/*-javadoc.jar"/>
             <exclude name="**/plugins/junit.jar"/>
             <exclude name="**/JavaApplicationStub" />
         </zipfileset>
-      	<zipfileset
+          <zipfileset
           dir="src/main"
           prefix="${workbench.dist.name}/src"
           includes="mondrian/gui/**/*"/>
-    	<zipfileset src="${bin.dir}/oss-licenses.zip" prefix="${workbench.dist.name}" includes="PentahoSchemaWorkbench_OSS_Licenses.html"/>
+        <zipfileset src="${bin.dir}/oss-licenses.zip" prefix="${workbench.dist.name}" includes="PentahoSchemaWorkbench_OSS_Licenses.html"/>
     </zip>
-  </target>
-
-  <!--
-       Retroweaver re-engineers JDK 1.5-compatible code so it can run under
-       JDK 1.4. This task compiles all core and test classes under 1.5 then
-       runs retroweaver to make them 1.4 compatible.
-
-       If you only intend to run on JDK 1.5, there's no need to call this task.
-
-       The inputs to this process are the mondrian.jar file (containing core
-       files) and the testclasses directory (containing test classes).
-
-       The outputs from this process are the mondrian-jdk14.jar file
-       and the testclasses-jdk14 directory.
-
-       Note that, to keep things sane, this task does not modify classes in
-       place.
-
-       After you've run this task, you can invoke 'ant test' from a JDK 1.4 and
-       all the tests will run. You should also be able replace mondrian.jar with
-       mondrian-jdk14.jar and retroweaver-rt.jar (retroweaver's runtime library)
-       in your web application and run jpivot, but I haven't tried
-       that. Exercise for the reader.
-
-       Choosing the right ant version is a bit tricky. The retroweaver task
-       requires ant-1.6.5 or higher (and JDK 1.5), but when you run the
-       regression under JDK 1.4, you must use ant-1.6.0. Later versions of
-       ant include junit4, which requires JDK 1.5.
-    -->
-  <target name="retroweave" depends="jar, compile.tests">
-    <taskdef name="retroweaver"
-        classname="net.sourceforge.retroweaver.ant.RetroWeaverTask">
-      <classpath>
-        <pathelement location="${lib.dir}/asm.jar" />
-        <pathelement location="${lib.dir}/asm-commons.jar" />
-        <pathelement location="${lib.dir}/asm-util.jar" />
-        <pathelement location="${lib.dir}/retroweaver.jar" />
-        <pathelement location="${lib.dir}/retroweaver-rt.jar" />
-        <pathelement location="${lib.dir}/backport-util-concurrent.jar" />
-      </classpath>
-    </taskdef>
-
-    <delete quiet="true">
-      <fileset dir="." includes="${jar-jdk14.file}" />
-      <fileset dir="${testclasses-jdk14.dir}" />
-      <fileset dir="." includes="${lib.dir}/olap4j-jdk14.jar" />
-    </delete>
-
-    <mkdir dir="${testclasses-jdk14.dir}"/>
-
-    <retroweaver inputjar="${in.jar.file}" outputjar="${out.jar.file}" />
-    <retroweaver srcdir="${testclasses.dir}" destdir="${testclasses-jdk14.dir}" />
-    <retroweaver inputjar="${olap4j.in.jar.file}" outputjar="${olap4j.out.jar.file}" />
   </target>
 
   <!--=======================================================================
          publish-workbench-jar
-	          
+              
          Deploys the workbench jar to a maven repository
       ====================================================================-->
 
@@ -1956,90 +1227,89 @@ xalan.jar"/>
     <ivy:report xml="true" todir="${ivy.reports.dir}" />
   </target>
 
-	
-	<!-- ======================================== EULA assembly packaging ========================================= -->
+    <!-- ======================================== EULA assembly packaging ========================================= -->
 
-	<target name="package-eula">
+    <target name="package-eula">
 
-		<property name="pentaho.resolve.repo" value="http://nexus.pentaho.org:8081/content/groups/omni" />
+        <property name="pentaho.resolve.repo" value="http://nexus.pentaho.org:8081/content/groups/omni" />
 
-		<get
-			src="${pentaho.resolve.repo}/ant-contrib/ant-contrib/1.0b3/ant-contrib-1.0b3.jar"
-			dest="dist/ant-contrib-1.0b3.jar"
-			verbose="true"
-		/>
-		<taskdef resource="net/sf/antcontrib/antlib.xml" classpath="dist/ant-contrib-1.0b3.jar" />
+        <get
+            src="${pentaho.resolve.repo}/ant-contrib/ant-contrib/1.0b3/ant-contrib-1.0b3.jar"
+            dest="dist/ant-contrib-1.0b3.jar"
+            verbose="true"
+        />
+        <taskdef resource="net/sf/antcontrib/antlib.xml" classpath="dist/ant-contrib-1.0b3.jar" />
 
-		<condition property="isWindows">
-		    <os family="windows" />
-		</condition>
-		
-		<if>
-			<not>
-				<isset property="pentaho-eula-assembly-pom.version"/>
-			</not>
-			<then>
-				<property name="pentaho-eula-assembly-pom.version" value="1.0.13" />
-				<echo>pentaho-eula-assembly-pom.version not set, assuming default of ${pentaho-eula-assembly-pom.version}</echo>
-			</then>
-		</if>
-		
-		<if>
-			<not>
-				<isset property="artifactName"/>
-			</not>
-			<then>
-				<property name="artifactName" value="${package.basename}" />
-				<echo>artifactName not set, assuming default of ${artifactName}</echo>
-			</then>
-		</if>
-		
-		<if>
-			<not>
-				<available file="dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" type="file" />
-			</not>
-			<then>
-				<get src="${pentaho.resolve.repo}/com/pentaho/pentaho-eula-assembly-pom/${pentaho-eula-assembly-pom.version}/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" 
-		              dest="dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" 
-		              verbose="true" />
-			</then>
-		</if>
+        <condition property="isWindows">
+            <os family="windows" />
+        </condition>
+        
+        <if>
+            <not>
+                <isset property="pentaho-eula-assembly-pom.version"/>
+            </not>
+            <then>
+                <property name="pentaho-eula-assembly-pom.version" value="1.0.13" />
+                <echo>pentaho-eula-assembly-pom.version not set, assuming default of ${pentaho-eula-assembly-pom.version}</echo>
+            </then>
+        </if>
+        
+        <if>
+            <not>
+                <isset property="artifactName"/>
+            </not>
+            <then>
+                <property name="artifactName" value="${package.basename}" />
+                <echo>artifactName not set, assuming default of ${artifactName}</echo>
+            </then>
+        </if>
+        
+        <if>
+            <not>
+                <available file="dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" type="file" />
+            </not>
+            <then>
+                <get src="${pentaho.resolve.repo}/com/pentaho/pentaho-eula-assembly-pom/${pentaho-eula-assembly-pom.version}/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" 
+                      dest="dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" 
+                      verbose="true" />
+            </then>
+        </if>
 
-		<echo>
-		          mvn
-		          -f dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml
-		          -DartifactName=${artifactName}
-		          -Ddist.dir=
-		          package
-		</echo>
-		<if>
-			<isset property="isWindows" />
-			<then>
-				<exec executable="cmd">
-					<arg value="/c" />
-					<arg value="mvn.bat" />
-					<arg value="-f" />
-					<arg value="dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" />
-					<arg value="-DartifactName=${artifactName}" />
-					<arg value="-Ddist.dir=" />
-					<arg value="package" />
-				</exec>
-			</then>
-			<else>
-				<exec executable="mvn">
-					<arg value="-f" />
-					<arg value="dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" />
-					<arg value="-DartifactName=${artifactName}" />
-					<arg value="-Ddist.dir=" />
-					<arg value="package" />
-				</exec>
-			</else>
-		</if>
-		
-		<delete file="dist/ant-contrib-1.0b3.jar" />
+        <echo>
+                  mvn
+                  -f dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml
+                  -DartifactName=${artifactName}
+                  -Ddist.dir=
+                  package
+        </echo>
+        <if>
+            <isset property="isWindows" />
+            <then>
+                <exec executable="cmd">
+                    <arg value="/c" />
+                    <arg value="mvn.bat" />
+                    <arg value="-f" />
+                    <arg value="dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" />
+                    <arg value="-DartifactName=${artifactName}" />
+                    <arg value="-Ddist.dir=" />
+                    <arg value="package" />
+                </exec>
+            </then>
+            <else>
+                <exec executable="mvn">
+                    <arg value="-f" />
+                    <arg value="dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" />
+                    <arg value="-DartifactName=${artifactName}" />
+                    <arg value="-Ddist.dir=" />
+                    <arg value="package" />
+                </exec>
+            </else>
+        </if>
+        
+        <delete file="dist/ant-contrib-1.0b3.jar" />
 
-	</target>
-	
+    </target>
+    
 
 </project>
 

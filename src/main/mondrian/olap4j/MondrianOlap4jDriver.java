@@ -75,44 +75,7 @@ public class MondrianOlap4jDriver implements Driver {
      * Creates a MondrianOlap4jDriver.
      */
     public MondrianOlap4jDriver() {
-        this.factory = createFactory();
-    }
-
-    private static Factory createFactory() {
-        final String factoryClassName = getFactoryClassName();
-        try {
-            // Cannot use ClassResolver here, because factory's constructor has
-            // package access.
-            final Class<?> clazz = Class.forName(factoryClassName);
-            return (Factory) clazz.newInstance();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static String getFactoryClassName() {
-        try {
-            // If java.sql.PseudoColumnUsage is present, we are running JDBC 4.1
-            // or later.
-            Class.forName("java.sql.PseudoColumnUsage");
-            return "mondrian.olap4j.FactoryJdbc41Impl";
-        } catch (ClassNotFoundException e) {
-            // java.sql.PseudoColumnUsage is not present. This means we are
-            // running JDBC 4.0 or earlier.
-            try {
-                Class.forName("java.sql.Wrapper");
-                return "mondrian.olap4j.FactoryJdbc4Impl";
-            } catch (ClassNotFoundException e2) {
-                // java.sql.Wrapper is not present. This means we are running
-                // JDBC 3.0 or earlier (probably JDK 1.5). Load the JDBC 3.0
-                // factory.
-                return "mondrian.olap4j.FactoryJdbc3Impl";
-            }
-        }
+        this.factory = new FactoryJdbc41Impl();
     }
 
     /**

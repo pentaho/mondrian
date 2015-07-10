@@ -314,43 +314,14 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
     }
 
     /**
-     * Tests the output of the MDSCHEMA_FUNCTIONS call in JDK 1.5 or later. In
-     * JDK 1.4, does nothing and trivially succeeds.
-     * See {@link #testMDFunctionsJdk14()}.
+     * Tests the output of the MDSCHEMA_FUNCTIONS call.
      *
      * @throws Exception on error
      */
     public void testMDFunctions() throws Exception {
-        if (Util.PreJdk15 || Util.Retrowoven) {
-            // MDSCHEMA_FUNCTIONS produces different output in JDK 1.4.
-            return;
-        }
         if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
             // <Dimension>.CurrentMember function exists if
             // SsasCompatibleNaming=false.
-            return;
-        }
-        String requestType = "MDSCHEMA_FUNCTIONS";
-
-        Properties props = new Properties();
-        props.setProperty(REQUEST_TYPE_PROP, requestType);
-        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
-
-        doTest(requestType, props, TestContext.instance());
-    }
-
-    /**
-     * Tests the output of the MDSCHEMA_FUNCTIONS call in JDK 1.4, which is
-     * different because metadata such as function name and description is
-     * encoded using Java annotations, and hence is not available until
-     * JDK 1.5. In JDK 1.5 and later, does nothing and trivially succeeds.
-     * See {@link #testMDFunctions()}.
-     *
-     * @throws Exception on error
-     */
-    public void testMDFunctionsJdk14() throws Exception {
-        if (!(Util.PreJdk15 || Util.Retrowoven)) {
-            // MDSCHEMA_FUNCTIONS produces different output in JDK 1.4.
             return;
         }
         String requestType = "MDSCHEMA_FUNCTIONS";

@@ -52,10 +52,7 @@ public class Olap4jTckTest extends TestCase {
         final String catalog = list.get("Catalog");
 
         final TestSuite suite = new TestSuite();
-        if (Util.PreJdk15) {
-            // olap4j doesn't run on JDK1.4. (Not without effort.)
-            return suite;
-        }
+
         suite.setName("olap4j TCK");
         suite.addTest(createMondrianSuite(connStr, false));
         suite.addTest(createMondrianSuite(connStr, true));
