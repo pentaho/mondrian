@@ -17,12 +17,9 @@ import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapEvaluator;
-import mondrian.rolap.RolapSchema;
 import mondrian.util.CartesianProductList;
 
 import org.apache.log4j.Logger;
-
-import sun.security.action.GetLongAction;
 
 import java.util.*;
 
