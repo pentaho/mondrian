@@ -47,6 +47,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import sun.rmi.runtime.Log;
+
 /**
  *
  * This class provides a REST API for cube management in the Mondrian  
@@ -76,7 +78,57 @@ public class RequestProcessEngine {
 	@GET
 	@Produces("application/xml")
 	public String getCatalogs(@PathParam("c") String catalogName) {
-		String result = getCube(DATASOURCE_PATH, "", catalogName);
+		LOGGER.info("Querying for catalog: "+ catalogName);
+		String output = "";
+		try {
+			if (checkCatalogInDataSource(catalogName)) {
+
+				output = getCube(DATASOURCE_PATH, "", catalogName);
+				LOGGER.info(output);
+			} else {
+				output = "<output>No Catalogs found.</output>";
+				LOGGER.info(output);
+			}
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return output;
+	}
+	
+	@Path("/catalog/{c}")
+	@DELETE
+	@Produces("application/xml")
+	public String deleteCatalog(@PathParam("c") String catalogName) {
+		LOGGER.info("Deleting catalog: "+ catalogName);
+		String result = "";
+		boolean isDelCatalogSuccess = false;
+		try {
+			String userDir = System.getProperty("user.dir");
+			String userDirArr[] = userDir.split("/");
+			String dirCatalogFiles = "/";
+			for (String folderName : userDirArr) {
+				if (folderName != null && !"".equalsIgnoreCase(folderName)) {
+					dirCatalogFiles = dirCatalogFiles + folderName + "/";
+					if (folderName.contains("apache")) {
+						break;
+					}
+				}
+			}
+
+			dirCatalogFiles = dirCatalogFiles + "webapps/mondrian/WEB-INF/queries/";
+			if (deleteCatalogFromDatasource(catalogName)) {
+				deleteFile(dirCatalogFiles + catalogName + ".xml");
+				isDelCatalogSuccess = true;
+			}
+			result = isDelCatalogSuccess ? "Catalog successfully deleted"
+					: "Deletion failed";
+		} catch (Exception e) {
+			result = e.getMessage();
+		}
+
+		result = "<output>" + result + "</output>";
 		LOGGER.info(result);
 		return result;
 	}
@@ -123,7 +175,7 @@ public class RequestProcessEngine {
 			result = deleteCube(cubeName, catalogName) ? "Cube successfully deleted"
 					: "Deletion failed";
 		} catch (Exception e) {
-			result = e.getMessage();
+			result = "Deletion failed" + e.getMessage();
 		}
 
 		result = "<output>" + result + "</output>";
@@ -137,8 +189,8 @@ public class RequestProcessEngine {
 	@Consumes("text/plain")
 	public String putTask(@PathParam("c") String catalogName,
 			@PathParam("d") String cubeName, String inputXml) {
-
-		LOGGER.info("Input xml---" + inputXml);
+		LOGGER.info("Creating cube: catalog_name: " + catalogName + " cube_name: " + cubeName);
+		LOGGER.info("Input xml: " + inputXml);
 		String result = "<output>" + addCube(inputXml, catalogName, cubeName)
 				+ "</output>";
 		LOGGER.info("response xml = " + result);
@@ -156,18 +208,23 @@ public class RequestProcessEngine {
 	@Consumes("text/plain")
 	public String createCatalog(@PathParam("c") String catalogName,
 			String inputXml) {
-
+		LOGGER.info("Creating catalog: " + catalogName);
+		LOGGER.info("Input XML: "+ inputXml);
 		Document doc = null;
 		NodeList nodeList = null;
-		LOGGER.info("Input xml---" + inputXml);
+		
 
-		// String result = "<output>"+ "</output>";
-		// LOGGER.info("response xml = " + result);
-		//
+		// Validation of input xml
+		if (!inputXml.contains("DataSource") || !inputXml.contains("JdbcDrivers=") || !inputXml.contains("Jdbc=")) {
+			LOGGER.info("Invalid input request!!");
+			return "<output>Catalog creation failed| reason: Invalid input request!!</output>";
+		}
+		
+		
 		String result = "";
 		try {
-			ArrayList<Object> arrList = getNodeList(inputXml, "CatalogDefinition",
-					false);
+			ArrayList<Object> arrList = getNodeList(inputXml,
+					"CatalogDefinition", false);
 			for (Object o : arrList) {
 				if (o instanceof Document) {
 					doc = (Document) o;
@@ -187,29 +244,32 @@ public class RequestProcessEngine {
 			for (RolapSchema schema : RolapSchema.getRolapSchemas()) {
 				if (schema.getName().equals(catalogName)) {
 					LOGGER.info("Catalog " + catalogName + " was found");
-					return "<output>Catalog "+ catalogName + " already exists</output>";
+					return "<output>Catalog " + catalogName
+							+ " already exists</output>";
 				}
 			}
-			
+
 			boolean isCatalogPresentInDatasource = checkCatalogInDataSource(catalogName);
-			
-			LOGGER.info("Is catalog present in the datasource = " + isCatalogPresentInDatasource);
-			
-			if (isCatalogPresentInDatasource)
-			{
-				return "<output>Catalog "+ catalogName + " already exists</output>";
+
+			LOGGER.info("Is catalog present in the datasource = "
+					+ isCatalogPresentInDatasource);
+
+			if (isCatalogPresentInDatasource) {
+				return "<output>Catalog " + catalogName
+						+ " already exists</output>";
 			}
-			
-			String catalogFileName = addCatalogInDataSource(catalogName, dataSourceInfo);
+
+			String catalogFileName = addCatalogInDataSource(catalogName,
+					dataSourceInfo);
 			createCatalogDefinition(catalogName, catalogFileName, "");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return "<output>Catalog creation failed| reason: "+ e.getMessage() +"</output>";
+			return "<output>Catalog creation failed| reason: " + e.getMessage()
+					+ "</output>";
 		}
 		return "<output>Catalog creation was successful</output>";
 	}
-	
 
 	@Path("/invalidatecache/catalog/{c}")
 	@PUT
@@ -455,8 +515,8 @@ public class RequestProcessEngine {
 
 					if (qName.equalsIgnoreCase("Catalog")) {
 						bCatalog = false;
-						LOGGER.info("Before deleting ....datasourceinfo ="
-								+ localDataSourceInfo);
+//						LOGGER.info("Before deleting ....datasourceinfo ="
+//								+ localDataSourceInfo);
 						if (localDataSourceInfo.length() > 0) {
 							localDataSourceInfo = localDataSourceInfo.delete(0,
 									localDataSourceInfo.length());
@@ -511,6 +571,29 @@ public class RequestProcessEngine {
 													+ "\">" + tempOutput
 													+ "</Catalog>";
 										}
+									} else {
+										if ((cubeNameToSearch==null || cubeNameToSearch.equalsIgnoreCase("")) && 
+												(catalogNameToSearch != null && !catalogNameToSearch.equalsIgnoreCase(""))) {
+											if (localDataSourceInfo.length() != 0) {
+												tempOutput = "<Catalog name=\""
+														+ catalogName
+														+ "\" datasourceinfo=\""
+														+ localDataSourceInfo
+																.toString().replaceAll(
+																		"&", "&#38;")
+														+ "\">" + tempOutput
+														+ "</Catalog>";
+											} else {
+												tempOutput = "<Catalog name=\""
+														+ catalogName
+														+ "\" datasourceinfo=\""
+														+ globalDataSourceInfo
+																.toString().replaceAll(
+																		"&", "&#38;")
+														+ "\">" + tempOutput
+														+ "</Catalog>";
+											}
+										}
 									}
 									result = result + tempOutput;
 								} catch (Exception e) {
@@ -548,6 +631,29 @@ public class RequestProcessEngine {
 																"&", "&#38;")
 												+ "\">" + tempOutput
 												+ "</Catalog>";
+									}
+								} else {
+									if ((cubeNameToSearch==null || cubeNameToSearch.equalsIgnoreCase("")) && 
+											(catalogNameToSearch != null && !catalogNameToSearch.equalsIgnoreCase(""))) {
+										if (localDataSourceInfo.length() != 0) {
+											tempOutput = "<Catalog name=\""
+													+ catalogName
+													+ "\" datasourceinfo=\""
+													+ localDataSourceInfo
+															.toString().replaceAll(
+																	"&", "&#38;")
+													+ "\">" + tempOutput
+													+ "</Catalog>";
+										} else {
+											tempOutput = "<Catalog name=\""
+													+ catalogName
+													+ "\" datasourceinfo=\""
+													+ globalDataSourceInfo
+															.toString().replaceAll(
+																	"&", "&#38;")
+													+ "\">" + tempOutput
+													+ "</Catalog>";
+										}
 									}
 								}
 								result = result + tempOutput;
@@ -1001,6 +1107,7 @@ public class RequestProcessEngine {
 		}
 		return createSucc;
 	}
+	
 
 	private boolean deleteCube(String cubeName, String catalogName)
 			throws Exception {
@@ -1114,6 +1221,7 @@ public class RequestProcessEngine {
 					if (catalogName.equalsIgnoreCase(catalogNameFromXml)) {
 						Node parent = n.getParentNode();
 						parent.removeChild(n);
+						delSucc = true;
 						break;
 					}
 				}
@@ -1130,14 +1238,15 @@ public class RequestProcessEngine {
 			String finalXml = resultStreamNew.getWriter().toString();
 			deleteFile(DATASOURCE_PATH);
 			createFile(DATASOURCE_PATH, finalXml);
-
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return delSucc;
 	}
-	
-	private static boolean checkCatalogInDataSource(String catalogName) throws Exception {
+
+	private static boolean checkCatalogInDataSource(String catalogName)
+			throws Exception {
 		Document doc = null;
 		NodeList nodeList = null;
 		ArrayList<Object> arrList = getNodeList(DATASOURCE_PATH,
@@ -1161,10 +1270,9 @@ public class RequestProcessEngine {
 				}
 			}
 		}
-		
+
 		return false;
 	}
-	
 
 	private static boolean deleteFile(String fileName) throws Exception {
 		boolean deleteSucc = false;
