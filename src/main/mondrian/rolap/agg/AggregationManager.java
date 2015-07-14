@@ -5,18 +5,14 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 30 August, 2001
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.CacheControl;
-import mondrian.olap.Exp;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.MondrianServer;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.rolap.SqlStatement.Type;
 import mondrian.rolap.aggmatcher.AggStar;
@@ -196,13 +192,14 @@ public class AggregationManager extends RolapAggregationManager {
     public String getDrillThroughSql(
         final DrillThroughCellRequest request,
         final StarPredicate starPredicateSlicer,
-        List<Exp> fields,
+        List<OlapElement> fields,
         final boolean countOnly)
     {
         DrillThroughQuerySpec spec =
             new DrillThroughQuerySpec(
                 request,
                 starPredicateSlicer,
+                fields,
                 countOnly);
         Pair<String, List<SqlStatement.Type>> pair = spec.generateSqlQuery();
 
