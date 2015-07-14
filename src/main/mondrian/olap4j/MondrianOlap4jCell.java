@@ -1,27 +1,25 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.olap4j;
 
-import mondrian.olap.Exp;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.RolapCell;
 import mondrian.rolap.SqlStatement;
 
 import org.apache.log4j.Logger;
 
 import org.olap4j.*;
+import org.olap4j.Cell;
 import org.olap4j.metadata.Property;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -123,7 +121,7 @@ class MondrianOlap4jCell implements Cell {
         return drillThroughInternal(
             -1,
             -1,
-            new ArrayList<Exp>(),
+            new ArrayList<OlapElement>(),
             false,
             null,
             null);
@@ -152,7 +150,7 @@ class MondrianOlap4jCell implements Cell {
     ResultSet drillThroughInternal(
         int maxRowCount,
         int firstRowOrdinal,
-        List<Exp> fields,
+        List<OlapElement> fields,
         boolean extendedContext,
         Logger logger,
         int[] rowCountSlot)
