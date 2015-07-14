@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho
+// Copyright (C) 2005-2015 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.mdx.*;
@@ -97,11 +96,11 @@ public class RolapCell implements Cell {
         boolean extendedContext)
     {
         return getDrillThroughSQL(
-            new ArrayList<Exp>(), extendedContext);
+            new ArrayList<OlapElement>(), extendedContext);
     }
 
     public String getDrillThroughSQL(
-        List<Exp> fields,
+        List<OlapElement> fields,
         boolean extendedContext)
     {
         if (!MondrianProperties.instance()
@@ -154,7 +153,8 @@ public class RolapCell implements Cell {
                 result.getSlicerAxis());
         DrillThroughCellRequest cellRequest =
             RolapAggregationManager.makeDrillThroughRequest(
-                currentMembers, false, result.getCube(), null);
+                currentMembers, false, result.getCube(),
+                Collections.<OlapElement>emptyList());
         if (cellRequest == null) {
             return -1;
         }
@@ -167,7 +167,7 @@ public class RolapCell implements Cell {
             aggMgr.getDrillThroughSql(
                 cellRequest,
                 starPredicateSlicer,
-                new ArrayList<Exp>(),
+                new ArrayList<OlapElement>(),
                 true);
 
         final SqlStatement stmt =
@@ -452,7 +452,7 @@ public class RolapCell implements Cell {
     public SqlStatement drillThroughInternal(
         int maxRowCount,
         int firstRowOrdinal,
-        List<Exp> fields,
+        List<OlapElement> fields,
         boolean extendedContext,
         Logger logger)
     {

@@ -1,16 +1,15 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.olap;
 
 import java.io.PrintWriter;
-import java.util.List;
+import java.util.*;
 
 /**
  * Drill through statement.
@@ -21,7 +20,7 @@ public class DrillThrough extends QueryPart {
     private final Query query;
     private final int maxRowCount;
     private final int firstRowOrdinal;
-    private final List<Exp> returnList;
+    private final List<OlapElement> returnList;
 
     /**
      * Creates a DrillThrough.
@@ -40,8 +39,11 @@ public class DrillThrough extends QueryPart {
         this.query = query;
         this.maxRowCount = maxRowCount;
         this.firstRowOrdinal = firstRowOrdinal;
-        this.returnList = returnList;
+        this.returnList = Collections.unmodifiableList(
+            resolveReturnList(returnList));
     }
+
+
 
     @Override
     public void unparse(PrintWriter pw) {
@@ -80,9 +82,32 @@ public class DrillThrough extends QueryPart {
         return firstRowOrdinal;
     }
 
-    public List<Exp> getReturnList() {
+    public List<OlapElement> getReturnList() {
         return returnList;
     }
+
+
+    private List<OlapElement> resolveReturnList(List<Exp> returnList) {
+        if (returnList == null) {
+            return Collections.emptyList();
+        }
+        List<OlapElement> returnClauseElements = new ArrayList<OlapElement>();
+        SchemaReader reader = query.getSchemaReader(true);
+        for (Exp exp : returnList) {
+            final OlapElement olapElement =
+                reader.lookupCompound(
+                    query.getCube(),
+                    Util.parseIdentifier(exp.toString()),
+                    true,
+                    Category.Unknown);
+            if (olapElement instanceof OlapElement) {
+                returnClauseElements.add(olapElement);
+            }
+        }
+        return returnClauseElements;
+    }
+
+
 }
 
 // End DrillThrough.java
