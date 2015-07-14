@@ -5,18 +5,19 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 30 August, 2001
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.*;
+
+import org.apache.commons.collections.*;
 
 import java.util.*;
 
@@ -50,9 +51,10 @@ public abstract class RolapAggregationManager {
      * @param members Set of members which constrain the cell
      * @return Cell request, or null if the requst is unsatisfiable
      */
-    public static CellRequest makeRequest(final Member[] members)
-    {
-        return makeCellRequest(members, false, false, null, null, null);
+    public static CellRequest makeRequest(final Member[] members) {
+        return makeCellRequest(
+            members, false, false, null, null, null,
+            Collections.<OlapElement>emptyList());
     }
 
     /**
@@ -76,11 +78,91 @@ public abstract class RolapAggregationManager {
         final Member[] members,
         final boolean extendedContext,
         RolapCube cube,
-        List<Exp> fieldsList)
+        List<OlapElement> returnClauseMembers)
     {
         assert cube != null;
+
+        List<OlapElement> applicableMembers = getApplicableReturnClauseMembers(
+            cube, members, returnClauseMembers, extendedContext);
+        List<OlapElement> nonApplicableMembers =
+            new ArrayList<OlapElement>(
+                (List<OlapElement>)CollectionUtils
+                    .subtract(returnClauseMembers, applicableMembers));
+
         return (DrillThroughCellRequest) makeCellRequest(
-            members, true, extendedContext, cube, fieldsList, null);
+            members, true, extendedContext, cube, null, applicableMembers,
+            nonApplicableMembers);
+    }
+
+    /**
+     * Returns a List of OlapElement consisting of elements present on
+     * the base cube in context.  If drillthrough is happening on a virtual
+     * cube this may exclude non-conforming dimensions, for example.
+     */
+    private static List<OlapElement> getApplicableReturnClauseMembers(
+        RolapCube cube, Member[] members,
+        List<OlapElement> returnClauseMembers, boolean extendedContext)
+    {
+        if (!extendedContext || returnClauseMembers == null) {
+            return Collections.emptyList();
+        }
+        List<OlapElement> applicableReturnClauseMembers =
+            new ArrayList<OlapElement>();
+        final RolapCube drillthroughCube = getDrillthroughCube(cube, members);
+        final Map<String, OlapElement> measureUniqueNameMap =
+            getMeasureUniqueNameMap(drillthroughCube);
+
+        for (OlapElement olapElement : returnClauseMembers) {
+            if (isClosureFor(olapElement)) {
+                continue;
+            }
+            if (hierarchyPresentOnCube(drillthroughCube, olapElement)) {
+                applicableReturnClauseMembers.add(olapElement);
+            } else if (measureUniqueNameMap
+                .containsKey(olapElement.getUniqueName()))
+            {
+                // add the drillthrough cubes measure, not the one
+                // potentially from a virtual cube
+                applicableReturnClauseMembers.add(
+                    measureUniqueNameMap.get(olapElement.getUniqueName()));
+            }
+        }
+        return applicableReturnClauseMembers;
+    }
+
+    private static Map<String, OlapElement> getMeasureUniqueNameMap(
+        RolapCube drillthroughCube)
+    {
+        final Map<String, OlapElement> measureUniqueNameMap =
+            new HashMap<String, OlapElement>();
+        for (Member measureMember : drillthroughCube.getMeasures())  {
+            measureUniqueNameMap
+                .put(measureMember.getUniqueName(), measureMember);
+        }
+        return measureUniqueNameMap;
+    }
+
+    private static boolean hierarchyPresentOnCube(
+        RolapCube cube, OlapElement olapElement)
+    {
+        return cube.getHierarchies().contains(olapElement.getHierarchy());
+    }
+
+    private static RolapCube getDrillthroughCube(
+        RolapCube cube, Member[] members)
+    {
+        RolapCube drillthroughCube =
+            RolapCell.chooseDrillThroughCube(members, cube);
+        if (drillthroughCube == null) {
+            drillthroughCube = cube;
+        }
+        return drillthroughCube;
+    }
+
+    private static boolean isClosureFor(OlapElement olapElement) {
+        return olapElement.getHierarchy() instanceof RolapCubeHierarchy
+            && ((RolapCubeHierarchy)olapElement.getHierarchy())
+            .getRolapHierarchy().closureFor != null;
     }
 
     /**
@@ -114,19 +196,17 @@ public abstract class RolapAggregationManager {
                 false,
                 false,
                 null,
-                null,
-                evaluator);
+                evaluator, null,
+                Collections.<OlapElement>emptyList());
 
         if (request == null) {
             // Current request cannot be processed. Per API, return null.
             return null;
         }
 
-        /*
-         * Now setting the compound keys.
-         * First find out the columns referenced in the aggregateMemberList.
-         * Each list defines a compound member.
-         */
+        // Now setting the compound keys.
+        // First find out the columns referenced in the aggregateMemberList.
+        // Each list defines a compound member.
         if (aggregationLists == null) {
             return request;
         }
@@ -136,11 +216,9 @@ public abstract class RolapAggregationManager {
         Map<BitKey, List<RolapCubeMember[]>> compoundGroupMap;
         boolean unsatisfiable;
 
-        /*
-         * For each aggregationList, generate the optimal form of
-         * compoundPredicate.  These compoundPredicates are AND'ed together when
-         * sql is generated for them.
-         */
+         // For each aggregationList, generate the optimal form of
+         // compoundPredicate. These compoundPredicates are AND'ed together when
+         // sql is generated for them.
         for (List<List<Member>> aggregationList : aggregationLists) {
             compoundBitKey = BitKey.Factory.makeBitKey(starColumnCount);
             compoundBitKey.clear();
@@ -171,9 +249,7 @@ public abstract class RolapAggregationManager {
                 makeCompoundPredicate(compoundGroupMap, measure.getCube());
 
             if (compoundPredicate != null) {
-                /*
-                 * Only add the compound constraint when it is not empty.
-                 */
+                 // Only add the compound constraint when it is not empty.
                 for (BitKey bitKey : compoundGroupMap.keySet()) {
                     compoundBitKey = compoundBitKey.or(bitKey);
                 }
@@ -189,8 +265,8 @@ public abstract class RolapAggregationManager {
         boolean drillThrough,
         final boolean extendedContext,
         RolapCube cube,
-        List<Exp> fieldsList,
-        Evaluator evaluator)
+        Evaluator evaluator, List<OlapElement> fieldsList,
+        List<OlapElement> nonApplicableFields)
     {
         // Need cube for drill-through requests
         assert drillThrough == (cube != null);
@@ -228,7 +304,8 @@ public abstract class RolapAggregationManager {
         final CellRequest request;
         if (drillThrough) {
             request =
-                new DrillThroughCellRequest(starMeasure, extendedContext);
+                new DrillThroughCellRequest(
+                    starMeasure, extendedContext, nonApplicableFields);
         } else {
             request =
                 new CellRequest(starMeasure, extendedContext, drillThrough);
@@ -242,20 +319,7 @@ public abstract class RolapAggregationManager {
                 // to include in the result set, other that we don't. This
                 // happens when the MDX is a DRILLTHROUGH operation and
                 // includes a RETURN clause.
-                final SchemaReader reader = cube.getSchemaReader().withLocus();
-                for (Exp exp : fieldsList) {
-                    final OlapElement member =
-                        reader.lookupCompound(
-                            cube,
-                            Util.parseIdentifier(exp.toString()),
-                            true,
-                            Category.Unknown);
-                    if (member.getHierarchy() instanceof RolapCubeHierarchy
-                        && ((RolapCubeHierarchy)member.getHierarchy())
-                            .getRolapHierarchy().closureFor != null)
-                    {
-                        continue;
-                    }
+                for (OlapElement member : fieldsList) {
                     addNonConstrainingColumns(member, cube, request);
                 }
             }
@@ -619,17 +683,10 @@ public abstract class RolapAggregationManager {
         List<StarPredicate> compoundPredicateList =
             new ArrayList<StarPredicate> ();
         for (List<RolapCubeMember[]> group : compoundGroupMap.values()) {
-            /*
-             * e.g.
-             * {[USA].[CA], [Canada].[BC]}
-             * or
-             * {
-             */
+             // e.g {[USA].[CA], [Canada].[BC]}
             StarPredicate compoundGroupPredicate = null;
             for (RolapCubeMember[] tuple : group) {
-               /*
-                * [USA].[CA]
-                */
+                // [USA].[CA]
                 StarPredicate tuplePredicate = null;
 
                 for (RolapCubeMember member : tuple) {
@@ -647,10 +704,8 @@ public abstract class RolapAggregationManager {
             }
 
             if (compoundGroupPredicate != null) {
-                /*
-                 * Sometimes the compound member list does not constrain any
-                 * columns; for example, if only AllLevel is present.
-                 */
+                // Sometimes the compound member list does not constrain any
+                // columns; for example, if only AllLevel is present.
                 compoundPredicateList.add(compoundGroupPredicate);
             }
         }
@@ -721,7 +776,7 @@ public abstract class RolapAggregationManager {
     public abstract String getDrillThroughSql(
         DrillThroughCellRequest request,
         StarPredicate starPredicateSlicer,
-        List<Exp> fields,
+        List<OlapElement> fields,
         boolean countOnly);
 
     public static RolapCacheRegion makeCacheRegion(
