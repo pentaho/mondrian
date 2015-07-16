@@ -42,6 +42,7 @@
   <property name="testsrc.dir" value="testsrc"/>
   <property name="testsrc.dir.relative" value="testsrc"/>
   <property name="java.dir" value="${src.dir}/main"/>
+  <property name="java.cubecrud.dir" value="${src.dir}/cubecrud"/>
   <property name="javatest.dir" value="${testsrc.dir}/main"/>
   <property name="etc.dir" value="${src.dir}/etc"/>
   <property name="lib.dir" value="lib"/>
@@ -180,6 +181,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${wb.plugins.dir}/kettle-core.jar"/>
     <pathelement location="${wb.plugins.dir}/pentaho-xul-core.jar"/>
     <pathelement location="${wb.plugins.dir}/pentaho-xul-swing.jar"/>
+    <pathelement location="${lib.dir}/jersey-bundle.jar"/>
   </path>
 
   <path id="project.build.classpath">
@@ -613,12 +615,28 @@ If you wish to build for this JDK, modify ${unix.script}.
 META-INF/**"/>
     </copy>
   </target>
+	
+	
+	<target name="compile.java.cubecrud" depends="apologise" if="java.version.matches.requested">
+	    <echo>Compiling on JVM Version: ${java.runtime.version}</echo>
+	    <javac
+	        srcdir="${java.cubecrud.dir}"
+	        destdir="${classes.dir}"
+	    	fork="yes"
+	    	executable="${env.JAVA_HOME_17}/bin/javac"
+	        debug="${project.build.debug}"
+	        classpathref="project.build.classpath"
+	        includeantruntime="false">	     
+	    </javac>	    
+	  </target>
 
   <target name="compile.tests" depends="info">
   	<pathconvert property="test.classpath.formatted" pathsep="${line.separator} " refid="test.classpath" />
   	<echo message="Test Classpath: ${test.classpath.formatted}" /> 
     <javac
         srcdir="${javatest.dir}"
+        fork="yes"
+        executable="${env.JAVA_HOME_17}/bin/javac"
         destdir="${testclasses.dir}"
         debug="${project.build.debug}"
         classpathref="project.build.test.classpath"
@@ -1286,7 +1304,7 @@ doc/**/*.xml"
   </target>
 
   <target name="set-compile-args">
-    <property name="compile.default.args" value="-Dskip.download=true compile.java" />
+    <property name="compile.default.args" value="-Dskip.download=true compile.java compile.java.cubecrud" />
     <if>
       <istrue value="${include.workbench}" />
       <then>
@@ -1588,7 +1606,10 @@ Assumes that mondrian.jar exists (use 'jar' target)">
     <mkdir dir="${build.dir}/mondrian" />
     <delete file="${war.file}"/>
     <unzip src="${lib.dir}/jpivot.war" dest="${build.dir}/mondrian"/>
-
+  	
+  		
+  	
+  		
     <!-- Remove the jpivot stuff we intend to overwrite. -->
     <delete>
       <fileset dir="${build.dir}/mondrian" includes="index.jsp,xmla.jsp"/>
@@ -1596,6 +1617,12 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <fileset dir="${build.dir}/mondrian/WEB-INF/queries" includes="xmla.jsp,*.xml"/>
       <fileset dir="${build.dir}/mondrian/WEB-INF/lib" includes="${name}.jar,eigenbase-*.jar,*.xml,mondrian.dtd"/>
     </delete>
+  	<delete>
+  		<fileset dir="${build.dir}/mondrian/WEB-INF/lib" includes="log*.jar"/>
+  	</delete>
+  	<!--<copy todir="${build.dir}/mondrian/WEB-INF/lib">
+  		<fileset dir="${lib.dir}" includes="log4j.jar,commons-io.jar,xml-apis.jar,mysql-connector-java.jar"/>
+  	</copy> -->
 
     <mkdir dir="${lib.dir}" />
 
@@ -1618,7 +1645,8 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <webinf dir="${build.dir}/mondrian/WEB-INF" excludes="web.xml"/>
       <fileset dir="${build.dir}/mondrian" excludes="WEB-INF/**/*,*.jsp"/>
       <fileset dir="${webapp.dir}" includes="*.*"/>
-      <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,olap4j-xmla.jar,eigenbase-*.jar,xalan.jar,xmlunit.jar,*.dtd"/>
+      <lib dir="${lib.dir}" includes="${name}.jar,olap4j.jar,olap4j-xmla.jar,eigenbase-*.jar,xalan.jar,xmlunit.jar,
+      	*.dtd,jersey-bundle.jar,mysql-connector-java.jar,log4j.jar,commons-io.jar,xml-apis.jar,postgresql.jar"/>
       <classes dir="${javatest.dir}" includes="mondrian/xmla/**/*.xml"/>
       <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
       <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>

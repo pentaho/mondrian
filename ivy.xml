@@ -57,7 +57,7 @@
         <dependency org="sun" name="jlfgr" rev="1.0"/>
         <dependency org="javax.servlet" name="jsp-api" rev="2.0" transitive="false"/>
         <dependency org="javax.servlet" name="servlet-api" rev="2.4" transitive="false"/>
-        <dependency org="log4j" name="log4j" rev="1.2.14"/>
+        <dependency org="log4j" name="log4j" rev="1.2.16"/>
         <dependency org="org.olap4j" name="olap4j" rev="${dependency.olap4j-core.revision}">
             <artifact name="olap4j"/>
         </dependency>
@@ -78,6 +78,13 @@
         <!-- REVIEW: try xalan 2.6.0? -->
         <dependency org="xalan" name="xalan" rev="2.6.0"/>
         <dependency org="xerces" name="xercesImpl" rev="2.9.1"/>
+
+
+        <!-- Cube CRUD management-->
+        <dependency org="com.sun.jersey" name="jersey-bundle" rev="1.19" />
+        <!-- Database drivers-->
+		<dependency org="mysql" name="mysql-connector-java" rev="5.1.35" />
+		<dependency org="postgresql" name="postgresql" rev="9.1-901-1.jdbc4"/>
 
         <!-- JDK 1.4 backwards compatibility jars -->
         <dependency org="backport-util-concurrent" 

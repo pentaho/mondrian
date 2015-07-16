@@ -34,7 +34,7 @@
         <!-- 
              The URL of the servlet.
         -->
-        <URL>http://localhost:8888/mondrian/xmla</URL>
+        <URL>http://localhost:8080/mondrian/xmla</URL>
 
         <!--
              Mondrian connect string for the data source. If this data
@@ -45,7 +45,7 @@
              Catalogs can override the connect string with their own
              <DataSourceInfo> element.
           -->
-        <DataSourceInfo>Provider=mondrian;Jdbc=jdbc:oracle:thin:foodmart/foodmart@//marmalade.hydromatic.net:1521/XE;JdbcUser=foodmart;JdbcPassword=foodmart;JdbcDrivers=oracle.jdbc.OracleDriver;Catalog=/WEB-INF/queries/FoodMart.xml</DataSourceInfo>
+        <DataSourceInfo>JdbcDrivers=com.mysql.jdbc.Driver;Provider=Mondrian;Jdbc=jdbc:mysql://localhost:3306/foodmart?user=foodmart&#38;password=temp;Catalog=file:/media/shazra/shome2/softwares/apache-tomcat-7.0.61/webapps/mondrian/WEB-INF/queries/FoodMart.xml;</DataSourceInfo>
 
         <!-- 
              Provider name must be 'Mondrian'.
@@ -79,15 +79,16 @@
                      data source's <DataSourceInfo> element. Typically,
                      you would use this element if the catalogs have
                      different JDBC data sources.
-                 -->
-                <!--
-                <DataSourceInfo>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver</DataSourceInfo>
+                
+                
+                <DataSourceInfo>JdbcDrivers=com.mysql.jdbc.Driver;Provider=mondrian;Jdbc=jdbc:mysql://localhost:3306/foodmart?user=foodmart&#38;password=temp;</DataSourceInfo>
                  -->
 
                 <!-- 
                     URI of the schema definition file.
                 -->
-                <Definition>/WEB-INF/queries/FoodMart.xml</Definition>
+                <!--<Definition>/WEB-INF/queries/FoodMart.xml</Definition> -->
+                <Definition>/media/shazra/shome2/softwares/apache-tomcat-7.0.61/webapps/mondrian/WEB-INF/queries/FoodMart.xml</Definition>
             </Catalog>
         </Catalogs>
 

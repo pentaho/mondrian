@@ -88,7 +88,7 @@ All Rights Reserved.
     <servlet-class>mondrian.xmla.impl.DynamicDatasourceXmlaServlet</servlet-class>
     <init-param>
       <param-name>DataSourcesConfig</param-name>
-      <param-value>/WEB-INF/datasources.xml</param-value>
+      <param-value>file:@datasourceconfig</param-value>
     </init-param>
     <!-- 
       This is an example of how to add a callback to the XML/A servlet.
@@ -99,7 +99,17 @@ All Rights Reserved.
     </init-param>
     -->
   </servlet>
-
+	
+	<!-- Cube Management REST API -->
+	<servlet>
+	<servlet-name>Cube Management Web Application</servlet-name>
+	<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+	<load-on-startup>1</load-on-startup>	
+	</servlet>
+  <servlet-mapping>
+    <servlet-name>Cube Management Web Application</servlet-name>
+    <url-pattern>/cubecrudapi/*</url-pattern>
+  </servlet-mapping>
 
   <!-- jfreechart provided servlet -->
   <servlet>

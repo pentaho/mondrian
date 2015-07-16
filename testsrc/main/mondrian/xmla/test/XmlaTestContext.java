@@ -45,11 +45,11 @@ public class XmlaTestContext {
     public static final String DATASOURCE_DESCRIPTION =
         "Mondrian FoodMart Test data source";
     public static final String DATASOURCE_INFO =
-        "Provider=Mondrian;DataSource=FoodMart;";
+        "Provider=Mondrian;DataSource=MondrianFoodMart;";
     public static final Map<String, String> ENV =
         Olap4jUtil.mapOf(
             "catalog", CATALOG_NAME,
-            "datasource", DATASOURCE_NAME);
+            "datasource", DATASOURCE_INFO);
     private static DataSourcesConfig.DataSources DATASOURCES;
     public static final CatalogLocator CATALOG_LOCATOR =
         new CatalogLocatorImpl();
