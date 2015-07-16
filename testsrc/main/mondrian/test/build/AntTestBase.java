@@ -71,12 +71,6 @@ abstract class AntTestBase extends TestCase
     protected void runAntTest(String target)
         throws IOException, InterruptedException
     {
-        if (Util.PreJdk15) {
-            // Cannot invoke ant in JDK 1.4 or ealier.
-            // ant gives "Unknown argument: -cp"
-            return;
-        }
-
         // On hudson, ant is not on the path but is at /opt/ant1.7. If that
         // file exists, assume that we are on hudson. Otherwise, require ant
         // to be on the path.

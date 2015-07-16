@@ -565,14 +565,14 @@ public class ParserTest extends FoodMartTestCase {
 
         // exponents akimbo
         assertParseExpr("1e2", "100", true);
-        assertParseExpr("1e2", Util.PreJdk15 ? "100" : "1E+2", false);
+        assertParseExpr("1e2", "1E+2", false);
 
         assertParseExprFails(
             "1e2e3",
             "Syntax error at line 1, column 37, token 'e3'");
 
         assertParseExpr("1.2e3", "1200", true);
-        assertParseExpr("1.2e3", Util.PreJdk15 ? "1200" : "1.2E+3", false);
+        assertParseExpr("1.2e3", "1.2E+3", false);
 
         assertParseExpr("-1.2345e3", "(- 1234.5)");
         assertParseExprFails(
@@ -581,10 +581,7 @@ public class ParserTest extends FoodMartTestCase {
         assertParseExpr(".00234e0003", "2.34");
         assertParseExpr(
             ".00234e-0067",
-            Util.PreJdk15
-                ? "0.00000000000000000000000000000000000000000000000000000000"
-                     + "0000000000000234"
-                : "2.34E-70");
+            "2.34E-70");
     }
 
     /**

@@ -119,7 +119,7 @@ Does not work without the notify on add feature.
     }
 */
     public void testDeltaUsage() throws Exception {
-        if (Util.PreJdk15 || !enabled) {
+        if (!enabled) {
             return;
         }
         class Listener implements MemoryMonitor.Listener {
@@ -223,7 +223,7 @@ Does not work without the notify on add feature.
      * @throws Exception
      */
     public void _testQuery() throws Exception {
-        if (Util.PreJdk15 || !enabled) {
+        if (!enabled) {
             return;
         }
 

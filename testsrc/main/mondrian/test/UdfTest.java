@@ -854,11 +854,6 @@ public class UdfTest extends FoodMartTestCase {
      * Tests that a non-static function gives an error.
      */
     public void testNonStaticUdfFails() {
-        if (Util.PreJdk15) {
-            // Cannot detect non-static inner classes in JDK 1.4, because
-            // such things are not supposed to exist.
-            return;
-        }
         TestContext tc = udfTestContext(
             "<UserDefinedFunction name=\"Reverse2\" className=\""
             + ReverseFunctionNotStatic.class.getName()
@@ -924,27 +919,9 @@ public class UdfTest extends FoodMartTestCase {
     }
 
     /**
-     * Unit test that ensures that script UDFs fail before JDK 1.6.
-     */
-    public void testUdfScriptBadJdk() {
-        if (!Util.PreJdk16) {
-            return;
-        }
-        TestContext tc = udfTestContext(
-            "<UserDefinedFunction name='StringMult'>\n"
-            + " <Script language='JavaScript'>bar</Script>\n"
-            + "</UserDefinedFunction>");
-        tc.assertQueryThrows(
-            "select from [Sales]", "Scripting not supported until Java 1.6");
-    }
-
-    /**
      * Unit test for a UDF defined in JavaScript.
      */
     public void testScriptUdf() {
-        if (Util.PreJdk16) {
-            return;
-        }
         TestContext tc = udfTestContext(
             "<UserDefinedFunction name='StringMult'>\n"
             + "  <Script language='JavaScript'>\n"
@@ -987,9 +964,7 @@ public class UdfTest extends FoodMartTestCase {
      * function. We also use 'CDATA' section to mask the '&lt;' symbol.
      */
     public void testScriptUdfFactorial() {
-        if (Util.PreJdk16) {
-            return;
-        }
+
         TestContext tc = udfTestContext(
             "<UserDefinedFunction name='Factorial'>\n"
             + "  <Script language='JavaScript'><![CDATA[\n"
@@ -1019,9 +994,6 @@ public class UdfTest extends FoodMartTestCase {
      * Unit test that we get a nice error if a script UDF contains an error.
      */
     public void testScriptUdfInvalid() {
-        if (Util.PreJdk16) {
-            return;
-        }
         TestContext tc = udfTestContext(
             "<UserDefinedFunction name='Factorial'>\n"
             + "  <Script language='JavaScript'><![CDATA[\n"
@@ -1107,9 +1079,6 @@ public class UdfTest extends FoodMartTestCase {
      * As {@link #testCellFormatterNested()}, but using a script.
      */
     public void testCellFormatterScript() {
-        if (Util.PreJdk16) {
-            return;
-        }
         TestContext tc = measureTestContext(
             "<Measure name='Unit Sales Foo Bar' column='unit_sales'\n"
             + "    aggregator='sum' formatString='Standard'>\n"
@@ -1194,9 +1163,6 @@ public class UdfTest extends FoodMartTestCase {
      * using a script.
      */
     public void testCellFormatterOnCalcMemberScript() {
-        if (Util.PreJdk16) {
-            return;
-        }
         TestContext tc = calcMemberTestContext(
             "<CalculatedMember\n"
             + "  name='Unit Sales Foo Bar'\n"
@@ -1269,9 +1235,6 @@ public class UdfTest extends FoodMartTestCase {
      * As {@link #testMemberFormatterNested()}, but using a script.
      */
     public void testMemberFormatterScript() {
-        if (Util.PreJdk16) {
-            return;
-        }
         TestContext tc = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name='Promotion Media2' foreignKey='promotion_id'>\n"
@@ -1362,9 +1325,6 @@ public class UdfTest extends FoodMartTestCase {
      * @throws java.sql.SQLException on error
      */
     public void testPropertyFormatterScript() throws SQLException {
-        if (Util.PreJdk16) {
-            return;
-        }
         TestContext tc = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name='Promotions2' foreignKey='promotion_id'>\n"

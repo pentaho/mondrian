@@ -166,10 +166,10 @@ public final class MemoryMonitorFactory
         Object[] parameterValues)
         throws CreationException
     {
-        return (! enabled() || Util.PreJdk15)
-                    // not enabled or Java4 or below
+        return (! enabled())
+                    // not enabled
                 ? new FauxMemoryMonitor()
-                    // enabled and Java5 or above
+                    // enabled
                 : new NotificationMemoryMonitor();
     }
 

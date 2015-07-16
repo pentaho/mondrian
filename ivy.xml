@@ -29,8 +29,7 @@
 
     <configurations>
         <conf name="codegen"/>
-     	<conf name="default"/>
-        <conf name="default-jdk1.4"/>
+        <conf name="default"/>
         <conf name="sources"/>
         <conf name="dist"/>
         <conf name="oss-licenses" />
@@ -75,34 +74,9 @@
             <artifact name="olap4j-xmla"/>
         </dependency>
 
-        <!-- REVIEW: try xalan 2.6.0? -->
         <dependency org="xalan" name="xalan" rev="2.6.0"/>
         <dependency org="xerces" name="xercesImpl" rev="2.9.1"/>
 
-        <!-- JDK 1.4 backwards compatibility jars -->
-        <dependency org="backport-util-concurrent" 
-                name="backport-util-concurrent" rev="3.1"
-                conf="default-jdk1.4->default"/>
-        <dependency org="asm" name="asm" rev="3.1"
-                conf="default-jdk1.4->default"/>
-        <dependency org="asm" name="asm-commons" rev="3.1"
-                conf="default-jdk1.4->default"/>
-        <dependency org="asm" name="asm-util" rev="3.1"
-                conf="default-jdk1.4->default"/>
-        <dependency org="retroweaver" name="retroweaver" rev="2.0.7"
-                conf="default-jdk1.4->default"/>
-        <dependency org="retroweaver" name="retroweaver-rt" rev="2.0.7"
-                conf="default-jdk1.4->default"/>
-
-        <!-- Distribution Jar and Wars -->
-        <dependency org="org.apache.derby" name="derby" rev="10.2.2.0" conf="dist->default"/>
-        <dependency org="hsqldb" name="hsqldb" rev="1.8.0.10" conf="dist->default"/>
-
-        <!-- Note that this is a build of jpivot's CVS trunk on 12-22-2008. -->
-        <dependency org="com.tonbeller" name="jpivot" rev="1.8.0-100420" conf="dist->default">
-            <artifact name="jpivot" type="war"/>
-        </dependency>
-        
         <!--  OSS Licenses file -->
 	    <dependency org="pentaho" name="oss-licenses" rev="${dependency.oss-licenses.revision}" conf="oss-licenses->default">
 		   <artifact name="oss-licenses" type="zip" />
@@ -129,5 +103,7 @@
         <exclude org="org.ccil.cowan.tagcoup" module="tagsoup"/>
         <exclude org="javax.sql" module="jdbc-stdext"/>
         <exclude org="xml-apis" module="xml-apis"/>
+        <exclude org="org.apache.ant" module="ant"/>
+        <exclude org="org.apache.ant" module="ant-launcher"/>
     </dependencies>
 </ivy-module>
