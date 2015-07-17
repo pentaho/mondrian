@@ -112,13 +112,6 @@ public class JavaFunDef extends FunDefBase {
             getAnnotation(
                 method, className + "$SyntaxDef", Syntax.Function);
 
-        // In JDK 1.4 we don't have annotations, so the function name will be
-        // precisely the method name. In particular, we went the
-        // Vba.int_(Object) method to become the 'Int' function.
-        if (name.endsWith("_") && Util.PreJdk15) {
-            name = name.substring(0, name.length() - 1);
-        }
-
         int returnCategory = getReturnCategory(method);
 
         int paramCategories[] = getParameterCategories(method);
