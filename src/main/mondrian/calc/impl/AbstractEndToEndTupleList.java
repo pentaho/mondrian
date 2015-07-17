@@ -97,7 +97,6 @@ abstract class AbstractEndToEndTupleList extends AbstractTupleList {
     public TupleList withPositionCallback(
         final PositionCallback positionCallback)
     {
-        assert !(backingList() instanceof PositionSensingList);
         return new ListTupleList(
             arity, new PositionSensingList(positionCallback));
     }
