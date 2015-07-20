@@ -5,16 +5,20 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Pentaho and others
+// Copyright (C) 2006-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
-import mondrian.olap.*;
+import mondrian.olap.Exp;
+import mondrian.olap.FunDef;
+import mondrian.olap.NativeEvaluator;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Composite of {@link RolapNative}s. Uses chain of responsibility
@@ -25,12 +29,13 @@ public class RolapNativeRegistry extends RolapNative {
     private Map<String, RolapNative> nativeEvaluatorMap =
         new HashMap<String, RolapNative>();
 
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private final Lock readLock = readWriteLock.readLock();
+    private final Lock writeLock = readWriteLock.writeLock();
+
     public RolapNativeRegistry() {
         super.setEnabled(true);
-
-        /*
-         * Mondrian functions which might be evaluated natively.
-         */
+        // Mondrian functions which might be evaluated natively.
         register("NonEmptyCrossJoin".toUpperCase(), new RolapNativeCrossJoin());
         register("CrossJoin".toUpperCase(), new RolapNativeCrossJoin());
         register("TopCount".toUpperCase(), new RolapNativeTopCount());
@@ -48,7 +53,13 @@ public class RolapNativeRegistry extends RolapNative {
             return null;
         }
 
-        RolapNative rn = nativeEvaluatorMap.get(fun.getName().toUpperCase());
+        RolapNative rn = null;
+        readLock.lock();
+        try {
+            rn = nativeEvaluatorMap.get(fun.getName().toUpperCase());
+        } finally {
+            readLock.unlock();
+        }
 
         if (rn == null) {
             return null;
@@ -66,21 +77,54 @@ public class RolapNativeRegistry extends RolapNative {
     }
 
     public void register(String funName, RolapNative rn) {
-        nativeEvaluatorMap.put(funName, rn);
+        writeLock.lock();
+        try {
+            nativeEvaluatorMap.put(funName, rn);
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     /** for testing */
     void setListener(Listener listener) {
         super.setListener(listener);
-        for (RolapNative rn : nativeEvaluatorMap.values()) {
-            rn.setListener(listener);
+        readLock.lock();
+        try {
+            for (RolapNative rn : nativeEvaluatorMap.values()) {
+                rn.setListener(listener);
+            }
+        } finally {
+            readLock.unlock();
         }
     }
 
     /** for testing */
     void useHardCache(boolean hard) {
-        for (RolapNative rn : nativeEvaluatorMap.values()) {
-            rn.useHardCache(hard);
+        readLock.lock();
+        try {
+            for (RolapNative rn : nativeEvaluatorMap.values()) {
+                rn.useHardCache(hard);
+            }
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    void flushAllNativeSetCache() {
+        readLock.lock();
+        try {
+            for (String key : nativeEvaluatorMap.keySet()) {
+                RolapNative currentRolapNative = nativeEvaluatorMap.get(key);
+                if (currentRolapNative instanceof RolapNativeSet
+                        && currentRolapNative != null)
+                {
+                    RolapNativeSet currentRolapNativeSet =
+                            (RolapNativeSet) currentRolapNative;
+                    currentRolapNativeSet.flushCache();
+                }
+            }
+        } finally {
+            readLock.unlock();
         }
     }
 }
