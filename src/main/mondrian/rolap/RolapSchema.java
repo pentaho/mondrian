@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -1274,9 +1274,14 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
                 "while instantiating member reader '" + memberReaderClass);
         } else {
             SqlMemberSource source = new SqlMemberSource(hierarchy);
-            if (hierarchy.getDimension().isHighCardinality()) {
+            Dimension dimension = hierarchy.getDimension();
+            if (dimension.isHighCardinality()) {
+                LOGGER.warn(
+                    MondrianResource.instance()
+                        .HighCardinalityInDimension.str(
+                            dimension.getUniqueName()));
                 LOGGER.debug(
-                    "High cardinality for " + hierarchy.getDimension());
+                    "High cardinality for " + dimension);
                 return new NoCacheMemberReader(source);
             } else {
                 LOGGER.debug(
