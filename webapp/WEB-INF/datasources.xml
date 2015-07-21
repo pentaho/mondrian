@@ -85,7 +85,7 @@
 
     -->
         <DataSourceInfo>
-          JdbcDrivers=org.postgresql.Driver;Provider=Mondrian;Jdbc=jdbc:postgresql://localhost:3306/foodmart?user=postgres&#38;password=password;Catalog=file://var/lib/tomcat7/webapps/mondrian/WEB-INF/queries/FoodMart.xml;
+          JdbcDrivers=org.postgresql.Driver;Provider=Mondrian;Jdbc=jdbc:postgresql://localhost:3306/foodmart?user=postgres&#38;password=password;Catalog=file:/var/lib/tomcat7/webapps/mondrian/WEB-INF/queries/FoodMart.xml;
         </DataSourceInfo>
         <Definition>/var/lib/tomcat7/webapps/mondrian/WEB-INF/queries/FoodMart.xml</Definition>
       </Catalog>
