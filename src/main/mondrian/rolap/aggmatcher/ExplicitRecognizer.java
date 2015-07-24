@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
@@ -17,11 +16,7 @@ import mondrian.rolap.*;
 import mondrian.rolap.aggmatcher.JdbcSchema.Table.Column;
 import mondrian.util.Pair;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * This is the Recognizer for the aggregate table descriptions that appear in
@@ -243,159 +238,207 @@ class ExplicitRecognizer extends Recognizer {
         try {
             // Try to match a Level's name against the RolapLevel
             // unique name.
-            List<Pair<RolapLevel, JdbcSchema.Table.Column>> levelMatches =
-                new ArrayList<Pair<RolapLevel, JdbcSchema.Table.Column>>();
+            List<Pair<RolapLevel, ExplicitRules.TableDef.Level>> levelMatches =
+                new ArrayList<Pair<RolapLevel, ExplicitRules.TableDef.Level>>();
             List<ExplicitRules.TableDef.Level> aggLevels =
                 new ArrayList<ExplicitRules.TableDef.Level>();
-            level_loop:
+
+            Map<String, Column> aggTableColumnMap =
+                getCaseInsensitiveColumnMap();
+            Map<String, ExplicitRules.TableDef.Level>
+                tableDefLevelUniqueNameMap  = getTableDefLevelUniqueNameMap();
+
             for (Level hLevel : hierarchy.getLevels()) {
-                if (hLevel.isAll()) {
-                    continue;
-                }
                 final RolapLevel rLevel = (RolapLevel) hLevel;
                 String levelUniqueName = rLevel.getUniqueName();
-                for (ExplicitRules.TableDef.Level level
-                    : getTableDef().getLevels())
-                {
-                    if (level.getName().equals(levelUniqueName)) {
-                        // Now can we find a column in the aggTable
-                        // that matches the Level's column
-                        final String columnName = level.getColumnName();
-                        for (JdbcSchema.Table.Column aggColumn
-                            : aggTable.getColumns())
-                        {
-                            if (aggColumn.getName()
-                                .equalsIgnoreCase(columnName))
-                            {
-                                levelMatches.add(
-                                    new Pair<RolapLevel,
-                                        JdbcSchema.Table.Column>(
-                                            rLevel, aggColumn));
-                                aggLevels.add(level);
-                                continue level_loop;
-                            }
-                        }
+
+                if (tableDefLevelUniqueNameMap.containsKey(levelUniqueName)) {
+                    ExplicitRules.TableDef.Level level =
+                        tableDefLevelUniqueNameMap.get(levelUniqueName);
+                    if (aggTableColumnMap.containsKey(level.getColumnName())) {
+                        levelMatches.add(
+                            new Pair<RolapLevel, ExplicitRules.TableDef.Level>(
+                                rLevel, level));
+                        aggLevels.add(level);
                     }
                 }
             }
             if (levelMatches.size() == 0) {
                 return;
             }
-            // Sort the matches by level depth.
-            Collections.sort(
-                levelMatches,
-                new Comparator<Pair<RolapLevel, JdbcSchema.Table.Column>>() {
-                    public int compare(
-                        Pair<RolapLevel, Column> o1,
-                        Pair<RolapLevel, Column> o2)
-                    {
-                        return Util.compareIntegers(
-                            o1.left.getDepth(),
-                            o2.left.getDepth());
-                    }
-                });
-            Collections.sort(
-                aggLevels,
-                new Comparator<ExplicitRules.TableDef.Level>() {
-                    public int compare(
-                        mondrian.rolap.aggmatcher
-                            .ExplicitRules.TableDef.Level o1,
-                        mondrian.rolap.aggmatcher
-                            .ExplicitRules.TableDef.Level o2)
-                    {
-                        return Util.compareIntegers(
-                            o1.getRolapLevel().getDepth(),
-                            o2.getRolapLevel().getDepth());
-                    }
-                });
-            // Validate by iterating.
-            boolean forceCollapse = false;
-            for (Pair<RolapLevel, JdbcSchema.Table.Column> pair
-                : levelMatches)
-            {
-                // Fail if the level is not the first match
-                // but the one before is not its parent.
-                if (levelMatches.indexOf(pair) > 0
-                    && pair.left.getDepth() - 1
-                        != levelMatches.get(
-                            levelMatches.indexOf(pair) - 1).left.getDepth())
-                {
-                    msgRecorder.reportError(
-                        "The aggregate table "
-                        + aggTable.getName()
-                        + " contains the column "
-                        + pair.right.getName()
-                        + " which maps to the level "
-                        + pair.left.getUniqueName()
-                        + " but its parent level is not part of that aggregation.");
-                }
-                // Warn if this level is marked as non-collapsed but the level
-                // above it is present in this agg table.
-                if (levelMatches.indexOf(pair) > 0
-                    && !aggLevels.get(levelMatches.indexOf(pair)).isCollapsed())
-                {
-                    forceCollapse = true;
-                    msgRecorder.reportWarning(
-                        "The aggregate table " + aggTable.getName()
-                        + " contains the column " + pair.right.getName()
-                        + " which maps to the level "
-                        + pair.left.getUniqueName()
-                        + " and is marked as non-collapsed, but its parent column is already present.");
-                }
-                // Fail if the level is the first, it isn't at the top,
-                // but it is marked as collapsed.
-                if (levelMatches.indexOf(pair) == 0
-                    && pair.left.getDepth() > 1
-                    && aggLevels.get(levelMatches.indexOf(pair)).isCollapsed())
-                {
-                    msgRecorder.reportError(
-                        "The aggregate table "
-                        + aggTable.getName()
-                        + " contains the column "
-                        + pair.right.getName()
-                        + " which maps to the level "
-                        + pair.left.getUniqueName()
-                        + " but its parent level is not part of that aggregation and this level is marked as collapsed.");
-                }
-                // Fail if the level is non-collapsed but its members
-                // are not unique.
-                if (!aggLevels.get(
-                        levelMatches.indexOf(pair)).isCollapsed()
-                            && !pair.left.isUnique())
-                {
-                    msgRecorder.reportError(
-                        "The aggregate table "
-                        + aggTable.getName()
-                        + " contains the column "
-                        + pair.right.getName()
-                        + " which maps to the level "
-                        + pair.left.getUniqueName()
-                        + " but that level doesn't have unique members and this level is marked as non collapsed.");
-                }
-            }
+            sortLevelMatches(levelMatches, aggLevels);
+            boolean forceCollapse =
+                validateLevelMatches(levelMatches, aggLevels);
+
             if (msgRecorder.hasErrors()) {
                 return;
             }
             // All checks out. Let's create the levels.
-            for (Pair<RolapLevel, JdbcSchema.Table.Column> pair
+            for (Pair<RolapLevel, ExplicitRules.TableDef.Level> pair
                 : levelMatches)
             {
-                makeLevel(
-                    pair.right,
+                RolapLevel rolapLevel = pair.left;
+                ExplicitRules.TableDef.Level aggLevel = pair.right;
+
+                makeLevelColumnUsage(
+                    aggTableColumnMap.get(aggLevel.getColumnName()),
                     hierarchy,
                     hierarchyUsage,
-                    getColumnName(pair.left.getKeyExp()),
+                    getColumnName(aggLevel.getRolapFieldName()),
                     aggLevels.get(levelMatches.indexOf(pair)).getColumnName(),
-                    pair.left.getName(),
+                    rolapLevel.getName(),
                     forceCollapse
                         ? true
                         : aggLevels.get(levelMatches.indexOf(pair))
-                            .isCollapsed(),
-                    pair.left);
+                        .isCollapsed(),
+                    rolapLevel,
+                    getColumn(aggLevel.getOrdinalColumn(), aggTableColumnMap),
+                    getColumn(aggLevel.getCaptionColumn(), aggTableColumnMap),
+                    getProperties(aggLevel.getProperties(), aggTableColumnMap));
             }
         } finally {
             msgRecorder.popContextName();
         }
+    }
+
+    private Column getColumn(
+        String columnName, Map<String, Column> aggTableColumnMap)
+    {
+        if (columnName == null) {
+            return null;
+        }
+        return aggTableColumnMap.get(columnName);
+    }
+
+    private Map<String, Column> getProperties(
+        Map<String, String> properties, Map<String, Column> columnMap)
+    {
+        Map<String, Column> map = new HashMap<String, Column>();
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
+            map.put(entry.getKey(), getColumn(entry.getValue(), columnMap));
+        }
+        return Collections.unmodifiableMap(map);
+    }
+
+    private Map<String, ExplicitRules.TableDef.Level>
+    getTableDefLevelUniqueNameMap()
+    {
+        Map<String, ExplicitRules.TableDef.Level> tableDefUniqueNameMap =
+            new HashMap<String, ExplicitRules.TableDef.Level>();
+        for (ExplicitRules.TableDef.Level level : getTableDef().getLevels()) {
+            tableDefUniqueNameMap.put(level.getName(), level);
+        }
+        return Collections.unmodifiableMap(tableDefUniqueNameMap);
+    }
+
+    private Map<String, Column> getCaseInsensitiveColumnMap() {
+        Map<String, Column> aggTableColumnMap =
+            new TreeMap<String, Column>(String.CASE_INSENSITIVE_ORDER);
+        aggTableColumnMap.putAll(aggTable.getColumnMap());
+        return Collections.unmodifiableMap(aggTableColumnMap);
+    }
+
+    private boolean validateLevelMatches(
+        List<Pair<RolapLevel, ExplicitRules.TableDef.Level>> levelMatches,
+        List<ExplicitRules.TableDef.Level> aggLevels)
+    {
+        // Validate by iterating.
+        boolean forceCollapse = false;
+        for (Pair<RolapLevel, ExplicitRules.TableDef.Level> pair
+            : levelMatches)
+        {
+            // Fail if the level is not the first match
+            // but the one before is not its parent.
+            if (levelMatches.indexOf(pair) > 0
+                && pair.left.getDepth() - 1
+                    != levelMatches.get(
+                        levelMatches.indexOf(pair) - 1).left.getDepth())
+            {
+                msgRecorder.reportError(
+                    "The aggregate table "
+                    + aggTable.getName()
+                    + " contains the column "
+                    + pair.right.getName()
+                    + " which maps to the level "
+                    + pair.left.getUniqueName()
+                    + " but its parent level is not part of that aggregation.");
+            }
+            // Warn if this level is marked as non-collapsed but the level
+            // above it is present in this agg table.
+            if (levelMatches.indexOf(pair) > 0
+                && !aggLevels.get(levelMatches.indexOf(pair)).isCollapsed())
+            {
+                forceCollapse = true;
+                msgRecorder.reportWarning(
+                    "The aggregate table " + aggTable.getName()
+                    + " contains the column " + pair.right.getName()
+                    + " which maps to the level "
+                    + pair.left.getUniqueName()
+                    + " and is marked as non-collapsed, but its parent column is already present.");
+            }
+            // Fail if the level is the first, it isn't at the top,
+            // but it is marked as collapsed.
+            if (levelMatches.indexOf(pair) == 0
+                && pair.left.getDepth() > 1
+                && aggLevels.get(levelMatches.indexOf(pair)).isCollapsed())
+            {
+                msgRecorder.reportError(
+                    "The aggregate table "
+                    + aggTable.getName()
+                    + " contains the column "
+                    + pair.right.getName()
+                    + " which maps to the level "
+                    + pair.left.getUniqueName()
+                    + " but its parent level is not part of that aggregation and this level is marked as collapsed.");
+            }
+            // Fail if the level is non-collapsed but its members
+            // are not unique.
+            if (!aggLevels.get(
+                    levelMatches.indexOf(pair)).isCollapsed()
+                        && !pair.left.isUnique())
+            {
+                msgRecorder.reportError(
+                    "The aggregate table "
+                    + aggTable.getName()
+                    + " contains the column "
+                    + pair.right.getName()
+                    + " which maps to the level "
+                    + pair.left.getUniqueName()
+                    + " but that level doesn't have unique members and this level is marked as non collapsed.");
+            }
+        }
+        return forceCollapse;
+    }
+
+    private void sortLevelMatches(
+        List<Pair<RolapLevel, ExplicitRules.TableDef.Level>> levelMatches,
+        List<ExplicitRules.TableDef.Level> aggLevels)
+    {
+        // Sort the matches by level depth.
+        Collections.sort(
+            levelMatches,
+            new Comparator<Pair<RolapLevel, ExplicitRules.TableDef.Level>>() {
+                public int compare(
+                    Pair<RolapLevel, ExplicitRules.TableDef.Level> o1,
+                    Pair<RolapLevel, ExplicitRules.TableDef.Level> o2)
+                {
+                    return Util.compareIntegers(
+                        o1.left.getDepth(),
+                        o2.left.getDepth());
+                }
+            });
+        Collections.sort(
+            aggLevels,
+            new Comparator<ExplicitRules.TableDef.Level>() {
+                public int compare(
+                    ExplicitRules.TableDef.Level o1,
+                    ExplicitRules.TableDef.Level o2)
+                {
+                    return Util.compareIntegers(
+                        o1.getRolapLevel().getDepth(),
+                        o2.getRolapLevel().getDepth());
+                }
+            });
     }
 }
 
