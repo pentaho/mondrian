@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
@@ -543,11 +542,31 @@ public class ExplicitRules {
             final ExplicitRules.TableDef tableDef,
             final MondrianDef.AggLevel aggLevel)
         {
+            if (aggLevel.nameColumn != null) {
+                handleNameColumn(aggLevel);
+            }
             addLevelTo(
                 tableDef,
                 aggLevel.getNameAttribute(),
                 aggLevel.getColumnName(),
-                aggLevel.isCollapsed());
+                aggLevel.isCollapsed(),
+                aggLevel.ordinalColumn,
+                aggLevel.captionColumn,
+                aggLevel.properties);
+        }
+
+        /**
+         * nameColumn is mapped to the internal property $name
+         */
+        private static void handleNameColumn(MondrianDef.AggLevel aggLevel) {
+            int length = aggLevel.properties.length;
+            aggLevel.properties = Arrays.copyOf(
+                aggLevel.properties, length + 1);
+            MondrianDef.AggLevelProperty nameProp =
+                new MondrianDef.AggLevelProperty();
+            nameProp.name = Property.NAME.getName();
+            nameProp.column = aggLevel.nameColumn;
+            aggLevel.properties[length] = nameProp;
         }
 
         private static void addTo(
@@ -561,12 +580,17 @@ public class ExplicitRules {
         }
 
         public static void addLevelTo(
-            final ExplicitRules.TableDef tableDef,
+            final TableDef tableDef,
             final String name,
             final String columnName,
-            final boolean collapsed)
+            final boolean collapsed,
+            String ordinalColumn,
+            String captionColumn,
+            MondrianDef.AggLevelProperty[] properties)
         {
-            Level level = tableDef.new Level(name, columnName, collapsed);
+            Level level = tableDef.new Level(
+                name, columnName, collapsed, ordinalColumn, captionColumn,
+                properties);
             tableDef.add(level);
         }
 
@@ -588,15 +612,34 @@ public class ExplicitRules {
             private final String columnName;
             private final boolean collapsed;
             private RolapLevel rlevel;
+            private final String ordinalColumn;
+            private final String captionColumn;
+            private final Map<String, String> properties;
 
             Level(
                 final String name,
                 final String columnName,
-                final boolean collapsed)
+                final boolean collapsed,
+                String ordinalColumn,
+                String captionColumn,
+                MondrianDef.AggLevelProperty[] properties)
             {
                 this.name = name;
                 this.columnName = columnName;
                 this.collapsed = collapsed;
+                this.ordinalColumn = ordinalColumn;
+                this.captionColumn = captionColumn;
+                this.properties = makePropertyMap(properties);
+            }
+
+            private Map<String, String> makePropertyMap(
+                MondrianDef.AggLevelProperty[] properties)
+            {
+                Map<String, String> map = new HashMap<String, String>();
+                for (MondrianDef.AggLevelProperty prop : properties) {
+                    map.put(prop.name, prop.column);
+                }
+                return Collections.unmodifiableMap(map);
             }
 
             /**
@@ -627,6 +670,11 @@ public class ExplicitRules {
             public RolapLevel getRolapLevel() {
                 return rlevel;
             }
+
+            public MondrianDef.Expression getRolapFieldName() {
+                return rlevel.getKeyExp();
+            }
+
 
             /**
              * Validates a level's name.
@@ -712,6 +760,19 @@ public class ExplicitRules {
                 pw.print(subprefix);
                 pw.print("columnName=");
                 pw.println(this.columnName);
+            }
+
+
+            public String getOrdinalColumn() {
+                return ordinalColumn;
+            }
+
+            public String getCaptionColumn() {
+                return captionColumn;
+            }
+
+            public Map<String, String> getProperties() {
+                return properties;
             }
         }
 
