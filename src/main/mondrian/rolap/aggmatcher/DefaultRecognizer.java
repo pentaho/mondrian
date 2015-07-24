@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.Hierarchy;
@@ -293,7 +292,7 @@ class DefaultRecognizer extends Recognizer {
                 {
                     collapsed = false;
                 }
-                makeLevel(
+                makeLevelColumnUsage(
                     pair.right,
                     hierarchy,
                     hierarchyUsage,
@@ -301,7 +300,7 @@ class DefaultRecognizer extends Recognizer {
                     getColumnName(pair.left.getKeyExp()),
                     pair.left.getName(),
                     collapsed,
-                    pair.left);
+                    pair.left, null, null, null);
             }
         } finally {
             msgRecorder.popContextName();

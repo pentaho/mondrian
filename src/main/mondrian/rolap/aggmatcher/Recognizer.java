@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -552,7 +552,7 @@ abstract class Recognizer {
      * calling this method was to create. If there is an existing level usage
      * for the column and it matches something else, then it is an error.
      */
-    protected void makeLevel(
+    protected void makeLevelColumnUsage(
         final JdbcSchema.Table.Column aggColumn,
         final Hierarchy hierarchy,
         final HierarchyUsage hierarchyUsage,
@@ -560,9 +560,12 @@ abstract class Recognizer {
         final String levelColumnName,
         final String symbolicName,
         final boolean isCollapsed,
-        final RolapLevel rLevel)
+        final RolapLevel rLevel,
+        JdbcSchema.Table.Column ordinalColumn,
+        JdbcSchema.Table.Column captionColumn,
+        Map<String, JdbcSchema.Table.Column> properties)
     {
-        msgRecorder.pushContextName("Recognizer.makeLevel");
+        msgRecorder.pushContextName("Recognizer.makeLevelColumnUsage");
 
         try {
             if (aggColumn.hasUsage(JdbcSchema.UsageType.LEVEL)) {
@@ -607,6 +610,13 @@ abstract class Recognizer {
                 aggUsage.rightJoinConditionColumnName = levelColumnName;
                 aggUsage.collapsed = isCollapsed;
                 aggUsage.level = rLevel;
+                aggUsage.captionColumn = captionColumn;
+                aggUsage.ordinalColumn = ordinalColumn;
+                aggUsage.properties = properties;
+
+                makeLevelExtraUsages(
+                    aggUsage.captionColumn, aggUsage.ordinalColumn,
+                    aggUsage.properties);
 
                 aggUsage.setSymbolicName(symbolicName);
 
@@ -671,6 +681,27 @@ abstract class Recognizer {
             }
         } finally {
             msgRecorder.popContextName();
+        }
+    }
+
+    /**
+     * If present, marks caption/ordinal/properties columns as LEVEL_EXTRA
+     */
+    private void makeLevelExtraUsages(
+        JdbcSchema.Table.Column captionColumn,
+        JdbcSchema.Table.Column ordinalColumn,
+        Map<String, JdbcSchema.Table.Column> properties)
+    {
+        if (captionColumn != null) {
+            captionColumn.newUsage(JdbcSchema.UsageType.LEVEL_EXTRA);
+        }
+        if (ordinalColumn != null) {
+            ordinalColumn.newUsage(JdbcSchema.UsageType.LEVEL_EXTRA);
+        }
+        if (properties != null) {
+            for (JdbcSchema.Table.Column column : properties.values()) {
+                column.newUsage(JdbcSchema.UsageType.LEVEL_EXTRA);
+            }
         }
     }
 
