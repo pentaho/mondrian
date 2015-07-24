@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.MondrianDef;
@@ -234,6 +233,7 @@ public class JdbcSchema {
         FOREIGN_KEY,
         MEASURE,
         LEVEL,
+        LEVEL_EXTRA,
         FACT_COUNT,
         IGNORE
     }
@@ -361,8 +361,11 @@ public class JdbcSchema {
                 public MondrianDef.Expression joinExp;
                 public String levelColumnName;
 
-                // level
+                // level stuff
                 public RolapStar.Column rColumn;
+                public Column ordinalColumn;
+                public Column captionColumn;
+                public Map<String, Column> properties;
 
                 // agg stuff
                 public boolean collapsed = false;
@@ -377,6 +380,7 @@ public class JdbcSchema {
                  * generation (See AggGen).
                  */
                 public String usagePrefix;
+
 
                 /**
                  * Creates a Usage.
@@ -418,6 +422,44 @@ public class JdbcSchema {
                  */
                 public String getSymbolicName() {
                     return symbolicName;
+                }
+
+                public MondrianDef.Expression getOrdinalExp() {
+                    MondrianDef.Expression ordinalExp = null;
+                    if (ordinalColumn != null) {
+                        ordinalExp =
+                            new MondrianDef.Column(
+                                getTable().getName(), ordinalColumn.getName());
+                    }
+                    return ordinalExp;
+                }
+
+                public MondrianDef.Expression getCaptionExp() {
+                    MondrianDef.Expression captionExp = null;
+                    if (captionColumn != null) {
+                        captionExp =
+                            new MondrianDef.Column(
+                                getTable().getName(), captionColumn.getName());
+                    }
+                    return captionExp;
+                }
+
+                public Map<String, MondrianDef.Expression> getProperties() {
+                    Map<String, MondrianDef.Expression> map =
+                        new HashMap<String, MondrianDef.Expression>();
+                    if (properties == null) {
+                        return map;
+                    }
+                    for (Map.Entry<String, Column> entry
+                        : properties.entrySet())
+                    {
+                        map.put(
+                            entry.getKey(),
+                            new MondrianDef.Column(
+                                getTable().getName(),
+                                entry.getValue().getName()));
+                    }
+                    return Collections.unmodifiableMap(map);
                 }
 
                 /**
@@ -1067,7 +1109,7 @@ public class JdbcSchema {
             }
         }
 
-        private Map<String, Column> getColumnMap() {
+        public Map<String, Column> getColumnMap() {
             if (columnMap == null) {
                 columnMap = new HashMap<String, Column>();
             }

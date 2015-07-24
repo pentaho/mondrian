@@ -1085,10 +1085,14 @@ public class SqlTupleReader implements TupleReader {
                 continue;
             }
 
-            MondrianDef.Expression keyExp = getKeyExprOrAggColExp(
-                currLevel, levelCollapsed, aggStar);
-            MondrianDef.Expression ordinalExp = currLevel.getOrdinalExp();
-            MondrianDef.Expression captionExp = currLevel.getCaptionExp();
+            Map<MondrianDef.Expression, MondrianDef.Expression>
+                targetExp = getLevelTargetExpMap(currLevel, aggStar);
+            MondrianDef.Expression keyExp =
+                targetExp.get(currLevel.getKeyExp());
+            MondrianDef.Expression ordinalExp =
+                targetExp.get(currLevel.getOrdinalExp());
+            MondrianDef.Expression captionExp =
+                targetExp.get(currLevel.getCaptionExp());
             MondrianDef.Expression parentExp = currLevel.getParentExp();
 
             if (parentExp != null) {
@@ -1107,9 +1111,7 @@ public class SqlTupleReader implements TupleReader {
                         parentSql, parentAlias, true, false, true, false);
                 }
             }
-
             String keySql = keyExp.getExpression(sqlQuery);
-
 
             if (!levelCollapsed) {
                 hierarchy.addToFrom(sqlQuery, keyExp);
@@ -1130,7 +1132,6 @@ public class SqlTupleReader implements TupleReader {
                 // The SQL query will figure out what to use.
                 sqlQuery.addGroupBy(keySql, keyAlias);
             }
-
             if (captionSql != null) {
                 final String captionAlias =
                     sqlQuery.addSelect(captionSql, null);
@@ -1164,7 +1165,7 @@ public class SqlTupleReader implements TupleReader {
             constraint.addLevelConstraint(
                 sqlQuery, baseCube, aggStar, currLevel);
 
-            if (levelCollapsed) {
+            if (levelCollapsed && requiresJoinToDim(targetExp)) {
                 // add join between key and aggstar
                 // join to dimension tables starting
                 // at the lowest granularity and working
@@ -1185,7 +1186,8 @@ public class SqlTupleReader implements TupleReader {
 
             RolapProperty[] properties = currLevel.getProperties();
             for (RolapProperty property : properties) {
-                final MondrianDef.Expression propExp = property.getExp();
+                final MondrianDef.Expression propExp =
+                    targetExp.get(property.getExp());
                 final String propSql;
                 if (propExp instanceof MondrianDef.Column) {
                     // When dealing with a column, we must use the same table
@@ -1193,7 +1195,8 @@ public class SqlTupleReader implements TupleReader {
                     // the property lives in the same table as the level.
                     propSql =
                         sqlQuery.getDialect().quoteIdentifier(
-                            currLevel.getTableAlias(),
+                            propExp.getTableAlias(),
+
                             ((MondrianDef.Column)propExp).name);
                 } else {
                     propSql = property.getExp().getExpression(sqlQuery);
@@ -1214,28 +1217,93 @@ public class SqlTupleReader implements TupleReader {
     }
 
     /**
-     * Returns the Expression associated with the level's
-     * KeyExp, or the Expression associated with the level's
-     * AggStar column if the level is collapsed and aggStar is defined.
+     * Determines whether we need to join the agg table to one or
+     * more dimension tables to retrieve "extra" level columns (like ordinal).
+     * If the targetExp map has any targets not on the agg table then
+     * we need to join.
      */
-    private MondrianDef.Expression getKeyExprOrAggColExp(
-        RolapLevel level, boolean levelCollapsed, AggStar aggStar)
+    private boolean requiresJoinToDim(
+        Map<MondrianDef.Expression, MondrianDef.Expression> targetExp)
     {
-        if (aggStar == null || !levelCollapsed) {
-            return level.getKeyExp();
-        } else {
-            AggStar.Table.Column aggColumn = getAggColumn(
-                aggStar, (RolapCubeLevel)level);
-            if (aggColumn == null) {
-                throw new MondrianException(
-                    String.format(
-                        "Expected level [%s] to have a collapsed attribute "
-                        + "on aggregate table '%s'", level.getName(),
-                        aggStar.getFactTable().getName()));
+        for (Map.Entry<MondrianDef.Expression, MondrianDef.Expression> entry
+             : targetExp.entrySet())
+        {
+            if (entry.getKey() != null
+                && entry.getKey().equals(entry.getValue()))
+            {
+                // this level expression does not have a corresponding
+                // field on the aggregate table
+                return true;
             }
-            return aggColumn.getExpression();
         }
+        return false;
     }
+
+    /**
+     * Returns a map of the various RolapLevel expressions (keyExp, ordinalExp,
+     * captionExp, properties) to the corresponding target expression to be
+     * used.  If there's no aggStar available then we'll just return an
+     * identity map.
+     * If an AggStar is present the target Expression may be on the
+     * aggregate table.
+     */
+    private Map<MondrianDef.Expression, MondrianDef.Expression>
+        getLevelTargetExpMap(RolapLevel level, AggStar aggStar)
+    {
+        Map<MondrianDef.Expression, MondrianDef.Expression> map =
+            initializeIdentityMap(level);
+        if (aggStar == null) {
+            return Collections.unmodifiableMap(map);
+        }
+        AggStar.Table.Level aggLevel =
+            getAggLevel(aggStar, (RolapCubeLevel) level);
+        if (aggLevel == null) {
+            // If no AggStar Level is defined, then the key exp is
+            // a raw AggStar Column.  No extra columns.
+            AggStar.Table.Column aggStarColumn =
+                getAggColumn(aggStar, (RolapCubeLevel)level);
+            assert aggStarColumn.getExpression() != null;
+            map.put(level.getKeyExp(), aggStarColumn.getExpression());
+        } else {
+            assert aggLevel.getExpression() != null;
+            map.put(level.getKeyExp(), aggLevel.getExpression());
+            if (aggLevel.getOrdinalExp() != null) {
+                map.put(level.getOrdinalExp(), aggLevel.getOrdinalExp());
+            }
+            if (aggLevel.getCaptionExp() != null) {
+                map.put(level.getCaptionExp(), aggLevel.getCaptionExp());
+            }
+            for (RolapProperty prop : level.getProperties()) {
+                String propName = prop.getName();
+                if (aggLevel.getProperties().containsKey(propName)) {
+                    map.put(
+                        prop.getExp(), aggLevel.getProperties().get(propName));
+                }
+            }
+        }
+        return Collections.unmodifiableMap(map);
+    }
+
+    /** Creates a map of the expressions from a RolapLevel
+     * to themselves.  This is the starting assumption of
+     * what the target expression is.
+     */
+    private  Map<MondrianDef.Expression, MondrianDef.Expression>
+        initializeIdentityMap(RolapLevel level) {
+        Map<MondrianDef.Expression, MondrianDef.Expression> map =
+            new HashMap<MondrianDef.Expression, MondrianDef.Expression>();
+        map.put(level.getKeyExp(), level.getKeyExp());
+        map.put(level.getOrdinalExp(), level.getOrdinalExp());
+        map.put(level.getCaptionExp(), level.getCaptionExp());
+        for (RolapProperty prop : level.getProperties()) {
+            if (!map.containsKey(prop.getExp())) {
+                map.put(prop.getExp(), prop.getExp());
+            }
+        }
+        return map;
+    }
+
+
 
     private void addAggColumnToSql(
         SqlQuery sqlQuery, WhichSelect whichSelect, AggStar aggStar,
@@ -1253,6 +1321,16 @@ public class SqlTupleReader implements TupleReader {
         }
         aggColumn.getTable().addToFrom(sqlQuery, false, true);
     }
+
+
+    private AggStar.Table.Level getAggLevel(
+        AggStar aggStar, RolapCubeLevel level)
+    {
+        RolapStar.Column starColumn =
+            level.getStarKeyColumn();
+        return aggStar.lookupLevel(starColumn.getBitPosition());
+    }
+
 
     private AggStar.Table.Column getAggColumn(
         AggStar aggStar, RolapCubeLevel level)
