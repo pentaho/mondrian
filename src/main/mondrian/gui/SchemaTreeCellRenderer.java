@@ -5,11 +5,10 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2010 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 */
-
 package mondrian.gui;
 
 import mondrian.gui.validate.ValidationUtils;
@@ -281,7 +280,7 @@ public class SchemaTreeCellRenderer
             this.setPreferredSize(
                 new java.awt.Dimension(
                     this.getPreferredSize().width + 1,
-                    25)); //Do not remove this
+                    25)); // Do not remove this
         } else if (value instanceof MondrianGuiDef.Measure) {
             setText(invalidFlag, ((MondrianGuiDef.Measure) value).name);
             super.setIcon(
@@ -546,6 +545,17 @@ public class SchemaTreeCellRenderer
                     myClassLoader.getResource(
                         workbench.getResourceConverter().getGUIReference(
                             "aggLevel"))));
+
+        } else if (value instanceof MondrianGuiDef.AggLevelProperty) {
+            setText(
+                invalidFlag, workbench.getResourceConverter().getString(
+                    "common.aggLevelProperty.title",
+                    "Aggregate Level Property"));
+            super.setIcon(
+                new ImageIcon(
+                    myClassLoader.getResource(
+                        workbench.getResourceConverter().getGUIReference(
+                            "property"))));
         } else if (value instanceof MondrianGuiDef.AggMeasure) {
             setText(
                 invalidFlag, workbench.getResourceConverter().getString(
