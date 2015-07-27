@@ -1919,9 +1919,25 @@
                 The name of the column mapping to the level name.
             </Doc>
         </Attribute>
+        <Attribute name="ordinalColumn" required="false">
+            <Doc>
+                The ordinal column for this level.
+            </Doc>
+        </Attribute>
+        <Attribute name="captionColumn" required="false">
+            <Doc>
+                The caption column for this level.
+            </Doc>
+        </Attribute>
         <Attribute name="name" required="true">
             <Doc>
                 The name of the Dimension Hierarchy level.
+            </Doc>
+        </Attribute>
+        <Attribute name="nameColumn" required="false">
+            <Doc>
+                The name of the column which holds the user identifier of
+                this level.
             </Doc>
         </Attribute>
         <Attribute name="collapsed" required="false" type="Boolean" default="true">
@@ -1930,6 +1946,7 @@
                 are also present in the aggregation table.
             </Doc>
         </Attribute>
+        <Array name="properties" type="AggLevelProperty" min="0"/>
         <Code>
             public String getNameAttribute() {
                 return name;
@@ -1941,6 +1958,13 @@
                 return collapsed;
             }
         </Code>
+    </Element>
+    <Element type="AggLevelProperty">
+        <Doc>
+            Member property.
+        </Doc>
+        <Attribute name="name"><Doc></Doc></Attribute>
+        <Attribute name="column"><Doc></Doc></Attribute>
     </Element>
 
     <Element type="AggMeasure">

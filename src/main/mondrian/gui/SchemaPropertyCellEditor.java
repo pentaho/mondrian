@@ -5,11 +5,10 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 */
-
 package mondrian.gui;
 
 import mondrian.gui.MondrianGuiDef.Hierarchy;
@@ -50,7 +49,6 @@ public class SchemaPropertyCellEditor
     JTable tableEditor;
     Component activeEditor;
     JComboBox listEditor;
-    //JComboBox relationList;  // Join, Table
     JTable relationTable;
     JPanel relationRenderer;
 
@@ -446,7 +444,8 @@ public class SchemaPropertyCellEditor
             activeEditor = listEditor;
 
         } else if (targetClassz == MondrianGuiDef.HierarchyGrant.class
-            && propertyName.equals("rollupPolicy")) {
+            && propertyName.equals("rollupPolicy"))
+        {
             ComboBoxModel cRollupPolicy =
                 new DefaultComboBoxModel(
                     new String[]{"full", "partial", "hidden"});
@@ -686,19 +685,24 @@ public class SchemaPropertyCellEditor
             activeEditor = listEditor;
 
         } else if ((targetClassz == MondrianGuiDef.AggFactCount.class
-                    && propertyName.equals("column"))
-                   || (targetClassz == MondrianGuiDef.AggIgnoreColumn.class
-                       && propertyName.equals("column"))
-                   || (targetClassz == MondrianGuiDef.AggLevel.class
-                       && propertyName.equals("column"))
-                   || (targetClassz == MondrianGuiDef.AggMeasure.class
-                       && propertyName.equals("column"))
-                   || (targetClassz == MondrianGuiDef.AggForeignKey.class
-                       && propertyName.equals("factColumn"))
-                   || (targetClassz == MondrianGuiDef.AggForeignKey.class
-                       && propertyName.equals("aggColumn")))
+            && propertyName.equals("column"))
+            || (targetClassz == MondrianGuiDef.AggIgnoreColumn.class
+            && propertyName.equals("column"))
+            || (targetClassz == MondrianGuiDef.AggLevelProperty.class
+            && propertyName.equals("column"))
+            || (targetClassz == MondrianGuiDef.AggLevel.class
+            && Arrays.asList(
+                "column", "ordinalColumn",
+                "captionColumn", "nameColumn").contains(propertyName))
+            || (targetClassz == MondrianGuiDef.AggMeasure.class
+            && propertyName.equals("column"))
+            || (targetClassz == MondrianGuiDef.AggForeignKey.class
+            && propertyName.equals("factColumn"))
+            || (targetClassz == MondrianGuiDef.AggForeignKey.class
+            && propertyName.equals("aggColumn")))
         {
             List<String> allcols = jdbcMetaData.getAllColumns(null, null);
+
             ComboBoxModel cAllcols =
                 new DefaultComboBoxModel(new Vector<String>(allcols));
 
@@ -1379,7 +1383,7 @@ public class SchemaPropertyCellEditor
 
     private List<String> getDimensions() {
         List<String> dims = new ArrayList<String>();
-        Object po = getParentObject(); //cubegrant
+        Object po = getParentObject(); // cubegrant
         if (po != null) {
             MondrianGuiDef.CubeGrant parent = (MondrianGuiDef.CubeGrant) po;
             if (!(parent.cube == null || parent.cube.equals(""))) {
@@ -1404,7 +1408,7 @@ public class SchemaPropertyCellEditor
 
     private List<String> getHierarchies() {
         List<String> hiers = new ArrayList<String>();
-        Object po = getParentObject(); //cubegrant
+        Object po = getParentObject(); // cubegrant
         if (po != null) {
             MondrianGuiDef.CubeGrant parent = (MondrianGuiDef.CubeGrant) po;
             if (!(parent.cube == null || parent.cube.equals(""))) {
@@ -1487,7 +1491,7 @@ public class SchemaPropertyCellEditor
                     segment.getQuoting()));
             }
         }
-        Object po = getParentObject(); //cubegrant
+        Object po = getParentObject(); // cubegrant
         if (po == null) {
             return hlevels;
         }
