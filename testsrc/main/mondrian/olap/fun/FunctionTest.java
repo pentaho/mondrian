@@ -3403,7 +3403,7 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testPercentile() {
         // same result as median
-       assertExprReturns(
+        assertExprReturns(
             "Percentile({[Store].[All Stores].[USA].children}, [Measures].[Store Sales], 50)",
             "159,167.84");
         // same result as min
