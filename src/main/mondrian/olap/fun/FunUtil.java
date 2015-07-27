@@ -1232,6 +1232,10 @@ public class FunUtil extends Util {
         // arithmetic mean of the two numbers in the middle of the list, or
         // (entries[length/2 - 1] + entries[length/2]) / 2.
         int length = asArray.length;
+        if (length == 1) {
+            // if array contains a single element return it
+            return asArray[0];
+        }
         if (p <= 0.0) {
             return asArray[0];
         } else if (p >= 1.0) {
@@ -1249,12 +1253,17 @@ public class FunUtil extends Util {
                     / 2.0;
             }
         } else {
-            final double jD = Math.floor(length * p);
-            int j = jD > 0 ? (int) jD - 1 : (int) jD;
-            double alpha = (p * length) - jD;
-            assert alpha >= 0;
-            assert alpha <= 1;
-            return asArray[j] + ((asArray[j + 1] - asArray[j]) * alpha);
+            final double rank = ((length - 1) * p) + 1;
+            final int integerPart = (int) Math.floor(rank);
+            assert integerPart >= 1;
+            final double decimalPart = rank - integerPart;
+            assert decimalPart >= 0;
+            assert decimalPart <= 1;
+            int indexForFormula = integerPart - 1;
+            double percentile = asArray[indexForFormula]
+                + ((asArray[indexForFormula + 1] - asArray[indexForFormula])
+                * decimalPart);
+            return percentile;
         }
     }
 
