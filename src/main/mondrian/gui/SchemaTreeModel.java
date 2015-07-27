@@ -5,11 +5,10 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2010 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 */
-
 package mondrian.gui;
 
 import mondrian.util.CompositeList;
@@ -182,6 +181,13 @@ public class SchemaTreeModel extends DefaultTreeModel {
                 (t instanceof MondrianGuiDef.AggPattern)
                     ? Arrays.asList(((MondrianGuiDef.AggPattern) t).excludes)
                     : Collections.emptyList());
+        } else if (parent instanceof MondrianGuiDef.AggLevel) {
+            MondrianGuiDef.AggLevel t = (MondrianGuiDef.AggLevel) parent;
+            if (t.properties == null) {
+                t.properties = new MondrianGuiDef.AggLevelProperty[0];
+            }
+            return new CompositeList<Object>(
+                Arrays.asList(t.properties));
         } else if (parent instanceof MondrianGuiDef.View) {
             MondrianGuiDef.View v = (MondrianGuiDef.View) parent;
             return Arrays.asList((Object[]) v.selects);
