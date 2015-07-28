@@ -1,0 +1,48 @@
+# explicit_aggs.csv
+# @version  $Id:$
+## TableName: exp_agg_test
+## ColumnNames:  testyear,testqtr,testmonthord,testmonthname,testmonthcap,testmonprop1,testmonprop2,gender,test_unit_sales,test_store_cost,fact_count
+## ColumnTypes: INTEGER,VARCHAR(30),INTEGER,VARCHAR(30),VARCHAR(30),VARCHAR(30),VARCHAR(30),VARCHAR(30),INTEGER,DECIMAL(10,4),INTEGER
+## NosOfRows: 12
+1997,Q1,1,January,January-,January-prop1,January-prop2,M,663152,549965.3518,217372
+1997,Q1,2,February,February-,February-prop1,February-prop2,M,598696,500406.3176,196224
+1997,Q1,3,March,March-,March-prop1,March-prop2,M,743628,627702.6878,241676
+1997,Q2,4,April,April-,April-prop1,April-prop2,M,611340,518570.178,200340
+1997,Q2,5,May,May-,May-prop1,May-prop2,M,653790,553017.7482,212536
+1997,Q2,6,June,June-,June-prop1,June-prop2,M,653040,545530.242,211440
+1997,Q3,7,July,July-,July-prop1,July-prop2,M,738854,614466.6922,240002
+1997,Q3,8,August,August-,August-prop1,August-prop2,M,699174,592095.0338,226610
+1997,Q3,9,September,September-,September-prop1,September-prop2,M,603300,514856.136,195720
+1997,Q4,10,October,October-,October-prop1,October-prop2,M,648024,545237.9386,210552
+1997,Q4,11,November,November-,November-prop1,November-prop2,M,777000,653573.166,253140
+1997,Q4,12,December,December-,December-prop1,December-prop2,M,841030,715230.6732,273048
+## TableName:  exp_agg_test_distinct_count
+## ColumnNames:  fact_count,testyear,gender,store_name,store_country,store_st,store_cty,store_add,unit_s,cust_cnt
+## ColumnTypes: INTEGER,INTEGER,VARCHAR(30),VARCHAR(30),VARCHAR(30),VARCHAR(30),VARCHAR(30),VARCHAR(30),INTEGER,INTEGER
+## NosOfRows:  26
+3957,1997,F,Store 11,USA,OR,Portland,5371 Holland Circle,12488,269
+6580,1997,F,Store 13,USA,OR,Salem,5179 Valley Ave,20548,232
+653,1997,F,Store 14,USA,CA,San Francisco,4365 Indigo Ct,1064,146
+4301,1997,F,Store 15,USA,WA,Seattle,5006 Highland Drive,13513,470
+3797,1997,F,Store 16,USA,WA,Spokane,5922 La Salle Ct,12068,45
+5538,1997,F,Store 17,USA,WA,Tacoma,490 Risdon Road,17420,139
+676,1997,F,Store 2,USA,WA,Bellingham,5203 Catanzaro Way,1096,100
+641,1997,F,Store 22,USA,WA,Walla Walla,9606 Julpum Loop,1019,44
+1597,1997,F,Store 23,USA,WA,Yakima,3920 Noah Court,5007,42
+4048,1997,F,Store 24,USA,CA,San Diego,2342 Waltham St.,12835,474
+3753,1997,F,Store 3,USA,WA,Bremerton,1501 Ramsey Circle,11640,87
+3426,1997,F,Store 6,USA,CA,Beverly Hills,5495 Mitchell Canyon Road,10771,519
+3864,1997,F,Store 7,USA,CA,Los Angeles,1077 Wharf Drive,12089,551
+4307,1997,M,Store 11,USA,OR,Portland,5371 Holland Circle,13591,294
+6767,1997,M,Store 13,USA,OR,Salem,5179 Valley Ave,21032,242
+672,1997,M,Store 14,USA,CA,San Francisco,4365 Indigo Ct,1053,150
+3655,1997,M,Store 15,USA,WA,Seattle,5006 Highland Drive,11498,436
+3600,1997,M,Store 16,USA,WA,Spokane,5922 La Salle Ct,11523,39
+5646,1997,M,Store 17,USA,WA,Tacoma,490 Risdon Road,17837,139
+704,1997,M,Store 2,USA,WA,Bellingham,5203 Catanzaro Way,1141,90
+698,1997,M,Store 22,USA,WA,Walla Walla,9606 Julpum Loop,1184,52
+2055,1997,M,Store 23,USA,WA,Yakima,3920 Noah Court,6484,53
+4047,1997,M,Store 24,USA,CA,San Diego,2342 Waltham St.,12800,488
+4123,1997,M,Store 3,USA,WA,Bremerton,1501 Ramsey Circle,12936,92
+3389,1997,M,Store 6,USA,CA,Beverly Hills,5495 Mitchell Canyon Road,10562,540
+4343,1997,M,Store 7,USA,CA,Los Angeles,1077 Wharf Drive,13574,596

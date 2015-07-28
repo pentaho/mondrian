@@ -5,11 +5,10 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 */
-
 package mondrian.gui;
 
 import org.apache.log4j.Logger;
@@ -191,7 +190,7 @@ public class SchemaExplorer
             listEditor.setPreferredSize(
                 new java.awt.Dimension(
                     listEditor.getPreferredSize().width,
-                    24)); //Do not remove this
+                    24)); // Do not remove this
 
             listEditor.addItemListener(
                 new ItemListener() {
@@ -445,9 +444,9 @@ public class SchemaExplorer
         jSplitPane1.setLeftComponent(jPanel2);
 
 
-        //========================================================
+        // ========================================================
         // actions
-        //========================================================
+        // ========================================================
         addCube = new AbstractAction(
             getResourceConverter().getString(
                 "schemaExplorer.addCube.title", "Add Cube"))
@@ -873,6 +872,15 @@ public class SchemaExplorer
                 addAggLevel(e);
             }
         };
+        addAggLevelProperty = new AbstractAction(
+            getResourceConverter().getString(
+                "schemaExplorer.addAggregateLevelProperty.title",
+                "Add Aggregate Level Property"))
+        {
+            public void actionPerformed(ActionEvent e) {
+                addAggLevelProperty(e);
+            }
+        };
         addAggFactCount = new AbstractAction(
             getResourceConverter().getString(
                 "schemaExplorer.addAggregateFactCount.title",
@@ -901,9 +909,9 @@ public class SchemaExplorer
             }
         };
 
-        //========================================================
+        // ========================================================
         // toolbar buttons
-        //========================================================
+        // ========================================================
         addCubeButton.setIcon(
             new ImageIcon(
                 myClassLoader.getResource(
@@ -1131,24 +1139,22 @@ public class SchemaExplorer
         jToolBar1.addSeparator();
         jToolBar1.add(editModeButton);
 
-        //========================================================
+        // ========================================================
         // popup menu
-        //========================================================
+        // ========================================================
         jPopupMenu = new CustomJPopupMenu();
 
-        //========================================================
+        // ========================================================
         // tree mouse listener
-        //========================================================
+        // ========================================================
         tree.addMouseListener(new PopupTrigger());
         tree.addKeyListener(
             new KeyAdapter() {
                 public void keyPressed(KeyEvent e) {
-                    /*
-                    keytext=Delete
-                    keycode=127
-                    keytext=NumPad .
-                    keycode=110
-                     */
+//                    keytext=Delete
+//                    keycode=127
+//                    keytext=NumPad .
+//                    keycode=110
                     int kcode = e.getKeyCode();
                     if (kcode == 127 || kcode == 110) {
                         delete(e);
@@ -1161,9 +1167,9 @@ public class SchemaExplorer
         footer.setLayout(new java.awt.BorderLayout());
         footer.add(databaseLabel, java.awt.BorderLayout.CENTER);
 
-        //========================================================
+        // ========================================================
         // jpanel
-        //========================================================
+        // ========================================================
         this.add(jSplitPane1, java.awt.BorderLayout.CENTER);
         this.add(jToolBar1, java.awt.BorderLayout.NORTH);
         this.add(footer, java.awt.BorderLayout.SOUTH);
@@ -1227,9 +1233,6 @@ public class SchemaExplorer
             propertyTable, propertyTable.getValueAt(row, 1), true, row, 1);
     }
 
-    /**
-     * @param evt
-     */
     protected void addCube(ActionEvent evt) {
         MondrianGuiDef.Schema schema =
             (MondrianGuiDef.Schema) tree.getModel().getRoot();
@@ -1239,15 +1242,6 @@ public class SchemaExplorer
 
         cube.dimensions = new MondrianGuiDef.Dimension[0];
         cube.measures = new MondrianGuiDef.Measure[0];
-
-        /*
-         * Don't default the table
-         *
-        MondrianGuiDef.Table cfact = new MondrianGuiDef.Table("","Table","");
-        cfact.aggExcludes = new MondrianGuiDef.AggExclude[0];
-        cfact.aggTables = new MondrianGuiDef.AggTable[0];
-        cube.fact = cfact;
-        */
 
         cube.calculatedMembers = new MondrianGuiDef.CalculatedMember[0];
         cube.namedSets = new MondrianGuiDef.NamedSet[0];
@@ -1282,7 +1276,7 @@ public class SchemaExplorer
 
         parameter.name = "";
 
-        //set the required fields
+        // set the required fields
         parameter.name =
             getNewName(
                 getResourceConverter().getString(
@@ -1315,7 +1309,7 @@ public class SchemaExplorer
 
         role.schemaGrants = new MondrianGuiDef.SchemaGrant[0];
 
-        //add cube to schema
+        // add cube to schema
         role.name =
             getNewName(
                 getResourceConverter().getString(
@@ -1346,7 +1340,7 @@ public class SchemaExplorer
         cube.calculatedMembers = new MondrianGuiDef.CalculatedMember[0];
         cube.enabled = Boolean.TRUE;
 
-        //add cube to schema
+        // add cube to schema
         cube.name =
             getNewName(
                 getResourceConverter().getString(
@@ -1408,21 +1402,10 @@ public class SchemaExplorer
         tree.scrollPathToVisible(path);
     }
 
-    /**
-     * @param evt
-     */
     protected void addMeasure(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -1435,7 +1418,7 @@ public class SchemaExplorer
                 }
             }
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
+        // Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Cube)) {
             JOptionPane.showMessageDialog(
                 this,
@@ -1480,15 +1463,7 @@ public class SchemaExplorer
     protected void addAggPattern(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -1506,7 +1481,7 @@ public class SchemaExplorer
                 }
             }
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
+        // Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Table)) {
             JOptionPane.showMessageDialog(
                 this,
@@ -1524,7 +1499,7 @@ public class SchemaExplorer
         MondrianGuiDef.AggPattern aggname = new MondrianGuiDef.AggPattern();
         aggname.pattern = "";
 
-        //add cube to schema
+        // add cube to schema
         aggname.ignorecase = Boolean.TRUE;
         aggname.factcount = null;
         aggname.ignoreColumns = new MondrianGuiDef.AggIgnoreColumn[0];
@@ -1555,15 +1530,7 @@ public class SchemaExplorer
     protected void addAggName(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -1594,7 +1561,7 @@ public class SchemaExplorer
         MondrianGuiDef.AggName aggname = new MondrianGuiDef.AggName();
         aggname.name = "";
 
-        //add cube to schema
+        // add cube to schema
         aggname.ignorecase = Boolean.TRUE;
         aggname.factcount = null;
         aggname.ignoreColumns = new MondrianGuiDef.AggIgnoreColumn[0];
@@ -1631,15 +1598,7 @@ public class SchemaExplorer
     protected void addAggExclude(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -1662,7 +1621,7 @@ public class SchemaExplorer
                 }
             }
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
+        // Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Table
               || path instanceof MondrianGuiDef.AggPattern))
         {
@@ -1718,15 +1677,7 @@ public class SchemaExplorer
     protected void addAggIgnoreColumn(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -1739,7 +1690,6 @@ public class SchemaExplorer
                 }
             }
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.AggTable)) {
             JOptionPane.showMessageDialog(
                 this,
@@ -1782,15 +1732,7 @@ public class SchemaExplorer
     protected void addAggForeignKey(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -1803,7 +1745,6 @@ public class SchemaExplorer
                 }
             }
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.AggTable)) {
             JOptionPane.showMessageDialog(
                 this,
@@ -1844,15 +1785,7 @@ public class SchemaExplorer
     protected void addAggMeasure(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -1865,7 +1798,6 @@ public class SchemaExplorer
                 }
             }
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.AggTable)) {
             JOptionPane.showMessageDialog(
                 this,
@@ -1904,15 +1836,7 @@ public class SchemaExplorer
     protected void addAggLevel(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -1961,18 +1885,82 @@ public class SchemaExplorer
         setTableCellFocus(0);
     }
 
-    protected void addAggFactCount(ActionEvent evt) {
-        TreePath tpath = null;
+    protected void addAggLevelProperty(ActionEvent evt) {
+        TreePath tpath = getTreePath(evt);
         Object path = null;
+        int parentIndex = -1;
+        if (tpath != null) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
+                 parentIndex--)
+            {
+                final Object p = tpath.getPathComponent(parentIndex);
+                if (p instanceof MondrianGuiDef.AggLevel) {
+                    path = p;
+                    break;
+                }
+            }
+        }
+        if (!(path instanceof MondrianGuiDef.AggLevel)) {
+            JOptionPane.showMessageDialog(
+                this,
+                getResourceConverter().getString(
+                    "schemaExplorer.aggregateLevelNotSelected.alert",
+                    "Aggregate Level not selected."),
+                alert,
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        MondrianGuiDef.AggLevel aggLevel = (MondrianGuiDef.AggLevel) path;
+        MondrianGuiDef.AggLevelProperty aggLevelProperty =
+            new MondrianGuiDef.AggLevelProperty();
+
+        appendAggLevelProperty(aggLevel, aggLevelProperty);
+
+        Object[] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
+            parentPathObjs[i] = tpath.getPathComponent(i);
+        }
+        TreePath parentPath = new TreePath(parentPathObjs);
+        tree.setSelectionPath(parentPath.pathByAddingChild(aggLevelProperty));
+
+        refreshTree(tree.getSelectionPath());
+        setTableCellFocus(0);
+    }
+
+    private void appendAggLevelProperty(
+        MondrianGuiDef.AggLevel aggLevel,
+        MondrianGuiDef.AggLevelProperty aggLevelProperty)
+    {
+        if (aggLevel.properties == null) {
+            aggLevel.properties = new MondrianGuiDef.AggLevelProperty[]
+                { aggLevelProperty };
+        } else {
+            aggLevel.properties = Arrays.copyOf(
+                aggLevel.properties,
+                aggLevel.properties.length + 1);
+            aggLevel.properties[aggLevel.properties.length - 1] =
+                aggLevelProperty;
+        }
+    }
+
+    private TreePath getTreePath(ActionEvent evt) {
+        TreePath tpath;
         if (evt.getSource() instanceof Component
             && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
+            .getParent() instanceof CustomJPopupMenu)
         {
             tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
+                .getParent()).getPath();
         } else {
             tpath = tree.getSelectionPath();
         }
+        return tpath;
+    }
+
+    protected void addAggFactCount(ActionEvent evt) {
+        TreePath tpath = null;
+        Object path = null;
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -2024,15 +2012,7 @@ public class SchemaExplorer
     protected void addVirtualCubeMeasure(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -2045,7 +2025,6 @@ public class SchemaExplorer
                 }
             }
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.VirtualCube)) {
             JOptionPane.showMessageDialog(
                 this,
@@ -2093,15 +2072,7 @@ public class SchemaExplorer
     protected void addCalculatedMember(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -2149,7 +2120,7 @@ public class SchemaExplorer
         calcmember.memberProperties =
             new MondrianGuiDef.CalculatedMemberProperty[0];
 
-        //add cube to schema
+        // add cube to schema
         if (cube != null) {
             calcmember.name =
                 getNewName(
@@ -2422,21 +2393,10 @@ public class SchemaExplorer
             : o1.equals(o2);
     }
 
-    /**
-     * @param evt
-     */
     protected void addDimension(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -2490,7 +2450,7 @@ public class SchemaExplorer
         dimension.hierarchies[0].memberReaderParameters =
             new MondrianGuiDef.MemberReaderParameter[0];
 
-        //add cube to schema
+        // add cube to schema
         if (cube != null) {
             dimension.name =
                 getNewName(
@@ -2535,15 +2495,7 @@ public class SchemaExplorer
     protected void addVirtualCubeDimension(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -2556,8 +2508,6 @@ public class SchemaExplorer
                 }
             }
         }
-
-        //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.VirtualCube)) {
             JOptionPane.showMessageDialog(
                 this,
@@ -2638,15 +2588,7 @@ public class SchemaExplorer
     protected void addNamedSet(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -2690,7 +2632,7 @@ public class SchemaExplorer
         namedset.formula = "";
         namedset.formulaElement = new MondrianGuiDef.Formula();
 
-        //add cube to schema
+        // add cube to schema
         if (cube != null) {
             namedset.name =
                 getNewName(
@@ -2736,15 +2678,7 @@ public class SchemaExplorer
     protected void addDimensionUsage(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -2757,7 +2691,6 @@ public class SchemaExplorer
                 }
             }
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Cube)) {
             JOptionPane.showMessageDialog(
                 this,
@@ -2803,15 +2736,7 @@ public class SchemaExplorer
     protected void addSchemaGrant(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -2824,7 +2749,6 @@ public class SchemaExplorer
                 }
             }
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Role)) {
             JOptionPane.showMessageDialog(
                 this,
@@ -2842,7 +2766,7 @@ public class SchemaExplorer
         schemaGrant.access = "";
         schemaGrant.cubeGrants = new MondrianGuiDef.CubeGrant[0];
 
-        //add cube to schema
+        // add cube to schema
         NodeDef[] temp = role.schemaGrants;
         role.schemaGrants = new MondrianGuiDef.SchemaGrant[temp.length + 1];
         for (int i = 0; i < temp.length; i++) {
@@ -2865,15 +2789,7 @@ public class SchemaExplorer
     protected void addCubeGrant(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -2906,7 +2822,7 @@ public class SchemaExplorer
         cubeGrant.dimensionGrants = new MondrianGuiDef.DimensionGrant[0];
         cubeGrant.hierarchyGrants = new MondrianGuiDef.HierarchyGrant[0];
 
-        //add cube to schema
+        // add cube to schema
         NodeDef[] temp = schemaGrant.cubeGrants;
         schemaGrant.cubeGrants = new MondrianGuiDef.CubeGrant[temp.length + 1];
         for (int i = 0; i < temp.length; i++) {
@@ -2929,15 +2845,7 @@ public class SchemaExplorer
     protected void addDimensionGrant(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -2950,7 +2858,6 @@ public class SchemaExplorer
                 }
             }
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.CubeGrant)) {
             JOptionPane.showMessageDialog(
                 this,
@@ -2968,7 +2875,7 @@ public class SchemaExplorer
             new MondrianGuiDef.DimensionGrant();
         dimeGrant.access = "";
 
-        //add cube to schema
+        // add cube to schema
         NodeDef[] temp = cubeGrant.dimensionGrants;
         cubeGrant.dimensionGrants =
             new MondrianGuiDef.DimensionGrant[temp.length + 1];
@@ -2994,15 +2901,7 @@ public class SchemaExplorer
     protected void addHierarchyGrant(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -3034,7 +2933,7 @@ public class SchemaExplorer
         hieGrant.access = "";
         hieGrant.memberGrants = new MondrianGuiDef.MemberGrant[0];
 
-        //add cube to schema
+        // add cube to schema
         NodeDef[] temp = cubeGrant.hierarchyGrants;
         cubeGrant.hierarchyGrants =
             new MondrianGuiDef.HierarchyGrant[temp.length + 1];
@@ -3060,15 +2959,7 @@ public class SchemaExplorer
     protected void addMemberGrant(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -3100,7 +2991,7 @@ public class SchemaExplorer
             new MondrianGuiDef.MemberGrant();
         memberGrant.access = "";
 
-        //add cube to schema
+        // add cube to schema
         NodeDef[] temp = hieGrant.memberGrants;
         hieGrant.memberGrants = new MondrianGuiDef.MemberGrant[temp.length + 1];
         for (int i = 0; i < temp.length; i++) {
@@ -3122,15 +3013,7 @@ public class SchemaExplorer
 
     protected void addAnnotations(ActionEvent evt) {
         TreePath tpath = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         Object path = tree.getSelectionPath().getLastPathComponent();
         // Verify that the node selected in the tree is something that supports
         // annotations.
@@ -3171,15 +3054,7 @@ public class SchemaExplorer
 
     protected void addAnnotation(ActionEvent evt) {
         TreePath tpath = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Annotations)) {
             JOptionPane.showMessageDialog(
@@ -3212,21 +3087,10 @@ public class SchemaExplorer
         setTableCellFocus(0);
     }
 
-    /**
-     * @param evt
-     */
     protected void addLevel(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -3285,15 +3149,7 @@ public class SchemaExplorer
     protected void addSQL(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -3309,7 +3165,6 @@ public class SchemaExplorer
                 }
             }
         }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
         if (path == null) {
             JOptionPane.showMessageDialog(
                 this, getResourceConverter().getString(
@@ -3326,7 +3181,7 @@ public class SchemaExplorer
         if (path instanceof MondrianGuiDef.ExpressionView) {
             MondrianGuiDef.ExpressionView expview =
                 (MondrianGuiDef.ExpressionView) path;
-            //add sql to ExpressionView
+            // add sql to ExpressionView
             NodeDef[] temp = expview.expressions;
             expview.expressions = new MondrianGuiDef.SQL[temp.length + 1];
             for (int i = 0; i < temp.length; i++) {
@@ -3337,7 +3192,7 @@ public class SchemaExplorer
         } else {
             // Its a View
             MondrianGuiDef.View view = (MondrianGuiDef.View) path;
-            //add sql to ExpressionView
+            // add sql to ExpressionView
             NodeDef[] temp = view.selects;
             view.selects = new MondrianGuiDef.SQL[temp.length + 1];
             for (int i = 0; i < temp.length; i++) {
@@ -3361,15 +3216,7 @@ public class SchemaExplorer
     protected void addScript(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -3430,15 +3277,7 @@ public class SchemaExplorer
     protected void addCellFormatter(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -3496,15 +3335,7 @@ public class SchemaExplorer
         final LevelInfo info = new LevelInfo();
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
 
         if (tpath != null) {
@@ -3556,15 +3387,7 @@ public class SchemaExplorer
     protected void addPropertyFormatter(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -3708,15 +3531,7 @@ public class SchemaExplorer
     protected void addMeasureExp(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -3763,15 +3578,7 @@ public class SchemaExplorer
     protected void addFormula(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -3869,15 +3676,7 @@ public class SchemaExplorer
     {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-                && ((Component)evt.getSource()).getParent()
-                instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -3896,7 +3695,7 @@ public class SchemaExplorer
         if (path instanceof MondrianGuiDef.Hierarchy) {
             MondrianGuiDef.Hierarchy h = (MondrianGuiDef.Hierarchy) path;
 
-            //add relation to hierarchy
+            // add relation to hierarchy
             h.relation = relation;
         } else if (path instanceof MondrianGuiDef.Cube) {
             if (!(relation instanceof MondrianGuiDef.Relation)) {
@@ -3911,7 +3710,7 @@ public class SchemaExplorer
 
             MondrianGuiDef.Cube cube = (MondrianGuiDef.Cube) path;
 
-            //add relation to cube
+            // add relation to cube
             cube.fact = (MondrianGuiDef.Relation) relation;
         } else {
             JOptionPane.showMessageDialog(
@@ -3937,15 +3736,7 @@ public class SchemaExplorer
     protected void addHierarchy(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -3975,7 +3766,7 @@ public class SchemaExplorer
         MondrianGuiDef.Hierarchy hierarchy = new MondrianGuiDef.Hierarchy();
 
         hierarchy.name = "";
-        hierarchy.hasAll = Boolean.TRUE; //new Boolean(false);
+        hierarchy.hasAll = Boolean.TRUE;
         hierarchy.visible = Boolean.TRUE;
         hierarchy.levels = new MondrianGuiDef.Level[0];
         hierarchy.memberReaderParameters =
@@ -4066,9 +3857,6 @@ public class SchemaExplorer
     }
 
 
-    /**
-     * @param evt
-     */
     protected void addProperty(ActionEvent evt) {
         final LevelInfo info = getSelectedLevel(evt);
         if (info == null) {
@@ -4102,21 +3890,10 @@ public class SchemaExplorer
         setTableCellFocus(0);
     }
 
-    /**
-     * @param evt
-     */
     protected void addCalculatedMemberProperty(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -4228,21 +4005,10 @@ public class SchemaExplorer
         setTableCellFocus(0);
     }
 
-    /**
-     * @param evt
-     */
     protected void addClosure(ActionEvent evt) {
         TreePath tpath = null;
         Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
+        tpath = getTreePath(evt);
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -4299,8 +4065,6 @@ public class SchemaExplorer
 
     /**
      * sets the schema file
-     *
-     * @param f
      */
     public void setSchemaFile(File f) {
         this.schemaFile = f;
@@ -4653,6 +4417,12 @@ public class SchemaExplorer
                 getResourceConverter().getString(
                     "common.aggLevel.title", LBL_AGG_LEVEL));
             ((MondrianGuiDef.AggLevel) o).displayXML(pxml, 0);
+        } else if (o instanceof MondrianGuiDef.AggLevelProperty) {
+            pNames = DEF_AGG_LEVEL_PROP;
+            targetLabel.setText(
+                getResourceConverter().getString(
+                    "common.aggLevelProperty.title", LBL_AGG_LEVEL_PROP));
+            ((MondrianGuiDef.AggLevelProperty) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.AggExclude) {
             pNames = DEF_AGG_EXCLUDE;
             targetLabel.setText(
@@ -4790,7 +4560,6 @@ public class SchemaExplorer
             break;
         }
         if (parent != null) {
-            //System.out.println("parent type="+parent.getClass());
             Field[] fs = parent.getClass().getFields();
             List<String> names = new ArrayList<String>();
             for (int i = 0; i < fs.length; i++) {
@@ -4812,7 +4581,7 @@ public class SchemaExplorer
                         }
                         ptm.setNames(names);
                     } catch (Exception ex) {
-                        //name field dosen't exist, skip parent object.
+                        // name field dosen't exist, skip parent object.
                     }
                     break;
                 }
@@ -5210,14 +4979,19 @@ public class SchemaExplorer
                         }
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
-                    } else if (pathSelected
-                               instanceof MondrianGuiDef.VirtualCube)
+                    } else if (
+                        pathSelected instanceof MondrianGuiDef.AggLevel)
+                    {
+                        jPopupMenu.add(addAggLevelProperty);
+                    } else if (
+                        pathSelected instanceof MondrianGuiDef.VirtualCube)
                     {
                         jPopupMenu.add(addVirtualCubeDimension);
                         jPopupMenu.add(addVirtualCubeMeasure);
                         jPopupMenu.add(addCalculatedMember);
                         jPopupMenu.add(addAnnotations);
-                        if (((MondrianGuiDef.VirtualCube) pathSelected)
+                        if (
+                            ((MondrianGuiDef.VirtualCube) pathSelected)
                                         .annotations == null)
                         {
                             addAnnotations.setEnabled(true);
@@ -5238,39 +5012,41 @@ public class SchemaExplorer
                         }
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
-                    } else if (pathSelected
-                               instanceof MondrianGuiDef.SchemaGrant)
+                    } else if (
+                        pathSelected instanceof MondrianGuiDef.SchemaGrant)
                     {
                         jPopupMenu.add(addCubeGrant);
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
-                    } else if (pathSelected
-                               instanceof MondrianGuiDef.CubeGrant)
+                    } else if (
+                        pathSelected instanceof MondrianGuiDef.CubeGrant)
                     {
                         jPopupMenu.add(addDimensionGrant);
                         jPopupMenu.add(addHierarchyGrant);
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
-                    } else if (pathSelected
-                               instanceof MondrianGuiDef.VirtualCubeMeasure)
+                    } else if (
+                        pathSelected
+                            instanceof MondrianGuiDef.VirtualCubeMeasure)
                     {
                         jPopupMenu.add(addAnnotations);
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
-                    } else if (pathSelected
-                               instanceof MondrianGuiDef.HierarchyGrant)
+                    } else if (
+                        pathSelected instanceof MondrianGuiDef.HierarchyGrant)
                     {
                         jPopupMenu.add(addMemberGrant);
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
-                    } else if (pathSelected
-                        instanceof MondrianGuiDef.Annotations)
+                    } else if (
+                        pathSelected instanceof MondrianGuiDef.Annotations)
                     {
                         jPopupMenu.add(addAnnotation);
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
-                    } else if (pathSelected
-                        instanceof MondrianGuiDef.UserDefinedFunction)
+                    } else if (
+                        pathSelected
+                            instanceof MondrianGuiDef.UserDefinedFunction)
                     {
                         jPopupMenu.add(addScript);
                         jPopupMenu.add(delete);
@@ -5296,9 +5072,7 @@ public class SchemaExplorer
                         jPopupMenu.add(delete);
                     } else {
                         jPopupMenu.add(delete);
-                    } /* else {
-                        return;
-                    }*/
+                    }
                     jPopupMenu.show(tree, x, y);
                 }
             }
@@ -5325,9 +5099,13 @@ public class SchemaExplorer
     static final String[] DEF_AGG_LEVEL = {
         "column",
         "name",
-        "collapsed"
+        "collapsed",
+        "captionColumn",
+        "ordinalColumn",
+        "nameColumn"
     };
 
+    static final String[] DEF_AGG_LEVEL_PROP = {"name", "column"};
     static final String[] DEF_CLOSURE = {"parentColumn", "childColumn"};
     static final String[] DEF_RELATION = {"name"};
     static final String[] DEF_SQL = {"cdata", "dialect"}; //?
@@ -5468,6 +5246,7 @@ public class SchemaExplorer
     private static final String LBL_AGG_FOREIGN_KEY = "Aggregate Foreign Key";
     private static final String LBL_AGG_MEASURE = "Aggregate Measure";
     private static final String LBL_AGG_LEVEL = "Aggregate Level";
+    private static final String LBL_AGG_LEVEL_PROP = "Aggregate Level Property";
     private static final String LBL_AGG_PATTERN = "Aggregate Pattern";
     private static final String LBL_AGG_EXCLUDE = "Aggregate Exclude";
     private static final String LBL_AGG_FACT_COUNT = "Aggregate Fact Count";
@@ -5515,7 +5294,7 @@ public class SchemaExplorer
     private AbstractAction addOrdinalExp;
     private AbstractAction addCaptionExp;
     private AbstractAction addParentExp;
-    //private AbstractAction addRelation;
+
     private AbstractAction addTable;
     private AbstractAction addJoin;
     private AbstractAction addView;
@@ -5531,6 +5310,7 @@ public class SchemaExplorer
     private AbstractAction addAggForeignKey;
     private AbstractAction addAggMeasure;
     private AbstractAction addAggLevel;
+    private AbstractAction addAggLevelProperty;
     private AbstractAction addAggPattern;
     private AbstractAction addAggExclude;
     private AbstractAction addAggFactCount;
@@ -5673,7 +5453,7 @@ public class SchemaExplorer
     public static void getTableNamesForJoin(
         MondrianGuiDef.RelationOrJoin aRelOrJoin, Set<String> aTableNames)
     {
-        //EC: Loops join tree and collects table names.
+        // EC: Loops join tree and collects table names.
         if (aRelOrJoin instanceof MondrianGuiDef.Join) {
             MondrianGuiDef.RelationOrJoin theRelOrJoin_L =
                 ((MondrianGuiDef.Join) aRelOrJoin).left;
@@ -5695,8 +5475,8 @@ public class SchemaExplorer
                         : theTable.name;
                     aTableNames.add(theTableName);
                 } else {
-                    //Calls recursively collecting all table names down the join
-                    //tree.
+                    // Calls recursively collecting all table names down the
+                    // join tree.
                     getTableNamesForJoin(theCurrentRelOrJoin, aTableNames);
                 }
             }
@@ -5709,7 +5489,7 @@ public class SchemaExplorer
         String theTableName = anAlias;
         String schemaName = null;
 
-        //EC: Loops join tree and finds the table name for an alias.
+        // EC: Loops join tree and finds the table name for an alias.
         if (aRelOrJoin instanceof MondrianGuiDef.Join) {
             MondrianGuiDef.RelationOrJoin theRelOrJoin_L =
                 ((MondrianGuiDef.Join) aRelOrJoin).left;
@@ -5733,7 +5513,7 @@ public class SchemaExplorer
                         schemaName = theTable.schema;
                     }
                 } else {
-                    //otherwise continue down the join tree.
+                    // otherwise continue down the join tree.
                     String[] result = getTableNameForAlias(
                         theCurrentRelOrJoin, anAlias);
                     schemaName = result[0];

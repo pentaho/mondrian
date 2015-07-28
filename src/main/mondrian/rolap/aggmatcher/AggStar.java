@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -713,9 +713,12 @@ public class AggStar {
          * This class is used for holding dimension level information.
          * Both DimTables and FactTables can have Level columns.
          */
-        final class Level extends Column {
+        public final class Level extends Column {
             private final RolapStar.Column starColumn;
+            private final MondrianDef.Expression ordinalExp;
+            private final MondrianDef.Expression captionExp;
             private final boolean collapsed;
+            private final Map<String, MondrianDef.Expression> properties;
 
             private Level(
                 final String name,
@@ -724,10 +727,28 @@ public class AggStar {
                 RolapStar.Column starColumn,
                 boolean collapsed)
             {
+                this(
+                    name, expression, bitPosition, starColumn, collapsed,
+                    null, null, null);
+            }
+
+            private Level(
+                final String name,
+                final MondrianDef.Expression expression,
+                final int bitPosition,
+                RolapStar.Column starColumn,
+                boolean collapsed,
+                MondrianDef.Expression ordinalExp,
+                MondrianDef.Expression captionExp,
+                Map<String, MondrianDef.Expression> props)
+            {
                 super(name, expression, starColumn.getDatatype(), bitPosition);
                 this.starColumn = starColumn;
                 this.collapsed = collapsed;
                 AggStar.this.levelBitKey.set(bitPosition);
+                this.ordinalExp = ordinalExp;
+                this.captionExp = captionExp;
+                this.properties = props;
             }
 
             @Override
@@ -737,6 +758,20 @@ public class AggStar {
 
             public boolean isCollapsed() {
                 return collapsed;
+            }
+
+            public MondrianDef.Expression getOrdinalExp() {
+                return ordinalExp;
+            }
+
+            public MondrianDef.Expression getCaptionExp() {
+                return captionExp;
+            }
+
+            public Map<String, MondrianDef.Expression> getProperties() {
+                return properties == null
+                    ? Collections.<String, MondrianDef.Expression>emptyMap()
+                    : properties;
             }
         }
 
@@ -1308,6 +1343,7 @@ public class AggStar {
             String name = usage.getSymbolicName();
             MondrianDef.Expression expression =
                 new MondrianDef.Column(getName(), usage.levelColumnName);
+
             int bitPosition = usage.rColumn.getBitPosition();
             Level level =
                 new Level(
@@ -1315,7 +1351,10 @@ public class AggStar {
                     expression,
                     bitPosition,
                     usage.rColumn,
-                    usage.collapsed);
+                    usage.collapsed,
+                    usage.getOrdinalExp(),
+                    usage.getCaptionExp(),
+                    usage.getProperties());
             addLevel(level);
 
             // If we are dealing with a non-collapsed level, we have to
