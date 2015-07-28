@@ -365,6 +365,7 @@ public class Main extends TestSuite {
             addTest(suite, FastBatchingCellReaderTest.class);
             addTest(suite, SqlQueryTest.class);
             addTest(suite, CodeSetTest.class);
+            addTest(suite, ExplicitRecognizerTest.class);
 
             if (MondrianProperties.instance().EnableNativeCrossJoin.get()) {
                 addTest(suite, BatchedFillTest.class, "suite");
