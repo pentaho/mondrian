@@ -5,14 +5,12 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho
+// Copyright (C) 2005-2015 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.rolap.agg;
 
-import mondrian.olap.MondrianDef;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.util.Pair;
@@ -31,11 +29,12 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
     private final List<StarPredicate> listOfStarPredicates;
     private final List<String> columnNames;
     private final int maxColumnNameLength;
+    private final List<OlapElement> fields;
 
     public DrillThroughQuerySpec(
         DrillThroughCellRequest request,
         StarPredicate starPredicateSlicer,
-        boolean countOnly)
+        List<OlapElement> fields, boolean countOnly)
     {
         super(request.getMeasure().getStar(), countOnly);
         this.request = request;
@@ -55,6 +54,7 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
             maxColumnNameLength = tmpMaxColumnNameLength;
         }
         this.columnNames = computeDistinctColumnNames();
+        this.fields = fields;
     }
 
     private List<String> computeDistinctColumnNames() {
@@ -162,7 +162,23 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
     public Pair<String, List<SqlStatement.Type>> generateSqlQuery() {
         SqlQuery sqlQuery = newSqlQuery();
         nonDistinctGenerateSql(sqlQuery);
+        appendInapplicableFields(sqlQuery);
         return sqlQuery.toSqlAndTypes();
+    }
+
+    /**
+     * Adds each inapplicable member to the sqlQuery as a placeholder.
+     * A drillthrough query can have inapplicable members included in the
+     * RETURN clause in the case of virtual cubes.
+     * We include these fields in the output because they've been
+     * specifically requested, even though they have no associated
+     * data.
+     */
+    private void appendInapplicableFields(SqlQuery sqlQuery) {
+        for (OlapElement member : request.getNonApplicableMembers()) {
+            sqlQuery.addSelect(
+                "NULL", SqlStatement.Type.STRING, member.getName());
+        }
     }
 
     protected void addMeasure(final int i, final SqlQuery sqlQuery) {

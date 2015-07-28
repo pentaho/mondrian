@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho
+// Copyright (C) 2005-2015 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -1505,6 +1505,54 @@ public class DrillThroughTest extends FoodMartTestCase {
             return;
         }
         getTestContext().assertSqlEquals(expectedSql, sql, 11);
+    }
+
+    public void testDrillthroughVirtualCubeWithReturnClause()
+        throws SQLException
+    {
+        // Validates that a RETURN clause including a mix of applicable
+        // and inapplicable fields will not cause an error (ANALYZER-3017)
+        // Should return w/o error and have NULL values for inapplicable
+        // columns.
+        ResultSet rs = null;
+        try {
+            rs = getTestContext().executeStatement(
+                "DRILLTHROUGH \n"
+                + "// Request ID: d73ea21c-2a29-11e5-ba1d-d4bed923da37 - RUN_REPORT\n"
+                + "WITH\n"
+                + "SET [*NATIVE_CJ_SET] AS 'FILTER([*BASE_MEMBERS__Gender_], NOT ISEMPTY ([Measures].[Unit Sales]))'\n"
+                + "SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+                + "SET [*CJ_SLICER_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Gender].CURRENTMEMBER)})'\n"
+                + "SET [*BASE_MEMBERS__Gender_] AS '{[Gender].[F]}'\n"
+                + "MEMBER [Measures].[*FORMATTED_MEASURE_0] AS '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', SOLVE_ORDER=500\n"
+                + "SELECT\n"
+                + "FILTER([*BASE_MEMBERS__Measures_],([Measures].CurrentMember Is [Measures].[*FORMATTED_MEASURE_0])) ON COLUMNS\n"
+                + "FROM [Warehouse and Sales]\n"
+                + "WHERE ([*CJ_SLICER_AXIS]) RETURN [Gender].[Gender], [Measures].[Unit Sales], [Measures].[Warehouse Sales], [Time].[Year], [Warehouse].[Country]");
+            assertEquals(
+                5, rs.getMetaData().getColumnCount());
+            while (rs.next()) {
+                assertEquals(
+                    "Each year in results should be 1997",
+                    1997, rs.getObject(1));
+                assertEquals(
+                    "Each gender in results should be F",
+                    "F", rs.getObject(2));
+                assertNotNull(
+                    "Should be a non-null value for unit sales",
+                    rs.getObject(3));
+                assertEquals(
+                    "Non applicable fields should be null",
+                    null, rs.getObject(4));
+                assertEquals(
+                    "Non applicable fields should be null",
+                    null, rs.getObject(5));
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+        }
     }
 }
 
