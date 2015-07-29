@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -3414,18 +3414,18 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns(
             "Percentile({[Store].[All Stores].[USA].children}, [Measures].[Store Sales], 100)",
             "263,793.22");
-
         // check some real percentile cases
         assertExprReturns(
             "Percentile({[Store].[All Stores].[USA].[WA].children}, [Measures].[Store Sales], 50)",
             "49,634.46");
-        // lets return the second element of the 7 children 4,739.23
+        // the next two results correspond to MS Excel 2013.
+        // See MONDRIAN-2343 jira issue.
         assertExprReturns(
             "Percentile({[Store].[All Stores].[USA].[WA].children}, [Measures].[Store Sales], 100/7*2)",
-            "4,739.23");
+            "18,732.09");
         assertExprReturns(
             "Percentile({[Store].[All Stores].[USA].[WA].children}, [Measures].[Store Sales], 95)",
-            "67,162.28");
+            "68,259.66");
     }
 
     /**
