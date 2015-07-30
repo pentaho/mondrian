@@ -412,6 +412,155 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
             + "Row #1: 5922 La Salle Ct\n"
             + "Row #1: 39\n"
             + "Row #1: 11,523\n");
+        // Should use agg table for distinct count measure
+        assertQuerySql(
+            testContext,
+            query,
+            sqlPattern(
+                "select\n"
+                + "    `exp_agg_test_distinct_count`.`testyear` as `c0`,\n"
+                + "    `exp_agg_test_distinct_count`.`gender` as `c1`,\n"
+                + "    `exp_agg_test_distinct_count`.`store_name` as `c2`,\n"
+                + "    `exp_agg_test_distinct_count`.`unit_s` as `m0`,\n"
+                + "    `exp_agg_test_distinct_count`.`cust_cnt` as `m1`\n"
+                + "from\n"
+                + "    `exp_agg_test_distinct_count` as `exp_agg_test_distinct_count`\n"
+                + "where\n"
+                + "    `exp_agg_test_distinct_count`.`testyear` = 1997\n"
+                + "and\n"
+                + "    `exp_agg_test_distinct_count`.`store_name` = 'Store 16'"));
+    }
+
+
+    public void testCountDistinctAllowableRollup() throws SQLException {
+        TestContext testContext = setupMultiColDimCube(
+            "    <AggName name=\"exp_agg_test_distinct_count\">\n"
+            + "        <AggFactCount column=\"FACT_COUNT\"/>\n"
+            + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_s\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Customer Count]\" column=\"cust_cnt\" />\n"
+            + "        <AggLevel name=\"[TimeExtra].[Year]\" column=\"testyear\" />\n"
+            + "        <AggLevel name=\"[Gender].[Gender]\" column=\"gender\" />\n"
+            + "        <AggLevel name=\"[Store].[Store Country]\" column=\"store_country\" />\n"
+            + "        <AggLevel name=\"[Store].[Store State]\" column=\"store_st\" />\n"
+            + "        <AggLevel name=\"[Store].[Store City]\" column=\"store_cty\" />\n"
+            + "        <AggLevel name=\"[Store].[Store Name]\" column=\"store_name\" >\n"
+            + "           <AggLevelProperty name='Street address' column='store_add' />"
+            + "        </AggLevel>\n"
+            + "    </AggName>\n",
+            "column=\"the_year\"",
+            "column=\"quarter\"",
+            "column=\"month_of_year\" captionColumn=\"the_month\" ordinalColumn=\"month_of_year\"",
+            "", "Customer Count");
+
+        // Query brings in Year and Store Name, omitting Gender.
+        // It's okay to roll up the agg table in this case
+        // since Customer Count is dependent on Gender.
+        String query =
+            "select { measures.[Customer Count], [Measures].[Unit Sales]} on columns, "
+            + "non empty CrossJoin({[TimeExtra].Year.members},{[Store].[USA].[WA].[Spokane].[Store 16]}) on rows "
+            + "from [ExtraCol]";
+
+        assertQuerySql(
+            testContext,
+            query,
+            sqlPattern(
+                "select\n"
+                + "    `exp_agg_test_distinct_count`.`testyear` as `c0`,\n"
+                + "    `exp_agg_test_distinct_count`.`store_country` as `c1`,\n"
+                + "    `exp_agg_test_distinct_count`.`store_st` as `c2`,\n"
+                + "    `exp_agg_test_distinct_count`.`store_cty` as `c3`,\n"
+                + "    `exp_agg_test_distinct_count`.`store_name` as `c4`,\n"
+                + "    `exp_agg_test_distinct_count`.`store_add` as `c5`\n"
+                + "from\n"
+                + "    `exp_agg_test_distinct_count` as `exp_agg_test_distinct_count`\n"
+                + "where\n"
+                + "    (`exp_agg_test_distinct_count`.`store_name` = 'Store 16')\n"
+                + "group by\n"
+                + "    `exp_agg_test_distinct_count`.`testyear`,\n"
+                + "    `exp_agg_test_distinct_count`.`store_country`,\n"
+                + "    `exp_agg_test_distinct_count`.`store_st`,\n"
+                + "    `exp_agg_test_distinct_count`.`store_cty`,\n"
+                + "    `exp_agg_test_distinct_count`.`store_name`,\n"
+                + "    `exp_agg_test_distinct_count`.`store_add`\n"
+                + "order by\n"
+                + "    ISNULL(`exp_agg_test_distinct_count`.`testyear`) ASC, `exp_agg_test_distinct_count`.`testyear` ASC,\n"
+                + "    ISNULL(`exp_agg_test_distinct_count`.`store_country`) ASC, `exp_agg_test_distinct_count`.`store_country` ASC,\n"
+                + "    ISNULL(`exp_agg_test_distinct_count`.`store_st`) ASC, `exp_agg_test_distinct_count`.`store_st` ASC,\n"
+                + "    ISNULL(`exp_agg_test_distinct_count`.`store_cty`) ASC, `exp_agg_test_distinct_count`.`store_cty` ASC,\n"
+                + "    ISNULL(`exp_agg_test_distinct_count`.`store_name`) ASC, `exp_agg_test_distinct_count`.`store_name` ASC"));
+
+        assertQuerySql(
+            testContext,
+            query,
+            sqlPattern(
+                "select\n"
+                + "    `exp_agg_test_distinct_count`.`testyear` as `c0`,\n"
+                + "    `exp_agg_test_distinct_count`.`store_name` as `c1`,\n"
+                + "    sum(`exp_agg_test_distinct_count`.`unit_s`) as `m0`,\n"
+                + "    sum(`exp_agg_test_distinct_count`.`cust_cnt`) as `m1`\n"
+                + "from\n"
+                + "    `exp_agg_test_distinct_count` as `exp_agg_test_distinct_count`\n"
+                + "where\n"
+                + "    `exp_agg_test_distinct_count`.`testyear` = 1997\n"
+                + "and\n"
+                + "    `exp_agg_test_distinct_count`.`store_name` = 'Store 16'\n"
+                + "group by\n"
+                + "    `exp_agg_test_distinct_count`.`testyear`,\n"
+                + "    `exp_agg_test_distinct_count`.`store_name`"));
+    }
+
+    public void testCountDisallowedRollup() throws SQLException {
+        TestContext testContext = setupMultiColDimCube(
+            "    <AggName name=\"exp_agg_test_distinct_count\">\n"
+            + "        <AggFactCount column=\"FACT_COUNT\"/>\n"
+            + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_s\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Customer Count]\" column=\"cust_cnt\" />\n"
+            + "        <AggLevel name=\"[TimeExtra].[Year]\" column=\"testyear\" />\n"
+            + "        <AggLevel name=\"[Gender].[Gender]\" column=\"gender\" />\n"
+            + "        <AggLevel name=\"[Store].[Store Country]\" column=\"store_country\" />\n"
+            + "        <AggLevel name=\"[Store].[Store State]\" column=\"store_st\" />\n"
+            + "        <AggLevel name=\"[Store].[Store City]\" column=\"store_cty\" />\n"
+            + "        <AggLevel name=\"[Store].[Store Name]\" column=\"store_name\" >\n"
+            + "           <AggLevelProperty name='Street address' column='store_add' />"
+            + "        </AggLevel>\n"
+            + "    </AggName>\n",
+            "column=\"the_year\"",
+            "column=\"quarter\"",
+            "column=\"month_of_year\" captionColumn=\"the_month\" ordinalColumn=\"month_of_year\"",
+            "", "Customer Count");
+
+        String query =
+            "select { measures.[Customer Count]} on columns, "
+            + "non empty CrossJoin({[TimeExtra].Year.members},{[Gender].[F]}) on rows "
+            + "from [ExtraCol]";
+
+
+        // Seg load query should not use agg table, since the independent
+        // attributes for store are on the aggStar bitkey and not part of the
+        // request and rollup is not safe
+        assertQuerySql(
+            testContext,
+            query,
+            sqlPattern(
+                "select\n"
+                + "    `time_by_day`.`the_year` as `c0`,\n"
+                + "    `customer`.`gender` as `c1`,\n"
+                + "    count(distinct `sales_fact_1997`.`customer_id`) as `m0`\n"
+                + "from\n"
+                + "    `time_by_day` as `time_by_day`,\n"
+                + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+                + "    `customer` as `customer`\n"
+                + "where\n"
+                + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+                + "and\n"
+                + "    `time_by_day`.`the_year` = 1997\n"
+                + "and\n"
+                + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+                + "and\n"
+                + "    `customer`.`gender` = 'F'\n"
+                + "group by\n"
+                + "    `time_by_day`.`the_year`,\n"
+                + "    `customer`.`gender`"));
     }
 
     private SqlPattern[] sqlPattern(String sql) {
@@ -425,6 +574,14 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
     private TestContext setupMultiColDimCube(
         String aggName, String yearCols, String qtrCols, String monthCols,
         String monthProp)
+    {
+        return setupMultiColDimCube(
+            aggName, yearCols, qtrCols, monthCols, monthProp, "Unit Sales");
+    }
+
+    private TestContext setupMultiColDimCube(
+        String aggName, String yearCols, String qtrCols, String monthCols,
+        String monthProp, String defaultMeasure)
     {
         String cube =
             "<?xml version=\"1.0\"?>\n"
@@ -440,7 +597,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
             + "      </Level>\n"
             + "    </Hierarchy>\n"
             + "  </Dimension>\n"
-            + "<Cube name=\"ExtraCol\">\n"
+            + "<Cube name=\"ExtraCol\" defaultMeasure='#DEFMEASURE#'>\n"
             + "  <Table name=\"sales_fact_1997\">\n"
             + "           #AGGNAME# "
             + "  </Table>"
@@ -478,7 +635,8 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
             .replace("#YEARCOLS#", yearCols)
             .replace("#QTRCOLS#", qtrCols)
             .replace("#MONTHCOLS#", monthCols)
-            .replace("#MONTHPROP#", monthProp);
+            .replace("#MONTHPROP#", monthProp)
+            .replace("#DEFMEASURE#", defaultMeasure);
         return TestContext.instance().withSchema(cube);
     }
 

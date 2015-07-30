@@ -357,6 +357,10 @@ public class AggregationManager extends RolapAggregationManager {
         assert rollup != null;
         BitKey fullBitKey = levelBitKey.or(measureBitKey);
 
+        // a levelBitKey with all parent bits set.
+        final BitKey expandedLevelBitKey = expandLevelBitKey(
+            star, levelBitKey.copy());
+
         // The AggStars are already ordered from smallest to largest so
         // we need only find the first one and return it.
         for (AggStar aggStar : star.getAggStars()) {
@@ -479,13 +483,16 @@ System.out.println(buf.toString());
                 }
             }
 
+            // We can use the expandedLevelBitKey here because
+            // presence of parent level columns won't effect granularity,
+            // so will still be an allowable agg match
             if (!aggStar.select(
-                    levelBitKey, combinedLevelBitKey, measureBitKey))
+                    expandedLevelBitKey, combinedLevelBitKey, measureBitKey))
             {
                 continue;
             }
 
-            if (levelBitKey.isEmpty()) {
+            if (expandedLevelBitKey.isEmpty()) {
                 // We won't be able to resolve a distinct count measure like
                 // this. We need to resolve the distinct values but we don't
                 // have any levels for which we constraint on. This would
@@ -493,10 +500,35 @@ System.out.println(buf.toString());
                 // only the first (non-rolled-up) to be returned.
                 continue;
             }
-            rollup[0] = !aggStar.getLevelBitKey().equals(levelBitKey);
+            rollup[0] = !aggStar.getLevelBitKey().equals(expandedLevelBitKey);
             return aggStar;
         }
         return null;
+    }
+
+    /**
+     * Sets the bits for parent columns.
+     */
+    private static BitKey expandLevelBitKey(
+        RolapStar star, BitKey levelBitKey)
+    {
+        int bitPos = levelBitKey.nextSetBit(0);
+        while (bitPos >= 0) {
+            levelBitKey = setParentsBitKey(star, levelBitKey, bitPos);
+            bitPos = levelBitKey.nextSetBit(bitPos + 1);
+        }
+        return levelBitKey;
+    }
+
+    private static BitKey setParentsBitKey(
+        RolapStar star, BitKey levelBitKey, int bitPos)
+    {
+        RolapStar.Column parent = star.getColumn(bitPos).getParentColumn();
+        if (parent == null) {
+            return levelBitKey;
+        }
+        levelBitKey.set(parent.getBitPosition());
+        return setParentsBitKey(star, levelBitKey, parent.getBitPosition());
     }
 
     public PinSet createPinSet() {
