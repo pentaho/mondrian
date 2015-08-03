@@ -76,7 +76,7 @@ public class RequestProcessEngine {
 	@GET
 	@Produces("application/xml")
 	public String getCatalogs(@PathParam("c") String catalogName) {
-		LOGGER.info("Querying for catalog: "+ catalogName);
+		LOGGER.info("Querying for catalog: " + catalogName);
 		String output = "";
 		try {
 			if (checkCatalogInDataSource(catalogName)) {
@@ -94,12 +94,12 @@ public class RequestProcessEngine {
 		}
 		return output;
 	}
-	
+
 	@Path("/catalog/{c}")
 	@DELETE
 	@Produces("application/xml")
 	public String deleteCatalog(@PathParam("c") String catalogName) {
-		LOGGER.info("Deleting catalog: "+ catalogName);
+		LOGGER.info("Deleting catalog: " + catalogName);
 		String result = "";
 		boolean isDelCatalogSuccess = false;
 		try {
@@ -115,7 +115,8 @@ public class RequestProcessEngine {
 				}
 			}
 
-			dirCatalogFiles = dirCatalogFiles + "webapps/mondrian/WEB-INF/queries/";
+			dirCatalogFiles = dirCatalogFiles
+					+ "webapps/mondrian/WEB-INF/queries/";
 			if (deleteCatalogFromDatasource(catalogName)) {
 				deleteFile(dirCatalogFiles + catalogName + ".xml");
 				isDelCatalogSuccess = true;
@@ -187,7 +188,8 @@ public class RequestProcessEngine {
 	@Consumes("text/plain")
 	public String putTask(@PathParam("c") String catalogName,
 			@PathParam("d") String cubeName, String inputXml) {
-		LOGGER.info("Creating cube: catalog_name: " + catalogName + " cube_name: " + cubeName);
+		LOGGER.info("Creating cube: catalog_name: " + catalogName
+				+ " cube_name: " + cubeName);
 		LOGGER.info("Input xml: " + inputXml);
 		String result = "<output>" + addCube(inputXml, catalogName, cubeName)
 				+ "</output>";
@@ -207,18 +209,18 @@ public class RequestProcessEngine {
 	public String createCatalog(@PathParam("c") String catalogName,
 			String inputXml) {
 		LOGGER.info("Creating catalog: " + catalogName);
-		LOGGER.info("Input XML: "+ inputXml);
+		LOGGER.info("Input XML: " + inputXml);
 		Document doc = null;
 		NodeList nodeList = null;
-		
 
 		// Validation of input xml
-		if (!inputXml.contains("DataSource") || !inputXml.contains("JdbcDrivers=") || !inputXml.contains("Jdbc=")) {
+		if (!inputXml.contains("DataSource")
+				|| !inputXml.contains("JdbcDrivers=")
+				|| !inputXml.contains("Jdbc=")) {
 			LOGGER.info("Invalid input request!!");
 			return "<output>Catalog creation failed| reason: Invalid input request!!</output>";
 		}
-		
-		
+
 		String result = "";
 		try {
 			ArrayList<Object> arrList = getNodeList(inputXml,
@@ -398,11 +400,11 @@ public class RequestProcessEngine {
 	}
 
 	/*
-	 * It returns the nodelist for a certain xpath in an xml file or a string xml.
-	 * If a file is passed then isFileName is true else false.
-	 *  
+	 * It returns the nodelist for a certain xpath in an xml file or a string
+	 * xml. If a file is passed then isFileName is true else false.
 	 */
-	private static ArrayList<Object> getNodeList(String textXml, String xpathStr, boolean isFilename) {
+	private static ArrayList<Object> getNodeList(String textXml,
+			String xpathStr, boolean isFilename) {
 		ArrayList<Object> resArrList = new ArrayList<Object>();
 		Document doc = null;
 		NodeList nl = null;
@@ -517,8 +519,8 @@ public class RequestProcessEngine {
 
 					if (qName.equalsIgnoreCase("Catalog")) {
 						bCatalog = false;
-//						LOGGER.info("Before deleting ....datasourceinfo ="
-//								+ localDataSourceInfo);
+						// LOGGER.info("Before deleting ....datasourceinfo ="
+						// + localDataSourceInfo);
 						if (localDataSourceInfo.length() > 0) {
 							localDataSourceInfo = localDataSourceInfo.delete(0,
 									localDataSourceInfo.length());
@@ -574,15 +576,19 @@ public class RequestProcessEngine {
 													+ "</Catalog>";
 										}
 									} else {
-										if ((cubeNameToSearch==null || cubeNameToSearch.equalsIgnoreCase("")) && 
-												(catalogNameToSearch != null && !catalogNameToSearch.equalsIgnoreCase(""))) {
+										if ((cubeNameToSearch == null || cubeNameToSearch
+												.equalsIgnoreCase(""))
+												&& (catalogNameToSearch != null && !catalogNameToSearch
+														.equalsIgnoreCase(""))) {
 											if (localDataSourceInfo.length() != 0) {
 												tempOutput = "<Catalog name=\""
 														+ catalogName
 														+ "\" datasourceinfo=\""
 														+ localDataSourceInfo
-																.toString().replaceAll(
-																		"&", "&#38;")
+																.toString()
+																.replaceAll(
+																		"&",
+																		"&#38;")
 														+ "\">" + tempOutput
 														+ "</Catalog>";
 											} else {
@@ -590,8 +596,10 @@ public class RequestProcessEngine {
 														+ catalogName
 														+ "\" datasourceinfo=\""
 														+ globalDataSourceInfo
-																.toString().replaceAll(
-																		"&", "&#38;")
+																.toString()
+																.replaceAll(
+																		"&",
+																		"&#38;")
 														+ "\">" + tempOutput
 														+ "</Catalog>";
 											}
@@ -635,15 +643,18 @@ public class RequestProcessEngine {
 												+ "</Catalog>";
 									}
 								} else {
-									if ((cubeNameToSearch==null || cubeNameToSearch.equalsIgnoreCase("")) && 
-											(catalogNameToSearch != null && !catalogNameToSearch.equalsIgnoreCase(""))) {
+									if ((cubeNameToSearch == null || cubeNameToSearch
+											.equalsIgnoreCase(""))
+											&& (catalogNameToSearch != null && !catalogNameToSearch
+													.equalsIgnoreCase(""))) {
 										if (localDataSourceInfo.length() != 0) {
 											tempOutput = "<Catalog name=\""
 													+ catalogName
 													+ "\" datasourceinfo=\""
 													+ localDataSourceInfo
-															.toString().replaceAll(
-																	"&", "&#38;")
+															.toString()
+															.replaceAll("&",
+																	"&#38;")
 													+ "\">" + tempOutput
 													+ "</Catalog>";
 										} else {
@@ -651,8 +662,9 @@ public class RequestProcessEngine {
 													+ catalogName
 													+ "\" datasourceinfo=\""
 													+ globalDataSourceInfo
-															.toString().replaceAll(
-																	"&", "&#38;")
+															.toString()
+															.replaceAll("&",
+																	"&#38;")
 													+ "\">" + tempOutput
 													+ "</Catalog>";
 										}
@@ -730,22 +742,27 @@ public class RequestProcessEngine {
 				LOGGER.debug(" Length of the node list =" + nl.getLength());
 				if (nl.getLength() > 0) {
 					for (int i = 0; i < nl.getLength(); i++) {
-						
+
 						Node ni = nl.item(i);
-						LOGGER.debug(" Name of the node inside the nodelist =" + ni.getNodeName());
+						LOGGER.debug(" Name of the node inside the nodelist ="
+								+ ni.getNodeName());
 						if (ni.getNodeName().equalsIgnoreCase("Cube")) {
 							NamedNodeMap nmapAttr = ni.getAttributes();
-							String cubeNameFromXml = nmapAttr.getNamedItem("name").getNodeValue();
+							String cubeNameFromXml = nmapAttr.getNamedItem(
+									"name").getNodeValue();
 							if ("".equalsIgnoreCase(cubeNameFromXml)) {
 								return "Invalid Input Request | Cube name is missing";
-							} else if (!cubeName.equalsIgnoreCase(cubeNameFromXml)) {
+							} else if (!cubeName
+									.equalsIgnoreCase(cubeNameFromXml)) {
 								return "Invalid Input Request | Cube name in the URL and xml do not match";
-							} 
+							}
 						}
-						
-						TransformerFactory tFactory = TransformerFactory.newInstance();
+
+						TransformerFactory tFactory = TransformerFactory
+								.newInstance();
 						Transformer transformer = tFactory.newTransformer();
-						transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+						transformer.setOutputProperty(
+								OutputKeys.OMIT_XML_DECLARATION, "yes");
 						sw = new StringWriter();
 						source = new DOMSource(ni);
 						resultStream = new StreamResult(sw);
@@ -759,17 +776,31 @@ public class RequestProcessEngine {
 					String isPresentStrArr[] = isPresentStr.split("\\|");
 					String isCubeStr = isPresentStrArr[0];
 					String isCatalogStr = isPresentStrArr[1];
-					LOGGER.info("result: isCubePresent:" + isCubeStr + ", isCatatalogPresent:" + isCatalogStr);
-					
+					LOGGER.info("result: isCubePresent:" + isCubeStr
+							+ ", isCatatalogPresent:" + isCatalogStr);
+
 					if ("true".equals(isCubeStr) && "true".equals(isCatalogStr)) {
 						LOGGER.debug("Cube and catalog are present : OverwritingScenario");
-						addCubeDefinitionInCatalogXml(cubeName, cubeDefinitionElems);
-						result = "Cube modified successfully";
+						boolean isCubeAddedSuccessfully = addCubeDefinitionInCatalogXml(
+								cubeName, cubeDefinitionElems);
+						if (isCubeAddedSuccessfully) {
+							result = "Cube modified successfully";
+						} else {
+							result = "Cube addition failed due to internal error.";
+						}
+
 					} else if ("true".equals(isCatalogStr)
 							&& "false".equals(isCubeStr)) {
-						LOGGER.info("Catalog present but the Cube: " + cubeName + "is not.");
-						addCubeDefinitionInCatalogXml(cubeName, cubeDefinitionElems);
-						result = "Cube is successfully added to an existing catalog.";
+						LOGGER.info("Catalog present but the Cube: " + cubeName
+								+ "is not.");
+						boolean isCubeAddedSuccessfully = addCubeDefinitionInCatalogXml(
+								cubeName, cubeDefinitionElems);
+						if (isCubeAddedSuccessfully) {
+							result = "Cube is successfully added to an existing catalog.";
+						} else {
+							result = "Cube addition failed due to internal error.";
+						}
+
 					} else {
 						LOGGER.info("Both catalog and cube does not exist.");
 						result = "Catalog was not found hence cube addition failed.";
@@ -828,11 +859,14 @@ public class RequestProcessEngine {
 		Document doc = null;
 		NodeList nodeList = null;
 		try {
-			
-			dataSourceInfo = dataSourceInfo.trim() + "Catalog=file:" + newCatalogDefFileName + ";";
-			LOGGER.debug("Final datasource info getting added = " + dataSourceInfo);
-			
-			ArrayList<Object> arrList = getNodeList(DATASOURCE_PATH, "DataSources/DataSource/Catalogs", true);
+
+			dataSourceInfo = dataSourceInfo.trim() + "Catalog=file:"
+					+ newCatalogDefFileName + ";";
+			LOGGER.debug("Final datasource info getting added = "
+					+ dataSourceInfo);
+
+			ArrayList<Object> arrList = getNodeList(DATASOURCE_PATH,
+					"DataSources/DataSource/Catalogs", true);
 			for (Object o : arrList) {
 				if (o instanceof Document) {
 					doc = (Document) o;
@@ -875,7 +909,8 @@ public class RequestProcessEngine {
 		return newCatalogDefFileName;
 	}
 
-	private static boolean addCubeDefinitionInCatalogXml(String cubeName, List<String> cubeDefinitionElemList) {
+	private static boolean addCubeDefinitionInCatalogXml(String cubeName,
+			List<String> cubeDefinitionElemList) {
 		boolean isSucess = false;
 		Document doc = null;
 		NodeList nodeList = null;
@@ -892,30 +927,34 @@ public class RequestProcessEngine {
 			}
 			if (nodeList.getLength() == 1) {
 				NodeList nl = nodeList.item(0).getChildNodes();
-				
+
 				if (nl.getLength() > 0) {
 					Node n = nl.item(0);
 					Node parent = n.getParentNode();
-					for(String elem : cubeDefinitionElemList) {
-						
+					for (String elem : cubeDefinitionElemList) {
+
 						Element e1 = createDOM(elem);
-						Node alreadyExistingNode = getAlreadyExistingNode(e1,nl);
+						Node alreadyExistingNode = getAlreadyExistingNode(e1,
+								nl);
 						Node importedNode = doc.importNode(e1, true);
-						if ( alreadyExistingNode != null) {
-							// Replace the existing node with append the current node
-							parent.replaceChild(importedNode, alreadyExistingNode);
+						if (alreadyExistingNode != null) {
+							// Replace the existing node with append the current
+							// node
+							parent.replaceChild(importedNode,
+									alreadyExistingNode);
 						} else {
 							// Append the current node
 							parent.appendChild(importedNode);
 						}
-					}					
-					isSucess = true;
+					}
+					
 				} else {
-					LOGGER.debug("Adding a cube definition first time to a catalog. Received elements size = " + cubeDefinitionElemList.size());
+					LOGGER.debug("Adding a cube definition first time to a catalog. Received elements size = "
+							+ cubeDefinitionElemList.size());
 					Node parent = nodeList.item(0);
 					// First time adding to a catalog
 					// Append the elements to the schema
-					for(String elemStr : cubeDefinitionElemList) {
+					for (String elemStr : cubeDefinitionElemList) {
 						if (!elemStr.equalsIgnoreCase("")) {
 							Element e1 = createDOM(elemStr);
 							Node importedNode = doc.importNode(e1, true);
@@ -933,9 +972,11 @@ public class RequestProcessEngine {
 				DOMSource sourceNew = new DOMSource(doc);
 				transformerNew.transform(sourceNew, resultStreamNew);
 				String finalXml = resultStreamNew.getWriter().toString();
-				LOGGER.info("Final XML which gets written to the catalog definition file-----------" + finalXml);
-				deleteFile(catalogFileForAdd);
-				createFile(catalogFileForAdd, finalXml);
+				LOGGER.info("Final XML which gets written to the catalog definition file-----------"
+						+ finalXml);
+				if (deleteFile(catalogFileForAdd) && createFile(catalogFileForAdd, finalXml)) {
+					isSucess = true;
+				} 
 				catalogFileForAdd = "";
 			}
 		} catch (Exception e) {
@@ -944,33 +985,42 @@ public class RequestProcessEngine {
 		}
 		return isSucess;
 	}
-	
+
 	/*
 	 * Checks the presence of an element be using the name.
 	 */
-	
-	private static Node getAlreadyExistingNode(Element elem, NodeList nl){
+
+	private static Node getAlreadyExistingNode(Element elem, NodeList nl) {
 		Node alreadyExisitingNode = null;
-		LOGGER.debug("Checking the element:: " + elem.getNodeName() + " with name as:: "
-				+ elem.getAttribute("name"));
+		LOGGER.debug("Checking the element:: " + elem.getNodeName()
+				+ " with name as:: " + elem.getAttribute("name"));
 		if (elem.getNodeName().equalsIgnoreCase("#text")) {
 			LOGGER.debug("No point in checking for #text");
 			return alreadyExisitingNode;
-		}		
-		for (int i = 0; i<nl.getLength(); i++) {
-			LOGGER.debug("Checking the name for:: " + nl.item(i).getNodeName() + " as::"
-		+ nl.item(i).getAttributes().getNamedItem("name").getNodeValue());
-			if (elem.getNodeName().equalsIgnoreCase(nl.item(i).getNodeName()) && 
-					elem.getAttribute("name").equalsIgnoreCase(nl.item(i)
-							.getAttributes().getNamedItem("name").getNodeValue())) {
-				LOGGER.debug("The element is already present");
-				alreadyExisitingNode = nl.item(i);
+		}
+		for (int i = 0; i < nl.getLength(); i++) {
+			if (nl.item(i).getAttributes() != null
+					&& nl.item(i).getAttributes().getNamedItem("name") != null) {
+				LOGGER.debug("Node name already in the xml"
+						+ nl.item(i).getNodeName());
+				LOGGER.debug("Checking the name for:: "
+						+ nl.item(i).getNodeName()
+						+ " as::"
+						+ nl.item(i).getAttributes().getNamedItem("name")
+								.getNodeValue());
+				if (elem.getNodeName().equalsIgnoreCase(
+						nl.item(i).getNodeName())
+						&& elem.getAttribute("name").equalsIgnoreCase(
+								nl.item(i).getAttributes().getNamedItem("name")
+										.getNodeValue())) {
+					LOGGER.debug("The element is already present");
+					alreadyExisitingNode = nl.item(i);
+				}
 			}
-			
+
 		}
 		return alreadyExisitingNode;
 	}
-	
 
 	public static final Element createDOM(String strXML)
 			throws ParserConfigurationException, SAXException, IOException {
@@ -984,9 +1034,10 @@ public class RequestProcessEngine {
 	}
 
 	/*
-	 * Returns String containing if the cube is present or the catalog is present in the form of "result_cube|result_catalog" 
-	 * e.g "true|true" if both cube and catalog is present.
-	 * "false|true" if cube is not present but catalog is present. 
+	 * Returns String containing if the cube is present or the catalog is
+	 * present in the form of "result_cube|result_catalog" e.g "true|true" if
+	 * both cube and catalog is present. "false|true" if cube is not present but
+	 * catalog is present.
 	 */
 	private String isCubePresent(String cubeName, String catalogName) {
 		LOGGER.info("Inside in isCubePresent");
@@ -1089,7 +1140,6 @@ public class RequestProcessEngine {
 		}
 		return createSucc;
 	}
-	
 
 	private boolean deleteCube(String cubeName, String catalogName)
 			throws Exception {
@@ -1220,7 +1270,7 @@ public class RequestProcessEngine {
 			String finalXml = resultStreamNew.getWriter().toString();
 			deleteFile(DATASOURCE_PATH);
 			createFile(DATASOURCE_PATH, finalXml);
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
