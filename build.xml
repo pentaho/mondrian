@@ -1605,6 +1605,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
     <delete file="${war.file}"/>
     <unzip src="${lib.dir}/jpivot.war" dest="${build.dir}/mondrian"/>
   	
+  	
   		
   	
   		
@@ -1612,6 +1613,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
     <delete>
       <fileset dir="${build.dir}/mondrian" includes="index.jsp,xmla.jsp"/>
       <fileset dir="${build.dir}/mondrian/WEB-INF" includes="web.xml,datasources.xml,mondrian.properties"/>
+    	<fileset dir="${build.dir}/mondrian/WEB-INF/classes" includes="log4j.properties"/>
       <fileset dir="${build.dir}/mondrian/WEB-INF/queries" includes="xmla.jsp,*.xml"/>
       <fileset dir="${build.dir}/mondrian/WEB-INF/lib" includes="${name}.jar,eigenbase-*.jar,*.xml,mondrian.dtd"/>
     </delete>
@@ -1649,6 +1651,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <classes dir="${testclasses.dir}" includes="mondrian/xmla/test/**/*.*"/>
       <classes dir="${testclasses.dir}" includes="mondrian/test/TestContext.*"/>
       <classes dir="${testclasses.dir}" includes="mondrian/test/DiffRepository.*"/>
+    	<classes dir="${basedir}" includes="log4j.properties"/>
     </war>
   </target>
 
