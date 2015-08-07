@@ -219,6 +219,22 @@ public class RolapSchema implements Schema {
     }
 
     /**
+     * @deprecated for tests only!
+     */
+    @Deprecated
+    RolapSchema(
+        SchemaKey key,
+        ByteString md5Bytes,
+        RolapConnection internalConnection)
+    {
+        this.id = Util.generateUuidString();
+        this.key = key;
+        this.md5Bytes = md5Bytes;
+        this.defaultRole = Util.createRootRole(this);
+        this.internalConnection = internalConnection;
+    }
+
+    /**
      * Given the name of a cell formatter class and/or a cell formatter script,
      * returns a cell formatter.
      *
