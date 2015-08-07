@@ -326,6 +326,7 @@ public class Main extends TestSuite {
             addTest(suite, RolapStarTest.class);
             addTest(suite, RolapSchemaTest.class);
             addTest(suite, RolapSchemaPoolTest.class);
+            addTest(suite, RolapSchemaPoolConcurrencyTest.class);
             addTest(suite, NullMemberRepresentationTest.class);
             addTest(suite, IgnoreUnrelatedDimensionsTest.class);
             addTest(

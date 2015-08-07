@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde and others
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.Util;
@@ -21,7 +20,6 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.lang.ref.*;
-import java.lang.reflect.Constructor;
 import java.util.*;
 
 import javax.sql.DataSource;
@@ -143,14 +141,8 @@ class RolapSchemaPool {
         // Use the schema pool unless "UseSchemaPool" is explicitly false.
         RolapSchema schema = null;
         if (!useSchemaPool) {
-            schema =
-                new RolapSchema(
-                    key,
-                    null,
-                    catalogUrl,
-                    catalogStr,
-                    connectInfo,
-                    dataSource);
+            schema = createRolapSchema(
+                catalogUrl, dataSource, connectInfo, catalogStr, key, null);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(
                     "create (no pool): schema-name=" + schema.getName()
@@ -181,13 +173,9 @@ class RolapSchemaPool {
             }
 
             if (schema == null) {
-                schema = new RolapSchema(
-                    key,
-                    md5Bytes,
-                    catalogUrl,
-                    catalogStr,
-                    connectInfo,
-                    dataSource);
+                schema = createRolapSchema(
+                    catalogUrl, dataSource, connectInfo, catalogStr,
+                    key, md5Bytes);
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(
                         "create: schema-name=" + schema.getName()
@@ -212,13 +200,8 @@ class RolapSchemaPool {
         }
 
         if (schema == null) {
-            schema = new RolapSchema(
-                key,
-                null,
-                catalogUrl,
-                catalogStr,
-                connectInfo,
-                dataSource);
+            schema = createRolapSchema(
+                catalogUrl, dataSource, connectInfo, catalogStr, key, null);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("create: " + schema);
             }
@@ -226,6 +209,24 @@ class RolapSchemaPool {
         }
 
         return schema;
+    }
+
+    // is extracted and made package-local for testing purposes
+    RolapSchema createRolapSchema(
+        String catalogUrl,
+        DataSource dataSource,
+        Util.PropertyList connectInfo,
+        String catalogStr,
+        SchemaKey key,
+        ByteString md5Bytes)
+    {
+        return new RolapSchema(
+            key,
+            md5Bytes,
+            catalogUrl,
+            catalogStr,
+            connectInfo,
+            dataSource);
     }
 
     private void putSchema(
