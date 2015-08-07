@@ -73,7 +73,7 @@ public class RolapSchemaPoolConcurrencyTest extends TestCase
 
 
     public void testTwentyAdders() throws Exception {
-        final int cycles = 100;
+        final int cycles = 500;
         final int addersAmount = 10 * 2;
 
         List<Adder> adders = new ArrayList<Adder>(addersAmount);
@@ -93,7 +93,7 @@ public class RolapSchemaPoolConcurrencyTest extends TestCase
 
 
     public void testTenAddersAndFiveRemovers() throws Exception {
-        final int cycles = 100;
+        final int cycles = 200;
         final int removersAmount = 5;
         final int addersAmount = removersAmount * 2;
 
@@ -123,11 +123,37 @@ public class RolapSchemaPoolConcurrencyTest extends TestCase
     }
 
 
+    public void testTwentySimpleGetters() throws Exception {
+        final int cycles = 1000;
+        final int actorsAmount = 20;
+
+        List<SingleSchemaGetter> actors =
+            new ArrayList<SingleSchemaGetter>(actorsAmount);
+        for (int i = 0; i < actorsAmount; i++) {
+            String catalogUrl = UUID.randomUUID().toString();
+
+            DataSource ds = mock(DataSource.class);
+
+            Util.PropertyList list = new Util.PropertyList();
+            list.put(CatalogContent.name(), UUID.randomUUID().toString());
+
+            // force the pool to create the fake schema
+            RolapSchema schema = poolSpy.get(catalogUrl, ds, list);
+            addedSchemas.add(schema);
+
+            actors.add(new SingleSchemaGetter(
+                poolSpy, cycles, catalogUrl, ds, list));
+        }
+
+        runTest(actors);
+    }
+
+
     public void testFourAddersTwoRemoversTenGetters() throws Exception {
-        final int addingCycles = 100;
+        final int addingCycles = 200;
         final int removersAmount = 2;
         final int addersAmount = removersAmount * 2;
-        final int listingCycles = 300;
+        final int listingCycles = 500;
         final int gettersAmount = 10;
 
         List<Adder> adders = new ArrayList<Adder>(addersAmount);
@@ -308,6 +334,39 @@ public class RolapSchemaPoolConcurrencyTest extends TestCase
                     acc = -acc;
                 }
                 Thread.sleep(Math.min(random.nextInt(50), acc));
+            }
+            return null;
+        }
+    }
+
+    private static class SingleSchemaGetter implements Callable<String> {
+        private final RolapSchemaPool pool;
+        private final int cycles;
+        private final String catalogUrl;
+        private final DataSource dataSource;
+        private final Util.PropertyList list;
+
+        public SingleSchemaGetter(
+            RolapSchemaPool pool,
+            int cycles,
+            String catalogUrl,
+            DataSource dataSource,
+            Util.PropertyList list)
+        {
+            this.pool = pool;
+            this.cycles = cycles;
+            this.catalogUrl = catalogUrl;
+            this.dataSource = dataSource;
+            this.list = list;
+        }
+
+        @Override
+        public String call() throws Exception {
+            for (int i = 0; i < cycles; i++) {
+                RolapSchema schema = pool.get(catalogUrl, dataSource, list);
+                assertNotNull(String.format(
+                    "Catalog: [%s], catalog content: [%s]", catalogUrl,
+                    list.get(CatalogContent.name())), schema);
             }
             return null;
         }
