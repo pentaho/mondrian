@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde and others
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.Util;
@@ -21,10 +20,14 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.lang.ref.*;
-import java.lang.reflect.Constructor;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.sql.DataSource;
+
+import static mondrian.rolap.RolapConnectionProperties.JdbcConnectionUuid;
+import static mondrian.rolap.RolapConnectionProperties.PinSchemaTimeout;
+import static mondrian.rolap.RolapConnectionProperties.UseSchemaPool;
 
 /**
  * A collection of schemas, identified by their connection properties
@@ -50,6 +53,8 @@ class RolapSchemaPool {
         mapMd5ToSchema =
             new HashMap<ByteString, ExpiringReference<RolapSchema>>();
 
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+
     private RolapSchemaPool() {
     }
 
@@ -57,7 +62,7 @@ class RolapSchemaPool {
         return INSTANCE;
     }
 
-    synchronized RolapSchema get(
+    RolapSchema get(
         final String catalogUrl,
         final String connectionKey,
         final String jdbcUser,
@@ -73,7 +78,7 @@ class RolapSchemaPool {
             connectInfo);
     }
 
-    synchronized RolapSchema get(
+    RolapSchema get(
         final String catalogUrl,
         final DataSource dataSource,
         final Util.PropertyList connectInfo)
@@ -96,16 +101,12 @@ class RolapSchemaPool {
         final Util.PropertyList connectInfo)
     {
         final String connectionUuidStr = connectInfo.get(
-            RolapConnectionProperties.JdbcConnectionUuid.name());
+            JdbcConnectionUuid.name());
         final boolean useSchemaPool =
             Boolean.parseBoolean(
-                connectInfo.get(
-                    RolapConnectionProperties.UseSchemaPool.name(),
-                    "true"));
+                connectInfo.get(UseSchemaPool.name(), "true"));
         final String pinSchemaTimeout =
-            connectInfo.get(
-                RolapConnectionProperties.PinSchemaTimeout.name(),
-                "-1s");
+            connectInfo.get(PinSchemaTimeout.name(), "-1s");
         final boolean useContentChecksum =
             Boolean.parseBoolean(
                 connectInfo.get(
@@ -141,16 +142,9 @@ class RolapSchemaPool {
                 connectionKey1);
 
         // Use the schema pool unless "UseSchemaPool" is explicitly false.
-        RolapSchema schema = null;
         if (!useSchemaPool) {
-            schema =
-                new RolapSchema(
-                    key,
-                    null,
-                    catalogUrl,
-                    catalogStr,
-                    connectInfo,
-                    dataSource);
+            RolapSchema schema = createRolapSchema(
+                catalogUrl, dataSource, connectInfo, catalogStr, key, null);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(
                     "create (no pool): schema-name=" + schema.getName()
@@ -161,73 +155,160 @@ class RolapSchemaPool {
         }
 
         if (useContentChecksum) {
-            final ByteString md5Bytes =
-                new ByteString(Util.digestMd5(catalogStr));
-            final ExpiringReference<RolapSchema> ref =
-                mapMd5ToSchema.get(md5Bytes);
+            return getByChecksum(
+                catalogUrl,
+                dataSource,
+                connectInfo,
+                pinSchemaTimeout,
+                catalogStr,
+                key);
+        }
+        return getByKey(
+            catalogUrl, dataSource, connectInfo, pinSchemaTimeout,
+            catalogStr, key);
+    }
+
+    private <T> RolapSchema lookUp(
+        Map<T, ExpiringReference<RolapSchema>> map,
+        T key,
+        String pinSchemaTimeout)
+    {
+        lock.readLock().lock();
+        try {
+            ExpiringReference<RolapSchema> ref = map.get(key);
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
-                    "get(key=" + key
-                    + ") returned " + toString(ref));
+                LOGGER.debug("get(key=" + key + ") returned " + toString(ref));
             }
 
+            if (ref != null) {
+                RolapSchema schema = ref.get(pinSchemaTimeout);
+                if (schema != null) {
+                    return schema;
+                }
+            }
+        } finally {
+            lock.readLock().unlock();
+        }
+
+        return null;
+    }
+
+    private RolapSchema getByKey(
+        String catalogUrl,
+        DataSource dataSource,
+        Util.PropertyList connectInfo,
+        String pinSchemaTimeout,
+        String catalogStr,
+        SchemaKey key)
+    {
+        RolapSchema schema = lookUp(mapKeyToSchema, key, pinSchemaTimeout);
+        if (schema != null) {
+            return schema;
+        }
+
+        lock.writeLock().lock();
+        try {
+            // We need to check once again, now under
+            // write lock's protection, because it is possible,
+            // that another thread has already replaced old ref
+            // with a new one, having the same key.
+            // If the condition were not checked, then this thread
+            // would remove the newborn schema
+            ExpiringReference<RolapSchema> ref = mapKeyToSchema.get(key);
+            if (ref != null) {
+                schema = ref.get(pinSchemaTimeout);
+                if (schema == null) {
+                    mapKeyToSchema.remove(key);
+                } else {
+                    return schema;
+                }
+            }
+
+            schema = createRolapSchema(
+                catalogUrl, dataSource, connectInfo, catalogStr, key, null);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("create: " + schema);
+            }
+            putSchema(schema, null, pinSchemaTimeout);
+            return schema;
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    private RolapSchema getByChecksum(
+        String catalogUrl,
+        DataSource dataSource,
+        Util.PropertyList connectInfo,
+        String pinSchemaTimeout,
+        String catalogStr,
+        SchemaKey key)
+    {
+        final ByteString md5Bytes = new ByteString(Util.digestMd5(catalogStr));
+        RolapSchema schema = lookUp(mapMd5ToSchema, md5Bytes, pinSchemaTimeout);
+        if (schema != null) {
+            return schema;
+        }
+
+        lock.writeLock().lock();
+        try {
+            // The motivation for repeating lookup attempt is the same
+            // as described in getByKey()
+            ExpiringReference<RolapSchema> ref = mapMd5ToSchema.get(md5Bytes);
             if (ref != null) {
                 schema = ref.get(pinSchemaTimeout);
                 if (schema == null) {
                     // clear out the reference since schema is null
                     mapKeyToSchema.remove(key);
                     mapMd5ToSchema.remove(md5Bytes);
+                } else {
+                    // someone has updated the schema for us
+                    return schema;
                 }
             }
 
-            if (schema == null) {
-                schema = new RolapSchema(
-                    key,
-                    md5Bytes,
-                    catalogUrl,
-                    catalogStr,
-                    connectInfo,
-                    dataSource);
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "create: schema-name=" + schema.getName()
-                        + ", schema-id=" + System.identityHashCode(schema));
-                }
-                putSchema(schema, md5Bytes, pinSchemaTimeout);
-            }
-            return schema;
-        }
-
-        ExpiringReference<RolapSchema> ref = mapKeyToSchema.get(key);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(
-                "get(key=" + key
-                + ") returned " + toString(ref));
-        }
-        if (ref != null) {
-            schema = ref.get(pinSchemaTimeout);
-            if (schema == null) {
-                mapKeyToSchema.remove(key);
-            }
-        }
-
-        if (schema == null) {
-            schema = new RolapSchema(
-                key,
-                null,
-                catalogUrl,
-                catalogStr,
-                connectInfo,
-                dataSource);
+            schema = createRolapSchema(
+                catalogUrl, dataSource, connectInfo, catalogStr,
+                key, md5Bytes);
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("create: " + schema);
+                LOGGER.debug(
+                    "create: schema-name=" + schema.getName()
+                    + ", schema-id=" + System.identityHashCode(schema));
             }
-            putSchema(schema, null, pinSchemaTimeout);
+            putSchema(schema, md5Bytes, pinSchemaTimeout);
+            return schema;
+        } finally {
+            lock.writeLock().unlock();
         }
-
-        return schema;
     }
 
+    // is extracted and made package-local for testing purposes
+    RolapSchema createRolapSchema(
+        String catalogUrl,
+        DataSource dataSource,
+        Util.PropertyList connectInfo,
+        String catalogStr,
+        SchemaKey key,
+        ByteString md5Bytes)
+    {
+        return new RolapSchema(
+            key,
+            md5Bytes,
+            catalogUrl,
+            catalogStr,
+            connectInfo,
+            dataSource);
+    }
+
+    /**
+     * Adds <tt>schema</tt> to the pool.
+     * <b>Attention!</b> This method is not doing any synchronization
+     * internally and relies on the assumption that it is invoked
+     * inside a critical section
+     * @param schema        schema to be stored
+     * @param md5Bytes      md5 hash, can be <tt>null</tt>
+     * @param pinTimeout    timeout mark
+     */
     private void putSchema(
         final RolapSchema schema,
         final ByteString md5Bytes,
@@ -315,7 +396,7 @@ class RolapSchemaPool {
         }
     }
 
-    synchronized void remove(
+    void remove(
         final String catalogUrl,
         final String connectionKey,
         final String jdbcUser,
@@ -344,7 +425,7 @@ class RolapSchemaPool {
         remove(key);
     }
 
-    synchronized void remove(
+    void remove(
         final String catalogUrl,
         final DataSource dataSource)
     {
@@ -371,7 +452,7 @@ class RolapSchemaPool {
         remove(key);
     }
 
-    synchronized void remove(RolapSchema schema) {
+    void remove(RolapSchema schema) {
         if (schema != null) {
             if (RolapSchema.LOGGER.isDebugEnabled()) {
                 RolapSchema.LOGGER.debug(
@@ -383,32 +464,43 @@ class RolapSchemaPool {
     }
 
     private void remove(SchemaKey key) {
-        Reference<RolapSchema> ref = mapKeyToSchema.get(key);
-        if (ref != null) {
-            RolapSchema schema = ref.get();
-            if (schema != null) {
-                mapMd5ToSchema.remove(schema.getChecksum());
-                schema.finalCleanUp();
-            }
-        }
-        mapKeyToSchema.remove(key);
-    }
-
-    synchronized void clear() {
-        if (RolapSchema.LOGGER.isDebugEnabled()) {
-            RolapSchema.LOGGER.debug("Pool.clear: clearing all RolapSchemas");
-        }
-
-        for (Reference<RolapSchema> ref : mapKeyToSchema.values()) {
+        lock.writeLock().lock();
+        try {
+            Reference<RolapSchema> ref = mapKeyToSchema.get(key);
             if (ref != null) {
                 RolapSchema schema = ref.get();
                 if (schema != null) {
+                    mapMd5ToSchema.remove(schema.getChecksum());
                     schema.finalCleanUp();
                 }
             }
+            mapKeyToSchema.remove(key);
+        } finally {
+            lock.writeLock().unlock();
         }
-        mapKeyToSchema.clear();
-        mapMd5ToSchema.clear();
+    }
+
+    void clear() {
+        lock.writeLock().lock();
+        try {
+            if (RolapSchema.LOGGER.isDebugEnabled()) {
+                RolapSchema.LOGGER.debug(
+                    "Pool.clear: clearing all RolapSchemas");
+            }
+
+            for (Reference<RolapSchema> ref : mapKeyToSchema.values()) {
+                if (ref != null) {
+                    RolapSchema schema = ref.get();
+                    if (schema != null) {
+                        schema.finalCleanUp();
+                    }
+                }
+            }
+            mapKeyToSchema.clear();
+            mapMd5ToSchema.clear();
+        } finally {
+            lock.writeLock().unlock();
+        }
         JdbcSchema.clearAllDBs();
     }
 
@@ -417,18 +509,28 @@ class RolapSchemaPool {
      *
      * @return List of schemas in this pool
      */
-    synchronized List<RolapSchema> getRolapSchemas() {
-        List<RolapSchema> list = new ArrayList<RolapSchema>();
-        for (RolapSchema schema
-            : Util.GcIterator.over(mapKeyToSchema.values()))
-        {
-            list.add(schema);
+    List<RolapSchema> getRolapSchemas() {
+        lock.readLock().lock();
+        try {
+            List<RolapSchema> list = new ArrayList<RolapSchema>();
+            for (RolapSchema schema : Util.GcIterator
+                .over(mapKeyToSchema.values()))
+            {
+                list.add(schema);
+            }
+            return list;
+        } finally {
+            lock.readLock().unlock();
         }
-        return list;
     }
 
-    synchronized boolean contains(RolapSchema rolapSchema) {
-        return mapKeyToSchema.containsKey(rolapSchema.key);
+    boolean contains(RolapSchema rolapSchema) {
+        lock.readLock().lock();
+        try {
+            return mapKeyToSchema.containsKey(rolapSchema.key);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     private static <T> String toString(Reference<T> ref) {
