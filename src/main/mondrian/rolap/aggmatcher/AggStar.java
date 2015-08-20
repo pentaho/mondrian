@@ -15,6 +15,7 @@ import mondrian.olap.MondrianDef.AggLevel;
 import mondrian.recorder.MessageRecorder;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
+import mondrian.rolap.RolapAggregator.BaseAggor;
 import mondrian.rolap.aggmatcher.JdbcSchema.Table.Column.Usage;
 import mondrian.rolap.aggmatcher.JdbcSchema.UsageType;
 import mondrian.rolap.sql.SqlQuery;
@@ -1094,8 +1095,15 @@ public class AggStar {
             }
 
             public String generateRollupString(SqlQuery query) {
-                String expr = generateExprString(query);
-                Aggregator rollup = null;
+                String expr = super.generateExprString(query);
+                RolapAggregator rollup = getRollupAggregator();
+
+                String s = rollup.getExpression(expr);
+                return s;
+            }
+
+            private RolapAggregator getRollupAggregator() {
+                Aggregator rollup;
 
                 BitKey fkbk = AggStar.this.getForeignKeyBitKey();
                 // When rolling up and the aggregator is distinct and
@@ -1108,10 +1116,9 @@ public class AggStar {
                 } else {
                     rollup = getAggregator().getRollup();
                 }
-
-                String s = ((RolapAggregator) rollup).getExpression(expr);
-                return s;
+                return (RolapAggregator) rollup;
             }
+
             public void print(final PrintWriter pw, final String prefix) {
                 SqlQuery sqlQuery = getSqlQuery();
                 pw.print(prefix);
@@ -1120,6 +1127,19 @@ public class AggStar {
                 pw.print(getBitPosition());
                 pw.print("): ");
                 pw.print(generateRollupString(sqlQuery));
+            }
+
+            @Override
+            public String generateExprString(SqlQuery query) {
+                String exprString = super.generateExprString(query);
+                RolapAggregator rollupAggregator = getRollupAggregator();
+                if (rollupAggregator instanceof BaseAggor) {
+                    BaseAggor agg = (BaseAggor) rollupAggregator;
+                    if (agg.alwaysRequiresFactColumn()) {
+                        return agg.getScalarExpression(exprString);
+                    }
+                }
+                return exprString;
             }
         }
 

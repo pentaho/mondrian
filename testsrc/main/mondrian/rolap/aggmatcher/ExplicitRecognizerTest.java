@@ -106,7 +106,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
 
     public void testAvgMeasureLowestGranularity() throws SQLException {
         TestContext testContext = setupMultiColDimCube(
-           "",
+            "",
             "column=\"the_year\"",
             "column=\"quarter\"",
             "column=\"month_of_year\" ",
@@ -114,10 +114,11 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
 
         String query =
             "select {[Measures].[Avg Unit Sales]} on columns, "
-                + "non empty CrossJoin({[TimeExtra].[1997].[Q1].Children},{[Gender].[M]}) on rows "
-                + "from [ExtraCol] ";
+            + "non empty CrossJoin({[TimeExtra].[1997].[Q1].Children},{[Gender].[M]}) on rows "
+            + "from [ExtraCol] ";
 
-        testContext.assertQueryReturns(query,
+        testContext.assertQueryReturns(
+            query,
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -135,64 +136,23 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
             query,
             sqlPattern(
                 "select\n"
-                    + "    `avg_agg_test`.`testyear` as `c0`,\n"
-                    + "    `avg_agg_test`.`testqtr` as `c1`,\n"
-                    + "    `avg_agg_test`.`gender` as `c2`,\n"
-                    + "    sum(`avg_agg_test`.`test_unit_sales` * `avg_agg_test`.`fact_count`) / sum(`avg_agg_test`.`fact_count`) as `m0`\n"
-                    + "from\n"
-                    + "    `avg_agg_test` as `avg_agg_test`\n"
-                    + "where\n"
-                    + "    `avg_agg_test`.`testyear` = 1997\n"
-                    + "and\n"
-                    + "    `avg_agg_test`.`gender` = 'M'\n"
-                    + "group by\n"
-                    + "    `avg_agg_test`.`testyear`,\n"
-                    + "    `avg_agg_test`.`testqtr`,\n"
-                    + "    `avg_agg_test`.`gender`"), true, false, true);
+                + "    `agg_c_avg_sales_fact_1997`.`the_year` as `c0`,\n"
+                + "    `agg_c_avg_sales_fact_1997`.`quarter` as `c1`,\n"
+                + "    `agg_c_avg_sales_fact_1997`.`month_of_year` as `c2`,\n"
+                + "    `agg_c_avg_sales_fact_1997`.`gender` as `c3`,\n"
+                + "    (`agg_c_avg_sales_fact_1997`.`unit_sales`) / (`agg_c_avg_sales_fact_1997`.`fact_count`) as `m0`\n"
+                + "from\n"
+                + "    `agg_c_avg_sales_fact_1997` as `agg_c_avg_sales_fact_1997`\n"
+                + "where\n"
+                + "    `agg_c_avg_sales_fact_1997`.`the_year` = 1997\n"
+                + "and\n"
+                + "    `agg_c_avg_sales_fact_1997`.`quarter` = 'Q1'\n"
+                + "and\n"
+                + "    `agg_c_avg_sales_fact_1997`.`month_of_year` in (1, 2, 3)\n"
+                + "and\n"
+                + "    `agg_c_avg_sales_fact_1997`.`gender` = 'M'"),
+                false, false, true);
     }
-
-    public void testAvgMeasureRolledUpGranularityExplicit() throws SQLException {
-        TestContext testContext = setupMultiColDimCube(
-            "    <AggName name=\"explicit_agg_c_avg_sales_fact_1997\">\n"
-            + "        <AggFactCount column=\"FACT_COUNT\"/>\n"
-            + "        <AggMeasure name=\"[Measures].[Avg Unit Sales]\" column=\"unit_sales\" />\n"
-            + "        <AggLevel name=\"[Gender].[Gender]\" column=\"gender\" />\n"
-            + "        <AggLevel name=\"[TimeExtra].[Year]\" column=\"the_year\" />\n"
-            + "        <AggLevel name=\"[TimeExtra].[Quarter]\" column=\"quarter\" />\n"
-            + "        <AggLevel name=\"[TimeExtra].[Month]\" column=\"month_of_year\" />\n"
-            + "    </AggName>\n",
-            "column=\"the_year\"",
-            "column=\"quarter\"",
-            "column=\"month_of_year\" ",
-            "");
-
-        String query =
-            "select {[Measures].[Avg Unit Sales]} on columns, "
-                + "non empty CrossJoin({[TimeExtra].[Quarter].members},{[Gender].[M]}) on rows "
-                + "from [ExtraCol] ";
-        // Should not do AvgFromAvg, need a way to do AvgFromSum with explicit
-        assertQuerySqlOrNot(
-            testContext,
-            query,
-            sqlPattern(
-                "select\n" +
-                    "    `explicit_agg_c_avg_sales_fact_1997`.`the_year` as `c0`,\n" +
-                    "    `explicit_agg_c_avg_sales_fact_1997`.`quarter` as `c1`,\n" +
-                    "    `explicit_agg_c_avg_sales_fact_1997`.`gender` as `c2`,\n" +
-                    "    sum(`explicit_agg_c_avg_sales_fact_1997`.`unit_sales` * `explicit_agg_c_avg_sales_fact_1997`.`fact_count`) / sum(`explicit_agg_c_avg_sales_fact_1997`.`fact_count`) as `m0`\n" +
-                    "from\n" +
-                    "    `explicit_agg_c_avg_sales_fact_1997` as `explicit_agg_c_avg_sales_fact_1997`\n" +
-                    "where\n" +
-                    "    `explicit_agg_c_avg_sales_fact_1997`.`the_year` = 1997\n" +
-                    "and\n" +
-                    "    `explicit_agg_c_avg_sales_fact_1997`.`gender` = 'M'\n" +
-                    "group by\n" +
-                    "    `explicit_agg_c_avg_sales_fact_1997`.`the_year`,\n" +
-                    "    `explicit_agg_c_avg_sales_fact_1997`.`quarter`,\n" +
-                    "    `explicit_agg_c_avg_sales_fact_1997`.`gender`"), true, false, true);
-    }
-
-
 
     public void testExplicitForeignKey() {
         TestContext testContext = setupMultiColDimCube(
@@ -687,20 +647,20 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
             + "      </Level>\n"
             + "    </Hierarchy>\n"
             + "  </Dimension>\n"
-                + "  <Dimension name=\"Product\">\n" +
-                "    <Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n" +
-                "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n" +
-                "        <Table name=\"product\"/>\n" +
-                "        <Table name=\"product_class\"/>\n" +
-                "      </Join>\n" +
-                "      <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n" +
-                "          uniqueMembers=\"true\"/>\n" +
-                "      <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n" +
-                "          uniqueMembers=\"false\"/>\n" +
-                "      <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"\n" +
-                "          uniqueMembers=\"false\"/>\n" +
-                "    </Hierarchy>\n" +
-                "  </Dimension>\n"
+            + "  <Dimension name=\"Product\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+            + "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+            + "        <Table name=\"product\"/>\n"
+            + "        <Table name=\"product_class\"/>\n"
+            + "      </Join>\n"
+            + "      <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n"
+            + "          uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n"
+            + "          uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"\n"
+            + "          uniqueMembers=\"false\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
             + "<Cube name=\"ExtraCol\" defaultMeasure='#DEFMEASURE#'>\n"
             + "  <Table name=\"sales_fact_1997\">\n"
             + "           #AGGNAME# "
@@ -727,7 +687,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
             + "    </Hierarchy>\n"
             + "  </Dimension>  "
             + "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>"
-                + "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>"
+            + "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>"
             + "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
             + "      formatString=\"Standard\" visible=\"false\"/>\n"
             + "<Measure name=\"Avg Unit Sales\" column=\"unit_sales\" aggregator=\"avg\"\n"
