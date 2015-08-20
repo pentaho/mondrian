@@ -12335,6 +12335,160 @@ Intel platforms):
                 + "Row #46: 263,793.22\n");
         }
     }
+
+    public void testExisting() {
+        // basic test
+        assertQueryReturns(
+            "with \n"
+            + "  member measures.ExistingCount as\n"
+            + "  count(Existing [Product].[Product Subcategory].Members)\n"
+            + "  select {measures.ExistingCount} on 0,\n"
+            + "  [Product].[Product Family].Members on 1\n"
+            + "  from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[ExistingCount]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "Row #0: 8\n"
+            + "Row #1: 62\n"
+            + "Row #2: 32\n");
+        // same as exists+currentMember
+        assertQueryReturns(
+            "with member measures.StaticCount as\n"
+            + "  count([Product].[Product Subcategory].Members)\n"
+            + "  member measures.WithExisting as\n"
+            + "  count(Existing [Product].[Product Subcategory].Members)\n"
+            + "  member measures.WithExists as\n"
+            + "  count(Exists([Product].[Product Subcategory].Members, [Product].CurrentMember))\n"
+            + "  select {measures.StaticCount, measures.WithExisting, measures.WithExists} on 0,\n"
+            + "  [Product].[Product Family].Members on 1\n"
+            + "  from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[StaticCount]}\n"
+            + "{[Measures].[WithExisting]}\n"
+            + "{[Measures].[WithExists]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "Row #0: 102\n"
+            + "Row #0: 8\n"
+            + "Row #0: 8\n"
+            + "Row #1: 102\n"
+            + "Row #1: 62\n"
+            + "Row #1: 62\n"
+            + "Row #2: 102\n"
+            + "Row #2: 32\n"
+            + "Row #2: 32\n");
+    }
+
+    public void testExistingAggSet() {
+        // aggregate simple set
+        assertQueryReturns(
+            "WITH MEMBER [Measures].[Edible Sales] AS \n"
+            + "Aggregate( Existing {[Product].[Drink], [Product].[Food]}, Measures.[Unit Sales] )\n"
+            + "SELECT {Measures.[Unit Sales], Measures.[Edible Sales]} ON 0,\n"
+            + "{ [Product].[Product Family].Members, [Product].[All Products] } ON 1\n"
+            + "FROM [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Edible Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "{[Product].[All Products]}\n"
+            + "Row #0: 24,597\n"
+            + "Row #0: 24,597\n"
+            + "Row #1: 191,940\n"
+            + "Row #1: 191,940\n"
+            + "Row #2: 50,236\n"
+            + "Row #2: \n"
+            + "Row #3: 266,773\n"
+            + "Row #3: 216,537\n");
+    }
+
+    public void testExistingGenerateAgg() {
+        // generate overrides existing context
+        assertQueryReturns(
+            "WITH SET BestOfFamilies AS\n"
+            + "  Generate( [Product].[Product Family].Members,\n"
+            + "            TopCount( Existing [Product].[Brand Name].Members, 10, Measures.[Unit Sales]) ) \n"
+            + "MEMBER Measures.[Top 10 Brand Sales] AS Aggregate(Existing BestOfFamilies, Measures.[Unit Sales])"
+            + "MEMBER Measures.[Rest Brand Sales] AS Aggregate( Except(Existing [Product].[Brand Name].Members, Existing BestOfFamilies), Measures.[Unit Sales])"
+            + "SELECT { Measures.[Unit Sales], Measures.[Top 10 Brand Sales], Measures.[Rest Brand Sales] } ON 0,\n"
+            + "       {[Product].[Product Family].Members} ON 1\n"
+            + "FROM [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Top 10 Brand Sales]}\n"
+            + "{[Measures].[Rest Brand Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "Row #0: 24,597\n"
+            + "Row #0: 9,448\n"
+            + "Row #0: 15,149\n"
+            + "Row #1: 191,940\n"
+            + "Row #1: 32,506\n"
+            + "Row #1: 159,434\n"
+            + "Row #2: 50,236\n"
+            + "Row #2: 8,936\n"
+            + "Row #2: 41,300\n");
+    }
+
+    public void testExistingGenerateOverrides() {
+        assertQueryReturns(
+            "WITH MEMBER Measures.[StaticSumNC] AS\n"
+            + " 'Sum(Generate([Product].[Non-Consumable],"
+            + "    Existing [Product].[Product Department].Members), Measures.[Unit Sales])'\n"
+            + "SELECT { Measures.[StaticSumNC], Measures.[Unit Sales] } ON 0,\n"
+            + "    NON EMPTY {[Product].[Product Family].Members} ON 1\n"
+            + "FROM [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[StaticSumNC]}\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "Row #0: 50,236\n"
+            + "Row #0: 24,597\n"
+            + "Row #1: 50,236\n"
+            + "Row #1: 191,940\n"
+            + "Row #2: 50,236\n"
+            + "Row #2: 50,236\n");
+        assertQueryReturns(
+            "WITH MEMBER Measures.[StaticSumNC] AS\n"
+            + " 'Sum(Generate([Product].[Product Family].Members,"
+            + "    Existing [Product].[Product Department].Members), Measures.[Unit Sales])'\n"
+            + "SELECT { Measures.[StaticSumNC], Measures.[Unit Sales] } ON 0,\n"
+            + "    NON EMPTY {[Product].[Non-Consumable]} ON 1\n"
+            + "FROM [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[StaticSumNC]}\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: 50,236\n");
+    }
+
 }
 
 // End FunctionTest.java

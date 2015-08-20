@@ -6,7 +6,6 @@
 *
 * Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
@@ -72,86 +71,6 @@ class ExistsFunDef extends FunDefBase
                 return result;
             }
         };
-    }
-
-    private static boolean isOnSameHierarchyChain(Member mA, Member mB)
-    {
-        return (FunUtil.isAncestorOf(mA, mB, false))||
-            (FunUtil.isAncestorOf(mB, mA, false));
-    }
-
-
-    /**
-     * Returns true if leftTuple Exists w/in rightTuple
-     *
-     *
-     *
-     * @param leftTuple tuple from arg one of EXISTS()
-     * @param rightTuple tuple from arg two of EXISTS()
-     * @param leftHierarchies list of hierarchies from leftTuple, in the same
-     *                        order
-     * @param rightHierarchies list of the hiearchies from rightTuple,
-     *                         in the same order
-     * @return true if each member from leftTuple is somewhere in the
-     *         hierarchy chain of the corresponding member from rightTuple,
-     *         false otherwise.
-     *         If there is no explicit corresponding member from either
-     *         right or left, then the default member is used.
-     */
-    private boolean existsInTuple(
-        final List<Member> leftTuple, final List<Member> rightTuple,
-        final List<Hierarchy> leftHierarchies,
-        final List<Hierarchy> rightHierarchies)
-    {
-        List<Member> checkedMembers = new ArrayList<Member>();
-
-        for (Member leftMember : leftTuple) {
-            Member rightMember = getCorrespondingMember(
-                leftMember, rightTuple, rightHierarchies);
-            checkedMembers.add(rightMember);
-            if (!isOnSameHierarchyChain(leftMember, rightMember)) {
-                return false;
-            }
-        }
-        // this loop handles members in the right tuple not present in left
-        // Such a member could only impact the resulting tuple list if the
-        // default member of the hierarchy is not the all member.
-        for (Member rightMember : rightTuple) {
-            if (checkedMembers.contains(rightMember)) {
-                // already checked in the previous loop
-                continue;
-            }
-            Member leftMember = getCorrespondingMember(
-                rightMember, leftTuple, leftHierarchies);
-            if (!isOnSameHierarchyChain(leftMember, rightMember)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Returns the corresponding member from tuple, or the default member
-     * for the hierarchy if member is not explicitly contained in the tuple.
-     *
-     *
-     * @param member source member
-     * @param tuple tuple containing the target member
-     * @param tupleHierarchies list of the hierarchies explicitly contained
-     *                         in the tuple, in the same order.
-     * @return target member
-     */
-    private Member getCorrespondingMember(
-        final Member member, final List<Member> tuple,
-        final List<Hierarchy> tupleHierarchies)
-    {
-        assert tuple.size() == tupleHierarchies.size();
-        int dimPos = tupleHierarchies.indexOf(member.getHierarchy());
-        if (dimPos >= 0) {
-            return tuple.get(dimPos);
-        } else {
-            return member.getHierarchy().getDefaultMember();
-        }
     }
 
     private static List<Hierarchy> getHierarchies(final List<Member> members)

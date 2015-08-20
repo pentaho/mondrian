@@ -1087,6 +1087,8 @@ public class BuiltinFunTable extends FunTableImpl {
         builder.define(RangeFunDef.instance); // "<member> : <member>" operator
         builder.define(SetFunDef.Resolver); // "{ <member> [,...] }" operator
         builder.define(NativizeSetFunDef.Resolver);
+        // Existing <Set>
+        builder.define(ExistingFunDef.instance);
 
         //
         // STRING FUNCTIONS
