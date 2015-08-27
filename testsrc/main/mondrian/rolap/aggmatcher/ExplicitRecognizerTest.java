@@ -9,7 +9,6 @@
 */
 package mondrian.rolap.aggmatcher;
 
-import mondrian.spi.Dialect;
 import mondrian.test.*;
 
 import java.sql.*;
@@ -56,7 +55,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
         assertQuerySql(
             testContext,
             query,
-            sqlPattern(
+            mysqlPattern(
                 "select\n"
                 + "    `agg_g_ms_pcat_sales_fact_1997`.`the_year` as `c0`,\n"
                 + "    `agg_g_ms_pcat_sales_fact_1997`.`quarter` as `c1`,\n"
@@ -84,7 +83,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
         assertQuerySql(
             testContext,
             query,
-            sqlPattern(
+            mysqlPattern(
                 "select\n"
                 + "    `agg_g_ms_pcat_sales_fact_1997`.`the_year` as `c0`,\n"
                 + "    `agg_g_ms_pcat_sales_fact_1997`.`quarter` as `c1`,\n"
@@ -102,56 +101,6 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
                 + "    `agg_g_ms_pcat_sales_fact_1997`.`quarter`,\n"
                 + "    `agg_g_ms_pcat_sales_fact_1997`.`month_of_year`,\n"
                 + "    `agg_g_ms_pcat_sales_fact_1997`.`gender`"));
-    }
-
-    public void testAvgMeasureLowestGranularity() throws SQLException {
-        TestContext testContext = setupMultiColDimCube(
-            "",
-            "column=\"the_year\"",
-            "column=\"quarter\"",
-            "column=\"month_of_year\" ",
-            "");
-
-        String query =
-            "select {[Measures].[Avg Unit Sales]} on columns, "
-            + "non empty CrossJoin({[TimeExtra].[1997].[Q1].Children},{[Gender].[M]}) on rows "
-            + "from [ExtraCol] ";
-
-        testContext.assertQueryReturns(
-            query,
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Avg Unit Sales]}\n"
-            + "Axis #2:\n"
-            + "{[TimeExtra].[1997].[Q1].[1], [Gender].[M]}\n"
-            + "{[TimeExtra].[1997].[Q1].[2], [Gender].[M]}\n"
-            + "{[TimeExtra].[1997].[Q1].[3], [Gender].[M]}\n"
-            + "Row #0: 3\n"
-            + "Row #1: 3\n"
-            + "Row #2: 3\n");
-
-        assertQuerySqlOrNot(
-            testContext,
-            query,
-            sqlPattern(
-                "select\n"
-                + "    `agg_c_avg_sales_fact_1997`.`the_year` as `c0`,\n"
-                + "    `agg_c_avg_sales_fact_1997`.`quarter` as `c1`,\n"
-                + "    `agg_c_avg_sales_fact_1997`.`month_of_year` as `c2`,\n"
-                + "    `agg_c_avg_sales_fact_1997`.`gender` as `c3`,\n"
-                + "    (`agg_c_avg_sales_fact_1997`.`unit_sales`) / (`agg_c_avg_sales_fact_1997`.`fact_count`) as `m0`\n"
-                + "from\n"
-                + "    `agg_c_avg_sales_fact_1997` as `agg_c_avg_sales_fact_1997`\n"
-                + "where\n"
-                + "    `agg_c_avg_sales_fact_1997`.`the_year` = 1997\n"
-                + "and\n"
-                + "    `agg_c_avg_sales_fact_1997`.`quarter` = 'Q1'\n"
-                + "and\n"
-                + "    `agg_c_avg_sales_fact_1997`.`month_of_year` in (1, 2, 3)\n"
-                + "and\n"
-                + "    `agg_c_avg_sales_fact_1997`.`gender` = 'M'"),
-                false, false, true);
     }
 
     public void testExplicitForeignKey() {
@@ -181,7 +130,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
         assertQuerySql(
             testContext,
             query,
-            sqlPattern(
+            mysqlPattern(
                 "select\n"
                 + "    `agg_c_14_sales_fact_1997`.`the_year` as `c0`,\n"
                 + "    `agg_c_14_sales_fact_1997`.`quarter` as `c1`,\n"
@@ -222,7 +171,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
         assertQuerySql(
             testContext,
             query,
-            sqlPattern(
+            mysqlPattern(
                 "select\n"
                 + "    `agg_c_14_sales_fact_1997`.`the_year` as `c0`,\n"
                 + "    `agg_c_14_sales_fact_1997`.`quarter` as `c1`,\n"
@@ -267,7 +216,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
         assertQuerySql(
             testContext,
             query,
-            sqlPattern(
+            mysqlPattern(
                 "select\n"
                 + "    `exp_agg_test`.`testyear` as `c0`,\n"
                 + "    `exp_agg_test`.`testqtr` as `c1`,\n"
@@ -314,7 +263,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
         assertQuerySql(
             testContext,
             query,
-            sqlPattern(
+            mysqlPattern(
                 "select\n"
                 + "    `exp_agg_test`.`testyear` as `c0`,\n"
                 + "    `exp_agg_test`.`testqtr` as `c1`,\n"
@@ -363,7 +312,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
         assertQuerySql(
             testContext,
             query,
-            sqlPattern(
+            mysqlPattern(
                 "select\n"
                 + "    `exp_agg_test`.`testyear` as `c0`,\n"
                 + "    `exp_agg_test`.`testqtr` as `c1`,\n"
@@ -418,7 +367,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
         assertQuerySql(
             testContext,
             query,
-            sqlPattern(
+            mysqlPattern(
                 "select\n"
                 + "    `exp_agg_test_distinct_count`.`gender` as `c0`,\n"
                 + "    `exp_agg_test_distinct_count`.`store_country` as `c1`,\n"
@@ -466,7 +415,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
         assertQuerySql(
             testContext,
             query,
-            sqlPattern(
+            mysqlPattern(
                 "select\n"
                 + "    `exp_agg_test_distinct_count`.`testyear` as `c0`,\n"
                 + "    `exp_agg_test_distinct_count`.`gender` as `c1`,\n"
@@ -513,7 +462,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
         assertQuerySql(
             testContext,
             query,
-            sqlPattern(
+            mysqlPattern(
                 "select\n"
                 + "    `exp_agg_test_distinct_count`.`testyear` as `c0`,\n"
                 + "    `exp_agg_test_distinct_count`.`store_country` as `c1`,\n"
@@ -542,7 +491,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
         assertQuerySql(
             testContext,
             query,
-            sqlPattern(
+            mysqlPattern(
                 "select\n"
                 + "    `exp_agg_test_distinct_count`.`testyear` as `c0`,\n"
                 + "    `exp_agg_test_distinct_count`.`store_name` as `c1`,\n"
@@ -591,7 +540,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
         assertQuerySql(
             testContext,
             query,
-            sqlPattern(
+            mysqlPattern(
                 "select\n"
                 + "    `time_by_day`.`the_year` as `c0`,\n"
                 + "    `customer`.`gender` as `c1`,\n"
@@ -613,15 +562,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
                 + "    `customer`.`gender`"));
     }
 
-    private SqlPattern[] sqlPattern(String sql) {
-        return new SqlPattern[]{
-            new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL,
-                sql,
-                sql.length())};
-    }
-
-    private TestContext setupMultiColDimCube(
+    static TestContext setupMultiColDimCube(
         String aggName, String yearCols, String qtrCols, String monthCols,
         String monthProp)
     {
@@ -629,7 +570,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
             aggName, yearCols, qtrCols, monthCols, monthProp, "Unit Sales");
     }
 
-    private TestContext setupMultiColDimCube(
+    static TestContext setupMultiColDimCube(
         String aggName, String yearCols, String qtrCols, String monthCols,
         String monthProp, String defaultMeasure)
     {

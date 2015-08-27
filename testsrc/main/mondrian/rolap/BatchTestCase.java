@@ -547,6 +547,14 @@ public class BatchTestCase extends FoodMartTestCase {
         }
     }
 
+    protected SqlPattern[] sqlPattern(Dialect.DatabaseProduct db, String sql) {
+        return new SqlPattern[]{new SqlPattern(db, sql, sql.length())};
+    }
+
+    protected SqlPattern[] mysqlPattern(String sql) {
+        return sqlPattern(Dialect.DatabaseProduct.MYSQL, sql);
+    }
+
     protected String dialectize(Dialect.DatabaseProduct d, String sql) {
         sql = sql.replaceAll("\r\n", "\n");
         switch (d) {

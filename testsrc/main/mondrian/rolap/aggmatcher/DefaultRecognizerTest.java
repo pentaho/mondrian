@@ -10,8 +10,6 @@
 package mondrian.rolap.aggmatcher;
 
 import mondrian.rolap.BatchTestCase;
-import mondrian.spi.Dialect.DatabaseProduct;
-import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
 
 public class DefaultRecognizerTest extends BatchTestCase {
@@ -87,14 +85,8 @@ public class DefaultRecognizerTest extends BatchTestCase {
         assertQuerySqlOrNot(
             TestContext.instance().withSchema(simpleSchema),
             query,
-            new SqlPattern[]{
-                new SqlPattern(
-                    DatabaseProduct.MYSQL,
-                    expectedSql,
-                    expectedSql.length())},
-            false,
-            true,
-            true);
+            mysqlPattern(expectedSql),
+            false, true, true);
     }
 
     public void testTupleReaderWithDistinctCountMeasureInContext() {
@@ -147,14 +139,8 @@ public class DefaultRecognizerTest extends BatchTestCase {
         assertQuerySqlOrNot(
             TestContext.instance(),
             query,
-            new SqlPattern[]{
-                new SqlPattern(
-                    DatabaseProduct.MYSQL,
-                    sql,
-                    sql.length())},
-            false,
-            true,
-            true);
+            mysqlPattern(sql),
+            false, true, true);
     }
 
 }
