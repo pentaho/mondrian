@@ -414,7 +414,7 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
             + "Row #1: 11,523\n");
     }
 
-    private SqlPattern[] sqlPattern(String sql) {
+    static SqlPattern[] sqlPattern(String sql) {
         return new SqlPattern[]{
             new SqlPattern(
                 Dialect.DatabaseProduct.MYSQL,
@@ -422,9 +422,17 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
                 sql.length())};
     }
 
-    private TestContext setupMultiColDimCube(
+    static TestContext setupMultiColDimCube(
         String aggName, String yearCols, String qtrCols, String monthCols,
         String monthProp)
+    {
+        return setupMultiColDimCube(
+            aggName, yearCols, qtrCols, monthCols, monthProp, "Unit Sales");
+    }
+
+    static TestContext setupMultiColDimCube(
+        String aggName, String yearCols, String qtrCols, String monthCols,
+        String monthProp, String defaultMeasure)
     {
         String cube =
             "<?xml version=\"1.0\"?>\n"
@@ -440,7 +448,21 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
             + "      </Level>\n"
             + "    </Hierarchy>\n"
             + "  </Dimension>\n"
-            + "<Cube name=\"ExtraCol\">\n"
+            + "  <Dimension name=\"Product\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+            + "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+            + "        <Table name=\"product\"/>\n"
+            + "        <Table name=\"product_class\"/>\n"
+            + "      </Join>\n"
+            + "      <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n"
+            + "          uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n"
+            + "          uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"\n"
+            + "          uniqueMembers=\"false\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "<Cube name=\"ExtraCol\" defaultMeasure='#DEFMEASURE#'>\n"
             + "  <Table name=\"sales_fact_1997\">\n"
             + "           #AGGNAME# "
             + "  </Table>"
@@ -466,7 +488,10 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
             + "    </Hierarchy>\n"
             + "  </Dimension>  "
             + "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>"
+            + "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>"
             + "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\" visible=\"false\"/>\n"
+            + "<Measure name=\"Avg Unit Sales\" column=\"unit_sales\" aggregator=\"avg\"\n"
             + "      formatString=\"Standard\" visible=\"false\"/>\n"
             + "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
             + "      formatString=\"#,###.00\"/>\n"
@@ -478,7 +503,8 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
             .replace("#YEARCOLS#", yearCols)
             .replace("#QTRCOLS#", qtrCols)
             .replace("#MONTHCOLS#", monthCols)
-            .replace("#MONTHPROP#", monthProp);
+            .replace("#MONTHPROP#", monthProp)
+            .replace("#DEFMEASURE#", defaultMeasure);
         return TestContext.instance().withSchema(cube);
     }
 
