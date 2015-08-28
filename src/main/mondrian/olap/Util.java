@@ -28,7 +28,9 @@ import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.VFS;
 import org.apache.commons.vfs2.provider.http.HttpFileObject;
 import org.apache.log4j.Logger;
+
 import org.eigenbase.xom.XOMUtil;
+
 import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.mdx.*;
 
@@ -3671,6 +3673,16 @@ public class Util extends XOMUtil {
         // Find a constructor.
         Constructor<?> constructor;
         Object[] args = {};
+
+        // 0. Check that class is public and top-level or static.
+        if (!Modifier.isPublic(udfClass.getModifiers())
+                || (udfClass.getEnclosingClass() != null
+                    && !Modifier.isStatic(udfClass.getModifiers())))
+        {
+            throw MondrianResource.instance().UdfClassMustBePublicAndStatic.ex(
+                functionName,
+                className);
+        }
 
         // 1. Look for a constructor "public Udf(String name)".
         try {
