@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.ResultStyle;
@@ -531,6 +530,14 @@ public class BatchTestCase extends FoodMartTestCase {
                     + "\" and test not run]");
             }
         }
+    }
+
+    protected SqlPattern[] sqlPattern(Dialect.DatabaseProduct db, String sql) {
+        return new SqlPattern[]{new SqlPattern(db, sql, sql.length())};
+    }
+
+    protected SqlPattern[] mysqlPattern(String sql) {
+        return sqlPattern(Dialect.DatabaseProduct.MYSQL, sql);
     }
 
     protected String dialectize(Dialect.DatabaseProduct d, String sql) {

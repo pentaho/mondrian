@@ -4,11 +4,10 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho
+// Copyright (C) 2003-2005 Julian Hyde and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.Calc;
@@ -270,7 +269,7 @@ public abstract class RolapAggregator
      * These aggregators are NOT singletons like the above aggregators; rather,
      * each is different because of the fact count column expression.
      */
-    protected static abstract class BaseAggor extends RolapAggregator {
+    public static abstract class BaseAggor extends RolapAggregator {
         protected final String factCountExpr;
 
         protected BaseAggor(final String name, final String factCountExpr) {
@@ -283,6 +282,10 @@ public abstract class RolapAggregator
         {
             throw new UnsupportedOperationException();
         }
+
+        public abstract boolean alwaysRequiresFactColumn();
+
+        public abstract String getScalarExpression(String operand);
     }
 
     /**
@@ -313,6 +316,22 @@ public abstract class RolapAggregator
             buf.append(factCountExpr);
             buf.append(')');
             return buf.toString();
+        }
+
+        @Override
+        public boolean alwaysRequiresFactColumn() {
+            return true;
+        }
+
+        @Override
+        public String getScalarExpression(String operand) {
+            return new StringBuilder(64)
+                    .append('(')
+                    .append(operand)
+                    .append(") / (")
+                    .append(factCountExpr)
+                    .append(')')
+                    .toString();
         }
     }
 
@@ -347,6 +366,18 @@ public abstract class RolapAggregator
             buf.append(')');
             return buf.toString();
         }
+
+        @Override
+        public boolean alwaysRequiresFactColumn() {
+            return false;
+        }
+
+        @Override
+        public String getScalarExpression(String operand) {
+            throw new UnsupportedOperationException(
+                "This method should not be invoked "
+                + "if alwaysRequiresFactColumn() is false");
+        }
     }
     /**
      * This is an aggregator used for aggregate tables implementing the
@@ -371,6 +402,22 @@ public abstract class RolapAggregator
             buf.append(factCountExpr);
             buf.append(')');
             return buf.toString();
+        }
+
+        @Override
+        public boolean alwaysRequiresFactColumn() {
+            return true;
+        }
+
+        @Override
+        public String getScalarExpression(String operand) {
+            return new StringBuilder(64)
+                    .append('(')
+                    .append(operand)
+                    .append(") * (")
+                    .append(factCountExpr)
+                    .append(')')
+                    .toString();
         }
     }
 
