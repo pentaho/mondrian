@@ -1136,14 +1136,14 @@ diagrams and hyperlinks to source code">
                 **/_vti*/*,
                 **/*.psp,
                 **/*.sh,
-                **/JavaApplicationStub,
+                **/**JavaApplicationStub,
                 ${doc.dir}/api/src-html/**/*"/>
         <zipfileset filemode="755"
           dir="workbench"
           prefix="${workbench.dist.name}">
             <include name="**/*.sh" />
               <include name="**/*.command"/>
-            <include name="**/JavaApplicationStub" />
+            <include name="**/**JavaApplicationStub" />
            </zipfileset>
         <zipfileset
           dir="workbench"
@@ -1155,7 +1155,7 @@ diagrams and hyperlinks to source code">
             <exclude name="**/plugins/*-source.jar"/>
             <exclude name="**/plugins/*-javadoc.jar"/>
             <exclude name="**/plugins/junit.jar"/>
-            <exclude name="**/JavaApplicationStub" />
+            <exclude name="**/**JavaApplicationStub" />
         </zipfileset>
         <zipfileset src="${bin.dir}/oss-licenses.zip" prefix="${workbench.dist.name}" includes="PentahoSchemaWorkbench_OSS_Licenses.html"/>
     </zip>
