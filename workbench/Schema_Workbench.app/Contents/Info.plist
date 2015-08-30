@@ -29,7 +29,7 @@
 			<string>./plugins/pentaho-application-launcher.jar</string>
 		</array>
 		<key>JVMVersion</key>
-		<string>1.6*</string>
+		<string>1.7+</string>
 		<key>MainClass</key>
 		<string>org.pentaho.commons.launcher.Launcher</string>
 	        <key>Properties</key>		<dict>              		<key>apple.laf.useScreenMenuBar</key>			<string>true</string>			<key>apple.awt.showGrowBox</key>			<string>true</string>		</dict>
