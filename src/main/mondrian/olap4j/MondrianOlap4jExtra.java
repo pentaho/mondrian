@@ -342,8 +342,9 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
 
     public void flushSchemaCache(OlapConnection conn) throws OlapException {
         try {
-            conn.unwrap(RolapConnection.class)
-                .getCacheControl(null).flushSchemaCache();
+            RolapConnection rConn = conn.unwrap(RolapConnection.class);
+            rConn.getCacheControl(null).flushSchema(
+                rConn.getSchema());
         } catch (SQLException e) {
             throw new OlapException(e);
         }
