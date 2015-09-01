@@ -1,4 +1,4 @@
-Import-Package: !org.junit.*,!junit.*,org.olap4j.driver.xmla;resolution:=optional,org.olap4j.driver.xmla.proxy;resolution:=optional,org.olap4j.test;resolution:=optional,mondrian.xmla,mondrian.xmla.impl,org.apache.log4j;version="[1.2.17,1.3)",*
+Import-Package: !org.junit.*,!junit.*,org.olap4j.driver.xmla;resolution:=optional,org.olap4j.driver.xmla.proxy;resolution:=optional,org.olap4j.test;resolution:=optional,mondrian.xmla,mondrian.xmla.impl,org.apache.log4j;version="[1.2.17,1.3)",org.pentaho.platform.web.servlet.PentahoDataSourceResolver;resolution:=optional,*
 Export-Package: !mondrian.xmla, !mondrian.xmla.*,*
 DynamicImport-Package: *
 Bundle-Name: mondrian
