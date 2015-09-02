@@ -347,6 +347,7 @@ public class Main extends TestSuite {
             addTest(suite, MemberCacheHelperTest.class);
             addTest(suite, EffectiveMemberCacheTest.class);
             addTest(suite, SqlStatementTest.class);
+            addTest(suite, ValidMeasureFunDefTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {
