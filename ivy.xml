@@ -15,7 +15,7 @@
     xmlns:m="http://ant.apache.org/ivy/maven"
     xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
 
-    <info organisation="pentaho" module="mondrian" revision="${project.revision}">
+    <info organisation="${ivy.artifact.group}" module="${ivy.artifact.id}" revision="${project.revision}">
         <license name="EPL" url="http://www.eclipse.org/legal/epl-v10.html"/>
         <ivyauthor name="Julian Hyde" />
         <repository name="pentaho-repository" url="http://repo.pentaho.org/artifactory"/>
@@ -76,7 +76,7 @@
                 conf="test->default" changing="true" transitive="false">
             <artifact name="olap4j-xmla"/>
         </dependency>
-        
+
         <dependency org="org.olap4j" name="olap4j-xmlaserver" rev="${dependency.olap4j-xmlaserver.revision}"
             changing="true">
             <artifact name="olap4j-xmlaserver"/>
@@ -91,7 +91,7 @@
 
 
       <!-- JDK 1.4 backwards compatibility jars -->
-        <dependency org="backport-util-concurrent" 
+        <dependency org="backport-util-concurrent"
                 name="backport-util-concurrent" rev="3.1"
                 conf="default-jdk1.4->default"/>
         <dependency org="asm" name="asm" rev="3.1"
