@@ -12335,6 +12335,33 @@ Intel platforms):
                 + "Row #46: 263,793.22\n");
         }
     }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-2157">MONDRIAN-2157</a>
+     * <p/>
+     * <p>The results should be equivalent either we use aliases or not</p>
+     */
+    public void testTopPercentWithAlias() {
+        final String queryWithoutAlias =
+            "select\n"
+            + " {[Measures].[Store Cost]}on rows,\n"
+            + " TopPercent([Product].[Brand Name].Members*[Time].[1997].children,"
+            + " 50, [Measures].[Unit Sales]) on columns\n"
+            + "from Sales";
+        String queryWithAlias =
+            "with\n"
+            + " set [*aaa] as '[Product].[Brand Name].Members*[Time].[1997].children'\n"
+            + "select\n"
+            + " {[Measures].[Store Cost]}on rows,\n"
+            + " TopPercent([*aaa], 50, [Measures].[Unit Sales]) on columns\n"
+            + "from Sales";
+        final TestContext context = TestContext.instance();
+        final Result result = context.executeQuery(queryWithoutAlias);
+        context.assertQueryReturns(
+            queryWithAlias,
+            context.toString(result));
+    }
 }
 
 // End FunctionTest.java
