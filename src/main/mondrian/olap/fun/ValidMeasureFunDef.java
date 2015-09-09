@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2002-2014 Pentaho and others
+// Copyright (C) 2002-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -107,11 +107,15 @@ public class ValidMeasureFunDef extends FunDefBase
                 new ArrayList<Member>(memberList);
             // start adding to validMeasureMembers at right place
             for (Dimension vMinusBDimension : vMinusBDimensions) {
-                final Hierarchy hierarchy = vMinusBDimension.getHierarchy();
-                if (hierarchy.hasAll()) {
-                    validMeasureMembers.add(hierarchy.getAllMember());
-                } else {
-                    validMeasureMembers.add(hierarchy.getDefaultMember());
+                // add default|all member for each hierarchy
+                for (final Hierarchy hierarchy
+                    : vMinusBDimension.getHierarchies())
+                {
+                    if (hierarchy.hasAll()) {
+                        validMeasureMembers.add(hierarchy.getAllMember());
+                    } else {
+                        validMeasureMembers.add(hierarchy.getDefaultMember());
+                    }
                 }
             }
             // this needs to be done before validmeasuremembers are set on the
