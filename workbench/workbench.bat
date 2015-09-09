@@ -56,6 +56,6 @@ for %%i in ("plugins\*.jar") do call cpappend %%i
 set PENTAHO_JAVA=java
 call "%~dp0set-pentaho-env.bat"
 
-"%_PENTAHO_JAVA%" -Xms100m -Xmx500m -cp "%CP%" -Dlog4j.configuration=file:///%ROOT%\.schemaWorkbench\log4j.xml mondrian.gui.Workbench
+"%_PENTAHO_JAVA%" -Xms1024m -Xmx2048m -cp "%CP%" -Dlog4j.configuration=file:///%ROOT%\.schemaWorkbench\log4j.xml mondrian.gui.Workbench
 
 rem End workbench.bat

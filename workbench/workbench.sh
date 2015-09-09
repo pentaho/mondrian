@@ -84,7 +84,7 @@ done
 
 #echo $CP
 
-JAVA_FLAGS="-Xms100m -Xmx500m"
+JAVA_FLAGS="-Xms1024m -Xmx2048m"
 #JAVA_FLAGS="-verbose $JAVA_FLAGS"
 
 # Standard pentaho environment. Script lives in workbench directory in a
