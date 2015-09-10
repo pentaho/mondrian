@@ -339,7 +339,7 @@ demo/FoodMartCreateData.sql"/>
           unless="skip.download"
           description="Resolves runtime dependencies not required for compilation.">
     <ivy:resolve file="workbench/assembly_ivy.xml"/>
-    <ivy:retrieve symlink="${symlink}" type="jar"
+    <ivy:retrieve symlink="${symlink}"
                   pattern="${wb.plugins.dir}/[module].[ext]"/>
     <ivy:retrieve symlink="${symlink}" type="source,javadoc"
                   pattern="${wb.plugins.dir}/[module]-[type].[ext]"/>
