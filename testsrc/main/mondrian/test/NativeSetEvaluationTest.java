@@ -1537,6 +1537,11 @@ public class NativeSetEvaluationTest extends BatchTestCase {
      * @see <a href="http://jira.pentaho.com/browse/MONDRIAN-2366">Jira issue</a>
      */
     public void testNativeSetsCacheClearing() {
+        if (MondrianProperties.instance().ReadAggregates.get()
+            && MondrianProperties.instance().UseAggregates.get())
+        {
+            return;
+        }
         final String mdx =
             "select filter( gender.gender.members, measures.[Unit Sales] > 0) on 0 from sales ";
 
