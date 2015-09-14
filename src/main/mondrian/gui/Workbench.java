@@ -17,9 +17,11 @@ import mondrian.olap.DriverManager;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.olap.Util.PropertyList;
+import mondrian.server.MondrianServerRegistry;
 import mondrian.util.UnionIterator;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.XMLOutput;
@@ -1090,11 +1092,16 @@ public class Workbench extends javax.swing.JFrame {
 
     private void aboutMenuItemActionPerformed(ActionEvent evt) {
         try {
+            URL versionUrl = myClassLoader.getResource(
+                getResourceConverter().getGUIReference( "version" ) );
+            InputStream versionIn = versionUrl.openStream();
+            String ver = IOUtils.toString( versionIn );
+            ver = ver.replace( "PRODUCT_VERSION",
+                MondrianServerRegistry.INSTANCE.getProductVersion() );
+            ver = ver.replace( "COPYRIGHT_YEAR",
+                MondrianServerRegistry.INSTANCE.getCopyrightYear() );
             JEditorPane jEditorPane =
-                new JEditorPane(
-                    myClassLoader.getResource(
-                        getResourceConverter().getGUIReference("version"))
-                        .toString());
+                new JEditorPane( "text/html", ver );
             jEditorPane.setEditable(false);
             JScrollPane jScrollPane = new JScrollPane(jEditorPane);
             JPanel jPanel = new JPanel();

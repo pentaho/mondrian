@@ -68,6 +68,14 @@ public class MondrianServerRegistry {
         }
     }
 
+    public String getCopyrightYear() {
+        return MondrianServerVersion.COPYRIGHT_YEAR;
+    }
+
+    public String getProductVersion() {
+        return MondrianServerVersion.VERSION;
+    }
+
     public MondrianServer.MondrianVersion getVersion() {
         if (logger.isDebugEnabled()){
             logger.debug(" Vendor: " + MondrianServerVersion.VENDOR);
