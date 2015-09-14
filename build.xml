@@ -66,6 +66,10 @@
   <property name="xom.jar.file" value="${lib.dir}/eigenbase-xom.jar"/>
   <property name="jdk.home" value="${env.JAVA_HOME}"/>
 
+  <tstamp>
+    <format property="copyright.year" pattern="yyyy"/>
+  </tstamp>
+
   <!-- Override this to tell Subfloor how to run the junit & jacoco -->
   <property name="junit.test.pattern" value="mondrian/test/Main.java"/>
 
@@ -643,6 +647,7 @@ class MondrianServerVersion {
     static final String VERSION = "${project.revision}";
     static final int MAJOR_VERSION = ${project.revision.major};
     static final int MINOR_VERSION = ${project.revision.minor};
+    static final String COPYRIGHT_YEAR = "${copyright.year}";
 }
 // End MondrianServerVersion.java</echo>
   </target>
