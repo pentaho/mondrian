@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
@@ -74,9 +73,7 @@ class TopBottomPercentSumFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc =
-            (ListCalc) compiler.compileAs(
-                call.getArg(0),
-                null, ResultStyle.MUTABLELIST_ONLY);
+            compiler.compileList(call.getArg(0), true);
         final DoubleCalc doubleCalc = compiler.compileDouble(call.getArg(1));
         final Calc calc = compiler.compileScalar(call.getArg(2), true);
         return new CalcImpl(call, listCalc, doubleCalc, calc);
