@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2013 Pentaho
+// Copyright (C) 2006-2015 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.mdx.*;
@@ -187,8 +186,10 @@ public class RolapNativeSql {
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
                 exprInner = aggColumn.generateExprString(sqlQuery);
             } else {
-                exprInner =
-                    measure.getMondrianDefExpression().getExpression(sqlQuery);
+                MondrianDef.Expression defExp =
+                    measure.getMondrianDefExpression();
+                exprInner = (defExp == null)
+                    ? "*" : defExp.getExpression(sqlQuery);
             }
 
             String expr = measure.getAggregator().getExpression(exprInner);
