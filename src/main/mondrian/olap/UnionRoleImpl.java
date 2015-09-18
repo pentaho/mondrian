@@ -1,12 +1,12 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2002-2015 Pentaho and others
+// All Rights Reserved.
 */
-
 package mondrian.olap;
 
 import org.apache.log4j.Logger;
@@ -35,6 +35,33 @@ class UnionRoleImpl implements Role {
      */
     UnionRoleImpl(List<Role> roleList) {
         this.roleList = new ArrayList<Role>(roleList);
+    }
+
+    public int hashCode() {
+        int hash = 11;
+        for (Role r : roleList) {
+            hash = Util.hash(hash, r);
+        }
+        return hash;
+    }
+
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof UnionRoleImpl)) {
+            return false;
+        }
+        final UnionRoleImpl r = (UnionRoleImpl) obj;
+        if (r.roleList.size() != this.roleList.size()) {
+            return false;
+        }
+        for (int cpt = 0; cpt < this.roleList.size(); cpt++) {
+            if (!this.roleList.get(cpt).equals(r.roleList.get(cpt))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public Access getAccess(Schema schema) {
