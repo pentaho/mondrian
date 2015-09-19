@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.olap;
 
 import mondrian.rolap.RolapCube;
@@ -36,11 +35,43 @@ public class RoleImpl implements Role {
         new HashMap<Hierarchy, HierarchyAccessImpl>();
     private static final Logger LOGGER =
         Logger.getLogger(RoleImpl.class);
+    private final List<Object[]> hashCache = new ArrayList<Object[]>();
+    private int hash = 0;
 
     /**
      * Creates a role with no permissions.
      */
     public RoleImpl() {
+    }
+
+    public int hashCode() {
+        // Although this code isn't entirely thread safe, it is good enough.
+        // The implementations of Role are not expected to be thread safe,
+        // but are only to be immutable once isMutable() returns true.
+        //
+        // Role objects are only often hashed for tuple list caches and only
+        // once per mondrian schema per mondrian instance. If heavier usage
+        // is added, this should probably be refactored into something more
+        // thread safe with a ReentrantReadWriteLock.
+        if (hash == 0) {
+            int tmpHash = 7;
+            for (Object obj : hashCache) {
+                tmpHash = Util.hash(tmpHash, obj);
+            }
+            hash = tmpHash;
+        }
+        return hash;
+    }
+
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof RoleImpl)) {
+            return false;
+        }
+        final RoleImpl r = (RoleImpl) obj;
+        return r.hashCache.equals(this.hashCache);
     }
 
     protected RoleImpl clone() {
@@ -49,6 +80,7 @@ public class RoleImpl implements Role {
         role.schemaGrants.putAll(schemaGrants);
         role.cubeGrants.putAll(cubeGrants);
         role.dimensionGrants.putAll(dimensionGrants);
+        role.hashCache.addAll(hashCache);
         for (Map.Entry<Hierarchy, HierarchyAccessImpl> entry
             : hierarchyGrants.entrySet())
         {
@@ -98,6 +130,11 @@ public class RoleImpl implements Role {
         assert schema != null;
         assert isMutable();
         schemaGrants.put(schema, access);
+        hashCache.add(
+            new Object[] {
+                schema.getId(),
+                access.name()});
+        hash = 0;
     }
 
     public Access getAccess(Schema schema) {
@@ -149,6 +186,12 @@ public class RoleImpl implements Role {
                 + cube.getSchema().getName());
             grant(cube.getSchema(), Access.CUSTOM);
         }
+        hashCache.add(
+            new Object[] {
+                cube.getClass().getName(),
+                cube.getName(),
+                access.name()});
+        hash = 0;
     }
 
     public Access getAccess(Cube cube) {
@@ -203,6 +246,12 @@ public class RoleImpl implements Role {
         // We always figure out the inheritance at runtime since the place
         // where the dimension is used (either inside of a virtual cube,
         // a shared dimension or a cube) will influence on the decision.
+        hashCache.add(
+            new Object[] {
+                dimension.getClass().getName(),
+                dimension.getName(),
+                access.name()});
+        hash = 0;
     }
 
     public Access getAccess(Dimension dimension) {
@@ -395,6 +444,12 @@ public class RoleImpl implements Role {
                 + hierarchy.getUniqueName());
             grant(hierarchy.getDimension(), Access.CUSTOM);
         }
+        hashCache.add(
+            new Object[] {
+                hierarchy.getClass().getName(),
+                hierarchy.getName(),
+                access.name()});
+        hash = 0;
     }
 
     public Access getAccess(Hierarchy hierarchy) {
@@ -523,6 +578,12 @@ public class RoleImpl implements Role {
         assert hierarchyAccess != null;
         assert hierarchyAccess.access == Access.CUSTOM;
         hierarchyAccess.grant(this, member, access);
+        hashCache.add(
+            new Object[] {
+                member.getClass().getName(),
+                member.getName(),
+                access.name()});
+        hash = 0;
     }
 
     public Access getAccess(Member member) {
