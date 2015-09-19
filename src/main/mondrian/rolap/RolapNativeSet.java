@@ -215,10 +215,15 @@ public abstract class RolapNativeSet extends RolapNative {
             // that independent axes have identical constraints but different
             // args (i.e. projections). REVIEW: In this case, should we use the
             // same cached result and project different columns?
+            //
+            // [MONDRIAN-2411] adds the roles to the key. Normally, the
+            // schemaReader would apply the roles, but we cache the lists over
+            // its head.
             List<Object> key = new ArrayList<Object>();
             key.add(tr.getCacheKey());
             key.addAll(Arrays.asList(args));
             key.add(maxRows);
+            key.add(schemaReader.getRole());
 
             TupleList result = cache.get(key);
             boolean hasEnumTargets = (tr.getEnumTargetCount() > 0);
