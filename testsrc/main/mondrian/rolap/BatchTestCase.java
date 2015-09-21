@@ -703,7 +703,6 @@ public class BatchTestCase extends FoodMartTestCase {
         request.addAggregateList(
             aggConstraint.getBitKey(star),
             aggConstraint.toPredicate(star));
-
         return request;
     }
 

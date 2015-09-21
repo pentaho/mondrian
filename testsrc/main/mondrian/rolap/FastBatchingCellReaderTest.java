@@ -1722,6 +1722,9 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
      * loading and using the aggregate function in the slicer.
      */
     public void testAggregateDistinctCount5() {
+        // make sure tuple optimization will be used
+        propSaver.set(propSaver.properties.MaxConstraints, 2);
+
         String query =
             "With "
             + "Set [Products] as "
