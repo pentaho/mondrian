@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation.
+// Copyright (c) 2002-2015 Pentaho Corporation.
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -243,7 +243,7 @@ public class SegmentCacheManager {
      */
     public final ExecutorService sqlExecutor =
         Util.getExecutorService(
-             // We use the same value for coreSize and maxSize
+            // We use the same value for coreSize and maxSize
             // because that's the behavior we want. All extra
             // tasks will be put on an unbounded queue.
             MondrianProperties.instance()
@@ -1450,9 +1450,7 @@ public class SegmentCacheManager {
                         star.getFactTable().getAlias(),
                         request.getConstrainedColumnsBitKey(),
                         request.getMappedCellValues(),
-                        AggregationKey.getCompoundPredicateStringList(
-                            star,
-                            key.getCompoundPredicateList()));
+                        request.getCompoundPredicateStrings());
 
             final Map<SegmentHeader, Future<SegmentBody>> headerMap =
                 new HashMap<SegmentHeader, Future<SegmentBody>>();

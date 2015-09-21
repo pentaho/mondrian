@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.olap.fun;
 
@@ -171,10 +171,16 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             //
             // Similar optimization can also be done for list of members.
 
-            if (evaluator instanceof RolapEvaluator
-                && ((RolapEvaluator) evaluator).getDialect()
-                .supportsUnlimitedValueList())
-            {
+            boolean unlimitedIn  = false;
+            if (evaluator instanceof RolapEvaluator) {
+                unlimitedIn =
+                    ((RolapEvaluator) evaluator).getDialect()
+                        .supportsUnlimitedValueList();
+            }
+            boolean tupleSizeWithinInListSize =
+                tupleList.size()
+                    <= MondrianProperties.instance().MaxConstraints.get();
+            if (unlimitedIn || tupleSizeWithinInListSize) {
                 // If the DBMS does not have an upper limit on IN list
                 // predicate size, then don't attempt any list
                 // optimization, since the current algorithm is
@@ -211,12 +217,12 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             // enforces a rollup policy of partial, we cannot safely
             // optimize the tuples list as it might end up rolling up to
             // the parent while not all children are actually accessible.
-            for (List<Member> tupleMembers : tupleList) {
-                for (Member member : tupleMembers) {
+            if (tupleList.size() > 0) {
+                for (Member member : tupleList.get(0)) {
                     final RollupPolicy policy =
                         evaluator.getSchemaReader().getRole()
                             .getAccessDetails(member.getHierarchy())
-                                .getRollupPolicy();
+                            .getRollupPolicy();
                     if (policy == RollupPolicy.PARTIAL) {
                         return false;
                     }
