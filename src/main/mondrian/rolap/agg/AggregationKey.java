@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
@@ -189,33 +188,6 @@ public class AggregationKey
      */
     public List<StarPredicate> getCompoundPredicateList() {
         return compoundPredicateList;
-    }
-
-    /**
-     * Returns a list of compound predicates, expressed as SQL strings.
-     *
-     * @param star Star
-     * @param compoundPredicateList Predicate list
-     * @return list of predicate strings
-     */
-    public static List<String> getCompoundPredicateStringList(
-        RolapStar star,
-        List<StarPredicate> compoundPredicateList)
-    {
-        if (compoundPredicateList.isEmpty()) {
-            return Collections.emptyList();
-        }
-        final List<String> cp = new ArrayList<String>();
-        final StringBuilder buf = new StringBuilder();
-        for (StarPredicate compoundPredicate : compoundPredicateList) {
-            buf.setLength(0);
-            SqlQuery query =
-                new SqlQuery(
-                    star.getSqlQueryDialect());
-            compoundPredicate.toSql(query, buf);
-            cp.add(buf.toString());
-        }
-        return cp;
     }
 }
 
