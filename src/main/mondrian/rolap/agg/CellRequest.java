@@ -5,12 +5,11 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 21 March, 2002
 */
-
 package mondrian.rolap.agg;
 
 import mondrian.rolap.*;
@@ -29,14 +28,12 @@ public class CellRequest {
     public final boolean extendedContext;
     public final boolean drillThrough;
 
-    /*
-     * Sparsely populated array of column predicates.  Each predicate will
-     * be located according to the bitPosition of the column to which it
-     * corresponds.  This costs a little memory in terms of unused array
-     * slots, but avoids the need to explicitly sort the column predicates
-     * into a canonical order. There aren't usually a lot of predicates to
-     * sort, but that time adds up quickly.
-     */
+     // Sparsely populated array of column predicates.  Each predicate will
+     // be located according to the bitPosition of the column to which it
+     // corresponds.  This costs a little memory in terms of unused array
+     // slots, but avoids the need to explicitly sort the column predicates
+     // into a canonical order. There aren't usually a lot of predicates to
+     // sort, but that time adds up quickly.
     private StarColumnPredicate[] sparseColumnPredicateList;
 
     /**
@@ -69,10 +66,8 @@ public class CellRequest {
      */
     private RolapStar star = null;
 
-    /*
-     * Array of column values;
-     * Not used to represent the compound members along one or more dimensions.
-     */
+    // Array of column values;
+    // Not used to represent the compound members along one or more dimensions.
     private Object[] singleValues;
 
     /**
@@ -119,6 +114,14 @@ public class CellRequest {
      * comparison with maps of other requests and with existing segments.</p>
      */
     private SortedMap<BitKey, StarPredicate> compoundPredicateMap = null;
+
+
+    /**
+     * List of string representations of the compound predicates contained
+     * in compoundPredicateMap, if present.
+     */
+    private List<String> compoundPredicateStrings = null;
+
 
     /**
      * Whether the request is impossible to satisfy. This is set to 'true' if
@@ -226,6 +229,16 @@ public class CellRequest {
         compoundPredicateMap.put(compoundBitKey, compoundPredicate);
     }
 
+
+    public void addPredicateString(
+        String predicateString)
+    {
+        if (compoundPredicateStrings == null) {
+            compoundPredicateStrings = new ArrayList<String>();
+        }
+        compoundPredicateStrings.add(predicateString);
+    }
+
     /**
      * Returns the measure of this cell request.
      *
@@ -264,6 +277,24 @@ public class CellRequest {
      */
     SortedMap<BitKey, StarPredicate> getCompoundPredicateMap() {
         return compoundPredicateMap;
+    }
+
+    public List<String> getCompoundPredicateStrings() {
+        if (compoundPredicateStrings != null) {
+            return Collections.unmodifiableList(compoundPredicateStrings);
+        }
+        if (compoundPredicateMap != null) {
+            List<String> stringPredicates = new ArrayList<String>();
+            for (StarPredicate predicate : compoundPredicateMap.values()) {
+                stringPredicates.add(
+                    CompoundPredicateInfo.getPredicateString(
+                        measure.getStar(), predicate));
+            }
+            compoundPredicateStrings =
+                Collections.unmodifiableList(stringPredicates);
+            return compoundPredicateStrings;
+        }
+        return Collections.emptyList();
     }
 
     /**

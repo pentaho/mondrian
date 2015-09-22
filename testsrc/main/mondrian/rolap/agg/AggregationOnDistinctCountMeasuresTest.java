@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.rolap.agg;
 
@@ -106,6 +106,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testCrossJoinMembersWithASingleMember() {
+        // make sure tuple optimization will be used
+        propSaver.set(propSaver.properties.MaxConstraints, 1);
+
         String query =
             "WITH MEMBER GENDER.X AS 'AGGREGATE({[GENDER].[GENDER].members} * "
             + "{[STORE].[ALL STORES].[USA].[CA]})', solve_order=100 "
@@ -122,15 +125,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         assertQueryReturns(query, result);
 
         // Check aggregate loading sql pattern
-        String derbySql =
-            "select \"time_by_day\".\"the_year\" as \"c0\", "
-            + "count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
-            + "from \"time_by_day\" as \"time_by_day\", \"sales_fact_1997\" as \"sales_fact_1997\", \"store\" as \"store\" "
-            + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
-            + "and \"time_by_day\".\"the_year\" = 1997 "
-            + "and \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and \"store\".\"store_state\" = 'CA' "
-            + "group by \"time_by_day\".\"the_year\"";
-
         String mysqlSql =
             "select `time_by_day`.`the_year` as `c0`, "
             + "count(distinct `sales_fact_1997`.`customer_id`) as `m0` "
@@ -149,7 +143,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "group by \"time_by_day\".\"the_year\"";
 
         SqlPattern[] patterns = {
-            new SqlPattern(Dialect.DatabaseProduct.DERBY, derbySql, derbySql),
             new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql),
             new SqlPattern(
                 Dialect.DatabaseProduct.ORACLE, oraTeraSql, oraTeraSql),
@@ -161,6 +154,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testCrossJoinMembersWithSetOfMembers() {
+        // make sure tuple optimization will be used
+        propSaver.set(propSaver.properties.MaxConstraints, 2);
+
         String query =
             "WITH MEMBER GENDER.X AS 'AGGREGATE({[GENDER].[GENDER].members} * "
             + "{[STORE].[ALL STORES].[USA].[CA], [Store].[All Stores].[Canada]})', solve_order=100 "
