@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation.
+// Copyright (c) 2002-2015 Pentaho Corporation.
 // All Rights Reserved.
 */
 package mondrian.rolap.cache;
@@ -96,9 +96,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
             request.getMeasure().getCubeName(),
             request.getMeasure().getStar().getFactTable().getAlias(),
             request.getMeasure().getName(),
-            AggregationKey.getCompoundPredicateStringList(
-                key.getStar(),
-                key.getCompoundPredicateList()));
+            request.getCompoundPredicateStrings());
     }
 
     public List<SegmentHeader> locate(
