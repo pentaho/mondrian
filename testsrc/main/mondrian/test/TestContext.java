@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.test;
 
 import mondrian.calc.*;
@@ -22,6 +21,7 @@ import mondrian.olap.fun.FunUtil;
 import mondrian.olap4j.MondrianInprocProxy;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
+import mondrian.rolap.aggmatcher.DefaultDef;
 import mondrian.spi.*;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 import mondrian.util.DelegatingInvocationHandler;
@@ -393,7 +393,8 @@ public class TestContext {
         String dimensionDefs,
         String measureDefs,
         String memberDefs,
-        String namedSetDefs)
+        String namedSetDefs,
+        String defaultMeasure)
     {
         String s = rawSchema;
 
@@ -466,6 +467,11 @@ public class TestContext {
             s = s.substring(0, i)
                 + namedSetDefs
                 + s.substring(i);
+        }
+        if (defaultMeasure != null) {
+            s = s.replaceFirst(
+                "(" + cubeName + ".*)defaultMeasure=\"[^\"]*\"",
+                "$1defaultMeasure=\"" + defaultMeasure + "\"");
         }
 
         return s;
@@ -1866,9 +1872,30 @@ public class TestContext {
             substituteSchema(
                 getRawFoodMartSchema(),
                 cubeName, dimensionDefs,
-                measureDefs, memberDefs, namedSetDefs);
+                measureDefs, memberDefs, namedSetDefs, null);
         return withSchema(schema);
     }
+
+    /**
+     * Overload that allows swapping the defaultMeasure.
+     */
+    public final TestContext createSubstitutingCube(
+        final String cubeName,
+        final String dimensionDefs,
+        final String measureDefs,
+        final String memberDefs,
+        final String namedSetDefs,
+        final String defaultMeasure)
+    {
+        final String schema =
+            substituteSchema(
+                getRawFoodMartSchema(),
+                cubeName, dimensionDefs,
+                measureDefs, memberDefs, namedSetDefs,
+                defaultMeasure);
+        return withSchema(schema);
+    }
+
 
     /**
      * Returns a TestContext similar to this one, but using the given role.
