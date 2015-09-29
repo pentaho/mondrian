@@ -109,6 +109,7 @@ public class Workbench extends javax.swing.JFrame {
     private int windowMenuMapIndex = 1;
 
     private static final String KETTLE_PLUGIN_BASE_FOLDERS = "kettle-plugins,"
+            + "plugins,"
             + Const.getKettleDirectory() + Const.FILE_SEPARATOR + "plugins";
     private XulDialog connectionDialog = null;
     private DataHandler connectionDialogController = null;
