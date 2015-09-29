@@ -5,12 +5,11 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1999-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
 */
-
 package mondrian.gui;
 
 import mondrian.olap.DriverManager;
@@ -110,6 +109,7 @@ public class Workbench extends javax.swing.JFrame {
     private int windowMenuMapIndex = 1;
 
     private static final String KETTLE_PLUGIN_BASE_FOLDERS = "kettle-plugins,"
+            + "plugins,"
             + Const.getKettleDirectory() + Const.FILE_SEPARATOR + "plugins";
     private XulDialog connectionDialog = null;
     private DataHandler connectionDialogController = null;
@@ -1093,15 +1093,17 @@ public class Workbench extends javax.swing.JFrame {
     private void aboutMenuItemActionPerformed(ActionEvent evt) {
         try {
             URL versionUrl = myClassLoader.getResource(
-                getResourceConverter().getGUIReference( "version" ) );
+                getResourceConverter().getGUIReference("version"));
             InputStream versionIn = versionUrl.openStream();
-            String ver = IOUtils.toString( versionIn );
-            ver = ver.replace( "PRODUCT_VERSION",
-                MondrianServerRegistry.INSTANCE.getProductVersion() );
-            ver = ver.replace( "COPYRIGHT_YEAR",
-                MondrianServerRegistry.INSTANCE.getCopyrightYear() );
+            String ver = IOUtils.toString(versionIn);
+            ver = ver.replace(
+                "PRODUCT_VERSION",
+                MondrianServerRegistry.INSTANCE.getProductVersion());
+            ver = ver.replace(
+                "COPYRIGHT_YEAR",
+                MondrianServerRegistry.INSTANCE.getCopyrightYear());
             JEditorPane jEditorPane =
-                new JEditorPane( "text/html", ver );
+                new JEditorPane("text/html", ver);
             jEditorPane.setEditable(false);
             JScrollPane jScrollPane = new JScrollPane(jEditorPane);
             JPanel jPanel = new JPanel();
