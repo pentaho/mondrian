@@ -316,6 +316,7 @@ public class Main extends TestSuite {
             addTest(suite, RolapSchemaReaderTest.class);
             addTest(suite, RolapCubeTest.class);
             addTest(suite, RolapNativeTopCountTest.class);
+            addTest(suite, RolapNativeTopCountVersusNonNativeTest.class);
             addTest(suite, RolapStarTest.class);
             addTest(suite, RolapSchemaPoolTest.class);
             addTest(suite, RolapSchemaPoolConcurrencyTest.class);

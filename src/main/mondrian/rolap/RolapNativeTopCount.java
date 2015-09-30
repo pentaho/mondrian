@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -108,6 +108,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
             }
             key.add(ascending);
             key.add(topCount);
+            key.add(this.getEvaluator().isNonEmpty());
 
             if (this.getEvaluator() instanceof RolapEvaluator) {
                 key.add(
@@ -219,6 +220,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
             SetEvaluator sev =
                 new SetEvaluator(cjArgs, schemaReader, constraint);
             sev.setMaxRows(count);
+            sev.setCompleteWithNullValues(!evaluator.isNonEmpty());
             return sev;
         } finally {
             evaluator.restore(savepoint);
