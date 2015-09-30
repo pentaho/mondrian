@@ -12362,6 +12362,29 @@ Intel platforms):
             queryWithAlias,
             context.toString(result));
     }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1187">MONDRIAN-1187</a>
+     * <p/>
+     * <p>The results should be equivalent</p>
+     */
+    public void testMondrian_1187() {
+        final String queryWithoutAlias =
+            "WITH\n" + "SET [Top Count] AS\n" + "{\n" + "TOPCOUNT(\n" + "DISTINCT([Customers].[Name].Members),\n"
+                + "5,\n" + "[Measures].[Unit Sales]\n" + ")\n" + "}\n" + "SELECT\n"
+                + "[Top Count] * [Measures].[Unit Sales] on 0\n" + "FROM [Sales]\n"
+                + "WHERE [Time].[1997].[Q1].[1] : [Time].[1997].[Q3].[8]";
+        String queryWithAlias =
+            "SELECT\n"
+                + "TOPCOUNT( DISTINCT( [Customers].[Name].Members), 5, [Measures].[Unit Sales]) * [Measures].[Unit Sales] on 0\n"
+                + "FROM [Sales]\n" + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q3].[8]";
+        final TestContext context = TestContext.instance();
+        final Result result = context.executeQuery(queryWithoutAlias);
+        context.assertQueryReturns(
+            queryWithAlias,
+            context.toString(result));
+    }
 }
 
 // End FunctionTest.java
