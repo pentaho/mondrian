@@ -512,7 +512,6 @@ parser,
 generate.resources,
 generate.properties,
 def,
-compileJdk15,
 compileJdk16,
 compileJdk17"/>
 
@@ -1297,16 +1296,6 @@ doc/**/*.xml"
       </else>
     </if>
     <property name="compile.args" value="${compile.workbench.arg} ${compile.default.args}" />
-  </target>
-
-  <target name="compileJdk15" depends="set-compile-args" >
-
-    <exec osfamily="unix" failonerror="true" executable="${unix.script}">
-      <arg line="jdk1.5 ${compile.args}"/>
-    </exec>
-    <exec osfamily="windows" failonerror="true" dir="." executable="cmd">
-      <arg line="/c .\buildOnJdk.bat jdk1.5 ${compile.args}"/>
-    </exec>
   </target>
 
   <target name="compileJdk16" depends="set-compile-args">
