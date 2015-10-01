@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
 */
 
 package mondrian.olap.fun;
@@ -221,14 +221,23 @@ class FilterFunDef extends FunDefBase {
                 icalc.evaluateIterable(evaluator);
             final Evaluator evaluator2 = evaluator.push();
             evaluator2.setNonEmpty(false);
+            final int checkCancelPeriod =
+                MondrianProperties.instance().CancelPhaseInterval.get();
             return new AbstractTupleIterable(iterable.getArity()) {
                 public TupleCursor tupleCursor() {
                     return new AbstractTupleCursor(iterable.getArity()) {
                         final TupleCursor cursor = iterable.tupleCursor();
 
                         public boolean forward() {
+                            int rowCount = -1;
                             while (cursor.forward()) {
-                                Locus.peek().execution.checkCancelOrTimeout();
+                                rowCount++;
+                                if (checkCancelPeriod > 0
+                                    && rowCount % checkCancelPeriod == 0)
+                                {
+                                    Locus.peek().execution
+                                        .checkCancelOrTimeout();
+                                }
                                 cursor.setContext(evaluator2);
                                 if (bcalc.evaluateBoolean(evaluator2)) {
                                     return true;
