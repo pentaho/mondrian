@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -85,7 +85,7 @@ public class AggTableManager {
      * This method should only be called once.
      */
     public void initialize() {
-        if (MondrianProperties.instance().ReadAggregates.get()) {
+        if (MondrianProperties.instance().UseAggregates.get()) {
             try {
                 loadRolapStarAggregates();
             } catch (SQLException ex) {
@@ -246,7 +246,10 @@ public class AggTableManager {
                                 msgRecorder);
                             approxRowCount = tableDef.getApproxRowCount();
                         }
-                        if (! makeAggStar) {
+                        if (! makeAggStar
+                            && MondrianProperties
+                            .instance().ReadAggregates.get())
+                        {
                             // Is it handled by the DefaultRules
                             if (rules.matchesTableName(factTableName, name)) {
                                 // load columns
