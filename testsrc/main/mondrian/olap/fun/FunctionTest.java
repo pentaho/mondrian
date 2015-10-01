@@ -6937,6 +6937,34 @@ public class FunctionTest extends FoodMartTestCase {
             "1997 and 1998");
     }
 
+    public void testGenerateWillTimeout() {
+        propSaver.set(propSaver.properties.QueryTimeout, 5);
+        propSaver.set(propSaver.properties.EnableNativeNonEmpty, false);
+        try {
+            getTestContext().executeAxis(
+                "Generate([Product].[Product Name].members,"
+                + "  Generate([Customers].[Name].members, "
+                + "    {([Store].CurrentMember, [Product].CurrentMember, [Customers].CurrentMember)}))");
+        } catch (QueryTimeoutException e) {
+            return;
+        }
+        fail("should have timed out");
+    }
+
+    public void testFilterWillTimeout() {
+        propSaver.set(propSaver.properties.QueryTimeout, 5);
+        propSaver.set(propSaver.properties.EnableNativeNonEmpty, false);
+        try {
+            getTestContext().executeAxis(
+                "Filter("
+                + "Filter(CrossJoin([Customers].[Name].members, [Product].[Product Name].members), [Measures].[Unit Sales] > 0),"
+                + " [Measures].[Sales Count] > 5) ");
+        } catch (QueryTimeoutException e) {
+            return;
+        }
+        fail("should have timed out");
+    }
+
     public void testHead() {
         assertAxisReturns(
             "Head([Store].Children, 2)",
