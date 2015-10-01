@@ -2986,6 +2986,21 @@ public class TestAggregationManager extends BatchTestCase {
             false, false, true);
     }
 
+    public void testDisabledReadAggregatesIgnoresDefaultRules()
+        throws Exception
+    {
+        propSaver.set(propSaver.properties.ReadAggregates, false);
+        propSaver.set(propSaver.properties.UseAggregates, true);
+        String sql =
+            "select count(*) as `c0` from `agg_c_10_sales_fact_1997` as `agg_c_10_sales_fact_1997`";
+        assertQuerySqlOrNot(
+            getTestContext(),
+            "select from sales",
+            new SqlPattern[]{
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL, sql, sql.length()) },
+            true, true, true);
+    }
 
     private AggStar getAggStar(RolapStar star, String aggStarName) {
         for (AggStar aggStar : star.getAggStars()) {
