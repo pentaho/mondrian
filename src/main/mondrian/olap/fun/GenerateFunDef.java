@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
 */
 
 package mondrian.olap.fun;
@@ -14,6 +14,7 @@ import mondrian.calc.impl.*;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
+import mondrian.server.Locus;
 
 import java.util.*;
 
@@ -104,6 +105,8 @@ class GenerateFunDef extends FunDefBase {
 
         public TupleList evaluateList(Evaluator evaluator) {
             final int savepoint = evaluator.savepoint();
+            final int checkCancelPeriod =
+                MondrianProperties.instance().CancelPhaseInterval.get();
             try {
                 evaluator.setNonEmpty(false);
                 final TupleIterable iterable1 =
@@ -112,7 +115,14 @@ class GenerateFunDef extends FunDefBase {
                 TupleList result = TupleCollections.createList(arityOut);
                 if (all) {
                     final TupleCursor cursor = iterable1.tupleCursor();
+                    int rowCount = -1;
                     while (cursor.forward()) {
+                        rowCount++;
+                        if (checkCancelPeriod > 0
+                            && rowCount % checkCancelPeriod == 0)
+                        {
+                            Locus.peek().execution.checkCancelOrTimeout();
+                        }
                         cursor.setContext(evaluator);
                         final TupleList result2 =
                             listCalc2.evaluateList(evaluator);
@@ -122,7 +132,15 @@ class GenerateFunDef extends FunDefBase {
                     final Set<List<Member>> emitted =
                             new HashSet<List<Member>>();
                     final TupleCursor cursor = iterable1.tupleCursor();
+
+                    int rowCount = -1;
                     while (cursor.forward()) {
+                        rowCount++;
+                        if (checkCancelPeriod > 0
+                            && rowCount % checkCancelPeriod == 0)
+                        {
+                            Locus.peek().execution.checkCancelOrTimeout();
+                        }
                         cursor.setContext(evaluator);
                         final TupleList result2 =
                                 listCalc2.evaluateList(evaluator);
