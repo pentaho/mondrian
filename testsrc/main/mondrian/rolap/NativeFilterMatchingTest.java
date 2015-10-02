@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation.  All rights reserved.
+// Copyright (c) 2002-2015 Pentaho Corporation.  All rights reserved.
 */
 package mondrian.rolap;
 
@@ -177,92 +177,6 @@ public class NativeFilterMatchingTest extends BatchTestCase {
             + "Row #0: \n");
     }
 
-    public void testNativeFilterAgainstAggTableWithNotAllMeasures() {
-        // http://jira.pentaho.com/browse/MONDRIAN-1703
-        // If a filter condition contains one or more measures that are
-        // not present in the aggregate table, the SQL should omit the
-        // having clause altogether.
-
-        if (!MondrianProperties.instance().UseAggregates.get()
-            || !MondrianProperties.instance().EnableNativeFilter.get())
-        {
-            // test is not applicable
-            return;
-        }
-        propSaver.set(
-            propSaver.properties.GenerateFormattedSql,
-            true);
-
-        String sqlMysqlNoHaving =
-            "select\n"
-            + "    `agg_c_10_sales_fact_1997`.`the_year` as `c0`,\n"
-            + "    `agg_c_10_sales_fact_1997`.`quarter` as `c1`\n"
-            + "from\n"
-            + "    `agg_c_10_sales_fact_1997` as `agg_c_10_sales_fact_1997`\n"
-            + "where\n"
-            + "    (`agg_c_10_sales_fact_1997`.`the_year` = 1997)\n"
-            + "group by\n"
-            + "    `agg_c_10_sales_fact_1997`.`the_year`,\n"
-            + "    `agg_c_10_sales_fact_1997`.`quarter`\n"
-            + "order by\n"
-            + "    ISNULL(`agg_c_10_sales_fact_1997`.`the_year`) ASC, `agg_c_10_sales_fact_1997`.`the_year` ASC,\n"
-            + "    ISNULL(`agg_c_10_sales_fact_1997`.`quarter`) ASC, `agg_c_10_sales_fact_1997`.`quarter` ASC";
-
-        SqlPattern[] patterns = {
-            new SqlPattern(
-                Dialect.DatabaseProduct.MYSQL,
-                sqlMysqlNoHaving,
-                sqlMysqlNoHaving.length())
-        };
-
-        // This query should hit the agg_c_10_sales_fact_1997 agg table,
-        // which has [unit sales] but not [store count], so should
-        // not include the filter condition in the having.
-        assertQuerySqlOrNot(
-            getTestContext(),
-            "select filter(Time.[1997].children,  "
-            + "measures.[Sales Count] +  measures.[unit sales] > 0) on 0 "
-            + "from [sales]",
-            patterns,
-            false,
-            true,
-            true);
-
-        String mySqlWithHaving =
-            "select\n"
-            + "    `agg_c_10_sales_fact_1997`.`the_year` as `c0`,\n"
-            + "    `agg_c_10_sales_fact_1997`.`quarter` as `c1`\n"
-            + "from\n"
-            + "    `agg_c_10_sales_fact_1997` as `agg_c_10_sales_fact_1997`\n"
-            + "where\n"
-            + "    (`agg_c_10_sales_fact_1997`.`the_year` = 1997)\n"
-            + "group by\n"
-            + "    `agg_c_10_sales_fact_1997`.`the_year`,\n"
-            + "    `agg_c_10_sales_fact_1997`.`quarter`\n"
-            + "having\n"
-            + "    ((sum(`agg_c_10_sales_fact_1997`.`store_sales`) + sum(`agg_c_10_sales_fact_1997`.`unit_sales`)) > 0)\n"
-            + "order by\n"
-            + "    ISNULL(`agg_c_10_sales_fact_1997`.`the_year`) ASC, `agg_c_10_sales_fact_1997`.`the_year` ASC,\n"
-            + "    ISNULL(`agg_c_10_sales_fact_1997`.`quarter`) ASC, `agg_c_10_sales_fact_1997`.`quarter` ASC";
-
-        patterns[0] = new SqlPattern(
-            Dialect.DatabaseProduct.MYSQL,
-            mySqlWithHaving,
-            mySqlWithHaving.length());
-
-        // both measures are present on the agg table, so this one *should*
-        // include having.
-        assertQuerySqlOrNot(
-            getTestContext(),
-            "select filter(Time.[1997].children,  "
-            + "measures.[Store Sales] +  measures.[unit sales] > 0) on 0 "
-            + "from [sales]",
-            patterns,
-            false,
-            true,
-            true);
-    }
-
 
     public void testNativeFilterSameAsNonNative() {
         // http://jira.pentaho.com/browse/MONDRIAN-1694
@@ -422,12 +336,7 @@ public class NativeFilterMatchingTest extends BatchTestCase {
                     + "order by\n"
                     + "    ISNULL(`agg_c_14_sales_fact_1997`.`the_year`) ASC, `agg_c_14_sales_fact_1997`.`the_year` ASC,\n"
                     + "    ISNULL(`agg_c_14_sales_fact_1997`.`quarter`) ASC, `agg_c_14_sales_fact_1997`.`quarter` ASC";
-            final SqlPattern[] patterns =
-                new SqlPattern[] {
-                    new SqlPattern(
-                        Dialect.DatabaseProduct.MYSQL,
-                        sqlMysql,
-                        sqlMysql.length())};
+            final SqlPattern[] patterns = mysqlPattern(sqlMysql);
 
             // Make sure the tuples list is using the HAVING clause.
             assertQuerySqlOrNot(
@@ -488,12 +397,7 @@ public class NativeFilterMatchingTest extends BatchTestCase {
                 + "order by\n"
                 + "    ISNULL(`agg_c_14_sales_fact_1997`.`the_year`) ASC, `agg_c_14_sales_fact_1997`.`the_year` ASC,\n"
                 + "    ISNULL(`agg_c_14_sales_fact_1997`.`quarter`) ASC, `agg_c_14_sales_fact_1997`.`quarter` ASC";
-            final SqlPattern[] patterns =
-                new SqlPattern[] {
-                    new SqlPattern(
-                        Dialect.DatabaseProduct.MYSQL,
-                        sqlMysql,
-                        sqlMysql.length())};
+            final SqlPattern[] patterns = mysqlPattern(sqlMysql);
 
             // Make sure the tuples list is using the HAVING clause.
             assertQuerySqlOrNot(
@@ -635,12 +539,7 @@ public class NativeFilterMatchingTest extends BatchTestCase {
                     + "    ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC,\n"
                     + "    ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC,\n"
                     + "    ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC";
-            final SqlPattern[] patterns =
-                new SqlPattern[] {
-                    new SqlPattern(
-                        Dialect.DatabaseProduct.MYSQL,
-                        sqlMysql,
-                        sqlMysql.length())};
+            final SqlPattern[] patterns = mysqlPattern(sqlMysql);
 
             // Make sure the tuples list is using the HAVING clause.
             assertQuerySqlOrNot(

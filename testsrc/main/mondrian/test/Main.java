@@ -211,6 +211,7 @@ public class Main extends TestSuite {
             addTest(suite, DenseDoubleSegmentBodyTest.class);
             addTest(suite, DenseIntSegmentBodyTest.class);
             addTest(suite, NativeFilterMatchingTest.class);
+            addTest(suite, NativeFilterAgainstAggTableTest.class);
             addTest(suite, RolapConnectionTest.class);
             addTest(suite, FilteredIterableTest.class);
             addTest(suite, HighDimensionsTest.class);
