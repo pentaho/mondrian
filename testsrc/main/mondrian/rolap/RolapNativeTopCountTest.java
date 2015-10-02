@@ -96,6 +96,31 @@ public class RolapNativeTopCountTest extends BatchTestCase {
             ROLE_RESTRICTION_WORKS_DF_QUERY,
             ROLE_RESTRICTION_WORKS_DF_RESULT);
     }
+
+
+    public void testMimicsHeadWhenTwoParams_States() {
+        assertQueryReturns(
+            TOPCOUNT_MIMICS_HEAD_WHEN_TWO_PARAMS_STATES_QUERY,
+            TOPCOUNT_MIMICS_HEAD_WHEN_TWO_PARAMS_STATES_RESULT);
+    }
+
+    public void testMimicsHeadWhenTwoParams_Cities() {
+        assertQueryReturns(
+            TOPCOUNT_MIMICS_HEAD_WHEN_TWO_PARAMS_CITIES_QUERY,
+            TOPCOUNT_MIMICS_HEAD_WHEN_TWO_PARAMS_CITIES_RESULT);
+    }
+
+    public void testMimicsHeadWhenTwoParams_ShowsNotMoreThanExist() {
+        assertQueryReturns(
+            RESULTS_ARE_SHOWN_NOT_MORE_THAN_EXIST_2_PARAMS_QUERY,
+            RESULTS_ARE_SHOWN_NOT_MORE_THAN_EXIST_2_PARAMS_RESULT);
+    }
+
+    public void testMimicsHeadWhenTwoParams_DoesNotIgnoreNonEmpty() {
+        assertQueryReturns(
+            NON_EMPTY_IS_NOT_IGNORED_WHEN_TWO_PARAMS_QUERY,
+            NON_EMPTY_IS_NOT_IGNORED_WHEN_TWO_PARAMS_RESULT);
+    }
 }
 
 // End RolapNativeTopCountTest.java
