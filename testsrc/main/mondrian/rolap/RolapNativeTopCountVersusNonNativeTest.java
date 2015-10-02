@@ -107,6 +107,30 @@ public class RolapNativeTopCountVersusNonNativeTest extends BatchTestCase {
             ROLE_RESTRICTION_WORKS_DF_QUERY, ctx);
     }
 
+
+    public void testMimicsHeadWhenTwoParams_States() {
+        assertResultsAreEqual(
+            "Two Parameters - States",
+            TOPCOUNT_MIMICS_HEAD_WHEN_TWO_PARAMS_STATES_QUERY);
+    }
+
+    public void testMimicsHeadWhenTwoParams_Cities() {
+        assertResultsAreEqual(
+            "Two Parameters - Cities",
+            TOPCOUNT_MIMICS_HEAD_WHEN_TWO_PARAMS_CITIES_QUERY);
+    }
+
+    public void testMimicsHeadWhenTwoParams_ShowsNotMoreThanExist() {
+        assertResultsAreEqual(
+            "Two Parameters - Shows not more than really exist",
+            RESULTS_ARE_SHOWN_NOT_MORE_THAN_EXIST_2_PARAMS_QUERY);
+    }
+
+    public void testMimicsHeadWhenTwoParams_DoesNotIgnoreNonEmpty() {
+        assertResultsAreEqual(
+            "Two Parameters - Does not ignore NON EMPTY",
+            NON_EMPTY_IS_NOT_IGNORED_WHEN_TWO_PARAMS_QUERY);
+    }
 }
 
 // End RolapNativeTopCountVersusNonNativeTest.java

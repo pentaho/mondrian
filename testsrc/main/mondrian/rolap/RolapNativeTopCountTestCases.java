@@ -320,6 +320,144 @@ class RolapNativeTopCountTestCases {
         + "Row #3: \n"
         + "Row #4: \n";
 
+
+
+    //
+    // The case for verifying NativeTopCount mimics HEAD's behaviour.
+    //
+    // This case checks states level.
+    //
+
+    static final String TOPCOUNT_MIMICS_HEAD_WHEN_TWO_PARAMS_STATES_QUERY = ""
+        + "SELECT TOPCOUNT([Customers].[State Province].members, 3) ON COLUMNS "
+        + "FROM [Sales] ";
+
+    static final String TOPCOUNT_MIMICS_HEAD_WHEN_TWO_PARAMS_STATES_RESULT = ""
+        + "Axis #0:\n"
+        + "{}\n" + "Axis #1:\n"
+        + "{[Customers].[Canada].[BC]}\n"
+        + "{[Customers].[Mexico].[DF]}\n"
+        + "{[Customers].[Mexico].[Guerrero]}\n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n";
+
+
+    //
+    // The case for verifying NativeTopCount mimics HEAD's behaviour.
+    //
+    // This case checks cities level.
+    //
+
+    static final String TOPCOUNT_MIMICS_HEAD_WHEN_TWO_PARAMS_CITIES_QUERY = ""
+        + "SELECT TOPCOUNT([Customers].[City].members, 30) ON COLUMNS "
+        + "FROM [Sales] ";
+
+    static final String TOPCOUNT_MIMICS_HEAD_WHEN_TWO_PARAMS_CITIES_RESULT = ""
+        + "Axis #0:\n"
+        + "{}\n"
+        + "Axis #1:\n"
+        + "{[Customers].[Canada].[BC].[Burnaby]}\n"
+        + "{[Customers].[Canada].[BC].[Cliffside]}\n"
+        + "{[Customers].[Canada].[BC].[Haney]}\n"
+        + "{[Customers].[Canada].[BC].[Ladner]}\n"
+        + "{[Customers].[Canada].[BC].[Langford]}\n"
+        + "{[Customers].[Canada].[BC].[Langley]}\n"
+        + "{[Customers].[Canada].[BC].[Metchosin]}\n"
+        + "{[Customers].[Canada].[BC].[N. Vancouver]}\n"
+        + "{[Customers].[Canada].[BC].[Newton]}\n"
+        + "{[Customers].[Canada].[BC].[Oak Bay]}\n"
+        + "{[Customers].[Canada].[BC].[Port Hammond]}\n"
+        + "{[Customers].[Canada].[BC].[Richmond]}\n"
+        + "{[Customers].[Canada].[BC].[Royal Oak]}\n"
+        + "{[Customers].[Canada].[BC].[Shawnee]}\n"
+        + "{[Customers].[Canada].[BC].[Sooke]}\n"
+        + "{[Customers].[Canada].[BC].[Vancouver]}\n"
+        + "{[Customers].[Canada].[BC].[Victoria]}\n"
+        + "{[Customers].[Canada].[BC].[Westminster]}\n"
+        + "{[Customers].[Mexico].[DF].[San Andres]}\n"
+        + "{[Customers].[Mexico].[DF].[Santa Anita]}\n"
+        + "{[Customers].[Mexico].[DF].[Santa Fe]}\n"
+        + "{[Customers].[Mexico].[DF].[Tixapan]}\n"
+        + "{[Customers].[Mexico].[Guerrero].[Acapulco]}\n"
+        + "{[Customers].[Mexico].[Jalisco].[Guadalajara]}\n"
+        + "{[Customers].[Mexico].[Mexico].[Mexico City]}\n"
+        + "{[Customers].[Mexico].[Oaxaca].[Tlaxiaco]}\n"
+        + "{[Customers].[Mexico].[Sinaloa].[La Cruz]}\n"
+        + "{[Customers].[Mexico].[Veracruz].[Orizaba]}\n"
+        + "{[Customers].[Mexico].[Yucatan].[Merida]}\n"
+        + "{[Customers].[Mexico].[Zacatecas].[Camacho]}\n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: \n";
+
+
+    //
+    // The case for verifying NativeTopCount mimics HEAD's behaviour.
+    //
+    // This case checks that no extra lines are returned.
+    //
+
+    static final String RESULTS_ARE_SHOWN_NOT_MORE_THAN_EXIST_2_PARAMS_QUERY =
+        ""
+        + "SELECT TOPCOUNT([Customers].[Country].members, 5) ON COLUMNS "
+        + "FROM [Sales] ";
+
+    static final String RESULTS_ARE_SHOWN_NOT_MORE_THAN_EXIST_2_PARAMS_RESULT =
+        ""
+        + "Axis #0:\n"
+        + "{}\n"
+        + "Axis #1:\n"
+        + "{[Customers].[Canada]}\n"
+        + "{[Customers].[Mexico]}\n"
+        + "{[Customers].[USA]}\n"
+        + "Row #0: \n"
+        + "Row #0: \n"
+        + "Row #0: 266,773\n";
+
+
+    //
+    // The case for verifying NativeTopCount mimics HEAD's behaviour.
+    //
+    // This case checks NON EMPTY modifier is not neglected.
+    //
+
+    static final String NON_EMPTY_IS_NOT_IGNORED_WHEN_TWO_PARAMS_QUERY = ""
+        + "SELECT NON EMPTY TOPCOUNT([Customers].[State Province].members, 3) ON COLUMNS "
+        + "FROM [Sales] ";
+
+    static final String NON_EMPTY_IS_NOT_IGNORED_WHEN_TWO_PARAMS_RESULT = ""
+        + "Axis #0:\n"
+        + "{}\n"
+        + "Axis #1:\n";
+
 }
 
 // End RolapNativeTopCountTestCases.java
