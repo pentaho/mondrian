@@ -16,6 +16,8 @@ import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.*;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.RestrictedMemberReader.MultiCardinalityDefaultMember;
+import mondrian.rolap.RolapHierarchy.LimitedRollupMember;
 import mondrian.rolap.RolapStar.Column;
 import mondrian.rolap.RolapStar.Table;
 import mondrian.rolap.agg.*;
@@ -243,6 +245,42 @@ public class SqlConstraintUtils {
     public static boolean useTupleSlicer(RolapEvaluator evaluator) {
         return evaluator.isDisjointSlicerTuple()
             || evaluator.isMultiLevelSlicerTuple();
+    }
+
+    public static Map<RolapLevel, List<RolapMember>> getRolesConstraints(
+        Evaluator evaluator)
+    {
+        Member[] mm = evaluator.getMembers();
+        SchemaReader schemaReader = evaluator.getSchemaReader();
+        Map<RolapLevel, List<RolapMember>> roleConstraints =
+            new LinkedHashMap<RolapLevel, List<RolapMember>>(mm.length);
+        for (Member member : mm) {
+            boolean isRolesMember = (member instanceof LimitedRollupMember)
+                || (member instanceof MultiCardinalityDefaultMember);
+            if (isRolesMember) {
+                List<Level> hierarchyLevels = schemaReader
+                    .getHierarchyLevels(member.getHierarchy());
+                for (Level affectedLevel : hierarchyLevels) {
+                    List<Member> availableMembers =
+                        schemaReader.getLevelMembers(affectedLevel, false);
+                    List<RolapMember> slicerMembers =
+                        new ArrayList<RolapMember>(availableMembers.size());
+                    for (Member available : availableMembers) {
+                        if (!available.isAll()) {
+                            slicerMembers.add((RolapMember) available);
+                        }
+                    }
+                    if (!slicerMembers.isEmpty()) {
+                        roleConstraints.put(
+                            (RolapLevel) affectedLevel, slicerMembers);
+                    }
+                }
+            }
+        }
+
+        return roleConstraints.isEmpty()
+            ? Collections.<RolapLevel, List<RolapMember>>emptyMap()
+            : roleConstraints;
     }
 
     /**
@@ -502,9 +540,9 @@ public class SqlConstraintUtils {
             new LinkedHashMap<Level, List<RolapMember>>();
         Role role = schemaReader.getRole();
         for (Member member : members) {
-            if (member instanceof RolapHierarchy.LimitedRollupMember
+            if (member instanceof LimitedRollupMember
                 || member instanceof
-                   RestrictedMemberReader.MultiCardinalityDefaultMember)
+                   MultiCardinalityDefaultMember)
             {
                 // iterate relevant levels to get accessible members
                 List<Level> hierarchyLevels =

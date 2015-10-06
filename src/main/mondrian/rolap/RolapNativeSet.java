@@ -157,6 +157,7 @@ public abstract class RolapNativeSet extends RolapNative {
         private final SchemaReaderWithMemberReaderAvailable schemaReader;
         private final TupleConstraint constraint;
         private int maxRows = 0;
+        private boolean completeWithNullValues;
 
         public SetEvaluator(
             CrossJoinArg[] args,
@@ -172,6 +173,10 @@ public abstract class RolapNativeSet extends RolapNative {
                     new SchemaReaderWithMemberReaderCache(schemaReader);
             }
             this.constraint = constraint;
+        }
+
+        public void setCompleteWithNullValues(boolean completeWithNullValues) {
+            this.completeWithNullValues = completeWithNullValues;
         }
 
         public Object execute(ResultStyle desiredResultStyle) {
@@ -258,6 +263,32 @@ public abstract class RolapNativeSet extends RolapNative {
                 result =
                     tr.readTuples(
                         dataSource, partialResult, newPartialResult);
+            }
+
+            // Did not get as many members as expected - try to complete using
+            // less constraints
+            if (completeWithNullValues && result.size() < maxRows) {
+                RolapLevel l = args[0].getLevel();
+                List<RolapMember> list = new ArrayList<RolapMember>();
+                for (List<Member> lm : result) {
+                    for (Member m : lm) {
+                        list.add((RolapMember) m);
+                    }
+                }
+                SqlTupleReader str = new SqlTupleReader(
+                    new MemberExcludeConstraint(
+                        list, l,
+                        constraint instanceof SetConstraint
+                        ? (SetConstraint) constraint : null));
+                str.setAllowHints(false);
+                for (CrossJoinArg arg : args) {
+                    addLevel(str, arg);
+                }
+
+                str.setMaxRows(maxRows - result.size());
+                result.addAll(
+                    str.readMembers(
+                        dataSource, null, new ArrayList<List<RolapMember>>()));
             }
 
             if (!MondrianProperties.instance().DisableCaching.get()) {
