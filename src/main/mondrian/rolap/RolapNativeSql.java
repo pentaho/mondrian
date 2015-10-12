@@ -175,6 +175,7 @@ public class RolapNativeSql {
                 return null;
             }
 
+            RolapAggregator aggregator = measure.getAggregator();
             String exprInner;
             // Use aggregate table to create condition if available
             if (aggStar != null
@@ -185,6 +186,17 @@ public class RolapNativeSql {
                 int bitPos = column.getBitPosition();
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
                 exprInner = aggColumn.generateExprString(sqlQuery);
+                if (aggColumn instanceof AggStar.FactTable.Measure) {
+                    RolapAggregator aggTableAggregator =
+                        ((AggStar.FactTable.Measure) aggColumn)
+                            .getAggregator();
+                    // aggregating data that has already been aggregated
+                    // should be done with another aggregators
+                    // e.g., counting facts should be proceeded via computing
+                    // sum, as a row can aggregate several facts
+                    aggregator = (RolapAggregator) aggTableAggregator
+                        .getRollup();
+                }
             } else {
                 MondrianDef.Expression defExp =
                     measure.getMondrianDefExpression();
@@ -192,7 +204,7 @@ public class RolapNativeSql {
                     ? "*" : defExp.getExpression(sqlQuery);
             }
 
-            String expr = measure.getAggregator().getExpression(exprInner);
+            String expr = aggregator.getExpression(exprInner);
             if (dialect.getDatabaseProduct().getFamily()
                 == Dialect.DatabaseProduct.DB2)
             {
