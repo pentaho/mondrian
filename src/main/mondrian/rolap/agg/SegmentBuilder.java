@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.rolap.agg;
 
@@ -705,33 +705,34 @@ public class SegmentBuilder {
         Collection<StarColumnPredicate> predicates)
     {
         List<SegmentColumn> ccs =
-            new ArrayList<SegmentColumn>();
+            new ArrayList<SegmentColumn>(predicates.size());
         for (StarColumnPredicate predicate : predicates) {
-            final List<Comparable> values =
-                new ArrayList<Comparable>();
-            predicate.values(Util.cast(values));
-            final Comparable[] valuesArray =
-                values.toArray(new Comparable[values.size()]);
-            if (valuesArray.length == 1 && valuesArray[0].equals(true)) {
-                ccs.add(
-                    new SegmentColumn(
-                        predicate.getConstrainedColumn()
-                            .getExpression().getGenericExpression(),
-                        predicate.getConstrainedColumn().getCardinality(),
-                        null));
-            } else {
-                Arrays.sort(
-                    valuesArray,
-                    Util.SqlNullSafeComparator.instance);
-                ccs.add(
-                    new SegmentColumn(
-                        predicate.getConstrainedColumn()
-                            .getExpression().getGenericExpression(),
-                        predicate.getConstrainedColumn().getCardinality(),
-                        new ArraySortedSet(valuesArray)));
+            if (predicate instanceof LiteralStarPredicate) {
+                if (((LiteralStarPredicate) predicate).getValue()) {
+                    // no constraint for this column
+                    ccs.add(segmentColumn(predicate, null));
+                    continue;
+                }
             }
+            List<Comparable> values = new ArrayList<Comparable>();
+            predicate.values(Util.cast(values));
+            Comparable[] valuesArray =
+                values.toArray(new Comparable[values.size()]);
+            Arrays.sort(valuesArray, Util.SqlNullSafeComparator.instance);
+            ccs.add(
+                segmentColumn(predicate, new ArraySortedSet(valuesArray)));
         }
         return ccs;
+    }
+
+    private static SegmentColumn segmentColumn(
+        StarColumnPredicate predicate, SortedSet<Comparable> set)
+    {
+        return new SegmentColumn(
+            predicate.getConstrainedColumn()
+                .getExpression().getGenericExpression(),
+            predicate.getConstrainedColumn().getCardinality(),
+            set);
     }
 
     /**
