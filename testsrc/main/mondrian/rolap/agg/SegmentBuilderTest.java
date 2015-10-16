@@ -810,6 +810,44 @@ public class SegmentBuilderTest extends BatchTestCase {
     }
 
 
+    public void testSegmentCreationForBoolean_True() {
+        doTestSegmentCreationForBoolean(true);
+    }
+
+    public void testSegmentCreationForBoolean_False() {
+        doTestSegmentCreationForBoolean(false);
+    }
+
+    private void doTestSegmentCreationForBoolean(boolean value) {
+        final String queryToBeCached = String.format(
+            "SELECT NON EMPTY [Store].[Store Country].members on COLUMNS "
+            + "FROM [Store] "
+            + "WHERE [Has coffee bar].[%b]", value);
+        executeQuery(queryToBeCached);
+
+        final String query = ""
+            + "SELECT NON EMPTY "
+            + "CROSSJOIN([Store].[Store Country].members, [Has coffee bar].[has coffee bar].members) ON COLUMNS "
+            + "FROM [Store]";
+
+        final String expected = ""
+            + "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[Canada], [Has coffee bar].[true]}\n"
+            + "{[Store].[Mexico], [Has coffee bar].[false]}\n"
+            + "{[Store].[Mexico], [Has coffee bar].[true]}\n"
+            + "{[Store].[USA], [Has coffee bar].[false]}\n"
+            + "{[Store].[USA], [Has coffee bar].[true]}\n"
+            + "Row #0: 57,564\n"
+            + "Row #0: 133,275\n"
+            + "Row #0: 109,737\n"
+            + "Row #0: 113,881\n"
+            + "Row #0: 157,139\n";
+
+        assertQueryReturns(query, expected);
+    }
+
 
     /**
      * Loads the cache with the results of the queries
