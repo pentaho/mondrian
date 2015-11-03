@@ -1,10 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2015 Pentaho Corporation.
+// All Rights Reserved.
 */
 package mondrian.test;
 
@@ -1280,6 +1281,109 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "Row #0: 5,895\n");
     }
 
+    public void testDistinctCountMeasureInSlicer() {
+        assertQueryReturns(
+            "select gender.members on 0 "
+            + "from sales where "
+            + "NonEmptyCrossJoin(Measures.[Customer Count], "
+            + "{Time.[1997].Q1, Time.[1997].Q2})",
+            "Axis #0:\n"
+            + "{[Measures].[Customer Count], [Time].[1997].[Q1]}\n"
+            + "{[Measures].[Customer Count], [Time].[1997].[Q2]}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[F]}\n"
+            + "{[Gender].[M]}\n"
+            + "Row #0: 4,257\n"
+            + "Row #0: 2,095\n"
+            + "Row #0: 2,162\n");
+    }
+
+    public void testDistinctCountWithAggregateMembersAndCompSlicer() {
+        assertQueryReturns(
+            "with member time.agg as 'Aggregate({Time.[1997].Q1, Time.[1997].Q2})' "
+            + "member Store.agg as 'Aggregate(Head(Store.[USA].children,2))' "
+            + "select NON EMPTY CrossJoin( time.agg, CrossJoin( store.agg, measures.[customer count]))"
+            + " on 0 from sales "
+            + "WHERE CrossJoin(Gender.F, "
+            + "{[Education Level].[Bachelors Degree], [Education Level].[Graduate Degree]})",
+            "Axis #0:\n"
+            + "{[Gender].[F], [Education Level].[Bachelors Degree]}\n"
+            + "{[Gender].[F], [Education Level].[Graduate Degree]}\n"
+            + "Axis #1:\n"
+            + "{[Time].[agg], [Store].[agg], [Measures].[Customer Count]}\n"
+            + "Row #0: 450\n");
+    }
+
+    public void testVirtualCubeWithCountDistinctUnsatisfiable() {
+        virtualCubeWithDC().assertQueryReturns(
+            "select {measures.[Customer Count], "
+            + "measures.[Unit Sales by Customer]} on 0 from [warehouse and sales] "
+            + "WHERE {[Time].[1997].Q1, [Time].[1997].Q2} "
+            + "*{[Warehouse].[USA].[CA], Warehouse.[USA].[WA]}",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1], [Warehouse].[USA].[CA]}\n"
+            + "{[Time].[1997].[Q1], [Warehouse].[USA].[WA]}\n"
+            + "{[Time].[1997].[Q2], [Warehouse].[USA].[CA]}\n"
+            + "{[Time].[1997].[Q2], [Warehouse].[USA].[WA]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "{[Measures].[Unit Sales by Customer]}\n"
+            + "Row #0: \n"
+            + "Row #0: \n");
+    }
+
+    public void testVirtualCubeWithCountDistinctSatisfiable() {
+        virtualCubeWithDC().assertQueryReturns(
+            "select {measures.[Customer Count], "
+            + "measures.[Unit Sales by Customer]} on 0 from [warehouse and sales] "
+            + "WHERE {[Time].[1997].Q1, [Time].[1997].Q2} "
+            + "*{[Store].[USA].[CA], Store.[USA].[WA]}",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1], [Store].[USA].[CA]}\n"
+            + "{[Time].[1997].[Q1], [Store].[USA].[WA]}\n"
+            + "{[Time].[1997].[Q2], [Store].[USA].[CA]}\n"
+            + "{[Time].[1997].[Q2], [Store].[USA].[WA]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "{[Measures].[Unit Sales by Customer]}\n"
+            + "Row #0: 3,311\n"
+            + "Row #0: 29\n");
+    }
+
+    public void testVirtualCubeWithCountDistinctPartiallySatisfiable() {
+        virtualCubeWithDC().assertQueryReturns(
+            "select {measures.[Warehouse Sales], "
+            + "measures.[Unit Sales by Customer]} on 0 from [warehouse and sales] "
+            + "WHERE {[Time].[1997].Q1, [Time].[1997].Q2} "
+            + "*{[Education Level].[Education Level].members}",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1], [Education Level].[Bachelors Degree]}\n"
+            + "{[Time].[1997].[Q1], [Education Level].[Graduate Degree]}\n"
+            + "{[Time].[1997].[Q1], [Education Level].[High School Degree]}\n"
+            + "{[Time].[1997].[Q1], [Education Level].[Partial College]}\n"
+            + "{[Time].[1997].[Q1], [Education Level].[Partial High School]}\n"
+            + "{[Time].[1997].[Q2], [Education Level].[Bachelors Degree]}\n"
+            + "{[Time].[1997].[Q2], [Education Level].[Graduate Degree]}\n"
+            + "{[Time].[1997].[Q2], [Education Level].[High School Degree]}\n"
+            + "{[Time].[1997].[Q2], [Education Level].[Partial College]}\n"
+            + "{[Time].[1997].[Q2], [Education Level].[Partial High School]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Warehouse Sales]}\n"
+            + "{[Measures].[Unit Sales by Customer]}\n"
+            + "Row #0: \n"
+            + "Row #0: 30\n");
+    }
+
+    private TestContext virtualCubeWithDC() {
+        return getTestContext().createSubstitutingCube(
+            "Warehouse and Sales", null,
+            "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Customer Count]\"/>\n",
+            " <CalculatedMember name=\"Unit Sales by Customer\" dimension=\"Measures\">"
+            + "<Formula>Measures.[Unit Sales]/Measures.[Customer Count]</Formula>"
+            + "</CalculatedMember>",
+            null, "Warehouse Sales");
+    }
 }
 
 // End CompoundSlicerTest.java

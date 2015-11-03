@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -629,9 +629,7 @@ class BatchLoader {
         final Map<String, Comparable> mappedCellValues =
             request.getMappedCellValues();
         final List<String> compoundPredicates =
-            AggregationKey.getCompoundPredicateStringList(
-                key.getStar(),
-                key.getCompoundPredicateList());
+            request.getCompoundPredicateStrings();
 
         for (SegmentHeader header : cacheHeaders) {
             if (SegmentCacheIndexImpl.matches(
@@ -727,9 +725,7 @@ class BatchLoader {
                     star.getFactTable().getAlias(),
                     request.getConstrainedColumnsBitKey(),
                     mappedCellValues,
-                    AggregationKey.getCompoundPredicateStringList(
-                        star,
-                        key.getCompoundPredicateList()));
+                    request.getCompoundPredicateStrings());
             if (!rollup.isEmpty()) {
                 rollups.add(
                     new RollupInfo(
