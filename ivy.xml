@@ -38,7 +38,7 @@
 
     <dependencies defaultconf="default->default">
         <dependency org="commons-collections" name="commons-collections"
-                rev="3.2"/>
+                rev="3.2.2"/>
         <dependency org="commons-dbcp" name="commons-dbcp" rev="1.2.1"/>
         <dependency org="commons-lang" name="commons-lang" rev="2.4"/>
         <dependency org="commons-io" name="commons-io" rev="1.4"/>
