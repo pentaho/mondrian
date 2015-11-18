@@ -222,6 +222,7 @@ public class Main extends TestSuite {
             addTest(suite, DialectTest.class);
             addTest(suite, ResultComparatorTest.class, "suite");
             addTest(suite, DrillThroughTest.class);
+            addTest(suite, DrillThroughFieldListTest.class);
             addTest(suite, ScenarioTest.class);
             addTest(suite, BasicQueryTest.class);
             addTest(suite, SegmentCacheTest.class);
