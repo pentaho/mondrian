@@ -57,7 +57,7 @@ public class SegmentBuilderTest extends BatchTestCase {
             makeSegmentMap(
                 new String[] {"col1", "col2"}, null, 3, 9, true,
                 new boolean[] {false, false}),// each axis sets null axis flag=F
-            new HashSet<String>(Arrays.asList("col2")),
+            Collections.singleton("col2"),
             null, RolapAggregator.Sum, Dialect.Datatype.Numeric);
         Pair<SegmentHeader, SegmentBody> rollupWithNullMembers =
             SegmentBuilder.rollup(
@@ -65,7 +65,7 @@ public class SegmentBuilderTest extends BatchTestCase {
                     new String[] {"col1", "col2"}, null, 2, 9, true,
                     // each axis sets null axis flag=T
                     new boolean[] {true, true}),
-                new HashSet<String>(Arrays.asList("col2")),
+                Collections.singleton("col2"),
                 null, RolapAggregator.Sum, Dialect.Datatype.Numeric);
         assertArraysAreEqual(
             (double[]) rollupNoNulls.getValue().getValueArray(),
@@ -90,7 +90,7 @@ public class SegmentBuilderTest extends BatchTestCase {
                 new String[] {"col1", "col2", "col3"}, null, 2, 18, true,
                 // col2 & col3 have nullAxisFlag=T
                 new boolean[] {false, true, true}),
-            new HashSet<String>(Arrays.asList("col2")),
+            Collections.singleton("col2"),
             null, RolapAggregator.Sum, Dialect.Datatype.Numeric);
 
         // expected value is 6 * MOCK_CELL_VALUE for each of 3 column values,
@@ -171,7 +171,7 @@ public class SegmentBuilderTest extends BatchTestCase {
                 new boolean[]{false, true, false}));
         Pair<SegmentHeader, SegmentBody> rollup = SegmentBuilder.rollup(
             map,
-            new HashSet<String>(Arrays.asList("col2")),
+            Collections.singleton("col2"),
             null, RolapAggregator.Sum, Dialect.Datatype.Numeric);
         // expected value is 10 * MOCK_CELL_VALUE for each of 2 column values,
         // since the 20 cells across 2 segments are being rolled up to 2 buckets
@@ -302,11 +302,10 @@ public class SegmentBuilderTest extends BatchTestCase {
             new ArrayList<Pair<SortedSet<Comparable>, Boolean>>();
         axes.add(new Pair<SortedSet<Comparable>, Boolean>(
             new TreeSet<Comparable>(
-                Arrays.asList(
-                    new String[] { "foo1", "bar1"})), true)); // nullAxisFlag=T
+                Arrays.asList("foo1", "bar1")), true)); // nullAxisFlag=T
         axes.add(new Pair<SortedSet<Comparable>, Boolean>(
             new TreeSet<Comparable>(
-                Arrays.asList(new String[] { "foo2", "bar2", "baz3"})), false));
+                Arrays.asList("foo2", "bar2", "baz3")), false));
         SegmentBody testBody = new DenseIntSegmentBody(
             new BitSet(), new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9},
             axes);
@@ -810,6 +809,44 @@ public class SegmentBuilderTest extends BatchTestCase {
     }
 
 
+    public void testSegmentCreationForBoolean_True() {
+        doTestSegmentCreationForBoolean(true);
+    }
+
+    public void testSegmentCreationForBoolean_False() {
+        doTestSegmentCreationForBoolean(false);
+    }
+
+    private void doTestSegmentCreationForBoolean(boolean value) {
+        final String queryToBeCached = String.format(
+            "SELECT NON EMPTY [Store].[Store Country].members on COLUMNS "
+            + "FROM [Store] "
+            + "WHERE [Has coffee bar].[%b]", value);
+        executeQuery(queryToBeCached);
+
+        final String query = ""
+            + "SELECT NON EMPTY "
+            + "CROSSJOIN([Store].[Store Country].members, [Has coffee bar].[has coffee bar].members) ON COLUMNS "
+            + "FROM [Store]";
+
+        final String expected = ""
+            + "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[Canada], [Has coffee bar].[true]}\n"
+            + "{[Store].[Mexico], [Has coffee bar].[false]}\n"
+            + "{[Store].[Mexico], [Has coffee bar].[true]}\n"
+            + "{[Store].[USA], [Has coffee bar].[false]}\n"
+            + "{[Store].[USA], [Has coffee bar].[true]}\n"
+            + "Row #0: 57,564\n"
+            + "Row #0: 133,275\n"
+            + "Row #0: 109,737\n"
+            + "Row #0: 113,881\n"
+            + "Row #0: 157,139\n";
+
+        assertQueryReturns(query, expected);
+    }
+
 
     /**
      * Loads the cache with the results of the queries
@@ -992,8 +1029,7 @@ public class SegmentBuilderTest extends BatchTestCase {
         for (int i = 0; i < colVals.length; i++) {
             String colExp = colExps[i];
             SortedSet<Comparable> headerVals = null;
-            SortedSet<Comparable> vals =
-                new TreeSet<Comparable>(Arrays.<Comparable>asList(colVals[i]));
+            SortedSet<Comparable> vals = toSortedSet(colVals[i]);
             if (!wildcardCols) {
                 headerVals = vals;
             }
