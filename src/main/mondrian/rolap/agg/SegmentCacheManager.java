@@ -269,6 +269,7 @@ public class SegmentCacheManager {
 
     public final SegmentCache compositeCache;
     private final SegmentCacheIndexRegistry indexRegistry;
+    private final Set<String> starFactTablesToSync;
 
     private static final Logger LOGGER =
         Logger.getLogger(AggregationManager.class);
@@ -307,6 +308,94 @@ public class SegmentCacheManager {
         }
 
         compositeCache = new CompositeSegmentCache(segmentCacheWorkers);
+
+        // syncing elements that already exist in external cache
+        // is not possible now - have to wait until the schema has been loaded
+        // thus, let's merely store headers
+        // in-memory cache will not be double-indexed,
+        // because at this point it is empty
+        starFactTablesToSync = pickStarTablesFrom(
+            compositeCache.getSegmentHeaders());
+    }
+
+    private Set<String> pickStarTablesFrom(List<SegmentHeader> headers) {
+        if (headers.isEmpty()) {
+            return Collections.emptySet();
+        }
+        Set<String> result = new HashSet<String>(headers.size());
+        for (SegmentHeader header : headers) {
+            result.add(header.rolapStarFactTableName);
+        }
+        return result;
+    }
+
+    public boolean loadCacheForStar(final RolapStar star) {
+        if (MondrianProperties.instance().DisableCaching.get()) {
+            // Ignore cache requests.
+            return false;
+        }
+
+        String starFactTableAlias = star.getFactTable().getAlias();
+        if (starFactTablesToSync.remove(starFactTableAlias)) {
+            final List<SegmentHeader> headers = new ArrayList<SegmentHeader>();
+            for (SegmentHeader header : compositeCache.getSegmentHeaders()) {
+                if (starFactTableAlias.equals(header.rolapStarFactTableName)) {
+                    headers.add(header);
+                }
+            }
+
+            if (!headers.isEmpty()) {
+                // cache should be changed within its thread
+                List<CellCacheSegmentCreateEvent> events = execute(
+                    new Command<List<CellCacheSegmentCreateEvent>>() {
+                        @Override
+                        public Locus getLocus() {
+                            return null;
+                        }
+
+                        @Override
+                        public List<CellCacheSegmentCreateEvent> call()
+                            throws Exception
+                        {
+                            SegmentCacheIndex index =
+                                indexRegistry.getIndex(star);
+                            List<CellCacheSegmentCreateEvent> result =
+                                new ArrayList<CellCacheSegmentCreateEvent>(
+                                    headers.size());
+
+                            for (SegmentHeader header : headers) {
+                                index.add(header, null, false);
+                                result.add(new CellCacheSegmentCreateEvent(
+                                    System.currentTimeMillis(),
+                                    server.getId(),
+                                    0, 0, 0,
+                                    header.getConstrainedColumns().size(),
+                                    0,
+                                    CellCacheEvent.Source.EXTERNAL));
+                            }
+                            return result;
+                        }
+                    }
+                );
+
+                // notification is moved outside the command, because
+                // sent events are put at the same bounded blocking queue
+                // and potentially a deadlock may occur
+                Monitor monitor = server.getMonitor();
+                for (CellCacheSegmentCreateEvent event : events) {
+                    monitor.sendEvent(event);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @deprecated for tests only!
+     */
+    Set<String> getStarFactTablesToSync() {
+        return starFactTablesToSync;
     }
 
     public <T> T execute(Command<T> command) {
@@ -684,7 +773,7 @@ public class SegmentCacheManager {
     interface Message {
     }
 
-    public static interface Command<T> extends Message, Callable<T> {
+    public interface Command<T> extends Message, Callable<T> {
         Locus getLocus();
     }
 

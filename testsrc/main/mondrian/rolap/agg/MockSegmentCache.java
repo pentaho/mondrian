@@ -1,20 +1,22 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
+import mondrian.rolap.CellKey;
 import mondrian.spi.*;
 
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
+
+import static java.util.Collections.singletonMap;
 
 /**
  * Mock implementation of {@link SegmentCache} that is used for automated
@@ -180,6 +182,48 @@ public class MockSegmentCache implements SegmentCache {
     {
         for (SegmentCacheListener listener : listeners) {
             listener.handle(event);
+        }
+    }
+
+    public static SegmentBody mockSegmentBody(Object value) {
+        return new MockSegmentBody(value);
+    }
+
+    public static class MockSegmentBody implements SegmentBody, Serializable {
+
+        private final Object value;
+
+        public MockSegmentBody(Object value) {
+            this.value = value;
+        }
+
+        @Override
+        public Map<CellKey, Object> getValueMap() {
+            return singletonMap(CellKey.Generator.newCellKey(1), value);
+        }
+
+        @Override
+        public Object getValueArray() {
+            return new Object[] {value};
+        }
+
+        @Override
+        public BitSet getNullValueIndicators() {
+            BitSet bitSet = new BitSet();
+            bitSet.set(0);
+            return bitSet;
+        }
+
+        @Override
+        public SortedSet<Comparable>[] getAxisValueSets() {
+            SortedSet<Integer> set = new TreeSet<Integer>();
+            set.add(0);
+            return new SortedSet[]{set};
+        }
+
+        @Override
+        public boolean[] getNullAxisFlags() {
+            return new boolean[]{false};
         }
     }
 }
