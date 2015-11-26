@@ -314,8 +314,7 @@ public abstract class RolapAggregationManager {
         // Since 'request.extendedContext == false' is a well-worn code path,
         // we have moved the test outside the loop.
         if (extendedContext) {
-            boolean isAllowDefaultMembers = true;
-            if (fieldsList != null && !fieldsList.isEmpty()) {
+            if (fieldsList != null) {
                 // If a field list was specified, there will be some columns
                 // to include in the result set, other that we don't. This
                 // happens when the MDX is a DRILLTHROUGH operation and
@@ -323,17 +322,12 @@ public abstract class RolapAggregationManager {
                 for (OlapElement member : fieldsList) {
                     addNonConstrainingColumns(member, cube, request);
                 }
-                isAllowDefaultMembers = false;
             }
             for (int i = 1; i < members.length; i++) {
                 final RolapCubeMember member = (RolapCubeMember) members[i];
                 if (member.getHierarchy().getRolapHierarchy().closureFor
                     != null)
                 {
-                    continue;
-                }
-
-                if (!isAllowDefaultMembers && member.isAllMember()) {
                     continue;
                 }
 
