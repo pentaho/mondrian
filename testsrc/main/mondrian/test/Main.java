@@ -27,6 +27,7 @@ import mondrian.rolap.sql.CrossJoinArgFactoryTest;
 import mondrian.rolap.sql.SelectNotInGroupByTest;
 import mondrian.rolap.sql.SqlQueryTest;
 import mondrian.server.FileRepositoryTest;
+import mondrian.spi.impl.ImpalaDialectTest;
 import mondrian.spi.impl.SybaseDialectTest;
 import mondrian.test.build.CodeComplianceTest;
 import mondrian.test.clearview.*;
@@ -346,6 +347,7 @@ public class Main extends TestSuite {
             addTest(suite, XmlaExtraTest.class);
             addTest(suite, CrossJoinArgFactoryTest.class);
             addTest(suite, UnionFunDefTest.class);
+            addTest(suite, ImpalaDialectTest.class);
             addTest(suite, SybaseDialectTest.class);
             addTest(suite, SqlStatementTest.class);
             addTest(suite, ValidMeasureFunDefTest.class);
