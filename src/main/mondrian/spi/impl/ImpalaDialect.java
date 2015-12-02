@@ -198,8 +198,9 @@ public class ImpalaDialect extends HiveDialect {
                     escapeMatcher.group(1),
                     escapeMatcher.group(2));
         }
-        final StringBuilder sb = new StringBuilder();
 
+        source = "cast(" + source + " as string)";
+        final StringBuilder sb = new StringBuilder();
         // Now build the string.
         if (caseSensitive) {
             sb.append(source);
