@@ -24,6 +24,7 @@ import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.*;
 import mondrian.rolap.sql.*;
 import mondrian.server.FileRepositoryTest;
+import mondrian.spi.impl.ImpalaDialectTest;
 import mondrian.spi.impl.SybaseDialectTest;
 import mondrian.test.build.CodeComplianceTest;
 import mondrian.test.clearview.*;
@@ -348,6 +349,7 @@ public class Main extends TestSuite {
             addTest(suite, XmlaExtraTest.class);
             addTest(suite, CrossJoinArgFactoryTest.class);
             addTest(suite, UnionFunDefTest.class);
+            addTest(suite, ImpalaDialectTest.class);
             addTest(suite, SybaseDialectTest.class);
             addTest(suite, IdBatchResolverTest.class);
             addTest(suite, MemberCacheHelperTest.class);
