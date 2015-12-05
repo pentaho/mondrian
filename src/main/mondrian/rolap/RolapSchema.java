@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -216,6 +216,22 @@ public class RolapSchema implements Schema {
         this(key, connectInfo, dataSource, md5Bytes, md5Bytes != null);
         load(catalogUrl, catalogStr);
         assert this.md5Bytes != null;
+    }
+
+    /**
+     * @deprecated for tests only!
+     */
+    @Deprecated
+    RolapSchema(
+        SchemaKey key,
+        ByteString md5Bytes,
+        RolapConnection internalConnection)
+    {
+        this.id = Util.generateUuidString();
+        this.key = key;
+        this.md5Bytes = md5Bytes;
+        this.defaultRole = Util.createRootRole(this);
+        this.internalConnection = internalConnection;
     }
 
     /**
@@ -730,138 +746,182 @@ public class RolapSchema implements Schema {
     }
 
     private Role createRole(MondrianDef.Role xmlRole) {
-        final boolean ignoreInvalidMembers =
-            MondrianProperties.instance().IgnoreInvalidMembers
-                .get();
         if (xmlRole.union != null) {
-            if (xmlRole.schemaGrants != null
-                && xmlRole.schemaGrants.length > 0)
-            {
-                throw MondrianResource.instance().RoleUnionGrants.ex();
-            }
-            List<Role> roleList = new ArrayList<Role>();
-            for (MondrianDef.RoleUsage roleUsage : xmlRole.union.roleUsages) {
-                final Role role = mapNameToRole.get(roleUsage.roleName);
-                if (role == null) {
-                    throw MondrianResource.instance().UnknownRole.ex(
-                        roleUsage.roleName);
-                }
-                roleList.add(role);
-            }
-            return RoleImpl.union(roleList);
+            return createUnionRole(xmlRole);
         }
+
         RoleImpl role = new RoleImpl();
         for (MondrianDef.SchemaGrant schemaGrant : xmlRole.schemaGrants) {
-            role.grant(this, getAccess(schemaGrant.access, schemaAllowed));
-            for (MondrianDef.CubeGrant cubeGrant : schemaGrant.cubeGrants) {
-                RolapCube cube = lookupCube(cubeGrant.cube);
-                if (cube == null) {
-                    throw Util.newError(
-                        "Unknown cube '" + cubeGrant.cube + "'");
-                }
-                role.grant(cube, getAccess(cubeGrant.access, cubeAllowed));
-                final SchemaReader schemaReader = cube.getSchemaReader(null);
-                for (MondrianDef.DimensionGrant dimensionGrant
-                    : cubeGrant.dimensionGrants)
-                {
-                    Dimension dimension = (Dimension)
-                        schemaReader.lookupCompound(
-                            cube,
-                            Util.parseIdentifier(dimensionGrant.dimension),
-                            true,
-                            Category.Dimension);
-                    role.grant(
-                        dimension,
-                        getAccess(dimensionGrant.access, dimensionAllowed));
-                }
-                for (MondrianDef.HierarchyGrant hierarchyGrant
-                    : cubeGrant.hierarchyGrants)
-                {
-                    Hierarchy hierarchy = (Hierarchy)
-                        schemaReader.lookupCompound(
-                            cube,
-                            Util.parseIdentifier(hierarchyGrant.hierarchy),
-                            true,
-                            Category.Hierarchy);
-                    final Access hierarchyAccess =
-                        getAccess(hierarchyGrant.access, hierarchyAllowed);
-                    Level topLevel = null;
-                    if (hierarchyGrant.topLevel != null) {
-                        if (hierarchyAccess != Access.CUSTOM) {
-                            throw Util.newError(
-                                "You may only specify 'topLevel' if "
-                                + "access='custom'");
-                        }
-                        topLevel = (Level) schemaReader.lookupCompound(
-                            cube,
-                            Util.parseIdentifier(hierarchyGrant.topLevel),
-                            true,
-                            Category.Level);
-                    }
-                    Level bottomLevel = null;
-                    if (hierarchyGrant.bottomLevel != null) {
-                        if (hierarchyAccess != Access.CUSTOM) {
-                            throw Util.newError(
-                                "You may only specify 'bottomLevel' if "
-                                + "access='custom'");
-                        }
-                        bottomLevel = (Level) schemaReader.lookupCompound(
-                            cube,
-                            Util.parseIdentifier(hierarchyGrant.bottomLevel),
-                            true,
-                            Category.Level);
-                    }
-                    Role.RollupPolicy rollupPolicy;
-                    if (hierarchyGrant.rollupPolicy != null) {
-                        try {
-                            rollupPolicy =
-                                Role.RollupPolicy.valueOf(
-                                    hierarchyGrant.rollupPolicy.toUpperCase());
-                        } catch (IllegalArgumentException e) {
-                            throw Util.newError(
-                                "Illegal rollupPolicy value '"
-                                + hierarchyGrant.rollupPolicy
-                                + "'");
-                        }
-                    } else {
-                        rollupPolicy = Role.RollupPolicy.FULL;
-                    }
-                    role.grant(
-                        hierarchy, hierarchyAccess, topLevel, bottomLevel,
-                        rollupPolicy);
-                    for (MondrianDef.MemberGrant memberGrant
-                        : hierarchyGrant.memberGrants)
-                    {
-                        if (hierarchyAccess != Access.CUSTOM) {
-                            throw Util.newError(
-                                "You may only specify <MemberGrant> if "
-                                + "<Hierarchy> has access='custom'");
-                        }
-                        Member member = schemaReader.withLocus()
-                            .getMemberByUniqueName(
-                                Util.parseIdentifier(memberGrant.member),
-                                !ignoreInvalidMembers);
-                        if (member == null) {
-                            // They asked to ignore members that don't exist
-                            // (e.g. [Store].[USA].[Foo]), so ignore this grant
-                            // too.
-                            assert ignoreInvalidMembers;
-                            continue;
-                        }
-                        if (member.getHierarchy() != hierarchy) {
-                            throw Util.newError(
-                                "Member '" + member
-                                + "' is not in hierarchy '" + hierarchy + "'");
-                        }
-                        role.grant(
-                            member,
-                            getAccess(memberGrant.access, memberAllowed));
-                    }
-                }
-            }
+            handleSchemaGrant(role, schemaGrant);
         }
         role.makeImmutable();
         return role;
+    }
+
+    // package-local visibility for testing purposes
+    Role createUnionRole(MondrianDef.Role xmlRole) {
+        if (xmlRole.schemaGrants != null && xmlRole.schemaGrants.length > 0) {
+            throw MondrianResource.instance().RoleUnionGrants.ex();
+        }
+
+        MondrianDef.RoleUsage[] usages = xmlRole.union.roleUsages;
+        List<Role> roleList = new ArrayList<Role>(usages.length);
+        for (MondrianDef.RoleUsage roleUsage : usages) {
+            Role role = mapNameToRole.get(roleUsage.roleName);
+            if (role == null) {
+                throw MondrianResource.instance().UnknownRole.ex(
+                    roleUsage.roleName);
+            }
+            roleList.add(role);
+        }
+        return RoleImpl.union(roleList);
+    }
+
+    // package-local visibility for testing purposes
+    void handleSchemaGrant(RoleImpl role, MondrianDef.SchemaGrant schemaGrant) {
+        role.grant(this, getAccess(schemaGrant.access, schemaAllowed));
+        for (MondrianDef.CubeGrant cubeGrant : schemaGrant.cubeGrants) {
+            handleCubeGrant(role, cubeGrant);
+        }
+    }
+
+    // package-local visibility for testing purposes
+    void handleCubeGrant(RoleImpl role, MondrianDef.CubeGrant cubeGrant) {
+        RolapCube cube = lookupCube(cubeGrant.cube);
+        if (cube == null) {
+            throw Util.newError("Unknown cube '" + cubeGrant.cube + "'");
+        }
+        role.grant(cube, getAccess(cubeGrant.access, cubeAllowed));
+
+        SchemaReader reader = cube.getSchemaReader(null);
+        for (MondrianDef.DimensionGrant grant
+            : cubeGrant.dimensionGrants)
+        {
+            Dimension dimension =
+                lookup(cube, reader, Category.Dimension, grant.dimension);
+            role.grant(
+                dimension,
+                getAccess(grant.access, dimensionAllowed));
+        }
+
+        for (MondrianDef.HierarchyGrant hierarchyGrant
+            : cubeGrant.hierarchyGrants)
+        {
+            handleHierarchyGrant(role, cube, reader, hierarchyGrant);
+        }
+    }
+
+    // package-local visibility for testing purposes
+    void handleHierarchyGrant(
+        RoleImpl role,
+        RolapCube cube,
+        SchemaReader reader,
+        MondrianDef.HierarchyGrant grant)
+    {
+        Hierarchy hierarchy =
+            lookup(cube, reader, Category.Hierarchy, grant.hierarchy);
+        final Access hierarchyAccess =
+            getAccess(grant.access, hierarchyAllowed);
+        Level topLevel = findLevelForHierarchyGrant(
+            cube, reader, hierarchyAccess, grant.topLevel, "topLevel");
+        Level bottomLevel = findLevelForHierarchyGrant(
+            cube, reader, hierarchyAccess, grant.bottomLevel, "bottomLevel");
+
+        Role.RollupPolicy rollupPolicy;
+        if (grant.rollupPolicy != null) {
+            try {
+                rollupPolicy =
+                    Role.RollupPolicy.valueOf(
+                        grant.rollupPolicy.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw Util.newError(
+                    "Illegal rollupPolicy value '"
+                        + grant.rollupPolicy
+                        + "'");
+            }
+        } else {
+            rollupPolicy = Role.RollupPolicy.FULL;
+        }
+        role.grant(
+            hierarchy, hierarchyAccess, topLevel, bottomLevel, rollupPolicy);
+
+        final boolean ignoreInvalidMembers =
+            MondrianProperties.instance().IgnoreInvalidMembers.get();
+
+        int membersRejected = 0;
+        if (grant.memberGrants.length > 0) {
+            if (hierarchyAccess != Access.CUSTOM) {
+                throw Util.newError(
+                    "You may only specify <MemberGrant> if "
+                    + "<Hierarchy> has access='custom'");
+            }
+
+            for (MondrianDef.MemberGrant memberGrant
+                : grant.memberGrants)
+            {
+                Member member = reader.withLocus()
+                    .getMemberByUniqueName(
+                        Util.parseIdentifier(memberGrant.member),
+                        !ignoreInvalidMembers);
+                if (member == null) {
+                    // They asked to ignore members that don't exist
+                    // (e.g. [Store].[USA].[Foo]), so ignore this grant
+                    // too.
+                    assert ignoreInvalidMembers;
+                    membersRejected++;
+                    continue;
+                }
+                if (member.getHierarchy() != hierarchy) {
+                    throw Util.newError(
+                        "Member '" + member
+                        + "' is not in hierarchy '" + hierarchy + "'");
+                }
+                role.grant(
+                    member,
+                    getAccess(memberGrant.access, memberAllowed));
+            }
+        }
+
+        if (membersRejected > 0
+            && grant.memberGrants.length == membersRejected)
+        {
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace(
+                    "Rolling back grants of Hierarchy '"
+                    + hierarchy.getUniqueName()
+                    + "' to NONE, because it contains no "
+                    + "valid restricted members");
+            }
+            role.grant(hierarchy, Access.NONE, null, null, rollupPolicy);
+        }
+    }
+
+    private <T extends OlapElement> T lookup(
+        RolapCube cube,
+        SchemaReader reader,
+        int category,
+        String id)
+    {
+        List<Id.Segment> segments = Util.parseIdentifier(id);
+        //noinspection unchecked
+        return (T) reader.lookupCompound(cube, segments, true, category);
+    }
+
+    private Level findLevelForHierarchyGrant(
+        RolapCube cube,
+        SchemaReader schemaReader,
+        Access hierarchyAccess,
+        String name, String desc)
+    {
+        if (name == null) {
+            return null;
+        }
+
+        if (hierarchyAccess != Access.CUSTOM) {
+            throw Util.newError(
+                "You may only specify '" + desc + "' if access='custom'");
+        }
+        return lookup(cube, schemaReader, Category.Level, name);
     }
 
     private Access getAccess(String accessString, Set<Access> allowed) {

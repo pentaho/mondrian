@@ -28,24 +28,13 @@ import java.util.*;
  * @author jhyde
  * @since 29 March, 2002
  */
-public class FoodMartTestCase extends TestCase {
-
-    /**
-     * Access properties via this object and their values will be reset on
-     * {@link #tearDown()}.
-     */
-    protected final PropertySaver propSaver = new PropertySaver();
+public class FoodMartTestCase extends PropertyRestoringTestCase {
 
     public FoodMartTestCase(String name) {
         super(name);
     }
 
     public FoodMartTestCase() {
-    }
-
-    protected void tearDown() throws Exception {
-        // revert any properties that have been set during this test
-        propSaver.reset();
     }
 
     /**
