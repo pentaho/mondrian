@@ -1394,7 +1394,7 @@ public class SqlTupleReader implements TupleReader {
             return null;
         }
 
-        if (evaluator == null) {
+        if (evaluator == null || !constraint.supportsAggTables()) {
             return null;
         }
 
