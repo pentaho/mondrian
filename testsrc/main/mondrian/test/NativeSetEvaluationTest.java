@@ -11,6 +11,7 @@ package mondrian.test;
 
 import mondrian.olap.CacheControl;
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.NativeEvaluationUnsupportedException;
 import mondrian.rolap.BatchTestCase;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapCube;
@@ -629,6 +630,65 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]}\n"
             + "Row #0: 6,838\n");
     }
+
+    public void testAggTCTwoArg() {
+        // will throw an error if native eval is not used
+        propSaver.set(
+            propSaver.properties.AlertNativeEvaluationUnsupported, "ERROR");
+        // native should be used and Canada/Mexico should be returned
+        // even though Canada and Mexico have no associated data.
+        assertQueryReturns(
+            "select TopCount(Customers.Country.members, 2) "
+            + "on 0 from Sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Customers].[Canada]}\n"
+            + "{[Customers].[Mexico]}\n"
+            + "Row #0: \n"
+            + "Row #0: \n");
+        // TopCount should return in natural order, not order of measure val
+        assertQueryReturns(
+            "select TopCount(Product.Drink.Children, 2) "
+            + "on 0 from Sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product].[Drink].[Alcoholic Beverages]}\n"
+            + "{[Product].[Drink].[Beverages]}\n"
+            + "Row #0: 6,838\n"
+            + "Row #0: 13,573\n");
+    }
+
+    public void testAggTCTwoArgWithCrossjoinedSet() {
+        propSaver.set(
+            propSaver.properties.AlertNativeEvaluationUnsupported, "ERROR");
+        try {
+            executeQuery(
+                "select TopCount( CrossJoin(Gender.Gender.members, Product.Drink.Children), 2) "
+                + "on 0 from Sales");
+            fail("Expected expression to fail native eval");
+        } catch (NativeEvaluationUnsupportedException neue) {
+            assertTrue(
+                neue.getMessage().contains("Native evaluation not supported"));
+        }
+    }
+
+    public void testAggTCTwoArgWithCalcMemPresent() {
+        propSaver.set(
+            propSaver.properties.AlertNativeEvaluationUnsupported, "ERROR");
+        try {
+            executeQuery(
+                "with member Gender.foo as '1'"
+                + "select TopCount( {Gender.foo, Gender.Gender.members}, 2) "
+                + "on 0 from Sales");
+            fail("Expected expression to fail native eval");
+        } catch (NativeEvaluationUnsupportedException neue) {
+            assertTrue(
+                neue.getMessage().contains("Native evaluation not supported"));
+        }
+    }
+
 
     /**
      * Crossjoin that uses same dimension as slicer but is independent from it,

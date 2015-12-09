@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.Evaluator;
@@ -77,6 +76,11 @@ class DescendantsConstraint implements TupleConstraint {
 
     public Evaluator getEvaluator() {
         return null;
+    }
+
+    @Override
+    public boolean supportsAggTables() {
+        return true;
     }
 }
 
