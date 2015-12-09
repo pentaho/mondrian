@@ -26,7 +26,7 @@ import javax.sql.DataSource;
  *
  * @author av
  * @since Nov 21, 2005
-  */
+ */
 public class RolapNativeTopCount extends RolapNativeSet {
 
     public RolapNativeTopCount() {
@@ -112,7 +112,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
             if (this.getEvaluator() instanceof RolapEvaluator) {
                 key.add(
                     ((RolapEvaluator)this.getEvaluator())
-                    .getSlicerMembers());
+                        .getSlicerMembers());
             }
             return key;
         }
@@ -127,18 +127,12 @@ public class RolapNativeTopCount extends RolapNativeSet {
         FunDef fun,
         Exp[] args)
     {
-        boolean ascending;
-
-        if (!isEnabled()) {
-            return null;
-        }
-        if (!TopCountConstraint.isValidContext(
-                evaluator, restrictMemberTypes()))
-        {
+        if (!isEnabled() || !isValidContext(evaluator)) {
             return null;
         }
 
         // is this "TopCount(<set>, <count>, [<numeric expr>])"
+        boolean ascending;
         String funName = fun.getName();
         if ("TopCount".equalsIgnoreCase(funName)) {
             ascending = false;
@@ -148,6 +142,11 @@ public class RolapNativeTopCount extends RolapNativeSet {
             return null;
         }
         if (args.length < 2 || args.length > 3) {
+            return null;
+        }
+
+        if (args.length == 2) {
+            // MONDRIAN-2394: for now, prohibit native evaluation
             return null;
         }
 
@@ -209,7 +208,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
                 // Combined the CJ and the additional predicate args
                 // to form the TupleConstraint.
                 combinedArgs =
-                        Util.appendArrays(cjArgs, predicateArgs);
+                    Util.appendArrays(cjArgs, predicateArgs);
             } else {
                 combinedArgs = cjArgs;
             }
@@ -223,6 +222,12 @@ public class RolapNativeTopCount extends RolapNativeSet {
         } finally {
             evaluator.restore(savepoint);
         }
+    }
+
+    // package-local visibility for testing purposes
+    boolean isValidContext(RolapEvaluator evaluator) {
+        return TopCountConstraint.isValidContext(
+            evaluator, restrictMemberTypes());
     }
 }
 

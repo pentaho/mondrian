@@ -22,9 +22,10 @@ import mondrian.olap4j.XmlaExtraTest;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.*;
-import mondrian.rolap.sql.SelectNotInGroupByTest;
-import mondrian.rolap.sql.SqlQueryTest;
+import mondrian.rolap.sql.*;
 import mondrian.server.FileRepositoryTest;
+import mondrian.spi.impl.ImpalaDialectTest;
+import mondrian.spi.impl.SybaseDialectTest;
 import mondrian.test.build.CodeComplianceTest;
 import mondrian.test.clearview.*;
 import mondrian.test.comp.ResultComparatorTest;
@@ -208,7 +209,10 @@ public class Main extends TestSuite {
                 return suite;
             }
             addTest(suite, SegmentBuilderTest.class);
+            addTest(suite, DenseDoubleSegmentBodyTest.class);
+            addTest(suite, DenseIntSegmentBodyTest.class);
             addTest(suite, NativeFilterMatchingTest.class);
+            addTest(suite, NativeFilterAgainstAggTableTest.class);
             addTest(suite, RolapConnectionTest.class);
             addTest(suite, FilteredIterableTest.class);
             addTest(suite, HighDimensionsTest.class);
@@ -219,6 +223,7 @@ public class Main extends TestSuite {
             addTest(suite, DialectTest.class);
             addTest(suite, ResultComparatorTest.class, "suite");
             addTest(suite, DrillThroughTest.class);
+            addTest(suite, DrillThroughFieldListTest.class);
             addTest(suite, ScenarioTest.class);
             addTest(suite, BasicQueryTest.class);
             addTest(suite, SegmentCacheTest.class);
@@ -313,8 +318,13 @@ public class Main extends TestSuite {
             addTest(suite, QueryTest.class);
             addTest(suite, RolapSchemaReaderTest.class);
             addTest(suite, RolapCubeTest.class);
+            addTest(suite, RolapNativeTopCountTest.class);
+            addTest(suite, RolapNativeTopCountVersusNonNativeTest.class);
+            addTest(suite, TopCountNativeEvaluatorTest.class);
+            addTest(suite, TopCountWithTwoParamsVersusHeadTest.class);
             addTest(suite, RolapStarTest.class);
             addTest(suite, RolapSchemaPoolTest.class);
+            addTest(suite, RolapSchemaPoolConcurrencyTest.class);
             addTest(suite, NullMemberRepresentationTest.class);
             addTest(suite, IgnoreUnrelatedDimensionsTest.class);
             addTest(
@@ -337,8 +347,15 @@ public class Main extends TestSuite {
             addTest(suite, BlockingHashMapTest.class);
             addTest(suite, FileRepositoryTest.class);
             addTest(suite, XmlaExtraTest.class);
+            addTest(suite, CrossJoinArgFactoryTest.class);
             addTest(suite, UnionFunDefTest.class);
+            addTest(suite, ImpalaDialectTest.class);
+            addTest(suite, SybaseDialectTest.class);
+            addTest(suite, IdBatchResolverTest.class);
+            addTest(suite, MemberCacheHelperTest.class);
+            addTest(suite, EffectiveMemberCacheTest.class);
             addTest(suite, SqlStatementTest.class);
+            addTest(suite, ValidMeasureFunDefTest.class);
 
             boolean testNonEmpty = isRunOnce();
             if (!MondrianProperties.instance().EnableNativeNonEmpty.get()) {
@@ -357,7 +374,9 @@ public class Main extends TestSuite {
 
             addTest(suite, FastBatchingCellReaderTest.class);
             addTest(suite, SqlQueryTest.class);
+            addTest(suite, CodeSetTest.class);
             addTest(suite, ExplicitRecognizerTest.class);
+            addTest(suite, AggregationOverAggTableTest.class);
 
             if (MondrianProperties.instance().EnableNativeCrossJoin.get()) {
                 addTest(suite, BatchedFillTest.class, "suite");
