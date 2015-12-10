@@ -988,6 +988,7 @@ public class NamedSetTest extends FoodMartTestCase {
      * sort immutable list".
      */
     public void testHierarchizeNamedSetImmutable() {
+        getTestContext().flushSchemaCache();
         assertQueryReturns(
             "with set necj as\n"
             + "NonEmptyCrossJoin([Customers].[Name].members,[Store].[Store Name].members)\n"

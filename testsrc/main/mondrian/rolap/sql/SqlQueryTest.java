@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
@@ -110,26 +110,22 @@ public class SqlQueryTest extends BatchTestCase {
         assertEquals(
             "\norder by\n"
             + "    CASE WHEN alias IS NULL THEN 1 ELSE 0 END, alias ASC",
-            makeTestSqlQuery("expr", "alias", true, true, true, true)
-            .toString());
+            queryUnixString("expr", "alias", true, true, true, true));
         // requireAlias = false
         assertEquals(
             "\norder by\n"
             + "    CASE WHEN expr IS NULL THEN 1 ELSE 0 END, expr ASC",
-            makeTestSqlQuery("expr", "alias", true, true, true, false)
-                .toString());
+            queryUnixString("expr", "alias", true, true, true, false));
         //  nullable = false
         assertEquals(
             "\norder by\n"
             + "    expr ASC",
-            makeTestSqlQuery("expr", "alias", true, false, true, false)
-                .toString());
+            queryUnixString("expr", "alias", true, false, true, false));
         //  ascending=false, collateNullsLast=false
         assertEquals(
             "\norder by\n"
             + "    CASE WHEN alias IS NULL THEN 0 ELSE 1 END, alias DESC",
-            makeTestSqlQuery("expr", "alias", false, true, false, true)
-                .toString());
+            queryUnixString("expr", "alias", false, true, false, true));
     }
 
     /**
@@ -147,6 +143,16 @@ public class SqlQueryTest extends BatchTestCase {
         query.addOrderBy(
             expr, alias, ascending, true, nullable, collateNullsLast);
         return query;
+    }
+
+    private String queryUnixString(
+        String expr, String alias, boolean ascending,
+        boolean nullable, boolean collateNullsLast, boolean reqOrderByAlias)
+    {
+        String sql = makeTestSqlQuery(
+            expr, alias, ascending, nullable, collateNullsLast,
+            reqOrderByAlias).toString();
+        return sql.replaceAll("\\r", "");
     }
 
     public void testToStringForForcedIndexHint() {
