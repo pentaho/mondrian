@@ -231,9 +231,9 @@ public class SqlContextConstraint
 
         // Now we'll need to expand the aggregated members
         expandedMembers.addAll(
-                SqlConstraintUtils.expandSupportedCalculatedMembers(
-                    members,
-                    evaluator));
+            SqlConstraintUtils.expandSupportedCalculatedMembers(
+                members,
+                evaluator));
         cacheKey.add(expandedMembers);
         cacheKey.add(evaluator.getSlicerTuples());
 
@@ -365,6 +365,11 @@ public class SqlContextConstraint
 
     public Evaluator getEvaluator() {
         return evaluator;
+    }
+
+    @Override
+    public boolean supportsAggTables() {
+        return true;
     }
 }
 

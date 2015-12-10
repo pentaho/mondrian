@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -26,7 +26,7 @@ import javax.sql.DataSource;
  *
  * @author av
  * @since Nov 21, 2005
-  */
+ */
 public class RolapNativeTopCount extends RolapNativeSet {
 
     public RolapNativeTopCount() {
@@ -51,13 +51,41 @@ public class RolapNativeTopCount extends RolapNativeSet {
         }
 
         /**
+         * If the orderByExpr is not present than we're dealing with
+         * the 2 arg form of TC.  The 2 arg form cannot be evaluated
+         * with a join to the fact.  Because of this, it's only valid
+         * to apply a native constraint for the 2 arg form if a single CJ
+         * arg is in place.  Otherwise we'd need to join the dims together
+         * via the fact table, which could eliminate tuples that should
+         * be returned.
+         */
+        protected boolean isValid() {
+            if (orderByExpr == null) {
+                return args.length == 1
+                    && canApplyCrossJoinArgConstraint(args[0]);
+            }
+            return true;
+        }
+
+        /**
          * {@inheritDoc}
          *
-         * <p>TopCount always needs to join the fact table because we want to
-         * evaluate the top count expression which involves a fact.
+         * <p>TopCount needs to join the fact table if a top count expression
+         * is present (i.e. orderByExpr).  If not present than the results of
+         * TC should be the natural ordering of the set in the first argument,
+         * which cannot use a join to the fact table without potentially
+         * eliminating empty tuples.
          */
         protected boolean isJoinRequired() {
-            return true;
+            return orderByExpr != null;
+        }
+
+        @Override
+        public boolean supportsAggTables() {
+            // We can only safely use agg tables if we can limit
+            // results to those with data (i.e. if we would be
+            // joining to a fact table).
+            return isJoinRequired();
         }
 
         public void addConstraint(
@@ -65,6 +93,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
             RolapCube baseCube,
             AggStar aggStar)
         {
+            assert isValid();
             if (orderByExpr != null) {
                 RolapNativeSql sql =
                     new RolapNativeSql(
@@ -83,7 +112,11 @@ public class RolapNativeTopCount extends RolapNativeSet {
                     nullable,
                     true);
             }
-            super.addConstraint(sqlQuery, baseCube, aggStar);
+            if (isJoinRequired()) {
+                super.addConstraint(sqlQuery, baseCube, aggStar);
+            } else if (args.length == 1) {
+                args[0].addConstraint(sqlQuery, baseCube, null);
+            }
         }
 
         private boolean deduceNullability(Exp expr) {
@@ -108,11 +141,12 @@ public class RolapNativeTopCount extends RolapNativeSet {
             }
             key.add(ascending);
             key.add(topCount);
+            key.add(this.getEvaluator().isNonEmpty());
 
             if (this.getEvaluator() instanceof RolapEvaluator) {
                 key.add(
                     ((RolapEvaluator)this.getEvaluator())
-                    .getSlicerMembers());
+                        .getSlicerMembers());
             }
             return key;
         }
@@ -127,18 +161,12 @@ public class RolapNativeTopCount extends RolapNativeSet {
         FunDef fun,
         Exp[] args)
     {
-        boolean ascending;
-
-        if (!isEnabled()) {
-            return null;
-        }
-        if (!TopCountConstraint.isValidContext(
-                evaluator, restrictMemberTypes()))
-        {
+        if (!isEnabled() || !isValidContext(evaluator)) {
             return null;
         }
 
         // is this "TopCount(<set>, <count>, [<numeric expr>])"
+        boolean ascending;
         String funName = fun.getName();
         if ("TopCount".equalsIgnoreCase(funName)) {
             ascending = false;
@@ -160,16 +188,22 @@ public class RolapNativeTopCount extends RolapNativeSet {
         // contains additional constraints on the dimensions. If either the list
         // or the first array is null, then native cross join is not feasible.
         if (allArgs == null || allArgs.isEmpty() || allArgs.get(0) == null) {
+            alertNonNativeTopCount(
+                "Set in 1st argument does not support native eval.");
             return null;
         }
 
         CrossJoinArg[] cjArgs = allArgs.get(0);
         if (isPreferInterpreter(cjArgs, false)) {
+            alertNonNativeTopCount(
+                "One or more args prefer non-native.");
             return null;
         }
 
         // extract count
         if (!(args[1] instanceof Literal)) {
+            alertNonNativeTopCount(
+                "TopCount value cannot be determined.");
             return null;
         }
         int count = ((Literal) args[1]).getIntValue();
@@ -191,10 +225,12 @@ public class RolapNativeTopCount extends RolapNativeSet {
             orderByExpr = args[2];
             String orderBySQL = sql.generateTopCountOrderBy(args[2]);
             if (orderBySQL == null) {
+                alertNonNativeTopCount(
+                    "Cannot convert order by expression to SQL.");
                 return null;
             }
         }
-        LOGGER.debug("using native topcount");
+
         final int savepoint = evaluator.savepoint();
         try {
             overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
@@ -209,20 +245,37 @@ public class RolapNativeTopCount extends RolapNativeSet {
                 // Combined the CJ and the additional predicate args
                 // to form the TupleConstraint.
                 combinedArgs =
-                        Util.appendArrays(cjArgs, predicateArgs);
+                    Util.appendArrays(cjArgs, predicateArgs);
             } else {
                 combinedArgs = cjArgs;
             }
-            TupleConstraint constraint =
+            TopCountConstraint constraint =
                 new TopCountConstraint(
                     count, combinedArgs, evaluator, orderByExpr, ascending);
+            if (!constraint.isValid()) {
+                alertNonNativeTopCount(
+                    "Constraint constructed cannot be used for native eval.");
+                return null;
+            }
+            LOGGER.debug("using native topcount");
             SetEvaluator sev =
                 new SetEvaluator(cjArgs, schemaReader, constraint);
             sev.setMaxRows(count);
+            sev.setCompleteWithNullValues(!evaluator.isNonEmpty());
             return sev;
         } finally {
             evaluator.restore(savepoint);
         }
+    }
+
+    private void alertNonNativeTopCount(String msg) {
+        RolapUtil.alertNonNative("TopCount", msg);
+    }
+
+    // package-local visibility for testing purposes
+    boolean isValidContext(RolapEvaluator evaluator) {
+        return TopCountConstraint.isValidContext(
+            evaluator, restrictMemberTypes());
     }
 }
 

@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2015 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap.sql;
 
 import mondrian.olap.Evaluator;
@@ -78,6 +77,11 @@ public interface TupleConstraint extends SqlConstraint {
      * if there is no associated evaluator
      */
     public Evaluator getEvaluator();
+
+    /**
+     * @return true if the constraint can leverage an aggregate table
+     */
+    public boolean supportsAggTables();
 }
 
 // End TupleConstraint.java
