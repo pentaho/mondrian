@@ -99,19 +99,23 @@ public abstract class RolapNativeSet extends RolapNative {
         {
             super.addConstraint(sqlQuery, baseCube, aggStar);
             for (CrossJoinArg arg : args) {
-                // if the cross join argument has calculated members in its
-                // enumerated set, ignore the constraint since we won't
-                // produce that set through the native sql and instead
-                // will simply enumerate through the members in the set
-                if (!(arg instanceof MemberListCrossJoinArg)
-                    || !((MemberListCrossJoinArg) arg).hasCalcMembers())
-                {
+                if (canApplyCrossJoinArgConstraint(arg)) {
                     RolapLevel level = arg.getLevel();
                     if (level == null || levelIsOnBaseCube(baseCube, level)) {
                         arg.addConstraint(sqlQuery, baseCube, aggStar);
                     }
                 }
             }
+        }
+
+        /** If the cross join argument has calculated members in its
+         *  enumerated set, ignore the constraint since we won't
+         *  produce that set through the native sql and instead
+         *  will simply enumerate through the members in the set
+         */
+        protected boolean canApplyCrossJoinArgConstraint(CrossJoinArg arg) {
+            return !(arg instanceof MemberListCrossJoinArg)
+                || !((MemberListCrossJoinArg) arg).hasCalcMembers();
         }
 
         private boolean levelIsOnBaseCube(
@@ -142,9 +146,7 @@ public abstract class RolapNativeSet extends RolapNative {
             // args that are sets with calculated members aren't executed
             // natively
             for (CrossJoinArg arg : args) {
-                if (!(arg instanceof MemberListCrossJoinArg)
-                    || !((MemberListCrossJoinArg) arg).hasCalcMembers())
-                {
+                if (canApplyCrossJoinArgConstraint(arg)) {
                     key.add(arg);
                 }
             }
