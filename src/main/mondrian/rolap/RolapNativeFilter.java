@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho
+// Copyright (C) 2005-2015 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -130,7 +130,7 @@ public class RolapNativeFilter extends RolapNativeSet {
             return null;
         }
         if (!FilterConstraint.isValidContext(
-                evaluator, restrictMemberTypes()))
+                evaluator, true, null, restrictMemberTypes(), fun))
         {
             return null;
         }
