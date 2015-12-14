@@ -318,6 +318,8 @@ public class Main extends TestSuite {
             addTest(suite, QueryTest.class);
             addTest(suite, RolapSchemaReaderTest.class);
             addTest(suite, RolapCubeTest.class);
+            addTest(suite, RolapNativeSql_NumberSqlCompiler_Test.class);
+            addTest(suite, RolapNativeSqlInjectionTest.class);
             addTest(suite, RolapNativeTopCountTest.class);
             addTest(suite, RolapNativeTopCountVersusNonNativeTest.class);
             addTest(suite, TopCountNativeEvaluatorTest.class);
