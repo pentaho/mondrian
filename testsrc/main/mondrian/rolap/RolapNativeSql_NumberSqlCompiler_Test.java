@@ -12,6 +12,7 @@ package mondrian.rolap;
 import mondrian.calc.DummyExp;
 import mondrian.olap.Exp;
 import mondrian.olap.Literal;
+import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.olap.type.NullType;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.Dialect;
@@ -68,7 +69,12 @@ public class RolapNativeSql_NumberSqlCompiler_Test extends TestCase {
 
     public void testRejectsStrings_ThatCannotBeParsedAsDouble() {
         Exp exp = Literal.createString("(select 100)");
-        assertNull(compiler.compile(exp));
+        try {
+            compiler.compile(exp);
+        } catch (MondrianEvaluationException e) {
+            return;
+        }
+        fail("Expected to get MondrianEvaluationException");
     }
 }
 
