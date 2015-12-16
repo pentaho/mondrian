@@ -62,20 +62,61 @@ public class NumberSqlCompilerTest extends TestCase {
         assertNotNull(compiler.compile(exp));
     }
 
-    public void testAcceptsString() {
-        Exp exp = Literal.createString("1");
-        assertNotNull(compiler.compile(exp));
+    public void testAcceptsString_Int() {
+        checkAcceptsString("1");
     }
 
-    public void testRejectsStrings_ThatCannotBeParsedAsDouble() {
-        Exp exp = Literal.createString("(select 100)");
+    public void testAcceptsString_Negative() {
+        checkAcceptsString("-1");
+    }
+
+    public void testAcceptsString_ExplicitlyPositive() {
+        checkAcceptsString("+1.01");
+    }
+
+    public void testAcceptsString_NoIntegerPart() {
+        checkAcceptsString("-.00001");
+    }
+
+    private void checkAcceptsString(String value) {
+        Exp exp = Literal.createString(value);
+        assertNotNull(value, compiler.compile(exp));
+    }
+
+
+    public void testRejectsString_SelectStatement() {
+        checkRejectsString("(select 100)");
+    }
+
+    public void testRejectsString_NaN() {
+        checkRejectsString("NaN");
+    }
+
+    public void testRejectsString_Infinity() {
+        checkRejectsString("Infinity");
+    }
+
+    public void testRejectsString_TwoDots() {
+        checkRejectsString("1.0.");
+    }
+
+    public void testRejectsString_OnlyDot() {
+        checkRejectsString(".");
+    }
+
+    public void testRejectsString_DoubleNegation() {
+        checkRejectsString("--1.0");
+    }
+
+    private void checkRejectsString(String value) {
+        Exp exp = Literal.createString(value);
         try {
             compiler.compile(exp);
         } catch (MondrianEvaluationException e) {
             return;
         }
-        fail("Expected to get MondrianEvaluationException");
+        fail("Expected to get MondrianEvaluationException for " + value);
     }
 }
 
-// End RolapNativeSql_NumberSqlCompiler_Test.java
+// End NumberSqlCompilerTest.java
