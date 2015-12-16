@@ -325,6 +325,7 @@ public class Main extends TestSuite {
             addTest(suite, TopCountNativeEvaluatorTest.class);
             addTest(suite, TopCountWithTwoParamsVersusHeadTest.class);
             addTest(suite, RolapStarTest.class);
+            addTest(suite, RolapSchemaTest.class);
             addTest(suite, RolapSchemaPoolTest.class);
             addTest(suite, RolapSchemaPoolConcurrencyTest.class);
             addTest(suite, NullMemberRepresentationTest.class);
@@ -335,6 +336,8 @@ public class Main extends TestSuite {
             addTest(suite, SetFunDefTest.class);
             addTest(suite, VisualTotalsTest.class);
             addTest(suite, AggregationOnDistinctCountMeasuresTest.class);
+            addTest(suite, AggregationOnInvalidRoleTest.class);
+            addTest(suite, AggregationOnInvalidRoleWhenNotIgnoringTest.class);
             addTest(suite, NonCollapsedAggTest.class);
             addTest(suite, SpeciesNonCollapsedAggTest.class);
             addTest(suite, UsagePrefixTest.class);
