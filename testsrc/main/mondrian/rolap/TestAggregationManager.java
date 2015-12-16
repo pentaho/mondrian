@@ -1416,6 +1416,7 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     public void testAggregatingTuples() {
+        propSaver.set(propSaver.properties.LevelPreCacheThreshold, 1);
         if (!(MondrianProperties.instance().UseAggregates.get()
                 && MondrianProperties.instance().ReadAggregates.get()))
         {
