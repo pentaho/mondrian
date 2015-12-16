@@ -268,8 +268,12 @@ public abstract class RolapNativeSet extends RolapNative {
             }
 
             // Did not get as many members as expected - try to complete using
-            // less constraints
-            if (completeWithNullValues && result.size() < maxRows) {
+            // less constraints.
+            // if !joinRequired then no need to try again, since the first
+            // query was pulling from the dimension table directly.
+            if (completeWithNullValues && result.size() < maxRows
+                && joinRequired(constraint))
+            {
                 RolapLevel l = args[0].getLevel();
                 List<RolapMember> list = new ArrayList<RolapMember>();
                 for (List<Member> lm : result) {
@@ -307,6 +311,17 @@ public abstract class RolapNativeSet extends RolapNative {
                 }
             }
             return filterInaccessibleTuples(result);
+        }
+
+        /**
+         * Returns true if the constraint may require a join to the
+         * fact table.
+         */
+        private boolean joinRequired(TupleConstraint constraint) {
+            return !(constraint
+                instanceof RolapNativeTopCount.TopCountConstraint)
+                || ((RolapNativeTopCount.TopCountConstraint)constraint)
+                .isJoinRequired();
         }
 
         /**

@@ -631,6 +631,37 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "Row #0: 6,838\n");
     }
 
+    public void testTCTwoArgDoesNotUseMemberExcludeQuery() {
+        // will throw an error if native eval is not used
+        propSaver.set(
+            propSaver.properties.AlertNativeEvaluationUnsupported, "ERROR");
+        propSaver.set(
+            propSaver.properties.GenerateFormattedSql, true);
+        // verifies that the second, member exclude query is not fired.
+        // That second query is only needed for the 3 arg form of TC
+        // MONDRIAN-2437
+        assertQuerySqlOrNot(
+            getTestContext(),
+            "select TopCount(Customers.Country.members, 5) "
+            + "on 0 from Sales",
+            new SqlPattern[]{
+                new SqlPattern(
+                    DatabaseProduct.MYSQL,
+                    "select\n"
+                    + "    `customer`.`country` as `c0`\n"
+                    + "from\n"
+                    + "    `customer` as `customer`\n"
+                    + "where\n"
+                    + "    ((not (`customer`.`country` in ('Canada', 'Mexico', 'USA')) or (`customer`.`country` is null)))\n"
+                    + "group by\n"
+                    + "    `customer`.`country`\n"
+                    + "order by\n"
+                    + "    ISNULL(`customer`.`country`) ASC, "
+                    + "`customer`.`country` ASC", null)
+            }, true, true, true);
+    }
+
+
     public void testAggTCTwoArg() {
         // will throw an error if native eval is not used
         propSaver.set(
