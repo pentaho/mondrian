@@ -12,6 +12,7 @@ package mondrian.rolap;
 
 import mondrian.mdx.*;
 import mondrian.olap.*;
+import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.olap.type.MemberType;
 import mondrian.olap.type.StringType;
 import mondrian.rolap.aggmatcher.AggStar;
@@ -20,6 +21,7 @@ import mondrian.spi.Dialect;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Creates SQL from parse tree nodes. Currently it creates the SQL that
@@ -29,6 +31,9 @@ import java.util.List;
  * @since Nov 17, 2005
   */
 public class RolapNativeSql {
+
+    private static final Pattern DECIMAL =
+        Pattern.compile("[+-]?((\\d+(\\.\\d*)?)|(\\.\\d+))");
 
     private SqlQuery sqlQuery;
     private Dialect dialect;
@@ -130,6 +135,11 @@ public class RolapNativeSql {
             }
             Literal literal = (Literal) exp;
             String expr = String.valueOf(literal.getValue());
+            if (!DECIMAL.matcher(expr).matches()) {
+                throw new MondrianEvaluationException(
+                    "Expected to get decimal, but got " + expr);
+            }
+
             if (dialect.getDatabaseProduct().getFamily()
                 == Dialect.DatabaseProduct.DB2)
             {
