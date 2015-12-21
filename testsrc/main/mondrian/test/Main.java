@@ -379,6 +379,7 @@ public class Main extends TestSuite {
             addTest(suite, CodeSetTest.class);
             addTest(suite, ExplicitRecognizerTest.class);
             addTest(suite, AggregationOverAggTableTest.class);
+            addTest(suite, CancellationTest.class);
 
             if (MondrianProperties.instance().EnableNativeCrossJoin.get()) {
                 addTest(suite, BatchedFillTest.class, "suite");
