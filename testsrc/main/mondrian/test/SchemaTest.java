@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.test;
 
@@ -3269,6 +3269,9 @@ public class SchemaTest extends FoodMartTestCase {
         assertEquals(
             false,
             factCountMeasure.getPropertyValue(Property.VISIBLE.name));
+        checkAnnotations(
+            factCountMeasure.getAnnotationMap(), "Internal Use",
+            "For internal use");
 
         final Member calcMeasure = measures.get(2);
         assertEquals("Foo", calcMeasure.getName());

@@ -291,6 +291,15 @@ public class RolapCube extends CubeBase {
             xmlMeasure.aggregator = "count";
             xmlMeasure.name = "Fact Count";
             xmlMeasure.visible = false;
+
+            MondrianDef.Annotation internalUsage = new MondrianDef.Annotation();
+            internalUsage.name = "Internal Use";
+            internalUsage.cdata = "For internal use";
+            MondrianDef.Annotations annotations = new MondrianDef.Annotations();
+            annotations.array = new MondrianDef.Annotation[1];
+            annotations.array[0] = internalUsage;
+            xmlMeasure.annotations = annotations;
+
             factCountMeasure =
                 createMeasure(
                     xmlCube, measuresLevel, measureList.size(), xmlMeasure);
