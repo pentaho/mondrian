@@ -847,6 +847,7 @@ public interface Dialect {
         MYSQL,
         SQLSTREAM,
         SYBASE,
+        TEIID,
         TERADATA,
         VERTICA,
         VECTORWISE;

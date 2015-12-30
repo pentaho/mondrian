@@ -1390,6 +1390,7 @@
                 <li>oracle</li>
                 <li>postgres</li>
                 <li>sybase</li>
+		<li>teiid</li>
                 <li>teradata</li>
                 <li>ingres</li>
                 <li>infobright</li>
@@ -1409,6 +1410,7 @@
             <Value>oracle</Value>
             <Value>postgres</Value>
             <Value>sybase</Value>
+	    <Value>teiid</Value>
             <Value>teradata</Value>
             <Value>ingres</Value>
             <Value>infobright</Value>

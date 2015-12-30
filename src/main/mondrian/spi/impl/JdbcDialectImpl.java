@@ -1108,6 +1108,8 @@ public class JdbcDialectImpl implements Dialect {
             // Sysbase Adaptive Server Enterprise 15.5 via jConnect 6.05 returns
             // "Adaptive Server Enterprise" as a product name.
             return DatabaseProduct.SYBASE;
+        } else if (upperProductName.indexOf("TEIID") >= 0) {
+            return DatabaseProduct.TEIID;
         } else if (upperProductName.indexOf("TERADATA") >= 0) {
             return DatabaseProduct.TERADATA;
         } else if (upperProductName.indexOf("HSQL") >= 0) {

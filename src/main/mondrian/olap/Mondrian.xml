@@ -1364,6 +1364,7 @@ Revision is $Id$
                 <li>oracle</li>
                 <li>postgres</li>
                 <li>sybase</li>
+		<li>teiid</li>
                 <li>teradata</li>
                 <li>ingres</li>
                 <li>infobright</li>

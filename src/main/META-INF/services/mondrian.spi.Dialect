@@ -22,6 +22,7 @@ mondrian.spi.impl.PostgreSqlDialect
 mondrian.spi.impl.RedshiftDialect
 mondrian.spi.impl.SqlStreamDialect
 mondrian.spi.impl.SybaseDialect
+mondrian.spi.impl.TeiidDialect
 mondrian.spi.impl.TeradataDialect
 mondrian.spi.impl.VectorwiseDialect
 mondrian.spi.impl.VerticaDialect
