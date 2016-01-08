@@ -1,14 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-
-  <!-- The basics. -->
   <groupId>pentaho</groupId>
   <artifactId>mondrian</artifactId>
-  <packaging>jar</packaging>
-  <version>4.0-SNAPSHOT</version>
-
-  <!-- More project information. -->
+  <version>4.3.0.8-161</version>
   <name>mondrian</name>
   <description>Mondrian OLAP engine.</description>
   <url>http://github.com/pentaho/mondrian</url>
@@ -23,7 +19,6 @@
       <url>http://www.eclipse.org/legal/epl-v10.html</url>
     </license>
   </licenses>
-
   <developers>
     <developer>
       <id>julianhyde</id>
@@ -35,10 +30,8 @@
         <role>developer</role>
       </roles>
       <timezone>-8</timezone>
-      <properties/>
     </developer>
   </developers>
-
   <mailingLists>
     <mailingList>
       <name>Mondrian developers list</name>
@@ -46,30 +39,22 @@
       <archive>http://lists.pentaho.org/pipermail/mondrian/</archive>
     </mailingList>
   </mailingLists>
-
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-
-  <!-- Environment settings. -->
-  <distributionManagement>
-    <repository>
-      <id>pentaho</id>
-      <name>Pentaho repository</name>
-      <url>http://repository.pentaho.org/artifactory/repo</url>
-      <layout>default</layout>
-    </repository>
-  </distributionManagement>
-
-  <issueManagement/>
-
   <scm>
     <connection>scm:git:git://github.com/pentaho/mondrian.git</connection>
     <developerConnection>scm:git:git@github.com:pentaho/mondrian.git</developerConnection>
     <url>http://github.com/pentaho/mondrian/tree/master</url>
   </scm>
-
-  <!-- Dependencies. -->
+  <issueManagement />
+  <distributionManagement>
+    <repository>
+      <id>pentaho</id>
+      <name>Pentaho repository</name>
+      <url>http://repository.pentaho.org/artifactory/repo</url>
+    </repository>
+  </distributionManagement>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>commons-collections</groupId>
@@ -193,8 +178,6 @@
       <version>1.6.0_24</version>
       <scope>provided</scope>
     </dependency>
-
-    <!-- Test dependencies. -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -211,17 +194,8 @@
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
       <version>5.1.31</version>
-      <!--<version>3.1.12</version>-->
       <scope>test</scope>
     </dependency>
-<!--
-    <dependency>
-      <groupId>net.hydromatic</groupId>
-      <artifactId>optiq</artifactId>
-      <version>0.4.12-SNAPSHOT</version>
-      <scope>test</scope>
-    </dependency>
--->
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
@@ -229,22 +203,6 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.9.1</version>
-        <configuration>
-          <links>
-            <link>http://docs.oracle.com/javase/7/docs/api/</link>
-          </links>
-        </configuration>
-      </plugin>
-    </plugins>
-  </reporting>
-
   <repositories>
     <repository>
       <releases>
@@ -255,29 +213,49 @@
       <id>pentaho</id>
       <name>Pentaho</name>
       <url>http://repo.pentaho.org/artifactory/repo</url>
-      <layout>default</layout>
     </repository>
   </repositories>
-
   <build>
     <defaultGoal>package</defaultGoal>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <filtering>true</filtering>
+        <directory>src/main/resources/version</directory>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>${project.basedir}</directory>
+        <includes>
+          <include>log4j.properties</include>
+        </includes>
+      </testResource>
+      <testResource>
+        <directory>${project.basedir}/src/test/resources</directory>
+        <includes>
+          <include>**/*.csv</include>
+          <include>**/*.properties</include>
+        </includes>
+      </testResource>
+    </testResources>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <version>2.8</version>
         <executions>
           <execution>
             <id>properties</id>
+            <phase>initialize</phase>
             <goals>
               <goal>properties</goal>
             </goals>
-            <phase>initialize</phase>
           </execution>
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
         <version>2.2.1</version>
         <executions>
@@ -294,17 +272,6 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>2.3.2</version>
-        <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
-          <excludes>
-            <exclude>**/FactoryJdbc3Impl.java</exclude>
-            <exclude>**/FactoryJdbc4Impl.java</exclude>
-            <exclude>**/UtilCompatibleJdk14.java</exclude>
-            <exclude>**/UtilCompatibleJdk15.java</exclude>
-            <exclude>**/UtilCompatibleJdk16.java</exclude>
-          </excludes>
-        </configuration>
         <executions>
           <execution>
             <id>compile-jdk15</id>
@@ -319,7 +286,7 @@
                 <include>**/FactoryJdbc3Impl.java</include>
               </includes>
               <compilerArguments>
-                <verbose/>
+                <verbose />
                 <bootclasspath>${com.sun:rt-jdk1.5:jar}</bootclasspath>
               </compilerArguments>
             </configuration>
@@ -337,43 +304,53 @@
                 <include>**/FactoryJdbc4Impl.java</include>
               </includes>
               <compilerArguments>
-                <verbose/>
+                <verbose />
                 <bootclasspath>${net.java.openjdk:rt-java6:jar}</bootclasspath>
               </compilerArguments>
             </configuration>
           </execution>
         </executions>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+          <excludes>
+            <exclude>**/FactoryJdbc3Impl.java</exclude>
+            <exclude>**/FactoryJdbc4Impl.java</exclude>
+            <exclude>**/UtilCompatibleJdk14.java</exclude>
+            <exclude>**/UtilCompatibleJdk15.java</exclude>
+            <exclude>**/UtilCompatibleJdk16.java</exclude>
+          </excludes>
+        </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
-          <dependencies>
-              <dependency>
-                  <groupId>com.sun</groupId>
-                  <artifactId>tools</artifactId>
-                  <version>1.5.0</version>
-                  <scope>system</scope>
-                  <systemPath>${java.home}/../lib/tools.jar</systemPath>
-              </dependency>
-          </dependencies>
         <version>1.7</version>
         <executions>
           <execution>
             <phase>generate-sources</phase>
-            <configuration>
-              <target>
-                <ant target="def"/>
-                <ant target="generate.properties"/>
-                <ant target="generate.resources"/>
-                <ant target="parser"/>
-                <ant target="version"/>
-              </target>
-            </configuration>
             <goals>
               <goal>run</goal>
             </goals>
+            <configuration>
+              <target>
+                <ant target="def" />
+                <ant target="generate.properties" />
+                <ant target="generate.resources" />
+                <ant target="parser" />
+                <ant target="version" />
+              </target>
+            </configuration>
           </execution>
         </executions>
+        <dependencies>
+          <dependency>
+            <groupId>com.sun</groupId>
+            <artifactId>tools</artifactId>
+            <version>1.5.0</version>
+            <scope>system</scope>
+            <systemPath>${java.home}/../lib/tools.jar</systemPath>
+          </dependency>
+        </dependencies>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -382,18 +359,18 @@
         <executions>
           <execution>
             <id>add-source</id>
-              <phase>generate-sources</phase>
-              <goals>
-                <goal>add-source</goal>
-              </goals>
-              <configuration>
-                <sources>
-                    <source>target/generated-sources/prop</source>
-                    <source>target/generated-sources/resgen</source>
-                    <source>target/generated-sources/version</source>
-                    <source>target/generated-sources/xom</source>
-                </sources>
-              </configuration>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>target/generated-sources/prop</source>
+                <source>target/generated-sources/resgen</source>
+                <source>target/generated-sources/version</source>
+                <source>target/generated-sources/xom</source>
+              </sources>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -418,7 +395,6 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <version>2.2</version>
         <executions>
@@ -449,7 +425,6 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.17</version>
         <configuration>
@@ -462,44 +437,24 @@
             <mondrian.foodmart.jdbcURL>${mondrian.foodmart.jdbcURL}</mondrian.foodmart.jdbcURL>
             <mondrian.test.foodmart.catalogURL>${mondrian.test.foodmart.catalogURL}</mondrian.test.foodmart.catalogURL>
             <mondrian.test.connectString>${mondrian.test.connectString}</mondrian.test.connectString>
-            <!-- tests require en_US locale -->
             <user.language>en</user.language>
             <user.region>US</user.region>
           </systemPropertyVariables>
         </configuration>
       </plugin>
     </plugins>
-
-    <!-- TODO: xom task that reads src/main/xom -->
-    <!-- TODO: prop task that reads src/main/prop -->
-    <!-- TODO: generate MondrianOlap4jDriverVersion.java -->
-    <!-- TODO: make test suite work out of the box (using say hsqldb) -->
-
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-      </resource>
-      <resource>
-        <directory>src/main/resources/version</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
-
-    <testResources>
-      <testResource>
-        <directory>${project.basedir}</directory>
-        <includes>
-          <include>log4j.properties</include>
-        </includes>
-      </testResource>
-      <testResource>
-        <directory>${project.basedir}/src/test/resources</directory> 
-          <includes>
-            <include>**/*.csv</include>
-            <include>**/*.properties</include>
-        </includes>
-      </testResource>
-    </testResources>
   </build>
-
+  <reporting>
+    <plugins>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9.1</version>
+        <configuration>
+          <links>
+            <link>http://docs.oracle.com/javase/7/docs/api/</link>
+          </links>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
 </project>
