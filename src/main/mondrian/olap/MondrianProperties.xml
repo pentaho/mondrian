@@ -1040,16 +1040,16 @@ allowed when iterating over members to compute aggregates.  A value of
         <Default>0</Default>
     </PropertyDefinition>
     <PropertyDefinition>
-        <Name>CancelPhaseInterval</Name>
-        <Path>mondrian.rolap.cancelPhaseInterval</Path>
+        <Name>CheckCancelOrTimeoutInterval</Name>
+        <Path>mondrian.util.checkCancelOrTimeoutInterval</Path>
         <Description>
-<p>Positive integer property that determines how many rows are read from sql executions between checks for whether the current mdx query has been cancelled.<br/>
-Setting the interval too small may result in a performance hit when reading large result sets;
-setting it too high can cause a big delay between the query being marked as cancelled and system resources associated to it being released.
+<p>Positive integer property that determines loop iterations number between checks for whether the current mdx query has been cancelled or timeout was exceeded.<br/>
+Setting the interval too small may result in a performance degradation when reading large result sets;
+setting it too high can cause a big delay between the query being marked as cancelled or timeout was exceeded and system resources associated to it being released.
 </p>
         </Description>
         <Type>int</Type>
-        <Default>10000</Default>
+        <Default>1000</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>ExecutionHistorySize</Name>

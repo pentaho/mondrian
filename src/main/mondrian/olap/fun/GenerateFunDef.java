@@ -1,12 +1,13 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2002-2005 Julian Hyde
+// Copyright (C) 2005-2016 Pentaho and others
+// All Rights Reserved.
 */
-
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
@@ -14,7 +15,9 @@ import mondrian.calc.impl.*;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
+import mondrian.server.Execution;
 import mondrian.server.Locus;
+import mondrian.util.CancellationChecker;
 
 import java.util.*;
 
@@ -105,24 +108,19 @@ class GenerateFunDef extends FunDefBase {
 
         public TupleList evaluateList(Evaluator evaluator) {
             final int savepoint = evaluator.savepoint();
-            final int checkCancelPeriod =
-                MondrianProperties.instance().CancelPhaseInterval.get();
             try {
                 evaluator.setNonEmpty(false);
                 final TupleIterable iterable1 =
                         iterCalc1.evaluateIterable(evaluator);
                 evaluator.restore(savepoint);
                 TupleList result = TupleCollections.createList(arityOut);
+                Execution execution = Locus.peek().execution;
                 if (all) {
                     final TupleCursor cursor = iterable1.tupleCursor();
-                    int rowCount = -1;
+                    int rowCount = 0;
                     while (cursor.forward()) {
-                        rowCount++;
-                        if (checkCancelPeriod > 0
-                            && rowCount % checkCancelPeriod == 0)
-                        {
-                            Locus.peek().execution.checkCancelOrTimeout();
-                        }
+                        CancellationChecker.checkCancelOrTimeout(
+                            rowCount++, execution);
                         cursor.setContext(evaluator);
                         final TupleList result2 =
                             listCalc2.evaluateList(evaluator);
@@ -133,14 +131,10 @@ class GenerateFunDef extends FunDefBase {
                             new HashSet<List<Member>>();
                     final TupleCursor cursor = iterable1.tupleCursor();
 
-                    int rowCount = -1;
+                    int rowCount = 0;
                     while (cursor.forward()) {
-                        rowCount++;
-                        if (checkCancelPeriod > 0
-                            && rowCount % checkCancelPeriod == 0)
-                        {
-                            Locus.peek().execution.checkCancelOrTimeout();
-                        }
+                        CancellationChecker.checkCancelOrTimeout(
+                            rowCount++, execution);
                         cursor.setContext(evaluator);
                         final TupleList result2 =
                                 listCalc2.evaluateList(evaluator);
@@ -196,7 +190,12 @@ class GenerateFunDef extends FunDefBase {
                 final TupleIterable iter11 =
                     iterCalc.evaluateIterable(evaluator);
                 final TupleCursor cursor = iter11.tupleCursor();
+                int currentIteration = 0;
+                Execution execution =
+                    evaluator.getQuery().getStatement().getCurrentExecution();
                 while (cursor.forward()) {
+                    CancellationChecker.checkCancelOrTimeout(
+                        currentIteration++, execution);
                     cursor.setContext(evaluator);
                     if (k++ > 0) {
                         String sep = sepCalc.evaluateString(evaluator);

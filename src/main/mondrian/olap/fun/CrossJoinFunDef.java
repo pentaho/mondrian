@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -17,6 +17,9 @@ import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapEvaluator;
+import mondrian.server.Execution;
+import mondrian.server.Locus;
+import mondrian.util.CancellationChecker;
 import mondrian.util.CartesianProductList;
 
 import org.apache.log4j.Logger;
@@ -565,7 +568,11 @@ public class CrossJoinFunDef extends FunDefBase {
         final int partialSizeNext = partialSize + tupleList.getArity();
         final int iNext = i + 1;
         final TupleCursor cursor = tupleList.tupleCursor();
+        int currentIteration = 0;
+        Execution execution = Locus.peek().execution;
         while (cursor.forward()) {
+            CancellationChecker.checkCancelOrTimeout(
+                currentIteration++, execution);
             cursor.currentToArray(partialArray, partialSize);
             if (i == lists.size() - 1) {
                 result.addAll(partial);
@@ -932,9 +939,8 @@ public class CrossJoinFunDef extends FunDefBase {
             // Measure and non-All Members evaluation is non-null, then
             // add it to the result List.
             final TupleCursor cursor = list.tupleCursor();
-            final int checkCancelPeriod =
-                MondrianProperties.instance().CancelPhaseInterval.get();
             int currentIteration = 0;
+            Execution execution = query.getStatement().getCurrentExecution();
             while (cursor.forward()) {
                 cursor.setContext(evaluator);
                 for (Member member : memberSet) {
@@ -948,12 +954,8 @@ public class CrossJoinFunDef extends FunDefBase {
                 // Check if the MDX query was canceled.
                 // Throws an exception in case of timeout is exceeded
                 // see MONDRIAN-2425
-                if (checkCancelPeriod > 0
-                    && currentIteration % checkCancelPeriod == 0)
-                {
-                    query.getStatement().getCurrentExecution()
-                        .checkCancelOrTimeout();
-                }
+                CancellationChecker.checkCancelOrTimeout(
+                    currentIteration++, execution);
                 if (checkData(
                         nonAllMembers,
                         nonAllMembers.length - 1,
@@ -962,7 +964,6 @@ public class CrossJoinFunDef extends FunDefBase {
                 {
                     result.addCurrent(cursor);
                 }
-                ++currentIteration;
             }
             return result;
         } finally {

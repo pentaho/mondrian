@@ -25,7 +25,7 @@ public class CancellationTest extends FoodMartTestCase {
     public void testNonEmptyListCancellation() throws MondrianException {
         // tests that cancellation/timeout is checked in
         // CrossJoinFunDef.nonEmptyList
-        propSaver.set(propSaver.properties.CancelPhaseInterval, 1);
+        propSaver.set(propSaver.properties.CheckCancelOrTimeoutInterval, 1);
         CrossJoinFunDefTester crossJoinFunDef =
                 new CrossJoinFunDefTester(new CrossJoinTest.NullFunDef());
         Result result = executeQuery(
