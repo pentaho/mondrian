@@ -286,7 +286,7 @@ public class SqlConstraintUtils {
     /**
      * Creates a predicate for the slicer tuple list
      */
-    private static StarPredicate getSlicerTuplesPredicate(
+    static StarPredicate getSlicerTuplesPredicate(
         TupleList tupleList,
         RolapCube baseCube,
         AggStar aggStar,
