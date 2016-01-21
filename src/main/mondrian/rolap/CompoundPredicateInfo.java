@@ -4,22 +4,27 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 //
 */
 package mondrian.rolap;
 
+import mondrian.olap.Evaluator;
 import mondrian.olap.Member;
 import mondrian.olap.fun.VisualTotalsFunDef;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.OrPredicate;
 import mondrian.rolap.agg.ValueColumnPredicate;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.util.Pair;
 
-import java.util.*;
-
-
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 /**
  * Constructs a Pair<BitKey, StarPredicate> based on an tuple list and
  * measure, along with the string representation of the predicate.
@@ -36,9 +41,9 @@ public class CompoundPredicateInfo {
     private boolean satisfiable = true;
 
     public CompoundPredicateInfo(
-        List<List<Member>> tupleList, RolapMeasure measure)
+        List<List<Member>> tupleList, RolapMeasure measure, Evaluator evaluator)
     {
-        this.predicate = predicateFromTupleList(tupleList, measure);
+        this.predicate = predicateFromTupleList(tupleList, measure, evaluator);
         this.predicateString = getPredicateString(
             getStar(measure), getPredicate());
         this.measure = measure;
@@ -95,7 +100,7 @@ public class CompoundPredicateInfo {
     }
 
     private Pair<BitKey, StarPredicate> predicateFromTupleList(
-        List<List<Member>> tupleList, RolapMeasure measure)
+        List<List<Member>> tupleList, RolapMeasure measure, Evaluator evaluator)
     {
         if (measure.isCalculated()) {
             // need a base measure to build predicates
@@ -125,7 +130,7 @@ public class CompoundPredicateInfo {
             return null;
         }
         compoundPredicate =
-            makeCompoundPredicate(compoundGroupMap, cube);
+            makeCompoundPredicate(compoundGroupMap, cube, evaluator);
         if (compoundPredicate != null) {
             for (BitKey bitKey : compoundGroupMap.keySet()) {
                 compoundBitKey = compoundBitKey.or(bitKey);
@@ -279,7 +284,7 @@ public class CompoundPredicateInfo {
 
     private StarPredicate makeCompoundPredicate(
         Map<BitKey, List<RolapCubeMember[]>> compoundGroupMap,
-        RolapCube baseCube)
+        RolapCube baseCube, Evaluator evaluator)
     {
         List<StarPredicate> compoundPredicateList =
             new ArrayList<StarPredicate> ();
@@ -292,7 +297,7 @@ public class CompoundPredicateInfo {
 
                 for (RolapCubeMember member : tuple) {
                     tuplePredicate = makeCompoundPredicateForMember(
-                        member, baseCube, tuplePredicate);
+                        member, baseCube, tuplePredicate, evaluator);
                 }
                 if (tuplePredicate != null) {
                     if (compoundGroupPredicate == null) {
@@ -325,19 +330,24 @@ public class CompoundPredicateInfo {
     private StarPredicate makeCompoundPredicateForMember(
         RolapCubeMember member,
         RolapCube baseCube,
-        StarPredicate memberPredicate)
+        StarPredicate memberPredicate, Evaluator evaluator)
     {
         while (member != null) {
             RolapCubeLevel level = member.getLevel();
             if (!level.isAll()) {
                 RolapStar.Column column = level.getBaseStarKeyColumn(baseCube);
-                if (memberPredicate == null) {
-                    memberPredicate =
-                        new ValueColumnPredicate(column, member.getKey());
+                StarPredicate addPredicate = null;
+                if (!member.isCalculated()) {
+                    addPredicate = new ValueColumnPredicate(
+                        column, member.getKey());
                 } else {
-                    memberPredicate =
-                        memberPredicate.and(
-                            new ValueColumnPredicate(column, member.getKey()));
+                    addPredicate = makeCalculatedMemberPredicate(
+                        member, baseCube, evaluator);
+                }
+                if (memberPredicate == null) {
+                    memberPredicate = addPredicate;
+                } else {
+                    memberPredicate = memberPredicate.and(addPredicate);
                 }
             }
             // Don't need to constrain USA if CA is unique
@@ -347,6 +357,37 @@ public class CompoundPredicateInfo {
             member = member.getParentMember();
         }
         return memberPredicate;
+    }
+
+    private StarPredicate makeCalculatedMemberPredicate(
+        RolapCubeMember member, RolapCube baseCube, Evaluator evaluator)
+    {
+        List<Member> expandedMemberList = SqlConstraintUtils
+            .expandSupportedCalculatedMember(member, evaluator);
+        for (Member checkMember : expandedMemberList) {
+            if (checkMember == null
+                || checkMember.isCalculated()
+                || !(checkMember instanceof RolapCubeMember))
+            {
+                throw MondrianResource.instance()
+                    .UnsupportedCalculatedMember.ex(member.getName(), null);
+            }
+        }
+        List<StarPredicate> predicates =
+            new ArrayList<StarPredicate>(expandedMemberList.size());
+        for (Member iMember : expandedMemberList) {
+            RolapCubeMember iCubeMember = ((RolapCubeMember)iMember);
+            RolapCubeLevel iLevel = iCubeMember.getLevel();
+            RolapStar.Column iColumn = iLevel.getBaseStarKeyColumn(baseCube);
+            Object iKey = iCubeMember.getKey();
+            StarPredicate iPredicate = new ValueColumnPredicate(iColumn, iKey);
+            predicates.add(iPredicate);
+        }
+        if (predicates.size() == 1) {
+            return (predicates.get(0));
+        } else {
+            return new OrPredicate(predicates);
+        }
     }
 }
 

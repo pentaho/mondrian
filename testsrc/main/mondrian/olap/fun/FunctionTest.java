@@ -12420,6 +12420,489 @@ Intel platforms):
             queryWithAlias,
             context.toString(result));
     }
+
+    public void testComplexSlicer_BaseBase() {
+      TestContext context = getTestContext();
+      String query =
+          "SELECT "
+          + "{[Measures].[Customer Count]} ON 0, "
+          + "{[Education Level].Members} ON 1 "
+          + "FROM [Sales] "
+          + "WHERE {[Time].[1997].[Q2],[Time].[1998].[Q1]}";
+      String expectedResult =
+          "Axis #0:\n"
+          + "{[Time].[1997].[Q2]}\n"
+          + "{[Time].[1998].[Q1]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Axis #2:\n"
+          + "{[Education Level].[All Education Levels]}\n"
+          + "{[Education Level].[Bachelors Degree]}\n"
+          + "{[Education Level].[Graduate Degree]}\n"
+          + "{[Education Level].[High School Degree]}\n"
+          + "{[Education Level].[Partial College]}\n"
+          + "{[Education Level].[Partial High School]}\n"
+          + "Row #0: 2,973\n"
+          + "Row #1: 760\n"
+          + "Row #2: 178\n"
+          + "Row #3: 853\n"
+          + "Row #4: 273\n"
+          + "Row #5: 909\n";
+      context.assertQueryReturns(query, expectedResult);
+    }
+
+    public void testComplexSlicer_Calc() {
+      TestContext context = getTestContext().createSubstitutingCube(
+          "Sales",
+          null,
+          "<CalculatedMember "
+          + "name='H1 1997' "
+          + "formula='Aggregate([Time].[1997].[Q1]:[Time].[1997].[Q2])' "
+          + "dimension='Time' />");
+      String query =
+          "SELECT "
+          + "{[Measures].[Customer Count]} ON 0, "
+          + "{[Education Level].Members} ON 1 "
+          + "FROM [Sales] "
+          + "WHERE {[Time].[H1 1997]}";
+      String expectedResult =
+          "Axis #0:\n"
+          + "{[Time].[H1 1997]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Axis #2:\n"
+          + "{[Education Level].[All Education Levels]}\n"
+          + "{[Education Level].[Bachelors Degree]}\n"
+          + "{[Education Level].[Graduate Degree]}\n"
+          + "{[Education Level].[High School Degree]}\n"
+          + "{[Education Level].[Partial College]}\n"
+          + "{[Education Level].[Partial High School]}\n"
+          + "Row #0: 4,257\n"
+          + "Row #1: 1,109\n"
+          + "Row #2: 240\n"
+          + "Row #3: 1,237\n"
+          + "Row #4: 394\n"
+          + "Row #5: 1,277\n";
+        context.assertQueryReturns(query, expectedResult);
+    }
+
+    public void testComplexSlicer_CalcBase() {
+      TestContext context = getTestContext().createSubstitutingCube(
+          "Sales",
+          null,
+          "<CalculatedMember "
+          + "name='H1 1997' "
+          + "formula='Aggregate([Time].[1997].[Q1]:[Time].[1997].[Q2])' "
+          + "dimension='Time' />");
+      String query =
+          "SELECT "
+          + "{[Measures].[Customer Count]} ON 0, "
+          + "{[Education Level].Members} ON 1 "
+          + "FROM [Sales] "
+          + "WHERE {[Time].[H1 1997],[Time].[1998].[Q1]}";
+      String expectedResult =
+          "Axis #0:\n"
+          + "{[Time].[H1 1997]}\n"
+          + "{[Time].[1998].[Q1]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Axis #2:\n"
+          + "{[Education Level].[All Education Levels]}\n"
+          + "{[Education Level].[Bachelors Degree]}\n"
+          + "{[Education Level].[Graduate Degree]}\n"
+          + "{[Education Level].[High School Degree]}\n"
+          + "{[Education Level].[Partial College]}\n"
+          + "{[Education Level].[Partial High School]}\n"
+          + "Row #0: 4,257\n"
+          + "Row #1: 1,109\n"
+          + "Row #2: 240\n"
+          + "Row #3: 1,237\n"
+          + "Row #4: 394\n"
+          + "Row #5: 1,277\n";
+      context.assertQueryReturns(query, expectedResult);
+    }
+
+    public void testComplexSlicer_BaseCalc() {
+      TestContext context = getTestContext().createSubstitutingCube(
+          "Sales",
+          null,
+          "<CalculatedMember "
+          + "name='H1 1997' "
+          + "formula='Aggregate([Time].[1997].[Q1]:[Time].[1997].[Q2])' "
+          + "dimension='Time' />");
+      String query =
+          "SELECT "
+          + "{[Measures].[Customer Count]} ON 0, "
+          + "{[Education Level].Members} ON 1 "
+          + "FROM [Sales] "
+          + "WHERE {[Time].[1998].[Q1], [Time].[H1 1997]}";
+      String expectedResult =
+          "Axis #0:\n"
+          + "{[Time].[1998].[Q1]}\n"
+          + "{[Time].[H1 1997]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Axis #2:\n"
+          + "{[Education Level].[All Education Levels]}\n"
+          + "{[Education Level].[Bachelors Degree]}\n"
+          + "{[Education Level].[Graduate Degree]}\n"
+          + "{[Education Level].[High School Degree]}\n"
+          + "{[Education Level].[Partial College]}\n"
+          + "{[Education Level].[Partial High School]}\n"
+          + "Row #0: 4,257\n"
+          + "Row #1: 1,109\n"
+          + "Row #2: 240\n"
+          + "Row #3: 1,237\n"
+          + "Row #4: 394\n"
+          + "Row #5: 1,277\n";
+      context.assertQueryReturns(query, expectedResult);
+    }
+
+    public void testComplexSlicer_Calc_Base() {
+      TestContext context = getTestContext().createSubstitutingCube(
+          "Sales",
+          null,
+          "<CalculatedMember "
+          + "name='H1 1997' "
+          + "formula='Aggregate([Time].[1997].[Q1]:[Time].[1997].[Q2])' "
+          + "dimension='Time' />");
+      String query =
+          "SELECT "
+          + "{[Measures].[Customer Count]} ON 0 "
+          + "FROM [Sales] "
+          + "WHERE ([Time].[H1 1997],[Education Level].[Partial College])";
+      String expectedResult =
+          "Axis #0:\n"
+          + "{[Time].[H1 1997], [Education Level].[Partial College]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Row #0: 394\n";
+      context.assertQueryReturns(query, expectedResult);
+    }
+
+    public void testComplexSlicer_Calc_Calc() {
+      TestContext context = getTestContext().createSubstitutingCube(
+          "Sales",
+          null,
+          "<CalculatedMember "
+          + "name='H1 1997' "
+          + "formula='Aggregate([Time].[1997].[Q1]:[Time].[1997].[Q2])' "
+          + "dimension='Time' />"
+          + "<CalculatedMember "
+          + "name='Partial' "
+          + "formula='Aggregate([Education Level].[Partial College]:[Education Level].[Partial High School])' "
+          + "dimension='Education Level' />");
+      String query =
+          "SELECT "
+          + "{[Measures].[Customer Count]} ON 0 "
+          + "FROM [Sales] "
+          + "WHERE ([Time].[H1 1997],[Education Level].[Partial])";
+      String expectedResult =
+          "Axis #0:\n"
+          + "{[Time].[H1 1997], [Education Level].[Partial]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Row #0: 1,671\n";
+      context.assertQueryReturns(query, expectedResult);
+    }
+
+    public void testComplexSlicerWith_Calc() {
+      TestContext context = getTestContext();
+      String query =
+          "with "
+          + "member [Time].[H1 1997] as 'Aggregate([Time].[1997].[Q1] : [Time].[1997].[Q2])', $member_scope = \"CUBE\", MEMBER_ORDINAL = 6 "
+          + "SELECT "
+          + "{[Measures].[Customer Count]} ON 0, "
+          + "{[Education Level].Members} ON 1 "
+          + "FROM [Sales] "
+          + "WHERE {[Time].[H1 1997]}";
+      String expectedResult =
+          "Axis #0:\n"
+          + "{[Time].[H1 1997]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Axis #2:\n"
+          + "{[Education Level].[All Education Levels]}\n"
+          + "{[Education Level].[Bachelors Degree]}\n"
+          + "{[Education Level].[Graduate Degree]}\n"
+          + "{[Education Level].[High School Degree]}\n"
+          + "{[Education Level].[Partial College]}\n"
+          + "{[Education Level].[Partial High School]}\n"
+          + "Row #0: 4,257\n"
+          + "Row #1: 1,109\n"
+          + "Row #2: 240\n"
+          + "Row #3: 1,237\n"
+          + "Row #4: 394\n"
+          + "Row #5: 1,277\n";
+      context.assertQueryReturns(query, expectedResult);
+    }
+
+    public void testComplexSlicerWith_CalcBase() {
+      TestContext context = getTestContext();
+      String query =
+          "with "
+          + "member [Time].[H1 1997] as 'Aggregate([Time].[1997].[Q1] : [Time].[1997].[Q2])', $member_scope = \"CUBE\", MEMBER_ORDINAL = 6 "
+          + "SELECT "
+          + "{[Measures].[Customer Count]} ON 0, "
+          + "{[Education Level].Members} ON 1 "
+          + "FROM [Sales] "
+          + "WHERE {[Time].[H1 1997],[Time].[1998].[Q1]}";
+      String expectedResult =
+          "Axis #0:\n"
+          + "{[Time].[H1 1997]}\n"
+          + "{[Time].[1998].[Q1]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Axis #2:\n"
+          + "{[Education Level].[All Education Levels]}\n"
+          + "{[Education Level].[Bachelors Degree]}\n"
+          + "{[Education Level].[Graduate Degree]}\n"
+          + "{[Education Level].[High School Degree]}\n"
+          + "{[Education Level].[Partial College]}\n"
+          + "{[Education Level].[Partial High School]}\n"
+          + "Row #0: 4,257\n"
+          + "Row #1: 1,109\n"
+          + "Row #2: 240\n"
+          + "Row #3: 1,237\n"
+          + "Row #4: 394\n"
+          + "Row #5: 1,277\n";
+      context.assertQueryReturns(query, expectedResult);
+    }
+
+    public void testComplexSlicerWith_Calc_Calc() {
+      TestContext context = getTestContext();
+      String query =
+          "with "
+          + "member [Time].[H1 1997] as 'Aggregate([Time].[1997].[Q1] : [Time].[1997].[Q2])', $member_scope = \"CUBE\", MEMBER_ORDINAL = 6 "
+          + "member [Education Level].[Partial] as 'Aggregate([Education Level].[Partial College]:[Education Level].[Partial High School])', $member_scope = \"CUBE\", MEMBER_ORDINAL = 7 "
+          + "SELECT "
+          + "{[Measures].[Customer Count]} ON 0 "
+          + "FROM [Sales] "
+          + "WHERE ([Time].[H1 1997],[Education Level].[Partial])";
+      String expectedResult =
+          "Axis #0:\n"
+          + "{[Time].[H1 1997], [Education Level].[Partial]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Row #0: 1,671\n";
+      context.assertQueryReturns(query, expectedResult);
+    }
+
+    public void testComplexSlicer_X_Base_Base() {
+      TestContext context = getTestContext().createSubstitutingCube(
+          "Sales",
+          null,
+          "<CalculatedMember "
+          + "name='H1 1997' "
+          + "formula='Aggregate([Time].[1997].[Q1]:[Time].[1997].[Q2])' "
+          + "dimension='Time' />");
+      String query =
+          "SELECT "
+          + "{[Measures].[Customer Count]} ON 0 "
+          + "FROM [Sales] "
+          + "WHERE CROSSJOIN ([Time].[1997].[Q1] , [Education Level].[Partial College])";
+      String expectedResult =
+          "Axis #0:\n"
+          + "{[Time].[1997].[Q1], [Education Level].[Partial College]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Row #0: 278\n";
+      context.assertQueryReturns(query, expectedResult);
+    }
+
+    public void testComplexSlicer_X_Calc_Base() {
+      TestContext context = getTestContext().createSubstitutingCube(
+          "Sales",
+          null,
+          "<CalculatedMember "
+          + "name='H1 1997' "
+          + "formula='Aggregate([Time].[1997].[Q1]:[Time].[1997].[Q2])' "
+          + "dimension='Time' />");
+      String query =
+          "SELECT "
+          + "{[Measures].[Customer Count]} ON 0 "
+          + "FROM [Sales] "
+          + "WHERE CROSSJOIN ([Time].[H1 1997] , [Education Level].[Partial College])";
+      String expectedResult =
+          "Axis #0:\n"
+          + "{[Time].[H1 1997], [Education Level].[Partial College]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Row #0: 394\n";
+      context.assertQueryReturns(query, expectedResult);
+    }
+
+    public void testComplexSlicer_X_Calc_Calc() {
+      TestContext context = getTestContext().createSubstitutingCube(
+          "Sales",
+          null,
+          "<CalculatedMember "
+          + "name='H1 1997' "
+          + "formula='Aggregate([Time].[1997].[Q1]:[Time].[1997].[Q2])' "
+          + "dimension='Time' />"
+          + "<CalculatedMember "
+          + "name='Partial' "
+          + "formula='Aggregate([Education Level].[Partial College]:[Education Level].[Partial High School])' "
+          + "dimension='Education Level' />");
+      String query =
+          "SELECT "
+          + "{[Measures].[Customer Count]} ON 0 "
+          + "FROM [Sales] "
+          + "WHERE CROSSJOIN ([Time].[H1 1997] , [Education Level].[Partial])";
+      String expectedResult =
+          "Axis #0:\n"
+          + "{[Time].[H1 1997], [Education Level].[Partial]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Row #0: 1,671\n";
+      context.assertQueryReturns(query, expectedResult);
+    }
+
+    public void testComplexSlicer_X_BaseBase_Base() {
+      TestContext context = getTestContext().createSubstitutingCube(
+          "Sales",
+          null,
+          "<CalculatedMember "
+          + "name='H1 1997' "
+          + "formula='Aggregate([Time].[1997].[Q1]:[Time].[1997].[Q2])' "
+          + "dimension='Time' />");
+      String query =
+          "SELECT "
+          + "{[Measures].[Customer Count]} ON 0 "
+          + "FROM [Sales] "
+          + "WHERE CROSSJOIN ({[Time].[1997].[Q1], [Time].[1997].[Q2]} , [Education Level].[Partial College])";
+      String expectedResult =
+          "Axis #0:\n"
+          + "{[Time].[1997].[Q1], [Education Level].[Partial College]}\n"
+          + "{[Time].[1997].[Q2], [Education Level].[Partial College]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Row #0: 394\n";
+      context.assertQueryReturns(query, expectedResult);
+    }
+
+    public void testComplexSlicer_X_BaseBaseBase_BaseBase() {
+      TestContext context = getTestContext();
+      String query =
+          "SELECT "
+          + "{[Measures].[Customer Count]} ON 0 "
+          + "FROM [Sales] "
+          + "WHERE CROSSJOIN ({[Time].[1997].[Q1],[Time].[1997].[Q2],[Time].[1998].[Q1]} , {[Education Level].[Partial College],[Education Level].[Partial High School]})";
+      String expectedResult =
+          "Axis #0:\n"
+          + "{[Time].[1997].[Q1], [Education Level].[Partial College]}\n"
+          + "{[Time].[1997].[Q1], [Education Level].[Partial High School]}\n"
+          + "{[Time].[1997].[Q2], [Education Level].[Partial College]}\n"
+          + "{[Time].[1997].[Q2], [Education Level].[Partial High School]}\n"
+          + "{[Time].[1998].[Q1], [Education Level].[Partial College]}\n"
+          + "{[Time].[1998].[Q1], [Education Level].[Partial High School]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Row #0: 1,671\n";
+      context.assertQueryReturns(query, expectedResult);
+    }
+
+
+    public void testComplexSlicer_X_CalcBase_Base() {
+      TestContext context = getTestContext().createSubstitutingCube(
+          "Sales",
+          null,
+          "<CalculatedMember "
+          + "name='H1 1997' "
+          + "formula='Aggregate([Time].[1997].[Q1]:[Time].[1997].[Q2])' "
+          + "dimension='Time' />");
+      String query =
+          "SELECT "
+          + "{[Measures].[Customer Count]} ON 0 "
+          + "FROM [Sales] "
+          + "WHERE CROSSJOIN ({[Time].[H1 1997],[Time].[1998].[Q1]} , [Education Level].[Partial College])";
+      String expectedResult =
+          "Axis #0:\n"
+          + "{[Time].[H1 1997], [Education Level].[Partial College]}\n"
+          + "{[Time].[1998].[Q1], [Education Level].[Partial College]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Row #0: 394\n";
+      context.assertQueryReturns(query, expectedResult);
+    }
+
+    public void testComplexSlicer_X_CalcBase_BaseBase() {
+      TestContext context = getTestContext().createSubstitutingCube(
+          "Sales",
+          null,
+          "<CalculatedMember "
+          + "name='H1 1997' "
+          + "formula='Aggregate([Time].[1997].[Q1]:[Time].[1997].[Q2])' "
+          + "dimension='Time' />");
+      String query =
+          "SELECT "
+          + "{[Measures].[Customer Count]} ON 0 "
+          + "FROM [Sales] "
+          + "WHERE CROSSJOIN ({[Time].[H1 1997],[Time].[1998].[Q1]} , {[Education Level].[Partial College],[Education Level].[Partial High School]})";
+      String expectedResult =
+          "Axis #0:\n"
+          + "{[Time].[H1 1997], [Education Level].[Partial College]}\n"
+          + "{[Time].[H1 1997], [Education Level].[Partial High School]}\n"
+          + "{[Time].[1998].[Q1], [Education Level].[Partial College]}\n"
+          + "{[Time].[1998].[Q1], [Education Level].[Partial High School]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Row #0: 1,671\n";
+      context.assertQueryReturns(query, expectedResult);
+    }
+
+    public void testComplexSlicer_Calc_ComplexAxis() {
+      TestContext context = getTestContext().createSubstitutingCube(
+          "Sales",
+          null,
+          "<CalculatedMember "
+          + "name='H1 1997' "
+          + "formula='Aggregate([Time].[1997].[Q1]:[Time].[1997].[Q2])' "
+          + "dimension='Time' />"
+          + "<CalculatedMember "
+          + "name='Partial' "
+          + "formula='Aggregate([Education Level].[Partial College]:[Education Level].[Partial High School])' "
+          + "dimension='Education Level' />");
+      String query =
+          "SELECT "
+          + "{[Measures].[Customer Count]} ON 0, "
+          + "{[Time].[H1 1997], [Time].[1997].[Q1]} ON 1"
+          + "FROM [Sales] "
+          + "WHERE "
+          + "{[Education Level].[Partial]} "
+          ;
+      String expectedResult =
+          "Axis #0:\n"
+          + "{[Education Level].[Partial]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Axis #2:\n"
+          + "{[Time].[H1 1997]}\n"
+          + "{[Time].[1997].[Q1]}\n"
+          + "Row #0: 1,671\n"
+          + "Row #1: 1,173\n";
+        context.assertQueryReturns(query, expectedResult);
+    }
+
+    public void testComplexSlicer_Unsupported() {
+      TestContext context = getTestContext().createSubstitutingCube(
+          "Sales",
+          null,
+          "<CalculatedMember "
+          + "name='H1 1997' "
+          + "formula='([Time].[1997].[Q1] - [Time].[1997].[Q2])' "
+          + "dimension='Time' />");
+      String query =
+          "SELECT "
+          + "{[Measures].[Customer Count]} ON 0, "
+          + "{[Education Level].Members} ON 1 "
+          + "FROM [Sales] "
+          + "WHERE {[Time].[H1 1997],[Time].[1998].[Q1]}";
+      final String errorMessagePattern =
+          "Calculated member 'H1 1997' is not supported within a compound predicate";
+      context.assertQueryThrows(query, errorMessagePattern);
+    }
+
 }
 
 // End FunctionTest.java
