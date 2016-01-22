@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho
+// Copyright (C) 2005-2016 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -16,6 +16,7 @@ import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import javax.sql.DataSource;
 
@@ -1531,10 +1532,21 @@ public class DrillThroughTest extends FoodMartTestCase {
                 + "WHERE ([*CJ_SLICER_AXIS]) RETURN [Gender].[Gender], [Measures].[Unit Sales], [Measures].[Warehouse Sales], [Time].[Year], [Warehouse].[Country]");
             assertEquals(
                 5, rs.getMetaData().getColumnCount());
+            Object expectedYear;
+            switch (getTestContext().getDialect().getDatabaseProduct()) {
+            case MYSQL:
+                expectedYear = new Integer(1997);
+                break;
+            case ORACLE:
+                expectedYear = new BigDecimal(1997);
+                break;
+            default:
+                return;
+            }
             while (rs.next()) {
                 assertEquals(
                     "Each year in results should be 1997",
-                    1997, rs.getObject(1));
+                    expectedYear, rs.getObject(1));
                 assertEquals(
                     "Each gender in results should be F",
                     "F", rs.getObject(2));
