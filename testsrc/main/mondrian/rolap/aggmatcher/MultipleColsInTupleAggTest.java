@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.rolap.aggmatcher;
 
@@ -175,50 +175,52 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
             + "{[Product].[Cat One].[Prod Cat One].[Two]}\n"
             + "Row #0: 6\n");
 
-        assertQuerySql(
-            query,
-            new SqlPattern[] {
-                new SqlPattern(
-                    Dialect.DatabaseProduct.MYSQL,
-                "select\n"
-                + "    `cat`.`cat` as `c0`,\n"
-                + "    `cat`.`cap` as `c1`,\n"
-                + "    `cat`.`ord` as `c2`,\n"
-                + "    `cat`.`name3` as `c3`,\n"
-                + "    `product_cat`.`name2` as `c4`,\n"
-                + "    `product_cat`.`cap` as `c5`,\n"
-                + "    `product_cat`.`ord` as `c6`,\n"
-                + "    `test_lp_xx2_fact`.`prodname` as `c7`,\n"
-                + "    `product_csv`.`color` as `c8`\n"
-                + "from\n"
-                + "    `product_csv` as `product_csv`,\n"
-                + "    `product_cat` as `product_cat`,\n"
-                + "    `cat` as `cat`,\n"
-                + "    `test_lp_xx2_fact` as `test_lp_xx2_fact`\n"
-                + "where\n"
-                + "    `product_cat`.`cat` = `cat`.`cat`\n"
-                + "and\n"
-                + "    `product_csv`.`prod_cat` = `product_cat`.`prod_cat`\n"
-                + "and\n"
-                + "    `product_csv`.`name1` = `test_lp_xx2_fact`.`prodname`\n"
-                + "group by\n"
-                + "    `cat`.`cat`,\n"
-                + "    `cat`.`cap`,\n"
-                + "    `cat`.`ord`,\n"
-                + "    `cat`.`name3`,\n"
-                + "    `product_cat`.`name2`,\n"
-                + "    `product_cat`.`cap`,\n"
-                + "    `product_cat`.`ord`,\n"
-                + "    `test_lp_xx2_fact`.`prodname`,\n"
-                + "    `product_csv`.`color`\n"
-                + "having\n"
-                + "    UPPER(c7) REGEXP '.*TWO.*'\n"
-                + "order by\n"
-                + "    ISNULL(`cat`.`ord`) ASC, `cat`.`ord` ASC,\n"
-                + "    ISNULL(`product_cat`.`ord`) ASC, `product_cat`.`ord` ASC,\n"
-                + "    ISNULL(`test_lp_xx2_fact`.`prodname`) ASC, "
-                + "`test_lp_xx2_fact`.`prodname` ASC", null)});
-
+        // check generated sql only for native evaluation
+        if (MondrianProperties.instance().EnableNativeFilter.get()) {
+          assertQuerySql(
+              query,
+              new SqlPattern[] {
+                  new SqlPattern(
+                      Dialect.DatabaseProduct.MYSQL,
+                  "select\n"
+                  + "    `cat`.`cat` as `c0`,\n"
+                  + "    `cat`.`cap` as `c1`,\n"
+                  + "    `cat`.`ord` as `c2`,\n"
+                  + "    `cat`.`name3` as `c3`,\n"
+                  + "    `product_cat`.`name2` as `c4`,\n"
+                  + "    `product_cat`.`cap` as `c5`,\n"
+                  + "    `product_cat`.`ord` as `c6`,\n"
+                  + "    `test_lp_xx2_fact`.`prodname` as `c7`,\n"
+                  + "    `product_csv`.`color` as `c8`\n"
+                  + "from\n"
+                  + "    `product_csv` as `product_csv`,\n"
+                  + "    `product_cat` as `product_cat`,\n"
+                  + "    `cat` as `cat`,\n"
+                  + "    `test_lp_xx2_fact` as `test_lp_xx2_fact`\n"
+                  + "where\n"
+                  + "    `product_cat`.`cat` = `cat`.`cat`\n"
+                  + "and\n"
+                  + "    `product_csv`.`prod_cat` = `product_cat`.`prod_cat`\n"
+                  + "and\n"
+                  + "    `product_csv`.`name1` = `test_lp_xx2_fact`.`prodname`\n"
+                  + "group by\n"
+                  + "    `cat`.`cat`,\n"
+                  + "    `cat`.`cap`,\n"
+                  + "    `cat`.`ord`,\n"
+                  + "    `cat`.`name3`,\n"
+                  + "    `product_cat`.`name2`,\n"
+                  + "    `product_cat`.`cap`,\n"
+                  + "    `product_cat`.`ord`,\n"
+                  + "    `test_lp_xx2_fact`.`prodname`,\n"
+                  + "    `product_csv`.`color`\n"
+                  + "having\n"
+                  + "    UPPER(c7) REGEXP '.*TWO.*'\n"
+                  + "order by\n"
+                  + "    ISNULL(`cat`.`ord`) ASC, `cat`.`ord` ASC,\n"
+                  + "    ISNULL(`product_cat`.`ord`) ASC, `product_cat`.`ord` ASC,\n"
+                  + "    ISNULL(`test_lp_xx2_fact`.`prodname`) ASC, "
+                  + "`test_lp_xx2_fact`.`prodname` ASC", null)});
+        }
         Axis axis = getTestContext().withCube("Fact").executeAxis(
             "Filter([Product].[Product Name].members, "
             + "Product.CurrentMember.Caption MATCHES (\"(?i).*Two.*\") )");
