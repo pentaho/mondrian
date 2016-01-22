@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2015-2015 Pentaho Corporation.
+// Copyright (c) 2015-2016 Pentaho Corporation.
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -19,6 +19,9 @@ import mondrian.test.TestContext;
 public class RolapNativeSqlInjectionTest extends FoodMartTestCase {
 
     public void testMondrian2436() {
+        propSaver.set(propSaver.properties.EnableNativeFilter, true);
+        propSaver.set(propSaver.properties.EnableNativeCrossJoin, true);
+
         String mdxQuery = ""
             + "select {[Measures].[Store Sales]} on columns, "
             + "filter([Customers].[Name].Members, (([Measures].[Store Sales]) > '(select 1000)')) on rows "
