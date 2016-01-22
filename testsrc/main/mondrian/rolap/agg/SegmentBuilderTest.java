@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.rolap.agg;
 
@@ -818,6 +818,13 @@ public class SegmentBuilderTest extends BatchTestCase {
     }
 
     private void doTestSegmentCreationForBoolean(boolean value) {
+        Dialect.DatabaseProduct db =
+            getTestContext().getDialect().getDatabaseProduct();
+        if (db == Dialect.DatabaseProduct.ORACLE) {
+            // Oracle does not support boolean type
+            return;
+        }
+
         final String queryToBeCached = String.format(
             "SELECT NON EMPTY [Store].[Store Country].members on COLUMNS "
             + "FROM [Store] "
