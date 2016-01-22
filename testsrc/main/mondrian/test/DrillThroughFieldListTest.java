@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho
+// Copyright (C) 2005-2016 Pentaho
 // All Rights Reserved.
 //
 */
@@ -63,24 +63,50 @@ public class DrillThroughFieldListTest extends FoodMartTestCase {
     List<OlapElement> attributes = Arrays
         .asList(returnMeasureAttribute, returnLevelAttribute);
 
-    String expected = "select\n"
-        + "    time_by_day.quarter as Quarter,\n"
-        + "    sales_fact_1997.unit_sales as Unit Sales\n"
-        + "from\n"
-        + "    time_by_day as time_by_day,\n"
-        + "    sales_fact_1997 as sales_fact_1997\n"
-        + "where\n"
-        + "    sales_fact_1997.time_id = time_by_day.time_id\n"
-        + "and\n"
-        + "    time_by_day.the_year = 1997\n"
-        + "and\n"
-        + "    time_by_day.quarter = 'Q1'\n"
-        + "order by\n"
-        + "    time_by_day.quarter ASC";
+    String expectedSql;
+    switch (getTestContext().getDialect().getDatabaseProduct()) {
+    case MYSQL:
+        expectedSql =
+            "select\n"
+            + "    time_by_day.quarter as Quarter,\n"
+            + "    sales_fact_1997.unit_sales as Unit Sales\n"
+            + "from\n"
+            + "    time_by_day as time_by_day,\n"
+            + "    sales_fact_1997 as sales_fact_1997\n"
+            + "where\n"
+            + "    sales_fact_1997.time_id = time_by_day.time_id\n"
+            + "and\n"
+            + "    time_by_day.the_year = 1997\n"
+            + "and\n"
+            + "    time_by_day.quarter = 'Q1'\n"
+            + "order by\n"
+            + "    time_by_day.quarter ASC";
+        break;
+    case ORACLE:
+        expectedSql =
+            "select\n"
+            + "    time_by_day.quarter as Quarter,\n"
+            + "    sales_fact_1997.unit_sales as Unit Sales\n"
+            + "from\n"
+            + "    time_by_day time_by_day,\n"
+            + "    sales_fact_1997 sales_fact_1997\n"
+            + "where\n"
+            + "    sales_fact_1997.time_id = time_by_day.time_id\n"
+            + "and\n"
+            + "    time_by_day.the_year = 1997\n"
+            + "and\n"
+            + "    time_by_day.quarter = 'Q1'\n"
+            + "order by\n"
+            + "    time_by_day.quarter ASC";
+        break;
+    default:
+        return;
+    }
+
     String actual = rCell.getDrillThroughSQL(attributes, true);
     int expectedRowsNumber = 21588;
 
-    context.assertSqlEquals(expected, actual, expectedRowsNumber);
+    context.assertSqlEquals(expectedSql, actual, expectedRowsNumber);
   }
 
   public void testOneJoinTwoMeasures() {
@@ -104,24 +130,52 @@ public class DrillThroughFieldListTest extends FoodMartTestCase {
     List<OlapElement> attributes = Arrays
         .asList(unitSalesAttribute, storeCostAttribute, quarterAttribute);
 
-    String expected = "select\n"
-        + "    time_by_day.quarter as Quarter,\n"
-        + "    sales_fact_1997.unit_sales as Unit Sales,\n"
-        + "    sales_fact_1997.store_cost as Store Cost\n"
-        + "from\n" + "    time_by_day as time_by_day,\n"
-        + "    sales_fact_1997 as sales_fact_1997\n"
-        + "where\n"
-        + "    sales_fact_1997.time_id = time_by_day.time_id\n"
-        + "and\n"
-        + "    time_by_day.the_year = 1997\n"
-        + "and\n"
-        + "    time_by_day.quarter = 'Q1'\n"
-        + "order by\n"
-        + "    time_by_day.quarter ASC";
+    String expectedSql;
+    switch (getTestContext().getDialect().getDatabaseProduct()) {
+    case MYSQL:
+        expectedSql =
+            "select\n"
+            + "    time_by_day.quarter as Quarter,\n"
+            + "    sales_fact_1997.unit_sales as Unit Sales,\n"
+            + "    sales_fact_1997.store_cost as Store Cost\n"
+            + "from\n"
+            + "    time_by_day as time_by_day,\n"
+            + "    sales_fact_1997 as sales_fact_1997\n"
+            + "where\n"
+            + "    sales_fact_1997.time_id = time_by_day.time_id\n"
+            + "and\n"
+            + "    time_by_day.the_year = 1997\n"
+            + "and\n"
+            + "    time_by_day.quarter = 'Q1'\n"
+            + "order by\n"
+            + "    time_by_day.quarter ASC";
+        break;
+    case ORACLE:
+        expectedSql =
+            "select\n"
+            + "    time_by_day.quarter as Quarter,\n"
+            + "    sales_fact_1997.unit_sales as Unit Sales,\n"
+            + "    sales_fact_1997.store_cost as Store Cost\n"
+            + "from\n"
+            + "    time_by_day time_by_day,\n"
+            + "    sales_fact_1997 sales_fact_1997\n"
+            + "where\n"
+            + "    sales_fact_1997.time_id = time_by_day.time_id\n"
+            + "and\n"
+            + "    time_by_day.the_year = 1997\n"
+            + "and\n"
+            + "    time_by_day.quarter = 'Q1'\n"
+            + "order by\n"
+            + "    time_by_day.quarter ASC";
+        break;
+    default:
+        return;
+    }
+
     String actual = rCell.getDrillThroughSQL(attributes, true);
     int expectedRowsNumber = 21588;
 
-    context.assertSqlEquals(expected, actual, expectedRowsNumber);
+    context.assertSqlEquals(expectedSql, actual, expectedRowsNumber);
   }
 
   public void testTwoJoins() {
@@ -146,30 +200,60 @@ public class DrillThroughFieldListTest extends FoodMartTestCase {
     List<OlapElement> attributes = Arrays
         .asList(unitSalesAttribute, storeCostAttribute, quarterAttribute);
 
-    String expected = "select\n"
-        + "    time_by_day.quarter as Quarter,\n"
-        + "    sales_fact_1997.unit_sales as Unit Sales,\n"
-        + "    sales_fact_1997.store_cost as Store Cost\n"
-        + "from\n"
-        + "    time_by_day as time_by_day,\n"
-        + "    sales_fact_1997 as sales_fact_1997,\n"
-        + "    product as product\n"
-        + "where\n"
-        + "    sales_fact_1997.time_id = time_by_day.time_id\n"
-        + "and\n"
-        + "    time_by_day.the_year = 1997\n"
-        + "and\n"
-        + "    time_by_day.quarter = 'Q1'\n"
-        + "and\n"
-        + "    sales_fact_1997.product_id = product.product_id\n"
-        + "and\n"
-        + "    product.product_name = 'Good Imported Beer'\n"
-        + "order by\n"
-        + "    time_by_day.quarter ASC";
+    String expectedSql;
+    switch (getTestContext().getDialect().getDatabaseProduct()) {
+    case MYSQL:
+        expectedSql = "select\n"
+             + "    time_by_day.quarter as Quarter,\n"
+             + "    sales_fact_1997.unit_sales as Unit Sales,\n"
+             + "    sales_fact_1997.store_cost as Store Cost\n"
+             + "from\n"
+             + "    time_by_day as time_by_day,\n"
+             + "    sales_fact_1997 as sales_fact_1997,\n"
+             + "    product as product\n"
+             + "where\n"
+             + "    sales_fact_1997.time_id = time_by_day.time_id\n"
+             + "and\n"
+             + "    time_by_day.the_year = 1997\n"
+             + "and\n"
+             + "    time_by_day.quarter = 'Q1'\n"
+             + "and\n"
+             + "    sales_fact_1997.product_id = product.product_id\n"
+             + "and\n"
+             + "    product.product_name = 'Good Imported Beer'\n"
+             + "order by\n"
+             + "    time_by_day.quarter ASC";
+        break;
+    case ORACLE:
+        expectedSql = "select\n"
+            + "    time_by_day.quarter as Quarter,\n"
+            + "    sales_fact_1997.unit_sales as Unit Sales,\n"
+            + "    sales_fact_1997.store_cost as Store Cost\n"
+            + "from\n"
+            + "    time_by_day time_by_day,\n"
+            + "    sales_fact_1997 sales_fact_1997,\n"
+            + "    product product\n"
+            + "where\n"
+            + "    sales_fact_1997.time_id = time_by_day.time_id\n"
+            + "and\n"
+            + "    time_by_day.the_year = 1997\n"
+            + "and\n"
+            + "    time_by_day.quarter = 'Q1'\n"
+            + "and\n"
+            + "    sales_fact_1997.product_id = product.product_id\n"
+            + "and\n"
+            + "    product.product_name = 'Good Imported Beer'\n"
+            + "order by\n"
+            + "    time_by_day.quarter ASC";
+        break;
+    default:
+        return;
+    }
+
     String actual = rCell.getDrillThroughSQL(attributes, true);
     int expectedRowsNumber = 7;
 
-    context.assertSqlEquals(expected, actual, expectedRowsNumber);
+    context.assertSqlEquals(expectedSql, actual, expectedRowsNumber);
   }
 
   public void testNoJoin() {
@@ -188,15 +272,30 @@ public class DrillThroughFieldListTest extends FoodMartTestCase {
     List<OlapElement> attributes = Arrays
         .asList(StoreSqftAttribute);
 
-    String expected =
-        "select\n"
-        + "    store.store_sqft as Store Sqft\n"
-        + "from\n"
-        + "    store as store";
+    String expectedSql;
+    switch (getTestContext().getDialect().getDatabaseProduct()) {
+    case MYSQL:
+        expectedSql =
+            "select\n"
+            + "    store.store_sqft as Store Sqft\n"
+            + "from\n"
+            + "    store as store";
+        break;
+    case ORACLE:
+        expectedSql =
+            "select\n"
+            + "    store.store_sqft as Store Sqft\n"
+            + "from\n"
+            + "    store store";
+        break;
+    default:
+        return;
+    }
+
     String actual = rCell.getDrillThroughSQL(attributes, true);
     int expectedRowsNumber = 25;
 
-    context.assertSqlEquals(expected, actual, expectedRowsNumber);
+    context.assertSqlEquals(expectedSql, actual, expectedRowsNumber);
   }
 
   public void testVirtualCube() {
@@ -216,24 +315,48 @@ public class DrillThroughFieldListTest extends FoodMartTestCase {
     List<OlapElement> attributes = Arrays
         .asList(StoreSqftAttribute);
 
-    String expected = "select\n"
-        + "    sales_fact_1997.unit_sales as Unit Sales\n"
-        + "from\n"
-        + "    time_by_day as time_by_day,\n"
-        + "    sales_fact_1997 as sales_fact_1997,\n"
-        + "    customer as customer\n"
-        + "where\n"
-        + "    sales_fact_1997.time_id = time_by_day.time_id\n"
-        + "and\n"
-        + "    time_by_day.the_year = 1997\n"
-        + "and\n"
-        + "    sales_fact_1997.customer_id = customer.customer_id\n"
-        + "and\n"
-        + "    customer.gender = 'F'";
+    String expectedSql;
+    switch (getTestContext().getDialect().getDatabaseProduct()) {
+    case MYSQL:
+        expectedSql = "select\n"
+            + "    sales_fact_1997.unit_sales as Unit Sales\n"
+            + "from\n"
+            + "    time_by_day as time_by_day,\n"
+            + "    sales_fact_1997 as sales_fact_1997,\n"
+            + "    customer as customer\n"
+            + "where\n"
+            + "    sales_fact_1997.time_id = time_by_day.time_id\n"
+            + "and\n"
+            + "    time_by_day.the_year = 1997\n"
+            + "and\n"
+            + "    sales_fact_1997.customer_id = customer.customer_id\n"
+            + "and\n"
+            + "    customer.gender = 'F'";
+        break;
+    case ORACLE:
+        expectedSql = "select\n"
+             + "    sales_fact_1997.unit_sales as Unit Sales\n"
+             + "from\n"
+             + "    time_by_day time_by_day,\n"
+             + "    sales_fact_1997 sales_fact_1997,\n"
+             + "    customer customer\n"
+             + "where\n"
+             + "    sales_fact_1997.time_id = time_by_day.time_id\n"
+             + "and\n"
+             + "    time_by_day.the_year = 1997\n"
+             + "and\n"
+             + "    sales_fact_1997.customer_id = customer.customer_id\n"
+             + "and\n"
+             + "    customer.gender = 'F'";
+        break;
+    default:
+        return;
+    }
+
     String actual = rCell.getDrillThroughSQL(attributes, true);
     int expectedRowsNumber = 42831;
 
-    context.assertSqlEquals(expected, actual, expectedRowsNumber);
+    context.assertSqlEquals(expectedSql, actual, expectedRowsNumber);
   }
 }
 
