@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.MondrianProperties;
@@ -248,9 +247,12 @@ public class NonCollapsedAggTest extends AggTableTestCase {
     }
 
     public void testSingleJoin() throws Exception {
-        if (!isApplicable()) {
-            return;
-        }
+      if (!isApplicable()
+          || !MondrianProperties.instance().UseAggregates.get())
+      {
+        // The test supposes agg tables are used
+        return;
+      }
 
         final String mdx =
             "select {[Measures].[Unit Sales]} on columns, {[dimension.tenant].[tenant].Members} on rows from [foo]";
