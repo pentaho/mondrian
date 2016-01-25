@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.tui;
 
 import mondrian.olap.*;
@@ -34,8 +33,8 @@ import java.util.*;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.xpath.XPathException;
 
 /**
  * Support for making XMLA requests and looking at the responses.
@@ -544,14 +543,14 @@ public class XmlaSupport {
     }
 
     public static Node[] extractNodesFromSoapXmla(byte[] bytes)
-        throws SAXException, IOException
+            throws SAXException, IOException, XPathException
     {
         Document doc = XmlUtil.parse(bytes);
         return extractNodesFromSoapXmla(doc);
     }
 
     public static Node[] extractNodesFromSoapXmla(Document doc)
-        throws SAXException, IOException
+            throws SAXException, IOException, XPathException
     {
         final String xmlaPrefix = "xmla";
         String xpath = getSoapXmlaRootXPath(xmlaPrefix);
@@ -573,14 +572,14 @@ public class XmlaSupport {
     }
 
     public static Node[] extractNodesFromXmla(byte[] bytes)
-        throws SAXException, IOException
+            throws SAXException, IOException, XPathException
     {
         Document doc = XmlUtil.parse(bytes);
         return extractNodesFromXmla(doc);
     }
 
     public static Node[] extractNodesFromXmla(Document doc)
-        throws SAXException, IOException
+            throws SAXException, IOException, XPathException
     {
         final String xmlaPrefix = "xmla";
         String xpath = getXmlaRootXPath(xmlaPrefix);
@@ -598,14 +597,14 @@ public class XmlaSupport {
     }
 
     public static Node[] extractFaultNodesFromSoap(byte[] bytes)
-        throws SAXException, IOException
+            throws SAXException, IOException, XPathException
     {
         Document doc = XmlUtil.parse(bytes);
         return extractFaultNodesFromSoap(doc);
     }
 
     public static Node[] extractFaultNodesFromSoap(Document doc)
-        throws SAXException, IOException
+            throws SAXException, IOException, XPathException
     {
         String xpath = getSoapFaultXPath();
 
@@ -616,27 +615,8 @@ public class XmlaSupport {
         return extractNodes(doc, xpath, nsArray);
     }
 
-    public static Node[] extractHeaderAndBodyFromSoap(byte[] bytes)
-        throws SAXException, IOException
-    {
-        Document doc = XmlUtil.parse(bytes);
-        return extractHeaderAndBodyFromSoap(doc);
-    }
-
-    public static Node[] extractHeaderAndBodyFromSoap(Document doc)
-        throws SAXException, IOException
-    {
-        String xpath = getSoapHeaderAndBodyXPath();
-
-        String[][] nsArray = {
-             { SOAP_PREFIX, XmlaConstants.NS_SOAP_ENV_1_1 },
-        };
-
-        return extractNodes(doc, xpath, nsArray);
-    }
-
     public static Document extractBodyFromSoap(Document doc)
-        throws SAXException, IOException
+            throws SAXException, IOException, XPathException
     {
         String xpath = getSoapBodyXPath();
 
@@ -660,10 +640,17 @@ public class XmlaSupport {
         Node node,
         String xpath,
         String[][] nsArray)
-        throws SAXException, IOException
+            throws SAXException, IOException, XPathException
     {
-        Document contextDoc = XmlUtil.createContextDocument(nsArray);
-        Node[] nodes = XmlUtil.selectAsNodes(node, xpath, contextDoc);
+        Map<String, String> nsMap = new HashMap<>();
+        for (int i = 0; i < nsArray.length; i++) {
+            nsMap.put(nsArray[i][0], nsArray[i][1]);
+        }
+        Node[] nodes =
+            XmlUtil.selectAsNodes(
+                node,
+                xpath,
+                Collections.unmodifiableMap(nsMap));
 
         if (LOGGER.isDebugEnabled()) {
             StringBuilder buf = new StringBuilder(1024);
@@ -703,34 +690,6 @@ public class XmlaSupport {
     }
 
     public static byte[] processSoapXmla(
-        File file,
-        String connectString,
-        Map<String, String> catalogNameUrls,
-        String cbClassName,
-        Map<List<String>, Servlet> servletCache)
-        throws IOException, ServletException, SAXException
-    {
-        String requestText = XmlaSupport.readFile(file);
-        return
-            processSoapXmla(
-                requestText, connectString, catalogNameUrls, cbClassName,
-                null, servletCache);
-    }
-
-    public static byte[] processSoapXmla(
-        Document doc,
-        String connectString,
-        Map<String, String> catalogNameUrls,
-        String cbClassName,
-        Role role)
-        throws IOException, ServletException, SAXException
-    {
-        return processSoapXmla(
-            doc, connectString, catalogNameUrls, cbClassName, role,
-            null);
-    }
-
-    public static byte[] processSoapXmla(
         Document doc,
         String connectString,
         Map<String, String> catalogNameUrls,
@@ -743,20 +702,6 @@ public class XmlaSupport {
         return processSoapXmla(
             requestText, connectString, catalogNameUrls, cbClassName, role,
             servletCache);
-    }
-
-    public static byte[] processSoapXmla(
-        String requestText,
-        String connectString,
-        Map<String, String> catalogNameUrls,
-        String cbClassName,
-        Role role)
-        throws IOException, ServletException, SAXException
-    {
-        return
-            processSoapXmla(
-                requestText, connectString,
-                catalogNameUrls, cbClassName, role, null);
     }
 
     public static byte[] processSoapXmla(
@@ -809,15 +754,6 @@ public class XmlaSupport {
     public static Servlet makeServlet(
         String connectString,
         Map<String, String> catalogNameUrls,
-        String cbClassName)
-        throws IOException, ServletException, SAXException
-    {
-        return makeServlet(connectString, catalogNameUrls, cbClassName, null);
-    }
-
-    public static Servlet makeServlet(
-        String connectString,
-        Map<String, String> catalogNameUrls,
         String cbClassName,
         Map<List<String>, Servlet> servletCache)
         throws IOException, ServletException, SAXException
@@ -837,7 +773,7 @@ public class XmlaSupport {
         throws ServletException
     {
         final List<String> key =
-            Arrays.asList(
+            Collections.singletonList(
                 dataSourceText);
         Servlet servlet = cache.get(key);
         if (servlet != null) {
@@ -858,15 +794,6 @@ public class XmlaSupport {
             cache.put(key, servlet);
         }
         return servlet;
-    }
-
-    public static byte[] processSoapXmla(
-        File file,
-        Servlet servlet)
-        throws IOException, ServletException, SAXException
-    {
-        String requestText = XmlaSupport.readFile(file);
-        return processSoapXmla(requestText, servlet);
     }
 
     public static byte[] processSoapXmla(
@@ -934,8 +861,7 @@ public class XmlaSupport {
     {
         return
             processXmla(
-                file, connectString, catalogNameUrls,
-                (Map<List<String>, MondrianServer>)null);
+                file, connectString, catalogNameUrls, null);
     }
 
     public static byte[] processXmla(
@@ -954,40 +880,12 @@ public class XmlaSupport {
         File file,
         String connectString,
         Map<String, String> catalogNameUrls,
-        Role role)
-        throws IOException, SAXException, XOMException
-    {
-        return
-            processXmla(
-                file,
-                connectString,
-                catalogNameUrls,
-                role,
-                null);
-    }
-
-    public static byte[] processXmla(
-        File file,
-        String connectString,
-        Map<String, String> catalogNameUrls,
         Role role,
         Map<List<String>, MondrianServer> cache)
         throws IOException, SAXException, XOMException
     {
         String requestText = XmlaSupport.readFile(file);
         return processXmla(requestText, connectString, catalogNameUrls, cache);
-    }
-
-    public static byte[] processXmla(
-        String requestText,
-        String connectString,
-        Map<String, String> catalogNameUrls)
-        throws IOException, SAXException, XOMException
-    {
-        return
-            processXmla(
-                requestText, connectString, catalogNameUrls,
-                (Map<List<String>, MondrianServer>)null);
     }
 
     public static byte[] processXmla(
@@ -1007,19 +905,6 @@ public class XmlaSupport {
         Document requestDoc,
         String connectString,
         Map<String, String> catalogNameUrls,
-        Role role)
-        throws IOException, XOMException
-    {
-        return
-            processXmla(
-                requestDoc, connectString,
-                catalogNameUrls, role, null);
-    }
-
-    public static byte[] processXmla(
-        Document requestDoc,
-        String connectString,
-        Map<String, String> catalogNameUrls,
         Role role,
         Map<List<String>, MondrianServer> cache)
         throws IOException, XOMException
@@ -1028,19 +913,6 @@ public class XmlaSupport {
         return
             processXmla(
                 requestElem, connectString, catalogNameUrls, role, cache);
-    }
-
-    public static byte[] processXmla(
-        Element requestElem,
-        String connectString,
-        Map<String, String> catalogNameUrls,
-        Role role)
-        throws IOException, XOMException
-    {
-        return
-            processXmla(
-                requestElem, connectString,
-                catalogNameUrls, role, null);
     }
 
     public static byte[] processXmla(
@@ -1140,7 +1012,7 @@ public class XmlaSupport {
      * the DOMs removing the schema nodes from the XMLA root node.
      */
     public static boolean validateSoapXmlaUsingXpath(byte[] bytes)
-        throws SAXException, IOException
+            throws SAXException, IOException, XPathException
     {
         if (! XmlUtil.supportsValidation()) {
             return false;
@@ -1197,7 +1069,7 @@ public class XmlaSupport {
      *
      */
     public static boolean validateXmlaUsingXpath(byte[] bytes)
-        throws SAXException, IOException
+            throws SAXException, IOException, XPathException
     {
         if (! XmlUtil.supportsValidation()) {
             return false;
@@ -1266,8 +1138,7 @@ public class XmlaSupport {
         String dataTransform)
         throws SAXException, IOException,
                ParserConfigurationException,
-               TransformerException,
-               TransformerConfigurationException
+               TransformerException
     {
         if (! XmlUtil.supportsValidation()) {
             return false;
@@ -1299,8 +1170,7 @@ public class XmlaSupport {
         String dataTransform)
         throws SAXException, IOException,
                ParserConfigurationException,
-               TransformerException,
-               TransformerConfigurationException
+               TransformerException
     {
         if (! XmlUtil.supportsValidation()) {
             return false;

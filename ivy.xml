@@ -74,7 +74,6 @@
             <artifact name="olap4j-xmla"/>
         </dependency>
 
-        <dependency org="xalan" name="xalan" rev="2.6.0"/>
         <dependency org="xerces" name="xercesImpl" rev="2.9.1"/>
 
         <!--  OSS Licenses file -->
