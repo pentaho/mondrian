@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2015-2015 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2015-2016 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.rolap.agg;
 
@@ -74,7 +74,7 @@ public class AggregationOnInvalidRoleTest extends CsvDBTestCase {
         + "    <AggName name=\"mondrian2225_agg\" ignorecase=\"true\">"
         + "      <AggFactCount column=\"fact_count\"/>"
         + "      <AggMeasure column=\"fact_Measure\" name=\"[Measures].[Measure]\"/>"
-        + "      <AggLevel column=\"dim_Code\" name=\"[Product Code].[Code]\" collapsed=\"true\"/>"
+        + "      <AggLevel column=\"dim_code\" name=\"[Product Code].[Code]\" collapsed=\"true\"/>"
         + "    </AggName>"
         + "  </Table>"
         + "  <Dimension type=\"StandardDimension\" visible=\"true\" foreignKey=\"customer_id\" highCardinality=\"false\" name=\"Customer\">"
@@ -126,7 +126,7 @@ public class AggregationOnInvalidRoleTest extends CsvDBTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Measure]}\n"
             + "Axis #2:\n"
-            + "{[Product Code].[#null]}\n"
+            + "{[Product Code].[eight]}\n"
             + "{[Product Code].[five]}\n"
             + "{[Product Code].[four]}\n"
             + "{[Product Code].[mdg]}\n"
