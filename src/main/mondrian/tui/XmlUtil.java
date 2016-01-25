@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.tui;
 
 import mondrian.olap.Util;
@@ -16,19 +15,19 @@ import org.apache.xerces.impl.Constants;
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
-import org.apache.xpath.domapi.XPathEvaluatorImpl;
 
 import org.w3c.dom.*;
-import org.w3c.dom.xpath.*;
 import org.xml.sax.*;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.xpath.*;
 
 /**
  * Some XML parsing, validation and transform utility methods used
@@ -281,6 +280,7 @@ public class XmlUtil {
             + "</xsl:template> " + LINE_SEP
             + "</xsl:stylesheet>";
     }
+
 
     /**
      * Error handler plus helper methods.
@@ -536,72 +536,11 @@ public class XmlUtil {
     //////////////////////////////////////////////////////////////////////////
     // xpath
     //////////////////////////////////////////////////////////////////////////
-    /**
-     * Create a context document for use in performing XPath operations.
-     * An array of prefix/namespace-urls are provided as input. These
-     * namespace-urls should be all of those that will appear in the
-     * document against which an xpath is to be applied.
-     * Importantly, it is, in fact, each element of the Document that
-     * has a default namespace these namespaces MUST have
-     * prefix/namespace-urls pairs in the context document and the prefix
-     * provided MUST also be used in the xpath.
-     * Elements with explicit namespaces don't have to have pairs in the
-     * context Document as long as the xpath uses the same prefixes
-     * that appear in the target Document.
-     *
-     */
-    public static Document createContextDocument(String[][] nsArray)
-        throws SAXException, IOException
-    {
-        StringBuilder buf = new StringBuilder(256);
-        buf.append("<?xml version='1.0' encoding='utf-8'?>");
-        buf.append("<DOES_NOT_MATTER");
-        for (int i = 0; i < nsArray.length; i++) {
-            String prefix = nsArray[i][0];
-            String nsURI = nsArray[i][1];
-
-            buf.append(" xmlns:");
-            buf.append(prefix);
-            buf.append("=\"");
-            buf.append(nsURI);
-            buf.append("\"");
-        }
-        buf.append(" />");
-
-        String docStr = buf.toString();
-        return parseString(docStr);
-    }
-
-    public static String makeSoapPath() {
-        return XmlUtil.makeSoapPath(SOAP_PREFIX);
-    }
-
-    // '/soapX:Envelope/soapX:Body/*'
-    public static String makeSoapPath(String prefix) {
-        StringBuilder buf = new StringBuilder(20);
-        buf.append('/');
-        if (prefix != null) {
-            buf.append(prefix);
-            buf.append(':');
-        }
-        buf.append("Envelope");
-        buf.append('/');
-        if (prefix != null) {
-            buf.append(prefix);
-            buf.append(':');
-        }
-        buf.append("Body");
-        buf.append('/');
-        buf.append('*');
-
-        return buf.toString();
-    }
 
     public static String makeRootPathInSoapBody() {
         return makeRootPathInSoapBody("xmla", XSD_PREFIX);
     }
 
-    // '/xmla:DiscoverResponse/xmla:return/ROW/root/*'
     public static String makeRootPathInSoapBody(
         String xmlaPrefix,
         String xsdPrefix)
@@ -623,163 +562,25 @@ public class XmlUtil {
         return buf.toString();
     }
 
-    public static String selectAsString(
-        Node node,
-        String xpath)
-        throws XPathException
-    {
-        return XmlUtil.selectAsString(node, xpath, node);
-    }
-
-    public static String selectAsString(
-        Node node,
-        String xpath,
-        Node namespaceNode)
-        throws XPathException
-    {
-        XPathResult xpathResult = XmlUtil.select(node, xpath, namespaceNode);
-        return XmlUtil.convertToString(xpathResult, false);
-    }
-
     public static Node[] selectAsNodes(
-        Node node,
-        String xpath)
+        Node node, String xpathExp, Map<String, String> namespaceMap)
         throws XPathException
     {
-        return XmlUtil.selectAsNodes(node, xpath, node);
+        XPathFactory fact = XPathFactory.newInstance();
+        javax.xml.xpath.XPath xpath  = fact.newXPath();
+        xpath.setNamespaceContext(new NamespaceContextImpl(namespaceMap));
+        return nodeListToArray(
+            (NodeList) xpath.evaluate(xpathExp, node, XPathConstants.NODESET));
     }
 
-    public static Node[] selectAsNodes(
-        Node node,
-        String xpath,
-        Node namespaceNode)
-        throws XPathException
-    {
-        XPathResult xpathResult = XmlUtil.select(node, xpath, namespaceNode);
-        return XmlUtil.convertToNodes(xpathResult);
+    private static Node[] nodeListToArray(NodeList nodeList) {
+        Node[] nodes = new Node[nodeList.getLength()];
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            nodes[i] = nodeList.item(i);
+        }
+        return nodes;
     }
 
-    public static XPathResult select(
-        Node contextNode,
-        String xpath,
-        Node namespaceNode)
-        throws XPathException
-    {
-        XPathEvaluator evaluator = new XPathEvaluatorImpl();
-        XPathNSResolver resolver = evaluator.createNSResolver(namespaceNode);
-
-        return (XPathResult) evaluator.evaluate(
-            xpath, contextNode, resolver,
-            XPathResult.ANY_TYPE, null);
-    }
-
-    /**
-     * Convert an XPathResult object to String.
-     *
-     */
-    public static String convertToString(
-        XPathResult xpathResult,
-        boolean prettyPrint)
-    {
-        switch (xpathResult.getResultType()) {
-        case XPathResult.NUMBER_TYPE:
-            double d = xpathResult.getNumberValue();
-            return Double.toString(d);
-
-        case XPathResult.STRING_TYPE:
-            String s = xpathResult.getStringValue();
-            return s;
-
-        case XPathResult.BOOLEAN_TYPE:
-            boolean b = xpathResult.getBooleanValue();
-            return String.valueOf(b);
-
-        case XPathResult.FIRST_ORDERED_NODE_TYPE:
-        case XPathResult.ANY_UNORDERED_NODE_TYPE:
-        {
-            Node node = xpathResult.getSingleNodeValue();
-            return XmlUtil.toString(node, prettyPrint);
-        }
-        case XPathResult.ORDERED_NODE_ITERATOR_TYPE:
-        case XPathResult.UNORDERED_NODE_ITERATOR_TYPE:
-        {
-            StringBuilder buf = new StringBuilder(512);
-            Node node = xpathResult.iterateNext();
-            while (node != null) {
-                buf.append(XmlUtil.toString(node, prettyPrint));
-                node = xpathResult.iterateNext();
-            }
-            return buf.toString();
-        }
-        case XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE:
-        case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE:
-        {
-            StringBuilder buf = new StringBuilder(512);
-            int len = xpathResult.getSnapshotLength();
-            for (int i = 0; i < len; i++) {
-                Node node = xpathResult.snapshotItem(i);
-                buf.append(XmlUtil.toString(node, prettyPrint));
-            }
-            return buf.toString();
-        }
-        default:
-            String msg = "Unknown xpathResult.type = "
-                + xpathResult.getResultType();
-            throw new XPathException(XPathException.TYPE_ERR, msg);
-        }
-    }
-
-    private static final Node[] NULL_NODE_ARRAY = new Node[0];
-
-    /**
-     * Convert an XPathResult to an array of Nodes.
-     *
-     */
-    public static Node[] convertToNodes(XPathResult xpathResult) {
-        switch (xpathResult.getResultType()) {
-        case XPathResult.NUMBER_TYPE:
-            return NULL_NODE_ARRAY;
-
-        case XPathResult.STRING_TYPE:
-            return NULL_NODE_ARRAY;
-
-        case XPathResult.BOOLEAN_TYPE:
-            return NULL_NODE_ARRAY;
-
-        case XPathResult.FIRST_ORDERED_NODE_TYPE:
-        case XPathResult.ANY_UNORDERED_NODE_TYPE:
-        {
-            Node node = xpathResult.getSingleNodeValue();
-            return new Node[] { node };
-        }
-        case XPathResult.ORDERED_NODE_ITERATOR_TYPE:
-        case XPathResult.UNORDERED_NODE_ITERATOR_TYPE:
-        {
-            List<Node> list = new ArrayList<Node>();
-            Node node = xpathResult.iterateNext();
-            while (node != null) {
-                list.add(node);
-                node = xpathResult.iterateNext();
-            }
-            return (Node[]) list.toArray(NULL_NODE_ARRAY);
-        }
-        case XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE:
-        case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE:
-        {
-            int len = xpathResult.getSnapshotLength();
-            Node[] nodes = new Node[len];
-            for (int i = 0; i < len; i++) {
-                Node node = xpathResult.snapshotItem(i);
-                nodes[i] = node;
-            }
-            return nodes;
-        }
-        default:
-            String msg = "Unknown xpathResult.type = "
-                + xpathResult.getResultType();
-            throw new XPathException(XPathException.TYPE_ERR, msg);
-        }
-    }
 
     /**
      * Convert a Node to a String.

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1998-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 21 January, 1999
@@ -29,6 +29,8 @@ import mondrian.spi.impl.SybaseDialectTest;
 import mondrian.test.build.CodeComplianceTest;
 import mondrian.test.clearview.*;
 import mondrian.test.comp.ResultComparatorTest;
+import mondrian.tui.NamespaceContextImplTest;
+import mondrian.tui.XmlUtilTest;
 import mondrian.udf.CurrentDateMemberUdfTest;
 import mondrian.udf.NullValueTest;
 import mondrian.util.*;
@@ -382,6 +384,8 @@ public class Main extends TestSuite {
             addTest(suite, CodeSetTest.class);
             addTest(suite, ExplicitRecognizerTest.class);
             addTest(suite, AggregationOverAggTableTest.class);
+            addTest(suite, XmlUtilTest.class);
+            addTest(suite, NamespaceContextImplTest.class);
             addTest(suite, CancellationTest.class);
 
             if (MondrianProperties.instance().EnableNativeCrossJoin.get()) {
