@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 22 December, 2001
@@ -368,10 +368,16 @@ public class RolapUtil {
         String reason)
         throws NativeEvaluationUnsupportedException
     {
+        String predicate = "Unable to use native SQL evaluation";
         // No i18n for log message, but yes for excn
-        String alertMsg =
-            "Unable to use native SQL evaluation for '" + functionName
-            + "'; reason:  " + reason;
+        StringBuilder alertMsg = new StringBuilder(predicate);
+        if (functionName != null && !functionName.isEmpty()) {
+            alertMsg.append(" for '").append(functionName).append("'");
+        }
+        if (reason != null && !reason.isEmpty()) {
+            alertMsg.append("; reason: ").append(reason);
+        }
+
 
         StringProperty alertProperty =
             MondrianProperties.instance().AlertNativeEvaluationUnsupported;

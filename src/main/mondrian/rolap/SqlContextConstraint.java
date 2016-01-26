@@ -13,6 +13,7 @@ package mondrian.rolap;
 import mondrian.mdx.MemberExpr;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.RestrictedMemberReader.MultiCardinalityDefaultMember;
 import mondrian.rolap.RolapHierarchy.LimitedRollupMember;
 import mondrian.rolap.aggmatcher.AggStar;
@@ -71,6 +72,17 @@ public class SqlContextConstraint
         Level [] levels,
         boolean strict)
     {
+        return isValidContext(
+            context, disallowVirtualCube, levels, strict, null);
+    }
+
+    public static boolean isValidContext(
+        Evaluator context,
+        boolean disallowVirtualCube,
+        Level [] levels,
+        boolean strict,
+        FunDef fun)
+    {
         if (context == null) {
             return false;
         }
@@ -107,11 +119,29 @@ public class SqlContextConstraint
 
         // we can not handle all calc members in slicer. Calc measure and some
         // like aggregates are exceptions
+        int maxConstraints =
+            MondrianProperties.instance().MaxConstraints.get();
         Member[] members = context.getMembers();
-        for (int i = 1; i < members.length; i++) {
-            if (members[i].isCalculated()
-                && !SqlConstraintUtils.isSupportedCalculatedMember(members[i]))
-            {
+        int calculatedMembersQuantity = 0;
+        for (int i = 0; i < members.length; i++) {
+            if (!(members[i].isCalculated())) {
+                // nothing more to check
+                continue;
+            }
+            // dealing with calculated members
+            if (!SqlConstraintUtils.isSupportedCalculatedMember(members[i])) {
+                return false;
+            }
+            List<Member> listMembers = SqlConstraintUtils
+                .expandExpressions(members[i], null, context);
+            Set<Member> uniqueMembers = new HashSet<Member>(listMembers);
+            calculatedMembersQuantity = uniqueMembers.size();
+            if (calculatedMembersQuantity > maxConstraints) {
+                String message =
+                    MondrianResource.instance()
+                        .MembersQuantityExceedsMaxConstraints
+                        .str(String.valueOf(calculatedMembersQuantity));
+                alertNonNative(context, fun, message);
                 return false;
             }
         }
@@ -204,16 +234,16 @@ public class SqlContextConstraint
     }
 
     /**
-    * Creates a SqlContextConstraint.
-    *
-    * @param evaluator Evaluator
-    * @param strict defines the behaviour if the evaluator context
-    * contains calculated members. If true, an exception is thrown,
-    * otherwise calculated members are silently ignored. The
-    * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, mondrian.rolap.RolapCube, mondrian.rolap.aggmatcher.AggStar, RolapMember)} and
-    * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, mondrian.rolap.RolapCube, mondrian.rolap.aggmatcher.AggStar, java.util.List)} will
-    * never accept a calculated member as parent.
-    */
+     * Creates a SqlContextConstraint.
+     *
+     * @param evaluator Evaluator
+     * @param strict defines the behaviour if the evaluator context
+     * contains calculated members. If true, an exception is thrown,
+     * otherwise calculated members are silently ignored. The
+     * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, mondrian.rolap.RolapCube, mondrian.rolap.aggmatcher.AggStar, RolapMember)} and
+     * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, mondrian.rolap.RolapCube, mondrian.rolap.aggmatcher.AggStar, java.util.List)} will
+     * never accept a calculated member as parent.
+     */
     SqlContextConstraint(RolapEvaluator evaluator, boolean strict) {
         this.evaluator = evaluator.push();
         this.strict = strict;
@@ -370,6 +400,18 @@ public class SqlContextConstraint
     @Override
     public boolean supportsAggTables() {
         return true;
+    }
+
+    private static void alertNonNative(
+        Evaluator evaluator, FunDef fun, String reason)
+    {
+        if (!evaluator.getQuery().shouldAlertForNonNative(fun)) {
+            return;
+        }
+        reason =
+            (reason != null && !reason.isEmpty())
+                ? reason : "Context is not valid";
+        RolapUtil.alertNonNative(fun.getName(), reason);
     }
 }
 

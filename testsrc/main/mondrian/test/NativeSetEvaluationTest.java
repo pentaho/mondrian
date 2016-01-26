@@ -12,12 +12,27 @@ package mondrian.test;
 import mondrian.olap.CacheControl;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.NativeEvaluationUnsupportedException;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.BatchTestCase;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapHierarchy;
+import mondrian.rolap.RolapUtil;
 import mondrian.spi.Dialect;
 import mondrian.spi.Dialect.DatabaseProduct;
+
+import org.apache.log4j.Appender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LoggingEvent;
+
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.mockito.ArgumentMatcher;
+
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * Test native evaluation of supported set operations.
@@ -1647,6 +1662,161 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                 getTestContext(), mdx, patterns, false, false, false);
         }
     }
+
+    /**
+    * tests if the results of native and non-native evaluations are equal
+    * and if exception is thrown in case of native evaluation and
+    * mondrian.native.unsupported.alert equals to "ERROR".
+    *
+    * @see <a href="http://jira.pentaho.com/browse/MONDRIAN-1803">Jira issue</a>
+    */
+    public void testNativeFilterWithLargeAggSetInSlicer() {
+      final String query = "with member customers.agg as "
+          + "'Aggregate(Except(Customers.[Name].members,    "
+          + "{[Customers].[USA].[OR].[Corvallis].[Judy Doolittle]}    ))' "
+          + " select filter(gender.gender.members, measures.[unit sales] >131500)"
+          + " on 0 from sales "
+          + " where customers.agg";
+      final String message =
+          "The results of native and non-native evaluations should be equal";
+      verifySameNativeAndNot(query, message, getTestContext());
+
+      propSaver.set(
+          MondrianProperties.instance()
+              .AlertNativeEvaluationUnsupported, "ERROR");
+      propSaver.set(propSaver.properties.EnableNativeFilter, true);
+      Appender appenderMock = mock(Appender.class);
+      try {
+        final Logger logger = Logger.getLogger(RolapUtil.class);
+        logger.addAppender(appenderMock);
+        executeQuery(query);
+      } catch (NativeEvaluationUnsupportedException e) {
+        // expected behavior: verify log message and return
+        verify(appenderMock)
+            .doAppend(argThat(
+                new ArgumentMatcher<LoggingEvent>() {
+          @Override
+          public boolean matches(Object item) {
+            String message =
+                "Unable to use native SQL evaluation for 'Filter'; reason: "
+                + MondrianResource.instance()
+                .MembersQuantityExceedsMaxConstraints.str("10280");
+            return message.equals(
+                ((LoggingEvent) item).getMessage().toString());
+          }
+        }));
+        return;
+      }
+      fail("NativeEvaluationUnsupportedException was expected");
+    }
+
+  /**
+   * the sum of calculated members for [Customers].[Country].Members is 3,
+   * for [Store].[Store State].Members is 10.
+   * At first we set MaxConstraints to 11
+   * (exceeds values of calculated members for each aggs).
+   * Here we verify that the generated SQL contains "in" clause
+   * and no ERROR messages are occurring.
+   * After that we assign MaxConstraints to 9
+   * (less than the sum of calc members for
+   * [Store].[Store State].Members) and verify that
+   * exception was thrown and log contains an error message. Beforehand we set
+   * AlertNativeEvaluationUnsupported to ERROR.
+   * @see <a href="http://jira.pentaho.com/browse/MONDRIAN-1803">Jira issue</a>
+   */
+  public void testNativeFilterWithLargeAggSetInSlicerTwoAggs() {
+    if (MondrianProperties.instance().UseAggregates.get()
+        && MondrianProperties.instance().ReadAggregates.get())
+    {
+      return;
+    }
+    String query =
+        "with \n"
+        + "member \n"
+        + "[Customers].[agg] as 'Aggregate({[Customers].[Country].Members})'\n"
+        + "member \n"
+        + "[Store].[agg] as 'Aggregate({[Store].[Store State].Members})'\n"
+        + "select Filter([Gender].[Gender].Members, ([Measures].[Unit Sales] > 135000)) ON COLUMNS\n"
+        + "from [Sales]\n"
+        + "where ([Customers].[agg],[Store].[agg])";
+
+    propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+    propSaver.set(propSaver.properties.EnableNativeFilter, true);
+    propSaver.set(MondrianProperties.instance().MaxConstraints, 11);
+    propSaver.set(
+        MondrianProperties.instance().AlertNativeEvaluationUnsupported,
+        "ERROR");
+
+    String sql = "select\n" + "    `customer`.`gender` as `c0`\n" + "from\n"
+        + "    `customer` as `customer`,\n"
+        + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+        + "    `store` as `store`,\n"
+        + "    `time_by_day` as `time_by_day`\n"
+        + "where\n"
+        + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+        + "and\n"
+        + "    `sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+        + "and\n"
+        + "    `store`.`store_state` in ('BC', 'DF', 'Guerrero', 'Jalisco', 'Veracruz', 'Yucatan', 'Zacatecas', 'CA', 'OR', 'WA')\n"
+        + "and\n"
+        + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+        + "and\n"
+        + "    `time_by_day`.`the_year` = 1997\n"
+        + "and\n"
+        + "    `customer`.`country` in ('Canada', 'Mexico', 'USA')\n"
+        + "group by\n"
+        + "    `customer`.`gender`\n"
+        + "having\n"
+        + "    ((sum(`sales_fact_1997`.`unit_sales`) > 135000)) \n"
+        + "order by\n"
+        + "    ISNULL(`customer`.`gender`) ASC, `customer`.`gender` ASC";
+    SqlPattern sqlPattern =
+        new SqlPattern(
+            DatabaseProduct.MYSQL, sql, sql);
+    assertQuerySql(query, new SqlPattern[]{sqlPattern});
+
+    propSaver.set(MondrianProperties.instance().MaxConstraints, 9);
+
+    Appender appenderMock = mock(Appender.class);
+    try {
+      final Logger logger = Logger.getLogger(RolapUtil.class);
+      logger.addAppender(appenderMock);
+      executeQuery(query);
+    } catch (NativeEvaluationUnsupportedException e) {
+      // expected behavior: verify log message and return
+      verify(appenderMock)
+          .doAppend(argThat(
+              new ArgumentMatcher<LoggingEvent>() {
+                @Override
+                public boolean matches(Object item) {
+                  String message =
+                      "Unable to use native SQL evaluation for 'Filter'; reason: "
+                          + MondrianResource.instance()
+                          .MembersQuantityExceedsMaxConstraints.str("10");
+                  return message.equals(
+                      ((LoggingEvent) item).getMessage().toString());
+                }
+              }));
+      return;
+    }
+    fail("NativeEvaluationUnsupportedException was expected");
+  }
+
+  public void testNativeFilterWithLargeAggSetInSlicerCompoundAggregate() {
+    final String query = "WITH member store.agg as "
+        + "'Aggregate(CrossJoin(Store.[Store Name].members, Gender.Members))' "
+        + "SELECT filter(customers.[name].members, measures.[unit sales] > 100) on 0 "
+        + "FROM sales where store.agg";
+    propSaver.set(
+        MondrianProperties.instance()
+            .AlertNativeEvaluationUnsupported, "ERROR");
+    propSaver.set(propSaver.properties.EnableNativeCrossJoin, true);
+    propSaver.set(propSaver.properties.EnableNativeFilter, true);
+    // stores quantity in the "in" clause is 25 and it's the maximum value
+    propSaver.set(MondrianProperties.instance().MaxConstraints, 26);
+
+    executeQuery(query);
+  }
 }
 
 // End NativeSetEvaluationTest.java
