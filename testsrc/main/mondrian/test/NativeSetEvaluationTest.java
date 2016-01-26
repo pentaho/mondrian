@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2015 Pentaho Corporation
+// Copyright (c) 2002-2016 Pentaho Corporation
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -661,6 +661,9 @@ public class NativeSetEvaluationTest extends BatchTestCase {
     }
 
     public void testAggTCTwoArgWithCrossjoinedSet() {
+        if (!MondrianProperties.instance().EnableNativeTopCount.get()) {
+            return;
+        }
         propSaver.set(
             propSaver.properties.AlertNativeEvaluationUnsupported, "ERROR");
         try {
@@ -675,6 +678,9 @@ public class NativeSetEvaluationTest extends BatchTestCase {
     }
 
     public void testAggTCTwoArgWithCalcMemPresent() {
+        if (!MondrianProperties.instance().EnableNativeTopCount.get()) {
+            return;
+        }
         propSaver.set(
             propSaver.properties.AlertNativeEvaluationUnsupported, "ERROR");
         try {
@@ -688,7 +694,6 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                 neue.getMessage().contains("Native evaluation not supported"));
         }
     }
-
 
     /**
      * Crossjoin that uses same dimension as slicer but is independent from it,
@@ -1363,7 +1368,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
         propSaver.reset();
     }
 
-    private static final boolean isUseAgg() {
+    private static boolean isUseAgg() {
         return
             MondrianProperties.instance().UseAggregates.get()
             && MondrianProperties.instance().ReadAggregates.get();
