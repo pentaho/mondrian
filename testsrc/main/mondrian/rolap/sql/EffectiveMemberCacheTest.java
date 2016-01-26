@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2015 Pentaho and others
+// Copyright (C) 2006-2016 Pentaho and others
 // All Rights Reserved.
  */
 package mondrian.rolap.sql;
@@ -21,6 +21,7 @@ public class EffectiveMemberCacheTest extends BatchTestCase {
     public void setUp() {
         clearCache();
         propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+        propSaver.set(propSaver.properties.EnableNativeNonEmpty, true);
     }
 
     public void testCachedLevelMembers() {
