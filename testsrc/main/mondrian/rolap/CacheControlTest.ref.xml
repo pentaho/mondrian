@@ -102,7 +102,7 @@ Cache state after flush:
             <![CDATA[Cache state before flush:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -110,13 +110,13 @@ Axes:[
     {time_by_day.the_year=('1997')}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[71e635239a2781c635737b4244e80f099d4a91470200de74c8da0113bbe0ed05]
+ID:[a53ea7707ef74edd1d6fddb1f2f1401818d251d3520422c2178100833b662e2f]
 
 
 discard segment - it cannot be constrained and maintain consistency:
 *Segment Header
 Schema:[FoodMart]
-Checksum:[9cca66327439577753dd5c3144ab59b5]
+Checksum:[7b4af973b0d21f364b0a746f5565cb03]
 Cube:[Sales]
 Measure:[Unit Sales]
 Axes:[
@@ -124,7 +124,7 @@ Axes:[
     {time_by_day.the_year=('1997')}]
 Excluded Regions:[]
 Compound Predicates:[]
-ID:[71e635239a2781c635737b4244e80f099d4a91470200de74c8da0113bbe0ed05]
+ID:[a53ea7707ef74edd1d6fddb1f2f1401818d251d3520422c2178100833b662e2f]
 
 Cache state after flush:
 
