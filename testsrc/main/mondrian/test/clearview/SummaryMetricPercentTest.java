@@ -1,15 +1,16 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.test.clearview;
 
+import mondrian.olap.MondrianProperties;
 import mondrian.test.DiffRepository;
+import mondrian.util.Bug;
 
 import junit.framework.TestSuite;
 
@@ -48,6 +49,17 @@ public class SummaryMetricPercentTest extends ClearViewBase {
             SummaryMetricPercentTest.class);
     }
 
+    @Override
+    protected void runTest() throws Exception {
+        if (!Bug.BugMondrian2452Fixed
+            && (getName().equals("testSpecialMetricPctOfCol"))
+            && !MondrianProperties.instance().EnableNativeCrossJoin.get())
+        {
+            // Tests give wrong results if native crossjoin is disabled.
+            return;
+        }
+        super.runTest();
+    }
 }
 
 // End SummaryMetricPercentTest.java

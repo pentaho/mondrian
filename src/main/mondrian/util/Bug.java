@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.util;
 
 import mondrian.olap.MondrianProperties;
@@ -237,6 +236,13 @@ public class Bug {
      * "Tests disabled due to property trigger issues"</a> is fixed.
      */
     public static final boolean BugMondrian1001Fixed = false;
+
+    /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-2452">bug MONDRIAN-1001,
+     * "Tests disabled due to property trigger issues"</a> is fixed.
+     */
+    public static final boolean BugMondrian2452Fixed = false;
 
     /**
      * Whether RolapCubeMember and RolapMember have been fully segregated; any
