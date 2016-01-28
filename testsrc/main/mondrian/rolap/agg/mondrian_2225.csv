@@ -19,7 +19,7 @@
 ## ColumnNames: dim_code,fact_measure,fact_count
 ## ColumnTypes: VARCHAR(45):null,DECIMAL(10,2),INTEGER
 ## NosOfRows: 7
-,175,14
+eight,175,14
 five,5,1
 four,4,1
 mdg,2,1
@@ -47,7 +47,7 @@ two,2,1
 3,three,third
 4,four,fourth
 5,five,fifth
-6,,
+6,tst,tstth
 7,seven,seventh
 8,eight,eighth
 9,nine,ninth
