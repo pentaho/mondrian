@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -17,6 +17,7 @@ import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.SegmentCacheManager.AbortException;
 import mondrian.rolap.cache.SegmentCacheIndex;
+import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.spi.*;
@@ -674,18 +675,15 @@ public class SegmentLoader {
             processedTypes = types;
         }
         final RowList processedRows = new RowList(processedTypes, 100);
-        final int checkCancelPeriod =
-            MondrianProperties.instance().CancelPhaseInterval.get();
 
+        Execution execution = Locus.peek().execution;
         while (rawRows.next()) {
-            checkResultLimit(++stmt.rowCount);
-            processedRows.createRow();
             // Check if the MDX query was canceled.
-            if (checkCancelPeriod > 0
-                && stmt.rowCount % checkCancelPeriod == 0)
-            {
-                Locus.peek().execution.checkCancelOrTimeout();
-            }
+            CancellationChecker.checkCancelOrTimeout(
+                ++stmt.rowCount, execution);
+
+            checkResultLimit(stmt.rowCount);
+            processedRows.createRow();
 
             // get the columns
             int columnIndex = 0;
