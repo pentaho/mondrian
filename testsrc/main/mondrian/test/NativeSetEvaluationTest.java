@@ -18,6 +18,7 @@ import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapHierarchy;
 import mondrian.spi.Dialect;
 import mondrian.spi.Dialect.DatabaseProduct;
+import mondrian.util.Bug;
 
 /**
  * Test native evaluation of supported set operations.
@@ -783,6 +784,13 @@ public class NativeSetEvaluationTest extends BatchTestCase {
      * Same as before but without combinations missing in the crossjoin
      */
     public void testSlicerTuplesFullCrossJoin() {
+        if (!MondrianProperties.instance().EnableNativeCrossJoin.get()
+                && !Bug.BugMondrian2452Fixed)
+        {
+            // The NonEmptyCrossJoin in the TSET named set below returns
+            // extra tuples due to MONDRIAN-2452.
+            return;
+        }
         final String mdx =
             "with\n"
             + "set TSET as NonEmptyCrossJoin({[Time].[1997].[Q1], [Time].[1997].[Q2]}, {[Store Type].[Supermarket], [Store Type].[Deluxe Supermarket], [Store Type].[Gourmet Supermarket]})\n"
