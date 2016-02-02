@@ -121,10 +121,20 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
           SqlConstraintUtils.expandSupportedCalculatedMembers(
               argMembersArray, evaluator));
       assertSameContent(
+          msg + " - (list, eval, false)",
+          expectedMembersList,
+          SqlConstraintUtils.expandSupportedCalculatedMembers(
+              argMembersList, evaluator, false));
+      assertSameContent(
           msg + " - (array, eval, false)",
           expectedMembersList,
           SqlConstraintUtils.expandSupportedCalculatedMembers(
               argMembersArray, evaluator, false));
+      assertSameContent(
+          msg + " - (list, eval, true)",
+          expectedMembersList,
+          SqlConstraintUtils.expandSupportedCalculatedMembers(
+              argMembersList, evaluator, true));
       assertSameContent(
           msg + " - (array, eval, true)",
           expectedMembersList,
@@ -156,10 +166,20 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
           SqlConstraintUtils.expandSupportedCalculatedMembers(
               argMembersArray, evaluator));
       assertSameContent(
+          msg + " - (list, eval, false)",
+          expectedListByDefault,
+          SqlConstraintUtils.expandSupportedCalculatedMembers(
+              argMembersList, evaluator, false));
+      assertSameContent(
           msg + " - (array, eval, false)",
           expectedListByDefault,
           SqlConstraintUtils.expandSupportedCalculatedMembers(
               argMembersArray, evaluator, false));
+      assertSameContent(
+          msg + " - (list, eval, true)",
+          expectedListOnDisjoin,
+          SqlConstraintUtils.expandSupportedCalculatedMembers(
+              argMembersList, evaluator, true));
       assertSameContent(
           msg + " - (array, eval, true)",
           expectedListOnDisjoin,
@@ -436,6 +456,117 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
             placeHolderMember, rolapEvaluator);
         // test
         Assert.assertSame(expectedMember, r);
+    }
+
+    public void testExpandSupportedCalculatedMember_notCalculated() {
+        // init
+        Evaluator evaluator = Mockito.mock(Evaluator.class);
+
+        Member member = makeNoncalculatedMember("0");
+
+        // tested call
+        List<Member> r = SqlConstraintUtils.expandSupportedCalculatedMember(
+            member, evaluator);
+        // test
+        Assert.assertNotNull(r);
+        Assert.assertEquals(1, r.size());
+        Assert.assertSame(member, r.get(0));
+    }
+
+
+    public void testExpandSupportedCalculatedMember_calculated_unsupported() {
+        Evaluator evaluator = Mockito.mock(Evaluator.class);
+
+        Member member = makeUnsupportedCalculatedMember("0");
+
+        // tested call
+        List<Member> r = SqlConstraintUtils.expandSupportedCalculatedMember(
+            member, evaluator);
+        // test
+        Assert.assertNotNull(r);
+        Assert.assertEquals(1, r.size());
+        Assert.assertSame(member, r.get(0));
+    }
+
+    public void testExpandSupportedCalculatedMember_calculated_memberExpr() {
+        Evaluator evaluator = Mockito.mock(Evaluator.class);
+
+        Member resultMember = makeNoncalculatedMember("0");
+        Member member = makeMemberExprMember(resultMember);
+
+        // tested call
+        List<Member> r = SqlConstraintUtils.expandSupportedCalculatedMember(
+            member, evaluator);
+        // test
+        Assert.assertNotNull(r);
+        Assert.assertEquals(1, r.size());
+        Assert.assertSame(resultMember, r.get(0));
+    }
+
+    public void testExpandSupportedCalculatedMember_calculated_aggregate() {
+        Evaluator evaluator = Mockito.mock(Evaluator.class);
+
+        Member endMember0 = Mockito.mock(Member.class);
+        Member endMember1 = Mockito.mock(Member.class);
+        Member endMember2 = Mockito.mock(Member.class);
+
+        Member member = null;
+        List<Member> r = null;
+        List<Member> aggregatedMembers = null;
+
+        // 0
+        aggregatedMembers = Collections.emptyList();
+        member = makeAggregateExprMember(evaluator, aggregatedMembers);
+        // tested call
+        r = SqlConstraintUtils.expandSupportedCalculatedMember(
+            member, evaluator, true);
+        // test
+        assertSameContent("",  aggregatedMembers, r);
+
+        // 1
+        aggregatedMembers = Collections.singletonList(endMember0);
+        member = makeAggregateExprMember(evaluator, aggregatedMembers);
+        // tested call
+        r = SqlConstraintUtils.expandSupportedCalculatedMember(
+            member, evaluator);
+        // test
+        assertSameContent("",  aggregatedMembers, r);
+
+        // 2
+        aggregatedMembers = Arrays.asList(
+            new Member[] {endMember0, endMember1});
+        member = makeAggregateExprMember(evaluator, aggregatedMembers);
+        // tested call
+        r = SqlConstraintUtils.expandSupportedCalculatedMember(
+            member, evaluator);
+        // test
+        assertSameContent("",  aggregatedMembers, r);
+
+        // 3
+        aggregatedMembers = Arrays.asList(
+            new Member[] {endMember0, endMember1, endMember2});
+        member = makeAggregateExprMember(evaluator, aggregatedMembers);
+        // tested call
+        r = SqlConstraintUtils.expandSupportedCalculatedMember(
+            member, evaluator);
+        // test
+        assertSameContent("",  aggregatedMembers, r);
+    }
+
+    public void testExpandSupportedCalculatedMember_calculated_parentheses() {
+        Evaluator evaluator = Mockito.mock(Evaluator.class);
+
+        Member resultMember = Mockito.mock(Member.class);
+        Member member = this.makeParenthesesExprMember(
+            evaluator, resultMember, "0");
+
+        // tested call
+        List<Member> r = SqlConstraintUtils.expandSupportedCalculatedMember(
+            member, evaluator);
+        // test
+        Assert.assertNotNull(r);
+        Assert.assertEquals(1, r.size());
+        Assert.assertSame(resultMember, r.get(0));
     }
 
     public void testExpandSupportedCalculatedMembers() {
