@@ -1,12 +1,11 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.test;
 
 import mondrian.olap.Util;
@@ -40,7 +39,11 @@ public class Olap4jTckTest extends TestCase {
                         "testCubesDrillthroughReturnClause")
                     && !testCaseName.equals("testStatementCancel")
                     && !testCaseName.equals("testDatabaseMetaDataGetCatalogs")
-                    && !testCaseName.equals("testCellSetBug");
+                    && !testCaseName.equals("testCellSetBug")
+                    // Disabling the following until the olap4j test expected
+                    // value is updated.
+                    && !testCaseName.equals(
+                        "testDatabaseMetaDataGetDatasources");
             }
         };
 
