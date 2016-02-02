@@ -158,6 +158,7 @@ demo/FoodMartCreateData.sql"/>
       Now import subfloor. All properties must be overridden first
       =================================================================== -->
   <import file="subfloor.xml" />
+	<import file="subfloor-pkg.xml" />
 
 
   <!-- Define some classpaths -->
@@ -1237,91 +1238,7 @@ diagrams and hyperlinks to source code">
     <ivy:resolve file="workbench/${ivyfile}" conf="${ivy.configs}" />
     <ivy:report xml="true" todir="${ivy.reports.dir}" />
   </target>
-
-    <!-- ======================================== EULA assembly packaging ========================================= -->
-
-    <target name="package-eula">
-
-        <property name="pentaho.resolve.repo" value="http://nexus.pentaho.org:8081/content/groups/omni" />
-
-        <get
-            src="${pentaho.resolve.repo}/ant-contrib/ant-contrib/1.0b3/ant-contrib-1.0b3.jar"
-            dest="dist/ant-contrib-1.0b3.jar"
-            verbose="true"
-        />
-        <taskdef resource="net/sf/antcontrib/antlib.xml" classpath="dist/ant-contrib-1.0b3.jar" />
-
-        <condition property="isWindows">
-            <os family="windows" />
-        </condition>
-        
-        <if>
-            <not>
-                <isset property="pentaho-eula-assembly-pom.version"/>
-            </not>
-            <then>
-                <property name="pentaho-eula-assembly-pom.version" value="1.0.13" />
-                <echo>pentaho-eula-assembly-pom.version not set, assuming default of ${pentaho-eula-assembly-pom.version}</echo>
-            </then>
-        </if>
-        
-        <if>
-            <not>
-                <isset property="artifactName"/>
-            </not>
-            <then>
-                <property name="artifactName" value="${package.basename}" />
-                <echo>artifactName not set, assuming default of ${artifactName}</echo>
-            </then>
-        </if>
-        
-        <if>
-            <not>
-                <available file="dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" type="file" />
-            </not>
-            <then>
-                <get src="${pentaho.resolve.repo}/com/pentaho/pentaho-eula-assembly-pom/${pentaho-eula-assembly-pom.version}/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" 
-                      dest="dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" 
-                      verbose="true" />
-            </then>
-        </if>
-
-        <echo>
-                  mvn
-                  -f dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml
-                  -DartifactName=${artifactName}
-                  -Ddist.dir=
-                  package
-        </echo>
-        <if>
-            <isset property="isWindows" />
-            <then>
-                <exec executable="cmd">
-                    <arg value="/c" />
-                    <arg value="mvn.bat" />
-                    <arg value="-f" />
-                    <arg value="dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" />
-                    <arg value="-DartifactName=${artifactName}" />
-                    <arg value="-Ddist.dir=" />
-                    <arg value="package" />
-                </exec>
-            </then>
-            <else>
-                <exec executable="mvn">
-                    <arg value="-f" />
-                    <arg value="dist/pentaho-eula-assembly-pom-${pentaho-eula-assembly-pom.version}-pom.xml" />
-                    <arg value="-DartifactName=${artifactName}" />
-                    <arg value="-Ddist.dir=" />
-                    <arg value="package" />
-                </exec>
-            </else>
-        </if>
-        
-        <delete file="dist/ant-contrib-1.0b3.jar" />
-
-    </target>
-    
-
+ 
 </project>
 
 <!-- End build.xml -->
