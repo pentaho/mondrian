@@ -246,13 +246,17 @@ public class NonCollapsedAggTest extends AggTableTestCase {
         return CUBE_1;
     }
 
+    @Override
+    public TestContext getTestContext() {
+        TestContext.instance().flushSchemaCache();
+        return TestContext.instance().create(
+            null, getCubeDescription(), null, null, null, null);
+    }
+
     public void testSingleJoin() throws Exception {
-      if (!isApplicable()
-          || !MondrianProperties.instance().UseAggregates.get())
-      {
-        // The test supposes agg tables are used
-        return;
-      }
+        if (!isApplicable()) {
+            return;
+        }
 
         final String mdx =
             "select {[Measures].[Unit Sales]} on columns, {[dimension.tenant].[tenant].Members} on rows from [foo]";
