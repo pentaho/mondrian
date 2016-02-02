@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -9521,7 +9521,7 @@ public class FunctionTest extends FoodMartTestCase {
             // 'DependencyTestingCalc' instances embedded in it.
             return;
         }
-        TestContext.assertEqualsVerbose(expectedCalc, actualCalc);
+        TestContext.assertStubbedEqualsVerbose(expectedCalc, actualCalc);
     }
 
     /**
@@ -9542,7 +9542,7 @@ public class FunctionTest extends FoodMartTestCase {
             // 'DependencyTestingCalc' instances embedded in it.
             return;
         }
-        TestContext.assertEqualsVerbose(expectedCalc, actualCalc);
+        TestContext.assertStubbedEqualsVerbose(expectedCalc, actualCalc);
     }
 
     /**
@@ -12404,14 +12404,16 @@ Intel platforms):
      */
     public void testMondrian_1187() {
         final String queryWithoutAlias =
-            "WITH\n" + "SET [Top Count] AS\n" + "{\n" + "TOPCOUNT(\n" + "DISTINCT([Customers].[Name].Members),\n"
-                + "5,\n" + "[Measures].[Unit Sales]\n" + ")\n" + "}\n" + "SELECT\n"
-                + "[Top Count] * [Measures].[Unit Sales] on 0\n" + "FROM [Sales]\n"
-                + "WHERE [Time].[1997].[Q1].[1] : [Time].[1997].[Q3].[8]";
+            "WITH\n" + "SET [Top Count] AS\n"
+            + "{\n" + "TOPCOUNT(\n" + "DISTINCT([Customers].[Name].Members),\n"
+            + "5,\n" + "[Measures].[Unit Sales]\n" + ")\n" + "}\n" + "SELECT\n"
+            + "[Top Count] * [Measures].[Unit Sales] on 0\n" + "FROM [Sales]\n"
+            + "WHERE [Time].[1997].[Q1].[1] : [Time].[1997].[Q3].[8]";
         String queryWithAlias =
             "SELECT\n"
-                + "TOPCOUNT( DISTINCT( [Customers].[Name].Members), 5, [Measures].[Unit Sales]) * [Measures].[Unit Sales] on 0\n"
-                + "FROM [Sales]\n" + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q3].[8]";
+            + "TOPCOUNT( DISTINCT( [Customers].[Name].Members), 5, [Measures].[Unit Sales]) * [Measures].[Unit Sales] on 0\n"
+            + "FROM [Sales]\n"
+            + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q3].[8]";
         final TestContext context = TestContext.instance();
         final Result result = context.executeQuery(queryWithoutAlias);
         context.assertQueryReturns(
