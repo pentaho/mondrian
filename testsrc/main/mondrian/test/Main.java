@@ -210,6 +210,7 @@ public class Main extends TestSuite {
                 addTest(suite, CodeComplianceTest.class);
                 return suite;
             }
+            addTest(suite, SqlConstraintUtilsTest.class);
             addTest(suite, SegmentBuilderTest.class);
             addTest(suite, DenseDoubleSegmentBodyTest.class);
             addTest(suite, DenseIntSegmentBodyTest.class);
