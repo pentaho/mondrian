@@ -4,13 +4,14 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.test;
 
 import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
+import mondrian.util.Bug;
 
 import java.io.InputStream;
 import java.util.Arrays;
@@ -2292,7 +2293,10 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
     public void testMondrian2411_3() throws Exception {
         // Tests an admin query followed by a user query, but both are wrapped
         // with a no-op role in a union.
-        if (!getTestContext().databaseIsValid()) {
+        if (!getTestContext().databaseIsValid()
+                || (MondrianProperties.instance().UseAggregates.get()
+                    && !Bug.BugMondrian2440Fixed))
+        {
             return;
         }
         final String schema =
