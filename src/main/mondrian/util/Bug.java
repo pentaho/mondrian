@@ -245,6 +245,13 @@ public class Bug {
     public static final boolean BugMondrian2452Fixed = false;
 
     /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-2440">bug MONDRIAN-1001,
+     * "Error when using aggregation tables with a hierarchy that has a visible
+     * level behind restricted"</a> is fixed.
+     */
+    public static final boolean BugMondrian2440Fixed = false;
+    /**
      * Whether RolapCubeMember and RolapMember have been fully segregated; any
      * piece of code should be working with one or the other, not both.
      */
