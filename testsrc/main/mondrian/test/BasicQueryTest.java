@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho
+// Copyright (C) 2005-2016 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -6163,7 +6163,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
             + "  {[Product].members} ON ROWS\n"
             + "FROM [Sales]";
-        propSaver.set(props.CancelPhaseInterval, cancelInterval);
+        propSaver.set(props.CheckCancelOrTimeoutInterval, cancelInterval);
         final String triggerSql = "product_name";
 
         Long rows = executeAndCancelAtSqlFetch(
@@ -6184,7 +6184,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     public void testCancelSqlFetchSegmentLoad() throws Exception {
           // 512 rows
           final int cancelInterval = 101;
-          propSaver.set(props.CancelPhaseInterval, cancelInterval);
+          propSaver.set(props.CheckCancelOrTimeoutInterval, cancelInterval);
           // this will avoid spamming output with cache failures, but should
           // also work without side effects with cache enabled
           propSaver.set(props.DisableCaching, true);
@@ -6216,7 +6216,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
             + "  {[Customers].[Mexico].[Guerrero].[Acapulco].Children} ON ROWS\n"
             + "FROM [Sales]";
-        propSaver.set(props.CancelPhaseInterval, cancelInterval);
+        propSaver.set(props.CheckCancelOrTimeoutInterval, cancelInterval);
 
         Long rows = executeAndCancelAtSqlFetch(
             query, "customer_id", "SqlMemberSource.getMemberChildren");
@@ -8333,11 +8333,11 @@ public class BasicQueryTest extends FoodMartTestCase {
         // Some DBs return 0 when we ask for null. Like Oracle.
         final String returnedValue;
         switch (getTestContext().getDialect().getDatabaseProduct()) {
-            case ORACLE:
-                returnedValue = "0";
-                break;
-            default:
-                returnedValue = "";
+        case ORACLE:
+            returnedValue = "0";
+            break;
+        default:
+            returnedValue = "";
         }
 
         testContext.assertQueryReturns(
@@ -8419,21 +8419,28 @@ public class BasicQueryTest extends FoodMartTestCase {
                 + "    <Level name=\"IsZero\" visible=\"true\" table=\"product\" column=\"product_id\" type=\"Integer\" uniqueMembers=\"false\" levelType=\"Regular\" hideMemberIf=\"Never\">\n"
                 + "      <NameExpression>\n"
                 + "        <SQL dialect=\"generic\">\n"
-                + "          <![CDATA[case when " + dialect.quoteIdentifier("product","product_id") + "=0 then 'Zero' else 'Non-Zero' end]]>\n"
+                + "          <![CDATA[case when "
+                + dialect.quoteIdentifier("product", "product_id")
+                + "=0 then 'Zero' else 'Non-Zero' end]]>\n"
                 + "        </SQL>\n"
                 + "      </NameExpression>\n"
                 + "    </Level>\n"
                 + "    <Level name=\"SubCat\" visible=\"true\" table=\"product_class\" column=\"product_class_id\" type=\"String\" uniqueMembers=\"false\" levelType=\"Regular\" hideMemberIf=\"Never\">\n"
                 + "      <NameExpression>\n"
                 + "        <SQL dialect=\"generic\">\n"
-                + "          <![CDATA[" + dialect.quoteIdentifier("product_class","product_subcategory") + "]]>\n"
+                + "          <![CDATA["
+                + dialect.quoteIdentifier(
+                    "product_class", "product_subcategory")
+                + "]]>\n"
                 + "        </SQL>\n"
                 + "      </NameExpression>\n"
                 + "    </Level>\n"
                 + "    <Level name=\"ProductName\" visible=\"true\" table=\"product\" column=\"product_id\" type=\"Integer\" uniqueMembers=\"false\" levelType=\"Regular\" hideMemberIf=\"Never\">\n"
                 + "      <NameExpression>\n"
                 + "        <SQL dialect=\"generic\">\n"
-                + "          <![CDATA["+ dialect.quoteIdentifier("product","product_name") + "]]>\n"
+                + "          <![CDATA["
+                + dialect.quoteIdentifier("product", "product_name")
+                + "]]>\n"
                 + "        </SQL>\n"
                 + "      </NameExpression>\n"
                 + "    </Level>\n"
