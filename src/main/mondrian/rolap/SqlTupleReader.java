@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -21,8 +21,10 @@ import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
+import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.monitor.SqlStatementEvent;
+import mondrian.util.CancellationChecker;
 import mondrian.util.Pair;
 
 import org.apache.log4j.Logger;
@@ -425,8 +427,6 @@ public class SqlTupleReader implements TupleReader {
             }
 
             int limit = MondrianProperties.instance().ResultLimit.get();
-            final int checkCancelPeriod =
-                MondrianProperties.instance().CancelPhaseInterval.get();
             int fetchCount = 0;
 
             // determine how many enum targets we have
@@ -446,18 +446,17 @@ public class SqlTupleReader implements TupleReader {
             } else {
                 moreRows = currPartialResultIdx < partialResult.size();
             }
+
+            Execution execution = Locus.peek().execution;
             while (moreRows) {
+                // Check if the MDX query was canceled.
+                CancellationChecker.checkCancelOrTimeout(
+                    stmt.rowCount, execution);
+
                 if (limit > 0 && limit < ++fetchCount) {
                     // result limit exceeded, throw an exception
                     throw MondrianResource.instance().MemberFetchLimitExceeded
                         .ex((long) limit);
-                }
-
-                // Check if the MDX query was canceled.
-                if (checkCancelPeriod > 0
-                    && stmt.rowCount % checkCancelPeriod == 0)
-                {
-                    Locus.peek().execution.checkCancelOrTimeout();
                 }
 
                 if (enumTargetCount == 0) {

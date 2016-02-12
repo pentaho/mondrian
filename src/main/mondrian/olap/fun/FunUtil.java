@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -17,6 +17,7 @@ import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
+import mondrian.server.Execution;
 import mondrian.util.*;
 
 import org.apache.commons.collections.ComparatorUtils;
@@ -634,7 +635,12 @@ public class FunUtil extends Util {
         if (tupleList == null) {
             tupleArrayList = new ArrayList<List<Member>>();
             final TupleCursor cursor = tupleIterable.tupleCursor();
+            int currentIteration = 0;
+            Execution execution =
+                evaluator.getQuery().getStatement().getCurrentExecution();
             while (cursor.forward()) {
+                CancellationChecker.checkCancelOrTimeout(
+                    currentIteration++, execution);
                 tupleArrayList.add(cursor.current());
             }
             if (tupleArrayList.size() <= 1) {
@@ -1591,7 +1597,12 @@ public class FunUtil extends Util {
         // todo: treat constant exps as evaluateMembers() does
         SetWrapper retval = new SetWrapper();
         final TupleCursor cursor = members.tupleCursor();
+        int currentIteration = 0;
+        Execution execution =
+            evaluator.getQuery().getStatement().getCurrentExecution();
         while (cursor.forward()) {
+            CancellationChecker.checkCancelOrTimeout(
+                currentIteration++, execution);
             cursor.setContext(evaluator);
             Object o = calc.evaluate(evaluator);
             if (o == null || o == Util.nullValue) {
@@ -1635,7 +1646,12 @@ public class FunUtil extends Util {
             retvals[i] = new SetWrapper();
         }
         final TupleCursor cursor = list.tupleCursor();
+        int currentIteration = 0;
+        Execution execution =
+            evaluator.getQuery().getStatement().getCurrentExecution();
         while (cursor.forward()) {
+            CancellationChecker.checkCancelOrTimeout(
+                currentIteration++, execution);
             cursor.setContext(evaluator);
             for (int i = 0; i < calcs.length; i++) {
                 DoubleCalc calc = calcs[i];

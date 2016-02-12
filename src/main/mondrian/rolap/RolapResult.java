@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -1579,7 +1579,11 @@ public class RolapResult extends ResultBase {
         }
 
         private void mergeTupleIter(TupleCursor cursor) {
+            int currentIteration = 0;
+            Execution execution = Locus.peek().execution;
             while (cursor.forward()) {
+                CancellationChecker.checkCancelOrTimeout(
+                    currentIteration++, execution);
                 mergeTuple(cursor);
             }
         }
