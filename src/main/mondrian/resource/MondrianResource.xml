@@ -295,6 +295,11 @@
 <exception id="350670" name="ValidMeasureUsingCalculatedMember">
     <text>The function ValidMeasure cannot be used with the measure ''{0}'' because it is a calculated member. The function should be used to wrap the base measure in the source cube.</text>
 </exception>
+
+<exception id="350680" name="UnsupportedCalculatedMember">
+    <text>Calculated member ''{0}'' is not supported within a compound predicate</text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Connectivity errors -->
 
