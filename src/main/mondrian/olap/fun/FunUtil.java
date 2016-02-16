@@ -2278,7 +2278,9 @@ public class FunUtil extends Util {
                 // Same effect as calling removeCalculatedMembers(tupleList)
                 // but one fewer copy of the list.
                 for (Member member1 : memberList1) {
-                    if (!member1.isCalculated()) {
+                    if (!member1.isCalculated()
+                      || member1.isParentChildPhysicalMember())
+                    {
                         memberList.add(member1);
                     }
                 }
