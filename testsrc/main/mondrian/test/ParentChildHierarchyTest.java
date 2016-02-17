@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho
+// Copyright (C) 2005-2016 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Mar 6, 2003
@@ -277,31 +277,16 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * <a href="http://jira.pentaho.org/browse/MONDRIAN-284">MONDRIAN-284,
      * "Parent child hierarchies without closures are broken"</a>.
      */
-    public void _testNonClosureParentChildHierarchy() {
+    public void testNonClosureParentChildHierarchy() {
+        TestContext testContext = getTestContext();
+        Result result = testContext.executeQuery(
+            "Select {[Employees].members} on columns from HR");
+        String expected = testContext.upgradeActual(
+            TestContext.toString(result))
+          .replace("[Employees]", "[EmployeesNonClosure]");
         getEmpNonClosureTestContext().assertQueryReturns(
-            "Select "
-            + "{[EmployeesNonClosure].[Sheri Nowmer].children} on columns,"
-            + "{[Time].[1997]} ON rows "
-            + "from HR",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[EmployeesNonClosure].[Sheri Nowmer].[Derrick Whelply]}\n"
-            + "{[EmployeesNonClosure].[Sheri Nowmer].[Michael Spence]}\n"
-            + "{[EmployeesNonClosure].[Sheri Nowmer].[Maya Gutierrez]}\n"
-            + "{[EmployeesNonClosure].[Sheri Nowmer].[Roberta Damstra]}\n"
-            + "{[EmployeesNonClosure].[Sheri Nowmer].[Rebecca Kanagaki]}\n"
-            + "{[EmployeesNonClosure].[Sheri Nowmer].[Darren Stanz]}\n"
-            + "{[EmployeesNonClosure].[Sheri Nowmer].[Donna Arnold]}\n"
-            + "Axis #2:\n"
-            + "{[Time].[1997]}\n"
-            + "Row #0: $36,494.07\n"
-            + "Row #0: \n"
-            + "Row #0: \n"
-            + "Row #0: $428.76\n"
-            + "Row #0: $234.36\n"
-            + "Row #0: $832.68\n"
-            + "Row #0: $577.80\n");
+            "Select {[EmployeesNonClosure].members} on columns from HR",
+          expected);
     }
 
 
