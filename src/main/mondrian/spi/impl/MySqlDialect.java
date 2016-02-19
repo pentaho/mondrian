@@ -247,6 +247,14 @@ public class MySqlDialect extends JdbcDialectImpl {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    protected String generateGroupByNulls(String expr)
+    {
+        return "ISNULL(" + expr + "), " + expr;
+    }
+
     public boolean requiresHavingAlias() {
         return true;
     }

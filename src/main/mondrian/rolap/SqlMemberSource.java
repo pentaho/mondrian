@@ -616,7 +616,7 @@ RME is this right
         hierarchy.addToFrom(sqlQuery, level.getKeyExp());
         String q = level.getKeyExp().getExpression(sqlQuery);
         String idAlias =
-            sqlQuery.addSelectGroupBy(q, level.getInternalType());
+            sqlQuery.addSelectGroupBy(q, level.getInternalType(), true);
 
         // in non empty mode the level table must be joined to the fact
         // table

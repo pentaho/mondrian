@@ -49,7 +49,7 @@ public class EffectiveMemberCacheTest extends BatchTestCase {
                     + "and\n"
                     + "    ( UPPER(`product`.`product_name`) IN (UPPER('Hermanos Fancy Plums'),UPPER('Hermanos Lemons'),UPPER('Hermanos Plums')))\n"
                     + "group by\n"
-                    + "    `product`.`product_name`\n"
+                    + "    ISNULL(`product`.`product_name`), `product`.`product_name`\n"
                     + "order by\n"
                     + "    ISNULL(`product`.`product_name`) ASC, "
                     + "`product`.`product_name` ASC", null)}
@@ -82,7 +82,7 @@ public class EffectiveMemberCacheTest extends BatchTestCase {
                     + "    ( UPPER(`product`.`product_name`) IN "
                     + "(UPPER('Hermanos Fancy Plums'),UPPER('Hermanos Lemons'),UPPER('Hermanos Plums')))\n"
                     + "group by\n"
-                    + "    `product`.`product_name`\n"
+                    + "    ISNULL(`product`.`product_name`), `product`.`product_name`\n"
                     + "order by\n"
                     + "    ISNULL(`product`.`product_name`) ASC, "
                     + "`product`.`product_name` ASC", null) }
@@ -107,7 +107,7 @@ public class EffectiveMemberCacheTest extends BatchTestCase {
                     + "from\n"
                     + "    `store` as `store`\n"
                     + "group by\n"
-                    + "    `store`.`store_type`\n"
+                    + "    ISNULL(`store`.`store_type`), `store`.`store_type`\n"
                     + "order by\n"
                     + "    ISNULL(`store`.`store_type`) ASC, "
                     + "`store`.`store_type` ASC", null)
@@ -135,7 +135,7 @@ public class EffectiveMemberCacheTest extends BatchTestCase {
                     + "    ( UPPER(`store`.`store_type`) IN "
                     + "(UPPER('Gourmet Supermarket'),UPPER('HeadQuarters')))\n"
                     + "group by\n"
-                    + "    `store`.`store_type`\n"
+                    + "    ISNULL(`store`.`store_type`), `store`.`store_type`\n"
                     + "order by\n"
                     + "    ISNULL(`store`.`store_type`) ASC, "
                     + "`store`.`store_type` ASC", null)
@@ -160,7 +160,7 @@ public class EffectiveMemberCacheTest extends BatchTestCase {
                     + "where\n"
                     + "    `store`.`coffee_bar` = false\n"
                     + "group by\n"
-                    + "    `store`.`coffee_bar`\n"
+                    + "    ISNULL(`store`.`coffee_bar`), `store`.`coffee_bar`\n"
                     + "order by\n"
                     + "    ISNULL(`store`.`coffee_bar`) ASC, "
                     + "`store`.`coffee_bar` ASC", null)});
