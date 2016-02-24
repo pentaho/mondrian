@@ -2429,10 +2429,10 @@ public class TestAggregationManager extends BatchTestCase {
                 + "    `agg_c_14_sales_fact_1997`.`month_of_year`,\n"
                 + "    `store`.`store_country`\n"
                 + "order by\n"
-                + "    ISNULL(`agg_c_14_sales_fact_1997`.`the_year`) ASC, `agg_c_14_sales_fact_1997`.`the_year` ASC,\n"
-                + "    ISNULL(`agg_c_14_sales_fact_1997`.`quarter`) ASC, `agg_c_14_sales_fact_1997`.`quarter` ASC,\n"
-                + "    ISNULL(`agg_c_14_sales_fact_1997`.`month_of_year`) ASC, `agg_c_14_sales_fact_1997`.`month_of_year` ASC,\n"
-                + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC";
+                + "    ISNULL(`c0`) ASC, `c0` ASC,\n"
+                + "    ISNULL(`c1`) ASC, `c1` ASC,\n"
+                + "    ISNULL(`c2`) ASC, `c2` ASC,\n"
+                + "    ISNULL(`c3`) ASC, `c3` ASC";
 
             assertQuerySqlOrNot(
                 context,
@@ -2586,8 +2586,8 @@ public class TestAggregationManager extends BatchTestCase {
             + "    `time_by_day`.`the_year`,\n"
             + "    `store`.`store_country`\n"
             + "order by\n"
-            + "    ISNULL(`time_by_day`.`the_year`) ASC, `time_by_day`.`the_year` ASC,\n"
-            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC";
+            + "    ISNULL(`c0`) ASC, `c0` ASC,\n"
+            + "    ISNULL(`c1`) ASC, `c1` ASC";
 
         final String sqlMysqlSegmentQuery =
             "select\n"
@@ -2630,11 +2630,11 @@ public class TestAggregationManager extends BatchTestCase {
             + "    `time_by_day`.`day_of_month`,\n"
             + "    `store`.`store_country`\n"
             + "order by\n"
-            + "    ISNULL(`time_by_day`.`the_year`) ASC, `time_by_day`.`the_year` ASC,\n"
-            + "    ISNULL(`time_by_day`.`quarter`) ASC, `time_by_day`.`quarter` ASC,\n"
-            + "    ISNULL(`time_by_day`.`month_of_year`) ASC, `time_by_day`.`month_of_year` ASC,\n"
-            + "    ISNULL(`time_by_day`.`day_of_month`) ASC, `time_by_day`.`day_of_month` ASC,\n"
-            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC";
+            + "    ISNULL(`c0`) ASC, `c0` ASC,\n"
+            + "    ISNULL(`c1`) ASC, `c1` ASC,\n"
+            + "    ISNULL(`c2`) ASC, `c2` ASC,\n"
+            + "    ISNULL(`c3`) ASC, `c3` ASC,\n"
+            + "    ISNULL(`c4`) ASC, `c4` ASC";
 
         final String sqlMysqlTooLowSegmentQuery =
             "select\n"

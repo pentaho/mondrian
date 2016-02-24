@@ -139,8 +139,8 @@ public class NativeFilterAgainstAggTableTest extends BatchTestCase {
             + "    `agg_c_10_sales_fact_1997`.`the_year`,\n"
             + "    `agg_c_10_sales_fact_1997`.`quarter`\n"
             + "order by\n"
-            + "    ISNULL(`agg_c_10_sales_fact_1997`.`the_year`) ASC, `agg_c_10_sales_fact_1997`.`the_year` ASC,\n"
-            + "    ISNULL(`agg_c_10_sales_fact_1997`.`quarter`) ASC, `agg_c_10_sales_fact_1997`.`quarter` ASC";
+            + "    ISNULL(`c0`) ASC, `c0` ASC,\n"
+            + "    ISNULL(`c1`) ASC, `c1` ASC";
 
         SqlPattern[] patterns = mysqlPattern(sqlMysqlNoHaving);
 
@@ -168,8 +168,8 @@ public class NativeFilterAgainstAggTableTest extends BatchTestCase {
             + "having\n"
             + "    ((sum(`agg_c_10_sales_fact_1997`.`store_sales`) + sum(`agg_c_10_sales_fact_1997`.`unit_sales`)) > 0)\n"
             + "order by\n"
-            + "    ISNULL(`agg_c_10_sales_fact_1997`.`the_year`) ASC, `agg_c_10_sales_fact_1997`.`the_year` ASC,\n"
-            + "    ISNULL(`agg_c_10_sales_fact_1997`.`quarter`) ASC, `agg_c_10_sales_fact_1997`.`quarter` ASC";
+            + "    ISNULL(`c0`) ASC, `c0` ASC,\n"
+            + "    ISNULL(`c1`) ASC, `c1` ASC";
 
         patterns = mysqlPattern(mySqlWithHaving);
 

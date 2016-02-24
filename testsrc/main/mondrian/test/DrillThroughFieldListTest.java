@@ -80,7 +80,7 @@ public class DrillThroughFieldListTest extends FoodMartTestCase {
             + "and\n"
             + "    time_by_day.quarter = 'Q1'\n"
             + "order by\n"
-            + "    time_by_day.quarter ASC";
+            + "    Quarter ASC";
         break;
     case ORACLE:
         expectedSql =
@@ -148,7 +148,7 @@ public class DrillThroughFieldListTest extends FoodMartTestCase {
             + "and\n"
             + "    time_by_day.quarter = 'Q1'\n"
             + "order by\n"
-            + "    time_by_day.quarter ASC";
+            + "    Quarter ASC";
         break;
     case ORACLE:
         expectedSql =
@@ -222,7 +222,7 @@ public class DrillThroughFieldListTest extends FoodMartTestCase {
              + "and\n"
              + "    product.product_name = 'Good Imported Beer'\n"
              + "order by\n"
-             + "    time_by_day.quarter ASC";
+             + "    Quarter ASC";
         break;
     case ORACLE:
         expectedSql = "select\n"

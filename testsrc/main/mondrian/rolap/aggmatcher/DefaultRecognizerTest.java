@@ -128,14 +128,14 @@ public class DefaultRecognizerTest extends BatchTestCase {
             + "    `agg_g_ms_pcat_sales_fact_1997`.`quarter`,\n"
             + "    `agg_g_ms_pcat_sales_fact_1997`.`month_of_year`\n"
             + "order by\n"
-            + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC,\n"
-            + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`marital_status`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`marital_status` ASC,\n"
-            + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_family`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`product_family` ASC,\n"
-            + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_department`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`product_department` ASC,\n"
-            + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_category`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`product_category` ASC,\n"
-            + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`the_year`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`the_year` ASC,\n"
-            + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`quarter`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`quarter` ASC,\n"
-            + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`month_of_year`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` ASC";
+            + "    ISNULL(`c0`) ASC, `c0` ASC,\n"
+            + "    ISNULL(`c1`) ASC, `c1` ASC,\n"
+            + "    ISNULL(`c2`) ASC, `c2` ASC,\n"
+            + "    ISNULL(`c3`) ASC, `c3` ASC,\n"
+            + "    ISNULL(`c4`) ASC, `c4` ASC,\n"
+            + "    ISNULL(`c5`) ASC, `c5` ASC,\n"
+            + "    ISNULL(`c6`) ASC, `c6` ASC,\n"
+            + "    ISNULL(`c7`) ASC, `c7` ASC";
         assertQuerySqlOrNot(
             TestContext.instance(),
             query,
