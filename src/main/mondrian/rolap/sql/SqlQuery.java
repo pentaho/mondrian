@@ -484,6 +484,7 @@ public class SqlQuery {
      * the GROUP BY clause, if the dialect requires it.
      *
      * @param expression Expression
+     * @param type Java type to be used to hold cursor column
      * @return Alias of expression
      */
     public String addSelectGroupBy(
@@ -492,6 +493,25 @@ public class SqlQuery {
     {
         final String alias = addSelect(expression, type);
         addGroupBy(expression, alias);
+        return alias;
+    }
+
+    /**
+     * Adds an expression to the SELECT and GROUP BY clauses. Uses the alias in
+     * the GROUP BY clause, if the dialect requires it.
+     *
+     * @param expression expression to add
+     * @param type Java type to be used to hold cursor column
+     * @param nullable whether the expression might be null
+     * @return alias of expression
+     */
+    public String addSelectGroupBy(
+        final String expression,
+        SqlStatement.Type type,
+        boolean nullable)
+    {
+        final String alias = addSelect(expression, type);
+        addGroupBy(expression, alias, nullable);
         return alias;
     }
 
@@ -568,17 +588,58 @@ public class SqlQuery {
         where.add(expression);
     }
 
+    /**
+     * Add an item to the GROUP BY statement.
+     *
+     * @param expression the item for GROUP BY statement
+     */
     public void addGroupBy(final String expression)
     {
-        assert expression != null && !expression.equals("");
-        groupBy.add(expression);
+        addGroupBy(expression, false);
     }
 
+    /**
+     * Add an item to the GROUP BY statement.
+     *
+     * @param expression the item for GROUP BY statement
+     * @param nullable whether the expression might be null
+     */
+    public void addGroupBy(String expression, boolean nullable)
+    {
+        assert expression != null && !expression.equals("");
+        groupBy.add(dialect.generateGroupItem(expression, nullable));
+    }
+
+    /**
+     * Add an item to the GROUP BY statement.
+     *
+     * @param expression the item for GROUP BY statement
+     * @param alias column alias (or null for no alias)
+     */
     public void addGroupBy(final String expression, final String alias) {
         if (dialect.requiresGroupByAlias()) {
             addGroupBy(dialect.quoteIdentifier(alias));
         } else {
             addGroupBy(expression);
+        }
+    }
+
+    /**
+     * Add an item to the GROUP BY statement.
+     *
+     * @param expression the item for GROUP BY statement
+     * @param alias column alias (or null for no alias)
+     * @param nullable whether the expression might be null
+     */
+    public void addGroupBy(
+        final String expression,
+        final String alias,
+        boolean nullable)
+    {
+        if (dialect.requiresGroupByAlias()) {
+            addGroupBy(dialect.quoteIdentifier(alias), nullable);
+        } else {
+            addGroupBy(expression, nullable);
         }
     }
 
@@ -1016,7 +1077,7 @@ public class SqlQuery {
           final String dialectName = dialect.getDatabaseProduct().getFamily()
               .name().toLowerCase();
           if (dialectName.equals("postgresql")) {
-              //Luc Boudreau's comment
+              // Luc Boudreau's comment
               // Special case for the discrepancy between the value used
               // in schemas and the actual name of the dialect. The former is
               // 'postgresql' while the later is 'postgres'.

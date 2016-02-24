@@ -998,7 +998,7 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "and\n"
             + "    `customer`.`city` = 'San Francisco'\n"
             + "group by\n"
-            + "    `customer`.`customer_id`,\n"
+            + "    ISNULL(`customer`.`customer_id`), `customer`.`customer_id`,\n"
             + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`),\n"
             + "    `customer`.`gender`,\n"
             + "    `customer`.`marital_status`,\n"

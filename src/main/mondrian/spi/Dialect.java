@@ -442,6 +442,19 @@ public interface Dialect {
         boolean collateNullsLast);
 
     /**
+     * Generates an item for an GROUP BY section and ensuring that
+     * nullable fields will be processed correctly.
+     *
+     * @param expr expression for the GROUP BY clause
+     * @param nullable whether expression may have NULL values
+     *
+     * @return Expression modified according to the nullable parameter
+     */
+    public String generateGroupItem(
+        String expr,
+        boolean nullable);
+
+    /**
      * Returns whether this Dialect supports expressions in the GROUP BY
      * clause. Derby/Cloudscape and Infobright do not.
      *

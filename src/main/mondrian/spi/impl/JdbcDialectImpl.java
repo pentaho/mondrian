@@ -752,6 +752,9 @@ public class JdbcDialectImpl implements Dialect {
         return !readOnly;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public String generateOrderItem(
         String expr,
         boolean nullable,
@@ -822,6 +825,34 @@ public class JdbcDialectImpl implements Dialect {
                     + " DESC";
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String generateGroupItem(
+        String expr,
+        boolean nullable)
+    {
+        if (nullable) {
+            return generateGroupByNulls(expr);
+        } else {
+            return expr;
+        }
+    }
+
+    /**
+     * Generates expression for GROUP BY section to correspond fields generated
+     * by {@link #generateOrderByNulls(String, boolean, boolean)} method.
+     *
+     * Additional info: http://jira.pentaho.com/browse/MONDRIAN-2451
+     *
+     * @param expr expression for the GROUP BY section
+     * @return expression modified according to the nullable parameter
+     */
+    protected String generateGroupByNulls(String expr)
+    {
+        return "CASE WHEN " + expr + " IS NULL THEN 1 ELSE 0 END, " + expr;
     }
 
     /**
