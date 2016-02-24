@@ -405,7 +405,7 @@ public class CrossJoinFunDef extends FunDefBase {
                     @Override
                     public List<Member> get(int index) {
                         cartesianProductList.getIntoArray(index, members);
-                        return Util.flatList(members);
+                        return Util.flatListCopy(members);
                     }
 
                     @Override
