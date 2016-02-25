@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2015 Pentaho and others
+// Copyright (C) 2006-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -233,7 +233,7 @@ public class SqlContextConstraint
         expandedMembers.addAll(
             SqlConstraintUtils.expandSupportedCalculatedMembers(
                 members,
-                evaluator));
+                evaluator).getMembers());
         cacheKey.add(expandedMembers);
         cacheKey.add(evaluator.getSlicerTuples());
 
