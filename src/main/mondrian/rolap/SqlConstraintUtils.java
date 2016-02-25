@@ -11,24 +11,56 @@
 */
 package mondrian.rolap;
 
-import mondrian.calc.*;
-import mondrian.mdx.*;
-import mondrian.olap.*;
-import mondrian.olap.fun.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import mondrian.calc.TupleIterable;
+import mondrian.calc.TupleList;
+import mondrian.mdx.MemberExpr;
+import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.Access;
+import mondrian.olap.Dimension;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Exp;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Level;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianDef;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Role;
+import mondrian.olap.SchemaReader;
+import mondrian.olap.Util;
+import mondrian.olap.fun.AggregateFunDef;
+import mondrian.olap.fun.MemberExtractingVisitor;
+import mondrian.olap.fun.ParenthesesFunDef;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RestrictedMemberReader.MultiCardinalityDefaultMember;
 import mondrian.rolap.RolapHierarchy.LimitedRollupMember;
 import mondrian.rolap.RolapStar.Column;
 import mondrian.rolap.RolapStar.Table;
-import mondrian.rolap.agg.*;
+import mondrian.rolap.agg.AndPredicate;
+import mondrian.rolap.agg.CellRequest;
+import mondrian.rolap.agg.ListColumnPredicate;
+import mondrian.rolap.agg.LiteralStarPredicate;
+import mondrian.rolap.agg.MemberColumnPredicate;
+import mondrian.rolap.agg.OrPredicate;
 import mondrian.rolap.aggmatcher.AggStar;
-import mondrian.rolap.sql.*;
+import mondrian.rolap.sql.CrossJoinArg;
+import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.Dialect;
 import mondrian.util.FilteredIterableList;
 
 import org.apache.log4j.Logger;
-
-import java.util.*;
 
 /**
  * Utility class used by implementations of {@link mondrian.rolap.sql.SqlConstraint},
@@ -877,8 +909,20 @@ public class SqlConstraintUtils {
         TupleIterable tupleIterable =
             evaluator.getSetEvaluator(
                 exp, true).evaluateTupleIterable();
-        Iterable<Member> iterable = tupleIterable.slice(0);
-        return iterable.iterator();
+
+        List<Member> iterList = new ArrayList<Member>();
+        Iterator<List<Member>> tupleIterator = tupleIterable.iterator();
+
+        List<Member> curMembers;
+        while(tupleIterator.hasNext()) {
+          curMembers = tupleIterator.next();
+          if(curMembers.size() > 0)
+          {
+            iterList.addAll(curMembers);
+          }
+        }
+
+        return iterList.iterator();
     }
 
     /**
