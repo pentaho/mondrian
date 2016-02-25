@@ -389,8 +389,10 @@ public class CompoundPredicateInfo {
     private StarPredicate makeUnaryPredicate(
         RolapCubeMember member, RolapCube baseCube, Evaluator evaluator)
     {
-      List<Member> expandedMemberList = SqlConstraintUtils
-          .expandSupportedCalculatedMember(member, evaluator);
+      TupleConstraintStruct constraint = new TupleConstraintStruct();
+      SqlConstraintUtils
+          .expandSupportedCalculatedMember(member, evaluator, constraint);
+      List<Member> expandedMemberList = constraint.getMembers();
       for (Member checkMember : expandedMemberList) {
           if (checkMember == null
               || checkMember.isCalculated()

@@ -1421,7 +1421,10 @@ public class SqlTupleReader implements TupleReader {
         // level would not be passed to the bitkeys
         final Member[] members =
           SqlConstraintUtils.expandSupportedCalculatedMembers(
-              evaluator.getNonAllMembers(), evaluator);
+              Arrays.asList(
+                  evaluator.getNonAllMembers()),
+                  evaluator)
+                  .getMembersArray();
 
         // if measure is calculated, we can't continue
         if (!(members[0] instanceof RolapBaseCubeMeasure)) {
