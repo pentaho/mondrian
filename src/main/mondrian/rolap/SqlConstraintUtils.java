@@ -11,19 +11,6 @@
 */
 package mondrian.rolap;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import mondrian.calc.TupleIterable;
 import mondrian.calc.TupleList;
 import mondrian.mdx.MemberExpr;
@@ -61,6 +48,19 @@ import mondrian.spi.Dialect;
 import mondrian.util.FilteredIterableList;
 
 import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Utility class used by implementations of {@link mondrian.rolap.sql.SqlConstraint},
@@ -914,12 +914,11 @@ public class SqlConstraintUtils {
         Iterator<List<Member>> tupleIterator = tupleIterable.iterator();
 
         List<Member> curMembers;
-        while(tupleIterator.hasNext()) {
-          curMembers = tupleIterator.next();
-          if(curMembers.size() > 0)
-          {
-            iterList.addAll(curMembers);
-          }
+        while (tupleIterator.hasNext()) {
+            curMembers = tupleIterator.next();
+            if (curMembers.size() > 0) {
+                iterList.addAll(curMembers);
+            }
         }
 
         return iterList.iterator();

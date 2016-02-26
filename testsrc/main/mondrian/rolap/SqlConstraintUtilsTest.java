@@ -10,19 +10,6 @@
 */
 package mondrian.rolap;
 
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
-import junit.framework.Assert;
 import mondrian.calc.TupleIterable;
 import mondrian.calc.impl.UnaryTupleList;
 import mondrian.mdx.MemberExpr;
@@ -49,10 +36,24 @@ import mondrian.server.Execution;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 
+import junit.framework.Assert;
+
+import com.google.common.collect.Lists;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * <code>SqlConstraintUtilsTest</code> tests the functions defined in
@@ -672,58 +673,62 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
           "(0, placeholder)",
           expectedMembers, expectedMembersOnDisjoin, argMembers,
           rolapEvaluator);
-  }
-    
-  @Test
-  public void testGetSetFromCalculatedMember() {
-    
-    List<Member> listColumn1 = new ArrayList<Member>();
-    List<Member> listColumn2 = new ArrayList<Member>();
-    
-    listColumn1.add(new TestMember("elem1_col1"));
-    listColumn1.add(new TestMember("elem2_col1"));
-    listColumn2.add(new TestMember("elem1_col2"));
-    listColumn2.add(new TestMember("elem2_col2"));
-    
-    List<List<Member>> table = new ArrayList<List<Member>>();
-    table.add(listColumn1);
-    table.add(listColumn2);
-    
-    Member memberMock = mock(Member.class);
-    
-    Exp[] funCallArgExps = new Exp[0];
-    ResolvedFunCall funCallArgMock = new ResolvedFunCall(mock(FunDef.class), funCallArgExps, mock(TupleType.class));
-    
-    Exp[] funCallExps = {funCallArgMock};
-    ResolvedFunCall funCallMock = new ResolvedFunCall(mock(FunDef.class), funCallExps, mock(TupleType.class)); 
-    
-    when(memberMock.getExpression()).thenReturn(funCallMock);
-    
-    Evaluator evaluatorMock = mock(Evaluator.class);
-    
-    Evaluator.SetEvaluator setEvaluatorMock = mock(Evaluator.SetEvaluator.class);
-    
-    TupleIterable tupleIterableMock = mock(TupleIterable.class);
-    
-    when(tupleIterableMock.iterator()).thenReturn(table.iterator());
-    
-    when(setEvaluatorMock.evaluateTupleIterable()).thenReturn(tupleIterableMock);
-    
-    when(evaluatorMock.getSetEvaluator(eq(funCallArgMock), anyBoolean())).thenReturn( setEvaluatorMock);
-    
-    Iterator<Member> res = SqlConstraintUtils.getSetFromCalculatedMember(evaluatorMock, memberMock);
-    
-    ArrayList<Member> arrayRes = Lists.newArrayList(res);
-    
-    assertEquals(arrayRes.size(), 4);
-    
-    assertEquals(listColumn1.get(0), arrayRes.get(0));
-    assertEquals(listColumn1.get(1), arrayRes.get(1));
-    assertEquals(listColumn2.get(0), arrayRes.get(2));
-    assertEquals(listColumn2.get(1), arrayRes.get(3));
-    
-  }
+    }
 
+    @Test
+    public void testGetSetFromCalculatedMember() {
+        List<Member> listColumn1 = new ArrayList<Member>();
+        List<Member> listColumn2 = new ArrayList<Member>();
+
+        listColumn1.add(new TestMember("elem1_col1"));
+        listColumn1.add(new TestMember("elem2_col1"));
+        listColumn2.add(new TestMember("elem1_col2"));
+        listColumn2.add(new TestMember("elem2_col2"));
+
+        List<List<Member>> table = new ArrayList<List<Member>>();
+        table.add(listColumn1);
+        table.add(listColumn2);
+
+        Member memberMock = mock(Member.class);
+
+        Exp[] funCallArgExps = new Exp[0];
+        ResolvedFunCall funCallArgMock = new ResolvedFunCall(
+            mock(FunDef.class),
+            funCallArgExps, mock(TupleType.class));
+
+        Exp[] funCallExps = {funCallArgMock};
+        ResolvedFunCall funCallMock = new ResolvedFunCall(
+            mock(FunDef.class), funCallExps, mock(TupleType.class));
+
+        when(memberMock.getExpression()).thenReturn(funCallMock);
+
+        Evaluator evaluatorMock = mock(Evaluator.class);
+
+        Evaluator.SetEvaluator setEvaluatorMock = mock(
+            Evaluator.SetEvaluator.class);
+
+        TupleIterable tupleIterableMock = mock(TupleIterable.class);
+
+        when(tupleIterableMock.iterator()).thenReturn(table.iterator());
+
+        when(setEvaluatorMock.evaluateTupleIterable())
+            .thenReturn(tupleIterableMock);
+
+        when(evaluatorMock.getSetEvaluator(eq(funCallArgMock), anyBoolean()))
+            .thenReturn(setEvaluatorMock);
+
+        Iterator<Member> res = SqlConstraintUtils.getSetFromCalculatedMember(
+            evaluatorMock, memberMock);
+
+        ArrayList<Member> arrayRes = Lists.newArrayList(res);
+
+        assertEquals(arrayRes.size(), 4);
+
+        assertEquals(listColumn1.get(0), arrayRes.get(0));
+        assertEquals(listColumn1.get(1), arrayRes.get(1));
+        assertEquals(listColumn2.get(0), arrayRes.get(2));
+        assertEquals(listColumn2.get(1), arrayRes.get(3));
+    }
 }
 
 // End SqlConstraintUtilsTest.java
