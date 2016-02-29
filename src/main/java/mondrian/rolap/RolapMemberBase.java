@@ -718,6 +718,11 @@ public class RolapMemberBase
                 return resource;
             }
         }
+
+        if (this.getLevel() != null && getLevel().getMemberFormatter() != null) {
+        	return getLevel().getMemberFormatter().formatMember(this);
+        }
+
         return Larders.get(this, getLarder(), prop, locale);
     }
 
