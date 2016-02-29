@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -41,6 +41,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.*;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.sql.DataSource;
 
@@ -1217,6 +1218,24 @@ public class TestContext {
         throw new ComparisonFailure(message, expected, actual);
     }
 
+    /**
+     * Checks that an actual string matches an expected string.
+     * Ignores the difference of anonymous class names
+     * in "mondrian...." package.
+     *
+     * <p>If they do not, throws a {@link junit.framework.ComparisonFailure} and
+     * prints the difference, including the actual string as an easily pasted
+     * Java string literal.
+     */
+    public static void assertStubbedEqualsVerbose(
+        String expected,
+        String actual)
+    {
+        assertEqualsVerbose(
+            stubAnonymousClasses(expected),
+            stubAnonymousClasses(actual));
+    }
+
     private static String toJavaString(String s) {
         // Convert [string with "quotes" split
         // across lines]
@@ -2213,6 +2232,43 @@ public class TestContext {
             }
         }
     }
+
+    /**
+     * Replaces anonymous class names (/\$\d+/)
+     * with a stub "$-anonymous-class-"
+     * in constructions
+     * "class&nbsp;mondrian.rest.package.name.ClassName$InnerClassNames".
+     * <br/>
+     * e.g.
+     * <br/>
+     *  <code>stubAnonymousClasses("class mondrian.fun.Fun$21$1")</code>
+     *  results
+     *  <code>
+     *  "class mondrian.fun.Fun$-anonymous-class-$-anonymous-class-"
+     *  </code>.
+     * <br/>
+     * Within a Strings comparison
+     * <br/>
+     * applying this to both compared <code>String</code>s makes the comparison
+     * independent on anonymous class names.
+     * </br>
+     */
+    public static String stubAnonymousClasses(String str) {
+      if (!str.contains("$")) {
+        return str;
+      }
+      final String regex =
+          "(class mondrian(?:\\.\\w+)*(?:\\$(?:\\w+|-anonymous-class-))*?)(?:\\$\\d+)\\b";
+      final String replacement = "$1\\$-anonymous-class-";
+      Pattern p = Pattern.compile(regex);
+      String str1 = p.matcher(str).replaceAll(replacement);
+      while (!str.equals(str1)) {
+        str = str1;
+        str1 = p.matcher(str).replaceAll(replacement);
+      }
+      return str1;
+    }
+
 }
 
 // End TestContext.java

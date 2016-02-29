@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -9521,7 +9521,7 @@ public class FunctionTest extends FoodMartTestCase {
             // 'DependencyTestingCalc' instances embedded in it.
             return;
         }
-        TestContext.assertEqualsVerbose(expectedCalc, actualCalc);
+        TestContext.assertStubbedEqualsVerbose(expectedCalc, actualCalc);
     }
 
     /**
@@ -9542,7 +9542,7 @@ public class FunctionTest extends FoodMartTestCase {
             // 'DependencyTestingCalc' instances embedded in it.
             return;
         }
-        TestContext.assertEqualsVerbose(expectedCalc, actualCalc);
+        TestContext.assertStubbedEqualsVerbose(expectedCalc, actualCalc);
     }
 
     /**
