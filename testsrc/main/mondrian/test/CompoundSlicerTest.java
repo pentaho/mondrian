@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2015 Pentaho Corporation.
+// Copyright (c) 2002-2016 Pentaho Corporation.
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -1384,6 +1384,21 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "</CalculatedMember>",
             null, "Warehouse Sales");
     }
+    public void testCompoundSlicerWithComplexAggregation() {
+      virtualCubeWithDC().assertQueryReturns(
+          "with\n"
+          + "member time.agg as 'Aggregate( { ( Gender.F, Time.[1997].Q1), (Gender.M, Time.[1997].Q2) })'\n"
+          + "select measures.[customer count] on 0\n"
+          + "from sales\n"
+          + "where {time.agg, Time.[1998]}",
+          "Axis #0:\n"
+          + "{[Time].[agg]}\n"
+          + "{[Time].[1998]}\n"
+          + "Axis #1:\n"
+          + "{[Measures].[Customer Count]}\n"
+          + "Row #0: 2,990\n"); // 5,881
+    }
+
 }
 
 // End CompoundSlicerTest.java

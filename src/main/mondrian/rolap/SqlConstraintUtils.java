@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -286,7 +286,7 @@ public class SqlConstraintUtils {
     /**
      * Creates a predicate for the slicer tuple list
      */
-    private static StarPredicate getSlicerTuplesPredicate(
+    static StarPredicate getSlicerTuplesPredicate(
         TupleList tupleList,
         RolapCube baseCube,
         AggStar aggStar,
@@ -696,25 +696,19 @@ public class SqlConstraintUtils {
         List<Member> members,
         Evaluator evaluator)
     {
+      return expandSupportedCalculatedMembers(members, evaluator, false);
+    }
+
+    public static List<Member> expandSupportedCalculatedMembers(
+        List<Member> members,
+        Evaluator evaluator,
+        boolean disjointSlicerTuples)
+    {
         ArrayList<Member> expanded = new ArrayList<Member>();
         for (Member member : members) {
-            if (member.isCalculated()
-                && isSupportedCalculatedMember(member))
-            {
-                expanded.addAll(
-                    expandExpressions(member, null, evaluator));
-            } else if (member instanceof RolapResult.CompoundSlicerRolapMember)
-            {
-                // if the slicer is disjoint, it handles the SQL generation in
-                // a different way
-                expanded.add(
-                    replaceCompoundSlicerPlaceholder(
-                        member,
-                        (RolapEvaluator) evaluator));
-            } else {
-                // just add the member
-                expanded.add(member);
-            }
+            final List<Member> expandedMember = expandSupportedCalculatedMember(
+                member, evaluator, disjointSlicerTuples);
+            expanded.addAll(expandedMember);
         }
         return expanded;
     }
@@ -731,33 +725,46 @@ public class SqlConstraintUtils {
         Evaluator evaluator,
         boolean disjointSlicerTuples)
     {
-        ArrayList<Member> listOfMembers = new ArrayList<Member>();
-        for (Member member : members) {
-            if (member.isCalculated()
-                && isSupportedCalculatedMember(member))
-            {
-                listOfMembers.addAll(
-                    expandExpressions(member, null, evaluator));
-            } else if (member instanceof RolapResult.CompoundSlicerRolapMember)
-            {
-                // if the slicer is disjoint, it handles the SQL generation in
-                // a different way
-                if (!disjointSlicerTuples) {
-                    listOfMembers.add(
-                        replaceCompoundSlicerPlaceholder(
-                            member,
-                            (RolapEvaluator) evaluator));
-                }
-            } else {
-                // just add the member
-                listOfMembers.add(member);
-            }
-        }
-        members = listOfMembers.toArray(new Member[listOfMembers.size()]);
+        List<Member> membersList = Arrays.asList(members);
+        List<Member> expandedMembersList = expandSupportedCalculatedMembers(
+            membersList, evaluator, disjointSlicerTuples);
+        members = expandedMembersList.toArray(
+            new Member[expandedMembersList.size()]);
         return members;
     }
 
-    private static Member replaceCompoundSlicerPlaceholder(
+    public static List<Member> expandSupportedCalculatedMember(
+        Member member,
+        Evaluator evaluator)
+    {
+        return expandSupportedCalculatedMember(
+            member,
+            evaluator,
+            false);
+    }
+
+    public static List<Member> expandSupportedCalculatedMember(
+        Member member,
+        Evaluator evaluator,
+        boolean disjointSlicerTuples)
+    {
+        if (member.isCalculated() && isSupportedCalculatedMember(member)) {
+            return expandExpressions(member, null, evaluator);
+        } else if (member instanceof RolapResult.CompoundSlicerRolapMember) {
+            if (disjointSlicerTuples) {
+              return Collections.emptyList();
+            } else {
+              return Collections.singletonList(replaceCompoundSlicerPlaceholder(
+                  member,
+                  (RolapEvaluator) evaluator));
+            }
+        } else {
+            // just the member
+            return Collections.singletonList(member);
+        }
+    }
+
+    static Member replaceCompoundSlicerPlaceholder(
         Member member,
         RolapEvaluator evaluator)
     {
