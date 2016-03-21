@@ -96,6 +96,10 @@ public class RolapCubeDimension extends RolapDimension {
         return cubeOrdinal;
     }
 
+    public MondrianDef.CubeDimension getDimensionDef() {
+        return xmlDimension;
+    }
+
     public boolean equals(Object o) {
         if (this == o) {
             return true;
