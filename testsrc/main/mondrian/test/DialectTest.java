@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.test;
 
@@ -337,7 +337,7 @@ public class DialectTest extends TestCase {
                 "Syntax error: Encountered \"<EOF>\" at line 1, column 47.",
                 // hive
                 "(?s).*mismatched input \'<EOF>\' expecting Identifier in subquery source.*",
-                // postgres
+                // postgres simular with Greenplum 
                 "(?s)ERROR: subquery in FROM must have an alias.*",
                 // teradata
                 ".*Syntax error, expected something like a name or a Unicode "
@@ -1286,14 +1286,40 @@ public class DialectTest extends TestCase {
     public void testRegularExpressionSqlInjection() throws SQLException {
         // bug mondrian-983
         // We know that mysql's dialect can handle this regex
-        boolean couldTranslate =
-            checkRegex("(?i).*\\Qa\"\"\\); window.alert(\"\"woot');\\E.*");
+        Throwable throwable = null;
+        boolean couldTranslate = true;
+        try {
+            couldTranslate =
+                checkRegex(
+                    "(?i).*\\Qa\"\"\\); window.alert(\"\"woot');\\E.*");
+        } catch (SQLException e) {
+            throwable = e;
+        }
         switch (getDialect().getDatabaseProduct()) {
         case MYSQL:
             assertTrue(couldTranslate);
+            assertNull(throwable);
             break;
+        case GREENPLUM:
+        case POSTGRESQL:
+            assertNotNull(throwable);
+            assertTrue(couldTranslate);
+            assertTrue(
+                throwable.getMessage(),
+                throwable.getMessage().contains(
+                    "ERROR: invalid regular expression:"
+                    + " parentheses () not balanced"));
+            break;          
+        default:
+            // As far as we know, all other databases either handle this regex
+            // just fine or our dialect for that database refuses to translate
+            // the regex to SQL.
+            assertTrue(couldTranslate);
+            assertNull(throwable);
         }
+    }
 
+    public void testRegularExpressionSqlInjection_Slash() throws SQLException {
         // On mysql, this gives error:
         //   Got error 'repetition-operator operand invalid' from regexp
         //
@@ -1301,6 +1327,7 @@ public class DialectTest extends TestCase {
         // SQL (perhaps because it's not a valid java regex). Currently the
         // database gives an error, and that's better than nothing.
         Throwable throwable = null;
+        boolean couldTranslate = true;
         try {
             couldTranslate =
                 checkRegex(
@@ -1317,6 +1344,7 @@ public class DialectTest extends TestCase {
                     "Got error 'repetition-operator operand invalid' from "
                     + "regexp"));
             break;
+        case GREENPLUM:
         case POSTGRESQL:
             assertNotNull(throwable);
             assertTrue(couldTranslate);
@@ -1330,6 +1358,7 @@ public class DialectTest extends TestCase {
             // As far as we know, all other databases either handle this regex
             // just fine or our dialect for that database refuses to translate
             // the regex to SQL.
+            assertTrue(couldTranslate);
             assertNull(throwable);
         }
 
