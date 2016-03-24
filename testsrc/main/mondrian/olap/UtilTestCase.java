@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.olap;
 
 import mondrian.olap.Util.ByteMatcher;
@@ -1398,7 +1397,7 @@ public class UtilTestCase extends TestCase {
         // Will throw a ClassCastException if it fails.
         Util.binarySearch(
             compArray, 0, compArray.length,
-            RolapUtil.sqlNullValue);
+            (Comparable)RolapUtil.sqlNullValue);
     }
 
     public void testByteMatcher() throws Exception {
