@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2002-2015 Pentaho and others
+// Copyright (C) 2002-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -79,6 +79,18 @@ public class ValidMeasureFunDefTest extends TestCase {
 
     context.assertQueryReturns(
         query, expected);
+  }
+
+  public void testValidMeasureWithNullTuple() {
+    TestContext.instance().assertQueryReturns(
+        "with member measures.vm as "
+        + "'ValidMeasure((Measures.[Unit Sales], Store.[All Stores].Parent))' "
+        + "select measures.vm on 0 from [warehouse and sales]",
+        "Axis #0:\n"
+        + "{}\n"
+        + "Axis #1:\n"
+        + "{[Measures].[vm]}\n"
+        + "Row #0: \n");
   }
 }
 
