@@ -1,12 +1,12 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2002-2016 Pentaho and others
+// All Rights Reserved.
 */
-
 package mondrian.test;
 
 import mondrian.calc.TupleCollections;
@@ -212,6 +212,30 @@ public class TupleListTest extends FoodMartTestCase {
                     return null;
                 }
             });
+    }
+
+    public void testCompoundAggCalcMemberInSlicer1() {
+        String query = "WITH member store.agg as "
+                + "'Aggregate(CrossJoin(Store.[Store Name].members, Gender.F))' "
+                + "SELECT filter(customers.[name].members, measures.[unit sales] > 100) on 0 "
+                + "FROM sales where store.agg";
+
+        verifySameNativeAndNot(
+            query,
+            "Compound aggregated member should return same results with native filter on/off",
+            getTestContext());
+    }
+
+    public void testCompoundAggCalcMemberInSlicer2() {
+        String query = "WITH member store.agg as "
+                + "'Aggregate({ ([Product].[Product Family].[Drink], Time.[1997].[Q1]), ([Product].[Product Family].[Food], Time.[1997].[Q2]) }))' "
+                + "SELECT filter(customers.[name].members, measures.[unit sales] > 100) on 0 "
+                + "FROM sales where store.agg";
+
+        verifySameNativeAndNot(
+            query,
+            "Compound aggregated member should return same results with native filter on/off",
+            getTestContext());
     }
 
     private void checkProject(TupleList fm) {

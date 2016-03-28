@@ -10,6 +10,9 @@
 */
 package mondrian.rolap;
 
+import mondrian.calc.TupleIterable;
+import mondrian.calc.TupleList;
+import mondrian.calc.impl.AbstractTupleCursor;
 import mondrian.calc.impl.UnaryTupleList;
 import mondrian.mdx.MemberExpr;
 import mondrian.mdx.ResolvedFunCall;
@@ -19,6 +22,7 @@ import mondrian.olap.Evaluator;
 import mondrian.olap.Evaluator.SetEvaluator;
 import mondrian.olap.Exp;
 import mondrian.olap.FunDef;
+import mondrian.olap.Hierarchy;
 import mondrian.olap.Member;
 import mondrian.olap.Query;
 import mondrian.olap.QueryAxis;
@@ -26,8 +30,10 @@ import mondrian.olap.Syntax;
 import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.CrossJoinTest.NullFunDef;
 import mondrian.olap.fun.ParenthesesFunDef;
+import mondrian.olap.fun.TestMember;
 import mondrian.olap.type.DecimalType;
 import mondrian.olap.type.NullType;
+import mondrian.olap.type.TupleType;
 import mondrian.olap.type.Type;
 import mondrian.server.Execution;
 import mondrian.test.FoodMartTestCase;
@@ -37,11 +43,17 @@ import junit.framework.Assert;
 
 import org.mockito.Mockito;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * <code>SqlConstraintUtilsTest</code> tests the functions defined in
@@ -114,32 +126,17 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
           msg + " - (list, eval)",
           expectedMembersList,
           SqlConstraintUtils.expandSupportedCalculatedMembers(
-              argMembersList, evaluator));
-      assertSameContent(
-          msg + " - (array, eval)",
-          expectedMembersList,
-          SqlConstraintUtils.expandSupportedCalculatedMembers(
-              argMembersArray, evaluator));
+              argMembersList, evaluator).getMembers());
       assertSameContent(
           msg + " - (list, eval, false)",
           expectedMembersList,
           SqlConstraintUtils.expandSupportedCalculatedMembers(
-              argMembersList, evaluator, false));
-      assertSameContent(
-          msg + " - (array, eval, false)",
-          expectedMembersList,
-          SqlConstraintUtils.expandSupportedCalculatedMembers(
-              argMembersArray, evaluator, false));
+              argMembersList, evaluator, false).getMembers());
       assertSameContent(
           msg + " - (list, eval, true)",
           expectedMembersList,
           SqlConstraintUtils.expandSupportedCalculatedMembers(
-              argMembersList, evaluator, true));
-      assertSameContent(
-          msg + " - (array, eval, true)",
-          expectedMembersList,
-          SqlConstraintUtils.expandSupportedCalculatedMembers(
-              argMembersArray, evaluator, true));
+              argMembersList, evaluator, true).getMembers());
     }
 
     private void assertApartExpandSupportedCalculatedMembers(
@@ -159,32 +156,17 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
           msg + " - (list, eval)",
           expectedListByDefault,
           SqlConstraintUtils.expandSupportedCalculatedMembers(
-              argMembersList, evaluator));
-      assertSameContent(
-          msg + " - (array, eval)",
-          expectedListByDefault,
-          SqlConstraintUtils.expandSupportedCalculatedMembers(
-              argMembersArray, evaluator));
+              argMembersList, evaluator).getMembers());
       assertSameContent(
           msg + " - (list, eval, false)",
           expectedListByDefault,
           SqlConstraintUtils.expandSupportedCalculatedMembers(
-              argMembersList, evaluator, false));
-      assertSameContent(
-          msg + " - (array, eval, false)",
-          expectedListByDefault,
-          SqlConstraintUtils.expandSupportedCalculatedMembers(
-              argMembersArray, evaluator, false));
+              argMembersList, evaluator, false).getMembers());
       assertSameContent(
           msg + " - (list, eval, true)",
           expectedListOnDisjoin,
           SqlConstraintUtils.expandSupportedCalculatedMembers(
-              argMembersList, evaluator, true));
-      assertSameContent(
-          msg + " - (array, eval, true)",
-          expectedListOnDisjoin,
-          SqlConstraintUtils.expandSupportedCalculatedMembers(
-              argMembersArray, evaluator, true));
+              argMembersList, evaluator, true).getMembers());
     }
 
     private Member makeNoncalculatedMember(String toString) {
@@ -465,8 +447,10 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
         Member member = makeNoncalculatedMember("0");
 
         // tested call
-        List<Member> r = SqlConstraintUtils.expandSupportedCalculatedMember(
-            member, evaluator);
+        TupleConstraintStruct constraint = new TupleConstraintStruct();
+        SqlConstraintUtils.expandSupportedCalculatedMember(
+            member, evaluator, constraint);
+        List<Member> r = constraint.getMembers();
         // test
         Assert.assertNotNull(r);
         Assert.assertEquals(1, r.size());
@@ -480,8 +464,10 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
         Member member = makeUnsupportedCalculatedMember("0");
 
         // tested call
-        List<Member> r = SqlConstraintUtils.expandSupportedCalculatedMember(
-            member, evaluator);
+        TupleConstraintStruct constraint = new TupleConstraintStruct();
+        SqlConstraintUtils.expandSupportedCalculatedMember(
+            member, evaluator, constraint);
+        List<Member> r = constraint.getMembers();
         // test
         Assert.assertNotNull(r);
         Assert.assertEquals(1, r.size());
@@ -495,8 +481,10 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
         Member member = makeMemberExprMember(resultMember);
 
         // tested call
-        List<Member> r = SqlConstraintUtils.expandSupportedCalculatedMember(
-            member, evaluator);
+        TupleConstraintStruct constraint = new TupleConstraintStruct();
+        SqlConstraintUtils.expandSupportedCalculatedMember(
+            member, evaluator, constraint);
+        List<Member> r = constraint.getMembers();
         // test
         Assert.assertNotNull(r);
         Assert.assertEquals(1, r.size());
@@ -518,8 +506,10 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
         aggregatedMembers = Collections.emptyList();
         member = makeAggregateExprMember(evaluator, aggregatedMembers);
         // tested call
-        r = SqlConstraintUtils.expandSupportedCalculatedMember(
-            member, evaluator, true);
+        TupleConstraintStruct constraint = new TupleConstraintStruct();
+        SqlConstraintUtils.expandSupportedCalculatedMember(
+            member, evaluator, true, constraint);
+        r = constraint.getMembers();
         // test
         assertSameContent("",  aggregatedMembers, r);
 
@@ -527,8 +517,10 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
         aggregatedMembers = Collections.singletonList(endMember0);
         member = makeAggregateExprMember(evaluator, aggregatedMembers);
         // tested call
-        r = SqlConstraintUtils.expandSupportedCalculatedMember(
-            member, evaluator);
+        constraint = new TupleConstraintStruct();
+        SqlConstraintUtils.expandSupportedCalculatedMember(
+            member, evaluator, constraint);
+        r = constraint.getMembers();
         // test
         assertSameContent("",  aggregatedMembers, r);
 
@@ -537,8 +529,10 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
             new Member[] {endMember0, endMember1});
         member = makeAggregateExprMember(evaluator, aggregatedMembers);
         // tested call
-        r = SqlConstraintUtils.expandSupportedCalculatedMember(
-            member, evaluator);
+        constraint = new TupleConstraintStruct();
+        SqlConstraintUtils.expandSupportedCalculatedMember(
+            member, evaluator, constraint);
+        r = constraint.getMembers();
         // test
         assertSameContent("",  aggregatedMembers, r);
 
@@ -547,8 +541,10 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
             new Member[] {endMember0, endMember1, endMember2});
         member = makeAggregateExprMember(evaluator, aggregatedMembers);
         // tested call
-        r = SqlConstraintUtils.expandSupportedCalculatedMember(
-            member, evaluator);
+        constraint = new TupleConstraintStruct();
+        SqlConstraintUtils.expandSupportedCalculatedMember(
+            member, evaluator, constraint);
+        r = constraint.getMembers();
         // test
         assertSameContent("",  aggregatedMembers, r);
     }
@@ -561,8 +557,10 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
             evaluator, resultMember, "0");
 
         // tested call
-        List<Member> r = SqlConstraintUtils.expandSupportedCalculatedMember(
-            member, evaluator);
+        TupleConstraintStruct constraint = new TupleConstraintStruct();
+        SqlConstraintUtils.expandSupportedCalculatedMember(
+            member, evaluator, constraint);
+        List<Member> r = constraint.getMembers();
         // test
         Assert.assertNotNull(r);
         Assert.assertEquals(1, r.size());
@@ -661,8 +659,163 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
           "(0, placeholder)",
           expectedMembers, expectedMembersOnDisjoin, argMembers,
           rolapEvaluator);
-  }
+    }
 
+    /**
+     * calculation test for disjoint tuples
+     */
+    public void testGetSetFromCalculatedMember() {
+        List<Member> listColumn1 = new ArrayList<Member>();
+        List<Member> listColumn2 = new ArrayList<Member>();
+
+        listColumn1.add(new TestMember("elem1_col1"));
+        listColumn1.add(new TestMember("elem2_col1"));
+        listColumn2.add(new TestMember("elem1_col2"));
+        listColumn2.add(new TestMember("elem2_col2"));
+
+        final List<List<Member>> table = new ArrayList<List<Member>>();
+        table.add(listColumn1);
+        table.add(listColumn2);
+
+        List<Member> arrayRes = getCalculatedMember(table, 1).getMembers();
+
+        assertEquals(arrayRes.size(), 4);
+
+        assertEquals(listColumn1.get(0), arrayRes.get(0));
+        assertEquals(listColumn1.get(1), arrayRes.get(1));
+        assertEquals(listColumn2.get(0), arrayRes.get(2));
+        assertEquals(listColumn2.get(1), arrayRes.get(3));
+    }
+
+    /**
+     * calculation test for disjoint tuples
+     */
+    public void testGetSetFromCalculatedMember_disjoint() {
+        final int ARITY = 2;
+
+        List<Member> listColumn1 = new ArrayList<Member>();
+        List<Member> listColumn2 = new ArrayList<Member>();
+
+        listColumn1.add(new TestMember("elem1_col1"));
+        listColumn1.add(new TestMember("elem2_col1"));
+        listColumn2.add(new TestMember("elem1_col2"));
+        listColumn2.add(new TestMember("elem2_col2"));
+
+        final List<List<Member>> table = new ArrayList<List<Member>>();
+        table.add(listColumn1);
+        table.add(listColumn2);
+
+        TupleConstraintStruct res = getCalculatedMember(table, ARITY);
+
+        TupleList tuple = res.getDisjoinedTupleLists().get(0);
+
+        assertTrue(res.getMembers().isEmpty()); // should be empty
+        assertEquals(tuple.getArity(), ARITY);
+        assertEquals(tuple.get(0).get(0), listColumn1.get(0));
+        assertEquals(tuple.get(0).get(1), listColumn1.get(1));
+        assertEquals(tuple.get(1).get(0), listColumn2.get(0));
+        assertEquals(tuple.get(1).get(1), listColumn2.get(1));
+    }
+
+    public TupleConstraintStruct getCalculatedMember(
+        final List<List<Member>> table,
+        int arity)
+    {
+        Member memberMock = mock(Member.class);
+
+        Exp[] funCallArgExps = new Exp[0];
+        ResolvedFunCall funCallArgMock = new ResolvedFunCall(
+            mock(FunDef.class),
+            funCallArgExps, mock(TupleType.class));
+
+        Exp[] funCallExps = {funCallArgMock};
+        ResolvedFunCall funCallMock = new ResolvedFunCall(
+            mock(FunDef.class), funCallExps, mock(TupleType.class));
+
+        when(memberMock.getExpression()).thenReturn(funCallMock);
+
+        Evaluator evaluatorMock = mock(Evaluator.class);
+
+        Evaluator.SetEvaluator setEvaluatorMock = mock(
+            Evaluator.SetEvaluator.class);
+
+        TupleIterable tupleIterableMock = mock(TupleIterable.class);
+
+        when(tupleIterableMock.iterator()).thenReturn(table.iterator());
+        when(tupleIterableMock.getArity()).thenReturn(arity);
+
+        AbstractTupleCursor cursor = new AbstractTupleCursor(arity) {
+            Iterator<List<Member>> iterator = table.iterator();
+            List<Member> curList;
+
+            @Override
+            public boolean forward() {
+                boolean hasNext = iterator.hasNext();
+                if (hasNext) {
+                    curList = iterator.next();
+                } else {
+                    curList = null;
+                }
+                return hasNext;
+            }
+
+            @Override
+            public List<Member> current() {
+                return curList;
+            }
+        };
+
+        when(tupleIterableMock.tupleCursor()).thenReturn(cursor);
+
+        when(setEvaluatorMock.evaluateTupleIterable())
+            .thenReturn(tupleIterableMock);
+
+        when(evaluatorMock.getSetEvaluator(eq(funCallArgMock), anyBoolean()))
+            .thenReturn(setEvaluatorMock);
+
+        TupleConstraintStruct constraint = new TupleConstraintStruct();
+        SqlConstraintUtils.expandSetFromCalculatedMember(
+            evaluatorMock, memberMock, constraint);
+        return constraint;
+    }
+
+    public void testRemoveCalculatedAndDefaultMembers() {
+        Hierarchy hierarchy = mock(Hierarchy.class);
+
+        // create members
+        List<Member> members = new ArrayList<Member>();
+        members.add(createMemberMock(false, false, hierarchy)); // 0:passed
+        members.add(createMemberMock(true, false, hierarchy)); // 1:not passed
+        members.add(createMemberMock(true, true, hierarchy)); // 2:passed
+        members.add(createMemberMock(false, true, hierarchy)); // 3:passed
+        members.add(createMemberMock(false, true, hierarchy)); // 4:default,
+                                                               //   not passed
+        members.add(createMemberMock(false, false, hierarchy)); // 5:passed
+        members.add(createMemberMock(true, false, hierarchy)); // 6:not passed
+
+        when(hierarchy.getDefaultMember()).thenReturn(members.get(4));
+
+        List<Member> newMembers = SqlConstraintUtils
+            .removeCalculatedAndDefaultMembers(members);
+
+        assertEquals(4, newMembers.size());
+        assertTrue(newMembers.contains(members.get(0)));
+        assertTrue(newMembers.contains(members.get(2)));
+        assertTrue(newMembers.contains(members.get(3)));
+        assertTrue(newMembers.contains(members.get(5)));
+    }
+
+    private Member createMemberMock(
+        boolean isCalculated,
+        boolean isParentChildLeaf,
+        Hierarchy hierarchy)
+    {
+        Member mock = mock(Member.class);
+        when(mock.isCalculated()).thenReturn(isCalculated);
+        when(mock.isParentChildLeaf()).thenReturn(isParentChildLeaf);
+        when(mock.getHierarchy()).thenReturn(hierarchy);
+        return mock;
+    }
 }
 
 // End SqlConstraintUtilsTest.java
