@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -15,6 +15,8 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.VisualTotalsFunDef;
+import mondrian.rolap.format.DefaultNumberFormatter;
+import mondrian.rolap.format.FormatterFactory;
 import mondrian.server.Locus;
 import mondrian.spi.PropertyFormatter;
 import mondrian.util.*;
@@ -24,7 +26,6 @@ import org.apache.log4j.Logger;
 
 import org.eigenbase.util.property.StringProperty;
 
-import java.math.BigDecimal;
 import java.util.*;
 
 
@@ -606,20 +607,13 @@ public class RolapMemberBase
                 this, propertyName,
                 getPropertyValue(propertyName));
         }
-
-        Object val = getPropertyValue(propertyName);
-
-        if (val != null && val instanceof Number) {
-            // Numbers are a special case. We don't want any
-            // scientific notations, so we wrap in a BigDecimal
-            // before calling toString. This is cheap to perform here
-            // because this method only gets called by the GUI.
-            val = new BigDecimal(((Number)val).doubleValue());
-        }
-
-        return (val == null)
-            ? ""
-            : val.toString();
+        // Numbers are a special case. We don't want any
+        // scientific notations, as well as inaccurate decimal values.
+        // So we wrap in a BigDecimal, and format before calling toString.
+        // This is cheap to perform here,
+        // because this method only gets called by the GUI.
+        return FormatterFactory.getDefaultNumberFormatter()
+                .format(getPropertyValue(propertyName));
     }
 
     public boolean isParentChildLeaf() {
@@ -1075,6 +1069,19 @@ public class RolapMemberBase
         // That happens implicitly in setContext.
         evaluator.setContext(defaultMember);
         evaluator.setExpanding(this);
+    }
+
+    /**
+     * Takes generic caption column value, performs formatting,
+     * and sets as a caption.
+     *
+     * @param captionValue caption column value
+     */
+    public void setCaption(Object captionValue) {
+        DefaultNumberFormatter defaultNumberFormatter =
+                FormatterFactory.getDefaultNumberFormatter();
+        String caption = defaultNumberFormatter.format(captionValue);
+        setCaption(caption);
     }
 }
 

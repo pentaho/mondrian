@@ -1048,7 +1048,10 @@ RME is this right
             member.setOrdinal(lastOrdinal++);
         }
         if (captionValue != null) {
-            member.setCaption(captionValue.toString());
+            // passing caption column raw value
+            // to be properly formatted, in case if it's numeric,
+            // and finally set as a caption
+            member.setCaption(captionValue);
         }
         if (parentChild) {
             // Create a 'public' and a 'data' member. The public member is

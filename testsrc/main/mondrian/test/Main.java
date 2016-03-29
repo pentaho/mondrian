@@ -395,6 +395,8 @@ public class Main extends TestSuite {
                 logger.warn("skipping BatchedFillTests");
             }
 
+            addTest(suite, RolapMemberBaseTest.class);
+
             // Must be the last test.
             addTest(suite, TerminatorTest.class);
         }
