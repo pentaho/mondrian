@@ -1399,6 +1399,29 @@ public class CompoundSlicerTest extends FoodMartTestCase {
           + "Row #0: 2,990\n"); // 5,881
     }
 
+    public void testCompoundAggCalcMemberInSlicer1() {
+        String query = "WITH member store.agg as "
+                + "'Aggregate(CrossJoin(Store.[Store Name].members, Gender.F))' "
+                + "SELECT filter(customers.[name].members, measures.[unit sales] > 100) on 0 "
+                + "FROM sales where store.agg";
+
+        verifySameNativeAndNot(
+            query,
+            "Compound aggregated member should return same results with native filter on/off",
+            getTestContext());
+    }
+
+    public void testCompoundAggCalcMemberInSlicer2() {
+        String query = "WITH member store.agg as "
+                + "'Aggregate({ ([Product].[Product Family].[Drink], Time.[1997].[Q1]), ([Product].[Product Family].[Food], Time.[1997].[Q2]) }))' "
+                + "SELECT filter(customers.[name].members, measures.[unit sales] > 100) on 0 "
+                + "FROM sales where store.agg";
+
+        verifySameNativeAndNot(
+            query,
+            "Compound aggregated member should return same results with native filter on/off",
+            getTestContext());
+    }
 }
 
 // End CompoundSlicerTest.java
