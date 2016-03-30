@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2002-2015 Pentaho and others
+// Copyright (C) 2002-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -68,6 +68,11 @@ public class ValidMeasureFunDef extends FunDefBase
             RolapCube baseCube;
             RolapCube virtualCube = (RolapCube) evaluator.getCube();
             final List<Member> memberList = getCalcsMembers(evaluator);
+
+            if (memberList == null || memberList.size() == 0) {
+              // there are no members in the ValidMeasure
+              return null;
+            }
 
             if (!virtualCube.isVirtual()) {
                 // this is not a virtual cube,
@@ -138,7 +143,11 @@ public class ValidMeasureFunDef extends FunDefBase
             } else {
                 final Member[] tupleMembers =
                     calc.unwrap((TupleCalc.class)).evaluateTuple(evaluator);
-                memberList = Arrays.asList(tupleMembers);
+                if (tupleMembers == null) {
+                  memberList = null;
+                } else {
+                  memberList = Arrays.asList(tupleMembers);
+                }
             }
             return memberList;
         }
