@@ -278,7 +278,7 @@ public class RolapLevel extends LevelBase {
         return (flags & FLAG_UNIQUE) != 0;
     }
 
-    final Dialect.Datatype getDatatype() {
+    public final Dialect.Datatype getDatatype() {
         return datatype;
     }
 
