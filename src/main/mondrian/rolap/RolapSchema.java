@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -1446,6 +1446,11 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             if (star == null) {
                 star = makeRolapStar(fact);
                 stars.put(factTableName, star);
+                // let cache manager load pending segments
+                // from external cache if needed
+                MondrianServer.forConnection(
+                    internalConnection).getAggregationManager().cacheMgr
+                    .loadCacheForStar(star);
             }
             return star;
         }
