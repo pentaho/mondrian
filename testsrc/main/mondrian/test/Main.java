@@ -230,6 +230,7 @@ public class Main extends TestSuite {
             addTest(suite, ScenarioTest.class);
             addTest(suite, BasicQueryTest.class);
             addTest(suite, SegmentCacheTest.class);
+            addTest(suite, SegmentCacheManager_ExternalCache_Test.class);
             addTest(suite, CVBasicTest.class, "suite");
             addTest(suite, GrandTotalTest.class, "suite");
             addTest(suite, HangerDimensionTest.class, "suite");
