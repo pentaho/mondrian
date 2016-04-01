@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -108,6 +108,8 @@ public abstract class MemberBase
         if (mf != null) {
             return mf.formatMember(this);
         }
+
+        // fallback if formatter is null
         final String caption = super.getCaption();
         return (caption != null)
             ? caption

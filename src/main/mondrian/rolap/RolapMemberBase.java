@@ -15,8 +15,6 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.VisualTotalsFunDef;
-import mondrian.rolap.format.DefaultNumberFormatter;
-import mondrian.rolap.format.FormatterFactory;
 import mondrian.server.Locus;
 import mondrian.spi.PropertyFormatter;
 import mondrian.util.*;
@@ -87,6 +85,8 @@ public class RolapMemberBase
 
     private Boolean containsAggregateFunction = null;
 
+    private Object captionValue;
+
     /**
      * Creates a RolapMemberBase.
      *
@@ -153,6 +153,28 @@ public class RolapMemberBase
 
     public RolapMember getParentMember() {
         return (RolapMember) super.getParentMember();
+    }
+
+    /**
+     * An object value to be formatted further by member formatter.
+     *
+     * Actually, acts like MemberBase#getCaption(),
+     * but using not formatted object values.
+     */
+    public Object getCaptionValue() {
+        if (captionValue != null) {
+            return captionValue;
+        }
+
+        // falling back to member name, as it's done in MemberBase
+        Object name = getPropertyValue(Property.NAME.name);
+
+        // falling back to member key, as it's done in #getName()
+        return name != null ? name : key;
+    }
+
+    public void setCaptionValue(Object captionValue) {
+        this.captionValue = captionValue;
     }
 
     // Regular members do not have annotations. Measures and calculated members
@@ -601,19 +623,13 @@ public class RolapMemberBase
                 break;
             }
         }
+        Object propertyValue = getPropertyValue(propertyName);
         PropertyFormatter pf;
         if (prop != null && (pf = prop.getFormatter()) != null) {
-            return pf.formatProperty(
-                this, propertyName,
-                getPropertyValue(propertyName));
+            return pf.formatProperty(this, propertyName, propertyValue);
         }
-        // Numbers are a special case. We don't want any
-        // scientific notations, as well as inaccurate decimal values.
-        // So we wrap in a BigDecimal, and format before calling toString.
-        // This is cheap to perform here,
-        // because this method only gets called by the GUI.
-        return FormatterFactory.getDefaultNumberFormatter()
-                .format(getPropertyValue(propertyName));
+        // fallback
+        return propertyValue == null ? null : propertyValue.toString();
     }
 
     public boolean isParentChildLeaf() {
@@ -1071,18 +1087,6 @@ public class RolapMemberBase
         evaluator.setExpanding(this);
     }
 
-    /**
-     * Takes generic caption column value, performs formatting,
-     * and sets as a caption.
-     *
-     * @param captionValue caption column value
-     */
-    public void setCaption(Object captionValue) {
-        DefaultNumberFormatter defaultNumberFormatter =
-                FormatterFactory.getDefaultNumberFormatter();
-        String caption = defaultNumberFormatter.format(captionValue);
-        setCaption(caption);
-    }
 }
 
 // End RolapMemberBase.java

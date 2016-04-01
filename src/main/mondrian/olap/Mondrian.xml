@@ -2319,7 +2319,31 @@ Revision is $Id$
         <CData/>
     </Element>
 
-    <Element type="CellFormatter">
+    <Element type="ElementFormatter" abstract="true">
+        <Doc>
+            Abstract type just in order to avoid duplication.
+        </Doc>
+        <Attribute name="className" required="false">
+            <Doc>
+                Name of the class which implements this formatter.
+                Must implement the corresponding SPI
+                interface.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Attribute>
+        <Object name="script" required="false" type="Script">
+            <Doc>
+                Script to implement this formatter.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Object>
+    </Element>
+
+    <Element type="CellFormatter" class="ElementFormatter">
         <Doc>
             Plugin that formats the values of cells.
             It must be implemented by a Java
@@ -2327,27 +2351,9 @@ Revision is $Id$
             <a href="api/mondrian/spi/CellFormatter.html">mondrian.spi.CellFormatter</a>,
             or by a script.
         </Doc>
-        <Attribute name="className" required="false">
-            <Doc>
-                Name of the class which implemenets this cell formatter.
-                Must implement the <code>mondrian.spi.CellFormatter</code>
-                interface.
-
-                <p>Either the "Script" element or the "className" attribute
-                must be specified.</p>
-            </Doc>
-        </Attribute>
-        <Object name="script" required="false" type="Script">
-            <Doc>
-                Script to implement this cell formatter.
-
-                <p>Either the "Script" element or the "className" attribute
-                must be specified.</p>
-            </Doc>
-        </Object>
     </Element>
 
-    <Element type="MemberFormatter">
+    <Element type="MemberFormatter" class="ElementFormatter">
         <Doc>
             Plugin that formats members.
             It must be implemented by a Java
@@ -2355,27 +2361,9 @@ Revision is $Id$
             <a href="api/mondrian/spi/MemberFormatter.html">mondrian.spi.MemberFormatter</a>,
             or by a script.
         </Doc>
-        <Attribute name="className" required="false">
-            <Doc>
-                Name of the class which implemenets this member formatter.
-                Must implement the <code>mondrian.spi.MemberFormatter</code>
-                interface.
-
-                <p>Either the "Script" element or the "className" attribute
-                must be specified.</p>
-            </Doc>
-        </Attribute>
-        <Object name="script" required="false" type="Script">
-            <Doc>
-                Script to implement this member formatter.
-
-                <p>Either the "Script" element or the "className" attribute
-                must be specified.</p>
-            </Doc>
-        </Object>
     </Element>
 
-    <Element type="PropertyFormatter">
+    <Element type="PropertyFormatter" class="ElementFormatter">
         <Doc>
             Plugin that formats properties.
             It must be implemented by a Java
@@ -2383,24 +2371,6 @@ Revision is $Id$
             <a href="api/mondrian/spi/PropertyFormatter.html">mondrian.spi.PropertyFormatter</a>,
             or by a script.
         </Doc>
-        <Attribute name="className" required="false">
-            <Doc>
-                Name of the class which implemenets this property formatter.
-                Must implement the <code>mondrian.spi.PropertyFormatter</code>
-                interface.
-
-                <p>Either the "Script" element or the "className" attribute
-                must be specified.</p>
-            </Doc>
-        </Attribute>
-        <Object name="script" required="false" type="Script">
-            <Doc>
-                Script to implement this property formatter.
-
-                <p>Either the "Script" element or the "className" attribute
-                must be specified.</p>
-            </Doc>
-        </Object>
     </Element>
 </Model>
 

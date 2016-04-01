@@ -5,22 +5,26 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.format.FormatterCreateContext;
+import mondrian.rolap.format.FormatterFactory;
 import mondrian.spi.Dialect;
 import mondrian.spi.PropertyFormatter;
-import mondrian.spi.impl.Scripts;
 
 import org.apache.log4j.Logger;
 
 import org.olap4j.impl.UnmodifiableArrayMap;
 
-import java.util.*;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <code>RolapLevel</code> implements {@link Level} for a ROLAP database.
@@ -347,32 +351,18 @@ public class RolapLevel extends LevelBase {
             setCaption(xmlLevel.caption);
         }
 
-        final String memberFormatterClassName;
-        final Scripts.ScriptDefinition scriptDefinition;
-        if (xmlLevel.memberFormatter != null) {
-            memberFormatterClassName = xmlLevel.memberFormatter.className;
-            scriptDefinition =
-                RolapSchema.toScriptDef(xmlLevel.memberFormatter.script);
-        } else {
-            memberFormatterClassName = xmlLevel.formatter;
-            scriptDefinition = null;
-        }
-        if (memberFormatterClassName != null || scriptDefinition != null) {
-            try {
-                memberFormatter =
-                    RolapSchema.getMemberFormatter(
-                        memberFormatterClassName,
-                        scriptDefinition);
-            } catch (Exception e) {
-                throw MondrianResource.instance().MemberFormatterLoadFailed.ex(
-                    xmlLevel.formatter, getUniqueName(), e);
-            }
-        }
+        FormatterCreateContext memberFormatterContext =
+            new FormatterCreateContext.Builder(getUniqueName())
+                .formatterDef(xmlLevel.memberFormatter)
+                .formatterAttr(xmlLevel.formatter)
+                .build();
+        memberFormatter =
+            FormatterFactory.instance()
+                .createRolapMemberFormatter(memberFormatterContext);
     }
 
     // helper for constructor
-    private static RolapProperty[] createProperties(
-        MondrianDef.Level xmlLevel)
+    private static RolapProperty[] createProperties(MondrianDef.Level xmlLevel)
     {
         List<RolapProperty> list = new ArrayList<RolapProperty>();
         final MondrianDef.Expression nameExp = xmlLevel.getNameExp();
@@ -387,35 +377,14 @@ public class RolapLevel extends LevelBase {
         for (int i = 0; i < xmlLevel.properties.length; i++) {
             MondrianDef.Property xmlProperty = xmlLevel.properties[i];
 
-            final PropertyFormatter formatter;
-            final String propertyFormatterClassName;
-            final Scripts.ScriptDefinition scriptDefinition;
-            if (xmlProperty.propertyFormatter != null) {
-                propertyFormatterClassName =
-                    xmlProperty.propertyFormatter.className;
-                scriptDefinition =
-                    RolapSchema.toScriptDef(
-                        xmlProperty.propertyFormatter.script);
-            } else {
-                propertyFormatterClassName = xmlProperty.formatter;
-                scriptDefinition = null;
-            }
-            if (propertyFormatterClassName != null
-                || scriptDefinition != null)
-            {
-                try {
-                    formatter =
-                        RolapSchema.createPropertyFormatter(
-                            propertyFormatterClassName,
-                            scriptDefinition);
-                } catch (Exception e) {
-                    throw MondrianResource.instance()
-                        .PropertyFormatterLoadFailed.ex(
-                            propertyFormatterClassName, xmlProperty.name, e);
-                }
-            } else {
-                formatter = null;
-            }
+            FormatterCreateContext formatterContext =
+                    new FormatterCreateContext.Builder(xmlProperty.name)
+                        .formatterDef(xmlProperty.propertyFormatter)
+                        .formatterAttr(xmlProperty.formatter)
+                        .build();
+            PropertyFormatter formatter =
+                FormatterFactory.instance()
+                    .createPropertyFormatter(formatterContext);
 
             list.add(
                 new RolapProperty(
@@ -686,5 +655,4 @@ public class RolapLevel extends LevelBase {
         return null;
     }
 }
-
 // End RolapLevel.java

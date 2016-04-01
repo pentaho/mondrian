@@ -15,10 +15,7 @@ import mondrian.olap.fun.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.AggTableManager;
-import mondrian.spi.CellFormatter;
 import mondrian.spi.*;
-import mondrian.spi.MemberFormatter;
-import mondrian.spi.PropertyFormatter;
 import mondrian.spi.impl.Scripts;
 import mondrian.util.ByteString;
 import mondrian.util.ClassResolver;
@@ -232,104 +229,6 @@ public class RolapSchema implements Schema {
         this.md5Bytes = md5Bytes;
         this.defaultRole = Util.createRootRole(this);
         this.internalConnection = internalConnection;
-    }
-
-    /**
-     * Given the name of a cell formatter class and/or a cell formatter script,
-     * returns a cell formatter.
-     *
-     * @param className Name of cell formatter class
-     * @param script Script
-     * @return Cell formatter
-     * @throws Exception if class cannot be instantiated
-     */
-    static CellFormatter getCellFormatter(
-        String className,
-        Scripts.ScriptDefinition script)
-        throws Exception
-    {
-        if (className == null && script == null) {
-            throw Util.newError(
-                "Must specify either className attribute or Script element");
-        }
-        if (className != null && script != null) {
-            throw Util.newError(
-                "Must not specify both className attribute and Script element");
-        }
-        if (className != null) {
-            @SuppressWarnings({"unchecked"})
-            Class<CellFormatter> clazz =
-                (Class<CellFormatter>) Class.forName(className);
-            Constructor<CellFormatter> ctor = clazz.getConstructor();
-            return ctor.newInstance();
-        } else {
-            return Scripts.cellFormatter(script);
-        }
-    }
-
-    /**
-     * Given the name of a member formatter class, returns a member formatter.
-     *
-     * @param className Name of cell formatter class
-     * @param script Script
-     * @return Member formatter
-     * @throws Exception if class cannot be instantiated
-     */
-    static MemberFormatter getMemberFormatter(
-        String className,
-        Scripts.ScriptDefinition script)
-        throws Exception
-    {
-        if (className == null && script == null) {
-            throw Util.newError(
-                "Must specify either className attribute or Script element");
-        }
-        if (className != null && script != null) {
-            throw Util.newError(
-                "Must not specify both className attribute and Script element");
-        }
-        if (className != null) {
-            @SuppressWarnings({"unchecked"})
-            Class<MemberFormatter> clazz =
-                (Class<MemberFormatter>) Class.forName(className);
-            Constructor<MemberFormatter> ctor = clazz.getConstructor();
-            return ctor.newInstance();
-        } else {
-            return Scripts.memberFormatter(script);
-        }
-    }
-
-    /**
-     * Given the name of a property formatter class, returns a propert
-     * formatter.
-     *
-     * @param className Name of property formatter class
-     * @param script Script
-     * @return Property formatter
-     * @throws Exception if class cannot be instantiated
-     */
-    static PropertyFormatter createPropertyFormatter(
-        String className,
-        Scripts.ScriptDefinition script)
-        throws Exception
-    {
-        if (className == null && script == null) {
-            throw Util.newError(
-                "Must specify either className attribute or Script element");
-        }
-        if (className != null && script != null) {
-            throw Util.newError(
-                "Must not specify both className attribute and Script element");
-        }
-        if (className != null) {
-            @SuppressWarnings({"unchecked"})
-            Class<PropertyFormatter> clazz =
-                (Class<PropertyFormatter>) Class.forName(className);
-            Constructor<PropertyFormatter> ctor = clazz.getConstructor();
-            return ctor.newInstance();
-        } else {
-            return Scripts.propertyFormatter(script);
-        }
     }
 
     protected void flushSegments() {

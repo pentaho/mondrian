@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -18,10 +18,11 @@ import mondrian.olap.fun.FunDefBase;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.rolap.cache.SoftSmartCache;
+import mondrian.rolap.format.FormatterCreateContext;
+import mondrian.rolap.format.FormatterFactory;
 import mondrian.server.Locus;
 import mondrian.server.Statement;
 import mondrian.spi.CellFormatter;
-import mondrian.spi.impl.Scripts;
 
 import org.apache.log4j.Logger;
 
@@ -369,27 +370,16 @@ public class RolapCube extends CubeBase {
                 aggregator, xmlMeasure.datatype,
                 RolapHierarchy.createAnnotationMap(xmlMeasure.annotations));
 
-        final String cellFormatterClassName;
-        final Scripts.ScriptDefinition scriptDefinition;
-        if (xmlMeasure.cellFormatter != null) {
-            cellFormatterClassName = xmlMeasure.cellFormatter.className;
-            scriptDefinition =
-                RolapSchema.toScriptDef(xmlMeasure.cellFormatter.script);
-        } else {
-            cellFormatterClassName = xmlMeasure.formatter;
-            scriptDefinition = null;
-        }
-        if (cellFormatterClassName != null || scriptDefinition != null) {
-            try {
-                CellFormatter cellFormatter =
-                    RolapSchema.getCellFormatter(
-                        cellFormatterClassName,
-                        scriptDefinition);
-                measure.setFormatter(cellFormatter);
-            } catch (Exception e) {
-                throw MondrianResource.instance().CellFormatterLoadFailed.ex(
-                    cellFormatterClassName, measure.getUniqueName(), e);
-            }
+        FormatterCreateContext formatterContext =
+                new FormatterCreateContext.Builder(measure.getUniqueName())
+                    .formatterDef(xmlMeasure.cellFormatter)
+                    .formatterAttr(xmlMeasure.formatter)
+                    .build();
+        CellFormatter cellFormatter =
+            FormatterFactory.instance()
+                .createCellFormatter(formatterContext);
+        if (cellFormatter != null) {
+            measure.setFormatter(cellFormatter);
         }
 
         // Set member's caption, if present.
