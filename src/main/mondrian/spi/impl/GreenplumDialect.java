@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2008-2009 Millersoft
-// Copyright (C) 2011-2013 Pentaho and others
+// Copyright (C) 2011-2016 Pentaho and others
 // All Rights Reserved.
 */
 
@@ -54,15 +54,11 @@ public class GreenplumDialect extends PostgreSqlDialect {
     }
 
     public boolean requiresAliasForFromQuery() {
-        return false;
+        return true;
     }
 
     public boolean allowsCountDistinct() {
         return true;
-    }
-
-    public boolean allowsFromQuery() {
-        return false;
     }
 
     public DatabaseProduct getDatabaseProduct() {
