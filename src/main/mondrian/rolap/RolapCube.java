@@ -2477,7 +2477,7 @@ public class RolapCube extends CubeBase {
     /**
      * Returns this cube's fact table, null if the cube is virtual.
      */
-    MondrianDef.RelationOrJoin getFact() {
+    public MondrianDef.RelationOrJoin getFact() {
         return fact;
     }
 
