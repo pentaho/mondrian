@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -359,13 +359,16 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             for (RolapStar.Column column
                 : predicate.getConstrainedColumnList())
             {
+                if (column == null) {
+                    continue;
+                }
                 final RolapStar.Table table = column.getTable();
                 table.addToFrom(sqlQuery, false, true);
             }
             StringBuilder buf = new StringBuilder();
             predicate.toSql(sqlQuery, buf);
             final String where = buf.toString();
-            if (!where.equals("true")) {
+            if (!where.equals("true") && !where.equals("()")) {
                 sqlQuery.addWhere(where);
             }
         }
