@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
 
 package mondrian.rolap.agg;
@@ -63,8 +63,13 @@ public abstract class ListPredicate implements StarPredicate {
         if (columnBitKey == null) {
             for (StarPredicate predicate : children) {
                 if (columnBitKey == null) {
+                    BitKey constrainedColumnBitKey =
+                        predicate.getConstrainedColumnBitKey();
+                    if (constrainedColumnBitKey == null) {
+                        continue;
+                    }
                     columnBitKey =
-                        predicate.getConstrainedColumnBitKey().copy();
+                        constrainedColumnBitKey.copy();
                 } else {
                     columnBitKey =
                         columnBitKey.or(predicate.getConstrainedColumnBitKey());

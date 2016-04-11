@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
 
 package mondrian.rolap.agg;
@@ -87,6 +87,9 @@ public class OrPredicate extends ListPredicate {
     {
         BitKey inListRhsBitKey;
         BitKey columnBitKey = getConstrainedColumnBitKey();
+        if (columnBitKey == null) {
+            return;
+        }
         if (predicate instanceof ValueColumnPredicate) {
             // OR of column values from the same column
             inListRhsBitKey =

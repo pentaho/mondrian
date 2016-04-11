@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 12 August, 2001
@@ -838,6 +838,12 @@ public class RolapStar {
                     Column object1,
                     Column object2)
                 {
+                    if (object1 == null) {
+                        return -1;
+                    }
+                    if (object2 == null) {
+                        return 1;
+                    }
                     return Util.compare(
                         object1.getBitPosition(),
                         object2.getBitPosition());
