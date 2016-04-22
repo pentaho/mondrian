@@ -1090,6 +1090,18 @@ public class SegmentBuilderTest extends BatchTestCase {
     return new TreeSet<Comparable>(list);
   }
 
+  public void testRollupWithNonUniqueColumns() {
+      Pair<SegmentHeader, SegmentBody> rollup =
+          SegmentBuilder.rollup(
+              makeSegmentMap(
+                  new String[] {"col1", "col2", "col3", "col2"},
+                  new String[][] {{"0.0"}, {"0.0"}, {"0.0"}, {"0.0"}},
+                  10, 15, false, null),
+              new HashSet<String>(Arrays.asList("col1", "col2")),
+              null, RolapAggregator.Sum, Dialect.Datatype.Numeric);
+      assertEquals(3, rollup.left.getConstrainedColumns().size());
+  }
+
 }
 
 // End SegmentBuilderTest.java
