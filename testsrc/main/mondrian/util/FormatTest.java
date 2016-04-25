@@ -469,6 +469,10 @@ public class FormatTest extends TestCase {
         checkDate("Long Time",     "8:09:06 PM", "8#09#06 PM", "8:09:06 PM");
         checkDate("Medium Time",   "8:09 PM",    "8#09 PM",    "8:09 PM");
         checkDate("Short Time",    "20:09",      "20#09",      "20:09");
+        checkDate("mmmmm-dd", "April-29", "Avril-29", "April-29");
+        checkDate("MMMMM-dd", "April-29", "Avril-29", "April-29");
+        checkDate("MM-dd", "04-29", "04-29", "04-29");
+        checkDate("MMMMM-dd-yyyy HH:mm AM/PM", "April-29-1969 20:09 PM", "Avril-29-1969 20#09 PM", "April-29-1969 20:09 PM");
     }
 
     private void checkDate(String format, String en, String fr, String de) {
