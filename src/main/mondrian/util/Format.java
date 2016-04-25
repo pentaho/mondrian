@@ -1023,6 +1023,7 @@ public class Format {
                 break;
             }
             case FORMAT_MM:
+            case FORMAT_MM_UPPER:
             {
                 int mm = calendar.get(Calendar.MONTH) + 1; // 0-based
                 if (mm < 10) {
@@ -1040,6 +1041,8 @@ public class Format {
             }
             case FORMAT_MMMM_LOWER:
             case FORMAT_MMMM_UPPER:
+            case FORMAT_MMMMM_LOWER:
+            case FORMAT_MMMMM_UPPER:
             {
                 int m = calendar.get(Calendar.MONTH); // 0-based
                 buf.append(locale.monthsLong[m]); // e.g. January
@@ -1082,6 +1085,7 @@ public class Format {
                 break;
             }
             case FORMAT_HH:
+            case FORMAT_HH_UPPER:
             {
                 int h = calendar.get(
                     twelveHourClock ? Calendar.HOUR : Calendar.HOUR_OF_DAY);
@@ -1378,6 +1382,10 @@ public class Format {
     private static final int FORMAT_MMM_LOWER = 55;
     private static final int FORMAT_MMMM_LOWER = 56;
     private static final int FORMAT_USD = 57;
+    private static final int FORMAT_MM_UPPER = 58;
+    private static final int FORMAT_MMMMM_LOWER = 59;
+    private static final int FORMAT_MMMMM_UPPER = 60;
+    private static final int FORMAT_HH_UPPER = 61;
 
     private static final Map<Integer, String> formatTokenToFormatString =
         new HashMap<Integer, String>();
@@ -1493,6 +1501,12 @@ public class Format {
             "Display the month as a number with a leading zero (01 - 12). If m "
             + "immediately follows h or hh, the minute rather than the month "
             + "is displayed."),
+        nfe(
+            FORMAT_MM_UPPER,
+            DATE,
+            "MM",
+            null,
+            "Display the month as a number with a leading zero (01 - 12)."),
         nfe(
             FORMAT_MMM_LOWER,
             DATE,
@@ -1895,6 +1909,24 @@ public class Format {
             "Shows date and time if expression contains both. If expression is "
             + "only a date or a time, the missing information is not "
             + "displayed."),
+        nfe(
+            FORMAT_MMMMM_LOWER,
+            DATE,
+            "mmmmm",
+            null,
+            "Display the month as a full month name (January - December)."),
+        nfe(
+            FORMAT_MMMMM_UPPER,
+            DATE,
+            "MMMMM",
+            null,
+            "Display the month as a full month name (January - December)."),
+        nfe(
+            FORMAT_HH_UPPER,
+            DATE,
+            "HH",
+            null,
+            "Display the hour as a number with leading zeros (00 - 23)."),
     };
 
     // Named formats.  todo: Supply the translation strings.
@@ -2424,7 +2456,8 @@ public class Format {
                                 // ignore boilerplate
                                 j--;
                             } else if (prevFormat.code == FORMAT_H
-                                       || prevFormat.code == FORMAT_HH)
+                                       || prevFormat.code == FORMAT_HH
+                                       || prevFormat.code == FORMAT_HH_UPPER)
                             {
                                 theyMeantMinute = true;
                                 break;
@@ -2663,14 +2696,20 @@ public class Format {
         // date formats to use twelve hour clock.  Likewise, figure out the
         // multiplier implied by their use of "%" or ",".
         boolean twelveHourClock = false;
+        // User 24 hour format if HH is used in the format String. This follows
+        // Java's date format convention.
+        boolean isFormatHH = false;
         for (int i = 0; i < formatList.size(); i++) {
             switch (formatList.get(i).code) {
+            case FORMAT_HH_UPPER:
+                isFormatHH = true;
+                break;
             case FORMAT_UPPER_AM_SOLIDUS_PM:
             case FORMAT_LOWER_AM_SOLIDUS_PM:
             case FORMAT_UPPER_A_SOLIDUS_P:
             case FORMAT_LOWER_A_SOLIDUS_P:
             case FORMAT_AMPM:
-                twelveHourClock = true;
+                twelveHourClock = true & !isFormatHH;
                 break;
 
             case FORMAT_PERCENT:
