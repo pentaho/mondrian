@@ -59,19 +59,23 @@
         <dependency org="log4j" name="log4j" rev="1.2.14"/>
         <dependency org="org.olap4j" name="olap4j" rev="${dependency.olap4j-core.revision}">
             <artifact name="olap4j"/>
+            <exclude org="xerces" module="xercesImpl"/>
         </dependency>
         <dependency org="org.olap4j" name="olap4j" rev="${dependency.olap4j-core.revision}"
                 conf="sources->default">
             <artifact name="olap4j" type="source" ext="jar"
                     m:classifier="sources"/>
+            <exclude org="xerces" module="xercesImpl"/>
         </dependency>
         <dependency org="org.olap4j" name="olap4j-tck" rev="${dependency.olap4j-tck.revision}"
                 conf="test->default" changing="true">
             <artifact name="olap4j-tck"/>
+            <exclude org="xerces" module="xercesImpl"/>
         </dependency>
         <dependency org="org.olap4j" name="olap4j-xmla" rev="${dependency.olap4j-xmla.revision}"
                 conf="test->default" changing="true">
             <artifact name="olap4j-xmla"/>
+            <exclude org="xerces" module="xercesImpl"/>
         </dependency>
 
         <dependency org="xerces" name="xercesImpl" rev="2.9.1"/>
