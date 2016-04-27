@@ -1017,6 +1017,7 @@ public class Format {
                 break;
             }
             case FORMAT_M:
+            case FORMAT_M_UPPER:
             {
                 int m = calendar.get(Calendar.MONTH) + 1; // 0-based
                 buf.append(m);
@@ -1386,6 +1387,7 @@ public class Format {
     private static final int FORMAT_MMMMM_LOWER = 59;
     private static final int FORMAT_MMMMM_UPPER = 60;
     private static final int FORMAT_HH_UPPER = 61;
+    private static final int FORMAT_M_UPPER = 62;
 
     private static final Map<Integer, String> formatTokenToFormatString =
         new HashMap<Integer, String>();
@@ -1493,6 +1495,12 @@ public class Format {
             "Display the month as a number without a leading zero (1 - 12). If "
             + "m immediately follows h or hh, the minute rather than the month "
             + "is displayed."),
+        nfe(
+            FORMAT_M_UPPER,
+            DATE,
+            "M",
+            null,
+            "Display the month as a number without a leading zero (1 - 12)."),
         nfe(
             FORMAT_MM,
             DATE | SPECIAL,
