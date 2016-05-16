@@ -14,7 +14,6 @@ import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 import mondrian.spi.impl.*;
 import mondrian.util.DelegatingInvocationHandler;
-
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
@@ -22,6 +21,7 @@ import java.lang.reflect.*;
 import java.sql.*;
 import java.sql.Connection;
 import java.util.*;
+
 import javax.sql.DataSource;
 
 /**
@@ -1578,6 +1578,14 @@ public class DialectTest extends TestCase {
       assertEquals( 
           "TIMESTAMP literal for Hive requires special syntax (cast)",
           "cast( '2014-10-29 10:27:55.12' as timestamp )", buf.toString());
+    }
+    
+    public void testQuoteIdentifierForDividedByDot() {
+        final String TABLE_NAME = "table.one";
+        final String FIELD_NAME = "field.one";
+        String q = getDialect().getQuoteIdentifierString();
+        String res = getDialect().quoteIdentifier(TABLE_NAME, FIELD_NAME);
+        assertEquals(q + TABLE_NAME + q + "." + q + FIELD_NAME + q, res);
     }
 
     public static class MockResultSetMetadata
