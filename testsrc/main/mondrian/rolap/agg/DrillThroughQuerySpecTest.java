@@ -11,14 +11,18 @@
 package mondrian.rolap.agg;
 
 import mondrian.olap.OlapElement;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.SqlStatement;
-import mondrian.rolap.StarPredicate;
+import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.Dialect;
 
+import mondrian.test.TestContext;
+
 import junit.framework.TestCase;
 
+import org.olap4j.OlapConnection;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,7 +70,7 @@ public class DrillThroughQuerySpecTest extends TestCase {
   public void testEmptyColumns() {
     List<RolapStar.Column> columns = Collections.emptyList();
     when(starPredicateMock.getConstrainedColumnList())
-      .thenReturn( columns );
+      .thenReturn(columns);
     drillThroughQuerySpec.extraPredicates(sqlQueryMock);
     verify(sqlQueryMock, times(0))
       .addSelect(anyString(), any(SqlStatement.Type.class), anyString());
@@ -107,6 +111,35 @@ public class DrillThroughQuerySpecTest extends TestCase {
     drillThroughQuerySpec.extraPredicates(sqlQueryMock);
     verify(sqlQueryMock, times(1))
       .addSelect(anyString(), any(SqlStatement.Type.class), anyString());
+  }
+
+  // test that returns correct number of columns
+  public void testMdxQuery() throws SQLException {
+    String drillThroughMdx = "DRILLTHROUGH WITH "
+        + "SET [*NATIVE_CJ_SET_WITH_SLICER] AS 'NONEMPTYCROSSJOIN([*BASE_MEMBERS__Product_],[*BASE_MEMBERS__Store Type_])' "
+        + "SET [*NATIVE_CJ_SET] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Product].CURRENTMEMBER)})' "
+        + "SET [*BASE_MEMBERS__Store Type_] AS 'FILTER([Store Type].[Store Type].MEMBERS,[Store Type].CURRENTMEMBER "
+        + "NOT IN {[Store Type].[All Store Types].[Small Grocery]})' "
+        + "SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],[Product].CURRENTMEMBER.ORDERKEY,BASC,ANCESTOR([Product]"
+        + ".CURRENTMEMBER,[Product].[Product Family]).ORDERKEY,BASC)' "
+        + "SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[Warehouse Cost]}' "
+        + "SET [*CJ_SLICER_AXIS] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Store Type].CURRENTMEMBER)})' "
+        + "SET [*BASE_MEMBERS__Product_] AS '[Product].[Product Department].MEMBERS' "
+        + "SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Product].CURRENTMEMBER)})' "
+        + "SELECT "
+        + "FILTER([*BASE_MEMBERS__Measures_],([Measures].CurrentMember Is [Measures].[Warehouse Cost])) ON COLUMNS "
+        + ",FILTER([*SORTED_ROW_AXIS],([Product].CurrentMember Is [Product].[Drink].[Alcoholic Beverages])) ON ROWS "
+        + "FROM [Warehouse] " + "WHERE ([*CJ_SLICER_AXIS]) "
+        + "RETURN [Product].[Product Department]";
+
+    OlapConnection olap4jConnection = TestContext.instance()
+      .getOlap4jConnection();
+    ResultSet resultSet = olap4jConnection.createStatement()
+      .executeQuery(drillThroughMdx);
+
+    assertEquals(1, resultSet.getMetaData().getColumnCount());
+    assertEquals
+      ("product_department", resultSet.getMetaData().getColumnName(1));
   }
 
 }
