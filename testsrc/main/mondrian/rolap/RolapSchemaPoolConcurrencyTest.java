@@ -68,7 +68,7 @@ public class RolapSchemaPoolConcurrencyTest extends TestCase
         ByteString md5 = (ByteString) invocation.getArguments()[5];
         RolapConnection connection = mock(RolapConnection.class);
         //noinspection deprecation
-        return new RolapSchema(key, md5, connection);
+        return new RolapSchema(key, md5, connection, "schemaNameForTesting");
     }
 
 
