@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2015-2015 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2015-2016 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.rolap;
 
@@ -33,7 +33,8 @@ public class RolapSchemaTest extends PropertyRestoringTestCase {
 
         ByteString md5 = new ByteString("test schema".getBytes());
         //noinspection deprecation
-        return new RolapSchema(key, md5, mock(RolapConnection.class));
+        return new RolapSchema(
+            key, md5, mock(RolapConnection.class), "schemaNameForTesting");
     }
 
     private SchemaReader mockSchemaReader(int category, OlapElement element) {

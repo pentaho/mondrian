@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1998-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 21 January, 1999
@@ -326,6 +326,7 @@ public class Main extends TestSuite {
             addTest(suite, RolapStarTest.class);
             addTest(suite, RolapSchemaTest.class);
             addTest(suite, RolapSchemaPoolTest.class);
+            addTest(suite, RolapSchemaPoolConcurrencyTest.class);
             addTest(suite, NullMemberRepresentationTest.class);
             addTest(suite, IgnoreUnrelatedDimensionsTest.class);
             addTest(

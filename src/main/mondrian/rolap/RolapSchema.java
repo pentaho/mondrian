@@ -225,13 +225,15 @@ public class RolapSchema implements Schema {
     RolapSchema(
         SchemaKey key,
         ByteString md5Bytes,
-        RolapConnection internalConnection)
+        RolapConnection internalConnection,
+        String name)
     {
         this.id = Util.generateUuidString();
         this.key = key;
         this.md5Bytes = md5Bytes;
         this.defaultRole = Util.createRootRole(this);
         this.internalConnection = internalConnection;
+        this.name = name;
     }
 
     /**
