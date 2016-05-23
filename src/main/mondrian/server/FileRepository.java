@@ -36,12 +36,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Implementation of {@link mondrian.server.Repository} that reads
@@ -66,8 +69,34 @@ public class FileRepository implements Repository {
             "mondrian.server.DynamicContentFinder$executorService");
 
     private ServerInfo serverInfo;
-    private final ScheduledFuture<?> scheduledFuture;
+
+    static{
+        final Pair<Long, TimeUnit> interval =
+            Util.parseInterval(
+                String.valueOf(
+                    MondrianProperties.instance()
+                        .XmlaSchemaRefreshInterval.get()),
+                TimeUnit.MILLISECONDS);
+        executorService.scheduleWithFixedDelay(
+            new Runnable() {
+                public void run() {
+                    Iterator<FileRepository> instanceIt = instances.iterator();
+                    while ( instanceIt.hasNext() ) {
+                        FileRepository next = instanceIt.next();
+                        next.clearServerInfo();
+                    }
+
+                }
+            },
+            0,
+            interval.left,
+            interval.right);
+    }
     private final CatalogLocator locator;
+    private static final Set<FileRepository> instances = Collections.newSetFromMap(
+        new WeakHashMap<FileRepository, Boolean>());
+
+    private AtomicBoolean shutdown = new AtomicBoolean( false );
 
     public FileRepository(
         RepositoryContentFinder repositoryContentFinder,
@@ -76,23 +105,14 @@ public class FileRepository implements Repository {
         this.repositoryContentFinder = repositoryContentFinder;
         this.locator = locator;
         assert repositoryContentFinder != null;
-        final Pair<Long, TimeUnit> interval =
-            Util.parseInterval(
-                String.valueOf(
-                    MondrianProperties.instance()
-                        .XmlaSchemaRefreshInterval.get()),
-                TimeUnit.MILLISECONDS);
-        scheduledFuture = executorService.scheduleWithFixedDelay(
-            new Runnable() {
-                public void run() {
-                    synchronized (SERVER_INFO_LOCK) {
-                        serverInfo = null;
-                    }
-                }
-            },
-            0,
-            interval.left,
-            interval.right);
+        instances.add(this);
+
+    }
+
+    protected void clearServerInfo(){
+        synchronized (SERVER_INFO_LOCK) {
+            serverInfo = null;
+        }
     }
 
     public List<Map<String, Object>> getDatabases(
@@ -223,8 +243,10 @@ public class FileRepository implements Repository {
     }
 
     public void shutdown() {
-        scheduledFuture.cancel(false);
-        repositoryContentFinder.shutdown();
+        if(!shutdown.getAndSet(true)) {
+            instances.remove(this);
+            repositoryContentFinder.shutdown();
+        }
     }
 
     ServerInfo getServerInfo() {
@@ -333,6 +355,10 @@ public class FileRepository implements Repository {
         return Collections.singletonMap(
             schema.getName(),
             schema);
+    }
+
+    @Override protected void finalize() throws Throwable {
+        shutdown();
     }
 
     // Class is defined as package-protected in order to be accessible by unit
