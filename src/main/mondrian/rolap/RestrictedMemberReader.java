@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2016 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -98,7 +97,8 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         MemberChildrenConstraint constraint)
     {
         List<RolapMember> fullChildren = new ArrayList<RolapMember>();
-        memberReader.getMemberChildren(parentMember, fullChildren, constraint);
+        memberReader.getMemberChildren
+          (parentMember, fullChildren, constraint);
         return processMemberChildren(fullChildren, children, constraint);
     }
 
@@ -132,37 +132,38 @@ class RestrictedMemberReader extends DelegatingMemberReader {
             new LinkedHashMap<RolapMember, Access>();
         for (int i = 0; i < fullChildren.size(); i++) {
             RolapMember member = fullChildren.get(i);
-            // If a child is hidden (due to raggedness) include its children.
+
+            // If a child is hidden (due to raggedness)
+            // or doesn't have access include its children.
             // This must be done before applying access-control.
-            if (ragged) {
-                if (member.isHidden()) {
-                    // Replace this member with all of its children.
-                    // They might be hidden too, but we'll get to them in due
-                    // course. They also might be access-controlled; that's why
-                    // we deal with raggedness before we apply access-control.
-                    fullChildren.remove(i);
-                    if (grandChildren == null) {
-                        grandChildren = new ArrayList<RolapMember>();
-                    } else {
-                        grandChildren.clear();
-                    }
-                    memberReader.getMemberChildren(
-                        member, grandChildren, constraint);
-                    fullChildren.addAll(i, grandChildren);
-                    // Step back to before the first child we just inserted,
-                    // and go through the loop again.
-                    --i;
-                    continue;
-                }
-            }
-            // Filter out children which are invisible because of
-            // access-control.
             final Access access;
             if (hierarchyAccess != null) {
                 access = hierarchyAccess.getAccess(member);
             } else {
                 access = Access.ALL;
             }
+            if ((ragged && member.isHidden()) || access.equals(Access.NONE)) {
+                // Replace this member with all of its children.
+                // They might be hidden too, but we'll get to them in due
+                // course. They also might be access-controlled; that's why
+                // we deal with raggedness before we apply access-control.
+                fullChildren.remove(i);
+                if (grandChildren == null) {
+                    grandChildren = new ArrayList<RolapMember>();
+                } else {
+                    grandChildren.clear();
+                }
+                memberReader.getMemberChildren
+                  (member, grandChildren, constraint);
+                fullChildren.addAll(i, grandChildren);
+                // Step back to before the first child we just inserted,
+                // and go through the loop again.
+                --i;
+                continue;
+            }
+
+            // Filter out children which are invisible because of
+            // access-control.
             switch (access) {
             case NONE:
                 break;
