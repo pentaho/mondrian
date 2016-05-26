@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.xmla;
@@ -732,6 +732,31 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         String requestType = "EXECUTE";
         Properties props = getDefaultRequestProperties(requestType);
         doTest(requestType, props, TestContext.instance());
+    }
+
+    public void testExecuteAliasWithSharedDimension()
+      throws Exception
+    {
+        String requestType = "EXECUTE";
+        Properties props = getDefaultRequestProperties(requestType);
+        String schema = ""
+            + "<?xml version=\"1.0\"?>\n"
+            + "<Schema name=\"foodmart-xmla-alias-bug\">\n"
+            + "  <Dimension name=\"Customers\">\n"
+            + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKey=\"customer_id\">\n"
+            + "      <Table schema=\"foodmart\" name=\"customer\"/>\n"
+            + "      <Level name=\"Country\" column=\"country\" type=\"String\" uniqueMembers=\"true\" levelType=\"Regular\"\n"
+            + "             hideMemberIf=\"Never\"/>\n"
+            + "    </Hierarchy>\n" + "  </Dimension>\n" + "\n"
+            + "<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\" cache=\"true\" enabled=\"true\">\n"
+            + "  <Table schema=\"foodmart\" name=\"sales_fact_1998\" />\n"
+            + "  <DimensionUsage source=\"Customers\" caption=\"Customers\" name=\"Customers-Alias\" visible=\"true\"\n"
+            + "                  foreignKey=\"customer_id\" />\n"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "</Cube>\n" + "\n" + "</Schema>";
+
+        doTest(requestType, props, TestContext.instance().withSchema(schema));
     }
 
     public void testExecuteWithMemberKeyDimensionPropertyForMemberWithKey()
