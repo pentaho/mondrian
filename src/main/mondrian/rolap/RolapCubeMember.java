@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.mdx.HierarchyExpr;
@@ -199,6 +198,10 @@ public class RolapCubeMember
         }
         // fall through to rolap member
         return member.getPropertyValue(propertyName, matchCase);
+    }
+
+    public Object getPropertyValue(String propertyName) {
+        return this.getPropertyValue(propertyName, true);
     }
 
     public final RolapCubeMember getParentMember() {
