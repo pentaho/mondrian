@@ -88,7 +88,6 @@
         <!-- Test Jars -->
         <dependency org="junit" name="junit" rev="3.8.1" conf="test->default"/>
         <dependency org="xmlunit" name="xmlunit" rev="1.1" conf="test->default"/>
-        <dependency org="monetdb" name="monetdb-jdbc" rev="2.6" conf="test->default"/>
         <dependency org="org.mockito" name="mockito-all" rev="1.9.5" conf="test->default"/>
         <dependency org="mysql" name="mysql-connector-java" rev="5.1.25" conf="test->default"/>
 
