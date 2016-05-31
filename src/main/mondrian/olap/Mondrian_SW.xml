@@ -7,7 +7,7 @@
   == You must accept the terms of that agreement to use this software.
   ==
   == Copyright (C) 2001-2005 Julian Hyde
-  == Copyright (C) 2005-2009 Pentaho and others
+  == Copyright (C) 2005-2016 Pentaho and others
   == All Rights Reserved.
   ==
   == This file defines an MMM schema for an Olap schema.
@@ -809,8 +809,9 @@
         </Attribute>
         <Attribute name="captionColumn" required="false">
             <Doc>
-                The name of the column which holds the caption for
-                members.
+                The name of the database column that holds the caption for the members.
+                See also the Caption sub-element.
+                If neither captionColumn nor Caption are specified, defaults to the nameColumn.
             </Doc>
         </Attribute>
         <Object name="annotations" type="Annotations" required="false">
@@ -1926,7 +1927,7 @@
         </Attribute>
         <Attribute name="captionColumn" required="false">
             <Doc>
-                The caption column for this level.
+                The name of the database column that holds the caption for this level.
             </Doc>
         </Attribute>
         <Attribute name="name" required="true">
