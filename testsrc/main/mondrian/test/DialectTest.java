@@ -22,6 +22,7 @@ import java.lang.reflect.*;
 import java.sql.*;
 import java.sql.Connection;
 import java.util.*;
+
 import javax.sql.DataSource;
 
 /**
@@ -337,7 +338,7 @@ public class DialectTest extends TestCase {
                 "Syntax error: Encountered \"<EOF>\" at line 1, column 47.",
                 // hive
                 "(?s).*mismatched input \'<EOF>\' expecting Identifier in subquery source.*",
-                // postgres simular with Greenplum 
+                // postgres simular with Greenplum
                 "(?s)ERROR: subquery in FROM must have an alias.*",
                 // teradata
                 ".*Syntax error, expected something like a name or a Unicode "
@@ -1309,7 +1310,7 @@ public class DialectTest extends TestCase {
                 throwable.getMessage().contains(
                     "ERROR: invalid regular expression:"
                     + " parentheses () not balanced"));
-            break;          
+            break;
         default:
             // As far as we know, all other databases either handle this regex
             // just fine or our dialect for that database refuses to translate
@@ -1574,10 +1575,18 @@ public class DialectTest extends TestCase {
       Dialect hiveDbDialect =
           TestContext.getFakeDialect(Dialect.DatabaseProduct.HIVE);
       StringBuilder buf = new StringBuilder();
-      hiveDbDialect.quoteTimestampLiteral( buf, "2014-10-29 10:27:55.12");
-      assertEquals( 
+      hiveDbDialect.quoteTimestampLiteral(buf, "2014-10-29 10:27:55.12");
+      assertEquals(
           "TIMESTAMP literal for Hive requires special syntax (cast)",
           "cast( '2014-10-29 10:27:55.12' as timestamp )", buf.toString());
+    }
+
+    public void testQuoteIdentifierForDividedByDot() {
+        final String TABLE_NAME = "table.one";
+        final String FIELD_NAME = "field.one";
+        String q = getDialect().getQuoteIdentifierString();
+        String res = getDialect().quoteIdentifier(TABLE_NAME, FIELD_NAME);
+        assertEquals(q + TABLE_NAME + q + "." + q + FIELD_NAME + q, res);
     }
 
     public static class MockResultSetMetadata
