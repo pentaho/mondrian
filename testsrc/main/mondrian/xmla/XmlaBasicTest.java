@@ -916,7 +916,9 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
                         public Access getAccess(Member member) {
                             String mname =
                                 "[Customers].[Mexico]";
-                            if (member.getUniqueName().equals(mname)) {
+                            //Members inherit access from their parents. If you deny access to California, you won't be able to see San Francisco.
+                            //need to restrict children as well.
+                            if (member.getUniqueName().startsWith(mname)) {
                                 return Access.NONE;
                             } else {
                                 return Access.ALL;
