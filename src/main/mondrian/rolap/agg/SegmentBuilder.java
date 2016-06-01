@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.rolap.agg;
 
@@ -23,7 +23,6 @@ import org.apache.log4j.Logger;
 import org.olap4j.impl.UnmodifiableArrayList;
 
 import java.math.BigInteger;
-
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -201,12 +200,14 @@ public class SegmentBuilder {
         List<Map.Entry<SegmentHeader, SegmentBody>>  segments =
             UnmodifiableArrayList.of(map.entrySet());
         final SegmentHeader firstHeader = segments.get(0).getKey();
-        final AxisInfo[] axes =
-            new AxisInfo[keepColumns.size()];
+        final List<AxisInfo> axes = new ArrayList<AxisInfo>(keepColumns.size());
         int z = 0, j = 0;
-        for (SegmentColumn column : firstHeader.getConstrainedColumns()) {
+        List<SegmentColumn> firstHeaderConstrainedColumns =
+            firstHeader.getConstrainedColumns();
+        for (SegmentColumn column : firstHeaderConstrainedColumns) {
             if (keepColumns.contains(column.columnExpression)) {
-                final AxisInfo axisInfo = axes[z++] = new AxisInfo();
+                final AxisInfo axisInfo = new AxisInfo();
+                axes.add(axisInfo);
                 axisInfo.src = j;
                 axisInfo.column = column;
                 axisInfo.requestedValues = column.values;
@@ -301,17 +302,17 @@ public class SegmentBuilder {
             new ArrayList<List<Comparable>>();
 
         for (Map.Entry<SegmentHeader, SegmentBody> entry : map.entrySet()) {
-            final int[] pos = new int[axes.length];
+            final int[] pos = new int[axes.size()];
             final Comparable[][] valueArrays =
-                new Comparable[firstHeader.getConstrainedColumns().size()][];
+                new Comparable[firstHeaderConstrainedColumns.size()][];
             final SegmentBody body = entry.getValue();
 
             // Copy source value sets into arrays. For axes that are being
             // projected away, store null.
             z = 0;
             for (SortedSet<Comparable> set : body.getAxisValueSets()) {
-                valueArrays[z] = keepColumns.contains(
-                    firstHeader.getConstrainedColumns().get(z).columnExpression)
+                    valueArrays[z] = keepColumns.contains(
+                        firstHeaderConstrainedColumns.get(z).columnExpression)
                         ? set.toArray(new Comparable[set.size()])
                         : null;
                 ++z;
@@ -327,17 +328,17 @@ public class SegmentBuilder {
                     }
                     final int ordinal = vEntry.getKey().getOrdinals()[i];
                     final int targetOrdinal;
-                    if (axes[z].hasNull && ordinal == valueArray.length) {
-                        targetOrdinal = axes[z].valueSet.size();
+                    if (axes.get(z).hasNull && ordinal == valueArray.length) {
+                        targetOrdinal = axes.get(z).valueSet.size();
                     } else {
                         final Comparable value = valueArray[ordinal];
                         if (value == null) {
-                            targetOrdinal = axes[z].valueSet.size();
+                            targetOrdinal = axes.get(z).valueSet.size();
                         } else {
                             targetOrdinal =
                                 Util.binarySearch(
-                                    axes[z].values,
-                                    0, axes[z].values.length,
+                                    axes.get(z).values,
+                                    0, axes.get(z).values.length,
                                     value);
                         }
                     }
@@ -490,8 +491,8 @@ public class SegmentBuilder {
         // Create header.
         final List<SegmentColumn> constrainedColumns =
             new ArrayList<SegmentColumn>();
-        for (int i = 0; i < axes.length; i++) {
-            AxisInfo axisInfo = axes[i];
+        for (int i = 0; i < axes.size(); i++) {
+            AxisInfo axisInfo = axes.get(i);
 
             constrainedColumns.add(
                 new SegmentColumn(
