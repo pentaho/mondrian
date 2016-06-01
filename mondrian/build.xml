@@ -1,0 +1,165 @@
+<!--
+  == This software is subject to the terms of the Eclipse Public License v1.0
+  == Agreement, available at the following URL:
+  == http://www.eclipse.org/legal/epl-v10.html.
+  == You must accept the terms of that agreement to use this software.
+  ==
+  == Copyright (C) 2001-2005 Julian Hyde
+  == Copyright (C) 2005-2016 Pentaho and others
+  == All Rights Reserved.
+  -->
+<project name="mondrian">
+  <target name="define-tasks">
+    <taskdef name="javacup" classname="java_cup.JavaCUPTask">
+      <classpath path="${classpath}"/>
+    </taskdef>
+
+    <taskdef name="xomgen" classname="org.eigenbase.xom.XOMGenTask">
+      <classpath path="${classpath}"/>
+    </taskdef>
+
+    <taskdef name="resgen" classname="org.eigenbase.resgen.ResourceGenTask">
+      <classpath path="${classpath}"/>
+    </taskdef>
+  </target>
+
+  <target name="generate.resources" depends="define-tasks">
+
+    <!-- Compile MondrianException first, so that resgen can use
+         reflection on it. -->
+    <javac
+        srcdir="${java.dir}"
+        destdir="${classes.dir}"
+        debug="${project.build.debug}"
+        classpath="${classpath}"
+        includeantruntime="false"
+        source="${source.jdk.version}"
+        target="${target.jdk.version}">
+      <include name="mondrian/olap/MondrianException.java" />
+      <include name="mondrian/olap/ResultLimitExceededException.java" />
+      <include name="mondrian/olap/InvalidHierarchyException.java" />
+      <include name="mondrian/olap/ResourceLimitExceededException.java" />
+      <include name="mondrian/olap/NativeEvaluationUnsupportedException.java" />
+      <include name="mondrian/olap/QueryCanceledException.java" />
+      <include name="mondrian/olap/QueryTimeoutException.java" />
+    </javac>
+
+    <resgen
+        srcdir="${java.dir}"
+        destdir="${generated.java.dir}"
+        resdir="${classes.dir}"
+        style="functor"
+        locales="en_US,de_DE,de,es_ES">
+      <include name="mondrian/resource/MondrianResource.xml"/>
+    </resgen>
+
+  </target>
+
+  <target name="generate.properties">
+    <!-- Generate MondrianProperties.java,
+         mondrian.properties.template, property.html. -->
+    <javac
+        srcdir="${java.dir}"
+        destdir="${project.build.outputDirectory}"
+        debug="${project.build.debug}"
+        classpath="${classpath}"
+        includeantruntime="false"
+        source="${source.jdk.version}"
+        target="${target.jdk.version}">
+      <include name="mondrian/util/PropertyUtil.java" />
+    </javac>
+
+    <java classpath="${classpath}"
+        classname="mondrian.util.PropertyUtil"
+        fork="no">
+        <arg value="${java.dir}/mondrian/olap"/>
+        <arg value="${generated.java.dir}/mondrian/olap"/>
+      </java>
+  </target>
+
+  <target name="parser" depends="define-tasks">
+    <!-- Old parser. -->
+    <javacup
+        srcdir="${java.dir}"
+        input="${java.dir}/mondrian/olap/Parser.cup"
+
+        expect="63"
+        interface="true"/>
+    <move file="${java.dir}/mondrian/olap/Parser.java" todir="${generated.java.dir}/mondrian/olap"/>
+    <move file="${java.dir}/mondrian/olap/ParserSym.java" todir="${generated.java.dir}/mondrian/olap"/>
+    <!-- New parser. -->
+    <copy file="${net.java.dev.javacc:javacc:jar}" tofile="${project.build.directory}/javacc.jar" />
+    <javacc
+        target="${java.dir}/mondrian/parser/MdxParser.jj"
+        outputdirectory="${generated.java.dir}/mondrian/parser"
+        javacchome="${project.build.directory}"/>
+  </target>
+
+  <target name="def" depends="define-tasks">
+    <xomgen
+        model="${relative.java.dir}/mondrian/olap/Mondrian.xml"
+        destdir="${relative.generated.java.dir}"
+        classname="mondrian.olap.MondrianDef"
+        dtdname="mondrian.dtd"/>
+    <!--<copy file="${generated.java.dir}/mondrian/olap/mondrian.dtd"-->
+      <!--todir="${project.build.directory}"/>-->
+
+    <xomgen
+        model="${relative.resources.dir}/DefaultRulesSchema.xml"
+        destdir="${relative.generated.java.dir}"
+        classname="mondrian.rolap.aggmatcher.DefaultDef"
+        dtdname="aggregates.dtd"/>
+    <!--<copy file="${generated.java.dir}/mondrian/rolap/aggmatcher/aggregates.dtd"-->
+      <!--todir="${project.build.directory}"/>-->
+
+    <xomgen
+        model="${relative.java.dir}/mondrian/xmla/DataSourcesConfig.xml"
+        destdir="${relative.generated.java.dir}"
+        classname="mondrian.xmla.DataSourcesConfig"
+        dtdname="datasourcesconfig.dtd"/>
+    <!--<copy file="${generated.java.dir}/mondrian/xmla/datasourcesconfig.dtd"-->
+        <!--todir="${project.build.directory}"/>-->
+  </target>
+
+  <target name="version">
+    <echo file="${generated.resources.dir}/VERSION.txt">Title: ${project.artifactId}
+Version: ${project.version}
+VersionMajor: ${project.version.major}
+VersionMinor: ${project.version.minor}
+Vendor: ${vendor}
+</echo>
+   <echo file="${generated.java.dir}/mondrian/olap4j/MondrianOlap4jDriverVersion.java">/*
+ * Project version information. Generated - do not modify.
+ */
+package mondrian.olap4j;
+/**
+ * Version information for the Mondrian olap4j driver. (Generated.)
+ */
+class MondrianOlap4jDriverVersion {
+    static final String NAME = "${driver.name}";
+    static final String VERSION = "${driver.version}";
+    static final int MAJOR_VERSION = ${driver.version.major};
+    static final int MINOR_VERSION = ${driver.version.minor};
+}
+
+// End MondrianOlap4jDriverVersion.java</echo>
+       <echo file="${generated.java.dir}/mondrian/server/MondrianServerVersion.java">/*
+ * Project version information. Generated - do not modify.
+ */
+package mondrian.server;
+/**
+ * Version information for Mondrian. (Generated by build)
+ */
+class MondrianServerVersion {
+    static final String VENDOR = "${vendor}";
+    static final String NAME = "${project.artifactId}";
+    static final String VERSION = "${project.version}";
+    static final int MAJOR_VERSION = ${project.version.major};
+    static final int MINOR_VERSION = ${project.version.minor};
+    static final String COPYRIGHT_YEAR = "${copyright.year}";
+}
+// End MondrianServerVersion.java</echo>
+  </target>
+
+</project>
+
