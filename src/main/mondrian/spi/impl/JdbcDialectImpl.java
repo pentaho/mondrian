@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.spi.impl;
 
@@ -331,26 +331,10 @@ public class JdbcDialectImpl implements Dialect {
             return;
         }
 
-        int k = val.indexOf('.');
-        if (k > 0) {
-            // qualified
-            String val1 = Util.replace(val.substring(0, k), q, q + q);
-            String val2 = Util.replace(val.substring(k + 1), q, q + q);
-            buf.append(q);
-            buf.append(val1);
-            buf.append(q);
-            buf.append(".");
-            buf.append(q);
-            buf.append(val2);
-            buf.append(q);
-
-        } else {
-            // not Qualified
-            String val2 = Util.replace(val, q, q + q);
-            buf.append(q);
-            buf.append(val2);
-            buf.append(q);
-        }
+        String val2 = Util.replace(val, q, q + q);
+        buf.append(q);
+        buf.append(val2);
+        buf.append(q);
     }
 
     public String quoteIdentifier(final String qual, final String name) {
