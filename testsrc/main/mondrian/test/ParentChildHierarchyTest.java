@@ -1060,6 +1060,53 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "Row #0: $182.40\n");
     }
 
+
+    /**
+     * Tests for MONDRIAN-2496, a parent-child hierarchy should work with with captionColumn
+     */
+    public void testParentChildCaption() {
+
+        final TestContext testContext = TestContext.instance().create(
+                null,
+                "<Cube name=\"HR-caption\">\n"
+                        + "  <Table name=\"salary\"/>\n"
+                        + "  <Dimension name=\"Employees\" foreignKey=\"employee_id\">\n"
+                        + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Employees\"\n"
+                        + "        primaryKey=\"employee_id\">\n"
+                        + "      <Table name=\"employee\"/>\n"
+                        + "      <Level name=\"Employee Id\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+                        + "          column=\"employee_id\" parentColumn=\"supervisor_id\"\n"
+                        + "          captionColumn=\"full_name\" nullParentValue=\"0\""
+                        + "           >\n"
+                        + "        <Closure parentColumn=\"supervisor_id\" childColumn=\"employee_id\">\n"
+                        + "          <Table name=\"employee_closure\"/>\n"
+                        + "        </Closure>\n"
+                        + "      </Level>\n"
+                        + "    </Hierarchy>\n"
+                        + "  </Dimension>\n"
+                        + "\n"
+                        + "  <Measure name=\"Org Salary\" column=\"salary_paid\" aggregator=\"sum\"\n"
+                        + "      formatString=\"Currency\"/>\n"
+                        + "  <Measure name=\"Count\" column=\"employee_id\" aggregator=\"count\"\n"
+                        + "      formatString=\"#,#\"/>\n"
+                        + "</Cube>",
+                null,
+                null,
+                null,
+                null);
+
+        Result result = testContext.executeQuery("select {[Employees].[Employee Id].[1], " +
+                "[Employees].[Employee Id].[2]} on columns from [HR-caption]");
+        Axis[] axes = result.getAxes();
+        List<Position> positions = axes[0].getPositions();
+
+        Member m0 = positions.get(0).get(0);
+        Assert.assertEquals("Sheri Nowmer", m0.getCaption());
+
+        Member m1 = positions.get(1).get(0);
+        Assert.assertEquals("Derrick Whelply", m1.getCaption());
+    }
+
     public void testLevelMembers() {
         final TestContext testContext = new TestContext() {
             public String getDefaultCubeName() {

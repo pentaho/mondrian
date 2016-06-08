@@ -1385,6 +1385,10 @@ RME is this right
         public int getOrdinal() {
             return dataMember.getOrdinal();
         }
+
+        public String getCaption() {
+            return dataMember.getCaption();
+        }
     }
 
     /**
