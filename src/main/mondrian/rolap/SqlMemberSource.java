@@ -1047,12 +1047,6 @@ RME is this right
         if (!childLevel.getOrdinalExp().equals(childLevel.getKeyExp())) {
             member.setOrdinal(lastOrdinal++);
         }
-        if (captionValue != null) {
-            // passing caption column raw value
-            // to be properly formatted, in case if it's numeric,
-            // and finally set as a caption
-            member.setCaption(captionValue);
-        }
         if (parentChild) {
             // Create a 'public' and a 'data' member. The public member is
             // calculated, and its value is the aggregation of the data member
@@ -1065,6 +1059,12 @@ RME is this right
                     parentMember, rolapChildLevel, value, member)
                 : new RolapParentChildMemberNoClosure(
                     parentMember, rolapChildLevel, value, member);
+        }
+        if (captionValue != null) {
+            // passing caption column raw value
+            // to be properly formatted, in case if it's numeric,
+            // and finally set as a caption
+            member.setCaption(captionValue);
         }
         Property[] properties = childLevel.getProperties();
         final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
@@ -1384,10 +1384,6 @@ RME is this right
 
         public int getOrdinal() {
             return dataMember.getOrdinal();
-        }
-
-        public String getCaption() {
-            return dataMember.getCaption();
         }
     }
 
