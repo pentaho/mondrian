@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho
+// Copyright (C) 2005-2016 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -281,7 +281,8 @@ public class RolapCell implements Cell {
                                 (RolapCubeMember) memberWalk;
                             RolapStar.Column column =
                                 rolapCubeMember.getLevel()
-                                    .getBaseStarKeyColumn(result.getCube());
+                                    .getBaseStarKeyColumn(
+                                        getDrillThroughBaseCube());
                             // Add a predicate for the member at this level
                             listOfStarPredicatesForCurrentPosition.add(
                                 new MemberColumnPredicate(
@@ -305,6 +306,22 @@ public class RolapCell implements Cell {
         // OR together the predicates for all of the slicer's
         // positions and return
         return new OrPredicate(listOfStarPredicatesForSlicerPositions);
+    }
+
+    /**
+     * Returns appropriate non-virtual cube that will be used
+     * for retrieving base star key column.
+     */
+    private RolapCube getDrillThroughBaseCube() {
+        if (result.getCube().isVirtual()) {
+            Member[] membersForDrillThrough = this.getMembersForDrillThrough();
+            for (Member m : membersForDrillThrough) {
+                if (m instanceof RolapVirtualCubeMeasure) {
+                    return ((RolapVirtualCubeMeasure) m).getCube();
+                }
+            }
+        }
+        return result.getCube();
     }
 
     /**
