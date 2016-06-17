@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.TupleList;
@@ -58,7 +57,8 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
     protected void prepareTuples(
         final DataSource dataSource,
         final TupleList partialResult,
-        final List<List<RolapMember>> newPartialResult)
+        final List<List<RolapMember>> newPartialResult,
+        final List<TargetBase> targetGroup)
     {
         String message = "Populating member cache with members for " + targets;
         SqlStatement stmt = null;
@@ -75,7 +75,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
                     }
                 }
                 final Pair<String, List<SqlStatement.Type>> pair =
-                    makeLevelMembersSql(dataSource);
+                    makeLevelMembersSql(dataSource, targetGroup);
                 String sql = pair.left;
                 List<SqlStatement.Type> types = pair.right;
                 stmt = RolapUtil.executeQuery(
@@ -136,7 +136,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
         final TupleList partialResult,
         final List<List<RolapMember>> newPartialResult)
     {
-        prepareTuples(dataSource, partialResult, newPartialResult);
+        prepareTuples(dataSource, partialResult, newPartialResult, targets);
 
         assert targets.size() == 1;
 
@@ -149,7 +149,8 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
         final TupleList partialResult,
         final List<List<RolapMember>> newPartialResult)
     {
-        prepareTuples(jdbcConnection, partialResult, newPartialResult);
+        prepareTuples(
+            jdbcConnection, partialResult, newPartialResult, targets);
 
         // List of tuples
         final int n = targets.size();

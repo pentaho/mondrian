@@ -17,6 +17,7 @@ import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapEvaluator;
+import mondrian.rolap.SqlConstraintUtils;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.util.CancellationChecker;
@@ -776,6 +777,12 @@ public class CrossJoinFunDef extends FunDefBase {
             Formula[] formula = query.getFormulas();
             if (formula != null) {
                 for (Formula f : formula) {
+                    if (SqlConstraintUtils.containsValidMeasure(
+                            f.getExpression()))
+                    {
+                        // short circuit if VM is present.
+                        return list;
+                    }
                     f.accept(measureVisitor);
                 }
             }

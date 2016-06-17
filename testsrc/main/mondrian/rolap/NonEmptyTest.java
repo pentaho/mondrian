@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho
+// Copyright (C) 2005-2016 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -4024,6 +4024,11 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCrossjoinWithTwoDimensionsJoiningToOppositeBaseCubes() {
+        // This test formerly expected an empty result set,
+        // which is actually inconsistent with SSAS.  Since ValidMeasure forces
+        // Warehouse to the [All] level when evaluating the [vm] measure,
+        // the results should include each [warehouse name] member intersected
+        // with the non-empty Gender members.
         assertQueryReturns(
             "with member [Measures].[vm] as 'ValidMeasure([Measures].[Unit Sales])'\n"
             + "select non empty Crossjoin([Warehouse].[Warehouse Name].members, [Gender].[Gender].members) on 0,\n"
@@ -4032,9 +4037,87 @@ public class NonEmptyTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
+            + "{[Warehouse].[USA].[CA].[Beverly Hills].[Big  Quality Warehouse], [Gender].[F]}\n"
+            + "{[Warehouse].[USA].[CA].[Beverly Hills].[Big  Quality Warehouse], [Gender].[M]}\n"
+            + "{[Warehouse].[USA].[CA].[Los Angeles].[Artesia Warehousing, Inc.], [Gender].[F]}\n"
+            + "{[Warehouse].[USA].[CA].[Los Angeles].[Artesia Warehousing, Inc.], [Gender].[M]}\n"
+            + "{[Warehouse].[USA].[CA].[San Diego].[Jorgensen Service Storage], [Gender].[F]}\n"
+            + "{[Warehouse].[USA].[CA].[San Diego].[Jorgensen Service Storage], [Gender].[M]}\n"
+            + "{[Warehouse].[USA].[CA].[San Francisco].[Food Service Storage, Inc.], [Gender].[F]}\n"
+            + "{[Warehouse].[USA].[CA].[San Francisco].[Food Service Storage, Inc.], [Gender].[M]}\n"
+            + "{[Warehouse].[USA].[OR].[Portland].[Quality Distribution, Inc.], [Gender].[F]}\n"
+            + "{[Warehouse].[USA].[OR].[Portland].[Quality Distribution, Inc.], [Gender].[M]}\n"
+            + "{[Warehouse].[USA].[OR].[Salem].[Treehouse Distribution], [Gender].[F]}\n"
+            + "{[Warehouse].[USA].[OR].[Salem].[Treehouse Distribution], [Gender].[M]}\n"
+            + "{[Warehouse].[USA].[WA].[Bellingham].[Foster Products], [Gender].[F]}\n"
+            + "{[Warehouse].[USA].[WA].[Bellingham].[Foster Products], [Gender].[M]}\n"
+            + "{[Warehouse].[USA].[WA].[Bremerton].[Destination, Inc.], [Gender].[F]}\n"
+            + "{[Warehouse].[USA].[WA].[Bremerton].[Destination, Inc.], [Gender].[M]}\n"
+            + "{[Warehouse].[USA].[WA].[Seattle].[Quality Warehousing and Trucking], [Gender].[F]}\n"
+            + "{[Warehouse].[USA].[WA].[Seattle].[Quality Warehousing and Trucking], [Gender].[M]}\n"
+            + "{[Warehouse].[USA].[WA].[Spokane].[Jones International], [Gender].[F]}\n"
+            + "{[Warehouse].[USA].[WA].[Spokane].[Jones International], [Gender].[M]}\n"
+            + "{[Warehouse].[USA].[WA].[Tacoma].[Jorge Garcia, Inc.], [Gender].[F]}\n"
+            + "{[Warehouse].[USA].[WA].[Tacoma].[Jorge Garcia, Inc.], [Gender].[M]}\n"
+            + "{[Warehouse].[USA].[WA].[Walla Walla].[Valdez Warehousing], [Gender].[F]}\n"
+            + "{[Warehouse].[USA].[WA].[Walla Walla].[Valdez Warehousing], [Gender].[M]}\n"
+            + "{[Warehouse].[USA].[WA].[Yakima].[Maddock Stored Foods], [Gender].[F]}\n"
+            + "{[Warehouse].[USA].[WA].[Yakima].[Maddock Stored Foods], [Gender].[M]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Units Shipped]}\n"
-            + "{[Measures].[vm]}\n");
+            + "{[Measures].[vm]}\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #1: 131,558\n"
+            + "Row #1: 135,215\n"
+            + "Row #1: 131,558\n"
+            + "Row #1: 135,215\n"
+            + "Row #1: 131,558\n"
+            + "Row #1: 135,215\n"
+            + "Row #1: 131,558\n"
+            + "Row #1: 135,215\n"
+            + "Row #1: 131,558\n"
+            + "Row #1: 135,215\n"
+            + "Row #1: 131,558\n"
+            + "Row #1: 135,215\n"
+            + "Row #1: 131,558\n"
+            + "Row #1: 135,215\n"
+            + "Row #1: 131,558\n"
+            + "Row #1: 135,215\n"
+            + "Row #1: 131,558\n"
+            + "Row #1: 135,215\n"
+            + "Row #1: 131,558\n"
+            + "Row #1: 135,215\n"
+            + "Row #1: 131,558\n"
+            + "Row #1: 135,215\n"
+            + "Row #1: 131,558\n"
+            + "Row #1: 135,215\n"
+            + "Row #1: 131,558\n"
+            + "Row #1: 135,215\n");
     }
 
     public void testCrossjoinWithOneDimensionThatDoesNotJoinToBothBaseCubes() {
