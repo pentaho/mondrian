@@ -21,7 +21,7 @@ import java.sql.SQLException;
  *
  * @author jhyde
  */
-abstract class MondrianOlap4jMetadataElement
+public abstract class MondrianOlap4jMetadataElement
     implements OlapWrapper, MetadataElement
 {
     /**
