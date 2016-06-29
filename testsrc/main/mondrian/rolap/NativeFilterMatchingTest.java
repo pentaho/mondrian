@@ -538,7 +538,7 @@ public class NativeFilterMatchingTest extends BatchTestCase {
                     + "    ISNULL(`c0`) ASC, `c0` ASC,\n"
                     + "    ISNULL(`c1`) ASC, `c1` ASC,\n"
                     + "    ISNULL(`c2`) ASC, `c2` ASC,\n"
-                    + "    ISNULL(`c4`) ASC, CONCAT(`c4`) ASC";
+                    + "    ISNULL(`c4`) ASC, `c4` ASC";
             final SqlPattern[] patterns = mysqlPattern(sqlMysql);
 
             // Make sure the tuples list is using the HAVING clause.
