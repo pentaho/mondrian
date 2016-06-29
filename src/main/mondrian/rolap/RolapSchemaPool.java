@@ -495,7 +495,10 @@ class RolapSchemaPool {
 
             for (Reference<RolapSchema> ref : mapKeyToSchema.values()) {
                 if (ref != null) {
-                    schemas.add(ref.get());
+                    RolapSchema schema = ref.get();
+                    if (schema != null) {
+                        schemas.add(schema);
+                    }
                 }
             }
             mapKeyToSchema.clear();
