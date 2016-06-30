@@ -34,6 +34,7 @@ public class MySqlDialect extends JdbcDialectImpl {
             MySqlDialect.class,
             DatabaseProduct.MYSQL)
         {
+            @Override
             protected boolean acceptsConnection(Connection connection) {
                 try {
                     // Infobright looks a lot like MySQL. If this is an
@@ -80,7 +81,7 @@ public class MySqlDialect extends JdbcDialectImpl {
                 final ResultSet resultSet =
                     statement.executeQuery(
                         "select * from INFORMATION_SCHEMA.engines "
-                        + "where ENGINE = 'BRIGHTHOUSE'");
+                        + "where ENGINE in ( 'BRIGHTHOUSE', 'INFOBRIGHT' )");
                 if (resultSet.next()) {
                     return true;
                 }
@@ -110,6 +111,7 @@ public class MySqlDialect extends JdbcDialectImpl {
         return productName;
     }
 
+    @Override
     protected String deduceIdentifierQuoteString(
         DatabaseMetaData databaseMetaData)
     {
@@ -123,6 +125,7 @@ public class MySqlDialect extends JdbcDialectImpl {
         return quoteIdentifierString;
     }
 
+    @Override
     protected boolean deduceSupportsSelectNotInGroupBy(Connection connection)
         throws SQLException
     {
@@ -178,6 +181,7 @@ public class MySqlDialect extends JdbcDialectImpl {
     }
 
 
+    @Override
     public void appendHintsAfterFromClause(
         StringBuilder buf,
         Map<String, String> hints)
@@ -192,16 +196,19 @@ public class MySqlDialect extends JdbcDialectImpl {
         }
     }
 
+    @Override
     public boolean requiresAliasForFromQuery() {
         return true;
     }
 
+    @Override
     public boolean allowsFromQuery() {
         // MySQL before 4.0 does not allow FROM
         // subqueries in the FROM clause.
         return productVersion.compareTo("4.") >= 0;
     }
 
+    @Override
     public boolean allowsCompoundCountDistinct() {
         return true;
     }
@@ -216,6 +223,7 @@ public class MySqlDialect extends JdbcDialectImpl {
         buf.append('\'');
     }
 
+    @Override
     public String generateInline(
         List<String> columnNames,
         List<String> columnTypes,
@@ -247,10 +255,12 @@ public class MySqlDialect extends JdbcDialectImpl {
         }
     }
 
+    @Override
     public boolean requiresHavingAlias() {
         return true;
     }
 
+    @Override
     public boolean supportsMultiValueInExpr() {
         return true;
     }
@@ -260,10 +270,12 @@ public class MySqlDialect extends JdbcDialectImpl {
         GLOBAL
     }
 
+    @Override
     public boolean allowsRegularExpressionInWhereClause() {
         return true;
     }
 
+    @Override
     public String generateRegularExpression(
         String source,
         String javaRegex)
