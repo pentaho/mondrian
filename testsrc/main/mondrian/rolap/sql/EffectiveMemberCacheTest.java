@@ -51,8 +51,7 @@ public class EffectiveMemberCacheTest extends BatchTestCase {
                     + "group by\n"
                     + "    `product`.`product_name`\n"
                     + "order by\n"
-                    + "    ISNULL(`product`.`product_name`) ASC, "
-                    + "`product`.`product_name` ASC", null)}
+                    + "    ISNULL(`c0`) ASC, `c0` ASC", null)}
         );
     }
 
@@ -84,8 +83,7 @@ public class EffectiveMemberCacheTest extends BatchTestCase {
                     + "group by\n"
                     + "    `product`.`product_name`\n"
                     + "order by\n"
-                    + "    ISNULL(`product`.`product_name`) ASC, "
-                    + "`product`.`product_name` ASC", null) }
+                    + "    ISNULL(`c0`) ASC, `c0` ASC", null) }
         );
     }
 
@@ -109,8 +107,7 @@ public class EffectiveMemberCacheTest extends BatchTestCase {
                     + "group by\n"
                     + "    `store`.`store_type`\n"
                     + "order by\n"
-                    + "    ISNULL(`store`.`store_type`) ASC, "
-                    + "`store`.`store_type` ASC", null)
+                    + "    ISNULL(`c0`) ASC, `c0` ASC", null)
             });
     }
 
@@ -137,8 +134,7 @@ public class EffectiveMemberCacheTest extends BatchTestCase {
                     + "group by\n"
                     + "    `store`.`store_type`\n"
                     + "order by\n"
-                    + "    ISNULL(`store`.`store_type`) ASC, "
-                    + "`store`.`store_type` ASC", null)
+                    + "    ISNULL(`c0`) ASC, `c0` ASC", null)
             });
     }
 
@@ -162,8 +158,7 @@ public class EffectiveMemberCacheTest extends BatchTestCase {
                     + "group by\n"
                     + "    `store`.`coffee_bar`\n"
                     + "order by\n"
-                    + "    ISNULL(`store`.`coffee_bar`) ASC, "
-                    + "`store`.`coffee_bar` ASC", null)});
+                    + "    ISNULL(`c0`) ASC, `c0` ASC", null)});
     }
 
 

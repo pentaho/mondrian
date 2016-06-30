@@ -216,10 +216,9 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
                   + "having\n"
                   + "    UPPER(c7) REGEXP '.*TWO.*'\n"
                   + "order by\n"
-                  + "    ISNULL(`cat`.`ord`) ASC, `cat`.`ord` ASC,\n"
-                  + "    ISNULL(`product_cat`.`ord`) ASC, `product_cat`.`ord` ASC,\n"
-                  + "    ISNULL(`test_lp_xx2_fact`.`prodname`) ASC, "
-                  + "`test_lp_xx2_fact`.`prodname` ASC", null)});
+                  + "    ISNULL(`c2`) ASC, `c2` ASC,\n"
+                  + "    ISNULL(`c6`) ASC, `c6` ASC,\n"
+                  + "    ISNULL(`c7`) ASC, `c7` ASC", null)});
         }
         Axis axis = getTestContext().withCube("Fact").executeAxis(
             "Filter([Product].[Product Name].members, "

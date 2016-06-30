@@ -1032,6 +1032,7 @@ public class SqlTupleReader implements TupleReader {
                     for (int i = 0; i < types.size(); i++) {
                         unionQuery.addOrderBy(
                             i + 1 + "",
+                            null,
                             true,
                             false,
                             // We can't order the nulls
@@ -1039,8 +1040,8 @@ public class SqlTupleReader implements TupleReader {
                             // are not supported by functions.
                             // FIXME This dialect call is old and
                             // has lost its meaning in the process.
-                            unionQuery.getDialect()
-                                .requiresUnionOrderByOrdinal());
+                            unionQuery.getDialect().requiresUnionOrderByOrdinal(),
+                            true);
                     }
                 }
                 return Pair.of(unionQuery.toSqlAndTypes().left, types);

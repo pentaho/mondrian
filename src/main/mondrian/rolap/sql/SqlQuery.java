@@ -625,7 +625,7 @@ public class SqlQuery {
     {
         String orderExpr =
             dialect.generateOrderItem(
-                dialect.requiresOrderByAlias()
+                dialect.requiresOrderByAlias() && alias != null
                     ? dialect.quoteIdentifier(alias)
                     : expr,
                 nullable,

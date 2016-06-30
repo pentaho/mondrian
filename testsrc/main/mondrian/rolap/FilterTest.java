@@ -386,10 +386,8 @@ public class FilterTest extends BatchTestCase {
             + "(('Q1', 1997), ('Q3', 1998))) or (`time_by_day`.`quarter` is null or "
             + "`time_by_day`.`the_year` is null)) "
             + "group by `customer`.`country`, `time_by_day`.`the_year`, "
-            + "`time_by_day`.`quarter` order by ISNULL(`customer`.`country`) ASC, "
-            + "`customer`.`country` ASC, ISNULL(`time_by_day`.`the_year`) ASC, "
-            + "`time_by_day`.`the_year` ASC, ISNULL(`time_by_day`.`quarter`) ASC, "
-            + "`time_by_day`.`quarter` ASC";
+            + "`time_by_day`.`quarter` order by ISNULL(`c0`) ASC, "
+            + "`c0` ASC, ISNULL(`c1`) ASC, `c1` ASC, ISNULL(`c2`) ASC, `c2` ASC";
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -450,10 +448,8 @@ public class FilterTest extends BatchTestCase {
             + "(`time_by_day`.`quarter` is null)) or (not "
             + "(`time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` "
             + "is null))) group by `customer`.`country`, `time_by_day`.`the_year`,"
-            + " `time_by_day`.`quarter` order by ISNULL(`customer`.`country`) ASC, "
-            + "`customer`.`country` ASC, ISNULL(`time_by_day`.`the_year`) ASC, "
-            + "`time_by_day`.`the_year` ASC, ISNULL(`time_by_day`.`quarter`) ASC, "
-            + "`time_by_day`.`quarter` ASC";
+            + " `time_by_day`.`quarter` order by ISNULL(`c0`) ASC, "
+            + "`c0` ASC, ISNULL(`c1`) ASC, `c1` ASC, ISNULL(`c2`) ASC, `c2` ASC";
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -979,7 +975,7 @@ public class FilterTest extends BatchTestCase {
         final String badMysqlSQL =
             "select `store`.`store_country` as `c0`, `store`.`store_state` as `c1`, `store`.`store_city` as `c2`, `store`.`store_id` as `c3`, `store`.`store_name` as `c4`, `store`.`store_type` as `c5`, `store`.`store_manager` as `c6`, `store`.`store_sqft` as `c7`, `store`.`grocery_sqft` as `c8`, `store`.`frozen_sqft` as `c9`, `store`.`meat_sqft` as `c10`, `store`.`coffee_bar` as `c11`, `store`.`store_street_address` as `c12` from `FOODMART`.`store` as `store` where (`store`.`store_state` in ('CA', 'OR')) and ((`store`.`store_name`,`store`.`store_city`,`store`.`store_state`) in (('11','Portland','OR'),('14','San Francisco','CA'))) group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `store`.`store_id`, `store`.`store_name`, `store`.`store_type`, `store`.`store_manager`, `store`.`store_sqft`, `store`.`grocery_sqft`, `store`.`frozen_sqft`, `store`.`meat_sqft`, `store`.`coffee_bar`, `store`.`store_street_address` having NOT((sum(`store`.`store_sqft`) is null)) order by ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC, ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC, ISNULL(`store`.`store_city`) ASC, `store`.`store_city` ASC, ISNULL(`store`.`store_id`) ASC, `store`.`store_id` ASC";
         final String goodMysqlSQL =
-            "select `store`.`store_country` as `c0`, `store`.`store_state` as `c1`, `store`.`store_city` as `c2`, `store`.`store_id` as `c3`, `store`.`store_name` as `c4` from `store` as `store` where (`store`.`store_state` in ('CA', 'OR')) and ((`store`.`store_id`, `store`.`store_city`, `store`.`store_state`) in ((11, 'Portland', 'OR'), (14, 'San Francisco', 'CA'))) group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `store`.`store_id`, `store`.`store_name` having NOT((sum(`store`.`store_sqft`) is null))  order by ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC, ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC, ISNULL(`store`.`store_city`) ASC, `store`.`store_city` ASC, ISNULL(`store`.`store_id`) ASC, `store`.`store_id` ASC";
+            "select `store`.`store_country` as `c0`, `store`.`store_state` as `c1`, `store`.`store_city` as `c2`, `store`.`store_id` as `c3`, `store`.`store_name` as `c4` from `store` as `store` where (`store`.`store_state` in ('CA', 'OR')) and ((`store`.`store_id`, `store`.`store_city`, `store`.`store_state`) in ((11, 'Portland', 'OR'), (14, 'San Francisco', 'CA'))) group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `store`.`store_id`, `store`.`store_name` having NOT((sum(`store`.`store_sqft`) is null))  order by ISNULL(`c0`) ASC, `c0` ASC, ISNULL(`c1`) ASC, `c1` ASC, ISNULL(`c2`) ASC, `c2` ASC, ISNULL(`c3`) ASC, `c3` ASC";
         final String mdx =
             "With\n"
             + "Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Store], Not IsEmpty ([Measures].[Store Sqft]))'\n"
@@ -1165,30 +1161,21 @@ public class FilterTest extends BatchTestCase {
                 + " ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC,"
                 + " `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC";
         } else {
-                sql = "select `agg_g_ms_pcat_sales_fact_1997`."
-                + "`product_family` as `c0`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`product_department` as `c1`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c2` "
-                + "from `agg_g_ms_pcat_sales_fact_1997` as "
-                + "`agg_g_ms_pcat_sales_fact_1997` "
-                + "where (not ((`agg_g_ms_pcat_sales_fact_1997`.`product_department`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`product_family`) in "
-                + "(('Baked Goods',"
-                + " 'Food'),"
-                + " ('Dairy',"
-                + " 'Drink'))) or (`agg_g_ms_pcat_sales_fact_1997`."
-                + "`product_department` "
-                + "is null or `agg_g_ms_pcat_sales_fact_1997`.`product_family` "
-                + "is null)) "
-                + "group by `agg_g_ms_pcat_sales_fact_1997`.`product_family`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`product_department`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`gender` order by "
-                + "ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_family`) ASC,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`product_family` ASC,"
-                + " ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_department`) ASC,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`product_department` ASC,"
-                + " ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC";
+                sql = "select `agg_g_ms_pcat_sales_fact_1997`.`product_family` as `c0`, "
+                + "`agg_g_ms_pcat_sales_fact_1997`.`product_department` as `c1`, "
+                + "`agg_g_ms_pcat_sales_fact_1997`.`gender` as `c2` "
+                + "from `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997` "
+                + "where (not ((`agg_g_ms_pcat_sales_fact_1997`.`product_department`, "
+                + "`agg_g_ms_pcat_sales_fact_1997`.`product_family`) in "
+                + "(('Baked Goods', 'Food'), ('Dairy', 'Drink'))) or "
+                + "(`agg_g_ms_pcat_sales_fact_1997`.`product_department` is null or "
+                + "`agg_g_ms_pcat_sales_fact_1997`.`product_family` is null)) "
+                + "group by `agg_g_ms_pcat_sales_fact_1997`.`product_family`, "
+                + "`agg_g_ms_pcat_sales_fact_1997`.`product_department`, "
+                + "`agg_g_ms_pcat_sales_fact_1997`.`gender` "
+                + "order by ISNULL(`c0`) ASC, `c0` ASC, "
+                + "ISNULL(`c1`) ASC, `c1` ASC, "
+                + "ISNULL(`c2`) ASC, `c2` ASC";
         }
         String mdx =  "select NonEmptyCrossjoin( \n"+
             "   filter ( product.[product department].members,\n"+
