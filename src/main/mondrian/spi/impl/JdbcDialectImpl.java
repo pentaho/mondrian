@@ -22,7 +22,6 @@ import org.apache.commons.logging.LogFactory;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * Implementation of {@link Dialect} based on a JDBC connection and metadata.
@@ -140,6 +139,10 @@ public class JdbcDialectImpl implements Dialect {
         Connection connection)
         throws SQLException
     {
+        // MONDRIAN-2502
+        if (LOGGER.isInfoEnabled()) {
+          LOGGER.info( String.format("Mondrian Dialect: %s", this.getClass().getName() ) );
+        }
         final DatabaseMetaData metaData = connection.getMetaData();
         this.quoteIdentifierString = deduceIdentifierQuoteString(metaData);
         this.productName = deduceProductName(metaData);
@@ -155,6 +158,10 @@ public class JdbcDialectImpl implements Dialect {
     }
 
     public JdbcDialectImpl() {
+        // MONDRIAN-2502
+        if (LOGGER.isInfoEnabled()) {
+          LOGGER.info( String.format("Mondrian Dialect: %s", this.getClass().getName() ) );
+        }
         quoteIdentifierString = "";
         productName = "";
         productVersion = "";
@@ -166,10 +173,12 @@ public class JdbcDialectImpl implements Dialect {
         statisticsProviders = null;
     }
 
+    @Override
     public DatabaseProduct getDatabaseProduct() {
         return databaseProduct;
     }
 
+    @Override
     public void appendHintsAfterFromClause(
         StringBuilder buf,
         Map<String, String> hints)
@@ -177,6 +186,7 @@ public class JdbcDialectImpl implements Dialect {
         // Hints are always dialect-specific, so the default is a no-op
     }
 
+    @Override
     public boolean allowsDialectSharing() {
         return true;
     }
@@ -296,15 +306,18 @@ public class JdbcDialectImpl implements Dialect {
         return false;
     }
 
+    @Override
     public String toUpper(String expr) {
         return "UPPER(" + expr + ")";
     }
 
+    @Override
     public String caseWhenElse(String cond, String thenExpr, String elseExpr) {
         return "CASE WHEN " + cond + " THEN " + thenExpr + " ELSE " + elseExpr
             + " END";
     }
 
+    @Override
     public String quoteIdentifier(final String val) {
         int size = val.length() + SINGLE_QUOTE_SIZE;
         StringBuilder buf = new StringBuilder(size);
@@ -314,6 +327,7 @@ public class JdbcDialectImpl implements Dialect {
         return buf.toString();
     }
 
+    @Override
     public void quoteIdentifier(final String val, final StringBuilder buf) {
         String q = getQuoteIdentifierString();
         if (q == null) {
@@ -337,6 +351,7 @@ public class JdbcDialectImpl implements Dialect {
         buf.append(q);
     }
 
+    @Override
     public String quoteIdentifier(final String qual, final String name) {
         // We know if the qalifier is null, then only the name is going
         // to be quoted.
@@ -351,6 +366,7 @@ public class JdbcDialectImpl implements Dialect {
         return buf.toString();
     }
 
+    @Override
     public void quoteIdentifier(
         final StringBuilder buf,
         final String... names)
@@ -370,10 +386,12 @@ public class JdbcDialectImpl implements Dialect {
         }
     }
 
+    @Override
     public String getQuoteIdentifierString() {
         return quoteIdentifierString;
     }
 
+    @Override
     public void quoteStringLiteral(
         StringBuilder buf,
         String s)
@@ -381,6 +399,7 @@ public class JdbcDialectImpl implements Dialect {
         Util.singleQuoteString(s, buf);
     }
 
+    @Override
     public void quoteNumericLiteral(
         StringBuilder buf,
         String value)
@@ -388,6 +407,7 @@ public class JdbcDialectImpl implements Dialect {
         buf.append(value);
     }
 
+    @Override
     public void quoteBooleanLiteral(StringBuilder buf, String value) {
         // NOTE jvs 1-Jan-2007:  See quoteDateLiteral for explanation.
         // In addition, note that we leave out UNKNOWN (even though
@@ -402,6 +422,7 @@ public class JdbcDialectImpl implements Dialect {
         buf.append(value);
     }
 
+    @Override
     public void quoteDateLiteral(StringBuilder buf, String value) {
         // NOTE jvs 1-Jan-2007: Check that the supplied literal is in valid
         // SQL:2003 date format.  A hack in
@@ -440,6 +461,7 @@ public class JdbcDialectImpl implements Dialect {
         Util.singleQuoteString(value, buf);
     }
 
+    @Override
     public void quoteTimeLiteral(StringBuilder buf, String value) {
         // NOTE jvs 1-Jan-2007:  See quoteDateLiteral for explanation.
         try {
@@ -452,6 +474,7 @@ public class JdbcDialectImpl implements Dialect {
         Util.singleQuoteString(value, buf);
     }
 
+    @Override
     public void quoteTimestampLiteral(
         StringBuilder buf,
         String value)
@@ -467,38 +490,47 @@ public class JdbcDialectImpl implements Dialect {
         Util.singleQuoteString(value, buf);
     }
 
+    @Override
     public boolean requiresAliasForFromQuery() {
         return false;
     }
 
+    @Override
     public boolean allowsAs() {
         return true;
     }
 
+    @Override
     public boolean allowsFromQuery() {
         return true;
     }
 
+    @Override
     public boolean allowsCompoundCountDistinct() {
         return false;
     }
 
+    @Override
     public boolean allowsCountDistinct() {
         return true;
     }
 
+    @Override
     public boolean allowsMultipleCountDistinct() {
         return allowsCountDistinct();
     }
 
+    @Override
     public boolean allowsMultipleDistinctSqlMeasures() {
         return allowsMultipleCountDistinct();
     }
 
+    @Override
     public boolean allowsCountDistinctWithOtherAggs() {
       return allowsCountDistinct();
     }
 
+    @Override
     public String generateInline(
         List<String> columnNames,
         List<String> columnTypes,
@@ -683,10 +715,12 @@ public class JdbcDialectImpl implements Dialect {
         return buf.toString();
     }
 
+    @Override
     public boolean needsExponent(Object value, String valueString) {
         return false;
     }
 
+    @Override
     public void quote(
         StringBuilder buf,
         Object value,
@@ -732,10 +766,12 @@ public class JdbcDialectImpl implements Dialect {
         }
     }
 
+    @Override
     public boolean allowsDdl() {
         return !readOnly;
     }
 
+    @Override
     public String generateOrderItem(
         String expr,
         boolean nullable,
@@ -830,54 +866,67 @@ public class JdbcDialectImpl implements Dialect {
         }
     }
 
+    @Override
     public boolean supportsGroupByExpressions() {
         return true;
     }
 
+    @Override
     public boolean allowsSelectNotInGroupBy() {
         return permitsSelectNotInGroupBy;
     }
 
+    @Override
     public boolean allowsJoinOn() {
         return false;
     }
 
+    @Override
     public boolean supportsGroupingSets() {
         return false;
     }
 
+    @Override
     public boolean supportsUnlimitedValueList() {
         return false;
     }
 
+    @Override
     public boolean requiresGroupByAlias() {
         return false;
     }
 
+    @Override
     public boolean requiresOrderByAlias() {
         return false;
     }
 
+    @Override
     public boolean requiresHavingAlias() {
         return false;
     }
 
+    @Override
     public boolean allowsOrderByAlias() {
         return requiresOrderByAlias();
     }
 
+    @Override
     public boolean requiresUnionOrderByOrdinal() {
         return true;
     }
 
+    @Override
     public boolean requiresUnionOrderByExprToBeInSelectClause() {
         return true;
     }
 
+    @Override
     public boolean supportsMultiValueInExpr() {
         return false;
     }
 
+    @Override
     public boolean supportsResultSetConcurrency(
         int type,
         int concurrency)
@@ -886,22 +935,27 @@ public class JdbcDialectImpl implements Dialect {
             Arrays.asList(type, concurrency));
     }
 
+    @Override
     public String toString() {
         return productName;
     }
 
+    @Override
     public int getMaxColumnNameLength() {
         return maxColumnNameLength;
     }
 
+    @Override
     public boolean allowsRegularExpressionInWhereClause() {
         return false;
     }
 
+    @Override
     public String generateCountExpression(String exp) {
         return exp;
     }
 
+    @Override
     public String generateRegularExpression(
         String source,
         String javaRegExp)
@@ -909,10 +963,12 @@ public class JdbcDialectImpl implements Dialect {
         return null;
     }
 
+    @Override
     public List<StatisticsProvider> getStatisticsProviders() {
         return statisticsProviders;
     }
 
+    @Override
     public SqlStatement.Type getType(
         ResultSetMetaData metaData, int columnIndex)
         throws SQLException
