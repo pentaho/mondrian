@@ -140,8 +140,8 @@ public class JdbcDialectImpl implements Dialect {
         throws SQLException
     {
         // MONDRIAN-2502
-        if (LOGGER.isInfoEnabled()) {
-          LOGGER.info( String.format("Mondrian Dialect: %s", this.getClass().getName() ) );
+        if ( LOGGER.isInfoEnabled() ) {
+          LOGGER.info( String.format( "Mondrian Dialect: %s", this.getClass().getName() ) );
         }
         final DatabaseMetaData metaData = connection.getMetaData();
         this.quoteIdentifierString = deduceIdentifierQuoteString(metaData);
@@ -159,8 +159,8 @@ public class JdbcDialectImpl implements Dialect {
 
     public JdbcDialectImpl() {
         // MONDRIAN-2502
-        if (LOGGER.isInfoEnabled()) {
-          LOGGER.info( String.format("Mondrian Dialect: %s", this.getClass().getName() ) );
+        if ( LOGGER.isInfoEnabled() ) {
+          LOGGER.info( String.format( "Mondrian Dialect: %s", this.getClass().getName() ) );
         }
         quoteIdentifierString = "";
         productName = "";
