@@ -326,21 +326,6 @@ public class MySqlDialect extends JdbcDialectImpl {
         }
         return sb.toString();
     }
-
-  /**
-   * Required for MySQL 5.7+, where SQL_MODE include ONLY_FULL_GROUP_BY by default. This prevent expressions like
-   * ISNULL(RTRIM(`promotion_name`)) ASC from being used in ORDER BY section: ISNULL(`c0`) ASC will be used, where
-   * `c0` is an alias of the RTRIM(`promotion_name`). And this is important for the cases where we're using SQL
-   * expressions in a Level definition.
-   *
-   * Jira ticket, that describes the issue: http://jira.pentaho.com/browse/MONDRIAN-2451
-   *
-   * @return always true
-   */
-  @Override
-    public boolean requiresOrderByAlias() {
-        return true;
-    }
 }
 
 // End MySqlDialect.java
