@@ -928,7 +928,7 @@ public class TestAggregationManager extends BatchTestCase {
                 + "where `agg_c_14_sales_fact_1997`.`the_year` = 1998 "
                 + "and `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id` "
                 + "group by `store`.`store_country` "
-                + "order by ISNULL(`c0`) ASC, `c0` ASC",
+                + "order by ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC",
                 26)};
 
         assertQuerySql(
@@ -1367,10 +1367,10 @@ public class TestAggregationManager extends BatchTestCase {
                 + "    `product_class`.`product_family`,\n"
                 + "    `agg_g_ms_pcat_sales_fact_1997`.`gender`\n"
                 + "order by\n"
-                + "    ISNULL(`c0`) ASC, `c0` ASC,\n"
-                + "    ISNULL(`c1`) ASC, `c1` ASC,\n"
-                + "    ISNULL(`c2`) ASC, `c2` ASC,\n"
-                + "    ISNULL(`c4`) ASC, `c4` ASC",
+                + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_family`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`product_family` ASC,\n"
+                + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_department`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`product_department` ASC,\n"
+                + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_category`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`product_category` ASC,\n"
+                + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
                 null)
         };
 
@@ -1455,8 +1455,10 @@ public class TestAggregationManager extends BatchTestCase {
                 + "`agg_g_ms_pcat_sales_fact_1997`.`gender`, "
                 + "`agg_g_ms_pcat_sales_fact_1997`.`marital_status` "
                 + "order by "
-                + "ISNULL(`c0`) ASC, `c0` ASC, "
-                + "ISNULL(`c1`) ASC, `c1` ASC",
+                + "ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, "
+                + "`agg_g_ms_pcat_sales_fact_1997`.`gender` ASC, "
+                + "ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`marital_status`) ASC, "
+                + "`agg_g_ms_pcat_sales_fact_1997`.`marital_status` ASC",
                 null)
         };
 
@@ -1497,8 +1499,10 @@ public class TestAggregationManager extends BatchTestCase {
                 + "group by "
                 + "`store`.`store_country`, `store`.`store_state` "
                 + "order by "
-                + "ISNULL(`c0`) ASC, `c0` ASC, "
-                + "ISNULL(`c1`) ASC, `c1` ASC",
+                + "ISNULL(`store`.`store_country`) ASC, "
+                + "`store`.`store_country` ASC, "
+                + "ISNULL(`store`.`store_state`) ASC, "
+                + "`store`.`store_state` ASC",
                 null)
         };
 
@@ -1544,7 +1548,7 @@ public class TestAggregationManager extends BatchTestCase {
                 + "as `agg_g_ms_pcat_sales_fact_1997` "
                 + "group by "
                 + "`agg_g_ms_pcat_sales_fact_1997`.`gender`"
-                + " order by ISNULL(`c0`) ASC, `c0` ASC",
+                + " order by ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
                 null)
         };
 
@@ -2425,10 +2429,10 @@ public class TestAggregationManager extends BatchTestCase {
                 + "    `agg_c_14_sales_fact_1997`.`month_of_year`,\n"
                 + "    `store`.`store_country`\n"
                 + "order by\n"
-                + "    ISNULL(`c0`) ASC, `c0` ASC,\n"
-                + "    ISNULL(`c1`) ASC, `c1` ASC,\n"
-                + "    ISNULL(`c2`) ASC, `c2` ASC,\n"
-                + "    ISNULL(`c3`) ASC, `c3` ASC";
+                + "    ISNULL(`agg_c_14_sales_fact_1997`.`the_year`) ASC, `agg_c_14_sales_fact_1997`.`the_year` ASC,\n"
+                + "    ISNULL(`agg_c_14_sales_fact_1997`.`quarter`) ASC, `agg_c_14_sales_fact_1997`.`quarter` ASC,\n"
+                + "    ISNULL(`agg_c_14_sales_fact_1997`.`month_of_year`) ASC, `agg_c_14_sales_fact_1997`.`month_of_year` ASC,\n"
+                + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC";
 
             assertQuerySqlOrNot(
                 context,
@@ -2582,8 +2586,8 @@ public class TestAggregationManager extends BatchTestCase {
             + "    `time_by_day`.`the_year`,\n"
             + "    `store`.`store_country`\n"
             + "order by\n"
-            + "    ISNULL(`c0`) ASC, `c0` ASC,\n"
-            + "    ISNULL(`c1`) ASC, `c1` ASC";
+            + "    ISNULL(`time_by_day`.`the_year`) ASC, `time_by_day`.`the_year` ASC,\n"
+            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC";
 
         final String sqlMysqlSegmentQuery =
             "select\n"
@@ -2626,11 +2630,11 @@ public class TestAggregationManager extends BatchTestCase {
             + "    `time_by_day`.`day_of_month`,\n"
             + "    `store`.`store_country`\n"
             + "order by\n"
-            + "    ISNULL(`c0`) ASC, `c0` ASC,\n"
-            + "    ISNULL(`c1`) ASC, `c1` ASC,\n"
-            + "    ISNULL(`c2`) ASC, `c2` ASC,\n"
-            + "    ISNULL(`c3`) ASC, `c3` ASC,\n"
-            + "    ISNULL(`c4`) ASC, `c4` ASC";
+            + "    ISNULL(`time_by_day`.`the_year`) ASC, `time_by_day`.`the_year` ASC,\n"
+            + "    ISNULL(`time_by_day`.`quarter`) ASC, `time_by_day`.`quarter` ASC,\n"
+            + "    ISNULL(`time_by_day`.`month_of_year`) ASC, `time_by_day`.`month_of_year` ASC,\n"
+            + "    ISNULL(`time_by_day`.`day_of_month`) ASC, `time_by_day`.`day_of_month` ASC,\n"
+            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC";
 
         final String sqlMysqlTooLowSegmentQuery =
             "select\n"
