@@ -465,23 +465,28 @@ class RolapSchemaPool {
 
     private void remove(SchemaKey key) {
         lock.writeLock().lock();
+        RolapSchema schema = null;
         try {
             Reference<RolapSchema> ref = mapKeyToSchema.get(key);
             if (ref != null) {
-                RolapSchema schema = ref.get();
+                schema = ref.get();
                 if (schema != null) {
                     mapMd5ToSchema.remove(schema.getChecksum());
-                    schema.finalCleanUp();
                 }
             }
             mapKeyToSchema.remove(key);
         } finally {
             lock.writeLock().unlock();
         }
+
+        if (schema != null) {
+            schema.finalCleanUp();
+        }
     }
 
     void clear() {
         lock.writeLock().lock();
+        List<RolapSchema> schemas = new ArrayList<RolapSchema>();
         try {
             if (RolapSchema.LOGGER.isDebugEnabled()) {
                 RolapSchema.LOGGER.debug(
@@ -492,7 +497,7 @@ class RolapSchemaPool {
                 if (ref != null) {
                     RolapSchema schema = ref.get();
                     if (schema != null) {
-                        schema.finalCleanUp();
+                        schemas.add(schema);
                     }
                 }
             }
@@ -500,6 +505,10 @@ class RolapSchemaPool {
             mapMd5ToSchema.clear();
         } finally {
             lock.writeLock().unlock();
+        }
+
+        for (RolapSchema schema : schemas) {
+            schema.finalCleanUp();
         }
         JdbcSchema.clearAllDBs();
     }
