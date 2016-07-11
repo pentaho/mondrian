@@ -821,7 +821,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + " `salary` =as= `salary` "
             + "where `salary`.`pay_date` = `time_by_day`.`the_date`"
             + " and `time_by_day`.`the_year` = 1997 "
-            + "order by `time_by_day`.`the_year` ASC",
+            + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "order by `Year` ASC"
+                : "order by `time_by_day`.`the_year` ASC"),
             7392);
 
         // Drill-through for row #1, [Employees].[All].[Sheri Nowmer]
@@ -844,7 +846,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + " and `time_by_day`.`the_year` = 1997"
             + " and `salary`.`employee_id` = `employee`.`employee_id`"
             + " and `employee`.`employee_id` = 1 "
-            + "order by `time_by_day`.`the_year` ASC, `employee`.`employee_id` ASC",
+            + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "order by `Year` ASC, `Employee Id (Key) ASC"
+                : "order by `time_by_day`.`the_year` ASC, `employee`.`employee_id` ASC"),
             12);
 
         // Drill-through for row #2, [Employees].[All].[Sheri Nowmer].
@@ -865,7 +869,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + " and `time_by_day`.`the_year` = 1997"
             + " and `salary`.`employee_id` = `employee`.`employee_id`"
             + " and `employee`.`employee_id` = 2 "
-            + "order by `time_by_day`.`the_year` ASC, `employee`.`employee_id` ASC",
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "order by `Year` ASC, `Employee Id (Key) ASC"
+                : "order by `time_by_day`.`the_year` ASC, `employee`.`employee_id` ASC"),
             12);
     }
 
@@ -916,21 +922,37 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + " and `salary`.`department_id` = `department`.`department_id`"
             + " and `employee`.`employee_id` = 2 "
             + "order by"
-            + " `time_by_day`.`the_year` ASC,"
-            + " `time_by_day`.`quarter` ASC,"
-            + " `time_by_day`.`the_month` ASC,"
-            + " `time_by_day`.`month_of_year` ASC,"
-            + " `store`.`store_country` ASC,"
-            + " `store`.`store_state` ASC,"
-            + " `store`.`store_city` ASC,"
-            + " `store`.`store_name` ASC,"
-            + " `position`.`pay_type` ASC,"
-            + " `store`.`store_type` ASC,"
-            + " `employee`.`management_role` ASC,"
-            + " `employee`.`position_title` ASC,"
-            + " `department`.`department_id` ASC,"
-            + " `employee`.`full_name` ASC,"
-            + " `employee`.`employee_id` ASC",
+            + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? " `Year` ASC,"
+                + " `Quarter` ASC,"
+                + " `Month` ASC,"
+                + " `Month (Key)` ASC,"
+                + " `Store Country` ASC,"
+                + " `Store State` ASC,"
+                + " `Store City` ASC,"
+                + " `Store Name` ASC,"
+                + " `Pay Type` ASC,"
+                + " `Store Type` ASC,"
+                + " `Management Role` ASC,"
+                + " `Position Title` ASC,"
+                + " `Department Description` ASC,"
+                + " `Employee Id` ASC,"
+                + " `Employee Id (Key)` ASC"
+                : " `time_by_day`.`the_year` ASC,"
+                + " `time_by_day`.`quarter` ASC,"
+                + " `time_by_day`.`the_month` ASC,"
+                + " `time_by_day`.`month_of_year` ASC,"
+                + " `store`.`store_country` ASC,"
+                + " `store`.`store_state` ASC,"
+                + " `store`.`store_city` ASC,"
+                + " `store`.`store_name` ASC,"
+                + " `position`.`pay_type` ASC,"
+                + " `store`.`store_type` ASC,"
+                + " `employee`.`management_role` ASC,"
+                + " `employee`.`position_title` ASC,"
+                + " `department`.`department_id` ASC,"
+                + " `employee`.`full_name` ASC,"
+                + " `employee`.`employee_id` ASC"),
             12);
     }
 
