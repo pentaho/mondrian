@@ -22,6 +22,9 @@ import mondrian.olap4j.XmlaExtraTest;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.*;
+import mondrian.rolap.format.DefaultFormatterTest;
+import mondrian.rolap.format.FormatterCreateContextTest;
+import mondrian.rolap.format.FormatterFactoryTest;
 import mondrian.rolap.sql.*;
 import mondrian.server.FileRepositoryTest;
 import mondrian.spi.impl.ImpalaDialectTest;
@@ -398,6 +401,9 @@ public class Main extends TestSuite {
             }
 
             addTest(suite, RolapMemberBaseTest.class);
+            addTest(suite, DefaultFormatterTest.class);
+            addTest(suite, FormatterCreateContextTest.class);
+            addTest(suite, FormatterFactoryTest.class);
 
             // Must be the last test.
             addTest(suite, TerminatorTest.class);

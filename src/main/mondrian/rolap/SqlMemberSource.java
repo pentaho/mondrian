@@ -1049,9 +1049,8 @@ RME is this right
         }
         if (captionValue != null) {
             // passing caption column raw value
-            // to be properly formatted, in case if it's numeric,
-            // and finally set as a caption
-            member.setCaption(captionValue);
+            // to be properly formatted later
+            member.setCaptionValue(captionValue);
         }
         if (parentChild) {
             // Create a 'public' and a 'data' member. The public member is

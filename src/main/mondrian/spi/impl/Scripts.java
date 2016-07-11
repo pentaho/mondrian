@@ -1,12 +1,12 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2002-2016 Pentaho and others
+// All Rights Reserved.
 */
-
 package mondrian.spi.impl;
 
 import mondrian.olap.Util;
@@ -19,72 +19,61 @@ import mondrian.spi.*;
  */
 public class Scripts {
 
-    private static <T> T create(
-        ScriptDefinition script,
-        Class<T> iface,
-        String script2)
-    {
-        final String engineName = script.language.engineName;
-        return Util.compileScript(iface, script2, engineName);
-    }
-
-    private static String simple(ScriptDefinition script, String decl) {
-        switch (script.language) {
-        case JAVASCRIPT:
-            return "function " + decl + " { " + script.script + " }";
-        default:
-            throw Util.unexpected(script.language);
-        }
-    }
-
     /**
      * Creates an implementation of the {@link PropertyFormatter} SPI based on
      * a script.
      *
-     * @param script Script
+     * @param scriptText Script text
+     * @param scriptLanguage Script language
      * @return property formatter
      */
     public static PropertyFormatter propertyFormatter(
-        ScriptDefinition script)
+        String scriptText,
+        String scriptLanguage)
     {
         return create(
-            script,
             PropertyFormatter.class,
-            simple(
-                script,
-                "formatProperty(member,propertyName,propertyValue)"));
+            scriptText,
+            scriptLanguage,
+            "formatProperty(member,propertyName,propertyValue)");
     }
 
     /**
      * Creates an implementation of the {@link MemberFormatter} SPI based on
      * a script.
      *
-     * @param script Script
+     * @param scriptText Script text
+     * @param scriptLanguage Script language
      * @return member formatter
      */
     public static MemberFormatter memberFormatter(
-        ScriptDefinition script)
+        String scriptText,
+        String scriptLanguage)
     {
         return create(
-            script,
             MemberFormatter.class,
-            simple(script, "formatMember(member)"));
+            scriptText,
+            scriptLanguage,
+            "formatMember(member)");
     }
 
     /**
      * Creates an implementation of the {@link CellFormatter} SPI based on
      * a script.
      *
-     * @param script Script
+     * @param scriptText Script text
+     * @param scriptLanguage Script language
      * @return cell formatter
      */
     public static CellFormatter cellFormatter(
-        ScriptDefinition script)
+        String scriptText,
+        String scriptLanguage)
     {
         return create(
-            script,
             CellFormatter.class,
-            simple(script, "formatCell(value)"));
+            scriptText,
+            scriptLanguage,
+            "formatCell(value)");
     }
 
     /**
@@ -200,6 +189,48 @@ public class Scripts {
             script,
             UserDefinedFunction.class,
             code);
+    }
+
+    private static Scripts.ScriptDefinition toScriptDef(
+        String script,
+        String language)
+    {
+        final Scripts.ScriptLanguage scriptLanguage =
+            Scripts.ScriptLanguage.lookup(language);
+        if (scriptLanguage == null) {
+            throw Util.newError(
+                "Invalid script language '" + language + "'");
+        }
+        return new Scripts.ScriptDefinition(script, scriptLanguage);
+    }
+
+    private static <T> T create(
+        ScriptDefinition script,
+        Class<T> iface,
+        String script2)
+    {
+        final String engineName = script.language.engineName;
+        return Util.compileScript(iface, script2, engineName);
+    }
+
+    private static <T> T create(
+        Class<T> iface,
+        String scriptText,
+        String scriptLanguage,
+        String functionSignature)
+    {
+        ScriptDefinition scriptDef = toScriptDef(scriptText, scriptLanguage);
+        String script = simple(scriptDef, functionSignature);
+        return create(scriptDef, iface, script);
+    }
+
+    private static String simple(ScriptDefinition script, String decl) {
+        switch (script.language) {
+        case JAVASCRIPT:
+            return "function " + decl + " { " + script.script + " }";
+        default:
+            throw Util.unexpected(script.language);
+        }
     }
 
     public static class ScriptDefinition {
