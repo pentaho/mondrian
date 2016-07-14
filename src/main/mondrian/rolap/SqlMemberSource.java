@@ -960,6 +960,9 @@ RME is this right
             }
         }
         final String sql = pair.left;
+
+        int startChildrenSize = children.size();
+        Set<RolapMember> uniqueChildren = new HashSet<RolapMember>();
         final List<SqlStatement.Type> types = pair.right;
         SqlStatement stmt =
             RolapUtil.executeQuery(
@@ -1016,12 +1019,21 @@ RME is this right
                     addAsOldestSibling(children, member);
                 } else {
                     children.add(member);
+                    uniqueChildren.add(member);
                 }
             }
         } catch (SQLException e) {
             throw stmt.handle(e);
         } finally {
             stmt.close();
+        }
+
+        if (children.size() - startChildrenSize != uniqueChildren.size()) {
+            LOGGER.error(
+                "Column expression for level ["
+                + parentLevel.getName() + "].[" + childLevel.getName()
+                + "] is inconsistent with ordinal or caption expression."
+                + " It should have 1:1 relationship");
         }
     }
 
