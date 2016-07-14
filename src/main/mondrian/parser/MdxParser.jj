@@ -246,6 +246,7 @@ TOKEN :
     | <WHERE: "WHERE">
     | <XOR: "XOR">
     | <WITH: "WITH">
+    | <EXISTING: "EXISTING">
 }
 
 // White space
@@ -707,6 +708,9 @@ Exp factor() :
     }
 |   <MINUS> p = primary() {
         return new UnresolvedFunCall("-", Syntax.Prefix, new Exp[] {p});
+    }
+|   <EXISTING> p = primary() {
+        return new UnresolvedFunCall("Existing", Syntax.Prefix, new Exp[] {p});
     }
 }
 
