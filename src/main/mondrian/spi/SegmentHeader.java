@@ -109,13 +109,13 @@ public class SegmentHeader implements Serializable {
         hash = Util.hash(hash, schemaChecksum);
         hash = Util.hash(hash, cubeName);
         hash = Util.hash(hash, measureName);
-        for (SegmentColumn col : this.constrainedColumns) {
+        for (SegmentColumn col : getSortedColumns()) {
             hash = Util.hash(hash, col.columnExpression);
             if (col.values != null) {
                 hash = Util.hashArray(hash, col.values.toArray());
             }
         }
-        for (SegmentColumn col : this.excludedRegions) {
+        for (SegmentColumn col : getSortedRegions()) {
             hash = Util.hash(hash, col.columnExpression);
             if (col.values != null) {
                 hash = Util.hashArray(hash, col.values.toArray());
@@ -327,7 +327,7 @@ public class SegmentHeader implements Serializable {
             hashSB.append(this.schemaChecksum);
             hashSB.append(this.cubeName);
             hashSB.append(this.measureName);
-            for (SegmentColumn c : constrainedColumns) {
+            for (SegmentColumn c : getSortedColumns()) {
                 hashSB.append(c.columnExpression);
                 if (c.values != null) {
                     for (Object value : c.values) {
@@ -335,7 +335,7 @@ public class SegmentHeader implements Serializable {
                     }
                 }
             }
-            for (SegmentColumn c : excludedRegions) {
+            for (SegmentColumn c : getSortedRegions()) {
                 hashSB.append(c.columnExpression);
                 if (c.values != null) {
                     for (Object value : c.values) {
@@ -350,6 +350,44 @@ public class SegmentHeader implements Serializable {
                 new ByteString(Util.digestSha256(hashSB.toString()));
         }
         return uniqueID;
+    }
+
+    /**
+     * This function returns a sorted view of the excluded regions
+     * of this segment. We cannot sort them at construction because
+     * changing their order would make it not correspond to its SegmentDataset.
+     * Use this method with caution, not in tight loops.
+     */
+    private List<SegmentColumn> getSortedRegions() {
+        // Sort the columns to make the ID deterministic
+        List<SegmentColumn> sortedRegions = new ArrayList<>(excludedRegions);
+        Collections.sort(
+            sortedRegions,
+            new Comparator<SegmentColumn>() {
+                public int compare(SegmentColumn o1, SegmentColumn o2) {
+                    return o1.columnExpression.compareTo(o2.columnExpression);
+                }
+            });
+        return sortedRegions;
+    }
+
+    /**
+     * This function returns a sorted view of the constrained columns
+     * of this segment. We cannot sort them at construction because
+     * changing their order would make it not correspond to its SegmentDataset.
+     * Use this method with caution, not in tight loops.
+     */
+    private List<SegmentColumn> getSortedColumns() {
+        // Sort the columns to make the ID deterministic
+        List<SegmentColumn> sortedColumns = new ArrayList<>(constrainedColumns);
+        Collections.sort(
+            sortedColumns,
+            new Comparator<SegmentColumn>() {
+                public int compare(SegmentColumn o1, SegmentColumn o2) {
+                    return o1.columnExpression.compareTo(o2.columnExpression);
+                }
+            });
+        return sortedColumns;
     }
 
     /**
@@ -371,7 +409,7 @@ public class SegmentHeader implements Serializable {
             descriptionSB.append(this.measureName);
             descriptionSB.append("]\n");
             descriptionSB.append("Axes:[");
-            for (SegmentColumn c : constrainedColumns) {
+            for (SegmentColumn c : getSortedColumns()) {
                 descriptionSB.append("\n    {");
                 descriptionSB.append(c.columnExpression);
                 descriptionSB.append("=(");
@@ -389,7 +427,7 @@ public class SegmentHeader implements Serializable {
             }
             descriptionSB.append("]\n");
             descriptionSB.append("Excluded Regions:[");
-            for (SegmentColumn c : excludedRegions) {
+            for (SegmentColumn c : getSortedRegions()) {
                 descriptionSB.append("\n    {");
                 descriptionSB.append(c.columnExpression);
                 descriptionSB.append("=(");
