@@ -1425,7 +1425,7 @@ public class SchemaTest extends FoodMartTestCase {
             + "{[Store].[USA].[CA]}\n"
             + "{[Store].[USA].[OR]}\n"
             + "{[Store].[USA].[WA]}\n"
-            + "Row #0: 25,789.086\n"
+            + "Row #0: 25,789.087\n"
             + "Row #0: 8,624.791\n"
             + "Row #1: 17,606.904\n"
             + "Row #1: 3,812.023\n"
