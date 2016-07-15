@@ -231,7 +231,7 @@ public class VirtualCubeTest extends BatchTestCase {
             + "{[Measures].[Warehouse Cost]}\n"
             + "{[Measures].[Sales Count]}\n"
             + "Row #0: 89,043.253\n"
-            + "Row #0: 25,789.086\n"
+            + "Row #0: 25,789.087\n"
             + "Row #1: 86,837\n"
             + "Row #1: \n");
     }
