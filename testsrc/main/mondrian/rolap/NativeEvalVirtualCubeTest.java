@@ -9,6 +9,10 @@
 */
 package mondrian.rolap;
 
+import mondrian.spi.Dialect;
+import mondrian.test.SqlPattern;
+import mondrian.test.TestContext;
+
 public class NativeEvalVirtualCubeTest extends BatchTestCase {
 
   /**
@@ -323,6 +327,62 @@ public class NativeEvalVirtualCubeTest extends BatchTestCase {
         + "Row #0: 68,755\n");
   }
 
+  public void testCachedShouldNotBeUsed() {
+    // First query doesn't use a measure like ValidMeasure, so results in an
+    // empty tuples set being cached.  The second query should not reuse the
+    // cache results from the first query, since it *does* use VM.
+    executeQuery(
+        "select non empty crossjoin(gender.gender.members, warehouse.[USA].[CA]) on 0, "
+        + "measures.[unit sales] on 1 from [warehouse and sales]");
+    assertQueryReturns(
+        "with member measures.vm as 'validmeasure(measures.[unit sales])' "
+        + "select non empty crossjoin(gender.gender.members, warehouse.[USA].[CA]) on 0, "
+        + "measures.vm on 1 from [warehouse and sales]",
+        "Axis #0:\n"
+        + "{}\n"
+        + "Axis #1:\n"
+        + "{[Gender].[F], [Warehouse].[USA].[CA]}\n"
+        + "{[Gender].[M], [Warehouse].[USA].[CA]}\n"
+        + "Axis #2:\n"
+        + "{[Measures].[vm]}\n"
+        + "Row #0: 131,558\n"
+        + "Row #0: 135,215\n");
+  }
+
+  public void testShouldUseCache() {
+    // verify cache does get used for applicable grouped target tuple queries
+    propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+    String mySqlGenderQuery = "select\n"
+      + "    `customer`.`gender` as `c0`\n"
+      + "from\n"
+      + "    `customer` as `customer`,\n"
+      + "    `sales_fact_1997` as `sales_fact_1997`\n"
+      + "where\n"
+      + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+      + "group by\n"
+      + "    `customer`.`gender`\n"
+      + "order by\n"
+      + "    ISNULL(`customer`.`gender`) ASC, `customer`.`gender` ASC";
+    TestContext tc = getTestContext().withFreshConnection();
+    SqlPattern mysqlPattern =
+      new SqlPattern(
+          Dialect.DatabaseProduct.MYSQL,
+          mySqlGenderQuery,
+          mySqlGenderQuery);
+    String mdx =
+        "with member measures.vm as 'validmeasure(measures.[unit sales])' "
+        + "select non empty "
+        + "crossjoin(gender.gender.members, warehouse.[USA].[CA]) on 0, "
+        + "measures.vm on 1 from [warehouse and sales]";
+    // first MDX with a fresh query should result in gender query.
+    assertQuerySqlOrNot(
+        tc, mdx, new SqlPattern[]{ mysqlPattern }, false, false, false);
+    // rerun the MDX, since the previous assert aborts when it hits the SQL.
+    tc.executeQuery(mdx);
+    // Subsequent query should pull from cache, not rerun gender query.
+    assertQuerySqlOrNot(
+        tc, mdx, new SqlPattern[]{ mysqlPattern }, true, false, false);
+  }
 }
 
 // End NativeEvalVirtualCubeTest.java

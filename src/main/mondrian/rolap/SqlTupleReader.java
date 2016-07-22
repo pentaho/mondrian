@@ -372,7 +372,37 @@ public class SqlTupleReader implements TupleReader {
                 key.add(target.getLevel());
             }
         }
+        if (constraint.getEvaluator() != null) {
+            addTargetGroupsToKey(key);
+        }
         return key;
+    }
+
+  /**
+   * adds target group info to cacheKey if split target
+   * groups are needed for this query.
+   */
+   private void addTargetGroupsToKey(List<Object> cacheKey) {
+        List<List<TargetBase>> targetGroups = groupTargets(
+            targets,
+            constraint.getEvaluator().getQuery());
+        if (targetGroups.size() > 1) {
+            cacheKey.add(targetsToLevels(targetGroups));
+        }
+    }
+
+    private List<List<RolapLevel>> targetsToLevels(
+        List<List<TargetBase>> targetGroups)
+    {
+        List<List<RolapLevel>> groupedLevelList = new ArrayList<>();
+        for (List<TargetBase> targets : targetGroups) {
+            List<RolapLevel> levels = new ArrayList<>();
+            for (TargetBase target : targets) {
+                levels.add(target.getLevel());
+            }
+            groupedLevelList.add(levels);
+        }
+        return groupedLevelList;
     }
 
     /**
