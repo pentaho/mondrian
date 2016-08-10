@@ -131,7 +131,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             } else {
                 alias =
                     sqlQuery.addSelect(
-                        expr, column.getInternalType(), getColumnAlias(i));
+                        expr, column.getInternalType(), getColumnAlias(i).replace(' ','_');
             }
 
             if (isAggregate()) {
