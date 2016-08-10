@@ -104,7 +104,7 @@ public abstract class MondrianServer {
      * @return Server's version
      */
     public MondrianVersion getVersion() {
-        return MondrianServerRegistry.INSTANCE.getOrLoadVersion();
+        return MondrianServerRegistry.INSTANCE.getVersion();
     }
 
     /**
