@@ -883,6 +883,12 @@
     </text>
 </message>
 
+<message id="8000200" name="MembersQuantityExceedsMaxConstraints">
+    <text>
+        Quantify of supported calculated members(''{0}'') exceeds value of the mondrian.rolap.maxConstraints property.
+    </text>
+</message>
+
 <!-- ====================================================================== -->
 <!-- Execution -->
 <exception id="8500001" name="ExecutionStatementCleanupException">
