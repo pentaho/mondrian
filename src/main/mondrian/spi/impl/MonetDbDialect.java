@@ -69,7 +69,12 @@ public class MonetDbDialect extends JdbcDialectImpl {
     public boolean supportsGroupByExpressions() {
         return false;
     }
-
+    
+    @Override
+    public boolean requiresGroupByAlias() {
+        return true;
+    }
+    
     @Override
     public void quoteStringLiteral(StringBuilder buf, String s) {
         // Go beyond Util.singleQuoteString; also quote backslash, like MySQL.
