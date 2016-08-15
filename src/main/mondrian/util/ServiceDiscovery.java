@@ -65,44 +65,47 @@ public class ServiceDiscovery<T> {
         // in the order they were added.
         Set<Class<T>> uniqueClasses = new LinkedHashSet<Class<T>>();
 
-        ClassLoader cLoader = Thread.currentThread().getContextClassLoader();
-        if (cLoader == null) {
-            cLoader = this.getClass().getClassLoader();
-        }
-        try {
-            // Enumerate the files because I may have more than one .jar file
-            // that contains an implementation for the interface, and therefore,
-            // more than one list of entries.
-            String lookupName = "META-INF/services/" + theInterface.getName();
-            Enumeration<URL> urlEnum = cLoader.getResources(lookupName);
-            while (urlEnum.hasMoreElements()) {
-                URL resourceURL = urlEnum.nextElement();
-                InputStream is = null;
-                try {
-                    is = resourceURL.openStream();
-                    BufferedReader reader =
-                        new BufferedReader(new InputStreamReader(is));
+        ClassLoader[] classLoaders = new ClassLoader[]{ this.getClass().getClassLoader(), Thread.currentThread().getContextClassLoader() };
 
-                    // read each class and parse it
-                    String clazz;
-                    while ((clazz = reader.readLine()) != null) {
-                        parseImplementor(clazz, cLoader, uniqueClasses);
-                    }
-                } catch (IOException e) {
-                    logger.warn(
-                        "Error while finding service file " + resourceURL
-                        + " for " + theInterface,
-                        e);
-                } finally {
-                    if (is != null) {
-                        is.close();
+        for ( ClassLoader cLoader : classLoaders ) {
+            if( cLoader == null ){
+                continue;
+            }
+            try {
+                // Enumerate the files because I may have more than one .jar file
+                // that contains an implementation for the interface, and therefore,
+                // more than one list of entries.
+                String lookupName = "META-INF/services/" + theInterface.getName();
+                Enumeration<URL> urlEnum = cLoader.getResources( lookupName );
+                while ( urlEnum.hasMoreElements() ) {
+                    URL resourceURL = urlEnum.nextElement();
+                    InputStream is = null;
+                    try {
+                        is = resourceURL.openStream();
+                        BufferedReader reader =
+                            new BufferedReader( new InputStreamReader( is ) );
+
+                        // read each class and parse it
+                        String clazz;
+                        while ( ( clazz = reader.readLine() ) != null ) {
+                            parseImplementor( clazz, cLoader, uniqueClasses );
+                        }
+                    } catch ( IOException e ) {
+                        logger.warn(
+                            "Error while finding service file " + resourceURL
+                                + " for " + theInterface,
+                            e );
+                    } finally {
+                        if ( is != null ) {
+                            is.close();
+                        }
                     }
                 }
+            } catch ( IOException e ) {
+                logger.warn(
+                    "Error while finding service files for " + theInterface,
+                    e );
             }
-        } catch (IOException e) {
-            logger.warn(
-                "Error while finding service files for " + theInterface,
-                e);
         }
         List<Class<T>> rtn = new ArrayList<Class<T>>();
         rtn.addAll(uniqueClasses);
