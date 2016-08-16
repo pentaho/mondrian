@@ -2,7 +2,7 @@ package mondrian.util;
 
 import junit.framework.TestCase;
 import mondrian.spi.UserDefinedFunction;
-import org.junit.Test;
+import junit.framework.Test;
 
 /**
  * Created by nbaker on 8/2/16.
