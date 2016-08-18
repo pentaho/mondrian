@@ -80,7 +80,9 @@ public class DrillThroughFieldListTest extends FoodMartTestCase {
             + "and\n"
             + "    time_by_day.quarter = 'Q1'\n"
             + "order by\n"
-            + "    time_by_day.quarter ASC";
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "    Quarter ASC"
+                : "    time_by_day.quarter ASC");
         break;
     case ORACLE:
         expectedSql =
@@ -148,7 +150,9 @@ public class DrillThroughFieldListTest extends FoodMartTestCase {
             + "and\n"
             + "    time_by_day.quarter = 'Q1'\n"
             + "order by\n"
-            + "    time_by_day.quarter ASC";
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "    Quarter ASC"
+                : "    time_by_day.quarter ASC");
         break;
     case ORACLE:
         expectedSql =
@@ -204,25 +208,27 @@ public class DrillThroughFieldListTest extends FoodMartTestCase {
     switch (getTestContext().getDialect().getDatabaseProduct()) {
     case MYSQL:
         expectedSql = "select\n"
-             + "    time_by_day.quarter as Quarter,\n"
-             + "    sales_fact_1997.unit_sales as Unit Sales,\n"
-             + "    sales_fact_1997.store_cost as Store Cost\n"
-             + "from\n"
-             + "    time_by_day as time_by_day,\n"
-             + "    sales_fact_1997 as sales_fact_1997,\n"
-             + "    product as product\n"
-             + "where\n"
-             + "    sales_fact_1997.time_id = time_by_day.time_id\n"
-             + "and\n"
-             + "    time_by_day.the_year = 1997\n"
-             + "and\n"
-             + "    time_by_day.quarter = 'Q1'\n"
-             + "and\n"
-             + "    sales_fact_1997.product_id = product.product_id\n"
-             + "and\n"
-             + "    product.product_name = 'Good Imported Beer'\n"
-             + "order by\n"
-             + "    time_by_day.quarter ASC";
+            + "    time_by_day.quarter as Quarter,\n"
+            + "    sales_fact_1997.unit_sales as Unit Sales,\n"
+            + "    sales_fact_1997.store_cost as Store Cost\n"
+            + "from\n"
+            + "    time_by_day as time_by_day,\n"
+            + "    sales_fact_1997 as sales_fact_1997,\n"
+            + "    product as product\n"
+            + "where\n"
+            + "    sales_fact_1997.time_id = time_by_day.time_id\n"
+            + "and\n"
+            + "    time_by_day.the_year = 1997\n"
+            + "and\n"
+            + "    time_by_day.quarter = 'Q1'\n"
+            + "and\n"
+            + "    sales_fact_1997.product_id = product.product_id\n"
+            + "and\n"
+            + "    product.product_name = 'Good Imported Beer'\n"
+            + "order by\n"
+            + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "    Quarter ASC"
+                : "    time_by_day.quarter ASC");
         break;
     case ORACLE:
         expectedSql = "select\n"
