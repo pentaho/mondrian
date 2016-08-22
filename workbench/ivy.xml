@@ -30,7 +30,7 @@
         <dependency org="jaxen" name="jaxen" rev="1.1.1"/>
         <dependency org="dom4j" name="dom4j" rev="1.6.1"/>
         <dependency org="junit" name="junit" rev="4.0"/>
-        <dependency org="org.codehaus.groovy" name="groovy-all" rev="1.5.6" transitive="false"/>
+        <dependency org="org.codehaus.groovy" name="groovy-all" rev="2.4.7" transitive="false"/>
 
         <dependency org="pentaho" name="pentaho-xul-core" rev="${dependency.pentaho-xul.revision}" changing="true" />
         <dependency org="pentaho" name="pentaho-xul-swing" rev="${dependency.pentaho-xul.revision}" changing="true" />
