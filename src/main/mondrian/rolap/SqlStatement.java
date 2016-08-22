@@ -16,8 +16,6 @@ import mondrian.server.monitor.*;
 import mondrian.server.monitor.SqlStatementEvent.Purpose;
 import mondrian.util.*;
 
-import org.apache.log4j.Logger;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 
@@ -59,9 +57,6 @@ import javax.sql.DataSource;
  * @since 2.3
  */
 public class SqlStatement {
-    private static final Logger LOGGER =
-      Logger.getLogger(SqlStatement.class);
-
     private static final String TIMING_NAME = "SqlStatement-";
 
     // used for SQL logging, allows for a SQL Statement UID
@@ -258,8 +253,8 @@ public class SqlStatement {
         } finally {
             RolapUtil.SQL_LOGGER.debug(id + ": " + status);
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
+            if (RolapUtil.LOGGER.isDebugEnabled()) {
+                RolapUtil.LOGGER.debug(
                     locus.component + ": executing sql [" + sql + "]" + status);
             }
         }
@@ -323,8 +318,8 @@ public class SqlStatement {
             + ", close=" + Counters.SQL_STATEMENT_CLOSE_COUNT.get()
             + ", open=" + Counters.SQL_STATEMENT_EXECUTING_IDS;
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(
+        if (RolapUtil.LOGGER.isDebugEnabled()) {
+            RolapUtil.LOGGER.debug(
                 locus.component + ": done executing sql [" + sql + "]"
                 + status);
         }
