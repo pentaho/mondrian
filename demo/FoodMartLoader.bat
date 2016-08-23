@@ -7,6 +7,7 @@ set CP=%CP%;../lib/eigenbase-properties.jar;../lib/eigenbase-resgen.jar;../lib/e
 set CP=%CP%;../lib/javacup.jar;../lib/mondrian.jar
 set CP=%CP%;../lib/log4j-1.2.9.jar
 set CP=%CP%;../testlib/mysql-connector-java-3.1.11-bin.jar
+set CP=%CP%;../testlib/mariadb-java-client-1.4.6.jar
 set CP=%CP%;../testlib/postgresql-driver-jdbc3-74-214.jar
 set CP=%CP%;../testlib/jtds-1.2.jar
 

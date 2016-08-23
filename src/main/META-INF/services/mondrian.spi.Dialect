@@ -13,6 +13,7 @@ mondrian.spi.impl.InterbaseDialect
 mondrian.spi.impl.LucidDbDialect
 mondrian.spi.impl.MicrosoftSqlServerDialect
 mondrian.spi.impl.MySqlDialect
+mondrian.spi.impl.MariaDBDialect
 mondrian.spi.impl.MonetDbDialect
 mondrian.spi.impl.NeoviewDialect
 mondrian.spi.impl.NuoDbDialect

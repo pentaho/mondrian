@@ -393,8 +393,8 @@ public class RolapConnection extends ConnectionBase {
                     jdbcConnectString,
                     jdbcProperties);
             }
-
-            if (jdbcConnectString.toLowerCase().indexOf("mysql") > -1) {
+            String connLc = jdbcConnectString.toLowerCase();
+            if ( ( connLc.indexOf("mysql") > -1 ) || ( connLc.indexOf("mariadb") > -1 ) ) {
                 // mysql driver needs this autoReconnect parameter
                 jdbcProperties.setProperty("autoReconnect", "true");
             }

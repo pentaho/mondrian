@@ -2588,6 +2588,7 @@ public class SchemaTest extends FoodMartTestCase {
     public void testBinaryLevelKey() {
         switch (TestContext.instance().getDialect().getDatabaseProduct()) {
         case DERBY:
+        case MARIADB:
         case MYSQL:
             break;
         default:
@@ -4492,6 +4493,7 @@ public class SchemaTest extends FoodMartTestCase {
     public void testBugMondrian1047() {
         // Test case only works under MySQL, due to how columns are quoted.
         switch (TestContext.instance().getDialect().getDatabaseProduct()) {
+        case MARIADB:
         case MYSQL:
             break;
         default:

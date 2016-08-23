@@ -204,6 +204,15 @@ mondrian.foodmart.jdbcPassword=foodmart<br/>
 mondrian.jdbcDrivers=com.mysql.jdbc.Driver<br/>
 driver.classpath=D:/mysql-connector-3.1.12</code></blockquote>
 
+<h3> MariaDB: can have user and password set in JDBC URL</h3>
+<blockquote><code>
+mondrian.foodmart.jdbcURL=jdbc:mariadb://localhost/foodmart?user=foodmart&amp;password=foodmart<br/>
+mondrian.foodmart.jdbcURL=jdbc:mariadb://localhost/foodmart<br/>
+mondrian.foodmart.jdbcUser=foodmart<br/>
+mondrian.foodmart.jdbcPassword=foodmart<br/>
+mondrian.jdbcDrivers=org.mariadb.jdbc.Driver<br/>
+driver.classpath=D:/mariadb-java-client-1.4.6.jar</code></blockquote>
+
 <h3> NuoDB</h3>
 <blockquote><code>
 mondrian.foodmart.jdbcURL=jdbc:com.nuodb://localhost/foodmart?schema=mondrian<br/>

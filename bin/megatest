@@ -274,6 +274,16 @@ doTest2() {
       echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
     ) >> megatest.properties
     ;;
+  mariadb)
+    (
+      jdbcDrivers=org.mariadb.jdbc.Driver
+      export jdbcURL='jdbc:mariadb://localhost/foodmart?user=foodmart&password=foodmart&characterEncoding=latin1'
+      echo mondrian.foodmart.jdbcURL=${jdbcURL}
+      echo mondrian.jdbcDrivers=${jdbcDrivers}
+      echo driver.classpath=/jdbc/lib/mariadb-java-client-1.4.6.jar
+      echo "mondrian.test.connectString=Provider=mondrian;Jdbc=${jdbcURL};JdbcUser=foodmart;JdbcPassword=foodmart;Catalog=${MONDRIAN_DIR}/demo/FoodMart.xml;JdbcDrivers=${jdbcDrivers};RoleXX='California manager';"
+    ) >> megatest.properties
+    ;;
   postgresql)
     (
       jdbcDrivers=org.postgresql.Driver
@@ -541,7 +551,7 @@ doLotsOfTests() {
             # false if db does not support it.
             if [ "$groupingSets" = false ] ; then
                case "$database" in
-               (access|mysql|derby) continue;;
+               (access|mysql|mariadb|derby) continue;;
                esac
             fi
             doTest $jdk $database \
