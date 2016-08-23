@@ -65,6 +65,7 @@ public class DrillThroughFieldListTest extends FoodMartTestCase {
 
     String expectedSql;
     switch (getTestContext().getDialect().getDatabaseProduct()) {
+    case MARIADB:
     case MYSQL:
         expectedSql =
             "select\n"
@@ -134,6 +135,7 @@ public class DrillThroughFieldListTest extends FoodMartTestCase {
 
     String expectedSql;
     switch (getTestContext().getDialect().getDatabaseProduct()) {
+    case MARIADB:
     case MYSQL:
         expectedSql =
             "select\n"
@@ -206,6 +208,7 @@ public class DrillThroughFieldListTest extends FoodMartTestCase {
 
     String expectedSql;
     switch (getTestContext().getDialect().getDatabaseProduct()) {
+    case MARIADB:
     case MYSQL:
         expectedSql = "select\n"
             + "    time_by_day.quarter as Quarter,\n"
@@ -280,6 +283,7 @@ public class DrillThroughFieldListTest extends FoodMartTestCase {
 
     String expectedSql;
     switch (getTestContext().getDialect().getDatabaseProduct()) {
+    case MARIADB:
     case MYSQL:
         expectedSql =
             "select\n"
@@ -323,6 +327,7 @@ public class DrillThroughFieldListTest extends FoodMartTestCase {
 
     String expectedSql;
     switch (getTestContext().getDialect().getDatabaseProduct()) {
+    case MARIADB:
     case MYSQL:
         expectedSql = "select\n"
             + "    sales_fact_1997.unit_sales as Unit Sales\n"
