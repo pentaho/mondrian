@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2002-2013 Pentaho and others
+// Copyright (C) 2002-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -325,6 +325,29 @@ public class MySqlDialect extends JdbcDialectImpl {
             quoteStringLiteral(sb, javaRegex.toUpperCase());
         }
         return sb.toString();
+    }
+
+    /**
+     * Required for MySQL 5.7+, where SQL_MODE include ONLY_FULL_GROUP_BY
+     * by default. This prevent expressions like
+     *
+     * ISNULL(RTRIM(`promotion_name`)) ASC
+     *
+     * from being used in ORDER BY section.
+     *
+     * ISNULL(`c0`) ASC
+     *
+     * will be used, where `c0` is an alias of the RTRIM(`promotion_name`).
+     * And this is important for the cases where we're using SQL
+     * expressions in a Level definition.
+     *
+     * Jira ticket, that describes the issue: http://jira.pentaho.com/browse/MONDRIAN-2451
+     *
+     * @return true when MySQL version is 5.7 or larger
+     */
+    @Override
+    public boolean requiresOrderByAlias() {
+        return productVersion.compareTo("5.7") >= 0;
     }
 }
 

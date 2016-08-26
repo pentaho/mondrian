@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2015 Pentaho
+// Copyright (C) 2006-2016 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -76,10 +76,15 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
                 + "    `time_by_day`.`the_month`,\n"
                 + "    `agg_g_ms_pcat_sales_fact_1997`.`gender`\n"
                 + "order by\n"
-                + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`the_year`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`the_year` ASC,\n"
-                + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`quarter`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`quarter` ASC,\n"
-                + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`month_of_year`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` ASC,\n"
-                + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC"));
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                    ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
+                    + "    ISNULL(`c1`) ASC, `c1` ASC,\n"
+                    + "    ISNULL(`c2`) ASC, `c2` ASC,\n"
+                    + "    ISNULL(`c4`) ASC, `c4` ASC"
+                    : "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`the_year`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`the_year` ASC,\n"
+                    + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`quarter`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`quarter` ASC,\n"
+                    + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`month_of_year`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` ASC,\n"
+                    + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC")));
         assertQuerySql(
             testContext,
             query,
@@ -160,13 +165,21 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
                 + "    `store`.`store_name`,\n"
                 + "    `store`.`store_street_address`\n"
                 + "order by\n"
-                + "    ISNULL(`agg_c_14_sales_fact_1997`.`the_year`) ASC, `agg_c_14_sales_fact_1997`.`the_year` ASC,\n"
-                + "    ISNULL(`agg_c_14_sales_fact_1997`.`quarter`) ASC, `agg_c_14_sales_fact_1997`.`quarter` ASC,\n"
-                + "    ISNULL(`agg_c_14_sales_fact_1997`.`month_of_year`) ASC, `agg_c_14_sales_fact_1997`.`month_of_year` ASC,\n"
-                + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
-                + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC,\n"
-                + "    ISNULL(`store`.`store_city`) ASC, `store`.`store_city` ASC,\n"
-                + "    ISNULL(`store`.`store_name`) ASC, `store`.`store_name` ASC"));
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                    ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
+                    + "    ISNULL(`c1`) ASC, `c1` ASC,\n"
+                    + "    ISNULL(`c2`) ASC, `c2` ASC,\n"
+                    + "    ISNULL(`c4`) ASC, `c4` ASC,\n"
+                    + "    ISNULL(`c5`) ASC, `c5` ASC,\n"
+                    + "    ISNULL(`c6`) ASC, `c6` ASC,\n"
+                    + "    ISNULL(`c7`) ASC, `c7` ASC"
+                    : "    ISNULL(`agg_c_14_sales_fact_1997`.`the_year`) ASC, `agg_c_14_sales_fact_1997`.`the_year` ASC,\n"
+                    + "    ISNULL(`agg_c_14_sales_fact_1997`.`quarter`) ASC, `agg_c_14_sales_fact_1997`.`quarter` ASC,\n"
+                    + "    ISNULL(`agg_c_14_sales_fact_1997`.`month_of_year`) ASC, `agg_c_14_sales_fact_1997`.`month_of_year` ASC,\n"
+                    + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
+                    + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC,\n"
+                    + "    ISNULL(`store`.`store_city`) ASC, `store`.`store_city` ASC,\n"
+                    + "    ISNULL(`store`.`store_name`) ASC, `store`.`store_name` ASC")));
 
         assertQuerySql(
             testContext,
@@ -234,10 +247,15 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
                 + "    `exp_agg_test`.`testmonthord`,\n"
                 + "    `exp_agg_test`.`gender`\n"
                 + "order by\n"
-                + "    ISNULL(`exp_agg_test`.`testyear`) ASC, `exp_agg_test`.`testyear` ASC,\n"
-                + "    ISNULL(`exp_agg_test`.`testqtr`) ASC, `exp_agg_test`.`testqtr` ASC,\n"
-                + "    ISNULL(`exp_agg_test`.`testmonthord`) ASC, `exp_agg_test`.`testmonthord` ASC,\n"
-                + "    ISNULL(`exp_agg_test`.`gender`) ASC, `exp_agg_test`.`gender` ASC"));
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                    ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
+                    + "    ISNULL(`c1`) ASC, `c1` ASC,\n"
+                    + "    ISNULL(`c3`) ASC, `c3` ASC,\n"
+                    + "    ISNULL(`c4`) ASC, `c4` ASC"
+                    : "    ISNULL(`exp_agg_test`.`testyear`) ASC, `exp_agg_test`.`testyear` ASC,\n"
+                    + "    ISNULL(`exp_agg_test`.`testqtr`) ASC, `exp_agg_test`.`testqtr` ASC,\n"
+                    + "    ISNULL(`exp_agg_test`.`testmonthord`) ASC, `exp_agg_test`.`testmonthord` ASC,\n"
+                    + "    ISNULL(`exp_agg_test`.`gender`) ASC, `exp_agg_test`.`gender` ASC")));
     }
 
     public void testExplicitAggCaptionOnAggTable() throws SQLException {
@@ -281,10 +299,15 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
                 + "    `exp_agg_test`.`testmonthcap`,\n"
                 + "    `exp_agg_test`.`gender`\n"
                 + "order by\n"
-                + "    ISNULL(`exp_agg_test`.`testyear`) ASC, `exp_agg_test`.`testyear` ASC,\n"
-                + "    ISNULL(`exp_agg_test`.`testqtr`) ASC, `exp_agg_test`.`testqtr` ASC,\n"
-                + "    ISNULL(`exp_agg_test`.`testmonthname`) ASC, `exp_agg_test`.`testmonthname` ASC,\n"
-                + "    ISNULL(`exp_agg_test`.`gender`) ASC, `exp_agg_test`.`gender` ASC"));
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                    ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
+                    + "    ISNULL(`c1`) ASC, `c1` ASC,\n"
+                    + "    ISNULL(`c2`) ASC, `c2` ASC,\n"
+                    + "    ISNULL(`c4`) ASC, `c4` ASC"
+                    : "    ISNULL(`exp_agg_test`.`testyear`) ASC, `exp_agg_test`.`testyear` ASC,\n"
+                    + "    ISNULL(`exp_agg_test`.`testqtr`) ASC, `exp_agg_test`.`testqtr` ASC,\n"
+                    + "    ISNULL(`exp_agg_test`.`testmonthname`) ASC, `exp_agg_test`.`testmonthname` ASC,\n"
+                    + "    ISNULL(`exp_agg_test`.`gender`) ASC, `exp_agg_test`.`gender` ASC")));
     }
 
     public void testExplicitAggNameColumnOnAggTable() throws SQLException {
@@ -332,10 +355,15 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
                 + "    `exp_agg_test`.`testmonprop1`,\n"
                 + "    `exp_agg_test`.`gender`\n"
                 + "order by\n"
-                + "    ISNULL(`exp_agg_test`.`testyear`) ASC, `exp_agg_test`.`testyear` ASC,\n"
-                + "    ISNULL(`exp_agg_test`.`testqtr`) ASC, `exp_agg_test`.`testqtr` ASC,\n"
-                + "    ISNULL(`exp_agg_test`.`testmonthname`) ASC, `exp_agg_test`.`testmonthname` ASC,\n"
-                + "    ISNULL(`exp_agg_test`.`gender`) ASC, `exp_agg_test`.`gender` ASC"));
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                    ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
+                    + "    ISNULL(`c1`) ASC, `c1` ASC,\n"
+                    + "    ISNULL(`c2`) ASC, `c2` ASC,\n"
+                    + "    ISNULL(`c5`) ASC, `c5` ASC"
+                    : "    ISNULL(`exp_agg_test`.`testyear`) ASC, `exp_agg_test`.`testyear` ASC,\n"
+                    + "    ISNULL(`exp_agg_test`.`testqtr`) ASC, `exp_agg_test`.`testqtr` ASC,\n"
+                    + "    ISNULL(`exp_agg_test`.`testmonthname`) ASC, `exp_agg_test`.`testmonthname` ASC,\n"
+                    + "    ISNULL(`exp_agg_test`.`gender`) ASC, `exp_agg_test`.`gender` ASC")));
     }
 
 
@@ -387,11 +415,17 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
                 + "    `exp_agg_test_distinct_count`.`store_name`,\n"
                 + "    `exp_agg_test_distinct_count`.`store_add`\n"
                 + "order by\n"
-                + "    ISNULL(`exp_agg_test_distinct_count`.`gender`) ASC, `exp_agg_test_distinct_count`.`gender` ASC,\n"
-                + "    ISNULL(`exp_agg_test_distinct_count`.`store_country`) ASC, `exp_agg_test_distinct_count`.`store_country` ASC,\n"
-                + "    ISNULL(`exp_agg_test_distinct_count`.`store_st`) ASC, `exp_agg_test_distinct_count`.`store_st` ASC,\n"
-                + "    ISNULL(`exp_agg_test_distinct_count`.`store_cty`) ASC, `exp_agg_test_distinct_count`.`store_cty` ASC,\n"
-                + "    ISNULL(`exp_agg_test_distinct_count`.`store_name`) ASC, `exp_agg_test_distinct_count`.`store_name` ASC"));
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                    ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
+                    + "    ISNULL(`c1`) ASC, `c1` ASC,\n"
+                    + "    ISNULL(`c2`) ASC, `c2` ASC,\n"
+                    + "    ISNULL(`c3`) ASC, `c3` ASC,\n"
+                    + "    ISNULL(`c4`) ASC, `c4` ASC"
+                    : "    ISNULL(`exp_agg_test_distinct_count`.`gender`) ASC, `exp_agg_test_distinct_count`.`gender` ASC,\n"
+                    + "    ISNULL(`exp_agg_test_distinct_count`.`store_country`) ASC, `exp_agg_test_distinct_count`.`store_country` ASC,\n"
+                    + "    ISNULL(`exp_agg_test_distinct_count`.`store_st`) ASC, `exp_agg_test_distinct_count`.`store_st` ASC,\n"
+                    + "    ISNULL(`exp_agg_test_distinct_count`.`store_cty`) ASC, `exp_agg_test_distinct_count`.`store_cty` ASC,\n"
+                    + "    ISNULL(`exp_agg_test_distinct_count`.`store_name`) ASC, `exp_agg_test_distinct_count`.`store_name` ASC")));
 
         testContext.assertQueryReturns(
             "Store Address Property should be '5922 La Salle Ct'",
@@ -482,11 +516,17 @@ public class ExplicitRecognizerTest extends AggTableTestCase {
                 + "    `exp_agg_test_distinct_count`.`store_name`,\n"
                 + "    `exp_agg_test_distinct_count`.`store_add`\n"
                 + "order by\n"
-                + "    ISNULL(`exp_agg_test_distinct_count`.`testyear`) ASC, `exp_agg_test_distinct_count`.`testyear` ASC,\n"
-                + "    ISNULL(`exp_agg_test_distinct_count`.`store_country`) ASC, `exp_agg_test_distinct_count`.`store_country` ASC,\n"
-                + "    ISNULL(`exp_agg_test_distinct_count`.`store_st`) ASC, `exp_agg_test_distinct_count`.`store_st` ASC,\n"
-                + "    ISNULL(`exp_agg_test_distinct_count`.`store_cty`) ASC, `exp_agg_test_distinct_count`.`store_cty` ASC,\n"
-                + "    ISNULL(`exp_agg_test_distinct_count`.`store_name`) ASC, `exp_agg_test_distinct_count`.`store_name` ASC"));
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                    ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
+                    + "    ISNULL(`c1`) ASC, `c1` ASC,\n"
+                    + "    ISNULL(`c2`) ASC, `c2` ASC,\n"
+                    + "    ISNULL(`c3`) ASC, `c3` ASC,\n"
+                    + "    ISNULL(`c4`) ASC, `c4` ASC"
+                    : "    ISNULL(`exp_agg_test_distinct_count`.`testyear`) ASC, `exp_agg_test_distinct_count`.`testyear` ASC,\n"
+                    + "    ISNULL(`exp_agg_test_distinct_count`.`store_country`) ASC, `exp_agg_test_distinct_count`.`store_country` ASC,\n"
+                    + "    ISNULL(`exp_agg_test_distinct_count`.`store_st`) ASC, `exp_agg_test_distinct_count`.`store_st` ASC,\n"
+                    + "    ISNULL(`exp_agg_test_distinct_count`.`store_cty`) ASC, `exp_agg_test_distinct_count`.`store_cty` ASC,\n"
+                    + "    ISNULL(`exp_agg_test_distinct_count`.`store_name`) ASC, `exp_agg_test_distinct_count`.`store_name` ASC")));
 
         assertQuerySql(
             testContext,

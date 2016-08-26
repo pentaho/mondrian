@@ -5,10 +5,8 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
-//
-// jhyde, Mar 21, 2002
 */
 package mondrian.rolap.sql;
 
@@ -625,7 +623,7 @@ public class SqlQuery {
     {
         String orderExpr =
             dialect.generateOrderItem(
-                dialect.requiresOrderByAlias()
+                dialect.requiresOrderByAlias() && alias != null
                     ? dialect.quoteIdentifier(alias)
                     : expr,
                 nullable,
@@ -1016,7 +1014,7 @@ public class SqlQuery {
           final String dialectName = dialect.getDatabaseProduct().getFamily()
               .name().toLowerCase();
           if (dialectName.equals("postgresql")) {
-              //Luc Boudreau's comment
+              // Luc Boudreau's comment
               // Special case for the discrepancy between the value used
               // in schemas and the actual name of the dialect. The former is
               // 'postgresql' while the later is 'postgres'.

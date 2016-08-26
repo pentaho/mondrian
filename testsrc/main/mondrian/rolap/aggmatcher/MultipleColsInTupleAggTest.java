@@ -14,6 +14,7 @@ import mondrian.olap.Result;
 import mondrian.rolap.RolapAxis;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
+import mondrian.test.TestContext;
 
 /**
  * Testcase for levels that contain multiple columns and are
@@ -216,10 +217,14 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
                   + "having\n"
                   + "    UPPER(c7) REGEXP '.*TWO.*'\n"
                   + "order by\n"
-                  + "    ISNULL(`cat`.`ord`) ASC, `cat`.`ord` ASC,\n"
-                  + "    ISNULL(`product_cat`.`ord`) ASC, `product_cat`.`ord` ASC,\n"
-                  + "    ISNULL(`test_lp_xx2_fact`.`prodname`) ASC, "
-                  + "`test_lp_xx2_fact`.`prodname` ASC", null)});
+                  + (TestContext.instance().getDialect().requiresOrderByAlias()
+                      ? "    ISNULL(`c2`) ASC, `c2` ASC,\n"
+                      + "    ISNULL(`c6`) ASC, `c6` ASC,\n"
+                      + "    ISNULL(`c7`) ASC, `c7` ASC"
+                      : "    ISNULL(`cat`.`ord`) ASC, `cat`.`ord` ASC,\n"
+                      + "    ISNULL(`product_cat`.`ord`) ASC, `product_cat`.`ord` ASC,\n"
+                      + "    ISNULL(`test_lp_xx2_fact`.`prodname`) ASC, "
+                      + "`test_lp_xx2_fact`.`prodname` ASC"), null)});
         }
         Axis axis = getTestContext().withCube("Fact").executeAxis(
             "Filter([Product].[Product Name].members, "
