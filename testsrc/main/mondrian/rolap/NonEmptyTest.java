@@ -1957,9 +1957,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "and `sales_fact_1997`.`product_id` = `product`.`product_id` "
             + "and ((`store`.`store_city`, `store`.`store_state`) in (('Portland', 'OR'), ('Salem', 'OR'), ('San Francisco', 'CA'), ('Tacoma', 'WA'))) "
             + "and (`product_class`.`product_family` = 'Food') "
-            + "group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `product_class`.`product_family` "
-            + "order by ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC, ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC, "
-            + "ISNULL(`store`.`store_city`) ASC, `store`.`store_city` ASC, ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
+            + "group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `product_class`.`product_family` order by "
+            + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "ISNULL(`c0`) ASC, `c0` ASC, ISNULL(`c1`) ASC, `c1` ASC, "
+                + "ISNULL(`c2`) ASC, `c2` ASC, ISNULL(`c3`) ASC, `c3` ASC"
+                : "ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC, ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC, "
+                + "ISNULL(`store`.`store_city`) ASC, `store`.`store_city` ASC, ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC");
 
         if (MondrianProperties.instance().UseAggregates.get()
             && MondrianProperties.instance().ReadAggregates.get())
@@ -2252,9 +2255,13 @@ public class NonEmptyTest extends BatchTestCase {
             + "(`product_class`.`product_family` = 'Food') "
             + "group by `warehouse`.`wa_address3`, `warehouse`.`wa_address2`, `warehouse`.`warehouse_fax`, "
             + "`product_class`.`product_family` "
-            + "order by ISNULL(`warehouse`.`wa_address3`) ASC, `warehouse`.`wa_address3` ASC, ISNULL(`warehouse`.`wa_address2`) ASC, "
-            + "`warehouse`.`wa_address2` ASC, ISNULL(`warehouse`.`warehouse_fax`) ASC, `warehouse`.`warehouse_fax` ASC, "
-            + "ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
+            + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "order by ISNULL(`c0`) ASC, `c0` ASC, ISNULL(`c1`) ASC, "
+                + "`c1` ASC, ISNULL(`c2`) ASC, `c2` ASC, "
+                + "ISNULL(`c3`) ASC, `c3` ASC"
+                : "order by ISNULL(`warehouse`.`wa_address3`) ASC, `warehouse`.`wa_address3` ASC, ISNULL(`warehouse`.`wa_address2`) ASC, "
+                + "`warehouse`.`wa_address2` ASC, ISNULL(`warehouse`.`warehouse_fax`) ASC, `warehouse`.`warehouse_fax` ASC, "
+                + "ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC");
 
         TestContext testContext =
             TestContext.instance().create(
@@ -4864,8 +4871,11 @@ public class NonEmptyTest extends BatchTestCase {
                 "select `product_class`.`product_family` as `c0` "
                 + "from `product_class` as `product_class` "
                 + "group by `product_class`.`product_family` "
-                + "order by ISNULL(`product_class`.`product_family`) ASC,"
-                + " `product_class`.`product_family` ASC",
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                    ? "order by ISNULL(`c0`) ASC,"
+                    + " `c0` ASC"
+                    : "order by ISNULL(`product_class`.`product_family`) ASC,"
+                    + " `product_class`.`product_family` ASC"),
                 null)
         };
         final TestContext context = getTestContext().withFreshConnection();
@@ -5077,8 +5087,11 @@ public class NonEmptyTest extends BatchTestCase {
             + "having\n"
             + "    UPPER(c1) REGEXP '.*CA.*'\n"
             + "order by\n"
-            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
-            + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
+            + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
+                + "    ISNULL(`c1`) ASC, `c1` ASC"
+                : "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
+                + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC");
 
         final String mysqlWithFactJoin =
             "select\n"
@@ -5100,8 +5113,11 @@ public class NonEmptyTest extends BatchTestCase {
             + "having\n"
             + "    UPPER(c1) REGEXP '.*CA.*'\n"
             + "order by\n"
-            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
-            + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
+            + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
+                + "    ISNULL(`c1`) ASC, `c1` ASC"
+                : "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
+                + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC");
 
         final String oracle =
             "select\n"
@@ -5264,8 +5280,11 @@ public class NonEmptyTest extends BatchTestCase {
             + "having\n"
             + "    UPPER(c1) REGEXP '.*CA.*'\n"
             + "order by\n"
-            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
-            + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
+            + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
+                + "    ISNULL(`c1`) ASC, `c1` ASC"
+                : "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
+                + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC");
 
         final String mysqlWithFactJoin =
             "select\n"
@@ -5284,8 +5303,11 @@ public class NonEmptyTest extends BatchTestCase {
             + "having\n"
             + "    UPPER(c1) REGEXP '.*CA.*'\n"
             + "order by\n"
-            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
-            + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
+            + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
+                + "    ISNULL(`c1`) ASC, `c1` ASC"
+                : "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
+                + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC");
 
         final String oracle =
             "select\n"

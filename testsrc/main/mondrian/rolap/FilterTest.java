@@ -1,12 +1,12 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
-*/
-
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2006-2016 Pentaho and others
+// All Rights Reserved.
+ */
 package mondrian.rolap;
 
 import mondrian.olap.Connection;
@@ -385,11 +385,16 @@ public class FilterTest extends BatchTestCase {
             + "(not ((`time_by_day`.`quarter`, `time_by_day`.`the_year`) in "
             + "(('Q1', 1997), ('Q3', 1998))) or (`time_by_day`.`quarter` is null or "
             + "`time_by_day`.`the_year` is null)) "
-            + "group by `customer`.`country`, `time_by_day`.`the_year`, "
-            + "`time_by_day`.`quarter` order by ISNULL(`customer`.`country`) ASC, "
-            + "`customer`.`country` ASC, ISNULL(`time_by_day`.`the_year`) ASC, "
-            + "`time_by_day`.`the_year` ASC, ISNULL(`time_by_day`.`quarter`) ASC, "
-            + "`time_by_day`.`quarter` ASC";
+            + "group by `customer`.`country`, `time_by_day`.`the_year`, `time_by_day`.`quarter` "
+            + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "order by ISNULL(`c0`) ASC, "
+                + "`c0` ASC, ISNULL(`c1`) ASC, "
+                + "`c1` ASC, ISNULL(`c2`) ASC, "
+                + "`c2` ASC"
+                : "order by ISNULL(`customer`.`country`) ASC, "
+                + "`customer`.`country` ASC, ISNULL(`time_by_day`.`the_year`) ASC, "
+                + "`time_by_day`.`the_year` ASC, ISNULL(`time_by_day`.`quarter`) ASC, "
+                + "`time_by_day`.`quarter` ASC");
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -449,11 +454,16 @@ public class FilterTest extends BatchTestCase {
             + "((not (`time_by_day`.`quarter` in ('Q1', 'Q3')) or "
             + "(`time_by_day`.`quarter` is null)) or (not "
             + "(`time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` "
-            + "is null))) group by `customer`.`country`, `time_by_day`.`the_year`,"
-            + " `time_by_day`.`quarter` order by ISNULL(`customer`.`country`) ASC, "
-            + "`customer`.`country` ASC, ISNULL(`time_by_day`.`the_year`) ASC, "
-            + "`time_by_day`.`the_year` ASC, ISNULL(`time_by_day`.`quarter`) ASC, "
-            + "`time_by_day`.`quarter` ASC";
+            + "is null))) group by `customer`.`country`, `time_by_day`.`the_year`, `time_by_day`.`quarter` "
+            + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "order by ISNULL(`c0`) ASC, "
+                + "`c0` ASC, ISNULL(`c1`) ASC, "
+                + "`c1` ASC, ISNULL(`c2`) ASC, "
+                + "`c2` ASC"
+                : "order by ISNULL(`customer`.`country`) ASC, "
+                + "`customer`.`country` ASC, ISNULL(`time_by_day`.`the_year`) ASC, "
+                + "`time_by_day`.`the_year` ASC, ISNULL(`time_by_day`.`quarter`) ASC, "
+                + "`time_by_day`.`quarter` ASC");
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -977,9 +987,27 @@ public class FilterTest extends BatchTestCase {
         // Notice that the '11' and '14' store ID is applied on the store_name
         // instead of the store_id. So it would return no rows.
         final String badMysqlSQL =
-            "select `store`.`store_country` as `c0`, `store`.`store_state` as `c1`, `store`.`store_city` as `c2`, `store`.`store_id` as `c3`, `store`.`store_name` as `c4`, `store`.`store_type` as `c5`, `store`.`store_manager` as `c6`, `store`.`store_sqft` as `c7`, `store`.`grocery_sqft` as `c8`, `store`.`frozen_sqft` as `c9`, `store`.`meat_sqft` as `c10`, `store`.`coffee_bar` as `c11`, `store`.`store_street_address` as `c12` from `FOODMART`.`store` as `store` where (`store`.`store_state` in ('CA', 'OR')) and ((`store`.`store_name`,`store`.`store_city`,`store`.`store_state`) in (('11','Portland','OR'),('14','San Francisco','CA'))) group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `store`.`store_id`, `store`.`store_name`, `store`.`store_type`, `store`.`store_manager`, `store`.`store_sqft`, `store`.`grocery_sqft`, `store`.`frozen_sqft`, `store`.`meat_sqft`, `store`.`coffee_bar`, `store`.`store_street_address` having NOT((sum(`store`.`store_sqft`) is null)) order by ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC, ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC, ISNULL(`store`.`store_city`) ASC, `store`.`store_city` ASC, ISNULL(`store`.`store_id`) ASC, `store`.`store_id` ASC";
+            "select `store`.`store_country` as `c0`, `store`.`store_state` as `c1`, `store`.`store_city` as `c2`, `store`.`store_id` as `c3`, `store`.`store_name` as `c4`, `store`.`store_type` as `c5`, `store`.`store_manager` as `c6`, `store`.`store_sqft` as `c7`, `store`.`grocery_sqft` as `c8`, `store`.`frozen_sqft` as `c9`, `store`.`meat_sqft` as `c10`, `store`.`coffee_bar` as `c11`, `store`.`store_street_address` as `c12` from `FOODMART`.`store` as `store` where (`store`.`store_state` in ('CA', 'OR')) and ((`store`.`store_name`,`store`.`store_city`,`store`.`store_state`) in (('11','Portland','OR'),('14','San Francisco','CA'))) group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `store`.`store_id`, `store`.`store_name`, `store`.`store_type`, `store`.`store_manager`, `store`.`store_sqft`, `store`.`grocery_sqft`, `store`.`frozen_sqft`, `store`.`meat_sqft`, `store`.`coffee_bar`, `store`.`store_street_address` having NOT((sum(`store`.`store_sqft`) is null)) "
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "order by ISNULL(`c0`) ASC, `c0` ASC, "
+                + "ISNULL(`c1`) ASC, `c1` ASC, "
+                + "ISNULL(`c2`) ASC, `c2` ASC, "
+                + "ISNULL(`c3`) ASC, `c3` ASC"
+                : "order by ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC, "
+                + "ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC, "
+                + "ISNULL(`store`.`store_city`) ASC, `store`.`store_city` ASC, "
+                + "ISNULL(`store`.`store_id`) ASC, `store`.`store_id` ASC");
         final String goodMysqlSQL =
-            "select `store`.`store_country` as `c0`, `store`.`store_state` as `c1`, `store`.`store_city` as `c2`, `store`.`store_id` as `c3`, `store`.`store_name` as `c4` from `store` as `store` where (`store`.`store_state` in ('CA', 'OR')) and ((`store`.`store_id`, `store`.`store_city`, `store`.`store_state`) in ((11, 'Portland', 'OR'), (14, 'San Francisco', 'CA'))) group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `store`.`store_id`, `store`.`store_name` having NOT((sum(`store`.`store_sqft`) is null))  order by ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC, ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC, ISNULL(`store`.`store_city`) ASC, `store`.`store_city` ASC, ISNULL(`store`.`store_id`) ASC, `store`.`store_id` ASC";
+            "select `store`.`store_country` as `c0`, `store`.`store_state` as `c1`, `store`.`store_city` as `c2`, `store`.`store_id` as `c3`, `store`.`store_name` as `c4` from `store` as `store` where (`store`.`store_state` in ('CA', 'OR')) and ((`store`.`store_id`, `store`.`store_city`, `store`.`store_state`) in ((11, 'Portland', 'OR'), (14, 'San Francisco', 'CA'))) group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `store`.`store_id`, `store`.`store_name` having NOT((sum(`store`.`store_sqft`) is null)) "
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? " order by ISNULL(`c0`) ASC, `c0` ASC, "
+                + "ISNULL(`c1`) ASC, `c1` ASC, "
+                + "ISNULL(`c2`) ASC, `c2` ASC, "
+                + "ISNULL(`c3`) ASC, `c3` ASC"
+                : " order by ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC, "
+                + "ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC, "
+                + "ISNULL(`store`.`store_city`) ASC, `store`.`store_city` ASC, "
+                + "ISNULL(`store`.`store_id`) ASC, `store`.`store_id` ASC");
         final String mdx =
             "With\n"
             + "Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Store], Not IsEmpty ([Measures].[Store Sqft]))'\n"
