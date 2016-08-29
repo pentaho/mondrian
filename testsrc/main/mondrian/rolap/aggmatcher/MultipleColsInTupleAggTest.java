@@ -14,6 +14,7 @@ import mondrian.olap.Result;
 import mondrian.rolap.RolapAxis;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
+import mondrian.test.TestContext;
 
 /**
  * Testcase for levels that contain multiple columns and are
