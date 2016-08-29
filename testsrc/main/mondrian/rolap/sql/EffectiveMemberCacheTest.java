@@ -27,6 +27,24 @@ public class EffectiveMemberCacheTest extends BatchTestCase {
     public void testCachedLevelMembers() {
         // verify query for specific members can be fulfilled by members cached
         // from a level members query.
+        String sql = "select\n"
+                + "    `product`.`product_name` as `c0`\n"
+                + "from\n"
+                + "    `product` as `product`,\n"
+                + "    `product_class` as `product_class`\n"
+                + "where\n"
+                + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+                + "and\n"
+                + "    (`product`.`brand_name` = 'Hermanos' and `product_class`.`product_subcategory` = 'Fresh Fruit' and `product_class`.`product_category` = 'Fruit' and `product_class`.`product_department` = 'Produce' and `product_class`.`product_family` = 'Food')\n"
+                + "and\n"
+                + "    ( UPPER(`product`.`product_name`) IN (UPPER('Hermanos Fancy Plums'),UPPER('Hermanos Lemons'),UPPER('Hermanos Plums')))\n"
+                + "group by\n"
+                + "    `product`.`product_name`\n"
+                + "order by\n"
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "    ISNULL(`c0`) ASC, `c0` ASC"
+                : "    ISNULL(`product`.`product_name`) ASC, "
+                + "`product`.`product_name` ASC");
         testWithAndWithoutCachedMembers(
             "select Product.[Product Name].members on 0 from sales",
             "select "
@@ -36,29 +54,32 @@ public class EffectiveMemberCacheTest extends BatchTestCase {
             + " on 0 from sales",
             new SqlPattern[]{
                 new SqlPattern(
-                    Dialect.DatabaseProduct.MYSQL,
-                    "select\n"
-                    + "    `product`.`product_name` as `c0`\n"
-                    + "from\n"
-                    + "    `product` as `product`,\n"
-                    + "    `product_class` as `product_class`\n"
-                    + "where\n"
-                    + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
-                    + "and\n"
-                    + "    (`product`.`brand_name` = 'Hermanos' and `product_class`.`product_subcategory` = 'Fresh Fruit' and `product_class`.`product_category` = 'Fruit' and `product_class`.`product_department` = 'Produce' and `product_class`.`product_family` = 'Food')\n"
-                    + "and\n"
-                    + "    ( UPPER(`product`.`product_name`) IN (UPPER('Hermanos Fancy Plums'),UPPER('Hermanos Lemons'),UPPER('Hermanos Plums')))\n"
-                    + "group by\n"
-                    + "    `product`.`product_name`\n"
-                    + "order by\n"
-                    + "    ISNULL(`product`.`product_name`) ASC, "
-                    + "`product`.`product_name` ASC", null)}
+                    Dialect.DatabaseProduct.MYSQL, sql, null)}
         );
     }
 
     public void testCachedChildMembers() {
         // verify query for specific members can be fulfilled by members cached
         // from a child members query.
+        String sql = "select\n"
+                + "    `product`.`product_name` as `c0`\n"
+                + "from\n"
+                + "    `product` as `product`,\n"
+                + "    `product_class` as `product_class`\n"
+                + "where\n"
+                + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+                + "and\n"
+                + "    (`product`.`brand_name` = 'Hermanos' and `product_class`.`product_subcategory` = 'Fresh Fruit' and `product_class`.`product_category` = 'Fruit' and `product_class`.`product_department` = 'Produce' and `product_class`.`product_family` = 'Food')\n"
+                + "and\n"
+                + "    ( UPPER(`product`.`product_name`) IN "
+                + "(UPPER('Hermanos Fancy Plums'),UPPER('Hermanos Lemons'),UPPER('Hermanos Plums')))\n"
+                + "group by\n"
+                + "    `product`.`product_name`\n"
+                + "order by\n"
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "    ISNULL(`c0`) ASC, `c0` ASC"
+                : "    ISNULL(`product`.`product_name`) ASC, "
+                + "`product`.`product_name` ASC");
         testWithAndWithoutCachedMembers(
             "select [Product].[Food].[Produce].[Fruit].[Fresh Fruit].[Hermanos].Children on 0 from sales",
             "select "
@@ -68,24 +89,7 @@ public class EffectiveMemberCacheTest extends BatchTestCase {
             + " on 0 from sales",
             new SqlPattern[]{
                 new SqlPattern(
-                    Dialect.DatabaseProduct.MYSQL,
-                    "select\n"
-                    + "    `product`.`product_name` as `c0`\n"
-                    + "from\n"
-                    + "    `product` as `product`,\n"
-                    + "    `product_class` as `product_class`\n"
-                    + "where\n"
-                    + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
-                    + "and\n"
-                    + "    (`product`.`brand_name` = 'Hermanos' and `product_class`.`product_subcategory` = 'Fresh Fruit' and `product_class`.`product_category` = 'Fruit' and `product_class`.`product_department` = 'Produce' and `product_class`.`product_family` = 'Food')\n"
-                    + "and\n"
-                    + "    ( UPPER(`product`.`product_name`) IN "
-                    + "(UPPER('Hermanos Fancy Plums'),UPPER('Hermanos Lemons'),UPPER('Hermanos Plums')))\n"
-                    + "group by\n"
-                    + "    `product`.`product_name`\n"
-                    + "order by\n"
-                    + "    ISNULL(`product`.`product_name`) ASC, "
-                    + "`product`.`product_name` ASC", null) }
+                    Dialect.DatabaseProduct.MYSQL, sql, null) }
         );
     }
 
@@ -94,51 +98,53 @@ public class EffectiveMemberCacheTest extends BatchTestCase {
         // LevelPreCacheThreshold.  All members should be loaded, not
         // just the 2 referenced.
         propSaver.set(propSaver.properties.LevelPreCacheThreshold, 300);
-
+        String sql = "select\n"
+                + "    `store`.`store_type` as `c0`\n"
+                + "from\n"
+                + "    `store` as `store`\n"
+                + "group by\n"
+                + "    `store`.`store_type`\n"
+                + "order by\n"
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "    ISNULL(`c0`) ASC, `c0` ASC"
+                : "    ISNULL(`store`.`store_type`) ASC, "
+                + "`store`.`store_type` ASC");
         assertQuerySql(
             testContext,
             "select {[Store Type].[Gourmet Supermarket], "
             + "[Store Type].[HeadQuarters]} on 0 from sales",
             new SqlPattern[] {
                 new SqlPattern(
-                    Dialect.DatabaseProduct.MYSQL,
-                    "select\n"
-                    + "    `store`.`store_type` as `c0`\n"
-                    + "from\n"
-                    + "    `store` as `store`\n"
-                    + "group by\n"
-                    + "    `store`.`store_type`\n"
-                    + "order by\n"
-                    + "    ISNULL(`store`.`store_type`) ASC, "
-                    + "`store`.`store_type` ASC", null)
+                    Dialect.DatabaseProduct.MYSQL, sql, null)
             });
     }
 
     public void testLevelPreCacheThresholdDisabled() {
-        propSaver.set(propSaver.properties.LevelPreCacheThreshold, 0);
-
         // with LevelPreCacheThreshold set to 0, we should not load
         // all [store type] members, we should only retrieve the 2
         // specified.
+        propSaver.set(propSaver.properties.LevelPreCacheThreshold, 0);
+        String sql = "select\n"
+                + "    `store`.`store_type` as `c0`\n"
+                + "from\n"
+                + "    `store` as `store`\n"
+                + "where\n"
+                + "    ( UPPER(`store`.`store_type`) IN "
+                + "(UPPER('Gourmet Supermarket'),UPPER('HeadQuarters')))\n"
+                + "group by\n"
+                + "    `store`.`store_type`\n"
+                + "order by\n"
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "    ISNULL(`c0`) ASC, `c0` ASC"
+                : "    ISNULL(`store`.`store_type`) ASC, "
+                + "`store`.`store_type` ASC");
         assertQuerySql(
             testContext,
             "select {[Store Type].[Gourmet Supermarket], "
             + "[Store Type].[HeadQuarters]} on 0 from sales",
             new SqlPattern[] {
                 new SqlPattern(
-                    Dialect.DatabaseProduct.MYSQL,
-                    "select\n"
-                    + "    `store`.`store_type` as `c0`\n"
-                    + "from\n"
-                    + "    `store` as `store`\n"
-                    + "where\n"
-                    + "    ( UPPER(`store`.`store_type`) IN "
-                    + "(UPPER('Gourmet Supermarket'),UPPER('HeadQuarters')))\n"
-                    + "group by\n"
-                    + "    `store`.`store_type`\n"
-                    + "order by\n"
-                    + "    ISNULL(`store`.`store_type`) ASC, "
-                    + "`store`.`store_type` ASC", null)
+                    Dialect.DatabaseProduct.MYSQL, sql, null)
             });
     }
 
@@ -147,23 +153,25 @@ public class EffectiveMemberCacheTest extends BatchTestCase {
         // The cost of doing full scans of the fact table is assumed
         // to be too high.
         propSaver.set(propSaver.properties.LevelPreCacheThreshold, 1000);
+        String sql = "select\n"
+                + "    `store`.`coffee_bar` as `c0`\n"
+                + "from\n"
+                + "    `store` as `store`\n"
+                + "where\n"
+                + "    `store`.`coffee_bar` = false\n"
+                + "group by\n"
+                + "    `store`.`coffee_bar`\n"
+                + "order by\n"
+                + (TestContext.instance().getDialect().requiresOrderByAlias()
+                ? "    ISNULL(`c0`) ASC, `c0` ASC"
+                : "    ISNULL(`store`.`coffee_bar`) ASC, "
+                + "`store`.`coffee_bar` ASC");
         assertQuerySql(
             testContext,
             "select {[Has coffee bar].[All Has coffee bars].[false]} on 0 from Store",
             new SqlPattern[]{
                 new SqlPattern(
-                    Dialect.DatabaseProduct.MYSQL,
-                    "select\n"
-                    + "    `store`.`coffee_bar` as `c0`\n"
-                    + "from\n"
-                    + "    `store` as `store`\n"
-                    + "where\n"
-                    + "    `store`.`coffee_bar` = false\n"
-                    + "group by\n"
-                    + "    `store`.`coffee_bar`\n"
-                    + "order by\n"
-                    + "    ISNULL(`store`.`coffee_bar`) ASC, "
-                    + "`store`.`coffee_bar` ASC", null)});
+                    Dialect.DatabaseProduct.MYSQL, sql, null)});
     }
 
 
