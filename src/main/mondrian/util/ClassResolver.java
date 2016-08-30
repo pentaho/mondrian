@@ -51,7 +51,8 @@ public interface ClassResolver {
      * {@link Thread#getContextClassLoader()} on the current thread. */
     class ThreadContextClassResolver extends AbstractClassResolver {
         protected ClassLoader getClassLoader() {
-            return Thread.currentThread().getContextClassLoader();
+            ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+            return contextClassLoader != null ? contextClassLoader : getClass().getClassLoader();
         }
     }
 
