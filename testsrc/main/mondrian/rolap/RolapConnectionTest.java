@@ -1,6 +1,21 @@
+/*
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2001-2005 Julian Hyde
+// Copyright (C) 2005-2016 Pentaho and others
+// All Rights Reserved.
+*/
 package mondrian.rolap;
 
-import mondrian.olap.*;
+import mondrian.olap.DriverManager;
+import mondrian.olap.MondrianException;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Query;
+import mondrian.olap.Result;
+import mondrian.olap.Util;
 import mondrian.spi.Dialect;
 import mondrian.test.TestContext;
 import mondrian.util.Pair;
@@ -9,10 +24,26 @@ import junit.framework.TestCase;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.*;
-import javax.naming.*;
-import javax.naming.spi.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.List;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.naming.spi.InitialContextFactory;
+import javax.naming.spi.InitialContextFactoryBuilder;
+import javax.naming.spi.NamingManager;
 import javax.sql.DataSource;
+
+
+
+
+
+
+
+import static org.mockito.Mockito.*;
 
 /**
  * Unit test for {@link RolapConnection}.
@@ -310,7 +341,7 @@ public class RolapConnectionTest extends TestCase {
     {
         // use the datasource property to connect to the database
         Util.PropertyList properties =
-            TestContext.instance().getConnectionProperties().clone();
+            spy(TestContext.instance().getConnectionProperties().clone());
         final Dialect dialect = TestContext.instance().getDialect();
         if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS) {
             // Access doesn't accept user/password, so this test is pointless.
@@ -341,10 +372,10 @@ public class RolapConnectionTest extends TestCase {
             RolapConnection.createDataSource(null, properties, buf);
         final String desc = buf.toString();
         assertTrue(desc, desc.startsWith("Jdbc="));
-        assertTrue(
-            desc,
-            desc.indexOf("JdbcUser=bogususer; JdbcPassword=boguspassword")
-            >= 0);
+        assertTrue(desc, desc.indexOf("JdbcUser=bogususer") >= 0);
+        verify(
+            properties,
+            atLeastOnce()).get(RolapConnectionProperties.JdbcPassword.name());
         final String jndiName = "jndiDataSource";
         THREAD_INITIAL_CONTEXT.set(
             new InitialContext() {
