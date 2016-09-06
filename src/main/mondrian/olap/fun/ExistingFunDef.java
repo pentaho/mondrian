@@ -28,6 +28,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Existing keyword limits a set to what exists within the current context, ie
+ * as if context members of the same dimension as the set were in the slicer.
+ */
 public class ExistingFunDef extends FunDefBase {
 
     static final ExistingFunDef instance = new ExistingFunDef();
@@ -69,7 +73,7 @@ public class ExistingFunDef extends FunDefBase {
                         argDims = getHierarchies(tuple);
                     }
                     if (existsInTuple(tuple, contextMembers,
-                        argDims, contextDims))
+                        argDims, contextDims, evaluator))
                     {
                         result.add(tuple);
                     }
@@ -79,8 +83,7 @@ public class ExistingFunDef extends FunDefBase {
         };
     }
 
-    private static List<Hierarchy> getHierarchies(final List<Member> members)
-    {
+    private static List<Hierarchy> getHierarchies(final List<Member> members) {
         List<Hierarchy> hierarchies = new ArrayList<Hierarchy>(members.size());
         for (Member member : members) {
             hierarchies.add(member.getHierarchy());
