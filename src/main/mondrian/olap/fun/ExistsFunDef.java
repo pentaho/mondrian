@@ -61,7 +61,7 @@ class ExistsFunDef extends FunDefBase
                 for (List<Member> leftTuple : leftTuples) {
                     for (List<Member> rightTuple : rightTuples) {
                         if (existsInTuple(leftTuple, rightTuple,
-                            leftDims, rightDims))
+                            leftDims, rightDims, null))
                         {
                             result.add(leftTuple);
                             continue leftLoop;

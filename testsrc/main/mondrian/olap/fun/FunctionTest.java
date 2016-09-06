@@ -13059,6 +13059,26 @@ Intel platforms):
             + "Row #0: 50,236\n");
     }
 
+    public void testExistingVirtualCube() {
+        // this should ideally return 14 for both,
+        // but being coherent with exists is good enough
+        assertQueryReturns(
+            "WITH MEMBER [Measures].[Count Exists] AS Count(exists( [Time.Weekly].[Week].Members, [Time.Weekly].CurrentMember ) )\n"
+            + " MEMBER [Measures].[Count Existing] AS Count(existing [Time.Weekly].[Week].Members)\n"
+            + "SELECT\n"
+            + "{[Measures].[Count Exists], [Measures].[Count Existing]}\n"
+            + "ON 0\n"
+            + "FROM [Warehouse and Sales]\n"
+            + "WHERE [Time].[1997].[Q2]",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q2]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Count Exists]}\n"
+            + "{[Measures].[Count Existing]}\n"
+            + "Row #0: 104\n"
+            + "Row #0: 104\n");
+    }
+
 }
 
 // End FunctionTest.java
