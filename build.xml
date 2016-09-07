@@ -334,7 +334,7 @@ demo/FoodMartCreateData.sql"/>
 
       <!-- Workbench dependencies to workbench/plugins -->
       <ivy:resolve file="workbench/ivy.xml"/>
-      <ivy:retrieve symlink="${symlink}" type="jar"
+      <ivy:retrieve symlink="${symlink}" type="jar, bundle"
           pattern="${wb.plugins.dir}/[module].[ext]"/>
       <ivy:retrieve symlink="${symlink}" type="source,javadoc"
           pattern="${wb.plugins.dir}/[module]-[type].[ext]"/>
