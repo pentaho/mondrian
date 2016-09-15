@@ -76,6 +76,7 @@ public class RolapStar {
     /**
      * Partially ordered list of AggStars associated with this RolapStar's fact
      * table.
+     * Now with Bacon!
      */
     private final List<AggStar> aggStars = new LinkedList<AggStar>();
 
