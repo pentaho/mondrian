@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation
+// Copyright (c) 2002-2016 Pentaho Corporation
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -1640,6 +1640,45 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             assertQuerySqlOrNot(
                 getTestContext(), mdx, patterns, false, false, false);
         }
+    }
+
+    public void testNativeFilterWithLargeAggSetInSlicer() {
+        final String query = "with member customers.agg as "
+                + "'Aggregate(Except(Customers.[Name].members,    "
+                + "{[Customers].[USA].[OR].[Corvallis].[Judy Doolittle]}    ))' "
+                + " select filter(gender.gender.members, measures.[unit sales] >131500)"
+                + " on 0 from sales "
+                + " where customers.agg";
+        final String message =
+                "The results of native and non-native evaluations should be equal";
+        verifySameNativeAndNot(query, message, getTestContext());
+    }
+
+    public void testNativeFilterWithLargeAggSetInSlicerTwoAggs() {
+        String query = "with \n"
+                        + "member \n"
+                        + "[Customers].[agg] as 'Aggregate({[Customers].[Country].Members})'\n"
+                        + "member \n"
+                        + "[Store].[agg] as 'Aggregate({[Store].[Store State].Members})'\n"
+                        + "select Filter([Gender].[Gender].Members, ([Measures].[Unit Sales] > 135000)) ON COLUMNS\n"
+                        + "from [Sales]\n"
+                        + "where ([Customers].[agg],[Store].[agg])";
+
+        final String message =
+                "The results of native and non-native evaluations should be equal";
+        verifySameNativeAndNot(query, message, getTestContext());
+    }
+
+    public void testNativeFilterWithLargeAggSetInSlicerCompoundAggregate() {
+        final String query = "WITH member store.agg as "
+                + "'Aggregate(CrossJoin(Store.[Store Name].members, Gender.Members))' "
+                + "SELECT filter(customers.[name].members, measures.[unit sales] > 100) on 0 "
+                + "FROM sales where store.agg";
+        propSaver.set(MondrianProperties.instance().MaxConstraints, 24);
+
+        final String message =
+                "The results of native and non-native evaluations should be equal";
+        verifySameNativeAndNot(query, message, getTestContext());
     }
 }
 

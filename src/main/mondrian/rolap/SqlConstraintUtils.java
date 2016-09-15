@@ -1990,6 +1990,7 @@ public class SqlConstraintUtils {
                         .NativeSqlInClauseTooLarge.str(
                             level.getUniqueName(),
                             maxConstraints + ""));
+                sqlQuery.setSupported(false);
             } else {
                 String where =
                     RolapStar.Column.createInExpr(
