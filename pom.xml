@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>pentaho</groupId>
   <artifactId>mondrian</artifactId>
-  <version>4.5-SNAPSHOT</version>
+  <version>4.5.0.6-242</version>
   <name>mondrian</name>
   <description>Mondrian OLAP engine.</description>
   <url>http://github.com/pentaho/mondrian</url>
