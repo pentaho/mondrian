@@ -99,6 +99,17 @@ public class RolapNativeFilter extends RolapNativeSet {
             }
         }
 
+        public boolean isSuported(DataSource ds) {
+            Evaluator evaluator = this.getEvaluator();
+            SqlQuery testQuery = SqlQuery.newQuery(ds, "testQuery");
+            SqlTupleReader sqlTupleReader = new SqlTupleReader(this);
+            RolapCube cube = (RolapCube) evaluator.getCube();
+            this.addConstraint
+                    (testQuery, cube, sqlTupleReader.chooseAggStar
+                            (this, evaluator, cube));
+            return testQuery.isSupported();
+        }
+
         public Object getCacheKey() {
             List<Object> key = new ArrayList<Object>();
             key.add(super.getCacheKey());
@@ -191,8 +202,6 @@ public class RolapNativeFilter extends RolapNativeSet {
             return null;
         }
 
-        LOGGER.debug("using native filter");
-
         final int savepoint = evaluator.savepoint();
         try {
             overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
@@ -221,8 +230,13 @@ public class RolapNativeFilter extends RolapNativeSet {
                 }
             }
 
-            TupleConstraint constraint =
+            FilterConstraint constraint =
                 new FilterConstraint(combinedArgs, evaluator, filterExpr);
+            if (!constraint.isSuported(ds)) {
+                return null;
+            }
+
+            LOGGER.debug("using native filter");
             return new SetEvaluator(cjArgs, schemaReader, constraint);
         } finally {
             evaluator.restore(savepoint);
