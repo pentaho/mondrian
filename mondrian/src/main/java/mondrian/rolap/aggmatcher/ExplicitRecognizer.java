@@ -5,9 +5,10 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
+
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
@@ -61,6 +62,11 @@ class ExplicitRecognizer extends Recognizer {
      */
     protected Recognizer.Matcher getFactCountMatcher() {
         return getTableDef().getFactCountMatcher();
+    }
+
+    @Override
+    protected Matcher getMeasureFactCountMatcher() {
+        return  getTableDef().getMeasureFactCountMatcher();
     }
 
     /**
@@ -439,6 +445,17 @@ class ExplicitRecognizer extends Recognizer {
                         o2.getRolapLevel().getDepth());
                 }
             });
+    }
+
+    protected String getFactCountColumnName
+            (final JdbcSchema.Table.Column.Usage aggUsage) {
+        String measureName = aggUsage.getColumn().getName();
+        Map<String, String> measuresFactCount = tableDef.getMeasuresFactCount();
+        String factCountColumnName = measuresFactCount.get(measureName);
+        if (Util.isEmpty(factCountColumnName)) {
+            factCountColumnName = getFactCountColumnName();
+        }
+        return factCountColumnName;
     }
 }
 

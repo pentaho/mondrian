@@ -5,9 +5,10 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
+
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
@@ -75,6 +76,15 @@ public class AggStar {
     {
         AggStar aggStar = new AggStar(star, dbTable, approxRowCount);
         AggStar.FactTable aggStarFactTable = aggStar.getFactTable();
+
+        // load measure fact count
+        for (Iterator<JdbcSchema.Table.Column.Usage> it =
+             dbTable.getColumnUsages(UsageType.MEASURE_FACT_COUNT);
+             it.hasNext();)
+        {
+            JdbcSchema.Table.Column.Usage usage = it.next();
+            aggStarFactTable.loadMeasureFactCount(usage);
+        }
 
         // 1. load fact count
         for (Iterator<JdbcSchema.Table.Column.Usage> it =
@@ -1144,6 +1154,7 @@ public class AggStar {
         }
 
         private Column factCountColumn;
+        private Set<Column> measureFactCountColumns = new HashSet<>();
         private final List<Measure> measures;
         private final int totalColumnSize;
         private int numberOfRows;
@@ -1354,6 +1365,32 @@ public class AggStar {
                     bitPosition);
 
             factCountColumn = aggColumn;
+        }
+
+        /**
+         * Create a fact_count column for a usage of type fact count.
+         */
+        private void loadMeasureFactCount
+        (final JdbcSchema.Table.Column.Usage usage) {
+            String name = usage.getColumn().getName();
+            String symbolicName = usage.getSymbolicName();
+            if (symbolicName == null) {
+                symbolicName = name;
+            }
+
+            MondrianDef.Expression expression =
+                    new MondrianDef.Column(getName(), name);
+            Dialect.Datatype datatype = usage.getColumn().getDatatype();
+            int bitPosition = -1;
+
+            Column aggColumn =
+                    new Column(
+                        symbolicName,
+                        expression,
+                        datatype,
+                        bitPosition);
+
+            measureFactCountColumns.add(aggColumn);
         }
 
         /**

@@ -5,10 +5,11 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 */
+
 package mondrian.gui;
 
 import mondrian.gui.MondrianGuiDef.Hierarchy;
@@ -685,6 +686,8 @@ public class SchemaPropertyCellEditor
             activeEditor = listEditor;
 
         } else if ((targetClassz == MondrianGuiDef.AggFactCount.class
+            && propertyName.equals("column"))
+            || (targetClassz == MondrianGuiDef.AggMeasureFactCount.class
             && propertyName.equals("column"))
             || (targetClassz == MondrianGuiDef.AggIgnoreColumn.class
             && propertyName.equals("column"))

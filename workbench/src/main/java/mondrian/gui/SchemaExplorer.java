@@ -5,10 +5,11 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 */
+
 package mondrian.gui;
 
 import org.apache.log4j.Logger;
@@ -888,6 +889,15 @@ public class SchemaExplorer
         {
             public void actionPerformed(ActionEvent e) {
                 addAggFactCount(e);
+            }
+        };
+        addAggMeasureFactCount = new AbstractAction(
+                getResourceConverter().getString(
+                        "schemaExplorer.addAggregateMeasureFactCount.title",
+                        "Add Aggregate Measure Fact Count"))
+        {
+            public void actionPerformed(ActionEvent e) {
+                addAggMeasureFactCount(e);
             }
         };
 
@@ -2004,6 +2014,58 @@ public class SchemaExplorer
         }
         TreePath parentPath = new TreePath(parentPathObjs);
         tree.setSelectionPath(parentPath.pathByAddingChild(aggFactCount));
+
+        refreshTree(tree.getSelectionPath());
+        setTableCellFocus(0);
+    }
+
+    protected void addAggMeasureFactCount(ActionEvent evt) {
+        TreePath tpath = null;
+        Object path = null;
+        tpath = getTreePath(evt);
+        int parentIndex = -1;
+        if (tpath != null) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
+                 parentIndex--)
+            {
+                final Object p = tpath.getPathComponent(parentIndex);
+                if (p instanceof MondrianGuiDef.AggTable) {
+                    path = p;
+                    break;
+                }
+            }
+        }
+        if (!((path instanceof MondrianGuiDef.AggName)
+                || (path instanceof MondrianGuiDef.AggPattern)))
+        {
+            JOptionPane.showMessageDialog(
+                    this,
+                    getResourceConverter().getString(
+                            "schemaExplorer.aggregateTableOrAggPatternNotSelected.alert",
+                            "Aggregate Table or Aggregate Pattern not selected."),
+                    alert,
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        MondrianGuiDef.AggTable aggTable = (MondrianGuiDef.AggTable) path;
+
+        MondrianGuiDef.AggMeasureFactCount aggMeasureFactCount = new MondrianGuiDef.AggMeasureFactCount();
+
+        NodeDef[] temp = aggTable.measuresfactcount;
+        aggTable.measuresfactcount = new MondrianGuiDef.AggMeasureFactCount[temp.length + 1];
+        for (int i = 0; i < temp.length; i++) {
+            aggTable.measuresfactcount[i] = (MondrianGuiDef.AggMeasureFactCount) temp[i];
+        }
+
+        aggTable.measuresfactcount[aggTable.measuresfactcount.length - 1] = aggMeasureFactCount;
+
+        Object[] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
+            parentPathObjs[i] = tpath.getPathComponent(i);
+        }
+        TreePath parentPath = new TreePath(parentPathObjs);
+        tree.setSelectionPath(parentPath.pathByAddingChild(aggMeasureFactCount));
 
         refreshTree(tree.getSelectionPath());
         setTableCellFocus(0);
@@ -4442,7 +4504,15 @@ public class SchemaExplorer
                     "common.aggFactCount.title", LBL_AGG_FACT_COUNT));
             ((MondrianGuiDef.AggFactCount) o).displayXML(pxml, 0);
 
-        } else if (o instanceof MondrianGuiDef.View) {
+        } else if (o instanceof MondrianGuiDef.AggMeasureFactCount) {
+            pNames = DEF_AGG_MEASURE_FACT_COUNT;
+            targetLabel.setText(
+                    getResourceConverter().getString(
+                            "common.aggMeasureFactCount.title", LBL_AGG_MEASURE_FACT_COUNT));
+            ((MondrianGuiDef.AggMeasureFactCount) o).displayXML(pxml, 0);
+
+        }
+        else if (o instanceof MondrianGuiDef.View) {
             pNames = DEF_VIEW;
             targetLabel.setText(
                 getResourceConverter().getString(
@@ -4955,6 +5025,7 @@ public class SchemaExplorer
                                instanceof MondrianGuiDef.AggPattern)
                     {
                         jPopupMenu.add(addAggFactCount);
+                        jPopupMenu.add(addAggMeasureFactCount);
                         jPopupMenu.add(addAggIgnoreColumn);
                         jPopupMenu.add(addAggForeignKey);
                         jPopupMenu.add(addAggMeasure);
@@ -5089,6 +5160,7 @@ public class SchemaExplorer
     static final String[] DEF_VIEW = {"alias"};
     static final String[] DEF_TABLE = {"schema", "name", "alias"};
     static final String[] DEF_AGG_FACT_COUNT = {"column"};
+    static final String[] DEF_AGG_MEASURE_FACT_COUNT = {"column", "factColumn"};
     static final String[] DEF_AGG_NAME = {
         "name", "ignorecase", "approxRowCount"};
     static final String[] DEF_AGG_PATTERN = {"pattern", "ignorecase"};
@@ -5250,6 +5322,7 @@ public class SchemaExplorer
     private static final String LBL_AGG_PATTERN = "Aggregate Pattern";
     private static final String LBL_AGG_EXCLUDE = "Aggregate Exclude";
     private static final String LBL_AGG_FACT_COUNT = "Aggregate Fact Count";
+    private static final String LBL_AGG_MEASURE_FACT_COUNT = "Aggregate Measure Fact Count";
 
     private static final String LBL_VIEW = "View";
     private static final String LBL_VIRTUAL_CUBE = "Virtual Cube";
@@ -5314,6 +5387,7 @@ public class SchemaExplorer
     private AbstractAction addAggPattern;
     private AbstractAction addAggExclude;
     private AbstractAction addAggFactCount;
+    private AbstractAction addAggMeasureFactCount;
 
     private AbstractAction addVirtualCube;
     private AbstractAction addVirtualCubeDimension;

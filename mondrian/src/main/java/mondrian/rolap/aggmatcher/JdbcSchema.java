@@ -5,9 +5,10 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
+
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.MondrianDef;
@@ -235,6 +236,7 @@ public class JdbcSchema {
         LEVEL,
         LEVEL_EXTRA,
         FACT_COUNT,
+        MEASURE_FACT_COUNT,
         IGNORE
     }
 
