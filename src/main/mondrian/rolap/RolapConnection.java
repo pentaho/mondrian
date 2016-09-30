@@ -749,6 +749,7 @@ public class RolapConnection extends ConnectionBase {
                 parseStatement(statement, query, null, false);
             if (queryPart instanceof Query) {
                 ((Query) queryPart).setOwnStatement(true);
+                statement.close();
                 statement = null;
             }
             return queryPart;

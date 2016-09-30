@@ -17,6 +17,7 @@ import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.parser.JavaccParserValidatorImpl;
 import mondrian.parser.MdxParserValidator;
 import mondrian.server.Statement;
+import mondrian.server.monitor.Monitor;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 import mondrian.util.Bug;
@@ -902,6 +903,16 @@ public class ParserTest extends FoodMartTestCase {
         checkChildren0(p, "CHILDREN");
         checkChildren0(p, "Children");
         checkChildren0(p, "children");
+    }
+    
+    public void testStatementClosing() {
+        Connection con = getConnection();
+        MondrianServer server = MondrianServer.forConnection(con);
+        Monitor mon = server.getMonitor();
+        int startSize = mon.getStatements().size();
+        QueryPart ex = con.parseStatement("Select Measures.Profit on columns from Sales");
+        int endSize = mon.getStatements().size();
+        assertEquals(startSize, endSize);
     }
 
     private void checkChildren0(TestParser p, String name) {
