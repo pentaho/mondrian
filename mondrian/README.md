@@ -4,38 +4,22 @@ Mondrian is an Online Analytical Processing (OLAP) server that enables business 
 #### Requirements
 * JDK 1.8 or higher
 * Maven 3.3 or higher
-* MySql or other supported DBMS
 
-#### Preparing the Build
-Mondrian's test suite runs queries against the Foodmart database.  By default, it will connect to a MySql database called foodmart on localhost using username/password of foodmart/foodmart.  Configure the MySql database and user on your system.  You may choose to use different connection properties by creating a file `mondrian.properties` and specifying properties as follows:
+#### Quick Start
+The following command will build the Mondrian jar, run the full integration test suite using an embedded MySQL server and install the jar file into your local Maven repository.
+```
+mvn -DrunITs install
+```
+Skip the integration tests by omitting `-DrunITs`
+
+#### Alternate Foodmart
+Mondrian's integration test suite runs queries against the Foodmart database.  By default, maven will start an embedded MySql database where the foodmart data will be loaded.  It is often needed to run the test suite against a different database.  You may choose different connection properties by creating a file `mondrian.properties` and specifying jdbc connection properties as follows:
 ```
 mondrian.foodmart.jdbcURL=jdbc:mysql://yourServerName/yourDatabaseName
 mondrian.foodmart.jdbcUser=yourUser
 mondrian.foodmart.jdbcPassword=yourPassword
 ```
-
-#### Loading Foodmart
-Populating the foodmart database before the test suite runs can be done by activating the Maven profile `load-foodmart`.  The following command will compile Mondrian, load foodmart into the configured database, run the test suite and build a jar file.
-```
-mvn -Pload-foodmart package 
-```
-#### Running the test suite
-Once foodmart is loaded, you don't need to load it again, so you can omit activation of the load-foodmart profile.  Mondrian uses the typical Maven phases for building, testing, and packaging.  Run the test suite with:
-```
-mvn verify
-```
-#### CmdRunner
-Mondrian provides a command line utility for executing MDX queries.  It can often be helpful for debugging.  CmdRunner will connect to the same database as is configured for the test suite.  The Maven profile `cmdrunner` will build Mondrian, skip the test suite and execute CmdRunner.
-```
-mvn -Pcmdrunner
-```
-#### Advanced Configuration
-Mondrian has many additional configuration options that can be specified in `mondrian.properties`.  The complete set of options as well as documentation on how to use them gets generated during the generate-sources phase of the Maven build.
-```
-mvn generate-sources
-```
-The `target` folder will now contain a file `mondrian.properties.template`.  All supported properties are explained there.  You can use any of them in your `mondrian.properties` file, but be aware that some tests will explicitly override some of these properties.
-#### Using a DBMS other than MySql.
+###### Getting JDBC Drivers
 The Maven build has a test dependency on the MySql jdbc driver.  If you want to use a different DBMS you will need to add the jdbc driver to the test dependencies using a Maven profile.  The profile should be defined in your settings.xml file.  Example profile:
 ```
 ...
@@ -51,3 +35,22 @@ The Maven build has a test dependency on the MySql jdbc driver.  If you want to 
     </profile>
 ...
 ```
+    
+###### Loading Foodmart
+When using the embedded MySQL databse, Foodmart will be populated automatically during the integration-test phase of the build.  When you're using an alternate Foodmart you can populate your database before the test suite runs by activating the Maven profile `load-foodmart`.  The following command will compile Mondrian, build a jar file, load foodmart into the configured database and run the integration test suite.
+```
+mvn -DrunITs -Pload-foodmart verify 
+```
+Once Foodmart is loaded, you don't need to load it on subsequent builds, so you can omit activation of the load-foodmart profile.
+
+#### CmdRunner
+Mondrian provides a command line utility for executing MDX queries.  It can often be helpful for debugging.  CmdRunner will connect to the same database as is configured for the test suite.  The Maven profile `cmdrunner` will build Mondrian, skip the test suite and execute CmdRunner.
+```
+mvn -Pcmdrunner
+```
+#### Advanced Configuration
+Mondrian has many additional configuration options that can be specified in `mondrian.properties`.  The complete set of options as well as documentation on how to use them gets generated during the generate-sources phase of the Maven build.
+```
+mvn generate-sources
+```
+The `target` folder will now contain a file `mondrian.properties.template`.  All supported properties are explained there.  You can use any of them in your `mondrian.properties` file, but be aware that some tests will explicitly override some of these properties.
