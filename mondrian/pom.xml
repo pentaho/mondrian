@@ -297,21 +297,6 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven-surefire-plugin.version}</version>
-        <configuration>
-          <includes>
-            <include>Main.java</include>
-          </includes>
-            <systemPropertyVariables>
-              <mondrian.foodmart.jdbcURL>${mondrian.foodmart.jdbcURL}</mondrian.foodmart.jdbcURL>
-              <mondrian.foodmart.jdbcUser>${mondrian.foodmart.jdbcUser}</mondrian.foodmart.jdbcUser>
-              <mondrian.foodmart.jdbcPassword>${mondrian.foodmart.jdbcPassword}</mondrian.foodmart.jdbcPassword>
-            </systemPropertyVariables>
-        </configuration>
-      </plugin>
-      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>xml-maven-plugin</artifactId>
         <version>1.0.1</version>
@@ -338,6 +323,28 @@
               </fileMappers>
             </transformationSet>
           </transformationSets>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>integration-test</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <includes>
+            <include>Main.java</include>
+          </includes>
+          <systemPropertyVariables>
+            <mondrian.foodmart.jdbcURL>${mondrian.foodmart.jdbcURL}</mondrian.foodmart.jdbcURL>
+            <mondrian.foodmart.jdbcUser>${mondrian.foodmart.jdbcUser}</mondrian.foodmart.jdbcUser>
+            <mondrian.foodmart.jdbcPassword>${mondrian.foodmart.jdbcPassword}</mondrian.foodmart.jdbcPassword>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
     </plugins>
@@ -374,21 +381,143 @@
       </build>
     </profile>
     <profile>
-      <id>default-mysql</id>
+      <id>embedded-mysql</id>
       <activation>
         <file>
           <missing>mondrian.properties</missing>
         </file>
       </activation>
       <properties>
-        <mondrian.foodmart.jdbcURL>jdbc:mysql://localhost/foodmart?useSSL=false</mondrian.foodmart.jdbcURL>
-        <mondrian.foodmart.jdbcUser>foodmart</mondrian.foodmart.jdbcUser>
-        <mondrian.foodmart.jdbcPassword>foodmart</mondrian.foodmart.jdbcPassword>
+        <mondrian.foodmart.jdbcURL>jdbc:mysql://localhost:${mysql.port}/foodmart?useSSL=false</mondrian.foodmart.jdbcURL>
+        <mondrian.foodmart.jdbcUser>root</mondrian.foodmart.jdbcUser>
+        <mondrian.foodmart.jdbcPassword>root</mondrian.foodmart.jdbcPassword>
         <mondrian.catalogURL>file:demo/FoodMart.xml</mondrian.catalogURL>
+
+        <mysql.driver>com.mysql.jdbc.Driver</mysql.driver>
+        <mysql.url.default>jdbc:mysql://localhost:${mysql.port}/mysql</mysql.url.default>
+        <mysql-dist.version>5.6.14</mysql-dist.version>
+        <jcabi-mysql-maven-plugin.version>0.8.2</jcabi-mysql-maven-plugin.version>
+        <dependency.sql-maven-plugin.version>1.5</dependency.sql-maven-plugin.version>
+        <mondrian.jdbcDrivers>${mysql.driver}</mondrian.jdbcDrivers>
       </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>${build-helper-maven-plugin.version}</version>
+            <executions>
+              <execution>
+                <phase>process-test-sources</phase>
+                <goals>
+                  <goal>reserve-network-port</goal>
+                </goals>
+                <configuration>
+                  <portNames>
+                    <portName>mysql.port</portName>
+                  </portNames>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>${maven-dependency-plugin.version}</version>
+            <executions>
+              <execution>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>unpack</goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>com.jcabi</groupId>
+                      <artifactId>mysql-dist</artifactId>
+                      <version>${mysql-dist.version}</version>
+                      <classifier>${mysql.classifier}</classifier>
+                      <type>zip</type>
+                      <overWrite>false</overWrite>
+                      <outputDirectory>${project.build.directory}/mysql-dist</outputDirectory>
+                    </artifactItem>
+                  </artifactItems>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>com.jcabi</groupId>
+            <artifactId>jcabi-mysql-maven-plugin</artifactId>
+            <version>${jcabi-mysql-maven-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>mysql-test</id>
+                <goals>
+                  <goal>classify</goal>
+                  <goal>start</goal>
+                  <goal>stop</goal>
+                </goals>
+                <configuration>
+                  <port>${mysql.port}</port>
+                  <data>${project.build.directory}/mysql-data</data>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>sql-maven-plugin</artifactId>
+            <version>${dependency.sql-maven-plugin.version}</version>
+            <dependencies>
+              <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${dependency.mysql.revision}</version>
+              </dependency>
+            </dependencies>
+            <configuration>
+              <driver>${mysql.driver}</driver>
+              <url>${mondrian.foodmart.jdbcURL}</url>
+              <username>${mondrian.foodmart.jdbcUser}</username>
+              <password>${mondrian.foodmart.jdbcPassword}</password>
+            </configuration>
+            <executions>
+              <execution>
+                <id>create-foodmart</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <configuration>
+                  <!-- need another database to drop the targeted one -->
+                  <url>${mysql.url.default}</url>
+                  <autocommit>true</autocommit>
+                  <orderFile>ascending</orderFile>
+                  <fileset>
+                    <basedir>${project.basedir}/src/it/resources/sql/</basedir>
+                    <includes>
+                      <include>create-foodmart.sql</include>
+                    </includes>
+                  </fileset>
+                  <onError>continue</onError>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
     <profile>
       <id>load-foodmart</id>
+      <activation>
+        <file>
+          <missing>mondrian.properties</missing>
+        </file>
+      </activation>
       <build>
         <plugins>
           <plugin>
@@ -397,11 +526,13 @@
             <version>1.5.0</version>
             <executions>
               <execution>
-                <phase>process-test-classes</phase>
+                <phase>pre-integration-test</phase>
                 <goals>
                   <goal>java</goal>
                 </goals>
                 <configuration>
+                  <includeProjectDependencies>true</includeProjectDependencies>
+                  <includePluginDependencies>true</includePluginDependencies>
                   <mainClass>mondrian.test.loader.MondrianFoodMartLoader</mainClass>
                   <arguments>
                     <argument>-verbose</argument>
@@ -412,8 +543,12 @@
                     <argument>-outputJdbcUser=${mondrian.foodmart.jdbcUser}</argument>
                     <argument>-outputJdbcPassword=${mondrian.foodmart.jdbcPassword}</argument>
                     <argument>-outputJdbcBatchSize=50</argument>
+                    <argument>-jdbcDrivers=${mondrian.jdbcDrivers}</argument>
                   </arguments>
                   <classpathScope>test</classpathScope>
+                  <additionalClasspathElements>
+                    <additionalClasspathElement>${project.build.directory}/it-classes</additionalClasspathElement>
+                  </additionalClasspathElements>
                   <cleanupDaemonThreads>false</cleanupDaemonThreads>
                 </configuration>
               </execution>
