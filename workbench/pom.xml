@@ -256,7 +256,18 @@
   <build>
     <plugins>
       <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>src/generated</directory>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+      <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.7</version>
         <executions>
           <execution>
             <phase>generate-sources</phase>
