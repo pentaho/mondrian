@@ -502,7 +502,6 @@
                   <goal>execute</goal>
                 </goals>
                 <configuration>
-                  <!-- need another database to drop the targeted one -->
                   <url>${mysql.url.default}</url>
                   <autocommit>true</autocommit>
                   <orderFile>ascending</orderFile>
@@ -510,6 +509,25 @@
                     <basedir>${project.basedir}/src/it/resources/sql/</basedir>
                     <includes>
                       <include>create-foodmart.sql</include>
+                    </includes>
+                  </fileset>
+                  <onError>continue</onError>
+                </configuration>
+              </execution>
+              <execution>
+                <id>create-steelwheels</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <configuration>
+                  <url>${mysql.url.default}</url>
+                  <autocommit>true</autocommit>
+                  <orderFile>ascending</orderFile>
+                  <fileset>
+                    <basedir>${project.basedir}/src/it/resources/mondrian/test/loader/</basedir>
+                    <includes>
+                      <include>SteelWheels.mysql.sql</include>
                     </includes>
                   </fileset>
                   <onError>continue</onError>
