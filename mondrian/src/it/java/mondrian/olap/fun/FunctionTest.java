@@ -11201,7 +11201,7 @@ Intel platforms):
                         null))));
         Collections.sort(funInfoList);
 
-        final File file = new File("functions.html");
+        final File file = new File("target/functions.html");
         final FileOutputStream os = new FileOutputStream(file);
         final PrintWriter pw = new PrintWriter(os);
         pw.println("<table border='1'>");
