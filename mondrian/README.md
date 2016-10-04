@@ -44,7 +44,14 @@ mvn -DrunITs -Pload-foodmart verify
 Once Foodmart is loaded, you don't need to load it on subsequent builds, so you can omit activation of the load-foodmart profile.
 
 #### CmdRunner
-Mondrian provides a command line utility for executing MDX queries.  It can often be helpful for debugging.  CmdRunner will connect to the same database as is configured for the test suite.  The Maven profile `cmdrunner` will build Mondrian, skip the test suite and execute CmdRunner.
+Mondrian provides a command line utility for executing MDX queries.  It can often be helpful for debugging.  CmdRunner requires that you have setup a mondrian.properties file.  At present, it cannot run with the embedded MySql server.  The required properties are:
+```
+mondrian.foodmart.jdbcURL=jdbc:mysql://yourServerName/yourDatabaseName
+mondrian.foodmart.jdbcUser=yourUser
+mondrian.foodmart.jdbcPassword=yourPassword
+mondrian.catalogURL=../demo/FoodMart.xml
+```
+The Maven profile `cmdrunner` will build Mondrian, skip the test suite and execute CmdRunner.
 ```
 mvn -Pcmdrunner
 ```
