@@ -265,6 +265,17 @@
           </filesets>
         </configuration>
       </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <configuration>
+            <archive>
+              <manifest>
+                <mainClass>mondrian.gui.Workbench</mainClass>
+              </manifest>
+            </archive>
+          </configuration>
+        </plugin>
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <version>1.7</version>
