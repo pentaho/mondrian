@@ -90,6 +90,15 @@ mysql() {
          -outputJdbcURL="jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart"
 }
 
+mariadb() {
+    java -cp "${CP}${PS}/jdbc/lib/mariadb-java-client-1.4.6.jar" \
+         mondrian.test.loader.MondrianFoodMartLoader \
+         -verbose -aggregates -tables -data -indexes \
+         -jdbcDrivers=org.mariadb.jdbc.Driver \
+         -inputFile=demo/FoodMartCreateData.sql \
+         -outputJdbcURL="jdbc:mariadb://localhost/foodmart?user=foodmart&password=foodmart"
+}
+
 nuodb() {
     java -cp "${CP}${PS}/opt/nuodb/jar/nuodbjdbc.jar" \
          mondrian.test.loader.MondrianFoodMartLoader \
@@ -238,6 +247,7 @@ infobright \
 luciddb \
 monetdb \
 mysql \
+mariadb \
 nuodb \
 oracle \
 oracleTrickle \
@@ -263,6 +273,7 @@ case "$db" in
 (luciddb) luciddb;;
 (monetdb) monetdb;;
 (mysql) mysql;;
+(mariadb) mariadb;;
 (nuodb) nuodb;;
 (oracle) oracle;;
 (oracleTrickle) oracleTrickle;;
