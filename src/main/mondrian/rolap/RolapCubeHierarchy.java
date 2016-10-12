@@ -5,13 +5,18 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
-import mondrian.olap.*;
+import mondrian.olap.Access;
+import mondrian.olap.Formula;
+import mondrian.olap.Level;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianDef;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
 import mondrian.olap.fun.VisualTotalsFunDef;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.MemberChildrenConstraint;
@@ -19,7 +24,13 @@ import mondrian.rolap.sql.TupleConstraint;
 import mondrian.util.UnsupportedList;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Hierarchy that is associated with a specific Cube.
@@ -679,6 +690,9 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 checkCacheStatus();
 
                 List<RolapMember> missed = new ArrayList<RolapMember>();
+                // could not process duplicated members
+                parentMembers = new ArrayList<RolapMember>(
+                    new LinkedHashSet<RolapMember>(parentMembers));
                 for (RolapMember parentMember : parentMembers) {
                     List<RolapMember> list =
                         rolapCubeCacheHelper.getChildrenFromCache(

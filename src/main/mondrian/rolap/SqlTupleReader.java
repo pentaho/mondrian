@@ -238,6 +238,12 @@ public class SqlTupleReader implements TupleReader {
                     if (!childLevel.getOrdinalExp().equals(
                             childLevel.getKeyExp()))
                     {
+                        LOGGER.warn(
+                            "Different level KeyExp="
+                            + childLevel.getKeyExp()
+                            + " and OrdinalExp="
+                            + childLevel.getOrdinalExp()
+                            + " was detected. Behaviour may be indeterminate");
                         ++column;
                     }
                     column += childLevel.getProperties().length;

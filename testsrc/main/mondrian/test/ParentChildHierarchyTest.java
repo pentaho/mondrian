@@ -1469,6 +1469,31 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                 .getAxes()[1].getPositions().get(2).iterator().next()
                     .getParentMember());
     }
+
+    public void testForCachedResultWithDifferentOrdinalColumn() {
+        String query =
+                "with member [Measures].cntr as 'Count(Descendants([Time].CurrentMember, [Time].month))'\n"
+                + "select [Measures].cntr on 0, [Time].[1997] on 1 from [Sales]";
+
+        String oldSchema = getTestContext().getRawSchema();
+
+        String newSchema = oldSchema.replaceAll(
+            "<Level name=\"Quarter\"",
+            "<Level name=\"Quarter\" ordinalColumn=\"month_of_year\"");
+
+        assertNotSame("Corrupt schema definition", oldSchema, newSchema);
+
+        TestContext newContext = getTestContext().withSchema(newSchema);
+
+        // before caching
+        Result result1 = newContext.executeQuery(query);
+        // after caching
+        Result result2 = newContext.executeQuery(query);
+        assertEquals(
+            "Result after caching should be same with previous",
+            TestContext.toString(result1),
+            TestContext.toString(result2));
+    }
 }
 
 // End ParentChildHierarchyTest.java
