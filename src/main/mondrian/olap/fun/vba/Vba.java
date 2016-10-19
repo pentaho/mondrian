@@ -116,7 +116,7 @@ public class Vba {
             return number.doubleValue();
         } else {
             final String s = String.valueOf(expression);
-            return new Double(s).intValue();
+            return new Double(s);
         }
     }
 

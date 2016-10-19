@@ -149,6 +149,7 @@ public class VbaTest extends TestCase {
         assertEquals(-1.4, Vba.cDbl(-1.4));
         assertEquals(-1.5, Vba.cDbl(-1.5));
         assertEquals(-1.6, Vba.cDbl(-1.6));
+        assertEquals(-1.6, Vba.cDbl("-1.6"));
         assertEquals(Double.MAX_VALUE, Vba.cDbl(Double.MAX_VALUE));
         assertEquals(Double.MIN_VALUE, Vba.cDbl(Double.MIN_VALUE));
         try {
