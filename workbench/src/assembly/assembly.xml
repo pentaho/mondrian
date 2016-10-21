@@ -8,13 +8,6 @@
     <includeBaseDirectory>false</includeBaseDirectory>
     <fileSets>
         <fileSet>
-            <directory>${project.basedir}</directory>
-            <outputDirectory>workbench-${project.version}</outputDirectory>
-            <includes>
-                <include>readme.txt</include>
-            </includes>
-        </fileSet>
-        <fileSet>
             <directory>${project.basedir}/..</directory>
             <outputDirectory>workbench-${project.version}</outputDirectory>
             <includes>

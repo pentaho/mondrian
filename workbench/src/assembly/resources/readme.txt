@@ -3,7 +3,7 @@
 # http://www.eclipse.org/legal/epl-v10.html.
 # You must accept the terms of that agreement to use this software.
 #
-# Copyright (C) 2007-2008 Cincom Inc, JasperSoft, Pentaho, and others
+# Copyright (C) 2007-2016 Cincom Inc, JasperSoft, Pentaho, and others
 # All Rights Reserved.
 
 Welcome to the Mondrian Schema Workbench.
@@ -11,12 +11,9 @@ Welcome to the Mondrian Schema Workbench.
 The Mondrian Schema Workbench allows you to visually create and test Mondrian
 OLAP cube schemas.
 
-See the docs directory for documentation on the Workbench and Mondrian.
-
-
 Technical Prerequisites for the Workbench
 
-* Java 1.5.
+* Java 1.8.
 * JDBC driver for your database in the drivers directory.
 
 
