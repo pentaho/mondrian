@@ -5,11 +5,12 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.xmla.impl;
 
+import mondrian.util.XmlParserFactoryProducer;
 import mondrian.xmla.*;
 
 import org.olap4j.impl.Olap4jUtil;
@@ -65,7 +66,16 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
     }
 
     protected static DocumentBuilderFactory getDocumentBuilderFactory() {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory;
+        try {
+            factory = XmlParserFactoryProducer.createSecureDocBuilderFactory();
+        } catch (ParserConfigurationException ex) {
+            throw new XmlaException(
+                SERVER_FAULT_FC,
+                SIE_REQUEST_STATE_CODE,
+                SIE_REQUEST_STATE_FAULT_FS,
+                ex);
+        }
         factory.setIgnoringComments(true);
         factory.setIgnoringElementContentWhitespace(true);
         factory.setNamespaceAware(true);

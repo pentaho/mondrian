@@ -9,6 +9,7 @@
 package mondrian.tui;
 
 import mondrian.olap.Util;
+import mondrian.util.XmlParserFactoryProducer;
 
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.impl.Constants;
@@ -851,7 +852,8 @@ public class XmlUtil {
                TransformerConfigurationException,
                TransformerException
     {
-        DocumentBuilderFactory dfactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory dfactory =
+            XmlParserFactoryProducer.createSecureDocBuilderFactory();
         dfactory.setNamespaceAware(true);
 
         DocumentBuilder docBuilder = dfactory.newDocumentBuilder();
@@ -901,7 +903,8 @@ public class XmlUtil {
                TransformerConfigurationException,
                TransformerException
     {
-        DocumentBuilderFactory dfactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory dfactory =
+            XmlParserFactoryProducer.createSecureDocBuilderFactory();
         dfactory.setNamespaceAware(true);
 
         DocumentBuilder docBuilder = dfactory.newDocumentBuilder();
