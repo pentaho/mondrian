@@ -5,14 +5,14 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2016 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.xmla;
 
 import mondrian.olap.MondrianException;
 import mondrian.olap.Util;
+import mondrian.util.XmlParserFactoryProducer;
 import mondrian.xmla.impl.DefaultXmlaResponse;
 
 import org.olap4j.OlapConnection;
@@ -161,10 +161,11 @@ public class XmlaUtil implements XmlaConstants {
     {
         try {
             DocumentBuilderFactory factory =
-                DocumentBuilderFactory.newInstance();
+                XmlParserFactoryProducer.createSecureDocBuilderFactory();
             factory.setIgnoringElementContentWhitespace(true);
             factory.setIgnoringComments(true);
             factory.setNamespaceAware(true);
+
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document doc = builder.parse(source);
             return doc.getDocumentElement();

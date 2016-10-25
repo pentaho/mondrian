@@ -1,12 +1,13 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2001-2005 Julian Hyde
+// Copyright (C) 2005-2016 Pentaho and others
+// All Rights Reserved.
 */
-
 package mondrian.xmla;
 
 /**
@@ -50,12 +51,12 @@ public interface XmlaConstants {
 
     public static final String SOAP_PREFIX = "SOAP-ENV";
 
-    /*
+    /**
      * Soap Header mustUnderstand attribute name.
      */
     public static final String SOAP_MUST_UNDERSTAND_ATTR = "mustUnderstand";
 
-    /*
+    /**
      * Soap XMLA Header elements and attribute names.
      */
     public static final String XMLA_BEGIN_SESSION      = "BeginSession";
@@ -64,7 +65,7 @@ public interface XmlaConstants {
     public static final String XMLA_SESSION_ID         = "SessionId";
     public static final String XMLA_SECURITY           = "Security";
 
-    /*
+    /**
      * Names of context keys known by both callbacks and Mondrian code.
      */
     // context key for role name storage
@@ -119,6 +120,13 @@ public interface XmlaConstants {
       //<faultcode>XA:Mondrian.XML.88BA1202</faultcode>
     public static final String FAULT_FC_PREFIX = "Mondrian";
     public static final String FAULT_FS_PREFIX = "The Mondrian XML: ";
+
+    /////////////////////////////////////////////////////////////////////////
+    // Servlet Initialization Error : SIE
+    /////////////////////////////////////////////////////////////////////////
+    public static final String SIE_REQUEST_STATE_CODE = "00SIEA01";
+    public static final String SIE_REQUEST_STATE_FAULT_FS =
+            "Servlet initialization error";
 
     /////////////////////////////////////////////////////////////////////////
     // Unmarshall Soap Message : USM
