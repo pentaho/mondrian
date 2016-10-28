@@ -22,6 +22,7 @@ import org.olap4j.metadata.XmlaConstants;
 
 import org.w3c.dom.Document;
 
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -996,6 +997,15 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
 
         doTest(requestType, props, testContext);
+    }
+
+    /**
+     * Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-1910">
+     * MONDRIAN-1910: "Axes with empty sets cause NPE in XmlaHandler."</a>.
+     */
+    public void testEmptySet() throws SQLException {
+        getTestContext().executeOlap4jXmlaQuery(
+            "select {} on 0, gender.gender.members on 1 from sales");
     }
 
     private void doTestExecuteContent(

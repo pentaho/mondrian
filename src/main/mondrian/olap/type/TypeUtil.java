@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho
+// Copyright (C) 2005-2014 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.olap.type;
 
 import mondrian.mdx.UnresolvedFunCall;
@@ -513,7 +512,10 @@ public class TypeUtil {
             }
             return hierarchyList;
         } else {
-            return Collections.singletonList(type.getHierarchy());
+            Hierarchy hierarchy = type.getHierarchy();
+            return hierarchy == null
+                ? Collections.<Hierarchy>emptyList()
+                : Collections.singletonList(hierarchy);
         }
     }
 
