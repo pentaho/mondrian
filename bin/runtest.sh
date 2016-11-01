@@ -21,6 +21,7 @@ CLASSPATH=$CLASSPATH:$MONDRIAN_LIB/commons-vfs.jar
 CLASSPATH="$CLASSPATH:$MONDRIAN_LIB/commons-logging.jar"
 
 CLASSPATH=$CLASSPATH:$MONDRIAN_TEST_LIB/mysql-connector-java-3.1.7-bin.jar
+CLASSPATH=$CLASSPATH:$MONDRIAN_TEST_LIB/mariadb-java-client-1.4.6.jar
 CLASSPATH=$CLASSPATH:$MONDRIAN_TEST_LIB/ojdbc14.jar
 CLASSPATH=$CLASSPATH:$MONDRIAN_TEST_LIB/junit.jar
 CLASSPATH=$CLASSPATH:$MONDRIAN_TEST_LIB/derby.jar
@@ -38,6 +39,10 @@ CATALOG_URL="file://localhost${MONDRIAN_HOME}/demo/FoodMart.xml"
 # mysql 
 JDBC_DRIVER=com.mysql.jdbc.Driver
 JDBC_URL="jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart"
+
+# mariadb 
+#JDBC_DRIVER=org.mariadb.jdbc.Driver
+#JDBC_URL="jdbc:mariadb://localhost/foodmart?user=foodmart&password=foodmart"
 
 # Derby
 #JDBC_DRIVER=org.apache.derby.jdbc.EmbeddedDriver

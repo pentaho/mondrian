@@ -604,6 +604,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
             case INFOBRIGHT:
             case LUCIDDB:
             case MYSQL:
+            case MARIADB:
             case NEOVIEW:
             case NETEZZA:
             case TERADATA:
