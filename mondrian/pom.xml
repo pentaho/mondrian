@@ -396,6 +396,9 @@
         <file>
           <missing>mondrian.properties</missing>
         </file>
+        <property>
+          <name>runITs</name>
+        </property>
       </activation>
       <properties>
         <mondrian.foodmart.jdbcURL>jdbc:mysql://localhost:${mysql.port}/foodmart?useSSL=false</mondrian.foodmart.jdbcURL>
@@ -544,6 +547,9 @@
         <file>
           <missing>mondrian.properties</missing>
         </file>
+        <property>
+          <name>runITs</name>
+        </property>
       </activation>
       <build>
         <plugins>
