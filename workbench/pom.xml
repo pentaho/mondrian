@@ -19,12 +19,12 @@
     <url>scm:git:git@github.com:pentaho/${project.artifactId}.git</url>
   </scm>
   <properties>
-    <dependency.kettle.revision>7.0-SNAPSHOT</dependency.kettle.revision>
-    <dependency.pentaho-application-launcher.revision>7.0-SNAPSHOT</dependency.pentaho-application-launcher.revision>
+    <dependency.kettle.revision>7.1-SNAPSHOT</dependency.kettle.revision>
+    <dependency.pentaho-application-launcher.revision>7.1-SNAPSHOT</dependency.pentaho-application-launcher.revision>
     <dependency.groovy-all.revision>2.4.7</dependency.groovy-all.revision>
     <dependency.jersey.revision>1.19.1</dependency.jersey.revision>
-    <dependency.pdi-dataservice-client-plugin.revision>7.0-SNAPSHOT</dependency.pdi-dataservice-client-plugin.revision>
-    <dependency.oss-licenses.revision>7.0-SNAPSHOT</dependency.oss-licenses.revision>
+    <dependency.pdi-dataservice-client-plugin.revision>7.1-SNAPSHOT</dependency.pdi-dataservice-client-plugin.revision>
+    <dependency.oss-licenses.revision>7.1-SNAPSHOT</dependency.oss-licenses.revision>
   </properties>
   <dependencies>
     <dependency>
