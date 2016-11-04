@@ -30,7 +30,7 @@
     <dependency>
       <groupId>eigenbase</groupId>
       <artifactId>eigenbase-xom</artifactId>
-      <version>${dependency.eigenbase.xom.revision}</version>
+      <version>${eigenbase-xom.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.apache.ant</groupId>
@@ -49,7 +49,7 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>${dependency.commons.io.revision}</version>
+      <version>${commons-io.version}</version>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
@@ -230,7 +230,7 @@
     <dependency>
       <groupId>xerces</groupId>
       <artifactId>xercesImpl</artifactId>
-      <version>${dependency.xercesImpl.revision}</version>
+      <version>${xercesImpl.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
@@ -243,7 +243,7 @@
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>${dependency.mysql.revision}</version>
+      <version>${mysql-connector-java.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

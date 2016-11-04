@@ -15,10 +15,10 @@
   <description>Container pom for mondrian and mondrian workbench</description>
   <url>http://www.pentaho.com</url>
   <properties>
-    <dependency.commons.io.revision>1.4</dependency.commons.io.revision>
-    <dependency.eigenbase.xom.revision>1.3.1</dependency.eigenbase.xom.revision>
-    <dependency.xercesImpl.revision>2.9.1</dependency.xercesImpl.revision>
-    <dependency.mysql.revision>5.1.39</dependency.mysql.revision>
+    <commons-io.version>1.4</commons-io.version>
+    <eigenbase-xom.version>1.3.1</eigenbase-xom.version>
+    <xercesImpl.version>2.9.1</xercesImpl.version>
+    <mysql-connector-java.version>5.1.39</mysql-connector-java.version>
     <dependency.postgres.revision>9.3-1102-jdbc4</dependency.postgres.revision>
   </properties>
 

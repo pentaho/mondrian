@@ -19,26 +19,26 @@
     <url>scm:git:git@github.com:pentaho/${project.artifactId}.git</url>
   </scm>
   <properties>
-    <dependency.commons.collections.revision>3.2.2</dependency.commons.collections.revision>
-    <dependency.commons.dbcp.revision>1.2.1</dependency.commons.dbcp.revision>
-    <dependency.commons.lang.revision>2.4</dependency.commons.lang.revision>
-    <dependency.commons.logging.revision>1.1.1</dependency.commons.logging.revision>
-    <dependency.commons.math.revision>1.1</dependency.commons.math.revision>
-    <dependency.commons.pool.revision>1.2</dependency.commons.pool.revision>
-    <dependency.commons.vfs2.revision>2.1-20150824</dependency.commons.vfs2.revision>
-    <dependency.dom4j.revision>1.6.1</dependency.dom4j.revision>
-    <dependency.validation.api.revision>1.0.0.GA</dependency.validation.api.revision>
-    <dependency.eigenbase.properties.revision>1.1.2</dependency.eigenbase.properties.revision>
-    <dependency.eigenbase.resgen.revision>1.3.1</dependency.eigenbase.resgen.revision>
-    <dependency.olap4j.revision>1.2.0</dependency.olap4j.revision>
-    <dependency.olap4j.xmla.revision>1.2.0</dependency.olap4j.xmla.revision>
-    <dependency.olap4j.xmlaserver.revision>1.2.0</dependency.olap4j.xmlaserver.revision>
-    <dependency.olap4j-tck.revision>1.0.1.539</dependency.olap4j-tck.revision>
-    <dependency.servlet.api.revision>2.4</dependency.servlet.api.revision>
-    <dependency.jsp.api.revision>2.0</dependency.jsp.api.revision>
-    <dependency.junit.revision>3.8.1</dependency.junit.revision>
-    <dependency.xmlunit.revision>1.1</dependency.xmlunit.revision>
-    <dependency.mockito.revision>1.9.5</dependency.mockito.revision>
+    <commons-collections.version>3.2.2</commons-collections.version>
+    <commons-dbcp.version>1.2.1</commons-dbcp.version>
+    <commons-lang.version>2.4</commons-lang.version>
+    <commons-logging.version>1.1.1</commons-logging.version>
+    <commons-math.version>1.1</commons-math.version>
+    <commons-pool.version>1.2</commons-pool.version>
+    <commons-vfs2.version>2.1-20150824</commons-vfs2.version>
+    <dom4j.version>1.6.1</dom4j.version>
+    <validation-api.version>1.0.0.GA</validation-api.version>
+    <eigenbase-properties.version>1.1.2</eigenbase-properties.version>
+    <eigenbase-resgen.version>1.3.1</eigenbase-resgen.version>
+    <olap4j.version>1.2.0</olap4j.version>
+    <olap4j-xmla.version>1.2.0</olap4j-xmla.version>
+    <olap4j-xmlaserver.version>1.2.0</olap4j-xmlaserver.version>
+    <olap4j-tck.version>1.0.1.539</olap4j-tck.version>
+    <servlet-api.version>2.4</servlet-api.version>
+    <jsp-api.version>2.0</jsp-api.version>
+    <junit.version>3.8.1</junit.version>
+    <xmlunit.version>1.1</xmlunit.version>
+    <mockito-all.version>1.9.5</mockito-all.version>
     <maven-bundle-plugin.version>2.3.7</maven-bundle-plugin.version>
 
     <project.version.major>3</project.version.major>
@@ -50,37 +50,38 @@
     <vendor>Pentaho</vendor>
     <copyright.year>2016</copyright.year>
 
+    <xml-apis.version>2.0.2</xml-apis.version>
   </properties>
   <dependencies>
     <dependency>
       <groupId>xml-apis</groupId>
       <artifactId>xml-apis</artifactId>
-      <version>2.0.2</version>
+      <version>${xml-apis.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>
-      <version>${dependency.commons.collections.revision}</version>
+      <version>${commons-collections.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-dbcp</groupId>
       <artifactId>commons-dbcp</artifactId>
-      <version>${dependency.commons.dbcp.revision}</version>
+      <version>${commons-dbcp.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-      <version>${dependency.commons.lang.revision}</version>
+      <version>${commons-lang.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>${dependency.commons.io.revision}</version>
+      <version>${commons-io.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
-      <version>${dependency.commons.logging.revision}</version>
+      <version>${commons-logging.version}</version>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
@@ -91,95 +92,95 @@
     <dependency>
       <groupId>commons-math</groupId>
       <artifactId>commons-math</artifactId>
-      <version>${dependency.commons.math.revision}</version>
+      <version>${commons-math.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-pool</groupId>
       <artifactId>commons-pool</artifactId>
-      <version>${dependency.commons.pool.revision}</version>
+      <version>${commons-pool.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-vfs2</artifactId>
-      <version>${dependency.commons.vfs2.revision}</version>
+      <version>${commons-vfs2.version}</version>
     </dependency>
     <dependency>
       <groupId>dom4j</groupId>
       <artifactId>dom4j</artifactId>
-      <version>${dependency.dom4j.revision}</version>
+      <version>${dom4j.version}</version>
     </dependency>
     <dependency>
       <groupId>javax.validation</groupId>
       <artifactId>validation-api</artifactId>
-      <version>${dependency.validation.api.revision}</version>
+      <version>${validation-api.version}</version>
     </dependency>
     <dependency>
       <groupId>eigenbase</groupId>
       <artifactId>eigenbase-xom</artifactId>
-      <version>${dependency.eigenbase.xom.revision}</version>
+      <version>${eigenbase-xom.version}</version>
     </dependency>
     <dependency>
       <groupId>eigenbase</groupId>
       <artifactId>eigenbase-properties</artifactId>
-      <version>${dependency.eigenbase.properties.revision}</version>
+      <version>${eigenbase-properties.version}</version>
     </dependency>
     <dependency>
       <groupId>eigenbase</groupId>
       <artifactId>eigenbase-resgen</artifactId>
-      <version>${dependency.eigenbase.resgen.revision}</version>
+      <version>${eigenbase-resgen.version}</version>
     </dependency>
     <dependency>
       <groupId>org.olap4j</groupId>
       <artifactId>olap4j</artifactId>
-      <version>${dependency.olap4j.revision}</version>
+      <version>${olap4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.olap4j</groupId>
       <artifactId>olap4j-xmla</artifactId>
-      <version>${dependency.olap4j.xmla.revision}</version>
+      <version>${olap4j-xmla.version}</version>
     </dependency>
     <dependency>
       <groupId>org.olap4j</groupId>
       <artifactId>olap4j-xmlaserver</artifactId>
-      <version>${dependency.olap4j.xmlaserver.revision}</version>
+      <version>${olap4j-xmlaserver.version}</version>
     </dependency>
     <dependency>
       <groupId>org.olap4j</groupId>
       <artifactId>olap4j-tck</artifactId>
-      <version>${dependency.olap4j-tck.revision}</version>
+      <version>${olap4j-tck.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>xerces</groupId>
       <artifactId>xercesImpl</artifactId>
-      <version>${dependency.xercesImpl.revision}</version>
+      <version>${xercesImpl.version}</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
-      <version>${dependency.servlet.api.revision}</version>
+      <version>${servlet-api.version}</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>jsp-api</artifactId>
-      <version>${dependency.jsp.api.revision}</version>
+      <version>${jsp-api.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>${dependency.junit.revision}</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>xmlunit</groupId>
       <artifactId>xmlunit</artifactId>
-      <version>${dependency.xmlunit.revision}</version>
+      <version>${xmlunit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
-      <version>${dependency.mockito.revision}</version>
+      <version>${mockito-all.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -195,7 +196,7 @@
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>${dependency.mysql.revision}</version>
+      <version>${mysql-connector-java.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -493,7 +494,7 @@
               <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
-                <version>${dependency.mysql.revision}</version>
+                <version>${mysql-connector-java.version}</version>
               </dependency>
             </dependencies>
             <configuration>
