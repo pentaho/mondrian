@@ -612,9 +612,10 @@ cannot be performed when using <code>highCardinality="true"</code>.
 <h1>3.3.2 The 'all' member<a name="The_all_member">&nbsp;</a></h1>
 
 <p>By default, every hierarchy contains a top level called '<code>(All)</code>', which contains a single
-member called '<code>(All {<i>hierarchyName</i>})</code>'. This member is parent of all other members
-of the hierarchy, and thus represents a grand total. It is also the default member of the hierarchy; that is, the member
-which is used for calculating cell values when the hierarchy is not included on an axis or in the slicer. The
+member called by default '<code>(All {<i>hierarchyName</i>}s)</code>' (note the "s" appended to the end). 
+For example, if your hierarchy is called <code>Store</code>, the 'all' member will be called <code>(All Stores)</code>, unless
+this name is overridden through the <code>allMemberName</code> or <code>allLevelName</code> attributes.
+This member is parent of all other members of the hierarchy, and thus represents a grand total. It is also the default member of the hierarchy; that is, the member which is used for calculating cell values when the hierarchy is not included on an axis or in the slicer. The
 <code>allMemberName</code> and <code>allLevelName</code> attributes override the default
 names of the all level and all member.</p>
 
@@ -665,6 +666,10 @@ indicated by the level's <code>levelType</code> attribute, whose allowable value
     		<td>TimeYears</td>
     		<td>Level is a year</td>
   		</tr>
+      <tr>
+        <td>TimeHalfYears</td>
+        <td>Level is a half year</td>
+      </tr>
   		<tr>
     		<td>TimeQuarters</td>
     		<td>Level is a quarter</td>
@@ -680,7 +685,23 @@ indicated by the level's <code>levelType</code> attribute, whose allowable value
   		<tr>
     		<td>TimeDays</td>
     		<td>Level represents days</td>
-  		</tr>
+
+      <tr>
+        <td>TimeHours</td>
+        <td>Level represents hours</td>
+      </tr>
+      <tr>
+        <td>TimeMinutes</td>
+        <td>Level represents minutes</td>
+      </tr>                  
+      <tr>
+        <td>TimeSeconds</td>
+        <td>Level represents seconds</td>
+      </tr>
+      <tr>
+        <td>TimeUndefined</td>
+        <td>Level represents an unspecified time period</td>
+      </tr>           
 	</table>
 
 <p>Here is an example of a time dimension:</p>
@@ -688,12 +709,13 @@ indicated by the level's <code>levelType</code> attribute, whose allowable value
 <blockquote style="text-indent: -20px">
   	<code>
 		<div style="padding-left:20px;">&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Time&quot; type=&quot;TimeDimension&quot;&gt;</div>
-			<div style="padding-left:40px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Periods&quot; primaryKey=&quot;dateid&quot;&gt;</div>
+			<div style="padding-left:40px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> name=&quot;Period&quot; hasAll=&quot;true&quot; allMemberName=&quot;All Periods&quot; primaryKey=&quot;dateid&quot;&gt;</div>
 				<div style="padding-left:60px;">&lt;<a href="#XML_Table">Table</a> name=&quot;datehierarchy&quot;/&gt;</div>
 				<div style="padding-left:60px;">&lt;<a href="#XML_Level">Level</a> name=&quot;Year&quot; column=&quot;year&quot; uniqueMembers=&quot;true&quot; levelType=&quot;TimeYears&quot; type=&quot;Numeric&quot;/&gt;</div>
-				<div style="padding-left:60px;">&lt;<a href="#XML_Level">Level</a> name=&quot;Quarter&quot; column=&quot;quarter&quot; uniqueMembers=&quot;false&quot; levelType=&quot;TimeQuarters&quot;/&gt;</div>
+        <div style="padding-left:60px;">&lt;<a href="#XML_Level">Level</a> name=&quot;Half Year&quot; column=&quot;halfyear&quot; uniqueMembers=&quot;false&quot; levelType=&quot;TimeHalfYears&quot; type=&quot;Numeric&quot;/&gt;</div>        
+				<div style="padding-left:60px;">&lt;<a href="#XML_Level">Level</a> name=&quot;Quarter&quot; column=&quot;quarter&quot; uniqueMembers=&quot;false&quot; levelType=&quot;TimeQuarters&quot; type=&quot;Numeric&quot;/&gt;</div>
 				<div style="padding-left:60px;">&lt;<a href="#XML_Level">Level</a> name=&quot;Month&quot; column=&quot;month&quot; uniqueMembers=&quot;false&quot; ordinalColumn=&quot;month&quot; nameColumn=&quot;month_name&quot; levelType=&quot;TimeMonths&quot; type=&quot;Numeric&quot;/&gt;</div>
-				<div style="padding-left:60px;">&lt;<a href="#XML_Level">Level</a> name=&quot;Week&quot; column=&quot;week_in_month&quot; uniqueMembers=&quot;false&quot; levelType=&quot;TimeWeeks&quot;/&gt;</div>
+				<div style="padding-left:60px;">&lt;<a href="#XML_Level">Level</a> name=&quot;Week&quot; column=&quot;week_in_month&quot; uniqueMembers=&quot;false&quot; levelType=&quot;TimeWeeks&quot; type=&quot;Numeric&quot;/&gt;</div>
 				<div style="padding-left:60px;">&lt;<a href="#XML_Level">Level</a> name=&quot;Day&quot; column=&quot;day_in_month&quot; uniqueMembers=&quot;false&quot; ordinalColumn=&quot;day_in_month&quot; nameColumn=&quot;day_name&quot; levelType=&quot;TimeDays&quot; type=&quot;Numeric&quot;/&gt;</div>
 			<div style="padding-left:40px;">&lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;</div>
 		<div style="padding-left:20px;">&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</div>
