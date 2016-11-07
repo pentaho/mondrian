@@ -14,6 +14,7 @@ import mondrian.olap.Util;
 import mondrian.rolap.RolapMember;
 import mondrian.rolap.SqlStatement;
 import mondrian.spi.Dialect;
+import mondrian.spi.Dialect.Datatype;
 import mondrian.spi.DialectManager;
 import mondrian.spi.impl.*;
 import mondrian.util.DelegatingInvocationHandler;
@@ -1543,6 +1544,32 @@ public class DialectTest extends TestCase {
         MonetDbDialect monetDbDialect = new MonetDbDialect();
         SqlStatement.Type type = monetDbDialect.getType(resultSet, 0);
         assertEquals(SqlStatement.Type.OBJECT, type);
+    }
+
+    public void testsqlTypeToDatatype() throws SQLException {
+        Dialect dialect = new JdbcDialectImpl();
+
+        assertEquals( Datatype.Integer, dialect.sqlTypeToDatatype("BIT", Types.BIT) );
+
+        assertEquals( Datatype.Date, dialect.sqlTypeToDatatype("DATE", Types.DATE) );
+
+        assertEquals( Datatype.Boolean, dialect.sqlTypeToDatatype("BOOLEAN", Types.BOOLEAN) );
+
+        assertEquals( Datatype.Integer, dialect.sqlTypeToDatatype("TINYINT", Types.TINYINT) );
+        assertEquals( Datatype.Integer, dialect.sqlTypeToDatatype("SMALLINT", Types.SMALLINT) );
+        assertEquals( Datatype.Integer, dialect.sqlTypeToDatatype("INT", Types.INTEGER) );
+        assertEquals( Datatype.Integer, dialect.sqlTypeToDatatype("BIGINT", Types.BIGINT) );
+
+        assertEquals( Datatype.Numeric, dialect.sqlTypeToDatatype("DOUBLE", Types.DOUBLE) );
+        assertEquals( Datatype.Numeric, dialect.sqlTypeToDatatype("FLOAT", Types.FLOAT) );
+        assertEquals( Datatype.Numeric, dialect.sqlTypeToDatatype("DECIMAL", Types.DECIMAL) );
+        assertEquals( Datatype.Numeric, dialect.sqlTypeToDatatype("FLOAT", Types.REAL) );
+
+        assertEquals( Datatype.String, dialect.sqlTypeToDatatype("VARCHAR", Types.VARCHAR) );
+        assertEquals( Datatype.String, dialect.sqlTypeToDatatype("CHAR", Types.CHAR) );
+
+        assertEquals( Datatype.Time, dialect.sqlTypeToDatatype("TIME", Types.TIME) );
+        assertEquals( Datatype.Timestamp, dialect.sqlTypeToDatatype("TIMESTAMP", Types.TIMESTAMP) );
     }
 
     public static class MockResultSetMetadata
