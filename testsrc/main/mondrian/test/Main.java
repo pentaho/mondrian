@@ -407,6 +407,7 @@ public class Main extends TestSuite {
 
             // Must be the last test.
             addTest(suite, TerminatorTest.class);
+            addTest(suite, SqlMemberSourceTest.class);
         }
 
         if (testName != null && !testName.equals("")) {
