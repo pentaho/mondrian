@@ -25,6 +25,7 @@
     <dependency.jersey.revision>1.19.1</dependency.jersey.revision>
     <dependency.pdi-dataservice-client-plugin.revision>7.1-SNAPSHOT</dependency.pdi-dataservice-client-plugin.revision>
     <dependency.oss-licenses.revision>7.1-SNAPSHOT</dependency.oss-licenses.revision>
+    <jlfgr.version>1.0</jlfgr.version>
   </properties>
   <dependencies>
     <dependency>
@@ -239,6 +240,11 @@
       <version>${dependency.oss-licenses.revision}</version>
       <scope>runtime</scope>
       <type>zip</type>
+    </dependency>
+    <dependency>
+      <groupId>sun</groupId>
+      <artifactId>jlfgr</artifactId>
+      <version>${jlfgr.version}</version>
     </dependency>
     <dependency>
       <groupId>mysql</groupId>
