@@ -10,7 +10,7 @@
   <groupId>pentaho</groupId>
   <artifactId>pentaho-mondrian-parent-pom</artifactId>
   <packaging>pom</packaging>
-  <version>3.13-SNAPSHOT</version>
+  <version>3.14-SNAPSHOT</version>
   <name>Pentaho Mondrian Parent POM</name>
   <description>Container pom for mondrian and mondrian workbench</description>
   <url>http://www.pentaho.com</url>
