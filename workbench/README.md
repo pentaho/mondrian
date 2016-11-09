@@ -6,15 +6,10 @@ OLAP cube schemas.
 * JDK 1.8 or higher
 * Maven 3.3 or higher
 
-#### Quick Start
+#### Building
 Schema Workbench uses typical Maven commands for building
 ```
 mvn install
 ```
 
-#### Launch Profile
-The Maven build includes a launch profile for conviently launching Schema Workbench from the project directory.
-
-```
-mvn -Plaunch-workbench
-```
+See the assemblies sub-module for building the complete assembly for deployment
