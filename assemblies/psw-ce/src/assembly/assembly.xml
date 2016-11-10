@@ -8,8 +8,8 @@
     <includeBaseDirectory>false</includeBaseDirectory>
     <fileSets>
         <fileSet>
-            <directory>${project.basedir}/..</directory>
-            <outputDirectory>workbench-${project.version}</outputDirectory>
+            <directory>${project.basedir}/../..</directory>
+            <outputDirectory>schema-workbench</outputDirectory>
             <includes>
                 <include>LICENSE*</include>
                 <include>demo/*</include>
@@ -17,11 +17,11 @@
         </fileSet>
         <fileSet>
             <directory>${project.basedir}/src/assembly/resources</directory>
-            <outputDirectory>workbench-${project.version}</outputDirectory>
+            <outputDirectory>schema-workbench</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}</directory>
-            <outputDirectory>workbench-${project.version}</outputDirectory>
+            <outputDirectory>schema-workbench</outputDirectory>
             <includes>
                 <include>PentahoSchemaWorkbench_OSS_Licenses.html</include>
             </includes>
@@ -29,9 +29,10 @@
     </fileSets>
     <dependencySets>
         <dependencySet>
-            <outputDirectory>workbench-${project.version}/lib</outputDirectory>
+            <outputDirectory>schema-workbench/lib</outputDirectory>
             <scope>runtime</scope>
             <useTransitiveDependencies>true</useTransitiveDependencies>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
             <includes>
                 <include>*:*:jar</include>
             </includes>
