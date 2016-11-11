@@ -282,10 +282,8 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <descriptor>src/assembly/assembly.xml</descriptor>
-        </configuration>
         <executions>
           <execution>
             <id>create-archive</id>
@@ -293,6 +291,10 @@
             <goals>
               <goal>single</goal>
             </goals>
+            <configuration>
+              <descriptor>src/assembly/assembly.xml</descriptor>
+              <appendAssemblyId>false</appendAssemblyId>
+            </configuration>
           </execution>
         </executions>
       </plugin>
