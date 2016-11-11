@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.pentaho</groupId>
@@ -11,9 +11,11 @@
   <artifactId>pentaho-mondrian-parent-pom</artifactId>
   <packaging>pom</packaging>
   <version>3.14-SNAPSHOT</version>
+  
   <name>Pentaho Mondrian Parent POM</name>
   <description>Container pom for mondrian and mondrian workbench</description>
   <url>http://www.pentaho.com</url>
+  
   <properties>
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-dbcp.version>1.2.1</commons-dbcp.version>
@@ -43,10 +45,38 @@
     <dependency.postgres.revision>9.3-1102-jdbc4</dependency.postgres.revision>
   </properties>
 
-  <modules>
-    <module>mondrian</module>
-    <module>workbench</module>
-    <module>assemblies</module>
-  </modules>
+  <profiles>
+  
+    <profile>
+      <id>mondrian</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>mondrian</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>workbench</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>workbench</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>assemblies</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>assemblies</module>
+      </modules>
+    </profile>
+
+  </profiles>
 
 </project>
