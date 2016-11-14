@@ -57,6 +57,7 @@ public class XmlaExcel2007Test extends XmlaBaseTestCase {
             Dialect dialect = TestContext.instance().getDialect();
             switch (dialect.getDatabaseProduct()) {
             case MYSQL:
+            case MARIADB:
             case VERTICA:
                 content =
                     foo(content, "Has_x0020_coffee_x0020_bar", "1", "true");
