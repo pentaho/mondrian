@@ -195,6 +195,7 @@ schema as a guiding example.</p>
         aggElement ::=<br/>
             <div style="padding-left:40px;">&lt;<a href="#XML_AggExclude">AggExclude</a>&gt;</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_AggFactCount">AggFactCount</a>&gt;</div>
+            <div style="padding-left:40px;">&lt;<a href="#XML_AggMeasureFactCount">AggMeasureFactCount</a>&gt;</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_AggIgnoreColumn">AggIgnoreColumn</a>&gt;</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_AggForeignKey">AggForeignKey</a>&gt;</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_AggMeasure">AggMeasure</a>&gt;</div>
@@ -3488,6 +3489,10 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
       	<td><code>&lt;<a name="XML_AggFactCount" href="xml_schema.html#AggFactCount">AggFactCount</a>&gt;</code></td>
       	<td>Specifies name of the column in the candidate aggregate table which contains the number of fact table rows.</td>
     </tr>
+	<tr>
+		<td><code>&lt;<a name="XML_AggMeasureFactCount" href="xml_schema.html#AggMeasureFactCount">AggMeasureFactCount</a>&gt;</code></td>
+		<td>The number of non-null fact table rows associated with a specific fact column. Mondrian can use this information when calculating averages from aggregate table values.</td>
+	</tr>
     <tr>
       	<td><code>&lt;<a name="XML_AggIgnoreColumn" href="xml_schema.html#AggIgnoreColumn">AggIgnoreColumn</a>&gt;</code></td>
       	<td>Tells Mondrian to ignore a column in an aggregate table.</td>

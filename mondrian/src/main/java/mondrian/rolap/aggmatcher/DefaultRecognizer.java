@@ -5,9 +5,10 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
+
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.Hierarchy;
@@ -67,6 +68,17 @@ class DefaultRecognizer extends Recognizer {
      */
     protected Recognizer.Matcher getFactCountMatcher() {
         return getRules().getFactCountMatcher();
+    }
+
+    @Override
+    protected Matcher getMeasureFactCountMatcher() {
+        return new Matcher() {
+            @Override
+            public boolean matches(String name) {
+                String factCountColumnName = getFactCountColumnName();
+                return name.contains(factCountColumnName);
+            }
+        };
     }
 
     /**
@@ -305,6 +317,31 @@ class DefaultRecognizer extends Recognizer {
         } finally {
             msgRecorder.popContextName();
         }
+    }
+
+    @Override
+    protected String getFactCountColumnName(Column.Usage aggUsage) {
+        // get the fact count column name.
+        JdbcSchema.Table aggTable = aggUsage.getColumn().getTable();
+
+        // get the columns name
+        String factCountColumnName = getFactCountColumnName();
+
+        // check if there is a fact column for specific measure
+        String measureFactColumnName =  aggUsage.getColumn().getName()
+                + "_" + factCountColumnName;
+        for (Iterator<JdbcSchema.Table.Column.Usage> iter =
+             aggTable.getColumnUsages(JdbcSchema.UsageType.MEASURE_FACT_COUNT);
+             iter.hasNext();)
+        {
+            Column.Usage usage = iter.next();
+            if (usage.getColumn().getName().equals(measureFactColumnName)) {
+                factCountColumnName = measureFactColumnName;
+                break;
+            }
+        }
+
+        return factCountColumnName;
     }
 }
 

@@ -1731,6 +1731,11 @@ Revision is $Id$
                 What does the fact_count column look like.
             </Doc>
         </Object>
+        <Array name="measuresfactcount" type="AggMeasureFactCount" required="false">
+            <Doc>
+                What does the fact_count for specific measure column look like.
+            </Doc>
+        </Array>
         <Array name="ignoreColumns" type="AggIgnoreColumn"/>
         <Array name="foreignKeys" type="AggForeignKey"/>
         <Array name="measures" type="AggMeasure"/>
@@ -1742,6 +1747,11 @@ Revision is $Id$
             public AggFactCount getAggFactCount() {
                 return factcount;
             }
+
+            public AggMeasureFactCount[] getMeasuresFactCount() {
+                return measuresfactcount;
+            }
+
             public AggIgnoreColumn[] getAggIgnoreColumns() {
                 return ignoreColumns;
             }
@@ -1843,6 +1853,19 @@ Revision is $Id$
     </Element>
 
     <Element type="AggFactCount" class= "AggColumnName"/>
+
+    <Element type="AggMeasureFactCount" class= "AggColumnName">
+        <Attribute name="factColumn" required="true">
+            <Doc>
+                The name of the fact column associated with a base measure.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getFactColumn() {
+            return factColumn;
+            }
+        </Code>
+    </Element>
 
     <Element type="AggIgnoreColumn" class= "AggColumnName"/>
 

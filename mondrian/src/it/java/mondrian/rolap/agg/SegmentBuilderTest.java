@@ -649,12 +649,12 @@ public class SegmentBuilderTest extends BatchTestCase {
                 + "[Time].[1998].[Q4].[10], [Time].[1998].[Q4].[11], [Time].[1998].[Q4].[12]}"
                 + "on 0 from sales"},
             new String[] {
-                "78a261a0d167093d12cc2f279d1a8a19cc9d7050ad004ef8fee38ca45cc08101",
+                "af45d690c892633e5755b06d623ba50a849357832d2157954303a76b4d9564ac",
                     // ^^^
                     //    {time_by_day.the_year=('1998')}
                     //    {time_by_day.quarter=('Q1','Q2','Q3')}
                     //    {time_by_day.month_of_year=('2','3','4','5','6','7')}]
-                "c99bd7b377b7181a9438adf47834fd2f3b5cb086614c587bd2dd9a94396a541d"
+                "0ceeeddc5d670cf385ea5bfe88811dee2f4b2ec43e1272d0258a9cd7c4d02ceb"
                     // ^^^
                     // {time_by_day.the_year=(*)}
                     // {time_by_day.quarter=('Q1','Q3','Q4')}
@@ -672,11 +672,11 @@ public class SegmentBuilderTest extends BatchTestCase {
             + "Cube:[Sales]\n"
             + "Measure:[Unit Sales]\n"
             + "Axes:[\n"
-            + "    {time_by_day.the_year=('1998')}\n"
-            + "    {time_by_day.quarter=('Q1','Q3')}]\n"
+            + "    {time_by_day.quarter=('Q1','Q3')}\n"
+            + "    {time_by_day.the_year=('1998')}]\n"
             + "Excluded Regions:[]\n"
             + "Compound Predicates:[]\n"
-            + "ID:[685502fc54fc3d05e4438ee812b26799a05e25fbbdd6c75b0133d62480bcbd98]\n");
+            + "ID:[5eca71e4224b8c407e4f0c9ba0082bba0b36455304a675263eee942847cbfc06]\n");
     }
 
     public void testSameRollupRegardlessOfSegmentOrderWithData() {
@@ -694,13 +694,13 @@ public class SegmentBuilderTest extends BatchTestCase {
                 + "{[Product].[Drink].[Dairy]}"
                 + "on 0 from sales"},
             new String[] {
-              "6fa249f861b66fef01fc8ad41e116d1a1316563c440e7c8df8fd5457713e3fc6",
+              "71cf49a1d6f0c2da433442927e05ea5c571f52fce132081f499aba34b6dbb054",
                 // ^^^
                 //    {time_by_day.the_year=('1997')}
                 //    {product_class.product_family=(*)}
                 //    {product_class.product_department=('Alcoholic Beverages',
                 //     'Baked Goods','Beverages','Periodicals')}]
-              "28998f37f3a12b6b566e5542c1de63ad89c7c024cded868476745f4a2eb2724e"
+              "5bc7ead7b284809f6203df971c09c7c797d727050ae46dbd9cc04d59edc9538a"
                 // ^^^
                 //    {time_by_day.the_year=('1997')}
                 //    {product_class.product_family=('Drink')}
@@ -734,13 +734,13 @@ public class SegmentBuilderTest extends BatchTestCase {
                 + "{[Product].[Drink].[Dairy]}"
                 + "on 0 from sales"},
             new String[] {
-                "348d8b84a4322bce4abaa6f22fffb43beeaa005bb84eee2fe95c52e8467c9e17",
+                "63b78b31fae7a3229f284be9a2fc8d5ff47f1241b6a5972b6e6adf41f48cdb5a",
                     // ^^^
                     //    {time_by_day.the_year=('1997')}
                     // {product_class.product_family=('Drink','Non-Consumable')}
                     // {product_class.product_department=('Alcoholic Beverages',
                     //  'Beverages','Periodicals')}]
-                "28998f37f3a12b6b566e5542c1de63ad89c7c024cded868476745f4a2eb2724e"
+                "5bc7ead7b284809f6203df971c09c7c797d727050ae46dbd9cc04d59edc9538a"
                     // ^^^
                     //    {time_by_day.the_year=('1997')}
                     //    {product_class.product_family=('Drink')}
@@ -775,17 +775,17 @@ public class SegmentBuilderTest extends BatchTestCase {
                 " select "
                 + "{[Product].[Drink].[Beverages]} on 0 from sales"},
             new String[] {
-                "28998f37f3a12b6b566e5542c1de63ad89c7c024cded868476745f4a2eb2724e",
+                "e546620837ba618128e2ffbb53f2a32867725f68f53467e4cc081e94ffc7809b",
                     // ^^^
                     //    {time_by_day.the_year=('1997')}
                     //    {product_class.product_family=('Drink')}
                     //    {product_class.product_department=('Dairy')}]
-                "c5e912e9af50f82339c8bc2e3806e0b6d1e4e2029c3b1ae9ebef504d0799037b",
+                "4c6158aa74d34b4941f79c699f39a866eb5d4aaacf27f4319839aaff5486e886",
                     // ^^^
                     //    {time_by_day.the_year=('1997')}
                     //    {product_class.product_family=('Drink')}
                     //    {product_class.product_department=('Beverages')}]
-                "bdf9f996de66edb6477d4ae016a1a4a6508c324c8641833e03bb2b869dc83d77"
+                "5bc7ead7b284809f6203df971c09c7c797d727050ae46dbd9cc04d59edc9538a"
                     // ^^^
                     //    {time_by_day.the_year=('1997')}
                     //    {product_class.product_family=

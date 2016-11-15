@@ -5,9 +5,10 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
+
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
@@ -16,6 +17,7 @@ import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -93,7 +95,7 @@ abstract class Recognizer {
      */
     public boolean check() {
         checkIgnores();
-        checkFactCount();
+        checkFactColumns();
 
         // Check measures
         int nosMeasures = checkMeasures();
@@ -150,15 +152,20 @@ abstract class Recognizer {
     protected abstract Matcher getFactCountMatcher();
 
     /**
-     * Make sure that the aggregate table has one fact count column and that its
-     * type is numeric.
+     * Return the fact count column Matcher.
      */
-    protected void checkFactCount() {
+    protected abstract Matcher getMeasureFactCountMatcher();
+
+    /**
+     * Make sure that the aggregate table has one fact count column and that its
+     * type is numeric and find measure fact columns
+     */
+    protected void checkFactColumns() {
         msgRecorder.pushContextName("Recognizer.checkFactCount");
 
         try {
             Matcher factCountMatcher = getFactCountMatcher();
-
+            JdbcSchema.Table.Column factColumn = null;
             int nosOfFactCounts = 0;
             for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
                 // if marked as ignore, then do not consider
@@ -169,6 +176,7 @@ abstract class Recognizer {
                     if (aggColumn.getDatatype().isNumeric()) {
                         makeFactCount(aggColumn);
                         nosOfFactCounts++;
+                        factColumn = aggColumn;
                     } else {
                         String msg = mres.NonNumericFactCountColumn.str(
                             aggTable.getName(),
@@ -197,6 +205,20 @@ abstract class Recognizer {
                 msgRecorder.reportError(msg);
 
                 returnValue = false;
+            } else {
+                // if fact column is correct
+                // find fact columns for specific measure
+                Matcher measureFactCountMatcher = getMeasureFactCountMatcher();
+                for (JdbcSchema.Table.Column aggColumn
+                        : aggTable.getColumns())
+                {
+                    if (!aggColumn.hasUsage()
+                            && measureFactCountMatcher.matches
+                            (aggColumn.getName()))
+                    {
+                        makeMeasureFactCount(aggColumn);
+                    }
+                }
             }
         } finally {
             msgRecorder.popContextName();
@@ -218,6 +240,26 @@ abstract class Recognizer {
         usage.setSymbolicName("Fact Count");
     }
 
+    /**
+     * Create measure fact count usage for the aggColumn.
+     */
+    protected void makeMeasureFactCount
+    (final JdbcSchema.Table.Column aggColumn)
+    {
+        JdbcSchema.Table.Column.Usage usage =
+                aggColumn.newUsage(JdbcSchema.UsageType.MEASURE_FACT_COUNT);
+        usage.setSymbolicName("Measure Fact Count");
+    }
+
+    protected String getFactCountColumnName() {
+        // iterator over fact count usages - in the end there can be only one!!
+        Iterator<JdbcSchema.Table.Column.Usage> it =
+                aggTable.getColumnUsages(JdbcSchema.UsageType.FACT_COUNT);
+        return it.hasNext() ? it.next().getColumn().getName() : null;
+    }
+
+    protected abstract String getFactCountColumnName
+            (final JdbcSchema.Table.Column.Usage aggUsage);
 
     /**
      * Make sure there was at least one measure column identified.
@@ -881,6 +923,40 @@ abstract class Recognizer {
         return rollupAgg;
     }
 
+    protected void checkMeasureFactCount() {
+        JdbcSchema.Table.Column factColumn = null;
+        Set<String> allowedMeasureFactColumnNames = new HashSet<>();
+
+        for (Iterator<JdbcSchema.Table.Column.Usage> it =
+             aggTable.getColumnUsages(JdbcSchema.UsageType.FACT_COUNT);
+             it.hasNext();)
+        {
+            JdbcSchema.Table.Column.Usage usage = it.next();
+            factColumn = usage.getColumn();
+        }
+
+        if (factColumn != null) {
+            for (Iterator<JdbcSchema.Table.Column.Usage> it =
+                 aggTable.getColumnUsages(JdbcSchema.UsageType.MEASURE);
+                 it.hasNext();)
+            {
+                JdbcSchema.Table.Column.Usage usage = it.next();
+                JdbcSchema.Table.Column measureColumn = usage.getColumn();
+                allowedMeasureFactColumnNames.add
+                        (factColumn.getName() + "_" + measureColumn.getName());
+            }
+
+            for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
+                if (!aggColumn.hasUsage()
+                        && allowedMeasureFactColumnNames.contains
+                        (aggColumn.getName()))
+                {
+                    makeMeasureFactCount(aggColumn);
+                }
+            }
+        }
+    }
+
     /**
      * Given an aggregate table column usage, find the column name of the
      * table's fact count column usage.
@@ -888,25 +964,15 @@ abstract class Recognizer {
      * @param aggUsage Aggregate table column usage
      * @return The name of the column which holds the fact count.
      */
-    private String getFactCountExpr(
-        final JdbcSchema.Table.Column.Usage aggUsage)
+    private String getFactCountExpr
+    (final JdbcSchema.Table.Column.Usage aggUsage)
     {
-        // get the fact count column name.
-        JdbcSchema.Table aggTable = aggUsage.getColumn().getTable();
-
-        // iterator over fact count usages - in the end there can be only one!!
-        Iterator<JdbcSchema.Table.Column.Usage> it =
-            aggTable.getColumnUsages(JdbcSchema.UsageType.FACT_COUNT);
-        it.hasNext();
-        JdbcSchema.Table.Column.Usage usage = it.next();
-
-        // get the columns name
-        String factCountColumnName = usage.getColumn().getName();
         String tableName = aggTable.getName();
+        String factCountColumnName = getFactCountColumnName(aggUsage);
 
         // we want the fact count expression
         MondrianDef.Column column =
-            new MondrianDef.Column(tableName, factCountColumnName);
+                new MondrianDef.Column(tableName, factCountColumnName);
         SqlQuery sqlQuery = star.getSqlQuery();
         return column.getExpression(sqlQuery);
     }

@@ -5,10 +5,11 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 */
+
 package mondrian.gui;
 
 import mondrian.util.CompositeList;
@@ -174,6 +175,7 @@ public class SchemaTreeModel extends DefaultTreeModel {
             MondrianGuiDef.AggTable t = (MondrianGuiDef.AggTable) parent;
             return new CompositeList<Object>(
                 ifList(t.factcount),
+                Arrays.asList(t.measuresfactcount),
                 Arrays.asList(t.ignoreColumns),
                 Arrays.asList(t.foreignKeys),
                 Arrays.asList(t.measures),

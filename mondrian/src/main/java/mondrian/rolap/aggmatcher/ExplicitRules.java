@@ -5,9 +5,10 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 */
+
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
@@ -508,6 +509,18 @@ public class ExplicitRules {
                     aggTable.getAggFactCount().getColumnName());
             }
 
+            if (aggTable.getMeasuresFactCount() != null) {
+                Map<String, String> measuresFactCount =
+                        tableDef.getMeasuresFactCount();
+                for (MondrianDef.AggMeasureFactCount measureFact
+                        : aggTable.getMeasuresFactCount())
+                {
+                    measuresFactCount.put
+                            (measureFact.getFactColumn(),
+                                    measureFact.getColumnName());
+                }
+            }
+
             MondrianDef.AggIgnoreColumn[] ignores =
                 aggTable.getAggIgnoreColumns();
 
@@ -921,6 +934,7 @@ public class ExplicitRules {
         protected final boolean ignoreCase;
         protected final ExplicitRules.Group aggGroup;
         protected String factCountName;
+        protected Map<String, String> measuresFactCount = new HashMap<>();
         protected List<String> ignoreColumnNames;
         private Map<String, String> foreignKeyMap;
         private List<Level> levels;
@@ -985,6 +999,10 @@ public class ExplicitRules {
             this.factCountName = factCountName;
         }
 
+        public Map<String, String> getMeasuresFactCount() {
+            return measuresFactCount;
+        }
+
         /**
          * Get an Iterator over all ignore column name entries.
          */
@@ -1042,6 +1060,17 @@ public class ExplicitRules {
                     final String factCountName = TableDef.this.factCountName;
                     return factCountName != null
                         && factCountName.equalsIgnoreCase(name);
+                }
+            };
+        }
+
+        protected Recognizer.Matcher getMeasureFactCountMatcher() {
+            return new Recognizer.Matcher() {
+                @Override
+                public boolean matches(String name) {
+                    HashSet<String> measuresFactCountSet =
+                            new HashSet<>(measuresFactCount.values());
+                    return measuresFactCountSet.contains(name);
                 }
             };
         }
