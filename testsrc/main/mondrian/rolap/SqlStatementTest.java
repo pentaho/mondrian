@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2015-2015 Pentaho and others
+// Copyright (C) 2015-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -18,6 +18,7 @@ import mondrian.server.StatementImpl;
 import mondrian.server.monitor.Monitor;
 
 import junit.framework.TestCase;
+import mondrian.spi.Dialect;
 
 import static org.mockito.Mockito.*;
 
@@ -26,28 +27,38 @@ import static org.mockito.Mockito.*;
  */
 public class SqlStatementTest extends TestCase {
 
-  public void testPrintingNilDurationIfCancelledBeforeStart() throws Exception {
-    Monitor monitor = mock(Monitor.class);
+  private Monitor monitor;
+  private MondrianServer srv;
+  private RolapConnection rolapConnection;
+  private StatementImpl statMock;
+  private Execution execution;
+  private Locus locus;
+  private SqlStatement statement;
 
-    MondrianServer srv = mock(MondrianServer.class);
+  public void setUp() {
+    monitor = mock(Monitor.class);
+
+    srv = mock(MondrianServer.class);
     when(srv.getMonitor()).thenReturn(monitor);
 
-    RolapConnection rolapConnection = mock(RolapConnection.class);
+    rolapConnection = mock(RolapConnection.class);
     when(rolapConnection.getServer()).thenReturn(srv);
 
-    StatementImpl statMock = mock(StatementImpl.class);
+    statMock = mock(StatementImpl.class);
     when(statMock.getMondrianConnection()).thenReturn(rolapConnection);
 
-    Execution execution = new Execution(statMock, 0);
+    execution = new Execution(statMock, 0);
     execution = spy(execution);
     doThrow(MondrianResource.instance().QueryCanceled.ex())
-      .when(execution).checkCancelOrTimeout();
+            .when(execution).checkCancelOrTimeout();
 
-    Locus locus = new Locus(execution, "component", "message");
-    SqlStatement statement =
-      new SqlStatement(null, "sql", null, 0, 0, locus, 0, 0, null);
+    locus = new Locus(execution, "component", "message");
+
+    statement = new SqlStatement(null, "sql", null, 0, 0, locus, 0, 0, null);
     statement = spy(statement);
+  }
 
+  public void testPrintingNilDurationIfCancelledBeforeStart() throws Exception {
     try {
       statement.execute();
     } catch (Exception e) {
@@ -60,6 +71,45 @@ public class SqlStatementTest extends TestCase {
     }
 
     verify(statement).formatTimingStatus(eq(0L), anyInt());
+  }
+
+  public void testGetDialectSchemaAndConnectionNull() {
+    try {
+      this.statement.getDialect(null);
+      fail("Should throw exception");
+    } catch (Exception e) {
+      verify(statement).createDialect();
+    }
+  }
+
+  public void testGetDialectDialectNull() {
+    RolapSchema schema = mock(RolapSchema.class);
+    when(schema.getDialect()).thenReturn(null);
+    try {
+      statement.getDialect(schema);
+      fail("Should throw exception");
+    } catch (Exception e) {
+      verify(statement).createDialect();
+    }
+  }
+
+  public void testGetDialect() {
+    RolapSchema schema = mock(RolapSchema.class);
+    Dialect dialect = mock(Dialect.class);
+    when(schema.getDialect()).thenReturn(dialect);
+    Dialect dialectReturn = statement.getDialect(schema);
+    assertNotNull(dialectReturn);
+    assertEquals(dialect, dialectReturn);
+  }
+
+  public void testCreateDialect() {
+    statement = mock(SqlStatement.class);
+    Dialect dialect = mock(Dialect.class);
+    when(statement.getDialect(any())).thenCallRealMethod();
+    when(statement.createDialect()).thenReturn(dialect);
+    Dialect dialectReturn = statement.getDialect(null);
+    assertNotNull(dialectReturn);
+    assertEquals(dialect, dialectReturn);
   }
 }
 // End SqlStatementTest.java
