@@ -459,6 +459,7 @@ public class RolapConnectionTest extends TestCase {
                             + "invalid username/password; logon denied") >= 0);
                     break;
                 case MYSQL:
+                case MARIADB:
                     assertTrue(
                         s,
                         s.indexOf(

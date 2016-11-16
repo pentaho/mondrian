@@ -101,6 +101,7 @@ public class CaptionTest extends TestCase {
         switch (tc.getDialect().getDatabaseProduct()) {
         case ACCESS:
         case ORACLE:
+        case MARIADB:
         case MYSQL:
             break;
         default:
