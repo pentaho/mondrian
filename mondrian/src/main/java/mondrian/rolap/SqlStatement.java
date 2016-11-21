@@ -14,6 +14,8 @@ import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.monitor.*;
 import mondrian.server.monitor.SqlStatementEvent.Purpose;
+import mondrian.spi.Dialect;
+import mondrian.spi.DialectManager;
 import mondrian.util.*;
 
 import java.lang.reflect.InvocationTargetException;
@@ -433,15 +435,41 @@ public class SqlStatement {
                 .getMondrianConnection()
                 .getSchema();
 
+            Dialect dialect = getDialect(schema);
+
             if (suggestedType != null) {
                 types.add(suggestedType);
-            } else if (schema != null && schema.getDialect() != null) {
-                types.add(schema.getDialect().getType(metaData, i));
+            } else if (dialect != null) {
+                types.add(dialect.getType(metaData, i));
             } else {
                 types.add(Type.OBJECT);
             }
         }
         return types;
+    }
+
+    /**
+     * Retrieves dialect from schema or attempts to create it
+     * in case it is null
+     *
+     * @param schema rolap schema
+     * @return database dialect
+     */
+    protected Dialect getDialect(RolapSchema schema) {
+        Dialect dialect = null;
+        if (schema != null && schema.getDialect() != null) {
+            dialect = schema.getDialect();
+        } else {
+            dialect = createDialect();
+        }
+        return dialect;
+    }
+
+    /**
+     * For tests
+     */
+    protected Dialect createDialect(){
+        return DialectManager.createDialect(dataSource, jdbcConnection);
     }
 
     public List<Accessor> getAccessors() throws SQLException {
