@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho
+// Copyright (C) 2005-2015 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -1184,13 +1184,13 @@ public class AccessControlTest extends FoodMartTestCase {
         // Role1 can see [Promotion].[Media Type], Role2 cannot
         // Neither can see [Marital Status]
         assertHierarchyAccess(
-            connection, Access.CUSTOM, "Sales", "[Customers]");
+            connection, Access.CUSTOM, "Sales", "[Customer].[Customers]");
         assertHierarchyAccess(
             connection, Access.ALL, "Sales", "[Stores]");
         assertHierarchyAccess(
             connection, Access.ALL, "Sales", "[Promotion].[Media Type]");
         assertHierarchyAccess(
-            connection, Access.NONE, "Sales", "[Marital Status]");
+            connection, Access.NONE, "Sales", "[Customer].[Marital Status]");
 
         // Rollup policy is the greater of Role1's partian and Role2's hidden
         final Role.HierarchyAccess hierarchyAccess =

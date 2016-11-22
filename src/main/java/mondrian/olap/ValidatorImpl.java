@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2009 Pentaho
+// Copyright (C) 2002-2015 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -50,11 +50,15 @@ abstract class ValidatorImpl implements Validator {
      *
      * @param funTable Function table
      *
+     * @param resolvedIdentifiers map of already resolved Ids
      * @pre funTable != null
      */
-    protected ValidatorImpl(FunTable funTable) {
+    protected ValidatorImpl(
+        FunTable funTable, Map<QueryPart, QueryPart> resolvedIdentifiers)
+    {
         Util.assertPrecondition(funTable != null, "funTable != null");
         this.funTable = funTable;
+        resolvedNodes.putAll(resolvedIdentifiers);
     }
 
     public Exp validate(Exp exp, boolean scalar) {

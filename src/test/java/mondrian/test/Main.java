@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1998-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 21 January, 1999
@@ -21,6 +21,7 @@ import mondrian.olap.type.TypeTest;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.*;
+import mondrian.rolap.sql.EffectiveMemberCacheTest;
 import mondrian.rolap.sql.SelectNotInGroupByTest;
 import mondrian.rolap.sql.SqlQueryTest;
 import mondrian.test.build.CodeComplianceTest;
@@ -321,6 +322,9 @@ public class Main extends TestSuite {
             addTest(suite, DynamicSchemaProcessorTest.class);
             addTest(suite, MonitorTest.class);
             addTest(suite, BlockingHashMapTest.class);
+            addTest(suite, IdBatchResolverTest.class);
+            addTest(suite, MemberCacheHelperTest.class);
+            addTest(suite, EffectiveMemberCacheTest.class);
             addTest(suite, CodeComplianceTest.class);
 
             boolean testNonEmpty = isRunOnce();

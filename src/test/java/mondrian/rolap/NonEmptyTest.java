@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2014 Pentaho and others
+// Copyright (C) 2005-2015 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -32,6 +32,7 @@ import org.eigenbase.util.property.BooleanProperty;
 import org.eigenbase.util.property.StringProperty;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -66,6 +67,7 @@ public class NonEmptyTest extends BatchTestCase {
         super.setUp();
         propSaver.set(propSaver.props.EnableNativeCrossJoin, true);
         propSaver.set(propSaver.props.EnableNativeNonEmpty, true);
+        propSaver.set(propSaver.props.LevelPreCacheThreshold, 0);
     }
 
     @Override
@@ -2019,10 +2021,10 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `product` as `product`,\n"
             + "    `product_class` as `product_class`\n"
             + "where\n"
-            + "    ((`warehouse`.`wa_address2` is null\n"
+            + "    ((( `warehouse`.`wa_address2` IS NULL )\n"
             + "    and `warehouse`.`wa_address1` = '5617 Saclan Terrace'\n"
             + "    and `warehouse`.`warehouse_name` = 'Arnold and Sons')\n"
-            + "    or (`warehouse`.`wa_address2` is null\n"
+            + "    or (( `warehouse`.`wa_address2` IS NULL )\n"
             + "    and `warehouse`.`wa_address1` = '3377 Coachman Place'\n"
             + "    and `warehouse`.`warehouse_name` = 'Jones International'))\n"
             + "and\n"
@@ -2116,7 +2118,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `product_class` as `product_class`\n"
             + "where\n"
             + "    ((`warehouse`.`warehouse_fax`, `warehouse`.`wa_address1`, `warehouse`.`warehouse_name`) in (('971-555-6213', '3377 Coachman Place', 'Jones International'))\n"
-            + "    or (`warehouse`.`warehouse_fax` is null\n"
+            + "    or (( `warehouse`.`warehouse_fax` IS NULL )\n"
             + "    and `warehouse`.`wa_address1` = '234 West Covina Pkwy'\n"
             + "    and `warehouse`.`warehouse_name` = 'Freeman And Co'))\n"
             + "and\n"
@@ -2291,12 +2293,11 @@ public class NonEmptyTest extends BatchTestCase {
         List<RolapMember> list = ssmrch.mapMemberToChildren.get(
             ca, scf.getMemberChildrenConstraint(null));
         assertNull("children of [CA] are not in cache", list);
-        list = ssmrch.mapMemberToChildren.get(
-            ca, scf.getChildByNameConstraint(
-                ca,
-                new Id.NameSegment("San Francisco")));
-        assertNotNull("child [San Francisco] of [CA] is in cache", list);
-        assertEquals("[San Francisco] expected", sf, list.get(0));
+
+        Collection caChildren = ssmrch.mapParentToNamedChildren.get(ca);
+
+        assertNotNull("child [San Francisco] of [CA] is in cache", caChildren);
+        assertTrue("[San Francisco] expected", caChildren.contains(sf));
     }
 
     /**
@@ -4798,14 +4799,6 @@ public class NonEmptyTest extends BatchTestCase {
             mdx,
             expected,
             true);
-    }
-
-    void clearAndHardenCache(MemberCacheHelper helper) {
-        helper.mapLevelToMembers.setCache(
-            new HardSmartCache<Pair<RolapLevel, Object>, List<RolapMember>>());
-        helper.mapMemberToChildren.setCache(
-            new HardSmartCache<Pair<RolapMember, Object>, List<RolapMember>>());
-        helper.mapKeyToMember.clear();
     }
 
     SmartMemberReader getSmartMemberReader(String hierName) {
