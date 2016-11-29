@@ -602,6 +602,9 @@ public class RolapResult extends ResultBase {
 
             return batchingReader.loadAggregations();
         } else {
+            execution.setCellCacheHitCount(batchingReader.getHitCount());
+            execution.setCellCacheMissCount(batchingReader.getMissCount());
+            execution.setCellCachePendingCount(batchingReader.getPendingCount());
             return false;
         }
     }
