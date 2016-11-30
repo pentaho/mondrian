@@ -27,7 +27,6 @@
     <dependency.oss-licenses.revision>7.1-SNAPSHOT</dependency.oss-licenses.revision>
     <jlfgr.version>1.0</jlfgr.version>
     <guava.version>17.0</guava.version>
-    <esapi.version>2.0.1</esapi.version>
   </properties>
   <dependencies>
     <dependency>
