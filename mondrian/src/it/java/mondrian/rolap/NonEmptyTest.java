@@ -5186,7 +5186,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `store`.`store_country`,\n"
             + "    `store`.`store_state`\n"
             + "having\n"
-            + "    UPPER(c1) REGEXP '.*CA.*'\n"
+            + "    UPPER(c1) REGEXP '.*CA.*' AND UPPER(c1) IS NOT NULL\n"
             + "order by\n"
             + (TestContext.instance().getDialect().requiresOrderByAlias()
                 ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
@@ -5212,7 +5212,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `store`.`store_country`,\n"
             + "    `store`.`store_state`\n"
             + "having\n"
-            + "    UPPER(c1) REGEXP '.*CA.*'\n"
+            + "    UPPER(c1) REGEXP '.*CA.*' AND UPPER(c1) IS NOT NULL\n"
             + "order by\n"
             + (TestContext.instance().getDialect().requiresOrderByAlias()
                 ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
@@ -5230,7 +5230,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    \"store\".\"store_country\",\n"
             + "    \"store\".\"store_state\"\n"
             + "having\n"
-            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i') AND \"store\".\"store_state\" IS NOT NULL\n"
             + "order by\n"
             + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
             + "    \"store\".\"store_state\" ASC NULLS LAST";
@@ -5253,7 +5253,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    \"store\".\"store_country\",\n"
             + "    \"store\".\"store_state\"\n"
             + "having\n"
-            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i') AND \"store\".\"store_state\" IS NOT NULL\n"
             + "order by\n"
             + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
             + "    \"store\".\"store_state\" ASC NULLS LAST";
@@ -5379,7 +5379,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `store`.`store_country`,\n"
             + "    `store`.`store_state`\n"
             + "having\n"
-            + "    UPPER(c1) REGEXP '.*CA.*'\n"
+            + "    UPPER(c1) REGEXP '.*CA.*' AND UPPER(c1) IS NOT NULL\n"
             + "order by\n"
             + (TestContext.instance().getDialect().requiresOrderByAlias()
                 ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
@@ -5402,7 +5402,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `store`.`store_country`,\n"
             + "    `store`.`store_state`\n"
             + "having\n"
-            + "    UPPER(c1) REGEXP '.*CA.*'\n"
+            + "    UPPER(c1) REGEXP '.*CA.*' AND UPPER(c1) IS NOT NULL\n"
             + "order by\n"
             + (TestContext.instance().getDialect().requiresOrderByAlias()
                 ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
@@ -5420,7 +5420,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    \"store\".\"store_country\",\n"
             + "    \"store\".\"store_state\"\n"
             + "having\n"
-            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i') AND \"store\".\"store_state\" IS NOT NULL\n"
             + "order by\n"
             + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
             + "    \"store\".\"store_state\" ASC NULLS LAST";
@@ -5440,7 +5440,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    \"store\".\"store_country\",\n"
             + "    \"store\".\"store_state\"\n"
             + "having\n"
-            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i') AND \"store\".\"store_state\" IS NOT NULL\n"
             + "order by\n"
             + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
             + "    \"store\".\"store_state\" ASC NULLS LAST";

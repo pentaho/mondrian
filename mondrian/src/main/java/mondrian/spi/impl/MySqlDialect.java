@@ -321,8 +321,16 @@ public class MySqlDialect extends JdbcDialectImpl {
         sb.append(" REGEXP ");
         if (caseSensitive) {
             quoteStringLiteral(sb, javaRegex);
+            sb.append(" AND ");
+            sb.append(source);
+            sb.append(" IS NOT NULL");
         } else {
             quoteStringLiteral(sb, javaRegex.toUpperCase());
+            sb.append(" AND ");
+            sb.append("UPPER(");
+            sb.append(source);
+            sb.append(")");
+            sb.append(" IS NOT NULL");
         }
         return sb.toString();
     }

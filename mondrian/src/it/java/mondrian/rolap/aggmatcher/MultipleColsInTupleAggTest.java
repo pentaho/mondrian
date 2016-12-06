@@ -215,7 +215,7 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
                   + "    `test_lp_xx2_fact`.`prodname`,\n"
                   + "    `product_csv`.`color`\n"
                   + "having\n"
-                  + "    UPPER(c7) REGEXP '.*TWO.*'\n"
+                  + "    UPPER(c7) REGEXP '.*TWO.*' AND UPPER(c7) IS NOT NULL\n"
                   + "order by\n"
                   + (TestContext.instance().getDialect().requiresOrderByAlias()
                       ? "    ISNULL(`c2`) ASC, `c2` ASC,\n"

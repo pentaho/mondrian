@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.spi.impl;
 
@@ -130,6 +130,9 @@ public class OracleDialect extends JdbcDialectImpl {
         sb.append(", ");
         quoteStringLiteral(sb, suffix);
         sb.append(")");
+        sb.append(" AND ");
+        sb.append(source);
+        sb.append(" IS NOT NULL");
         return sb.toString();
     }
 

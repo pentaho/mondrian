@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2015 Pentaho and others
+// Copyright (C) 2012-2016 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -212,8 +212,16 @@ public class ImpalaDialect extends HiveDialect {
         sb.append(" REGEXP ");
         if (caseSensitive) {
             quoteStringLiteral(sb, javaRegex);
+            sb.append(" AND ");
+            sb.append(source);
+            sb.append(" IS NOT NULL");
         } else {
             quoteStringLiteral(sb, javaRegex.toUpperCase());
+            sb.append(" AND ");
+            sb.append("UPPER(");
+            sb.append(source);
+            sb.append(")");
+            sb.append(" IS NOT NULL");
         }
         return sb.toString();
     }
