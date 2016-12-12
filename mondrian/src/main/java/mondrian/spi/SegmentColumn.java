@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
 
 package mondrian.spi;
@@ -28,7 +28,7 @@ import java.util.SortedSet;
 public class SegmentColumn implements Serializable {
     private static final long serialVersionUID = -5227838916517784720L;
     public final String columnExpression;
-    public final int valueCount;
+    public final long valueCount;
     public final SortedSet<Comparable> values;
     private final int hashCode;
 
@@ -52,7 +52,7 @@ public class SegmentColumn implements Serializable {
      */
     public SegmentColumn(
         String columnExpression,
-        int valueCount,
+        long valueCount,
         SortedSet<Comparable> valueList)
     {
         this.columnExpression = columnExpression;
@@ -139,7 +139,7 @@ public class SegmentColumn implements Serializable {
      * @return Number of distinct values, including null, that occur for this
      * column
      */
-    public int getValueCount() {
+    public long getValueCount() {
         return valueCount;
     }
 }

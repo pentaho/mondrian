@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
 
 package mondrian.rolap;
@@ -26,19 +26,19 @@ import javax.sql.DataSource;
  */
 public class RolapStatisticsCache {
     private final RolapStar star;
-    private final Map<List, Integer> columnMap = new HashMap<List, Integer>();
-    private final Map<List, Integer> tableMap = new HashMap<List, Integer>();
-    private final Map<String, Integer> queryMap =
-        new HashMap<String, Integer>();
+    private final Map<List, Long> columnMap = new HashMap<List, Long>();
+    private final Map<List, Long> tableMap = new HashMap<List, Long>();
+    private final Map<String, Long> queryMap =
+        new HashMap<String, Long>();
 
     public RolapStatisticsCache(RolapStar star) {
         this.star = star;
     }
 
-    public int getRelationCardinality(
+    public long getRelationCardinality(
         MondrianDef.Relation relation,
         String alias,
-        int approxRowCount)
+        long approxRowCount)
     {
         if (approxRowCount >= 0) {
             return approxRowCount;
@@ -55,13 +55,13 @@ public class RolapStatisticsCache {
         }
     }
 
-    private int getTableCardinality(
+    private long getTableCardinality(
         String catalog,
         String schema,
         String table)
     {
         final List<String> key = Arrays.asList(catalog, schema, table);
-        int rowCount = -1;
+        long rowCount = -1;
         if (tableMap.containsKey(key)) {
             rowCount = tableMap.get(key);
         } else {
@@ -93,8 +93,8 @@ public class RolapStatisticsCache {
         return rowCount;
     }
 
-    private int getQueryCardinality(String sql) {
-        int rowCount = -1;
+    private long getQueryCardinality(String sql) {
+        long rowCount = -1;
         if (queryMap.containsKey(sql)) {
             rowCount = queryMap.get(sql);
         } else {
@@ -121,10 +121,10 @@ public class RolapStatisticsCache {
         return rowCount;
     }
 
-    public int getColumnCardinality(
+    public long getColumnCardinality(
         MondrianDef.Relation relation,
         MondrianDef.Expression expression,
-        int approxCardinality)
+        long approxCardinality)
     {
         if (approxCardinality >= 0) {
             return approxCardinality;
@@ -148,14 +148,14 @@ public class RolapStatisticsCache {
         }
     }
 
-    private int getColumnCardinality(
+    private long getColumnCardinality(
         String catalog,
         String schema,
         String table,
         String column)
     {
         final List<String> key = Arrays.asList(catalog, schema, table, column);
-        int rowCount = -1;
+        long rowCount = -1;
         if (columnMap.containsKey(key)) {
             rowCount = columnMap.get(key);
         } else {

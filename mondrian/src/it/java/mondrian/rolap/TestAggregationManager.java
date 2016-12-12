@@ -2773,7 +2773,7 @@ public class TestAggregationManager extends BatchTestCase {
         AggStar aggStarSpy = spy(
             getAggStar(star, "agg_c_10_sales_fact_1997"));
         // make sure the test AggStar will be prioritized first
-        when(aggStarSpy.getSize()).thenReturn(0);
+        when(aggStarSpy.getSize()).thenReturn(0l);
         context.getConnection().getSchemaReader()
             .getSchema().getStar("sales_fact_1997").addAggStar(aggStarSpy);
         boolean[] rollup = { false };
@@ -2848,7 +2848,7 @@ public class TestAggregationManager extends BatchTestCase {
         AggStar aggStarSpy = spy(
             getAggStar(star, "agg_c_special_sales_fact_1997"));
         // make sure the test AggStar will be prioritized first
-        when(aggStarSpy.getSize()).thenReturn(0);
+        when(aggStarSpy.getSize()).thenReturn(0l);
         context.getConnection().getSchemaReader()
             .getSchema().getStar("sales_fact_1997").addAggStar(aggStarSpy);
 
@@ -2945,7 +2945,7 @@ public class TestAggregationManager extends BatchTestCase {
         AggStar aggStarSpy = spy(
             getAggStar(star, "agg_g_ms_pcat_sales_fact_1997"));
         // make sure the test AggStar will be prioritized first
-        when(aggStarSpy.getSize()).thenReturn(0);
+        when(aggStarSpy.getSize()).thenReturn(0l);
         context.getConnection().getSchemaReader()
             .getSchema().getStar("sales_fact_1997").addAggStar(aggStarSpy);
         boolean[] rollup = { false };

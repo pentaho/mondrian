@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2016 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 12 August, 2001
@@ -30,7 +30,7 @@ import java.lang.ref.SoftReference;
 import java.sql.Connection;
 import java.sql.*;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.sql.DataSource;
 
@@ -433,7 +433,7 @@ public class RolapStar {
      */
     public void addAggStar(AggStar aggStar) {
         // Add it before the first AggStar which is larger, if there is one.
-        int size = aggStar.getSize();
+        long size = aggStar.getSize();
         ListIterator<AggStar> lit = aggStars.listIterator();
         while (lit.hasNext()) {
             AggStar as = lit.next();
@@ -878,8 +878,8 @@ public class RolapStar {
          * The estimated cardinality of the column.
          * {@link Integer#MIN_VALUE} means unknown.
          */
-        private AtomicInteger approxCardinality = new AtomicInteger(
-            Integer.MIN_VALUE);
+        private AtomicLong approxCardinality = new AtomicLong(
+            Long.MIN_VALUE);
 
         private Column(
             String name,
@@ -1018,7 +1018,7 @@ public class RolapStar {
          *
          * @return the column cardinality.
          */
-        public int getCardinality() {
+        public long getCardinality() {
             if (approxCardinality.get() < 0) {
                 approxCardinality.set(
                     table.star.getStatisticsCache().getColumnCardinality(
