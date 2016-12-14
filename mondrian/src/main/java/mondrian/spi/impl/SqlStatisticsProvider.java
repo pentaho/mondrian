@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
 
 package mondrian.spi.impl;
@@ -25,7 +25,7 @@ import javax.sql.DataSource;
  * SQL queries to count rows and distinct values.
  */
 public class SqlStatisticsProvider implements StatisticsProvider {
-    public int getTableCardinality(
+    public long getTableCardinality(
         Dialect dialect,
         DataSource dataSource,
         String catalog,
@@ -59,7 +59,7 @@ public class SqlStatisticsProvider implements StatisticsProvider {
         }
     }
 
-    public int getQueryCardinality(
+    public long getQueryCardinality(
         Dialect dialect,
         DataSource dataSource,
         String sql,
@@ -99,7 +99,7 @@ public class SqlStatisticsProvider implements StatisticsProvider {
         }
     }
 
-    public int getColumnCardinality(
+    public long getColumnCardinality(
         Dialect dialect,
         DataSource dataSource,
         String catalog,

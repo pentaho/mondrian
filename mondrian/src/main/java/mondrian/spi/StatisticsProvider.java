@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
 
 package mondrian.spi;
@@ -42,7 +42,7 @@ public interface StatisticsProvider {
      * @return Estimated number of rows in table, or -1 if there
      * is no estimate
      */
-    int getTableCardinality(
+    long getTableCardinality(
         Dialect dialect,
         DataSource dataSource,
         String catalog,
@@ -61,7 +61,7 @@ public interface StatisticsProvider {
      * @return Estimated number of rows returned by query, or -1 if there
      * is no estimate
      */
-    int getQueryCardinality(
+    long getQueryCardinality(
         Dialect dialect,
         DataSource dataSource,
         String sql,
@@ -81,7 +81,7 @@ public interface StatisticsProvider {
      * @return Estimated number of rows in table, or -1 if there
      * is no estimate
      */
-    int getColumnCardinality(
+    long getColumnCardinality(
         Dialect dialect,
         DataSource dataSource,
         String catalog,

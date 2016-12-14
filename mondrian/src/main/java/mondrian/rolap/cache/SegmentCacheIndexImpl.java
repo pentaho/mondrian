@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2015 Pentaho Corporation.
+// Copyright (c) 2002-2016 Pentaho Corporation.
 // All Rights Reserved.
 */
 package mondrian.rolap.cache;
@@ -868,7 +868,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         for (Pair<SegmentHeader, List<SegmentColumn>> pair : matchingHeaders) {
             for (SegmentColumn column : pair.right) {
                 if (!columnNameList.contains(column.columnExpression)) {
-                    final int valueCount = column.getValueCount();
+                    final long valueCount = column.getValueCount();
                     if (valueCount <= 0) {
                         // Impossible to safely roll up. If we don't know the
                         // number of values, we don't know that we have all of
