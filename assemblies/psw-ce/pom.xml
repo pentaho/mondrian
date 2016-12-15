@@ -226,12 +226,6 @@
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>xerces</groupId>
-      <artifactId>xercesImpl</artifactId>
-      <version>${xercesImpl.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
       <groupId>pentaho</groupId>
       <artifactId>oss-licenses</artifactId>
       <version>${dependency.oss-licenses.revision}</version>
