@@ -4,20 +4,19 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.tui;
 
+import mondrian.olap.MondrianException;
 import mondrian.olap.Util;
 import mondrian.util.XmlParserFactoryProducer;
 
-import org.apache.xerces.dom.DocumentImpl;
-import org.apache.xerces.impl.Constants;
-import org.apache.xerces.parsers.DOMParser;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
-
 import org.w3c.dom.*;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.*;
 
 import java.io.*;
@@ -59,8 +58,15 @@ public class XmlUtil {
     public static final String DEFER_NODE_EXPANSION =
         "http://apache.org/xml/features/dom/defer-node-expansion";
 
-    public static final String SCHEMA_LOCATION =
-        Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_LOCATION;
+    public static final String PRETTY_PRINT_PROPERTY = "format-pretty-print";
+    public static final String XML_DECLARATION_PROPERTY = "xml-declaration";
+
+    private static final String JAXP_SCHEMA_LANGUAGE_PROP_NAME =
+            "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
+    private static final String JAXP_SCHEMA_LANGUAGE_PROP_VALUE =
+            "http://www.w3.org/2001/XMLSchema";
+    private static final String JAXP_SCHEMA_LOCATION_PROP_NAME =
+            "http://java.sun.com/xml/jaxp/properties/schemaSource";
 
     /**
      * This is the xslt that can extract the "data" part of a SOAP
@@ -398,10 +404,18 @@ public class XmlUtil {
         }
     }
 
-    public static Document newDocument(Node firstElement, boolean deepcopy) {
-        Document newDoc = new DocumentImpl();
-        newDoc.appendChild(newDoc.importNode(firstElement, deepcopy));
-        return newDoc;
+    public static Document newDocument(Node firstElement, boolean deepcopy)
+    {
+        try {
+            DocumentBuilderFactory factory =
+                XmlParserFactoryProducer.createSecureDocBuilderFactory();
+            DocumentBuilder documentBuilder = factory.newDocumentBuilder();
+            Document newDoc = documentBuilder.newDocument();
+            newDoc.appendChild(newDoc.importNode(firstElement, deepcopy));
+            return newDoc;
+        } catch (ParserConfigurationException e) {
+            throw new MondrianException(e);
+        }
     }
 
 
@@ -414,31 +428,50 @@ public class XmlUtil {
      * based validation of the instance Document.
      *
      */
-    public static DOMParser getParser(
+    private static DocumentBuilder getParser(
         String schemaLocationPropertyValue,
         EntityResolver entityResolver,
+        ErrorHandler errorHandler,
         boolean validate)
         throws SAXNotRecognizedException, SAXNotSupportedException
     {
         boolean doingValidation =
             (validate || (schemaLocationPropertyValue != null));
 
-        DOMParser parser = new DOMParser();
-
-        parser.setEntityResolver(entityResolver);
-        parser.setErrorHandler(new SaxErrorHandler());
-        parser.setFeature(DEFER_NODE_EXPANSION, false);
-        parser.setFeature(NAMESPACES_FEATURE_ID, true);
-        parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, doingValidation);
-        parser.setFeature(VALIDATION_FEATURE_ID, doingValidation);
-
-        if (schemaLocationPropertyValue != null) {
-            parser.setProperty(
-                SCHEMA_LOCATION,
-                schemaLocationPropertyValue.replace('\\', '/'));
+        try {
+            DocumentBuilderFactory dbf =
+                XmlParserFactoryProducer.createSecureDocBuilderFactory();
+            dbf.setFeature(DEFER_NODE_EXPANSION, false);
+            dbf.setFeature(NAMESPACES_FEATURE_ID, true);
+            dbf.setFeature(SCHEMA_VALIDATION_FEATURE_ID, doingValidation);
+            dbf.setFeature(VALIDATION_FEATURE_ID, doingValidation);
+            if (schemaLocationPropertyValue != null) {
+                dbf.setAttribute(
+                    JAXP_SCHEMA_LANGUAGE_PROP_NAME,
+                    JAXP_SCHEMA_LANGUAGE_PROP_VALUE);
+                dbf.setAttribute(
+                    JAXP_SCHEMA_LOCATION_PROP_NAME,
+                    schemaLocationPropertyValue.replace('\\', '/'));
+            }
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            db.setEntityResolver(entityResolver);
+            db.setErrorHandler(errorHandler);
+            return db;
+        } catch (ParserConfigurationException e) {
+            throw new MondrianException(e);
         }
+    }
 
-        return parser;
+    public static DocumentBuilder getParser(
+        String schemaLocationPropertyValue,
+        EntityResolver entityResolver,
+        boolean validate)
+        throws SAXNotRecognizedException, SAXNotSupportedException
+    {
+        ErrorHandler errorHandler = new SaxErrorHandler();
+        return getParser(
+            schemaLocationPropertyValue, entityResolver,
+            errorHandler, validate);
     }
 
     /**
@@ -447,7 +480,7 @@ public class XmlUtil {
      *
      */
     private static void checkForParseError(
-        final DOMParser parser,
+        ErrorHandler errorHandler,
         Throwable t)
     {
         if (Util.IBM_JVM) {
@@ -456,7 +489,6 @@ public class XmlUtil {
             return;
         }
 
-        final ErrorHandler errorHandler = parser.getErrorHandler();
         if (errorHandler instanceof SaxErrorHandler) {
             final SaxErrorHandler saxEH = (SaxErrorHandler) errorHandler;
             final List<SaxErrorHandler.ErrorInfo> errors = saxEH.getErrors();
@@ -470,8 +502,8 @@ public class XmlUtil {
         }
     }
 
-    private static void checkForParseError(final DOMParser parser) {
-        checkForParseError(parser, null);
+    private static void checkForParseError(ErrorHandler errorHandler) {
+        checkForParseError(errorHandler, null);
     }
 
 
@@ -521,16 +553,17 @@ public class XmlUtil {
     {
         InputSource source = new InputSource(in);
 
-        DOMParser parser = XmlUtil.getParser(null, null, false);
+        ErrorHandler errorHandler = new SaxErrorHandler();
+        DocumentBuilder parser =
+            XmlUtil.getParser(null, null, errorHandler, false);
         try {
-            parser.parse(source);
-            checkForParseError(parser);
+            Document document = parser.parse(source);
+            checkForParseError(errorHandler);
+            return document;
         } catch (SAXParseException ex) {
-            checkForParseError(parser, ex);
+            checkForParseError(errorHandler, ex);
+            return null;
         }
-
-        Document document = parser.getDocument();
-        return document;
     }
 
 
@@ -582,7 +615,6 @@ public class XmlUtil {
         return nodes;
     }
 
-
     /**
      * Convert a Node to a String.
      *
@@ -591,31 +623,35 @@ public class XmlUtil {
         if (node == null) {
             return null;
         }
-        try {
-            Document doc = node.getOwnerDocument();
-            OutputFormat format;
-            if (doc != null) {
-                format = new OutputFormat(doc, null, prettyPrint);
-            } else {
-                format = new OutputFormat("xml", null, prettyPrint);
-                format.setLineWidth(0); // don't wrap lines
-            }
+        try (Writer writer = new StringWriter(1000)) {
+            DOMImplementationRegistry registry =
+                DOMImplementationRegistry.newInstance();
+            DOMImplementationLS impl =
+                (DOMImplementationLS) registry
+                    .getDOMImplementation("XML 3.0 LS 3.0");
+
+            LSSerializer serializer = impl.createLSSerializer();
+            LSOutput output = impl.createLSOutput();
+            output.setCharacterStream(writer);
+
             if (prettyPrint) {
-                format.setLineSeparator(LINE_SEP);
+                serializer.getDomConfig()
+                    .setParameter(PRETTY_PRINT_PROPERTY, true);
+                serializer.setNewLine(LINE_SEP);
             } else {
-                format.setLineSeparator("");
+                serializer.setNewLine("");
             }
-            StringWriter writer = new StringWriter(1000);
-            XMLSerializer serial = new XMLSerializer(writer, format);
-            serial.asDOMSerializer();
+
             if (node instanceof Document) {
-                serial.serialize((Document) node);
+                serializer.write(node, output);
             } else if (node instanceof Element) {
-                format.setOmitXMLDeclaration(true);
-                serial.serialize((Element) node);
+                serializer.getDomConfig()
+                    .setParameter(XML_DECLARATION_PROPERTY, false);
+                serializer.write(node, output);
             } else if (node instanceof DocumentFragment) {
-                format.setOmitXMLDeclaration(true);
-                serial.serialize((DocumentFragment) node);
+                serializer.getDomConfig()
+                    .setParameter(XML_DECLARATION_PROPERTY, false);
+                serializer.write(node, output);
             } else if (node instanceof Text) {
                 Text text = (Text) node;
                 return text.getData();
@@ -682,59 +718,6 @@ public class XmlUtil {
         }
     }
 
-    /**
-     * Get the Xerces version being used.
-     *
-     * @return Xerces version being used
-     */
-    public static String getXercesVersion() {
-        try {
-            return org.apache.xerces.impl.Version.getVersion();
-        } catch (java.lang.NoClassDefFoundError ex) {
-            return "Xerces-J 2.2.0";
-        }
-    }
-
-    /**
-     * Get the number part of the Xerces Version string.
-     *
-     * @return number part of the Xerces Version string
-     */
-    public static String getXercesVersionNumberString() {
-        String version = getXercesVersion();
-        int index = version.indexOf(' ');
-        return (index == -1)
-            ? "0.0.0" : version.substring(index + 1);
-    }
-
-    private static int[] versionNumbers = null;
-
-    /**
-     * Gets the Xerces version numbers as a three part array of ints where
-     * the first element is the major release number, the second is the
-     * minor release number, and the third is the patch number.
-     *
-     * @return Xerces version number as int array
-     */
-    public static synchronized int[] getXercesVersionNumbers() {
-        if (versionNumbers == null) {
-            int[] verNums = new int[3];
-            String verNumStr = getXercesVersionNumberString();
-            int index = verNumStr.indexOf('.');
-            verNums[0] = Integer.parseInt(verNumStr.substring(0, index));
-
-            verNumStr = verNumStr.substring(index + 1);
-            index = verNumStr.indexOf('.');
-            verNums[1] = Integer.parseInt(verNumStr.substring(0, index));
-
-            verNumStr = verNumStr.substring(index + 1);
-            verNums[2] = Integer.parseInt(verNumStr);
-
-            versionNumbers = verNums;
-        }
-
-        return versionNumbers;
-    }
 
     /**
      * I could not get Xerces 2.2 to validate. So, I hard coded allowing
@@ -751,27 +734,6 @@ public class XmlUtil {
             Boolean.getBoolean(ALWAYS_ATTEMPT_VALIDATION);
     }
 
-    /**
-     * Returns whether the XML parser supports validation.
-     *
-     * <p>I could not get validation to work with Xerces 2.2 so I put in
-     * this check. If you want to test on an earlier version of Xerces
-     * simply define the above property:
-     *   "mondrian.xml.always.attempt.validation",
-     * to true.
-     *
-     * @return whether the XML parser supports validation
-     */
-    public static boolean supportsValidation() {
-        if (alwaysAttemptValidation) {
-            return true;
-        } else {
-            int[] verNums = getXercesVersionNumbers();
-            return (verNums[0] >= 3)
-                || ((verNums[0] == 2) && (verNums[1] >= 6));
-        }
-    }
-
     public static void validate(
         Document doc,
         String schemaLocationPropertyValue,
@@ -779,14 +741,27 @@ public class XmlUtil {
         throws IOException,
         SAXException
     {
-        OutputFormat format  = new OutputFormat(doc, null, true);
-        StringWriter writer = new StringWriter(1000);
-        XMLSerializer serial = new XMLSerializer(writer, format);
-        serial.asDOMSerializer();
-        serial.serialize(doc);
-        String docString = writer.toString();
+        try (Writer writer = new StringWriter(1000)) {
+            DOMImplementationRegistry registry =
+                    DOMImplementationRegistry.newInstance();
+            DOMImplementationLS impl =
+                    (DOMImplementationLS) registry
+                            .getDOMImplementation("XML 3.0 LS 3.0");
 
-        validate(docString, schemaLocationPropertyValue, resolver);
+            LSSerializer serializer = impl.createLSSerializer();
+            LSOutput output = impl.createLSOutput();
+            output.setCharacterStream(writer);
+
+            serializer.write(doc, output);
+
+            String docString = writer.toString();
+            validate(docString, schemaLocationPropertyValue, resolver);
+        } catch (IllegalAccessException |
+                InstantiationException |
+                ClassNotFoundException e)
+        {
+            throw new MondrianException(e);
+        }
     }
 
     public static void validate(
@@ -799,14 +774,16 @@ public class XmlUtil {
         if (resolver == null) {
             resolver = new Resolver();
         }
-        DOMParser parser =
-            getParser(schemaLocationPropertyValue, resolver, true);
+        ErrorHandler errorHandler = new SaxErrorHandler();
+        DocumentBuilder parser =
+            getParser(
+                schemaLocationPropertyValue, resolver, errorHandler, true);
 
         try {
             parser.parse(new InputSource(new StringReader(docStr)));
-            checkForParseError(parser);
+            checkForParseError(errorHandler);
         } catch (SAXParseException ex) {
-            checkForParseError(parser, ex);
+            checkForParseError(errorHandler, ex);
         }
     }
 

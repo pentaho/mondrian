@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2002-2014 Pentaho and others
+// Copyright (C) 2002-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.xmla;
@@ -142,7 +142,7 @@ System.out.println("requestText=" + requestText);
         boolean validate)
         throws Exception
     {
-        if (validate && XmlUtil.supportsValidation()) {
+        if (validate) {
             if (XmlaSupport.validateSoapXmlaUsingXpath(bytes)) {
                 if (DEBUG) {
                     System.out.println("XML Data is Valid");
@@ -280,7 +280,7 @@ System.out.println("Got CONTINUE");
 
     protected void addDatasourceInfoResponseKey(Properties props) {
         XmlaTestContext s = new XmlaTestContext();
-        String con = s.getConnectString().replaceAll("&amp;","&");
+        String con = s.getConnectString().replaceAll("&amp;", "&");
         PropertyList pl = Util.parseConnectString(con);
         pl.remove(RolapConnectionProperties.Jdbc.name());
         pl.remove(RolapConnectionProperties.JdbcUser.name());
@@ -617,11 +617,9 @@ System.out.println("Got CONTINUE");
             XmlaSupport.processXmla(
                 xmlaReqDoc, filterConnectString(connectString),
                 catalogNameUrls, role, SERVER_CACHE);
-        if (XmlUtil.supportsValidation()
-            // We can't validate against the schema when the content type
-            // is Data because it doesn't respect the XDS.
-            && !content.equals(XmlaConstants.Content.Data))
-        {
+        // We can't validate against the schema when the content type
+        // is Data because it doesn't respect the XDS.
+        if (content != XmlaConstants.Content.Data) {
             // Validating requires a <?xml header.
             String response = new String(bytes);
             if (!response.startsWith("<?xml version=\"1.0\"?>")) {
@@ -656,7 +654,7 @@ System.out.println("Got CONTINUE");
 
         validate(
             bytes, expectedDoc, testContext, replace,
-            content.equals(XmlaConstants.Content.Data) ? false : true);
+                content != XmlaConstants.Content.Data);
         Util.discard(entry);
     }
 
