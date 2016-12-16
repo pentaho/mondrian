@@ -1,0 +1,597 @@
+<html xmlns="http://www.w3.org/1999/html">
+<!--
+  == This software is subject to the terms of the Eclipse Public License v1.0
+  == Agreement, available at the following URL:
+  == http://www.eclipse.org/legal/epl-v10.html.
+  == You must accept the terms of that agreement to use this software.
+  ==
+  == Copyright (C) 2005-2016 Pentaho and others
+  == All Rights Reserved.
+  -->
+
+<head>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	<title>Pentaho Analysis Services: Developer's guide</title>
+</head>
+<body>
+<!-- doc2web start -->
+
+<!-- page title -->
+<div class="contentheading">Developer's Guide</div>
+<!-- end page title -->
+
+<hr noshade size="1">
+
+<p>There are several ways to get Mondrian running. The easiest is to download a
+binary release, as described in the <a href="install.html">installation guide</a>.
+But you can also build Mondrian from its source code. This document describes
+how to do that, how to learn about Mondrian's inner workings, and the guidelines
+you'll need to follow if you want to contribute to the Mondrian project.</p>
+
+<h2>Getting the source code<a name="Getting_the_source_code">&nbsp;</a></h2>
+
+<p>First, you need to get a copy of the source code. You can get the source code
+from SourceForge or from the project's Github repository.</p>
+
+<h3>Download the latest release<a name="3_3_Download_the_latest_source_release">&nbsp;</a></h3>
+
+<p>Download the latest <code>mondrian-<i>version</i>.zip</code> from <a href="http://sourceforge.net/projects/mondrian">
+SourceForge</a>, and unzip. Now find the <code>mondrian-<i>version</i>-src.zip</code>
+inside this distribution, and unzip it. The directory you unzip this source code to &mdash;
+typically something like <code>C:\open\mondrian</code>
+or <code>/usr/local/mondrian-<i>x.y.z</i></code> &mdash; will be denoted <code>
+<i>${project.location}</i></code> later in this document.</p>
+
+<h3>Clone the Github repository<a name="3_4_Connect_to_the_GitHub_repository">&nbsp;</a></h3>
+<p>Download the Git client from
+  <a target="_parent" href="http://www.git-scm.com/downloads">Git</a>.</p>
+  <p>Clone the Git repository.</p><pre>
+<code>$ git clone https://github.com/pentaho/mondrian.git</code></pre><pre>
+    <code>Cloning into 'mondrian'...
+    remote: Counting objects: 51661, done.
+    remote: Compressing objects: 100% (9979/9979), done.
+    remote: Total 51661 (delta 37833), reused 51512 (delta 37691)
+    Receiving objects: 100% (51661/51661), 294.25 MiB | 604 KiB/s, done.
+    Resolving deltas: 100% (37833/37833), done.</code></pre>
+
+
+<h2>Building the code</h2>
+
+<h3>Setting up your environment</h3>
+<ul>
+    <li>Download and install a Java SDK supporting Java 1.7+.</li>
+    <li>Download and install Ant version 1.7 or later.  You can download Ant from <a href="http://ant.apache.org/bindownload.cgi">Apache</a></li>
+</ul>
+
+<p>From the root of the mondrian project, launch ant to see the build instructions.</p>
+
+<blockquote>
+<pre>
+<code>
+$ ant
+Buildfile: [path to mondrian]/build.xml
+
+help:
+     [echo] 
+     [echo]       You must specify a specific project target when using the ANT build.
+     [echo]       Targets are one of the following:
+     [echo] 
+     [echo]       - help
+     [echo]           This is the help.
+     [echo] 
+     [echo]       - info
+     [echo]           Shows configuration info.
+     [echo] 
+     [echo]       - binzip
+     [echo]           Compiles Mondrian and wraps everything in a neat little package,
+     [echo]           including documentation.
+     [echo] 
+     [echo]       - workbench-dist
+     [echo]           Compiles PSW and wraps everything in a neat little package.
+     [echo] 
+     [echo]       - jar
+     [echo]           Creates a Mondrian jar.
+     [echo] 
+     [echo]       - workbench
+     [echo]           Creates Mondrian and workbench jars.
+     [echo] 
+     [echo]       - clean
+     [echo]           Deletes build output.
+     [echo] 
+     [echo]       - clean-deep
+     [echo]           Clean build output and generated sources.
+     [echo] 
+     [echo]       - javadoc
+     [echo]           Create the API documentation.
+     [echo] 
+     [echo]       - test
+     [echo]           Runs the tests. Requires FoodMart to be installed. (see below)
+     [echo] 
+     [echo]       - jacoco
+     [echo]           Runs the tests with jacoco to measure coverage. Requires FoodMart
+     [echo]           to be installed. (see below)
+     [echo] 
+     [echo]       -load-foodmart
+     [echo]           Will load the test DB FoodMart using the JDBC parameters specified.
+     [echo]           (see below)
+     [echo] 
+     [echo]       To run the tests, you must have FoodMart available in a database.
+     [echo]       You can pass the DB configuration through the command line arguments,
+     [echo]       like so:
+     [echo] 
+     [echo]           ant -Dmondrian.foodmart.jdbcURL="jdbc:mysql://localhost/foodmart" \
+     [echo]               -Dmondrian.foodmart.jdbcUser=foodmart \
+     [echo]               -Dmondrian.foodmart.jdbcPassword=foodmart \
+     [echo]               -Dmondrian.jdbcDrivers=com.mysql.jdbc.Driver \
+     [echo]               -Ddriver.classpath="/opt/mysql-connector-java-5.1.25-bin.jar" 
+     [echo]               test
+     [echo] 
+     [echo]       Alternatively, these can be written to a file at the root of the project.
+     [echo]       Create a file 'mondrian.properties' containing this:
+     [echo] 
+     [echo]           mondrian.foodmart.jdbcURL=jdbc:mysql://localhost/foodmart
+     [echo]           mondrian.foodmart.jdbcUser=foodmart
+     [echo]           mondrian.foodmart.jdbcPassword=foodmart
+     [echo]           mondrian.jdbcDrivers=com.mysql.jdbc.Driver
+     [echo]           driver.classpath=/opt/mysql-connector-java-5.1.25-bin.jar
+     [echo] 
+     [echo]       To load foodmart into your DB, you can call the 'load-foodmart' target
+     [echo]       before 'test'.
+     [echo] 
+     [echo]       The parameters can be adjusted to point to a different DB than MySQL.
+     [echo]     
+
+BUILD SUCCESSFUL
+Total time: 0 seconds
+</code>
+</pre>
+</blockquote>
+
+<h2>Installing the database</h2>
+
+<p>Before you run the regression test suite or the web application, you must
+install the standard FoodMart dataset.</p>
+
+<p>There is a target in the build script, load-foodmart, that will load the Foodmart data into an empty
+database. You can use command line parameters, or create a file called mondrian.properties to tell mondrian
+how to connect to your database. See the ant help page above for details.</p>
+
+<blockquote>
+<pre>
+<code>
+cd <i>${project.location}</i><br/>
+ant -Dmondrian.foodmart.jdbcURL="jdbc:mysql://localhost/foodmart" \
+    -Dmondrian.foodmart.jdbcUser=foodmart \
+    -Dmondrian.foodmart.jdbcPassword=foodmart \
+    -Dmondrian.jdbcDrivers=com.mysql.jdbc.Driver \
+    -Ddriver.classpath="/opt/mysql-connector-java-5.1.25-bin.jar"
+    load-foodmart
+
+Buildfile: /git/mondrian-master/build.xml
+
+info:
+     [echo] ==============================================================
+     [echo] | Mondrian configuration info                                |
+     [echo] ==============================================================
+     [echo] project.location             = /git/mondrian-master
+     [echo] jdk.home                     = ${env.JAVA_HOME}
+     [echo] log4j.configuration          = log4j.properties
+     [echo] mondrian.foodmart.catalogURL = file:/git/mondrian-master/demo/FoodMart.xml
+     [echo] mondrian.foodmart.jdbcURL    = jdbc:mysql://localhost:3306/FOODMART
+     [echo] mondrian.jdbcDrivers         = com.mysql.jdbc.Driver
+     [echo] driver.classpath (additions) = 
+     [echo] ==============================================================
+
+init:
+
+version:
+
+antcontrib.download-check:
+
+antcontrib.download:
+
+install-antcontrib:
+
+install-ivy:
+
+resolve:
+     [echo] symlink=true
+[ivy:resolve] :: Apache Ivy 2.4.0 - 20141213170938 :: http://ant.apache.org/ivy/ ::
+[ivy:resolve] :: loading settings :: url = file:/git/mondrian-master/ivysettings.xml
+[ivy:resolve] :: resolving dependencies :: pentaho#mondrian;3.12-SNAPSHOT
+[ivy:resolve]   confs: [codegen, default, sources, dist, oss-licenses, test]
+[ivy:resolve]   found commons-collections#commons-collections;3.2.2 in pentaho-mvn
+[ivy:resolve]   found commons-dbcp#commons-dbcp;1.2.1 in pentaho-mvn
+[ivy:resolve]   found commons-pool#commons-pool;1.2 in pentaho-mvn
+[ivy:resolve]   found xerces#xerces;2.0.2 in pentaho-mvn
+[ivy:resolve]   found commons-lang#commons-lang;2.4 in pentaho-mvn
+[ivy:resolve]   found commons-io#commons-io;1.4 in pentaho-mvn
+[ivy:resolve]   found commons-logging#commons-logging;1.1.1 in pentaho-mvn
+[ivy:resolve]   found commons-math#commons-math;1.1 in pentaho-mvn
+[ivy:resolve]   found org.apache.commons#commons-vfs2;2.1-20150824 in pentaho-mvn
+[ivy:resolve]   found javacup#javacup;10k in pentaho-mvn
+[ivy:resolve]   found net.java.dev.javacc#javacc;5.0 in pentaho-mvn
+[ivy:resolve]   found dom4j#dom4j;1.6.1 in pentaho-mvn
+[ivy:resolve]   found javax.validation#validation-api;1.0.0.GA in pentaho-mvn
+[ivy:resolve]   found eigenbase#eigenbase-xom;1.3.1 in pentaho-mvn
+[ivy:resolve]   found eigenbase#eigenbase-properties;1.1.2 in pentaho-mvn
+[ivy:resolve]   found eigenbase#eigenbase-resgen;1.3.1 in pentaho-mvn
+[ivy:resolve]   found sun#jlfgr;1.0 in pentaho-mvn
+[ivy:resolve]   found javax.servlet#jsp-api;2.0 in pentaho-mvn
+[ivy:resolve]   found javax.servlet#servlet-api;2.4 in pentaho-mvn
+[ivy:resolve]   found log4j#log4j;1.2.14 in pentaho-mvn
+[ivy:resolve]   found org.olap4j#olap4j;1.2.0 in pentaho-mvn
+[ivy:resolve]   found xalan#xalan;2.6.0 in pentaho-mvn
+[ivy:resolve]   found xerces#xercesImpl;2.9.1 in pentaho-mvn
+[ivy:resolve]   found pentaho#oss-licenses;6.1-SNAPSHOT in pentaho-mvn
+[ivy:resolve]   found org.olap4j#olap4j-tck;1.0.1.539 in pentaho-mvn
+[ivy:resolve]   found org.olap4j#olap4j-xmla;1.2.0 in pentaho-mvn
+[ivy:resolve]   found junit#junit;3.8.1 in pentaho-mvn
+[ivy:resolve]   found xmlunit#xmlunit;1.1 in pentaho-mvn
+[ivy:resolve]   found monetdb#monetdb-jdbc;2.6 in pentaho-mvn
+[ivy:resolve]   found org.mockito#mockito-all;1.9.5 in pentaho-mvn
+[ivy:resolve]   found mysql#mysql-connector-java;5.1.25 in pentaho-mvn
+[ivy:resolve] :: resolution report :: resolve 18507ms :: artifacts dl 55ms
+[ivy:resolve]   :: evicted modules:
+[ivy:resolve]   commons-collections#commons-collections;2.1 by [commons-collections#commons-collections;3.2.2] in [default]
+[ivy:resolve]   xerces#xercesImpl;2.0.2 by [xerces#xercesImpl;2.9.1] in [default]
+[ivy:resolve]   commons-logging#commons-logging;1.0.3 by [commons-logging#commons-logging;1.1.1] in [default]
+[ivy:resolve]   xerces#xercesImpl;2.5.0 by [xerces#xercesImpl;2.9.1] in [default]
+    ---------------------------------------------------------------------
+    |                  |            modules            ||   artifacts   |
+    |       conf       | number| search|dwnlded|evicted|| number|dwnlded|
+    ---------------------------------------------------------------------
+    |      codegen     |   0   |   0   |   0   |   0   ||   0   |   0   |
+    |      default     |   27  |   0   |   0   |   4   ||   22  |   0   |
+    |      sources     |   1   |   0   |   0   |   0   ||   1   |   0   |
+    |       dist       |   0   |   0   |   0   |   0   ||   0   |   0   |
+    |   oss-licenses   |   1   |   0   |   0   |   0   ||   1   |   0   |
+    |       test       |   7   |   2   |   0   |   0   ||   7   |   0   |
+    ---------------------------------------------------------------------
+[ivy:retrieve] :: retrieving :: pentaho#mondrian
+[ivy:retrieve]  confs: [codegen, default, sources, dist, oss-licenses, test]
+[ivy:retrieve]  0 artifacts copied, 29 already retrieved (0kB/19ms)
+[ivy:retrieve] :: retrieving :: pentaho#mondrian
+[ivy:retrieve]  confs: [codegen, default, sources, dist, oss-licenses, test]
+[ivy:retrieve]  0 artifacts copied, 1 already retrieved (0kB/12ms)
+
+prepare:
+
+define-tasks:
+
+parser:
+  [javacup] Files are up to date.
+   [javacc] Java Compiler Compiler Version 5.0 (Parser Generator)
+   [javacc] (type "javacc" with no arguments for help)
+   [javacc] Reading from file /git/mondrian-master/src/main/mondrian/parser/MdxParser.jj . . .
+   [javacc] Note: UNICODE_INPUT option is specified. Please make sure you create the parser/lexer using a Reader with the correct character encoding.
+   [javacc] File "TokenMgrError.java" is being rebuilt.
+   [javacc] File "ParseException.java" is being rebuilt.
+   [javacc] File "Token.java" is being rebuilt.
+   [javacc] File "SimpleCharStream.java" is being rebuilt.
+   [javacc] Parser generated successfully.
+
+generate.resources:
+   [resgen] /git/mondrian-master/src/main/mondrian/resource/MondrianResource.java is up to date
+   [resgen] /git/mondrian-master/build/classes/mondrian/resource/MondrianResource.properties is up to date
+   [resgen] /git/mondrian-master/src/main/mondrian/resource/MondrianResource_en_US.java is up to date
+   [resgen] /git/mondrian-master/build/classes/mondrian/resource/MondrianResource_en_US.properties is up to date
+   [resgen] /git/mondrian-master/src/main/mondrian/resource/MondrianResource_de_DE.java is up to date
+   [resgen] /git/mondrian-master/build/classes/mondrian/resource/MondrianResource_de_DE.properties is up to date
+   [resgen] /git/mondrian-master/src/main/mondrian/resource/MondrianResource_de.java is up to date
+   [resgen] /git/mondrian-master/build/classes/mondrian/resource/MondrianResource_de.properties is up to date
+   [resgen] /git/mondrian-master/src/main/mondrian/resource/MondrianResource_es_ES.java is up to date
+   [resgen] /git/mondrian-master/build/classes/mondrian/resource/MondrianResource_es_ES.properties is up to date
+
+generate.properties:
+     [java] Generating src/main/mondrian/olap/MondrianProperties.java
+     [java] Generating doc/properties.html
+     [java] Generating mondrian.properties.template
+
+def:
+
+subfloor.compile.pre:
+
+compile.pre:
+
+compile.java:
+     [echo] Compiling on JVM Version: 1.8.0_25-b17
+     [echo] include.gui=${include.gui}
+    [javac] Compiling 10 source files to /git/mondrian-master/build/classes
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.7
+    [javac] 1 warning
+     [copy] Copying 1 file to /git/mondrian-master/build/classes
+     [copy] Copying 1 file to /git/mondrian-master/build/classes
+
+compile.post:
+
+compile:
+
+clean-tests:
+
+junit.exists-check:
+     [echo] junit.available=true
+
+init-tests:
+    [mkdir] Created dir: /git/mondrian-master/test-src
+    [mkdir] Created dir: /git/mondrian-master/build/test/classes
+
+subfloor.compile-tests:
+    [javac] /git/mondrian-master/subfloor.xml:1778: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 208 source files to /git/mondrian-master/build/testclasses
+    [javac] warning: [options] bootstrap class path not set in conjunction with -source 1.7
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] Note: Some input files use unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked for details.
+    [javac] 1 warning
+     [copy] Copying 78 files to /git/mondrian-master/build/testclasses
+
+set.connectString:
+
+compile-tests:
+
+load-foodmart:
+     [echo] Driver present: true
+     [java] 11:31:26,478 INFO  [MondrianProperties] Mondrian: properties loaded from 'file=/git/mondrian-master/mondrian.properties (exists=true)'
+     [java] 11:31:26,495 INFO  [MondrianProperties] Mondrian: properties loaded from 'file:/git/mondrian-master/mondrian.properties'
+     [java] 11:31:26,495 INFO  [MondrianProperties] Mondrian: loaded 0 system properties
+     [java] 11:31:26,542 WARN  [MondrianFoodMartLoader] Starting load at: Fri Jan 22 11:31:26 EST 2016
+     [java] 11:31:26,542 INFO  [MondrianFoodMartLoader] Parameters: 
+     [java]     -tables
+     [java]     -data
+     [java]     -indexes
+     [java]     -jdbcDrivers=com.mysql.jdbc.Driver
+     [java]     -outputJdbcURL=jdbc:mysql://localhost:3306/FOODMART
+     [java]     -outputJdbcUser=foodmart
+     [java]     -outputJdbcPassword=foodmart
+     [java]     -outputJdbcSchema=
+     [java]     -outputJdbcBatchSize=50
+</code>
+</pre>
+</blockquote>
+
+<h2>Running the test suite<a name="6_Run_the_test_suite">&nbsp;</a></h2>
+
+<p>Once you have the Foodmart dataset installed in your database, you can run the test suite.
+If you were using command line arguments to configure mondrian, make sure that the arguments
+are copied again here.</p>
+
+<blockquote>
+<pre><code>
+cd <i>${project.location}</i><br/>
+ant -Dmondrian.foodmart.jdbcURL="jdbc:mysql://localhost/foodmart" \
+    -Dmondrian.foodmart.jdbcUser=foodmart \
+    -Dmondrian.foodmart.jdbcPassword=foodmart \
+    -Dmondrian.jdbcDrivers=com.mysql.jdbc.Driver \
+    -Ddriver.classpath="/opt/mysql-connector-java-5.1.25-bin.jar"
+    test</code>
+</pre></blockquote>
+
+<h2>Checking in code<a name="Checking_in_code">&nbsp;</a></h2>
+<h3>Create a GitHub account</h3>
+<p>If you don't have one already, you can create a free GitHub account
+    <a href="https://github.com/signup/free">here.</a></p>
+<h3>Forking to your account</h3>
+<p>The first thing you need to do is fork the Pentaho repository into your GitHub account.
+    This creates an exact copy of the Pentaho repo as it exists at the time of the
+    fork in your personal GitHub space. This copy is not updated as the Pentaho
+    repository gets updated, but we&apos;ll cover how to keep it updated later.</p>
+
+<p>From the Mondrian repository page click the Fork button near the top right.
+    Once you have done this, GitHub will redirect you to your newly forked repository.</p>
+
+<h3>Cloning a specific branch</h3>
+<p>Mondrian works on a single repository with multiple branches containing the
+    different versions &ndash; past, released and in development. <b>You should never be
+        working against the master branch without permission from the Mondrian development
+        team.</b> Always work against the repository specific to the version you are developing for.
+    Cloning the repository moves all the data and metadata from all branches to your
+    local working folder, and you then checkout a specific branch locally to
+    setup the file structure for that version.</p>
+
+<p>First, clone the repository:<br></p><pre>
+<code>$ git clone https://github.com/[username]/mondrian.git</code></pre><pre>
+    <code>Cloning into 'mondrian'...
+    remote: Counting objects: 51661, done.
+    remote: Compressing objects: 100% (9979/9979), done.
+    remote: Total 51661 (delta 37833), reused 51512 (delta 37691)
+    Receiving objects: 100% (51661/51661), 294.25 MiB | 604 KiB/s, done.
+    Resolving deltas: 100% (37833/37833), done.</code></pre>
+<p>Now change into the newly created &apos;mondrian&apos; folder and list the
+    available branches:<br></p><pre><code>$ git branch -a</code></pre><pre>
+    <code>master
+    remotes/origin/3.0
+    remotes/origin/3.1
+    remotes/origin/3.2
+    remotes/origin/3.2.2
+    remotes/origin/3.3.1
+    remotes/origin/3.4
+    remotes/origin/HEAD -&gt; origin/master
+    remotes/origin/lagunitas
+    remotes/origin/master
+    remotes/origin/pacino</code></pre>
+<p>And finally checkout the branch you want to work on:<br></p>
+<pre><code>$ git checkout 3.4</code></pre><pre>
+    <code>Branch 3.4 set up to track remote branch 3.4 from origin.
+    Switched to a new branch '3.4'</code></pre>
+
+<h3>Adding upstream and local settings</h3>
+<p>In order to be able to keep your repository up-to-date with the Pentaho
+    Mondrian repository, and to be able to merge your changes with changes made
+    while you were developing your feature, we will add a new remote called
+    &apos;upstream&apos; that will point to the Pentaho repository directly.</p>
+<pre><code>$ git remote add upstream git://github.com/pentaho/mondrian.git</code></pre>
+<p>You also want to disable fast-forward during merges to preserve the entire commit history and properly track file changes.</p>
+<pre><code>$ git config --add merge.ff false</code></pre><p><strong>Note:</strong> If you have a git version prior to 1.7.6, this option will do nothing.</p>
+<p><strong>Your repository is now ready to develop against your selected branch.</strong></p>
+
+<h3>Merging upstream changes</h3>
+<p>It is important during development that you keep your repository updated with
+    any changes made to the Pentaho Mondrian repository.  This not only ensures
+    that you are always working with the most recent code available for your
+    working branch, but also ensures that your changes do not break any new or
+    updated tests.</p>
+<p>To update and merge changes from the upstream repository, do the following:<br></p>
+<pre><code>$ git fetch upstream [branch]
+$ git merge upstream/[branch]</code></pre>
+<p>Where [branch] is the current branch you&apos;re working on.</p>
+<p>If you are using a version of git prior to 1.7.6, you need to add the
+    <em>&ndash;&ndash;no&ndash;ff</em> flag in order to disable fast&ndash;forward merges:<br></p><pre>
+<code>$ git merge --no-ff upstream/[branch]</code></pre>
+<p>If there are any merge conflicts, git will let you know.
+    Otherwise, your local repository is now up-to-date without losing any of
+    your working changes.</p>
+<p>This should always be the 2nd last step performed before issuing a pull request.
+    The last step being, of course, running the tests again after the merge to
+    ensure nothing is broken.</p>
+<h3>Preparing for a Pull Request</h3>
+<p>Before starting a pull request, please make sure the following criteria are
+    met or your request may not be accepted and merged, or may take much longer
+    to be merged into the Pentaho Mondrian repository.</p>
+<ol>
+    <li><b>Make sure your change adheres to the <a href="#Coding_guidelines">
+        coding guidelines</a></b>.  To verify that your contribution conforms to
+        those standards, you can use the
+        <a href="#The_checkFile_utility">checkFile</a> utility.
+    <li><b>Write a unit test for your change</b>. (Or unit tests: the number of
+        unit tests you write should be appropriate for the scale of your change.)
+        The test should fail before you make the change, and succeed after it. We
+        recommend a test-driven development process, where you write the test before
+        you change the code. Unit tests are particularly important if you are fixing
+        a bug.</li>
+    <li><b>Run the regression suite, and make sure all tests pass</b>. We don't
+        expect you to run the suite in all configurations (DBMSes, operating
+        systems, JDK versions, and parameter settings) but if your change affects
+        something configuration-specific, be smart and test more than one
+        configuration. For example, SQL generation is DBMS-specific, and file
+        handling is OS-specific, but MDX function implementations are typically
+        generic.</li>
+    <li><b>If the change affects mondrian's user-visible behavior, update the
+        documentation</b>. For example, if you make a schema change, update
+        <a href="schema.html">schema.html</a>.</li>
+    <li><b>If your change affects a public API, discuss the change with mondrian
+        developers first</b>. We want to preserve backwards compatibility if
+        possible, or at least clearly document the change in the release notes.</li>
+    <li><b>Use JIRA case numbers in your commit messages</b>. If your
+        change fixes a bug, reference the bug number in your commit message, and
+        reference the commit hash value and expected release number
+        in the bug comments when closing the bug.</li>
+</ol>
+
+<h3>Generating a Pull Request</h3>
+<p>A pull request is the way GitHub manages the process of merging changes
+    between forked repositories.  Generating a pull request starts a conversation
+    with the Pentaho Mondrian development team asking them to review the changes
+    you&apos;ve made, comment on them, and optionally choose to merge the changes
+    into the main repository or return them to you for additional changes.</p>
+<p>When you are ready to start a pull request, go to your personal Mondrian
+    fork on GitHub and select the branch you want to be merged.  Then click the
+    Pull Request button near the top of the page.<br>
+    <img src="https://a248.e.akamai.net/camo.github.com/167ecedbd6d84db343817b0d7958fbe03ebcdcd8/687474703a2f2f696d672e736b697463682e636f6d2f32303130303833312d71666b316339777974383970666766786736316268317238726e2e706e67" title="pull request" alt="pull request"></p>
+<p>You can then fill in a title and notes related to the pull request, and
+    click the <em>Send pull request</em> button.  The Mondrian development team
+    will be notified of the pull request and will continue the process from there.</p>
+<p>For a more detailed description of the entire pull request and commenting process,
+    see <a href="http://help.github.com/send-pull-requests/">Help.GitHub &ndash; Send pull requests</a></p>
+
+
+<h2>Coding guidelines<a name="Coding_guidelines">&nbsp;</a></h2><p>If you are contributing code, please follow the same guidelines used for the
+rest of the code. (&quot;When in Rome, do as the Romans do.&quot;)</p><p>Code content:</p><ul>
+  <li>Declare variables as near to their first use as possible.</li><li>Don't initialize variables with 'dummy' values just
+      to shut up the compiler.</li><li>One declaration per line is recommended.</li><li>Only one top-level class should be defined per java file.</li></ul><p>Documentation and comments:</p><ul>
+  <li>Source files must contain copyright and license notices.</li><li>Classes and public methods must have javadoc.</li><li>Write Javadoc comments on
+      methods in the present active ('Collects garbage.'), <em>not</em>
+      the imperative ('Collect garbage.'), passive ('Garbage is collected.'),
+      or future active ('Will collect garbage.').</li><li>When editing HTML documents, please don't use an editor which reformats
+      the HTML source (such as Microsoft Word).</li></ul><p>Spacing and indentation:</p><ul>
+  <li>Use spaces, not tabs.</li><li>Indentation 4.</li><li>Open braces on the same line as the preceding 'if', 'else', 'while'
+      statement, or method or 'class' declaration.</li><li>Use braces even for single-line blocks.</li><li>Try to keep lines shorter than 80 characters.</li></ul><p>The following images show my
+code style settings in IntelliJ. If you use IntelliJ, plug in these settings; if
+not, they should give you an idea of the code formatting policy.</p>
+
+<p><img border="0" alt="Code formatting: General" src="images/code_general.png" width="1007" height="826"></p>
+
+<p><img border="0" alt="Code formatting: Alignment and Braces" src="images/code_indentation.png" width="1007" height="866"></p>
+
+<p><img border="0" alt="Code formatting: Wrapping" src="images/code_wrapping.png" width="1007" height="866"></p>
+
+<p><img border="0" alt="Code formatting: Spaces" src="images/code_spacing.png"></p>
+
+<h2>The checkFile utility<a name="The_checkFile_utility">&nbsp;</a></h2>
+
+<p>If the files you are submitting do not pass the checkFile utility, your pull
+    request may be delayed or denied.  It is recommended that you run checkFile
+    locally before initiating a pull request.  The utility is located in your git
+    repository under the bin directory.
+    <a href="https://github.com/pentaho/mondrian/tree/master/bin/checkFile">
+        <code>https://github.com/pentaho/mondrian/tree/master/bin/checkFile</code></a>
+    The script requires <a href="http://www.cygwin.com">cygwin</a> to run on
+    Windows.</p>
+<p>Usage:</p>
+<pre><code>
+checkFile  [ &lt;options&gt; ] &lt;file&gt;...
+    Checks a list of files.
+checkFile  [ &lt;options&gt; ] --opened
+    Checks all files that are opened in git. Implies --strict.
+checkFile  [ &lt;options&gt; ] --under &lt;dir&gt;
+    Recursively checks all files under a given directory.
+checkFile --help
+    Prints this help.
+
+Options:
+--lenient
+    Does not apply rules to components which are not known to
+    be in compliance.
+--strict
+    Stricter than usual; the opposite of lenient.
+</code></pre>
+<h2>Learning more about Mondrian<a name="Learning_more_about_Mondrian">&nbsp;</a></h2>
+
+<h3>How Mondrian generates SQL<a name="How_Mondrian_generates_SQL">&nbsp;</a></h3>
+
+<p>If you're feeling mystified where the various SQL statements come
+from, here's a good way to learn more. Give it a try, and if you have
+more questions I'll be glad to answer them.</p><p>In a debugger, put a break point in the <code>
+<a href="api/mondrian/rolap/RolapUtil.html#executeQuery(java.sql.Connection, java.lang.String, java.lang.String)">RolapUtil.executeQuery()</a></code>
+method, and run a
+simple query. The easiest way to run a query is to run a junit testcase such as
+<a href="api/mondrian/test/BasicQueryTest.html#testSample0()">BasicQueryTest.testSample0()</a>.
+The debugger will stop every time a SQL
+statement is executed, and you should be able to loop up the call stack to which component is executing the query.</p><p>I expect that you will see the following phases in the execution:<ul>
+
+<li>One or two SQL queries will be executed as the <code>schema.xml</code> file is read
+(validating calculated members and named sets, resolving default members of
+hierarchies, and such)<li>A few SQL queries will be executed to resolve members as the query
+is parsed. (For example, if a query uses <code>[Store].[USA].[CA]</code>, it will
+look all members of the <code>[Store Nation]</code> level, then look up all children
+of the <code>[USA]</code> member.)
+
+<li>When the query is executed, the axes (slicer, columns, rows) are
+executed first. Expect to see more queries on dimension tables when
+expressions like <code>[Product].children</code> are evaluated.
+
+<li>Once the axes are populated, the cells are evaluated. Rather than
+executing a SQL query per cell, Mondrian makes a pass over all cells
+building a list of cells which are not in the cache. Then it builds
+and executes a SQL query to fetch all of those cells. If it didn't
+manage to fetch all cell values, it will repeat this step until it
+does.</li></ul></p><p>Remember that the purpose of these queries is to populate cache. There are two caches. The dimension cache which maps a member to its children, e.g.</p><blockquote><code>[Store].[All Stores]</code>&nbsp;&rarr; <code>{ [Store].[USA], [Store].[Canada], [Store].[Mexico]}</code></blockquote><p>The aggregation cache maps a tuple a measure value, e.g.</p><blockquote><code>([Store].[USA], [Gender].[F], [Measures].[Unit Sales])</code>
+	&rarr; <code>123,456</code></blockquote><p>Once the cache has been populated, the query won't be executed
+again. That's why I recommend that you restart the process each time
+you run this in the debugger.</p>
+
+<hr noshade size="1"/>
+<p>
+    Author: Julian Hyde; last updated August, 2011.<br/>
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/developer.html?ac=22">log&nbsp;</a>)<br/>
+    Copyright (C) 2005-2011 Pentaho
+</p>
+
+<br />
+
+<!-- doc2web end -->
+
+</body>
+</html>

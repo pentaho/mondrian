@@ -1,0 +1,54 @@
+# fact table
+# it is incomplete and contains dummy rows, because data, needed for tests, is taken from agg table
+## TableName: mondrian2225_fact
+## ColumnNames: product_ID,customer_id,fact
+## ColumnTypes: INTEGER,INTEGER,INTEGER
+## NosOfRows: 10
+1,1,1
+2,2,2
+3,3,3
+4,4,4
+5,5,5
+6,5,6
+7,5,7
+8,5,8
+9,5,9
+10,5,10
+# agg table
+## TableName: mondrian2225_agg
+## ColumnNames: dim_code,fact_measure,fact_count
+## ColumnTypes: VARCHAR(45):null,DECIMAL(10,2),INTEGER
+## NosOfRows: 7
+eight,175,14
+five,5,1
+four,4,1
+mdg,2,1
+tst,1000,1
+three,3,1
+two,2,1
+## TableName: mondrian2225_customer
+## ColumnNames: customer_id,customer_name
+## ColumnTypes: INTEGER,VARCHAR(45):null
+## NosOfRows: 8
+1,Name1
+2,Name2
+3,Name3
+4,Name4
+5,Name5
+6,Name6
+7,Name7
+8,Name8
+## TableName: mondrian2225_dim
+## ColumnNames: product_id,product_code,product_sub_code
+## ColumnTypes: INTEGER,VARCHAR(45):null,VARCHAR(45):null
+## NosOfRows: 10
+1,mdg,mdg
+2,two,second
+3,three,third
+4,four,fourth
+5,five,fifth
+6,tst,tstth
+7,seven,seventh
+8,eight,eighth
+9,nine,ninth
+10,ten,tenth

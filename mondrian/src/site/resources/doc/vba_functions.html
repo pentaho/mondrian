@@ -1,0 +1,3820 @@
+<html>
+<!--
+  == This software is subject to the terms of the Eclipse Public License v1.0
+  == Agreement, available at the following URL:
+  == http://www.eclipse.org/legal/epl-v10.html.
+  == You must accept the terms of that agreement to use this software.
+  ==
+  == Copyright (C) 2008-2009 Pentaho
+  == All Rights Reserved.
+  -->
+<head>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	<title>Pentaho Analysis Services: Visual Basic for Applications (VBA) Functions</title>
+</head>
+<body>
+<!-- doc2web start -->
+
+<!-- page title -->
+<div class="contentheading">Visual Basic for Applications (VBA) Function List</div>
+<!-- end page title -->
+
+<p>The following table describes the functions in the Visual Basic for 
+Applications (VBA) specification, which are implicitly part of the MDX language 
+specification.</p>
+
+<p>Some of the functions are not implemented in 
+mondrian, but are included for completeness. The 'Mondrian version/priority' column indicates which functions are 
+implemented in mondrian, and if not, priority of the development team for adding 
+them. Some functions, such as Beep, will never be implemented in Mondrian MDX.</p>
+
+<p>The MDX language implemented by mondrian, including a list of set of 
+functions implemented, is described in the <a href="mdx.html">MDX specification</a>.</p>
+
+<table style="border-collapse: collapse" border="1" width="500">
+<tr><th>Name</th><th>Description</th><th>Mondrian version / priority</th></tr>
+<tr><td>Abs</td><td>Returns a value of the same type that is passed to 
+	it specifying the absolute value of a number.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Abs(number)<br>
+	<br>
+	The required number argument can be any valid numeric expression. If number 
+	contains Null, Null is returned; if it is an uninitialized variable, zero is 
+	returned.<br>
+	<br>
+	Remarks<br>
+	<br>
+	The absolute value of a number is its unsigned magnitude. For example, 
+	ABS(-1) and ABS(1) both return 1.</td><td>1</td></tr>
+<tr><td>Add</td><td></td><td>-</td></tr>
+<tr><td>AppActivate</td><td></td><td>-</td></tr>
+<tr><td>Array</td><td>Returns a Variant containing an array.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Array(arglist)<br>
+	<br>
+	The required arglist argument is a comma-delimited list of values that are 
+	assigned to the elements of the array contained within the Variant. If no 
+	arguments are specified, an array of zero length is created.<br>
+	<br>
+	Remarks<br>
+	<br>
+	The notation used to refer to an element of an array consists of the 
+	variable name followed by parentheses containing an index number indicating 
+	the desired element. In the following example, the first statement creates a 
+	variable named <br>
+	A<br>
+	as a Variant. The second statement assigns an array to variable <br>
+	A<br>
+	. The last statement assigns the value contained in the second array element 
+	to another variable.<br>
+	<br>
+	Dim A As Variant<br>
+	A = Array(10,20,30)<br>
+	B = A(2)<br>
+	The lower bound of an array created using the Array function is determined 
+	by the lower bound specified with the Option Base statement, unless Array is 
+	qualified with the name of the type library (for example VBA.Array). If 
+	qualified with the type-library name, Array is unaffected by Option Base.<br>
+	<br>
+	Note A Variant that is not declared as an array can still contain an array. 
+	A Variant variable can contain an array of any type, except fixed-length 
+	strings and user-defined types. Although a Variant containing an array is 
+	conceptually different from an array whose elements are of type Variant, the 
+	array elements are accessed in the same way.</td><td>Not 
+	applicable - mondrian has no array data type</td></tr>
+<tr><td>Asc</td><td>Returns an Integer representing the character code 
+	corresponding to the first letter in a string.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Asc(string)<br>
+	<br>
+	The required string argument is any valid string expression. If the string 
+	contains no characters, a run-time error occurs.<br>
+	<br>
+	Remarks<br>
+	<br>
+	The range for returns is 0 255 on non-DBCS systems, but 32768 32767 on DBCS 
+	systems.<br>
+	<br>
+	Note The AscB function is used with byte data contained in a string. Instead 
+	of returning the character code for the first character, AscB returns the 
+	first byte. The AscW function returns the Unicode character code except on 
+	platforms where Unicode is not supported, in which case, the behavior is 
+	identical to the Asc function.</td><td>1</td></tr>
+<tr><td>AscB</td><td>See Asc</td><td>N/A</td></tr>
+<tr><td>AscW</td><td>See Asc</td><td>1</td></tr>
+<tr><td>Atn</td><td>Returns a Double specifying the arctangent of a 
+	number.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Atn(number)<br>
+	<br>
+	The required number argument is a Double or any valid numeric expression.<br>
+	<br>
+	Remarks<br>
+	<br>
+	The Atn function takes the ratio of two sides of a right triangle (number) 
+	and returns the corresponding angle in radians. The ratio is the length of 
+	the side opposite the angle divided by the length of the side adjacent to 
+	the angle.<br>
+	<br>
+	The range of the result is -pi/2 to pi/2 radians.<br>
+	<br>
+	To convert degrees to radians, multiply degrees by pi/180. To convert 
+	radians to degrees, multiply radians by 180/pi.<br>
+	<br>
+	Note Atn is the inverse trigonometric function of Tan, which takes an angle 
+	as its argument and returns the ratio of two sides of a right triangle. Do 
+	not confuse Atn with the cotangent, which is the simple inverse of a tangent 
+	(1/tangent).</td><td>1</td></tr>
+<tr><td>Beep</td><td></td><td>Not applicable in server</td></tr>
+<tr><td>Calendar</td><td></td><td>-</td></tr>
+<tr><td>CallByName</td><td>Executes a method of an object, or sets or 
+	returns a property of an object.<br>
+	<br>
+	Syntax<br>
+	<br>
+	CallByName(object, procname, calltype,[args()])<br>
+	<br>
+	The CallByName function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	object Required; Variant (Object). The name of the object on which the 
+	function will be executed. <br>
+	procname Required; Variant (String). A string expression containing the name 
+	of a property or method of the object. <br>
+	calltype Required; Constant. A constant of type vbCallType representing the 
+	type of procedure being called. <br>
+	args() Optional: Variant (Array). <br>
+	<br>
+	Remarks<br>
+	<br>
+	The CallByName function is used to get or set a property, or invoke a method 
+	at run time using a string name.<br>
+	<br>
+	In the following example, the first line uses CallByName to set the 
+	MousePointer property of a text box, the second line gets the value of the 
+	MousePointer property, and the third line invokes the Move method to move 
+	the text box:<br>
+	<br>
+	CallByName Text1, &quot;MousePointer&quot;, vbLet, vbCrosshair<br>
+	Result = CallByName (Text1, &quot;MousePointer&quot;, vbGet)<br>
+	CallByName Text1, &quot;Move&quot;, vbMethod, 100, 100</td><td>-</td></tr>
+<tr><td>CBool</td><td>Returns an expression that has been converted to 
+	a Variant of subtype Boolean.<br>
+	<br>
+	CBool(expression)<br>
+	<br>
+	The expression argument is any valid expression.<br>
+	<br>
+	If expression is zero, False is returned; otherwise, True is returned. If 
+	expression can't be interpreted as a numeric value, a run-time error occurs.<br>
+	<br>
+	The following example uses the CBool function to convert an expression to a 
+	Boolean. If the expression evaluates to a nonzero value, CBool returns True; 
+	otherwise, it returns False. </td><td>2</td></tr>
+<tr><td>CByte</td><td>Returns an expression that has been converted to 
+	a Variant of subtype Byte.<br>
+	<br>
+	CByte(expression)<br>
+	<br>
+	The expression argument is any valid expression.<br>
+	<br>
+	In general, you can document your code using the subtype conversion 
+	functions to show that the result of some operation should be expressed as a 
+	particular data type rather than the default data type. For example, use 
+	CByte to force byte arithmetic in cases where currency, single-precision, 
+	double-precision, or integer arithmetic normally would occur.<br>
+	<br>
+	Use the CByte function to provide internationally aware conversions from any 
+	other data type to a Byte subtype. For example, different decimal separators 
+	are properly recognized depending on the locale setting of your system, as 
+	are different thousand separators.<br>
+	<br>
+	If expression lies outside the acceptable range for the byte subtype, an 
+	error occurs.</td><td>N/A; mondrian has no byte datatype</td></tr>
+<tr><td>CCur</td><td>Returns an expression that has been converted to a 
+	Variant of subtype Currency.<br>
+	<br>
+	CCur(expression)<br>
+&nbsp;<br>
+	The expression argument is any valid expression.<br>
+	<br>
+	In general, you can document your code using the subtype conversion 
+	functions to show that the result of some operation should be expressed as a 
+	particular data type rather than the default data type. For example, use 
+	CCur to force currency arithmetic in cases where integer arithmetic normally 
+	would occur.<br>
+	<br>
+	You should use the CCur function to provide internationally aware 
+	conversions from any other data type to a Currency subtype. For example, 
+	different decimal separators and thousands separators are properly 
+	recognized depending on the locale setting of your system.</td><td>-</td></tr>
+<tr><td>CDate</td><td>Returns an expression that has been converted to 
+	a Variant of subtype Date.<br>
+	<br>
+	CDate(date)<br>
+	<br>
+	The date argument is any valid date expression.<br>
+	<br>
+	Use the IsDate function to determine if date can be converted to a date or 
+	time. CDate recognizes date literals and time literals as well as some 
+	numbers that fall within the range of acceptable dates. When converting a 
+	number to a date, the whole number portion is converted to a date. Any 
+	fractional part of the number is converted to a time of day, starting at 
+	midnight.<br>
+	<br>
+	CDate recognizes date formats according to the locale setting of your 
+	system. The correct order of day, month, and year may not be determined if 
+	it is provided in a format other than one of the recognized date settings. 
+	In addition, a long date format is not recognized if it also contains the 
+	day-of-the-week string.</td><td>1</td></tr>
+<tr><td>CDbl</td><td>Returns an expression that has been converted to a 
+	Variant of subtype Double.<br>
+	<br>
+	CDbl(expression)<br>
+&nbsp;<br>
+	The expression argument is any valid expression.<br>
+	<br>
+	In general, you can document your code using the subtype conversion 
+	functions to show that the result of some operation should be expressed as a 
+	particular data type rather than the default data type. For example, use 
+	CDbl or CSng to force double-precision or single-precision arithmetic in 
+	cases where currency or integer arithmetic normally would occur.<br>
+	<br>
+	Use the CDbl function to provide internationally aware conversions from any 
+	other data type to a Double subtype. For example, different decimal 
+	separators and thousands separators are properly recognized depending on the 
+	locale setting of your system.</td><td>2</td></tr>
+<tr><td>CDec</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>ChDir</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>ChDrive</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>Choose</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>Chr</td><td>Returns a String containing the character 
+	associated with the specified character code.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Chr(charcode)<br>
+	<br>
+	The required charcode argument is a Long that identifies a character.<br>
+	<br>
+	Remarks<br>
+	<br>
+	Numbers from 0 31 are the same as standard, nonprintable ASCII codes. For 
+	example, Chr(10) returns a linefeed character. The normal range for charcode 
+	is 0 255. However, on DBCS systems, the actual range for charcode is -32768 
+	to 65535.<br>
+	<br>
+	Note The ChrB function is used with byte data contained in a String. Instead 
+	of returning a character, which may be one or two bytes, ChrB always returns 
+	a single byte. The ChrW function returns a String containing the Unicode 
+	character except on platforms where Unicode is not supported, in which case, 
+	the behavior is identical to the Chr function.</td><td>1</td></tr>
+<tr><td>ChrB</td><td>See Chr.</td><td>-</td></tr>
+<tr><td>ChrW</td><td>See Chr.</td><td>1</td></tr>
+<tr><td>CInt</td><td>Returns an expression that has been converted to a 
+	Variant of subtype Integer.<br>
+	<br>
+	CInt(expression)<br>
+	<br>
+	The expression argument is any valid expression.<br>
+	<br>
+	In general, you can document your code using the subtype conversion 
+	functions to show that the result of some operation should be expressed as a 
+	particular data type rather than the default data type. For example, use 
+	CInt or CLng to force integer arithmetic in cases where currency, 
+	single-precision, or double-precision arithmetic normally would occur.<br>
+	<br>
+	Use the CInt function to provide internationally aware conversions from any 
+	other data type to an Integer subtype. For example, different decimal 
+	separators are properly recognized depending on the locale setting of your 
+	system, as are different thousand separators.<br>
+	<br>
+	If expression lies outside the acceptable range for the Integer subtype, an 
+	error occurs.<br>
+	<br>
+	The following example uses the CInt function to convert a value to an 
+	Integer: <br>
+	<br>
+	Dim MyDouble, MyInt<br>
+	MyDouble = 2345.5678 ' MyDouble is a Double.<br>
+	MyInt = CInt(MyDouble) ' MyInt contains 2346.<p>Note. CInt differs from the 
+	Fix and Int functions, which truncate, rather than round, the fractional 
+	part of a number. When the fractional part is exactly 0.5, the CInt function 
+	always rounds it to the nearest even number. For example, 0.5 rounds to 0, 
+	and 1.5 rounds to 2.</td><td>2</td></tr>
+<tr><td>Clear</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>CLng</td><td>Returns an expression that has been converted to a 
+	Variant of subtype Long.<br>
+	<br>
+	CLng(expression)<br>
+	<br>
+	The expression argument is any valid expression.<br>
+	<br>
+	In general, you can document your code using the subtype conversion 
+	functions to show that the result of some operation should be expressed as a 
+	particular data type rather than the default data type. For example, use 
+	CInt or CLng to force integer arithmetic in cases where currency, 
+	single-precision, or double-precision arithmetic normally would occur.<br>
+	<br>
+	Use the CLng function to provide internationally aware conversions from any 
+	other data type to a Long subtype. For example, different decimal separators 
+	are properly recognized depending on the locale setting of your system, as 
+	are different thousand separators.<br>
+	<br>
+	If expression lies outside the acceptable range for the Long subtype, an 
+	error occurs.<br>
+	<br>
+	The following example uses the CLng function to convert a value to a Long:
+	<br>
+	<br>
+	Dim MyVal1, MyVal2, MyLong1, MyLong2<br>
+	MyVal1 = 25427.45: MyVal2 = 25427.55 ' MyVal1, MyVal2 are Doubles.<br>
+	MyLong1 = CLng(MyVal1) ' MyLong1 contains 25427.<br>
+	MyLong2 = CLng(MyVal2) ' MyLong2 contains 25428.<p>Note. CLng differs from 
+	the Fix and Int functions, which truncate, rather than round, the fractional 
+	part of a number. When the fractional part is exactly 0.5, the CLng function 
+	always rounds it to the nearest even number. For example, 0.5 rounds to 0, 
+	and 1.5 rounds to 2.</td><td>2</td></tr>
+<tr><td>Command</td><td>Returns the argument portion of the command 
+	line used to launch Microsoft Visual Basic or an executable program 
+	developed with Visual Basic. <br>
+	<br>
+	Syntax<br>
+	<br>
+	Command<br>
+	<br>
+	Remarks<br>
+	<br>
+	When Visual Basic is launched from the command line, any portion of the 
+	command line that follows <br>
+	/cmd<br>
+	is passed to the program as the command-line argument. In the following 
+	example, <br>
+	cmdlineargs<br>
+	represents the argument information returned by the Command function.<br>
+	<br>
+	VB /cmd cmdlineargs<br>
+	For applications developed with Visual Basic and compiled to an .exe file, 
+	Command returns any arguments that appear after the name of the application 
+	on the command line. For example:<br>
+	<br>
+	MyApp cmdlineargs<br>
+	To find how command line arguments can be changed in the user interface of 
+	the application you're using, search Help for &quot;command line arguments.&quot;</td><td>
+	-</td></tr>
+<tr><td>Cos</td><td>Returns a Double specifying the cosine of an angle.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Cos(number)<br>
+	<br>
+	The required number argument is a Double or any valid numeric expression 
+	that expresses an angle in radians.<br>
+	<br>
+	Remarks<br>
+	<br>
+	The Cos function takes an angle and returns the ratio of two sides of a 
+	right triangle. The ratio is the length of the side adjacent to the angle 
+	divided by the length of the hypotenuse.<br>
+	<br>
+	The result lies in the range -1 to 1.<br>
+	<br>
+	To convert degrees to radians, multiply degrees by pi/180. To convert 
+	radians to degrees, multiply radians by 180/pi.</td><td>1</td></tr>
+<tr><td>Count</td><td>&nbsp;</td><td>?</td></tr>
+<tr><td>CreateObject</td><td>Creates and returns a reference to an 
+	ActiveX object.<br>
+	<br>
+	Syntax<br>
+	<br>
+	CreateObject(class,[servername])<br>
+	<br>
+	The CreateObject function syntax has these parts:<br>
+	<br>
+	Part Description <br>
+	class Required; Variant (String). The application name and class of the 
+	object to create. <br>
+	servername Optional; Variant (String). The name of the network server where 
+	the object will be created. If servername is an empty string (&quot;&quot;), the local 
+	machine is used. <br>
+	<br>
+	The class argument uses the syntax appname.objecttype and has these parts:<br>
+	<br>
+	Part Description <br>
+	appname Required; Variant (String). The name of the application providing 
+	the object. <br>
+	objecttype Required; Variant (String). The type or class of object to 
+	create. <br>
+	<br>
+	Remarks<br>
+	<br>
+	Every application that supports Automation provides at least one type of 
+	object. For example, a word processing application may provide an 
+	Application object, a Document object, and a Toolbar object.</td><td>-</td></tr>
+<tr><td>CSng</td><td>&nbsp;</td><td>?</td></tr>
+<tr><td>CStr</td><td>&nbsp;</td><td>?</td></tr>
+<tr><td>CurDir</td><td>Returns a Variant (String) representing the 
+	current path.<br>
+	<br>
+	Syntax<br>
+	<br>
+	CurDir[(drive)]<br>
+	<br>
+	The optional drive argument is a string expression that specifies an 
+	existing drive. If no drive is specified or if drive is a zero-length string 
+	(&quot;&quot;), CurDir returns the path for the current drive.</td><td>&nbsp;</td></tr>
+<tr><td>Cvar</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>CVDate</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>CVErr</td><td>Returns a Variant of subtype Error containing an 
+	error number specified by the user.<br>
+	<br>
+	Syntax<br>
+	<br>
+	CVErr(errornumber)<br>
+	<br>
+	The required errornumber argument is any valid error number.<br>
+	<br>
+	Remarks<br>
+	<br>
+	Use the CVErr function to create user-defined errors in user-created 
+	procedures. For example, if you create a function that accepts several 
+	arguments and normally returns a string, you can have your function evaluate 
+	the input arguments to ensure they are within acceptable range. If they are 
+	not, it is likely your function will not return what you expect. In this 
+	event, CVErr allows you to return an error number that tells you what action 
+	to take.<br>
+	<br>
+	Note that implicit conversion of an Error is not allowed. For example, you 
+	can't directly assign the return value of CVErr to a variable that is not a 
+	Variant. However, you can perform an explicit conversion (using CInt, CDbl, 
+	and so on) of the value returned by CVErr and assign that to a variable of 
+	the appropriate data type.</td><td>-</td></tr>
+<tr><td>Date</td><td>Returns a Variant (Date) containing the current 
+	system date.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Date<br>
+	<br>
+	Remarks<br>
+	<br>
+	To set the system date, use the Date statement.<br>
+	<br>
+	Date, and if the calendar is Gregorian, Date$ behavior is unchanged by the 
+	Calendar property setting. If the calendar is Hijri, Date$ returns a 
+	10-character string of the form mm-dd-yyyy, where mm (01-12), dd (01-30) and 
+	yyyy (1400-1523) are the Hijri month, day and year. The equivalent Gregorian 
+	range is Jan 1, 1980 through Dec 31, 2099.</td><td>1</td></tr>
+<tr><td>DateAdd</td><td>Returns a Variant (Date) containing a date to 
+	which a specified time interval has been added.<br>
+	<br>
+	Syntax<br>
+	<br>
+	DateAdd(interval, number, date)<br>
+	<br>
+	The DateAdd function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	interval Required. String expression that is the interval of time you want 
+	to add. <br>
+	number Required. Numeric expression that is the number of intervals you want 
+	to add. It can be positive (to get dates in the future) or negative (to get 
+	dates in the past). <br>
+	date Required. Variant (Date) or literal representing date to which the 
+	interval is added. <br>
+	<br>
+	Settings<br>
+	<br>
+	The interval argument has these settings:<br>
+	<br>
+	Setting Description <br>
+	yyyy Year <br>
+	q Quarter <br>
+	m Month <br>
+	y Day of year <br>
+	d Day <br>
+	w Weekday <br>
+	ww Week <br>
+	h Hour <br>
+	n Minute <br>
+	s Second <br>
+	<br>
+	Remarks<br>
+	<br>
+	You can use the DateAdd function to add or subtract a specified time 
+	interval from a date. For example, you can use DateAdd to calculate a date 
+	30 days from today or a time 45 minutes from now.<br>
+	<br>
+	To add days to date, you can use Day of Year (&quot;y&quot;), Day (&quot;d&quot;), or Weekday 
+	(&quot;w&quot;).<br>
+	<br>
+	The DateAdd function won't return an invalid date. The following example 
+	adds one month to January 31:<br>
+	<br>
+	DateAdd(&quot;m&quot;, 1, &quot;31-Jan-95&quot;)<br>
+	In this case, DateAdd returns 28-Feb-95, not 31-Feb-95. If date is 
+	31-Jan-96, it returns 29-Feb-96 because 1996 is a leap year.<br>
+	<br>
+	If the calculated date would precede the year 100 (that is, you subtract 
+	more years than are in date), an error occurs.<br>
+	<br>
+	If number isn't a Long value, it is rounded to the nearest whole number 
+	before being evaluated.<br>
+	<br>
+	Note The format of the return value for DateAdd is determined by Control 
+	Panel settings, not by the format that is passed in date argument.<br>
+	<br>
+	Note For date, if the Calendar property setting is Gregorian, the supplied 
+	date must be Gregorian. If the calendar is Hijri, the supplied date must be 
+	Hijri. If month values are names, the name must be consistent with the 
+	current Calendar property setting. To minimize the possibility of month 
+	names conflicting with the current Calendar property setting, enter numeric 
+	month values (Short Date format).</td><td>1</td></tr>
+<tr><td>DateDiff</td><td>Returns a Variant (Long) specifying the number 
+	of time intervals between two specified dates.<br>
+	<br>
+	Syntax<br>
+	<br>
+	DateDiff(interval, date1, date2[, firstdayofweek[, firstweekofyear]])<br>
+	<br>
+	The DateDiff function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	interval Required. String expression that is the interval of time you use to 
+	calculate the difference between date1 and date2. <br>
+	date1, date2 Required; Variant (Date). Two dates you want to use in the 
+	calculation. <br>
+	firstdayofweek Optional. A constant that specifies the first day of the 
+	week. If not specified, Sunday is assumed. <br>
+	firstweekofyear Optional. A constant that specifies the first week of the 
+	year. If not specified, the first week is assumed to be the week in which 
+	January 1 occurs. <br>
+	<br>
+	Settings<br>
+	<br>
+	The interval argument has these settings:<br>
+	<br>
+	Setting Description <br>
+	yyyy Year <br>
+	q Quarter <br>
+	m Month <br>
+	y Day of year <br>
+	d Day <br>
+	w Weekday <br>
+	ww Week <br>
+	h Hour <br>
+	n Minute <br>
+	s Second <br>
+	<br>
+	<br>
+	The firstdayofweek argument has these settings:<br>
+	<br>
+	Constant Value Description <br>
+	vbUseSystem 0 Use the NLS API setting. <br>
+	vbSunday 1 Sunday (default) <br>
+	vbMonday 2 Monday <br>
+	vbTuesday 3 Tuesday <br>
+	vbWednesday 4 Wednesday <br>
+	vbThursday 5 Thursday <br>
+	vbFriday 6 Friday <br>
+	vbSaturday 7 Saturday <br>
+	<br>
+	Constant Value Description <br>
+	vbUseSystem 0 Use the NLS API setting. <br>
+	vbFirstJan1 1 Start with week in which January 1 occurs (default). <br>
+	vbFirstFourDays 2 Start with the first week that has at least four days in 
+	the new year. <br>
+	vbFirstFullWeek 3 Start with first full week of the year. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	You can use the DateDiff function to determine how many specified time 
+	intervals exist between two dates. For example, you might use DateDiff to 
+	calculate the number of days between two dates, or the number of weeks 
+	between today and the end of the year.<br>
+	<br>
+	To calculate the number of days between date1 and date2, you can use either 
+	Day of year (&quot;y&quot;) or Day (&quot;d&quot;). When interval is Weekday (&quot;w&quot;), DateDiff 
+	returns the number of weeks between the two dates. If date1 falls on a 
+	Monday, DateDiff counts the number of Mondays until date2. It counts date2 
+	but not date1. If interval is Week (&quot;ww&quot;), however, the DateDiff function 
+	returns the number of calendar weeks between the two dates. It counts the 
+	number of Sundays between date1 and date2. DateDiff counts date2 if it falls 
+	on a Sunday; but it doesn't count date1, even if it does fall on a Sunday.<br>
+	<br>
+	If date1 refers to a later point in time than date2, the DateDiff function 
+	returns a negative number.<br>
+	<br>
+	The firstdayofweek argument affects calculations that use the &quot;w&quot; and &quot;ww&quot; 
+	interval symbols.<br>
+	<br>
+	If date1 or date2 is a date literal, the specified year becomes a permanent 
+	part of that date. However, if date1 or date2 is enclosed in double 
+	quotation marks (&quot; &quot;), and you omit the year, the current year is inserted 
+	in your code each time the date1 or date2 expression is evaluated. This 
+	makes it possible to write code that can be used in different years.<br>
+	<br>
+	When comparing December 31 to January 1 of the immediately succeeding year, 
+	DateDiff for Year (&quot;yyyy&quot;) returns 1 even though only a day has elapsed.<br>
+	<br>
+	Note For date1 and date2, if the Calendar property setting is Gregorian, the 
+	supplied date must be Gregorian. If the calendar is Hijri, the supplied date 
+	must be Hijri.</td><td>1</td></tr>
+<tr><td>DatePart</td><td>Returns a Variant (Integer) containing the 
+	specified part of a given date.<br>
+	<br>
+	Syntax<br>
+	<br>
+	DatePart(interval, date[,firstdayofweek[, firstweekofyear]])<br>
+	<br>
+	The DatePart function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	interval Required. String expression that is the interval of time you want 
+	to return. <br>
+	date Required. Variant (Date) value that you want to evaluate. <br>
+	firstdayofweek Optional. A constant that specifies the first day of the 
+	week. If not specified, Sunday is assumed. <br>
+	firstweekofyear Optional. A constant that specifies the first week of the 
+	year. If not specified, the first week is assumed to be the week in which 
+	January 1 occurs. <br>
+	<br>
+	Settings<br>
+	<br>
+	The interval argument has these settings:<br>
+	<br>
+	Setting Description <br>
+	yyyy Year <br>
+	q Quarter <br>
+	m Month <br>
+	y Day of year <br>
+	d Day <br>
+	w Weekday <br>
+	ww Week <br>
+	h Hour <br>
+	n Minute <br>
+	s Second <br>
+	<br>
+	The firstdayofweek argument has these settings:<br>
+	<br>
+	Constant Value Description <br>
+	vbUseSystem 0 Use the NLS API setting. <br>
+	vbSunday 1 Sunday (default) <br>
+	vbMonday 2 Monday <br>
+	vbTuesday 3 Tuesday <br>
+	vbWednesday 4 Wednesday <br>
+	vbThursday 5 Thursday <br>
+	vbFriday 6 Friday <br>
+	vbSaturday 7 Saturday <br>
+	<br>
+	The firstweekofyear argument has these settings:<br>
+	<br>
+	Constant Value Description <br>
+	vbUseSystem 0 Use the NLS API setting. <br>
+	vbFirstJan1 1 Start with week in which January 1 occurs (default). <br>
+	vbFirstFourDays 2 Start with the first week that has at least four days in 
+	the new year. <br>
+	vbFirstFullWeek 3 Start with first full week of the year. <br>
+	<br>
+	Remarks<br>
+	<br>
+	You can use the DatePart function to evaluate a date and return a specific 
+	interval of time. For example, you might use DatePart to calculate the day 
+	of the week or the current hour.<br>
+	<br>
+	The firstdayofweek argument affects calculations that use the &quot;w&quot; and &quot;ww&quot; 
+	interval symbols.<br>
+	<br>
+	If date is a date literal, the specified year becomes a permanent part of 
+	that date. However, if date is enclosed in double quotation marks (&quot; &quot;), and 
+	you omit the year, the current year is inserted in your code each time the 
+	date expression is evaluated. This makes it possible to write code that can 
+	be used in different years.<br>
+	<br>
+	Note For date, if the Calendar property setting is Gregorian, the supplied 
+	date must be Gregorian. If the calendar is Hijri, the supplied date must be 
+	Hijri.<br>
+	<br>
+	The returned date part is in the time period units of the current Arabic 
+	calendar. For example, if the current calendar is Hijri and the date part to 
+	be returned is the year, the year value is a Hijri year.</td><td>1</td></tr>
+<tr><td>DateSerial</td><td>Returns a Variant (Date) for a specified 
+	year, month, and day.<br>
+	<br>
+	Syntax<br>
+	<br>
+	DateSerial(year, month, day)<br>
+	<br>
+	The DateSerial function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	year Required; Integer. Number between 100 and 9999, inclusive, or a numeric 
+	expression. <br>
+	month Required; Integer. Any numeric expression. <br>
+	day Required; Integer. Any numeric expression. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	To specify a date, such as December 31, 1991, the range of numbers for each 
+	DateSerial argument should be in the accepted range for the unit; that is, 
+	131 for days and 112 for months. However, you can also specify relative 
+	dates for each argument using any numeric expression that represents some 
+	number of days, months, or years before or after a certain date.<br>
+	<br>
+	The following example uses numeric expressions instead of absolute date 
+	numbers. Here the DateSerial function returns a date that is the day before 
+	the first day (<br>
+	1 - 1<br>
+	), two months before August (<br>
+	8 - 2<br>
+	), 10 years before 1990 (<br>
+	1990 - 10<br>
+	); in other words, May 31, 1980.<br>
+	<br>
+	DateSerial(1990 - 10, 8 - 2, 1 - 1)<br>
+	Under Windows 98 or Windows 2000, two digit years for the year argument are 
+	interpreted based on user-defined machine settings. The default settings are 
+	that values between 0 and 29, inclusive, are interpreted as the years 
+	20002029. The default values between 30 and 99 are interpreted as the years 
+	19301999. For all other year arguments, use a four-digit year (for example, 
+	1800). <br>
+	<br>
+	Earlier versions of Windows interpret two-digit years based on the defaults 
+	described above. To be sure the function returns the proper value, use a 
+	four-digit year.<br>
+	<br>
+	When any argument exceeds the accepted range for that argument, it 
+	increments to the next larger unit as appropriate. For example, if you 
+	specify 35 days, it is evaluated as one month and some number of days, 
+	depending on where in the year it is applied. If any single argument is 
+	outside the range -32,768 to 32,767, an error occurs. If the date specified 
+	by the three arguments falls outside the acceptable range of dates, an error 
+	occurs.<br>
+	<br>
+	Note For year, month, and day, if the Calendar property setting is 
+	Gregorian, the supplied value is assumed to be Gregorian. If the Calendar 
+	property setting is Hijri, the supplied value is assumed to be Hijri.<br>
+	<br>
+	The returned date part is in the time period units of the current Visual 
+	Basic calendar. For example, if the current calendar is Hijri and the date 
+	part to be returned is the year, the year value is a Hijri year. For the 
+	argument year, values between 0 and 99, inclusive, are interpreted as the 
+	years 1400-1499. For all other year values, use the complete four-digit year 
+	(for example, 1520).</td><td>1</td></tr>
+<tr><td>DateValue</td><td>Returns a Variant (Date).<br>
+	<br>
+	Syntax<br>
+	<br>
+	DateValue(date)<br>
+	<br>
+	The required date argument is normally a string expression representing a 
+	date from January 1, 100 through December 31, 9999. However, date can also 
+	be any expression that can represent a date, a time, or both a date and 
+	time, in that range.<br>
+	<br>
+	Remarks<br>
+	<br>
+	If date is a string that includes only numbers separated by valid date 
+	separators, DateValue recognizes the order for month, day, and year 
+	according to the Short Date format you specified for your system. DateValue 
+	also recognizes unambiguous dates that contain month names, either in long 
+	or abbreviated form. For example, in addition to recognizing 12/30/1991 and 
+	12/30/91, DateValue also recognizes December 30, 1991 and Dec 30, 1991.<br>
+	<br>
+	If the year part of date is omitted, DateValue uses the current year from 
+	your computer's system date.<br>
+	<br>
+	If the date argument includes time information, DateValue doesn't return it. 
+	However, if date includes invalid time information (such as &quot;89:98&quot;), an 
+	error occurs.<br>
+	<br>
+	Note For date, if the Calendar property setting is Gregorian, the supplied 
+	date must be Gregorian. If the calendar is Hijri, the supplied date must be 
+	Hijri. If the supplied date is Hijri, the argument date is a String 
+	representing a date from 1/1/100 (Gregorian Aug 2, 718) through 4/3/9666 
+	(Gregorian Dec 31, 9999).</td><td>1</td></tr>
+<tr><td>Day</td><td>Returns a Variant 
+								(Integer) specifying a whole number between 1 
+								and 31, inclusive, representing the day of the 
+								month.<br>
+								<br>
+								Syntax<br>
+								<br>
+								Day(date)<br>
+								<br>
+								The required date argument is any Variant, 
+								numeric expression, string expression, or any 
+								combination, that can represent a date. If date 
+								contains Null, Null is returned.<br>
+								<br>
+								Note If the Calendar property setting is 
+								Gregorian, the returned integer represents the 
+								Gregorian day of the month for the date 
+								argument. If the calendar is Hijri, the returned 
+								integer represents the Hijri day of the month 
+								for the date argument.</td><td>1</td></tr>
+<tr><td>DDB</td><td>Returns a Double specifying the depreciation of an 
+	asset for a specific time period using the double-declining balance method 
+	or some other method you specify.<br>
+	<br>
+	Syntax<br>
+	<br>
+	DDB(cost, salvage, life, period[, factor])<br>
+	<br>
+	The DDB function has these named arguments:<br>
+	<br>
+	Part Description <br>
+	cost Required. Double specifying initial cost of the asset. <br>
+	salvage Required. Double specifying value of the asset at the end of its 
+	useful life. <br>
+	life Required. Double specifying length of useful life of the asset. <br>
+	period Required. Double specifying period for which asset depreciation is 
+	calculated. <br>
+	factor Optional. Variant specifying rate at which the balance declines. If 
+	omitted, 2 (double-declining method) is assumed. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	The double-declining balance method computes depreciation at an accelerated 
+	rate. Depreciation is highest in the first period and decreases in 
+	successive periods.<br>
+	<br>
+	The life and period arguments must be expressed in the same units. For 
+	example, if life is given in months, period must also be given in months. 
+	All arguments must be positive numbers.<br>
+	<br>
+	The DDB function uses the following formula to calculate depreciation for a 
+	given period:<br>
+	<br>
+	Depreciation / period = ((cost salvage) * factor) / life</td><td>2</td></tr>
+<tr><td>Dir</td><td>Returns a String representing the name of a file, 
+	directory, or folder that matches a specified pattern or file attribute, or 
+	the volume label of a drive.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Dir[(pathname[, attributes])]<br>
+	<br>
+	The Dir function syntax has these parts:<br>
+	<br>
+	Part Description <br>
+	pathname Optional. String expression that specifies a file name may include 
+	directory or folder, and drive. A zero-length string (&quot;&quot;) is returned if 
+	pathname is not found. <br>
+	attributes Optional. Constant or numeric expression, whose sum specifies 
+	file attributes. If omitted, returns files that match pathname but have no 
+	attributes.<br>
+	<br>
+	Settings<br>
+	<br>
+	The attributes argument settings are:<br>
+	<br>
+	Constant Value Description <br>
+	vbNormal 0 (Default) Specifies files with no attributes. <br>
+	vbReadOnly 1 Specifies read-only files in addition to files with no 
+	attributes. <br>
+	vbHidden 2 Specifies hidden files in addition to files with no attributes.
+	<br>
+	VbSystem 4 Specifies system files in addition to files with no attributes.
+	<br>
+	vbVolume 8 Specifies volume label; if any other attributed is specified, 
+	vbVolume is ignored. <br>
+	vbDirectory 16 Specifies directories or folders in addition to files with no 
+	attributes.<br>
+	<br>
+	Note These constants are specified by Visual Basic for Applications and can 
+	be used anywhere in your code in place of the actual values..<br>
+	<br>
+	Remarks<br>
+	<br>
+Dir supports the use of multiple character (*) and single character (?) 
+	wildcards to specify multiple files.</td><td>-</td></tr>
+<tr><td>DoEvents</td><td>Yields execution so that the operating system 
+	can process other events.<br>
+	<br>
+	Syntax<br>
+	<br>
+	DoEvents( )<br>
+	<br>
+	Remarks<br>
+	<br>
+	The DoEvents function returns an Integer representing the number of open 
+	forms in stand-alone versions of Visual Basic, such as Visual Basic, 
+	Professional Edition. DoEvents returns zero in all other applications.<br>
+	<br>
+	DoEvents passes control to the operating system. Control is returned after 
+	the operating system has finished processing the events in its queue and all 
+	keys in the SendKeys queue have been sent.<br>
+	<br>
+	DoEvents is most useful for simple things like allowing a user to cancel a 
+	process after it has started, for example a search for a file. For 
+	long-running processes, yielding the processor is better accomplished by 
+	using a Timer or delegating the task to an ActiveX EXE component.. In the 
+	latter case, the task can continue completely independent of your 
+	application, and the operating system takes case of multitasking and time 
+	slicing.<br>
+	<br>
+	Caution Any time you temporarily yield the processor within an event 
+	procedure, make sure the procedure is not executed again from a different 
+	part of your code before the first call returns; this could cause 
+	unpredictable results. In addition, do not use DoEvents if other 
+	applications could possibly interact with your procedure in unforeseen ways 
+	during the time you have yielded control.</td><td>-</td></tr>
+<tr><td>DeleteSetting</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>Description</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>Environ</td><td>Returns the String associated with an 
+	operating system environment variable. <br>
+	<br>
+	Syntax<br>
+	<br>
+	Environ({envstring | number})<br>
+	<br>
+	The Environ function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	envstring Optional. String expression containing the name of an environment 
+	variable. <br>
+	number Optional. Numeric expression corresponding to the numeric order of 
+	the environment string in the environment-string table. The number argument 
+	can be any numeric expression, but is rounded to a whole number before it is 
+	evaluated. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	If envstring can't be found in the environment-string table, a zero-length 
+	string (&quot;&quot;) is returned. Otherwise, Environ returns the text assigned to the 
+	specified envstring; that is, the text following the equal sign (=) in the 
+	environment-string table for that environment variable.<br>
+	<br>
+	If you specify number, the string occupying that numeric position in the 
+	environment-string table is returned. In this case, Environ returns all of 
+	the text, including envstring. If there is no environment string in the 
+	specified position, Environ returns a zero-length string.</td><td>-</td></tr>
+<tr><td>EOF</td><td>Returns an Integer containing the Boolean value 
+	True when the end of a file opened for Random or sequential Input has been 
+	reached.<br>
+	<br>
+	Syntax<br>
+	<br>
+	EOF(filenumber)<br>
+	<br>
+	The required filenumber argument is an Integer containing any valid file 
+	number.<br>
+	<br>
+	Remarks<br>
+	<br>
+	Use EOF to avoid the error generated by attempting to get input past the end 
+	of a file.<br>
+	<br>
+	The EOF function returns False until the end of the file has been reached. 
+	With files opened for Random or Binary access, EOF returns False until the 
+	last executed Get statement is unable to read an entire record.<br>
+	<br>
+	With files opened for Binary access, an attempt to read through the file 
+	using the Input function until EOF returns True generates an error. Use the 
+	LOF and Loc functions instead of EOF when reading binary files with Input, 
+	or use Get when using the EOF function. With files opened for Output, EOF 
+	always returns True.</td><td>-</td></tr>
+<tr><td>Err</td><td>Contains information about run-time errors.<br>
+	<br>
+	Remarks<br>
+	The properties of the Err object are set by the generator of an error Visual 
+	Basic, an object, or the programmer.<br>
+	<br>
+	The default property of the Err object is Number. Because the default 
+	property can be represented by the object name Err, earlier code written 
+	using the Err function or Err statement doesn't have to be modified.<br>
+	<br>
+	When a run-time error occurs, the properties of the Err object are filled 
+	with information that uniquely identifies the error and information that can 
+	be used to handle it. To generate a run-time error in your code, use the 
+	Raise method.<br>
+	<br>
+	The Err object's properties are reset to zero or zero-length strings (&quot;&quot;) 
+	after an Exit Sub, Exit Function, Exit Property or Resume Next statement 
+	within an error-handling routine. Using any form of the Resume statement 
+	outside of an error-handling routine will not reset the Err object's 
+	properties. The Clear method can be used to explicitly reset Err.<br>
+	<br>
+	Use the Raise method, rather than the Error statement, to generate run-time 
+	errors for system errors and class modules. Using the Raise method in other 
+	code depends on the richness of the information you want to return.<br>
+	<br>
+	The Err object is an intrinsic object with global scope. There is no need to 
+	create an instance of it in your code.</td><td>&nbsp;</td></tr>
+<tr><td>Error</td><td>Returns the error message that corresponds to a 
+	given error number.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Error[(errornumber)]<br>
+	<br>
+	The optional errornumber argument can be any valid error number. If 
+	errornumber is a valid error number, but is not defined, Error returns the 
+	string &quot;Application-defined or object-defined error.&quot; If errornumber is not 
+	valid, an error occurs. If errornumber is omitted, the message corresponding 
+	to the most recent run-time error is returned. If no run-time error has 
+	occurred, or errornumber is 0, Error returns a zero-length string (&quot;&quot;).<br>
+	<br>
+	Remarks<br>
+	<br>
+	Examine the property settings of the Err object to identify the most recent 
+	run-time error. The return value of the Error function corresponds to the 
+	Description property of the Err object.</td><td>-</td></tr>
+<tr><td>Exp</td><td>Returns a Double specifying e (the base of natural 
+	logarithms) raised to a power.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Exp(number)<br>
+	<br>
+	The required number argument is a Double or any valid numeric expression.<br>
+	<br>
+	Remarks<br>
+	<br>
+	If the value of number exceeds 709.782712893, an error occurs. The constant 
+	e is approximately 2.718282.<br>
+	<br>
+	Note The Exp function complements the action of the Log function and is 
+	sometimes referred to as the antilogarithm.</td><td>1</td></tr>
+<tr><td>FileAttr</td><td>Returns a Long representing the file mode for 
+	files opened using the Open statement.<br>
+	<br>
+	Syntax<br>
+	<br>
+	FileAttr(filenumber, returntype)<br>
+	<br>
+	The FileAttr function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	filenumber Required; Integer. Any valid file number. <br>
+	returntype Required; Integer. Number indicating the type of information to 
+	return. Specify 1 to return a value indicating the file mode. On 16-bit 
+	systems only, specify 2 to retrieve an operating system file handle. 
+	Returntype 2 is not supported in 32-bit systems and causes an error. <br>
+	<br>
+	<br>
+	Return Values<br>
+	<br>
+	When the returntype argument is 1, the following return values indicate the 
+	file access mode:<br>
+	<br>
+	Mode Value <br>
+	Input 1 <br>
+	Output 2 <br>
+	Random 4 <br>
+	Append 8 <br>
+	Binary 32</td><td>-</td></tr>
+<tr><td>FileCopy</td><td>&nbsp;</td><td>-</td></tr>
+<tr><td>FileDateTime</td><td>Returns a Variant (Date) that indicates 
+	the date and time when a file was created or last modified.<br>
+	<br>
+	Syntax<br>
+	<br>
+	FileDateTime(pathname)<br>
+	<br>
+	The required pathname argument is a string expression that specifies a file 
+	name. The pathname may include the directory or folder, and the drive.</td><td>
+	-</td></tr>
+<tr><td>FileLen</td><td>Returns a Long specifying the length of a file 
+	in bytes.<br>
+	<br>
+	Syntax<br>
+	<br>
+	FileLen(pathname)<br>
+	<br>
+	The required pathname argument is a string expression that specifies a file. 
+	The pathname may include the directory or folder, and the drive.<br>
+	<br>
+	Remarks<br>
+	<br>
+	If the specified file is open when the FileLen function is called, the value 
+	returned represents the size of the file immediately before it was opened.<br>
+	<br>
+	Note To obtain the length of an open file, use the LOF function.</td><td>-</td></tr>
+<tr><td>Filter</td><td>Returns a zero-based array containing subset of 
+	a string array based on a specified filter criteria.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Filter(sourcesrray, match[, include[, compare]])<br>
+	<br>
+	The Filter function syntax has these named argument:<br>
+	<br>
+	Part Description <br>
+	sourcearray Required. One-dimensional array of strings to be searched. <br>
+	match Required. String to search for. <br>
+	include Optional. Boolean value indicating whether to return substrings that 
+	include or exclude match. If include is True, Filter returns the subset of 
+	the array that contains match as a substring. If include is False, Filter 
+	returns the subset of the array that does not contain match as a substring.
+	<br>
+	compare Optional. Numeric value indicating the kind of string comparison to 
+	use. See Settings section for values. <br>
+	<br>
+	<br>
+	Settings<br>
+	<br>
+	The compare argument can have the following values:<br>
+	<br>
+	Constant Value Description <br>
+	vbUseCompareOption 1 Performs a comparison using the setting of the Option 
+	Compare statement. <br>
+	vbBinaryCompare 0 Performs a binary comparison. <br>
+	vbTextCompare 1 Performs a textual comparison. <br>
+	vbDatabaseCompare 2 Microsoft Access only. Performs a comparison based on 
+	information in your database. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	If no matches of match are found within sourcearray, Filter returns an empty 
+	array. An error occurs if sourcearray is Null or is not a one-dimensional 
+	array.<br>
+	<br>
+	The array returned by the Filter function contains only enough elements to 
+	contain the number of matched items.</td><td>?</td></tr>
+<tr><td>Fix</td><td>See Int</td><td>1</td></tr>
+<tr><td>Format</td><td>Returns a Variant (String) containing an 
+	expression formatted according to instructions contained in a format 
+	expression.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Format(expression[, format[, firstdayofweek[, firstweekofyear]]])<br>
+	<br>
+	The Format function syntax has these parts:<br>
+	<br>
+	Part Description <br>
+	expression Required. Any valid expression. <br>
+	format Optional. A valid named or user-defined format expression. <br>
+	firstdayofweek Optional. A constant that specifies the first day of the 
+	week. <br>
+	firstweekofyear Optional. A constant that specifies the first week of the 
+	year. <br>
+	<br>
+	<br>
+	Settings<br>
+	<br>
+	The firstdayofweek argument has these settings:<br>
+	<br>
+	Constant Value Description <br>
+	vbUseSystem 0 Use NLS API setting. <br>
+	VbSunday 1 Sunday (default) <br>
+	vbMonday 2 Monday <br>
+	vbTuesday 3 Tuesday <br>
+	vbWednesday 4 Wednesday <br>
+	vbThursday 5 Thursday <br>
+	vbFriday 6 Friday <br>
+	vbSaturday 7 Saturday <br>
+	<br>
+	<br>
+	The firstweekofyear argument has these settings:<br>
+	<br>
+	Constant Value Description <br>
+	vbUseSystem 0 Use NLS API setting. <br>
+	vbFirstJan1 1 Start with week in which January 1 occurs (default). <br>
+	vbFirstFourDays 2 Start with the first week that has at least four days in 
+	the year. <br>
+	vbFirstFullWeek 3 Start with the first full week of the year. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	To Format Do This <br>
+	Numbers Use predefined named numeric formats or create user-defined numeric 
+	formats. <br>
+	Dates and times Use predefined named date/time formats or create 
+	user-defined date/time formats. <br>
+	Date and time serial numbers Use date and time formats or numeric formats.
+	<br>
+	Strings Create your own user-defined string formats. <br>
+	<br>
+	<br>
+	If you try to format a number without specifying format, Format provides 
+	functionality similar to the Str function, although it is internationally 
+	aware. However, positive numbers formatted as strings using Format dont 
+	include a leading space reserved for the sign of the value; those converted 
+	using Str retain the leading space.<br>
+	<br>
+	If you are formatting a non-localized numeric string, you should use a 
+	user-defined numeric format to ensure that you get the look you want.<br>
+	<br>
+	Note If the Calendar property setting is Gregorian and format specifies date 
+	formatting, the supplied expression must be Gregorian. If the Visual Basic 
+	Calendar property setting is Hijri, the supplied expression must be Hijri.<br>
+	<br>
+	If the calendar is Gregorian, the meaning of format expression symbols is 
+	unchanged. If the calendar is Hijri, all date format symbols (for example, 
+	dddd, mmmm, yyyy) have the same meaning but apply to the Hijri calendar. 
+	Format symbols remain in English; symbols that result in text display (for 
+	example, AM and PM) display the string (English or Arabic) associated with 
+	that symbol. The range of certain symbols changes when the calendar is Hijri.<br>
+	<br>
+	Symbol Range <br>
+	d 1-30 <br>
+	dd 1-30 <br>
+	ww 1-51 <br>
+	mmm Displays full month names (Hijri month names have no abbreviations). <br>
+	y 1-355 <br>
+	yyyy 100-9666 </td><td>?</td></tr>
+<tr><td>FormatCurrency</td><td>Returns an expression formatted as a 
+	currency value using the currency symbol defined in the system control 
+	panel.<br>
+	<br>
+	Syntax<br>
+	<br>
+	FormatCurrency(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers 
+	[,GroupDigits]]]])<br>
+	<br>
+	The FormatCurrency function syntax has these parts:<br>
+	<br>
+	Part Description <br>
+	Expression Required. Expression to be formatted. <br>
+	NumDigitsAfterDecimal Optional. Numeric value indicating how many places to 
+	the right of the decimal are displayed. Default value is 1, which indicates 
+	that the computer&apos;s regional settings are used. <br>
+	IncludeLeadingDigit Optional. Tristate constant that indicates whether or 
+	not a leading zero is displayed for fractional values. See Settings section 
+	for values. <br>
+	UseParensForNegativeNumbers Optional. Tristate constant that indicates 
+	whether or not to place negative values within parentheses. See Settings 
+	section for values. <br>
+	GroupDigits Optional. Tristate constant that indicates whether or not 
+	numbers are grouped using the group delimiter specified in the computer's 
+	regional settings. See Settings section for values. <br>
+	<br>
+	<br>
+	Settings<br>
+	<br>
+	The IncludeLeadingDigit, UseParensForNegativeNumbers, and GroupDigits 
+	arguments have the following settings:<br>
+	<br>
+	Constant Value Description <br>
+	vbTrue 1 True <br>
+	vbFalse 0 False <br>
+	vbUseDefault 2 Use the setting from the computer's regional settings. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	When one or more optional arguments are omitted, the values for omitted 
+	arguments are provided by the computer's regional settings.<br>
+	<br>
+	The position of the currency symbol relative to the currency value is 
+	determined by the system's regional settings.<br>
+	<br>
+	Note All settings information comes from the Regional Settings Currency tab, 
+	except leading zero which comes from the Number tab.</td><td>1</td></tr>
+<tr><td>FormatDateTime</td><td>Returns an expression formatted as a 
+	date or time.<br>
+	<br>
+	Syntax<br>
+	<br>
+	FormatDateTime(Date[,NamedFormat])<br>
+	<br>
+	The FormatDateTime function syntax has these parts:<br>
+	<br>
+	Part Description <br>
+	Date Required. Date expression to be formatted. <br>
+	NamedFormat Optional. Numeric value that indicates the date/time format 
+	used. If omitted, vbGeneralDate is used. <br>
+	<br>
+	<br>
+	Settings<br>
+	<br>
+	The NamedFormat argument has the following settings:<br>
+	<br>
+	Constant Value Description <br>
+	vbGeneralDate 0 Display a date and/or time. If there is a date part, display 
+	it as a short date. If there is a time part, display it as a long time. If 
+	present, both parts are displayed. <br>
+	vbLongDate 1 Display a date using the long date format specified in your 
+	computer's regional settings. <br>
+	vbShortDate 2 Display a date using the short date format specified in your 
+	computer's regional settings. <br>
+	vbLongTime 3 Display a time using the time format specified in your 
+	computer's regional settings. <br>
+	vbShortTime 4 Display a time using the 24-hour format (hh:mm). </td><td>1</td></tr>
+<tr><td>FormatNumber</td><td>Returns an expression formatted as a 
+	number.<br>
+	<br>
+	Syntax<br>
+	<br>
+	FormatNumber(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers 
+	[,GroupDigits]]]])<br>
+	<br>
+	The FormatNumber function syntax has these parts:<br>
+	<br>
+	Part Description <br>
+	Expression Required. Expression to be formatted. <br>
+	NumDigitsAfterDecimal Optional. Numeric value indicating how many places to 
+	the right of the decimal are displayed. Default value is 1, which indicates 
+	that the computer's regional settings are used. <br>
+	IncludeLeadingDigit Optional. Tristate constant that indicates whether or 
+	not a leading zero is displayed for fractional values. See Settings section 
+	for values. <br>
+	UseParensForNegativeNumbers Optional. Tristate constant that indicates 
+	whether or not to place negative values within parentheses. See Settings 
+	section for values. <br>
+	GroupDigits Optional. Tristate constant that indicates whether or not 
+	numbers are grouped using the group delimiter specified in the computer's 
+	regional settings. See Settings section for values. <br>
+	<br>
+	Settings<br>
+	<br>
+	The IncludeLeadingDigit, UseParensForNegativeNumbers, and GroupDigits 
+	arguments have the following settings:<br>
+	<br>
+	Constant Value Description <br>
+	vbTrue 1 True <br>
+	vbFalse 0 False <br>
+	vbUseDefault 2 Use the setting from the computer's regional settings. <br>
+	<br>
+	Remarks<br>
+	<br>
+	When one or more optional arguments are omitted, the values for omitted 
+	arguments are provided by the computer's regional settings.<br>
+	<br>
+	Note All settings information comes from the Regional Settings Number tab.</td><td>
+	1</td></tr>
+<tr><td>FormatPercent</td><td>Returns an expression formatted as a 
+	percentage (multipled by 100) with a trailing % character.<br>
+	<br>
+	Syntax<br>
+	<br>
+	FormatPercent(Expression[,NumDigitsAfterDecimal [,IncludeLeadingDigit [,UseParensForNegativeNumbers 
+	[,GroupDigits]]]])<br>
+	<br>
+	The FormatPercent function syntax has these parts:<br>
+	<br>
+	Part Description <br>
+	Expression Required. Expression to be formatted. <br>
+	NumDigitsAfterDecimal Optional. Numeric value indicating how many places to 
+	the right of the decimal are displayed. Default value is 1, which indicates 
+	that the computer's regional settings are used. <br>
+	IncludeLeadingDigit Optional. Tristate constant that indicates whether or 
+	not a leading zero is displayed for fractional values. See Settings section 
+	for values. <br>
+	UseParensForNegativeNumbers Optional. Tristate constant that indicates 
+	whether or not to place negative values within parentheses. See Settings 
+	section for values. <br>
+	GroupDigits Optional. Tristate constant that indicates whether or not 
+	numbers are grouped using the group delimiter specified in the computer's 
+	regional settings. See Settings section for values.<br>
+	<br>
+	Settings<br>
+	<br>
+	The IncludeLeadingDigit, UseParensForNegativeNumbers, and GroupDigits 
+	arguments have the following settings:<br>
+	<br>
+	Constant Value Description <br>
+	vbTrue 1 True <br>
+	vbFalse 0 False <br>
+	vbUseDefault 2 Use the setting from the computer's regional settings. <br>
+	<br>
+	Remarks<br>
+	<br>
+	When one or more optional arguments are omitted, the values for omitted 
+	arguments are provided by the computer's regional settings.<br>
+	<br>
+	Note All settings information comes from the Regional Settings Number tab.</td><td>
+	1</td></tr>
+<tr><td>FreeFile</td><td>Returns an Integer representing the next file 
+	number available for use by the Open statement.<br>
+	<br>
+	Syntax<br>
+	<br>
+	FreeFile[(rangenumber)]<br>
+	<br>
+	The optional rangenumber argument is a Variant that specifies the range from 
+	which the next free file number is to be returned. Specify a 0 (default) to 
+	return a file number in the range 1 255, inclusive. Specify a 1 to return a 
+	file number in the range 256 511.<br>
+	<br>
+	Remarks<br>
+	<br>
+	Use FreeFile to supply a file number that is not already in use.</td><td>-</td></tr>
+<tr><td>FV</td><td>Returns a Double specifying the future value of an 
+	annuity based on periodic, fixed payments and a fixed interest rate.<br>
+	<br>
+	Syntax<br>
+	<br>
+	FV(rate, nper, pmt[, pv[, type]])<br>
+	<br>
+	The FV function has these named arguments:<br>
+	<br>
+	Part Description <br>
+	rate Required. Double specifying interest rate per period. For example, if 
+	you get a car loan at an annual percentage rate (APR) of 10 percent and make 
+	monthly payments, the rate per period is 0.1/12, or 0.0083. <br>
+	nper Required. Integer specifying total number of payment periods in the 
+	annuity. For example, if you make monthly payments on a four-year car loan, 
+	your loan has a total of 4 * 12 (or 48) payment periods. <br>
+	pmt Required. Double specifying payment to be made each period. Payments 
+	usually contain principal and interest that doesn't change over the life of 
+	the annuity. <br>
+	pv Optional. Variant specifying present value (or lump sum) of a series of 
+	future payments. For example, when you borrow money to buy a car, the loan 
+	amount is the present value to the lender of the monthly car payments you 
+	will make. If omitted, 0 is assumed. <br>
+	type Optional. Variant specifying when payments are due. Use 0 if payments 
+	are due at the end of the payment period, or use 1 if payments are due at 
+	the beginning of the period. If omitted, 0 is assumed. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	An annuity is a series of fixed cash payments made over a period of time. An 
+	annuity can be a loan (such as a home mortgage) or an investment (such as a 
+	monthly savings plan).<br>
+	<br>
+	The rate and nper arguments must be calculated using payment periods 
+	expressed in the same units. For example, if rate is calculated using 
+	months, nper must also be calculated using months.<br>
+	<br>
+	For all arguments, cash paid out (such as deposits to savings) is 
+	represented by negative numbers; cash received (such as dividend checks) is 
+	represented by positive numbers.</td><td>2</td></tr>
+<tr><td>GetAllSettings</td><td>Returns a list of key settings and 
+	their respective values (originally created with SaveSetting) from an 
+	application's entry in the Windows registry.<br>
+	<br>
+	Syntax<br>
+	<br>
+	GetAllSettings(appname, section)<br>
+	<br>
+	The GetAllSettings function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	appname Required. String expression containing the name of the application 
+	or project whose key settings are requested. <br>
+	section Required. String expression containing the name of the section whose 
+	key settings are requested. GetAllSettings returns a Variant whose contents 
+	is a two-dimensional array of strings containing all the key settings in the 
+	specified section and their corresponding values. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	GetAllSettings returns an uninitialized Variant if either appname or section 
+	does not exist.</td><td>-</td></tr>
+<tr><td>GetAttr</td><td>Returns an Integer representing the attributes 
+	of a file, directory, or folder.<br>
+	<br>
+	Syntax<br>
+	<br>
+	GetAttr(pathname)<br>
+	<br>
+	The required pathname argument is a string expression that specifies a file 
+	name. The pathname may include the directory or folder, and the drive.<br>
+	<br>
+	Return Values<br>
+	<br>
+	The value returned by GetAttr is the sum of the following attribute values:<br>
+	<br>
+	Constant Value Description <br>
+	vbNormal 0 Normal. <br>
+	vbReadOnly 1 Read-only. <br>
+	vbHidden 2 Hidden. <br>
+	vbSystem 4 System file. <br>
+	vbDirectory 16 Directory or folder. <br>
+	vbArchive 32 File has changed since last backup. <br>
+	<br>
+	<br>
+	Note These constants are specified by Visual Basic for Applications. The 
+	names can be used anywhere in your code in place of the actual values.<br>
+	<br>
+	Remarks<br>
+	<br>
+	To determine which attributes are set, use the And operator to perform a 
+	bitwise comparison of the value returned by the GetAttr function and the 
+	value of the individual file attribute you want. If the result is not zero, 
+	that attribute is set for the named file. For example, the return value of 
+	the following And expression is zero if the Archive attribute is not set:<br>
+	<br>
+	Result = GetAttr(FName) And vbArchive<br>
+	A nonzero value is returned if the Archive attribute is set.</td><td>-</td></tr>
+<tr><td>GetObject</td><td>Returns a reference to an object provided by 
+	an ActiveX component.<br>
+	<br>
+	Syntax<br>
+	<br>
+	GetObject([pathname] [, class])<br>
+	<br>
+	The GetObject function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	pathname Optional; Variant (String). The full path and name of the file 
+	containing the object to retrieve. If pathname is omitted, class is 
+	required. <br>
+	class Optional; Variant (String). A string representing the class of the 
+	object. <br>
+	<br>
+	<br>
+	The class argument uses the syntax appname.objecttype and has these parts:<br>
+	<br>
+	Part Description <br>
+	appname Required; Variant (String). The name of the application providing 
+	the object. <br>
+	objecttype Required; Variant (String). The type or class of object to 
+	create. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	Use the GetObject function to access an ActiveX object from a file and 
+	assign the object to an object variable. Use the Set statement to assign the 
+	object returned by GetObject to the object variable. For example:<br>
+	<br>
+	Dim CADObject As Object<br>
+	Set CADObject = GetObject(&quot;C:\CAD\SCHEMA.CAD&quot;)<br>
+	When this code is executed, the application associated with the specified 
+	pathname is started and the object in the specified file is activated.<br>
+	<br>
+	If pathname is a zero-length string (&quot;&quot;), GetObject returns a new object 
+	instance of the specified type. If the pathname argument is omitted, 
+	GetObject returns a currently active object of the specified type. If no 
+	object of the specified type exists, an error occurs.<br>
+	<br>
+	Some applications allow you to activate part of a file. Add an exclamation 
+	point (!) to the end of the file name and follow it with a string that 
+	identifies the part of the file you want to activate. For information on how 
+	to create this string, see the documentation for the application that 
+	created the object.<br>
+	<br>
+	For example, in a drawing application you might have multiple layers to a 
+	drawing stored in a file. You could use the following code to activate a 
+	layer within a drawing called <br>
+	SCHEMA.CAD<br>
+	:<br>
+	<br>
+	Set LayerObject = GetObject(&quot;C:\CAD\SCHEMA.CAD!Layer3&quot;)<br>
+	If you don't specify the object's class, Automation determines the 
+	application to start and the object to activate, based on the file name you 
+	provide. Some files, however, may support more than one class of object. For 
+	example, a drawing might support three different types of objects: an 
+	Application object, a Drawing object, and a Toolbar object, all of which are 
+	part of the same file. To specify which object in a file you want to 
+	activate, use the optional class argument. For example:<br>
+	<br>
+	Dim MyObject As Object<br>
+	Set MyObject = GetObject(&quot;C:\DRAWINGS\SAMPLE.DRW&quot;, &quot;FIGMENT.DRAWING&quot;)<br>
+	In the example, <br>
+	FIGMENT<br>
+	is the name of a drawing application and <br>
+	DRAWING<br>
+	is one of the object types it supports.<br>
+	<br>
+	Once an object is activated, you reference it in code using the object 
+	variable you defined. In the preceding example, you access properties and 
+	methods of the new object using the object variable <br>
+	MyObject<br>
+	. For example:<br>
+	<br>
+	MyObject.Line 9, 90<br>
+	MyObject.InsertText 9, 100, &quot;Hello, world.&quot;<br>
+	MyObject.SaveAs &quot;C:\DRAWINGS\SAMPLE.DRW&quot;<br>
+	Note Use the GetObject function when there is a current instance of the 
+	object or if you want to create the object with a file already loaded. If 
+	there is no current instance, and you don't want the object started with a 
+	file loaded, use the CreateObject function.<br>
+	<br>
+	If an object has registered itself as a single-instance object, only one 
+	instance of the object is created, no matter how many times CreateObject is 
+	executed. With a single-instance object, GetObject always returns the same 
+	instance when called with the zero-length string (&quot;&quot;) syntax, and it causes 
+	an error if the pathname argument is omitted. You can't use GetObject to 
+	obtain a reference to a class created with Visual Basic.</td><td>-</td></tr>
+<tr><td>GetSetting</td><td>Returns a key setting value from an 
+	application's entry in the Windows registry.<br>
+	<br>
+	Syntax<br>
+	<br>
+	GetSetting(appname, section, key[, default])<br>
+	<br>
+	The GetSetting function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	appname Required. String expression containing the name of the application 
+	or project whose key setting is requested. <br>
+	section Required. String expression containing the name of the section where 
+	the key setting is found. <br>
+	key Required. String expression containing the name of the key setting to 
+	return. <br>
+	default Optional. Expression containing the value to return if no value is 
+	set in the key setting. If omitted, default is assumed to be a zero-length 
+	string (&quot;&quot;). <br>
+	<br>
+	Remarks<br>
+	<br>
+	If any of the items named in the GetSetting arguments do not exist, 
+	GetSetting returns the value of default.</td><td>-</td></tr>
+<tr><td>HelpContext</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>HelpFile</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>Hex</td><td>Returns a String representing the hexadecimal value 
+	of a number.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Hex(number)<br>
+	<br>
+	The required number argument is any valid numeric expression or string 
+	expression.<br>
+	<br>
+	Remarks<br>
+	<br>
+	If number is not already a whole number, it is rounded to the nearest whole 
+	number before being evaluated.<br>
+	<br>
+	If number is Hex returns <br>
+	Null Null <br>
+	Empty Zero (0) <br>
+	Any other number Up to eight hexadecimal characters <br>
+	<br>
+	<br>
+	You can represent hexadecimal numbers directly by preceding numbers in the 
+	proper range with <br>
+	&amp;H.<br>
+	For example, <br>
+	&amp;H10<br>
+	represents decimal 16 in hexadecimal notation.</td><td>1</td></tr>
+<tr><td>Hour</td><td>Returns a Variant (Integer) specifying a whole 
+	number between 0 and 23, inclusive, representing the hour of the day.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Hour(time)<br>
+	<br>
+	The required time argument is any Variant, numeric expression, string 
+	expression, or any combination, that can represent a time. If time contains 
+	Null, Null is returned.</td><td>1</td></tr>
+<tr><td>IIf</td><td>Returns one of two parts, depending on the 
+	evaluation of an expression.<br>
+	<br>
+	Syntax<br>
+	<br>
+	IIf(expr, truepart, falsepart)<br>
+	<br>
+	The IIf function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	expr Required. Expression you want to evaluate. <br>
+	truepart Required. Value or expression returned if expr is True. <br>
+	falsepart Required. Value or expression returned if expr is False. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	IIf always evaluates both truepart and falsepart, even though it returns 
+	only one of them. Because of this, you should watch for undesirable side 
+	effects. For example, if evaluating falsepart results in a division by zero 
+	error, an error occurs even if expr is True.</td><td>?</td></tr>
+<tr><td>IMEStatus</td><td>Returns an Integer specifying the current 
+	Input Method Editor (IME) mode of Microsoft Windows; available in East Asian 
+	versions only.<br>
+	<br>
+	Syntax<br>
+	<br>
+	IMEStatus<br>
+	<br>
+	Return Values<br>
+	<br>
+	The return values for the Japanese locale are as follows:<br>
+	<br>
+	Constant Value Description <br>
+	vbIMEModeNoControl 0 Don't control IME (default) <br>
+	vbIMEModeOn 1 IME on <br>
+	vbIMEModeOff 2 IME off <br>
+	vbIMEModeDisable 3 IME disabled <br>
+	vbIMEModeHiragana 4 Full-width Hiragana mode <br>
+	vbIMEModeKatakana 5 Full-width Katakana mode <br>
+	vbIMEModeKatakanaHalf 6 Half-width Katakana mode <br>
+	vbIMEModeAlphaFull 7 Full-width Alphanumeric mode <br>
+	vbIMEModeAlpha 8 Half-width Alphanumeric mode <br>
+	<br>
+	<br>
+	The return values for the Korean locale are as follows:<br>
+	<br>
+	Constant Value Description <br>
+	vbIMEModeNoControl 0 Don't control IME(default) <br>
+	vbIMEModeAlphaFull 7 Full-width Alphanumeric mode <br>
+	vbIMEModeAlpha 8 Half-width Alphanumeric mode <br>
+	vbIMEModeHangulFull 9 Full-width Hangul mode <br>
+	vbIMEModeHangul 10 Half-width Hangul mode <br>
+	<br>
+	<br>
+	The return values for the Chinese locale are as follows:<br>
+	<br>
+	Constant Value Description <br>
+	vbIMEModeNoControl 0 Don't control IME (default) <br>
+	vbIMEModeOn 1 IME on <br>
+	vbIMEModeOff 2 IME off </td><td>-</td></tr>
+<tr><td>Input</td><td>Returns String containing characters from a file 
+	opened in Input or Binary mode.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Input(number, [#]filenumber)<br>
+	<br>
+	The Input function syntax has these parts:<br>
+	<br>
+	Part Description <br>
+	number Required. Any valid numeric expression specifying the number of 
+	characters to return. <br>
+	filenumber Required. Any valid file number. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	Data read with the Input function is usually written to a file with Print # 
+	or Put. Use this function only with files opened in Input or Binary mode.<br>
+	<br>
+	Unlike the Input # statement, the Input function returns all of the 
+	characters it reads, including commas, carriage returns, linefeeds, 
+	quotation marks, and leading spaces.<br>
+	<br>
+	With files opened for Binary access, an attempt to read through the file 
+	using the Input function until EOF returns True generates an error. Use the 
+	LOF and Loc functions instead of EOF when reading binary files with Input, 
+	or use Get when using the EOF function.<br>
+	<br>
+	Security Note When reading from files, do not make decisions about the 
+	contents of the file based on the file name extension. For example, a file 
+	named Form1.vb may not be a Visual Basic source file.<br>
+	Note Use the InputB function for byte data contained within text files. With 
+	InputB, number specifies the number of bytes to return rather than the 
+	number of characters to return.</td><td>-</td></tr>
+<tr><td>InputB</td><td>&nbsp;</td><td>-</td></tr>
+<tr><td>InputBox</td><td>Displays a prompt in a dialog box, waits for 
+	the user to input text or click a button, and returns a String containing 
+	the contents of the text box.<br>
+	<br>
+	Syntax<br>
+	<br>
+	InputBox(prompt[, title] [, default] [, xpos] [, ypos] [, helpfile, 
+	context])<br>
+	<br>
+	The InputBox function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	prompt Required. String expression displayed as the message in the dialog 
+	box. The maximum length of prompt is approximately 1024 characters, 
+	depending on the width of the characters used. If prompt consists of more 
+	than one line, you can separate the lines using a carriage return character 
+	(Chr(13)), a linefeed character (Chr(10)), or carriage returnlinefeed 
+	character combination (Chr(13) &amp; Chr(10)) between each line. <br>
+	title Optional. String expression displayed in the title bar of the dialog 
+	box. If you omit title, the application name is placed in the title bar. <br>
+	default Optional. String expression displayed in the text box as the default 
+	response if no other input is provided. If you omit default, the text box is 
+	displayed empty. <br>
+	xpos Optional. Numeric expression that specifies, in twips, the horizontal 
+	distance of the left edge of the dialog box from the left edge of the 
+	screen. If xpos is omitted, the dialog box is horizontally centered. <br>
+	ypos Optional. Numeric expression that specifies, in twips, the vertical 
+	distance of the upper edge of the dialog box from the top of the screen. If 
+	ypos is omitted, the dialog box is vertically positioned approximately 
+	one-third of the way down the screen. <br>
+	helpfile Optional. String expression that identifies the Help file to use to 
+	provide context-sensitive Help for the dialog box. If helpfile is provided, 
+	context must also be provided. <br>
+	context Optional. Numeric expression that is the Help context number 
+	assigned to the appropriate Help topic by the Help author. If context is 
+	provided, helpfile must also be provided. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	When both helpfile and context are provided, the user can press F1 to view 
+	the Help topic corresponding to the context. Some host applications, for 
+	example, Microsoft Excel, also automatically add a Help button to the dialog 
+	box. If the user clicks OK or presses ENTER , the InputBox function returns 
+	whatever is in the text box. If the user clicks Cancel, the function returns 
+	a zero-length string (&quot;&quot;).<br>
+	<br>
+	Note To specify more than the first named argument, you must use InputBox in 
+	an expression. To omit some positional arguments, you must include the 
+	corresponding comma delimiter.</td><td>-</td></tr>
+<tr><td>InStr</td><td>Returns a Variant (Long) specifying the position 
+	of the first occurrence of one string within another.<br>
+	<br>
+	Syntax<br>
+	<br>
+	InStr([start, ]string1, string2[, compare])<br>
+	<br>
+	The InStr function syntax has these arguments:<br>
+	<br>
+	Part Description <br>
+	start Optional. Numeric expression that sets the starting position for each 
+	search. If omitted, search begins at the first character position. If start 
+	contains Null, an error occurs. The start argument is required if compare is 
+	specified. <br>
+	string1 Required. String expression being searched. <br>
+	string2 Required. String expression sought. <br>
+	compare Optional. Specifies the type of string comparison. If compare is 
+	Null, an error occurs. If compare is omitted, the Option Compare setting 
+	determines the type of comparison. Specify a valid LCID (LocaleID) to use 
+	locale-specific rules in the comparison. <br>
+	<br>
+	<br>
+	Settings<br>
+	<br>
+	The compare argument settings are:<br>
+	<br>
+	Constant Value Description <br>
+	vbUseCompareOption -1 Performs a comparison using the setting of the Option 
+	Compare statement. <br>
+	vbBinaryCompare 0 Performs a binary comparison. <br>
+	vbTextCompare 1 Performs a textual comparison. <br>
+	vbDatabaseCompare 2 Microsoft Access only. Performs a comparison based on 
+	information in your database. <br>
+	<br>
+	<br>
+	Return Values<br>
+	<br>
+	If InStr returns <br>
+	string1 is zero-length 0 <br>
+	string1 is Null Null <br>
+	string2 is zero-length start <br>
+	string2 is Null Null <br>
+	string2 is not found 0 <br>
+	string2 is found within string1 Position at which match is found <br>
+	start &gt; string2 0 <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	The InStrB function is used with byte data contained in a string. Instead of 
+	returning the character position of the first occurrence of one string 
+	within another, InStrB returns the byte position.</td><td>mondrian 2.4</td></tr>
+<tr><td>InStrB</td><td>See InStr.</td><td>-</td></tr>
+<tr><td>InStrRev</td><td>Returns the position of an occurrence of one 
+	string within another, from the end of string.<br>
+	<br>
+	Syntax<br>
+	<br>
+	InstrRev(stringcheck, stringmatch[, start[, compare]])<br>
+	<br>
+	The InstrRev function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	stringcheck Required. String expression being searched. <br>
+	stringmatch Required. String expression being searched for. <br>
+	start Optional. Numeric expression that sets the starting position for each 
+	search. If omitted, 1 is used, which means that the search begins at the 
+	last character position. If start contains Null, an error occurs.<br>
+	compare Optional. Numeric value indicating the kind of comparison to use 
+	when evaluating substrings. If omitted, a binary comparison is performed. 
+	See Settings section for values. <br>
+	<br>
+	Settings<br>
+	<br>
+	The compare argument can have the following values:<br>
+	<br>
+	Constant Value Description <br>
+	vbUseCompareOption 1 Performs a comparison using the setting of the Option 
+	Compare statement. <br>
+	vbBinaryCompare 0 Performs a binary comparison. <br>
+	vbTextCompare 1 Performs a textual comparison. <br>
+	vbDatabaseCompare 2 Microsoft Access only. Performs a comparison based on 
+	information in your database. <br>
+	<br>
+	<br>
+	Return Values<br>
+	<br>
+	InStrRev returns the following values:<br>
+	<br>
+	If InStrRev returns <br>
+	stringcheck is zero-length 0 <br>
+	stringcheck is Null Null <br>
+	stringmatch is zero-length start <br>
+	stringmatch is Null Null <br>
+	stringmatch is not found 0 <br>
+	stringmatch is found within stringcheck Position at which match is found <br>
+	start &gt; Len(stringmatch) 0 <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	Note that the syntax for the InstrRev function is not the same as the syntax 
+	for the Instr function.</td><td>1</td></tr>
+<tr><td>Int</td><td>Returns the integer portion of a number.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Int(number)<br>
+	Fix(number)<br>
+	<br>
+	The required number argument is a Double or any valid numeric expression. If 
+	number contains Null, Null is returned.<br>
+	<br>
+	Remarks<br>
+	<br>
+	Both Int and Fix remove the fractional part of number and return the 
+	resulting integer value.<br>
+	<br>
+	The difference between Int and Fix is that if number is negative, Int 
+	returns the first negative integer less than or equal to number, whereas Fix 
+	returns the first negative integer greater than or equal to number. For 
+	example, Int converts -8.4 to -9, and Fix converts -8.4 to -8.<br>
+	<br>
+	Fix(number) is equivalent to:<br>
+	<br>
+	Sgn(number) * Int(Abs(number))</td><td>1</td></tr>
+<tr><td>IPmt</td><td>Returns a Double specifying the interest payment 
+	for a given period of an annuity based on periodic, fixed payments and a 
+	fixed interest rate.<br>
+	<br>
+	Syntax<br>
+	<br>
+	IPmt(rate, per, nper, pv[, fv[, type]])<br>
+	<br>
+	The IPmt function has these named arguments:<br>
+	<br>
+	Part Description <br>
+	rate Required. Double specifying interest rate per period. For example, if 
+	you get a car loan at an annual percentage rate (APR) of 10 percent and make 
+	monthly payments, the rate per period is 0.1/12, or 0.0083. <br>
+	per Required. Double specifying payment period in the range 1 through nper.
+	<br>
+	nper Required. Double specifying total number of payment periods in the 
+	annuity. For example, if you make monthly payments on a four-year car loan, 
+	your loan has a total of 4 * 12 (or 48) payment periods. <br>
+	pv Required. Double specifying present value, or value today, of a series of 
+	future payments or receipts. For example, when you borrow money to buy a 
+	car, the loan amount is the present value to the lender of the monthly car 
+	payments you will make. <br>
+	fv Optional. Variant specifying future value or cash balance you want after 
+	you've made the final payment. For example, the future value of a loan is $0 
+	because that's its value after the final payment. However, if you want to 
+	save $50,000 over 18 years for your child's education, then $50,000 is the 
+	future value. If omitted, 0 is assumed. <br>
+	type Optional. Variant specifying when payments are due. Use 0 if payments 
+	are due at the end of the payment period, or use 1 if payments are due at 
+	the beginning of the period. If omitted, 0 is assumed. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	An annuity is a series of fixed cash payments made over a period of time. An 
+	annuity can be a loan (such as a home mortgage) or an investment (such as a 
+	monthly savings plan).<br>
+	<br>
+	The rate and nper arguments must be calculated using payment periods 
+	expressed in the same units. For example, if rate is calculated using 
+	months, nper must also be calculated using months.<br>
+	<br>
+	For all arguments, cash paid out (such as deposits to savings) is 
+	represented by negative numbers; cash received (such as dividend checks) is 
+	represented by positive numbers.</td><td>2</td></tr>
+<tr><td>IRR</td><td>Returns a Double specifying the internal rate of 
+	return for a series of periodic cash flows (payments and receipts).<br>
+	<br>
+	Syntax<br>
+	<br>
+	IRR(values()[, guess])<br>
+	<br>
+	The IRR function has these named arguments:<br>
+	<br>
+	Part Description <br>
+	values() Required. Array of Double specifying cash flow values. The array 
+	must contain at least one negative value (a payment) and one positive value 
+	(a receipt). <br>
+	guess Optional. Variant specifying value you estimate will be returned by 
+	IRR. If omitted, guess is 0.1 (10 percent). <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	The internal rate of return is the interest rate received for an investment 
+	consisting of payments and receipts that occur at regular intervals.<br>
+	<br>
+	The IRR function uses the order of values within the array to interpret the 
+	order of payments and receipts. Be sure to enter your payment and receipt 
+	values in the correct sequence. The cash flow for each period doesn't have 
+	to be fixed, as it is for an annuity.<br>
+	<br>
+	IRR is calculated by iteration. Starting with the value of guess, IRR cycles 
+	through the calculation until the result is accurate to within 0.00001 
+	percent. If IRR can't find a result after 20 tries, it fails.</td><td>2</td></tr>
+<tr><td>IsArray</td><td>Returns a Boolean value indicating whether a 
+	variable is an array.<br>
+	<br>
+	Syntax<br>
+	<br>
+	IsArray(varname)<br>
+	<br>
+	The required varname argument is an identifier specifying a variable.<br>
+	<br>
+	Remarks<br>
+	<br>
+	IsArray returns True if the variable is an array; otherwise, it returns 
+	False. IsArray is especially useful with variants containing arrays.</td><td>
+	2</td></tr>
+<tr><td>IsDate</td><td>Returns a Boolean value indicating whether an 
+	expression can be converted to a date.<br>
+	<br>
+	Syntax<br>
+	<br>
+	IsDate(expression)<br>
+	<br>
+	The required expression argument is a Variant containing a date expression 
+	or string expression recognizable as a date or time.<br>
+	<br>
+	Remarks<br>
+	<br>
+	IsDate returns True if the expression is a date or is recognizable as a 
+	valid date; otherwise, it returns False. In Microsoft Windows, the range of 
+	valid dates is January 1, 100 A.D. through December 31, 9999 A.D.; the 
+	ranges vary among operating systems.</td><td>1</td></tr>
+<tr><td>IsEmpty</td><td>Returns a Boolean value indicating whether a 
+	variable has been initialized.<br>
+	<br>
+	Syntax<br>
+	<br>
+	IsEmpty(expression)<br>
+	<br>
+	The required expression argument is a Variant containing a numeric or string 
+	expression. However, because IsEmpty is used to determine if individual 
+	variables are initialized, the expression argument is most often a single 
+	variable name.<br>
+	<br>
+	Remarks<br>
+	<br>
+	IsEmpty returns True if the variable is uninitialized, or is explicitly set 
+	to Empty; otherwise, it returns False. False is always returned if 
+	expression contains more than one variable. IsEmpty only returns meaningful 
+	information for variants.</td><td>since mondrian 0.6</td></tr>
+<tr><td>IsError</td><td>Returns a Boolean value indicating whether an 
+	expression is an error value.<br>
+	<br>
+	Syntax<br>
+	<br>
+	IsError(expression)<br>
+	<br>
+	The required expression argument can be any valid expression.<br>
+	<br>
+	Remarks<br>
+	<br>
+	Error values are created by converting real numbers to error values using 
+	the CVErr function. The IsError function is used to determine if a numeric 
+	expression represents an error. IsError returns True if the expression 
+	argument indicates an error; otherwise, it returns False. </td><td>?</td></tr>
+<tr><td>IsMissing</td><td>Returns a Boolean value indicating whether 
+	an optional Variant argument has been passed to a procedure.<br>
+	<br>
+	Syntax<br>
+	<br>
+	IsMissing(argname)<br>
+	<br>
+	The required argname argument contains the name of an optional Variant 
+	procedure argument.<br>
+	<br>
+	Remarks<br>
+	<br>
+	Use the IsMissing function to detect whether or not optional Variant 
+	arguments have been provided in calling a procedure. IsMissing returns True 
+	if no value has been passed for the specified argument; otherwise, it 
+	returns False. If IsMissing returns True for an argument, use of the missing 
+	argument in other code may cause a user-defined error. If IsMissing is used 
+	on a ParamArray argument, it always returns False. To detect an empty 
+	ParamArray, test to see if the arrays upper bound is less than its lower 
+	bound.<br>
+	<br>
+	Note IsMissing does not work on simple data types (such as Integer or 
+	Double) because, unlike Variants, they don't have a provision for a 
+	&quot;missing&quot; flag bit. Because of this, the syntax for typed optional arguments 
+	allows you to specify a default value. If the argument is omitted when the 
+	procedure is called, then the argument will have this default value, as in 
+	the example below:<br>
+	<br>
+	Sub MySub(Optional MyVar As String = &quot;specialvalue&quot;)<br>
+	If MyVar = &quot;specialvalue&quot; Then<br>
+	' MyVar was omitted.<br>
+	Else<br>
+	...<br>
+	End Sub<br>
+	In many cases you can omit the <br>
+	If MyVar<br>
+	test entirely by making the default value equal to the value you want <br>
+	MyVar<br>
+	to contain if the user omits it from the function call. This makes your code 
+	more concise and efficient.</td><td>?</td></tr>
+<tr><td>IsNull</td><td>Returns a Boolean value that indicates whether 
+	an expression contains no valid data (Null).<br>
+	<br>
+	Syntax<br>
+	<br>
+	IsNull(expression)<br>
+	<br>
+	The required expression argument is a Variant containing a numeric 
+	expression or string expression.<br>
+	<br>
+	Remarks<br>
+	<br>
+	IsNull returns True if expression is Null; otherwise, IsNull returns False. 
+	If expression consists of more than one variable, Null in any constituent 
+	variable causes True to be returned for the entire expression.<br>
+	<br>
+	The Null value indicates that the Variant contains no valid data. Null is 
+	not the same as Empty, which indicates that a variable has not yet been 
+	initialized. It is also not the same as a zero-length string (&quot;&quot;), which is 
+	sometimes referred to as a null string.<br>
+	<br>
+	Important Use the IsNull function to determine whether an expression 
+	contains a Null value. Expressions that you might expect to evaluate to True 
+	under some circumstances, such as <br>
+	If Var = Null<br>
+	and <br>
+	If Var &lt;&gt; Null<br>
+	, are always False. This is because any expression containing a Null is 
+	itself Null and, therefore, False.</td><td>1</td></tr>
+<tr><td>IsNumeric</td><td>Returns a Boolean value indicating whether an 
+	expression can be evaluated as a number.<br>
+	<br>
+	Syntax<br>
+	<br>
+	IsNumeric(expression)<br>
+	<br>
+	The required expression argument is a Variant containing a numeric 
+	expression or string expression.<br>
+	<br>
+	Remarks<br>
+	<br>
+	IsNumeric returns True if the entire expression is recognized as a number; 
+	otherwise, it returns False.<br>
+	<br>
+	IsNumeric returns False if expression is a date expression.</td><td>1</td></tr>
+<tr><td>IsObject</td><td>Returns a Boolean value indicating whether an 
+	identifier represents an object variable.<br>
+	<br>
+	Syntax<br>
+	<br>
+	IsObject(identifier)<br>
+	<br>
+	The required identifier argument is a variable name.<br>
+	<br>
+	Remarks<br>
+	<br>
+	IsObject is useful only in determining whether a Variant is of VarType 
+	vbObject. This could occur if the Variant actually references (or once 
+	referenced) an object, or if it contains Nothing.<br>
+	<br>
+	IsObject returns True if identifier is a variable declared with Object type 
+	or any valid class type, or if identifier is a Variant of VarType vbObject, 
+	or a user-defined object; otherwise, it returns False. IsObject returns True 
+	even if the variable has been set to Nothing.<br>
+	<br>
+	Use error trapping to be sure that an object reference is valid.</td><td>2</td></tr>
+<tr><td>Item</td><td>&nbsp;</td><td>?</td></tr>
+<tr><td>Join</td><td>Returns a string created by joining a number of 
+	substrings contained in an array.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Join(sourcearray[, delimiter])<br>
+	<br>
+	The Join function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	sourcearray Required. One-dimensional array containing substrings to be 
+	joined. <br>
+	delimiter Optional. String character used to separate the substrings in the 
+	returned string. If omitted, the space character (&quot; &quot;) is used. If delimiter 
+	is a zero-length string (&quot;&quot;), all items in the list are concatenated with no 
+	delimiters. </td><td>-</td></tr>
+<tr><td>Kill</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>LastDllError</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>LCase</td><td>Returns a String that has been converted to 
+	lowercase.<br>
+	<br>
+	Syntax<br>
+	<br>
+	LCase(string)<br>
+	<br>
+	The required string argument is any valid string expression. If string 
+	contains Null, Null is returned.<br>
+	<br>
+	Remarks<br>
+	<br>
+	Only uppercase letters are converted to lowercase; all lowercase letters and 
+	nonletter characters remain unchanged.</td><td>1</td></tr>
+<tr><td>Left</td><td>Returns a Variant (String) containing a specified 
+	number of characters from the left side of a string.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Left(string, length)<br>
+	<br>
+	The Left function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	string Required. String expression from which the leftmost characters are 
+	returned. If string contains Null, Null is returned. <br>
+	length Required; Variant (Long). Numeric expression indicating how many 
+	characters to return. If 0, a zero-length string (&quot;&quot;) is returned. If 
+	greater than or equal to the number of characters in string, the entire 
+	string is returned. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	To determine the number of characters in string, use the Len function.<br>
+	<br>
+	Note Use the LeftB function with byte data contained in a string. Instead of 
+	specifying the number of characters to return, length specifies the number 
+	of bytes.</td><td>mondrian 2.4</td></tr>
+<tr><td>LeftB</td><td>See Left.</td><td>&nbsp;</td></tr>
+<tr><td>Len</td><td>Returns a Long containing the number of characters 
+	in a string or the number of bytes required to store a variable.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Len(string | varname)<br>
+	<br>
+	The Len function syntax has these parts:<br>
+	<br>
+	Part Description <br>
+	string Any valid string expression. If string contains Null, Null is 
+	returned. <br>
+	Varname Any valid variable name. If varname contains Null, Null is returned. 
+	If varname is a Variant, Len treats it the same as a String and always 
+	returns the number of characters it contains. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	One (and only one) of the two possible arguments must be specified. With 
+	user-defined types, Len returns the size as it will be written to the file.<br>
+	<br>
+	Note Use the LenB function with byte data contained in a string, as in 
+	double-byte character set (DBCS) languages. Instead of returning the number 
+	of characters in a string, LenB returns the number of bytes used to 
+	represent that string. With user-defined types, LenB returns the in-memory 
+	size, including any padding between elements. For sample code that uses LenB, 
+	see the second example in the example topic. <br>
+	<br>
+	Note Len may not be able to determine the actual number of storage bytes 
+	required when used with variable-length strings in user-defined data types.</td><td>
+	mondrian 2.4</td></tr>
+<tr><td>LenB</td><td>See Len.</td><td>&nbsp;</td></tr>
+<tr><td>Loc</td><td>Returns a Long specifying the current read/write 
+	position within an open file.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Loc(filenumber)<br>
+	<br>
+	The required filenumber argument is any valid Integer file number.<br>
+	<br>
+	Remarks<br>
+	<br>
+	The following describes the return value for each file access mode:<br>
+	<br>
+	Mode Return Value <br>
+	Random Number of the last record read from or written to the file. <br>
+	Sequential Current byte position in the file divided by 128. However, 
+	information returned by Loc for sequential files is neither used nor 
+	required. <br>
+	Binary Position of the last byte read or written. </td><td>-</td></tr>
+<tr><td>LOF</td><td>Returns a Long representing the size, in bytes, of 
+	a file opened using the Open statement.<br>
+	<br>
+	Syntax<br>
+	<br>
+	LOF(filenumber)<br>
+	<br>
+	The required filenumber argument is an Integer containing a valid file 
+	number.<br>
+	<br>
+	Note Use the FileLen function to obtain the length of a file that is not 
+	open.</td><td>-</td></tr>
+<tr><td>Log</td><td>Returns a Double specifying the natural logarithm 
+	of a number.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Log(number)<br>
+	<br>
+	The required number argument is a Double or any valid numeric expression 
+	greater than zero.<br>
+	<br>
+	Remarks<br>
+	<br>
+	The natural logarithm is the logarithm to the base e. The constant e is 
+	approximately 2.718282.<br>
+	<br>
+	You can calculate base-n logarithms for any number x by dividing the natural 
+	logarithm of x by the natural logarithm of n as follows:<br>
+	<br>
+	Logn(x) = Log(x) / Log(n)<br>
+	<br>
+	The following example illustrates a custom Function that calculates base-10 
+	logarithms:<br>
+	<br>
+	Static Function Log10(X)<br>
+	Log10 = Log(X) / Log(10#)<br>
+	End Function</td><td>1</td></tr>
+<tr><td>LTrim</td><td>Returns a Variant (String) containing a copy of a 
+	specified string without leading spaces (LTrim), trailing spaces (RTrim), or 
+	both leading and trailing spaces (Trim).<br>
+	<br>
+	Syntax<br>
+	<br>
+	LTrim(string)<br>
+	RTrim(string)<br>
+	Trim(string)<br>
+	<br>
+	The required string argument is any valid string expression. If string 
+	contains Null, Null is returned.</td><td>1</td></tr>
+<tr><td>Mid</td><td>Returns a Variant (String) containing a specified 
+	number of characters from a string.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Mid(string, start[, length])<br>
+	<br>
+	The Mid function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	string Required. String expression from which characters are returned. If 
+	string contains Null, Null is returned. <br>
+	start Required; Long. Character position in string at which the part to be 
+	taken begins. If start is greater than the number of characters in string, 
+	Mid returns a zero-length string (&quot;&quot;). <br>
+	length Optional; Variant (Long). Number of characters to return. If omitted 
+	or if there are fewer than length characters in the text (including the 
+	character at start), all characters from the start position to the end of 
+	the string are returned. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	To determine the number of characters in string, use the Len function.<br>
+	<br>
+	Note Use the MidB function with byte data contained in a string, as in 
+	double-byte character set languages. Instead of specifying the number of 
+	characters, the arguments specify numbers of bytes. For sample code that 
+	uses MidB, see the second example in the example topic.</td><td>mondrian 2.4</td></tr>
+<tr><td>MidB</td><td>See Mid.</td><td>-</td></tr>
+<tr><td>Minute</td><td>Returns a Variant (Integer) specifying a whole 
+	number between 0 and 59, inclusive, representing the minute of the hour.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Minute(time)<br>
+	<br>
+	The required time argument is any Variant, numeric expression, string 
+	expression, or any combination, that can represent a time. If time contains 
+	Null, Null is returned.</td><td>1</td></tr>
+<tr><td>MIRR</td><td>Returns a Double specifying the modified internal 
+	rate of return for a series of periodic cash flows (payments and receipts).<br>
+	<br>
+	Syntax<br>
+	<br>
+	MIRR(values(), finance_rate, reinvest_rate)<br>
+	<br>
+	The MIRR function has these named arguments:<br>
+	<br>
+	Part Description <br>
+	values() Required. Array of Double specifying cash flow values. The array 
+	must contain at least one negative value (a payment) and one positive value 
+	(a receipt). <br>
+	finance_rate Required. Double specifying interest rate paid as the cost of 
+	financing. <br>
+	reinvest_rate Required. Double specifying interest rate received on gains 
+	from cash reinvestment. <br>
+	<br>
+	Remarks<br>
+	<br>
+	The modified internal rate of return is the internal rate of return when 
+	payments and receipts are financed at different rates. The MIRR function 
+	takes into account both the cost of the investment (finance_rate) and the 
+	interest rate received on reinvestment of cash (reinvest_rate).<br>
+	<br>
+	The finance_rate and reinvest_rate arguments are percentages expressed as 
+	decimal values. For example, 12 percent is expressed as 0.12.<br>
+	<br>
+	The MIRR function uses the order of values within the array to interpret the 
+	order of payments and receipts. Be sure to enter your payment and receipt 
+	values in the correct sequence.</td><td>2</td></tr>
+<tr><td>MkDir</td><td>&nbsp;</td><td>-</td></tr>
+<tr><td>Month</td><td>Returns a Variant (Integer) specifying a whole 
+	number between 1 and 12, inclusive, representing the month of the year.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Month(date)<br>
+	<br>
+	The required date argument is any Variant, numeric expression, string 
+	expression, or any combination, that can represent a date. If date contains 
+	Null, Null is returned.<br>
+	<br>
+	Note If the Calendar property setting is Gregorian, the returned integer 
+	represents the Gregorian day of the week for the date argument. If the 
+	calendar is Hijri, the returned integer represents the Hijri day of the week 
+	for the date argument. For Hijri dates, the argument number is any numeric 
+	expression that can represent a date and/or time from 1/1/100 (Gregorian Aug 
+	2, 718) through 4/3/9666 (Gregorian Dec 31, 9999).</td><td>1</td></tr>
+<tr><td>MonthName</td><td>Returns a string indicating the specified 
+	month.<br>
+	<br>
+	Syntax<br>
+	<br>
+	MonthName(month[, abbreviate])<br>
+	<br>
+	The MonthName function syntax has these parts:<br>
+	<br>
+	Part Description <br>
+	month Required. The numeric designation of the month. For example, January 
+	is 1, February is 2, and so on. <br>
+	abbreviate Optional. Boolean value that indicates if the month name is to be 
+	abbreviated. If omitted, the default is False, which means that the month 
+	name is not abbreviated. </td><td>1</td></tr>
+<tr><td>MsgBox</td><td>Displays a message in a dialog box, waits for 
+	the user to click a button, and returns an Integer indicating which button 
+	the user clicked.<br>
+	<br>
+	Syntax<br>
+	<br>
+	MsgBox(prompt[, buttons] [, title] [, helpfile, context])<br>
+	<br>
+	The MsgBox function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	prompt Required. String expression displayed as the message in the dialog 
+	box. The maximum length of prompt is approximately 1024 characters, 
+	depending on the width of the characters used. If prompt consists of more 
+	than one line, you can separate the lines using a carriage return character 
+	(Chr(13)), a linefeed character (Chr(10)), or carriage return linefeed 
+	character combination (Chr(13) &amp; Chr(10)) between each line. <br>
+	buttons Optional. Numeric expression that is the sum of values specifying 
+	the number and type of buttons to display, the icon style to use, the 
+	identity of the default button, and the modality of the message box. If 
+	omitted, the default value for buttons is 0. <br>
+	title Optional. String expression displayed in the title bar of the dialog 
+	box. If you omit title, the application name is placed in the title bar. <br>
+	helpfile Optional. String expression that identifies the Help file to use to 
+	provide context-sensitive Help for the dialog box. If helpfile is provided, 
+	context must also be provided. <br>
+	context Optional. Numeric expression that is the Help context number 
+	assigned to the appropriate Help topic by the Help author. If context is 
+	provided, helpfile must also be provided. <br>
+	<br>
+	<br>
+	Settings<br>
+	<br>
+	The buttons argument settings are:<br>
+	<br>
+	Constant Value Description <br>
+	vbOKOnly 0 Display OK button only. <br>
+	vbOKCancel 1 Display OK and Cancel buttons. <br>
+	vbAbortRetryIgnore 2 Display Abort, Retry, and Ignore buttons. <br>
+	vbYesNoCancel 3 Display Yes, No, and Cancel buttons. <br>
+	vbYesNo 4 Display Yes and No buttons. <br>
+	vbRetryCancel 5 Display Retry and Cancel buttons. <br>
+	vbCritical 16 Display Critical Message icon. <br>
+	vbQuestion 32 Display Warning Query icon. <br>
+	vbExclamation 48 Display Warning Message icon. <br>
+	vbInformation 64 Display Information Message icon. <br>
+	vbDefaultButton1 0 First button is default. <br>
+	vbDefaultButton2 256 Second button is default. <br>
+	vbDefaultButton3 512 Third button is default. <br>
+	vbDefaultButton4 768 Fourth button is default. <br>
+	vbApplicationModal 0 Application modal; the user must respond to the message 
+	box before continuing work in the current application. <br>
+	vbSystemModal 4096 System modal; all applications are suspended until the 
+	user responds to the message box. <br>
+	vbMsgBoxHelpButton 16384 Adds Help button to the message box <br>
+	VbMsgBoxSetForeground 65536 Specifies the message box window as the 
+	foreground window <br>
+	vbMsgBoxRight 524288 Text is right aligned <br>
+	vbMsgBoxRtlReading 1048576 Specifies text should appear as right-to-left 
+	reading on Hebrew and Arabic systems <br>
+	<br>
+	<br>
+	The first group of values (05) describes the number and type of buttons 
+	displayed in the dialog box; the second group (16, 32, 48, 64) describes the 
+	icon style; the third group (0, 256, 512) determines which button is the 
+	default; and the fourth group (0, 4096) determines the modality of the 
+	message box. When adding numbers to create a final value for the buttons 
+	argument, use only one number from each group.<br>
+	<br>
+	Note These constants are specified by Visual Basic for Applications. As a 
+	result, the names can be used anywhere in your code in place of the actual 
+	values.<br>
+	<br>
+	Return Values<br>
+	<br>
+	Constant Value Description <br>
+	vbOK 1 OK <br>
+	vbCancel 2 Cancel <br>
+	vbAbort 3 Abort <br>
+	vbRetry 4 Retry <br>
+	vbIgnore 5 Ignore <br>
+	vbYes 6 Yes <br>
+	vbNo 7 No <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	When both helpfile and context are provided, the user can press F1 to view 
+	the Help topic corresponding to the context. Some host applications, for 
+	example, Microsoft Excel, also automatically add a Help button to the dialog 
+	box.<br>
+	<br>
+	If the dialog box displays a Cancel button, pressing the ESC key has the 
+	same effect as clicking Cancel. If the dialog box contains a Help button, 
+	context-sensitive Help is provided for the dialog box. However, no value is 
+	returned until one of the other buttons is clicked.<br>
+	<br>
+	Note To specify more than the first named argument, you must use MsgBox in 
+	an expression. To omit some positional arguments, you must include the 
+	corresponding comma delimiter.</td><td>-</td></tr>
+<tr><td>Now</td><td>Returns a Variant (Date) specifying the current 
+	date and time according your computer's system date and time.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Now</td><td>1</td></tr>
+<tr><td>NPer</td><td>Returns a Double specifying the number of periods 
+	for an annuity based on periodic, fixed payments and a fixed interest rate.<br>
+	<br>
+	Syntax<br>
+	<br>
+	NPer(rate, pmt, pv[, fv[, type]])<br>
+	<br>
+	The NPer function has these named arguments:<br>
+	<br>
+	Part Description <br>
+	rate Required. Double specifying interest rate per period. For example, if 
+	you get a car loan at an annual percentage rate (APR) of 10 percent and make 
+	monthly payments, the rate per period is 0.1/12, or 0.0083. <br>
+	pmt Required. Double specifying payment to be made each period. Payments 
+	usually contain principal and interest that doesn't change over the life of 
+	the annuity. <br>
+	pv Required. Double specifying present value, or value today, of a series of 
+	future payments or receipts. For example, when you borrow money to buy a 
+	car, the loan amount is the present value to the lender of the monthly car 
+	payments you will make. <br>
+	fv Optional. Variant specifying future value or cash balance you want after 
+	you've made the final payment. For example, the future value of a loan is $0 
+	because that's its value after the final payment. However, if you want to 
+	save $50,000 over 18 years for your child's education, then $50,000 is the 
+	future value. If omitted, 0 is assumed. <br>
+	type Optional. Variant specifying when payments are due. Use 0 if payments 
+	are due at the end of the payment period, or use 1 if payments are due at 
+	the beginning of the period. If omitted, 0 is assumed. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	An annuity is a series of fixed cash payments made over a period of time. An 
+	annuity can be a loan (such as a home mortgage) or an investment (such as a 
+	monthly savings plan).<br>
+	<br>
+	For all arguments, cash paid out (such as deposits to savings) is 
+	represented by negative numbers; cash received (such as dividend checks) is 
+	represented by positive numbers.</td><td>2</td></tr>
+<tr><td>NPV</td><td>Returns a Double specifying the net present value 
+	of an investment based on a series of periodic cash flows (payments and 
+	receipts) and a discount rate.<br>
+	<br>
+	Syntax<br>
+	<br>
+	NPV(rate, values())<br>
+	<br>
+	The NPV function has these named arguments:<br>
+	<br>
+	Part Description <br>
+	rate Required. Double specifying discount rate over the length of the 
+	period, expressed as a decimal. <br>
+	values() Required. Array of Double specifying cash flow values. The array 
+	must contain at least one negative value (a payment) and one positive value 
+	(a receipt). <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	The net present value of an investment is the current value of a future 
+	series of payments and receipts.<br>
+	<br>
+	The NPV function uses the order of values within the array to interpret the 
+	order of payments and receipts. Be sure to enter your payment and receipt 
+	values in the correct sequence.<br>
+	<br>
+	The NPV investment begins one period before the date of the first cash flow 
+	value and ends with the last cash flow value in the array.<br>
+	<br>
+	The net present value calculation is based on future cash flows. If your 
+	first cash flow occurs at the beginning of the first period, the first value 
+	must be added to the value returned by NPV and must not be included in the 
+	cash flow values of values( ).<br>
+	<br>
+	The NPV function is similar to the PV function (present value) except that 
+	the PV function allows cash flows to begin either at the end or the 
+	beginning of a period. Unlike the variable NPV cash flow values, PV cash 
+	flows must be fixed throughout the investment.</td><td>2</td></tr>
+<tr><td>Number</td><td>&nbsp;</td><td>?</td></tr>
+<tr><td>Oct</td><td>Returns a Variant (String) representing the octal 
+	value of a number.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Oct(number)<br>
+	<br>
+	The required number argument is any valid numeric expression or string 
+	expression.<br>
+	<br>
+	Remarks<br>
+	<br>
+	If number is not already a whole number, it is rounded to the nearest whole 
+	number before being evaluated.<br>
+	<br>
+	If number is Oct returns <br>
+	Null Null <br>
+	Empty Zero (0) <br>
+	Any other number Up to 11 octal characters <br>
+	<br>
+	<br>
+	You can represent octal numbers directly by preceding numbers in the proper 
+	range with <br>
+	&amp;O<br>
+	. For example, <br>
+	&amp;O10<br>
+	is the octal notation for decimal 8.</td><td>1</td></tr>
+<tr><td>Partition</td><td>Returns a Variant (String) indicating where a 
+	number occurs within a calculated series of ranges.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Partition(number, start, stop, interval)<br>
+	<br>
+	The Partition function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	number Required. Whole number that you want to evaluate against the ranges.
+	<br>
+	start Required. Whole number that is the start of the overall range of 
+	numbers. The number can't be less than 0. <br>
+	stop Required. Whole number that is the end of the overall range of numbers. 
+	The number can't be equal to or less than start. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	The Partition function identifies the particular range in which number falls 
+	and returns a Variant (String) describing that range. The Partition function 
+	is most useful in queries. You can create a select query that shows how many 
+	orders fall within various ranges, for example, order values from 1 to 1000, 
+	1001 to 2000, and so on.<br>
+	<br>
+	The following table shows how the ranges are determined using three sets of 
+	start, stop, and interval parts. The First Range and Last Range columns show 
+	what Partition returns. The ranges are represented by lowervalue:uppervalue, 
+	where the low end (lowervalue) of the range is separated from the high end (uppervalue) 
+	of the range with a colon (:).<br>
+	<br>
+	start stop interval Before First First Range Last Range After Last <br>
+	0 99 5 &quot; :-1&quot; &quot; 0: 4&quot; &quot; 95: 99&quot; &quot; 100: &quot; <br>
+	20 199 10 &quot; : 19&quot; &quot; 20: 29&quot; &quot; 190: 199&quot; &quot; 200: &quot; <br>
+	100 1010 20 &quot; : 99&quot; &quot; 100: 119&quot; &quot; 1000: 1010&quot; &quot; 1011: &quot; <br>
+	<br>
+	<br>
+	In the table shown above, the third line shows the result when start and 
+	stop define a set of numbers that can't be evenly divided by interval. The 
+	last range extends to stop (11 numbers) even though interval is 20.<br>
+	<br>
+	If necessary, Partition returns a range with enough leading spaces so that 
+	there are the same number of characters to the left and right of the colon 
+	as there are characters in stop, plus one. This ensures that if you use 
+	Partition with other numbers, the resulting text will be handled properly 
+	during any subsequent sort operation.<br>
+	<br>
+	If interval is 1, the range is number:number, regardless of the start and 
+	stop arguments. For example, if interval is 1, number is 100 and stop is 
+	1000, Partition returns &quot; 100: 100&quot;.<br>
+	<br>
+	If any of the parts is Null, Partition returns a Null.</td><td>2</td></tr>
+<tr><td>Pmt</td><td>Returns a Double specifying the payment for an 
+	annuity based on periodic, fixed payments and a fixed interest rate.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Pmt(rate, nper, pv[, fv[, type]])<br>
+	<br>
+	The Pmt function has these named arguments:<br>
+	<br>
+	Part Description <br>
+	rate Required. Double specifying interest rate per period. For example, if 
+	you get a car loan at an annual percentage rate (APR) of 10 percent and make 
+	monthly payments, the rate per period is 0.1/12, or 0.0083. <br>
+	nper Required. Integer specifying total number of payment periods in the 
+	annuity. For example, if you make monthly payments on a four-year car loan, 
+	your loan has a total of 4 * 12 (or 48) payment periods. <br>
+	pv Required. Double specifying present value (or lump sum) that a series of 
+	payments to be paid in the future is worth now. For example, when you borrow 
+	money to buy a car, the loan amount is the present value to the lender of 
+	the monthly car payments you will make. <br>
+	fv Optional. Variant specifying future value or cash balance you want after 
+	you've made the final payment. For example, the future value of a loan is $0 
+	because that's its value after the final payment. However, if you want to 
+	save $50,000 over 18 years for your child's education, then $50,000 is the 
+	future value. If omitted, 0 is assumed. <br>
+	type Optional. Variant specifying when payments are due. Use 0 if payments 
+	are due at the end of the payment period, or use 1 if payments are due at 
+	the beginning of the period. If omitted, 0 is assumed. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	An annuity is a series of fixed cash payments made over a period of time. An 
+	annuity can be a loan (such as a home mortgage) or an investment (such as a 
+	monthly savings plan).<br>
+	<br>
+	The rate and nper arguments must be calculated using payment periods 
+	expressed in the same units. For example, if rate is calculated using 
+	months, nper must also be calculated using months.<br>
+	<br>
+	For all arguments, cash paid out (such as deposits to savings) is 
+	represented by negative numbers; cash received (such as dividend checks) is 
+	represented by positive numbers.</td><td>2</td></tr>
+<tr><td>PPmt</td><td>Returns a Double specifying the principal payment 
+	for a given period of an annuity based on periodic, fixed payments and a 
+	fixed interest rate.<br>
+	<br>
+	Syntax<br>
+	<br>
+	PPmt(rate, per, nper, pv[, fv[, type]])<br>
+	<br>
+	The PPmt function has these named arguments:<br>
+	<br>
+	Part Description <br>
+	rate Required. Double specifying interest rate per period. For example, if 
+	you get a car loan at an annual percentage rate (APR) of 10 percent and make 
+	monthly payments, the rate per period is 0.1/12, or 0.0083. <br>
+	per Required. Integer specifying payment period in the range 1 through nper.
+	<br>
+	nper Required. Integer specifying total number of payment periods in the 
+	annuity. For example, if you make monthly payments on a four-year car loan, 
+	your loan has a total of 4 * 12 (or 48) payment periods. <br>
+	pv Required. Double specifying present value, or value today, of a series of 
+	future payments or receipts. For example, when you borrow money to buy a 
+	car, the loan amount is the present value to the lender of the monthly car 
+	payments you will make. <br>
+	fv Optional. Variant specifying future value or cash balance you want after 
+	you've made the final payment. For example, the future value of a loan is $0 
+	because that's its value after the final payment. However, if you want to 
+	save $50,000 over 18 years for your child's education, then $50,000 is the 
+	future value. If omitted, 0 is assumed. <br>
+	type Optional. Variant specifying when payments are due. Use 0 if payments 
+	are due at the end of the payment period, or use 1 if payments are due at 
+	the beginning of the period. If omitted, 0 is assumed. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	An annuity is a series of fixed cash payments made over a period of time. An 
+	annuity can be a loan (such as a home mortgage) or an investment (such as a 
+	monthly savings plan).<br>
+	<br>
+	The rate and nper arguments must be calculated using payment periods 
+	expressed in the same units. For example, if rate is calculated using 
+	months, nper must also be calculated using months.<br>
+	<br>
+	For all arguments, cash paid out (such as deposits to savings) is 
+	represented by negative numbers; cash received (such as dividend checks) is 
+	represented by positive numbers.</td><td>2</td></tr>
+<tr><td>PV</td><td>Returns a Double specifying the present value of an 
+	annuity based on periodic, fixed payments to be paid in the future and a 
+	fixed interest rate.<br>
+	<br>
+	Syntax<br>
+	<br>
+	PV(rate, nper, pmt[, fv[, type]])<br>
+	<br>
+	The PV function has these named arguments:<br>
+	<br>
+	Part Description <br>
+	rate Required. Double specifying interest rate per period. For example, if 
+	you get a car loan at an annual percentage rate (APR) of 10 percent and make 
+	monthly payments, the rate per period is 0.1/12, or 0.0083. <br>
+	nper Required. Integer specifying total number of payment periods in the 
+	annuity. For example, if you make monthly payments on a four-year car loan, 
+	your loan has a total of 4 * 12 (or 48) payment periods. <br>
+	pmt Required. Double specifying payment to be made each period. Payments 
+	usually contain principal and interest that doesn't change over the life of 
+	the annuity. <br>
+	fv Optional. Variant specifying future value or cash balance you want after 
+	you've made the final payment. For example, the future value of a loan is $0 
+	because that's its value after the final payment. However, if you want to 
+	save $50,000 over 18 years for your child's education, then $50,000 is the 
+	future value. If omitted, 0 is assumed. <br>
+	type Optional. Variant specifying when payments are due. Use 0 if payments 
+	are due at the end of the payment period, or use 1 if payments are due at 
+	the beginning of the period. If omitted, 0 is assumed. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	An annuity is a series of fixed cash payments made over a period of time. An 
+	annuity can be a loan (such as a home mortgage) or an investment (such as a 
+	monthly savings plan).<br>
+	<br>
+	The rate and nper arguments must be calculated using payment periods 
+	expressed in the same units. For example, if rate is calculated using 
+	months, nper must also be calculated using months.<br>
+	<br>
+	For all arguments, cash paid out (such as deposits to savings) is 
+	represented by negative numbers; cash received (such as dividend checks) is 
+	represented by positive numbers.</td><td>2</td></tr>
+<tr><td>QBColor</td><td>Returns a Long representing the RGB color code 
+	corresponding to the specified color number.<br>
+	<br>
+	Syntax<br>
+	<br>
+	QBColor(color)<br>
+	<br>
+	The required color argument is a whole number in the range 015.<br>
+	<br>
+	Settings<br>
+	<br>
+	The color argument has these settings:<br>
+	<br>
+	Number Color Number Color <br>
+	0 Black 8 Gray <br>
+	1 Blue 9 Light Blue <br>
+	2 Green 10 Light Green <br>
+	3 Cyan 11 Light Cyan <br>
+	4 Red 12 Light Red <br>
+	5 Magenta 13 Light Magenta <br>
+	6 Yellow 14 Light Yellow <br>
+	7 White 15 Bright White <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	The color argument represents color values used by earlier versions of Basic 
+	(such as Microsoft Visual Basic for MS-DOS and the Basic Compiler). Starting 
+	with the least-significant byte, the returned value specifies the red, 
+	green, and blue values used to set the appropriate color in the RGB system 
+	used by Visual Basic for Applications.</td><td>2</td></tr>
+<tr><td>Raise</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>Randomize</td><td>See Rnd.</td><td>2</td></tr>
+<tr><td>Rate</td><td>Returns a Double specifying the interest rate per 
+	period for an annuity.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Rate(nper, pmt, pv[, fv[, type[, guess]]])<br>
+	<br>
+	The Rate function has these named arguments:<br>
+	<br>
+	Part Description <br>
+	nper Required. Double specifying total number of payment periods in the 
+	annuity. For example, if you make monthly payments on a four-year car loan, 
+	your loan has a total of 4 * 12 (or 48) payment periods. <br>
+	pmt Required. Double specifying payment to be made each period. Payments 
+	usually contain principal and interest that doesn't change over the life of 
+	the annuity. <br>
+	pv Required. Double specifying present value, or value today, of a series of 
+	future payments or receipts. For example, when you borrow money to buy a 
+	car, the loan amount is the present value to the lender of the monthly car 
+	payments you will make. <br>
+	fv Optional. Variant specifying future value or cash balance you want after 
+	you make the final payment. For example, the future value of a loan is $0 
+	because that's its value after the final payment. However, if you want to 
+	save $50,000 over 18 years for your child's education, then $50,000 is the 
+	future value. If omitted, 0 is assumed. <br>
+	type Optional. Variant specifying a number indicating when payments are due. 
+	Use 0 if payments are due at the end of the payment period, or use 1 if 
+	payments are due at the beginning of the period. If omitted, 0 is assumed.
+	<br>
+	guess Optional. Variant specifying value you estimate will be returned by 
+	Rate. If omitted, guess is 0.1 (10 percent). <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	An annuity is a series of fixed cash payments made over a period of time. An 
+	annuity can be a loan (such as a home mortgage) or an investment (such as a 
+	monthly savings plan).<br>
+	<br>
+	For all arguments, cash paid out (such as deposits to savings) is 
+	represented by negative numbers; cash received (such as dividend checks) is 
+	represented by positive numbers.<br>
+	<br>
+	Rate is calculated by iteration. Starting with the value of guess, Rate 
+	cycles through the calculation until the result is accurate to within 
+	0.00001 percent. If Rate can't find a result after 20 tries, it fails. If 
+	your guess is 10 percent and Rate fails, try a different value for guess.</td><td>
+	2</td></tr>
+<tr><td>Remove</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>Replace</td><td>Returns a string in which a specified 
+	substring has been replaced with another substring a specified number of 
+	times.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Replace(expression, find, replace[, start[, count[, compare]]])<br>
+	<br>
+	The Replace function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	expression Required. String expression containing substring to replace. <br>
+	find Required. Substring being searched for. <br>
+	replace Required. Replacement substring. <br>
+	start Optional. Position within expression where substring search is to 
+	begin. If omitted, 1 is assumed. <br>
+	count Optional. Number of substring substitutions to perform. If omitted, 
+	the default value is 1, which means make all possible substitutions. <br>
+	compare Optional. Numeric value indicating the kind of comparison to use 
+	when evaluating substrings. See Settings section for values. <br>
+	<br>
+	<br>
+	Settings<br>
+	<br>
+	The compare argument can have the following values:<br>
+	<br>
+	Constant Value Description <br>
+	vbUseCompareOption 1 Performs a comparison using the setting of the Option 
+	Compare statement. <br>
+	vbBinaryCompare 0 Performs a binary comparison. <br>
+	vbTextCompare 1 Performs a textual comparison. <br>
+	vbDatabaseCompare 2 Microsoft Access only. Performs a comparison based on 
+	information in your database. <br>
+	<br>
+	<br>
+	Return Values<br>
+	<br>
+	Replace returns the following values:<br>
+	<br>
+	If Replace returns <br>
+	expression is zero-length Zero-length string (&quot;&quot;) <br>
+	expression is Null An error. <br>
+	find is zero-length Copy of expression. <br>
+	replace is zero-length Copy of expression with all occurences of find 
+	removed. <br>
+	start &gt; Len(expression) Zero-length string. <br>
+	count is 0 Copy of expression. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	The return value of the Replace function is a string, with substitutions 
+	made, that begins at the position specified by start and and concludes at 
+	the end of the expression string. It is not a copy of the original string 
+	from start to finish.</td><td>1</td></tr>
+<tr><td>Reset</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>RGB</td><td>Returns a Long whole number representing an RGB 
+	color value.<br>
+	<br>
+	Syntax<br>
+	<br>
+	RGB(red, green, blue)<br>
+	<br>
+	The RGB function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	red Required; Variant (Integer). Number in the range 0255, inclusive, that 
+	represents the red component of the color. <br>
+	green Required; Variant (Integer). Number in the range 0255, inclusive, that 
+	represents the green component of the color. <br>
+	blue Required; Variant (Integer). Number in the range 0255, inclusive, that 
+	represents the blue component of the color. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	Application methods and properties that accept a color specification expect 
+	that specification to be a number representing an RGB color value. An RGB 
+	color value specifies the relative intensity of red, green, and blue to 
+	cause a specific color to be displayed.<br>
+	<br>
+	The value for any argument to RGB that exceeds 255 is assumed to be 255.<br>
+	<br>
+	The following table lists some standard colors and the red, green, and blue 
+	values they include:<br>
+	<br>
+	Color Red Value Green Value Blue Value <br>
+	Black 0 0 0 <br>
+	Blue 0 0 255 <br>
+	Green 0 255 0 <br>
+	Cyan 0 255 255 <br>
+	Red 255 0 0 <br>
+	Magenta 255 0 255 <br>
+	Yellow 255 255 0 <br>
+	White 255 255 255 </td><td>2</td></tr>
+<tr><td>Right</td><td>Returns a Variant (String) containing a specified 
+	number of characters from the right side of a string.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Right(string, length)<br>
+	<br>
+	The Right function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	string Required. String expression from which the rightmost characters are 
+	returned. If string contains Null, Null is returned. <br>
+	length Required; Variant (Long). Numeric expression indicating how many 
+	characters to return. If 0, a zero-length string (&quot;&quot;) is returned. If 
+	greater than or equal to the number of characters in string, the entire 
+	string is returned. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	To determine the number of characters in string, use the Len function.<br>
+	<br>
+	Note Use the RightB function with byte data contained in a string. Instead 
+	of specifying the number of characters to return, length specifies the 
+	number of bytes.</td><td>1</td></tr>
+<tr><td>RightB</td><td>See Right.</td><td>-</td></tr>
+<tr><td>RmDir</td><td>&nbsp;</td><td>-</td></tr>
+<tr><td>Rnd</td><td>Returns a Single containing a random number.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Rnd[(number)]<br>
+	<br>
+	The optional number argument is a Single or any valid numeric expression.<br>
+	<br>
+	Return Values<br>
+	<br>
+	If number is Rnd generates <br>
+	Less than zero The same number every time, using number as the seed. <br>
+	Greater than zero The next random number in the sequence. <br>
+	Equal to zero The most recently generated number. <br>
+	Not supplied The next random number in the sequence. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	The Rnd function returns a value less than 1 but greater than or equal to 
+	zero.<br>
+	<br>
+	The value of number determines how Rnd generates a random number:<br>
+	<br>
+	For any given initial seed, the same number sequence is generated because 
+	each successive call to the Rnd function uses the previous number as a seed 
+	for the next number in the sequence.<br>
+	<br>
+	Before calling Rnd, use the Randomize statement without an argument to 
+	initialize the random-number generator with a seed based on the system 
+	timer.<br>
+	<br>
+	To produce random integers in a given range, use this formula:<br>
+	<br>
+	Int((upperbound - lowerbound + 1) * Rnd + lowerbound)<br>
+	Here, upperbound is the highest number in the range, and lowerbound is the 
+	lowest number in the range.<br>
+	<br>
+	Note To repeat sequences of random numbers, call Rnd with a negative 
+	argument immediately before using Randomize with a numeric argument. Using 
+	Randomize with the same value for number does not repeat the previous 
+	sequence.<br>
+	<br>
+	Security Note Because the Random statement and the Rnd function start with a 
+	seed value and generate numbers that fall within a finite range, the results 
+	may be predictable by someone who knows the algorithm used to generate them. 
+	Consequently, the Random statement and the Rnd function should not be used 
+	to generate random numbers for use in cryptography.</td><td>2</td></tr>
+<tr><td>Round</td><td>Returns a number rounded to a specified number of 
+	decimal places.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Round(expression [,numdecimalplaces])<br>
+	<br>
+	The Round function syntax has these parts:<br>
+	<br>
+	Part Description <br>
+	expression Required. Numeric expression being rounded. <br>
+	numdecimalplaces Optional. Number indicating how many places to the right of 
+	the decimal are included in the rounding. If omitted, integers are returned 
+	by the Round function. </td><td>1</td></tr>
+<tr><td>RTrim</td><td>See LTrim.</td><td>1</td></tr>
+<tr><td>SaveSetting</td><td>&nbsp;</td><td>-</td></tr>
+<tr><td>Second</td><td>Returns a Variant (Integer) specifying a whole 
+	number between 0 and 59, inclusive, representing the second of the minute.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Second(time)<br>
+	<br>
+	The required time argument is any Variant, numeric expression, string 
+	expression, or any combination, that can represent a time. If time contains 
+	Null, Null is returned.</td><td>1</td></tr>
+<tr><td>Seek</td><td>Returns a Long specifying the current read/write 
+	position within a file opened using the Open statement.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Seek(filenumber)<br>
+	<br>
+	The required filenumber argument is an Integer containing a valid file 
+	number.<br>
+	<br>
+	Remarks<br>
+	<br>
+	Seek returns a value between 1 and 2,147,483,647 (equivalent to 2^31 1), 
+	inclusive.<br>
+	<br>
+	The following describes the return values for each file access mode.<br>
+	<br>
+	Mode Return Value <br>
+	Random Number of the next record read or written <br>
+	Binary,<br>
+	Output,<br>
+	Append,<br>
+	Input Byte position at which the next operation takes place. The first byte 
+	in a file is at position 1, the second byte is at position 2, and so on. </td><td>
+	-</td></tr>
+<tr><td>SendKeys</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>SetAttr</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>Sgn</td><td>Returns a Variant (Integer) indicating the sign of 
+	a number.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Sgn(number)<br>
+	<br>
+	The required number argument can be any valid numeric expression.<br>
+	<br>
+	Return Values<br>
+	<br>
+	If number is Sgn returns <br>
+	Greater than zero 1 <br>
+	Equal to zero 0 <br>
+	Less than zero -1 <br>
+	<br>
+	Remarks<br>
+	<br>
+	The sign of the number argument determines the return value of the Sgn 
+	function.</td><td>1</td></tr>
+<tr><td>Shell</td><td>Runs an executable program and returns a Variant 
+	(Double) representing the program's task ID if successful, otherwise it 
+	returns zero.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Shell(pathname[,windowstyle])<br>
+	<br>
+	The Shell function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	pathname Required; Variant (String). Name of the program to execute and any 
+	required arguments or command-line switches; may include directory or folder 
+	and drive. <br>
+	windowstyle Optional. Variant (Integer) corresponding to the style of the 
+	window in which the program is to be run. If windowstyle is omitted, the 
+	program is started minimized with focus. <br>
+	<br>
+	<br>
+	The windowstyle named argument has these values:<br>
+	<br>
+	Constant Value Description <br>
+	vbHide 0 Window is hidden and focus is passed to the hidden window. <br>
+	vbNormalFocus 1 Window has focus and is restored to its original size and 
+	position. <br>
+	vbMinimizedFocus 2 Window is displayed as an icon with focus. <br>
+	vbMaximizedFocus 3 Window is maximized with focus. <br>
+	vbNormalNoFocus 4 Window is restored to its most recent size and position. 
+	The currently active window remains active. <br>
+	vbMinimizedNoFocus 6 Window is displayed as an icon. The currently active 
+	window remains active. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	If the Shell function successfully executes the named file, it returns the 
+	task ID of the started program. The task ID is a unique number that 
+	identifies the running program. If the Shell function can't start the named 
+	program, an error occurs.<br>
+	<br>
+	Note By default, the Shell function runs other programs asynchronously. This 
+	means that a program started with Shell might not finish executing before 
+	the statements following the Shell function are executed. <br>
+	<br>
+	Security Note If you do not enclose the path and file specification in 
+	quotes, there is a security risk if the file name or a path node contains 
+	spaces. If the path node specification is not inside quotes, for example <br>
+	\Program Files<br>
+	and a program named <br>
+	Program.exe<br>
+	had been installed in C:\, for example by illicit tampering, Windows would 
+	execute it instead of <br>
+	MyFile.exe</td><td>-</td></tr>
+<tr><td>Sin</td><td>Returns a Double specifying the sine of an angle.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Sin(number)<br>
+	<br>
+	The required number argument is a Double or any valid numeric expression 
+	that expresses an angle in radians.<br>
+	<br>
+	Remarks<br>
+	<br>
+	The Sin function takes an angle and returns the ratio of two sides of a 
+	right triangle. The ratio is the length of the side opposite the angle 
+	divided by the length of the hypotenuse.<br>
+	<br>
+	The result lies in the range -1 to 1.<br>
+	<br>
+	To convert degrees to radians, multiply degrees by pi/180. To convert 
+	radians to degrees, multiply radians by 180/pi.</td><td>1</td></tr>
+<tr><td>SLN</td><td>Returns a Double specifying the straight-line 
+	depreciation of an asset for a single period.<br>
+	<br>
+	Syntax<br>
+	<br>
+	SLN(cost, salvage, life)<br>
+	<br>
+	The SLN function has these named arguments:<br>
+	<br>
+	Part Description <br>
+	cost Required. Double specifying initial cost of the asset. <br>
+	salvage Required. Double specifying value of the asset at the end of its 
+	useful life. <br>
+	life Required. Double specifying length of the useful life of the asset. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	The depreciation period must be expressed in the same unit as the life 
+	argument. All arguments must be positive numbers.</td><td>2</td></tr>
+<tr><td>Source</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>Space</td><td>Returns a Variant (String) consisting of the 
+	specified number of spaces.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Space(number)<br>
+	<br>
+	The required number argument is the number of spaces you want in the string.<br>
+	<br>
+	Remarks<br>
+	<br>
+	The Space function is useful for formatting output and clearing data in 
+	fixed-length strings.</td><td>1</td></tr>
+<tr><td>Split</td><td>Returns a zero-based, one-dimensional array 
+	containing a specified number of substrings.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Split(expression[, delimiter[, limit[, compare]]])<br>
+	<br>
+	The Split function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	expression Required. String expression containing substrings and delimiters. 
+	If expression is a zero-length string(&quot;&quot;), Split returns an empty array, 
+	that is, an array with no elements and no data. <br>
+	delimiter Optional. String character used to identify substring limits. If 
+	omitted, the space character (&quot; &quot;) is assumed to be the delimiter. If 
+	delimiter is a zero-length string, a single-element array containing the 
+	entire expression string is returned. <br>
+	limit Optional. Number of substrings to be returned; 1 indicates that all 
+	substrings are returned. <br>
+	compare Optional. Numeric value indicating the kind of comparison to use 
+	when evaluating substrings. See Settings section for values. <br>
+	<br>
+	<br>
+	Settings<br>
+	<br>
+	The compare argument can have the following values:<br>
+	<br>
+	Constant Value Description <br>
+	vbUseCompareOption 1 Performs a comparison using the setting of the Option 
+	Compare statement. <br>
+	vbBinaryCompare 0 Performs a binary comparison. <br>
+	vbTextCompare 1 Performs a textual comparison. <br>
+	vbDatabaseCompare 2 Microsoft Access only. Performs a comparison based on 
+	information in your database. </td><td>-</td></tr>
+<tr><td>Sqr</td><td>Returns a Double specifying the square root of a 
+	number.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Sqr(number)<br>
+	<br>
+	The required number argument is a Double or any valid numeric expression 
+	greater than or equal to zero.</td><td>1</td></tr>
+<tr><td>Str</td><td>Returns a Variant (String) representation of a 
+	number.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Str(number)<br>
+	<br>
+	The required number argument is a Long containing any valid numeric 
+	expression.<br>
+	<br>
+	Remarks<br>
+	<br>
+	When numbers are converted to strings, a leading space is always reserved 
+	for the sign of number. If number is positive, the returned string contains 
+	a leading space and the plus sign is implied.<br>
+	<br>
+	Use the Format function to convert numeric values you want formatted as 
+	dates, times, or currency or in other user-defined formats. Unlike Str, the 
+	Format function doesn't include a leading space for the sign of number.<br>
+	<br>
+	Note The Str function recognizes only the period (.) as a valid decimal 
+	separator. When different decimal separators may be used (for example, in 
+	international applications), use CStr to convert a number to a string.</td><td>
+	1</td></tr>
+<tr><td>StrComp</td><td>Returns a Variant (Integer) indicating the 
+	result of a string comparison.<br>
+	<br>
+	Syntax<br>
+	<br>
+	StrComp(string1, string2[, compare])<br>
+	<br>
+	The StrComp function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	string1 Required. Any valid string expression. <br>
+	string2 Required. Any valid string expression. <br>
+	compare Optional. Specifies the type of string comparison. If the compare 
+	argument is Null, an error occurs. If compare is omitted, the Option Compare 
+	setting determines the type of comparison. <br>
+	<br>
+	<br>
+	Settings<br>
+	<br>
+	The compare argument settings are:<br>
+	<br>
+	Constant Value Description <br>
+	vbUseCompareOption -1 Performs a comparison using the setting of the Option 
+	Compare statement. <br>
+	vbBinaryCompare 0 Performs a binary comparison. <br>
+	vbTextCompare 1 Performs a textual comparison. <br>
+	vbDatabaseCompare 2 Microsoft Access only. Performs a comparison based on 
+	information in your database. <br>
+	<br>
+	<br>
+	Return Values<br>
+	<br>
+	The StrComp function has the following return values:<br>
+	<br>
+	If StrComp returns <br>
+	string1 is less than string2 -1 <br>
+	string1 is equal to string2 0 <br>
+	string1 is greater than string2 1 <br>
+	string1 or string2 is Null Null </td><td>1</td></tr>
+<tr><td>String</td><td>Returns a Variant (String) containing a 
+	repeating character string of the length specified.<br>
+	<br>
+	Syntax<br>
+	<br>
+	String(number, character)<br>
+	<br>
+	The String function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	number Required; Long. Length of the returned string. If number contains 
+	Null, Null is returned. <br>
+	character Required; Variant. Character code specifying the character or 
+	string expression whose first character is used to build the return string. 
+	If character contains Null, Null is returned. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	If you specify a number for character greater than 255, String converts the 
+	number to a valid character code using the formula:<br>
+	<br>
+	character Mod 256</td><td>1</td></tr>
+<tr><td>StrReverse</td><td>Returns a string in which the character 
+	order of a specified string is reversed.<br>
+	<br>
+	Syntax<br>
+	<br>
+	StrReverse(expression)<br>
+	<br>
+	The expression argument is the string whose characters are to be reversed. 
+	If expression is a zero-length string (&quot;&quot;), a zero-length string is 
+	returned. If expression is Null, an error occurs.</td><td>1</td></tr>
+<tr><td>Switch</td><td>Evaluates a list of expressions and returns a 
+	Variant value or an expression associated with the first expression in the 
+	list that is True.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Switch(expr-1, value-1[, expr-2, value-2 [, expr-n,value-n]])<br>
+	<br>
+	The Switch function syntax has these parts:<br>
+	<br>
+	Part Description <br>
+	expr Required. Variant expression you want to evaluate. <br>
+	value Required. Value or expression to be returned if the corresponding 
+	expression is True. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	The Switch function argument list consists of pairs of expressions and 
+	values. The expressions are evaluated from left to right, and the value 
+	associated with the first expression to evaluate to True is returned. If the 
+	parts aren't properly paired, a run-time error occurs. For example, if 
+	expr-1 is True, Switch returns value-1. If expr-1 is False, but expr-2 is 
+	True, Switch returns value-2, and so on.<br>
+	<br>
+	Switch returns a Null value if: <br>
+	<br>
+	None of the expressions is True.<br>
+	<br>
+	<br>
+	The first True expression has a corresponding value that is Null. <br>
+	Switch evaluates all of the expressions, even though it returns only one of 
+	them. For this reason, you should watch for undesirable side effects. For 
+	example, if the evaluation of any expression results in a division by zero 
+	error, an error occurs.</td><td>?</td></tr>
+<tr><td>SYD</td><td>Returns a Double specifying the sum-of-years' 
+	digits depreciation of an asset for a specified period.<br>
+	<br>
+	Syntax<br>
+	<br>
+	SYD(cost, salvage, life, period)<br>
+	<br>
+	The SYD function has these named arguments:<br>
+	<br>
+	Part Description <br>
+	cost Required. Double specifying initial cost of the asset. <br>
+	salvage Required. Double specifying value of the asset at the end of its 
+	useful life. <br>
+	life Required. Double specifying length of the useful life of the asset. <br>
+	period Required. Double specifying period for which asset depreciation is 
+	calculated. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	The life and period arguments must be expressed in the same units. For 
+	example, if life is given in months, period must also be given in months. 
+	All arguments must be positive numbers.</td><td>2</td></tr>
+<tr><td>Tan</td><td>Returns a Double specifying the tangent of an 
+	angle.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Tan(number)<br>
+	<br>
+	The required number argument is a Double or any valid numeric expression 
+	that expresses an angle in radians.<br>
+	<br>
+	Remarks<br>
+	<br>
+	Tan takes an angle and returns the ratio of two sides of a right triangle. 
+	The ratio is the length of the side opposite the angle divided by the length 
+	of the side adjacent to the angle.<br>
+	<br>
+	To convert degrees to radians, multiply degrees by pi/180. To convert 
+	radians to degrees, multiply radians by 180/pi.</td><td>1</td></tr>
+<tr><td>Time</td><td>Returns a Variant (Date) indicating the current 
+	system time.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Time<br>
+	<br>
+	Remarks<br>
+	<br>
+	To set the system time, use the Time statement.</td><td>1</td></tr>
+<tr><td>Timer</td><td>Returns a Single representing the number of 
+	seconds elapsed since midnight.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Timer<br>
+	<br>
+	Remarks<br>
+	<br>
+	In Microsoft Windows the Timer function returns fractional portions of a 
+	second.</td><td>1</td></tr>
+<tr><td>TimeSerial</td><td>Returns a Variant (Date) containing the time 
+	for a specific hour, minute, and second.<br>
+	<br>
+	Syntax<br>
+	<br>
+	TimeSerial(hour, minute, second)<br>
+	<br>
+	The TimeSerial function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	hour Required; Variant (Integer). Number between 0 (12:00 A.M.) and 23 
+	(11:00 P.M.), inclusive, or a numeric expression. <br>
+	minute Required; Variant (Integer). Any numeric expression. <br>
+	second Required; Variant (Integer). Any numeric expression. <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	To specify a time, such as 11:59:59, the range of numbers for each 
+	TimeSerial argument should be in the normal range for the unit; that is, 023 
+	for hours and 059 for minutes and seconds. However, you can also specify 
+	relative times for each argument using any numeric expression that 
+	represents some number of hours, minutes, or seconds before or after a 
+	certain time. The following example uses expressions instead of absolute 
+	time numbers. The TimeSerial function returns a time for 15 minutes before (<br>
+	-15<br>
+	) six hours before noon (<br>
+	12 - 6<br>
+	), or 5:45:00 A.M.<br>
+	<br>
+	TimeSerial(12 - 6, -15, 0)<br>
+	When any argument exceeds the normal range for that argument, it increments 
+	to the next larger unit as appropriate. For example, if you specify 75 
+	minutes, it is evaluated as one hour and 15 minutes. If any single argument 
+	is outside the range -32,768 to 32,767, an error occurs. If the time 
+	specified by the three arguments causes the date to fall outside the 
+	acceptable range of dates, an error occurs.</td><td>1</td></tr>
+<tr><td>TimeValue</td><td>Returns a Variant (Date) containing the time.<br>
+	<br>
+	Syntax<br>
+	<br>
+	TimeValue(time)<br>
+	<br>
+	The required time argument is normally a string expression representing a 
+	time from 0:00:00 (12:00:00 A.M.) to 23:59:59 (11:59:59 P.M.), inclusive. 
+	However, time can also be any expression that represents a time in that 
+	range. If time contains Null, Null is returned.<br>
+	<br>
+	Remarks<br>
+	<br>
+	You can enter valid times using a 12-hour or 24-hour clock. For example, <br>
+	&quot;2:24PM&quot;<br>
+	and <br>
+	&quot;14:24&quot;<br>
+	are both valid time arguments.<br>
+	<br>
+	If the time argument contains date information, TimeValue doesn't return it. 
+	However, if time includes invalid date information, an error occurs.</td><td>
+	1</td></tr>
+<tr><td>Trim</td><td>See LTrim.</td><td>1</td></tr>
+<tr><td>TypeName</td><td>Returns a String that provides information 
+	about a variable.<br>
+	<br>
+	Syntax<br>
+	<br>
+	TypeName(varname)<br>
+	<br>
+	The required varname argument is a Variant containing any variable except a 
+	variable of a user-defined type.<br>
+	<br>
+	Remarks<br>
+	<br>
+	The string returned by TypeName can be any one of the following:<br>
+	<br>
+	String returned Variable <br>
+	object type An object whose type is objecttype <br>
+	Byte Byte value <br>
+	Integer Integer <br>
+	Long Long integer <br>
+	Single Single-precision floating-point number <br>
+	Double Double-precision floating-point number <br>
+	Currency Currency value <br>
+	Decimal Decimal value <br>
+	Date Date value <br>
+	String String <br>
+	Boolean Boolean value <br>
+	Error An error value <br>
+	Empty Uninitialized <br>
+	Null No valid data <br>
+	Object An object <br>
+	Unknown An object whose type is unknown <br>
+	Nothing Object variable that doesn't refer to an object <br>
+	<br>
+	<br>
+	If varname is an array, the returned string can be any one of the possible 
+	returned strings (or Variant) with empty parentheses appended. For example, 
+	if varname is an array of integers, TypeName returns &quot;<br>
+	Integer()<br>
+	&quot;.</td><td>2</td></tr>
+<tr><td>UCase</td><td>Returns a Variant (String) containing the 
+	specified string, converted to uppercase.<br>
+	<br>
+	Syntax<br>
+	<br>
+	UCase(string)<br>
+	<br>
+	The required string argument is any valid string expression. If string 
+	contains Null, Null is returned.<br>
+	<br>
+	Remarks<br>
+	<br>
+	Only lowercase letters are converted to uppercase; all uppercase letters and 
+	nonletter characters remain unchanged.</td><td>mondrian 2.4</td></tr>
+<tr><td>Val</td><td>Returns the numbers contained in a string as a 
+	numeric value of appropriate type.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Val(string)<br>
+	<br>
+	The required string argument is any valid string expression.<br>
+	<br>
+	Remarks<br>
+	<br>
+	The Val function stops reading the string at the first character it can't 
+	recognize as part of a number. Symbols and characters that are often 
+	considered parts of numeric values, such as dollar signs and commas, are not 
+	recognized. However, the function recognizes the radix prefixes <br>
+	&amp;O<br>
+	(for octal) and <br>
+	&amp;H<br>
+	(for hexadecimal). Blanks, tabs, and linefeed characters are stripped from 
+	the argument.<br>
+	<br>
+	The following returns the value 1615198:<br>
+	<br>
+	Val(&quot; 1615 198th Street N.E.&quot;)<br>
+	In the code below, Val returns the decimal value -1 for the hexadecimal 
+	value shown:<br>
+	<br>
+	Val(&quot;&amp;HFFFF&quot;)<br>
+	Note The Val function recognizes only the period (.) as a valid decimal 
+	separator. When different decimal separators are used, as in international 
+	applications, use CDbl instead to convert a string to a number.</td><td>1</td></tr>
+<tr><td>VarType</td><td>Returns an Integer indicating the subtype of a 
+	variable.<br>
+	<br>
+	Syntax<br>
+	<br>
+	VarType(varname)<br>
+	<br>
+	The required varname argument is a Variant containing any variable except a 
+	variable of a user-defined type.<br>
+	<br>
+	Return Values<br>
+	<br>
+	Constant Value Description <br>
+	vbEmpty 0 Empty (uninitialized) <br>
+	vbNull 1 Null (no valid data) <br>
+	vbInteger 2 Integer <br>
+	vbLong 3 Long integer <br>
+	vbSingle 4 Single-precision floating-point number <br>
+	vbDouble 5 Double-precision floating-point number <br>
+	vbCurrency 6 Currency value <br>
+	vbDate 7 Date value <br>
+	vbString 8 String <br>
+	vbObject 9 Object <br>
+	vbError 10 Error value <br>
+	vbBoolean 11 Boolean value <br>
+	vbVariant 12 Variant (used only with arrays of variants) <br>
+	vbDataObject 13 A data access object <br>
+	vbDecimal 14 Decimal value <br>
+	vbByte 17 Byte value <br>
+	vbUserDefinedType 36 Variants that contain user-defined types <br>
+	vbArray 8192 Array <br>
+	<br>
+	<br>
+	Note These constants are specified by Visual Basic for Applications. The 
+	names can be used anywhere in your code in place of the actual values.<br>
+	<br>
+	Remarks<br>
+	<br>
+	The VarType function never returns the value for vbArray by itself. It is 
+	always added to some other value to indicate an array of a particular type. 
+	The constant vbVariant is only returned in conjunction with vbArray to 
+	indicate that the argument to the VarType function is an array of type 
+	Variant. For example, the value returned for an array of integers is 
+	calculated as vbInteger + vbArray, or 8194. If an object has a default 
+	property, VarType (object) returns the type of the object's default 
+	property.</td><td>2</td></tr>
+<tr><td>Weekday</td><td>Returns a Variant (Integer) containing a whole 
+	number representing the day of the week.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Weekday(date, [firstdayofweek])<br>
+	<br>
+	The Weekday function syntax has these named arguments:<br>
+	<br>
+	Part Description <br>
+	date Required. Variant, numeric expression, string expression, or any 
+	combination, that can represent a date. If date contains Null, Null is 
+	returned. <br>
+	firstdayofweek Optional. A constant that specifies the first day of the 
+	week. If not specified, vbSunday is assumed. <br>
+	<br>
+	<br>
+	Settings<br>
+	<br>
+	The firstdayofweek argument has these settings:<br>
+	<br>
+	Constant Value Description <br>
+	vbUseSystem 0 Use the NLS API setting. <br>
+	vbSunday 1 Sunday (default) <br>
+	vbMonday 2 Monday <br>
+	vbTuesday 3 Tuesday <br>
+	vbWednesday 4 Wednesday <br>
+	vbThursday 5 Thursday <br>
+	vbFriday 6 Friday <br>
+	vbSaturday 7 Saturday <br>
+	<br>
+	<br>
+	Return Values<br>
+	<br>
+	The Weekday function can return any of these values:<br>
+	<br>
+	Constant Value Description <br>
+	vbSunday 1 Sunday <br>
+	vbMonday 2 Monday <br>
+	vbTuesday 3 Tuesday <br>
+	vbWednesday 4 Wednesday <br>
+	vbThursday 5 Thursday <br>
+	vbFriday 6 Friday <br>
+	vbSaturday 7 Saturday <br>
+	<br>
+	<br>
+	Remarks<br>
+	<br>
+	If the Calendar property setting is Gregorian, the returned integer 
+	represents the Gregorian day of the week for the date argument. If the 
+	calendar is Hijri, the returned integer represents the Hijri day of the week 
+	for the date argument. For Hijri dates, the argument number is any numeric 
+	expression that can represent a date and/or time from 1/1/100 (Gregorian Aug 
+	2, 718) through 4/3/9666 (Gregorian Dec 31, 9999).</td><td>1</td></tr>
+<tr><td>WeekdayName</td><td>Returns a string indicating the specified 
+	day of the week.<br>
+	<br>
+	Syntax<br>
+	<br>
+	WeekdayName(weekday, abbreviate, firstdayofweek)<br>
+	<br>
+	The WeekdayName function syntax has these parts:<br>
+	<br>
+	Part Description <br>
+	weekday Required. The numeric designation for the day of the week. Numeric 
+	value of each day depends on setting of the firstdayofweek setting. <br>
+	abbreviate Optional. Boolean value that indicates if the weekday name is to 
+	be abbreviated. If omitted, the default is False, which means that the 
+	weekday name is not abbreviated. <br>
+	firstdayofweek Optional. Numeric value indicating the first day of the week. 
+	See Settings section for values. <br>
+	<br>
+	<br>
+	Settings<br>
+	<br>
+	The firstdayofweek argument can have the following values:<br>
+	<br>
+	Constant Value Description <br>
+	vbUseSystem 0 Use National Language Support (NLS) API setting. <br>
+	vbSunday 1 Sunday (default) <br>
+	vbMonday 2 Monday <br>
+	vbTuesday 3 Tuesday <br>
+	vbWednesday 4 Wednesday <br>
+	vbThursday 5 Thursday <br>
+	vbFriday 6 Friday <br>
+	vbSaturday 7 Saturday</td><td>1</td></tr>
+<tr><td>Width</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>Year</td><td>Returns a Variant (Integer) containing a whole 
+	number representing the year.<br>
+	<br>
+	Syntax<br>
+	<br>
+	Year(date)<br>
+	<br>
+	The required date argument is any Variant, numeric expression, string 
+	expression, or any combination, that can represent a date. If date contains 
+	Null, Null is returned.<br>
+	<br>
+	Note If the Calendar property setting is Gregorian, the returned integer 
+	represents the Gregorian year for the date argument. If the calendar is 
+	Hijri, the returned integer represents the Hijri year for the date argument. 
+	For Hijri dates, the argument number is any numeric expression that can 
+	represent a date and/or time from 1/1/100 (Gregorian Aug 2, 718) through 
+	4/3/9666 (Gregorian Dec 31, 9999).</td><td>1</td></tr>
+</table>
+
+<br />
+
+<p>
+    Author: Julian Hyde; last modified January 2008.<br/>
+    Version: $Id$ (<a href="http://p4web.eigenbase.org/open/mondrian/doc/vba_functions.html?ac=22">log</a>)<br/>
+    Copyright (C) 2008-2009 Pentaho
+</p>
+
+<br />
+
+<!-- doc2web end -->
+
+</body>
+</html>
