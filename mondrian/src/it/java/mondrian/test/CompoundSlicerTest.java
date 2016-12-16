@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2016 Pentaho Corporation.
+// Copyright (c) 2002-2017 Pentaho Corporation.
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -1421,6 +1421,25 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             query,
             "Compound aggregated member should return same results with native filter on/off",
             getTestContext());
+    }
+
+    public void testNativeFilterWithNullMember() {
+        // The [Store Sqft] attribute include a null member.  This member should not be excluded
+        // by the filter function in this query.
+        verifySameNativeAndNot( "WITH\n"
+                + "SET [*NATIVE_CJ_SET] AS 'FILTER(FILTER([Store Size in SQFT].[Store Sqft].MEMBERS,[Store Size in SQFT]"
+                + ".CURRENTMEMBER.CAPTION NOT MATCHES (\"(?i).*20319.*\")), NOT ISEMPTY ([Measures].[Unit Sales]))'\n"
+                + "SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],[Store Size in SQFT].CURRENTMEMBER.ORDERKEY,BASC)'\n"
+                + "SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+                + "SET [*BASE_MEMBERS__Store Size in SQFT_] AS 'FILTER([Store Size in SQFT].[Store Sqft].MEMBERS,[Store "
+                + "Size in SQFT].CURRENTMEMBER.CAPTION NOT MATCHES (\"(?i).*20319.*\"))'\n"
+                + "SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Store Size in SQFT].CURRENTMEMBER)})'\n"
+                + "MEMBER [Measures].[*FORMATTED_MEASURE_0] AS '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', "
+                + "SOLVE_ORDER=500\n"
+                + "SELECT\n"
+                + "[*BASE_MEMBERS__Measures_] ON COLUMNS\n"
+                + ",[*SORTED_ROW_AXIS] ON ROWS\n"
+                + "FROM [Sales]", "", getTestContext() );
     }
 }
 
