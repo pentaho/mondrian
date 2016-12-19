@@ -105,7 +105,7 @@ public class SqlStatementTest extends TestCase {
   public void testCreateDialect() {
     statement = mock(SqlStatement.class);
     Dialect dialect = mock(Dialect.class);
-    when(statement.getDialect(any())).thenCallRealMethod();
+    when(statement.getDialect(any(RolapSchema.class))).thenCallRealMethod();
     when(statement.createDialect()).thenReturn(dialect);
     Dialect dialectReturn = statement.getDialect(null);
     assertNotNull(dialectReturn);
