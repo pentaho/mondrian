@@ -544,7 +544,9 @@ public class RolapConnection extends ConnectionBase {
     }
 
     public String getConnectString() {
-        return connectInfo.toString();
+        final Util.PropertyList connectInfoClone = connectInfo.clone();
+        connectInfoClone.remove(RolapConnectionProperties.JdbcPassword.name());
+        return connectInfoClone.toString();
     }
 
     public String getCatalogName() {
