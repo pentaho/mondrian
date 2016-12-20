@@ -1326,7 +1326,7 @@ Revision is $Id$
             public boolean equals(Object o) {
                 if (o instanceof View) {
                     View that = (View) o;
-                    if (!this.alias.equals(that.alias)) {
+                    if (!Util.equals(this.alias, that.alias)) {
                         return false;
                     }
                     if (this.selects == null || that.selects == null || this.selects.length != that.selects.length) {
