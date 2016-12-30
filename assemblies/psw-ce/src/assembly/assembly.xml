@@ -36,6 +36,18 @@
             <includes>
                 <include>*:*:jar</include>
             </includes>
+            <excludes>
+                <exclude>*:pdi-dataservice-client-plugin:jar</exclude>
+            </excludes>
+        </dependencySet>
+        <dependencySet>
+            <outputDirectory>schema-workbench/plugins</outputDirectory>
+            <scope>runtime</scope>
+            <useTransitiveDependencies>true</useTransitiveDependencies>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+            <includes>
+                <include>*:pdi-dataservice-client-plugin:jar</include>
+            </includes>
         </dependencySet>
     </dependencySets>
 </assembly>
