@@ -835,7 +835,7 @@ Revision is $Id$
             public Expression getNameExp() {
                 if (nameExp != null) {
                     return nameExp;
-                } else if (nameColumn != null) {
+                } else if (nameColumn != null &amp;&amp; !Util.equals(nameColumn, column)) {
                     return new Column(table, nameColumn);
                 } else {
                     return null;
