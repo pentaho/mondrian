@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho
+// Copyright (C) 2005-2017 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -3444,6 +3444,54 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 21,628\n"
             + "Row #1: 1,396\n");
+    }
+
+    public void testSameColumnAndColumnNameInLevelAttribute() {
+        String mdx = ""
+                + "SELECT\n"
+                + "[Measures].[Unit Sales] ON COLUMNS,\n"
+                + "FILTER([Time].[Quarter].MEMBERS, NOT ISEMPTY ([Measures].[Unit Sales])) ON ROWS\n"
+                + "FROM [Sales]";
+
+        String schema = ""
+                + "<?xml version=\"1.0\"?>\n"
+                + "<Schema name=\"FoodMart 2442\">\n"
+                + "<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">\n"
+                + "  <Table name=\"sales_fact_1997\">\n"
+                + "    <AggName name=\"agg_c_special_sales_fact_1997\">\n"
+                + "        <AggFactCount column=\"FACT_COUNT\"/>\n"
+                + "        <AggIgnoreColumn column=\"foo\"/>\n"
+                + "        <AggIgnoreColumn column=\"bar\"/>\n"
+                + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"UNIT_SALES_SUM\" />\n"
+                + "        <AggLevel name=\"[Time].[Year]\" column=\"TIME_YEAR\" />\n"
+                + "        <AggLevel name=\"[Time].[Quarter]\" column=\"TIME_QUARTER\" />\n"
+                + "    </AggName>\n"
+                + "  </Table>\n"
+
+                +  " <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
+                + "   <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
+                + "      <Table name=\"time_by_day\"/>\n"
+                + "      <Level name=\"Year\" \n"
+
+                            // column and nameColumn are the same
+                + "         column=\"the_year\" nameColumn=\"the_year\" ordinalColumn=\"the_year\"\n"
+                + "         type=\"Numeric\" uniqueMembers=\"true\" levelType=\"TimeYears\"/>\n"
+                + "      <Level name=\"Quarter\" \n"
+                + "         column=\"quarter\" ordinalColumn=\"quarter\"\n"
+                + "         uniqueMembers=\"false\" levelType=\"TimeQuarters\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+
+                + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+                + "      formatString=\"Standard\"/>\n"
+                + "</Cube>\n"
+                + "</Schema>";
+
+        TestContext testContext = TestContext.instance().withSchema( schema );
+        propSaver.set(props.UseAggregates, true);
+        propSaver.set(props.ReadAggregates, true);
+
+        testContext.executeQuery( mdx );
     }
 
     /**
