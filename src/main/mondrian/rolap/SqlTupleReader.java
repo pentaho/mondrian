@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -94,6 +94,7 @@ public class SqlTupleReader implements TupleReader {
     private int emptySets = 0;
     // allow hints by default
     private boolean allowHints = true;
+    private HashMap<RolapMember, Object> rolapToOrdinalMap = new HashMap<>();
 
     public boolean isAllowHints() {
         return allowHints;
@@ -229,11 +230,24 @@ public class SqlTupleReader implements TupleReader {
                         }
                     }
 
+
+
                     // Skip over the columns consumed by makeMember
                     if (!childLevel.getOrdinalExp().equals(
                             childLevel.getKeyExp()))
                     {
-                        ++column;
+                        Object ordinal = accessors.get(column++).get();
+                        Object prevValue = rolapToOrdinalMap
+                                .put(member, ordinal);
+                        if (prevValue != null
+                                && !Util.equals(prevValue, ordinal))
+                        {
+                            LOGGER.error(
+                                "Column expression for "
+                                + member.getUniqueName()
+                                + " is inconsistent with ordinal or caption expression."
+                                + " It should have 1:1 relationship");
+                        }
                     }
                     column += childLevel.getProperties().length;
 
@@ -523,6 +537,7 @@ public class SqlTupleReader implements TupleReader {
         List<List<RolapMember>> newPartialResult)
     {
         int memberCount = countMembers();
+        rolapToOrdinalMap = new HashMap<>();
         while (true) {
             missedMemberCount = 0;
             int memberCountBefore = memberCount;

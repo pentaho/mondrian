@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -960,6 +960,10 @@ RME is this right
             }
         }
         final String sql = pair.left;
+
+        int startChildrenSize = children.size();
+        HashMap<RolapMember, Object> rolapToOrdinalMap = new HashMap<>();
+
         final List<SqlStatement.Type> types = pair.right;
         SqlStatement stmt =
             RolapUtil.executeQuery(
@@ -1016,6 +1020,20 @@ RME is this right
                     addAsOldestSibling(children, member);
                 } else {
                     children.add(member);
+                }
+
+                if (!childLevel.getOrdinalExp()
+                        .equals(childLevel.getKeyExp()))
+                {
+                    Object ordinal = accessors.get(columnOffset).get();
+                    Object prevValue = rolapToOrdinalMap.put(member, ordinal);
+                    if (prevValue != null && !Util.equals(prevValue, ordinal)) {
+                        LOGGER.error(
+                            "Column expression for "
+                            + member.getUniqueName()
+                            + " is inconsistent with ordinal or caption expression."
+                            + " It should have 1:1 relationship");
+                    }
                 }
             }
         } catch (SQLException e) {
