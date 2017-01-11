@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1998-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 21 January, 1999
@@ -404,6 +404,7 @@ public class Main extends TestSuite {
             addTest(suite, DefaultFormatterTest.class);
             addTest(suite, FormatterCreateContextTest.class);
             addTest(suite, FormatterFactoryTest.class);
+            addTest(suite, OrderKeyOneToOneCheckTest.class);
 
             // Must be the last test.
             addTest(suite, TerminatorTest.class);
