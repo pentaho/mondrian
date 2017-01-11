@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho
+// Copyright (C) 2005-2017 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -898,7 +898,6 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `product`.`brand_name` as `Brand Name`,"
             + " `product`.`product_name` as `Product Name`,"
             + " `store_ragged`.`store_id` as `Store Id`,"
-            + " `store_ragged`.`store_id` as `Store Id (Key)`,"
             + " `promotion`.`media_type` as `Media Type`,"
             + " `promotion`.`promotion_name` as `Promotion Name`,"
             + " `customer`.`country` as `Country`,"
@@ -947,7 +946,6 @@ public class DrillThroughTest extends FoodMartTestCase {
                 + " `Brand Name` ASC,"
                 + " `Product Name` ASC,"
                 + " `Store Id` ASC,"
-                + " `Store Id (Key)` ASC,"
                 + " `Media Type` ASC,"
                 + " `Promotion Name` ASC,"
                 + " `Country` ASC,"
