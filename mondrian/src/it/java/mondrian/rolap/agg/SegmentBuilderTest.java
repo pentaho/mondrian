@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.rolap.agg;
 
@@ -649,12 +649,12 @@ public class SegmentBuilderTest extends BatchTestCase {
                 + "[Time].[1998].[Q4].[10], [Time].[1998].[Q4].[11], [Time].[1998].[Q4].[12]}"
                 + "on 0 from sales"},
             new String[] {
-                "af45d690c892633e5755b06d623ba50a849357832d2157954303a76b4d9564ac",
+                "208c5162e6bb49ceb217eab3621f4fc0209f73265c291a3f8aa673aee775de81",
                     // ^^^
                     //    {time_by_day.the_year=('1998')}
                     //    {time_by_day.quarter=('Q1','Q2','Q3')}
                     //    {time_by_day.month_of_year=('2','3','4','5','6','7')}]
-                "0ceeeddc5d670cf385ea5bfe88811dee2f4b2ec43e1272d0258a9cd7c4d02ceb"
+                "48e6f2f623d0a1f42d033ff22f13a18febaa9f2d43854b9505f21917b283cbdc"
                     // ^^^
                     // {time_by_day.the_year=(*)}
                     // {time_by_day.quarter=('Q1','Q3','Q4')}
@@ -668,7 +668,7 @@ public class SegmentBuilderTest extends BatchTestCase {
             // expected header of the rolled up segment
             "*Segment Header\n"
             + "Schema:[FoodMart]\n"
-            + "Checksum:[7b4af973b0d21f364b0a746f5565cb03]\n"
+            + "Checksum:[4079ae1a3e5190690712b752a45ee209]\n"
             + "Cube:[Sales]\n"
             + "Measure:[Unit Sales]\n"
             + "Axes:[\n"
@@ -676,7 +676,7 @@ public class SegmentBuilderTest extends BatchTestCase {
             + "    {time_by_day.the_year=('1998')}]\n"
             + "Excluded Regions:[]\n"
             + "Compound Predicates:[]\n"
-            + "ID:[5eca71e4224b8c407e4f0c9ba0082bba0b36455304a675263eee942847cbfc06]\n");
+            + "ID:[fb76b2a2a1c3906a349067fb923d6bffb89091ec39bcd57062dbeff066a96052]\n");
     }
 
     public void testSameRollupRegardlessOfSegmentOrderWithData() {
@@ -694,13 +694,13 @@ public class SegmentBuilderTest extends BatchTestCase {
                 + "{[Product].[Drink].[Dairy]}"
                 + "on 0 from sales"},
             new String[] {
-              "71cf49a1d6f0c2da433442927e05ea5c571f52fce132081f499aba34b6dbb054",
+              "85d83d3e873198a09ac235cfdb2864b8d310b6b4de8d0c2dbd2e94801f21e204",
                 // ^^^
                 //    {time_by_day.the_year=('1997')}
                 //    {product_class.product_family=(*)}
                 //    {product_class.product_department=('Alcoholic Beverages',
                 //     'Baked Goods','Beverages','Periodicals')}]
-              "5bc7ead7b284809f6203df971c09c7c797d727050ae46dbd9cc04d59edc9538a"
+              "dcbac5b6c2585a65d2a4312bbdfe1f469d0a76cd5ec20af80c30b1c4c016cc2d"
                 // ^^^
                 //    {time_by_day.the_year=('1997')}
                 //    {product_class.product_family=('Drink')}
@@ -711,14 +711,14 @@ public class SegmentBuilderTest extends BatchTestCase {
             },
             "*Segment Header\n"
             + "Schema:[FoodMart]\n"
-            + "Checksum:[7b4af973b0d21f364b0a746f5565cb03]\n"
+            + "Checksum:[4079ae1a3e5190690712b752a45ee209]\n"
             + "Cube:[Sales]\n"
             + "Measure:[Unit Sales]\n"
             + "Axes:[\n"
             + "    {product_class.product_family=('Drink')}]\n"
             + "Excluded Regions:[]\n"
             + "Compound Predicates:[]\n"
-            + "ID:[360a78a6503ae823650bbfd528bd3014e77d09c2cc0815f5eac90e8d7d46a474]\n");
+            + "ID:[f6aff32a27d1a3f59259dccacb45ed8ff770de3004d0ede496b5bd3ecc283627]\n");
     }
 
     public void testSameRollupRegardlessOfSegmentOrderNoWildcards() {
@@ -734,13 +734,13 @@ public class SegmentBuilderTest extends BatchTestCase {
                 + "{[Product].[Drink].[Dairy]}"
                 + "on 0 from sales"},
             new String[] {
-                "63b78b31fae7a3229f284be9a2fc8d5ff47f1241b6a5972b6e6adf41f48cdb5a",
+                "85d83d3e873198a09ac235cfdb2864b8d310b6b4de8d0c2dbd2e94801f21e204",
                     // ^^^
                     //    {time_by_day.the_year=('1997')}
                     // {product_class.product_family=('Drink','Non-Consumable')}
                     // {product_class.product_department=('Alcoholic Beverages',
                     //  'Beverages','Periodicals')}]
-                "5bc7ead7b284809f6203df971c09c7c797d727050ae46dbd9cc04d59edc9538a"
+                "2244f2725b4d3acf620926a2af3244b93233f6e77352e5fe33a0ccfe3ce375c2"
                     // ^^^
                     //    {time_by_day.the_year=('1997')}
                     //    {product_class.product_family=('Drink')}
@@ -751,14 +751,14 @@ public class SegmentBuilderTest extends BatchTestCase {
             },
             "*Segment Header\n"
             + "Schema:[FoodMart]\n"
-            + "Checksum:[7b4af973b0d21f364b0a746f5565cb03]\n"
+            + "Checksum:[4079ae1a3e5190690712b752a45ee209]\n"
             + "Cube:[Sales]\n"
             + "Measure:[Unit Sales]\n"
             + "Axes:[\n"
             + "    {product_class.product_family=('Drink')}]\n"
             + "Excluded Regions:[]\n"
             + "Compound Predicates:[]\n"
-            + "ID:[360a78a6503ae823650bbfd528bd3014e77d09c2cc0815f5eac90e8d7d46a474]\n");
+            + "ID:[f6aff32a27d1a3f59259dccacb45ed8ff770de3004d0ede496b5bd3ecc283627]\n");
     }
 
     public void testSameRollupRegardlessOfSegmentOrderThreeSegs() {
@@ -775,17 +775,17 @@ public class SegmentBuilderTest extends BatchTestCase {
                 " select "
                 + "{[Product].[Drink].[Beverages]} on 0 from sales"},
             new String[] {
-                "e546620837ba618128e2ffbb53f2a32867725f68f53467e4cc081e94ffc7809b",
+                "85d83d3e873198a09ac235cfdb2864b8d310b6b4de8d0c2dbd2e94801f21e204",
                     // ^^^
                     //    {time_by_day.the_year=('1997')}
                     //    {product_class.product_family=('Drink')}
                     //    {product_class.product_department=('Dairy')}]
-                "4c6158aa74d34b4941f79c699f39a866eb5d4aaacf27f4319839aaff5486e886",
+                "70458a34f44bd07a9b481a753c3823c36bc0899b80c38bb92858e3fe5514ab83",
                     // ^^^
                     //    {time_by_day.the_year=('1997')}
                     //    {product_class.product_family=('Drink')}
                     //    {product_class.product_department=('Beverages')}]
-                "5bc7ead7b284809f6203df971c09c7c797d727050ae46dbd9cc04d59edc9538a"
+                "a37378e53340dd980556c25027c58cc75c2e487f459282cbdc8d999e79c4dd54"
                     // ^^^
                     //    {time_by_day.the_year=('1997')}
                     //    {product_class.product_family=
@@ -798,14 +798,14 @@ public class SegmentBuilderTest extends BatchTestCase {
             },
             "*Segment Header\n"
             + "Schema:[FoodMart]\n"
-            + "Checksum:[7b4af973b0d21f364b0a746f5565cb03]\n"
+            + "Checksum:[4079ae1a3e5190690712b752a45ee209]\n"
             + "Cube:[Sales]\n"
             + "Measure:[Unit Sales]\n"
             + "Axes:[\n"
             + "    {product_class.product_family=('Drink')}]\n"
             + "Excluded Regions:[]\n"
             + "Compound Predicates:[]\n"
-            + "ID:[360a78a6503ae823650bbfd528bd3014e77d09c2cc0815f5eac90e8d7d46a474]\n");
+            + "ID:[f6aff32a27d1a3f59259dccacb45ed8ff770de3004d0ede496b5bd3ecc283627]\n");
     }
 
 
