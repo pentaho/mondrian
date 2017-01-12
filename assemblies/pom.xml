@@ -16,5 +16,6 @@
   <url>http://www.pentaho.com</url>
   <modules>
     <module>psw-ce</module>
+    <module>psw-ee</module>
   </modules>
 </project>

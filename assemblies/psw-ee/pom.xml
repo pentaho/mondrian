@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>pentaho</groupId>
+    <artifactId>pentaho-mondrian-assemblies</artifactId>
+    <version>3.14-SNAPSHOT</version>
+  </parent>
+  
+  <artifactId>psw-ee</artifactId>
+  <version>3.14-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  
+  <name>Pentaho Schema Workbench - EE</name>
+  <description>Mondrian Schema Workbench</description>
+  <url>http://mondrian.pentaho.com</url>
+  
+  <distributionManagement>
+    <repository>
+      <id>pentaho.private.release.repo</id>
+      <name>Pentaho Private Release Repository</name>
+      <url>${pentaho.private.release.repo}</url>
+    </repository>
+    <snapshotRepository>
+      <id>pentaho.private.snapshot.repo</id>
+      <name>Pentaho Private Snapshot Repository</name>
+      <url>${pentaho.private.snapshot.repo}</url>
+    </snapshotRepository>
+  </distributionManagement>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>create-archive</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptor>src/assembly/assembly.xml</descriptor>
+              <appendAssemblyId>false</appendAssemblyId>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  
+  <dependencies>
+    <dependency>
+      <groupId>pentaho</groupId>
+      <artifactId>psw-ce</artifactId>
+      <version>${project.version}</version>
+      <type>zip</type>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+  
+</project>
