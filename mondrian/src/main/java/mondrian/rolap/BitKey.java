@@ -18,6 +18,7 @@ import java.util.BitSet;
 import java.util.Iterator;
 
 /**
+ * Just a random line.
  * Represents a set of bits.
  *
  * <p>Unlike {@link java.util.BitSet}, the number of bits cannot be changed
