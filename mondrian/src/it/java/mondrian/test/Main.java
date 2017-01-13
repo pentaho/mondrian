@@ -405,6 +405,7 @@ public class Main extends TestSuite {
             addTest(suite, FormatterCreateContextTest.class);
             addTest(suite, FormatterFactoryTest.class);
             addTest(suite, OrderKeyOneToOneCheckTest.class);
+            addTest(suite, RestrictedMemberReaderTest.class);
 
             // Must be the last test.
             addTest(suite, TerminatorTest.class);
