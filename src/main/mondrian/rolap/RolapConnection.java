@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -532,7 +532,9 @@ public class RolapConnection extends ConnectionBase {
     }
 
     public String getConnectString() {
-        return connectInfo.toString();
+        final Util.PropertyList connectInfoClone = connectInfo.clone();
+        connectInfoClone.remove(RolapConnectionProperties.JdbcPassword.name());
+        return connectInfoClone.toString();
     }
 
     public String getCatalogName() {
