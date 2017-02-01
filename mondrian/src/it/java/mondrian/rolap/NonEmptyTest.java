@@ -7,7 +7,8 @@
 // Copyright (C) 2003-2005 Julian Hyde
 // Copyright (C) 2005-2016 Pentaho
 // All Rights Reserved.
-*/
+*//*
+
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -34,13 +35,15 @@ import org.eigenbase.util.property.StringProperty;
 
 import java.util.*;
 
+*/
 /**
  * Tests for NON EMPTY Optimization, includes SqlConstraint type hierarchy and
  * RolapNative classes.
  *
  * @author av
  * @since Nov 21, 2005
- */
+ *//*
+
 public class NonEmptyTest extends BatchTestCase {
     private static Logger logger = Logger.getLogger(NonEmptyTest.class);
     SqlConstraintFactory scf = SqlConstraintFactory.instance();
@@ -121,12 +124,14 @@ public class NonEmptyTest extends BatchTestCase {
             + "Axis #2:\n");
     }
 
-    /**
+    */
+/**
      * Test case for an issue where mondrian failed to use native evaluation
      * for evaluating crossjoin. With the issue, performance is poor because
      * mondrian is doing crossjoins in memory; and the test case throws because
      * the result limit is exceeded.
-     */
+     *//*
+
     public void testAnalyzerPerformanceIssue() {
         final MondrianProperties mondrianProperties =
             MondrianProperties.instance();
@@ -594,10 +599,12 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testTopCountCacheKeyMustIncludeCount() {
-        /**
+        */
+/**
          * When caching topcount results, the number of elements must
          * be part of the cache key
-         */
+         *//*
+
         TestContext ctx = getTestContext();
         // fill cache
         ctx.assertQueryReturns(
@@ -733,11 +740,13 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #17: 366\n");
     }
 
-    /**
+    */
+/**
      * Must not use native sql optimization because it chooses the wrong
      * RolapStar in SqlContextConstraint/SqlConstraintUtils.  Test ensures that
      * no exception is thrown.
-     */
+     *//*
+
     public void testVirtualCube() {
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
             return;
@@ -765,11 +774,13 @@ public class NonEmptyTest extends BatchTestCase {
         c.run();
     }
 
-    /**
+    */
+/**
      *  verifies that redundant set braces do not prevent native evaluation
      *  for example, {[Store].[Store Name].members} and
      *  {{[Store Type].[Store Type].members}}
-     */
+     *//*
+
     public void testNativeCJWithRedundantSetBraces() {
         propSaver.set(
             MondrianProperties.instance().EnableNativeCrossJoin, true);
@@ -789,10 +800,12 @@ public class NonEmptyTest extends BatchTestCase {
             requestFreshConnection);
     }
 
-    /**
+    */
+/**
      * Verifies that CrossJoins with two non native inputs can be natively
      * evaluated.
-     */
+     *//*
+
     public void testExpandAllNonNativeInputs() {
         // This query will not run natively unless the <Dimension>.Children
         // expression is expanded to a member list.
@@ -823,10 +836,12 @@ public class NonEmptyTest extends BatchTestCase {
             requestFreshConnection);
     }
 
-    /**
+    */
+/**
      * Verifies that CrossJoins with one non native inputs can be natively
      * evaluated.
-     */
+     *//*
+
     public void testExpandOneNonNativeInput() {
         // This query will not be evaluated natively unless the Filter
         // expression is expanded to a member list.
@@ -852,10 +867,12 @@ public class NonEmptyTest extends BatchTestCase {
             requestFreshConnection);
     }
 
-    /**
+    */
+/**
      * Check that the ExpandNonNative does not create Joins with input lists
      * containing large number of members.
-     */
+     *//*
+
     public void testExpandNonNativeResourceLimitFailure() {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         propSaver.set(
@@ -875,10 +892,12 @@ public class NonEmptyTest extends BatchTestCase {
         }
     }
 
-    /**
+    */
+/**
      * Verify that the presence of All member in all the inputs disables native
      * evaluation, even when ExpandNonNative is true.
-     */
+     *//*
+
     public void testExpandAllMembersInAllInputs() {
         // This query will not be evaluated natively, even if the Hierarchize
         // expression is expanded to a member list. The reason is that the
@@ -902,10 +921,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #0: 266,773\n");
     }
 
-    /**
+    */
+/**
      * Verifies that the presence of calculated member in all the inputs
      * disables native evaluation, even when ExpandNonNative is true.
-     */
+     *//*
+
     public void testExpandCalcMembersInAllInputs() {
         // This query will not be evaluated natively, even if the Hierarchize
         // expression is expanded to a member list. The reason is that the
@@ -929,12 +950,14 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #0: 266,773\n");
     }
 
-    /**
+    */
+/**
      * Check that if both inputs to NECJ are either
      * AllMember(currentMember, defaultMember are also AllMember)
      * or Calcculated member
      * native CJ is not used.
-     */
+     *//*
+
     public void testExpandCalcMemberInputNECJ() {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         checkNotNative(
@@ -956,10 +979,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #0: 163,270.72\n");
     }
 
-    /**
+    */
+/**
      * Native evaluation is no longer possible after the fix to
      * {@link #testCjEnumCalcMembersBug()} test.
-     */
+     *//*
+
     public void testExpandCalcMembers() {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         checkNotNative(
@@ -996,10 +1021,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #0: 50,236\n");
     }
 
-    /**
+    */
+/**
      * Verify that evaluation is native for expressions with nested non native
      * inputs that preduce MemberList results.
-     */
+     *//*
+
     public void testExpandNestedNonNativeInputs() {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         propSaver.set(
@@ -1034,10 +1061,12 @@ public class NonEmptyTest extends BatchTestCase {
             requestFreshConnection);
     }
 
-    /**
+    */
+/**
      * Verify that a low value for maxConstraints disables native evaluation,
      * even when ExpandNonNative is true.
-     */
+     *//*
+
     public void testExpandLowMaxConstraints() {
         propSaver.set(MondrianProperties.instance().MaxConstraints, 2);
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
@@ -1076,10 +1105,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #0: 28,275\n");
     }
 
-    /**
+    */
+/**
      * Verify that native evaluation is not enabled if expanded member list will
      * contain members from different levels, even if ExpandNonNative is set.
-     */
+     *//*
+
     public void testExpandDifferentLevels() {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         checkNotNative(
@@ -1091,10 +1122,12 @@ public class NonEmptyTest extends BatchTestCase {
             null);
     }
 
-    /**
+    */
+/**
      * Verify that native evaluation is turned off for tuple inputs, even if
      * ExpandNonNative is set.
-     */
+     *//*
+
     public void testExpandTupleInputs1() {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         checkNotNative(
@@ -1111,10 +1144,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #0: 108,188\n");
     }
 
-    /**
+    */
+/**
      * Verify that native evaluation is turned off for tuple inputs, even if
      * ExpandNonNative is set.
-     */
+     *//*
+
     public void testExpandTupleInputs2() {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         checkNotNative(
@@ -1131,10 +1166,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #0: 108,188\n");
     }
 
-    /**
+    */
+/**
      * Verify that native evaluation is on when ExpendNonNative is set, even if
      * the input list is empty.
-     */
+     *//*
+
     public void testExpandWithOneEmptyInput() {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         boolean requestFreshConnection = true;
@@ -1187,11 +1224,13 @@ public class NonEmptyTest extends BatchTestCase {
             + "Axis #2:\n");
     }
 
-    /**
+    */
+/**
      * Verify that native MemberLists inputs are subject to SQL constriant
      * limitation. If mondrian.rolap.maxConstraints is set too low, native
      * evaluations will be turned off.
-     */
+     *//*
+
     public void testEnumLowMaxConstraints() {
         propSaver.set(MondrianProperties.instance().MaxConstraints, 2);
         checkNotNative(
@@ -1241,10 +1280,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #0: 28,275\n");
     }
 
-    /**
+    */
+/**
      * Verify that the presence of All member in all the inputs disables native
      * evaluation.
-     */
+     *//*
+
     public void testAllMembersNECJ1() {
         // This query cannot be evaluated natively because of the "All" member.
         propSaver.set(
@@ -1261,10 +1302,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #0: 266,773\n");
     }
 
-    /**
+    */
+/**
      * Verify that the native evaluation is possible if one input does not
      * contain the All member.
-     */
+     *//*
+
     public void testAllMembersNECJ2() {
         // This query can be evaluated natively because there is at least one
         // non "All" member.
@@ -1297,9 +1340,11 @@ public class NonEmptyTest extends BatchTestCase {
             requestFreshConnection);
     }
 
-    /**
+    */
+/**
      * getMembersInLevel where Level = (All)
-     */
+     *//*
+
     public void testAllLevelMembers() {
         checkNative(
             14,
@@ -1309,9 +1354,11 @@ public class NonEmptyTest extends BatchTestCase {
             + "from [Sales]");
     }
 
-    /**
+    */
+/**
      * enum sets {} containing ALL
-     */
+     *//*
+
     public void testCjDescendantsEnumAllOnly() {
         checkNative(
             9,
@@ -1323,10 +1370,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "where ([Promotions].[All Promotions].[Bag Stuffers])");
     }
 
-    /**
+    */
+/**
      * checks that crossjoin returns a modifiable copy from cache
      * because its modified during sort
-     */
+     *//*
+
     public void testResultIsModifyableCopy() {
         checkNative(
             3,
@@ -1340,9 +1389,11 @@ public class NonEmptyTest extends BatchTestCase {
             + "  [Time].[1997].[Q1].[1])");
     }
 
-    /**
+    */
+/**
      * Checks that TopCount is executed natively unless disabled.
-     */
+     *//*
+
     public void testNativeTopCount() {
         switch (getTestContext().getDialect().getDatabaseProduct()) {
         case INFOBRIGHT:
@@ -1367,9 +1418,11 @@ public class NonEmptyTest extends BatchTestCase {
         checkNative(3, 3, query, null, requestFreshConnection);
     }
 
-    /**
+    */
+/**
      * Checks that TopCount is executed natively with calculated member.
-     */
+     *//*
+
     public void testCmNativeTopCount() {
         switch (getTestContext().getDialect().getDatabaseProduct()) {
         case INFOBRIGHT:
@@ -1440,10 +1493,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #3: 175\n");
     }
 
-    /**
+    */
+/**
      * Calc Member in TopCount: this topcount can not be calculated native
      * because its set contains calculated members.
-     */
+     *//*
+
     public void testCmInTopCount() {
         checkNotNative(
             1,
@@ -1453,9 +1508,11 @@ public class NonEmptyTest extends BatchTestCase {
             + "NON EMPTY TopCount({[Time].[Jan]}, 2) ON rows from [Sales] ");
     }
 
-    /**
+    */
+/**
      * Calc member in slicer cannot be executed natively.
-     */
+     *//*
+
     public void testCmInSlicer() {
         checkNotNative(
             3,
@@ -1703,9 +1760,11 @@ public class NonEmptyTest extends BatchTestCase {
             + "  [Time].[1997].[Q1].[1])");
     }
 
-    /**
+    */
+/**
      * use SQL even when all members are known
-     */
+     *//*
+
     public void testCjEnumEnum() {
         // Make sure maxConstraint settting is high enough
         int minConstraints = 2;
@@ -1723,9 +1782,11 @@ public class NonEmptyTest extends BatchTestCase {
             + "from [Sales] ");
     }
 
-    /**
+    */
+/**
      * Set containing only null member should not prevent usage of native.
-     */
+     *//*
+
     public void testCjNullInEnum() {
         propSaver.set(
             MondrianProperties.instance().IgnoreInvalidMembersDuringQuery,
@@ -1738,10 +1799,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "from [Sales] ");
     }
 
-    /**
+    */
+/**
      * enum sets {} containing members from different levels can not be computed
      * natively currently.
-     */
+     *//*
+
     public void testCjDescendantsEnumAll() {
         checkNotNative(
             13,
@@ -1796,10 +1859,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "where ([Promotions].[All Promotions].[Bag Stuffers])");
     }
 
-    /**
+    */
+/**
      * {} contains members from different levels, this can not be handled by
      * the current native crossjoin.
-     */
+     *//*
+
     public void testCjEnumDifferentLevelsChildren() {
         // Don't run the test if we're testing expression dependencies.
         // Expression dependencies cause spurious interval calls to
@@ -1909,13 +1974,15 @@ public class NonEmptyTest extends BatchTestCase {
             + "  [Time].[1997].[Q1].[1])");
     }
 
-    /**
+    */
+/**
      * Checks that multi-level member list generates compact form of SQL where
      * clause:
      * (1) Use IN list if possible
      * (2) Group members sharing the same parent
      * (3) Only need to compare up to the first unique parent level.
-     */
+     *//*
+
     public void testMultiLevelMemberConstraintNonNullParent() {
         String query =
             "with "
@@ -2006,7 +2073,8 @@ public class NonEmptyTest extends BatchTestCase {
         assertQuerySql(query, patterns);
     }
 
-    /**
+    */
+/**
      * Checks that multi-level member list generates compact form of SQL where
      * clause:
      * (1) Use IN list if possible(not possible if there are null values because
@@ -2014,7 +2082,8 @@ public class NonEmptyTest extends BatchTestCase {
      * (2) Group members sharing the same parent, including parents with NULLs.
      * (3) If parent levels include NULLs, comparision includes any unique
      * level.
-     */
+     *//*
+
     public void testMultiLevelMemberConstraintNullParent() {
         propSaver.set(propSaver.properties.GenerateFormattedSql, true);
         if (!isDefaultNullMemberRepresentation()) {
@@ -2111,7 +2180,8 @@ public class NonEmptyTest extends BatchTestCase {
         assertQuerySql(testContext, query, patterns);
     }
 
-    /**
+    */
+/**
      * Check that multi-level member list generates compact form of SQL where
      * clause:
      * (1) Use IN list if possible(not possible if there are null values because
@@ -2121,7 +2191,8 @@ public class NonEmptyTest extends BatchTestCase {
      *     level.
      * (4) Can handle predicates correctly if the member list contains both NULL
      * and non NULL parent levels.
-     */
+     *//*
+
     public void testMultiLevelMemberConstraintMixedNullNonNullParent() {
         propSaver.set(propSaver.properties.GenerateFormattedSql, true);
         if (!isDefaultNullMemberRepresentation()) {
@@ -2213,7 +2284,8 @@ public class NonEmptyTest extends BatchTestCase {
         assertQuerySql(testContext, query, patterns);
     }
 
-    /**
+    */
+/**
      * Check that multi-level member list generates compact form of SQL where
      * clause:
      * (1) Use IN list if possible(not possible if there are null values because
@@ -2222,7 +2294,8 @@ public class NonEmptyTest extends BatchTestCase {
      * (3) Only need to compare up to the first unique parent level.
      * (4) Can handle predicates correctly if the member list contains both NULL
      * and non NULL child levels.
-     */
+     *//*
+
     public void testMultiLevelMemberConstraintWithMixedNullNonNullChild() {
         if (!isDefaultNullMemberRepresentation()) {
             return;
@@ -2327,11 +2400,13 @@ public class NonEmptyTest extends BatchTestCase {
         Assert.assertEquals(21, rowsAxis.getPositions().size());
     }
 
-    /**
+    */
+/**
      * when Mondrian parses a string like
      * "[Store].[All Stores].[USA].[CA].[San Francisco]"
      * it shall not lookup additional members.
-     */
+     *//*
+
     public void testLookupMemberCache() {
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
             // Dependency testing causes extra SQL reads, and screws up this
@@ -2377,13 +2452,15 @@ public class NonEmptyTest extends BatchTestCase {
         assertTrue("[San Francisco] expected", caChildren.contains(sf));
     }
 
-    /**
+    */
+/**
      * When looking for [Month] Mondrian generates SQL that tries to find
      * 'Month' as a member of the time dimension. This resulted in an
      * SQLException because the year level is numeric and the constant 'Month'
      * in the WHERE condition is not.  Its probably a bug that Mondrian does not
      * take into account [Time].[1997] when looking up [Month].
-     */
+     *//*
+
     public void testLookupMember() {
         // ok if no exception occurs
         executeQuery(
@@ -2391,11 +2468,13 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
 
-    /**
+    */
+/**
      * Non Empty CrossJoin (A,B) gets turned into CrossJoin (Non Empty(A), Non
      * Empty(B)).  Verify that there is no crash when the length of B could be
      * non-zero length before the non empty and 0 after the non empty.
-     */
+     *//*
+
     public void testNonEmptyCrossJoinList() {
         propSaver.set(
             MondrianProperties.instance().EnableNativeCrossJoin, false);
@@ -2411,19 +2490,23 @@ public class NonEmptyTest extends BatchTestCase {
             oldEnableNativeNonEmpty);
     }
 
-    /**
+    */
+/**
      * SQL Optimization must be turned off in ragged hierarchies.
-     */
+     *//*
+
     public void testLookupMember2() {
         // ok if no exception occurs
         executeQuery(
             "select {[Store].[USA].[Washington]} on columns from [Sales Ragged]");
     }
 
-    /**
+    */
+/**
      * Make sure that the Crossjoin in [Measures].[CustomerCount]
      * is not evaluated in NON EMPTY context.
-     */
+     *//*
+
     public void testCalcMemberWithNonEmptyCrossJoin() {
         getConnection().getCacheControl(null).flushSchemaCache();
         Result result = executeQuery(
@@ -2567,10 +2650,12 @@ public class NonEmptyTest extends BatchTestCase {
         assertNull(list);
     }
 
-    /**
+    */
+/**
      * Tests that <Dimension>.Members exploits the same optimization as
      * <Level>.Members.
-     */
+     *//*
+
     public void testDimensionMembers() {
         // No query should return more than 20 rows. (1 row at 'all' level,
         // 1 row at nation level, 1 at state level, 20 at city level, and 11
@@ -2586,9 +2671,11 @@ public class NonEmptyTest extends BatchTestCase {
         c.run();
     }
 
-    /**
+    */
+/**
      * Tests non empty children of rolap member
-     */
+     *//*
+
     public void testMemberChildrenOfRolapMember() {
         TestCase c = new TestCase(
             50,
@@ -2601,9 +2688,11 @@ public class NonEmptyTest extends BatchTestCase {
         c.run();
     }
 
-    /**
+    */
+/**
      * Tests non empty children of All member
-     */
+     *//*
+
     public void testMemberChildrenOfAllMember() {
         TestCase c = new TestCase(
             50,
@@ -2614,9 +2703,11 @@ public class NonEmptyTest extends BatchTestCase {
         c.run();
     }
 
-    /**
+    */
+/**
      * Tests non empty children of All member w/o WHERE clause
-     */
+     *//*
+
     public void testMemberChildrenNoWhere() {
         // The time dimension is joined because there is no (All) level in the
         // Time hierarchy:
@@ -2646,11 +2737,13 @@ public class NonEmptyTest extends BatchTestCase {
         c.run();
     }
 
-    /**
+    */
+/**
      * Testcase for bug 1379068, which causes no children of [Time].[1997].[Q2]
      * to be found, because it incorrectly constrains on the level's key column
      * rather than name column.
-     */
+     *//*
+
     public void testMemberChildrenNameCol() {
         // Expression dependency testing casues false negatives.
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
@@ -2666,7 +2759,8 @@ public class NonEmptyTest extends BatchTestCase {
         c.run();
     }
 
-    /**
+    */
+/**
      * When a member is expanded in JPivot with mulitple hierarchies visible it
      * generates a
      *   <code>CrossJoin({[member from left hierarchy]}, [member to
@@ -2674,7 +2768,8 @@ public class NonEmptyTest extends BatchTestCase {
      *
      * <p>This should behave the same as if <code>[member from left
      * hierarchy]</code> was put into the slicer.
-     */
+     *//*
+
     public void testCrossjoin() {
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
             // Dependency testing causes extra SQL reads, and makes this
@@ -2695,11 +2790,13 @@ public class NonEmptyTest extends BatchTestCase {
         c.run();
     }
 
-    /**
+    */
+/**
      * Ensures that NON EMPTY Descendants is optimized.
      * Ensures that Descendants as a side effect collects MemberChildren that
      * may be looked up in the cache.
-     */
+     *//*
+
     public void testNonEmptyDescendants() {
         // Don't run the test if we're testing expression dependencies.
         // Expression dependencies cause spurious interval calls to
@@ -3154,10 +3251,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "from [Sales]");
     }
 
-    /**
+    */
+/**
      * Tests the behavior if you have NON EMPTY on both axes, and the default
      * member of a hierarchy is not 'all' or the first child.
-     */
+     *//*
+
     public void testNonEmptyWithWeirdDefaultMember() {
         if (!Bug.BugMondrian229Fixed) {
             return;
@@ -3514,10 +3613,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "  [Time].[1997].[Q1].[1])");
     }
 
-    /**
+    */
+/**
      * Test for bug #1696772
      * Modified which calculations are tested for non native, non empty joins
-     */
+     *//*
+
     public void testNonEmptyWithCalcMeasure() {
         checkNative(
             15,
@@ -3664,10 +3765,12 @@ public class NonEmptyTest extends BatchTestCase {
         }
     }
 
-    /**
+    */
+/**
      * Tests bug 1791609, "CrossJoin non empty optimizer eliminates calculated
      * member".
-     */
+     *//*
+
     public void testBug1791609NonEmptyCrossJoinEliminatesCalcMember() {
         if (!Bug.BugMondrian328Fixed) {
             return;
@@ -3764,13 +3867,15 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #30: $29,230.83\n");
     }
 
-    /**
+    */
+/**
      * Test that executes &lt;Level&gt;.Members and applies a non-empty
      * constraint. Must work regardless of whether
      * {@link MondrianProperties#EnableNativeNonEmpty native} is enabled.
      * Testcase for bug
      * 1722959, "NON EMPTY Level.MEMBERS fails if nonempty.enable=false"
-     */
+     *//*
+
     public void testNonEmptyLevelMembers() {
         boolean currentNativeNonEmpty =
                 MondrianProperties.instance().EnableNativeNonEmpty.get();
@@ -3889,11 +3994,13 @@ public class NonEmptyTest extends BatchTestCase {
             + "Axis #2:\n");
     }
 
-    /**
+    */
+/**
      * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-412">
      * MONDRIAN-412, "NON EMPTY and Filter() breaking aggregate
      * calculations"</a>.
-     */
+     *//*
+
     public void testBugMondrian412() {
         TestContext ctx = getTestContext();
         ctx.assertQueryReturns(
@@ -4287,11 +4394,13 @@ public class NonEmptyTest extends BatchTestCase {
         executeQuery(mdx);
     }
 
-    /**
+    */
+/**
      * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-321">
      * MONDRIAN-321, "CrossJoin has no nulls when
      * EnableNativeNonEmpty=true"</a>.
-     */
+     *//*
+
     public void testBugMondrian321() {
         assertQueryReturns(
             "WITH SET [#DataSet#] AS 'Crossjoin({Descendants([Customers].[All Customers], 2)}, {[Product].[All Products]})' \n"
@@ -4750,13 +4859,15 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #1: 135,215\n");
     }
 
-    /***
+    */
+/***
      * Before the fix this test would throw an IndexOutOfBounds exception
      * in SqlConstraintUtils.removeDefaultMembers.  The method assumed that the
      * first member in the list would exist and be a measure.  But, when the
      * default measure is calculated, it would have already been removed from
      * the list by removeCalculatedMembers, and thus the assumption was wrong.
-     */
+     *//*
+
     public void testCalculatedDefaultMeasureOnVirtualCubeNoThrowException() {
         propSaver.set(MondrianProperties.instance().EnableNativeNonEmpty, true);
         final TestContext context =
@@ -4812,11 +4923,13 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #2: 124,366\n");
     }
 
-    /**
+    */
+/**
      * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-734">
      * MONDRIAN-734, "Exception thrown when creating a "New Analysis View" with
      * JPivot"</a>.
-     */
+     *//*
+
     public void testExpandNonNativeWithEnableNativeCrossJoin() {
         final MondrianProperties mondrianProperties =
             MondrianProperties.instance();
@@ -4844,11 +4957,13 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #3: 50,236\n");
     }
 
-    /**
+    */
+/**
      * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-695">
      * MONDRIAN-695, "Unexpected data set may returned when MDX slicer contains
      * multiple dimensions"</a>.
-     */
+     *//*
+
     public void testNonEmptyCJWithMultiPositionSlicer() {
         final String mdx =
             "select NON EMPTY NonEmptyCrossJoin([Measures].[Sales Count], [Store].[USA].Children) ON COLUMNS, "
@@ -5069,12 +5184,14 @@ public class NonEmptyTest extends BatchTestCase {
         }
     }
 
-    /**
+    */
+/**
     * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-897">
     * MONDRIAN-897, "ClassCastException in
     * CrossJoinArgFactory.allArgsCheapToExpand when defining a NamedSet as
     * another NamedSet"</a>.
-    */
+    *//*
+
     public void testBugMondrian897DoubleNamedSetDefinitions() {
         TestContext ctx = getTestContext();
         ctx.assertQueryReturns(
@@ -5099,13 +5216,15 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #3: \n");
     }
 
-    /**
+    */
+/**
      * Test case for
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-1133">MONDRIAN-1133</a>
      *
      * <p>RolapNativeFilter would force the join to the fact table.
      * Some queries don't need to be joined to it and gain in performance.
-     */
+     *//*
+
     public void testMondrian1133() {
         propSaver.set(
             propSaver.properties.UseAggregates,
@@ -5186,7 +5305,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `store`.`store_country`,\n"
             + "    `store`.`store_state`\n"
             + "having\n"
-            + "    UPPER(c1) REGEXP '.*CA.*'\n"
+            + "    UPPER(c1) REGEXP '.*CA.*' AND UPPER(c1) IS NOT NULL\n"
             + "order by\n"
             + (TestContext.instance().getDialect().requiresOrderByAlias()
                 ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
@@ -5212,7 +5331,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `store`.`store_country`,\n"
             + "    `store`.`store_state`\n"
             + "having\n"
-            + "    UPPER(c1) REGEXP '.*CA.*'\n"
+            + "    UPPER(c1) REGEXP '.*CA.*' AND UPPER(c1) IS NOT NULL\n"
             + "order by\n"
             + (TestContext.instance().getDialect().requiresOrderByAlias()
                 ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
@@ -5230,7 +5349,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    \"store\".\"store_country\",\n"
             + "    \"store\".\"store_state\"\n"
             + "having\n"
-            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i') AND \"store\".\"store_state\" IS NOT NULL\n"
             + "order by\n"
             + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
             + "    \"store\".\"store_state\" ASC NULLS LAST";
@@ -5253,7 +5372,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    \"store\".\"store_country\",\n"
             + "    \"store\".\"store_state\"\n"
             + "having\n"
-            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i') AND \"store\".\"store_state\" IS NOT NULL\n"
             + "order by\n"
             + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
             + "    \"store\".\"store_state\" ASC NULLS LAST";
@@ -5289,7 +5408,8 @@ public class NonEmptyTest extends BatchTestCase {
             context.withRole("Role1"), nonEmptyQuery, patternsWithFactJoin);
     }
 
-    /**
+    */
+/**
      * Test case for
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-1133">MONDRIAN-1133</a>
      *
@@ -5297,7 +5417,8 @@ public class NonEmptyTest extends BatchTestCase {
      * Some queries don't need to be joined to it and gain in performance.
      *
      * <p>This one is for agg tables turned on.
-     */
+     *//*
+
     public void testMondrian1133WithAggs() {
         propSaver.set(
             propSaver.properties.UseAggregates,
@@ -5379,7 +5500,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `store`.`store_country`,\n"
             + "    `store`.`store_state`\n"
             + "having\n"
-            + "    UPPER(c1) REGEXP '.*CA.*'\n"
+            + "    UPPER(c1) REGEXP '.*CA.*' AND UPPER(c1) IS NOT NULL\n"
             + "order by\n"
             + (TestContext.instance().getDialect().requiresOrderByAlias()
                 ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
@@ -5402,7 +5523,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `store`.`store_country`,\n"
             + "    `store`.`store_state`\n"
             + "having\n"
-            + "    UPPER(c1) REGEXP '.*CA.*'\n"
+            + "    UPPER(c1) REGEXP '.*CA.*' AND UPPER(c1) IS NOT NULL\n"
             + "order by\n"
             + (TestContext.instance().getDialect().requiresOrderByAlias()
                 ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
@@ -5420,7 +5541,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    \"store\".\"store_country\",\n"
             + "    \"store\".\"store_state\"\n"
             + "having\n"
-            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i') AND \"store\".\"store_state\" IS NOT NULL\n"
             + "order by\n"
             + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
             + "    \"store\".\"store_state\" ASC NULLS LAST";
@@ -5440,7 +5561,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    \"store\".\"store_country\",\n"
             + "    \"store\".\"store_state\"\n"
             + "having\n"
-            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i') AND \"store\".\"store_state\" IS NOT NULL\n"
             + "order by\n"
             + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
             + "    \"store\".\"store_state\" ASC NULLS LAST";
@@ -5477,9 +5598,11 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
 
-    /**
+    */
+/**
      * Native CrossJoin with a ranged slicer.
-     */
+     *//*
+
     public void testNonEmptyAggregateSlicerIsNative() {
         final String mdx =
             "select NON EMPTY\n"
@@ -5638,7 +5761,8 @@ public class NonEmptyTest extends BatchTestCase {
             true);
     }
 
-    /**
+    */
+/**
      * Test case for
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-1658">MONDRIAN-1658</a>
      *
@@ -5648,7 +5772,8 @@ public class NonEmptyTest extends BatchTestCase {
      * an incorrect type which in turn caused the types for each argument to
      * union to be different
      *
-     */
+     *//*
+
     public void testMondrian1658() {
         propSaver.set(MondrianProperties.instance().ExpandNonNative, true);
         String mdx =
@@ -6316,3 +6441,4 @@ public class NonEmptyTest extends BatchTestCase {
 }
 
 // End NonEmptyTest.java
+*/
