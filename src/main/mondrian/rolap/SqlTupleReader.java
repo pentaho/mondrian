@@ -1787,6 +1787,13 @@ public class SqlTupleReader implements TupleReader {
                             // target group.
                             continue;
                         }
+                        // member constraint with name columns in agg table is not supported
+                        if (arg instanceof MemberListCrossJoinArg) {
+                            if (level.getNameExp() != null && !Util.equals(level.getNameExp(), level.getKeyExp())) {
+                                LOGGER.warn("Member constraint is not supported with name column in agg table");
+                                return null;
+                            }
+                        }
                         levelBitKey.set(column.getBitPosition());
                     }
                 }
