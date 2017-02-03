@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
 */
 
 package mondrian.spi.impl;
@@ -91,6 +91,8 @@ public class PostgreSqlDialect extends JdbcDialectImpl {
         javaRegex = javaRegex.replace("\\Q", "");
         javaRegex = javaRegex.replace("\\E", "");
         final StringBuilder sb = new StringBuilder();
+        sb.append(source);
+        sb.append(" is not null and ");
         sb.append("cast(");
         sb.append(source);
         sb.append(" as text) ~ ");
