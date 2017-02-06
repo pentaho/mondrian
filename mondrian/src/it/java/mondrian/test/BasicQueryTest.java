@@ -3487,11 +3487,62 @@ public class BasicQueryTest extends FoodMartTestCase {
                 + "</Cube>\n"
                 + "</Schema>";
 
-        TestContext testContext = TestContext.instance().withSchema( schema );
+        TestContext testContext = TestContext.instance().withSchema(schema);
+        propSaver.set(props.UseAggregates, true);
+        propSaver.set(props.ReadAggregates, true);
+        testContext.executeQuery(mdx);
+    }
+
+    public void testDifferentNameAndKeyColumn() {
+        String mdx = ""
+                + "With\n"
+                + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin(\n"
+                + "[Product].[Product Subcategory].Members,\n"
+                + "{[Time].[October].[October],[Time].[December].[December]})'\n"
+                + "Select\n"
+                + "[Measures].[Unit Sales] on columns,\n"
+                + "[*NATIVE_CJ_SET] on rows\n"
+                + "From [Sales]";
+
+        String schema = ""
+                + "<?xml version=\"1.0\"?>\n"
+                + "<Schema name=\"FoodMart 2285\">\n"
+                + "<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">\n"
+                + "  <Table name=\"sales_fact_1997\">\n"
+                + "     <AggExclude name=\"agg_c_special_sales_fact_1997\" />"
+                + "  </Table>\n"
+                + "  <Dimension name=\"Product\" foreignKey=\"product_id\">\n"
+                + "     <Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+                + "         <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+                + "             <Table name=\"product\"/>\n"
+                + "             <Table name=\"product_class\"/>\n"
+                + "         </Join>\t  \n"
+                + "         <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_class_id\"\n"
+                + "             uniqueMembers=\"false\"/>\n"
+                + "     </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
+                + "     <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
+                + "         <Table name=\"time_by_day\"/>\n"
+                + "         <Level name=\"Month Upper\" column=\"month_of_year\" nameColumn=\"the_month\" "
+                + "             uniqueMembers=\"false\" type=\"Numeric\" levelType=\"TimeMonths\"/>"
+                + "         <Level name=\"Month\" column=\"month_of_year\" nameColumn=\"the_month\" "
+                + "             uniqueMembers=\"false\" type=\"Numeric\" levelType=\"TimeMonths\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" "
+                + "     formatString=\"Standard\"/>\n"
+                + "</Cube>\n"
+                + "</Schema>";
+
+        TestContext testContext = TestContext.instance()
+                .withFreshConnection()
+                .withSchema(schema);
         propSaver.set(props.UseAggregates, true);
         propSaver.set(props.ReadAggregates, true);
 
-        testContext.executeQuery( mdx );
+        // no exception is thrown
+        testContext.executeQuery(mdx);
     }
 
     /**
