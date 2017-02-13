@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2017 Pentaho
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -257,11 +256,31 @@ class RestrictedMemberReader extends DelegatingMemberReader {
             }
         }
         final List<RolapMember> rootMembers = getRootMembers();
-        if (rootMembers.size() == 1) {
-            return rootMembers.get(0);
-        } else {
-            return new MultiCardinalityDefaultMember(rootMembers.get(0));
+
+        RolapMember firstAvailableRootMember = null;
+        boolean singleAvailableRootMember = false;
+        for (RolapMember rootMember : rootMembers) {
+            Access i = hierarchyAccess.getAccess(rootMember);
+            if (i != Access.NONE) {
+                if (firstAvailableRootMember == null) {
+                    firstAvailableRootMember = rootMember;
+                    singleAvailableRootMember = true;
+                } else {
+                    singleAvailableRootMember = false;
+                    break;
+                }
+            }
         }
+        if (singleAvailableRootMember) {
+            return firstAvailableRootMember;
+        }
+        if (
+            firstAvailableRootMember != null
+            && firstAvailableRootMember.isMeasure())
+        {
+            return firstAvailableRootMember;
+        }
+        return new MultiCardinalityDefaultMember(rootMembers.get(0));
     }
 
     /**

@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.test;
 
@@ -4795,6 +4795,53 @@ public class SchemaTest extends FoodMartTestCase {
             + "Row #0: 131,558\n"
             + "Row #0: 135,215\n");
     }
+
+    public void testBugMonrian2528() {
+      // Default member [Measures].[Unit Sales] is denied for the current role.
+      // Before the fix ClassCastException was thrown on query.
+      final TestContext testContext = TestContext.instance().create(
+          null, null, null, null, null,
+          "<Role name=\"admin\">\n"
+          + "  <SchemaGrant access=\"all\">\n"
+          + "  </SchemaGrant>\n"
+          + "</Role>\n"
+          + "<Role name=\"dev\">\n"
+          + "  <SchemaGrant access=\"all\">\n"
+          + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+          + "      <HierarchyGrant hierarchy=\"[Measures]\""
+          + " access=\"custom\">\n"
+          + "        <MemberGrant member=\"[Measures].[Store Cost]\""
+          + " access=\"all\">\n"
+          + "        </MemberGrant>\n"
+          + "        <MemberGrant member=\"[Measures].[Store Sales]\""
+          + " access=\"all\">\n"
+          + "        </MemberGrant>\n"
+          + "        <MemberGrant member=\"[Measures].[Sales Count]\""
+          + " access=\"all\">\n"
+          + "        </MemberGrant>\n"
+          + "      </HierarchyGrant>\n"
+          + "    </CubeGrant>\n"
+          + "  </SchemaGrant>\n"
+          + "</Role>\n").withRole("dev");
+
+      testContext.assertQueryReturns(
+          "SELECT\n"
+          + "[Product].[All Products] ON 0,\n"
+          + "[Measures].[Store Sales] ON 1\n"
+          + "FROM [Sales]\n"
+          + "WHERE FILTER([Store Type].children, [Store Type].CURRENTMEMBER NOT IN {[Store Type].[Deluxe Supermarket], [Store Type].[Gourmet Supermarket]})\n",
+          "Axis #0:\n"
+          + "{[Store Type].[HeadQuarters]}\n"
+          + "{[Store Type].[Mid-Size Grocery]}\n"
+          + "{[Store Type].[Small Grocery]}\n"
+          + "{[Store Type].[Supermarket]}\n"
+          + "Axis #1:\n"
+          + "{[Product].[All Products]}\n"
+          + "Axis #2:\n"
+          + "{[Measures].[Store Sales]}\n"
+          + "Row #0: 357,425.65\n"
+);
+  }
 }
 
 // End SchemaTest.java
