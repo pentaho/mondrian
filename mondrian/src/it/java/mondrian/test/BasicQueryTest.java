@@ -8547,6 +8547,83 @@ public class BasicQueryTest extends FoodMartTestCase {
             "[Example.Example Hierarchy].[Non-Zero].[Juice].Children",
             "[Example.Example Hierarchy].[Non-Zero].[Juice].[Washington Berry Juice]");
     }
+
+    public void testMondrian2245() {
+        String mdxWithoutBug = "" +
+                "SELECT " +
+                "   {[Measures].[Sales]} ON Axis(0),\n" +
+                "   Hierarchize({[Product - no Bug].[Product Family].Members}) ON Axis(1)\n" +
+                "FROM " +
+                "   [No Bug]";
+        String mdxWithBug = "" +
+                "SELECT " +
+                "   {[Measures].[Sales]} ON Axis(0),\n" +
+                "   Hierarchize({[Product - Bug].[Product Family].Members}) ON Axis(1)\n" +
+                "FROM " +
+                "   [Bug]";
+
+        String schema = "" +
+                "<?xml version=\"1.0\"?>\n" +
+                "<Schema name=\"snowflake bug\">\n" +
+                        "  <Cube name=\"Bug\">\n" +
+                        "    <Table name=\"sales_fact_1997\"/>\n" +
+                        "    <Dimension name=\"Product - Bug\" foreignKey=\"product_id\" highCardinality=\"false\">\n" +
+                        "      <Hierarchy name=\"\" hasAll=\"true\" primaryKeyTable=\"product\" primaryKey=\"product_id\">\n" +
+                        "        <Join leftAlias=\"product_class\" leftKey=\"product_class_id\" rightAlias=\"product\" rightKey=\"product_class_id\">\n" +
+                        "          <Table name=\"product_class\" alias=\"product_class\"/>\n" +
+                        "          <Table name=\"product\" alias=\"product\"/>\n" +
+                        "        </Join>\n" +
+                        "        <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\" uniqueMembers=\"false\"/>\n" +
+                        "      </Hierarchy>\n" +
+                        "    </Dimension>\n" +
+                        "    <Measure name=\"Sales\" aggregator=\"sum\" column=\"store_sales\"/>\n" +
+                        "  </Cube>\n" +
+                        "  <Cube name=\"No Bug\">\n" +
+                        "    <Table name=\"sales_fact_1997\"/>\n" +
+                        "    <Dimension name=\"Product - no Bug\" highCardinality=\"false\" foreignKey=\"product_id\">\n" +
+                        "      <Hierarchy name=\"\" hasAll=\"true\" primaryKeyTable=\"product\" primaryKey=\"product_id\">\n" +
+                        "        <Join leftAlias=\"product\" leftKey=\"product_class_id\" rightAlias=\"product_class\" rightKey=\"product_class_id\">\n" +
+                        "          <Table name=\"product\" alias=\"product\"/>\n" +
+                        "          <Table name=\"product_class\" alias=\"product_class\"/>\n" +
+                        "        </Join>\n" +
+                        "        <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"/>\n" +
+                        "      </Hierarchy>\n" +
+                        "    </Dimension>\n" +
+                        "    <Measure name=\"Sales\" aggregator=\"sum\" column=\"store_sales\"/>\n" +
+                        "  </Cube>\n" +
+                        "</Schema>";
+
+        String expectedResultInBugCube = "" +
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Product - Bug].[Drink]}\n" +
+                "{[Product - Bug].[Food]}\n" +
+                "{[Product - Bug].[Non-Consumable]}\n" +
+                "Row #0: 48,836.21\n" +
+                "Row #1: 409,035.59\n" +
+                "Row #2: 107,366.33\n";
+
+        String expectedResultInNoBugCube = "" +
+                "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Sales]}\n" +
+                "Axis #2:\n" +
+                "{[Product - no Bug].[Drink]}\n" +
+                "{[Product - no Bug].[Food]}\n" +
+                "{[Product - no Bug].[Non-Consumable]}\n" +
+                "Row #0: 48,836.21\n" +
+                "Row #1: 409,035.59\n" +
+                "Row #2: 107,366.33\n";
+        TestContext testContext = TestContext.instance()
+                .withFreshConnection()
+                .withSchema(schema);
+        testContext.assertQueryReturns(mdxWithoutBug, expectedResultInNoBugCube);
+        testContext.assertQueryReturns(mdxWithBug, expectedResultInBugCube);
+    }
 }
 
 // End BasicQueryTest.java
