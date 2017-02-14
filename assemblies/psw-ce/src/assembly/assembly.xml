@@ -16,7 +16,7 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${project.basedir}/src/assembly/resources</directory>
+            <directory>${project.basedir}/src/main/resources</directory>
             <outputDirectory>schema-workbench</outputDirectory>
         </fileSet>
         <fileSet>
