@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -666,7 +666,8 @@ public class RoleImpl implements Role {
     /**
      * Represents the access that a role has to a particular hierarchy.
      */
-    private static class HierarchyAccessImpl implements Role.HierarchyAccess {
+    private static class HierarchyAccessImpl implements Role.AllHierarchyAccess
+    {
         private final Hierarchy hierarchy;
         private final Level topLevel;
         private final Access access;
@@ -845,6 +846,10 @@ public class RoleImpl implements Role {
                         rollupPolicy);
                 }
             }
+        }
+
+        public Access getAccess() {
+            return access;
         }
 
         public Access getAccess(Member member) {
@@ -1052,7 +1057,7 @@ public class RoleImpl implements Role {
      * delegates all methods to an underlying hierarchy access.
      */
     public static abstract class DelegatingHierarchyAccess
-        implements HierarchyAccess
+        implements AllHierarchyAccess
     {
         protected final HierarchyAccess hierarchyAccess;
 
@@ -1084,6 +1089,14 @@ public class RoleImpl implements Role {
 
         public boolean hasInaccessibleDescendants(Member member) {
             return hierarchyAccess.hasInaccessibleDescendants(member);
+        }
+
+        public Access getAccess() {
+            if (hierarchyAccess instanceof AllHierarchyAccess) {
+                return ((AllHierarchyAccess) hierarchyAccess).getAccess();
+            }
+            throw Util.newInternal(
+                "Unsupported operation. Should implement AllHierarchyAccess.");
         }
     }
 
