@@ -830,4 +830,8 @@ fullname
   </SchemaGrant>
 </Role>
 
+<Role name="Administrator">
+  <SchemaGrant access="all"/>
+</Role>
+
 </Schema>
