@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.rolap.aggmatcher;
 
@@ -215,7 +215,7 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
                   + "    `test_lp_xx2_fact`.`prodname`,\n"
                   + "    `product_csv`.`color`\n"
                   + "having\n"
-                  + "    UPPER(c7) REGEXP '.*TWO.*'\n"
+                  + "    c7 IS NOT NULL AND UPPER(c7) REGEXP '.*TWO.*'\n"
                   + "order by\n"
                   + (TestContext.instance().getDialect().requiresOrderByAlias()
                       ? "    ISNULL(`c2`) ASC, `c2` ASC,\n"
