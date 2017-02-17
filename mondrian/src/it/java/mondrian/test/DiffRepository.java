@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
 */
 
 package mondrian.test;
@@ -501,21 +501,26 @@ public class DiffRepository
                 "reference file does not contain resource '" + expected
                 + "' for testcase '" + testCaseName + "'");
         } else {
-            try {
-                // TODO jvs 25-Apr-2006:  reuse bulk of
-                // DiffTestCase.diffTestLog here; besides newline
-                // insensitivity, it can report on the line
-                // at which the first diff occurs, which is useful
-                // for largish snippets
-                String expected2Canonical =
-                    Util.replace(expected2, Util.nl, "\n");
-                String actualCanonical = Util.replace(actual, Util.nl, "\n");
-                Assert.assertEquals(
-                    expected2Canonical,
-                    actualCanonical);
-            } catch (ComparisonFailure e) {
-                amend(expected, actual);
-                throw e;
+            // TODO jvs 25-Apr-2006:  reuse bulk of
+            // DiffTestCase.diffTestLog here; besides newline
+            // insensitivity, it can report on the line
+            // at which the first diff occurs, which is useful
+            // for largish snippets
+            String expectedCanonical = Util.replace(expected2, Util.nl, "\n");
+            String actualCanonical = Util.replace(actual, Util.nl, "\n");
+
+            List<String> expectedParts = getListOfSegments(expectedCanonical);
+            List<String> actualParts = getListOfSegments(actualCanonical);
+
+            for (String expectedPart : expectedParts) {
+                boolean partFound = false;
+                for (String actualPart : actualParts) {
+                    if (actualPart.equals(expectedPart)) {
+                        partFound = true;
+                        break;
+                    }
+                }
+                Assert.assertTrue(partFound);
             }
         }
     }
@@ -773,6 +778,36 @@ public class DiffRepository
             mapClassToRepos.put(clazz, diffRepos);
         }
         return diffRepos;
+    }
+
+    /**
+     * Extracts segment cache data from inputted string.
+     *
+     * <p>First of all it split inputted string by "[*]Segment Header"
+     * Then it believes that segment data starts with "Schema:["
+     * and ends with "Compound Predicates:[...]"
+     *
+     * @param data String containing all segments data
+     * @return The list of extracted segments
+     */
+    public List<String> getListOfSegments(String data) {
+        String[] parts = data.split("[*]Segment Header");
+        List<String> normalizedParts = new ArrayList<>();
+        for (String part : parts) {
+            if (part.contains("Schema:[")) {
+                part = part.substring(part.indexOf("Schema:["));
+                if (part.contains("Compound Predicates:[")) {
+                    int searchFrom = part.indexOf("Compound Predicates:[");
+                    int substEnd = part.indexOf("]", searchFrom
+                            + "Compound Predicates:[".length());
+                    if (substEnd != -1) {
+                        part = part.substring(0, substEnd + 1);
+                        normalizedParts.add(part);
+                    }
+                }
+            }
+        }
+        return normalizedParts;
     }
 }
 
