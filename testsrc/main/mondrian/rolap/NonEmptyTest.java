@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho
+// Copyright (C) 2005-2017 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -14,7 +14,6 @@ import mondrian.olap.*;
 import mondrian.olap.Level;
 import mondrian.rolap.RolapConnection.NonEmptyResult;
 import mondrian.rolap.RolapNative.*;
-import mondrian.rolap.cache.HardSmartCache;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.spi.Dialect;
@@ -22,7 +21,6 @@ import mondrian.spi.Dialect.DatabaseProduct;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
 import mondrian.util.Bug;
-import mondrian.util.Pair;
 
 import junit.framework.Assert;
 
@@ -5103,7 +5101,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `store`.`store_country`,\n"
             + "    `store`.`store_state`\n"
             + "having\n"
-            + "    UPPER(c1) REGEXP '.*CA.*'\n"
+            + "    c1 IS NOT NULL AND UPPER(c1) REGEXP '.*CA.*'\n"
             + "order by\n"
             + (TestContext.instance().getDialect().requiresOrderByAlias()
                 ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
@@ -5129,7 +5127,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `store`.`store_country`,\n"
             + "    `store`.`store_state`\n"
             + "having\n"
-            + "    UPPER(c1) REGEXP '.*CA.*'\n"
+            + "    c1 IS NOT NULL AND UPPER(c1) REGEXP '.*CA.*'\n"
             + "order by\n"
             + (TestContext.instance().getDialect().requiresOrderByAlias()
                 ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
@@ -5147,7 +5145,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    \"store\".\"store_country\",\n"
             + "    \"store\".\"store_state\"\n"
             + "having\n"
-            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "    \"store\".\"store_state\" IS NOT NULL AND REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
             + "order by\n"
             + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
             + "    \"store\".\"store_state\" ASC NULLS LAST";
@@ -5170,7 +5168,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    \"store\".\"store_country\",\n"
             + "    \"store\".\"store_state\"\n"
             + "having\n"
-            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "    \"store\".\"store_state\" IS NOT NULL AND REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
             + "order by\n"
             + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
             + "    \"store\".\"store_state\" ASC NULLS LAST";
@@ -5296,7 +5294,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `store`.`store_country`,\n"
             + "    `store`.`store_state`\n"
             + "having\n"
-            + "    UPPER(c1) REGEXP '.*CA.*'\n"
+            + "    c1 IS NOT NULL AND UPPER(c1) REGEXP '.*CA.*'\n"
             + "order by\n"
             + (TestContext.instance().getDialect().requiresOrderByAlias()
                 ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
@@ -5319,7 +5317,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    `store`.`store_country`,\n"
             + "    `store`.`store_state`\n"
             + "having\n"
-            + "    UPPER(c1) REGEXP '.*CA.*'\n"
+            + "    c1 IS NOT NULL AND UPPER(c1) REGEXP '.*CA.*'\n"
             + "order by\n"
             + (TestContext.instance().getDialect().requiresOrderByAlias()
                 ? "    ISNULL(`c0`) ASC, `c0` ASC,\n"
@@ -5337,7 +5335,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    \"store\".\"store_country\",\n"
             + "    \"store\".\"store_state\"\n"
             + "having\n"
-            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "    \"store\".\"store_state\" IS NOT NULL AND REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
             + "order by\n"
             + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
             + "    \"store\".\"store_state\" ASC NULLS LAST";
@@ -5357,7 +5355,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "    \"store\".\"store_country\",\n"
             + "    \"store\".\"store_state\"\n"
             + "having\n"
-            + "    REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
+            + "    \"store\".\"store_state\" IS NOT NULL AND REGEXP_LIKE(\"store\".\"store_state\", '.*CA.*', 'i')\n"
             + "order by\n"
             + "    \"store\".\"store_country\" ASC NULLS LAST,\n"
             + "    \"store\".\"store_state\" ASC NULLS LAST";
