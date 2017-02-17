@@ -648,18 +648,6 @@ public class SegmentBuilderTest extends BatchTestCase {
                 + "[Time].[1998].[Q1].[1], [Time].[1998].[Q3].[8], [Time].[1998].[Q3].[9], "
                 + "[Time].[1998].[Q4].[10], [Time].[1998].[Q4].[11], [Time].[1998].[Q4].[12]}"
                 + "on 0 from sales"},
-            new String[] {
-                "208c5162e6bb49ceb217eab3621f4fc0209f73265c291a3f8aa673aee775de81",
-                    // ^^^
-                    //    {time_by_day.the_year=('1998')}
-                    //    {time_by_day.quarter=('Q1','Q2','Q3')}
-                    //    {time_by_day.month_of_year=('2','3','4','5','6','7')}]
-                "48e6f2f623d0a1f42d033ff22f13a18febaa9f2d43854b9505f21917b283cbdc"
-                    // ^^^
-                    // {time_by_day.the_year=(*)}
-                    // {time_by_day.quarter=('Q1','Q3','Q4')}
-                    // {time_by_day.month_of_year=('1','8','9','10','11','12')}]
-            },
             new String[]{
                 // rollup columns
                 "time_by_day.quarter",
@@ -668,15 +656,13 @@ public class SegmentBuilderTest extends BatchTestCase {
             // expected header of the rolled up segment
             "*Segment Header\n"
             + "Schema:[FoodMart]\n"
-            + "Checksum:[4079ae1a3e5190690712b752a45ee209]\n"
             + "Cube:[Sales]\n"
             + "Measure:[Unit Sales]\n"
             + "Axes:[\n"
             + "    {time_by_day.quarter=('Q1','Q3')}\n"
             + "    {time_by_day.the_year=('1998')}]\n"
             + "Excluded Regions:[]\n"
-            + "Compound Predicates:[]\n"
-            + "ID:[fb76b2a2a1c3906a349067fb923d6bffb89091ec39bcd57062dbeff066a96052]\n");
+            + "Compound Predicates:[]\n");
     }
 
     public void testSameRollupRegardlessOfSegmentOrderWithData() {
@@ -693,32 +679,17 @@ public class SegmentBuilderTest extends BatchTestCase {
                 + "\n"
                 + "{[Product].[Drink].[Dairy]}"
                 + "on 0 from sales"},
-            new String[] {
-              "85d83d3e873198a09ac235cfdb2864b8d310b6b4de8d0c2dbd2e94801f21e204",
-                // ^^^
-                //    {time_by_day.the_year=('1997')}
-                //    {product_class.product_family=(*)}
-                //    {product_class.product_department=('Alcoholic Beverages',
-                //     'Baked Goods','Beverages','Periodicals')}]
-              "dcbac5b6c2585a65d2a4312bbdfe1f469d0a76cd5ec20af80c30b1c4c016cc2d"
-                // ^^^
-                //    {time_by_day.the_year=('1997')}
-                //    {product_class.product_family=('Drink')}
-                //    {product_class.product_department=('Dairy')}]
-            },
             new String[]{
                 "product_class.product_family"
             },
             "*Segment Header\n"
             + "Schema:[FoodMart]\n"
-            + "Checksum:[4079ae1a3e5190690712b752a45ee209]\n"
             + "Cube:[Sales]\n"
             + "Measure:[Unit Sales]\n"
             + "Axes:[\n"
             + "    {product_class.product_family=('Drink')}]\n"
             + "Excluded Regions:[]\n"
-            + "Compound Predicates:[]\n"
-            + "ID:[f6aff32a27d1a3f59259dccacb45ed8ff770de3004d0ede496b5bd3ecc283627]\n");
+            + "Compound Predicates:[]\n");
     }
 
     public void testSameRollupRegardlessOfSegmentOrderNoWildcards() {
@@ -733,32 +704,17 @@ public class SegmentBuilderTest extends BatchTestCase {
                 + "\n"
                 + "{[Product].[Drink].[Dairy]}"
                 + "on 0 from sales"},
-            new String[] {
-                "85d83d3e873198a09ac235cfdb2864b8d310b6b4de8d0c2dbd2e94801f21e204",
-                    // ^^^
-                    //    {time_by_day.the_year=('1997')}
-                    // {product_class.product_family=('Drink','Non-Consumable')}
-                    // {product_class.product_department=('Alcoholic Beverages',
-                    //  'Beverages','Periodicals')}]
-                "2244f2725b4d3acf620926a2af3244b93233f6e77352e5fe33a0ccfe3ce375c2"
-                    // ^^^
-                    //    {time_by_day.the_year=('1997')}
-                    //    {product_class.product_family=('Drink')}
-                    //    {product_class.product_department=('Dairy')}]
-            },
             new String[]{
                 "product_class.product_family"
             },
             "*Segment Header\n"
             + "Schema:[FoodMart]\n"
-            + "Checksum:[4079ae1a3e5190690712b752a45ee209]\n"
             + "Cube:[Sales]\n"
             + "Measure:[Unit Sales]\n"
             + "Axes:[\n"
             + "    {product_class.product_family=('Drink')}]\n"
             + "Excluded Regions:[]\n"
-            + "Compound Predicates:[]\n"
-            + "ID:[f6aff32a27d1a3f59259dccacb45ed8ff770de3004d0ede496b5bd3ecc283627]\n");
+            + "Compound Predicates:[]\n");
     }
 
     public void testSameRollupRegardlessOfSegmentOrderThreeSegs() {
@@ -774,38 +730,17 @@ public class SegmentBuilderTest extends BatchTestCase {
                 + "on 0 from sales",
                 " select "
                 + "{[Product].[Drink].[Beverages]} on 0 from sales"},
-            new String[] {
-                "85d83d3e873198a09ac235cfdb2864b8d310b6b4de8d0c2dbd2e94801f21e204",
-                    // ^^^
-                    //    {time_by_day.the_year=('1997')}
-                    //    {product_class.product_family=('Drink')}
-                    //    {product_class.product_department=('Dairy')}]
-                "70458a34f44bd07a9b481a753c3823c36bc0899b80c38bb92858e3fe5514ab83",
-                    // ^^^
-                    //    {time_by_day.the_year=('1997')}
-                    //    {product_class.product_family=('Drink')}
-                    //    {product_class.product_department=('Beverages')}]
-                "a37378e53340dd980556c25027c58cc75c2e487f459282cbdc8d999e79c4dd54"
-                    // ^^^
-                    //    {time_by_day.the_year=('1997')}
-                    //    {product_class.product_family=
-                    //                              ('Drink','Non-Consumable')}
-                    //    {product_class.product_department=
-                    //                  ('Alcoholic Beverages','Periodicals')}]
-            },
             new String[]{
                 "product_class.product_family"
             },
             "*Segment Header\n"
             + "Schema:[FoodMart]\n"
-            + "Checksum:[4079ae1a3e5190690712b752a45ee209]\n"
             + "Cube:[Sales]\n"
             + "Measure:[Unit Sales]\n"
             + "Axes:[\n"
             + "    {product_class.product_family=('Drink')}]\n"
             + "Excluded Regions:[]\n"
-            + "Compound Predicates:[]\n"
-            + "ID:[f6aff32a27d1a3f59259dccacb45ed8ff770de3004d0ede496b5bd3ecc283627]\n");
+            + "Compound Predicates:[]\n");
     }
 
 
@@ -866,7 +801,6 @@ public class SegmentBuilderTest extends BatchTestCase {
      */
     private Pair<SegmentHeader, SegmentBody> runRollupTest(
         String[] cachePopulatingQueries,
-        String[] segmentIdsToRollup,
         String[] keepColumns,
         String expectedHeader)
     {
@@ -874,8 +808,7 @@ public class SegmentBuilderTest extends BatchTestCase {
             MondrianProperties.instance().OptimizePredicates,
             false);
         TestContext context = loadCacheWithQueries(cachePopulatingQueries);
-        Map<SegmentHeader, SegmentBody> map = getReversibleTestMap(
-            context, Order.FORWARD, segmentIdsToRollup);
+        Map<SegmentHeader, SegmentBody> map = getReversibleTestMap(context, Order.FORWARD);
         Set<String> keepColumnsSet = new HashSet<String>();
         keepColumnsSet.addAll(Arrays.asList(keepColumns));
         Pair<SegmentHeader, SegmentBody> rolledForward = SegmentBuilder.rollup(
@@ -888,14 +821,14 @@ public class SegmentBuilderTest extends BatchTestCase {
             Dialect.Datatype.Numeric);
         // Now try reversing the order the segments are retrieved
         context = loadCacheWithQueries(cachePopulatingQueries);
-        map = getReversibleTestMap(context, Order.REVERSE, segmentIdsToRollup);
+        map = getReversibleTestMap(context, Order.REVERSE);
         Pair<SegmentHeader, SegmentBody> rolledReverse = SegmentBuilder.rollup(
             map,
             keepColumnsSet,
             BitKey.Factory.makeBitKey(new BitSet()),
             RolapAggregator.Sum,
             Dialect.Datatype.Numeric);
-        assertEquals(expectedHeader, rolledForward.getKey().toString());
+        assertEquals(expectedHeader, removeJdkDependentStrings(rolledForward.getKey().toString()));
         // the header of the rolled up segment should be the same
         // regardless of the order the segments were processed
         assertEquals(rolledForward.getKey(), rolledReverse.getKey());
@@ -926,11 +859,9 @@ public class SegmentBuilderTest extends BatchTestCase {
      * @param context  The test context
      * @param order  The order to sort the elements returned by entrySet(),
      *               FORWARD or REVERSE
-     * @param segmentIdsToInclude  The IDs of currently cached segments to
-     *                             include in the map.
      */
     private Map<SegmentHeader, SegmentBody> getReversibleTestMap(
-        TestContext context, final Order order, String[] segmentIdsToInclude)
+        TestContext context, final Order order)
     {
         SegmentCache cache = MondrianServer.forConnection(
             context.getConnection()).getAggregationManager()
@@ -984,11 +915,7 @@ public class SegmentBuilderTest extends BatchTestCase {
             }
         };
         for (SegmentHeader header : headers) {
-            for (String segmentId : segmentIdsToInclude) {
-                if (header.getUniqueID().toString().equals(segmentId)) {
-                    testMap.put(header, cache.get(header));
-                }
-            }
+            testMap.put(header, cache.get(header));
         }
         assertFalse(String.format(
             "SegmentMap is empty. No segmentIds matched test parameters. "
@@ -1100,6 +1027,12 @@ public class SegmentBuilderTest extends BatchTestCase {
               new HashSet<String>(Arrays.asList("col1", "col2")),
               null, RolapAggregator.Sum, Dialect.Datatype.Numeric);
       assertEquals(3, rollup.left.getConstrainedColumns().size());
+  }
+
+  public String removeJdkDependentStrings(String data) {
+      data = data.replaceAll("(?m)^Checksum:.*(?:\\r?\\n)?","");
+      data = data.replaceAll("(?m)^ID:.*(?:\\r?\\n)?","");
+      return data;
   }
 
 }

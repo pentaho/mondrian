@@ -85,6 +85,8 @@ public class CacheControlTest extends FoodMartTestCase {
     {
         String expected2 = expected.replaceAll("Segment #[0-9]+", "Segment ##");
         String actual2 = actual.replaceAll("Segment #[0-9]+", "Segment ##");
+        actual2 = actual2.replaceAll("(?m)^Checksum:.*(?:\\r?\\n)?","");
+        actual2 = actual2.replaceAll("(?m)^ID:.*(?:\\r?\\n)?","");
         getDiffRepos().assertEquals(tag, expected2, actual2);
     }
 
