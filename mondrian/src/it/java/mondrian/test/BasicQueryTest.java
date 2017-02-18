@@ -3545,6 +3545,281 @@ public class BasicQueryTest extends FoodMartTestCase {
         testContext.executeQuery(mdx);
     }
 
+    public void testRollupAvgFromSum() {
+        String mdx = ""
+                + "select\n"
+                + "[Measures].[Unit Sales] on columns,\n"
+                + "Descendants([Time].[1997], [Time].[Quarter]) on rows\n"
+                + "from [Sales]";
+
+        String schema = ""
+                + "<?xml version=\"1.0\"?>\n"
+                + "<Schema name=\"FoodMart 2399 Rollup Type\">\n"
+                + "<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">\n"
+                + "  <Table name=\"sales_fact_1997\">\n"
+                + "<AggExclude name=\"agg_c_14_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_l_03_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_l_04_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_l_05_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_lc_06_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_lc_100_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_ll_01_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_pl_01_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_c_special_sales_fact_1997\" />\n"
+                + "    <AggName name=\"agg_c_10_sales_fact_1997\">\n"
+                + "        <AggFactCount column=\"FACT_COUNT\"/>\n"
+                + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"UNIT_SALES\" rollupType=\"AvgFromSum\" />\n"
+                + "        <AggLevel name=\"[Time].[Year]\" column=\"THE_YEAR\" />\n"
+                + "        <AggLevel name=\"[Time].[Quarter]\" column=\"QUARTER\" />\n"
+                + "    </AggName>\n"
+                + "  </Table>\n"
+                + "  <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
+                + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
+                + "      <Table name=\"time_by_day\"/>\n"
+                + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+                + "          levelType=\"TimeYears\"/>\n"
+                + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
+                + "          levelType=\"TimeQuarters\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"avg\" />\n"
+                + "</Cube>\n"
+                + "</Schema>";
+
+        TestContext testContext = TestContext
+                .instance()
+                .withFreshConnection()
+                .withSchema(schema);
+        propSaver.set(props.UseAggregates, true);
+        propSaver.set(props.ReadAggregates, true);
+
+        String desiredResult = ""
+                + "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Time].[1997].[Q1]}\n"
+                + "{[Time].[1997].[Q2]}\n"
+                + "{[Time].[1997].[Q3]}\n"
+                + "{[Time].[1997].[Q4]}\n"
+                + "Row #0: 3.071\n"
+                + "Row #1: 3.074\n"
+                + "Row #2: 3.069\n"
+                + "Row #3: 3.074\n";
+
+        testContext.assertQueryReturns(mdx, desiredResult );
+
+        // check that consistent with fact table
+        propSaver.set(props.UseAggregates, false);
+        propSaver.set(props.ReadAggregates, false);
+
+        testContext.withFreshConnection()
+                .assertQueryReturns(mdx, desiredResult);
+    }
+
+    public void testRollupAvgFromAvg() {
+        String mdx = ""
+                + "select\n"
+                + "[Measures].[Unit Sales] on columns,\n"
+                + "Descendants([Time].[1997], [Time].[Quarter]) on rows\n"
+                + "from [Sales]";
+
+        String schema = ""
+                + "<?xml version=\"1.0\"?>\n"
+                + "<Schema name=\"FoodMart 2399 Rollup Type\">\n"
+                + "<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">\n"
+                + "  <Table name=\"sales_fact_1997\">\n"
+                + "<AggExclude name=\"agg_c_14_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_l_03_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_l_04_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_l_05_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_lc_06_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_lc_100_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_ll_01_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_pl_01_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_c_special_sales_fact_1997\" />\n"
+                + "    <AggName name=\"agg_c_10_sales_fact_1997\">\n"
+                + "        <AggFactCount column=\"FACT_COUNT\"/>\n"
+                + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"UNIT_SALES\" rollupType=\"AvgFromAvg\" />\n"
+                + "        <AggLevel name=\"[Time].[Year]\" column=\"THE_YEAR\" />\n"
+                + "        <AggLevel name=\"[Time].[Quarter]\" column=\"QUARTER\" />\n"
+                + "    </AggName>\n"
+                + "  </Table>\n"
+                + "  <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
+                + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
+                + "      <Table name=\"time_by_day\"/>\n"
+                + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+                + "          levelType=\"TimeYears\"/>\n"
+                + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
+                + "          levelType=\"TimeQuarters\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"avg\" />\n"
+                + "</Cube>\n"
+                + "</Schema>";
+
+        TestContext testContext = TestContext
+                .instance()
+                .withFreshConnection()
+                .withSchema(schema);
+        propSaver.set(props.UseAggregates, true);
+        propSaver.set(props.ReadAggregates, true);
+
+        String desiredResult = ""
+                + "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Time].[1997].[Q1]}\n"
+                + "{[Time].[1997].[Q2]}\n"
+                + "{[Time].[1997].[Q3]}\n"
+                + "{[Time].[1997].[Q4]}\n"
+                + "Row #0: 22,157.417\n"
+                + "Row #1: 20,880.448\n"
+                + "Row #2: 22,036.988\n"
+                + "Row #3: 24,368.758\n";
+
+        testContext.assertQueryReturns(mdx, desiredResult );
+    }
+
+    public void testRollupSumFromAvg() {
+        String mdx = ""
+                + "select\n"
+                + "[Measures].[Unit Sales] on columns,\n"
+                + "Descendants([Time].[1997], [Time].[Quarter]) on rows\n"
+                + "from [Sales]";
+
+        String schema = ""
+                + "<?xml version=\"1.0\"?>\n"
+                + "<Schema name=\"FoodMart 2399 Rollup Type\">\n"
+                + "<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">\n"
+                + "  <Table name=\"sales_fact_1997\">\n"
+                + "<AggExclude name=\"agg_c_14_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_l_03_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_l_04_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_l_05_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_lc_06_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_lc_100_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_ll_01_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_pl_01_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_c_special_sales_fact_1997\" />\n"
+                + "    <AggName name=\"agg_c_10_sales_fact_1997\">\n"
+                + "        <AggFactCount column=\"FACT_COUNT\"/>\n"
+                + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"UNIT_SALES\" rollupType=\"SumFromAvg\" />\n"
+                + "        <AggLevel name=\"[Time].[Year]\" column=\"THE_YEAR\" />\n"
+                + "        <AggLevel name=\"[Time].[Quarter]\" column=\"QUARTER\" />\n"
+                + "    </AggName>\n"
+                + "  </Table>\n"
+                + "  <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
+                + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
+                + "      <Table name=\"time_by_day\"/>\n"
+                + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+                + "          levelType=\"TimeYears\"/>\n"
+                + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
+                + "          levelType=\"TimeQuarters\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"avg\" />\n"
+                + "</Cube>\n"
+                + "</Schema>";
+
+        TestContext testContext = TestContext
+                .instance()
+                .withFreshConnection()
+                .withSchema(schema);
+        propSaver.set(props.UseAggregates, true);
+        propSaver.set(props.ReadAggregates, true);
+
+        String desiredResult = ""
+                + "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Time].[1997].[Q1]}\n"
+                + "{[Time].[1997].[Q2]}\n"
+                + "{[Time].[1997].[Q3]}\n"
+                + "{[Time].[1997].[Q4]}\n"
+                + "Row #0: 478,334,320\n"
+                + "Row #1: 425,292,956\n"
+                + "Row #2: 472,759,506\n"
+                + "Row #3: 570,911,254\n";
+
+        testContext.assertQueryReturns(mdx, desiredResult );
+    }
+
+    public void testWithoutRollupType() {
+        String mdx = ""
+                + "select\n"
+                + "[Measures].[Unit Sales] on columns,\n"
+                + "Descendants([Time].[1997], [Time].[Quarter]) on rows\n"
+                + "from [Sales]";
+
+        String schema = ""
+                + "<?xml version=\"1.0\"?>\n"
+                + "<Schema name=\"FoodMart 2399 Rollup Type\">\n"
+                + "<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">\n"
+                + "  <Table name=\"sales_fact_1997\">\n"
+                + "<AggExclude name=\"agg_c_14_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_l_03_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_l_04_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_l_05_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_lc_06_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_lc_100_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_ll_01_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_pl_01_sales_fact_1997\" />\n"
+                + "<AggExclude name=\"agg_c_special_sales_fact_1997\" />\n"
+                + "    <AggName name=\"agg_c_10_sales_fact_1997\">\n"
+                + "        <AggFactCount column=\"FACT_COUNT\"/>\n"
+                + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"UNIT_SALES\" />\n"
+                + "        <AggLevel name=\"[Time].[Year]\" column=\"THE_YEAR\" />\n"
+                + "        <AggLevel name=\"[Time].[Quarter]\" column=\"QUARTER\" />\n"
+                + "    </AggName>\n"
+                + "  </Table>\n"
+                + "  <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
+                + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
+                + "      <Table name=\"time_by_day\"/>\n"
+                + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+                + "          levelType=\"TimeYears\"/>\n"
+                + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
+                + "          levelType=\"TimeQuarters\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"avg\" />\n"
+                + "</Cube>\n"
+                + "</Schema>";
+
+        TestContext testContext = TestContext
+                .instance()
+                .withFreshConnection()
+                .withSchema(schema);
+        propSaver.set(props.UseAggregates, true);
+        propSaver.set(props.ReadAggregates, true);
+
+        String desiredResult = ""
+                + "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Time].[1997].[Q1]}\n"
+                + "{[Time].[1997].[Q2]}\n"
+                + "{[Time].[1997].[Q3]}\n"
+                + "{[Time].[1997].[Q4]}\n"
+                + "Row #0: 22,157.417\n"
+                + "Row #1: 20,880.448\n"
+                + "Row #2: 22,036.988\n"
+                + "Row #3: 24,368.758\n";
+
+        testContext.assertQueryReturns(mdx, desiredResult );
+    }
+
     /**
      *
      * There are cross database order issues in this test.

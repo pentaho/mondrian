@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
@@ -183,11 +182,22 @@ class ExplicitRecognizer extends Recognizer {
             aggColumn.newUsage(JdbcSchema.UsageType.MEASURE);
 
         aggUsage.setSymbolicName(measure.getSymbolicName());
-        RolapAggregator ra = (factAgg == null)
+
+        ExplicitRules.TableDef.RollupType explicitRollupType = measure
+                .getExplicitRollupType();
+        RolapAggregator ra = null;
+
+        // precedence to the explicitly defined rollup type
+        if (explicitRollupType != null) {
+            String factCountExpr = getFactCountExpr(aggUsage);
+            ra = explicitRollupType.getAggregator(factCountExpr);
+        } else {
+            ra = (factAgg == null)
                     ? convertAggregator(aggUsage, rm.getAggregator())
                     : convertAggregator(aggUsage, factAgg, rm.getAggregator());
-        aggUsage.setAggregator(ra);
+        }
 
+        aggUsage.setAggregator(ra);
         aggUsage.rMeasure = rm;
     }
 

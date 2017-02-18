@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
@@ -589,7 +588,8 @@ public class ExplicitRules {
             addMeasureTo(
                 tableDef,
                 aggMeasure.getNameAttribute(),
-                aggMeasure.getColumn());
+                aggMeasure.getColumn(),
+                aggMeasure.getRollupType());
         }
 
         public static void addLevelTo(
@@ -610,9 +610,10 @@ public class ExplicitRules {
         public static void addMeasureTo(
             final ExplicitRules.TableDef tableDef,
             final String name,
-            final String column)
+            final String column,
+            final String rollupType)
         {
-            Measure measure = tableDef.new Measure(name, column);
+            Measure measure = tableDef.new Measure(name, column, rollupType);
             tableDef.add(measure);
         }
 
@@ -789,6 +790,56 @@ public class ExplicitRules {
             }
         }
 
+        enum RollupType {
+            AVG_FROM_SUM("AvgFromSum") {
+                @Override
+                public RolapAggregator.BaseAggor getAggregator(
+                    String factCountColumnExpr)
+                {
+                    return new RolapAggregator.AvgFromSum(factCountColumnExpr);
+                }
+            },
+            AVG_FROM_AVG("AvgFromAvg") {
+                @Override
+                public RolapAggregator.BaseAggor getAggregator(
+                    String factCountColumnExpr)
+                {
+                    return new RolapAggregator.AvgFromAvg(factCountColumnExpr);
+                }
+            },
+            SUM_FROM_AVG("SumFromAvg") {
+                @Override
+                public RolapAggregator.BaseAggor getAggregator(
+                    String factCountColumnExpr)
+                {
+                    return new RolapAggregator.SumFromAvg(factCountColumnExpr);
+                }
+            };
+
+            private String friendlyName;
+
+            RollupType(String friendlyName) {
+                this.friendlyName = friendlyName;
+            }
+
+            public abstract RolapAggregator.BaseAggor getAggregator(
+                String factCountColumnExpr);
+
+            public String getFriendlyName() {
+                return friendlyName;
+            }
+
+            public static RollupType getAggregatorType(String friendlyName) {
+                for (RollupType rollupType : RollupType.values()) {
+                    if (Util.equals(rollupType.getFriendlyName(),
+                        friendlyName))
+                    {
+                        return rollupType;
+                    }
+                }
+                return null;
+            }
+        }
         /**
          * This class is used to map from a measure's symbolic name,
          * [Measures]&amp;#46;[Unit Sales] to the aggregate table's column
@@ -798,11 +849,17 @@ public class ExplicitRules {
             private final String name;
             private String symbolicName;
             private final String columnName;
+            private final RollupType explicitRollupType;
             private RolapStar.Measure rolapMeasure;
 
-            Measure(final String name, final String columnName) {
+            Measure(
+                final String name,
+                final String columnName, final String rollupType)
+            {
                 this.name = name;
                 this.columnName = columnName;
+                this.explicitRollupType = RollupType
+                        .getAggregatorType(rollupType);
             }
 
             /**
@@ -832,6 +889,10 @@ public class ExplicitRules {
              */
             public RolapStar.Measure getRolapStarMeasure() {
                 return rolapMeasure;
+            }
+
+            public RollupType getExplicitRollupType() {
+                return explicitRollupType;
             }
 
             /**
