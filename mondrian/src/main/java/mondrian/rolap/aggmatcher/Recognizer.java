@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 
@@ -964,7 +964,7 @@ abstract class Recognizer {
      * @param aggUsage Aggregate table column usage
      * @return The name of the column which holds the fact count.
      */
-    private String getFactCountExpr
+    protected String getFactCountExpr
     (final JdbcSchema.Table.Column.Usage aggUsage)
     {
         String tableName = aggTable.getName();
