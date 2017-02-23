@@ -291,7 +291,9 @@
               <goal>single</goal>
             </goals>
             <configuration>
-              <descriptor>src/assembly/assembly.xml</descriptor>
+              <descriptors>
+                <descriptor>src/assembly/assembly.xml</descriptor>
+              </descriptors>
               <appendAssemblyId>false</appendAssemblyId>
             </configuration>
           </execution>
