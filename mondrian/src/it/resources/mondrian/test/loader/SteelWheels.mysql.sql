@@ -50,7 +50,7 @@ CREATE TABLE `customer_w_ter` (
   `CREDITLIMIT` decimal(31,10) default NULL,
   `TERRITORY` varchar(10) collate latin1_general_cs default NULL,
   UNIQUE KEY `index1` (`CUSTOMERNUMBER`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
+) ENGINE=MEMORY DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
 
 --
 -- Dumping data for table `customer_w_ter`
@@ -207,7 +207,7 @@ CREATE TABLE `customers` (
   `SALESREPEMPLOYEENUMBER` int(11) default NULL,
   `CREDITLIMIT` decimal(17,0) default NULL,
   PRIMARY KEY  (`CUSTOMERNUMBER`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
+) ENGINE=MEMORY DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
 
 --
 -- Dumping data for table `customers`
@@ -353,7 +353,7 @@ CREATE TABLE `department_managers` (
   `REGION` varchar(50) collate latin1_general_cs NOT NULL default '',
   `MANAGER_NAME` varchar(50) collate latin1_general_cs NOT NULL default '',
   `EMAIL` varchar(50) collate latin1_general_cs default NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
+) ENGINE=MEMORY DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
 
 --
 -- Dumping data for table `department_managers`
@@ -383,7 +383,7 @@ CREATE TABLE `employees` (
   `REPORTSTO` int(11) default NULL,
   `JOBTITLE` varchar(50) collate latin1_general_cs NOT NULL default '',
   PRIMARY KEY  (`EMPLOYEENUMBER`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
+) ENGINE=MEMORY DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
 
 --
 -- Dumping data for table `employees`
@@ -433,7 +433,7 @@ CREATE TABLE `offices` (
   `POSTALCODE` varchar(10) collate latin1_general_cs NOT NULL default '',
   `TERRITORY` varchar(10) collate latin1_general_cs NOT NULL default '',
   PRIMARY KEY  (`OFFICECODE`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
+) ENGINE=MEMORY DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
 
 --
 -- Dumping data for table `offices`
@@ -463,7 +463,7 @@ CREATE TABLE `orderdetails` (
   `PRICEEACH` decimal(17,0) NOT NULL default '0',
   `ORDERLINENUMBER` smallint(6) NOT NULL default '0',
   PRIMARY KEY  (`ORDERNUMBER`,`PRODUCTCODE`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
+) ENGINE=MEMORY DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
 
 --
 -- Dumping data for table `orderdetails`
@@ -3500,7 +3500,7 @@ CREATE TABLE `orderfact` (
   `YEAR_ID` bigint(20) default NULL,
   KEY `SYS_FK_1` (`PRODUCTCODE`),
   CONSTRAINT `SYS_FK_1` FOREIGN KEY (`PRODUCTCODE`) REFERENCES `products` (`PRODUCTCODE`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
+) ENGINE=MEMORY DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
 
 --
 -- Dumping data for table `orderfact`
@@ -6529,7 +6529,7 @@ CREATE TABLE `orders` (
   `COMMENTS` mediumtext collate latin1_general_cs,
   `CUSTOMERNUMBER` int(11) NOT NULL default '0',
   PRIMARY KEY  (`ORDERNUMBER`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
+) ENGINE=MEMORY DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
 
 --
 -- Dumping data for table `orders`
@@ -6881,7 +6881,7 @@ CREATE TABLE `payments` (
   `PAYMENTDATE` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   `AMOUNT` decimal(17,0) NOT NULL default '0',
   PRIMARY KEY  (`CUSTOMERNUMBER`,`CHECKNUMBER`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
+) ENGINE=MEMORY DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
 
 --
 -- Dumping data for table `payments`
@@ -7180,7 +7180,7 @@ CREATE TABLE `products` (
   `BUYPRICE` decimal(17,0) NOT NULL default '0',
   `MSRP` decimal(17,0) NOT NULL default '0',
   PRIMARY KEY  (`PRODUCTCODE`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
+) ENGINE=MEMORY DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
 
 --
 -- Dumping data for table `products`
@@ -7313,7 +7313,7 @@ CREATE TABLE `quadrant_actuals` (
   `ACTUAL` decimal(18,4) default NULL,
   `BUDGET` decimal(18,4) default NULL,
   `VARIANCE` decimal(18,4) default NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
+) ENGINE=MEMORY DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
 
 --
 -- Dumping data for table `quadrant_actuals`
@@ -7486,7 +7486,7 @@ CREATE TABLE `time` (
   `MONTH_DESC` varchar(9) collate latin1_general_cs default NULL,
   `QTR_NAME` varchar(4) collate latin1_general_cs default NULL,
   `QTR_DESC` varchar(9) collate latin1_general_cs default NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
+) ENGINE=MEMORY DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
 
 --
 -- Dumping data for table `time`
@@ -7774,7 +7774,7 @@ CREATE TABLE `trial_balance` (
   `Category2` varchar(57) collate latin1_general_cs default NULL,
   `Detail` varchar(57) collate latin1_general_cs default NULL,
   `Amount` int(11) default NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
+) ENGINE=MEMORY DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
 
 --
 -- Dumping data for table `trial_balance`
