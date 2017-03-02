@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2002-2015 Pentaho and others
+// Copyright (C) 2002-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -282,7 +282,21 @@ class UnionRoleImpl implements Role {
         public int getBottomLevelDepth() {
             if (!isBottomLeveRestricted()) {
                 // We don't restrict the bottom level.
-                return list.get(0).getBottomLevelDepth();
+                int resultDepth = 0;
+                for (int i = 0; i < list.size(); i++) {
+                    HierarchyAccess hierarchyAccess = list.get(i);
+                    if (hierarchyAccess instanceof AllHierarchyAccess
+                            && ((AllHierarchyAccess) hierarchyAccess)
+                            .getAccess() != Access.NONE)
+                    {
+                        int currentDepth =
+                            hierarchyAccess.getBottomLevelDepth();
+                        // Should chose maximum allowed depth
+                        resultDepth = (currentDepth > resultDepth)
+                            ? currentDepth : resultDepth;
+                    }
+                }
+                return resultDepth;
             }
             int access = -1;
             for (HierarchyAccess hierarchyAccess : list) {

@@ -5,12 +5,11 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, Oct 5, 2002
 */
-
 package mondrian.olap;
 
 /**
@@ -105,6 +104,19 @@ public interface Role {
          * @return Returns whether a descendant is inaccessible.
          */
         boolean hasInaccessibleDescendants(Member member);
+    }
+
+    /**
+     * Represents the access that a role has to whole particular hierarchy.
+     */
+    interface AllHierarchyAccess extends HierarchyAccess {
+
+        /**
+         * Returns the access to whole hierarchy.
+         *
+         * @return the access to the hierarchy.
+         */
+        Access getAccess();
     }
 
     /**
