@@ -47,7 +47,7 @@
     <resgen
         srcdir="${java.dir}"
         destdir="${generated.java.dir}"
-        resdir="${classes.dir}"
+        resdir="${generated.resources.dir}"
         style="functor"
         locales="en_US,de_DE,de,es_ES">
       <include name="mondrian/resource/MondrianResource.xml"/>
