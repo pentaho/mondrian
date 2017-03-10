@@ -8,7 +8,6 @@
 // Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -72,17 +71,35 @@ public class RolapCubeDimension extends RolapDimension {
         // create new hierarchies
         hierarchies = new RolapCubeHierarchy[rolapDim.getHierarchies().length];
 
+        RolapCube factCube = null;
+        if (cube.isVirtual()) {
+          factCube = lookupFactCube(cubeDim, cube.getSchema());
+        }
         for (int i = 0; i < rolapDim.getHierarchies().length; i++) {
-            final RolapCubeHierarchy cubeHierarchy =
+          final RolapCubeHierarchy cubeHierarchy =
                 new RolapCubeHierarchy(
                     this,
                     cubeDim,
                     (RolapHierarchy) rolapDim.getHierarchies()[i],
                     ((HierarchyBase) rolapDim.getHierarchies()[i]).getSubName(),
-                    hierarchyList.size());
+                    hierarchyList.size(),
+                    factCube);
             hierarchies[i] = cubeHierarchy;
             hierarchyList.add(cubeHierarchy);
         }
+    }
+
+    RolapCube lookupFactCube(
+        MondrianDef.CubeDimension cubeDim, RolapSchema schema)
+    {
+      if (cubeDim instanceof MondrianDef.VirtualCubeDimension) {
+        final MondrianDef.VirtualCubeDimension virtualCubeDim =
+            (MondrianDef.VirtualCubeDimension)cubeDim;
+        if (virtualCubeDim.cubeName != null) {
+          return schema.lookupCube(virtualCubeDim.cubeName);
+        }
+      }
+      return null;
     }
 
     public RolapCube getCube() {
