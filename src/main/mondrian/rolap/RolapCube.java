@@ -616,6 +616,33 @@ public class RolapCube extends CubeBase {
             this,
             false);
 
+        // iterate through a calculated member definitions in a virtual cube
+        // retrieve calculated member source cube
+        // set it appropriate rolap calculated measure
+        for (RolapCube rolapCube : calculatedMembersMap.keySet()) {
+            List<MondrianDef.CalculatedMember> calculatedMembers =
+                    calculatedMembersMap.get(rolapCube);
+            for (MondrianDef.CalculatedMember calculatedMember
+                    : calculatedMembers)
+            {
+                List<Member> measures = this.getMeasures();
+                for (Member measure : measures) {
+                    if (measure instanceof
+                            RolapHierarchy.RolapCalculatedMeasure)
+                    {
+                        RolapHierarchy.RolapCalculatedMeasure
+                                calculatedMeasure =
+                                (RolapHierarchy.RolapCalculatedMeasure) measure;
+                        if (calculatedMember
+                                .name.equals(calculatedMeasure.getKey()))
+                        {
+                            calculatedMeasure.setBaseCube(rolapCube);
+                        }
+                    }
+                }
+            }
+        }
+
         // reset the measureHierarchy member reader back to the list of
         // measures that are only defined on this virtual cube
         setMeasuresHierarchyMemberReader(
@@ -1803,20 +1830,32 @@ public class RolapCube extends CubeBase {
                             hierarchyUsage.getJoinExp());
 
                     if (hierarchy.getXmlHierarchy() != null
-                            && hierarchy.getXmlHierarchy().primaryKeyTable != null
+                            && hierarchy.getXmlHierarchy()
+                            .primaryKeyTable != null
                             && relation instanceof MondrianDef.Join
-                            && ((MondrianDef.Join) relation).right instanceof MondrianDef.Table
-                            && ((MondrianDef.Table) ((MondrianDef.Join) relation).right).getAlias() != null
-                            && ((MondrianDef.Table) ((MondrianDef.Join) relation).right).getAlias()
-                            .equals(hierarchy.getXmlHierarchy().primaryKeyTable)) {
-
+                            && ((MondrianDef.Join) relation)
+                            .right instanceof MondrianDef.Table
+                            && ((MondrianDef.Table)
+                            ((MondrianDef.Join) relation).right)
+                            .getAlias() != null
+                            && ((MondrianDef.Table)
+                            ((MondrianDef.Join) relation).right)
+                            .getAlias()
+                            .equals(
+                                hierarchy.getXmlHierarchy()
+                              .primaryKeyTable))
+                    {
                         MondrianDef.Join newRelation = new MondrianDef.Join();
                         newRelation.left = ((MondrianDef.Join) relation).right;
                         newRelation.right = ((MondrianDef.Join) relation).left;
-                        newRelation.leftAlias = ((MondrianDef.Join) relation).getRightAlias();
-                        newRelation.rightAlias = ((MondrianDef.Join) relation).getLeftAlias();
-                        newRelation.leftKey = ((MondrianDef.Join) relation).rightKey;
-                        newRelation.rightKey = ((MondrianDef.Join) relation).leftKey;
+                        newRelation.leftAlias = ((MondrianDef.Join)
+                                relation).getRightAlias();
+                        newRelation.rightAlias = ((MondrianDef.Join)
+                                relation).getLeftAlias();
+                        newRelation.leftKey = ((MondrianDef.Join)
+                                relation).rightKey;
+                        newRelation.rightKey = ((MondrianDef.Join)
+                                relation).leftKey;
 
                         relation = newRelation;
                     }

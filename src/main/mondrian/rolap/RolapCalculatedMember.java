@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -29,6 +28,8 @@ import java.util.Map;
 public class RolapCalculatedMember extends RolapMemberBase {
     private final Formula formula;
     private Map<String, Annotation> annotationMap;
+    // source cube for a virtual member
+    private RolapCube baseCube;
 
     /**
      * Creates a RolapCalculatedMember.
@@ -98,6 +99,14 @@ public class RolapCalculatedMember extends RolapMemberBase {
     void setAnnotationMap(Map<String, Annotation> annotationMap) {
         assert annotationMap != null;
         this.annotationMap = annotationMap;
+    }
+
+    public RolapCube getBaseCube() {
+        return baseCube;
+    }
+
+    public void setBaseCube(RolapCube baseCube) {
+        this.baseCube = baseCube;
     }
 }
 
