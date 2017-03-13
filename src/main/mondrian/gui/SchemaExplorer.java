@@ -5,10 +5,11 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 */
+
 package mondrian.gui;
 
 import org.apache.log4j.Logger;
@@ -5095,7 +5096,7 @@ public class SchemaExplorer
     static final String[] DEF_AGG_EXCLUDE = {"pattern", "name", "ignorecase"};
     static final String[] DEF_AGG_IGNORE_COLUMN = {"column"};
     static final String[] DEF_AGG_FOREIGN_KEY = {"factColumn", "aggColumn"};
-    static final String[] DEF_AGG_MEASURE = {"column", "name"};
+    static final String[] DEF_AGG_MEASURE = {"column", "name", "rollupType"};
     static final String[] DEF_AGG_LEVEL = {
         "column",
         "name",
