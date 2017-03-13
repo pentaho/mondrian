@@ -1979,12 +1979,21 @@
                 The name of the Cube measure.
             </Doc>
         </Attribute>
+        <Attribute name="rollupType" required="false">
+            <Doc>
+                Explicitly define rollup type. Available types: AvgFromSum, AvgFromAvg, SumFromAvg.
+                Will be ignored if wrong type is chosen.
+            </Doc>
+        </Attribute>
         <Code>
             public String getNameAttribute() {
                 return name;
             }
             public String getColumn() {
                 return column;
+            }
+            public String getRollupType() {
+                return rollupType;
             }
         </Code>
     </Element>
