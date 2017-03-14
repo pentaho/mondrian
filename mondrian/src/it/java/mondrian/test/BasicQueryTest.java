@@ -3468,7 +3468,8 @@ public class BasicQueryTest extends FoodMartTestCase {
                 + "    </AggName>\n"
                 + "  </Table>\n"
 
-                +  " <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
+                +  " <Dimension name=\"Time\""
+                + " type=\"TimeDimension\" foreignKey=\"time_id\">\n"
                 + "   <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
                 + "      <Table name=\"time_by_day\"/>\n"
                 + "      <Level name=\"Year\" \n"
@@ -3545,6 +3546,87 @@ public class BasicQueryTest extends FoodMartTestCase {
         testContext.executeQuery(mdx);
     }
 
+    public void testVirtualCubeAndCalculatedMeasure() {
+        String mdx = ""
+                + "WITH\n"
+                + "SET [*NATIVE_CJ_SET] AS 'NONEMPTYCROSSJOIN([Time].[Year].MEMBERS,[Warehouse].[Country].MEMBERS)'\n"
+                + "SELECT\n"
+                + "{[Measures].[Warehouse Sales Calc]} ON COLUMNS, \n"
+                + "NON EMPTY\n"
+                + "GENERATE([*NATIVE_CJ_SET], {([Time].CURRENTMEMBER,[Warehouse].CURRENTMEMBER)}) ON ROWS\n"
+                + "FROM [Warehouse and Sales]";
+
+        String schema = ""
+                + "<?xml version=\"1.0\"?>\n"
+                + "<Schema name=\"tiny\">\n"
+                + "  <Dimension name=\"Time\" type=\"TimeDimension\">\n"
+                + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
+                + "      <Table name=\"time_by_day\" />\n"
+                + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\" levelType=\"TimeYears\" />\n"
+                + "      <Level name=\"Quarter\" uniqueMembers=\"false\" levelType=\"TimeQuarters\" >\n"
+                + "        <KeyExpression><SQL>RTRIM(quarter)</SQL></KeyExpression>\n"
+                + "      </Level>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Dimension name=\"Product\">\n"
+                + "    <Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+                + "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+                + "        <Table name=\"product\"/>\n"
+                + "        <Table name=\"product_class\"/>\n"
+                + "      </Join>\n"
+                + "      <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\" uniqueMembers=\"true\" />\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Dimension name=\"Warehouse\">\n"
+                + "    <Hierarchy hasAll=\"true\" primaryKey=\"warehouse_id\">\n"
+                + "      <Table name=\"warehouse\"/>\n"
+                + "      <Level name=\"Country\" column=\"warehouse_country\" uniqueMembers=\"true\"/>\n"
+                + "      <Level name=\"State Province\" column=\"warehouse_state_province\"\n"
+                + "          uniqueMembers=\"true\"/>\n"
+                + "      <Level name=\"City\" column=\"warehouse_city\" uniqueMembers=\"false\"/>\n"
+                + "      <Level name=\"Warehouse Name\" column=\"warehouse_name\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Cube name=\"Sales\">\n"
+                + "    <Table name=\"sales_fact_1997\" />\n"
+                + "    <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\" />\n"
+                + "    <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\" />\n"
+                + "    <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\" />\n"
+                + "  </Cube>\n"
+                + "  <Cube name=\"Warehouse\">\n"
+                + "    <Table name=\"inventory_fact_1997\" />\n"
+                + "    <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\" />\n"
+                + "    <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\" />\n"
+                + "    <DimensionUsage name=\"Warehouse\" source=\"Warehouse\" foreignKey=\"warehouse_id\"/>\n"
+                + "    <Measure name=\"Warehouse Sales\" column=\"warehouse_sales\" aggregator=\"sum\" formatString=\"Standard\" />\n"
+                + "    <CalculatedMember name=\"Warehouse Sales Calc\" dimension=\"Measures\">\n"
+                + "      <Formula>[Measures].[Warehouse Sales]</Formula>\n"
+                + "    </CalculatedMember>\n"
+                + "  </Cube>\n"
+                + "  <VirtualCube name=\"Warehouse and Sales\">\n"
+                + "    <VirtualCubeDimension name=\"Time\" />\n"
+                + "    <VirtualCubeDimension name=\"Product\" />\n"
+                + "    <VirtualCubeDimension cubeName=\"Warehouse\" name=\"Warehouse\"/>\n"
+                + "    <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\" />\n"
+                + "    <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales Calc]\" />\n"
+                + "  </VirtualCube>\n"
+                + "</Schema>\n";
+
+        String result = ""
+                + "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Warehouse Sales Calc]}\n"
+                + "Axis #2:\n"
+                + "{[Time].[1997], [Warehouse].[USA]}\n"
+                + "Row #0: 196,771\n";
+
+        TestContext testContext = TestContext.instance()
+                .withSchema(schema);
+
+        testContext.assertQueryReturns(mdx, result);
+    }
+
     public void testRollupAvgFromSum() {
         String mdx = ""
                 + "select\n"
@@ -3617,73 +3699,6 @@ public class BasicQueryTest extends FoodMartTestCase {
 
         testContext.withFreshConnection()
                 .assertQueryReturns(mdx, desiredResult);
-    }
-
-    public void testRollupAvgFromAvg() {
-        String mdx = ""
-                + "select\n"
-                + "[Measures].[Unit Sales] on columns,\n"
-                + "Descendants([Time].[1997], [Time].[Quarter]) on rows\n"
-                + "from [Sales]";
-
-        String schema = ""
-                + "<?xml version=\"1.0\"?>\n"
-                + "<Schema name=\"FoodMart 2399 Rollup Type\">\n"
-                + "<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">\n"
-                + "  <Table name=\"sales_fact_1997\">\n"
-                + "<AggExclude name=\"agg_c_14_sales_fact_1997\" />\n"
-                + "<AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\" />\n"
-                + "    <AggExclude name=\"agg_l_03_sales_fact_1997\" />\n"
-                + "<AggExclude name=\"agg_l_04_sales_fact_1997\" />\n"
-                + "<AggExclude name=\"agg_l_05_sales_fact_1997\" />\n"
-                + "<AggExclude name=\"agg_lc_06_sales_fact_1997\" />\n"
-                + "<AggExclude name=\"agg_lc_100_sales_fact_1997\" />\n"
-                + "    <AggExclude name=\"agg_ll_01_sales_fact_1997\" />\n"
-                + "    <AggExclude name=\"agg_pl_01_sales_fact_1997\" />\n"
-                + "<AggExclude name=\"agg_c_special_sales_fact_1997\" />\n"
-                + "    <AggName name=\"agg_c_10_sales_fact_1997\">\n"
-                + "        <AggFactCount column=\"FACT_COUNT\"/>\n"
-                + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"UNIT_SALES\" rollupType=\"AvgFromAvg\" />\n"
-                + "        <AggLevel name=\"[Time].[Year]\" column=\"THE_YEAR\" />\n"
-                + "        <AggLevel name=\"[Time].[Quarter]\" column=\"QUARTER\" />\n"
-                + "    </AggName>\n"
-                + "  </Table>\n"
-                + "  <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
-                + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
-                + "      <Table name=\"time_by_day\"/>\n"
-                + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
-                + "          levelType=\"TimeYears\"/>\n"
-                + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
-                + "          levelType=\"TimeQuarters\"/>\n"
-                + "    </Hierarchy>\n"
-                + "  </Dimension>\n"
-                + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"avg\" />\n"
-                + "</Cube>\n"
-                + "</Schema>";
-
-        TestContext testContext = TestContext
-                .instance()
-                .withFreshConnection()
-                .withSchema(schema);
-        propSaver.set(props.UseAggregates, true);
-        propSaver.set(props.ReadAggregates, true);
-
-        String desiredResult = ""
-                + "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Axis #2:\n"
-                + "{[Time].[1997].[Q1]}\n"
-                + "{[Time].[1997].[Q2]}\n"
-                + "{[Time].[1997].[Q3]}\n"
-                + "{[Time].[1997].[Q4]}\n"
-                + "Row #0: 22,157.417\n"
-                + "Row #1: 20,880.448\n"
-                + "Row #2: 22,036.988\n"
-                + "Row #3: 24,368.758\n";
-
-        testContext.assertQueryReturns(mdx, desiredResult );
     }
 
     public void testRollupSumFromAvg() {
