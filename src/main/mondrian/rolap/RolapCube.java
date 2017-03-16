@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -1802,30 +1802,24 @@ public class RolapCube extends CubeBase {
                             column,
                             hierarchyUsage.getJoinExp());
 
-                    // (rchen) potential bug?:
-                    // FACT table joins with tables in a hierarchy in the
-                    // order they appear in the schema definition, even though
-                    // the primary key for this hierarchy can be on a table
-                    // which is not the leftmost.
-                    // e.g.
-                    //
-                    // <Dimension name="Product">
-                    // <Hierarchy hasAll="true" primaryKey="product_id"
-                    //    primaryKeyTable="product">
-                    //  <Join
-                    //      leftKey="product_class_id"
-                    //      rightKey="product_class_id">
-                    //    <Table name="product_class"/>
-                    //    <Table name="product"/>
-                    //  </Join>
-                    // </Hierarchy>
-                    // </Dimension>
-                    //
-                    // When this hierarchy is referenced in a cube, the fact
-                    // table is joined with the dimension tables using this
-                    // incorrect join condition which assumes the leftmost
-                    // table produces the primaryKey:
-                    //   "fact"."foreignKey" = "product_class"."product_id"
+                    if (hierarchy.getXmlHierarchy() != null
+                            && hierarchy.getXmlHierarchy().primaryKeyTable != null
+                            && relation instanceof MondrianDef.Join
+                            && ((MondrianDef.Join) relation).right instanceof MondrianDef.Table
+                            && ((MondrianDef.Table) ((MondrianDef.Join) relation).right).getAlias() != null
+                            && ((MondrianDef.Table) ((MondrianDef.Join) relation).right).getAlias()
+                            .equals(hierarchy.getXmlHierarchy().primaryKeyTable)) {
+
+                        MondrianDef.Join newRelation = new MondrianDef.Join();
+                        newRelation.left = ((MondrianDef.Join) relation).right;
+                        newRelation.right = ((MondrianDef.Join) relation).left;
+                        newRelation.leftAlias = ((MondrianDef.Join) relation).getRightAlias();
+                        newRelation.rightAlias = ((MondrianDef.Join) relation).getLeftAlias();
+                        newRelation.leftKey = ((MondrianDef.Join) relation).rightKey;
+                        newRelation.rightKey = ((MondrianDef.Join) relation).leftKey;
+
+                        relation = newRelation;
+                    }
 
                     table = table.addJoin(this, relation, joinCondition);
                 }
