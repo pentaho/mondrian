@@ -6311,6 +6311,162 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #12: 3\n");
     }
 
+    public void testNonEmptyCrossJoinCalcMember() {
+        assertQueryReturns("WITH \n" +
+                "MEMBER Measures.Calc AS '[Measures].[Profit] * 2', SOLVE_ORDER=1000\n" +
+                "MEMBER Product.Conditional as 'Iif(Measures.CurrentMember IS Measures.[Calc], + Measures.CurrentMember, null)', SOLVE_ORDER=2000\n" +
+                "SET [S2] AS '{[Store].MEMBERS}' \n" +
+                "SET [S1] AS 'CROSSJOIN({[Customers].[All Customers]},{Product.Conditional})' \n" +
+                "SELECT \n" +
+                "NON EMPTY GENERATE({Measures.[Calc]}, CROSSJOIN(HEAD({([Measures].CURRENTMEMBER)}, 1),{[S1]}), ALL) ON AXIS(0), NON EMPTY [S2] ON AXIS(1) \n" +
+                "FROM [Sales]",
+                "Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Measures].[Calc], [Customers].[All Customers], [Product].[Conditional]}\n" +
+                        "Axis #2:\n" +
+                        "{[Store].[All Stores]}\n" +
+                        "{[Store].[USA]}\n" +
+                        "{[Store].[USA].[CA]}\n" +
+                        "{[Store].[USA].[CA].[Beverly Hills]}\n" +
+                        "{[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n" +
+                        "{[Store].[USA].[CA].[Los Angeles]}\n" +
+                        "{[Store].[USA].[CA].[Los Angeles].[Store 7]}\n" +
+                        "{[Store].[USA].[CA].[San Diego]}\n" +
+                        "{[Store].[USA].[CA].[San Diego].[Store 24]}\n" +
+                        "{[Store].[USA].[CA].[San Francisco]}\n" +
+                        "{[Store].[USA].[CA].[San Francisco].[Store 14]}\n" +
+                        "{[Store].[USA].[OR]}\n" +
+                        "{[Store].[USA].[OR].[Portland]}\n" +
+                        "{[Store].[USA].[OR].[Portland].[Store 11]}\n" +
+                        "{[Store].[USA].[OR].[Salem]}\n" +
+                        "{[Store].[USA].[OR].[Salem].[Store 13]}\n" +
+                        "{[Store].[USA].[WA]}\n" +
+                        "{[Store].[USA].[WA].[Bellingham]}\n" +
+                        "{[Store].[USA].[WA].[Bellingham].[Store 2]}\n" +
+                        "{[Store].[USA].[WA].[Bremerton]}\n" +
+                        "{[Store].[USA].[WA].[Bremerton].[Store 3]}\n" +
+                        "{[Store].[USA].[WA].[Seattle]}\n" +
+                        "{[Store].[USA].[WA].[Seattle].[Store 15]}\n" +
+                        "{[Store].[USA].[WA].[Spokane]}\n" +
+                        "{[Store].[USA].[WA].[Spokane].[Store 16]}\n" +
+                        "{[Store].[USA].[WA].[Tacoma]}\n" +
+                        "{[Store].[USA].[WA].[Tacoma].[Store 17]}\n" +
+                        "{[Store].[USA].[WA].[Walla Walla]}\n" +
+                        "{[Store].[USA].[WA].[Walla Walla].[Store 22]}\n" +
+                        "{[Store].[USA].[WA].[Yakima]}\n" +
+                        "{[Store].[USA].[WA].[Yakima].[Store 23]}\n" +
+                        "Row #0: $679,221.79\n" +
+                        "Row #1: $679,221.79\n" +
+                        "Row #2: $191,274.83\n" +
+                        "Row #3: $54,967.60\n" +
+                        "Row #4: $54,967.60\n" +
+                        "Row #5: $65,547.49\n" +
+                        "Row #6: $65,547.49\n" +
+                        "Row #7: $65,435.21\n" +
+                        "Row #8: $65,435.21\n" +
+                        "Row #9: $5,324.53\n" +
+                        "Row #10: $5,324.53\n" +
+                        "Row #11: $171,009.14\n" +
+                        "Row #12: $66,219.69\n" +
+                        "Row #13: $66,219.69\n" +
+                        "Row #14: $104,789.45\n" +
+                        "Row #15: $104,789.45\n" +
+                        "Row #16: $316,937.82\n" +
+                        "Row #17: $5,685.23\n" +
+                        "Row #18: $5,685.23\n" +
+                        "Row #19: $63,548.67\n" +
+                        "Row #20: $63,548.67\n" +
+                        "Row #21: $63,374.53\n" +
+                        "Row #22: $63,374.53\n" +
+                        "Row #23: $59,677.94\n" +
+                        "Row #24: $59,677.94\n" +
+                        "Row #25: $89,769.36\n" +
+                        "Row #26: $89,769.36\n" +
+                        "Row #27: $5,651.26\n" +
+                        "Row #28: $5,651.26\n" +
+                        "Row #29: $29,230.83\n" +
+                        "Row #30: $29,230.83\n");
+    }
+
+    public void testCrossJoinCalcMember() {
+        assertQueryReturns("WITH \n" +
+                        "MEMBER Measures.Calc AS '[Measures].[Profit] * 2', SOLVE_ORDER=1000\n" +
+                        "MEMBER Product.Conditional as 'Iif(Measures.CurrentMember IS Measures.[Calc], + Measures.CurrentMember, null)', SOLVE_ORDER=2000\n" +
+                        "SET [S2] AS '{[Store].MEMBERS}' \n" +
+                        "SET [S1] AS 'CROSSJOIN({[Customers].[All Customers]},{Product.Conditional})' \n" +
+                        "SELECT \n" +
+                        "GENERATE({Measures.[Calc]}, CROSSJOIN(HEAD({([Measures].CURRENTMEMBER)}, 1),{[S1]}), ALL) ON AXIS(0), NON EMPTY [S2] ON AXIS(1) \n" +
+                        "FROM [Sales]",
+                "Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Measures].[Calc], [Customers].[All Customers], [Product].[Conditional]}\n" +
+                        "Axis #2:\n" +
+                        "{[Store].[All Stores]}\n" +
+                        "{[Store].[USA]}\n" +
+                        "{[Store].[USA].[CA]}\n" +
+                        "{[Store].[USA].[CA].[Beverly Hills]}\n" +
+                        "{[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n" +
+                        "{[Store].[USA].[CA].[Los Angeles]}\n" +
+                        "{[Store].[USA].[CA].[Los Angeles].[Store 7]}\n" +
+                        "{[Store].[USA].[CA].[San Diego]}\n" +
+                        "{[Store].[USA].[CA].[San Diego].[Store 24]}\n" +
+                        "{[Store].[USA].[CA].[San Francisco]}\n" +
+                        "{[Store].[USA].[CA].[San Francisco].[Store 14]}\n" +
+                        "{[Store].[USA].[OR]}\n" +
+                        "{[Store].[USA].[OR].[Portland]}\n" +
+                        "{[Store].[USA].[OR].[Portland].[Store 11]}\n" +
+                        "{[Store].[USA].[OR].[Salem]}\n" +
+                        "{[Store].[USA].[OR].[Salem].[Store 13]}\n" +
+                        "{[Store].[USA].[WA]}\n" +
+                        "{[Store].[USA].[WA].[Bellingham]}\n" +
+                        "{[Store].[USA].[WA].[Bellingham].[Store 2]}\n" +
+                        "{[Store].[USA].[WA].[Bremerton]}\n" +
+                        "{[Store].[USA].[WA].[Bremerton].[Store 3]}\n" +
+                        "{[Store].[USA].[WA].[Seattle]}\n" +
+                        "{[Store].[USA].[WA].[Seattle].[Store 15]}\n" +
+                        "{[Store].[USA].[WA].[Spokane]}\n" +
+                        "{[Store].[USA].[WA].[Spokane].[Store 16]}\n" +
+                        "{[Store].[USA].[WA].[Tacoma]}\n" +
+                        "{[Store].[USA].[WA].[Tacoma].[Store 17]}\n" +
+                        "{[Store].[USA].[WA].[Walla Walla]}\n" +
+                        "{[Store].[USA].[WA].[Walla Walla].[Store 22]}\n" +
+                        "{[Store].[USA].[WA].[Yakima]}\n" +
+                        "{[Store].[USA].[WA].[Yakima].[Store 23]}\n" +
+                        "Row #0: $679,221.79\n" +
+                        "Row #1: $679,221.79\n" +
+                        "Row #2: $191,274.83\n" +
+                        "Row #3: $54,967.60\n" +
+                        "Row #4: $54,967.60\n" +
+                        "Row #5: $65,547.49\n" +
+                        "Row #6: $65,547.49\n" +
+                        "Row #7: $65,435.21\n" +
+                        "Row #8: $65,435.21\n" +
+                        "Row #9: $5,324.53\n" +
+                        "Row #10: $5,324.53\n" +
+                        "Row #11: $171,009.14\n" +
+                        "Row #12: $66,219.69\n" +
+                        "Row #13: $66,219.69\n" +
+                        "Row #14: $104,789.45\n" +
+                        "Row #15: $104,789.45\n" +
+                        "Row #16: $316,937.82\n" +
+                        "Row #17: $5,685.23\n" +
+                        "Row #18: $5,685.23\n" +
+                        "Row #19: $63,548.67\n" +
+                        "Row #20: $63,548.67\n" +
+                        "Row #21: $63,374.53\n" +
+                        "Row #22: $63,374.53\n" +
+                        "Row #23: $59,677.94\n" +
+                        "Row #24: $59,677.94\n" +
+                        "Row #25: $89,769.36\n" +
+                        "Row #26: $89,769.36\n" +
+                        "Row #27: $5,651.26\n" +
+                        "Row #28: $5,651.26\n" +
+                        "Row #29: $29,230.83\n" +
+                        "Row #30: $29,230.83\n");
+    }
+
 }
 
 // End NonEmptyTest.java
