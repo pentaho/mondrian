@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
@@ -803,6 +803,29 @@ public class SqlQueryTest extends BatchTestCase {
         SqlPattern mySqlPattern =
             new SqlPattern(Dialect.DatabaseProduct.MYSQL, sql, sql.length());
         assertQuerySql(context, mdx, new SqlPattern[]{mySqlPattern});
+    }
+
+    public void testAddFromTable() {
+        for (boolean formatted : new boolean[]{false, true}) {
+            Dialect dialect = getTestContext().getDialect();
+            String quote = dialect.getQuoteIdentifierString();
+            SqlQuery sqlQuery = new SqlQuery(dialect, formatted);
+            sqlQuery.addFromTable("scheme.name", "table.name", "table.alias", null, null, true);
+            String expected;
+            String lineSep = System.getProperty("line.separator");
+            if (!formatted) {
+                expected = " from " + quote + "scheme" + quote + "." + quote + "name" + quote + "." + quote + "table.name" + quote + " as " + quote + "table.alias" + quote;
+            } else {
+                expected = lineSep +
+                        "from" + lineSep +
+                        "    " + quote + "scheme" + quote + "." + quote + "name" + quote + "." + quote + "table.name" + quote + " as " + quote + "table.alias" + quote;
+            }
+            assertEquals(
+                    dialectize(dialect.getDatabaseProduct(), expected),
+                    dialectize(
+                            sqlQuery.getDialect().getDatabaseProduct(),
+                            sqlQuery.toString()));
+        }
     }
 }
 
