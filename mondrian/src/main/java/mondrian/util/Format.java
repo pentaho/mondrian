@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2000-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 2 November, 2000
@@ -3057,6 +3057,12 @@ public class Format {
             // We need to truncate -- also round if the trailing digits are
             // 5000... or greater.
             int m = totalDigits;
+            if ( digits2.length >= lastDigit && lastDigit != 0 ) {
+              while ( digits2[lastDigit - 1] < '0' || digits2[lastDigit - 1] > '9' ) {
+                // BACKLOG-15504
+                lastDigit--;
+              }
+            }
             while (true) {
                 m--;
                 if (m < 0) {
@@ -3073,7 +3079,7 @@ public class Format {
                 } else if (m == lastDigit) {
                     char d = digits2[m];
                     digits2[m] = '0';
-                    if (d < '5') {
+                    if (d < '5' || d == ':') {
                         break; // no need to round
                     }
                 } else if (m > lastDigit) {
