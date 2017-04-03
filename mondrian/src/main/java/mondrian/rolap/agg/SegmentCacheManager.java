@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2016 Pentaho Corporation.
+// Copyright (c) 2002-2017 Pentaho Corporation.
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -1568,9 +1568,9 @@ public class SegmentCacheManager {
      * The index is based off the checksum of the schema.
      */
     public class SegmentCacheIndexRegistry {
-        private final Map<ByteString, SegmentCacheIndex> indexes =
+        private final Map<SchemaKey, SegmentCacheIndex> indexes =
             Collections.synchronizedMap(
-                new HashMap<ByteString, SegmentCacheIndex>());
+                new HashMap<SchemaKey, SegmentCacheIndex>());
 
         /**
          * Returns the {@link SegmentCacheIndex} for a given
@@ -1581,17 +1581,17 @@ public class SegmentCacheManager {
                 "SegmentCacheManager.SegmentCacheIndexRegistry.getIndex:"
                 + System.identityHashCode(star));
 
-            if (!indexes.containsKey(star.getSchema().getChecksum())) {
+            if (!indexes.containsKey(star.getSchema().getKey())) {
                 final SegmentCacheIndexImpl index =
                     new SegmentCacheIndexImpl(thread);
                 LOGGER.trace(
                     "SegmentCacheManager.SegmentCacheIndexRegistry.getIndex:"
                     + "Creating New Index "
                     + System.identityHashCode(index));
-                indexes.put(star.getSchema().getChecksum(), index);
+                indexes.put(star.getSchema().getKey(), index);
             }
             final SegmentCacheIndex index =
-                indexes.get(star.getSchema().getChecksum());
+                indexes.get(star.getSchema().getKey());
             LOGGER.trace(
                 "SegmentCacheManager.SegmentCacheIndexRegistry.getIndex:"
                 + "Returning Index "
@@ -1606,13 +1606,6 @@ public class SegmentCacheManager {
         private SegmentCacheIndex getIndex(
             SegmentHeader header)
         {
-            // First we check the indexes that already exist.
-            // This is fast.
-            if (indexes.containsKey(header.schemaChecksum)) {
-                return indexes.get(header.schemaChecksum);
-            }
-
-            // The index doesn't exist. Let's create it.
             final RolapStar star = getStar(header);
             if (star == null) {
                 // TODO FIXME this happens when a cache event comes

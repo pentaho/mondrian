@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -453,6 +453,14 @@ public class RolapSchema implements Schema {
      */
     public String getId() {
         return this.id;
+    }
+
+    /**
+     * Returns this schema instance unique key.
+     * @return a {@link SchemaKey}.
+     */
+    public SchemaKey getKey() {
+        return key;
     }
 
     public Map<String, Annotation> getAnnotationMap() {
