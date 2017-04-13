@@ -1178,6 +1178,12 @@ public class SqlTupleReader implements TupleReader {
       for (Member member : getMeasures(query)) {
           if (member instanceof RolapStoredMeasure) {
               cubes.add(((RolapStoredMeasure) member).getCube());
+          } else if (member instanceof RolapHierarchy.RolapCalculatedMeasure) {
+              RolapCube baseCube = (
+                  (RolapHierarchy.RolapCalculatedMeasure) member).getBaseCube();
+              if (baseCube != null) {
+                cubes.add(baseCube);
+              }
           }
       }
       return cubes;
@@ -1787,10 +1793,17 @@ public class SqlTupleReader implements TupleReader {
                             // target group.
                             continue;
                         }
-                        // member constraint with name columns in agg table is not supported
+                        // member constraint
+                        // with name columns in agg table is not supported
                         if (arg instanceof MemberListCrossJoinArg) {
-                            if (level.getNameExp() != null && !Util.equals(level.getNameExp(), level.getKeyExp())) {
-                                LOGGER.warn("Member constraint is not supported with name column in agg table");
+                            if (level.getNameExp() != null
+                                    && !Util.equals(
+                                        level.getNameExp(), level.getKeyExp()))
+                            {
+                                LOGGER.warn(
+                                    ""
+                                    + "Member constraint"
+                                    + " is not supported with name column in agg table");
                                 return null;
                             }
                         }
