@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2016 Pentaho Corporation
+// Copyright (c) 2002-2017 Pentaho Corporation
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -1036,6 +1036,8 @@ public class NativeSetEvaluationTest extends BatchTestCase {
             + "    `customer`.`state_province` = 'CA'\n"
             + "and\n"
             + "    `customer`.`city` = 'San Francisco'\n"
+            + "and\n"
+            + "    (`customer`.`city` = 'San Francisco' and `customer`.`state_province` = 'CA')\n"
             + "group by\n"
             + "    `customer`.`customer_id`,\n"
             + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`),\n"

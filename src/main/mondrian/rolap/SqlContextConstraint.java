@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2016 Pentaho and others
+// Copyright (C) 2006-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -282,10 +282,8 @@ public class SqlContextConstraint
             evaluator.restore(savepoint);
         }
 
-        // comment out addMemberConstraint here since constraint
-        // is already added by addContextConstraint
-        // SqlConstraintUtils.addMemberConstraint(
-        //        sqlQuery, baseCube, aggStar, parent, true);
+         SqlConstraintUtils.addMemberConstraint(
+                sqlQuery, baseCube, aggStar, parent, true);
     }
 
     /**
