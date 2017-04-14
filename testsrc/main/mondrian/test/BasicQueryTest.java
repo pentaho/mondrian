@@ -8771,6 +8771,42 @@ public class BasicQueryTest extends FoodMartTestCase {
             "[Example.Example Hierarchy].[Non-Zero].[Juice].Children",
             "[Example.Example Hierarchy].[Non-Zero].[Juice].[Washington Berry Juice]");
     }
+
+    public void testMondrian625() {
+        assertQueriesReturnSimilarResults(
+                "select\n" +
+                        "    {[Measures].[Unit Sales]} ON COLUMNS,\n" +
+                        "    {Descendants([Customers].[All Customers], 4)} ON ROWS\n" +
+                        "from\n" +
+                        "    [Sales]\n" +
+                        "where\n" +
+                        "    ([Time].[1997].[Q4].[12])",
+                "select\n" +
+                        "    {[Measures].[Unit Sales]} ON COLUMNS,\n" +
+                        "    {[Customers].[Name].Members} ON ROWS\n" +
+                        "from\n" +
+                        "    [Sales]\n" +
+                        "where\n" +
+                        "    ([Time].[1997].[Q4].[12])\n",
+                getTestContext().withFreshConnection());
+
+        assertQueriesReturnSimilarResults(
+                "select\n" +
+                        "    non empty {[Measures].[Unit Sales]} ON COLUMNS,\n" +
+                        "    non empty {Descendants([Customers].[All Customers], 4)} ON ROWS\n" +
+                        "from\n" +
+                        "    [Sales]\n" +
+                        "where\n" +
+                        "    ([Time].[1997].[Q4].[12])",
+                "select\n" +
+                        "    non empty {[Measures].[Unit Sales]} ON COLUMNS,\n" +
+                        "    non empty {[Customers].[Name].Members} ON ROWS\n" +
+                        "from\n" +
+                        "    [Sales]\n" +
+                        "where\n" +
+                        "    ([Time].[1997].[Q4].[12])\n",
+                getTestContext().withFreshConnection());
+    }
 }
 
 // End BasicQueryTest.java

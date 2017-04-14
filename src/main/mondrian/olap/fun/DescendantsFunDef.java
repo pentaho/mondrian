@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 
@@ -222,7 +222,11 @@ class DescendantsFunDef extends FunDefBase {
                 }
             }
 
-            children = schemaReader.getMemberChildren(children, context);
+            if (context.isNonEmpty()) {
+                children = schemaReader.getMemberChildren(children, context);
+            } else {
+                children = schemaReader.getMemberChildren(children);
+            }
             if (children.size() == 0) {
                 break;
             }
