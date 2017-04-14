@@ -8,11 +8,15 @@
 */
 package mondrian.test;
 
+import junit.framework.Assert;
 import mondrian.olap.*;
 import mondrian.olap.Category;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Level;
+import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapConnectionProperties;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapSchema;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.spi.Dialect;
 import mondrian.spi.PropertyFormatter;
@@ -3216,7 +3220,7 @@ public class SchemaTest extends FoodMartTestCase {
         assertEquals(
             "Time shared description", time2Dimension.getDescription());
         assertEquals("Time shared caption", time2Dimension.getCaption());
-        checkAnnotations(time2Dimension.getAnnotationMap());
+        checkAnnotations(time2Dimension.getAnnotationMap(), "a", "Time shared");
 
         final Hierarchy time2Hierarchy = time2Dimension.getHierarchies()[0];
         // The hierarchy in the shared dimension does not have a name, so the
@@ -4842,6 +4846,46 @@ public class SchemaTest extends FoodMartTestCase {
           + "Row #0: 357,425.65\n"
 );
   }
+
+    public void testMondrian1275() throws Exception {
+        final TestContext tc =
+                getTestContext()
+                        .withSchema(
+                                "<?xml version=\"1.0\"?>\n"
+                                        + "<Schema name=\"FoodMart\">\n"
+                                        + "  <Dimension name=\"Store Type\">\n"
+                                        + "    <Annotations>\n"
+                                        + "      <Annotation name=\"foo\">bar</Annotation>\n"
+                                        + "    </Annotations>\n"
+                                        + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
+                                        + "      <Table name=\"store\"/>\n"
+                                        + "      <Level name=\"Store Type\" column=\"store_type\" uniqueMembers=\"true\"/>\n"
+                                        + "    </Hierarchy>\n"
+                                        + "  </Dimension>\n"
+                                        + "<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">\n"
+                                        + "  <Table name=\"sales_fact_1997\">\n"
+                                        + "    <AggExclude name=\"agg_c_special_sales_fact_1997\" />\n"
+                                        + "    <AggExclude name=\"agg_lc_100_sales_fact_1997\" />\n"
+                                        + "    <AggExclude name=\"agg_lc_10_sales_fact_1997\" />\n"
+                                        + "    <AggExclude name=\"agg_pc_10_sales_fact_1997\" />\n"
+                                        + "  </Table>\n"
+                                        + "  <DimensionUsage name=\"Store Type\" source=\"Store Type\" foreignKey=\"store_id\"/>\n"
+                                        + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+                                        + "      formatString=\"Standard\"/>\n"
+                                        + "</Cube>\n"
+                                        + "</Schema>\n");
+
+        final RolapConnection rolapConn = tc.getOlap4jConnection().unwrap(RolapConnection.class);
+        final SchemaReader schemaReader = rolapConn.getSchemaReader();
+        final RolapSchema schema = schemaReader.getSchema();
+        for (RolapCube cube : schema.getCubeList()) {
+            Dimension dim = cube.getDimensions()[1];
+            final Map<String, Annotation> annotations = dim.getAnnotationMap();
+            Assert.assertEquals(1, annotations.size());
+            Assert.assertEquals("bar", annotations.get("foo").getValue());
+        }
+    }
+
 }
 
 // End SchemaTest.java
