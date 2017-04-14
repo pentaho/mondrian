@@ -6467,6 +6467,43 @@ public class NonEmptyTest extends BatchTestCase {
                         "Row #30: $29,230.83\n");
     }
 
+    public void testDefaultMemberNonEmptyContext() {
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
+                "Sales",
+                "  <Dimension name=\"Store2\"  foreignKey=\"store_id\" >\n"
+                        + "    <Hierarchy hasAll=\"false\" primaryKey=\"store_id\"  defaultMember='[Store2].[USA].[OR]'>\n"
+                        + "      <Table name=\"store\"/>\n"
+                        + "      <Level name=\"Store Country\" column=\"store_country\"  uniqueMembers=\"true\"\n"
+                        + "          />\n"
+                        + "      <Level name=\"Store State\" column=\"store_state\" uniqueMembers=\"true\"\n"
+                        + "         />\n"
+                        + "      <Level name=\"Store City\" column=\"store_city\" uniqueMembers=\"false\" />\n"
+                        + "    </Hierarchy>\n"
+                        + "  </Dimension>");
+        testContext.assertQueryReturns("with member measures.one as '1' " +
+                        "select non empty store2.usa.[OR].children on 0, measures.one on 1 from sales",
+                "Axis #0:\n"
+                        + "{}\n"
+                        + "Axis #1:\n"
+                        + "{[Store2].[USA].[OR].[Portland]}\n"
+                        + "{[Store2].[USA].[OR].[Salem]}\n"
+                        + "Axis #2:\n"
+                        + "{[Measures].[one]}\n"
+                        + "Row #0: 1\n"
+                        + "Row #0: 1\n");
+        testContext.assertQueryReturns("with member measures.one as '1' " +
+                        "select store2.usa.[OR].children on 0, measures.one on 1 from sales",
+                "Axis #0:\n"
+                        + "{}\n"
+                        + "Axis #1:\n"
+                        + "{[Store2].[USA].[OR].[Portland]}\n"
+                        + "{[Store2].[USA].[OR].[Salem]}\n"
+                        + "Axis #2:\n"
+                        + "{[Measures].[one]}\n"
+                        + "Row #0: 1\n"
+                        + "Row #0: 1\n");
+    }
+
 }
 
 // End NonEmptyTest.java
