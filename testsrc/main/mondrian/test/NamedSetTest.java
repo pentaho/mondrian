@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho
+// Copyright (C) 2005-2017 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -1178,6 +1178,20 @@ public class NamedSetTest extends FoodMartTestCase {
             + "FROM [Sales]\n"
             + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q4].[10]",
             expected);
+    }
+
+    public void testMondrian2424() {
+        assertQueryReturns(
+                "WITH SET Gender as '[Gender].[Gender].members' \n" +
+                        "select {Gender} ON 0 from [Sales]",
+                "Axis #0:\n" +
+                        "{}\n" +
+                        "Axis #1:\n" +
+                        "{[Gender].[F]}\n" +
+                        "{[Gender].[M]}\n" +
+                        "Row #0: 131,558\n" +
+                        "Row #0: 135,215\n"
+        );
     }
 
     /**
