@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2010 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 
@@ -55,12 +55,14 @@ public class RolapCubeDimension extends RolapDimension {
                 ? cubeDim.caption
                 : rolapDim.getCaption(),
             cubeDim.visible,
-            cubeDim.caption != null
+            cubeDim.description != null
                 ? cubeDim.description
                 : rolapDim.getDescription(),
             null,
             highCardinality,
-            RolapHierarchy.createAnnotationMap(cubeDim.annotations));
+            cubeDim.annotations != null
+                ? RolapHierarchy.createAnnotationMap(cubeDim.annotations)
+                : rolapDim.getAnnotationMap());
         this.xmlDimension = cubeDim;
         this.rolapDimension = rolapDim;
         this.cubeOrdinal = cubeOrdinal;

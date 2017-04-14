@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 10 August, 2001
@@ -104,7 +104,7 @@ class RolapDimension extends DimensionBase {
             xmlDimension.description,
             xmlDimension.getDimensionType(),
             xmlDimension.highCardinality,
-            RolapHierarchy.createAnnotationMap(xmlCubeDimension.annotations));
+            RolapHierarchy.createAnnotationMap(xmlDimension.annotations));
 
         Util.assertPrecondition(schema != null);
 
