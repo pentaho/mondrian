@@ -4294,7 +4294,7 @@ public class NonEmptyTest extends BatchTestCase {
         assertQueryReturns(
             "WITH SET [#DataSet#] AS 'Crossjoin({Descendants([Customers].[All Customers], 2)}, {[Product].[All Products]})' \n"
             + "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns, \n"
-            + "Hierarchize({[#DataSet#]}) on rows FROM [Sales]",
+            + "NON EMPTY Hierarchize({[#DataSet#]}) on rows FROM [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -4310,6 +4310,14 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #1: 142,277.07\n"
             + "Row #2: 124,366\n"
             + "Row #2: 263,793.22\n");
+
+        verifySameNativeAndNot(
+                "WITH SET [#DataSet#] AS 'Crossjoin({Descendants([Customers].[All Customers], 2)}, {[Product].[All Products]})' \n"
+                        + "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns, \n"
+                        + "NON EMPTY Hierarchize({[#DataSet#]}) on rows FROM [Sales]",
+                "testBugMondrian321 failed",
+                getTestContext()
+        );
     }
 
     public void testNativeCrossjoinWillConstrainUsingArgsFromAllAxes() {
