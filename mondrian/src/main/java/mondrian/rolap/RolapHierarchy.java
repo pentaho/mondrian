@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -177,6 +177,7 @@ public class RolapHierarchy extends HierarchyBase {
      *   dimension for this object
      */
     RolapHierarchy(
+        RolapCube cube,
         RolapDimension dimension,
         MondrianDef.Hierarchy xmlHierarchy,
         MondrianDef.CubeDimension xmlCubeDimension)
@@ -194,11 +195,30 @@ public class RolapHierarchy extends HierarchyBase {
         assert !(this instanceof RolapCubeHierarchy);
 
         this.xmlHierarchy = xmlHierarchy;
-        this.relation = xmlHierarchy.relation;
-        if (xmlHierarchy.relation instanceof MondrianDef.InlineTable) {
+        MondrianDef.RelationOrJoin xmlHierarchyRelation = xmlHierarchy.relation;
+        if (xmlHierarchy.relation == null
+            && xmlHierarchy.memberReaderClass == null
+            && cube != null)
+        {
+          // if cube is virtual than there is no fact in it,
+          // so look for it in source cube
+          if(cube.isVirtual()) {
+            String cubeName = ((MondrianDef.VirtualCubeDimension) xmlCubeDimension)
+                    .cubeName;
+            RolapCube sourceCube = cube.getSchema().lookupCube(cubeName);
+            if(sourceCube != null) {
+              xmlHierarchyRelation = sourceCube.getFact();
+            }
+          } else {
+            xmlHierarchyRelation = cube.getFact();
+          }
+        }
+
+        this.relation = xmlHierarchyRelation;
+        if (xmlHierarchyRelation instanceof MondrianDef.InlineTable) {
             this.relation =
                 RolapUtil.convertInlineTableToRelation(
-                    (MondrianDef.InlineTable) xmlHierarchy.relation,
+                    (MondrianDef.InlineTable) xmlHierarchyRelation,
                     getRolapSchema().getDialect());
         }
         this.memberReaderClass = xmlHierarchy.memberReaderClass;
@@ -291,7 +311,7 @@ public class RolapHierarchy extends HierarchyBase {
         } else {
             this.sharedHierarchyName = null;
         }
-        if (xmlHierarchy.relation != null
+        if (xmlHierarchyRelation != null
             && xmlHierarchy.memberReaderClass != null)
         {
             throw MondrianResource.instance()
