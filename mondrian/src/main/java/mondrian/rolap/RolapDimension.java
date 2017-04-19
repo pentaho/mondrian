@@ -10,7 +10,6 @@
 //
 // jhyde, 10 August, 2001
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -117,18 +116,8 @@ class RolapDimension extends DimensionBase {
         }
         this.hierarchies = new RolapHierarchy[xmlDimension.hierarchies.length];
         for (int i = 0; i < xmlDimension.hierarchies.length; i++) {
-            // remaps the xml hierarchy relation to the fact table.
-            // moved out of RolapHierarchy constructor
-            // this should eventually be phased out completely
-            if (xmlDimension.hierarchies[i].relation == null
-                && xmlDimension.hierarchies[i].memberReaderClass == null
-                && cube != null)
-            {
-                xmlDimension.hierarchies[i].relation = cube.fact;
-            }
-
             RolapHierarchy hierarchy = new RolapHierarchy(
-                this, xmlDimension.hierarchies[i], xmlCubeDimension);
+                cube, this, xmlDimension.hierarchies[i], xmlCubeDimension);
             hierarchies[i] = hierarchy;
         }
 
