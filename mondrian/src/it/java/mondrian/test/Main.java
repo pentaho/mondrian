@@ -342,6 +342,9 @@ public class Main extends TestSuite {
             addTest(suite, OrderKeyOneToOneCheckTest.class);
             addTest(suite, RestrictedMemberReaderTest.class);
 
+            addTest(suite, RolapCubeHierarchyTest.class);
+            addTest(suite, RolapCubeDimensionTest.class);
+
             // Must be the last test.
             addTest(suite, TerminatorTest.class);
         }
