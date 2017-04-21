@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -992,6 +992,19 @@ public class BatchTestCase extends FoodMartTestCase {
             TestContext.toString(expectedResult));
     }
 
+    public static void checkNotNative(String mdx, Result expectedResult, final TestContext context) {
+        BatchTestCase test = new BatchTestCase() {
+            @Override
+            public TestContext getTestContext() {
+                return context;
+            }
+        };
+        test.checkNotNative(
+                getRowCount(expectedResult),
+                mdx,
+                TestContext.toString(expectedResult));
+    }
+
     public static void checkNative(String mdx, Result expectedResult) {
         BatchTestCase test = new BatchTestCase();
         test.checkNative(
@@ -1000,6 +1013,21 @@ public class BatchTestCase extends FoodMartTestCase {
             mdx,
             TestContext.toString(expectedResult),
             true);
+    }
+
+    public static void checkNative(String mdx, Result expectedResult, final TestContext context) {
+        BatchTestCase test = new BatchTestCase() {
+            @Override
+            public TestContext getTestContext() {
+                return context;
+            }
+        };
+        test.checkNative(
+                0,
+                getRowCount(expectedResult),
+                mdx,
+                TestContext.toString(expectedResult),
+                true);
     }
 
     private static int getRowCount(Result result) {
