@@ -1140,10 +1140,22 @@ public class SqlTupleReader implements TupleReader {
             }
             final RolapAttribute attribute = currLevel.getAttribute();
 
+            final Clause clause =
+                isUnion
+                    ? Clause.SELECT.maybeGroup(needsGroupBy)
+                    : Clause.SELECT_ORDER.maybeGroup(needsGroupBy);
+
+            for (RolapSchema.PhysColumn column : currLevel.getOrderByList()) {
+                levelLayoutBuilder.orderByOrdinalList.add(
+                    queryBuilder.addColumn(
+                        queryBuilder.column(column, level.cubeDimension),
+                        clause, joiner, null));
+            }
+
             if (currLevel.getParentAttribute() != null) {
                 List<RolapSchema.PhysColumn> parentExps =
                     currLevel.getParentAttribute().getKeyList();
-                Clause clause =
+                Clause clauseForKeyList =
                     selectOrdinal == selectCount - 1
                         ? Clause.SELECT_GROUP_ORDER
                         : Clause.SELECT_GROUP;
@@ -1151,14 +1163,9 @@ public class SqlTupleReader implements TupleReader {
                     levelLayoutBuilder.parentOrdinalList.add(
                         queryBuilder.addColumn(
                             queryBuilder.column(parentExp, level.cubeDimension),
-                            clause, joiner, null));
+                            clauseForKeyList, joiner, null));
                 }
             }
-
-            final Clause clause =
-                isUnion
-                    ? Clause.SELECT.maybeGroup(needsGroupBy)
-                    : Clause.SELECT_ORDER.maybeGroup(needsGroupBy);
 
             for (RolapSchema.PhysColumn column : currLevel.getOrderByList()) {
                 levelLayoutBuilder.orderByOrdinalList.add(
