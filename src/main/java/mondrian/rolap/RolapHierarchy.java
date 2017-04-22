@@ -14,11 +14,14 @@ import mondrian.calc.*;
 import mondrian.calc.impl.*;
 import mondrian.mdx.*;
 import mondrian.olap.*;
+import mondrian.olap.Id.KeySegment;
+import mondrian.olap.Id.NameSegment;
 import mondrian.olap.Role.HierarchyAccess;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RestrictedMemberReader.MultiCardinalityDefaultMember;
+import mondrian.rolap.RolapSchema.PhysColumn;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.CellFormatter;
 import mondrian.spi.impl.Scripts;
@@ -341,6 +344,58 @@ public class RolapHierarchy extends HierarchyBase {
 
     public List<? extends RolapLevel> getLevelList() {
         return Util.cast(levelList);
+    }
+
+    /**
+    * Ssas-compatible lookup from hierarchy.
+    * <br>
+    * Tries every level from closest to farthest from root, bypassing
+    * trivially incompatible keys.
+    */
+   protected OlapElement lookupKeyFromHierarchy(
+       final SchemaReader schemaReader,
+       final Id.KeySegment key,
+       final MatchType matchType)
+   {
+       OlapElement member = null;
+
+       for (RolapLevel level : getLevelList()) {
+           if (level.isAll()) {
+               continue;
+           }
+           if (isKeyCompatible(key, level)) {
+               member = level.lookupChild(schemaReader, key, matchType);
+               if (member != null) {
+                   return member;
+               }
+           }
+       }
+       return null;
+   }
+
+    private boolean isKeyCompatible(KeySegment key, RolapLevel level) {
+        RolapAttribute attrib = level.getAttribute();
+        List<NameSegment> keyValues = key.getKeyParts();
+        List<PhysColumn> keyColumns = attrib.getKeyList();
+        if (keyValues.size() != keyColumns.size()) {
+            return false;
+        }
+        for (int i = 0; i < keyColumns.size(); i++) {
+            if (keyColumns.get(i).getDatatype().isNumeric()) {
+                try {
+                    String value = keyValues.get(i).getName();
+                    // allow null key for all types
+                    // otherwise check type before trying db
+                    if (!RolapUtil.mdxNullLiteral().equalsIgnoreCase(value)) {
+                        Double.valueOf(key.getKeyParts().get(i).getName());
+                    }
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            }
+        }
+        // ok as far as we can tell
+        return true;
     }
 
     /**

@@ -26,6 +26,7 @@ import org.olap4j.mdx.IdentifierSegment;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
 import javax.sql.DataSource;
 
 /**
@@ -450,6 +451,12 @@ public class RolapSchemaReader
             {
                 constraint = sqlConstraintFactory.getChildByNameConstraint(
                     parent, (Id.NameSegment) childName);
+            } else if (childName instanceof Id.KeySegment
+                && matchType.isExact()
+                && parent.getLevel().getChildLevel() != null)
+            {
+                return parent.getLevel().getChildLevel()
+                    .lookupChild(this, childName, matchType);
             } else {
                 constraint =
                     sqlConstraintFactory.getMemberChildrenConstraint(null);
