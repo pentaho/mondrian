@@ -19,7 +19,7 @@
   </scm>
   <properties>
     <jlfgr.version>1.0</jlfgr.version>
-    <dependency.pentaho-application-launcher.revision>7.1-SNAPSHOT</dependency.pentaho-application-launcher.revision>
+    <pentaho-launcher.version>8.0-SNAPSHOT</pentaho-launcher.version>
     <dependency.groovy-all.revision>2.4.7</dependency.groovy-all.revision>
     <dependency.pdi-dataservice-client-plugin.revision>8.0-SNAPSHOT</dependency.pdi-dataservice-client-plugin.revision>
     <dependency.oss-licenses.revision>8.0-SNAPSHOT</dependency.oss-licenses.revision>
