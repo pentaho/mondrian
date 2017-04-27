@@ -20,7 +20,7 @@
   </scm>
   <properties>
     <dependency.kettle.revision>7.1-SNAPSHOT</dependency.kettle.revision>
-    <dependency.pentaho-application-launcher.revision>7.1-SNAPSHOT</dependency.pentaho-application-launcher.revision>
+    <pentaho-launcher.version>7.1-SNAPSHOT</pentaho-launcher.version>
     <dependency.groovy-all.revision>2.4.7</dependency.groovy-all.revision>
     <dependency.jersey.revision>1.19.1</dependency.jersey.revision>
     <dependency.pdi-dataservice-client-plugin.revision>7.1-SNAPSHOT</dependency.pdi-dataservice-client-plugin.revision>
@@ -180,7 +180,7 @@
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-application-launcher</artifactId>
-      <version>${dependency.pentaho-application-launcher.revision}</version>
+      <version>${pentaho-launcher.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
