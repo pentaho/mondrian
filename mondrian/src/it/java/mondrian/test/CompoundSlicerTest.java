@@ -15,6 +15,8 @@ import mondrian.util.Bug;
  * Tests the expressions used for calculated members. Please keep in sync
  * with the actual code used by the wizard.
  *
+ * wingman test
+ *
  * @author jhyde
  * @since 15 May, 2009
  */
