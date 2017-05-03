@@ -37,6 +37,9 @@ import java.util.Iterator;
  * not efficient.
  *
  * @author Richard M. Emberson
+ *
+ * wingman test
+ *
  */
 public interface BitKey
         extends Serializable, Comparable<BitKey>, Iterable<Integer>
