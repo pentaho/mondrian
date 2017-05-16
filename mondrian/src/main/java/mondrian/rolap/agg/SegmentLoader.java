@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -709,6 +709,13 @@ public class SegmentLoader {
                         // We assume that all values are Comparable. Boolean
                         // wasn't Comparable until JDK 1.5, but we can live with
                         // that bug because JDK 1.4 is no longer important.
+
+                        // byte [] is not Comparable.
+                        // For our case it can be binary array. It was typed as String.
+                        // So it can be processing (comparing and displaying) correctly as String
+                        if (o instanceof byte []) {
+                           o = new String((byte[]) o);
+                        }
                         axisValueSets[axisIndex].add((Comparable) o);
                     }
                     processedRows.setObject(columnIndex, o);

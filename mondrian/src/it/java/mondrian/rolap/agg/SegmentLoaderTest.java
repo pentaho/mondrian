@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 
@@ -457,6 +457,55 @@ public class SegmentLoaderTest extends BatchTestCase {
         assertFalse(axisContainsNull[1]);
         assertTrue(axisContainsNull[2]);
         assertFalse(axisContainsNull[3]);
+    }
+
+    // PDI-16150
+    public void testProcessBinaryData()
+            throws SQLException
+    {
+        GroupingSet groupingSetsInfo = getDefaultGroupingSet();
+
+        String binaryData0 = "11011";
+        String binaryData1 = "01011";
+
+        final List<Object[]> data = new ArrayList<>();
+        data.add(new Object[]{binaryData0.getBytes()});
+        data.add(new Object[]{binaryData1.getBytes()});
+
+
+        final SqlStatement stmt =
+                new MockSqlStatement(
+                        0,
+                        new GroupingSetsList(
+                                Collections.singletonList(groupingSetsInfo)),
+                        trim(5, data));
+        SegmentLoader loader = new SegmentLoader(cacheMgr) {
+            @Override
+            SqlStatement createExecuteSql(
+                    int cellRequestCount,
+                    GroupingSetsList groupingSetsList,
+                    List<StarPredicate> compoundPredicateList)
+            {
+                return stmt;
+            }
+        };
+        int axisCount = 2;
+        SortedSet<Comparable>[] axisValueSet =
+                loader.getDistinctValueWorkspace(axisCount);
+        boolean[] axisContainsNull = new boolean[axisCount];
+        List<GroupingSet> groupingSets = new ArrayList<GroupingSet>();
+        groupingSets.add(groupingSetsInfo);
+
+        loader.processData(
+                stmt,
+                axisContainsNull,
+                axisValueSet,
+                new GroupingSetsList(groupingSets));
+
+        Object[] values = axisValueSet[0].toArray();
+        assertEquals( binaryData0, values[1] );
+        assertEquals( binaryData1, values[0] );
+
     }
 
     public void testProcessDataForNonGroupingSetsScenario()
