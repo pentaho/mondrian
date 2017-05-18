@@ -14,6 +14,7 @@ package mondrian.rolap;
 import mondrian.mdx.MdxVisitorImpl;
 import mondrian.mdx.MemberExpr;
 import mondrian.olap.*;
+import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
 
@@ -99,15 +100,44 @@ public class RolapNativeFilter extends RolapNativeSet {
             }
         }
 
-        public boolean isSuported(DataSource ds) {
+        public boolean isSuported( DataSource ds ) {
             Evaluator evaluator = this.getEvaluator();
             SqlQuery testQuery = SqlQuery.newQuery(ds, "testQuery");
             SqlTupleReader sqlTupleReader = new SqlTupleReader(this);
+            
+            Role role = evaluator.getSchemaReader().getRole();
+            RolapSchemaReader reader = new RolapSchemaReader( role, evaluator.getSchemaReader().getSchema() );
+            
+            for ( CrossJoinArg arg : args ) {
+              addLevel( sqlTupleReader, reader, arg );
+            }
+            
             RolapCube cube = (RolapCube) evaluator.getCube();
             this.addConstraint
                     (testQuery, cube, sqlTupleReader.chooseAggStar
                             (this, evaluator, cube));
             return testQuery.isSupported();
+        }
+        
+
+        private void addLevel( TupleReader tr, RolapSchemaReader schemaReader, CrossJoinArg arg ) {
+          RolapLevel level = arg.getLevel();
+          if ( level == null ) {
+            // Level can be null if the CrossJoinArg represent
+            // an empty set.
+            // This is used to push down the "1 = 0" predicate
+            // into the emerging CJ so that the entire CJ can
+            // be natively evaluated.
+            tr.incrementEmptySets();
+            return;
+          }
+
+          RolapHierarchy hierarchy = level.getHierarchy();
+          MemberReader mr = schemaReader.getMemberReader( hierarchy );
+          MemberBuilder mb = mr.getMemberBuilder();
+          Util.assertTrue( mb != null, "MemberBuilder not found" );
+
+          tr.addLevelMembers( level, mb, null );
         }
 
         public Object getCacheKey() {
@@ -232,6 +262,7 @@ public class RolapNativeFilter extends RolapNativeSet {
 
             FilterConstraint constraint =
                 new FilterConstraint(combinedArgs, evaluator, filterExpr);
+            
             if (!constraint.isSuported(ds)) {
                 return null;
             }
