@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -73,6 +72,32 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         String subName,
         int ordinal)
     {
+      this(
+          cubeDimension,
+          cubeDim,
+          rolapHierarchy,
+          subName,
+          ordinal, null);
+    }
+
+    /**
+     * Creates a RolapCubeHierarchy.
+     *
+     * @param cubeDimension Dimension
+     * @param cubeDim XML dimension element
+     * @param rolapHierarchy Wrapped hierarchy
+     * @param subName Name of hierarchy within dimension
+     * @param ordinal Ordinal of hierarchy within cube
+     * @param factCube Optional - specified for virtual cube dimension
+     */
+    public RolapCubeHierarchy(
+        RolapCubeDimension cubeDimension,
+        MondrianDef.CubeDimension cubeDim,
+        RolapHierarchy rolapHierarchy,
+        String subName,
+        int ordinal,
+        RolapCube factCube)
+    {
         super(
             cubeDimension,
             subName,
@@ -83,7 +108,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             null,
             rolapHierarchy.getAnnotationMap());
         this.ordinal = ordinal;
-        if (!cubeDimension.getCube().isVirtual()) {
+        final boolean cubeIsVirtual = cubeDimension.getCube().isVirtual();
+        if (!cubeIsVirtual) {
             this.usage =
                 new HierarchyUsage(
                     cubeDimension.getCube(), rolapHierarchy, cubeDim);
@@ -97,13 +123,18 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         // the 'all' level.
         this.currentNullLevel = new RolapCubeLevel(nullLevel, this);
 
+        if (factCube == null) {
+          factCube = cubeDimension.getCube();
+        }
+
         usingCubeFact =
-            (cubeDimension.getCube().getFact() == null
-              || cubeDimension.getCube().getFact().equals(
+            (factCube == null
+              || factCube.getFact() == null
+              || factCube.getFact().equals(
                   rolapHierarchy.getRelation()));
 
         // re-alias names if necessary
-        if (!usingCubeFact) {
+        if (!cubeIsVirtual && !usingCubeFact) {
             // join expressions are columns only
             assert (usage.getJoinExp() instanceof MondrianDef.Column);
             currentRelation =
