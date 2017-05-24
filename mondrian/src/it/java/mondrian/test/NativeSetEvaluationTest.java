@@ -12,6 +12,7 @@ package mondrian.test;
 import mondrian.olap.CacheControl;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.NativeEvaluationUnsupportedException;
+import mondrian.olap.Result;
 import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 import mondrian.spi.Dialect.DatabaseProduct;
@@ -1764,6 +1765,33 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                 "The results of native and non-native evaluations should be equal";
         verifySameNativeAndNot(query, message, getTestContext());
     }
+
+    public void testDimensionUsageWithDifferentNameExecutedNatively() {
+      TestContext testContext = getTestContext()
+              .createSubstitutingCube(
+                  "Sales",
+                  "<DimensionUsage name=\"PurchaseDate\" source=\"Time\" foreignKey=\"time_id\"/>");
+      String mdx = ""
+              + "with member Measures.q1Sales as '([PurchaseDate].[1997].[Q1], Measures.[Unit Sales])'\n"
+              + "select NonEmptyCrossjoin([PurchaseDate].[1997].[Q1], Gender.Gender.members) on 0 \n"
+              + "from Sales where Measures.q1Sales";
+      Result result = testContext.executeQuery(mdx);
+
+      checkNative(mdx, result, testContext);
+    }
+
+    public void testDimensionUsageExecutedNatively() {
+      TestContext testContext = getTestContext();
+      String mdx = ""
+              + "with member Measures.q1Sales as '([Time].[1997].[Q1], Measures.[Unit Sales])'\n"
+              + "select NonEmptyCrossjoin( [Time].[1997].[Q1], Gender.Gender.members) on 0 \n"
+              + "from Sales where Measures.q1Sales";
+      Result result = testContext.executeQuery(mdx);
+
+      checkNative(mdx, result);
+    }
+
+
 }
 
 // End NativeSetEvaluationTest.java

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -80,7 +80,12 @@ public class DelegatingRolapMember extends RolapMemberBase {
     }
 
     public boolean isChildOrEqualTo(Member member2) {
-        return member.isChildOrEqualTo(member2);
+        if (member2 instanceof DelegatingRolapMember) {
+            return member
+                    .isChildOrEqualTo(((DelegatingRolapMember) member2).member);
+        } else {
+            return member.isChildOrEqualTo(member2);
+        }
     }
 
     public boolean isCalculated() {
