@@ -117,11 +117,6 @@
     </dependency>
     <dependency>
       <groupId>org.olap4j</groupId>
-      <artifactId>olap4j-xmlaserver</artifactId>
-      <version>${olap4j-xmlaserver.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.olap4j</groupId>
       <artifactId>olap4j-tck</artifactId>
       <version>${olap4j-tck.version}</version>
       <scope>test</scope>
