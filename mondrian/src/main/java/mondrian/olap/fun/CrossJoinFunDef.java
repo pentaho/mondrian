@@ -914,8 +914,7 @@ public class CrossJoinFunDef extends FunDefBase {
                             }
                         }
                         if (!found) {
-                            System.out.println(
-                                "CrossJoinFunDef.nonEmptyListNEW: ERROR");
+                            LOGGER.warn( "CrossJoinFunDef.nonEmptyListNEW: ERROR" );
                         }
                     } else {
                         // The Hierarchy does NOT have an All member
