@@ -997,7 +997,7 @@
         <Attribute name="datatype" required="false">
             <Doc>
                 The datatype of this measure:
-                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+                String, Numeric, Integer.
 
                 <p/>The default datatype of a measure is
                 'Integer' if the measure's aggregator is 'Count',
@@ -1006,10 +1006,6 @@
             <Value>String</Value>
             <Value>Numeric</Value>
             <Value>Integer</Value>
-            <Value>Boolean</Value>
-            <Value>Date</Value>
-            <Value>Time</Value>
-            <Value>Timestamp</Value>
         </Attribute>
         <Attribute name="formatString">
             <Doc>
