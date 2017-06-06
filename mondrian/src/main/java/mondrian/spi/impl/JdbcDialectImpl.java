@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.spi.impl;
 
@@ -335,6 +335,48 @@ public class JdbcDialectImpl implements Dialect {
         buf.append(q);
         buf.append(val2);
         buf.append(q);
+    }
+
+    public String quoteIdentifierWithInnerDots(final String val) {
+        if (val == null) {
+            return null;
+        }
+        String q = getQuoteIdentifierString();
+        if (q == null) {
+            // quoting is not supported
+            return val;
+        }
+        // if the value is already quoted, do nothing
+        //  if not, then check for a dot qualified expression
+        //  like "owner.table".
+        //  In that case, prefix the single parts separately.
+        if (val.startsWith(q) && val.endsWith(q)) {
+            // already quoted - nothing to do
+            return val;
+        }
+
+        StringBuffer buf = new StringBuffer();
+        int k = val.indexOf('.');
+        if (k > 0) {
+            // qualified
+            String val1 = Util.replace(val.substring(0, k), q, q + q);
+            String val2 = Util.replace(val.substring(k + 1), q, q + q);
+            buf.append(q);
+            buf.append(val1);
+            buf.append(q);
+            buf.append(".");
+            buf.append(q);
+            buf.append(val2);
+            buf.append(q);
+
+        } else {
+            // not Qualified
+            String val2 = Util.replace(val, q, q + q);
+            buf.append(q);
+            buf.append(val2);
+            buf.append(q);
+        }
+        return buf.toString();
     }
 
     public String quoteIdentifier(final String qual, final String name) {

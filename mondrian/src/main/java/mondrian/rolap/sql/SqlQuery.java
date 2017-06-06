@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
@@ -271,7 +271,7 @@ public class SqlQuery {
         }
 
         buf.setLength(0);
-        dialect.quoteIdentifier(buf, schema, name);
+        dialect.quoteIdentifier(buf, dialect.quoteIdentifierWithInnerDots(schema), name);
         if (alias != null) {
             Util.assertTrue(alias.length() > 0);
 

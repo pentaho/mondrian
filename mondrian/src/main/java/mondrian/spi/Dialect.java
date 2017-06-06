@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.spi;
 
@@ -159,6 +159,18 @@ public interface Dialect {
     String quoteIdentifier(
         String qual,
         String name);
+
+    /**
+     * Encloses an identifier in quotation marks appropriate for the
+     * current SQL dialect. For example, in Oracle, where the identifiers
+     * are quoted using double-quotes,
+     * <code>quoteIdentifier("schema.name")</code> yields a string
+     * containing <code>"schema"."name"</code>.
+
+     * @param name Name to be quoted.
+     * @return Quoted identifier
+     */
+    String quoteIdentifierWithInnerDots(String name);
 
     /**
      * Appends to a buffer a list of identifiers, quoted
