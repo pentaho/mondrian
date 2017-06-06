@@ -5,7 +5,7 @@
 # http://www.eclipse.org/legal/epl-v10.html.
 # You must accept the terms of that agreement to use this software.
 #
-# Copyright (C) 2007-2010 Pentaho and others
+# Copyright (C) 2007-2017 Pentaho and others
 # All Rights Reserved.
 #
 # Launch Mondrian Schema Workbench on Linux, UNIX or Cygwin

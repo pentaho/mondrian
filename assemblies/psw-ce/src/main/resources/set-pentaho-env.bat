@@ -1,4 +1,13 @@
 
+REM ***************************************************************************
+REM This software is subject to the terms of the Eclipse Public License v1.0
+REM Agreement, available at the following URL:
+REM http://www.eclipse.org/legal/epl-v10.html.
+REM You must accept the terms of that agreement to use this software.
+REM
+REM Copyright (c) 2009-2017 Pentaho Corporation..  All rights reserved.
+REM ***************************************************************************
+
 rem ---------------------------------------------------------------------------
 rem Finds a suitable Java
 rem
