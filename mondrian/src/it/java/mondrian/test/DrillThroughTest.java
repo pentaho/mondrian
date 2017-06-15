@@ -18,6 +18,8 @@ import mondrian.spi.Dialect;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.text.MessageFormat;
+
 import javax.sql.DataSource;
 
 
@@ -29,12 +31,56 @@ import javax.sql.DataSource;
  * @since May 10, 2006
  */
 public class DrillThroughTest extends FoodMartTestCase {
+
     public DrillThroughTest() {
         super();
     }
     public DrillThroughTest(String name) {
         super(name);
     }
+
+    //DRILLTHROUGH MDX queries
+    private static final String CURRENT_MEMBER_CUSTOMER_FULL_NAME = "Jeanne Derry";
+    private static final String CURRENT_MEMBER_CUSTOMER_ID = "3";
+    private static final String DRILLTHROUGH_QUERY_TEMPLATE = "DRILLTHROUGH \n"
+            + "// Request ID: 9520e524-4d2c-11e7-a0e2-a0d3c11aa164 - RUN_REPORT\n"
+            + "WITH\n"
+            + "SET [*NATIVE_CJ_SET] AS ''FILTER([Customers Dimension].[Customer Level Name].MEMBERS, NOT ISEMPTY ([Measures].[Store Sales]))''\n"
+            + "SET [*SORTED_ROW_AXIS] AS ''ORDER([*CJ_ROW_AXIS],[Customers Dimension].CURRENTMEMBER.ORDERKEY,BASC)''\n"
+            + "SET [*BASE_MEMBERS__Customers Dimension_] AS ''[Customers Dimension].[Customer Level Name].MEMBERS''\n"
+            + "SET [*BASE_MEMBERS__Measures_] AS '''{[Measures].[*FORMATTED_MEASURE_0]}'''\n"
+            + "SET [*CJ_ROW_AXIS] AS ''GENERATE([*NATIVE_CJ_SET], '{([Customers Dimension].CURRENTMEMBER)}')''\n"
+            + "MEMBER [Measures].[*FORMATTED_MEASURE_0] AS ''[Measures].[Store Sales]'', FORMAT_STRING = ''#,###.00'', SOLVE_ORDER=500\n"
+            + "SELECT\n"
+            + "FILTER([*BASE_MEMBERS__Measures_],([Measures].CurrentMember Is [Measures].[*FORMATTED_MEASURE_0])) ON COLUMNS\n"
+            + ",FILTER( [*SORTED_ROW_AXIS],([Customers Dimension].CurrentMember Is [Customers Dimension].[{0}])) ON ROWS\n"
+            + "FROM [SalesShort] RETURN [Customers Dimension].[Customer Level Name], [Product Dimension].[Product Level Name], [Measures].[Store Sales]";
+    private static final String DRILLTHROUGH_QUERY_WITH_CUSTOMER_FULL_NAME = MessageFormat.format( DRILLTHROUGH_QUERY_TEMPLATE, CURRENT_MEMBER_CUSTOMER_FULL_NAME);
+    private static final String DRILLTHROUGH_QUERY_WITH_CUSTOMER_ID = MessageFormat.format( DRILLTHROUGH_QUERY_TEMPLATE, CURRENT_MEMBER_CUSTOMER_ID);
+    //Schemas contained Levels with and without nameColumn attribute.
+    private static final String NAME_COLUMN_FULL_NAME = " nameColumn=\"fullname\" ";
+    private static final String NAME_COLUMN_PRODUCT_NAME = " nameColumn=\"product_name\" ";
+    private static final String SALES_ONLY_TEMPLATE = "<Schema name=\"FoodMartSalesOnly\">\n"
+         +" <Cube name=\"SalesShort\">\n"
+         +"   <Table name=\"sales_fact_1997\"/>\n"
+         +"   <Dimension name=\"Customers Dimension\" foreignKey=\"customer_id\">\n"
+         +"     <Hierarchy hasAll=\"true\" allMemberName=\"All Customers hierarchy name\" primaryKey=\"customer_id\">\n"
+         +"       <Table name=\"customer\"/>\n"
+         +"       <Level name=\"Customer Level Name\" caption=\"Customer Level Caption\" description=\"Customer Level Description\" column=\"customer_id\"{0}type=\"String\" uniqueMembers=\"true\" />\n"
+         +"     </Hierarchy>\n"
+         +"   </Dimension>\n"
+         +"   <Dimension name=\"Product Dimension\" foreignKey=\"product_id\">\n"
+         +"     <Hierarchy hasAll=\"true\" allMemberName=\"All products hierarchy name\" primaryKey=\"product_id\">\n"
+         +"       <Table name=\"product\"/>\n"
+         +"       <Level name=\"Product Level Name\" caption=\"Product Level Caption\" description=\"Product Level Description\" column=\"product_id\"{1}type=\"String\" uniqueMembers=\"true\" />\n"
+         +"     </Hierarchy>\n"
+         +"   </Dimension>\n"
+         +"   <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\" formatString=\"#,###.00\"/>\n"
+         +" </Cube>\n"
+         +"</Schema>\n";
+
+    private static final String SALES_ONLY_WITHOUT_NAME_COLUMN = MessageFormat.format( SALES_ONLY_TEMPLATE, " ", " " );
+    private static final String SALES_ONLY_WITH_NAME_COLUMN = MessageFormat.format( SALES_ONLY_TEMPLATE, NAME_COLUMN_FULL_NAME, NAME_COLUMN_PRODUCT_NAME );
 
     // ~ Tests ================================================================
 
@@ -1713,6 +1759,94 @@ public class DrillThroughTest extends FoodMartTestCase {
                     "Non applicable fields should be null",
                     null, rs.getObject(5));
             }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+        }
+    }
+
+    public void testDrillThroughWithReturnClause_ReturnsNameColumn()
+        throws SQLException
+    {
+        ResultSet rs = null;
+        final TestContext testContext =
+            TestContext.instance().withSchema(SALES_ONLY_WITH_NAME_COLUMN);
+        try {
+            rs = testContext.executeStatement(
+                    DRILLTHROUGH_QUERY_WITH_CUSTOMER_FULL_NAME);
+            assertEquals(
+                5, rs.getMetaData().getColumnCount());
+            assertEquals(
+                    "Customer Level Name", rs.getMetaData().getColumnLabel(1));
+            assertEquals(
+                    "Customer Level Name (Key)", rs.getMetaData().getColumnLabel(2));
+            assertEquals(
+                    "Product Level Name", rs.getMetaData().getColumnLabel(3));
+            assertEquals(
+                    "Product Level Name (Key)", rs.getMetaData().getColumnLabel(4));
+            assertEquals(
+                    "Store Sales", rs.getMetaData().getColumnLabel(5));
+
+            while (rs.next()) {
+                assertEquals(
+                    "Each Customer full name in results should be Jeanne Derry",
+                    "Jeanne Derry", rs.getObject(1));
+                assertEquals(
+                    "Each customer key should be 3",
+                    3, rs.getObject(2));
+                assertNotNull(
+                    "Should be a non-null value for product name",
+                    rs.getObject(3));
+                assertNotNull(
+                        "Should be a non-null value for product key",
+                        rs.getObject(4));
+                assertNotNull(
+                        "Should be a non-null value for store sales",
+                        rs.getObject(5));
+            }
+            rs.last();
+            assertEquals(
+                    17, rs.getRow());
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+        }
+    }
+
+    public void testDrillThroughWithReturnClause_ReturnsNoNameColumn()
+            throws SQLException
+    {
+        ResultSet rs = null;
+        final TestContext testContext =
+                TestContext.instance().withSchema(SALES_ONLY_WITHOUT_NAME_COLUMN);
+        try {
+            rs = testContext.executeStatement(
+                    DRILLTHROUGH_QUERY_WITH_CUSTOMER_ID);
+            assertEquals(
+                    3, rs.getMetaData().getColumnCount());
+            assertEquals(
+                    "Customer Level Name", rs.getMetaData().getColumnLabel(1));
+            assertEquals(
+                    "Product Level Name", rs.getMetaData().getColumnLabel(2));
+            assertEquals(
+                    "Store Sales", rs.getMetaData().getColumnLabel(3));
+
+            while (rs.next()) {
+                assertEquals(
+                        "Each customer key should be 3",
+                        3, rs.getObject(1));
+                assertNotNull(
+                        "Should be a non-null value for product key",
+                        rs.getObject(2));
+                assertNotNull(
+                        "Should be a non-null value for store sales",
+                        rs.getObject(3));
+            }
+            rs.last();
+            assertEquals(
+                    17, rs.getRow());
         } finally {
             if (rs != null) {
                 rs.close();
