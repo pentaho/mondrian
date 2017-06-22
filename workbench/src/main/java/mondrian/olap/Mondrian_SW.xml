@@ -7,7 +7,7 @@
   == You must accept the terms of that agreement to use this software.
   ==
   == Copyright (C) 2001-2005 Julian Hyde
-  == Copyright (C) 2005-2016 Pentaho and others
+  == Copyright (C) 2005-2017 Pentaho and others
   == All Rights Reserved.
   ==
   == This file defines an MMM schema for an Olap schema.
@@ -997,7 +997,7 @@
         <Attribute name="datatype" required="false">
             <Doc>
                 The datatype of this measure:
-                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+                String, Numeric, Integer.
 
                 <p/>The default datatype of a measure is
                 'Integer' if the measure's aggregator is 'Count',
@@ -1006,10 +1006,6 @@
             <Value>String</Value>
             <Value>Numeric</Value>
             <Value>Integer</Value>
-            <Value>Boolean</Value>
-            <Value>Date</Value>
-            <Value>Time</Value>
-            <Value>Timestamp</Value>
         </Attribute>
         <Attribute name="formatString">
             <Doc>
