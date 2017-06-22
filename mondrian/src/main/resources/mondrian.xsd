@@ -125,7 +125,7 @@
                                     <xsd:attribute name="datatype" use="optional">
                                         <xsd:annotation>
                                             <xsd:documentation>
-                                                The datatype of this measure: String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+                                                The datatype of this measure: String, Numeric, Integer.
                                                 The default datatype of a measure is 'Integer' if the measure's aggregator is 'Count', otherwise it is 'Numeric'. 
                                             </xsd:documentation>
                                         </xsd:annotation>
@@ -134,10 +134,6 @@
                                                 <xsd:enumeration value="String"/>
                                                 <xsd:enumeration value="Numeric"/>
                                                 <xsd:enumeration value="Integer"/>
-                                                <xsd:enumeration value="Boolean"/>
-                                                <xsd:enumeration value="Date"/>
-                                                <xsd:enumeration value="Time"/>
-                                                <xsd:enumeration value="Timestamp"/>
                                             </xsd:restriction>
                                         </xsd:simpleType>
                                     </xsd:attribute>
