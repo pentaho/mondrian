@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -4383,6 +4383,23 @@ public class Util extends XOMUtil {
             }
             return matcher;
         }
+    }
+
+    public static Map<Hierarchy, Set<Member>> getMembersToHierarchyMap(List<Member> members){
+        Map<Hierarchy, Set<Member>> map =
+                new HashMap<Hierarchy, Set<Member>>();
+        if (members != null) {
+            for (Member member : members) {
+                Hierarchy hierarchy = member.getHierarchy();
+                if (!map.containsKey(hierarchy)) {
+                    map.put(
+                            hierarchy,
+                            new HashSet<>());
+                }
+                map.get(hierarchy).add(member);
+            }
+        }
+        return map;
     }
 
     /**
