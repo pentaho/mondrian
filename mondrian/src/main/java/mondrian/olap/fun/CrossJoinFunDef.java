@@ -823,19 +823,7 @@ public class CrossJoinFunDef extends FunDefBase {
                 slicerMembers = rev.getSlicerMembers();
             }
             // Iterate the list of slicer members, grouping them by hierarchy
-            Map<Hierarchy, Set<Member>> mapOfSlicerMembers =
-                new HashMap<Hierarchy, Set<Member>>();
-            if (slicerMembers != null) {
-                for (Member slicerMember : slicerMembers) {
-                    Hierarchy hierarchy = slicerMember.getHierarchy();
-                    if (!mapOfSlicerMembers.containsKey(hierarchy)) {
-                        mapOfSlicerMembers.put(
-                            hierarchy,
-                            new HashSet<Member>());
-                    }
-                    mapOfSlicerMembers.get(hierarchy).add(slicerMember);
-                }
-            }
+            Map<Hierarchy, Set<Member>> mapOfSlicerMembers = Util.getMembersToHierarchyMap(slicerMembers);
 
             // Now we have the non-List-Members, but some of them may not be
             // All Members (default Member need not be the All Member) and

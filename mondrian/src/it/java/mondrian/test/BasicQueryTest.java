@@ -8915,6 +8915,52 @@ public class BasicQueryTest extends FoodMartTestCase {
         testContext.assertQueryReturns(mdxWithBug, expectedResultInBugCube);
     }
 
+    public void testCurrentMemberWithCompoundSlicer() {
+        String mdx = ""
+                + "with\n"
+                + "member [Measures].[Gender Current Member] "
+                + "as '[Gender].CurrentMember.Name'\n"
+                + "select [Measures].[Gender Current Member] on 0\n"
+                + "from [Sales]\n"
+                + "where { [Gender].[M], [Gender].[F] }";
+        try {
+            executeQuery(mdx);
+            fail("MondrianException is expected");
+        } catch (MondrianException e) {
+          assertEquals("Mondrian Error:The "
+                  + "MDX function CURRENTMEMBER failed "
+                  + "because the coordinate for the [Gender]"
+                  + " hierarchy contains a set",
+                  e.getCause().getMessage());
+        }
+    }
+
+    public void testCurrentMemberWithCompoundSlicer2() {
+        String mdx = "" +
+                "with\n"
+                + "member [Measures].[Drink Sales Previous Period] as\n"
+                + "'( Time.CurrentMember.lag(1), [Product].[All Products].[Drink],"
+                + " measures.[unit sales] )'\n"
+                + "member [Measures].[Drink Sales Current Period] as\n"
+                + "'( Time.CurrentMember, [Product].[All Products].[Drink],"
+                + " [Measures].[Unit Sales] )'\n"
+                + "select\n"
+                + "{ [Measures].[Drink Sales Current Period],"
+                + " [Measures].[Drink Sales Current Period] } on 0\n"
+                + "from [Sales]\n"
+                + "where { [Time].[1997].[Q4],[Time].[1997].[Q3] }\n";
+        try {
+            executeQuery(mdx);
+            fail("MondrianException is expected");
+        } catch (MondrianException e) {
+          assertEquals("Mondrian Error:The "
+                  + "MDX function CURRENTMEMBER failed "
+                  + "because the coordinate for the [Time] "
+                  + "hierarchy contains a set",
+                  e.getCause().getMessage());
+        }
+    }
+
     public void testMondrian625() {
         assertQueriesReturnSimilarResults(
                 "select\n" +
