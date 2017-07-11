@@ -8,8 +8,6 @@
 */
 package mondrian.spi.impl;
 
-import org.apache.commons.lang.StringUtils;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -56,19 +54,8 @@ public class VectorwiseDialect extends IngresDialect {
     }
 
     @Override
-    protected String generateOrderByNulls(
-        String expr,
-        boolean ascending,
-        boolean collateNullsLast)
-    {
-        // expr may be a column number
-        if (StringUtils.isNumeric(expr)) {
-            expr = new Integer(expr).toString();
-        }
-        return super.generateOrderByNulls(
-            expr,
-            ascending,
-            collateNullsLast);
+    public boolean requiresUnionOrderByOrdinal() {
+        return false;
     }
 }
 

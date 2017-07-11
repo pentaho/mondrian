@@ -27,6 +27,7 @@ import java.util.*;
 import javax.sql.DataSource;
 
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit test which checks that {@link mondrian.spi.Dialect}
@@ -1660,12 +1661,16 @@ public class DialectTest extends TestCase {
     }
 
     public void testMondrian2253() throws SQLException {
+        String expected = "    1 ASC";
         // "1" is supposed to be a column number
-        String expected = "CASE WHEN 1 IS NULL THEN 1 ELSE 0 END, 1 ASC";
         String expr = "1";
         JdbcDialectImpl dialect = new VectorwiseDialect(getConnection());
+
         SqlQuery query = new SqlQuery(dialect, true);
-        query.addOrderBy(expr, null, true, true, true, true);
+        query.addOrderBy(
+            expr, null, true, false,
+            dialect.requiresUnionOrderByOrdinal(), true);
+
         assertTrue(query.toString().contains(expected));
     }
 }
