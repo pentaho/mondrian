@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 
@@ -473,6 +473,24 @@ public interface Evaluator {
      * @param nativeEnabled Whether native evaluation should be used
      */
    void setNativeEnabled(boolean nativeEnabled);
+
+    /**
+     * Returns whether optimize evaluation is enabled in this context.
+     *
+     * @return whether optimize evaluation is enabled in this context
+     */
+    default boolean optimizerEnabled() {
+        return true;
+    }
+
+    /**
+     * Sets whether optimize evaluation should be used.
+     *
+     * @param optimizerEnabled Whether optimize evaluation should be used
+     */
+    default void setOptimizerEnabled(boolean optimizerEnabled){
+
+    }
 
     /**
      * Returns whether the current context is an empty cell.

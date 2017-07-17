@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -972,8 +972,45 @@ public class RolapResult extends ResultBase {
                 0,
                 Collections.singletonList(Collections.<Member>emptyList()));
         }
+
+        AxisOrdinal currentOrdinal = queryAxis.getAxisOrdinal();
+        QueryAxis[] axises = evaluator.getQuery().getAxes();
+        QueryAxis axis;
+
+        final Set<Member> members = new HashSet<>(  );
+
+        for ( QueryAxis axise : axises ) {
+            axis = axise;
+            if ( currentOrdinal.logicalOrdinal() != axis.getAxisOrdinal().logicalOrdinal() ) {
+                Exp funCall = axis.getSet();
+                axis.accept( new MdxVisitorImpl() {
+                    @Override public Object visit( ResolvedFunCall call ) {
+                        if ( funCall != call ) {
+                            turnOffVisitChildren();
+                        }
+                        return null;
+                    }
+
+                    @Override public Object visit( MemberExpr memberExpr ) {
+                        Member member = memberExpr.getMember();
+                        members.add( member );
+                        return null;
+                    }
+                } );
+            }
+        }
+        Set<Member> membersNestedInCurrentAxis = new HashSet<>();
+        queryAxis.accept( new MemberExtractingVisitor( membersNestedInCurrentAxis, null, false));
+        Member[] membersNestedInCurrentAxisArray = membersNestedInCurrentAxis.toArray( new Member[0] );
+
         final int savepoint = evaluator.savepoint();
         try {
+
+            if ( SqlConstraintUtils.measuresConflictWithMembers( members, membersNestedInCurrentAxisArray ) ) {
+                evaluator.setNativeEnabled( false );
+                evaluator.setOptimizerEnabled( false );
+            }
+
             evaluator.setNonEmpty(queryAxis.isNonEmpty());
             evaluator.setEvalAxes(true);
             final TupleIterable iterable =

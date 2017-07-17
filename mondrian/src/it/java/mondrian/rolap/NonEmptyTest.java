@@ -4555,6 +4555,47 @@ public class NonEmptyTest extends BatchTestCase {
         assertQuerySql(mdx, new SqlPattern[]{pattern});
     }
 
+    public void testOverrideCrossjoinWithCalcMemOnOpposingAxis() {
+        //propSaver.properties.EnableNativeCrossJoin.set(false);
+        //propSaver.properties.EnableNativeNonEmpty.set(false);
+        //propSaver.properties.CrossJoinOptimizerSize.set(200000000);
+
+        assertQueryReturns(
+            "WITH  member Gender.[overrideContext] as '( measures.[unit sales], Time.[1997].Q1 )'\n"
+            + "SELECT Gender.[overrideContext] on 0, \n"
+            + "crossjoin( Time.[1998].Q1, [Marital Status].[M]) on 1\n"
+           // + "NON EMPTY crossjoin( Time.[1998].Q1, [Marital Status].[M]) on 1\n"
+            + "FROM sales\n",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[overrideContext]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1998].[Q1], [Marital Status].[M]}\n"
+            + "Row #0: 33,101\n");
+
+    }
+
+    public void testOverrideCrossjoinWithCalcMemOnOpposingAxisNonEmpty() {
+        //propSaver.properties.EnableNativeCrossJoin.set(false);
+        //propSaver.properties.EnableNativeNonEmpty.set(false);
+        //propSaver.properties.CrossJoinOptimizerSize.set(200000000);
+
+        assertQueryReturns(
+          "WITH  member Gender.[overrideContext] as '( measures.[unit sales], Time.[1997].Q1 )'\n"
+            + "SELECT Gender.[overrideContext] on 0, \n"
+            + "NON EMPTY crossjoin( Time.[1998].Q1, [Marital Status].[M]) on 1\n"
+            + "FROM sales\n",
+          "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[overrideContext]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1998].[Q1], [Marital Status].[M]}\n"
+            + "Row #0: 33,101\n");
+
+    }
+
     public void testConstrainedMeasureGetsOptimized() {
         String mdx =
             "with member [Measures].[unit sales Male] as '([Measures].[Unit Sales],[Gender].[Gender].[M])' "

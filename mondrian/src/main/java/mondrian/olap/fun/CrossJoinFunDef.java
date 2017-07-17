@@ -489,7 +489,7 @@ public class CrossJoinFunDef extends FunDefBase {
         }
         int size = list.size();
 
-        if (size > opSize && evaluator.isNonEmpty()) {
+        if ( size > opSize && evaluator.isNonEmpty() &&  evaluator.optimizerEnabled() ) {
             // instead of overflow exception try to further
             // optimize nonempty(crossjoin(a,b)) ==
             // nonempty(crossjoin(nonempty(a),nonempty(b))
