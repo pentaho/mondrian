@@ -300,6 +300,10 @@
     <text>Calculated member ''{0}'' is not supported within a compound predicate</text>
 </exception>
 
+<exception id="350690" name="CurrentMemberWithCompoundSlicer">
+    <text>The MDX function CURRENTMEMBER failed because the coordinate for the ''{0}'' hierarchy contains a set</text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Connectivity errors -->
 

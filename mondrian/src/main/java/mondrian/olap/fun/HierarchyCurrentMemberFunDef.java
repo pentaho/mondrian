@@ -1,18 +1,18 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
 */
-
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractMemberCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapEvaluator;
 import mondrian.rolap.RolapHierarchy;
 
@@ -109,16 +109,19 @@ public class HierarchyCurrentMemberFunDef extends FunDefBase {
         }
     }
 
-    private static void validateSlicerMembers(Hierarchy hierarchy, Evaluator evaluator) {
+    private static void validateSlicerMembers(
+        Hierarchy hierarchy,
+        Evaluator evaluator)
+    {
         if (evaluator instanceof RolapEvaluator) {
             RolapEvaluator rev = (RolapEvaluator) evaluator;
-            Map<Hierarchy, Set<Member>> map = Util.getMembersToHierarchyMap(rev.getSlicerMembers());
+            Map<Hierarchy, Set<Member>> map =
+                    Util.getMembersToHierarchyMap(rev.getSlicerMembers());
             Set<Member> members = map.get(hierarchy);
-            if(members != null && members.size() > 1) {
-                throw new MondrianException("The MDX function CURRENTMEMBER "
-                        +"failed because the coordinate for the "
-                        + hierarchy.getUniqueName()
-                        + " hierarchy contains a set");
+            if (members != null && members.size() > 1) {
+                throw MondrianResource.instance()
+                    .CurrentMemberWithCompoundSlicer.ex(
+                        hierarchy.getUniqueName());
             }
         }
     }
