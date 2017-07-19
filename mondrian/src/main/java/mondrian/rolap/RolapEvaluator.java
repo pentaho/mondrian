@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 10 August, 2001
@@ -107,6 +107,7 @@ public class RolapEvaluator implements Evaluator {
     private Member[] nonAllMembers;
     private int commandCount;
     private Object[] commands;
+    private boolean optimizerEnabled;
 
     /**
      * Set of expressions actively being expanded. Prevents infinite cycle of
@@ -155,6 +156,7 @@ public class RolapEvaluator implements Evaluator {
         ancestorCommandCount =
             parent.ancestorCommandCount + parent.commandCount;
         nonEmpty = parent.nonEmpty;
+        optimizerEnabled = parent.optimizerEnabled;
         nativeEnabled = parent.nativeEnabled;
         evalAxes = parent.evalAxes;
         cellReader = parent.cellReader;
@@ -212,6 +214,7 @@ public class RolapEvaluator implements Evaluator {
         this.parent = null;
         ancestorCommandCount = 0;
         nonEmpty = false;
+        optimizerEnabled = true;
         nativeEnabled =
             MondrianProperties.instance().EnableNativeNonEmpty.get()
                 || MondrianProperties.instance().EnableNativeCrossJoin.get();
@@ -343,6 +346,19 @@ public class RolapEvaluator implements Evaluator {
             commands[commandCount++] = this.nativeEnabled;
             commands[commandCount++] = Command.SET_NATIVE_ENABLED;
             this.nativeEnabled = nativeEnabled;
+        }
+    }
+
+    @Override public boolean optimizerEnabled() {
+        return this.optimizerEnabled;
+    }
+
+    @Override public void setOptimizerEnabled( boolean optimizerEnabled ) {
+        if ( optimizerEnabled != this.optimizerEnabled ) {
+            ensureCommandCapacity(commandCount + 2);
+            commands[commandCount++] = this.optimizerEnabled;
+            commands[commandCount++] = Command.SET_OPTIMIZER_ENABLED;
+            this.optimizerEnabled = optimizerEnabled;
         }
     }
 
@@ -1362,7 +1378,8 @@ public class RolapEvaluator implements Evaluator {
             + (nonEmpty ? 0x1 : 0x2)
             + (nativeEnabled ? 0x4 : 0x8)
             + (firstExpanding ? 0x10 : 0x20)
-            + (evalAxes ? 0x40 : 0x80);
+            + (evalAxes ? 0x40 : 0x80)
+            + (optimizerEnabled ? 0x100 : 0x200);
         if (false) {
             // Enable this code block to debug checksum mismatches.
             System.err.println(
@@ -1374,6 +1391,7 @@ public class RolapEvaluator implements Evaluator {
                     expandingMember,
                     aggregationLists,
                     nonEmpty,
+                    optimizerEnabled,
                     nativeEnabled,
                     firstExpanding,
                     evalAxes));
@@ -1402,11 +1420,18 @@ public class RolapEvaluator implements Evaluator {
                 evaluator.setContext(member, false);
             }
         },
+        SET_OPTIMIZER_ENABLED(1) {
+            @Override
+            void execute(RolapEvaluator evaluator) {
+                evaluator.optimizerEnabled =
+                    (Boolean) evaluator.commands[--evaluator.commandCount];
+            }
+        },
         SET_NATIVE_ENABLED(1) {
             @Override
             void execute(RolapEvaluator evaluator) {
                 evaluator.nativeEnabled =
-                    (Boolean) evaluator.commands[--evaluator.commandCount];
+                  (Boolean) evaluator.commands[--evaluator.commandCount];
             }
         },
         SET_NON_EMPTY(1) {
