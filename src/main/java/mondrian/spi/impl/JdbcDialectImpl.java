@@ -1137,6 +1137,7 @@ public class JdbcDialectImpl implements Dialect {
         case Types.DECIMAL:
         case Types.FLOAT:
         case Types.DOUBLE:
+        case Types.REAL:
             return Datatype.Numeric;
         case Types.CHAR:
         case Types.VARCHAR:

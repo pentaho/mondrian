@@ -1033,7 +1033,8 @@ public class RolapSchema extends OlapElementBase implements Schema {
                         loader.getHandler().warning(
                             "Unknown data type "
                             + typeName + " (" + type + ") for column "
-                            + columnName + " of view; mondrian is probably"
+                            + columnName + " of view " + xmlNode.getWrapper().getAttribute("alias")
+                            + "; mondrian is probably"
                             + " not familiar with this database's type"
                             + " system",
                             xmlNode,

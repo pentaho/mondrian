@@ -7,7 +7,6 @@ dist
 *~
 VERSION.txt
 functions.html
-*.properties
 scratch.txt
 
 .idea
