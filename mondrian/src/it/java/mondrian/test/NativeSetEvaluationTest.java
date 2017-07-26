@@ -1791,7 +1791,26 @@ public class NativeSetEvaluationTest extends BatchTestCase {
       checkNative(mdx, result);
     }
 
-
+    public void testMondrian2575() {
+        assertQueriesReturnSimilarResults(
+                "WITH member [Customers].[AggregatePageMembers] AS \n" +
+                        "'Aggregate({[Customers].[USA].[CA].[Altadena].[Amy Petranoff], [Customers].[USA].[CA].[Altadena].[Arvid Duran]})'\n" +
+                        "member [Measures].[test set] AS \n" +
+                        "'SetToStr(Filter([Product].[Product Name].Members,[Measures].[Store Sales] > 0))'\n" +
+                        "SELECT {[Measures].[test set]} ON COLUMNS,\n" +
+                        "{[Product].[All Products], [Product].[All Products].Children} ON ROWS\n" +
+                        "FROM [Sales]\n" +
+                        "WHERE [Customers].[AggregatePageMembers]",
+                "WITH member [Customers].[AggregatePageMembers] AS \n" +
+                        "'Aggregate({[Customers].[USA].[CA].[Altadena].[Arvid Duran], [Customers].[USA].[CA].[Altadena].[Amy Petranoff]})'\n" +
+                        "member [Measures].[test set] AS \n" +
+                        "'SetToStr(Filter([Product].[Product Name].Members,[Measures].[Store Sales] > 0))'\n" +
+                        "SELECT {[Measures].[test set]} ON COLUMNS,\n" +
+                        "{[Product].[All Products], [Product].[All Products].Children} ON ROWS\n" +
+                        "FROM [Sales]\n" +
+                        "WHERE [Customers].[AggregatePageMembers]",
+                getTestContext().withFreshConnection());
+    }
 }
 
 // End NativeSetEvaluationTest.java
