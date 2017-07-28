@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -5235,6 +5235,21 @@ public class FunctionTest extends FoodMartTestCase {
             "IIf(1 > 2, {[Store].[USA], [Store].[USA].[CA]}, {[Store].[Mexico], [Store].[USA].[OR]})",
             "[Store].[Mexico]\n"
             + "[Store].[USA].[OR]");
+    }
+
+    // MONDRIAN-2408 - Consumer wants ITERABLE or ANY in CrossJoinFunDef.compileCall(ResolvedFunCall, ExpCompiler)
+    public void testIIfSetType_InCrossJoin() {
+      assertAxisReturns(
+          "CROSSJOIN([Store Type].[Deluxe Supermarket],IIf(1 = 1, {[Store].[USA], [Store].[USA].[CA]}, {[Store].[Mexico], [Store].[USA].[OR]}))",
+          "{[Store Type].[Deluxe Supermarket], [Store].[USA]}\n"
+          + "{[Store Type].[Deluxe Supermarket], [Store].[USA].[CA]}");
+    }
+
+    //MONDRIAN-2408 - Consumer wants (immutable) LIST in CrossJoinFunDef.compileCall(ResolvedFunCall, ExpCompiler)
+    public void testIIfSetType_InCrossJoinAndAvg() {
+      assertExprReturns(
+          "Avg(CROSSJOIN([Store Type].[Deluxe Supermarket],IIf(1 = 1, {[Store].[USA].[OR], [Store].[USA].[WA]}, {[Store].[Mexico], [Store].[USA].[CA]})), [Measures].[Store Sales])",
+          "81,031.12");
     }
 
     public void testDimensionCaption() {
