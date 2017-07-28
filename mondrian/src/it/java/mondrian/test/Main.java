@@ -149,6 +149,7 @@ public class Main extends TestSuite {
                 return suite;
             }
             addTest(suite, SqlConstraintUtilsTest.class);
+            addTest(suite, IifFunDefTest.class);
             addTest(suite, SegmentBuilderTest.class);
             addTest(suite, DenseDoubleSegmentBodyTest.class);
             addTest(suite, DenseIntSegmentBodyTest.class);
