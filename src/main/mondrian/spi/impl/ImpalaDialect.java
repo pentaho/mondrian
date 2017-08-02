@@ -15,6 +15,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import mondrian.spi.DialectUtil;
+
 /**
  * Dialect for Cloudera's Impala DB.
  *
@@ -176,7 +178,7 @@ public class ImpalaDialect extends HiveDialect {
             // Not a valid Java regex. Too risky to continue.
             return null;
         }
-
+        javaRegex = DialectUtil.cleanUnicodeAwareCaseFlag(javaRegex);
         // We might have to use case-insensitive matching
         final Matcher flagsMatcher = flagsPattern.matcher(javaRegex);
         boolean caseSensitive = true;

@@ -10,6 +10,7 @@
 package mondrian.spi.impl;
 
 import mondrian.rolap.SqlStatement;
+import mondrian.spi.DialectUtil;
 
 import java.sql.*;
 import java.util.regex.Pattern;
@@ -88,6 +89,7 @@ public class PostgreSqlDialect extends JdbcDialectImpl {
             // Not a valid Java regex. Too risky to continue.
             return null;
         }
+        javaRegex = DialectUtil.cleanUnicodeAwareCaseFlag(javaRegex);
         javaRegex = javaRegex.replace("\\Q", "");
         javaRegex = javaRegex.replace("\\E", "");
         final StringBuilder sb = new StringBuilder();
