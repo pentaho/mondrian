@@ -4,72 +4,59 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2015-2015 Pentaho Corporation.
+// Copyright (c) 2015-2017 Pentaho Corporation.
 // All rights reserved.
  */
 package mondrian.spi.impl;
 
-import mondrian.spi.Dialect;
-
-import junit.framework.TestCase;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import junit.framework.TestCase;
+import mondrian.spi.Dialect;
 
 /**
  * @author Andrey Khayrutdinov
  */
 public class ImpalaDialectTest extends TestCase {
+  private Connection connection = mock( Connection.class );
+  private DatabaseMetaData metaData = mock( DatabaseMetaData.class );
+  private ImpalaDialect impalaDialect;
 
-    public void testGenerateRegularExpression_InvalidRegex()
-        throws Exception
-    {
-        assertNull(
-            "Invalid regex should be ignored",
-            callGenerateRegularExpression("table.column", "(a"));
-    }
+  @Override
+  protected void setUp() throws Exception {
+    when( metaData.getDatabaseProductName() ).thenReturn( Dialect.DatabaseProduct.IMPALA.name() );
+    when( connection.getMetaData() ).thenReturn( metaData );
+    impalaDialect = new ImpalaDialect( connection );
+  }
 
-    public void testGenerateRegularExpression_CaseInsensitive()
-        throws Exception
-    {
-        String sql = callGenerateRegularExpression("table.column", "(?i).*1.*");
-        assertSqlWithRegex(false, sql, "'.*1.*'");
-    }
+  public void testAllowsRegularExpressionInWhereClause() {
+    assertTrue( impalaDialect.allowsRegularExpressionInWhereClause() );
+  }
 
-    public void testGenerateRegularExpression_CaseSensitive()
-        throws Exception
-    {
-        String sql = callGenerateRegularExpression("table.column", ".*1.*");
-        assertSqlWithRegex(true, sql, "'.*1.*'");
-    }
+  public void testGenerateRegularExpression_InvalidRegex() throws Exception {
+    assertNull( "Invalid regex should be ignored", impalaDialect.generateRegularExpression( "table.column", "(a" ) );
+  }
 
-    private String callGenerateRegularExpression(String source, String regex)
-        throws Exception
-    {
-        DatabaseMetaData metaData = mock(DatabaseMetaData.class);
-        when(metaData.getDatabaseProductName())
-            .thenReturn(Dialect.DatabaseProduct.IMPALA.name());
+  public void testGenerateRegularExpression_CaseInsensitive() throws Exception {
+    String sql = impalaDialect.generateRegularExpression( "table.column", "(?i)|(?u).*a.*" );
+    assertSqlWithRegex( false, sql, "'.*A.*'" );
+  }
 
-        Connection connection = mock(Connection.class);
-        when(connection.getMetaData()).thenReturn(metaData);
+  public void testGenerateRegularExpression_CaseSensitive() throws Exception {
+    String sql = impalaDialect.generateRegularExpression( "table.column", ".*1.*" );
+    assertSqlWithRegex( true, sql, "'.*1.*'" );
+  }
 
-        return new ImpalaDialect(connection)
-            .generateRegularExpression(source, regex);
-    }
-
-    private void assertSqlWithRegex(
-        boolean isCaseSensitive,
-        String sql,
-        String quotedRegex) throws Exception
-    {
-        assertNotNull("Sql should be generated", sql);
-        assertEquals(sql, isCaseSensitive, !sql.contains("UPPER"));
-        assertTrue(sql, sql.contains("cast(table.column as string)"));
-        assertTrue(sql, sql.contains("REGEXP"));
-        assertTrue(sql, sql.contains(quotedRegex));
-    }
+  private void assertSqlWithRegex( boolean isCaseSensitive, String sql, String quotedRegex ) throws Exception {
+    assertNotNull( "Sql should be generated", sql );
+    assertEquals( sql, isCaseSensitive, !sql.contains( "UPPER" ) );
+    assertTrue( sql, sql.contains( "cast(table.column as string)" ) );
+    assertTrue( sql, sql.contains( "REGEXP" ) );
+    assertTrue( sql, sql.contains( quotedRegex ) );
+  }
 }
 // End ImpalaDialectTest.java
