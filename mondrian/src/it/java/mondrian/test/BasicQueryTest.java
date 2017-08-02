@@ -8929,7 +8929,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         } catch (MondrianException e) {
           assertEquals("Mondrian Error:The "
                   + "MDX function CURRENTMEMBER failed "
-                  + "because the coordinate for the [Gender]"
+                  + "because the coordinate for the '[Gender]'"
                   + " hierarchy contains a set",
                   e.getCause().getMessage());
         }
@@ -8955,7 +8955,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         } catch (MondrianException e) {
           assertEquals("Mondrian Error:The "
                   + "MDX function CURRENTMEMBER failed "
-                  + "because the coordinate for the [Time] "
+                  + "because the coordinate for the '[Time]' "
                   + "hierarchy contains a set",
                   e.getCause().getMessage());
         }
