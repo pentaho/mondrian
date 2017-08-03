@@ -28,12 +28,8 @@
     <vendor>Pentaho</vendor>
     <driver.version.major>${project.version.major}</driver.version.major>
   </properties>
+
   <dependencies>
-    <dependency>
-      <groupId>xml-apis</groupId>
-      <artifactId>xml-apis</artifactId>
-      <version>${xml-apis.version}</version>
-    </dependency>
     <dependency>
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>
@@ -42,7 +38,6 @@
     <dependency>
       <groupId>commons-dbcp</groupId>
       <artifactId>commons-dbcp</artifactId>
-      <version>${commons-dbcp.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-lang</groupId>
@@ -73,17 +68,11 @@
     <dependency>
       <groupId>commons-pool</groupId>
       <artifactId>commons-pool</artifactId>
-      <version>${commons-pool.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-vfs2</artifactId>
       <version>${commons-vfs2.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>dom4j</groupId>
-      <artifactId>dom4j</artifactId>
-      <version>${dom4j.version}</version>
     </dependency>
     <dependency>
       <groupId>javax.validation</groupId>
@@ -93,17 +82,14 @@
     <dependency>
       <groupId>eigenbase</groupId>
       <artifactId>eigenbase-xom</artifactId>
-      <version>${eigenbase-xom.version}</version>
     </dependency>
     <dependency>
       <groupId>eigenbase</groupId>
       <artifactId>eigenbase-properties</artifactId>
-      <version>${eigenbase-properties.version}</version>
     </dependency>
     <dependency>
       <groupId>eigenbase</groupId>
       <artifactId>eigenbase-resgen</artifactId>
-      <version>${eigenbase-resgen.version}</version>
     </dependency>
     <dependency>
       <groupId>org.olap4j</groupId>
@@ -120,11 +106,6 @@
       <artifactId>olap4j-tck</artifactId>
       <version>${olap4j-tck.version}</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>xerces</groupId>
-      <artifactId>xercesImpl</artifactId>
-      <version>${xercesImpl.version}</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>

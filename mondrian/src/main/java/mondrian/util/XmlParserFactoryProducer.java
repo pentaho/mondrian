@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho
+// Copyright (C) 2005-2017 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -13,9 +13,6 @@ package mondrian.util;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.dom4j.io.SAXReader;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
@@ -78,24 +75,6 @@ public class XmlParserFactoryProducer {
         factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
         factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
         return factory;
-    }
-
-    public static SAXReader getSAXReader(final EntityResolver resolver) {
-        SAXReader reader = new SAXReader();
-        if (resolver != null) {
-            reader.setEntityResolver(resolver);
-        }
-        try {
-            reader.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            reader.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            reader.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            reader.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-        } catch (SAXException e) {
-            logger.error("Some parser properties are not supported.");
-        }
-        reader.setIncludeExternalDTDDeclarations(false);
-        reader.setIncludeInternalDTDDeclarations(false);
-        return reader;
     }
 }
 

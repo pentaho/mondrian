@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.tui;
 
@@ -1014,10 +1014,6 @@ public class XmlaSupport {
     public static boolean validateSoapXmlaUsingXpath(byte[] bytes)
             throws SAXException, IOException, XPathException
     {
-        if (! XmlUtil.supportsValidation()) {
-            return false;
-        }
-
         // Remove the UTF BOM for proper validation.
         bytes = removeUtfBom(bytes);
 
@@ -1071,10 +1067,6 @@ public class XmlaSupport {
     public static boolean validateXmlaUsingXpath(byte[] bytes)
             throws SAXException, IOException, XPathException
     {
-        if (! XmlUtil.supportsValidation()) {
-            return false;
-        }
-
         // Remove the UTF BOM for proper validation.
         bytes = removeUtfBom(bytes);
 
@@ -1092,9 +1084,6 @@ public class XmlaSupport {
     public static boolean validateNodes(Node[] nodes)
         throws SAXException, IOException
     {
-        if (! XmlUtil.supportsValidation()) {
-            return false;
-        }
         if (nodes.length == 0) {
             // no nodes
             return false;
@@ -1140,10 +1129,6 @@ public class XmlaSupport {
                ParserConfigurationException,
                TransformerException
     {
-        if (! XmlUtil.supportsValidation()) {
-            return false;
-        }
-
         Document doc = XmlUtil.parse(bytes);
         return validateEmbeddedSchema(doc, schemaTransform, dataTransform);
     }
@@ -1172,10 +1157,6 @@ public class XmlaSupport {
                ParserConfigurationException,
                TransformerException
     {
-        if (! XmlUtil.supportsValidation()) {
-            return false;
-        }
-
         Node dataDoc = XmlUtil.transform(
             doc,
             new BufferedReader(new StringReader(dataTransform)));
