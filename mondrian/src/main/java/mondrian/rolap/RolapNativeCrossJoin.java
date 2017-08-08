@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2015 Pentaho
+// Copyright (C) 2006-2017 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -173,8 +173,18 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             }
         }
 
+        // Use the combined CrossJoinArg for the tuple constraint,
+        // which will be translated to the SQL WHERE clause.
+        CrossJoinArg[] cargs = combineArgs(allArgs);
+        CrossJoinArg[] constrainArgs;
+        if (safeToConstrainByOtherAxes(fun)) {
+            constrainArgs = buildArgs(evaluator, cargs);
+        } else {
+            constrainArgs = cargs;
+        }
+
         if (SqlConstraintUtils.measuresConflictWithMembers(
-                evaluator.getQuery().getMeasuresMembers(), cjArgs))
+                evaluator.getQuery().getMeasuresMembers(), constrainArgs))
         {
             alertCrossJoinNonNative(
                 evaluator,
@@ -226,15 +236,11 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         try {
             overrideContext(evaluator, cjArgs, null);
 
-            // Use the combined CrossJoinArg for the tuple constraint,
-            // which will be translated to the SQL WHERE clause.
-            CrossJoinArg[] cargs = combineArgs(allArgs);
-
             // Now construct the TupleConstraint that contains both the CJ
             // dimensions and the additional filter on them. It will make a
             // copy of the evaluator.
             TupleConstraint constraint =
-                buildConstraint(evaluator, fun, cargs);
+                buildConstraint(evaluator, fun, constrainArgs);
             // Use the just the CJ CrossJoiArg for the evaluator context,
             // which will be translated to select list in sql.
             final SchemaReader schemaReader = evaluator.getSchemaReader();
@@ -272,15 +278,9 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
     private TupleConstraint buildConstraint(
         final RolapEvaluator evaluator,
         final FunDef fun,
-        final CrossJoinArg[] cargs)
+        final CrossJoinArg[] constraintArgs)
     {
-        CrossJoinArg[] myArgs;
-        if (safeToConstrainByOtherAxes(fun)) {
-            myArgs = buildArgs(evaluator, cargs);
-        } else {
-            myArgs = cargs;
-        }
-        return new NonEmptyCrossJoinConstraint(myArgs, evaluator);
+        return new NonEmptyCrossJoinConstraint(constraintArgs, evaluator);
     }
 
     private CrossJoinArg[] buildArgs(

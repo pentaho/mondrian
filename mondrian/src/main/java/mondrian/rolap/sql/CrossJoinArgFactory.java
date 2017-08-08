@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2014 Pentaho and others
+// Copyright (C) 2006-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
@@ -251,8 +251,10 @@ public class CrossJoinArgFactory {
                 } else {
                     members = new ArrayList<RolapMember>();
                 }
-                members.add((RolapMember) ((MemberExpr) tupleArg).getMember());
-                memberLists.put(dimension, members);
+                if (tupleArg instanceof MemberExpr) {
+                    members.add((RolapMember) ((MemberExpr) tupleArg).getMember());
+                    memberLists.put(dimension, members);
+                }
             } else if (isConstrainedMeasure(tupleArg)) {
                 addConstrainingMembersToMap(tupleArg, memberLists);
             }
