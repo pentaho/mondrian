@@ -509,18 +509,23 @@ public class DiffRepository
             String expectedCanonical = Util.replace(expected2, Util.nl, "\n");
             String actualCanonical = Util.replace(actual, Util.nl, "\n");
 
-            List<String> expectedParts = getListOfSegments(expectedCanonical);
-            List<String> actualParts = getListOfSegments(actualCanonical);
+            if ( !expectedCanonical.startsWith( "<?xml" ) && expectedCanonical.contains( "*Segment Header" ) ) {
 
-            for (String expectedPart : expectedParts) {
-                boolean partFound = false;
-                for (String actualPart : actualParts) {
-                    if (actualPart.equals(expectedPart)) {
-                        partFound = true;
-                        break;
+                List<String> expectedParts = getListOfSegments(expectedCanonical);
+                List<String> actualParts = getListOfSegments(actualCanonical);
+
+                for (String expectedPart : expectedParts) {
+                    boolean partFound = false;
+                    for (String actualPart : actualParts) {
+                        if (actualPart.equals(expectedPart)) {
+                            partFound = true;
+                            break;
+                        }
                     }
+                    Assert.assertTrue(partFound);
                 }
-                Assert.assertTrue(partFound);
+            } else {
+                Assert.assertEquals( expectedCanonical, actualCanonical );
             }
         }
     }
