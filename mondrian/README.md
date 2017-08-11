@@ -1,4 +1,4 @@
-## Welcome to Mondrian
+## Welcome to Mondrian 
 Mondrian is an Online Analytical Processing (OLAP) server that enables business users to analyze large quantities of data in real-time.  Mondrian implements the Olap4J API.
 ### Building
 #### Requirements
