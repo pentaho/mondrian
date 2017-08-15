@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -434,7 +434,15 @@ public class RolapMemberBase
                 return parentMember == null ? 0 : 1;
 
             case Property.VISIBLE_ORDINAL:
-                break;
+                final Object visProp =
+                    getPropertyFromMap(propertyName, matchCase);
+                if (visProp != null) {
+                    // There was a visibility property specified for this
+                    // member. Return that.
+                    return visProp;
+                }
+                // Default behavior is to return isVisible.
+                return isVisible();
 
             case Property.MEMBER_KEY_ORDINAL:
             case Property.KEY_ORDINAL:
@@ -1019,9 +1027,8 @@ public class RolapMemberBase
          * This passes the <code>PropertyValueMapFactory</code> class to the
          * <code>ObjectFactory</code> base class.
          */
-        @SuppressWarnings({"unchecked"})
         private PropertyValueMapFactoryFactory() {
-            super((Class) PropertyValueMapFactory.class);
+            super(PropertyValueMapFactory.class);
         }
 
         protected StringProperty getStringProperty() {
