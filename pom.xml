@@ -9,11 +9,16 @@
   </parent>
   <groupId>pentaho</groupId>
   <artifactId>pentaho-mondrian-parent-pom</artifactId>
-  <version>3.15-SNAPSHOT</version>
+  <version>8.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Pentaho Mondrian Parent POM</name>
   <description>Container pom for mondrian and mondrian workbench</description>
   <url>http://www.pentaho.com</url>
+  <scm>
+    <connection>scm:git:git@github.com:pentaho/mondrian.git</connection>
+    <developerConnection>scm:git:git@github.com:pentaho/mondrian.git</developerConnection>
+    <url>scm:git:git@github.com:pentaho/mondrian.git</url>
+  </scm>
   <properties>
     <olap4j.version>1.2.0</olap4j.version>
     <commons-vfs2.version>2.1-20150824</commons-vfs2.version>

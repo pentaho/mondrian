@@ -5,24 +5,19 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-mondrian-parent-pom</artifactId>
-    <version>3.15-SNAPSHOT</version>
+    <version>8.0-SNAPSHOT</version>
   </parent>
   <artifactId>mondrian</artifactId>
-  <version>3.15-SNAPSHOT</version>
+  <version>8.0-SNAPSHOT</version>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>Mondrian OLAP Engine</description>
   <url>http://mondrian.pentaho.com</url>
-  <scm>
-    <connection>scm:git:git@github.com:pentaho/${project.artifactId}.git</connection>
-    <developerConnection>scm:git:git@github.com:pentaho/${project.artifactId}.git</developerConnection>
-    <url>scm:git:git@github.com:pentaho/${project.artifactId}.git</url>
-  </scm>
   <properties>
-    <project.version.minor>130</project.version.minor>
+    <project.version.minor>000</project.version.minor>
     <copyright.year>2017</copyright.year>
     <xml-apis.version>2.0.2</xml-apis.version>
     <driver.version>${project.version}</driver.version>
-    <project.version.major>3</project.version.major>
+    <project.version.major>8</project.version.major>
     <driver.name>Mondrian olap4j driver</driver.name>
     <driver.version.minor>${project.version.minor}</driver.version.minor>
     <vendor>Pentaho</vendor>
