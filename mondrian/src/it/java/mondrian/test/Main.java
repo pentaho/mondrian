@@ -30,6 +30,7 @@ import mondrian.server.FileRepositoryTest;
 import mondrian.spi.DialectUtilTest;
 import mondrian.spi.impl.ImpalaDialectTest;
 import mondrian.spi.impl.JdbcDialectImplTest;
+import mondrian.spi.impl.MonetDbDialectTest;
 import mondrian.spi.impl.MySqlDialectTest;
 import mondrian.spi.impl.OracleDialectTest;
 import mondrian.spi.impl.PostgreSqlDialectTest;
@@ -307,6 +308,7 @@ public class Main extends TestSuite {
             addTest(suite, PostgreSqlDialectTest.class);
             addTest(suite, OracleDialectTest.class);
             addTest(suite, MySqlDialectTest.class);
+            addTest(suite, MonetDbDialectTest.class);
             addTest(suite, DialectUtilTest.class);
             addTest(suite, IdBatchResolverTest.class);
             addTest(suite, MemberCacheHelperTest.class);
