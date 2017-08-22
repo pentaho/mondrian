@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
 */
 
 package mondrian.test;
@@ -654,6 +654,24 @@ public class Olap4jTest extends FoodMartTestCase {
         }
         assertEquals(1, n);
         assertEquals(1, n2);
+    }
+
+    /**
+     * Test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1967">MONDRIAN-1967</a>
+     *
+     * <p>An empty case statement in RolapMemberBase was breaking when the
+     * visibility property was asked instead of delegating to isVisible().
+     */
+    public void testMondrian1967() throws Exception {
+        assertTrue(
+                getTestContext().getOlap4jConnection()
+                        .getOlapSchema()
+                        .getCubes().get("Sales")
+                        .lookupMember(
+                                IdentifierNode.parseIdentifier("[Time].[Time].[1997]")
+                                        .getSegmentList())
+                        .isVisible());
     }
 }
 
