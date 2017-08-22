@@ -173,18 +173,8 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             }
         }
 
-        // Use the combined CrossJoinArg for the tuple constraint,
-        // which will be translated to the SQL WHERE clause.
-        CrossJoinArg[] cargs = combineArgs(allArgs);
-        CrossJoinArg[] constrainArgs;
-        if (safeToConstrainByOtherAxes(fun)) {
-            constrainArgs = buildArgs(evaluator, cargs);
-        } else {
-            constrainArgs = cargs;
-        }
-
         if (SqlConstraintUtils.measuresConflictWithMembers(
-                evaluator.getQuery().getMeasuresMembers(), constrainArgs))
+                evaluator.getQuery().getMeasuresMembers(), cjArgs))
         {
             alertCrossJoinNonNative(
                 evaluator,
@@ -236,11 +226,15 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         try {
             overrideContext(evaluator, cjArgs, null);
 
+            // Use the combined CrossJoinArg for the tuple constraint,
+            // which will be translated to the SQL WHERE clause.
+            CrossJoinArg[] cargs = combineArgs(allArgs);
+
             // Now construct the TupleConstraint that contains both the CJ
             // dimensions and the additional filter on them. It will make a
             // copy of the evaluator.
             TupleConstraint constraint =
-                buildConstraint(evaluator, fun, constrainArgs);
+                new NonEmptyCrossJoinConstraint(cargs, evaluator);
             // Use the just the CJ CrossJoiArg for the evaluator context,
             // which will be translated to select list in sql.
             final SchemaReader schemaReader = evaluator.getSchemaReader();
@@ -273,27 +267,6 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
             }
         }
         return cjArgs;
-    }
-
-    private TupleConstraint buildConstraint(
-        final RolapEvaluator evaluator,
-        final FunDef fun,
-        final CrossJoinArg[] constraintArgs)
-    {
-        return new NonEmptyCrossJoinConstraint(constraintArgs, evaluator);
-    }
-
-    private CrossJoinArg[] buildArgs(
-        final RolapEvaluator evaluator, final CrossJoinArg[] cargs)
-    {
-        Set<CrossJoinArg> joinArgs =
-            crossJoinArgFactory().buildConstraintFromAllAxes(evaluator);
-        joinArgs.addAll(Arrays.asList(cargs));
-        return joinArgs.toArray(new CrossJoinArg[joinArgs.size()]);
-    }
-
-    private boolean safeToConstrainByOtherAxes(final FunDef fun) {
-        return !(fun instanceof NonEmptyCrossJoinFunDef);
     }
 
     private void alertCrossJoinNonNative(

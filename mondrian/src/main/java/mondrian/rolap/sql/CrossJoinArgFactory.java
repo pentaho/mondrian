@@ -251,10 +251,8 @@ public class CrossJoinArgFactory {
                 } else {
                     members = new ArrayList<RolapMember>();
                 }
-                if (tupleArg instanceof MemberExpr) {
-                    members.add((RolapMember) ((MemberExpr) tupleArg).getMember());
-                    memberLists.put(dimension, members);
-                }
+                members.add((RolapMember) ((MemberExpr) tupleArg).getMember());
+                memberLists.put(dimension, members);
             } else if (isConstrainedMeasure(tupleArg)) {
                 addConstrainingMembersToMap(tupleArg, memberLists);
             }
