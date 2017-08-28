@@ -4,12 +4,13 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.test;
 
 import mondrian.olap.*;
 import mondrian.rolap.*;
+import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 import mondrian.spi.impl.*;
@@ -24,6 +25,9 @@ import java.sql.Connection;
 import java.util.*;
 
 import javax.sql.DataSource;
+
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit test which checks that {@link mondrian.spi.Dialect}
@@ -1643,6 +1647,20 @@ public class DialectTest extends TestCase {
         public int getScale(int column) throws SQLException {
             return scale;
         }
+    }
+
+    public void testMondrian2253() throws SQLException {
+        String expected = "    1 ASC";
+        // "1" is supposed to be a column number
+        String expr = "1";
+        JdbcDialectImpl dialect = new VectorwiseDialect(getConnection());
+
+        SqlQuery query = new SqlQuery(dialect, true);
+        query.addOrderBy(
+            expr, null, true, false,
+            dialect.requiresUnionOrderByOrdinal(), true);
+
+        assertTrue(query.toString().contains(expected));
     }
 }
 
