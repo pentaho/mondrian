@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
 */
 
 package mondrian.olap.fun;
@@ -84,6 +84,10 @@ public class IifFunDef extends FunDefBase {
                 public Calc[] getCalcs() {
                     return new Calc[] {booleanCalc, calc1, calc2};
                 }
+
+                public ResultStyle getResultStyle() {
+                    return calc1.getResultStyle();
+              }
             };
         } else {
             return new GenericCalc(call) {
