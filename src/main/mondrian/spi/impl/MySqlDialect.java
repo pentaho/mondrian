@@ -10,6 +10,7 @@
 package mondrian.spi.impl;
 
 import mondrian.olap.Util;
+import mondrian.spi.DialectUtil;
 
 import java.sql.*;
 import java.util.List;
@@ -288,6 +289,7 @@ public class MySqlDialect extends JdbcDialectImpl {
         }
 
         // We might have to use case-insensitive matching
+        javaRegex = DialectUtil.cleanUnicodeAwareCaseFlag(javaRegex);
         final Matcher flagsMatcher = flagsPattern.matcher(javaRegex);
         boolean caseSensitive = true;
         if (flagsMatcher.matches()) {
