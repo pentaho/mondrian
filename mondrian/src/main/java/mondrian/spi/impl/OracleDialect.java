@@ -9,6 +9,7 @@
 package mondrian.spi.impl;
 
 import mondrian.rolap.SqlStatement;
+import mondrian.spi.DialectUtil;
 
 import java.sql.*;
 import java.util.List;
@@ -92,6 +93,7 @@ public class OracleDialect extends JdbcDialectImpl {
             // Not a valid Java regex. Too risky to continue.
             return null;
         }
+        javaRegex = DialectUtil.cleanUnicodeAwareCaseFlag(javaRegex);
         final Matcher flagsMatcher = flagsPattern.matcher(javaRegex);
         final String suffix;
         if (flagsMatcher.matches()) {
