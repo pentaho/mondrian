@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho
+// Copyright (C) 2005-2017 Pentaho
 // All Rights Reserved.
 */
 package mondrian.xmla;
@@ -18,6 +18,7 @@ import mondrian.xmla.impl.DefaultXmlaResponse;
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapException;
 
+import org.olap4j.impl.LcidLocale;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 
@@ -514,6 +515,27 @@ way too noisy
         public Wildcard(String pattern) {
             this.pattern = pattern;
         }
+    }
+
+    public static Locale convertToLocale(String value) {
+        if (value != null) {
+            try {
+                // First check for a numeric locale id (LCID) as used by
+                // Windows.
+                final short lcid = Short.valueOf(value);
+                return LcidLocale.lcidToLocale(lcid);
+            } catch (NumberFormatException nfe) {
+                // Since value is not a valid LCID, now see whether it is a
+                // locale name, e.g. "en_US". This behavior is an
+                // extension to the XMLA spec.
+                try {
+                    return Util.parseLocale(value);
+                } catch (RuntimeException re) {
+                    // probably a bad locale string; fall through
+                }
+            }
+        }
+        return null;
     }
 
     public static class ElementNameEncoder {

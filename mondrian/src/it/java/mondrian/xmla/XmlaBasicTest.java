@@ -989,6 +989,14 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         doTest(requestType, props, TestContext.instance());
     }
 
+    public void testExecuteWithLocale() throws Exception {
+        TestContext context = getTestContext().withCube("Sales");
+        String requestType = "EXECUTE";
+        Properties props = getDefaultRequestProperties(requestType);
+        props.setProperty(LOCALE_PROP, Locale.GERMANY.toString());
+        doTest(requestType, props, context);
+    }
+
     public void doTestRT(String requestType, TestContext testContext)
         throws Exception
     {
