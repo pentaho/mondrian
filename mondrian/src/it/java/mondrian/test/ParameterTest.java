@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho
+// Copyright (C) 2005-2017 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -330,7 +330,7 @@ public class ParameterTest extends FoodMartTestCase {
             "java.lang.NumberFormatException: For input string: \"xy\"");
     }
 
-    public void testParameterDimension() {
+    public void testParameterDimensionWithTwoHierarchies() {
         assertExprReturns(
             "Parameter(\"Foo\",[Time],[Time].[1997],\"Foo\").Name", "1997");
         assertExprReturns(
@@ -339,12 +339,28 @@ public class ParameterTest extends FoodMartTestCase {
         // wrong dimension
         assertExprThrows(
             "Parameter(\"Foo\",[Time],[Product].[All Products],\"Foo\").Name",
-            "Default value of parameter 'Foo' is not consistent with the parameter type 'MemberType<dimension=[Time]>");
+            "Default value of parameter 'Foo' is not consistent with the parameter type 'MemberType<hierarchy=[Time]>");
         // non-existent member
         assertExprThrows(
             "Parameter(\"Foo\",[Time],[Time].[1997].[Q5],\"Foo\").Name",
             "MDX object '[Time].[1997].[Q5]' not found in cube 'Sales'");
     }
+
+    public void testParameterDimensionWithOneHierarchy() {
+      assertExprReturns(
+          "Parameter(\"Foo\",[Store],[Store].[USA],\"Foo\").Name", "USA");
+      assertExprReturns(
+          "Parameter(\"Foo\",[Store],[Store].[USA].[OR].[Portland],\"Foo\").Name",
+          "Portland");
+      // wrong dimension
+      assertExprThrows(
+          "Parameter(\"Foo\",[Store],[Product].[All Products],\"Foo\").Name",
+          "Default value of parameter 'Foo' is not consistent with the parameter type 'MemberType<hierarchy=[Store]>");
+      // non-existent member
+      assertExprThrows(
+          "Parameter(\"Foo\",[Store],[Store].[USA].[NY],\"Foo\").Name",
+          "MDX object '[Store].[USA].[NY]' not found in cube 'Sales'");
+  }
 
     public void testParameterHierarchy() {
         assertExprReturns(
