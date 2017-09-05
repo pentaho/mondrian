@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -1298,6 +1298,7 @@ public class RolapResult extends ResultBase {
                     point.setAxis(axisOrdinal, tupleIndex);
                     final int savepoint = revaluator.savepoint();
                     try {
+                        revaluator.setEvalAxes( true );
                         revaluator.setContext(tuple);
                         execution.checkCancelOrTimeout();
                         executeStripe(axisOrdinal - 1, revaluator, pos);
