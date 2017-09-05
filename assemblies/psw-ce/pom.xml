@@ -169,11 +169,6 @@
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
-      <artifactId>pentaho-xul-swt</artifactId>
-      <version>${dependency.kettle.revision}</version>
-    </dependency>
-    <dependency>
-      <groupId>pentaho</groupId>
       <artifactId>pentaho-application-launcher</artifactId>
       <version>${pentaho-launcher.version}</version>
       <scope>runtime</scope>
