@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho
+// Copyright (C) 2005-2017 Pentaho
 // All Rights Reserved.
 */
 package mondrian.xmla;
@@ -174,12 +174,17 @@ public class XmlaHandler {
             }
         }
 
-        return
-            getConnection(
+        OlapConnection connection = getConnection(
                 databaseName,
                 catalogName,
                 request.getRoleName(),
-                props);
+                props );
+        String localeIdentifier = request.getProperties().get("LocaleIdentifier");
+        Locale locale = XmlaUtil.convertToLocale( localeIdentifier );
+        if (locale != null) {
+            connection.setLocale(locale);
+        }
+        return connection;
     }
 
     private enum SetType {
