@@ -181,7 +181,6 @@
       <groupId>pentaho</groupId>
       <artifactId>pentaho-application-launcher</artifactId>
       <version>${pentaho-launcher.version}</version>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
@@ -193,49 +192,41 @@
       <groupId>pentaho</groupId>
       <artifactId>pentaho-mondrianschemaworkbench-plugins</artifactId>
       <version>${project.version}</version>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
       <version>${dependency.groovy-all.revision}</version>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-core</artifactId>
       <version>${dependency.jersey.revision}</version>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-client</artifactId>
       <version>${dependency.jersey.revision}</version>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.sun.jersey.contribs</groupId>
       <artifactId>jersey-multipart</artifactId>
       <version>${dependency.jersey.revision}</version>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pdi-dataservice-client-plugin</artifactId>
       <version>${dependency.pdi-dataservice-client-plugin.revision}</version>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>xerces</groupId>
       <artifactId>xercesImpl</artifactId>
       <version>${xercesImpl.version}</version>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>oss-licenses</artifactId>
       <version>${dependency.oss-licenses.revision}</version>
-      <scope>runtime</scope>
       <type>zip</type>
     </dependency>
     <dependency>
@@ -243,6 +234,8 @@
       <artifactId>jlfgr</artifactId>
       <version>${jlfgr.version}</version>
     </dependency>
+    
+    <!-- change bellow scope to runtime to include database drivers -->
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
@@ -263,6 +256,44 @@
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
+            <id>add-libs</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
+              <includeScope>runtime</includeScope>
+              <excludeArtifactIds>oss-licenses,pdi-dataservice-client-plugin,mysql-connector-java,postgresql</excludeArtifactIds>
+            </configuration>
+          </execution>
+          <execution>
+            <id>add-plugins</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/plugins</outputDirectory>
+              <includeScope>runtime</includeScope>
+              <includeArtifactIds>pdi-dataservice-client-plugin</includeArtifactIds>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>add-drivers</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/drivers</outputDirectory>
+              <includeScope>runtime</includeScope>
+              <includeArtifactIds>mysql-connector-java,postgresql</includeArtifactIds>
+            </configuration>
+          </execution>
+
+          <execution>
             <id>unpack-dependencies</id>
             <phase>prepare-package</phase>
             <goals>
@@ -272,25 +303,6 @@
               <includes>PentahoSchemaWorkbench_OSS_Licenses.html</includes>
               <outputDirectory>${project.build.directory}</outputDirectory>
               <includeArtifactIds>oss-licenses</includeArtifactIds>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>create-archive</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <descriptors>
-                <descriptor>src/assembly/assembly.xml</descriptor>
-              </descriptors>
-              <appendAssemblyId>false</appendAssemblyId>
             </configuration>
           </execution>
         </executions>
