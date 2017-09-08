@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2017 Pentaho
 // All Rights Reserved.
 */
 
@@ -65,8 +65,17 @@ public class DimensionType implements Type {
         return dimension == null
             ? null
             : dimension.getHierarchies().length > 1
-            ? null
+            ? getHierarchyWithDefaultName()
             : dimension.getHierarchies()[0];
+    }
+
+    private Hierarchy getHierarchyWithDefaultName() {
+      for ( Hierarchy hierarchy : dimension.getHierarchies() ) {
+        if ( Util.equalName( hierarchy.getName(), dimension.getName() ) ) {
+          return hierarchy;
+        }
+      }
+      return null;
     }
 
     public Level getLevel() {

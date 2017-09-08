@@ -6970,6 +6970,28 @@ public class FunctionTest extends FoodMartTestCase {
         fail("should have timed out");
     }
 
+    //The test case for the issue: MONDRIAN-2402
+    public void testGenerateForStringMemberProperty() {
+      assertQueryReturns(
+          "WITH MEMBER [Store].[Lineage of Time] AS\n"
+          + " Generate(Ascendants([Time].CurrentMember), [Time].CurrentMember.Properties(\"MEMBER_CAPTION\"), \",\")\n"
+          + " SELECT\n"
+          + "  {[Time].[1997]} ON Axis(0),\n"
+          + "  Union(\n"
+          + "   {([Store].[Lineage of Time])},\n"
+          + "   {[Store].[All Stores]}) ON Axis(1)\n"
+          + " FROM [Sales]\n",
+          "Axis #0:\n"
+          + "{}\n"
+          + "Axis #1:\n"
+          + "{[Time].[1997]}\n"
+          + "Axis #2:\n"
+          + "{[Store].[Lineage of Time]}\n"
+          + "{[Store].[All Stores]}\n"
+          + "Row #0: 1997\n"
+          + "Row #1: 266,773\n");
+    }
+
     public void testFilterWillTimeout() {
         propSaver.set(propSaver.properties.QueryTimeout, 3);
         propSaver.set(propSaver.properties.EnableNativeNonEmpty, false);
