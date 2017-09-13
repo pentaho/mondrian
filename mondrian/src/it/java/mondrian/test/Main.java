@@ -293,6 +293,7 @@ public class Main extends TestSuite {
             addTest(suite, BitKeyTest.class);
             addTest(suite, TypeTest.class);
             addTest(suite, SteelWheelsSchemaTest.class);
+            addTest(suite, BasicSteelWheelsQueryTest.class);
             addTest(suite, MultipleColsInTupleAggTest.class);
             addTest(suite, DynamicSchemaProcessorTest.class);
             addTest(suite, MonitorTest.class);

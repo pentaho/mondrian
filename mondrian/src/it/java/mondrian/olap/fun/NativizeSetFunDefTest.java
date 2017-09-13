@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
 */
 
 package mondrian.olap.fun;
@@ -1535,6 +1535,48 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             actualOutput = actualOutput.replace(Util.nl, "\n");
         }
         assertEquals(expectedQuery, actualOutput);
+    }
+
+    public void testCJArgsAndPredicatesExecuteNatively() {
+        propSaver.set(propSaver.properties.EnableNativeCrossJoin, true);
+        propSaver.set(propSaver.properties.EnableNativeFilter, true);
+        propSaver.set(propSaver.properties.EnableNativeNonEmpty, true);
+        propSaver.set(propSaver.properties.EnableNativeTopCount, true);
+
+        String mdx = "" +
+                " WITH\n" +
+                " MEMBER [Measures].[USA Unit Sales] AS '([Measures].[Unit Sales]," +
+                "   ANCESTOR([Customers].CURRENTMEMBER,[Customers].[Country]) )'\n" +
+                " SELECT\n" +
+                " [Measures].[USA Unit Sales] ON COLUMNS,\n" +
+                " NONEMPTYCROSSJOIN(" +
+                "   {[Product].[All Products].[Drink]}," +
+                "   FILTER(" +
+                "       [Customers].[Country].MEMBERS," +
+                "       [Customers].CURRENTMEMBER IN {[Customers].[All Customers].[USA]}" +
+                "   )" +
+                " ) ON ROWS\n" +
+                " FROM [Sales]";
+
+        String sql = "select " +
+                "`product_class`.`product_family` as `c0`," +
+                " `customer`.`country` as `c1` from `product` as `product`," +
+                " `product_class` as `product_class`," +
+                " `sales_fact_1997` as `sales_fact_1997`," +
+                " `customer` as `customer` " +
+                "where " +
+                "`product`.`product_class_id` = `product_class`.`product_class_id` and " +
+                "`sales_fact_1997`.`product_id` = `product`.`product_id` and " +
+                "`sales_fact_1997`.`customer_id` = `customer`.`customer_id` and " +
+                "(`product_class`.`product_family` = 'Drink') and " +
+                "(`customer`.`country` = 'USA') " +
+                "group by `product_class`.`product_family`, `customer`.`country` " +
+                "order by ISNULL(`c0`) ASC," +
+                " `c0` ASC, ISNULL(`c1`) ASC," +
+                " `c1` ASC";
+
+        SqlPattern[] sqlPattern = new SqlPattern[] { new SqlPattern(Dialect.DatabaseProduct.MYSQL, sql, sql.length()) };
+        assertQuerySql(mdx, sqlPattern);
     }
 }
 
