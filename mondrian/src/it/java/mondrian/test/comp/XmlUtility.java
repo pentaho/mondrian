@@ -5,21 +5,24 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2017 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.test.comp;
 
+import mondrian.olap.MondrianException;
 import mondrian.olap.Util;
 
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
+import mondrian.tui.XmlUtil;
 
 import org.eigenbase.xom.XOMUtil;
 import org.eigenbase.xom.wrappers.W3CDOMWrapper;
 
 import org.w3c.dom.*;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.*;
 
 import java.io.*;
@@ -85,18 +88,26 @@ class XmlUtility {
     public static void save(Writer writer, Document document)
         throws IOException
     {
-        OutputFormat outputFormat = new OutputFormat(document);
-
-        outputFormat.setIndenting(true);
-
-        outputFormat.setLineWidth(Integer.MAX_VALUE);
-
-        outputFormat.setLineSeparator(Util.nl);
-
         try {
-            XMLSerializer serializer = new XMLSerializer(writer, outputFormat);
+            DOMImplementationRegistry registry =
+                    DOMImplementationRegistry.newInstance();
+            DOMImplementationLS impl =
+                    (DOMImplementationLS) registry
+                            .getDOMImplementation("XML 3.0 LS 3.0");
 
-            serializer.serialize(document);
+            LSSerializer serializer = impl.createLSSerializer();
+            LSOutput output = impl.createLSOutput();
+            serializer.getDomConfig()
+                    .setParameter(XmlUtil.PRETTY_PRINT_PROPERTY, true);
+            serializer.setNewLine(Util.nl);
+            output.setCharacterStream(writer);
+
+            serializer.write(document, output);
+        } catch (IllegalAccessException |
+                 InstantiationException |
+                 ClassNotFoundException e)
+        {
+            throw new MondrianException(e);
         } finally {
             if (writer != null) {
                 writer.close();

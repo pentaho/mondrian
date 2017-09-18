@@ -51,9 +51,9 @@ public class XmlaTest extends TestCase {
 
     static {
         XMLUnit.setControlParser(
-            "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+            "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
         XMLUnit.setTestParser(
-            "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+            "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
         XMLUnit.setIgnoreWhitespace(true);
     }
 
