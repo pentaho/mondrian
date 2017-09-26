@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho
+// Copyright (C) 2005-2017 Pentaho
 // All Rights Reserved.
 */
 
@@ -149,33 +149,12 @@ abstract class Rowset implements XmlaConstants {
         case Catalog:
             break;
         case LocaleIdentifier:
-            if (value != null) {
-                try {
-                    // First check for a numeric locale id (LCID) as used by
-                    // Windows.
-                    final short lcid = Short.valueOf(value);
-                    final Locale locale = LcidLocale.lcidToLocale(lcid);
-                    if (locale != null) {
-                        extraProperties.put(
-                            XmlaHandler.JDBC_LOCALE, locale.toString());
-                        return;
-                    }
-                } catch (NumberFormatException nfe) {
-                    // Since value is not a valid LCID, now see whether it is a
-                    // locale name, e.g. "en_US". This behavior is an
-                    // extension to the XMLA spec.
-                    try {
-                        Locale locale = Util.parseLocale(value);
-                        extraProperties.put(
-                            XmlaHandler.JDBC_LOCALE, locale.toString());
-                        return;
-                    } catch (RuntimeException re) {
-                        // probably a bad locale string; fall through
-                    }
-                }
-                return;
+            Locale locale = XmlaUtil.convertToLocale( value );
+            if(locale != null) {
+                extraProperties.put(
+                        XmlaHandler.JDBC_LOCALE, locale.toString());
             }
-            // fall through
+            return;
         default:
             LOGGER.warn(
                 "Warning: Rowset '" + rowsetDefinition.name()
