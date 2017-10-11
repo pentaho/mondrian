@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2014 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
 */
 package mondrian.spi.impl;
 
@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the NuoDB database.
- * In order to use NuoDB with Pentaho Mondrian users can only use NuoDB
+ * In order to use NuoDB with Hitachi Vantara Mondrian users can only use NuoDB
  * version 2.0.4 or newer.
  *
  * @author rbuck

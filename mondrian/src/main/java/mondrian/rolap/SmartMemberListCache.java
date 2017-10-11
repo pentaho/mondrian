@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2010 Pentaho
+// Copyright (C) 2006-2017 Hitachi Vantara
 // All Rights Reserved.
 */
 

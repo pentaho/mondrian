@@ -5,7 +5,7 @@
 # http://www.eclipse.org/legal/epl-v10.html.
 # You must accept the terms of that agreement to use this software.
 #
-# Copyright (C) 2005-2017 Pentaho
+# Copyright (C) 2005-2017 Hitachi Vantara
 # All Rights Reserved.
 #
 # Converts documentation from Mondrian's source format to Pentaho's web site.

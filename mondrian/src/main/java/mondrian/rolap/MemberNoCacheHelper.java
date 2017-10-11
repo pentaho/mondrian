@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2008-2008 TASecurity Group Spain
-// Copyright (C) 2008-2012 Pentaho and others
+// Copyright (C) 2008-2017 Hitachi Vantara and others
 // All Rights Reserved.
 */
 

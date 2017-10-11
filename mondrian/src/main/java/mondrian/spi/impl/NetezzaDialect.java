@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2008-2009 Jaspersoft
-// Copyright (C) 2009-2013 Pentaho
+// Copyright (C) 2009-2017 Hitachi Vantara
 // All Rights Reserved.
 */
 

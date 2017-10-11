@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2003-2005 Julian Hyde
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2015 Pentaho
+// Copyright (C) 2005-2017 Hitachi Vantara
 // All Rights Reserved.
 */
 package mondrian.olap;

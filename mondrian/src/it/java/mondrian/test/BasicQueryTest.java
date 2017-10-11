@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2017 Pentaho
+// Copyright (C) 2005-2017 Hitachi Vantara
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -7558,7 +7558,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * Testcase for Pentaho bug
+     * Testcase for Hitachi Vantara bug
      * <a href="http://jira.pentaho.com/browse/BISERVER-1323">BISERVER-1323</a>,
      * empty SQL query generated when crossjoining more than two sets each
      * containing just the 'all' member.

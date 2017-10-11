@@ -7,7 +7,7 @@
 // Copyright (C) 2001-2002 Julian Hyde
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2007-2008 StrateBI
-// Copyright (C) 2008-2012 Pentaho and others
+// Copyright (C) 2008-2017 Hitachi Vantara and others
 // All Rights Reserved.
 */
 

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2008-2009 Millersoft
-// Copyright (C) 2011-2016 Pentaho and others
+// Copyright (C) 2011-2017 Hitachi Vantara and others
 // All Rights Reserved.
 */
 
