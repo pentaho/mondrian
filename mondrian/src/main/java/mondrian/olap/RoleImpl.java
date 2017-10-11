@@ -492,7 +492,9 @@ public class RoleImpl implements Role {
             if (schemaGrant == Access.ALL) {
                 hierarchyAccess = Access.ALL;
             } else {
-                hierarchyAccess = Access.NONE;
+              // Let's check the parent dimension
+              Access dimAccess = getAccess( hierarchy.getDimension() );
+              hierarchyAccess = dimAccess == Access.ALL ? Access.ALL : Access.NONE;
             }
         } else {
             hierarchyAccess = Access.ALL;
