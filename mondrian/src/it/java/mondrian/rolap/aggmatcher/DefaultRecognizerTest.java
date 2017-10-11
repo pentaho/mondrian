@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2014-2016 Pentaho and others
+// Copyright (C) 2014-2017 Hitachi Vantara and others
 // All Rights Reserved.
  */
 package mondrian.rolap.aggmatcher;

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 SAS Institute, Inc.
-// Copyright (C) 2006-2012 Pentaho and others
+// Copyright (C) 2006-2017 Hitachi Vantara and others
 // All Rights Reserved.
 */
 

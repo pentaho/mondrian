@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2007-2008 Bart Pappyn
-// Copyright (C) 2007-2015 Pentaho
+// Copyright (C) 2007-2017 Hitachi Vantara
 // All Rights Reserved.
 */
 package mondrian.rolap;

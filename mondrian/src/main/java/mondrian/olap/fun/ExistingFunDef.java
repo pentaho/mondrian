@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2014-2016 Pentaho
+// Copyright (c) 2014-2017 Hitachi Vantara
 // All rights reserved.
 */
 package mondrian.olap.fun;

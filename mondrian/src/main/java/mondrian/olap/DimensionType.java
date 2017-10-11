@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 Galt Johnson
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2007 Pentaho and others
+// Copyright (C) 2005-2017 Hitachi Vantara and others
 // All Rights Reserved.
 */
 

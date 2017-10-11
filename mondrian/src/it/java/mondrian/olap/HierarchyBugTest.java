@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho
+// Copyright (C) 2005-2017 Hitachi Vantara
 // All Rights Reserved.
 //
 // remberson, Jan 31, 2006
