@@ -79,6 +79,12 @@
       <groupId>pentaho-kettle</groupId>
       <artifactId>kettle-dbdialog</artifactId>
       <version>${dependency.kettle.revision}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>pentaho-kettle</groupId>
