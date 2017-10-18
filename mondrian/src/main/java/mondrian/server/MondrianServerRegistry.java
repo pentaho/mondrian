@@ -76,6 +76,8 @@ public class MondrianServerRegistry {
         return MondrianServerVersion.VERSION;
     }
 
+    public int getSchemaVersion() { return MondrianServerVersion.SCHEMA_VERSION; }
+
     public MondrianServer.MondrianVersion getVersion() {
         if (logger.isDebugEnabled()){
             logger.debug(" Vendor: " + MondrianServerVersion.VENDOR);
@@ -118,6 +120,9 @@ public class MondrianServerRegistry {
             }
             public int getMajorVersion() {
                 return MondrianServerVersion.MAJOR_VERSION;
+            }
+            public int getSchemaVersion() {
+                return MondrianServerVersion.SCHEMA_VERSION;
             }
         };
     }

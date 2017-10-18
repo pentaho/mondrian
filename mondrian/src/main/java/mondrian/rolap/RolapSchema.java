@@ -388,12 +388,10 @@ public class RolapSchema implements Schema {
         final String schemaMajor =
             versionParts.length > 0 ? versionParts[0] : "";
 
-        MondrianServer.MondrianVersion mondrianVersion =
-            MondrianServer.forId(null).getVersion();
-        final String serverMajor =
-            mondrianVersion.getMajorVersion() + ""; // "3"
+        String serverSchemaVersion =
+            Integer.toString(MondrianServer.forId(null).getSchemaVersion());
 
-        if (serverMajor.compareTo(schemaMajor) < 0) {
+        if (serverSchemaVersion.compareTo(schemaMajor) < 0) {
             String errorMsg =
                 "Schema version '" + schemaVersion
                 + "' is later than schema version "

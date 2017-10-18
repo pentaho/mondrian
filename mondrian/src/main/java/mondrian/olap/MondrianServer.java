@@ -99,6 +99,15 @@ public abstract class MondrianServer {
     public abstract int getId();
 
     /**
+     * Returns the schema version of this MondrianServer.
+     *
+     * @return Server's schema version
+     */
+    public int getSchemaVersion() {
+        return MondrianServerRegistry.INSTANCE.getSchemaVersion();
+    }
+
+    /**
      * Returns the version of this MondrianServer.
      *
      * @return Server's version
