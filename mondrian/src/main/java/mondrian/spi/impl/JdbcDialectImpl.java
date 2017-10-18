@@ -1100,6 +1100,8 @@ public class JdbcDialectImpl implements Dialect {
             return DatabaseProduct.VERTICA;
         } else if (upperProductName.indexOf("VECTORWISE") >= 0) {
             return DatabaseProduct.VECTORWISE;
+        } else if (upperProductName.startsWith("PDI")) {
+            return DatabaseProduct.PDI;
         } else {
             return DatabaseProduct.getDatabaseProduct(upperProductName);
         }
