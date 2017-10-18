@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.spi;
 
@@ -850,7 +850,8 @@ public interface Dialect {
         TERADATA,
         VERTICA,
         VECTORWISE,
-        MARIADB;
+        MARIADB,
+        PDI;
 
         /**
          * Return the root of the family of products this database product
