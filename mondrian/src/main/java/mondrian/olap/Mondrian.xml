@@ -1367,6 +1367,7 @@ Revision is $Id$
                 <li>luciddb</li>
                 <li>vertica</li>
                 <li>neoview</li>
+                <li>pdi</li>
                 </ul>
             </Doc>
         </Attribute>

@@ -850,7 +850,8 @@ public interface Dialect {
         TERADATA,
         VERTICA,
         VECTORWISE,
-        MARIADB;
+        MARIADB,
+        PDI;
 
         /**
          * Return the root of the family of products this database product
