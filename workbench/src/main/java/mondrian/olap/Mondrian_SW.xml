@@ -1393,6 +1393,7 @@
                 <li>luciddb</li>
                 <li>vertica</li>
                 <li>neoview</li>
+                <li>pdi</li>
                 </ul>
             </Doc>
             <Value>generic</Value>
@@ -1415,6 +1416,7 @@
             <Value>greenplum</Value>
             <Value>vectorwise</Value>
             <Value>hive</Value>
+            <Value>pdi</Value>
         </Attribute>
         <CData/>
         <Code><![CDATA[
