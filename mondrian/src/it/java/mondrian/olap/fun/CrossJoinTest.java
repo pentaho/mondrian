@@ -10,12 +10,21 @@ package mondrian.olap.fun;
 
 import mondrian.calc.*;
 import mondrian.calc.impl.ArrayTupleList;
+import mondrian.calc.impl.UnaryTupleList;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
+import mondrian.rolap.RolapCube;
+import mondrian.server.Execution;
+import mondrian.server.Locus;
 import mondrian.test.FoodMartTestCase;
 
 import junit.framework.Assert;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -29,6 +38,13 @@ import java.util.*;
  */
 
 public class CrossJoinTest extends FoodMartTestCase {
+
+    private static final String SELECT_GENDER_MEMBERS =
+        "select Gender.members on 0 from sales";
+
+    private static final String SALES_CUBE = "Sales";
+
+    private Execution excMock = mock(Execution.class);
 
     static List<List<Member>> m3 = Arrays.asList(
         Arrays.<Member>asList(new TestMember("k"), new TestMember("l")),
@@ -77,34 +93,102 @@ public class CrossJoinTest extends FoodMartTestCase {
     ////////////////////////////////////////////////////////////////////////
 
     public void testListTupleListTupleIterCalc() {
-if (! Util.Retrowoven) {
+      if (!Util.Retrowoven) {
+        propSaver.set(propSaver.properties.CheckCancelOrTimeoutInterval, 0);
         CrossJoinFunDef.CrossJoinIterCalc calc =
-            crossJoinFunDef.new CrossJoinIterCalc(
-                getResolvedFunCall(), null);
+            crossJoinFunDef.new CrossJoinIterCalc(getResolvedFunCall(), null);
 
-        doTupleTupleIterTest(calc);
-}
+        doTupleTupleIterTest(calc, excMock);
+      }
     }
 
-    protected void doTupleTupleIterTest(
-        CrossJoinFunDef.CrossJoinIterCalc calc)
+    private void doTupleTupleIterTest(
+        CrossJoinFunDef.CrossJoinIterCalc calc, Execution execution)
     {
-        TupleList l4 = makeListTuple(m4);
-        String s4 = toString(l4);
-        String e4 = "{[U, V], [W, X], [Y, Z]}";
-        Assert.assertEquals(e4, s4);
+      TupleList l4 = makeListTuple(m4);
+      String s4 = toString(l4);
+      String e4 = "{[U, V], [W, X], [Y, Z]}";
+      Assert.assertEquals(e4, s4);
 
-        TupleList l3 = makeListTuple(m3);
-        String s3 = toString(l3);
-        String e3 = "{[k, l], [m, n]}";
-        Assert.assertEquals(e3, s3);
+      TupleList l3 = makeListTuple(m3);
+      String s3 = toString(l3);
+      String e3 = "{[k, l], [m, n]}";
+      Assert.assertEquals(e3, s3);
 
-        TupleIterable iterable = calc.makeIterable(l4, l3);
-        String s = toString(iterable);
-        String e =
-            "{[U, V, k, l], [U, V, m, n], [W, X, k, l], "
-            + "[W, X, m, n], [Y, Z, k, l], [Y, Z, m, n]}";
-        Assert.assertEquals(e, s);
+      String s = Locus.execute(
+          execution, "CrossJoinTest", new Locus.Action<String>()
+      {
+        public String execute() {
+          TupleIterable iterable = calc.makeIterable(l4, l3);
+          return CrossJoinTest.this.toString(iterable);
+        }
+      });
+      String e =
+          "{[U, V, k, l], [U, V, m, n], [W, X, k, l], "
+          + "[W, X, m, n], [Y, Z, k, l], [Y, Z, m, n]}";
+      Assert.assertEquals(e, s);
+    }
+
+    // The test to verify that cancellation/timeout is checked
+    // in CrossJoinFunDef$CrossJoinIterCalc$1$1.forward()
+    public void testCrossJoinIterCalc_IterationCancellationOnForward() {
+      propSaver.set(propSaver.properties.CheckCancelOrTimeoutInterval, 1);
+      // Get product members as TupleList
+      RolapCube salesCube =
+          (RolapCube) cubeByName(getTestContext().getConnection(), SALES_CUBE);
+      SchemaReader salesCubeSchemaReader =
+          salesCube.getSchemaReader(getTestContext().getConnection().getRole())
+          .withLocus();
+      TupleList productMembers =
+          productMembersPotScrubbersPotsAndPans(salesCubeSchemaReader);
+      // Get genders members as TupleList
+      Result genders = executeQuery(SELECT_GENDER_MEMBERS);
+      TupleList genderMembers = getGenderMembers(genders);
+
+      // Test execution to track cancellation/timeout calls
+      Execution execution =
+          spy(new Execution(genders.getQuery().getStatement(), 0));
+      // check no execution of checkCancelOrTimeout has been yet
+      verify(execution, times(0)).checkCancelOrTimeout();
+      Integer crossJoinIterCalc =
+          crossJoinIterCalcIterate(productMembers, genderMembers, execution);
+
+      // checkCancelOrTimeout should be called once for the left tuple
+      //from CrossJoinIterCalc$1$1.forward() since phase
+      // interval is 1
+      verify(execution, times(productMembers.size())).checkCancelOrTimeout();
+      assertEquals(
+          productMembers.size() * genderMembers.size(),
+          crossJoinIterCalc.intValue());
+    }
+
+    private static TupleList getGenderMembers(Result genders) {
+      TupleList genderMembers = new UnaryTupleList();
+      for (Position pos : genders.getAxes()[0].getPositions()) {
+        genderMembers.add(pos);
+      }
+      return genderMembers;
+    }
+
+    private Integer crossJoinIterCalcIterate(
+        final TupleList list1, final TupleList list2,
+        final Execution execution)
+    {
+      return Locus.execute(
+          execution, "CrossJoinTest", new Locus.Action<Integer>() {
+        public Integer execute() {
+          TupleIterable iterable =
+              crossJoinFunDef.new CrossJoinIterCalc(
+                  getResolvedFunCall(), null).makeIterable(list1, list2);
+          TupleCursor tupleCursor = iterable.tupleCursor();
+          // total count of all iterations
+          int counter = 0;
+          while (tupleCursor.forward()) {
+            counter++;
+          }
+          return Integer.valueOf(counter);
+        }
+      });
     }
 
     ////////////////////////////////////////////////////////////////////////
