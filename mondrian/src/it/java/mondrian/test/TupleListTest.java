@@ -245,7 +245,7 @@ public class TupleListTest extends FoodMartTestCase {
         final boolean fail = true;
         Cube salesCube = schema.lookupCube("Sales", fail);
         final SchemaReader schemaReader =
-            salesCube.getSchemaReader(null); // unrestricted
+            salesCube.getSchemaReader(null).withLocus(); // unrestricted
         return schemaReader.getMemberByUniqueName(
             Util.parseIdentifier(memberName), true);
     }

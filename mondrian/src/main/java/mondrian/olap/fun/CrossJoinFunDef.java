@@ -233,11 +233,15 @@ public class CrossJoinFunDef extends FunDefBase {
                             TupleCollections.emptyList(1).tupleCursor();
                         final Member[] members = new Member[arity];
 
+                        long currentIteration = 0;
+                        Execution execution = Locus.peek().execution;
                         public boolean forward() {
                             if (i2.forward()) {
                                 return true;
                             }
                             while (i1.forward()) {
+                                CancellationChecker.checkCancelOrTimeout(
+                                    currentIteration++, execution);
                                 i2 = it2.tupleCursor();
                                 if (i2.forward()) {
                                     return true;
