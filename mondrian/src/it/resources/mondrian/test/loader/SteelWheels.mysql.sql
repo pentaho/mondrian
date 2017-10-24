@@ -3492,7 +3492,7 @@ CREATE TABLE `orderfact` (
   `REQUIREDDATE` timestamp NOT NULL default '0000-00-00 00:00:00',
   `SHIPPEDDATE` timestamp NOT NULL default '0000-00-00 00:00:00',
   `STATUS` varchar(15) collate latin1_general_cs default NULL,
-  `COMMENTS` mediumtext collate latin1_general_cs,
+  `COMMENTS` varchar(1024) collate latin1_general_cs,
   `CUSTOMERNUMBER` int(11) default NULL,
   `TIME_ID` varchar(10) collate latin1_general_cs default NULL,
   `QTR_ID` bigint(20) default NULL,
@@ -6526,7 +6526,7 @@ CREATE TABLE `orders` (
   `REQUIREDDATE` timestamp NOT NULL default '0000-00-00 00:00:00',
   `SHIPPEDDATE` timestamp NOT NULL default '0000-00-00 00:00:00',
   `STATUS` varchar(15) collate latin1_general_cs NOT NULL default '',
-  `COMMENTS` mediumtext collate latin1_general_cs,
+  `COMMENTS` varchar(1024) collate latin1_general_cs,
   `CUSTOMERNUMBER` int(11) NOT NULL default '0',
   PRIMARY KEY  (`ORDERNUMBER`)
 ) ENGINE=MEMORY DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs;
@@ -7175,7 +7175,7 @@ CREATE TABLE `products` (
   `PRODUCTLINE` varchar(50) collate latin1_general_cs NOT NULL default '',
   `PRODUCTSCALE` varchar(10) collate latin1_general_cs NOT NULL default '',
   `PRODUCTVENDOR` varchar(50) collate latin1_general_cs NOT NULL default '',
-  `PRODUCTDESCRIPTION` mediumtext collate latin1_general_cs NOT NULL,
+  `PRODUCTDESCRIPTION` varchar(1024) collate latin1_general_cs NOT NULL,
   `QUANTITYINSTOCK` smallint(6) NOT NULL default '0',
   `BUYPRICE` decimal(17,0) NOT NULL default '0',
   `MSRP` decimal(17,0) NOT NULL default '0',
