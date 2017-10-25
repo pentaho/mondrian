@@ -1,52 +1,48 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.pentaho</groupId>
     <artifactId>pentaho-ce-jar-parent-pom</artifactId>
-    <version>7.1-SNAPSHOT</version>
+    <version>7.1.0.5-72</version>
   </parent>
-
   <groupId>pentaho</groupId>
   <artifactId>pentaho-mondrian-parent-pom</artifactId>
+  <version>3.14.0.5-72</version>
   <packaging>pom</packaging>
-  <version>3.14-SNAPSHOT</version>
-  
   <name>Pentaho Mondrian Parent POM</name>
   <description>Container pom for mondrian and mondrian workbench</description>
   <url>http://www.pentaho.com</url>
-  
   <properties>
-    <commons-collections.version>3.2.2</commons-collections.version>
-    <commons-dbcp.version>1.2.1</commons-dbcp.version>
-    <commons-lang.version>2.4</commons-lang.version>
-    <commons-logging.version>1.1.1</commons-logging.version>
-    <commons-math.version>1.1</commons-math.version>
-    <commons-pool.version>1.2</commons-pool.version>
-    <commons-vfs2.version>2.1-20150824</commons-vfs2.version>
-    <dom4j.version>1.6.1</dom4j.version>
-    <validation-api.version>1.0.0.GA</validation-api.version>
-    <eigenbase-resgen.version>1.3.1</eigenbase-resgen.version>
     <olap4j.version>1.2.0</olap4j.version>
-    <olap4j-xmla.version>1.2.0</olap4j-xmla.version>
-    <olap4j-xmlaserver.version>1.2.0</olap4j-xmlaserver.version>
-    <olap4j-tck.version>1.0.1.539</olap4j-tck.version>
-    <servlet-api.version>2.4</servlet-api.version>
-    <jsp-api.version>2.0</jsp-api.version>
-    <junit.version>3.8.1</junit.version>
-    <xmlunit.version>1.1</xmlunit.version>
-    <mockito-all.version>1.9.5</mockito-all.version>
-    <maven-bundle-plugin.version>2.3.7</maven-bundle-plugin.version>
-    <commons-io.version>1.4</commons-io.version>
+    <commons-vfs2.version>2.1-20150824</commons-vfs2.version>
     <eigenbase-properties.version>1.1.2</eigenbase-properties.version>
-    <eigenbase-xom.version>1.3.5</eigenbase-xom.version>
-    <xercesImpl.version>2.9.1</xercesImpl.version>
+    <commons-io.version>1.4</commons-io.version>
     <mysql-connector-java.version>5.1.39</mysql-connector-java.version>
+    <olap4j-tck.version>1.0.1.539</olap4j-tck.version>
+    <eigenbase-resgen.version>1.3.1</eigenbase-resgen.version>
+    <junit.version>3.8.1</junit.version>
+    <maven-bundle-plugin.version>2.3.7</maven-bundle-plugin.version>
+    <commons-pool.version>1.2</commons-pool.version>
+    <validation-api.version>1.0.0.GA</validation-api.version>
+    <xercesImpl.version>2.9.1</xercesImpl.version>
+    <commons-collections.version>3.2.2</commons-collections.version>
+    <commons-math.version>1.1</commons-math.version>
+    <olap4j-xmla.version>1.2.0</olap4j-xmla.version>
+    <jsp-api.version>2.0</jsp-api.version>
+    <mockito-all.version>1.9.5</mockito-all.version>
+    <commons-dbcp.version>1.2.1</commons-dbcp.version>
+    <olap4j-xmlaserver.version>1.2.0</olap4j-xmlaserver.version>
+    <dom4j.version>1.6.1</dom4j.version>
     <dependency.postgres.revision>9.3-1102-jdbc4</dependency.postgres.revision>
+    <commons-logging.version>1.1.1</commons-logging.version>
+    <eigenbase-xom.version>1.3.5</eigenbase-xom.version>
+    <servlet-api.version>2.4</servlet-api.version>
+    <commons-lang.version>2.4</commons-lang.version>
+    <xmlunit.version>1.1</xmlunit.version>
   </properties>
-
   <profiles>
-  
     <profile>
       <id>mondrian</id>
       <activation>
@@ -56,7 +52,6 @@
         <module>mondrian</module>
       </modules>
     </profile>
-
     <profile>
       <id>workbench</id>
       <activation>
@@ -66,7 +61,6 @@
         <module>workbench</module>
       </modules>
     </profile>
-
     <profile>
       <id>assemblies</id>
       <activation>
@@ -76,7 +70,5 @@
         <module>assemblies</module>
       </modules>
     </profile>
-
   </profiles>
-
 </project>
