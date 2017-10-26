@@ -4,3 +4,7 @@ mondrian.*properties
 *.ipr
 *.iws
 *.iml
+.project
+.settings
+.classpath
+.idea
