@@ -637,6 +637,36 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Row #2: 10,319\n");
     }
 
+    public void testBugMondrian_2586_RaggedDimMembersShouldBeVisible() {
+      String raggedUser =
+              "<Role name=\"Sales Ragged\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales Ragged\" access=\"all\" />\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>";
+    final TestContext raggedSales = TestContext.instance().create( null, null, null, null, null, raggedUser ).withRole( "Sales Ragged" );
+    //[Geography].[Country]
+    raggedSales.assertQueryReturns(
+        "select {[Measures].[Unit Sales]} ON COLUMNS, {[Geography].[Country].MEMBERS} ON ROWS from [Sales Ragged]",
+        "Axis #0:\n"
+        + "{}\n"
+        + "Axis #1:\n"
+        + "{[Measures].[Unit Sales]}\n"
+        + "Axis #2:\n"
+        + "{[Geography].[Canada]}\n"
+        + "{[Geography].[Israel]}\n"
+        + "{[Geography].[Mexico]}\n"
+        + "{[Geography].[USA]}\n"
+        + "{[Geography].[Vatican]}\n"
+        + "Row #0: \n"
+        + "Row #1: 13,694\n"
+        + "Row #2: \n"
+        + "Row #3: 217,822\n"
+        + "Row #4: 35,257\n");
+    }
+
+
+
     public void testBugMondrian_1201_CacheAwareOfRoleAccessControl() {
         String test_1201_Roles =
             "<Role name=\"Role1\">\n"
