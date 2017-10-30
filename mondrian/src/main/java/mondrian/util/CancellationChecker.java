@@ -23,8 +23,14 @@ public class CancellationChecker {
   public static void checkCancelOrTimeout(
       int currentIteration, Execution execution)
   {
-    int checkCancelOrTimeoutInterval =
-        MondrianProperties.instance().CheckCancelOrTimeoutInterval.get();
+    checkCancelOrTimeout((long) currentIteration, execution);
+  }
+
+  public static void checkCancelOrTimeout(
+      long currentIteration, Execution execution)
+  {
+    int checkCancelOrTimeoutInterval = MondrianProperties.instance()
+        .CheckCancelOrTimeoutInterval.get();
     if (execution != null) {
       synchronized (execution) {
         if (checkCancelOrTimeoutInterval > 0
@@ -32,7 +38,7 @@ public class CancellationChecker {
         {
           execution.checkCancelOrTimeout();
         }
-    }
+      }
     }
   }
 }

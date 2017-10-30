@@ -12,6 +12,7 @@ package mondrian.olap4j;
 import mondrian.calc.TupleList;
 import mondrian.olap.AxisOrdinal;
 import mondrian.rolap.RolapAxis;
+import mondrian.server.Locus;
 
 import org.olap4j.*;
 import org.olap4j.metadata.Member;
@@ -76,7 +77,14 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
             }
 
             public int size() {
-                return axis.getTupleList().size();
+              return Locus.execute(
+                  olap4jCellSet.olap4jStatement.olap4jConnection
+                  .getMondrianConnection2(),
+                  "Getting List<Position>.size", new Locus.Action<Integer>() {
+                public Integer execute() {
+                  return axis.getTupleList().size();
+                }
+              });
             }
         };
     }
