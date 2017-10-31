@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
 */
 package mondrian.spi.impl;
 
@@ -1100,6 +1100,8 @@ public class JdbcDialectImpl implements Dialect {
             return DatabaseProduct.VERTICA;
         } else if (upperProductName.indexOf("VECTORWISE") >= 0) {
             return DatabaseProduct.VECTORWISE;
+        } else if (upperProductName.startsWith("PDI")) {
+            return DatabaseProduct.PDI;
         } else {
             return DatabaseProduct.getDatabaseProduct(upperProductName);
         }
