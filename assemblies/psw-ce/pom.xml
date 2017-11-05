@@ -5,23 +5,23 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-mondrian-assemblies</artifactId>
-    <version>8.0-SNAPSHOT</version>
+    <version>8.0.0.0-28</version>
   </parent>
   <artifactId>psw-ce</artifactId>
-  <version>8.0-SNAPSHOT</version>
+  <version>8.0.0.0-28</version>
   <packaging>pom</packaging>
   <name>Pentaho Schema Workbench - CE</name>
   <description>Mondrian Schema Workbench</description>
   <url>http://mondrian.pentaho.com</url>
   <properties>
     <jlfgr.version>1.0</jlfgr.version>
-    <pentaho-launcher.version>8.0-SNAPSHOT</pentaho-launcher.version>
+    <pentaho-launcher.version>8.0.0.0-28</pentaho-launcher.version>
     <guava.version>17.0</guava.version>
     <dependency.groovy-all.revision>2.4.7</dependency.groovy-all.revision>
-    <dependency.pdi-dataservice-client-plugin.revision>8.0-SNAPSHOT</dependency.pdi-dataservice-client-plugin.revision>
-    <dependency.oss-licenses.revision>8.0-SNAPSHOT</dependency.oss-licenses.revision>
+    <dependency.pdi-dataservice-client-plugin.revision>8.0.0.0-28</dependency.pdi-dataservice-client-plugin.revision>
+    <dependency.oss-licenses.revision>8.0.0.0-28</dependency.oss-licenses.revision>
     <dependency.jersey.revision>1.19.1</dependency.jersey.revision>
-    <dependency.kettle.revision>8.0-SNAPSHOT</dependency.kettle.revision>
+    <dependency.kettle.revision>8.0.0.0-28</dependency.kettle.revision>
   </properties>
   <dependencies>
     <dependency>
