@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2017 Pentaho and others
+// Copyright (C) 2005-2017 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -101,6 +101,12 @@ public class RolapCube extends CubeBase {
         new HashMap<RolapLevel, RolapCubeLevel>();
 
     final BitKey closureColumnBitKey;
+
+    /**
+     * Used for virtual cubes.
+     * Contains a list of all base cubes related to a virtual cube
+     */
+    private List<RolapCube> baseCubes;
 
     /**
      * Private constructor used by both normal cubes and virtual cubes.
@@ -3155,6 +3161,45 @@ public class RolapCube extends CubeBase {
             },
             new Exp[0],
             calc.getType());
+    }
+
+
+
+    /**Returns the list of base cubes associated with this cube
+     * if this one is a virtual cube,
+     * otherwise return just this cube
+     *
+     * @return the list of base cubes
+     */
+    public List<RolapCube> getBaseCubes() {
+      if (baseCubes == null) {
+        baseCubes = findBaseCubes(this);
+      }
+      return baseCubes;
+    }
+
+    /**
+     * Locates all base cubes associated with the virtual cube.
+     */
+    private static List<RolapCube> findBaseCubes(RolapCube cube) {
+      if (!cube.isVirtual()) {
+        return Collections.singletonList(cube);
+      }
+      List<RolapCube> cubesList = new ArrayList<RolapCube>();
+      Set<RolapCube> cubes = new TreeSet<>(new RolapCube.CubeComparator());
+      for (Member member : cube.getMeasures()) {
+        if (member instanceof RolapStoredMeasure) {
+          cubes.add(((RolapStoredMeasure) member).getCube());
+        } else if (member instanceof RolapHierarchy.RolapCalculatedMeasure) {
+          RolapCube baseCube =
+              ((RolapHierarchy.RolapCalculatedMeasure) member).getBaseCube();
+          if (baseCube != null) {
+            cubes.add(baseCube);
+          }
+        }
+      }
+      cubesList.addAll(cubes);
+      return cubesList;
     }
 }
 
