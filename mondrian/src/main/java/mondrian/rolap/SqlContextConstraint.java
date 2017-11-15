@@ -246,17 +246,11 @@ public class SqlContextConstraint
             cacheKey.addAll(list);
         }
 
-        // For virtual cubes, context constraint should be evaluated in the
-        // query's context, because the query might reference different base
-        // cubes.
-        //
-        // Note: we could avoid adding base cubes to the key if the evaluator
-        // contains measure members referenced in the query, rather than
-        // just the default measure for the entire virtual cube. The commented
-        // code in RolapResult() that replaces the default measure seems to
-        // do that.
+        // MONDRIAN-2597
+        //For virtual cube we add all base cubes
+        //associated with this virtual cube to the key
         if (evaluator.getCube().isVirtual()) {
-            cacheKey.addAll(evaluator.getQuery().getBaseCubes());
+            cacheKey.addAll(evaluator.getCube().getBaseCubes());
         }
     }
 
