@@ -1,3 +1,13 @@
+/*
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2001-2005 Julian Hyde
+// Copyright (C) 2005-2017 Hitachi Vantara and others
+// All Rights Reserved.
+*/
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -312,6 +322,37 @@ public class RolapCubeTest extends FoodMartTestCase {
                 "Calculated member name not found: " + calculatedMemberName,
                 expectedCalculatedMemberNames.contains(calculatedMemberName));
         }
+    }
+
+    public void testBasedCubesForVirtualCube() {
+      RolapCube cubeSales =
+          (RolapCube) getConnection().getSchema().lookupCube("Sales", false);
+      RolapCube cubeWarehouse =
+          (RolapCube) getConnection().getSchema().lookupCube(
+              "Warehouse", false);
+      RolapCube cube =
+          (RolapCube) getConnection().getSchema().lookupCube(
+              "Warehouse and Sales", false);
+      assertNotNull(cube);
+      assertNotNull(cubeSales);
+      assertNotNull(cubeWarehouse);
+      assertEquals(true, cube.isVirtual());
+      List<RolapCube> baseCubes = cube.getBaseCubes();
+      assertNotNull(baseCubes);
+      assertEquals(2, baseCubes.size());
+      assertSame(cubeSales, baseCubes.get(0));
+      assertEquals(cubeWarehouse, baseCubes.get(1));
+    }
+
+    public void testBasedCubesForNotVirtualCubeIsThisCube() {
+      RolapCube cubeSales =
+          (RolapCube) getConnection().getSchema().lookupCube("Sales", false);
+      assertNotNull(cubeSales);
+      assertEquals(false, cubeSales.isVirtual());
+      List<RolapCube> baseCubes = cubeSales.getBaseCubes();
+      assertNotNull(baseCubes);
+      assertEquals(1, baseCubes.size());
+      assertSame(cubeSales, baseCubes.get(0));
     }
 
 }
