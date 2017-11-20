@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho
+// Copyright (C) 2005-2017 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -224,11 +224,16 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
             for (RolapStar.Column column
                 : predicate.getConstrainedColumnList())
             {
-                if ( request.includeInSelect( column ) ) {
+              //add to Select clause only columns
+              //that are not yet in Select clause
+              //there is no need to have the same column twice
+                if (request.includeInSelect(column)
+                    && !columnNameSet.contains(column.getName()))
+                {
                     sqlQuery.addSelect(
-                      column.generateExprString(sqlQuery),
-                      column.getInternalType(),
-                      makeAlias(column, columnNames, columnNameSet));
+                        column.generateExprString(sqlQuery),
+                        column.getInternalType(),
+                        makeAlias(column, columnNames, columnNameSet));
                 }
             }
         }
