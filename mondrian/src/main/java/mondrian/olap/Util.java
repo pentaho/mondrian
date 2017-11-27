@@ -41,6 +41,7 @@ import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
@@ -60,6 +61,8 @@ import java.util.regex.Pattern;
 public class Util extends XOMUtil {
 
     public static final String nl = System.getProperty("line.separator");
+
+    public static final String ENCODING = "encoding";
 
     private static final Logger LOGGER = Logger.getLogger(Util.class);
 
@@ -3291,6 +3294,11 @@ public class Util extends XOMUtil {
         }
     }
 
+    public static InputStream readVirtualFile(String url) throws FileSystemException
+    {
+        return readVirtualFile(url, Charset.defaultCharset().name());
+    }
+
     /**
      * Gets content via Apache VFS. File must exist and have content
      *
@@ -3298,7 +3306,7 @@ public class Util extends XOMUtil {
      * @return Apache VFS FileContent for further processing
      * @throws FileSystemException on error
      */
-    public static InputStream readVirtualFile(String url)
+    public static InputStream readVirtualFile(String url, String encoding)
         throws FileSystemException
     {
         // Treat catalogUrl as an Apache VFS (Virtual File System) URL.
@@ -3367,6 +3375,8 @@ public class Util extends XOMUtil {
                 "Cannot get virtual file content: " + url);
         }
 
+        fileContent.setAttribute(ENCODING, encoding);
+
         return fileContent.getInputStream();
     }
 
@@ -3374,9 +3384,16 @@ public class Util extends XOMUtil {
         String catalogUrl)
         throws IOException
     {
-        InputStream in = readVirtualFile(catalogUrl);
+        return readVirtualFileAsString(catalogUrl, Charset.defaultCharset().name());
+    }
+
+    public static String readVirtualFileAsString(
+      String catalogUrl, String encoding)
+      throws IOException
+    {
+        InputStream in = readVirtualFile(catalogUrl, encoding);
         try {
-            return IOUtils.toString(in);
+            return IOUtils.toString(in, encoding);
         } finally {
             IOUtils.closeQuietly(in);
         }
