@@ -553,6 +553,11 @@ System.out.println(buf.toString());
         implements RolapAggregationManager.PinSet
     {
     }
+
+    public SegmentCacheManager getCacheMgr() {
+      return cacheMgr;
+    }
+
 }
 
 // End AggregationManager.java

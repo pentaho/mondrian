@@ -355,6 +355,7 @@ public class Main extends TestSuite {
 
             addTest(suite, RolapCubeHierarchyTest.class);
             addTest(suite, RolapCubeDimensionTest.class);
+            addTest(suite, RolapUtilTest.class);
 
             // Must be the last test.
             addTest(suite, TerminatorTest.class);
