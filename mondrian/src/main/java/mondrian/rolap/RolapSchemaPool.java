@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.lang.ref.*;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -363,7 +364,7 @@ class RolapSchemaPool {
             if (Util.isEmpty(catalogStr)) {
                 // read schema from file
                 try {
-                    catalogStr = Util.readVirtualFileAsString(catalogUrl);
+                    catalogStr = Util.readVirtualFileAsString(catalogUrl, Charset.defaultCharset().name());
                 } catch (IOException e) {
                     throw Util.newError(
                         e,
