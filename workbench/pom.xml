@@ -16,10 +16,10 @@
     <jlfgr.version>1.0</jlfgr.version>
     <pentaho-launcher.version>8.1-SNAPSHOT</pentaho-launcher.version>
     <dependency.groovy-all.revision>2.4.7</dependency.groovy-all.revision>
-    <dependency.pdi-dataservice-client-plugin.revision>8.1-SNAPSHOT</dependency.pdi-dataservice-client-plugin.revision>
-    <dependency.oss-licenses.revision>8.1-SNAPSHOT</dependency.oss-licenses.revision>
+    <pdi-dataservice-client-plugin.version>8.1-SNAPSHOT</pdi-dataservice-client-plugin.version>
+    <oss-licenses.version>8.1-SNAPSHOT</oss-licenses.version>
     <dependency.jersey.revision>1.19.1</dependency.jersey.revision>
-    <dependency.kettle.revision>8.1-SNAPSHOT</dependency.kettle.revision>
+    <pdi.version>8.1-SNAPSHOT</pdi.version>
   </properties>
   <dependencies>
     <dependency>
@@ -69,7 +69,7 @@
     <dependency>
       <groupId>pentaho-kettle</groupId>
       <artifactId>kettle-dbdialog</artifactId>
-      <version>${dependency.kettle.revision}</version>
+      <version>${pdi.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>*</artifactId>
@@ -80,7 +80,7 @@
     <dependency>
       <groupId>pentaho-kettle</groupId>
       <artifactId>kettle-core</artifactId>
-      <version>${dependency.kettle.revision}</version>
+      <version>${pdi.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>*</artifactId>
@@ -91,7 +91,7 @@
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-xul-core</artifactId>
-      <version>${dependency.kettle.revision}</version>
+      <version>${pdi.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>*</artifactId>
@@ -102,7 +102,7 @@
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-xul-swing</artifactId>
-      <version>${dependency.kettle.revision}</version>
+      <version>${pdi.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>*</artifactId>

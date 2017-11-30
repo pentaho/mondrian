@@ -18,10 +18,10 @@
     <pentaho-launcher.version>8.1-SNAPSHOT</pentaho-launcher.version>
     <guava.version>17.0</guava.version>
     <dependency.groovy-all.revision>2.4.7</dependency.groovy-all.revision>
-    <dependency.pdi-dataservice-client-plugin.revision>8.1-SNAPSHOT</dependency.pdi-dataservice-client-plugin.revision>
-    <dependency.oss-licenses.revision>8.1-SNAPSHOT</dependency.oss-licenses.revision>
+    <pdi-dataservice-client-plugin.version>8.1-SNAPSHOT</pdi-dataservice-client-plugin.version>
+    <oss-licenses.version>8.1-SNAPSHOT</oss-licenses.version>
     <dependency.jersey.revision>1.19.1</dependency.jersey.revision>
-    <dependency.kettle.revision>8.1-SNAPSHOT</dependency.kettle.revision>
+    <pdi.version>8.1-SNAPSHOT</pdi.version>
   </properties>
   <dependencies>
     <dependency>
@@ -78,7 +78,7 @@
     <dependency>
       <groupId>pentaho-kettle</groupId>
       <artifactId>kettle-dbdialog</artifactId>
-      <version>${dependency.kettle.revision}</version>
+      <version>${pdi.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>*</artifactId>
@@ -89,7 +89,7 @@
     <dependency>
       <groupId>pentaho-kettle</groupId>
       <artifactId>kettle-core</artifactId>
-      <version>${dependency.kettle.revision}</version>
+      <version>${pdi.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>avalon-framework-api</artifactId>
@@ -156,7 +156,7 @@
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-xul-core</artifactId>
-      <version>${dependency.kettle.revision}</version>
+      <version>${pdi.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>jdom</artifactId>
@@ -171,7 +171,7 @@
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-xul-swing</artifactId>
-      <version>${dependency.kettle.revision}</version>
+      <version>${pdi.version}</version>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
@@ -212,7 +212,7 @@
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pdi-dataservice-client-plugin</artifactId>
-      <version>${dependency.pdi-dataservice-client-plugin.revision}</version>
+      <version>${pdi-dataservice-client-plugin.version}</version>
     </dependency>
     <dependency>
       <groupId>xerces</groupId>
@@ -222,7 +222,7 @@
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>oss-licenses</artifactId>
-      <version>${dependency.oss-licenses.revision}</version>
+      <version>${oss-licenses.version}</version>
       <type>zip</type>
     </dependency>
     <dependency>
