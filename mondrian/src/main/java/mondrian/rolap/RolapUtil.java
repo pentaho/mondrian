@@ -705,6 +705,42 @@ public class RolapUtil {
             }
         }
     }
+
+    /**Generates rolap star key based on the fact
+     * using fact alias and SQl filter data
+     * if this one is present in the fact
+     * @param fact the fact based on which is generated the rolap star key
+     * @return the rolap star key
+     */
+    public static List<String> makeRolapStarKey(
+        final MondrianDef.Relation fact)
+    {
+      List<String> rlStarKey = new ArrayList<String>();
+      MondrianDef.Table table = null;
+      rlStarKey.add(fact.getAlias());
+      if (fact instanceof MondrianDef.Table) {
+        table = (MondrianDef.Table) fact;
+      }
+      // Add SQL filter to the key
+      if (!Util.isNull(table) && !Util.isNull(table.filter)
+          && !Util.isBlank(table.filter.cdata))
+      {
+        rlStarKey.add(table.filter.dialect);
+        rlStarKey.add(table.filter.cdata);
+      }
+      return Collections.unmodifiableList(rlStarKey);
+    }
+
+    /**Generates rolap star key based on the fact table name.
+     * @param factTableName the fact table name
+     * based on which is generated the rolap star key
+     * @return the rolap star key
+     */
+    public static List<String> makeRolapStarKey(String factTableName) {
+      return Collections.unmodifiableList(Arrays.asList(factTableName));
+    }
+
+
 }
 
 // End RolapUtil.java

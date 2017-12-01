@@ -44,6 +44,30 @@ import java.util.Map;
  */
 public class SchemaTest extends FoodMartTestCase {
 
+    private static final String CUBES_AB =
+            "<Cube name=\"CubeA\" defaultMeasure=\"Unit Sales\">\n"
+            + " <Table name=\"sales_fact_1997\" alias=\"TableAlias\">\n"
+            + "   <!-- count=32 -->\n"
+            + "   <SQL dialect=\"mysql\">\n"
+            + "     `TableAlias`.`promotion_id` = 108\n"
+            + "   </SQL>\n"
+            + " </Table>\n"
+            + " <DimensionUsage name=\"Store Type\" source=\"Store Type\" foreignKey=\"store_id\"/>\n"
+            + " <Measure name=\"Customer Count\" column=\"customer_id\" aggregator=\"distinct-count\" formatString=\"#,###\"/>\n"
+            + " <Measure name=\"Fantastic Count for Different Types of Promotion\" column=\"promotion_id\" aggregator=\"count\" formatString=\"Standard\"/>\n"
+            + "</Cube>\n"
+            + "<Cube name=\"CubeB\" defaultMeasure=\"Unit Sales\">\n"
+            + " <Table name=\"sales_fact_1997\" alias=\"TableAlias\">\n"
+            + "   <!-- count=22 -->\n"
+            + "   <SQL dialect=\"mysql\">\n"
+            + "     `TableAlias`.`promotion_id` = 112\n"
+            + "   </SQL>\n"
+            + " </Table>\n"
+            + " <DimensionUsage name=\"Store Type\" source=\"Store Type\" foreignKey=\"store_id\"/>\n"
+            + " <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n"
+            + " <Measure name=\"Fantastic Count for Different Types of Promotion\" column=\"promotion_id\" aggregator=\"count\" formatString=\"Standard\"/>\n"
+            + "</Cube>";
+
     public SchemaTest(String name) {
         super(name);
     }
@@ -4773,6 +4797,29 @@ public class SchemaTest extends FoodMartTestCase {
             + "Row #1: $180,599.76\n"
             + "Row #2: $83,479.14\n");
     }
+
+    /**
+    * Testcase for bug
+    * <a href="http://jira.pentaho.com/browse/MONDRIAN-1073">MONDRIAN-1073,
+    * "Two cubes operating on same fact table gives wrong WHERE clause"</a>.
+    */
+    public void testMondrian1073() throws Exception {
+        final String schema = TestContext.instance()
+                .getSchema(
+                    null, CUBES_AB,
+                    null, null, null, null);
+        final TestContext testContextWithCubeAAndCubeB =
+            TestContext.instance().withSchema(schema).withCube("CubeB");
+
+        testContextWithCubeAAndCubeB.assertQueryReturns(
+            "SELECT [Measures].[Fantastic Count for Different Types of Promotion] ON COLUMNS\n"
+            + "FROM [CubeB]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Fantastic Count for Different Types of Promotion]}\n"
+            + "Row #0: 22\n");
+  }
 
     public void testMultiByteSchemaReadFromFile() throws IOException {
         String rawSchema = TestContext.getRawFoodMartSchema().replace(
