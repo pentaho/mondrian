@@ -5,16 +5,26 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2017 Pentaho
+// Copyright (C) 2005-2018 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
-import mondrian.olap.*;
+import junit.framework.Assert;
+import mondrian.olap.Axis;
+import mondrian.olap.Cell;
+import mondrian.olap.Connection;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Id;
 import mondrian.olap.Level;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.NativeEvaluationUnsupportedException;
+import mondrian.olap.Result;
 import mondrian.rolap.RolapConnection.NonEmptyResult;
-import mondrian.rolap.RolapNative.*;
-import mondrian.rolap.cache.HardSmartCache;
+import mondrian.rolap.RolapNative.Listener;
+import mondrian.rolap.RolapNative.NativeEvent;
+import mondrian.rolap.RolapNative.TupleEvent;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.spi.Dialect;
@@ -22,17 +32,16 @@ import mondrian.spi.Dialect.DatabaseProduct;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
 import mondrian.util.Bug;
-import mondrian.util.Pair;
-
-import junit.framework.Assert;
-
-import org.apache.log4j.*;
+import org.apache.log4j.Appender;
+import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
-
 import org.eigenbase.util.property.BooleanProperty;
 import org.eigenbase.util.property.StringProperty;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Tests for NON EMPTY Optimization, includes SqlConstraint type hierarchy and
@@ -6512,6 +6521,54 @@ public class NonEmptyTest extends BatchTestCase {
                         + "{[Measures].[one]}\n"
                         + "Row #0: 1\n"
                         + "Row #0: 1\n");
+    }
+
+    public void testCalcMeasureInVirtualCubeWithoutBaseComponents() {
+        // http://jira.pentaho.com/browse/ANALYZER-3630
+        propSaver.set( MondrianProperties.instance().EnableNativeNonEmpty, true );
+        final TestContext context =
+                TestContext.instance().withSchema(
+                        "<Schema name=\"FoodMart\">"
+                                + "  <Dimension name=\"Store\">"
+                                + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">"
+                                + "      <Table name=\"store\" />"
+                                + "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\" />"
+                                + "      <Level name=\"Store State\" column=\"store_state\" uniqueMembers=\"true\" />"
+                                + "    </Hierarchy>"
+                                + "  </Dimension>"
+                                + "  <Dimension name=\"Time\" type=\"TimeDimension\">\n"
+                                + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
+                                + "      <Table name=\"time_by_day\"/>\n"
+                                + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+                                + "          levelType=\"TimeYears\"/>\n"
+                                + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
+                                + "          levelType=\"TimeQuarters\"/>\n"
+                                + "    </Hierarchy>\n"
+                                + "    </Dimension>"
+                                + "  <Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">"
+                                + "    <Table name=\"sales_fact_1997\" />"
+                                + "    <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\" />"
+                                + "    <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\" />"
+                                + "    <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\" />"
+                                + "    <CalculatedMember name=\"dummyMeasure\" dimension=\"Measures\">"
+                                + "      <Formula>[Measures].[Unit Sales]</Formula>"
+                                + "    </CalculatedMember>"
+                                + "    <CalculatedMember name=\"dummyMeasure2\" dimension=\"Measures\">"
+                                + "      <Formula>[Measures].[dummyMeasure]</Formula>"
+                                + "    </CalculatedMember>"
+                                + "  </Cube>"
+                                + "  <VirtualCube defaultMeasure=\"dummyMeasure\" name=\"virtual\">"
+                                + "    <VirtualCubeDimension name=\"Store\" />"
+                                + "    <VirtualCubeDimension name=\"Time\" />"
+                                + "    <VirtualCubeMeasure name=\"[Measures].[dummyMeasure2]\" cubeName=\"Sales\" />"
+                                + "  </VirtualCube>"
+                                + "</Schema>" );
+        verifySameNativeAndNot(
+                "select "
+                        + " [Measures].[dummyMeasure2] on COLUMNS, "
+                        + " NON EMPTY CrossJoin([Store].[Store State].Members, Time.[Year].members) ON ROWS "
+                        + " from [virtual] ",
+                "", context );
     }
 
 }
