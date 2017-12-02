@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2016 Pentaho
+// Copyright (C) 2005-2017 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -382,6 +382,114 @@ public class NativeEvalVirtualCubeTest extends BatchTestCase {
     // Subsequent query should pull from cache, not rerun gender query.
     assertQuerySqlOrNot(
         tc, mdx, new SqlPattern[]{ mysqlPattern }, true, false, false);
+  }
+
+  /**
+   * Testcase for bug
+   * <a href="http://jira.pentaho.com/browse/MONDRIAN-2597">MONDRIAN-2597,
+   * "readTuples and cardinality queries sent twice to the database
+   * when using Virtual Cube (Not cached)"</a>.
+   */
+  public void testTupleQueryShouldBeCachedForVirtualCube() {
+    propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+    String mySqlMembersQuery =
+            "select\n"
+            + "    *\n"
+            + "from\n"
+            + "    (select\n"
+            + "    `product_class`.`product_family` as `c0`,\n"
+            + "    `product_class`.`product_department` as `c1`,\n"
+            + "    `time_by_day`.`the_year` as `c2`\n"
+            + "from\n"
+            + "    `product` as `product`,\n"
+            + "    `product_class` as `product_class`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+            + "    `time_by_day` as `time_by_day`\n"
+            + "where\n"
+            + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+            + "and\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "group by\n"
+            + "    `product_class`.`product_family`,\n"
+            + "    `product_class`.`product_department`,\n"
+            + "    `time_by_day`.`the_year`\n"
+            + "union\n"
+            + "select\n"
+            + "    `product_class`.`product_family` as `c0`,\n"
+            + "    `product_class`.`product_department` as `c1`,\n"
+            + "    `time_by_day`.`the_year` as `c2`\n"
+            + "from\n"
+            + "    `product` as `product`,\n"
+            + "    `product_class` as `product_class`,\n"
+            + "    `inventory_fact_1997` as `inventory_fact_1997`,\n"
+            + "    `time_by_day` as `time_by_day`\n"
+            + "where\n"
+            + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+            + "and\n"
+            + "    `inventory_fact_1997`.`product_id` = `product`.`product_id`\n"
+            + "and\n"
+            + "    `inventory_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "group by\n"
+            + "    `product_class`.`product_family`,\n"
+            + "    `product_class`.`product_department`,\n"
+            + "    `time_by_day`.`the_year`) as `unionQuery`\n"
+            + "order by\n"
+            + "    ISNULL(1) ASC, 1 ASC,\n"
+            + "    ISNULL(2) ASC, 2 ASC,\n"
+            + "    ISNULL(3) ASC, 3 ASC";
+    TestContext tc = getTestContext().withFreshConnection();
+    SqlPattern mysqlPatternMembers =
+      new SqlPattern(
+          Dialect.DatabaseProduct.MYSQL,
+          mySqlMembersQuery,
+          mySqlMembersQuery);
+    //The MDX with default measure of [Warehouse and Sales] virtual cube:
+    //Store Sales that belongs to the redular [Sale] cube
+    String mdx =
+            "WITH\n"
+            + "SET [*NATIVE_CJ_SET] AS 'NONEMPTYCROSSJOIN([*BASE_MEMBERS__Product_],[*BASE_MEMBERS__Time_])'\n"
+            + "SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],ANCESTOR([Product].CURRENTMEMBER, [Product].[Product Family]).ORDERKEY,BASC,[Product].CURRENTMEMBER.ORDERKEY,BASC,[Time].CURRENTMEMBER.ORDERKEY,BASC)'\n"
+            + "SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+            + "SET [*BASE_MEMBERS__Product_] AS '[Product].[Product Department].MEMBERS'\n"
+            + "SET [*BASE_MEMBERS__Time_] AS '[Time].[Year].MEMBERS'\n"
+            + "SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Product].CURRENTMEMBER,[Time].CURRENTMEMBER)})'\n"
+            + "MEMBER [Measures].[*FORMATTED_MEASURE_0] AS '[Measures].[Store Sales]', FORMAT_STRING = '#,###.00', SOLVE_ORDER=500\n"
+            + "SELECT\n"
+            + "[*BASE_MEMBERS__Measures_] ON COLUMNS\n"
+            + ", NON EMPTY\n"
+            + "[*SORTED_ROW_AXIS] ON ROWS\n"
+            + "FROM [Warehouse and Sales]";
+    // first MDX with a fresh query should result in product_family,
+    //product_department and the_year query.
+    assertQuerySqlOrNot(
+        tc, mdx, new SqlPattern[]{ mysqlPatternMembers }, false, false, false);
+    // rerun the MDX, since the previous assert aborts when it hits the SQL.
+    tc.executeQuery(mdx);
+    // Subsequent query should pull from cache, not rerun product_family,
+    //product_department and the_year query.
+    assertQuerySqlOrNot(
+        tc, mdx, new SqlPattern[]{ mysqlPatternMembers }, true, false, false);
+    //The MDX with added Warehouse Sales measure
+    //that belongs to the regulr [Warehouse].
+    String mdx1 =
+            "WITH\n"
+            + "SET [*NATIVE_CJ_SET] AS 'NONEMPTYCROSSJOIN([*BASE_MEMBERS__Product_],[*BASE_MEMBERS__Time_])'\n"
+            + "SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],ANCESTOR([Product].CURRENTMEMBER, [Product].[Product Family]).ORDERKEY,BASC,[Product].CURRENTMEMBER.ORDERKEY,BASC,[Time].CURRENTMEMBER.ORDERKEY,BASC)'\n"
+            + "SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[Warehouse Sales]}'\n"
+            + "SET [*BASE_MEMBERS__Product_] AS '[Product].[Product Department].MEMBERS'\n"
+            + "SET [*BASE_MEMBERS__Time_] AS '[Time].[Year].MEMBERS'\n"
+            + "SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Product].CURRENTMEMBER,[Time].CURRENTMEMBER)})'\n"
+            + "SELECT\n"
+            + "[*BASE_MEMBERS__Measures_] ON COLUMNS\n"
+            + ", NON EMPTY\n"
+            + "[*SORTED_ROW_AXIS] ON ROWS\n"
+            + "FROM [Warehouse and Sales]";
+    // Subsequent query should pull from cache, not rerun product_family,
+    //product_department and the_year query.
+    assertQuerySqlOrNot(
+        tc, mdx1, new SqlPattern[]{ mysqlPatternMembers }, true, false, false);
   }
 }
 
