@@ -19,6 +19,9 @@ import mondrian.spi.Dialect;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -1774,19 +1777,22 @@ public class DrillThroughTest extends FoodMartTestCase {
             TestContext.instance().withSchema(SALES_ONLY_WITH_NAME_COLUMN);
         try {
             rs = testContext.executeStatement(
-                    DRILLTHROUGH_QUERY_WITH_CUSTOMER_FULL_NAME);
+                DRILLTHROUGH_QUERY_WITH_CUSTOMER_FULL_NAME);
             assertEquals(
                 5, rs.getMetaData().getColumnCount());
             assertEquals(
-                    "Customer Level Name", rs.getMetaData().getColumnLabel(1));
+                "Customer Level Name", rs.getMetaData().getColumnLabel(1));
             assertEquals(
-                    "Customer Level Name (Key)", rs.getMetaData().getColumnLabel(2));
+                "Customer Level Name (Key)",
+                rs.getMetaData().getColumnLabel(2));
             assertEquals(
-                    "Product Level Name", rs.getMetaData().getColumnLabel(3));
+                "Product Level Name",
+                rs.getMetaData().getColumnLabel(3));
             assertEquals(
-                    "Product Level Name (Key)", rs.getMetaData().getColumnLabel(4));
+                "Product Level Name (Key)",
+                rs.getMetaData().getColumnLabel(4));
             assertEquals(
-                    "Store Sales", rs.getMetaData().getColumnLabel(5));
+                "Store Sales", rs.getMetaData().getColumnLabel(5));
 
             while (rs.next()) {
                 assertEquals(
@@ -1799,15 +1805,15 @@ public class DrillThroughTest extends FoodMartTestCase {
                     "Should be a non-null value for product name",
                     rs.getObject(3));
                 assertNotNull(
-                        "Should be a non-null value for product key",
+                    "Should be a non-null value for product key",
                         rs.getObject(4));
                 assertNotNull(
-                        "Should be a non-null value for store sales",
+                    "Should be a non-null value for store sales",
                         rs.getObject(5));
             }
             rs.last();
             assertEquals(
-                    17, rs.getRow());
+                17, rs.getRow());
         } finally {
             if (rs != null) {
                 rs.close();
@@ -1820,33 +1826,82 @@ public class DrillThroughTest extends FoodMartTestCase {
     {
         ResultSet rs = null;
         final TestContext testContext =
-                TestContext.instance().withSchema(SALES_ONLY_WITHOUT_NAME_COLUMN);
+                TestContext.instance().withSchema(
+                    SALES_ONLY_WITHOUT_NAME_COLUMN);
         try {
             rs = testContext.executeStatement(
-                    DRILLTHROUGH_QUERY_WITH_CUSTOMER_ID);
+                DRILLTHROUGH_QUERY_WITH_CUSTOMER_ID);
             assertEquals(
-                    3, rs.getMetaData().getColumnCount());
+                3, rs.getMetaData().getColumnCount());
             assertEquals(
-                    "Customer Level Name", rs.getMetaData().getColumnLabel(1));
+                "Customer Level Name", rs.getMetaData().getColumnLabel(1));
             assertEquals(
-                    "Product Level Name", rs.getMetaData().getColumnLabel(2));
+                "Product Level Name", rs.getMetaData().getColumnLabel(2));
             assertEquals(
-                    "Store Sales", rs.getMetaData().getColumnLabel(3));
+                "Store Sales", rs.getMetaData().getColumnLabel(3));
 
             while (rs.next()) {
                 assertEquals(
-                        "Each customer key should be 3",
+                    "Each customer key should be 3",
                         3, rs.getObject(1));
                 assertNotNull(
-                        "Should be a non-null value for product key",
+                    "Should be a non-null value for product key",
                         rs.getObject(2));
                 assertNotNull(
-                        "Should be a non-null value for store sales",
+                    "Should be a non-null value for store sales",
                         rs.getObject(3));
             }
             rs.last();
             assertEquals(
-                    17, rs.getRow());
+                17, rs.getRow());
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+        }
+    }
+    /**
+    * Testcase for bug
+    * <a href="http://jira.pentaho.com/browse/MONDRIAN-2551">MONDRIAN-2551,
+    * "Drill-through filtering not working properly
+    * when level is used as filter"</a>.
+    */
+    public void testMultipleFilterByLevel_NoDuplicatedColumnsInResult()
+        throws SQLException
+    {
+        String[] expectedColumnValues = {"Gourmet Supermarket",
+          "Small Grocery"};
+        Set<String> expectedValues =
+            new HashSet<String>(Arrays.asList(expectedColumnValues));
+        int expectedRowCount = 10859;
+        ResultSet rs = null;
+        try {
+            rs = getTestContext().executeStatement(
+                "DRILLTHROUGH \n"
+                + "WITH\n"
+                + "SET [*NATIVE_CJ_SET_WITH_SLICER] AS 'FILTER({[Store Type].[All Store Types].[Gourmet Supermarket],[Store Type].[All Store Types].[Small Grocery]}, NOT ISEMPTY ([Measures].[Store Sales]))'\n"
+                + "SET [*NATIVE_CJ_SET] AS '[*NATIVE_CJ_SET_WITH_SLICER]'\n"
+                + "SET [*BASE_MEMBERS__Store Type_] AS '{[Store Type].[All Store Types].[Gourmet Supermarket],[Store Type].[All Store Types].[Small Grocery]}'\n"
+                + "SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+                + "SET [*CJ_SLICER_AXIS] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Store Type].CURRENTMEMBER)})'\n"
+                + "MEMBER [Measures].[*FORMATTED_MEASURE_0] AS '[Measures].[Store Sales]', FORMAT_STRING = '#,###.00', SOLVE_ORDER=500\n"
+                + "SELECT\n"
+                + "FILTER([*BASE_MEMBERS__Measures_],([Measures].CurrentMember Is [Measures].[*FORMATTED_MEASURE_0])) ON COLUMNS\n"
+                + "FROM [Sales]\n"
+                + "WHERE ([*CJ_SLICER_AXIS]) RETURN [Store Type].[Store Type]");
+            assertEquals(
+                "This DRILLTHROUGH Result should contain only one column - ",
+                1, rs.getMetaData().getColumnCount());
+            assertEquals(
+                "Store Type", rs.getMetaData().getColumnLabel(1));
+            while (rs.next()) {
+                assertTrue(
+                    "Store Type in results should be either Small Grocery or Gourmet Supermarket",
+                    expectedValues.contains(rs.getObject(1)));
+            }
+            rs.last();
+            assertEquals(
+                expectedRowCount, rs.getRow());
         } finally {
             if (rs != null) {
                 rs.close();
