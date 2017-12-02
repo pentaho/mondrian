@@ -224,11 +224,16 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
             for (RolapStar.Column column
                 : predicate.getConstrainedColumnList())
             {
-                if ( request.includeInSelect( column ) ) {
+              //add to Select clause only columns
+              //that are not yet in Select clause
+              //there is no need to have the same column twice
+                if (request.includeInSelect(column)
+                    && !columnNameSet.contains(column.getName()))
+                {
                     sqlQuery.addSelect(
-                      column.generateExprString(sqlQuery),
-                      column.getInternalType(),
-                      makeAlias(column, columnNames, columnNameSet));
+                        column.generateExprString(sqlQuery),
+                        column.getInternalType(),
+                        makeAlias(column, columnNames, columnNameSet));
                 }
             }
         }
