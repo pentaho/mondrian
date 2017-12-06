@@ -218,6 +218,34 @@ class RolapDimension extends DimensionBase {
     public Map<String, Annotation> getAnnotationMap() {
         return annotationMap;
     }
+
+    @Override
+    protected int computeHashCode() {
+      if (isMeasuresDimension()) {
+        return System.identityHashCode(this);
+      }
+      return super.computeHashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+    if (!(o instanceof RolapDimension)) {
+        return false;
+    }
+      if (isMeasuresDimension()) {
+        RolapDimension that = (RolapDimension) o;
+        return this == that;
+      }
+      return super.equals(o);
+    }
+
+    private boolean isMeasuresDimension() {
+      return this.getDimensionType() == DimensionType.MeasuresDimension;
+    }
+
 }
 
 // End RolapDimension.java
