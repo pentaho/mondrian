@@ -19,6 +19,7 @@ import mondrian.olap.fun.extra.NthQuartileFunDef;
 import mondrian.olap.fun.vba.Excel;
 import mondrian.olap.fun.vba.Vba;
 import mondrian.olap.type.LevelType;
+import mondrian.olap.type.NullType;
 import mondrian.olap.type.Type;
 
 import java.io.PrintWriter;
@@ -2041,6 +2042,10 @@ public class BuiltinFunTable extends FunTableImpl {
                     compiler.getEvaluator().getConnectionLocale();
                 final StringCalc stringCalc =
                     compiler.compileString(call.getArg(0));
+                if (stringCalc.getType().getClass().equals(NullType.class)) {
+                    throw newEvalException(this,
+                        "No method with the signature UCase(NULL) matches known functions.");
+                }
                 return new AbstractStringCalc(call, new Calc[]{stringCalc}) {
                     public String evaluateString(Evaluator evaluator) {
                         String value = stringCalc.evaluateString(evaluator);

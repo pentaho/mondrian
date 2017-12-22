@@ -11587,6 +11587,35 @@ Intel platforms):
             + "Row #0: 2,237\n");
     }
 
+    public void testUCaseWithNullString() {
+        assertQueryReturns(
+            "select filter([Store].MEMBERS, "
+                + " UCase(\"NULL\") = \"\" "
+                + "And [Store].CURRENTMEMBER.Name = \"Bellingham\") "
+                + "on 0 from sales",
+            "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n");
+    }
+
+    public void testUCaseWithNull() {
+        try {
+            getTestContext().executeQuery(
+                "select filter([Store].MEMBERS, "
+                    + " UCase(NULL) = \"\" "
+                    + "And [Store].CURRENTMEMBER.Name = \"Bellingham\") "
+                    + "on 0 from sales"
+            );
+        } catch (MondrianException e) {
+            Throwable mondrianEvaluationException = e.getCause();
+            assertEquals(mondrianEvaluationException.getClass(), (MondrianEvaluationException.class));
+            assertEquals(mondrianEvaluationException.getMessage(),
+                "No method with the signature UCase(NULL) matches known functions.");
+            return;
+        }
+        fail("MondrianEvaluationException is expected here");
+    }
+
     public void testInStrFunctionWithValidArguments() {
         assertQueryReturns(
             "select filter([Store].MEMBERS,InStr(\"Bellingham\", \"ingha\")=5 "
