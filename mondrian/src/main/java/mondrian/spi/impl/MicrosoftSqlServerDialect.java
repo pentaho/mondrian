@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2018 Pentaho Corporation..  All rights reserved.
 */
 
 package mondrian.spi.impl;
@@ -16,6 +16,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
+
+import mondrian.olap.Util;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the Microsoft SQL Server
@@ -59,6 +61,22 @@ public class MicrosoftSqlServerDialect extends JdbcDialectImpl {
 
     public boolean requiresUnionOrderByOrdinal() {
         return false;
+    }
+
+    @Override
+    public void quoteBooleanLiteral(StringBuilder buf, String value) {
+      //avoid padding origin values with blanks to n for char(n),
+      //when ANSI_PADDING=ON
+      String boolLiteral = value.trim();
+      if (!boolLiteral.equalsIgnoreCase("TRUE")
+          && !(boolLiteral.equalsIgnoreCase("FALSE"))
+          && !(boolLiteral.equalsIgnoreCase("1"))
+          && !(boolLiteral.equalsIgnoreCase("0")))
+      {
+        throw new NumberFormatException(
+            "Illegal BOOLEAN literal:  " + value);
+      }
+      buf.append(Util.singleQuoteString(value));
     }
 
     protected void quoteDateLiteral(StringBuilder buf, String value, Date date)
