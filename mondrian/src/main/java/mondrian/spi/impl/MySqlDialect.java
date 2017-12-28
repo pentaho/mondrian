@@ -224,6 +224,19 @@ public class MySqlDialect extends JdbcDialectImpl {
         buf.append('\'');
     }
 
+
+
+    @Override
+    public void quoteBooleanLiteral(StringBuilder buf, String value) {
+      if (!value.equalsIgnoreCase("1")
+          && !(value.equalsIgnoreCase("0")))
+      {
+        super.quoteBooleanLiteral(buf, value);
+      } else {
+        buf.append(value);
+      }
+    }
+
     @Override
     public String generateInline(
         List<String> columnNames,
