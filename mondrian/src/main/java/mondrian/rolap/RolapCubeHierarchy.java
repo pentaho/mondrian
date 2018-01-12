@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2017 Pentaho and others
+// Copyright (C) 2005-2018 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -772,9 +772,9 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                         newlist.add(getAllMember());
                     } else {
                         RolapCubeMember cubeMember =
-                            lookupCubeMemberWithParent(
-                                member,
-                                cubeLevel);
+                                lookupCubeMemberWithParent(
+                                        member,
+                                        cubeLevel);
                         newlist.add(cubeMember);
                     }
                 }
@@ -839,14 +839,29 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                     cubeMember = (RolapCubeMember)
                         rolapCubeCacheHelper.getMember(key, false);
                     if (cubeMember == null) {
-                        cubeMember = new RolapCubeMember(parent, member, level);
+                        cubeMember =
+                            new RolapCubeMember(parent, member, level);
                         rolapCubeCacheHelper.putMember(key, cubeMember);
+                    } else {
+                      if (level.hasOrdinalExp()) {
+                        fixOrdinal(cubeMember, member.getOrdinal());
+                      }
                     }
                 } else {
                     cubeMember = new RolapCubeMember(parent, member, level);
                 }
                 return cubeMember;
             }
+        }
+
+        private void fixOrdinal(
+            RolapCubeMember rlCubeMemberToFix,
+            int ordinalToSet)
+        {
+          RolapMember rolapMember = rlCubeMemberToFix.getRolapMember();
+          if (rolapMember instanceof RolapMemberBase) {
+            ((RolapMemberBase) rolapMember).setOrdinal(ordinalToSet, true);
+          }
         }
 
         public int getMemberCount() {

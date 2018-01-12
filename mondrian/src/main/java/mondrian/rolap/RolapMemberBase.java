@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2017 Pentaho and others
+// Copyright (C) 2005-2018 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -513,9 +513,17 @@ public class RolapMemberBase
 
     void setOrdinal(int ordinal) {
         if (this.ordinal == -1) {
-            this.ordinal = ordinal;
+          this.ordinal = ordinal;
         }
     }
+
+    protected void setOrdinal(int ordinal, boolean forced) {
+      if (forced) {
+          this.ordinal = ordinal;
+      } else {
+        setOrdinal(ordinal);
+      }
+  }
 
     void setOrderKey(Comparable orderKey) {
         this.orderKey = orderKey;
