@@ -4,11 +4,12 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2018 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.util;
 
+import junit.framework.Assert;
 import mondrian.olap.Util;
 import mondrian.test.I18nTest;
 
@@ -878,6 +879,16 @@ public class FormatTest extends TestCase {
                 string,
                 "-Infinity");
         }
+    }
+
+    // PDI-16761
+    public void testBigDecimalJavaFormat() {
+        BigDecimal bd = new BigDecimal("123456789123456789123456789");
+        Format.BasicFormat format = new Format.JavaFormat(Locale.FRENCH);
+        StringBuilder result = new StringBuilder();
+        format.format(bd, result);
+        // It should run without losing precision
+        Assert.assertEquals("123 456 789 123 456 789 123 456 789", result.toString());
     }
 }
 

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2000-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2018 Hitachi Vantara and others
 // All Rights Reserved.
 //
 // jhyde, 2 November, 2000
@@ -240,6 +240,10 @@ public class Format {
             Calendar calendar = Calendar.getInstance(); // todo: use locale
             calendar.setTime(date);
             format(calendar, buf);
+        }
+
+        void format(BigDecimal bigDecimal, StringBuilder buf) {
+            format(bigDecimal.doubleValue(), buf);
         }
 
         void format(Calendar calendar, StringBuilder buf) {
@@ -605,6 +609,10 @@ public class Format {
         void format(double d, StringBuilder buf) {
             // NOTE (jhyde, 2006/12/1): We'd use
             // NumberFormat(double,StringBuilder,FieldPosition) if it existed.
+            buf.append(numberFormat.format(d));
+        }
+
+        void format(BigDecimal d, StringBuilder buf) {
             buf.append(numberFormat.format(d));
         }
 
@@ -2871,7 +2879,7 @@ public class Format {
                 format.format((Byte) o, buf);
             } else if (o instanceof BigDecimal) {
                 format.format(
-                    ((BigDecimal) o).doubleValue(), buf);
+                    (BigDecimal) o, buf); // PDI-16761 if we cast it to double type we lose precision
             } else if (o instanceof BigInteger) {
                 format.format(
                     ((BigInteger) o).longValue(), buf);
