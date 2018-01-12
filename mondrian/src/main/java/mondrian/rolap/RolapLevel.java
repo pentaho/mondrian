@@ -270,6 +270,10 @@ public class RolapLevel extends LevelBase {
         return captionExp != null;
     }
 
+    public boolean hasOrdinalExp() {
+      return !getOrdinalExp().equals(getKeyExp());
+    }
+
     final int getFlags() {
         return flags;
     }
@@ -654,5 +658,6 @@ public class RolapLevel extends LevelBase {
         }
         return null;
     }
+
 }
 // End RolapLevel.java

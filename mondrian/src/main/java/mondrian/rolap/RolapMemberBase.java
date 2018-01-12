@@ -513,9 +513,17 @@ public class RolapMemberBase
 
     void setOrdinal(int ordinal) {
         if (this.ordinal == -1) {
-            this.ordinal = ordinal;
+          this.ordinal = ordinal;
         }
     }
+
+    protected void setOrdinal(int ordinal, boolean forced) {
+      if (forced) {
+          this.ordinal = ordinal;
+      } else {
+        setOrdinal(ordinal);
+      }
+  }
 
     void setOrderKey(Comparable orderKey) {
         this.orderKey = orderKey;
