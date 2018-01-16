@@ -20,6 +20,7 @@
     <oss-licenses.version>8.1.0.0-SNAPSHOT</oss-licenses.version>
     <dependency.jersey.revision>1.19.1</dependency.jersey.revision>
     <pdi.version>8.1.0.0-SNAPSHOT</pdi.version>
+    <commons-xul.version>8.1.0.0-SNAPSHOT</commons-xul.version>
   </properties>
   <dependencies>
     <dependency>
@@ -89,9 +90,9 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>pentaho</groupId>
-      <artifactId>pentaho-xul-core</artifactId>
-      <version>${pdi.version}</version>
+      <groupId>org.pentaho</groupId>
+      <artifactId>commons-xul-core</artifactId>
+      <version>${commons-xul.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>*</artifactId>
@@ -100,9 +101,9 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>pentaho</groupId>
-      <artifactId>pentaho-xul-swing</artifactId>
-      <version>${pdi.version}</version>
+      <groupId>org.pentaho</groupId>
+      <artifactId>commons-xul-swing</artifactId>
+      <version>${commons-xul.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>*</artifactId>
