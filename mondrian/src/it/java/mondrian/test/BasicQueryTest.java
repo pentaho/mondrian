@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2017 Pentaho
+// Copyright (C) 2005-2018 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -6389,6 +6389,153 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #1: 19,287\n"
             + "Row #2: 30,114\n");
     }
+
+    /**
+     * Tests that members are returned in correct order
+     *  when ordinalColumn is defined for the level
+     *  and members are cached partially already by previous MDX; bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-2608">MONDRIAN-2608</a>.
+     */
+    public void testMONDRIAN2608() {
+      //this issue takes place only for the case when ordinalColumn is defined
+      //and CompareSiblingsByOrderKey=false and ExpandNonNative=true
+      propSaver.set(props.CompareSiblingsByOrderKey, false);
+      propSaver.set(props.ExpandNonNative, true);
+      if (!props.EnableRolapCubeMemberCache.get()) {
+        propSaver.set(props.EnableRolapCubeMemberCache, true);
+      }
+
+      String MDX1 =
+          "WITH MEMBER [Measures].[0] as 0\n"
+          + "SELECT { [Measures].[0] } ON COLUMNS,\n"
+          + "NONEMPTYCROSSJOIN( EXCEPT(\n"
+          + "[Store Type].[Store Type].members, { [Store Type].[Deluxe Supermarket],\n"
+          + "[Store Type].[Gourmet Supermarket], [Store Type].[HeadQuarters] } ),\n"
+          + "[Position].[Position Title].members ) ON ROWS\n"
+          + "FROM [HR]";
+      String MDX2 =
+          "WITH MEMBER [Measures].[0] as 0\n"
+          + "select {[Measures].[0]} ON COLUMNS, \n"
+          + "[Position].[Position Title].Members ON ROWS \n"
+          + "from [HR]";
+
+
+      TestContext testContext = TestContext.instance().createSubstitutingCube(
+          "HR",
+          "<Dimension name=\"Position2608\" foreignKey=\"employee_id\">\n"
+          + " <Hierarchy hasAll=\"true\" allMemberName=\"All Position\"\n"
+          + "        primaryKey=\"employee_id\">\n"
+          + "   <Table name=\"employee\"/>\n"
+          + "   <Level name=\"Management Role\" uniqueMembers=\"true\"\n"
+          + "          column=\"management_role\"/>\n"
+          + "   <Level name=\"Position Title\" uniqueMembers=\"false\"\n"
+          + "          column=\"position_title\" ordinalColumn=\"position_id\"/>\n"
+          + " </Hierarchy>\n"
+          + "</Dimension>");
+      // Use a fresh connection to make sure bad member ordinals haven't
+      // been assigned by previous tests.
+      final TestContext context =
+          testContext.withFreshConnection().withCube("HR");
+      try {
+        //After running of MDX1
+        //members cache will contain items
+        //for [Position].[Position Title].members
+        context.assertQueryReturns(
+            MDX1,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[0]}\n"
+            + "Axis #2:\n"
+            + "{[Store Type].[Mid-Size Grocery], [Position].[Store Full Time Staf].[Store Permanent Checker]}\n"
+            + "{[Store Type].[Mid-Size Grocery], [Position].[Store Full Time Staf].[Store Temporary Checker]}\n"
+            + "{[Store Type].[Mid-Size Grocery], [Position].[Store Full Time Staf].[Store Permanent Stocker]}\n"
+            + "{[Store Type].[Mid-Size Grocery], [Position].[Store Management].[Store Manager]}\n"
+            + "{[Store Type].[Mid-Size Grocery], [Position].[Store Management].[Store Assistant Manager]}\n"
+            + "{[Store Type].[Mid-Size Grocery], [Position].[Store Management].[Store Shift Supervisor]}\n"
+            + "{[Store Type].[Mid-Size Grocery], [Position].[Store Temp Staff].[Store Temporary Stocker]}\n"
+            + "{[Store Type].[Small Grocery], [Position].[Store Full Time Staf].[Store Permanent Checker]}\n"
+            + "{[Store Type].[Small Grocery], [Position].[Store Full Time Staf].[Store Temporary Checker]}\n"
+            + "{[Store Type].[Small Grocery], [Position].[Store Management].[Store Manager]}\n"
+            + "{[Store Type].[Small Grocery], [Position].[Store Management].[Store Assistant Manager]}\n"
+            + "{[Store Type].[Supermarket], [Position].[Store Full Time Staf].[Store Information Systems]}\n"
+            + "{[Store Type].[Supermarket], [Position].[Store Full Time Staf].[Store Permanent Checker]}\n"
+            + "{[Store Type].[Supermarket], [Position].[Store Full Time Staf].[Store Temporary Checker]}\n"
+            + "{[Store Type].[Supermarket], [Position].[Store Full Time Staf].[Store Permanent Stocker]}\n"
+            + "{[Store Type].[Supermarket], [Position].[Store Full Time Staf].[Store Permanent Butcher]}\n"
+            + "{[Store Type].[Supermarket], [Position].[Store Management].[Store Manager]}\n"
+            + "{[Store Type].[Supermarket], [Position].[Store Management].[Store Assistant Manager]}\n"
+            + "{[Store Type].[Supermarket], [Position].[Store Management].[Store Shift Supervisor]}\n"
+            + "{[Store Type].[Supermarket], [Position].[Store Temp Staff].[Store Temporary Stocker]}\n"
+            + "Row #0: 0\n"
+            + "Row #1: 0\n"
+            + "Row #2: 0\n"
+            + "Row #3: 0\n"
+            + "Row #4: 0\n"
+            + "Row #5: 0\n"
+            + "Row #6: 0\n"
+            + "Row #7: 0\n"
+            + "Row #8: 0\n"
+            + "Row #9: 0\n"
+            + "Row #10: 0\n"
+            + "Row #11: 0\n"
+            + "Row #12: 0\n"
+            + "Row #13: 0\n"
+            + "Row #14: 0\n"
+            + "Row #15: 0\n"
+            + "Row #16: 0\n"
+            + "Row #17: 0\n"
+            + "Row #18: 0\n"
+            + "Row #19: 0\n");
+
+      //Run MDX2 - all [Position].[Position Title].Members should be sorted correctly by ordinalColumn inside Management Role groups
+        context.assertQueryReturns(
+            MDX2,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[0]}\n"
+            + "Axis #2:\n"
+            + "{[Position].[Middle Management].[HQ Information Systems]}\n"
+            + "{[Position].[Middle Management].[HQ Marketing]}\n"
+            + "{[Position].[Middle Management].[HQ Human Resources]}\n"
+            + "{[Position].[Middle Management].[HQ Finance and Accounting]}\n"
+            + "{[Position].[Senior Management].[President]}\n"
+            + "{[Position].[Senior Management].[VP Country Manager]}\n"
+            + "{[Position].[Senior Management].[VP Information Systems]}\n"
+            + "{[Position].[Senior Management].[VP Human Resources]}\n"
+            + "{[Position].[Senior Management].[VP Finance]}\n"
+            + "{[Position].[Store Full Time Staf].[Store Information Systems]}\n"
+            + "{[Position].[Store Full Time Staf].[Store Permanent Checker]}\n"
+            + "{[Position].[Store Full Time Staf].[Store Temporary Checker]}\n"
+            + "{[Position].[Store Full Time Staf].[Store Permanent Stocker]}\n"
+            + "{[Position].[Store Full Time Staf].[Store Permanent Butcher]}\n"
+            + "{[Position].[Store Management].[Store Manager]}\n"
+            + "{[Position].[Store Management].[Store Assistant Manager]}\n"
+            + "{[Position].[Store Management].[Store Shift Supervisor]}\n"
+            + "{[Position].[Store Temp Staff].[Store Temporary Stocker]}\n"
+            + "Row #0: 0\n"
+            + "Row #1: 0\n"
+            + "Row #2: 0\n"
+            + "Row #3: 0\n"
+            + "Row #4: 0\n"
+            + "Row #5: 0\n"
+            + "Row #6: 0\n"
+            + "Row #7: 0\n"
+            + "Row #8: 0\n"
+            + "Row #9: 0\n"
+            + "Row #10: 0\n"
+            + "Row #11: 0\n"
+            + "Row #12: 0\n"
+            + "Row #13: 0\n"
+            + "Row #14: 0\n"
+            + "Row #15: 0\n"
+            + "Row #16: 0\n"
+            + "Row #17: 0\n");
+      } finally {
+          context.close();
+      }
+  }
 
     public void testMemberOrdinalCaching() {
         propSaver.set(props.CompareSiblingsByOrderKey, true);
