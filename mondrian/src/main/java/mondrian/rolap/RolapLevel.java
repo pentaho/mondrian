@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2018 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -268,6 +268,10 @@ public class RolapLevel extends LevelBase {
 
     public boolean hasCaptionColumn() {
         return captionExp != null;
+    }
+
+    public boolean hasOrdinalExp() {
+      return !getOrdinalExp().equals(getKeyExp());
     }
 
     final int getFlags() {
@@ -654,5 +658,6 @@ public class RolapLevel extends LevelBase {
         }
         return null;
     }
+
 }
 // End RolapLevel.java
