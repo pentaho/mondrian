@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2002-2017 Pentaho and others
+// Copyright (C) 2002-2018 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -222,6 +222,19 @@ public class MySqlDialect extends JdbcDialectImpl {
         String s1 = Util.replace(s0, "\\", "\\\\");
         buf.append(s1);
         buf.append('\'');
+    }
+
+
+
+    @Override
+    public void quoteBooleanLiteral(StringBuilder buf, String value) {
+      if (!value.equalsIgnoreCase("1")
+          && !(value.equalsIgnoreCase("0")))
+      {
+        super.quoteBooleanLiteral(buf, value);
+      } else {
+        buf.append(value);
+      }
     }
 
     @Override

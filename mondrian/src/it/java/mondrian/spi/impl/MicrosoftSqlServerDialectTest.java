@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2015-2018 Pentaho Corporation.
+// Copyright (c) 2015-2018 Hitachi Vantara.
 // All rights reserved.
  */
 package mondrian.spi.impl;
@@ -19,9 +19,11 @@ import java.sql.DatabaseMetaData;
 import com.mysql.jdbc.Statement;
 
 import junit.framework.TestCase;
+import mondrian.olap.Util;
 import mondrian.spi.Dialect;
 
-public class MySqlDialectTest extends TestCase {
+public class MicrosoftSqlServerDialectTest extends TestCase {
+
   private static final String ILLEGAL_BOOLEAN_LITERAL =
       "illegal for this dialect boolean literal";
   private static final String ILLEGAL_BOOLEAN_LITERAL_MESSAGE =
@@ -33,70 +35,43 @@ public class MySqlDialectTest extends TestCase {
   private Connection connection = mock(Connection.class);
   private DatabaseMetaData metaData = mock(DatabaseMetaData.class);
   Statement statmentMock = mock(Statement.class);
-  private MySqlDialect dialect;
+  private MicrosoftSqlServerDialect dialect;
   private StringBuilder buf;
 
   @Override
   protected void setUp() throws Exception {
     when(metaData.getDatabaseProductName()).thenReturn(
-        Dialect.DatabaseProduct.MYSQL.name());
-    when(metaData.getDatabaseProductVersion()).thenReturn("5.0");
+        Dialect.DatabaseProduct.MSSQL.name());
     when(statmentMock.execute(any())).thenReturn(false);
     when(connection.getMetaData()).thenReturn(metaData);
     when(connection.createStatement()).thenReturn(statmentMock);
-    dialect = new MySqlDialect(connection);
+    dialect = new MicrosoftSqlServerDialect(connection);
     buf = new StringBuilder();
-  }
-
-  public void testAllowsRegularExpressionInWhereClause() {
-    assertTrue(dialect.allowsRegularExpressionInWhereClause());
-  }
-
-  public void testGenerateRegularExpression_InvalidRegex() throws Exception {
-    assertNull(
-        "Invalid regex should be ignored",
-        dialect.generateRegularExpression("table.column", "(a"));
-  }
-
-  public void testGenerateRegularExpression_CaseInsensitive()
-      throws Exception {
-    String sql =
-        dialect.generateRegularExpression("table.column", "(?i)|(?u).*a.*");
-    assertEquals(
-        "table.column IS NOT NULL AND UPPER(table.column) REGEXP '.*A.*'",
-        sql);
-  }
-
-  public void testGenerateRegularExpression_CaseSensitive()
-      throws Exception {
-    String sql =
-        dialect.generateRegularExpression("table.column", ".*a.*");
-    assertEquals(
-        "table.column IS NOT NULL AND table.column REGEXP '.*a.*'", sql);
   }
 
   public void testQuoteBooleanLiteral_True() throws Exception {
     assertEquals(0, buf.length());
     dialect.quoteBooleanLiteral(buf, BOOLEAN_LITERAL_TRUE);
-    assertEquals(BOOLEAN_LITERAL_TRUE, buf.toString());
+    assertEquals(Util.singleQuoteString(BOOLEAN_LITERAL_TRUE), buf.toString());
   }
 
   public void testQuoteBooleanLiteral_False() throws Exception {
     assertEquals(0, buf.length());
     dialect.quoteBooleanLiteral(buf, BOOLEAN_LITERAL_FALSE);
-    assertEquals(BOOLEAN_LITERAL_FALSE, buf.toString());
+    assertEquals(Util.singleQuoteString(
+        BOOLEAN_LITERAL_FALSE), buf.toString());
   }
 
   public void testQuoteBooleanLiteral_One() throws Exception {
     assertEquals(0, buf.length());
     dialect.quoteBooleanLiteral(buf, BOOLEAN_LITERAL_ONE);
-    assertEquals(BOOLEAN_LITERAL_ONE, buf.toString());
+    assertEquals(Util.singleQuoteString(BOOLEAN_LITERAL_ONE), buf.toString());
   }
 
   public void testQuoteBooleanLiteral_Zero() throws Exception {
     assertEquals(0, buf.length());
     dialect.quoteBooleanLiteral(buf, BOOLEAN_LITERAL_ZERO);
-    assertEquals(BOOLEAN_LITERAL_ZERO, buf.toString());
+    assertEquals(Util.singleQuoteString(BOOLEAN_LITERAL_ZERO), buf.toString());
   }
 
   public void testQuoteBooleanLiteral_TrowsException() throws Exception {
@@ -114,4 +89,4 @@ public class MySqlDialectTest extends TestCase {
   }
 
 }
-// End MySqlDialectTest.java
+// End MicrosoftSqlServerDialectTest.java
