@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2018 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -509,7 +509,7 @@ public class RolapCube extends CubeBase {
                     }
                     found = true;
                     if (cubeMeasure instanceof RolapCalculatedMember) {
-                        // We have a calulated member!  Keep track of which
+                        // We have a calculated member!  Keep track of which
                         // base cube each calculated member is associated
                         // with, so we can resolve the calculated member
                         // relative to its base cube.  We're using a treeMap
@@ -632,13 +632,15 @@ public class RolapCube extends CubeBase {
         // iterate through a calculated member definitions in a virtual cube
         // retrieve calculated member source cube
         // set it appropriate rolap calculated measure
+        Map<String, RolapHierarchy.RolapCalculatedMeasure> calcMeasuresWithBaseCube =
+                new HashMap<>();
         for (RolapCube rolapCube : calculatedMembersMap.keySet()) {
             List<MondrianDef.CalculatedMember> calculatedMembers =
                     calculatedMembersMap.get(rolapCube);
             for (MondrianDef.CalculatedMember calculatedMember
                     : calculatedMembers)
             {
-                List<Member> measures = this.getMeasures();
+                List<Member> measures = rolapCube.getMeasures();
                 for (Member measure : measures) {
                     if (measure instanceof
                             RolapHierarchy.RolapCalculatedMeasure)
@@ -650,6 +652,8 @@ public class RolapCube extends CubeBase {
                                 .name.equals(calculatedMeasure.getKey()))
                         {
                             calculatedMeasure.setBaseCube(rolapCube);
+                            calcMeasuresWithBaseCube.put(calculatedMeasure.getUniqueName(),
+                                    calculatedMeasure);
                         }
                     }
                 }
@@ -710,8 +714,13 @@ public class RolapCube extends CubeBase {
             finalMeasureMembers.add((RolapMember)measure);
         }
         for (Formula formula : calculatedMemberList) {
-            finalMeasureMembers.add(
-                (RolapMember)formula.getMdxMember());
+            final RolapMember calcMeasure = (RolapMember) formula.getMdxMember();
+            if (calcMeasure instanceof RolapHierarchy.RolapCalculatedMeasure
+                    && calcMeasuresWithBaseCube.containsKey(calcMeasure.getUniqueName())) {
+                ((RolapHierarchy.RolapCalculatedMeasure) calcMeasure)
+                        .setBaseCube(calcMeasuresWithBaseCube.get(calcMeasure.getUniqueName()).getBaseCube());
+            }
+            finalMeasureMembers.add(calcMeasure);
         }
         setMeasuresHierarchyMemberReader(
             new CacheMemberReader(
