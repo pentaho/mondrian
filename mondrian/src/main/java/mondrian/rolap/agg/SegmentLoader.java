@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2017 Pentaho and others
+// Copyright (C) 2005-2018 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -26,6 +26,7 @@ import mondrian.util.*;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -798,6 +799,8 @@ public class SegmentLoader {
                     } else if (numeric[i]) {
                         if (o instanceof Double) {
                             // nothing to do
+                        } else if (o instanceof BigDecimal ) {
+                            // nothing to do // PDI-16761 if we cast it to double type we lose precision
                         } else if (o instanceof Number) {
                             o = ((Number) o).doubleValue();
                         } else if (o instanceof byte[]) {
