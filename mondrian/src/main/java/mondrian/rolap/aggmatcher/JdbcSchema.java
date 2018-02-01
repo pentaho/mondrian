@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2018 Hitachi Vantara and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.MondrianDef;
@@ -1076,8 +1075,8 @@ public class JdbcSchema {
                             String name = rs.getString(4);
                             int type = rs.getInt(5);
                             String typeName = rs.getString(6);
-                            int columnSize = rs.getInt(7);
-                            int decimalDigits = rs.getInt(9);
+                            int columnSize = getSafeInt(rs, 7);
+                            int decimalDigits = getSafeInt(rs, 9);
                             int numPrecRadix = rs.getInt(10);
                             int charOctetLength = rs.getInt(16);
                             String isNullable = rs.getString(18);
@@ -1248,6 +1247,22 @@ public class JdbcSchema {
         }
         pw.print(subprefix);
         pw.println("]");
+    }
+
+    /**
+     * Some columns in JDBC can return null on certain primitive type methods.
+     * This is unfortunate, as it forces us to dance around the issue like so.
+     * Will check wasNull(). Returns 0 if the value was null.
+     */
+    private static int getSafeInt(ResultSet rs, int columnIndex) throws SQLException {
+        try {
+            return rs.getInt(9);
+        } catch (Exception e) {
+            if (rs.wasNull()) {
+                return 0;
+            }
+            throw new SQLException(e);
+        }
     }
 
     /**
