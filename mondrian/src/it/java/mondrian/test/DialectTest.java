@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+// Copyright (c) 2002-2018 Hitachi Vantara and others. All rights reserved.
 */
 package mondrian.test;
 
@@ -25,9 +25,6 @@ import java.sql.Connection;
 import java.util.*;
 
 import javax.sql.DataSource;
-
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 /**
  * Unit test which checks that {@link mondrian.spi.Dialect}
@@ -167,6 +164,12 @@ public class DialectTest extends TestCase {
                 databaseMetaData.getDatabaseProductName()
                     .contains("NuoDB"));
             break;
+        case GOOGLEBIGQUERY:
+            assertTrue(dialect instanceof GoogleBigQueryDialect);
+            assertTrue(
+                databaseMetaData.getDatabaseProductName()
+                    .contains("Google BigQuery"));
+            break;
         default:
             // Neither MySQL nor Infobright.
             assertFalse(dialect instanceof MySqlDialect);
@@ -180,7 +183,7 @@ public class DialectTest extends TestCase {
         String sql =
             dialectize(
                 "select count(distinct [customer_id], [product_id])\n"
-                + "from [sales_fact_1997]");
+                + "from [foodmart.sales_fact_1997]");
         if (getDialect().allowsCompoundCountDistinct()) {
             assertQuerySucceeds(sql);
         } else {
@@ -214,7 +217,9 @@ public class DialectTest extends TestCase {
                 // SQL server 2008
                 "Incorrect syntax near ','.",
                 // NuoDB
-                "(?s).*expected closing parenthesis got ,.*"
+                "(?s).*expected closing parenthesis got ,.*",
+                // Google BigQuery
+                "(?s).*No matching signature for aggregate function COUNT for argument types: INT64, INT64.*"
             };
             assertQueryFails(sql, errs);
         }
@@ -223,13 +228,13 @@ public class DialectTest extends TestCase {
     public void testAllowsCountDistinct() {
         String sql1 =
             dialectize(
-                "select count(distinct [customer_id]) from [sales_fact_1997]");
+                "select count(distinct [customer_id]) from [foodmart.sales_fact_1997]");
         // one distinct-count and one nondistinct-agg
         String sql2 =
             dialectize(
                 "select count(distinct [customer_id]),\n"
                 + " sum([time_id])\n"
-                + "from [sales_fact_1997]");
+                + "from [foodmart.sales_fact_1997]");
         if (getDialect().allowsCountDistinct()) {
             assertQuerySucceeds(sql1);
             assertQuerySucceeds(sql2);
@@ -249,14 +254,14 @@ public class DialectTest extends TestCase {
             dialectize(
                 "select count(distinct [customer_id]),\n"
                 + " count(distinct [time_id])\n"
-                + "from [sales_fact_1997]");
+                + "from [foodmart.sales_fact_1997]");
         // multiple distinct-counts with group by and other aggs
         String sql3 =
             dialectize(
                 "select [unit_sales],\n"
                 + " count(distinct [customer_id]),\n"
                 + " count(distinct [product_id])\n"
-                + "from [sales_fact_1997]\n"
+                + "from [foodmart.sales_fact_1997]\n"
                 + "where [time_id] in (371, 372)\n"
                 + "group by [unit_sales]");
         if (getDialect().allowsMultipleCountDistinct()) {
@@ -324,7 +329,7 @@ public class DialectTest extends TestCase {
     public void testAllowsFromQuery() {
         String sql =
             dialectize(
-                "select * from (select * from [sales_fact_1997]) as [x]");
+                "select * from (select * from [foodmart.sales_fact_1997]) as [x]");
         if (getDialect().allowsFromQuery()) {
             assertQuerySucceeds(sql);
         } else {
@@ -341,7 +346,8 @@ public class DialectTest extends TestCase {
         }
 
         String sql =
-            dialectize("select * from (select * from [sales_fact_1997])");
+            dialectize(
+                "select * from (select * from [foodmart.sales_fact_1997])");
         if (getDialect().requiresAliasForFromQuery()) {
             String[] errs = {
                 // mysql
@@ -379,7 +385,7 @@ public class DialectTest extends TestCase {
         String sql =
             dialectize(
                 "SELECT [unit_sales]\n"
-                + "FROM [sales_fact_1997]\n"
+                + "FROM [foodmart.sales_fact_1997]\n"
                 + "ORDER BY [unit_sales] + [store_id]");
         if (getDialect().requiresOrderByAlias()) {
             final String[] errs = {
@@ -401,7 +407,7 @@ public class DialectTest extends TestCase {
             dialectize(
                 "SELECT [unit_sales] as [x],\n"
                 + " [unit_sales] + [store_id] as [y]\n"
-                + "FROM [sales_fact_1997]\n"
+                + "FROM [foodmart.sales_fact_1997]\n"
                 + "ORDER BY [y]");
         if (getDialect().allowsOrderByAlias()) {
             assertQuerySucceeds(sql);
@@ -430,14 +436,14 @@ public class DialectTest extends TestCase {
                     + "    (select\n"
                     + "    [time_by_day].[the_year] as [c0]\n"
                     + "from\n"
-                    + "    [time_by_day] as [time_by_day]\n"
+                    + "    [foodmart.time_by_day] as [time_by_day]\n"
                     + "group by\n"
                     + "    [time_by_day].[the_year]\n"
-                    + "union\n"
+                    + "union all\n"
                     + "select\n"
                     + "    [time_by_day].[the_year] as [c0]\n"
                     + "from\n"
-                    + "    [time_by_day] as [time_by_day]\n"
+                    + "    [foodmart.time_by_day] as [time_by_day]\n"
                     + "group by\n"
                     + "    [time_by_day].[the_year]) as [unionQuery]\n"
                     + "order by\n"
@@ -459,10 +465,10 @@ public class DialectTest extends TestCase {
         String sql =
             dialectize(
                 "SELECT [unit_sales], [store_sales]\n"
-                + "FROM [sales_fact_1997]\n"
+                + "FROM [foodmart.sales_fact_1997]\n"
                 + "UNION ALL\n"
                 + "SELECT [unit_sales], [store_sales]\n"
-                + "FROM [sales_fact_1997]\n"
+                + "FROM [foodmart.sales_fact_1997]\n"
                 + "ORDER BY [unit_sales] + [store_sales]");
 
         if (!getDialect().requiresUnionOrderByExprToBeInSelectClause()) {
@@ -507,7 +513,7 @@ public class DialectTest extends TestCase {
         String sql =
             dialectize(
                 "SELECT sum([unit_sales] + 3) + 8\n"
-                + "FROM [sales_fact_1997]\n"
+                + "FROM [foodmart.sales_fact_1997]\n"
                 + "GROUP BY [unit_sales] + [store_id]");
         if (getDialect().supportsGroupByExpressions()) {
             assertQuerySucceeds(sql);
@@ -574,7 +580,9 @@ public class DialectTest extends TestCase {
                 // impala
                 "(?s).*Encountered: IDENTIFIER.*Expected: DIV, HAVING, LIMIT, ORDER, UNION, COMMA.*",
                 // NuoDB
-                "(?s).*expected end of statement got SETS.*"
+                "(?s).*expected end of statement got SETS.*",
+                // Google BigQuery
+                "(?s).*but got identifier \"SETS\" at \\[6:19\\].*"
             };
             assertQueryFails(sql, errs);
         }
@@ -584,7 +592,7 @@ public class DialectTest extends TestCase {
         String sql =
             dialectize(
                 "SELECT [unit_sales]\n"
-                + "FROM [sales_fact_1997]\n"
+                + "FROM [foodmart.sales_fact_1997]\n"
                 + "WHERE ([unit_sales], [time_id]) IN ((1, 371), (2, 394))");
 
         if (getDialect().supportsMultiValueInExpr()) {
@@ -883,6 +891,16 @@ public class DialectTest extends TestCase {
         checkForceNullCollation(false, false);
     }
 
+    private String dialectizeTableName(String name) {
+        // GBQ needs the schema name, not others.
+        switch (getDialect().getDatabaseProduct()) {
+        case GOOGLEBIGQUERY:
+            return dialect.quoteIdentifier("foodmart") + "." + name;
+        default:
+            return name;
+        }
+    }
+
     /**
      * Checks that the dialect can generate a valid query to sort in a given
      * direction, with NULL values appearing last.
@@ -899,7 +917,7 @@ public class DialectTest extends TestCase {
             "select "
             + dialect.quoteIdentifier("store_manager")
             + " from "
-            + dialect.quoteIdentifier("store")
+            + dialectizeTableName(dialect.quoteIdentifier("store"))
             + " order by "
             + dialect.generateOrderItem(
                 dialect.quoteIdentifier("store_manager"),
@@ -1016,6 +1034,16 @@ public class DialectTest extends TestCase {
         }
         final Dialect.DatabaseProduct databaseProduct =
             dialect.getDatabaseProduct();
+
+        // Some DBs require the schema to be a prfix of the table
+        switch (databaseProduct) {
+        case GOOGLEBIGQUERY:
+            break;
+        default:
+            s = s.replace("[foodmart.", "[");
+            break;
+        }
+
         switch (databaseProduct) {
         case ACCESS:
             break;
@@ -1048,10 +1076,11 @@ public class DialectTest extends TestCase {
             s = s.replace("]", "");
             break;
         default:
-            s = s.replace('[', '"');
-            s = s.replace(']', '"');
+            s = s.replace("[", dialect.getQuoteIdentifierString());
+            s = s.replace("]", dialect.getQuoteIdentifierString());
             break;
         }
+
         return s;
     }
 
@@ -1134,7 +1163,7 @@ public class DialectTest extends TestCase {
             + ", "
             + dialect.quoteIdentifier("the_month")
             + " from "
-            + dialect.quoteIdentifier("time_by_day")
+            + dialectizeTableName(dialect.quoteIdentifier("time_by_day"))
             + " group by "
             + dialect.quoteIdentifier("time_id");
         if (dialect.allowsSelectNotInGroupBy()) {
@@ -1186,7 +1215,9 @@ public class DialectTest extends TestCase {
                 "(?s).*scolumn mondrian.time_by_day.the_month must appear in the GROUP BY clause or be used in an aggregate function.*",
                 // Vertica 6
                 "(?s).*ERROR: Column \"time_by_day.the_month\" must appear in "
-                + "the GROUP BY clause or be used in an aggregate function.*"
+                + "the GROUP BY clause or be used in an aggregate function.*",
+                // BigQuery
+                "(?s).*SELECT list expression references column the_month which is neither grouped nor aggregated.*"
             };
             assertQueryFails(sql, errs);
         }
@@ -1199,7 +1230,7 @@ public class DialectTest extends TestCase {
                 "select upper("
                 + dialect.quoteIdentifier("customer", "fname")
                 + ") as c from "
-                + dialect.quoteIdentifier("customer")
+                + dialectizeTableName(dialect.quoteIdentifier("customer"))
                 + " group by "
                 + dialect.quoteIdentifier("customer", "fname")
                 + " having "
@@ -1234,7 +1265,7 @@ public class DialectTest extends TestCase {
                     "select "
                     + dialect.quoteIdentifier("customer", "fname")
                     + " from "
-                    + dialect.quoteIdentifier("customer")
+                    + dialectizeTableName(dialect.quoteIdentifier("customer"))
                     + " group by "
                     + dialect.quoteIdentifier("customer", "fname")
                     + " having "
@@ -1274,7 +1305,7 @@ public class DialectTest extends TestCase {
                     "select "
                     + dialect.quoteIdentifier("customer", "fname")
                     + " from "
-                    + dialect.quoteIdentifier("customer")
+                    + dialectizeTableName(dialect.quoteIdentifier("customer"))
                     + " group by "
                     + dialect.quoteIdentifier("customer", "fname")
                     + " having "
@@ -1325,6 +1356,14 @@ public class DialectTest extends TestCase {
                     "ERROR: invalid regular expression:"
                     + " parentheses () not balanced"));
             break;
+        case GOOGLEBIGQUERY:
+            assertNotNull(throwable);
+            assertTrue(couldTranslate);
+            assertTrue(
+                throwable.getMessage(),
+                throwable.getMessage().contains(
+                    "Error getting job status"));
+            break;
         default:
             // As far as we know, all other databases either handle this regex
             // just fine or our dialect for that database refuses to translate
@@ -1370,6 +1409,14 @@ public class DialectTest extends TestCase {
                     "ERROR: invalid regular expression: quantifier operand "
                     + "invalid"));
             break;
+        case GOOGLEBIGQUERY:
+            assertNotNull(throwable);
+            assertTrue(couldTranslate);
+            assertTrue(
+                throwable.getMessage(),
+                throwable.getMessage().contains(
+                    "Error getting job status"));
+            break;
         default:
             // As far as we know, all other databases either handle this regex
             // just fine or our dialect for that database refuses to translate
@@ -1400,7 +1447,7 @@ public class DialectTest extends TestCase {
         if (sqlRegex != null) {
             String sql =
                 "select * from "
-                + dialect.quoteIdentifier("customer")
+                + dialectizeTableName(dialect.quoteIdentifier("customer"))
                 + " where "
                 + sqlRegex;
             final ResultSet resultSet =
