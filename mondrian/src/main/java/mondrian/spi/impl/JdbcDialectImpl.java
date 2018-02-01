@@ -1102,6 +1102,8 @@ public class JdbcDialectImpl implements Dialect {
             return DatabaseProduct.VECTORWISE;
         } else if (upperProductName.startsWith("PDI")) {
             return DatabaseProduct.PDI;
+        } else if (upperProductName.startsWith("GOOGLE BIGQUERY")) {
+            return DatabaseProduct.GOOGLEBIGQUERY;
         } else {
             return DatabaseProduct.getDatabaseProduct(upperProductName);
         }
