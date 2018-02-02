@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2018 Hitachi Vantara and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.MondrianDef;
@@ -1077,7 +1076,8 @@ public class JdbcSchema {
                             int type = rs.getInt(5);
                             String typeName = rs.getString(6);
                             int columnSize = rs.getInt(7);
-                            int decimalDigits = rs.getInt(9);
+                            int decimalDigits =
+                                rs.getObject(9) == null ? 0 : rs.getInt(9);
                             int numPrecRadix = rs.getInt(10);
                             int charOctetLength = rs.getInt(16);
                             String isNullable = rs.getString(18);
