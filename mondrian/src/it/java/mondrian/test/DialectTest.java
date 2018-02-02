@@ -439,7 +439,7 @@ public class DialectTest extends TestCase {
                     + "    [foodmart.time_by_day] as [time_by_day]\n"
                     + "group by\n"
                     + "    [time_by_day].[the_year]\n"
-                    + "union\n"
+                    + "union all\n"
                     + "select\n"
                     + "    [time_by_day].[the_year] as [c0]\n"
                     + "from\n"
@@ -1075,14 +1075,9 @@ public class DialectTest extends TestCase {
             s = s.replace("[", "");
             s = s.replace("]", "");
             break;
-        case GOOGLEBIGQUERY:
-            s = s.replace("[", "");
-            s = s.replace("]", "");
-            s = s.replace("union", "union all");
-            break;
         default:
-            s = s.replace('[', '"');
-            s = s.replace(']', '"');
+            s = s.replace("[", dialect.getQuoteIdentifierString());
+            s = s.replace("]", dialect.getQuoteIdentifierString());
             break;
         }
 
@@ -1367,7 +1362,7 @@ public class DialectTest extends TestCase {
             assertTrue(
                 throwable.getMessage(),
                 throwable.getMessage().contains(
-                    "Syntax error: Expected \")\" but got string literal"));
+                    "Error getting job status"));
             break;
         default:
             // As far as we know, all other databases either handle this regex
@@ -1420,7 +1415,7 @@ public class DialectTest extends TestCase {
             assertTrue(
                 throwable.getMessage(),
                 throwable.getMessage().contains(
-                    "Syntax error: Expected \")\" but got string literal"));
+                    "Error getting job status"));
             break;
         default:
             // As far as we know, all other databases either handle this regex
@@ -1452,7 +1447,7 @@ public class DialectTest extends TestCase {
         if (sqlRegex != null) {
             String sql =
                 "select * from "
-                + dialect.quoteIdentifier("customer")
+                + dialectizeTableName(dialect.quoteIdentifier("customer"))
                 + " where "
                 + sqlRegex;
             final ResultSet resultSet =

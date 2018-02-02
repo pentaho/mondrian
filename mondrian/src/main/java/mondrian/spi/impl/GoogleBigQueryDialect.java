@@ -8,13 +8,20 @@
 */
 package mondrian.spi.impl;
 
+import mondrian.olap.Util;
 import mondrian.spi.DialectUtil;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+/**
+ * This is the Mondrian dialect for Google BigQuery. It was tested against
+ * google-api-services-bigquery-v2-rev355-1.22.0 in Q1 2018.
+ * @author lucboudreau
+ */
 public class GoogleBigQueryDialect extends JdbcDialectImpl {
 
     public static final JdbcDialectFactory FACTORY =
@@ -27,17 +34,20 @@ public class GoogleBigQueryDialect extends JdbcDialectImpl {
     }
 
     @Override
-    public String getQuoteIdentifierString() {
-        return "";
-    }
-
-    @Override
     public boolean allowsOrderByAlias() {
         return true;
     }
 
     @Override
+    public boolean allowsAs() {
+        return true;
+    }
+
+    @Override
     public boolean allowsDdl() {
+        // Although DDL is supported, kinda, BQ uses its own type system.
+        // Varchars are Strings and other small changes. We disable DDL
+        // here so that the TCK doesn't attempt to create temporary tables.
         return false;
     }
 
@@ -47,7 +57,39 @@ public class GoogleBigQueryDialect extends JdbcDialectImpl {
     }
 
     @Override
+    public String generateInline(
+        List<String> columnNames,
+        List<String> columnTypes,
+        List<String[]> valueList)
+    {
+        return generateInlineGeneric(
+            columnNames, columnTypes, valueList, null, false);
+    }
+
+    @Override
+    public void quoteIdentifier(String val, StringBuilder buf) {
+        // We have to turn spaces into underscores. BQ won't ever allow a
+        // column name, nor its alias, to contain spaces. So in the schema,
+        // won't be spaces coming into this function, whereas from a
+        // drillthrough operation, it might. A level name with a space
+        // may be used as an alias, so we need to override it here.
+        super.quoteIdentifier(val.replace(' ', '_'), buf);
+    }
+
+    @Override
+    public void quoteStringLiteral(StringBuilder buf, String s) {
+        // BQQ requires single quotes to be doubled and backslash
+        // do be doubled too.
+        buf.append('\'');
+        s = Util.replace(s, "\\", "\\\\");
+        s = Util.replace(s, "'", "\\'");
+        buf.append(s);
+        buf.append('\'');
+    }
+
+    @Override
     public boolean allowsRegularExpressionInWhereClause() {
+        // BQ supports regular expressions.
         return true;
     }
 
@@ -69,7 +111,7 @@ public class GoogleBigQueryDialect extends JdbcDialectImpl {
         sb.append(source);
         sb.append(" as string), r");
         quoteStringLiteral(sb, javaRegex);
-        sb.append(") = true");
+        sb.append(")");
         return sb.toString();
     }
 }
