@@ -73,7 +73,10 @@ public class GoogleBigQueryDialect extends JdbcDialectImpl {
         // won't be spaces coming into this function, whereas from a
         // drillthrough operation, it might. A level name with a space
         // may be used as an alias, so we need to override it here.
-        super.quoteIdentifier(val.replace(' ', '_'), buf);
+        // Same with non alpha characters, we have to remove them.
+        super.quoteIdentifier(
+            val.replace(' ', '_')
+                .replaceAll("[^A-Za-z0-9\\_\\.`]", ""), buf);
     }
 
     @Override
