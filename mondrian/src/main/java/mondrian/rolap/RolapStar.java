@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2018 Hitachi Vantara and others
 // All Rights Reserved.
 //
 // jhyde, 12 August, 2001
@@ -2031,7 +2031,7 @@ public class RolapStar {
     }
 
     /**
-     * Comparator to compare columns based on their name
+     * Comparator to compare columns based on their name and table that contains them
      */
     public static class ColumnComparator implements Comparator<Column> {
 
@@ -2040,8 +2040,17 @@ public class RolapStar {
         private ColumnComparator() {
         }
 
+        /* Compares two columns by their names.
+         * If the names of the columns do not differ,
+         * compare the tables to which the columns belong
+         */
         public int compare(Column o1, Column o2) {
-            return o1.getName().compareTo(o2.getName());
+          int result = o1.getName().compareTo(o2.getName());
+          if (result == 0) {
+            result =
+                o1.getTable().getAlias().compareTo(o2.getTable().getAlias());
+          }
+          return result;
         }
     }
 }
