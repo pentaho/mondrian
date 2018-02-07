@@ -2936,8 +2936,13 @@ public class Format {
         //         +maxDigitsRightOfDecimal
         //          + 10  (for decimal point and sign or -Infinity)
         //         +decExponent/3 (for the thousand separators)
+        // crashes e.g. for 1.1 and format '0000000000000'
         int resultLen =
-            10 + Math.abs(fd.decExponent) * 4 / 3 + maxDigitsRightOfDecimal;
+            10
+            + Math.max(
+                Math.abs(fd.decExponent),
+                minDigitsLeftOfDecimal) * 4 / 3
+            + maxDigitsRightOfDecimal;
         char result[] = new char[resultLen];
         int i = formatFd1(
             fd,
