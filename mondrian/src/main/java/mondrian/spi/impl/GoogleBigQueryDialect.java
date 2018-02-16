@@ -12,7 +12,10 @@ import mondrian.olap.Util;
 import mondrian.spi.DialectUtil;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -77,6 +80,44 @@ public class GoogleBigQueryDialect extends JdbcDialectImpl {
         super.quoteIdentifier(
             val.replace(' ', '_')
                 .replaceAll("[^A-Za-z0-9\\_\\.`]", ""), buf);
+    }
+
+    @Override
+    protected void quoteDateLiteral(
+        StringBuilder buf, String value, Date date)
+    {
+        buf.append("CAST(");
+        Util.singleQuoteString(value, buf);
+        buf.append(" AS DATE)");
+    }
+
+    @Override
+    public void quoteTimeLiteral(StringBuilder buf, String value) {
+      try {
+          Time.valueOf(value);
+      } catch (IllegalArgumentException ex) {
+          throw new NumberFormatException(
+              "Illegal TIME literal:  " + value);
+      }
+      buf.append("CAST(");
+      Util.singleQuoteString(value, buf);
+      buf.append(" AS TIME)");
+    }
+
+    public void quoteTimestampLiteral(
+        StringBuilder buf,
+        String value)
+    {
+        // NOTE jvs 1-Jan-2007:  See quoteTimestampLiteral for explanation.
+        try {
+            Timestamp.valueOf(value);
+        } catch (IllegalArgumentException ex) {
+            throw new NumberFormatException(
+                "Illegal TIMESTAMP literal:  " + value);
+        }
+        buf.append("CAST(");
+        Util.singleQuoteString(value, buf);
+        buf.append(" AS TIMESTAMP)");
     }
 
     @Override
