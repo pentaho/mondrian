@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2018 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.rolap;
@@ -12,7 +12,10 @@ package mondrian.rolap;
 import mondrian.olap.Connection;
 import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianDef.SQL;
+import mondrian.rolap.RolapStar.Column;
 import mondrian.test.FoodMartTestCase;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import junit.framework.Assert;
 
@@ -43,7 +46,8 @@ public class RolapStarTest extends FoodMartTestCase {
     }
 
     RolapStar getStar(Connection con, String starName) {
-        RolapCube cube = (RolapCube) con.getSchema().lookupCube(starName, true);
+        RolapCube cube =
+            (RolapCube) con.getSchema().lookupCube(starName, true);
         return cube.getStar();
     }
 
@@ -80,6 +84,46 @@ public class RolapStarTest extends FoodMartTestCase {
       Assert.assertNotNull(cloned.filter);
       Assert.assertEquals("NewAlias.clicked = 'true'", cloned.filter.cdata);
   }
+
+   //Below there are tests for mondrian.rolap.RolapStar.ColumnComparator
+   public void testTwoColumnsWithDifferentNamesNotEquals() {
+     RolapStar.ColumnComparator colComparator =
+         RolapStar.ColumnComparator.instance;
+     Column column1 = getColumnMock("Column1", "Table1");
+     Column column2 = getColumnMock("Column2", "Table1");
+     assertNotSame(column1, column2);
+     assertEquals(-1, colComparator.compare(column1, column2));
+   }
+
+   public void testTwoColumnsWithEqualsNamesButDifferentTablesNotEquals() {
+     RolapStar.ColumnComparator colComparator =
+         RolapStar.ColumnComparator.instance;
+     Column column1 = getColumnMock("Column1", "Table1");
+     Column column2 = getColumnMock("Column1", "Table2");
+     assertNotSame(column1, column2);
+     assertEquals(-1, colComparator.compare(column1, column2));
+   }
+
+   public void testTwoColumnsEquals() {
+     RolapStar.ColumnComparator colComparator =
+         RolapStar.ColumnComparator.instance;
+     Column column1 = getColumnMock("Column1", "Table1");
+     Column column2 = getColumnMock("Column1", "Table1");
+     assertNotSame(column1, column2);
+     assertEquals(0, colComparator.compare(column1, column2));
+   }
+
+   private static RolapStar.Column getColumnMock(
+       String columnName,
+       String tableName)
+   {
+     RolapStar.Column colMock = mock(RolapStar.Column.class);
+     RolapStar.Table tableMock = mock(RolapStar.Table.class);
+     when(colMock.getName()).thenReturn(columnName);
+     when(colMock.getTable()).thenReturn(tableMock);
+     when(tableMock.getAlias()).thenReturn(tableName);
+    return colMock;
+   }
 }
 
 // End RolapStarTest.java
