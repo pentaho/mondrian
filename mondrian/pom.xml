@@ -225,7 +225,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.9.1</version>
         <executions>
           <execution>
             <id>add-source</id>
@@ -365,7 +364,6 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>build-helper-maven-plugin</artifactId>
-            <version>${build-helper-maven-plugin.version}</version>
             <executions>
               <execution>
                 <phase>process-test-sources</phase>
