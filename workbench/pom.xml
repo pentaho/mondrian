@@ -21,7 +21,7 @@
   <properties>
     <dependency.kettle.revision>7.1-SNAPSHOT</dependency.kettle.revision>
     <pentaho-launcher.version>7.1-SNAPSHOT</pentaho-launcher.version>
-    <dependency.groovy-all.revision>2.4.7</dependency.groovy-all.revision>
+    <dependency.groovy-all.revision>2.4.8</dependency.groovy-all.revision>
     <dependency.jersey.revision>1.19.1</dependency.jersey.revision>
     <dependency.pdi-dataservice-client-plugin.revision>7.1-SNAPSHOT</dependency.pdi-dataservice-client-plugin.revision>
     <dependency.oss-licenses.revision>7.1-SNAPSHOT</dependency.oss-licenses.revision>
