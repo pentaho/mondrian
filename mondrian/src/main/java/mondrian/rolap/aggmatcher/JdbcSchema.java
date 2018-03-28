@@ -1254,9 +1254,11 @@ public class JdbcSchema {
      * This is unfortunate, as it forces us to dance around the issue like so.
      * Will check wasNull(). Returns 0 if the value was null.
      */
-    private static int getSafeInt(ResultSet rs, int columnIndex) throws SQLException {
+    private static int getSafeInt(ResultSet rs, int columnIndex)
+        throws SQLException
+    {
         try {
-            return rs.getInt(9);
+            return rs.getInt(columnIndex);
         } catch (Exception e) {
             if (rs.wasNull()) {
                 return 0;
