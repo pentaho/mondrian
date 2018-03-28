@@ -4,12 +4,11 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2017 Hitachi Vantara and others
+// Copyright (C) 2006-2018 Hitachi Vantara and others
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
 */
-
 package mondrian.gui;
 
 import org.apache.log4j.Logger;
@@ -252,7 +251,7 @@ public class JdbcMetaData {
             LOGGER.debug(
                 "JdbcMetaData: setAllSchemas - tables with no schema name");
             DbSchema dbs = new DbSchema();
-            dbs.name = null;    //tables with no schema name
+            dbs.name = null;    // tables with no schema name
             setAllTables(dbs);
             db.addDbSchema(dbs);
         }
@@ -282,12 +281,12 @@ public class JdbcMetaData {
 
                 DbTable dbt = null;
 
-                /* Note: Imported keys are foreign keys which are primary keys
-                 * of in some other tables; Exported keys are primary keys which
-                 * are referenced as foreign keys in other tables.
-                 */
+                // Note: Imported keys are foreign keys which are primary keys
+                // of in some other tables; Exported keys are primary keys which
+                // are referenced as foreign keys in other tables.
                 try {
-                    ResultSet rs_fks = md.getImportedKeys(null, dbs.name, tbname);
+                    ResultSet rs_fks =
+                        md.getImportedKeys(null, dbs.name, tbname);
                     try {
                         if (rs_fks.next()) {
                             dbt = new FactTable();
@@ -398,8 +397,8 @@ public class JdbcMetaData {
                 col.dataType = rs.getInt("DATA_TYPE");
                 col.name = rs.getString("COLUMN_NAME");
                 col.typeName = rs.getString("TYPE_NAME");
-                col.columnSize = rs.getInt("COLUMN_SIZE");
-                col.decimalDigits = rs.getInt("DECIMAL_DIGITS");
+                col.columnSize = getSafeInt(rs, "COLUMN_SIZE");
+                col.decimalDigits = getSafeInt(rs, "DECIMAL_DIGITS");
 
                 dbt.addColsDataType(col);
             }
@@ -411,6 +410,24 @@ public class JdbcMetaData {
             } catch (Exception e) {
                 // ignore
             }
+        }
+    }
+
+    /**
+     * Some columns in JDBC can return null on certain primitive type methods.
+     * This is unfortunate, as it forces us to dance around the issue like so.
+     * Will check wasNull(). Returns 0 if the value was null.
+     */
+    private static int getSafeInt(ResultSet rs, String columnName)
+        throws SQLException
+    {
+        try {
+            return rs.getInt(columnName);
+        } catch (Exception e) {
+            if (rs.wasNull()) {
+                return 0;
+            }
+            throw new SQLException(e);
         }
     }
 
@@ -682,9 +699,9 @@ public class JdbcMetaData {
 
         // list of all schemas in database
         Map<String, DbSchema> schemas = new TreeMap<String, DbSchema>();
-            //ordered collection, allows duplicates and null
+        // ordered collection, allows duplicates and null
         Map<String, TableTracker> tables = new TreeMap<String, TableTracker>();
-            // list of all tables in all schemas in database
+        // list of all tables in all schemas in database
 
         List<String> allSchemas;
 
