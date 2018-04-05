@@ -139,9 +139,17 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
     }
 
     public String getMeasureAlias(final int i) {
-        return request.getDrillThroughMeasures().size() > 0
-            ? request.getDrillThroughMeasures().get(i).getName()
-            : columnNames.get(columnNames.size() - 1);
+        String alias =
+            request.getDrillThroughMeasures().size() > 0
+                ? request.getDrillThroughMeasures().get(i).getName()
+                : columnNames.get(columnNames.size() - 1);
+        int j = 0;
+        String maybe = alias;
+        while (columnNames.contains(maybe)) {
+            maybe = alias.concat("_").concat("" + j);
+            j++;
+        }
+        return maybe;
     }
 
     public RolapStar.Column[] getColumns() {
