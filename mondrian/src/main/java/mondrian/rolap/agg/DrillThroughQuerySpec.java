@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara
+// Copyright (C) 2005-2018 Hitachi Vantara
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -139,9 +139,20 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
     }
 
     public String getMeasureAlias(final int i) {
-        return request.getDrillThroughMeasures().size() > 0
-            ? request.getDrillThroughMeasures().get(i).getName()
-            : columnNames.get(columnNames.size() - 1);
+        String alias =
+            request.getDrillThroughMeasures().size() > 0
+                ? request.getDrillThroughMeasures().get(i).getName()
+                : columnNames.get(columnNames.size() - 1);
+        int j = 0;
+        String maybe = alias;
+        while (columnNames.contains(maybe)
+            // This is dumb, but the last column is the measure.
+            && columnNames.indexOf(maybe) != (columnNames.size() - 1))
+        {
+            maybe = alias.concat("_").concat("" + j);
+            j++;
+        }
+        return maybe;
     }
 
     public RolapStar.Column[] getColumns() {
