@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2017 Hitachi Vantara
+// Copyright (C) 2006-2018 Hitachi Vantara
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -32,6 +32,9 @@ import java.util.regex.Pattern;
   */
 public class RolapNativeSql {
 
+    private static final String Digits = "(\\p{Digit}+)";
+    private static final String Exp = "[eE][+-]?" + Digits;
+    private static final Pattern BIGDECIMAL = Pattern.compile( "(" + Digits + "(\\.)?(" + Digits + "?)(" + Exp + ")?)" );
     private static final Pattern DECIMAL =
         Pattern.compile("[+-]?((\\d+(\\.\\d*)?)|(\\.\\d+))");
 
@@ -135,7 +138,7 @@ public class RolapNativeSql {
             }
             Literal literal = (Literal) exp;
             String expr = String.valueOf(literal.getValue());
-            if (!DECIMAL.matcher(expr).matches()) {
+            if ( !( DECIMAL.matcher( expr ).matches() || ( BIGDECIMAL.matcher( expr ).matches() ) ) ) {
                 throw new MondrianEvaluationException(
                     "Expected to get decimal, but got " + expr);
             }

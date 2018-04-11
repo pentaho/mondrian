@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2015-2017 Hitachi Vantara.
+// Copyright (c) 2015-2018 Hitachi Vantara.
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -83,6 +83,9 @@ public class NumberSqlCompilerTest extends TestCase {
         assertNotNull(value, compiler.compile(exp));
     }
 
+    public void testAcceptsString_BigDecimal() {
+        checkAcceptsString( "2.0E+8" );
+    }
 
     public void testRejectsString_SelectStatement() {
         checkRejectsString("(select 100)");
