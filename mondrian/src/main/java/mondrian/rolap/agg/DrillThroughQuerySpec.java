@@ -12,6 +12,8 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.*;
 import mondrian.rolap.*;
+import mondrian.rolap.RolapStar.Column;
+import mondrian.rolap.RolapStar.Measure;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.util.Pair;
 
@@ -138,6 +140,21 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
             : request.getMeasure();
     }
 
+    private boolean isSelectAliasTaken(Column[] cols, String alias) {
+        if (columnNames.contains(alias)) {
+            // Possible conflict of alias.
+            for (int j = 0; j < cols.length; j++) {
+                if (getColumnAlias(j).equals(alias)
+                    && isPartOfSelect(cols[j]))
+                {
+                    // Definite conflict.
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public String getMeasureAlias(final int i) {
         String alias =
             request.getDrillThroughMeasures().size() > 0
@@ -145,14 +162,12 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
                 : columnNames.get(columnNames.size() - 1);
         int j = 0;
         String maybe = alias;
-        while (columnNames.contains(maybe)
-            // This is dumb, but the last column is the measure.
-            && columnNames.indexOf(maybe) != (columnNames.size() - 1))
-        {
+        final Column[] cols = getColumns();
+        while (isSelectAliasTaken(cols, maybe)) {
             maybe = alias.concat("_").concat("" + j);
             j++;
         }
-        return maybe;
+        return alias;
     }
 
     public RolapStar.Column[] getColumns() {
@@ -235,9 +250,9 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
             for (RolapStar.Column column
                 : predicate.getConstrainedColumnList())
             {
-              //add to Select clause only columns
-              //that are not yet in Select clause
-              //there is no need to have the same column twice
+              // add to Select clause only columns
+              // that are not yet in Select clause
+              // there is no need to have the same column twice
                 if (request.includeInSelect(column)
                     && !columnNameSet.contains(column.getName()))
                 {
