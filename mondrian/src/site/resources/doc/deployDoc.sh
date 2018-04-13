@@ -5,7 +5,7 @@
 # http://www.eclipse.org/legal/epl-v10.html.
 # You must accept the terms of that agreement to use this software.
 #
-# Copyright (C) 2005-2017 Hitachi Vantara
+# Copyright (C) 2005-2018 Hitachi Vantara
 # All Rights Reserved.
 #
 # This is a script to deploy Mondrian's website.

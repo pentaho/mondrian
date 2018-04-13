@@ -6,7 +6,7 @@ REM Agreement, available at the following URL:
 REM http://www.eclipse.org/legal/epl-v10.html.
 REM You must accept the terms of that agreement to use this software.
 REM
-REM Copyright (c) 2007-2017 Hitachi Vantara..  All rights reserved.
+REM Copyright (c) 2007-2018 Hitachi Vantara..  All rights reserved.
 REM ***************************************************************************
 
 cd /D %~dp0
