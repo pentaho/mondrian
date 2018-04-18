@@ -6,7 +6,7 @@
 # http://www.eclipse.org/legal/epl-v10.html.
 # You must accept the terms of that agreement to use this software.
 #
-# Copyright (c) 2005-2017 Hitachi Vantara..  All rights reserved.
+# Copyright (c) 2005-2018 Hitachi Vantara..  All rights reserved.
 # ***************************************************************************
 
 # do not use ksh, use bash

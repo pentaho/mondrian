@@ -5,7 +5,7 @@
 # http://www.eclipse.org/legal/epl-v10.html.
 # You must accept the terms of that agreement to use this software.
 #
-# Copyright (C) 2008-2017 Hitachi Vantara and others
+# Copyright (C) 2008-2018 Hitachi Vantara and others
 # All Rights Reserved.
 #
 # Sample scripts to load Mondrian's database for various databases.
