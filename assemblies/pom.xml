@@ -5,11 +5,11 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-mondrian-parent-pom</artifactId>
-    <version>3.14-SNAPSHOT</version>
+    <version>3.14.0.12-132</version>
   </parent>
   <groupId>pentaho</groupId>
   <artifactId>pentaho-mondrian-assemblies</artifactId>
-  <version>3.14-SNAPSHOT</version>
+  <version>3.14.0.12-132</version>
   <packaging>pom</packaging>
   <name>Pentaho Mondrian Assemblies</name>
   <description>Packages Mondrian artifacts</description>
