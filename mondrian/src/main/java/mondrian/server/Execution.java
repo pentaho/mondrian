@@ -96,7 +96,11 @@ public class Execution {
     {
         Execution parentExec;
         try {
-            parentExec = Locus.peek().execution;
+            if (Locus.isEmpty()) {
+                parentExec = null;
+            } else {
+                parentExec = Locus.peek().execution;
+            }
         } catch (EmptyStackException e) {
             parentExec = null;
         }

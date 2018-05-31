@@ -60,6 +60,10 @@ public class Locus {
     public static Locus peek() {
         return THREAD_LOCAL.get().peek();
     }
+    
+    public static boolean isEmpty() {
+        return THREAD_LOCAL.get().isEmpty();
+    }
 
     public static <T> T execute(
         RolapConnection connection,
