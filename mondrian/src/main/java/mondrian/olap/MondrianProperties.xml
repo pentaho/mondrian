@@ -613,6 +613,19 @@ query to the next (the cache is cleared after each query).
         <Default>false</Default>
     </PropertyDefinition>
     <PropertyDefinition>
+        <Name>ForceMemberCaching</Name>
+        <Path>mondrian.rolap.star.forceMemberCaching</Path>
+        <Category>Caching</Category>
+        <Description>
+Boolean property that controls whether Axis Members
+properties (especially member children) should be cached.
+If true, member children will be cached even if 
+DisableCaching is true (which is useful not to cache data).
+        </Description>
+        <Type>boolean</Type>
+        <Default>false</Default>
+    </PropertyDefinition>
+    <PropertyDefinition>
         <Name>DisableLocalSegmentCache</Name>
         <Path>mondrian.rolap.star.disableLocalSegmentCache</Path>
         <Category>Caching</Category>
