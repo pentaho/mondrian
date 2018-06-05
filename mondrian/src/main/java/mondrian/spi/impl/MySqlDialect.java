@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2002-2017 Hitachi Vantara and others
+// Copyright (C) 2002-2018 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -29,6 +29,7 @@ public class MySqlDialect extends JdbcDialectImpl {
     private final Pattern flagsPattern = Pattern.compile(flagsRegexp);
     private final String escapeRegexp = "(\\\\Q([^\\\\Q]+)\\\\E)";
     private final Pattern escapePattern = Pattern.compile(escapeRegexp);
+    private final int MAX_CONSTRAINTS = 10000;
 
     public static final JdbcDialectFactory FACTORY =
         new JdbcDialectFactory(
@@ -365,6 +366,11 @@ public class MySqlDialect extends JdbcDialectImpl {
     @Override
     public boolean requiresOrderByAlias() {
         return productVersion.compareTo("5.7") >= 0;
+    }
+
+    @Override
+    public int getMaxConstraints() {
+        return MAX_CONSTRAINTS;
     }
 }
 
