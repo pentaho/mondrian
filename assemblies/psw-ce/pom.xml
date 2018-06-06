@@ -103,15 +103,7 @@
           <groupId>org.apache.avalon.framework</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>batik-js</artifactId>
-          <groupId>org.apache.xmlgraphics</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>batik-svggen</artifactId>
-          <groupId>org.apache.xmlgraphics</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>fop</artifactId>
+          <artifactId>*</artifactId>
           <groupId>org.apache.xmlgraphics</groupId>
         </exclusion>
         <exclusion>
@@ -237,6 +229,12 @@
       <groupId>jaxen</groupId>
       <artifactId>jaxen</artifactId>
       <version>${jaxen.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     
     <!-- change bellow scope to runtime to include database drivers -->
