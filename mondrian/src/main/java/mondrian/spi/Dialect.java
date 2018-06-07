@@ -806,6 +806,14 @@ public interface Dialect {
         throws SQLException;
 
     /**
+     * Retrieves the maximum number of constraints in a single 'IN' SQL clause based on dialect information
+     * This value might depend on database products or on their runtime settings.
+     *
+     * @return The maximum number of constraints in a single 'IN' SQL clause
+     */
+    int getMaxConstraints();
+
+    /**
      * Enumeration of common database types.
      *
      * <p>Branching on this enumeration allows you to write code which behaves

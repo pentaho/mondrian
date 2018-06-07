@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+// Copyright (c) 2002-2018 Hitachi Vantara..  All rights reserved.
 */
 package mondrian.spi.impl;
 
@@ -20,6 +20,8 @@ import java.sql.SQLException;
  * @since Nov 23, 2008
  */
 public class Db2Dialect extends JdbcDialectImpl {
+
+    private final int MAX_CONSTRAINTS = 2500;
 
     public static final JdbcDialectFactory FACTORY =
         new JdbcDialectFactory(
@@ -41,6 +43,11 @@ public class Db2Dialect extends JdbcDialectImpl {
 
     public boolean supportsGroupingSets() {
         return true;
+    }
+
+    @Override
+    public int getMaxConstraints() {
+        return MAX_CONSTRAINTS;
     }
 }
 

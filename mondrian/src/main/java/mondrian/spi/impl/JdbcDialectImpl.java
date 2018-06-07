@@ -939,6 +939,11 @@ public class JdbcDialectImpl implements Dialect {
         return internalType;
     }
 
+    @Override
+    public int getMaxConstraints() {
+        return MondrianProperties.instance().MaxConstraints.get();
+    }
+
 
     void logTypeInfo(
         ResultSetMetaData metaData, int columnIndex,

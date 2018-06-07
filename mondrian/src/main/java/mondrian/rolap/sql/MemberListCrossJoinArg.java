@@ -5,13 +5,12 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2017 Hitachi Vantara and others
+// Copyright (C) 2006-2018 Hitachi Vantara and others
 // All Rights Reserved.
 */
 
 package mondrian.rolap.sql;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.rolap.*;
 import mondrian.rolap.aggmatcher.AggStar;
 
@@ -62,7 +61,7 @@ public class MemberListCrossJoinArg implements CrossJoinArg {
 
         // First check that the member list will not result in a predicate
         // longer than the underlying DB could support.
-        if (argSize > MondrianProperties.instance().MaxConstraints.get()) {
+        if (argSize > evaluator.getDialect().getMaxConstraints()) {
             argSizeNotSupported = true;
         }
 
