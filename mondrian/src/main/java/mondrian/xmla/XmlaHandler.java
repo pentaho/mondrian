@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara
+// Copyright (C) 2005-2018 Hitachi Vantara
 // All Rights Reserved.
 */
 package mondrian.xmla;
@@ -3143,6 +3143,14 @@ public class XmlaHandler {
          */
         Object getOrderKey(Member m) throws OlapException;
 
+        /**
+         * Returns the data type of the level's key.
+         * 
+         * @param level
+         * @return String|Numeric|Integer|Boolean|Date|Time|Timestamp
+         */
+        public String getLevelDataType( Level level );
+
         class FunctionDefinition {
             public final String functionName;
             public final String description;
@@ -3307,6 +3315,10 @@ public class XmlaHandler {
 
         public Object getOrderKey(Member m) throws OlapException {
             return m.getOrdinal();
+        }
+        
+        public String getLevelDataType( Level level ) {
+            return null;
         }
     }
 
