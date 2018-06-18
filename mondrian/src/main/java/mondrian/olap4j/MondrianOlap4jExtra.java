@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2002-2017 Hitachi Vantara and others
+// Copyright (C) 2002-2018 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.olap4j;
@@ -366,6 +366,15 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
         } catch (SQLException e) {
             throw new OlapException(e);
         }
+    }
+    
+    public String getLevelDataType( Level level ) {
+        MondrianOlap4jLevel olap4jLevel = (MondrianOlap4jLevel) level;
+        if ( olap4jLevel.level instanceof RolapLevel ) {
+            return ( (RolapLevel) olap4jLevel.level ).getDatatype().name();
+    
+        }
+        return null;
     }
 }
 

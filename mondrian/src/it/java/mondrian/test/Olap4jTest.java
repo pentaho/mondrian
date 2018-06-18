@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2018 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.test;
@@ -127,7 +127,8 @@ public class Olap4jTest extends FoodMartTestCase {
     }
 
     public void testAnnotation() throws SQLException {
-        final OlapConnection connection =
+      
+      final OlapConnection connection =
             getTestContext().getOlap4jConnection();
         final CellSet cellSet =
             connection.createStatement().executeOlapQuery(
@@ -143,6 +144,22 @@ public class Olap4jTest extends FoodMartTestCase {
             XmlaHandler.getExtra(connection).getAnnotationMap(salesCube);
         assertEquals("Ventes", map.get("caption.fr_FR"));
     }
+    
+    public void testLevelDataType() throws SQLException {
+  
+        final OlapConnection connection = getTestContext().getOlap4jConnection();
+        Cube cube = connection.getOlapSchema().getCubes().get( "Sales" );
+        Hierarchy hier = cube.getHierarchies().get( "Customers" );
+        
+        Level level = hier.getLevels().get( 4 );
+        assertEquals( "Name", level.getName());
+        assertEquals( "Numeric", XmlaHandler.getExtra(connection).getLevelDataType( level ));
+        
+        level = hier.getLevels().get( 3 );
+        assertEquals( "City", level.getName());
+        assertEquals( "String", XmlaHandler.getExtra(connection).getLevelDataType( level ));
+    }
+
 
     public void testFormatString() throws SQLException {
         final OlapConnection connection =
