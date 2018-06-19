@@ -2110,6 +2110,12 @@ public class XmlaHandler {
             switch (datatype) {
             case UNSIGNED_INTEGER:
                 return RowsetDefinition.Type.UnsignedInteger.columnType;
+            case DOUBLE:
+                return RowsetDefinition.Type.Double.columnType;
+            case LARGE_INTEGER:
+                return RowsetDefinition.Type.Long.columnType;
+            case INTEGER:
+                return RowsetDefinition.Type.Integer.columnType;
             case BOOLEAN:
                 return RowsetDefinition.Type.Boolean.columnType;
             default:
