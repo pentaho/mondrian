@@ -939,6 +939,7 @@
             <Value>String</Value>
             <Value>Numeric</Value>
             <Value>Integer</Value>
+            <Value>Long</Value>
             <Value>Boolean</Value>
             <Value>Date</Value>
             <Value>Time</Value>
