@@ -3149,7 +3149,9 @@ public class XmlaHandler {
          * @param level
          * @return String|Numeric|Integer|Boolean|Date|Time|Timestamp
          */
-        public String getLevelDataType( Level level );
+        default public String getLevelDataType( Level level ) {
+          return null;
+        }
 
         class FunctionDefinition {
             public final String functionName;
@@ -3315,10 +3317,6 @@ public class XmlaHandler {
 
         public Object getOrderKey(Member m) throws OlapException {
             return m.getOrdinal();
-        }
-        
-        public String getLevelDataType( Level level ) {
-            return null;
         }
     }
 
