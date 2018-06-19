@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2018 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -1260,7 +1260,7 @@ public class RolapCube extends CubeBase {
     {
         Property prop = Property.lookup(name, false);
         if (prop != null
-            && prop.getType() == Property.Datatype.TYPE_NUMERIC
+            && prop.getType().isNumeric()
             && isSurroundedWithQuotes(expr)
             && expr.length() > 2)
         {
