@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2018 Hitachi Vantara and others
 // All Rights Reserved.
 */
 
@@ -149,6 +149,8 @@ class PropertiesFunDef extends FunDefBase {
                 case TYPE_BOOLEAN:
                     return Category.Logical;
                 case TYPE_NUMERIC:
+                case TYPE_INTEGER:
+                case TYPE_LONG:
                     return Category.Numeric;
                 case TYPE_STRING:
                     return Category.String;

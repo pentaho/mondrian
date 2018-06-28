@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2018 Hitachi Vantara
 // All Rights Reserved.
 */
 
@@ -1283,6 +1283,7 @@ public enum RowsetDefinition {
         StringSometimesArray("xsd:string"),
         Integer("xsd:int"),
         UnsignedInteger("xsd:unsignedInt"),
+        Double("xsd:double"),
         DateTime("xsd:dateTime"),
         Rowset(null),
         Short("xsd:short"),

@@ -5,14 +5,14 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2013 Pentaho and others
+// Copyright (C) 2005-2018 Hitachi Vantara and others
 // All Rights Reserved.
 //
 // jhyde, 12 September, 2002
 */
-
 package mondrian.olap;
 
+import mondrian.rolap.SqlStatement;
 import mondrian.spi.PropertyFormatter;
 
 import java.util.*;
@@ -61,13 +61,31 @@ import java.util.*;
 public class Property extends EnumeratedValues.BasicValue {
 
     public enum Datatype {
-        TYPE_STRING,
-        TYPE_NUMERIC,
-        TYPE_BOOLEAN,
-        TYPE_DATE,
-        TYPE_TIME,
-        TYPE_TIMESTAMP,
-        TYPE_OTHER
+        TYPE_STRING(null),
+        TYPE_NUMERIC(null),
+        TYPE_INTEGER(SqlStatement.Type.INT),
+        TYPE_LONG(SqlStatement.Type.LONG),
+        TYPE_BOOLEAN(null),
+        TYPE_DATE(null),
+        TYPE_TIME(null),
+        TYPE_TIMESTAMP(null),
+        TYPE_OTHER(null);
+
+        private SqlStatement.Type type;
+
+        Datatype(SqlStatement.Type type) {
+            this.type = type;
+    }
+
+        public SqlStatement.Type getInternalType() {
+            return type;
+        }
+
+        public boolean isNumeric() {
+            return this == TYPE_NUMERIC
+              || this == TYPE_INTEGER
+              || this == TYPE_LONG;
+        }
     }
 
     /**
