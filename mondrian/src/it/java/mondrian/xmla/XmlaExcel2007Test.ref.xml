@@ -394,10 +394,10 @@ where [Measures].[Unit Sales]
                                     <PARENT_UNIQUE_NAME name="[Store].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
                                     <Store_x0020_Type name="[Store].[Store Type]" type="xsd:string"/>
                                     <Store_x0020_Manager name="[Store].[Store Manager]" type="xsd:string"/>
-                                    <Store_x0020_Sqft name="[Store].[Store Sqft]" type="xsd:unsignedInt"/>
-                                    <Grocery_x0020_Sqft name="[Store].[Grocery Sqft]" type="xsd:unsignedInt"/>
-                                    <Frozen_x0020_Sqft name="[Store].[Frozen Sqft]" type="xsd:unsignedInt"/>
-                                    <Meat_x0020_Sqft name="[Store].[Meat Sqft]" type="xsd:unsignedInt"/>
+                                    <Store_x0020_Sqft name="[Store].[Store Sqft]" type="xsd:double"/>
+                                    <Grocery_x0020_Sqft name="[Store].[Grocery Sqft]" type="xsd:double"/>
+                                    <Frozen_x0020_Sqft name="[Store].[Frozen Sqft]" type="xsd:double"/>
+                                    <Meat_x0020_Sqft name="[Store].[Meat Sqft]" type="xsd:double"/>
                                     <Has_x0020_coffee_x0020_bar name="[Store].[Has coffee bar]" type="xsd:boolean"/>
                                     <Street_x0020_address name="[Store].[Street address]" type="xsd:string"/>
                                 </HierarchyInfo>
@@ -2104,10 +2104,10 @@ WITH  SET [XL_Row_Dim_0] AS 'VisualTotals(Distinct(Hierarchize(
                                     <PARENT_UNIQUE_NAME name="[Store].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
                                     <Store_x0020_Type name="[Store].[Store Type]" type="xsd:string"/>
                                     <Store_x0020_Manager name="[Store].[Store Manager]" type="xsd:string"/>
-                                    <Store_x0020_Sqft name="[Store].[Store Sqft]" type="xsd:unsignedInt"/>
-                                    <Grocery_x0020_Sqft name="[Store].[Grocery Sqft]" type="xsd:unsignedInt"/>
-                                    <Frozen_x0020_Sqft name="[Store].[Frozen Sqft]" type="xsd:unsignedInt"/>
-                                    <Meat_x0020_Sqft name="[Store].[Meat Sqft]" type="xsd:unsignedInt"/>
+                                    <Store_x0020_Sqft name="[Store].[Store Sqft]" type="xsd:double"/>
+                                    <Grocery_x0020_Sqft name="[Store].[Grocery Sqft]" type="xsd:double"/>
+                                    <Frozen_x0020_Sqft name="[Store].[Frozen Sqft]" type="xsd:double"/>
+                                    <Meat_x0020_Sqft name="[Store].[Meat Sqft]" type="xsd:double"/>
                                     <Has_x0020_coffee_x0020_bar name="[Store].[Has coffee bar]" type="xsd:boolean"/>
                                     <Street_x0020_address name="[Store].[Street address]" type="xsd:string"/>
                                 </HierarchyInfo>
