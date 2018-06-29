@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2017 Pentaho and others
+// Copyright (C) 2005-2018 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -682,7 +682,7 @@ RME is this right
                 hierarchy.addToFrom(sqlQuery, exp);
             }
             final String s = exp.getExpression(sqlQuery);
-            String alias = sqlQuery.addSelect(s, null);
+            String alias = sqlQuery.addSelect(s, property.getType().getInternalType());
             // Some dialects allow us to eliminate properties from the
             // group by that are functionally dependent on the level value
             if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()

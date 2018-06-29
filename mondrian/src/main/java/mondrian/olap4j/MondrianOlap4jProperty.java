@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2015 Pentaho
+// Copyright (C) 2005-2018 Hitachi Vantara
 // All Rights Reserved.
 */
 package mondrian.olap4j;
@@ -94,7 +94,11 @@ class MondrianOlap4jProperty implements IMondrianOlap4jProperty, Named {
         case TYPE_BOOLEAN:
             return Datatype.BOOLEAN;
         case TYPE_NUMERIC:
-            return Datatype.UNSIGNED_INTEGER;
+            return Datatype.DOUBLE;
+        case TYPE_INTEGER:
+            return Datatype.INTEGER;
+        case TYPE_LONG:
+            return Datatype.LARGE_INTEGER;
         case TYPE_STRING:
             return Datatype.STRING;
         case TYPE_OTHER:

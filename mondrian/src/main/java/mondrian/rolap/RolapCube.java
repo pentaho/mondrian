@@ -1260,7 +1260,7 @@ public class RolapCube extends CubeBase {
     {
         Property prop = Property.lookup(name, false);
         if (prop != null
-            && prop.getType() == Property.Datatype.TYPE_NUMERIC
+            && prop.getType().isNumeric()
             && isSurroundedWithQuotes(expr)
             && expr.length() > 2)
         {

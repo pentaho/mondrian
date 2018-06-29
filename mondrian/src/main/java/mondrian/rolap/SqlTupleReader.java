@@ -1515,7 +1515,7 @@ public class SqlTupleReader implements TupleReader {
                 } else {
                     propSql = property.getExp().getExpression(sqlQuery);
                 }
-                final String propAlias = sqlQuery.addSelect(propSql, null);
+                final String propAlias = sqlQuery.addSelect(propSql, property.getType().getInternalType());
                 if (needsGroupBy) {
                     // Certain dialects allow us to eliminate properties
                     // from the group by that are functionally dependent
