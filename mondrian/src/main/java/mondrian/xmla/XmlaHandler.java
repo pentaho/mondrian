@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara
+// Copyright (C) 2005-2018 Hitachi Vantara
 // All Rights Reserved.
 */
 package mondrian.xmla;
@@ -2110,6 +2110,12 @@ public class XmlaHandler {
             switch (datatype) {
             case UNSIGNED_INTEGER:
                 return RowsetDefinition.Type.UnsignedInteger.columnType;
+            case DOUBLE:
+                return RowsetDefinition.Type.Double.columnType;
+            case LARGE_INTEGER:
+                return RowsetDefinition.Type.Long.columnType;
+            case INTEGER:
+                return RowsetDefinition.Type.Integer.columnType;
             case BOOLEAN:
                 return RowsetDefinition.Type.Boolean.columnType;
             default:
