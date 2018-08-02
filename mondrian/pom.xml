@@ -417,7 +417,7 @@
                 </goals>
                 <configuration>
                   <port>${mysql.port}</port>
-                  <data>${project.build.directory}/mysql-data</data>
+                  <data>${java.io.tmpdir}/mondrian/mysql-data</data>
                 </configuration>
               </execution>
             </executions>
