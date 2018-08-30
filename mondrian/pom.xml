@@ -77,9 +77,8 @@
       <version>${commons-vfs2.version}</version>
     </dependency>
     <dependency>
-      <groupId>dom4j</groupId>
+      <groupId>org.dom4j</groupId>
       <artifactId>dom4j</artifactId>
-      <version>${dom4j.version}</version>
     </dependency>
     <dependency>
       <groupId>javax.validation</groupId>
