@@ -234,6 +234,10 @@
       <artifactId>jlfgr</artifactId>
       <version>${jlfgr.version}</version>
     </dependency>
+    <dependency>
+      <groupId>jaxen</groupId>
+      <artifactId>jaxen</artifactId>
+    </dependency>
     
     <!-- change bellow scope to runtime to include database drivers -->
     <dependency>
