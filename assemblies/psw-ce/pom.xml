@@ -24,7 +24,6 @@
     <pdi.version>8.2.0.0-SNAPSHOT</pdi.version>
     <commons-xul.version>8.2.0.0-SNAPSHOT</commons-xul.version>
     <mondrian-schemaworkbench-plugins.version>8.2.0.0-SNAPSHOT</mondrian-schemaworkbench-plugins.version>
-    <jaxen.version>1.1</jaxen.version>
   </properties>
   <dependencies>
     <dependency>
@@ -228,13 +227,6 @@
     <dependency>
       <groupId>jaxen</groupId>
       <artifactId>jaxen</artifactId>
-      <version>${jaxen.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>*</artifactId>
-          <groupId>*</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
     
     <!-- change bellow scope to runtime to include database drivers -->
