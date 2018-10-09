@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2018 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -5245,7 +5245,7 @@ public class FunctionTest extends FoodMartTestCase {
           + "{[Store Type].[Deluxe Supermarket], [Store].[USA].[CA]}");
     }
 
-    //MONDRIAN-2408 - Consumer wants (immutable) LIST in CrossJoinFunDef.compileCall(ResolvedFunCall, ExpCompiler)
+    // MONDRIAN-2408 - Consumer wants (immutable) LIST in CrossJoinFunDef.compileCall(ResolvedFunCall, ExpCompiler)
     public void testIIfSetType_InCrossJoinAndAvg() {
       assertExprReturns(
           "Avg(CROSSJOIN([Store Type].[Deluxe Supermarket],IIf(1 = 1, {[Store].[USA].[OR], [Store].[USA].[WA]}, {[Store].[Mexico], [Store].[USA].[CA]})), [Measures].[Store Sales])",
@@ -6644,6 +6644,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testIsNull() {
+        assertBooleanExprReturns(" Measures.[Profit] IS NULL ", false);
         assertBooleanExprReturns(" Store.[All Stores] IS NULL ", false);
         assertBooleanExprReturns(" Store.[All Stores].parent IS NULL ", true);
     }
@@ -6832,6 +6833,20 @@ public class FunctionTest extends FoodMartTestCase {
         Assert.assertEquals("30,114", cell.getFormattedValue());
     }
 
+    public void testIsNullWithCalcMem() {
+        assertQueryReturns(
+            "with member Store.foo as '1010' "
+            + "member measures.bar as 'Store.currentmember IS NULL' "
+            + "SELECT measures.bar on 0, {Store.foo} on 1 from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[bar]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[foo]}\n"
+            + "Row #0: false\n");
+    }
+
     public void testFilterCompound() {
         Result result = executeQuery(
             "select {[Measures].[Unit Sales]} on columns,\n"
@@ -6970,7 +6985,7 @@ public class FunctionTest extends FoodMartTestCase {
         fail("should have timed out");
     }
 
-    //The test case for the issue: MONDRIAN-2402
+    // The test case for the issue: MONDRIAN-2402
     public void testGenerateForStringMemberProperty() {
       assertQueryReturns(
           "WITH MEMBER [Store].[Lineage of Time] AS\n"
@@ -11590,26 +11605,28 @@ Intel platforms):
     public void testUCaseWithNullString() {
         assertQueryReturns(
             "select filter([Store].MEMBERS, "
-                + " UCase(\"NULL\") = \"\" "
-                + "And [Store].CURRENTMEMBER.Name = \"Bellingham\") "
-                + "on 0 from sales",
+            + " UCase(\"NULL\") = \"\" "
+            + "And [Store].CURRENTMEMBER.Name = \"Bellingham\") "
+            + "on 0 from sales",
             "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n");
+            + "{}\n"
+            + "Axis #1:\n");
     }
 
     public void testUCaseWithNull() {
         try {
             getTestContext().executeQuery(
                 "select filter([Store].MEMBERS, "
-                    + " UCase(NULL) = \"\" "
-                    + "And [Store].CURRENTMEMBER.Name = \"Bellingham\") "
-                    + "on 0 from sales"
-            );
+                + " UCase(NULL) = \"\" "
+                + "And [Store].CURRENTMEMBER.Name = \"Bellingham\") "
+                + "on 0 from sales");
         } catch (MondrianException e) {
             Throwable mondrianEvaluationException = e.getCause();
-            assertEquals(mondrianEvaluationException.getClass(), (MondrianEvaluationException.class));
-            assertEquals(mondrianEvaluationException.getMessage(),
+            assertEquals(
+                mondrianEvaluationException.getClass(),
+                (MondrianEvaluationException.class));
+            assertEquals(
+                mondrianEvaluationException.getMessage(),
                 "No method with the signature UCase(NULL) matches known functions.");
             return;
         }
