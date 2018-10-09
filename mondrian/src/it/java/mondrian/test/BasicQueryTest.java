@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara
+// Copyright (C) 2005-2018 Hitachi Vantara
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -3691,7 +3691,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 + "Row #2: 3.069\n"
                 + "Row #3: 3.074\n";
 
-        testContext.assertQueryReturns(mdx, desiredResult );
+        testContext.assertQueryReturns(mdx, desiredResult);
 
         // check that consistent with fact table
         propSaver.set(props.UseAggregates, false);
@@ -3765,7 +3765,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 + "Row #2: 472,759,506\n"
                 + "Row #3: 570,911,254\n";
 
-        testContext.assertQueryReturns(mdx, desiredResult );
+        testContext.assertQueryReturns(mdx, desiredResult);
     }
 
     public void testWithoutRollupType() {
@@ -3832,7 +3832,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 + "Row #2: 22,036.988\n"
                 + "Row #3: 24,368.758\n";
 
-        testContext.assertQueryReturns(mdx, desiredResult );
+        testContext.assertQueryReturns(mdx, desiredResult);
     }
 
     /**
@@ -6397,8 +6397,8 @@ public class BasicQueryTest extends FoodMartTestCase {
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-2608">MONDRIAN-2608</a>.
      */
     public void testMONDRIAN2608() {
-      //this issue takes place only for the case when ordinalColumn is defined
-      //and CompareSiblingsByOrderKey=false and ExpandNonNative=true
+      // this issue takes place only for the case when ordinalColumn is defined
+      // and CompareSiblingsByOrderKey=false and ExpandNonNative=true
       propSaver.set(props.CompareSiblingsByOrderKey, false);
       propSaver.set(props.ExpandNonNative, true);
       if (!props.EnableRolapCubeMemberCache.get()) {
@@ -6437,9 +6437,9 @@ public class BasicQueryTest extends FoodMartTestCase {
       final TestContext context =
           testContext.withFreshConnection().withCube("HR");
       try {
-        //After running of MDX1
-        //members cache will contain items
-        //for [Position].[Position Title].members
+        // After running of MDX1
+        // members cache will contain items
+        // for [Position].[Position Title].members
         context.assertQueryReturns(
             MDX1,
             "Axis #0:\n"
@@ -6488,7 +6488,8 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #18: 0\n"
             + "Row #19: 0\n");
 
-      //Run MDX2 - all [Position].[Position Title].Members should be sorted correctly by ordinalColumn inside Management Role groups
+        // Run MDX2 - all [Position].[Position Title].Members should be sorted
+        // correctly by ordinalColumn inside Management Role groups
         context.assertQueryReturns(
             MDX2,
             "Axis #0:\n"
@@ -7801,6 +7802,55 @@ public class BasicQueryTest extends FoodMartTestCase {
             "All arguments to function '{}' must have same hierarchy.");
     }
 
+    public void testQueryWithNullMember() {
+        // https://jira.pentaho.com/browse/MONDRIAN-2643
+        assertQueryReturns(
+            "WITH\n"
+            + " SET [*NATIVE_CJ_SET] AS 'FILTER( FILTER([Store Size in SQFT].[Store Sqft].MEMBERS,\n"
+            + "\n"
+            + "CASE WHEN ([Store Size in SQFT].CURRENTMEMBER  IS NULL )\n"
+            + "THEN 1=0 ELSE\n"
+            + "CAST([Store Size in SQFT].CURRENTMEMBER.CAPTION AS NUMERIC)  > 3500\n"
+            + "END\n"
+            + "\n"
+            + "), NOT ISEMPTY ([Measures].[Unit Sales]))'\n"
+            + " SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],[Store Size in SQFT].CURRENTMEMBER.ORDERKEY,BASC)'\n"
+            + " SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+            + " SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Store Size in SQFT].CURRENTMEMBER)})'\n"
+            + " MEMBER [Measures].[*FORMATTED_MEASURE_0] AS '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', "
+            + "SOLVE_ORDER=500\n"
+            + " SELECT\n"
+            + " [*BASE_MEMBERS__Measures_] ON COLUMNS\n"
+            + " , NON EMPTY\n"
+            + " [*SORTED_ROW_AXIS] ON ROWS\n"
+            + " FROM [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "Axis #2:\n"
+            + "{[Store Size in SQFT].[20319]}\n"
+            + "{[Store Size in SQFT].[21215]}\n"
+            + "{[Store Size in SQFT].[22478]}\n"
+            + "{[Store Size in SQFT].[23598]}\n"
+            + "{[Store Size in SQFT].[23688]}\n"
+            + "{[Store Size in SQFT].[27694]}\n"
+            + "{[Store Size in SQFT].[28206]}\n"
+            + "{[Store Size in SQFT].[30268]}\n"
+            + "{[Store Size in SQFT].[33858]}\n"
+            + "{[Store Size in SQFT].[39696]}\n"
+            + "Row #0: 26,079\n"
+            + "Row #1: 25,011\n"
+            + "Row #2: 2,117\n"
+            + "Row #3: 25,663\n"
+            + "Row #4: 21,333\n"
+            + "Row #5: 41,580\n"
+            + "Row #6: 2,237\n"
+            + "Row #7: 23,591\n"
+            + "Row #8: 35,257\n"
+            + "Row #9: 24,576\n");
+    }
+
     /**
      * Tests hierarchies of the same dimension on different axes.
      */
@@ -8986,75 +9036,75 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testMondrian2245() {
-        String mdxWithoutBug = "" +
-                "SELECT " +
-                "   {[Measures].[Sales]} ON Axis(0),\n" +
-                "   Hierarchize({[Product - no Bug].[Product Family].Members}) ON Axis(1)\n" +
-                "FROM " +
-                "   [No Bug]";
-        String mdxWithBug = "" +
-                "SELECT " +
-                "   {[Measures].[Sales]} ON Axis(0),\n" +
-                "   Hierarchize({[Product - Bug].[Product Family].Members}) ON Axis(1)\n" +
-                "FROM " +
-                "   [Bug]";
+        String mdxWithoutBug = ""
+            +  "SELECT "
+            +   "   {[Measures].[Sales]} ON Axis(0),\n"
+            +  "   Hierarchize({[Product - no Bug].[Product Family].Members}) ON Axis(1)\n"
+            +  "FROM "
+            +  "   [No Bug]";
+        String mdxWithBug = ""
+            +  "SELECT "
+            +  "   {[Measures].[Sales]} ON Axis(0),\n"
+            +  "   Hierarchize({[Product - Bug].[Product Family].Members}) ON Axis(1)\n"
+            +  "FROM "
+            +  "   [Bug]";
 
-        String schema = "" +
-                "<?xml version=\"1.0\"?>\n" +
-                "<Schema name=\"snowflake bug\">\n" +
-                        "  <Cube name=\"Bug\">\n" +
-                        "    <Table name=\"sales_fact_1997\"/>\n" +
-                        "    <Dimension name=\"Product - Bug\" foreignKey=\"product_id\" highCardinality=\"false\">\n" +
-                        "      <Hierarchy name=\"\" hasAll=\"true\" primaryKeyTable=\"product\" primaryKey=\"product_id\">\n" +
-                        "        <Join leftAlias=\"product_class\" leftKey=\"product_class_id\" rightAlias=\"product\" rightKey=\"product_class_id\">\n" +
-                        "          <Table name=\"product_class\" alias=\"product_class\"/>\n" +
-                        "          <Table name=\"product\" alias=\"product\"/>\n" +
-                        "        </Join>\n" +
-                        "        <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\" uniqueMembers=\"false\"/>\n" +
-                        "      </Hierarchy>\n" +
-                        "    </Dimension>\n" +
-                        "    <Measure name=\"Sales\" aggregator=\"sum\" column=\"store_sales\"/>\n" +
-                        "  </Cube>\n" +
-                        "  <Cube name=\"No Bug\">\n" +
-                        "    <Table name=\"sales_fact_1997\"/>\n" +
-                        "    <Dimension name=\"Product - no Bug\" highCardinality=\"false\" foreignKey=\"product_id\">\n" +
-                        "      <Hierarchy name=\"\" hasAll=\"true\" primaryKeyTable=\"product\" primaryKey=\"product_id\">\n" +
-                        "        <Join leftAlias=\"product\" leftKey=\"product_class_id\" rightAlias=\"product_class\" rightKey=\"product_class_id\">\n" +
-                        "          <Table name=\"product\" alias=\"product\"/>\n" +
-                        "          <Table name=\"product_class\" alias=\"product_class\"/>\n" +
-                        "        </Join>\n" +
-                        "        <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"/>\n" +
-                        "      </Hierarchy>\n" +
-                        "    </Dimension>\n" +
-                        "    <Measure name=\"Sales\" aggregator=\"sum\" column=\"store_sales\"/>\n" +
-                        "  </Cube>\n" +
-                        "</Schema>";
+        String schema = ""
+            +  "<?xml version=\"1.0\"?>\n"
+            +  "<Schema name=\"snowflake bug\">\n"
+            +  "  <Cube name=\"Bug\">\n"
+            +  "    <Table name=\"sales_fact_1997\"/>\n"
+            +  "    <Dimension name=\"Product - Bug\" foreignKey=\"product_id\" highCardinality=\"false\">\n"
+            +  "      <Hierarchy name=\"\" hasAll=\"true\" primaryKeyTable=\"product\" primaryKey=\"product_id\">\n"
+            +  "        <Join leftAlias=\"product_class\" leftKey=\"product_class_id\" rightAlias=\"product\" rightKey=\"product_class_id\">\n"
+            +  "          <Table name=\"product_class\" alias=\"product_class\"/>\n"
+            +  "          <Table name=\"product\" alias=\"product\"/>\n"
+            +  "        </Join>\n"
+            +  "        <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\" uniqueMembers=\"false\"/>\n"
+            +  "      </Hierarchy>\n"
+            +  "    </Dimension>\n"
+            +  "    <Measure name=\"Sales\" aggregator=\"sum\" column=\"store_sales\"/>\n"
+            +  "  </Cube>\n"
+            +  "  <Cube name=\"No Bug\">\n"
+            +  "    <Table name=\"sales_fact_1997\"/>\n"
+            +  "    <Dimension name=\"Product - no Bug\" highCardinality=\"false\" foreignKey=\"product_id\">\n"
+            +  "      <Hierarchy name=\"\" hasAll=\"true\" primaryKeyTable=\"product\" primaryKey=\"product_id\">\n"
+            +  "        <Join leftAlias=\"product\" leftKey=\"product_class_id\" rightAlias=\"product_class\" rightKey=\"product_class_id\">\n"
+            +  "          <Table name=\"product\" alias=\"product\"/>\n"
+            +  "          <Table name=\"product_class\" alias=\"product_class\"/>\n"
+            +  "        </Join>\n"
+            +  "        <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"/>\n"
+            +  "      </Hierarchy>\n"
+            +  "    </Dimension>\n"
+            +  "    <Measure name=\"Sales\" aggregator=\"sum\" column=\"store_sales\"/>\n"
+            +  "  </Cube>\n"
+            +  "</Schema>";
 
-        String expectedResultInBugCube = "" +
-                "Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Sales]}\n" +
-                "Axis #2:\n" +
-                "{[Product - Bug].[Drink]}\n" +
-                "{[Product - Bug].[Food]}\n" +
-                "{[Product - Bug].[Non-Consumable]}\n" +
-                "Row #0: 48,836.21\n" +
-                "Row #1: 409,035.59\n" +
-                "Row #2: 107,366.33\n";
+        String expectedResultInBugCube = ""
+              +  "Axis #0:\n"
+              +  "{}\n"
+              +  "Axis #1:\n"
+              +  "{[Measures].[Sales]}\n"
+              +  "Axis #2:\n"
+              +  "{[Product - Bug].[Drink]}\n"
+              +  "{[Product - Bug].[Food]}\n"
+              +  "{[Product - Bug].[Non-Consumable]}\n"
+              +  "Row #0: 48,836.21\n"
+              +  "Row #1: 409,035.59\n"
+              +  "Row #2: 107,366.33\n";
 
-        String expectedResultInNoBugCube = "" +
-                "Axis #0:\n" +
-                "{}\n" +
-                "Axis #1:\n" +
-                "{[Measures].[Sales]}\n" +
-                "Axis #2:\n" +
-                "{[Product - no Bug].[Drink]}\n" +
-                "{[Product - no Bug].[Food]}\n" +
-                "{[Product - no Bug].[Non-Consumable]}\n" +
-                "Row #0: 48,836.21\n" +
-                "Row #1: 409,035.59\n" +
-                "Row #2: 107,366.33\n";
+        String expectedResultInNoBugCube = ""
+              +  "Axis #0:\n"
+              +  "{}\n"
+              +  "Axis #1:\n"
+              +  "{[Measures].[Sales]}\n"
+              +  "Axis #2:\n"
+              +  "{[Product - no Bug].[Drink]}\n"
+              +  "{[Product - no Bug].[Food]}\n"
+              +  "{[Product - no Bug].[Non-Consumable]}\n"
+              +  "Row #0: 48,836.21\n"
+              +  "Row #1: 409,035.59\n"
+              +  "Row #2: 107,366.33\n";
         TestContext testContext = TestContext.instance()
                 .withFreshConnection()
                 .withSchema(schema);
@@ -9074,74 +9124,76 @@ public class BasicQueryTest extends FoodMartTestCase {
             executeQuery(mdx);
             fail("MondrianException is expected");
         } catch (MondrianException e) {
-          assertEquals("Mondrian Error:The "
-                  + "MDX function CURRENTMEMBER failed "
-                  + "because the coordinate for the '[Gender]'"
-                  + " hierarchy contains a set",
-                  e.getCause().getMessage());
+          assertEquals(
+              "Mondrian Error:The "
+              + "MDX function CURRENTMEMBER failed "
+              + "because the coordinate for the '[Gender]'"
+              + " hierarchy contains a set",
+              e.getCause().getMessage());
         }
     }
 
     public void testCurrentMemberWithCompoundSlicer2() {
-        String mdx = "" +
-                "with\n"
-                + "member [Measures].[Drink Sales Previous Period] as\n"
-                + "'( Time.CurrentMember.lag(1), [Product].[All Products].[Drink],"
-                + " measures.[unit sales] )'\n"
-                + "member [Measures].[Drink Sales Current Period] as\n"
-                + "'( Time.CurrentMember, [Product].[All Products].[Drink],"
-                + " [Measures].[Unit Sales] )'\n"
-                + "select\n"
-                + "{ [Measures].[Drink Sales Current Period],"
-                + " [Measures].[Drink Sales Current Period] } on 0\n"
-                + "from [Sales]\n"
-                + "where { [Time].[1997].[Q4],[Time].[1997].[Q3] }\n";
+        String mdx =
+            "with\n"
+            + "member [Measures].[Drink Sales Previous Period] as\n"
+            + "'( Time.CurrentMember.lag(1), [Product].[All Products].[Drink],"
+            + " measures.[unit sales] )'\n"
+            + "member [Measures].[Drink Sales Current Period] as\n"
+            + "'( Time.CurrentMember, [Product].[All Products].[Drink],"
+            + " [Measures].[Unit Sales] )'\n"
+            + "select\n"
+            + "{ [Measures].[Drink Sales Current Period],"
+            + " [Measures].[Drink Sales Current Period] } on 0\n"
+            + "from [Sales]\n"
+            + "where { [Time].[1997].[Q4],[Time].[1997].[Q3] }\n";
         try {
             executeQuery(mdx);
             fail("MondrianException is expected");
         } catch (MondrianException e) {
-          assertEquals("Mondrian Error:The "
-                  + "MDX function CURRENTMEMBER failed "
-                  + "because the coordinate for the '[Time]' "
-                  + "hierarchy contains a set",
-                  e.getCause().getMessage());
+          assertEquals(
+              "Mondrian Error:The "
+              + "MDX function CURRENTMEMBER failed "
+              + "because the coordinate for the '[Time]' "
+              + "hierarchy contains a set",
+              e.getCause().getMessage());
         }
     }
 
     public void testMondrian625() {
         assertQueriesReturnSimilarResults(
-                "select\n" +
-                        "    {[Measures].[Unit Sales]} ON COLUMNS,\n" +
-                        "    {Descendants([Customers].[All Customers], 4)} ON ROWS\n" +
-                        "from\n" +
-                        "    [Sales]\n" +
-                        "where\n" +
-                        "    ([Time].[1997].[Q4].[12])",
-                "select\n" +
-                        "    {[Measures].[Unit Sales]} ON COLUMNS,\n" +
-                        "    {[Customers].[Name].Members} ON ROWS\n" +
-                        "from\n" +
-                        "    [Sales]\n" +
-                        "where\n" +
-                        "    ([Time].[1997].[Q4].[12])\n",
-                getTestContext().withFreshConnection());
+            "select\n"
+            +  "    {[Measures].[Unit Sales]} ON COLUMNS,\n"
+            +  "    {Descendants([Customers].[All Customers], 4)} ON ROWS\n"
+            +  "from\n"
+            +  "    [Sales]\n"
+            +  "where\n"
+            +  "    ([Time].[1997].[Q4].[12])",
+            "select\n"
+            +  "    {[Measures].[Unit Sales]} ON COLUMNS,\n"
+            +  "    {[Customers].[Name].Members} ON ROWS\n"
+            +  "from\n"
+            +  "    [Sales]\n"
+            +  "where\n"
+            +  "    ([Time].[1997].[Q4].[12])\n",
+            getTestContext().withFreshConnection());
 
         assertQueriesReturnSimilarResults(
-                "select\n" +
-                        "    non empty {[Measures].[Unit Sales]} ON COLUMNS,\n" +
-                        "    non empty {Descendants([Customers].[All Customers], 4)} ON ROWS\n" +
-                        "from\n" +
-                        "    [Sales]\n" +
-                        "where\n" +
-                        "    ([Time].[1997].[Q4].[12])",
-                "select\n" +
-                        "    non empty {[Measures].[Unit Sales]} ON COLUMNS,\n" +
-                        "    non empty {[Customers].[Name].Members} ON ROWS\n" +
-                        "from\n" +
-                        "    [Sales]\n" +
-                        "where\n" +
-                        "    ([Time].[1997].[Q4].[12])\n",
-                getTestContext().withFreshConnection());
+            "select\n"
+            +  "    non empty {[Measures].[Unit Sales]} ON COLUMNS,\n"
+            +  "    non empty {Descendants([Customers].[All Customers], 4)} ON ROWS\n"
+            +  "from\n"
+            +  "    [Sales]\n"
+            +  "where\n"
+            +  "    ([Time].[1997].[Q4].[12])",
+            "select\n"
+            +  "    non empty {[Measures].[Unit Sales]} ON COLUMNS,\n"
+            +  "    non empty {[Customers].[Name].Members} ON ROWS\n"
+            +  "from\n"
+            +  "    [Sales]\n"
+            +  "where\n"
+            +  "    ([Time].[1997].[Q4].[12])\n",
+            getTestContext().withFreshConnection());
     }
 }
 

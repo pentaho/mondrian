@@ -1,18 +1,19 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (c) 2002-2018 Hitachi Vantara..  All rights reserved.
 */
-
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractBooleanCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.rolap.RolapMember;
+import mondrian.rolap.RolapUtil;
 
 /**
  * Definition of the <code>IS NULL</code> MDX function.
@@ -42,10 +43,18 @@ class IsNullFunDef extends FunDefBase {
         return new AbstractBooleanCalc(call, new Calc[]{memberCalc}) {
             public boolean evaluateBoolean(Evaluator evaluator) {
                 Member member = memberCalc.evaluateMember(evaluator);
-                return member.isNull();
-            }
-        };
-    }
+                return member.isNull()
+                   || nonAllWithNullKey((RolapMember) member);
+      }
+    };
+  }
+
+  /**
+   * Dimension members with a null value are treated as the null member.
+   */
+  private boolean nonAllWithNullKey(RolapMember member) {
+    return !member.isAll() && member.getKey() == RolapUtil.sqlNullValue;
+  }
 }
 
 // End IsNullFunDef.java
