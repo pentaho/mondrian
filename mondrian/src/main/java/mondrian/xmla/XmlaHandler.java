@@ -2022,6 +2022,7 @@ public class XmlaHandler {
                 "name", axisName);
 
             List<Hierarchy> hierarchies;
+            List<Property> props = new ArrayList<>(getProps(axis.getAxisMetaData()));
             Iterator<org.olap4j.Position> it = axis.getPositions().iterator();
             if (it.hasNext()) {
                 final org.olap4j.Position position = it.next();
@@ -2032,12 +2033,29 @@ public class XmlaHandler {
             } else {
                 hierarchies = axis.getAxisMetaData().getHierarchies();
             }
-            List<Property> props = getProps(axis.getAxisMetaData());
+
+            // remove a property without a valid associated hierarchy
+            props.removeIf(prop -> !isValidProp(axis.getPositions(), prop));
+
             writeHierarchyInfo(writer, hierarchies, props);
 
             writer.endElement(); // AxisInfo
 
             return hierarchies;
+        }
+
+        private boolean isValidProp(List<Position> positions, Property prop) {
+            if(!(prop instanceof IMondrianOlap4jProperty)){
+                return true;
+            }
+
+            for (Position pos : positions){
+                if(pos.getMembers().stream()
+                        .anyMatch(member -> Objects.nonNull(getHierarchyProperty(member, prop)))){
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void writeHierarchyInfo(
@@ -2284,7 +2302,7 @@ public class XmlaHandler {
                     value = member.getDepth();
                 } else {
                     value = (longProp instanceof IMondrianOlap4jProperty)
-                        ? getCurrentHierarchyProperty(member, longProp)
+                        ? getHierarchyProperty(member, longProp)
                         : member.getPropertyValue(longProp);
                 }
                 if (value != null) {
@@ -2294,8 +2312,8 @@ public class XmlaHandler {
             writer.endElement(); // Member
         }
 
-        private Object getCurrentHierarchyProperty(
-            Member member, Property longProp) throws OlapException
+        private Object getHierarchyProperty(
+            Member member, Property longProp)
         {
             IMondrianOlap4jProperty currentProperty =
                 (IMondrianOlap4jProperty) longProp;
@@ -2303,7 +2321,15 @@ public class XmlaHandler {
             String thatHierarchyName = currentProperty.getLevel()
                 .getHierarchy().getName();
             if (thisHierarchyName.equals(thatHierarchyName)) {
-                return member.getPropertyValue(currentProperty);
+                try {
+                    return member.getPropertyValue(currentProperty);
+                } catch (OlapException e) {
+                    throw new XmlaException(
+                            SERVER_FAULT_FC,
+                            HSB_BAD_PROPERTIES_LIST_CODE,
+                            HSB_BAD_PROPERTIES_LIST_FAULT_FS,
+                            e);
+                }
             }
             // if property doesn't belong to current hierarchy return null
             return null;
