@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2015 Pentaho and others
+// Copyright (C) 2005-2018 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.xmla;
@@ -24,15 +24,19 @@ import java.util.Properties;
 public class XmlaDimensionPropertiesTest extends XmlaBaseTestCase {
 
     public void testOneHierarchyProperties() throws Exception {
-        executeTest();
+        executeTest("HR");
     }
 
     public void testTwoHierarchiesProperties() throws Exception {
-        executeTest();
+        executeTest("HR");
     }
 
-    private void executeTest() throws Exception {
-        TestContext context = getTestContext().withCube("HR");
+    public void testMondrian2342() throws Exception {
+        executeTest("Sales");
+    }
+
+    private void executeTest(String cubeName) throws Exception {
+        TestContext context = getTestContext().withCube(cubeName);
         String requestType = "EXECUTE";
         Properties props = getDefaultRequestProperties(requestType);
         doTest(requestType, props, context);
