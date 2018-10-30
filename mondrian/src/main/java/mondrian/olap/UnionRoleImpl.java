@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2002-2017 Hitachi Vantara and others
+// Copyright (C) 2002-2018 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -286,8 +286,8 @@ class UnionRoleImpl implements Role {
                 for (int i = 0; i < list.size(); i++) {
                     HierarchyAccess hierarchyAccess = list.get(i);
                     if (hierarchyAccess instanceof AllHierarchyAccess
-                            && ((AllHierarchyAccess) hierarchyAccess)
-                            .getAccess() != Access.NONE)
+                        ? ((AllHierarchyAccess) hierarchyAccess).getAccess()
+                        != Access.NONE : true)
                     {
                         int currentDepth =
                             hierarchyAccess.getBottomLevelDepth();
