@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara
+// Copyright (C) 2005-2018 Hitachi Vantara
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -746,12 +746,15 @@ public class AccessControlTest extends FoodMartTestCase {
 
     public void testBugMondrian_2586_RaggedDimMembersShouldBeVisible() {
       String raggedUser =
-              "<Role name=\"Sales Ragged\">\n"
-            + "  <SchemaGrant access=\"none\">\n"
-            + "    <CubeGrant cube=\"Sales Ragged\" access=\"all\" />\n"
-            + "  </SchemaGrant>\n"
-            + "</Role>";
-    final TestContext raggedSales = TestContext.instance().create( null, null, null, null, null, raggedUser ).withRole( "Sales Ragged" );
+          "<Role name=\"Sales Ragged\">\n"
+          + "  <SchemaGrant access=\"none\">\n"
+          + "    <CubeGrant cube=\"Sales Ragged\" access=\"all\" />\n"
+          + "  </SchemaGrant>\n"
+          + "</Role>";
+    final TestContext raggedSales =
+            TestContext.instance()
+                .create(null, null, null, null, null, raggedUser)
+                .withRole("Sales Ragged");
     //[Geography].[Country]
     raggedSales.assertQueryReturns(
         "select {[Measures].[Unit Sales]} ON COLUMNS, {[Geography].[Country].MEMBERS} ON ROWS from [Sales Ragged]",
@@ -1599,6 +1602,58 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Row #0: 3,583\n"
             + "Row #0: 124,366\n");
         checkQuery(testContext.withRole("Role1,Role2"), mdx);
+    }
+
+    public void testUnionOfUnionRole() {
+        String roleDefs =
+            "<Role name=\"USA manager\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "      <DimensionGrant access=\"all\" dimension=\"[Measures]\"/>\n"
+            + "      <HierarchyGrant access=\"custom\" hierarchy=\"[Customers]\">\n"
+            + "        <MemberGrant access=\"all\" member=\"[Customers].[USA]\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>\n"
+            + "<Role name=\"parent of USA manager\">\n"
+            + "  <Union>\n"
+            + "    <RoleUsage roleName=\"USA manager\"/>\n"
+            + "  </Union>\n"
+            + "</Role>"
+            + "<Role name=\"grandparent of USA manager\">\n"
+            + "  <Union>\n"
+            + "    <RoleUsage roleName=\"parent of USA manager\"/>\n"
+            + "  </Union>\n"
+            + "</Role>";
+
+        final TestContext testContext =
+                TestContext.instance()
+                        .create(null, null, null, null, null, roleDefs);
+
+        Connection connection =
+                testContext.withRole("grandparent of USA manager")
+                        .getConnection();
+
+        // Can access [Sales]?
+        assertCubeAccess(connection, Access.ALL, "Sales");
+
+        // Has custom access to [Customers]?
+        assertHierarchyAccess
+                (connection, Access.CUSTOM, "Sales", "[Customers]");
+
+        final Role.HierarchyAccess hierarchyAccess =
+                getHierarchyAccess(connection, "Sales", "[Customers]");
+
+        // Can access all levels of the [Customers] hierarchy?
+        assertEquals(0, hierarchyAccess.getTopLevelDepth());
+        assertEquals(4, hierarchyAccess.getBottomLevelDepth());
+
+        // Can see [USA]?
+        assertMemberAccess(connection, Access.ALL, "[Customers].[USA]");
+
+        // Cannot see [Mexico]?
+        assertMemberAccess(connection, Access.NONE, "[Customers].[Mexico]");
     }
 
     /**
