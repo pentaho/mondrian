@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara
+// Copyright (C) 2005-2018 Hitachi Vantara
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -121,7 +121,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         return processMemberChildren(fullChildren, children, constraint);
     }
 
-    private Map<RolapMember, Access> processMemberChildren(
+    Map<RolapMember, Access> processMemberChildren(
         List<RolapMember> fullChildren,
         List<RolapMember> children,
         MemberChildrenConstraint constraint)
@@ -134,15 +134,8 @@ class RestrictedMemberReader extends DelegatingMemberReader {
             RolapMember member = fullChildren.get(i);
 
             // If a child is hidden (due to raggedness)
-            // or doesn't have access include its children.
             // This must be done before applying access-control.
-            final Access access;
-            if (hierarchyAccess != null) {
-                access = hierarchyAccess.getAccess(member);
-            } else {
-                access = Access.ALL;
-            }
-            if ((ragged && member.isHidden()) || access.equals(Access.NONE)) {
+            if ((ragged && member.isHidden())) {
                 // Replace this member with all of its children.
                 // They might be hidden too, but we'll get to them in due
                 // course. They also might be access-controlled; that's why
@@ -164,6 +157,12 @@ class RestrictedMemberReader extends DelegatingMemberReader {
 
             // Filter out children which are invisible because of
             // access-control.
+            final Access access;
+            if (hierarchyAccess != null) {
+                access = hierarchyAccess.getAccess(member);
+            } else {
+                access = Access.ALL;
+            }
             switch (access) {
             case NONE:
                 break;
