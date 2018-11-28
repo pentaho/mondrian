@@ -786,6 +786,12 @@
         Zero size Aggregate table ''{0}'' for Fact Table ''{1}''.
     </text>
 </message>
+
+<message id="7000421" name="AggTableNoConstraintGenerated">
+    <text>
+        Aggregate star fact table ''{0}'':  A constraint will not be generated because name column is not the same as key column.
+    </text>
+</message>
 <!-- Aggregate tables: end -->
 
 <exception id="7000500" name="CacheFlushRegionMustContainMembers">
