@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2018 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -75,6 +75,7 @@ public class SqlConstraintUtils {
 
     private static final Logger LOG =
         Logger.getLogger(SqlConstraintUtils.class);
+    private static final MondrianResource mres = MondrianResource.instance();
 
     /** Utility class */
     private SqlConstraintUtils() {
@@ -1674,6 +1675,12 @@ public class SqlConstraintUtils {
                 // as the key column
                 int bitPos = column.getBitPosition();
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+
+                if(aggColumn == null){
+                    LOG.warn(mres.AggTableNoConstraintGenerated.str(aggStar.getFactTable().getName()));
+                    return "";
+                }
+
                 columnString = aggColumn.generateExprString(query);
             } else {
                 columnString = column.generateExprString(query);
