@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+// Copyright (c) 2002-2018 Hitachi Vantara..  All rights reserved.
 */
 package mondrian.rolap;
 
@@ -17,15 +17,17 @@ import mondrian.olap.Role;
 import mondrian.olap.Role.HierarchyAccess;
 import mondrian.olap.Schema;
 import mondrian.rolap.RestrictedMemberReader.MultiCardinalityDefaultMember;
+import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.test.FoodMartTestCase;
 
 import junit.framework.Assert;
 
 import org.mockito.Mockito;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class RestrictedMemberReaderTest extends FoodMartTestCase {
 
@@ -295,6 +297,37 @@ public class RestrictedMemberReaderTest extends FoodMartTestCase {
       }
     }
     return null;
+  }
+
+  public void testProcessMemberChildren() {
+
+      MemberReader delegateMemberReader = Mockito.mock(MemberReader.class);
+      MemberChildrenConstraint constraint = Mockito.mock(MemberChildrenConstraint.class);
+      Role role = Mockito.mock(Role.class);
+      Schema schema = Mockito.mock(Schema.class);
+      Dimension dimension = Mockito.mock(Dimension.class);
+      RolapHierarchy hierarchy = Mockito.mock(RolapHierarchy.class);
+
+      Level[] hierarchyAccessLevels = new Level[] { null };
+
+      Mockito.doReturn(schema).when(dimension).getSchema();
+      Mockito.doReturn(dimension).when(hierarchy).getDimension();
+      Mockito.doReturn(hierarchyAccessLevels).when(hierarchy).getLevels();
+      Mockito.doReturn(true).when(hierarchy).isRagged();
+      Mockito.doReturn(hierarchy).when(delegateMemberReader).getHierarchy();
+
+      List<RolapMember> children = new ArrayList<>();
+      children.add(mockMember());
+
+      List<RolapMember> fullChildren = new ArrayList<>();
+      fullChildren.add(mockMember());
+      fullChildren.add(mockMember());
+
+      rmr = new RestrictedMemberReader(delegateMemberReader, role);
+      final Map<RolapMember, Access> testResult = rmr.processMemberChildren(fullChildren, children, constraint);
+
+      Assert.assertEquals(2, testResult.size());
+      Assert.assertTrue(testResult.containsValue(Access.ALL));
   }
 }
 // End RestrictedMemberReaderTest.java
