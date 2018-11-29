@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2018 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -35,7 +35,11 @@ import mondrian.olap.type.DecimalType;
 import mondrian.olap.type.NullType;
 import mondrian.olap.type.TupleType;
 import mondrian.olap.type.Type;
+import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.rolap.sql.SqlQuery;
 import mondrian.server.Execution;
+import mondrian.spi.Dialect;
+import mondrian.spi.DialectManager;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 
@@ -815,6 +819,30 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
         when(mock.isParentChildLeaf()).thenReturn(isParentChildLeaf);
         when(mock.getHierarchy()).thenReturn(hierarchy);
         return mock;
+    }
+
+    public void testConstrainLevel(){
+
+        final RolapCubeLevel level = mock( RolapCubeLevel.class);
+        final RolapCube baseCube = mock(RolapCube.class);
+        final RolapStar.Column column = mock(RolapStar.Column.class);
+
+        final TestContext testContext = TestContext.instance();
+        final Connection connection = testContext.getConnection();
+
+        final AggStar aggStar = null;
+        final Dialect dialect =  DialectManager.createDialect(connection.getDataSource(), null);
+        final SqlQuery query = new SqlQuery(dialect);
+
+        when(level.getBaseStarKeyColumn(baseCube)).thenReturn(column);
+        when(column.getNameColumn()).thenReturn(column);
+        when(column.generateExprString(query)).thenReturn("dummyName");
+
+        String[] columnValue = new String[1];
+        columnValue[0] = "dummyValue";
+
+        String levelStr = SqlConstraintUtils.constrainLevel(level, query, baseCube, aggStar, columnValue, false);
+        assertEquals("dummyName = 'dummyValue'",  levelStr);
     }
 }
 
