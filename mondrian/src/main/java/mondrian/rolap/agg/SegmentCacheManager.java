@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2017 Hitachi Vantara.
+// Copyright (c) 2002-2018 Hitachi Vantara.
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -350,7 +350,6 @@ public class SegmentCacheManager {
         }
         return false;
     }
-    
     public <T> T execute(Command<T> command) {
         return ACTOR.execute(handler, command);
     }
@@ -995,6 +994,9 @@ public class SegmentCacheManager {
             responseMap =
             new BlockingHashMap<Command<?>, Pair<Object, Throwable>>(1000);
 
+        private volatile boolean shutdown = false;
+        private final Object lock = new Object();
+
         public void run() {
             try {
                 for (;;) {
@@ -1018,9 +1020,36 @@ public class SegmentCacheManager {
                                     command,
                                     Pair.of(null, (Throwable) e));
                             } catch (PleaseShutdownException e) {
+                                // on shutdown, stop accepting new
+                                // queue elements, then drain the
+                                // existing queue putting errors
+                                // in the responseMap
+                                synchronized (lock) {
+                                    shutdown = true;
+                                }
+
                                 responseMap.put(
                                     command,
                                     Pair.of(null, (Throwable) null));
+
+                                List<Pair<Handler, Message>> pendingQueue =
+                                        new ArrayList<>(eventQueue.size());
+                                eventQueue.drainTo(pendingQueue);
+                                for (Pair<Handler, Message
+                                    > queueElement : pendingQueue)
+                                {
+                                    if (queueElement.getValue()
+                                        instanceof Command<?>)
+                                    {
+                                        responseMap.put(
+                                            (Command<?>)queueElement.getValue(),
+                                            Pair.of(
+                                                null,
+                                                    (Throwable)Util.newError(
+                                                        "Actor queue already shut down")));
+                                    }
+                                }
+
                                 return; // exit event loop
                             } catch (Throwable e) {
                                 responseMap.put(
@@ -1050,6 +1079,13 @@ public class SegmentCacheManager {
         }
 
         <T> T execute(Handler handler, Command<T> command) {
+            synchronized (lock) {
+                if (shutdown) {
+                    throw Util.newError(
+                        "Command submitted after shutdown " + command);
+                }
+            }
+
             try {
                 eventQueue.put(Pair.<Handler, Message>of(handler, command));
             } catch (InterruptedException e) {
@@ -1075,6 +1111,13 @@ public class SegmentCacheManager {
         }
 
         public void event(Handler handler, Event event) {
+            synchronized (lock) {
+                if (shutdown) {
+                    throw Util.newError(
+                        "Event submitted after shutdown " + event);
+                }
+            }
+
             try {
                 eventQueue.put(Pair.<Handler, Message>of(handler, event));
             } catch (InterruptedException e) {
