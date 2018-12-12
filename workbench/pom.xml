@@ -5,11 +5,10 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-mondrian-parent-pom</artifactId>
-    <version>3.14-SNAPSHOT</version>
+    <version>3.14.0.19-174</version>
   </parent>
   <artifactId>workbench</artifactId>
-  <version>3.14-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <version>3.14.0.19-174</version>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>Mondrian Schema Workbench</description>
   <url>http://mondrian.pentaho.com</url>
@@ -19,13 +18,13 @@
     <url>scm:git:git@github.com:pentaho/${project.artifactId}.git</url>
   </scm>
   <properties>
-    <dependency.kettle.revision>7.1-SNAPSHOT</dependency.kettle.revision>
-    <pentaho-launcher.version>7.1-SNAPSHOT</pentaho-launcher.version>
-    <dependency.groovy-all.revision>2.4.8</dependency.groovy-all.revision>
-    <dependency.jersey.revision>1.19.1</dependency.jersey.revision>
-    <dependency.pdi-dataservice-client-plugin.revision>7.1-SNAPSHOT</dependency.pdi-dataservice-client-plugin.revision>
-    <dependency.oss-licenses.revision>7.1-SNAPSHOT</dependency.oss-licenses.revision>
     <jlfgr.version>1.0</jlfgr.version>
+    <dependency.groovy-all.revision>2.4.8</dependency.groovy-all.revision>
+    <dependency.pdi-dataservice-client-plugin.revision>7.1.0.19-174</dependency.pdi-dataservice-client-plugin.revision>
+    <dependency.oss-licenses.revision>7.1.0.19-174</dependency.oss-licenses.revision>
+    <pentaho-launcher.version>7.1.0.19-174</pentaho-launcher.version>
+    <dependency.jersey.revision>1.19.1</dependency.jersey.revision>
+    <dependency.kettle.revision>7.1.0.19-174</dependency.kettle.revision>
   </properties>
   <dependencies>
     <dependency>
@@ -34,8 +33,8 @@
       <version>${eigenbase-xom.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>*</groupId>
           <artifactId>*</artifactId>
+          <groupId>*</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -45,8 +44,8 @@
       <version>${eigenbase-properties.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>*</groupId>
           <artifactId>*</artifactId>
+          <groupId>*</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -56,8 +55,8 @@
       <version>${commons-io.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>*</groupId>
           <artifactId>*</artifactId>
+          <groupId>*</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -67,8 +66,8 @@
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>*</groupId>
           <artifactId>*</artifactId>
+          <groupId>*</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -78,8 +77,8 @@
       <version>${dependency.kettle.revision}</version>
       <exclusions>
         <exclusion>
-          <groupId>*</groupId>
           <artifactId>*</artifactId>
+          <groupId>*</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -89,8 +88,8 @@
       <version>${dependency.kettle.revision}</version>
       <exclusions>
         <exclusion>
+          <artifactId>*</artifactId>
           <groupId>*</groupId>
-           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -100,8 +99,8 @@
       <version>${dependency.kettle.revision}</version>
       <exclusions>
         <exclusion>
-          <groupId>*</groupId>
           <artifactId>*</artifactId>
+          <groupId>*</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -111,8 +110,8 @@
       <version>${dependency.kettle.revision}</version>
       <exclusions>
         <exclusion>
-          <groupId>*</groupId>
           <artifactId>*</artifactId>
+          <groupId>*</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -122,8 +121,8 @@
       <version>1.2.14</version>
       <exclusions>
         <exclusion>
-          <groupId>*</groupId>
           <artifactId>*</artifactId>
+          <groupId>*</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -151,17 +150,16 @@
           </filesets>
         </configuration>
       </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-jar-plugin</artifactId>
-          <configuration>
-            <archive>
-              <manifest>
-                <mainClass>mondrian.gui.Workbench</mainClass>
-              </manifest>
-            </archive>
-          </configuration>
-        </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>mondrian.gui.Workbench</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <version>1.7</version>
@@ -173,12 +171,12 @@
             </goals>
             <configuration>
               <target>
-                <property name="classpath" refid="maven.compile.classpath"/>
-                <property name="relative.java.dir" value="src/main/java"/>
-                <property name="relative.generated.java.dir" value="src/generated/java"/>
-                <property name="generated.java.dir" value="${project.basedir}/src/generated/java"/>
-                <mkdir dir="${project.build.outputDirectory}"/>
-                <mkdir dir="${generated.java.dir}/mondrian/olap"/>
+                <property name="classpath" refid="maven.compile.classpath" />
+                <property name="relative.java.dir" value="src/main/java" />
+                <property name="relative.generated.java.dir" value="src/generated/java" />
+                <property name="generated.java.dir" value="${project.basedir}/src/generated/java" />
+                <mkdir dir="${project.build.outputDirectory}" />
+                <mkdir dir="${generated.java.dir}/mondrian/olap" />
                 <ant target="def" />
               </target>
             </configuration>
