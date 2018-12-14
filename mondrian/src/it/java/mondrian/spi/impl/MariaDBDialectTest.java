@@ -31,6 +31,7 @@ public class MariaDBDialectTest extends TestCase {
 
     private final Connection connection = mock(Connection.class);
     private final Statement statement = mock(Statement.class);
+    private MariaDBDialect dialect;
 
     @Override
     public void setUp() throws Exception {
@@ -39,6 +40,7 @@ public class MariaDBDialectTest extends TestCase {
         when( metaData.getDatabaseProductName() ).thenReturn( "MariaDB" );
         when( metaData.getDatabaseProductVersion() ).thenReturn( version );
         when( connection.createStatement() ).thenReturn( statement );
+        dialect = new MariaDBDialect( connection );
     }
 
     @SuppressWarnings("SqlNoDataSourceInspection")
@@ -51,5 +53,9 @@ public class MariaDBDialectTest extends TestCase {
 
         final Dialect dialect = DialectManager.createDialect( dataSource, connection );
         assertEquals( "Implementation class", dialect.getClass(), MariaDBDialect.class );
+    }
+
+    public void testAllowFromQuery() {
+        assertTrue("Allow from query", dialect.allowsFromQuery());
     }
 }
