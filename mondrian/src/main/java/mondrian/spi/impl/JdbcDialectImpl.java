@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2017 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2019 Hitachi Vantara.  All rights reserved.
 */
 package mondrian.spi.impl;
 
@@ -457,12 +457,21 @@ public class JdbcDialectImpl implements Dialect {
         String value)
     {
         // NOTE jvs 1-Jan-2007:  See quoteTimestampLiteral for explanation.
+        Timestamp timestamp;
         try {
-            Timestamp.valueOf(value);
+            timestamp = Timestamp.valueOf(value);
         } catch (IllegalArgumentException ex) {
             throw new NumberFormatException(
                 "Illegal TIMESTAMP literal:  " + value);
         }
+        quoteTimestampLiteral(buf, timestamp.toString(), timestamp);
+    }
+
+    protected void quoteTimestampLiteral(
+        StringBuilder buf,
+        String value,
+        Timestamp timestamp)
+    {
         buf.append("TIMESTAMP ");
         Util.singleQuoteString(value, buf);
     }
