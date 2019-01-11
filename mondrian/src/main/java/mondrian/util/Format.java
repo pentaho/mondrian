@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2000-2005 Julian Hyde
-// Copyright (C) 2005-2018 Hitachi Vantara and others
+// Copyright (C) 2005-2019 Hitachi Vantara and others
 // All Rights Reserved.
 //
 // jhyde, 2 November, 2000
@@ -2295,7 +2295,7 @@ public class Format {
      * Returns the best {@link FormatLocale} for a given {@link Locale}.
      * Never returns null, even if <code>locale</code> is null.
      */
-    public static synchronized FormatLocale getBestFormatLocale(Locale locale)
+    public static FormatLocale getBestFormatLocale(Locale locale)
     {
         FormatLocale formatLocale;
         if (locale == null) {

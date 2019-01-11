@@ -49,42 +49,7 @@ public class DefaultRules {
      * There is a single instance of the {@link DefaultRecognizer} and the
      * {@link DefaultRules} class is a container of that instance.
      */
-    public static synchronized DefaultRules getInstance() {
-        if (instance == null) {
-            InputStream inStream = getAggRuleInputStream();
-            if (inStream  == null) {
-                return null;
-            }
-
-            DefaultDef.AggRules defs = makeAggRules(inStream);
-
-            // validate the DefaultDef.AggRules object
-            ListRecorder reclists = new ListRecorder();
-            try {
-                defs.validate(reclists);
-            } catch (RecorderException e) {
-                // ignore
-            }
-
-            reclists.logWarningMessage(LOGGER);
-            reclists.logErrorMessage(LOGGER);
-
-            if (reclists.hasErrors()) {
-                reclists.throwRTException();
-            }
-
-
-            // make sure the tag name exists
-            String tag = MondrianProperties.instance().AggregateRuleTag.get();
-            DefaultDef.AggRule aggrule = defs.getAggRule(tag);
-            if (aggrule == null) {
-                throw mres.MissingDefaultAggRule.ex(tag);
-            }
-
-            DefaultRules rules = new DefaultRules(defs);
-            rules.setTag(tag);
-            instance = rules;
-        }
+    public static DefaultRules getInstance() {
         return instance;
     }
 
@@ -158,6 +123,38 @@ public class DefaultRules {
         final MondrianProperties properties = MondrianProperties.instance();
         properties.AggregateRules.addTrigger(trigger);
         properties.AggregateRuleTag.addTrigger(trigger);
+
+        // Initialize Instance
+        InputStream inStream = getAggRuleInputStream();
+        if (inStream  != null) {
+            DefaultDef.AggRules defs = makeAggRules( inStream );
+
+            // validate the DefaultDef.AggRules object
+            ListRecorder reclists = new ListRecorder();
+            try {
+                defs.validate( reclists );
+            } catch ( RecorderException e ) {
+                // ignore
+            }
+
+            reclists.logWarningMessage( LOGGER );
+            reclists.logErrorMessage( LOGGER );
+
+            if ( reclists.hasErrors() ) {
+                reclists.throwRTException();
+            }
+
+            // make sure the tag name exists
+            String tag = MondrianProperties.instance().AggregateRuleTag.get();
+            DefaultDef.AggRule aggrule = defs.getAggRule( tag );
+            if ( aggrule == null ) {
+                throw mres.MissingDefaultAggRule.ex( tag );
+            }
+
+            DefaultRules rules = new DefaultRules( defs );
+            rules.setTag( tag );
+            instance = rules;
+        }
     }
 
     protected static DefaultDef.AggRules makeAggRules(final File file) {

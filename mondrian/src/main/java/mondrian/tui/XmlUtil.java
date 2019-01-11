@@ -716,7 +716,7 @@ public class XmlUtil {
      *
      * @return Xerces version number as int array
      */
-    public static synchronized int[] getXercesVersionNumbers() {
+    public static int[] getXercesVersionNumbers() {
         if (versionNumbers == null) {
             int[] verNums = new int[3];
             String verNumStr = getXercesVersionNumberString();

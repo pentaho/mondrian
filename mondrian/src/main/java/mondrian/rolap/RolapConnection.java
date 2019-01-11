@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2019 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -71,9 +71,24 @@ public class RolapConnection extends ConnectionBase {
     private Scenario scenario;
     private boolean closed = false;
 
-    private static DataSourceResolver dataSourceResolver;
+    private static final DataSourceResolver dataSourceResolver;
     private final int id;
     private final Statement internalStatement;
+
+    static {
+        final StringProperty property = MondrianProperties.instance().DataSourceResolverClass;
+        final String className = property.get( JndiDataSourceResolver.class.getName());
+        try {
+            dataSourceResolver = ClassResolver.INSTANCE.instantiateSafe(className);
+        } catch (ClassCastException e) {
+            throw Util.newInternal(
+                e,
+                "Plugin class specified by property "
+                    + property.getPath()
+                    + " must implement "
+                    + DataSourceResolver.class.getName());
+        }
+    }
 
     /**
      * Creates a connection.
@@ -448,25 +463,7 @@ public class RolapConnection extends ConnectionBase {
      *
      * @return data source resolver
      */
-    private static synchronized DataSourceResolver getDataSourceResolver() {
-        if (dataSourceResolver == null) {
-            final StringProperty property =
-                MondrianProperties.instance().DataSourceResolverClass;
-            final String className =
-                property.get(
-                    JndiDataSourceResolver.class.getName());
-            try {
-                dataSourceResolver =
-                    ClassResolver.INSTANCE.instantiateSafe(className);
-            } catch (ClassCastException e) {
-                throw Util.newInternal(
-                    e,
-                    "Plugin class specified by property "
-                    + property.getPath()
-                    + " must implement "
-                    + DataSourceResolver.class.getName());
-            }
-        }
+    private static DataSourceResolver getDataSourceResolver() {
         return dataSourceResolver;
     }
 
