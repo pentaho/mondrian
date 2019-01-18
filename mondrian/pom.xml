@@ -27,7 +27,7 @@
     <driver.version.major>${project.version.major}</driver.version.major>
     <driver.version.minor>${project.version.minor}</driver.version.minor>
     <vendor>Pentaho</vendor>
-    <copyright.year>2018</copyright.year>
+    <copyright.year>2019</copyright.year>
 
     <xml-apis.version>2.0.2</xml-apis.version>
   </properties>
