@@ -5,10 +5,10 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-mondrian-assemblies</artifactId>
-    <version>3.14-SNAPSHOT</version>
+    <version>3.14.0.20-183</version>
   </parent>
   <artifactId>psw-ce</artifactId>
-  <version>3.14-SNAPSHOT</version>
+  <version>3.14.0.20-183</version>
   <packaging>pom</packaging>
   <name>Pentaho Schema Workbench - CE</name>
   <description>Mondrian Schema Workbench</description>
@@ -19,14 +19,14 @@
     <url>scm:git:git@github.com:pentaho/${project.artifactId}.git</url>
   </scm>
   <properties>
-    <dependency.kettle.revision>7.1-SNAPSHOT</dependency.kettle.revision>
-    <pentaho-launcher.version>7.1-SNAPSHOT</pentaho-launcher.version>
-    <dependency.groovy-all.revision>2.4.8</dependency.groovy-all.revision>
-    <dependency.jersey.revision>1.19.1</dependency.jersey.revision>
-    <dependency.pdi-dataservice-client-plugin.revision>7.1-SNAPSHOT</dependency.pdi-dataservice-client-plugin.revision>
-    <dependency.oss-licenses.revision>7.1-SNAPSHOT</dependency.oss-licenses.revision>
     <jlfgr.version>1.0</jlfgr.version>
     <guava.version>17.0</guava.version>
+    <dependency.groovy-all.revision>2.4.8</dependency.groovy-all.revision>
+    <dependency.pdi-dataservice-client-plugin.revision>7.1.0.20-183</dependency.pdi-dataservice-client-plugin.revision>
+    <dependency.oss-licenses.revision>7.1.0.20-183</dependency.oss-licenses.revision>
+    <pentaho-launcher.version>7.1.0.20-183</pentaho-launcher.version>
+    <dependency.jersey.revision>1.19.1</dependency.jersey.revision>
+    <dependency.kettle.revision>7.1.0.20-183</dependency.kettle.revision>
   </properties>
   <dependencies>
     <dependency>
@@ -35,16 +35,16 @@
       <version>${eigenbase-xom.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>org.apache.ant</groupId>
           <artifactId>ant</artifactId>
+          <groupId>org.apache.ant</groupId>
         </exclusion>
         <exclusion>
-          <groupId>xalan</groupId>
           <artifactId>xalan</artifactId>
+          <groupId>xalan</groupId>
         </exclusion>
         <exclusion>
-          <groupId>xerces</groupId>
           <artifactId>xmlParserAPIs</artifactId>
+          <groupId>xerces</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -59,24 +59,24 @@
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>net.java.dev.javacc</groupId>
           <artifactId>javacc</artifactId>
+          <groupId>net.java.dev.javacc</groupId>
         </exclusion>
         <exclusion>
-          <groupId>commons-discovery</groupId>
           <artifactId>commons-discovery</artifactId>
+          <groupId>commons-discovery</groupId>
         </exclusion>
         <exclusion>
-          <groupId>javax.servlet</groupId>
           <artifactId>jsp-api</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>javax.servlet</groupId>
-          <artifactId>servlet-api</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>javax.validation</groupId>
+          <artifactId>servlet-api</artifactId>
+          <groupId>javax.servlet</groupId>
+        </exclusion>
+        <exclusion>
           <artifactId>validation-api</artifactId>
+          <groupId>javax.validation</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -91,64 +91,64 @@
       <version>${dependency.kettle.revision}</version>
       <exclusions>
         <exclusion>
-          <groupId>org.apache.avalon.framework</groupId>
           <artifactId>avalon-framework-api</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>org.apache.avalon.framework</groupId>
+        </exclusion>
+        <exclusion>
           <artifactId>avalon-framework-impl</artifactId>
+          <groupId>org.apache.avalon.framework</groupId>
         </exclusion>
         <exclusion>
-          <groupId>org.apache.xmlgraphics</groupId>
           <artifactId>batik-js</artifactId>
+          <groupId>org.apache.xmlgraphics</groupId>
         </exclusion>
         <exclusion>
-          <groupId>org.apache.xmlgraphics</groupId>
           <artifactId>batik-svggen</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>org.apache.xmlgraphics</groupId>
+        </exclusion>
+        <exclusion>
           <artifactId>fop</artifactId>
+          <groupId>org.apache.xmlgraphics</groupId>
         </exclusion>
         <exclusion>
-          <groupId>org.owasp.antisamy</groupId>
           <artifactId>antisamy</artifactId>
+          <groupId>org.owasp.antisamy</groupId>
         </exclusion>
         <exclusion>
-          <groupId>org.beanshell</groupId>
           <artifactId>bsh-core</artifactId>
+          <groupId>org.beanshell</groupId>
         </exclusion>
         <exclusion>
-          <groupId>commons-digester</groupId>
           <artifactId>commons-digester</artifactId>
+          <groupId>commons-digester</groupId>
         </exclusion>
         <exclusion>
-          <groupId>commons-fileupload</groupId>
           <artifactId>commons-fileupload</artifactId>
+          <groupId>commons-fileupload</groupId>
         </exclusion>
         <exclusion>
-          <groupId>commons-configuration</groupId>
           <artifactId>commons-configuration</artifactId>
+          <groupId>commons-configuration</groupId>
         </exclusion>
         <exclusion>
-          <groupId>org.apache.karaf</groupId>
           <artifactId>org.apache.karaf.main</artifactId>
+          <groupId>org.apache.karaf</groupId>
         </exclusion>
         <exclusion>
-          <groupId>xalan</groupId>
           <artifactId>xalan</artifactId>
+          <groupId>xalan</groupId>
         </exclusion>
         <exclusion>
-          <groupId>xerces</groupId>
           <artifactId>xmlParserAPIs</artifactId>
+          <groupId>xerces</groupId>
         </exclusion>
         <exclusion>
-          <groupId>org.tukaani</groupId>
           <artifactId>xz</artifactId>
+          <groupId>org.tukaani</groupId>
         </exclusion>
         <exclusion>
-          <groupId>xom</groupId>
           <artifactId>xom</artifactId>
+          <groupId>xom</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -158,12 +158,12 @@
       <version>${dependency.kettle.revision}</version>
       <exclusions>
         <exclusion>
-          <groupId>jdom</groupId>
           <artifactId>jdom</artifactId>
+          <groupId>jdom</groupId>
         </exclusion>
         <exclusion>
-          <groupId>xom</groupId>
           <artifactId>xom</artifactId>
+          <groupId>xom</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -238,8 +238,6 @@
       <groupId>jaxen</groupId>
       <artifactId>jaxen</artifactId>
     </dependency>
-    
-    <!-- change bellow scope to runtime to include database drivers -->
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
@@ -256,7 +254,6 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
@@ -283,7 +280,6 @@
               <includeArtifactIds>pdi-dataservice-client-plugin</includeArtifactIds>
             </configuration>
           </execution>
-
           <execution>
             <id>add-drivers</id>
             <phase>generate-resources</phase>
@@ -296,7 +292,6 @@
               <includeArtifactIds>mysql-connector-java,postgresql</includeArtifactIds>
             </configuration>
           </execution>
-
           <execution>
             <id>unpack-dependencies</id>
             <phase>prepare-package</phase>
