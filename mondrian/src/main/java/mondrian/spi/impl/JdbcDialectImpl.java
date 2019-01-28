@@ -457,12 +457,21 @@ public class JdbcDialectImpl implements Dialect {
         String value)
     {
         // NOTE jvs 1-Jan-2007:  See quoteTimestampLiteral for explanation.
+        Timestamp timestamp;
         try {
-            Timestamp.valueOf(value);
+            timestamp = Timestamp.valueOf(value);
         } catch (IllegalArgumentException ex) {
             throw new NumberFormatException(
                 "Illegal TIMESTAMP literal:  " + value);
         }
+        quoteTimestampLiteral(buf, timestamp.toString(), timestamp);
+    }
+
+    protected void quoteTimestampLiteral(
+        StringBuilder buf,
+        String value,
+        Timestamp timestamp)
+    {
         buf.append("TIMESTAMP ");
         Util.singleQuoteString(value, buf);
     }
