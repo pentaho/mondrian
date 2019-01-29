@@ -20,6 +20,7 @@
     <url>scm:git:git@github.com:pentaho/mondrian.git</url>
   </scm>
   <properties>
+    <copyright.year>2019</copyright.year>
     <olap4j.version>1.2.0</olap4j.version>
     <commons-vfs2.version>2.2</commons-vfs2.version>
     <eigenbase-properties.version>1.1.2</eigenbase-properties.version>
