@@ -21,6 +21,11 @@
       <outputDirectory>.</outputDirectory>
     </fileSet>
     <fileSet>
+      <directory>${project.basedir}/src/main/resources-filtered</directory>
+      <outputDirectory>.</outputDirectory>
+      <filtered>true</filtered>
+    </fileSet>
+    <fileSet>
       <directory>${project.build.directory}</directory>
       <outputDirectory>.</outputDirectory>
       <includes>
