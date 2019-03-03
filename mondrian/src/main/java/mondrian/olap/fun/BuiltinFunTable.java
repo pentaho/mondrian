@@ -5,15 +5,57 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2019 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
 
-import mondrian.calc.*;
-import mondrian.calc.impl.*;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+
+import mondrian.calc.BooleanCalc;
+import mondrian.calc.Calc;
+import mondrian.calc.DimensionCalc;
+import mondrian.calc.DoubleCalc;
+import mondrian.calc.ExpCompiler;
+import mondrian.calc.HierarchyCalc;
+import mondrian.calc.IntegerCalc;
+import mondrian.calc.LevelCalc;
+import mondrian.calc.ListCalc;
+import mondrian.calc.MemberCalc;
+import mondrian.calc.StringCalc;
+import mondrian.calc.TupleList;
+import mondrian.calc.impl.AbstractBooleanCalc;
+import mondrian.calc.impl.AbstractDoubleCalc;
+import mondrian.calc.impl.AbstractIntegerCalc;
+import mondrian.calc.impl.AbstractLevelCalc;
+import mondrian.calc.impl.AbstractListCalc;
+import mondrian.calc.impl.AbstractMemberCalc;
+import mondrian.calc.impl.AbstractStringCalc;
+import mondrian.calc.impl.GenericCalc;
+import mondrian.calc.impl.UnaryTupleList;
+import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.olap.*;
+import mondrian.olap.Aggregator;
+import mondrian.olap.Category;
+import mondrian.olap.Cube;
+import mondrian.olap.Dimension;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Exp;
+import mondrian.olap.FunDef;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Level;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.OlapElement;
+import mondrian.olap.Property;
+import mondrian.olap.SchemaReader;
+import mondrian.olap.Syntax;
+import mondrian.olap.Validator;
+import mondrian.olap.fun.extra.CachedExistsFunDef;
 import mondrian.olap.fun.extra.CalculatedChildFunDef;
 import mondrian.olap.fun.extra.NthQuartileFunDef;
 import mondrian.olap.fun.vba.Excel;
@@ -21,9 +63,6 @@ import mondrian.olap.fun.vba.Vba;
 import mondrian.olap.type.LevelType;
 import mondrian.olap.type.NullType;
 import mondrian.olap.type.Type;
-
-import java.io.PrintWriter;
-import java.util.*;
 
 /**
  * <code>BuiltinFunTable</code> contains a list of all built-in MDX functions.
@@ -2026,6 +2065,8 @@ public class BuiltinFunTable extends FunTableImpl {
         builder.define(NthQuartileFunDef.ThirdQResolver);
 
         builder.define(CalculatedChildFunDef.instance);
+        
+        builder.define(CachedExistsFunDef.instance);
 
         builder.define(CastFunDef.Resolver);
 
