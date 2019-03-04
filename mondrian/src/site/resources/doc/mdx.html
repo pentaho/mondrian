@@ -5,7 +5,7 @@
   == http://www.eclipse.org/legal/epl-v10.html.
   == You must accept the terms of that agreement to use this software.
   ==
-  == Copyright (C) 2005-2011 Pentaho
+  == Copyright (C) 2005-2019 Pentaho
   == All Rights Reserved.
   -->
 <head>
@@ -635,6 +635,13 @@ that does not guarantee order.</p>
   <td>Evaluates and returns its sole argument, applying statement-level caching
     <h1>Syntax</h1>
     Cache(&lt;&lt;Exp&gt;&gt;)
+  </td>
+</tr>
+<tr>
+  <td valign=top><code>CachedExists</code></td>
+  <td>Returns tuples from a non-dynamic &lt;Set&gt; that exists in the specified &lt;Tuple&gt;.  This function will build a query level cache named &lt;String&gt; based on the &lt;Tuple&gt; type.    
+    <h1>Syntax</h1>
+    &lt;Set&gt; CachedExists(&lt;Set&gt;, &lt;Tuple&gt;, &lt;String&gt;)
   </td>
 </tr>
 <tr>
