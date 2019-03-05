@@ -75,7 +75,20 @@ public class AggSchemaScanTest extends FoodMartTestCase {
       Util.PropertyList propertyList = new Util.PropertyList();
       boolean foundSchema = false;
       // Different databases treat catalogs and schemas differently.  Figure out whether foodmart is a schema or catalog in this database
-      if ( dbmeta.supportsSchemasInTableDefinitions() ) {
+      try {
+        String schema = sqlConnection.getSchema();
+        String catalog = sqlConnection.getCatalog();
+        if ( schema != null || catalog != null ) {
+          foundSchema = true;
+          propertyList.put( RolapConnectionProperties.AggregateScanCatalog.name(), catalog );
+          propertyList.put( RolapConnectionProperties.AggregateScanSchema.name(), schema );
+        }
+      } catch ( AbstractMethodError | Exception ex ) {
+        // Catch if the JDBC client throws an exception.  Do nothing.
+      }
+
+      // Some databases like Oracle do not implement getSchema and getCatalog with the connection, so try the dbmeta instead
+      if ( !foundSchema && dbmeta.supportsSchemasInTableDefinitions() ) {
         try ( ResultSet resultSet = dbmeta.getSchemas() ) {
            if ( resultSet.getMetaData().getColumnCount() == 2 ) {
              while ( resultSet.next() ) {
