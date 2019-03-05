@@ -5,15 +5,18 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2018 Hitachi Vantara and others
+// Copyright (C) 2005-2019 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
+import mondrian.olap.Util.PropertyList;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapAggregator;
+import mondrian.rolap.RolapConnectionProperties;
 import mondrian.rolap.RolapLevel;
 import mondrian.rolap.RolapStar;
 import mondrian.spi.Dialect;
@@ -1130,17 +1133,26 @@ public class JdbcSchema {
     private final SortedMap<String, Table> tables =
         new TreeMap<String, Table>();
 
-    JdbcSchema(final DataSource dataSource) {
+    public JdbcSchema(final DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     /**
+     * @deprecated API updated to pass Mondrian connection properties
+     * See: {@link #load(PropertyList)}
+     */
+    @Deprecated
+    public void load() throws SQLException {
+        load(new Util.PropertyList());
+    }
+
+    /**
      * This forces the tables to be loaded.
-     *
+     * @param connectInfo Mondrian connection properties
      * @throws SQLException
      */
-    public void load() throws SQLException {
-        loadTables();
+    public void load(PropertyList connectInfo) throws SQLException {
+        loadTables(connectInfo);
     }
 
     protected synchronized void clear() {
@@ -1270,10 +1282,10 @@ public class JdbcSchema {
     /**
      * Gets all of the tables (and views) in the database.
      * If called a second time, this method is a no-op.
-     *
+     * @param connectInfo The Mondrian connection properties
      * @throws SQLException
      */
-    private void loadTables() throws SQLException {
+    protected void loadTables(PropertyList connectInfo) throws SQLException {
         if (allTablesLoaded) {
             return;
         }
@@ -1281,15 +1293,33 @@ public class JdbcSchema {
         try {
             conn = getDataSource().getConnection();
             final DatabaseMetaData databaseMetaData = conn.getMetaData();
+
+            final String scanSchemaProp =
+                connectInfo.get(
+                    RolapConnectionProperties.AggregateScanSchema.name(),
+                    getSchemaName());
+            final String scanCatalogProp =
+                connectInfo.get(
+                    RolapConnectionProperties.AggregateScanCatalog.name(),
+                    getCatalogName());
+
             String[] tableTypes = { "TABLE", "VIEW" };
             if (databaseMetaData.getDatabaseProductName().toUpperCase().indexOf(
                     "VERTICA") >= 0)
             {
                 for (String tableType : tableTypes) {
-                    loadTablesOfType(databaseMetaData, new String[]{tableType});
+                    loadTablesOfType(
+                        databaseMetaData,
+                        new String[]{tableType},
+                        scanSchemaProp,
+                        scanCatalogProp);
                 }
             } else {
-                loadTablesOfType(databaseMetaData, tableTypes);
+                loadTablesOfType(
+                    databaseMetaData,
+                    tableTypes,
+                    scanSchemaProp,
+                    scanCatalogProp);
             }
             allTablesLoaded = true;
         } finally {
@@ -1302,20 +1332,25 @@ public class JdbcSchema {
     /**
      * Loads definition of tables of a given set of table types ("TABLE", "VIEW"
      * etc.)
+     * @param databaseMetaData The databaseMetaData for the database connection to search for the list of tables
+     * @param tableTypes The table types to load.  ("TABLE", "VIEW", etc.)
+     * @param scanCatalogProp The name of the database catalog to load the list of tables from.  Null will load from every catalog.
+     * @param scanSchemaProp  The name of the database schema to load the list of tables from.  Null will load from every schema.
      */
     private void loadTablesOfType(
         DatabaseMetaData databaseMetaData,
-        String[] tableTypes)
+        String[] tableTypes,
+        String scanSchemaProp,
+        String scanCatalogProp)
         throws SQLException
     {
-        final String schema = getSchemaName();
-        final String catalog = getCatalogName();
         final String tableName = "%";
         ResultSet rs = null;
         try {
+            getLogger().debug("Getting list of tables from catalog " + scanCatalogProp + " schema " + scanSchemaProp + " table " + tableName);
             rs = databaseMetaData.getTables(
-                catalog,
-                schema,
+                scanCatalogProp,
+                scanSchemaProp,
                 tableName,
                 tableTypes);
             if (rs == null) {
@@ -1343,11 +1378,12 @@ public class JdbcSchema {
         String name = rs.getString(3);
         String tableType = rs.getString(4);
         Table table = new Table(name, tableType);
+        getLogger().debug("Adding table " + name);
 
         tables.put(table.getName(), table);
     }
 
-    private SortedMap<String, Table> getTablesMap() {
+    protected SortedMap<String, Table> getTablesMap() {
         return tables;
     }
 

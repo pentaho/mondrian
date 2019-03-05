@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2019 Hitachi Vantara and others
 // All Rights Reserved.
 */
 
@@ -157,7 +157,7 @@ public class AggGen {
     private void init() {
         JdbcSchema db = JdbcSchema.makeDB(star.getDataSource());
         try {
-            db.load();
+            db.load(new Util.PropertyList());
         } catch (SQLException ex) {
             getLogger().error(ex);
             return;

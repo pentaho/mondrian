@@ -5,12 +5,13 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2019 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.olap.Util.PropertyList;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
@@ -211,7 +212,7 @@ public class RolapSchema implements Schema {
         DataSource dataSource)
     {
         this(key, connectInfo, dataSource, md5Bytes, md5Bytes != null);
-        load(catalogUrl, catalogStr);
+        load(catalogUrl, catalogStr, connectInfo);
         assert this.md5Bytes != null;
     }
 
@@ -300,7 +301,11 @@ public class RolapSchema implements Schema {
      * @param catalogUrl URL of catalog
      * @param catalogStr Text of catalog, or null
      */
-    protected void load(String catalogUrl, String catalogStr) {
+    protected void load(
+        String catalogUrl,
+        String catalogStr,
+        PropertyList connectInfo)
+    {
         try {
             final Parser xmlParser = XOMUtil.createDefaultParser();
 
@@ -370,7 +375,7 @@ public class RolapSchema implements Schema {
             throw Util.newError(e, "while parsing catalog " + catalogUrl);
         }
 
-        aggTableManager.initialize();
+        aggTableManager.initialize(connectInfo);
         setSchemaLoadDate();
     }
 
