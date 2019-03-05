@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1998-2005 Julian Hyde
-// Copyright (C) 2005-2018 Hitachi Vantara and others
+// Copyright (C) 2005-2019 Hitachi Vantara and others
 // All Rights Reserved.
 //
 // jhyde, 21 January, 1999
@@ -361,6 +361,7 @@ public class Main extends TestSuite {
             addTest(suite, RolapCubeHierarchyTest.class);
             addTest(suite, RolapCubeDimensionTest.class);
             addTest(suite, RolapUtilTest.class);
+            addTest(suite, AggSchemaScanTest.class);
 
             // Must be the last test.
             addTest(suite, TerminatorTest.class);
