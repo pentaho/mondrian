@@ -44,7 +44,7 @@
     </li>
     <li><a href="#Logging">Logging</a><ol>
 			<li><a href="#Test_Logging">Configuring log4j within Mondrian's test environment</a></li>
-			<li><a href="#Statement_Logging">MDX and SQL Statement Logging</a></li>			
+			<li><a href="#Statement_Logging">MDX and SQL Statement Logging</a></li>
     	</ol>
     </li>
 </ol>
@@ -211,18 +211,18 @@ OLE DB connect string syntax specification</a>.</p>
         <td><p>The name of the <a href="schema.html#Access_control">role</a> to adopt
         for access-control purposes. If not specified, the connection uses a role
         which has access to every object in the schema.</p>
-		<p>This property can contain multiple role names separated by commas. If 
-		so, queries in the connection execute with the sum of the privileges of 
+		<p>This property can contain multiple role names separated by commas. If
+		so, queries in the connection execute with the sum of the privileges of
 		all of the rules; the effect is the same as running under a
 		<a href="schema.html#Union_roles">union role</a>, defined using the
 		<code>&lt;Union&gt;</code> element in the schema file.</p>
-		<p>If a role name contains a comma, escape the comma using an extra 
+		<p>If a role name contains a comma, escape the comma using an extra
 		comma. For example, a connection created with</p>
 		<blockquote>
-			<p><code>Role='Pacific region manager,Europe,, Middle East and 
+			<p><code>Role='Pacific region manager,Europe,, Middle East and
 			Africa manager'</code></p>
 		</blockquote>
-		<p>will execute with the combined privileges of the roles &quot;Pacific 
+		<p>will execute with the combined privileges of the roles &quot;Pacific
 		region manager&quot;, and &quot;Europe, Middle East and Africa manager&quot;.</p></td>
     </tr>
     <tr>
@@ -254,12 +254,12 @@ OLE DB connect string syntax specification</a>.</p>
     <tr>
         <td>UseSchemaPool</td>
         <td>No</td>
-        <td><p>Controls whether a new connection use a schema from the schema 
-        cache. If <code>true</code>, the default, a connection shares a schema 
-        definition (and hence also a cache of aggregate data retrieved by 
-        previous queries) with other connections which have a textually 
+        <td><p>Controls whether a new connection use a schema from the schema
+        cache. If <code>true</code>, the default, a connection shares a schema
+        definition (and hence also a cache of aggregate data retrieved by
+        previous queries) with other connections which have a textually
         identical schema definition.</p>
-        <p>If <code>false</code>, the connection has a private schema definition 
+        <p>If <code>false</code>, the connection has a private schema definition
         and cache.</p></td>
     </tr>
     <tr>
@@ -296,8 +296,18 @@ OLE DB connect string syntax specification</a>.</p>
     <tr>
         <td>JdbcConnectionUuid</td>
         <td>No</td>
-        <td><p>A unique identifier for the connection. If this is set, Mondrian will look at this property and no other to determine whether two 
+        <td><p>A unique identifier for the connection. If this is set, Mondrian will look at this property and no other to determine whether two
 data sources should be considered the same. You must ensure that connections will only share a JdbcConnectionUuid if they point to the same database.</p></td>
+    </tr>
+    <tr>
+        <td>AggregateScanCatalog</td>
+        <td>No</td>
+        <td><p>The name of the database catalog to scan when loading aggregate tables. If this is not set, Mondrian will read all catalogs the database connection has access to when loading aggregate tables.</p></td>
+    </tr>
+    <tr>
+        <td>AggregateScanSchema</td>
+        <td>No</td>
+        <td><p>The name of the database schema to scan when loading aggregate tables.  If this is not set, Mondrian will read all schemas the database connection has access to when loading aggregate tables.</p></td>
     </tr>
 </table>
 <p>Connect string properties are also documented in the
@@ -323,7 +333,7 @@ method:</p>
 <p>The cache is only used when creating new connections; existing connections
 retain their schemas.</p>
 <p>
-There are four connect string properties that control the use of the 
+There are four connect string properties that control the use of the
 Schema cache:
 <code>UseSchemaPool</code>,
 <code>UseContentChecksum</code>,
@@ -335,28 +345,28 @@ Schema cache:
 regardless of the values of any of the other properties. If UseSchemaPool
 is "false", then the cache is not used; each request for a new schema
 object creates a new one (entailing the re-parsing of the schema definition
-and re-scanning of the database for meta data and aggregate tables - 
+and re-scanning of the database for meta data and aggregate tables -
 very slow, and, in addition, there is no reuse of the in-memory aggregate
 cache).</p>
 
 <p>Next, if <code>UseContentChecksum</code> is "true", then a check sum (MD5) is created
 from the schema definition content (not URL) and it is this check sum
-that is used as the key to lookup previously cached versions of the 
+that is used as the key to lookup previously cached versions of the
 schema definition. If two schema definitions produce different check
 sums, then one can safely assume that they are different schemas (of course,
-it is possible that only a comment or some whitespace in the schema 
-definition changed in which case the two schemas would actually be the 
-same, but because their check sums are different, different schema 
+it is possible that only a comment or some whitespace in the schema
+definition changed in which case the two schemas would actually be the
+same, but because their check sums are different, different schema
 objects are used). If UseContentChecksum is "false", then no check sum
-is created and used as the lookup key, rather, a combination of 
-the connection attributes 
-"catalogUrl", 
-"connectionKey", 
-"jdbcUser", 
+is created and used as the lookup key, rather, a combination of
+the connection attributes
+"catalogUrl",
+"connectionKey",
+"jdbcUser",
 "dataSourceStr"
-or 
-"catalogUrl", 
-"dataSource" 
+or
+"catalogUrl",
+"dataSource"
 are used to create the key.</p>
 
 <p>If the <code>CatalogContent</code> is specified, then it is used as the schema
@@ -437,7 +447,7 @@ At the current time, I do not know a way around this problem.
 <p>
 	Mondrian uses log4j for all information and debug logging.  When running
 within an application server, Mondrian's log4j configuration is determined by
-the server's or web application's log4j configuration. Please see 
+the server's or web application's log4j configuration. Please see
 <a href="http://logging.apache.org/log4j/1.2/manual.html">log4j's documentation</a>
 for a additional details.
 </p>
@@ -446,12 +456,12 @@ for a additional details.
 <p>
 	When running outside an application server, log4j determines the location
 of the log4j.xml file via the log4j.configuration java system property.   log4j
-treats this string as a URL, so to have it detect the log4j file on the file 
-system, you must use the syntax "file:DIR/log4j.xml". Relative paths are 
-acceptible, so if you have your log4j.xml file in the root directory of 
-mondrian, "file:log4j.xml" will load the correct file.  You may specify the 
-log4j.configuration property in mondrian.properties, because Mondrian's ant 
-build file explicitly sets the property as a JVM system property when running 
+treats this string as a URL, so to have it detect the log4j file on the file
+system, you must use the syntax "file:DIR/log4j.xml". Relative paths are
+acceptible, so if you have your log4j.xml file in the root directory of
+mondrian, "file:log4j.xml" will load the correct file.  You may specify the
+log4j.configuration property in mondrian.properties, because Mondrian's ant
+build file explicitly sets the property as a JVM system property when running
 JUnit tests.
 </p>
 
@@ -459,9 +469,9 @@ JUnit tests.
 <p>
 	The default log4j.xml file is configured so that a separate log file is
 created for both MDX and SQL statement logging.  In the code, the MDX and SQL
-strings are logged at the debug level, so to disable them you can set the log 
+strings are logged at the debug level, so to disable them you can set the log
 level to INFO or any other level above debug.  Statement logging occurs within
-the log4j categories "mondrian.mdx" and "mondrian.sql".  These categories log 
+the log4j categories "mondrian.mdx" and "mondrian.sql".  These categories log
 the statements and how long they took to execute.  The SQL log also records the
 number of results returned in the result set.
 </p>
