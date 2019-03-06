@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2019 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -14,6 +14,7 @@ import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianException;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.olap.Util.PropertyList;
 import mondrian.recorder.ListRecorder;
 import mondrian.recorder.MessageRecorder;
 import mondrian.recorder.RecorderException;
@@ -38,7 +39,7 @@ import java.util.List;
  * <li>A {@link mondrian.rolap.RolapSchema} creates an {@link AggTableManager},
  *     and stores it in a member variable to ensure that it is not
  *     garbage-collected.
- * <li>The {@link mondrian.rolap.RolapSchema} calls {@link #initialize()},
+ * <li>The {@link mondrian.rolap.RolapSchema} calls {@link #initialize(PropertyList)},
  *     which scans the JDBC catalog and identifies aggregate tables.
  * <li>For each aggregate table, it creates an {@link AggStar} and calls
  *     {@link RolapStar#addAggStar(AggStar)}.
@@ -80,14 +81,24 @@ public class AggTableManager {
     }
 
     /**
+     * @deprecated API updated to pass the Mondrian connection properties.
+     * See {@link #initialize(PropertyList)}
+     */
+    @Deprecated
+    public void initialize() {
+        initialize(new Util.PropertyList());
+    }
+
+    /**
      * Initializes this object, loading all aggregate tables and associating
      * them with {@link RolapStar}s.
      * This method should only be called once.
+     * @param connectInfo The Mondrian connection properties
      */
-    public void initialize() {
+    public void initialize(PropertyList connectInfo) {
         if (MondrianProperties.instance().UseAggregates.get()) {
             try {
-                loadRolapStarAggregates();
+                loadRolapStarAggregates(connectInfo);
             } catch (SQLException ex) {
                 throw mres.AggLoadingError.ex(ex);
             }
@@ -166,7 +177,10 @@ public class AggTableManager {
      *
      * @throws SQLException
      */
-    private void loadRolapStarAggregates() throws SQLException {
+    private void loadRolapStarAggregates(
+        PropertyList connectInfo)
+        throws SQLException
+    {
         ListRecorder msgRecorder = new ListRecorder();
         try {
             DefaultRules rules = DefaultRules.getInstance();
@@ -181,7 +195,7 @@ public class AggTableManager {
                 db.flushUsages();
 
                 // loads tables, not their columns
-                db.load();
+                db.load(connectInfo);
 
                 loop:
                 for (RolapStar star : getStars()) {

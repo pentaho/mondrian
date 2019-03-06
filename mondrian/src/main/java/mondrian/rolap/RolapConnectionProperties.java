@@ -5,10 +5,9 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara
+// Copyright (C) 2005-2019 Hitachi Vantara
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import java.lang.ref.SoftReference;
@@ -203,7 +202,29 @@ public enum RolapConnectionProperties {
      *
      * <p>Defaults to "-1s".
      */
-    PinSchemaTimeout;
+    PinSchemaTimeout,
+
+    /**
+     * The "AggregateScanSchema" property is the name of the database schema
+     * to scan when looking for aggregate tables.  If defined, Mondrian will
+     * only look for aggregate tables within this schema.  This means that
+     * all aggregate tables, including explicitly defined tables must be in
+     * this schema.  If not defined, Mondrian will scan every schema that
+     * the database connection has access to when looking for aggregate
+     * tables.
+     */
+    AggregateScanSchema,
+
+    /**
+     * The "AggregateScanCatalog" property is the name of the database
+     * catalog to scan when looking for aggregate tables.  If defined,
+     * Mondrian will only look for aggregate tables within this catalog.
+     * This means that all aggregate tables, including explicitly defined
+     * tables must be in this catalog.  If not defined, Mondrian will
+     * scan every catalog the database connection has access to when
+     * looking for aggregate tables.
+     */
+    AggregateScanCatalog;
 
     /**
      * Any property beginning with this value will be added to the

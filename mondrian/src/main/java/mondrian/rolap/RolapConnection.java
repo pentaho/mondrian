@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2019 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -386,7 +386,9 @@ public class RolapConnection extends ConnectionBase {
                     jdbcProperties);
             }
             String connLc = jdbcConnectString.toLowerCase();
-            if ( ( connLc.indexOf("mysql") > -1 ) || ( connLc.indexOf("mariadb") > -1 ) ) {
+            if ((connLc.indexOf("mysql") > -1)
+              || (connLc.indexOf("mariadb") > -1))
+            {
                 // mysql driver needs this autoReconnect parameter
                 jdbcProperties.setProperty("autoReconnect", "true");
             }
