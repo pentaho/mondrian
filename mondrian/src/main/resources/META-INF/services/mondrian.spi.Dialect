@@ -29,4 +29,3 @@ mondrian.spi.impl.VerticaDialect
 mondrian.spi.impl.IngresDialect
 mondrian.spi.impl.PdiDataServiceDialect
 mondrian.spi.impl.GoogleBigQueryDialect
-mondrian.spi.impl.SnowflakeDialect
