@@ -224,6 +224,9 @@ CONCAT(CONCAT("customer"."fname", ' '), "customer"."lname")
           <SQL dialect="teradata">
 "fname" || ' ' || "lname"
           </SQL>
+          <SQL dialect="snowflake">
+"customer"."fullname"
+          </SQL>
           <SQL dialect="generic">
 fullname
           </SQL>
@@ -261,6 +264,9 @@ CONCAT(CONCAT("customer"."fname", ' '), "customer"."lname")
           </SQL>
           <SQL dialect="luciddb">
 "fname" || ' ' || "lname"
+          </SQL>
+          <SQL dialect="snowflake">
+"customer"."fullname"
           </SQL>
           <SQL dialect="generic">
 fullname
@@ -347,6 +353,9 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
 (case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
       </SQL>
       <SQL dialect="nuodb">
+(case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
+      </SQL>
+    <SQL dialect="snowflake">
 (case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
       </SQL>
       <SQL dialect="generic">
@@ -670,6 +679,9 @@ CONCAT(CONCAT("customer"."fname", ' '), "customer"."lname")
 "fname" || ' ' || "lname"
           </SQL>
           <SQL dialect="neoview">
+"customer"."fullname"
+          </SQL>
+          <SQL dialect="snowflake">
 "customer"."fullname"
           </SQL>
           <SQL dialect="generic">
