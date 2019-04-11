@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2018 Hitachi Vantara and others. All rights reserved.
+// Copyright (c) 2002-2019 Hitachi Vantara and others. All rights reserved.
 */
 package mondrian.test;
 
@@ -302,9 +302,9 @@ public class DialectTest extends TestCase {
             }
             // now create and drop a dummy table
             phase = 1;
-            assertFalse(stmt.execute(createSql));
+            stmt.execute( createSql );
             phase = 2;
-            assertFalse(stmt.execute(dropSql));
+            stmt.execute( dropSql );
             phase = 3;
         } catch (SQLException e2) {
             e = e2;
@@ -395,6 +395,8 @@ public class DialectTest extends TestCase {
                 "(?s).*Invalid Table Alias or Column Reference.*",
                 // neoview
                 NEOVIEW_SYNTAX_ERROR,
+                //snowflake
+              "(?s).*Processing aborted due to error 300002:2523989150.*"
             };
             assertQueryFails(sql, errs);
         } else {
@@ -1217,7 +1219,9 @@ public class DialectTest extends TestCase {
                 "(?s).*ERROR: Column \"time_by_day.the_month\" must appear in "
                 + "the GROUP BY clause or be used in an aggregate function.*",
                 // BigQuery
-                "(?s).*SELECT list expression references column the_month which is neither grouped nor aggregated.*"
+                "(?s).*SELECT list expression references column the_month which is neither grouped nor aggregated.*",
+                // Snowflake
+                "(?s).*select clause is neither an aggregate nor in the group by clause.*"
             };
             assertQueryFails(sql, errs);
         }
@@ -1416,6 +1420,14 @@ public class DialectTest extends TestCase {
                 throwable.getMessage(),
                 throwable.getMessage().contains(
                     "Error getting job status"));
+            break;
+        case SNOWFLAKE:
+            assertNotNull( throwable );
+            assertTrue( couldTranslate );
+            assertTrue(
+                throwable.getMessage(),
+                throwable.getMessage().contains(
+                    "Invalid regular expression" ) );
             break;
         default:
             // As far as we know, all other databases either handle this regex
