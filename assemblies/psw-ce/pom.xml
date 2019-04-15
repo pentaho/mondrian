@@ -209,7 +209,6 @@
     <dependency>
       <groupId>xerces</groupId>
       <artifactId>xercesImpl</artifactId>
-      <version>${xercesImpl.version}</version>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
