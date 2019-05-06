@@ -41,7 +41,6 @@
     <eigenbase-xom.version>1.3.5</eigenbase-xom.version>
     <xercesImpl.version>2.9.1</xercesImpl.version>
     <mysql-connector-java.version>5.1.39</mysql-connector-java.version>
-    <dependency.postgres.revision>9.3-1102-jdbc4</dependency.postgres.revision>
   </properties>
 
   <profiles>
