@@ -14,7 +14,6 @@
   <url>http://mondrian.pentaho.com</url>
   <properties>
     <project.version.minor>000</project.version.minor>
-    <xml-apis.version>2.0.2</xml-apis.version>
     <driver.version>${project.version}</driver.version>
     <project.version.major>8</project.version.major>
     <schema.version>3</schema.version>
@@ -27,7 +26,6 @@
     <dependency>
       <groupId>xml-apis</groupId>
       <artifactId>xml-apis</artifactId>
-      <version>${xml-apis.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-collections</groupId>
@@ -118,7 +116,6 @@
     <dependency>
       <groupId>xerces</groupId>
       <artifactId>xercesImpl</artifactId>
-      <version>${xercesImpl.version}</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
