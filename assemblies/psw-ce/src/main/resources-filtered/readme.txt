@@ -3,7 +3,7 @@
 # http://www.eclipse.org/legal/epl-v10.html.
 # You must accept the terms of that agreement to use this software.
 #
-# Copyright (C) 2007-2016 Cincom Inc, JasperSoft, Pentaho, and others
+# Copyright (C) 2007 - ${copyright.year} Cincom Inc, JasperSoft, Pentaho, and others
 # All Rights Reserved.
 
 Welcome to the Mondrian Schema Workbench.
