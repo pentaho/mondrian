@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2018 Hitachi Vantara and others
+// Copyright (C) 2005-2019 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -648,6 +648,13 @@ public class SqlTupleReader implements TupleReader {
         List<TupleList> tupleLists = new ArrayList<>();
 
         for (List<TargetBase> targetGroup : targetGroups) {
+            boolean allTargetsAtAllLevel = targetGroup.stream()
+                    .allMatch(t -> t.getLevel().isAll());
+
+            if (allTargetsAtAllLevel) {
+                continue;
+            }
+
             prepareTuples(
                 jdbcConnection, partialResult, newPartialResult, targetGroup);
 
@@ -1515,7 +1522,9 @@ public class SqlTupleReader implements TupleReader {
                 } else {
                     propSql = property.getExp().getExpression(sqlQuery);
                 }
-                final String propAlias = sqlQuery.addSelect(propSql, property.getType().getInternalType());
+                final String propAlias = sqlQuery.addSelect(
+                    propSql,
+                    property.getType().getInternalType());
                 if (needsGroupBy) {
                     // Certain dialects allow us to eliminate properties
                     // from the group by that are functionally dependent
