@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
+// Copyright (c) 2002-2019 Hitachi Vantara..  All rights reserved.
 */
 package mondrian.test;
 
@@ -2591,6 +2591,150 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Axis #2:\n"
             + "{[Customer_DimUsage.Customers Hierarchy].[1 rue Alsace-Lorraine].[Roulet]}\n"
             + "Row #0: 1,701.95\n");
+    }
+
+    /**
+     * this tests the fix for
+     * http://jira.pentaho.com/browse/Mondrian-2652
+     */
+    public void testMondrian2652() {
+        // Check if there is a valid SteelWheels database.
+        TestContext testContext = getTestContext();
+        if (!testContext.databaseIsValid()) {
+            return;
+        }
+
+        final String schema =
+            "<Schema name=\"rolesTest\">\n"
+            + "  <Dimension visible=\"true\" highCardinality=\"false\" name=\"Dimension1\">\n"
+            + "    <Hierarchy visible=\"true\" hasAll=\"true\" allMemberName=\"All Products\" primaryKey=\"PRODUCTCODE\">\n"
+            + "      <Table name=\"products\">\n"
+            + "      </Table>\n"
+            + "      <Level name=\"Level1\" visible=\"true\" column=\"PRODUCTLINE\" type=\"String\" uniqueMembers=\"false\" levelType=\"Regular\" hideMemberIf=\"Never\">\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Dimension visible=\"true\" highCardinality=\"false\" name=\"Dimension2\">\n"
+            + "    <Hierarchy visible=\"true\" hasAll=\"true\" allMemberName=\"All Customers\" primaryKey=\"CUSTOMERNUMBER\">\n"
+            + "      <Table name=\"customer_w_ter\">\n"
+            + "      </Table>\n"
+            + "      <Level name=\"Level2\" visible=\"true\" column=\"CUSTOMERNAME\" type=\"String\" uniqueMembers=\"false\" levelType=\"Regular\" hideMemberIf=\"Never\">\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Cube name=\"rolesTest1\" visible=\"true\" cache=\"true\" enabled=\"true\">\n"
+            + "    <Table name=\"orderfact\" alias=\"rolesTest1\">\n"
+            + "    </Table>\n"
+            + "    <DimensionUsage source=\"Dimension1\" name=\"Dimension1\" visible=\"true\" foreignKey=\"PRODUCTCODE\" highCardinality=\"false\">\n"
+            + "    </DimensionUsage>\n"
+            + "    <DimensionUsage source=\"Dimension2\" name=\"Dimension2\" visible=\"true\" foreignKey=\"CUSTOMERNUMBER\" highCardinality=\"false\">\n"
+            + "    </DimensionUsage>\n"
+            + "    <Measure name=\"Measure1\" column=\"QUANTITYORDERED\" aggregator=\"sum\">\n"
+            + "    </Measure>\n"
+            + "  </Cube>\n"
+            + "  <Cube name=\"rolesTest2\" visible=\"true\" cache=\"true\" enabled=\"true\">\n"
+            + "    <Table name=\"orderfact\" alias=\"rolesTest2\">\n"
+            + "    </Table>\n"
+            + "    <DimensionUsage source=\"Dimension2\" name=\"Dimension2\" visible=\"true\" foreignKey=\"CUSTOMERNUMBER\" highCardinality=\"false\">\n"
+            + "    </DimensionUsage>\n"
+            + "    <Measure name=\"Measure2:Internal\" column=\"TOTALPRICE\" aggregator=\"sum\">\n"
+            + "    </Measure>\n"
+            + "  </Cube>\n"
+            + "  <VirtualCube enabled=\"true\" name=\"rolesTest\" defaultMeasure=\"Quantity\" caption=\"Test\" visible=\"true\">\n"
+            + "    <CubeUsages>\n"
+            + "      <CubeUsage cubeName=\"rolesTest1\" ignoreUnrelatedDimensions=\"true\">\n"
+            + "      </CubeUsage>\n"
+            + "      <CubeUsage cubeName=\"rolesTest2\" ignoreUnrelatedDimensions=\"true\">\n"
+            + "      </CubeUsage>\n"
+            + "    </CubeUsages>\n"
+            + "    <VirtualCubeDimension cubeName=\"rolesTest1\" visible=\"true\" highCardinality=\"false\" name=\"Dimension1\">\n"
+            + "    </VirtualCubeDimension>\n"
+            + "    <VirtualCubeDimension cubeName=\"rolesTest1\" visible=\"true\" highCardinality=\"false\" name=\"Dimension2\">\n"
+            + "    </VirtualCubeDimension>\n"
+            + "    <VirtualCubeMeasure cubeName=\"rolesTest1\" name=\"[Measures].[Measure1]\" visible=\"true\">\n"
+            + "    </VirtualCubeMeasure>\n"
+            + "    <VirtualCubeMeasure cubeName=\"rolesTest2\" name=\"[Measures].[Measure2:Internal]\" visible=\"true\">\n"
+            + "    </VirtualCubeMeasure>\n"
+            + "    <CalculatedMember name=\"Measure2\" formula=\"ValidMeasure([Measures].[Measure2:Internal])\" dimension=\"Measures\">\n"
+            + "    </CalculatedMember>\n"
+            + "  </VirtualCube>\n"
+            + "  <Role name=\"Administrator\">\n"
+            + "    <SchemaGrant access=\"all\">\n"
+            + "    </SchemaGrant>\n"
+            + "  </Role>\n"
+            + "  <Role name=\"Report Author\">\n"
+            + "    <SchemaGrant access=\"custom\">\n"
+            + "      <CubeGrant cube=\"rolesTest\" access=\"all\">\n"
+            + "        <HierarchyGrant hierarchy=\"[Dimension2]\" topLevel=\"[Dimension2].[Level2]\" access=\"custom\">\n"
+            + "          <MemberGrant member=\"[Dimension2].[BG&#38;E Collectables]\" access=\"all\">\n"
+            + "          </MemberGrant>\n"
+            + "          <MemberGrant member=\"[Dimension2].[Baane Mini Imports]\" access=\"all\">\n"
+            + "          </MemberGrant>\n"
+            + "          <MemberGrant member=\"[Dimension2].[Blauer See Auto, Co.]\" access=\"all\">\n"
+            + "          </MemberGrant>\n"
+            + "          <MemberGrant member=\"[Dimension2].[Boards &#38; Toys Co.]\" access=\"all\">\n"
+            + "          </MemberGrant>\n"
+            + "        </HierarchyGrant>\n"
+            + "      </CubeGrant>\n"
+            + "    </SchemaGrant>\n"
+            + "  </Role>\n"
+            + "</Schema>\n";
+
+        final String mdxQuery =
+            "  WITH\n"
+            + " SET [*NATIVE_CJ_SET] AS 'NONEMPTYCROSSJOIN([*BASE_MEMBERS__Dimension1_],[*BASE_MEMBERS__Dimension2_])'\n"
+            +  " SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],[Dimension1].CURRENTMEMBER.ORDERKEY,BASC,[Dimension2].CURRENTMEMBER.ORDERKEY,BASC)'\n"
+            +  " SET [*BASE_MEMBERS__Dimension1_] AS '[Dimension1].[Level1].MEMBERS'\n"
+            +  " SET [*BASE_MEMBERS__Dimension2_] AS '{[Dimension2].[All Customers].[Alpha Cognac]}'\n"
+            +  " SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[Measure1],[Measures].[Measure2],[Measures].[Measure2:Internal]}'\n"
+            +  " SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Dimension1].CURRENTMEMBER,[Dimension2].CURRENTMEMBER)})'\n"
+            +  " SELECT\n"
+            +  " [*BASE_MEMBERS__Measures_] ON COLUMNS\n"
+            +  " , NON EMPTY\n"
+            +  " [*SORTED_ROW_AXIS] ON ROWS\n"
+            + " FROM [rolesTest]";
+
+        TestContext testContextReportAuthor =
+                createContext(TestContext.instance(), schema)
+                        .withCube("SteelWheelsSales").withRole("Report Author");
+
+        // Report Author gets an exception since
+        // he has no access to [Dimension2].[All Customers].[Alpha Cognac].
+        testContextReportAuthor.assertQueryThrows(
+            mdxQuery,
+    "MDX object '[Dimension2].[All Customers].[Alpha Cognac]' not found in cube 'rolesTest'");
+
+        TestContext testContextAdministrator =
+            createContext(TestContext.instance(), schema)
+                .withCube("SteelWheelsSales").withRole("Administrator");
+
+        // Administrator has full access to the data,
+        // So he gets the expected result.
+        testContextAdministrator.assertQueryReturns(
+            mdxQuery,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Measure1]}\n"
+            + "{[Measures].[Measure2]}\n"
+            + "{[Measures].[Measure2:Internal]}\n"
+            + "Axis #2:\n"
+            + "{[Dimension1].[Classic Cars], [Dimension2].[Alpha Cognac]}\n"
+            + "{[Dimension1].[Planes], [Dimension2].[Alpha Cognac]}\n"
+            + "{[Dimension1].[Ships], [Dimension2].[Alpha Cognac]}\n"
+            + "{[Dimension1].[Vintage Cars], [Dimension2].[Alpha Cognac]}\n"
+            + "Row #0: 126\n"
+            + "Row #0: 70,488.44\n"
+            + "Row #0: \n"
+            + "Row #1: 218\n"
+            + "Row #1: 70,488.44\n"
+            + "Row #1: \n"
+            + "Row #2: 247\n"
+            + "Row #2: 70,488.44\n"
+            + "Row #2: \n"
+            + "Row #3: 96\n"
+            + "Row #3: 70,488.44\n"
+            + "Row #3: \n");
     }
 }
 
