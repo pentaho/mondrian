@@ -14,12 +14,21 @@
   <name>Pentaho Mondrian Parent POM</name>
   <description>Container pom for mondrian and mondrian workbench</description>
   <url>http://www.pentaho.com</url>
+  <licenses>
+    <license>
+      <name>Eclipse Public License (EPL), Version 1.0</name>
+      <url>http://www.eclipse.org/legal/epl-v10.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
   <scm>
     <connection>scm:git:git@github.com:pentaho/mondrian.git</connection>
     <developerConnection>scm:git:git@github.com:pentaho/mondrian.git</developerConnection>
     <url>scm:git:git@github.com:pentaho/mondrian.git</url>
   </scm>
   <properties>
+    <license.licenseName>epl_only_v1</license.licenseName>
+
     <olap4j.version>1.2.0</olap4j.version>
     <commons-vfs2.version>2.2</commons-vfs2.version>
     <eigenbase-properties.version>1.1.2</eigenbase-properties.version>
@@ -74,7 +83,6 @@
     </profile>
   </profiles>
 
-
   <repositories>
     <repository>
       <id>pentaho-public</id>
@@ -90,5 +98,4 @@
       </snapshots>
     </repository>
   </repositories>
-
 </project>
