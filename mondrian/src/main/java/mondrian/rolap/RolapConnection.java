@@ -20,6 +20,7 @@ import mondrian.spi.*;
 import mondrian.spi.impl.JndiDataSourceResolver;
 import mondrian.util.*;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.util.property.StringProperty;
@@ -125,8 +126,7 @@ public class RolapConnection extends ConnectionBase {
       connectInfo.get( RolapConnectionProperties.Catalog.name() );
     final String jdbcUser =
       connectInfo.get( RolapConnectionProperties.JdbcUser.name() );
-    final String jdbcConnectString =
-      connectInfo.get( RolapConnectionProperties.Jdbc.name() );
+    final String jdbcConnectString = getJdbcConnectionString( connectInfo );
     final String strDataSource =
       connectInfo.get( RolapConnectionProperties.DataSource.name() );
     StringBuilder buf = new StringBuilder();
@@ -318,8 +318,7 @@ public class RolapConnection extends ConnectionBase {
     Util.PropertyList connectInfo,
     StringBuilder buf ) {
     assert buf != null;
-    final String jdbcConnectString =
-      connectInfo.get( RolapConnectionProperties.Jdbc.name() );
+    final String jdbcConnectString = getJdbcConnectionString( connectInfo );
     final String jdbcUser =
       connectInfo.get( RolapConnectionProperties.JdbcUser.name() );
     final String jdbcPassword =
@@ -1132,6 +1131,22 @@ public class RolapConnection extends ConnectionBase {
         throw new UnsupportedOperationException();
       }
     }
+  }
+
+  private static String getJdbcConnectionString( Util.PropertyList connectInfo ) {
+
+    String jdbc = connectInfo.get( RolapConnectionProperties.Jdbc.name() );
+
+    if ( StringUtils.isBlank( jdbc ) ) {
+      return null;
+    }
+
+    String database = StringUtils.isBlank( connectInfo.get( "databaseName" ) )
+      ? "" : ";databaseName=" + connectInfo.get( "databaseName" );
+    String integratedSecurity = Boolean.parseBoolean( connectInfo.get( "integratedSecurity" ) )
+      ? ";integratedSecurity=true" : "";
+
+    return jdbc + database + integratedSecurity;
   }
 
   /**
