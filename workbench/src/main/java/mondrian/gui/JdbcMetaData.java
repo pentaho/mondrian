@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2018 Hitachi Vantara and others
+// Copyright (C) 2006-2019 Hitachi Vantara and others
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
@@ -223,7 +223,7 @@ public class JdbcMetaData {
         ResultSet rs = null;
         boolean gotSchema = false;
         try {
-            rs = md.getSchemas();
+            rs = md.getSchemas(db.catalogName, null);
             while (rs.next()) {
                 String schemaName = rs.getString("TABLE_SCHEM");
                 if (inJdbcSchemas(schemaName)) {
@@ -265,11 +265,15 @@ public class JdbcMetaData {
             // Tables and views can be used
             try {
                 rs = md.getTables(
-                    null, dbs.name, null, new String[]{"TABLE", "VIEW"});
+                    db.catalogName,
+                    dbs.name,
+                    null,
+                    new String[]{"TABLE", "VIEW"});
             } catch (Exception e) {
                 // this is a workaround for databases that throw an exception
                 // when views are requested.
-                rs = md.getTables(null, dbs.name, null, new String[]{"TABLE"});
+                rs = md.getTables(
+                    db.catalogName, dbs.name, null, new String[]{"TABLE"});
             }
             while (rs.next()) {
                 // Oracle 10g Driver returns bogus BIN$ tables that cause
@@ -286,7 +290,7 @@ public class JdbcMetaData {
                 // are referenced as foreign keys in other tables.
                 try {
                     ResultSet rs_fks =
-                        md.getImportedKeys(null, dbs.name, tbname);
+                        md.getImportedKeys(db.catalogName, dbs.name, tbname);
                     try {
                         if (rs_fks.next()) {
                             dbt = new FactTable();
@@ -338,7 +342,7 @@ public class JdbcMetaData {
     private void setPKey(DbTable dbt) {
         ResultSet rs = null;
         try {
-            rs = md.getPrimaryKeys(null, dbt.schemaName, dbt.name);
+            rs = md.getPrimaryKeys(db.catalogName, dbt.schemaName, dbt.name);
             if (rs.next()) {
                 //   // a column may have been given a primary key name
                 //===dbt.pk = rs.getString("PK_NAME");
@@ -390,7 +394,7 @@ public class JdbcMetaData {
     private void setColumns(DbTable dbt) {
         ResultSet rs = null;
         try {
-            rs = md.getColumns(null, dbt.schemaName, dbt.name, null);
+            rs = md.getColumns(db.catalogName, dbt.schemaName, dbt.name, null);
             while (rs.next()) {
                 DbColumn col = new DbColumn();
 
