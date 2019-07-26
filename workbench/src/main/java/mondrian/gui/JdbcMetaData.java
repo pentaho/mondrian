@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  */
@@ -275,46 +276,49 @@ public class JdbcMetaData {
                 rs = md.getTables(
                     db.catalogName, dbs.name, null, new String[]{"TABLE"});
             }
+            ArrayList<String> tableNames = new ArrayList<>();
             while (rs.next()) {
+                String tableName = rs.getString("TABLE_NAME");
                 // Oracle 10g Driver returns bogus BIN$ tables that cause
                 // exceptions
-                String tbname = rs.getString("TABLE_NAME");
-                if (!tbname.matches("(?!BIN\\$).+")) {
-                    continue;
+                if (tableName.matches("(?!BIN\\$).+")) {
+                    tableNames.add(tableName);
                 }
-
+            }
+            tableNames.stream().parallel().forEach(
+                (tbname) -> {
                 DbTable dbt = null;
 
                 // Note: Imported keys are foreign keys which are primary keys
                 // of in some other tables; Exported keys are primary keys which
                 // are referenced as foreign keys in other tables.
                 try {
-                    ResultSet rs_fks =
-                        md.getImportedKeys(db.catalogName, dbs.name, tbname);
+                    ResultSet rsForeignKeys =
+                      md.getImportedKeys(db.catalogName, dbs.name, tbname);
                     try {
-                        if (rs_fks.next()) {
+                        if (rsForeignKeys.next()) {
                             dbt = new FactTable();
                             do {
                                 ((FactTable) dbt).addFks(
-                                    rs_fks.getString("FKCOLUMN_NAME"),
-                                    rs_fks.getString("pktable_name"));
-                            } while (rs_fks.next());
+                                    rsForeignKeys.getString("FKCOLUMN_NAME"),
+                                    rsForeignKeys.getString("pktable_name"));
+                            } while (rsForeignKeys.next());
                         } else {
                             dbt = new DbTable();
                         }
                     } finally {
                         try {
-                            rs_fks.close();
+                            rsForeignKeys.close();
                         } catch (Exception e) {
                             // ignore
                         }
                     }
                 } catch (Exception e) {
-                  // this fails in some cases (Redshift)
-                  LOGGER.warn("unable to process foreign keys", e);
-                  if (dbt == null) {
-                    dbt = new FactTable();
-                  }
+                    // this fails in some cases (Redshift)
+                    LOGGER.warn("unable to process foreign keys", e);
+                    if (dbt == null) {
+                        dbt = new FactTable();
+                    }
                 }
                 dbt.schemaName = dbs.name;
                 dbt.name = tbname;
@@ -323,7 +327,8 @@ public class JdbcMetaData {
                 // setColumns(dbt);
                 dbs.addDbTable(dbt);
                 db.addDbTable(dbt);
-            }
+              }
+            );
         } catch (Exception e) {
             LOGGER.error("setAllTables", e);
         } finally {
@@ -702,9 +707,9 @@ public class JdbcMetaData {
         String productVersion = "";
 
         // list of all schemas in database
-        Map<String, DbSchema> schemas = new TreeMap<String, DbSchema>();
+        Map<String, DbSchema> schemas = new TreeMap<>();
         // ordered collection, allows duplicates and null
-        Map<String, TableTracker> tables = new TreeMap<String, TableTracker>();
+        Map<String, TableTracker> tables = new ConcurrentSkipListMap<>();
         // list of all tables in all schemas in database
 
         List<String> allSchemas;
@@ -1083,7 +1088,7 @@ public class JdbcMetaData {
         /**
          * ordered collection, allows duplicates and null
          */
-        final Map<String, DbTable> tables = new TreeMap<String, DbTable>();
+        final Map<String, DbTable> tables = new ConcurrentSkipListMap<>();
 
         private DbTable getTable(String tableName) {
             return tables.get(tableName);
