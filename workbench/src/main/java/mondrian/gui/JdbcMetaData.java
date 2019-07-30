@@ -13,8 +13,16 @@ package mondrian.gui;
 
 import org.apache.log4j.Logger;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
@@ -193,7 +201,13 @@ public class JdbcMetaData {
         List<String> schemaNames = new ArrayList<String>();
         ResultSet rs = null;
         try {
-            rs = md.getSchemas();
+            try {
+                rs = md.getSchemas(db.catalogName, null);
+            } catch ( SQLException e ) {
+              LOGGER.debug( "Error retrieving schemas", e );
+                //teradata does not support passing a catalogName
+                rs = md.getSchemas();
+            }
 
             while (rs.next()) {
                 String schemaName = rs.getString("TABLE_SCHEM");
@@ -224,7 +238,13 @@ public class JdbcMetaData {
         ResultSet rs = null;
         boolean gotSchema = false;
         try {
-            rs = md.getSchemas(db.catalogName, null);
+            try {
+                rs = md.getSchemas(db.catalogName, null);
+            } catch ( SQLException e ) {
+                LOGGER.debug( "Error retrieving schemas", e );
+                //teradata does not support passing a catalogName
+                rs = md.getSchemas();
+            }
             while (rs.next()) {
                 String schemaName = rs.getString("TABLE_SCHEM");
                 if (inJdbcSchemas(schemaName)) {
