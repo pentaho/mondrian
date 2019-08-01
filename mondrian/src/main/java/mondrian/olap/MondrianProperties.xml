@@ -1205,6 +1205,26 @@ not conform to SSAS, but is useful in some applications.</p>
         <Default>false</Default>
     </PropertyDefinition>
     <PropertyDefinition>
+        <Name>CurrentMemberWithCompoundSlicerAlert</Name>
+        <Path>mondrian.olap.fun.currentmemberwithcompoundslicer.alert</Path>
+        <Category>SQL generation</Category>
+        <Description>
+            <p>Alerting action to take when a CurrentMember function is applied to
+                a dimension that is also a compound slicer</p>
+
+            <p>Recognized actions:</p>
+
+            <ul>
+                <li><code>OFF</code>:  do nothing</li>
+                <li><code>WARN</code>:  log a warning</li>
+                <li><code>ERROR</code>:  throw an CurrentMemberWithCompoundSlicer
+                    MondrianException</li>
+            </ul>
+        </Description>
+        <Type>String</Type>
+        <Default>ERROR</Default>
+    </PropertyDefinition>
+    <PropertyDefinition>
         <Name>EnableGroupingSets</Name>
         <Path>mondrian.rolap.groupingsets.enable</Path>
         <Category>SQL generation</Category>
