@@ -1355,20 +1355,33 @@ Revision is $Id$
                 <li>db2</li>
                 <li>derby</li>
                 <li>firebird</li>
+                <li>googlebigquery</li>
+                <li>greenplum</li>
                 <li>hsqldb</li>
+                <li>hive</li>
+                <li>impala</li>
+                <li>infobright</li>
+                <li>informix</li>
+                <li>ingres</li>
+                <li>interbase</li>
+                <li>luciddb</li>
+                <li>mariadb</li>
+                <li>monetdb</li>
                 <li>mssql</li>
                 <li>mysql</li>
+                <li>neoview</li>
+                <li>neteeza</li>
                 <li>nuodb</li>
                 <li>oracle</li>
+                <li>pdi</li>
                 <li>postgres</li>
+                <li>redshift</li>
+                <li>snowflake</li>
+                <li>sqlstream</li>
                 <li>sybase</li>
                 <li>teradata</li>
-                <li>ingres</li>
-                <li>infobright</li>
-                <li>luciddb</li>
+                <li>vectorwise</li>
                 <li>vertica</li>
-                <li>neoview</li>
-                <li>pdi</li>
                 </ul>
             </Doc>
         </Attribute>

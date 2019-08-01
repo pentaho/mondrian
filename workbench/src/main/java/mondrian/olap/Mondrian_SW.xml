@@ -1382,19 +1382,33 @@
                 <li>db2</li>
                 <li>derby</li>
                 <li>firebird</li>
+                <li>googlebigquery</li>
+                <li>greenplum</li>
                 <li>hsqldb</li>
+                <li>hive</li>
+                <li>impala</li>
+                <li>infobright</li>
+                <li>informix</li>
+                <li>ingres</li>
+                <li>interbase</li>
+                <li>luciddb</li>
+                <li>mariadb</li>
+                <li>monetdb</li>
                 <li>mssql</li>
                 <li>mysql</li>
+                <li>neoview</li>
+                <li>neteeza</li>
+                <li>nuodb</li>
                 <li>oracle</li>
+                <li>pdi</li>
                 <li>postgres</li>
+                <li>redshift</li>
+                <li>snowflake</li>
+                <li>sqlstream</li>
                 <li>sybase</li>
                 <li>teradata</li>
-                <li>ingres</li>
-                <li>infobright</li>
-                <li>luciddb</li>
+                <li>vectorwise</li>
                 <li>vertica</li>
-                <li>neoview</li>
-                <li>pdi</li>
                 </ul>
             </Doc>
             <Value>generic</Value>
@@ -1402,22 +1416,33 @@
             <Value>db2</Value>
             <Value>derby</Value>
             <Value>firebird</Value>
+            <Value>googlebigquery</Value>
+            <Value>greenplum</Value>
             <Value>hsqldb</Value>
+            <Value>hive</Value>
+            <Value>impala</Value>
+            <Value>infobright</Value>
+            <Value>informix</Value>
+            <Value>ingres</Value>
+            <Value>interbase</Value>
+            <Value>luciddb</Value>
+            <Value>mariadb</Value>
+            <Value>monetdb</Value>
             <Value>mssql</Value>
             <Value>mysql</Value>
+            <Value>neoview</Value>
+            <Value>neteeza</Value>
+            <Value>nuodb</Value>
             <Value>oracle</Value>
+            <Value>pdi</Value>
             <Value>postgres</Value>
+            <Value>redshift</Value>
+            <Value>snowflake</Value>
+            <Value>sqlstream</Value>
             <Value>sybase</Value>
             <Value>teradata</Value>
-            <Value>ingres</Value>
-            <Value>infobright</Value>
-            <Value>luciddb</Value>
-            <Value>vertica</Value>
-            <Value>neoview</Value>
-            <Value>greenplum</Value>
             <Value>vectorwise</Value>
-            <Value>hive</Value>
-            <Value>pdi</Value>
+            <Value>vertica</Value>
         </Attribute>
         <CData/>
         <Code><![CDATA[
