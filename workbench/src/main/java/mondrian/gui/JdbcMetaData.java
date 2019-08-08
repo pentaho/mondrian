@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2018 Hitachi Vantara and others
+// Copyright (C) 2006-2019 Hitachi Vantara and others
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
@@ -13,8 +13,17 @@ package mondrian.gui;
 
 import org.apache.log4j.Logger;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  */
@@ -192,7 +201,13 @@ public class JdbcMetaData {
         List<String> schemaNames = new ArrayList<String>();
         ResultSet rs = null;
         try {
-            rs = md.getSchemas();
+            try {
+                rs = md.getSchemas(db.catalogName, null);
+            } catch ( SQLException e ) {
+              LOGGER.debug( "Error retrieving schemas", e );
+                //teradata does not support passing a catalogName
+                rs = md.getSchemas();
+            }
 
             while (rs.next()) {
                 String schemaName = rs.getString("TABLE_SCHEM");
@@ -223,7 +238,13 @@ public class JdbcMetaData {
         ResultSet rs = null;
         boolean gotSchema = false;
         try {
-            rs = md.getSchemas();
+            try {
+                rs = md.getSchemas(db.catalogName, null);
+            } catch ( SQLException e ) {
+                LOGGER.debug( "Error retrieving schemas", e );
+                //teradata does not support passing a catalogName
+                rs = md.getSchemas();
+            }
             while (rs.next()) {
                 String schemaName = rs.getString("TABLE_SCHEM");
                 if (inJdbcSchemas(schemaName)) {
@@ -265,52 +286,59 @@ public class JdbcMetaData {
             // Tables and views can be used
             try {
                 rs = md.getTables(
-                    null, dbs.name, null, new String[]{"TABLE", "VIEW"});
+                    db.catalogName,
+                    dbs.name,
+                    null,
+                    new String[]{"TABLE", "VIEW"});
             } catch (Exception e) {
                 // this is a workaround for databases that throw an exception
                 // when views are requested.
-                rs = md.getTables(null, dbs.name, null, new String[]{"TABLE"});
+                rs = md.getTables(
+                    db.catalogName, dbs.name, null, new String[]{"TABLE"});
             }
+            ArrayList<String> tableNames = new ArrayList<>();
             while (rs.next()) {
+                String tableName = rs.getString("TABLE_NAME");
                 // Oracle 10g Driver returns bogus BIN$ tables that cause
                 // exceptions
-                String tbname = rs.getString("TABLE_NAME");
-                if (!tbname.matches("(?!BIN\\$).+")) {
-                    continue;
+                if (tableName.matches("(?!BIN\\$).+")) {
+                    tableNames.add(tableName);
                 }
-
+            }
+            tableNames.stream().parallel().forEach(
+                (tbname) -> {
                 DbTable dbt = null;
 
                 // Note: Imported keys are foreign keys which are primary keys
                 // of in some other tables; Exported keys are primary keys which
                 // are referenced as foreign keys in other tables.
                 try {
-                    ResultSet rs_fks =
-                        md.getImportedKeys(null, dbs.name, tbname);
+                    ResultSet rsForeignKeys =
+                      md.getImportedKeys(db.catalogName, dbs.name, tbname);
                     try {
-                        if (rs_fks.next()) {
+                        if (rsForeignKeys.next()) {
                             dbt = new FactTable();
                             do {
                                 ((FactTable) dbt).addFks(
-                                    rs_fks.getString("FKCOLUMN_NAME"),
-                                    rs_fks.getString("pktable_name"));
-                            } while (rs_fks.next());
+                                    rsForeignKeys.getString("FKCOLUMN_NAME"),
+                                    rsForeignKeys.getString("pktable_name"));
+                            } while (rsForeignKeys.next());
                         } else {
                             dbt = new DbTable();
                         }
                     } finally {
                         try {
-                            rs_fks.close();
+                            rsForeignKeys.close();
                         } catch (Exception e) {
                             // ignore
                         }
                     }
                 } catch (Exception e) {
-                  // this fails in some cases (Redshift)
-                  LOGGER.warn("unable to process foreign keys", e);
-                  if (dbt == null) {
-                    dbt = new FactTable();
-                  }
+                    // this fails in some cases (Redshift)
+                    LOGGER.warn("unable to process foreign keys", e);
+                    if (dbt == null) {
+                        dbt = new FactTable();
+                    }
                 }
                 dbt.schemaName = dbs.name;
                 dbt.name = tbname;
@@ -319,7 +347,8 @@ public class JdbcMetaData {
                 // setColumns(dbt);
                 dbs.addDbTable(dbt);
                 db.addDbTable(dbt);
-            }
+              }
+            );
         } catch (Exception e) {
             LOGGER.error("setAllTables", e);
         } finally {
@@ -338,7 +367,7 @@ public class JdbcMetaData {
     private void setPKey(DbTable dbt) {
         ResultSet rs = null;
         try {
-            rs = md.getPrimaryKeys(null, dbt.schemaName, dbt.name);
+            rs = md.getPrimaryKeys(db.catalogName, dbt.schemaName, dbt.name);
             if (rs.next()) {
                 //   // a column may have been given a primary key name
                 //===dbt.pk = rs.getString("PK_NAME");
@@ -390,7 +419,7 @@ public class JdbcMetaData {
     private void setColumns(DbTable dbt) {
         ResultSet rs = null;
         try {
-            rs = md.getColumns(null, dbt.schemaName, dbt.name, null);
+            rs = md.getColumns(db.catalogName, dbt.schemaName, dbt.name, null);
             while (rs.next()) {
                 DbColumn col = new DbColumn();
 
@@ -698,9 +727,9 @@ public class JdbcMetaData {
         String productVersion = "";
 
         // list of all schemas in database
-        Map<String, DbSchema> schemas = new TreeMap<String, DbSchema>();
+        Map<String, DbSchema> schemas = new TreeMap<>();
         // ordered collection, allows duplicates and null
-        Map<String, TableTracker> tables = new TreeMap<String, TableTracker>();
+        Map<String, TableTracker> tables = new ConcurrentSkipListMap<>();
         // list of all tables in all schemas in database
 
         List<String> allSchemas;
@@ -1079,7 +1108,7 @@ public class JdbcMetaData {
         /**
          * ordered collection, allows duplicates and null
          */
-        final Map<String, DbTable> tables = new TreeMap<String, DbTable>();
+        final Map<String, DbTable> tables = new ConcurrentSkipListMap<>();
 
         private DbTable getTable(String tableName) {
             return tables.get(tableName);
