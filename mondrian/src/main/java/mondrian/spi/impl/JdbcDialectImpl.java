@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2018 Hitachi Vantara.  All rights reserved.
+// Copyright (c) 2002-2019 Hitachi Vantara.  All rights reserved.
 */
 package mondrian.spi.impl;
 
@@ -1169,8 +1169,11 @@ public class JdbcDialectImpl implements Dialect {
             LOGGER.debug("NOT Using " + databaseProduct.name() + " dialect");
             return false;
         } catch (SQLException e) {
-            LOGGER.debug(
-                "NOT Using " + databaseProduct.name() + " dialect.", e);
+            // this exception can be hit by any db types that don't support
+            // 'select version()'
+            // no need to log exception, this is an "expected" error as we
+            // loop through all dialects looking for one that matches.
+            LOGGER.debug("NOT Using " + databaseProduct.name() + " dialect.");
             return false;
         } finally {
             Util.close(resultSet, statement, null);
