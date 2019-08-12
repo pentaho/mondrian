@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1999-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2019 Hitachi Vantara and others
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
@@ -2029,7 +2029,9 @@ public class Workbench extends javax.swing.JFrame {
                 (SchemaExplorer) theSchemaFrame.getContentPane()
                     .getComponent(0);
             File theFile = theSchemaExplorer.getSchemaFile();
-            checkSchemaFile(theFile);
+            if ( theFile.exists() ) {
+                checkSchemaFile( theFile );
+            }
             theSchemaExplorer.resetMetaData(jdbcMetaData);
             theSchemaExplorer.getTreeUpdater().update();
             theSchemaFrame.updateUI();
