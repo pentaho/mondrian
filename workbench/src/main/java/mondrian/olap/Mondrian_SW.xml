@@ -1397,7 +1397,7 @@
                 <li>mssql</li>
                 <li>mysql</li>
                 <li>neoview</li>
-                <li>neteeza</li>
+                <li>netezza</li>
                 <li>nuodb</li>
                 <li>oracle</li>
                 <li>pdi</li>
@@ -1431,7 +1431,7 @@
             <Value>mssql</Value>
             <Value>mysql</Value>
             <Value>neoview</Value>
-            <Value>neteeza</Value>
+            <Value>netezza</Value>
             <Value>nuodb</Value>
             <Value>oracle</Value>
             <Value>pdi</Value>
