@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2017 Hitachi Vantara.
+// Copyright (c) 2002-2019 Hitachi Vantara.
 // All Rights Reserved.
 */
 package mondrian.rolap.cache;
@@ -267,8 +267,15 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         checkThread();
 
         final HeaderInfo headerInfo = headerMap.get(header);
-        assert headerInfo != null
-            : "segment header " + header.getUniqueID() + " is missing";
+
+        if (headerInfo == null) {
+            LOGGER.trace(
+                "loadSucceeded: Discarding data for header "
+                + header.getUniqueID()
+                + ". Data arrived late.");
+            return;
+        }
+
         if (!headerInfo.slot.isDone()) {
             headerInfo.slot.put(body);
         }
