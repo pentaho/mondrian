@@ -22,6 +22,7 @@ import mondrian.olap4j.XmlaExtraTest;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.*;
+import mondrian.rolap.cache.SegmentCacheIndexImplTest;
 import mondrian.rolap.format.DefaultFormatterTest;
 import mondrian.rolap.format.FormatterCreateContextTest;
 import mondrian.rolap.format.FormatterFactoryTest;
@@ -178,6 +179,7 @@ public class Main extends TestSuite {
             addTest(suite, ScenarioTest.class);
             addTest(suite, BasicQueryTest.class);
             addTest(suite, SegmentCacheTest.class);
+            addTest(suite, SegmentCacheIndexImplTest.class);
             addTest(suite, CVBasicTest.class, "suite");
             addTest(suite, GrandTotalTest.class, "suite");
             addTest(suite, HangerDimensionTest.class, "suite");
