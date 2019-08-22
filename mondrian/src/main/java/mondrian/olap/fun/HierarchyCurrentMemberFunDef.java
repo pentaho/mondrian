@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+// Copyright (c) 2002-2019 Hitachi Vantara..  All rights reserved.
 */
 package mondrian.olap.fun;
 
@@ -15,6 +15,8 @@ import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapEvaluator;
 import mondrian.rolap.RolapHierarchy;
+import org.apache.log4j.Logger;
+import org.eigenbase.util.property.StringProperty;
 
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +29,9 @@ import java.util.Set;
  * @since Mar 23, 2006
  */
 public class HierarchyCurrentMemberFunDef extends FunDefBase {
+    private static final Logger LOGGER =
+            Logger.getLogger(HierarchyCurrentMemberFunDef.class);
+
     static final HierarchyCurrentMemberFunDef instance =
             new HierarchyCurrentMemberFunDef();
 
@@ -116,12 +121,30 @@ public class HierarchyCurrentMemberFunDef extends FunDefBase {
         if (evaluator instanceof RolapEvaluator) {
             RolapEvaluator rev = (RolapEvaluator) evaluator;
             Map<Hierarchy, Set<Member>> map =
-                    Util.getMembersToHierarchyMap(rev.getSlicerMembers());
+                Util.getMembersToHierarchyMap(rev.getSlicerMembers());
             Set<Member> members = map.get(hierarchy);
+
             if (members != null && members.size() > 1) {
-                throw MondrianResource.instance()
-                    .CurrentMemberWithCompoundSlicer.ex(
-                        hierarchy.getUniqueName());
+                MondrianException exception =
+                    MondrianResource.instance()
+                        .CurrentMemberWithCompoundSlicer.ex(
+                            hierarchy.getUniqueName());
+                StringProperty alertProperty =
+                    MondrianProperties.instance()
+                        .CurrentMemberWithCompoundSlicerAlert;
+                String alertValue = alertProperty.get();
+
+                if (alertValue.equalsIgnoreCase(
+                        org.apache.log4j.Level.WARN.toString()))
+                {
+                    LOGGER.warn(exception.getMessage());
+                } else if (alertValue.equalsIgnoreCase(
+                        org.apache.log4j.Level.ERROR.toString()))
+                {
+                    throw MondrianResource.instance()
+                        .CurrentMemberWithCompoundSlicer.ex(
+                            hierarchy.getUniqueName());
+                }
             }
         }
     }
