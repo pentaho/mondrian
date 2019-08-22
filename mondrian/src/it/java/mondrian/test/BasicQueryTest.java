@@ -9136,6 +9136,34 @@ public class BasicQueryTest extends FoodMartTestCase {
         }
     }
 
+    public void testCurrentMemberWithCompoundSlicerIgnoreException() {
+        propSaver.set(props.CurrentMemberWithCompoundSlicerAlert, "OFF");
+
+        final TestContext context = getTestContext().withFreshConnection();
+        String mdx = ""
+            + "with\n"
+            + "member [Measures].[Gender Current Member] "
+            + "as '[Gender].CurrentMember.Name'\n"
+            + "select [Measures].[Gender Current Member] on 0\n"
+            + "from [Sales]\n"
+            + "where { [Gender].[M], [Gender].[F] }";
+
+        try {
+            context.assertQueryReturns(
+                mdx,
+                "Axis #0:\n"
+                + "{[Gender].[M]}\n"
+                + "{[Gender].[F]}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Gender Current Member]}\n"
+                + "Row #0: #null\n");
+        } catch (MondrianException e) {
+            fail("MondrianException is not expected");
+        } finally {
+            propSaver.reset();
+        }
+    }
+
     public void testCurrentMemberWithCompoundSlicer2() {
         String mdx =
             "with\n"
@@ -9160,6 +9188,42 @@ public class BasicQueryTest extends FoodMartTestCase {
               + "because the coordinate for the '[Time]' "
               + "hierarchy contains a set",
               e.getCause().getMessage());
+        }
+    }
+
+    public void testCurrentMemberWithCompoundSlicer2IgnoreException() {
+        propSaver.set(props.CurrentMemberWithCompoundSlicerAlert, "OFF");
+
+        final TestContext context = getTestContext().withFreshConnection();
+        String mdx =
+                "with\n"
+                + "member [Measures].[Drink Sales Previous Period] as\n"
+                + "'( Time.CurrentMember.lag(1), [Product].[All Products].[Drink],"
+                + " measures.[unit sales] )'\n"
+                + "member [Measures].[Drink Sales Current Period] as\n"
+                + "'( Time.CurrentMember, [Product].[All Products].[Drink],"
+                + " [Measures].[Unit Sales] )'\n"
+                + "select\n"
+                + "{ [Measures].[Drink Sales Current Period],"
+                + " [Measures].[Drink Sales Current Period] } on 0\n"
+                + "from [Sales]\n"
+                + "where { [Time].[1997].[Q4],[Time].[1997].[Q3] }\n";
+
+        try {
+            context.assertQueryReturns(
+                mdx,
+                "Axis #0:\n"
+                + "{[Time].[1997].[Q4]}\n"
+                + "{[Time].[1997].[Q3]}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Drink Sales Current Period]}\n"
+                + "{[Measures].[Drink Sales Current Period]}\n"
+                + "Row #0: \n"
+                + "Row #0: \n");
+        } catch (MondrianException e) {
+            fail("MondrianException is not expected");
+        } finally {
+            propSaver.reset();
         }
     }
 
