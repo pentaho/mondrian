@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2016 Pentaho and others
+// Copyright (C) 2005-2019 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -22,12 +22,16 @@ import mondrian.util.Pair;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -36,12 +40,6 @@ import javax.naming.spi.InitialContextFactory;
 import javax.naming.spi.InitialContextFactoryBuilder;
 import javax.naming.spi.NamingManager;
 import javax.sql.DataSource;
-
-
-
-
-
-
 
 import static org.mockito.Mockito.*;
 
@@ -483,6 +481,78 @@ public class RolapConnectionTest extends TestCase {
             }
         }
     }
+
+    public void testGetJdbcConnectionWhenJdbcIsNull() {
+        final StringBuilder connectInfo = new StringBuilder();
+        Util.PropertyList properties =
+          TestContext.instance().getConnectionProperties().clone();
+        properties.remove(RolapConnectionProperties.Jdbc.name());
+        try {
+            DataSource dataSource =
+              RolapConnection.createDataSource(null, properties, connectInfo);
+        } catch (RuntimeException ex) {
+            assertTrue(
+              connectInfo.toString(),
+              StringUtils.isBlank(connectInfo.toString()));
+        }
+    }
+
+    public void testJdbcConnectionString() {
+        final StringBuilder connectInfo = new StringBuilder();
+        Map<String, String> connectInfoMap = new HashMap<>();
+
+        Util.PropertyList properties =
+          TestContext.instance().getConnectionProperties().clone();
+        properties.put(
+          RolapConnectionProperties.JdbcUser.name(), "sqlserver://localhost");
+        properties.put("databaseName", "databaseTest");
+        properties.put("integratedSecurity", "true");
+
+        DataSource dataSource =
+          RolapConnection.createDataSource(null, properties, connectInfo);
+
+        assertFalse(StringUtils.isBlank(connectInfo.toString()));
+
+        String[] parseconnectInfo = connectInfo.toString().split(";");
+        for (String parseconnectInfoVals : parseconnectInfo) {
+            String[] parseconnectInfoVal = parseconnectInfoVals.split("=");
+            connectInfoMap.put(parseconnectInfoVal[0], parseconnectInfoVal[1]);
+        }
+
+        assertTrue(connectInfoMap.get("databaseName"), true);
+        assertEquals(connectInfoMap.get("databaseName"), "databaseTest");
+        assertTrue(connectInfoMap.get("integratedSecurity"), true);
+        assertEquals(connectInfoMap.get("integratedSecurity"), "true");
+    }
+
+    public void testJdbcConnectionStringWithoutDatabase() {
+        final StringBuilder connectInfo = new StringBuilder();
+        Util.PropertyList properties =
+          TestContext.instance().getConnectionProperties().clone();
+        properties.put(
+          RolapConnectionProperties.JdbcUser.name(), "sqlserver://localhost");
+
+        DataSource dataSource =
+          RolapConnection.createDataSource(null, properties, connectInfo);
+
+        assertFalse(StringUtils.isBlank(connectInfo.toString()));
+        assertFalse(connectInfo.toString().contains("databaseName"));
+    }
+
+    public void testJdbcConnectionStringWithoutIntegratedSecurity() {
+        final StringBuilder connectInfo = new StringBuilder();
+        Util.PropertyList properties =
+          TestContext.instance().getConnectionProperties().clone();
+        properties.put(
+          RolapConnectionProperties.JdbcUser.name(), "sqlserver://localhost");
+
+        DataSource dataSource =
+          RolapConnection.createDataSource(null, properties, connectInfo);
+
+        assertFalse(StringUtils.isBlank(connectInfo.toString()));
+        assertFalse(connectInfo.toString().contains("integratedSecurity"));
+    }
+
 }
 
 // End RolapConnectionTest.java
