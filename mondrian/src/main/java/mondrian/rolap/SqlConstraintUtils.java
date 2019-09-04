@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2018 Hitachi Vantara and others
+// Copyright (C) 2005-2019 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -166,67 +166,56 @@ public class SqlConstraintUtils {
             // choose from agg or regular star
             String expr = getColumnExpr(sqlQuery, aggStar, column);
 
-            if ((RolapUtil.mdxNullLiteral().equalsIgnoreCase(value))
-                || (value.equalsIgnoreCase(RolapUtil.sqlNullValue.toString())))
-            {
-                sqlQuery.addWhere(expr, " is ", RolapUtil.sqlNullLiteral);
-            } else {
-                if (column.getDatatype().isNumeric()) {
-                    // make sure it can be parsed
-                    Double.valueOf(value);
-                }
+            if (mapOfSlicerMembers == null) {
+                mapOfSlicerMembers = getSlicerMemberMap(evaluator);
+            }
 
-                if (mapOfSlicerMembers == null) {
-                    mapOfSlicerMembers = getSlicerMemberMap(evaluator);
-                }
+            final MondrianDef.Expression keyForSlicerMap =
+                column.getExpression();
 
-                final MondrianDef.Expression keyForSlicerMap =
-                    column.getExpression();
+            if (mapOfSlicerMembers.containsKey(keyForSlicerMap)) {
+                if (!done.containsKey(keyForSlicerMap)) {
+                    Set<RolapMember> slicerMembersSet =
+                        mapOfSlicerMembers.get(keyForSlicerMap);
 
-                if (mapOfSlicerMembers.containsKey(keyForSlicerMap)) {
-                    if (!done.containsKey(keyForSlicerMap)) {
-                        Set<RolapMember> slicerMembersSet =
-                            mapOfSlicerMembers.get(keyForSlicerMap);
+                    // get only constraining members
+                    // TODO: can we do this right at getSlicerMemberMap?
+                    List<RolapMember> slicerMembers =
+                        getNonAllMembers(slicerMembersSet);
 
-                        // get only constraining members
-                        // TODO: can we do this right at getSlicerMemberMap?
-                        List<RolapMember> slicerMembers =
-                            getNonAllMembers(slicerMembersSet);
-
-                        if (slicerMembers.size() > 0) {
-                            // get level
-                            final int levelIndex = slicerMembers.get(0)
-                                .getHierarchy()
-                                .getLevels().length - 1;
-                            RolapLevel levelForWhere =
-                                (RolapLevel) slicerMembers.get(0)
-                                .getHierarchy()
-                                .getLevels()[levelIndex];
-                            // build where constraint
-                            final String where =
-                                generateSingleValueInExpr(
-                                    sqlQuery, baseCube,
-                                    aggStar, slicerMembers,
-                                    levelForWhere,
-                                    restrictMemberTypes, false, false);
-                            if (!where.equals("")) {
-                                // The where clause might be null because if the
-                                // list of members is greater than the limit
-                                // permitted, we won't constraint.
-                                sqlQuery.addWhere(where);
-                            }
-                        } else {
-                            addSimpleColumnConstraint(
-                                sqlQuery,
-                                column, expr, value);
+                    if (slicerMembers.size() > 0) {
+                        // get level
+                        final int levelIndex = slicerMembers.get(0)
+                            .getHierarchy()
+                            .getLevels().length - 1;
+                        RolapLevel levelForWhere =
+                            (RolapLevel) slicerMembers.get(0)
+                            .getHierarchy()
+                            .getLevels()[levelIndex];
+                        // build where constraint
+                        final String where =
+                            generateSingleValueInExpr(
+                                sqlQuery, baseCube,
+                                aggStar, slicerMembers,
+                                levelForWhere,
+                                restrictMemberTypes, false, false);
+                        if (!where.equals("")) {
+                            // The where clause might be null because if the
+                            // list of members is greater than the limit
+                            // permitted, we won't constraint.
+                            sqlQuery.addWhere(where);
                         }
-                        done.put(keyForSlicerMap, Boolean.TRUE);
+                    } else {
+                        addSimpleColumnConstraint(
+                            sqlQuery,
+                            column, expr, value);
                     }
-                    // if done, no op
-                } else {
-                    // column not constrained by slicer
-                    addSimpleColumnConstraint(sqlQuery, column, expr, value);
+                    done.put(keyForSlicerMap, Boolean.TRUE);
                 }
+                // if done, no op
+            } else {
+                // column not constrained by slicer
+                addSimpleColumnConstraint(sqlQuery, column, expr, value);
             }
         }
 
@@ -1676,8 +1665,10 @@ public class SqlConstraintUtils {
                 int bitPos = column.getBitPosition();
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
 
-                if(aggColumn == null){
-                    LOG.warn(mres.AggTableNoConstraintGenerated.str(aggStar.getFactTable().getName()));
+                if (aggColumn == null) {
+                    LOG.warn(
+                        mres.AggTableNoConstraintGenerated
+                            .str(aggStar.getFactTable().getName()));
                     return "";
                 }
 
