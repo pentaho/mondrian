@@ -109,7 +109,25 @@ public class LocalizingDynamicSchemaProcessor
         return schema;
     }
 
-    private String doRegExReplacements(String schema) {
+    public String filter( String schema, Util.PropertyList connectInfo ) {
+
+        setLocale(
+          connectInfo.get("Locale") == null
+            ? Locale.getDefault().toString()
+            : connectInfo.get("Locale"));
+
+        loadProperties();
+
+        String schemaProcessed = schema;
+
+        if (bundle != null) {
+            schemaProcessed = doRegExReplacements(schemaProcessed);
+        }
+        LOGGER.debug(schemaProcessed);
+        return schemaProcessed;
+    }
+
+    private String doRegExReplacements( String schema ) {
         // As of JDK 1.5, cannot use StringBuilder - appendReplacement requires
         // the antediluvian StringBuffer.
         StringBuffer intlSchema = new StringBuffer();

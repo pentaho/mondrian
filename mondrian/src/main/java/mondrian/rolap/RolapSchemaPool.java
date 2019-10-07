@@ -10,6 +10,7 @@
 */
 package mondrian.rolap;
 
+import mondrian.i18n.LocalizingDynamicSchemaProcessor;
 import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.JdbcSchema;
@@ -343,6 +344,8 @@ class RolapSchemaPool {
 
         String catalogStr = connectInfo.get(
             RolapConnectionProperties.CatalogContent.name());
+        String dynProcName = connectInfo.get(
+          RolapConnectionProperties.DynamicSchemaProcessor.name());
 
         if (Util.isEmpty(catalogStr)) {
             if (Util.isEmpty(catalogUrl)) {
@@ -352,8 +355,6 @@ class RolapSchemaPool {
                         RolapConnectionProperties.CatalogContent.name());
             }
             // check for a DynamicSchemaProcessor
-            String dynProcName = connectInfo.get(
-                RolapConnectionProperties.DynamicSchemaProcessor.name());
             if (!Util.isEmpty(dynProcName)) {
                 catalogStr =
                     processDynamicSchema(
@@ -371,8 +372,41 @@ class RolapSchemaPool {
                 }
             }
         }
+        else {
+            // If exist a DynamicSchemaProcessor apply locale
+            if ( !Util.isEmpty( dynProcName ) ) {
+                return processDynamicSchemaWithCatalog( dynProcName, catalogStr, connectInfo );
+            }
+        }
 
         return catalogStr;
+    }
+
+    private static String processDynamicSchemaWithCatalog(
+      final String dynProcName,
+      final String catalogStr,
+      final Util.PropertyList connectInfo) {
+
+        String catalogStrProcessed = catalogStr;
+
+        if (RolapSchema.LOGGER.isDebugEnabled()) {
+            RolapSchema.LOGGER.debug(
+              "Pool.get: translate schema \"" + catalogStr
+                + "\" using dynamic processor");
+        }
+        try {
+            final DynamicSchemaProcessor dynProc =
+              ClassResolver.INSTANCE.instantiateSafe(dynProcName);
+            if( dynProc instanceof LocalizingDynamicSchemaProcessor )
+                catalogStrProcessed = ((LocalizingDynamicSchemaProcessor)dynProc).filter( catalogStrProcessed, connectInfo);
+
+        } catch (Exception e) {
+            throw Util.newError(
+              e,
+              "loading DynamicSchemaProcessor " + dynProcName);
+        }
+
+        return catalogStrProcessed;
     }
 
     private static String processDynamicSchema(
