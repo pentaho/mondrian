@@ -9262,6 +9262,93 @@ public class BasicQueryTest extends FoodMartTestCase {
             +  "    ([Time].[1997].[Q4].[12])\n",
             getTestContext().withFreshConnection());
     }
+
+    public void testMondrian2630() {
+        String mdx = "WITH\n"
+                +  "SET [*NATIVE_CJ_SET_WITH_SLICER] AS '[*BASE_MEMBERS__Store Size in SQFT_]'\n"
+                +  "SET [*NATIVE_CJ_SET] AS '[SQFT 2].[Store Sqft].MEMBERS'\n"
+                +  "SET [*METRIC_CJ_SET] AS 'FILTER([*NATIVE_CJ_SET],[Measures].[Unit Sales] > 0)'\n"
+                +  "SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],[SQFT 2].CURRENTMEMBER.ORDERKEY,BASC)'\n"
+                +  "SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+                +  "SET [*BASE_MEMBERS__SQFT 2_] AS '[SQFT 2].[Store Sqft].MEMBERS'\n"
+                +  "SET [*CJ_SLICER_AXIS] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Store Size in SQFT].CURRENTMEMBER)})'\n"
+                +  "SET [*CJ_ROW_AXIS] AS 'GENERATE([*METRIC_CJ_SET], {([SQFT 2].CURRENTMEMBER)})'\n"
+                +  "SET [*BASE_MEMBERS__Store Size in SQFT_] AS 'FILTER([Store Size in SQFT].[Store Sqft].MEMBERS,[Store Size in SQFT].CURRENTMEMBER NOT IN {[Store Size in SQFT].[All Store Size in SQFTs].[22478]})'\n"
+                +  "MEMBER [Measures].[*FORMATTED_MEASURE_0] AS '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', SOLVE_ORDER=500\n"
+                +  "SELECT\n"
+                +  "[*BASE_MEMBERS__Measures_] ON COLUMNS\n"
+                +  ", NON EMPTY\n"
+                +  "[*SORTED_ROW_AXIS] ON ROWS\n"
+                +  "FROM [Sales]\n"
+                +  "WHERE ([*CJ_SLICER_AXIS])";
+
+        String schema = ""
+                +  "<?xml version=\"1.0\"?>\n"
+                +  "<Schema name=\"FoodMart\">\n"
+                +  "  <Dimension name=\"Store Size in SQFT\">\n"
+                +  "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
+                +  "      <Table name=\"store\"/>\n"
+                +  "      <Level name=\"Store Sqft\" column=\"store_sqft\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
+                +  "    </Hierarchy>\n"
+                +  "  </Dimension>\n"
+                +  "  <Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">\n"
+                +  "    <Table name=\"sales_fact_1997\"/>\n"
+                +  "    <DimensionUsage name=\"Store Size in SQFT\" source=\"Store Size in SQFT\" foreignKey=\"store_id\"/>\n"
+                +  "    <DimensionUsage name=\"SQFT 2\" source=\"Store Size in SQFT\" foreignKey=\"store_id\"/>\n"
+                +  "    <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n"
+                +  "  </Cube>\n"
+                +  "</Schema>";
+
+        String result = "Axis #0:\n"
+                + "{[Store Size in SQFT].[#null]}\n"
+                + "{[Store Size in SQFT].[20319]}\n"
+                + "{[Store Size in SQFT].[21215]}\n"
+                + "{[Store Size in SQFT].[23112]}\n"
+                + "{[Store Size in SQFT].[23593]}\n"
+                + "{[Store Size in SQFT].[23598]}\n"
+                + "{[Store Size in SQFT].[23688]}\n"
+                + "{[Store Size in SQFT].[23759]}\n"
+                + "{[Store Size in SQFT].[24597]}\n"
+                + "{[Store Size in SQFT].[27694]}\n"
+                + "{[Store Size in SQFT].[28206]}\n"
+                + "{[Store Size in SQFT].[30268]}\n"
+                + "{[Store Size in SQFT].[30584]}\n"
+                + "{[Store Size in SQFT].[30797]}\n"
+                + "{[Store Size in SQFT].[33858]}\n"
+                + "{[Store Size in SQFT].[34452]}\n"
+                + "{[Store Size in SQFT].[34791]}\n"
+                + "{[Store Size in SQFT].[36509]}\n"
+                + "{[Store Size in SQFT].[38382]}\n"
+                + "{[Store Size in SQFT].[39696]}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+                + "Axis #2:\n"
+                + "{[SQFT 2].[#null]}\n"
+                + "{[SQFT 2].[20319]}\n"
+                + "{[SQFT 2].[21215]}\n"
+                + "{[SQFT 2].[23598]}\n"
+                + "{[SQFT 2].[23688]}\n"
+                + "{[SQFT 2].[27694]}\n"
+                + "{[SQFT 2].[28206]}\n"
+                + "{[SQFT 2].[30268]}\n"
+                + "{[SQFT 2].[33858]}\n"
+                + "{[SQFT 2].[39696]}\n"
+                + "Row #0: 39,329\n"
+                + "Row #1: 26,079\n"
+                + "Row #2: 25,011\n"
+                + "Row #3: 25,663\n"
+                + "Row #4: 21,333\n"
+                + "Row #5: 41,580\n"
+                + "Row #6: 2,237\n"
+                + "Row #7: 23,591\n"
+                + "Row #8: 35,257\n"
+                + "Row #9: 24,576\n";
+
+        TestContext testContext = TestContext.instance()
+                .withFreshConnection()
+                .withSchema(schema);
+        testContext.assertQueryReturns(mdx, result);
+    }
 }
 
 // End BasicQueryTest.java
