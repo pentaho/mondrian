@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2019 Hitachi Vantara and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 */
@@ -1491,7 +1491,7 @@ public class SchemaExplorer
                 }
             }
         }
-        // Object path = tree.getSelectionPath().getLastPathComponent();
+
         if (!(path instanceof MondrianGuiDef.Table)) {
             JOptionPane.showMessageDialog(
                 this,
@@ -1503,7 +1503,6 @@ public class SchemaExplorer
             return;
         }
 
-
         MondrianGuiDef.Table factTable = (MondrianGuiDef.Table) path;
 
         MondrianGuiDef.AggPattern aggname = new MondrianGuiDef.AggPattern();
@@ -1512,6 +1511,7 @@ public class SchemaExplorer
         // add cube to schema
         aggname.ignorecase = Boolean.TRUE;
         aggname.factcount = null;
+        aggname.measuresfactcount = new MondrianGuiDef.AggMeasureFactCount[0];
         aggname.ignoreColumns = new MondrianGuiDef.AggIgnoreColumn[0];
         aggname.foreignKeys = new MondrianGuiDef.AggForeignKey[0];
         aggname.measures = new MondrianGuiDef.AggMeasure[0];
@@ -1558,6 +1558,7 @@ public class SchemaExplorer
                 }
             }
         }
+
         if (!(path instanceof MondrianGuiDef.Table)) {
             JOptionPane.showMessageDialog(
                 this, getResourceConverter().getString(
@@ -1574,11 +1575,11 @@ public class SchemaExplorer
         // add cube to schema
         aggname.ignorecase = Boolean.TRUE;
         aggname.factcount = null;
+        aggname.measuresfactcount = new MondrianGuiDef.AggMeasureFactCount[0];
         aggname.ignoreColumns = new MondrianGuiDef.AggIgnoreColumn[0];
         aggname.foreignKeys = new MondrianGuiDef.AggForeignKey[0];
         aggname.measures = new MondrianGuiDef.AggMeasure[0];
         aggname.levels = new MondrianGuiDef.AggLevel[0];
-
 
         NodeDef[] temp = factTable.aggTables;
         if (temp == null) {
