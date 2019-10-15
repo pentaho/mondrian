@@ -565,10 +565,21 @@ public class SqlConstraintUtils {
         String expr,
         final String value)
     {
-        // No extra slicers.... just use the = method
-        final StringBuilder buf = new StringBuilder();
-        sqlQuery.getDialect().quote(buf, value, column.getDatatype());
-        sqlQuery.addWhere(expr, " = ", buf.toString());
+        if ((RolapUtil.mdxNullLiteral().equalsIgnoreCase(value))
+                || (value.equalsIgnoreCase(RolapUtil.sqlNullValue.toString())))
+        {
+            sqlQuery.addWhere(expr, " is ", RolapUtil.sqlNullLiteral);
+        } else {
+            if ( column.getDatatype().isNumeric() ) {
+                // make sure it can be parsed
+                Double.valueOf( value );
+            }
+
+            // No extra slicers.... just use the = method
+            final StringBuilder buf = new StringBuilder();
+            sqlQuery.getDialect().quote(buf, value, column.getDatatype());
+            sqlQuery.addWhere(expr, " = ", buf.toString());
+        }
     }
 
     public static Map<Level, List<RolapMember>> getRoleConstraintMembers(
