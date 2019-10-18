@@ -63,7 +63,9 @@ public interface DynamicSchemaProcessor {
      * @return Returns the modified schema.
      * @throws Exception if an error occurs.
      */
-    public String processCatalog( String catalog, Util.PropertyList connectInfo) throws Exception;
+    default String processCatalog( String catalog, Util.PropertyList connectInfo) throws Exception {
+        return catalog;
+    }
 }
 
 // End DynamicSchemaProcessor.java

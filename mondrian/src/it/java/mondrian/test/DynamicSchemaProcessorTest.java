@@ -103,10 +103,6 @@ public class DynamicSchemaProcessorTest
             return getSchema();
         }
 
-        @Override public String processCatalog( String catalog, Util.PropertyList connectInfo ) throws Exception {
-            return catalog;
-        }
-
         public String getSchema() throws Exception {
             return
                 DynamicSchemaProcessorTest.TEMPLATE_SCHEMA.replaceAll(

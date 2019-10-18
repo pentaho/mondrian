@@ -693,10 +693,6 @@ public class CaptionTest extends TestCase {
         {
             return foodmart;
         }
-
-        @Override public String processCatalog( String catalog, Util.PropertyList connectInfo ) throws Exception {
-            return catalog;
-        }
     }
 }
 
