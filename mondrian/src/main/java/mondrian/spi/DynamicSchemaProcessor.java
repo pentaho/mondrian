@@ -50,9 +50,20 @@ public interface DynamicSchemaProcessor {
      * @return Returns the modified schema.
      * @throws Exception if an error occurs.
      */
-    public String processSchema(
-        String schemaUrl,
-        Util.PropertyList connectInfo) throws Exception;
+    public String processSchema( String schemaUrl, Util.PropertyList connectInfo) throws Exception;
+
+
+    /**
+     * Modifies a Mondrian catalog.
+     *
+     * <p>An implementation should process catalog and apply dynamic changes
+     *
+     * @param catalog The URL of the catalog.
+     * @param connectInfo Connection properties.
+     * @return Returns the modified schema.
+     * @throws Exception if an error occurs.
+     */
+    public String processCatalog( String catalog, Util.PropertyList connectInfo) throws Exception;
 }
 
 // End DynamicSchemaProcessor.java
