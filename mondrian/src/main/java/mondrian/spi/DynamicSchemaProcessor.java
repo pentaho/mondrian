@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara
+// Copyright (C) 2005-2019 Hitachi Vantara
 // All Rights Reserved.
 */
 
