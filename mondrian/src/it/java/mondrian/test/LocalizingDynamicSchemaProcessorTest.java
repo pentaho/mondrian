@@ -11,6 +11,7 @@ package mondrian.test;
 
 import junit.framework.TestCase;
 import mondrian.i18n.LocalizingDynamicSchemaProcessor;
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.spi.DynamicSchemaProcessor;
 
@@ -32,7 +33,7 @@ public class LocalizingDynamicSchemaProcessorTest
         String variable = "%{translate}";
         String translation = "Translate";
         String catalog = "..." + variable + "...";
-
+        MondrianProperties.instance().LocalePropFile.set( "resources.properties" );
         DynamicSchemaProcessor dsp = new LocalizingDynamicSchemaProcessor();
         Util.PropertyList connectInfo = new Util.PropertyList();
 
