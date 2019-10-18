@@ -191,6 +191,10 @@ public class RolapSchemaPoolTest extends FoodMartTestCase {
         {
             return Util.readVirtualFileAsString(schemaUrl);
         }
+
+        @Override public String processCatalog( String catalog, PropertyList connectInfo ) throws Exception {
+            return catalog;
+        }
     }
 }
 // End RolapSchemaPoolTest.java
