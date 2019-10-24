@@ -57,6 +57,31 @@ public class FilterDynamicSchemaProcessor implements DynamicSchemaProcessor {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * <p>FilterDynamicSchemaProcessor's implementation of this method use catalog
+     * supplied and passes it through the {@link #filter} method.
+     */
+    @Override public String processCatalog( String catalog, Util.PropertyList connectInfo ) throws Exception {
+        return filter( catalog, connectInfo );
+    }
+
+    /**
+     * Reads the contents of a catalog and returns the result as a string.
+     *
+     * <p>The default implementation returns the contents of the catalog
+     * unchanged.
+     *
+     * @param catalog the catalog content
+     * @param connectInfo Connection properties
+     * @return the modified catalog
+     */
+    protected String filter( String catalog, Util.PropertyList connectInfo ) {
+        return catalog;
+    }
+
+
+    /**
      * Reads the contents of a schema as a stream and returns the result as
      * a string.
      *

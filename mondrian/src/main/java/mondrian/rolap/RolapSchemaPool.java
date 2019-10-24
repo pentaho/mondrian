@@ -341,23 +341,19 @@ class RolapSchemaPool {
         //  2. DynamicSchemaProcessor#processSchema if set
         //  3. Util.readVirtualFileAsString(catalogUrl)
 
-        String catalogStr = connectInfo.get(
-            RolapConnectionProperties.CatalogContent.name());
+        // check for a DynamicSchemaProcessor
+        String dynProcName = connectInfo.get( RolapConnectionProperties.DynamicSchemaProcessor.name() );
+        String catalogStr = connectInfo.get( RolapConnectionProperties.CatalogContent.name() );
 
         if (Util.isEmpty(catalogStr)) {
             if (Util.isEmpty(catalogUrl)) {
-                throw MondrianResource.instance()
-                    .ConnectStringMandatoryProperties.ex(
+                throw MondrianResource.instance().ConnectStringMandatoryProperties.ex(
                         RolapConnectionProperties.Catalog.name(),
                         RolapConnectionProperties.CatalogContent.name());
             }
-            // check for a DynamicSchemaProcessor
-            String dynProcName = connectInfo.get(
-                RolapConnectionProperties.DynamicSchemaProcessor.name());
+
             if (!Util.isEmpty(dynProcName)) {
-                catalogStr =
-                    processDynamicSchema(
-                        dynProcName, catalogUrl, connectInfo);
+                catalogStr = processDynamicSchema( dynProcName, catalogUrl, null, connectInfo);
             }
 
             if (Util.isEmpty(catalogStr)) {
@@ -365,20 +361,22 @@ class RolapSchemaPool {
                 try {
                     catalogStr = Util.readVirtualFileAsString(catalogUrl);
                 } catch (IOException e) {
-                    throw Util.newError(
-                        e,
-                        "loading schema from url " + catalogUrl);
+                    throw Util.newError( e,"loading schema from url " + catalogUrl);
                 }
             }
+        }
+        else {
+            catalogStr = catalogStr = processDynamicSchema( dynProcName, null, catalogStr, connectInfo);
         }
 
         return catalogStr;
     }
 
     private static String processDynamicSchema(
-        final String dynProcName,
-        final String catalogUrl,
-        final Util.PropertyList connectInfo)
+      final String dynProcName,
+      final String catalogUrl,
+      final String catalogStr,
+      final Util.PropertyList connectInfo )
     {
         if (RolapSchema.LOGGER.isDebugEnabled()) {
             RolapSchema.LOGGER.debug(
@@ -388,7 +386,17 @@ class RolapSchemaPool {
         try {
             final DynamicSchemaProcessor dynProc =
                 ClassResolver.INSTANCE.instantiateSafe(dynProcName);
-            return dynProc.processSchema(catalogUrl, connectInfo);
+
+            if( catalogUrl != null ) {
+                return dynProc.processSchema(catalogUrl, connectInfo);
+            }
+
+            if( catalogStr != null ) {
+                return dynProc.processCatalog( catalogStr, connectInfo);
+            }
+
+            throw new IllegalArgumentException( "At least one of catalogUrl and catalogStr should not be null" );
+
         } catch (Exception e) {
             throw Util.newError(
                 e,

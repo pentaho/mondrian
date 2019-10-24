@@ -89,27 +89,33 @@ public class LocalizingDynamicSchemaProcessor
         }
     }
 
-    public String filter(
-        String schemaUrl,
-        Util.PropertyList connectInfo,
-        InputStream stream) throws Exception
-    {
-        setLocale(
-            connectInfo.get("Locale") == null
-                ? Locale.getDefault().toString()
-                : connectInfo.get("Locale"));
-
-        loadProperties();
-
-        String schema = super.filter(schemaUrl, connectInfo, stream);
-        if (bundle != null) {
-            schema = doRegExReplacements(schema);
-        }
-        LOGGER.debug(schema);
-        return schema;
+    private void applyLocale( Util.PropertyList connectInfo ) {
+        setLocale( connectInfo.get("Locale") == null
+            ? Locale.getDefault().toString()
+            : connectInfo.get("Locale"));
     }
 
-    private String doRegExReplacements(String schema) {
+    private String applyReplacement( String content ) {
+        if (bundle != null) {
+            content = doRegExReplacements(content);
+        }
+        LOGGER.debug(content);
+        return content;
+    }
+
+    public String filter( String schemaUrl, Util.PropertyList connectInfo, InputStream stream) throws Exception {
+        applyLocale(connectInfo);
+        loadProperties();
+        return applyReplacement(super.filter(schemaUrl, connectInfo, stream));
+    }
+
+    public String filter( String catalog, Util.PropertyList connectInfo ) {
+        applyLocale(connectInfo);
+        loadProperties();
+        return applyReplacement(catalog);
+    }
+
+    private String doRegExReplacements( String schema ) {
         // As of JDK 1.5, cannot use StringBuilder - appendReplacement requires
         // the antediluvian StringBuffer.
         StringBuffer intlSchema = new StringBuffer();

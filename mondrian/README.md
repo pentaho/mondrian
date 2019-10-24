@@ -14,6 +14,11 @@ Skip the integration tests by omitting `-DrunITs`
 
 The embedded mysql server does not work on Windows.  If you are running on Windows you will need to configure foodmart as explained in the next section.
 
+#### Run Isolate Integration Test
+```
+mvn verify -DrunITs -Dit.test=NonEmptyTest.java -DfailIfNoTests=false
+```
+
 #### Alternate Foodmart
 Mondrian's integration test suite runs queries against the Foodmart database.  By default, maven will start an embedded MySql database where the foodmart data will be loaded.  It is often needed to run the test suite against a different database.  You may choose different connection properties by creating a file `mondrian.properties` and specifying jdbc connection properties as follows:
 ```
