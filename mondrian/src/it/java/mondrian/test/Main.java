@@ -300,6 +300,7 @@ public class Main extends TestSuite {
             addTest(suite, SteelWheelsSchemaTest.class);
             addTest(suite, MultipleColsInTupleAggTest.class);
             addTest(suite, DynamicSchemaProcessorTest.class);
+            addTest(suite, LocalizingDynamicSchemaProcessorTest.class);
             addTest(suite, MonitorTest.class);
             addTest(suite, DeadlockTest.class);
 
