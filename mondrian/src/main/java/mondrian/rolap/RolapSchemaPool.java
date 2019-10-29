@@ -366,7 +366,9 @@ class RolapSchemaPool {
             }
         }
         else {
-            catalogStr = catalogStr = processDynamicSchema( dynProcName, null, catalogStr, connectInfo);
+            if (!Util.isEmpty(dynProcName)) {
+                catalogStr = catalogStr = processDynamicSchema( dynProcName, null, catalogStr, connectInfo );
+            }
         }
 
         return catalogStr;
