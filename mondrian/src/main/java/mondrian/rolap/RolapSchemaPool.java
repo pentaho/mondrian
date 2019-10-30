@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde and others
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2019 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -366,7 +366,9 @@ class RolapSchemaPool {
             }
         }
         else {
-            catalogStr = catalogStr = processDynamicSchema( dynProcName, null, catalogStr, connectInfo);
+            if (!Util.isEmpty(dynProcName)) {
+                catalogStr = processDynamicSchema( dynProcName, null, catalogStr, connectInfo );
+            }
         }
 
         return catalogStr;
