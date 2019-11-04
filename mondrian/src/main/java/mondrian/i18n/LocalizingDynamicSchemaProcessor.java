@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2019 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.i18n;
@@ -89,27 +89,33 @@ public class LocalizingDynamicSchemaProcessor
         }
     }
 
-    public String filter(
-        String schemaUrl,
-        Util.PropertyList connectInfo,
-        InputStream stream) throws Exception
-    {
-        setLocale(
-            connectInfo.get("Locale") == null
-                ? Locale.getDefault().toString()
-                : connectInfo.get("Locale"));
-
-        loadProperties();
-
-        String schema = super.filter(schemaUrl, connectInfo, stream);
-        if (bundle != null) {
-            schema = doRegExReplacements(schema);
-        }
-        LOGGER.debug(schema);
-        return schema;
+    private void applyLocale( Util.PropertyList connectInfo ) {
+        setLocale( connectInfo.get("Locale") == null
+            ? Locale.getDefault().toString()
+            : connectInfo.get("Locale"));
     }
 
-    private String doRegExReplacements(String schema) {
+    private String applyReplacement( String content ) {
+        if (bundle != null) {
+            content = doRegExReplacements(content);
+        }
+        LOGGER.debug(content);
+        return content;
+    }
+
+    public String filter( String schemaUrl, Util.PropertyList connectInfo, InputStream stream) throws Exception {
+        applyLocale(connectInfo);
+        loadProperties();
+        return applyReplacement(super.filter(schemaUrl, connectInfo, stream));
+    }
+
+    public String filter( String catalog, Util.PropertyList connectInfo ) {
+        applyLocale(connectInfo);
+        loadProperties();
+        return applyReplacement(catalog);
+    }
+
+    private String doRegExReplacements( String schema ) {
         // As of JDK 1.5, cannot use StringBuilder - appendReplacement requires
         // the antediluvian StringBuffer.
         StringBuffer intlSchema = new StringBuffer();

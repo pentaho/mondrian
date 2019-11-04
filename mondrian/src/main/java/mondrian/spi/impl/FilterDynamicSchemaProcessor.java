@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2019 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.spi.impl;
@@ -55,6 +55,31 @@ public class FilterDynamicSchemaProcessor implements DynamicSchemaProcessor {
         InputStream in = Util.readVirtualFile(schemaUrl);
         return filter(schemaUrl, connectInfo, in);
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>FilterDynamicSchemaProcessor's implementation of this method use catalog
+     * supplied and passes it through the {@link #filter} method.
+     */
+    @Override public String processCatalog( String catalog, Util.PropertyList connectInfo ) throws Exception {
+        return filter( catalog, connectInfo );
+    }
+
+    /**
+     * Reads the contents of a catalog and returns the result as a string.
+     *
+     * <p>The default implementation returns the contents of the catalog
+     * unchanged.
+     *
+     * @param catalog the catalog content
+     * @param connectInfo Connection properties
+     * @return the modified catalog
+     */
+    protected String filter( String catalog, Util.PropertyList connectInfo ) {
+        return catalog;
+    }
+
 
     /**
      * Reads the contents of a schema as a stream and returns the result as
