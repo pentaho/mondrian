@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1998-2005 Julian Hyde
-// Copyright (C) 2005-2017 Pentaho and others
+// Copyright (C) 2005-2019 Hitachi Vantara and others
 // All Rights Reserved.
 //
 // jhyde, 21 January, 1999
@@ -295,6 +295,7 @@ public class Main extends TestSuite {
             addTest(suite, SteelWheelsSchemaTest.class);
             addTest(suite, MultipleColsInTupleAggTest.class);
             addTest(suite, DynamicSchemaProcessorTest.class);
+            addTest(suite, LocalizingDynamicSchemaProcessorTest.class);
             addTest(suite, MonitorTest.class);
             addTest(suite, DeadlockTest.class);
 
