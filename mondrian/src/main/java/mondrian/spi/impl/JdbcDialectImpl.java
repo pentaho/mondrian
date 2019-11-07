@@ -1096,10 +1096,11 @@ public class JdbcDialectImpl implements Dialect {
         } else if (productName.startsWith("HP Neoview")) {
             return DatabaseProduct.NEOVIEW;
         } else if (upperProductName.indexOf("SYBASE") >= 0
-            || upperProductName.indexOf("ADAPTIVE SERVER") >= 0)
-        {
+            || upperProductName.indexOf("ADAPTIVE SERVER") >= 0
+            || upperProductName.indexOf("SQL ANYWHERE") >= 0 ) {
             // Sysbase Adaptive Server Enterprise 15.5 via jConnect 6.05 returns
             // "Adaptive Server Enterprise" as a product name.
+            // Also fixes Sybase SQL ANYWHERE 17 which returns "SQL ANYWHERE"
             return DatabaseProduct.SYBASE;
         } else if (upperProductName.indexOf("TERADATA") >= 0) {
             return DatabaseProduct.TERADATA;
