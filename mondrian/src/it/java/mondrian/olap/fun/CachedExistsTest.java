@@ -258,5 +258,32 @@ public class CachedExistsTest extends FoodMartTestCase {
     assertQueryReturns( query, expected );
   }
   
+  public void testTop1CustomersWithColumnLevel() {
+    String query =
+        "WITH\n"
+            + "SET [*NATIVE_CJ_SET] AS 'NONEMPTYCROSSJOIN([*BASE_MEMBERS__Time_],NONEMPTYCROSSJOIN([*BASE_MEMBERS__Product_],NONEMPTYCROSSJOIN([*BASE_MEMBERS__Education Level_],[*BASE_MEMBERS__Customers_])))'\n"
+            + "SET [*METRIC_CJ_SET] AS 'FILTER([*NATIVE_CJ_SET],[Measures].[*TOP_Unit Sales_SEL~SUM] <= 1)'\n"
+            + "SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],[Product].CURRENTMEMBER.ORDERKEY,BASC,[Education Level].CURRENTMEMBER.ORDERKEY,BASC,[Measures].[*SORTED_MEASURE],BDESC)'\n"
+            + "SET [*NATIVE_MEMBERS__Time_] AS 'GENERATE([*NATIVE_CJ_SET], {[Time].CURRENTMEMBER})'\n"
+            + "SET [*SORTED_COL_AXIS] AS 'ORDER([*CJ_COL_AXIS],[Time].CURRENTMEMBER.ORDERKEY,BASC,[Measures].CURRENTMEMBER.ORDERKEY,BASC)'\n"
+            + "SET [*BASE_MEMBERS__Education Level_] AS '{[Education Level].[All Education Levels].[Bachelors Degree]}'\n"
+            + "SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+            + "SET [*BASE_MEMBERS__Customers_] AS '[Customers].[Name].MEMBERS'\n"
+            + "SET [*CJ_COL_AXIS] AS 'GENERATE([*METRIC_CJ_SET], {([Time].CURRENTMEMBER)})'\n"
+            + "SET [*BASE_MEMBERS__Product_] AS '{[Product].[All Products].[Drink]}'\n"
+            + "SET [*BASE_MEMBERS__Time_] AS '[Time].[Year].MEMBERS'\n"
+            + "SET [*CJ_ROW_AXIS] AS 'GENERATE([*METRIC_CJ_SET], {([Product].CURRENTMEMBER,[Education Level].CURRENTMEMBER,[Customers].CURRENTMEMBER)})'\n"
+            + "MEMBER [Measures].[*FORMATTED_MEASURE_0] AS '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', SOLVE_ORDER=500\n"
+            + "MEMBER [Measures].[*SORTED_MEASURE] AS '([Measures].[*FORMATTED_MEASURE_0],[Time].[*CTX_MEMBER_SEL~SUM])', SOLVE_ORDER=400\n"
+            + "MEMBER [Measures].[*TOP_Unit Sales_SEL~SUM] AS 'RANK([Customers].CURRENTMEMBER,ORDER(GENERATE(CACHEDEXISTS([*NATIVE_CJ_SET],([Product].CURRENTMEMBER, [Education Level].CURRENTMEMBER),\"[*NATIVE_CJ_SET]\"),{[Customers].CURRENTMEMBER}),([Measures].[Unit Sales],[Product].CURRENTMEMBER,[Education Level].CURRENTMEMBER,[Time].[*CTX_MEMBER_SEL~SUM]),BDESC))', SOLVE_ORDER=400\n"
+            + "MEMBER [Time].[*CTX_MEMBER_SEL~SUM] AS 'SUM([*NATIVE_MEMBERS__Time_])', SOLVE_ORDER=97\n" + "SELECT\n"
+            + "CROSSJOIN([*SORTED_COL_AXIS],[*BASE_MEMBERS__Measures_]) ON COLUMNS\n" + ", NON EMPTY\n"
+            + "[*SORTED_ROW_AXIS] ON ROWS\n" + "FROM [Sales]";
+    String expected =
+        "Axis #0:\n" + "{}\n" + "Axis #1:\n" + "{[Time].[1997], [Measures].[*FORMATTED_MEASURE_0]}\n" + "Axis #2:\n"
+            + "{[Product].[Drink], [Education Level].[Bachelors Degree], [Customers].[USA].[WA].[Spokane].[Wildon Cameron]}\n"
+            + "Row #0: 47\n";
+    assertQueryReturns( query, expected );
+  }
 }
 
