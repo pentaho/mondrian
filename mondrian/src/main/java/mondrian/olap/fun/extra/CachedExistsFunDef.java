@@ -9,6 +9,7 @@
 
 package mondrian.olap.fun.extra;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,8 +23,13 @@ import mondrian.calc.TupleList;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.Evaluator;
+import mondrian.olap.Hierarchy;
 import mondrian.olap.Member;
 import mondrian.olap.fun.FunDefBase;
+import mondrian.olap.type.MemberType;
+import mondrian.olap.type.SetType;
+import mondrian.olap.type.TupleType;
+import mondrian.olap.type.Type;
 
 /**
  * CachedExistsFunDef is a replacement for the Exists MDX function that Analyzer uses for projecting tuples for
@@ -66,11 +72,30 @@ public class CachedExistsFunDef extends FunDefBase {
           return tuples;
         }
 
+        // Build a mapping from subtotal tuple types to the input set's tuple types 
+        List<Hierarchy> listHiers = getHierarchies(listCalc1.getType()); 
+        List<Hierarchy> subtotalHiers = getHierarchies(tupleCalc1.getType());
+        int[] subtotalToListIndex = new int[subtotalHiers.size()];
+        for (int i = 0; i < subtotalToListIndex.length; i++) {
+          Hierarchy subtotalHier = subtotalHiers.get( i );
+          boolean found = false;
+          for (int j = 0; j < listHiers.size(); j++) {
+            if (listHiers.get( j ) == subtotalHier) {
+              subtotalToListIndex[i] = j;
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            throw new IllegalArgumentException("Hierarchy in <Tuple> not present in <Set>");
+          }
+        }
+        
         // Build subtotal cache
         HashMap<String, TupleList> setCache = new HashMap<String, TupleList>();
         TupleList setToCache = listCalc1.evaluateList( evaluator );
         for ( List<Member> tuple : setToCache ) {
-          String subtotalKey = makeSubtotalKey( tuple, subtotal );
+          String subtotalKey = makeSubtotalKey( subtotalToListIndex, tuple, subtotal );
           TupleList tupleCache = setCache.get( subtotalKey );
           if ( tupleCache == null ) {
             tupleCache = TupleCollections.createList( listCalc1.getType().getArity() );
@@ -88,12 +113,65 @@ public class CachedExistsFunDef extends FunDefBase {
       }
     };
   }
+  
+  /**
+   * Returns a list of hierarchies used by the input type.
+   * 
+   * @param t
+   * @return
+   */
+  private List<Hierarchy> getHierarchies(Type t) {
+    List<Hierarchy> hiers = new ArrayList<Hierarchy>();
+    if (t instanceof MemberType) {
+      hiers.add( ((MemberType) t).getHierarchy());
+      return hiers;
+    } else if (t instanceof TupleType) {
+      return ((TupleType)t).getHierarchies();
+    } else if (t instanceof SetType) {
+      SetType setType = (SetType) t;
+      if (setType.getElementType() instanceof MemberType) {
+        hiers.add( ((MemberType) setType.getElementType()).getHierarchy());
+        return hiers;
+      } else if (setType.getElementType() instanceof TupleType) {
+        return ((TupleType)setType.getElementType()).getHierarchies();
+      }
+    }
+    throw new IllegalStateException();
+  }
 
-  private String makeSubtotalKey( List<Member> tuple, Member[] subtotal ) {
+  /**
+   * Generates a subtotal key for the input tuple based on the
+   * type of the input subtotal tuple.
+   * 
+   * For example, if the subtotal tuple contained:
+   * 
+   * ([Product].[Food], [Time].[1998])
+   * 
+   * then the type of this subtotal tuple is:
+   * 
+   * ([Product].[Family], [Time].[Year])  
+   * 
+   * The subtotal key would need to contain the same types from the input tuple.
+   * 
+   * So if a sample input tuple contained:
+   * 
+   * ([Gender].[M], [Product].[Drink].[Dairy], [Time].[1997].[Q1])
+   * 
+   * The subtotal key for this tuple would be:
+   * 
+   * ([Product].[Drink], [Time].[1997])
+   * 
+   * 
+   * @param subtotalToListIndex
+   * @param tuple
+   * @param subtotal
+   * @return
+   */
+  private String makeSubtotalKey( int[] subtotalToListIndex, List<Member> tuple, Member[] subtotal ) {
     StringBuilder builder = new StringBuilder();
     for ( int i = 0; i < subtotal.length; i++ ) {
       Member subtotalMember = subtotal[i];
-      Member tupleMember = tuple.get( i );
+      Member tupleMember = tuple.get( subtotalToListIndex[i] );
       int parentLevels = tupleMember.getDepth() - subtotalMember.getDepth();
       while ( parentLevels-- > 0 ) {
         tupleMember = tupleMember.getParentMember();
