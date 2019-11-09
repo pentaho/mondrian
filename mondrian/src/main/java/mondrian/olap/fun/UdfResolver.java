@@ -233,17 +233,30 @@ public class UdfResolver implements Resolver {
         public TupleList evaluateList(Evaluator evaluator) {
             final List list = (List) udf.execute(evaluator, args);
 
+            // PATCH: MONDRIAN-2661 if a TupleList is returned then use it as a result without modifications
+            if (list instanceof TupleList) {
+                return (TupleList) list;
             // If arity is 1, assume they have returned a list of members.
             // For other arity, assume a list of member arrays.
-            if (getType().getArity() == 1) {
+            } else if (getType().getArity() == 1) {
                 //noinspection unchecked
                 return new UnaryTupleList((List<Member>) list);
             } else {
                 // Use an adapter to make a list of member arrays look like
                 // a list of members laid end-to-end.
-                final int arity = getType().getArity();
+                // PATCH: Do not initialize final arity as it might be changed
                 //noinspection unchecked
                 final List<Member[]> memberArrayList = (List<Member[]>) list;
+                // PATCH: get actual arity from memberArrayList
+                int tempArity = getType().getArity();
+                if (tempArity == 0) {
+                    if (memberArrayList.size() > 0) {
+                        tempArity = memberArrayList.get(0).length;
+                    }
+                }
+                // for an empty list any non-zero arity will work
+                final int arity = tempArity > 0 ? tempArity : 1;
+
                 return new ListTupleList(
                     arity,
                     new AbstractList<Member>() {
