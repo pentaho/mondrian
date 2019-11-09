@@ -156,10 +156,11 @@ class UnionRoleImpl implements Role {
         }
         HierarchyAccess hierarchyAccess =
             new UnionHierarchyAccessImpl(hierarchy, list);
-        if (list.size() > 5) {
-            hierarchyAccess =
-                new RoleImpl.CachingHierarchyAccess(hierarchyAccess);
-        }
+        // PATCH: Fix for MONDRIAN-2641
+        // if (list.size() > 5) {
+        //     hierarchyAccess =
+        //         new RoleImpl.CachingHierarchyAccess(hierarchyAccess);
+        // }
         return hierarchyAccess;
     }
 
