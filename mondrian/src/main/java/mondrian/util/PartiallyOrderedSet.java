@@ -652,12 +652,12 @@ public class PartiallyOrderedSet<E> extends AbstractSet<E>
         final List<E> list = new ArrayList<E>();
         while (!deque.isEmpty()) {
             Node<E> node1 = deque.pop();
+            if(node1.e == null) {
+                // Node is top or bottom.
+                continue;
+            }
             list.add(node1.e);
             for (Node<E> child : up ? node1.childList : node1.parentList) {
-                if (child.e == null) {
-                    // Node is top or bottom.
-                    break;
-                }
                 if (seen.add(child)) {
                     deque.add(child);
                 }
