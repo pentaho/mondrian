@@ -229,7 +229,12 @@ public class Aggregation {
                 continue;
             }
 
-            if (valueCount > maxConstraints) {
+            if (valueCount > maxConstraints || columns[i].getTable().getTableName().equalsIgnoreCase(columns[i].getStar().getFactTable().getTableName())) {
+                
+                // if we have a degenerate dimension
+                // we don't want to do an IN clause on lots of columns on the fact table
+                // especially if these aren't indexed
+                
                 // Some databases can handle only a limited number of elements
                 // in 'WHERE IN (...)'. This set is greater than this database
                 // can handle, so we drop this constraint. Hopefully there are
