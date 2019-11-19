@@ -167,7 +167,9 @@ public class PartiallyOrderedSet<E> extends AbstractSet<E>
      */
     @Override
     public boolean add(E e) {
-        assert e != null;
+        if (e == null) {
+            return false;
+        }
         assert !DEBUG || isValid(true);
         Node<E> node = map.get(e);
         if (node != null) {
@@ -652,7 +654,7 @@ public class PartiallyOrderedSet<E> extends AbstractSet<E>
         final List<E> list = new ArrayList<E>();
         while (!deque.isEmpty()) {
             Node<E> node1 = deque.pop();
-            if(node1.e == null) {
+            if (node1.e == null) {
                 // Node is top or bottom.
                 continue;
             }
