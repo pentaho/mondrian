@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2019 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.util;
@@ -53,6 +53,16 @@ public class PartiallyOrderedSetTest extends TestCase {
                 return e1 % e2 == 0;
             }
         };
+
+    static final PartiallyOrderedSet.Ordering<Integer> isDivisorWithNulls =
+      new PartiallyOrderedSet.Ordering<Integer>() {
+          public boolean lessThan(Integer e1, Integer e2) {
+              if (e1 == null || e2 == null) {
+                  return true;
+              }
+              return e2 % e1 == 0;
+          }
+      };
 
     // Ordered by bit inclusion. E.g. the children of 14 (1110) are
     // 12 (1100), 10 (1010) and 6 (0110).
@@ -205,6 +215,20 @@ public class PartiallyOrderedSetTest extends TestCase {
         printValidate(poset);
         poset.remove(64); // {bit 6}
         printValidate(poset);
+    }
+
+    public void testMondrian2628() {
+        PartiallyOrderedSet<Integer> integers =
+            new PartiallyOrderedSet<Integer>(isDivisorWithNulls,
+              range(1, 1000));
+        // Null elements can't be added to the poset.
+        assertFalse(integers.add(null));
+        // Ancestors list cannot have null elements.
+        for (int i = 1; i < 1000; i++) {
+            assertFalse(
+                "Ancestor list of " + i + " has null elements.",
+                integers.getAncestors(i).contains(null));
+        }
     }
 
     public void testDivisorPoset() {
