@@ -5,11 +5,10 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-mondrian-parent-pom</artifactId>
-    <version>3.14-SNAPSHOT</version>
+    <version>3.14.0.31-241</version>
   </parent>
   <artifactId>mondrian</artifactId>
-  <version>3.14-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <version>3.14.0.31-241</version>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>Mondrian OLAP Engine</description>
   <url>http://mondrian.pentaho.com</url>
@@ -19,17 +18,15 @@
     <url>scm:git:git@github.com:pentaho/${project.artifactId}.git</url>
   </scm>
   <properties>
-
-    <project.version.major>3</project.version.major>
     <project.version.minor>130</project.version.minor>
-    <driver.name>Mondrian olap4j driver</driver.name>
+    <copyright.year>2019</copyright.year>
+    <xml-apis.version>2.0.2</xml-apis.version>
     <driver.version>${project.version}</driver.version>
-    <driver.version.major>${project.version.major}</driver.version.major>
+    <project.version.major>3</project.version.major>
+    <driver.name>Mondrian olap4j driver</driver.name>
     <driver.version.minor>${project.version.minor}</driver.version.minor>
     <vendor>Pentaho</vendor>
-    <copyright.year>2019</copyright.year>
-
-    <xml-apis.version>2.0.2</xml-apis.version>
+    <driver.version.major>${project.version.major}</driver.version.major>
   </properties>
   <dependencies>
     <dependency>
@@ -201,19 +198,19 @@
             </goals>
             <configuration>
               <target>
-                <property name="classpath" refid="maven.compile.classpath"/>
-                <property name="java.dir" value="${project.build.sourceDirectory}"/>
-                <property name="relative.java.dir" value="src/main/java"/>
-                <property name="relative.resources.dir" value="src/main/resources"/>
-                <property name="generated.java.dir" value="${project.basedir}/src/generated/java"/>
-                <property name="generated.resources.dir" value="${project.basedir}/src/generated/resources"/>
-                <property name="relative.generated.java.dir" value="src/generated/java"/>
-                <property name="classes.dir" value="${project.build.outputDirectory}"/>
-                <mkdir dir="${project.build.outputDirectory}"/>
-                <mkdir dir="${generated.java.dir}/mondrian/olap"/>
-                <mkdir dir="${generated.java.dir}/mondrian/rolap/aggmatcher"/>
-                <mkdir dir="${generated.java.dir}/mondrian/xmla"/>
-                <mkdir dir="${generated.java.dir}/mondrian/parser"/>
+                <property name="classpath" refid="maven.compile.classpath" />
+                <property name="java.dir" value="${project.build.sourceDirectory}" />
+                <property name="relative.java.dir" value="src/main/java" />
+                <property name="relative.resources.dir" value="src/main/resources" />
+                <property name="generated.java.dir" value="${project.basedir}/src/generated/java" />
+                <property name="generated.resources.dir" value="${project.basedir}/src/generated/resources" />
+                <property name="relative.generated.java.dir" value="src/generated/java" />
+                <property name="classes.dir" value="${project.build.outputDirectory}" />
+                <mkdir dir="${project.build.outputDirectory}" />
+                <mkdir dir="${generated.java.dir}/mondrian/olap" />
+                <mkdir dir="${generated.java.dir}/mondrian/rolap/aggmatcher" />
+                <mkdir dir="${generated.java.dir}/mondrian/xmla" />
+                <mkdir dir="${generated.java.dir}/mondrian/parser" />
                 <ant target="def" />
                 <ant target="generate.properties" />
                 <ant target="generate.resources" />
@@ -308,7 +305,6 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <executions>
           <execution>
@@ -365,25 +361,13 @@
     <profile>
       <id>embedded-mysql</id>
       <activation>
-        <file>
-          <missing>mondrian.properties</missing>
-        </file>
         <property>
           <name>runITs</name>
         </property>
+        <file>
+          <missing>mondrian.properties</missing>
+        </file>
       </activation>
-      <properties>
-        <mondrian.foodmart.jdbcURL>jdbc:mysql://localhost:${mysql.port}/foodmart?useSSL=false</mondrian.foodmart.jdbcURL>
-        <mondrian.foodmart.jdbcUser>root</mondrian.foodmart.jdbcUser>
-        <mondrian.foodmart.jdbcPassword>root</mondrian.foodmart.jdbcPassword>
-
-        <mysql.driver>com.mysql.jdbc.Driver</mysql.driver>
-        <mysql.url.default>jdbc:mysql://localhost:${mysql.port}/mysql</mysql.url.default>
-        <mysql-dist.version>5.6.14</mysql-dist.version>
-        <jcabi-mysql-maven-plugin.version>0.9</jcabi-mysql-maven-plugin.version>
-        <dependency.sql-maven-plugin.version>1.5</dependency.sql-maven-plugin.version>
-        <mondrian.jdbcDrivers>${mysql.driver}</mondrian.jdbcDrivers>
-      </properties>
       <build>
         <plugins>
           <plugin>
@@ -404,7 +388,6 @@
               </execution>
             </executions>
           </plugin>
-
           <plugin>
             <artifactId>maven-dependency-plugin</artifactId>
             <version>${maven-dependency-plugin.version}</version>
@@ -430,7 +413,6 @@
               </execution>
             </executions>
           </plugin>
-
           <plugin>
             <groupId>com.jcabi</groupId>
             <artifactId>jcabi-mysql-maven-plugin</artifactId>
@@ -450,25 +432,10 @@
               </execution>
             </executions>
           </plugin>
-
-
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>sql-maven-plugin</artifactId>
             <version>${dependency.sql-maven-plugin.version}</version>
-            <dependencies>
-              <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
-                <version>${mysql-connector-java.version}</version>
-              </dependency>
-            </dependencies>
-            <configuration>
-              <driver>${mysql.driver}</driver>
-              <url>${mondrian.foodmart.jdbcURL}</url>
-              <username>${mondrian.foodmart.jdbcUser}</username>
-              <password>${mondrian.foodmart.jdbcPassword}</password>
-            </configuration>
             <executions>
               <execution>
                 <id>create-foodmart</id>
@@ -509,19 +476,43 @@
                 </configuration>
               </execution>
             </executions>
+            <dependencies>
+              <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql-connector-java.version}</version>
+              </dependency>
+            </dependencies>
+            <configuration>
+              <driver>${mysql.driver}</driver>
+              <url>${mondrian.foodmart.jdbcURL}</url>
+              <username>${mondrian.foodmart.jdbcUser}</username>
+              <password>${mondrian.foodmart.jdbcPassword}</password>
+            </configuration>
           </plugin>
         </plugins>
       </build>
+      <properties>
+        <jcabi-mysql-maven-plugin.version>0.9</jcabi-mysql-maven-plugin.version>
+        <mondrian.foodmart.jdbcPassword>root</mondrian.foodmart.jdbcPassword>
+        <mondrian.foodmart.jdbcUser>root</mondrian.foodmart.jdbcUser>
+        <mondrian.jdbcDrivers>${mysql.driver}</mondrian.jdbcDrivers>
+        <mysql.driver>com.mysql.jdbc.Driver</mysql.driver>
+        <mondrian.foodmart.jdbcURL>jdbc:mysql://localhost:${mysql.port}/foodmart?useSSL=false</mondrian.foodmart.jdbcURL>
+        <dependency.sql-maven-plugin.version>1.5</dependency.sql-maven-plugin.version>
+        <mysql-dist.version>5.6.14</mysql-dist.version>
+        <mysql.url.default>jdbc:mysql://localhost:${mysql.port}/mysql</mysql.url.default>
+      </properties>
     </profile>
     <profile>
       <id>load-foodmart</id>
       <activation>
-        <file>
-          <missing>mondrian.properties</missing>
-        </file>
         <property>
           <name>runITs</name>
         </property>
+        <file>
+          <missing>mondrian.properties</missing>
+        </file>
       </activation>
       <build>
         <plugins>
@@ -605,7 +596,6 @@
             </executions>
           </plugin>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <version>${maven-surefire-plugin.version}</version>
             <configuration>
@@ -613,7 +603,6 @@
             </configuration>
           </plugin>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
             <version>${maven-failsafe-plugin.version}</version>
             <configuration>
