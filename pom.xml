@@ -30,7 +30,6 @@
     <license.licenseName>epl_only_v1</license.licenseName>
 
     <olap4j.version>1.2.0</olap4j.version>
-    <commons-vfs2.version>2.2</commons-vfs2.version>
     <eigenbase-properties.version>1.1.2</eigenbase-properties.version>
     <commons-io.version>1.4</commons-io.version>
     <mysql-connector-java.version>5.1.39</mysql-connector-java.version>
