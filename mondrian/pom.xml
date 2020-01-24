@@ -21,6 +21,7 @@
     <driver.version.minor>${project.version.minor}</driver.version.minor>
     <vendor>Pentaho</vendor>
     <driver.version.major>${project.version.major}</driver.version.major>
+    <maven-failsafe-plugin.argLine>-Duser.language=en -Duser.country=US</maven-failsafe-plugin.argLine>
   </properties>
   <dependencies>
     <dependency>
@@ -297,6 +298,7 @@
             </goals>
           </execution>
         </executions>
+
         <configuration>
           <includes>
             <include>Main.java</include>
