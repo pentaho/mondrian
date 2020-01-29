@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2012-2017 Hitachi Vantara and others
+// Copyright (C) 2012-2020 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -24,8 +24,6 @@ import mondrian.spi.DialectUtil;
  * @since 2/11/13
  */
 public class ImpalaDialect extends HiveDialect {
-    private final String flagsRegexp = "^(\\(\\?([a-zA-Z])\\)).*$";
-    private final Pattern flagsPattern = Pattern.compile(flagsRegexp);
     private final String escapeRegexp = "(\\\\Q([^\\\\Q]+)\\\\E)";
     private final Pattern escapePattern = Pattern.compile(escapeRegexp);
 
@@ -180,18 +178,12 @@ public class ImpalaDialect extends HiveDialect {
         }
         javaRegex = DialectUtil.cleanUnicodeAwareCaseFlag(javaRegex);
         // We might have to use case-insensitive matching
-        final Matcher flagsMatcher = flagsPattern.matcher(javaRegex);
+        StringBuilder mappedFlags = new StringBuilder();
+        String[][] mapping = new String[][]{{"i","i"}};
+        javaRegex = extractEmbeddedFlags( javaRegex, mapping, mappedFlags );
         boolean caseSensitive = true;
-        if (flagsMatcher.matches()) {
-            final String flags = flagsMatcher.group(2);
-            if (flags.contains("i")) {
-                caseSensitive = false;
-            }
-        }
-        if (flagsMatcher.matches()) {
-            javaRegex =
-                javaRegex.substring(0, flagsMatcher.start(1))
-                + javaRegex.substring(flagsMatcher.end(1));
+        if (mappedFlags.toString().contains( "i" )) {
+          caseSensitive = false;
         }
         final Matcher escapeMatcher = escapePattern.matcher(javaRegex);
         while (escapeMatcher.find()) {
