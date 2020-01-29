@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+// Copyright (c) 2002-2020 Hitachi Vantara..  All rights reserved.
 */
 package mondrian.spi.impl;
 
@@ -23,8 +23,6 @@ import java.util.regex.*;
  */
 public class OracleDialect extends JdbcDialectImpl {
 
-    private final String flagsRegexp = "^(\\(\\?([a-zA-Z])\\)).*$";
-    private final Pattern flagsPattern = Pattern.compile(flagsRegexp);
     private final String escapeRegexp = "(\\\\Q([^\\\\Q]+)\\\\E)";
     private final Pattern escapePattern = Pattern.compile(escapeRegexp);
 
@@ -94,29 +92,10 @@ public class OracleDialect extends JdbcDialectImpl {
             return null;
         }
         javaRegex = DialectUtil.cleanUnicodeAwareCaseFlag(javaRegex);
-        final Matcher flagsMatcher = flagsPattern.matcher(javaRegex);
-        final String suffix;
-        if (flagsMatcher.matches()) {
-            // We need to convert leading flags into oracle
-            // specific flags
-            final StringBuilder suffixSb = new StringBuilder();
-            final String flags = flagsMatcher.group(2);
-            if (flags.contains("i")) {
-                suffixSb.append("i");
-            }
-            if (flags.contains("c")) {
-                suffixSb.append("c");
-            }
-            if (flags.contains("m")) {
-                suffixSb.append("m");
-            }
-            suffix = suffixSb.toString();
-            javaRegex =
-                javaRegex.substring(0, flagsMatcher.start(1))
-                + javaRegex.substring(flagsMatcher.end(1));
-        } else {
-            suffix = "";
-        }
+        StringBuilder mappedFlags = new StringBuilder();
+        String[][] mapping = new String[][]{{"c","c"},{"i","i"},{"m","m"}};
+        javaRegex = extractEmbeddedFlags( javaRegex, mapping, mappedFlags );
+        
         final Matcher escapeMatcher = escapePattern.matcher(javaRegex);
         while (escapeMatcher.find()) {
             javaRegex =
@@ -132,7 +111,7 @@ public class OracleDialect extends JdbcDialectImpl {
         sb.append(", ");
         quoteStringLiteral(sb, javaRegex);
         sb.append(", ");
-        quoteStringLiteral(sb, suffix);
+        quoteStringLiteral(sb, mappedFlags.toString());
         sb.append(")");
         return sb.toString();
     }
