@@ -42,12 +42,12 @@ public class VerticaDialectTest extends TestCase {
 
   public void testGenerateRegularExpression_CaseInsensitive() throws Exception {
     String sql = dialect.generateRegularExpression( "table.column", "(?is)|(?u).*a.*" );
-    assertEquals( " REGEXP_LIKE ( table.column, '.*a.*', 'in')", sql );
+    assertEquals( " REGEXP_LIKE ( CAST (table.column AS VARCHAR), '.*a.*', 'in')", sql );
   }
 
   public void testGenerateRegularExpression_CaseSensitive() throws Exception {
     String sql = dialect.generateRegularExpression( "table.column", ".*a.*" );
-    assertEquals( " REGEXP_LIKE ( table.column, '.*a.*')", sql );
+    assertEquals( " REGEXP_LIKE ( CAST (table.column AS VARCHAR), '.*a.*')", sql );
   }
 }
 // End VerticaDialectTest.java
