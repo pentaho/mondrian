@@ -148,9 +148,9 @@ public class VerticaDialect extends JdbcDialectImpl {
     javaRegex = extractEmbeddedFlags( javaRegex, mapping, mappedFlags );
 
     final StringBuilder sb = new StringBuilder();
-    sb.append( " REGEXP_LIKE ( " );
+    sb.append( " REGEXP_LIKE ( CAST (" );
     sb.append( source );
-    sb.append( ", " );
+    sb.append( " AS VARCHAR), " );
     quoteStringLiteral( sb, javaRegex );
     if ( mappedFlags.length() > 0 ) {
       sb.append( ", " );
