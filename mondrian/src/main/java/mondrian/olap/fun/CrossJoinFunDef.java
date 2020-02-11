@@ -365,7 +365,13 @@ public class CrossJoinFunDef extends FunDefBase {
             ListCalc listCalc2 = (ListCalc) calcs[1];
 
             TupleList l1 = listCalc1.evaluateList(evaluator);
+            // check if size of first list already exceeds limit
+            Util.checkCJResultLimit(l1.size());
             TupleList l2 = listCalc2.evaluateList(evaluator);
+            // check if size of second list already exceeds limit
+            Util.checkCJResultLimit(l2.size());
+            // check crossjoin
+            Util.checkCJResultLimit(l1.size() * l2.size());
 
             l1 = nonEmptyOptimizeList(evaluator, l1, call);
             if (l1.isEmpty()) {
