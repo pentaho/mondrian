@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2019 Hitachi Vantara
+// Copyright (C) 2005-2020 Hitachi Vantara
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -8546,20 +8546,21 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testResultLimit() throws Exception {
-        propSaver.set(
-            MondrianProperties.instance().ResultLimit,
-            1000);
-        assertAxisThrows(
-            "CrossJoin([Product].[Brand Name].Members, [Gender].[Gender].Members)",
-            "Mondrian Error:Number of cell results to be read exceeded limit of (1,000)");
-        propSaver.set(
-            MondrianProperties.instance().ResultLimit,
-            5000);
-        executeQuery(
-            "select CrossJoin([Product].[Brand Name].Members, [Gender].[Gender].Members) on columns from [Sales]");
+      propSaver.set(MondrianProperties.instance().ResultLimit, 1000);
+      assertAxisThrows(
+        "CrossJoin([Product].[Brand Name].Members, [Gender].[Gender].Members)",
+        "result (1,146) exceeded limit (1,000)");
     }
 
-    /**
+    public void testResultLimitWithinLimit() {
+      propSaver.set(
+        MondrianProperties.instance().ResultLimit,
+        5000 );
+      executeQuery(
+        "select CrossJoin([Product].[Brand Name].Members, [Gender].[Gender].Members) on columns from [Sales]" );
+    }
+
+  /**
      * This is a test for
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-1161">
      * MONDRIAN-1161</a>. It verifies that two queries can run

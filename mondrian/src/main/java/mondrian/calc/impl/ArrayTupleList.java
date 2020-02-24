@@ -11,6 +11,7 @@ package mondrian.calc.impl;
 
 import mondrian.calc.*;
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 
 import java.util.*;
 
@@ -24,6 +25,7 @@ public class ArrayTupleList extends AbstractEndToEndTupleList
 {
     private transient Member[] objectData;
     private int size;
+    private static final int cjMaxSize = MondrianProperties.instance().ResultLimit.get();
 
     /**
      * Creates an empty ArrayTupleList with an initial capacity of 10 tuples.
@@ -247,6 +249,11 @@ public class ArrayTupleList extends AbstractEndToEndTupleList
             // Up to next multiple of arity.
             final int rem = newCapacity % arity;
             newCapacity += (arity - rem);
+            if (cjMaxSize > 0 && newCapacity > cjMaxSize) {
+                throw MondrianResource.instance().TotalMembersLimitExceeded.ex(
+                        newCapacity, cjMaxSize);
+            }
+            Util.checkCJResultLimit(newCapacity);
             objectData = Util.copyOf(objectData, newCapacity);
         }
     }

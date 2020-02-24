@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2017 Hitachi Vantara
+// Copyright (c) 2002-2020 Hitachi Vantara
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -1810,6 +1810,13 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                         "FROM [Sales]\n" +
                         "WHERE [Customers].[AggregatePageMembers]",
                 getTestContext().withFreshConnection());
+    }
+
+    public void testResultLimitInNativeCJ() {
+      propSaver.set(MondrianProperties.instance().ResultLimit, 400);
+      assertAxisThrows("NonEmptyCrossjoin({[Product].[All Products].Children}, "
+          + "{ [Customers].[Name].members})",
+        "read exceeded limit (400)");
     }
 }
 
