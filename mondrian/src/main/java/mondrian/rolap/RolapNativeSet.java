@@ -267,6 +267,9 @@ public abstract class RolapNativeSet extends RolapNative {
                         dataSource, partialResult, newPartialResult);
             }
 
+            // Check limit of result size already is too large
+            Util.checkCJResultLimit(result.size());
+
             // Did not get as many members as expected - try to complete using
             // less constraints
             if (completeWithNullValues && result.size() < maxRows) {

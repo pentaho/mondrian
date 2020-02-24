@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+// Copyright (c) 2002-2020 Hitachi Vantara..  All rights reserved.
 */
 package mondrian.olap.fun;
 
@@ -333,6 +333,13 @@ public class CrossJoinTest extends FoodMartTestCase {
         e = "{[k, l, U, V], [k, l, Y, Z], [m, n, U, V], "
             + "[m, n, W, X], [m, n, Y, Z]}";
         Assert.assertEquals(e, s);
+    }
+
+    public void testResultLimitWithinCrossjoin() {
+        propSaver.set(MondrianProperties.instance().ResultLimit, 1000);
+        assertAxisThrows("Hierarchize(Crossjoin(Union({[Gender].CurrentMember}, [Gender].Children), "
+            + "Union({[Product].CurrentMember}, [Product].[Brand Name].Members)))",
+          "result (1,539) exceeded limit (1,000)");
     }
 
     ////////////////////////////////////////////////////////////////////////
