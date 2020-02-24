@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2017 Hitachi Vantara and others
+// Copyright (C) 2006-2020 Hitachi Vantara and others
 // All Rights Reserved.
  */
 package mondrian.rolap;
@@ -57,7 +57,7 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(100, 45, query, null, requestFreshConnection);
+        checkNative(0, 45, query, null, requestFreshConnection);
     }
 
     public void testNotInFilterSimple() throws Exception {
@@ -79,7 +79,7 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(100, 66, query, null, requestFreshConnection);
+        checkNative(0, 66, query, null, requestFreshConnection);
     }
 
     public void testInFilterAND() throws Exception {
@@ -103,7 +103,7 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(200, 88, query, null, requestFreshConnection);
+        checkNative(0, 88, query, null, requestFreshConnection);
     }
 
     public void testIsFilterSimple() throws Exception {
@@ -125,7 +125,7 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(100, 45, query, null, requestFreshConnection);
+        checkNative(120, 45, query, null, requestFreshConnection);
     }
 
     public void testNotIsFilterSimple() throws Exception {
@@ -147,7 +147,7 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(100, 66, query, null, requestFreshConnection);
+        checkNative(150, 66, query, null, requestFreshConnection);
     }
 
     public void testMixedInIsFilters() throws Exception {
@@ -171,7 +171,7 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(200, 88, query, null, requestFreshConnection);
+        checkNative(0, 88, query, null, requestFreshConnection);
     }
 
     /**

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara
+// Copyright (C) 2005-2020 Hitachi Vantara
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -1516,7 +1516,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjMembersMembersMembers() {
         checkNative(
-            67,
+            0,
             67,
             "select {[Measures].[Store Sales]} on columns,"
             + "  NON EMPTY Crossjoin("
@@ -1545,7 +1545,7 @@ public class NonEmptyTest extends BatchTestCase {
         // No 'all' level, and ragged because [Product Name] is hidden if
         // blank.  Native evaluation should be able to handle this query.
         checkNative(
-            9999,  // Don't know why resultLimit needs to be so high.
+            0,
             67,
             "select {[Measures].[Store Sales]} on columns,"
             + "  NON EMPTY Crossjoin("
@@ -1574,7 +1574,7 @@ public class NonEmptyTest extends BatchTestCase {
         // [Product Name] can be hidden if it is blank, but native evaluation
         // should be able to handle the query.
         checkNative(
-            67,
+            0,
             67,
             "select {[Measures].[Store Sales]} on columns,"
             + "  NON EMPTY Crossjoin("
@@ -1631,7 +1631,7 @@ public class NonEmptyTest extends BatchTestCase {
         // Since the parent of [Product Name] can be hidden, native evaluation
         // can't handle the query.
         checkNative(
-            67,
+            0,
             67,
             "select {[Measures].[Store Sales]} on columns,"
             + "  NON EMPTY Crossjoin("
@@ -1660,7 +1660,7 @@ public class NonEmptyTest extends BatchTestCase {
         // Since the parent of [Product Name] can be hidden, native evaluation
         // can't handle the query.
         checkNative(
-            67,
+            0,
             67,
             "select {[Measures].[Store Sales]} on columns,"
             + "  NON EMPTY Crossjoin("
@@ -1831,7 +1831,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjDescendantsMembers() {
         checkNative(
-            67,
+            0,
             67,
             "select {[Measures].[Store Sales]} on columns,"
             + " NON EMPTY Crossjoin("
@@ -1844,7 +1844,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjMembersDescendants() {
         checkNative(
-            67,
+            0,
             67,
             "select {[Measures].[Store Sales]} on columns,"
             + " NON EMPTY Crossjoin("
@@ -1858,7 +1858,7 @@ public class NonEmptyTest extends BatchTestCase {
     // testcase for bug MONDRIAN-506
     public void testCjMembersDescendantsWithNumericArgument() {
         checkNative(
-            67,
+            0,
             67,
             "select {[Measures].[Store Sales]} on columns,"
             + " NON EMPTY Crossjoin("
@@ -1871,7 +1871,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjChildrenMembers() {
         checkNative(
-            67,
+            0,
             67,
             "select {[Measures].[Store Sales]} on columns,"
             + "  NON EMPTY Crossjoin([Customers].[All Customers].[USA].[CA].children,"
@@ -1883,7 +1883,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjMembersChildren() {
         checkNative(
-            67,
+            0,
             67,
             "select {[Measures].[Store Sales]} on columns,"
             + "  NON EMPTY Crossjoin([Product].[Product Name].Members,"
@@ -1895,7 +1895,7 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjMembersMembers() {
         checkNative(
-            67,
+            0,
             67,
             "select {[Measures].[Store Sales]} on columns,"
             + "  NON EMPTY Crossjoin([Customers].[Name].Members,"
@@ -3513,7 +3513,7 @@ public class NonEmptyTest extends BatchTestCase {
         // [Customers].[Name] is an ordinal expression.  Make sure ordering
         // is done on the column corresponding to that expression.
         checkNative(
-            67,
+            0,
             67,
             "select {[Measures].[Store Sales]} on columns,"
             + "  NON EMPTY Crossjoin([Customers].[Name].Members,"
@@ -3568,7 +3568,7 @@ public class NonEmptyTest extends BatchTestCase {
         // the slicer, both native and non-native evaluation should return
         // the same result.
         checkNative(
-            20,
+            0,
             1,
             "With "
             + "Set BM_PRODUCT as '{[Product].[All Products].[Drink]}' "
