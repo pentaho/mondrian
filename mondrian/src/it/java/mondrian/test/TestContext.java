@@ -5,45 +5,78 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2020 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.test;
 
-import mondrian.calc.*;
+import junit.framework.Assert;
+import junit.framework.ComparisonFailure;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+import mondrian.calc.Calc;
+import mondrian.calc.CalcWriter;
+import mondrian.calc.ResultStyle;
 import mondrian.olap.Axis;
+import mondrian.olap.CacheControl;
 import mondrian.olap.Cell;
 import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
-import mondrian.olap.*;
+import mondrian.olap.Exp;
+import mondrian.olap.Formula;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.Position;
+import mondrian.olap.Query;
+import mondrian.olap.Result;
+import mondrian.olap.Util;
 import mondrian.olap.fun.FunUtil;
 import mondrian.olap4j.MondrianInprocProxy;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.*;
-import mondrian.rolap.aggmatcher.DefaultDef;
-import mondrian.spi.*;
+import mondrian.rolap.RolapConnectionProperties;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapHierarchy;
+import mondrian.rolap.RolapUtil;
+import mondrian.spi.Dialect;
+import mondrian.spi.DialectManager;
+import mondrian.spi.DynamicSchemaProcessor;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 import mondrian.util.DelegatingInvocationHandler;
-
-import junit.framework.*;
-import junit.framework.Test;
-
-import org.olap4j.*;
+import org.olap4j.CellSet;
+import org.olap4j.CellSetAxis;
+import org.olap4j.OlapConnection;
+import org.olap4j.OlapStatement;
+import org.olap4j.OlapWrapper;
 import org.olap4j.driver.xmla.XmlaOlap4jDriver;
 import org.olap4j.impl.CoordinateIterator;
 import org.olap4j.layout.TraditionalCellSetFormatter;
 
-import java.io.*;
+import javax.sql.DataSource;
+import java.io.File;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.*;
-import java.util.*;
-import java.util.regex.Matcher;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.AbstractList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Formatter;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Pattern;
-import javax.sql.DataSource;
 
 /**
  * <code>TestContext</code> is a singleton class which contains the information
@@ -79,9 +112,7 @@ public class TestContext {
     "[Store Size in SQFT]",
     "[Store Type]",
     "[Time]",
-    MondrianProperties.instance().SsasCompatibleNaming.get()
-      ? "[Time].[Weekly]"
-      : "[Time.Weekly]",
+    MondrianProperties.instance().SsasCompatibleNaming.get() ? "[Time].[Weekly]" : "[Time.Weekly]",
     "[Product]",
     "[Promotion Media]",
     "[Promotions]",
@@ -1714,8 +1745,7 @@ public class TestContext {
    *                        appropriate place for parameter definitions.
    * @param cubeDefs        Cube definition(s). If not null, the string is is inserted into the schema XML in the
    *                        appropriate place for cube definitions.
-   * @param virtualCubeDefs Definitions of virtual cubes. If not null, the string is inserted into the schema XML
-   *                        in the
+   * @param virtualCubeDefs Definitions of virtual cubes. If not null, the string is inserted into the schema XML in the
    *                        appropriate place for virtual cube definitions.
    * @param namedSetDefs    Definitions of named sets. If not null, the string is inserted into the schema XML in the
    *                        appropriate place for named set definitions.
