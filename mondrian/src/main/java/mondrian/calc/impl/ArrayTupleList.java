@@ -30,6 +30,7 @@ import java.util.Objects;
  * @author jhyde
  */
 public class ArrayTupleList extends AbstractEndToEndTupleList {
+  private final int maxMembers;
   private transient Member[] objectData;
   private int size;
   private final int cjMaxSize = MondrianProperties.instance().ResultLimit.get();
@@ -59,6 +60,21 @@ public class ArrayTupleList extends AbstractEndToEndTupleList {
     assert members.length % arity == 0;
     this.objectData = members;
     this.size = size;
+    this.maxMembers = maxNumberOfMembers();
+  }
+
+  /**
+   * Get the upper limit of the size of the Member[] backing ArrayTupleLists
+   * This uses the {@link MondrianProperties#ResultLimit} as the value
+   * setting the maximum number of tuples.  Member max = (tuple max * arity),
+   * or max int if undefined.
+   */
+  private int maxNumberOfMembers() {
+    try {
+      return cjMaxSize <= 0 ? Integer.MAX_VALUE : Math.multiplyExact( cjMaxSize, arity );
+    } catch ( ArithmeticException overflow ) {
+      return Integer.MAX_VALUE;
+    }
   }
 
   @Override
@@ -248,6 +264,10 @@ public class ArrayTupleList extends AbstractEndToEndTupleList {
   }
 
   private void ensureCapacity( int minCapacity ) {
+    if ( minCapacity > maxMembers ) {
+      throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
+        minCapacity / arity, cjMaxSize );
+    }
     int oldCapacity = objectData.length;
     if ( minCapacity > oldCapacity ) {
       int newCapacity = ( oldCapacity * 3 ) / 2 + 1;
@@ -256,15 +276,13 @@ public class ArrayTupleList extends AbstractEndToEndTupleList {
       }
       // Up to next multiple of arity.
       final int rem = newCapacity % arity;
-      newCapacity += ( arity - rem );
-      if ( cjMaxSize > 0 && newCapacity > cjMaxSize ) {
-        throw MondrianResource.instance().TotalMembersLimitExceeded.ex(
-          newCapacity, cjMaxSize );
-      }
-      Util.checkCJResultLimit( newCapacity );
+      newCapacity = Math.min( newCapacity + ( arity - rem ), maxMembers );
+
       objectData = Util.copyOf( objectData, newCapacity );
     }
   }
+
+
 
   @Override public boolean equals( Object o ) {
     if ( this == o ) {
