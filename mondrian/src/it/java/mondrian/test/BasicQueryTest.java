@@ -8497,7 +8497,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     propSaver.set( MondrianProperties.instance().ResultLimit, 1000 );
     assertAxisThrows(
       "CrossJoin([Product].[Brand Name].Members, [Gender].[Gender].Members)",
-      "result (1,146) exceeded limit (1,000)" );
+      "result (1,001) exceeded limit (1,000)" );
   }
 
   public void testResultLimitWithinLimit() {
