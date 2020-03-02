@@ -54,6 +54,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings( { "JavaDoc", "squid:S1192", "squid:S4274" } )
 // suppressing warnings for asserts, duplicated string constants
@@ -294,6 +295,7 @@ public class SegmentCacheManager {
   private static final Logger LOGGER =
     Logger.getLogger( AggregationManager.class );
   private final MondrianServer server;
+
 
   public SegmentCacheManager( MondrianServer server ) {
     this.server = server;
@@ -971,6 +973,8 @@ public class SegmentCacheManager {
       responseMap =
       new BlockingHashMap<>( 1000 );
 
+    private final AtomicBoolean shuttingDown = new AtomicBoolean( false );
+
     public void run() {
       try {
         while ( true ) {
@@ -994,9 +998,7 @@ public class SegmentCacheManager {
                   command,
                   Pair.of( null, e ) );
               } catch ( PleaseShutdownException e ) {
-                responseMap.put(
-                  command,
-                  Pair.of( null, null ) );
+                shutDownAndDrainQueue( command );
                 return; // exit event loop
               } catch ( Exception e ) {
                 responseMap.put(
@@ -1024,7 +1026,30 @@ public class SegmentCacheManager {
       }
     }
 
+    /**
+     * on shutdown, stop accepting new queue elements, then drain the existing queue putting errors in the responseMap
+     * <p>
+     * This makes sure no threads waiting on a response in the {@link #responseMap} remain blocked.
+     */
+    private void shutDownAndDrainQueue( Command<?> command ) {
+      LOGGER.trace( "Shutting down and draining event queue" );
+      shuttingDown.set( true );
+      responseMap.put( command, Pair.of( null, null ) );
+      List<Pair<Handler, Message>> pendingQueue = new ArrayList<>( eventQueue.size() );
+      eventQueue.drainTo( pendingQueue );
+      for ( Pair<Handler, Message> queueElement : pendingQueue ) {
+        if ( queueElement.getValue() instanceof Command<?> ) {
+          responseMap.put(
+            (Command<?>) queueElement.getValue(),
+            Pair.of( null, Util.newError( "Actor queue already shut down" ) ) );
+        }
+      }
+    }
+
     <T> T execute( Handler handler, Command<T> command ) {
+      if ( shuttingDown.get() ) {
+        throw Util.newError( "Command submitted after shutdown " + command );
+      }
       try {
         eventQueue.put( Pair.of( handler, command ) );
       } catch ( InterruptedException e ) {
@@ -1052,6 +1077,9 @@ public class SegmentCacheManager {
     }
 
     public void event( Handler handler, Event event ) {
+      if ( shuttingDown.get() ) {
+        throw Util.newError( "Event submitted after shutdown " + event );
+      }
       try {
         eventQueue.put( Pair.of( handler, event ) );
       } catch ( InterruptedException e ) {
