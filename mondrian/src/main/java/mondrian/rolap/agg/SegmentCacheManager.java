@@ -239,7 +239,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class SegmentCacheManager {
   private final Handler handler = new Handler();
-  private final Actor ACTOR;
+  private final Actor actor;
   public final Thread thread;
   private final Set<String> starFactTablesToSync;
 
@@ -299,9 +299,9 @@ public class SegmentCacheManager {
 
   public SegmentCacheManager( MondrianServer server ) {
     this.server = server;
-    ACTOR = new Actor();
+    actor = new Actor();
     thread = new Thread(
-      ACTOR, "mondrian.rolap.agg.SegmentCacheManager$ACTOR" );
+      actor, "mondrian.rolap.agg.SegmentCacheManager$ACTOR" );
     thread.setDaemon( true );
     thread.start();
 
@@ -371,7 +371,7 @@ public class SegmentCacheManager {
   }
 
   public <T> T execute( Command<T> command ) {
-    return ACTOR.execute( handler, command );
+    return actor.execute( handler, command );
   }
 
   public SegmentCacheIndexRegistry getIndexRegistry() {
@@ -394,7 +394,7 @@ public class SegmentCacheManager {
     SegmentHeader header,
     SegmentBody body ) {
     final Locus locus = Locus.peek();
-    ACTOR.event(
+    actor.event(
       handler,
       new SegmentLoadSucceededEvent(
         System.currentTimeMillis(),
@@ -423,7 +423,7 @@ public class SegmentCacheManager {
     SegmentHeader header,
     Throwable throwable ) {
     final Locus locus = Locus.peek();
-    ACTOR.event(
+    actor.event(
       handler,
       new SegmentLoadFailedEvent(
         System.currentTimeMillis(),
@@ -451,7 +451,7 @@ public class SegmentCacheManager {
     RolapStar star,
     SegmentHeader header ) {
     final Locus locus = Locus.peek();
-    ACTOR.event(
+    actor.event(
       handler,
       new SegmentRemoveEvent(
         System.currentTimeMillis(),
@@ -476,7 +476,7 @@ public class SegmentCacheManager {
       // Ignore cache requests.
       return;
     }
-    ACTOR.event(
+    actor.event(
       handler,
       new ExternalSegmentCreatedEvent(
         System.currentTimeMillis(),
@@ -499,7 +499,7 @@ public class SegmentCacheManager {
       // Ignore cache requests.
       return;
     }
-    ACTOR.event(
+    actor.event(
       handler,
       new ExternalSegmentDeletedEvent(
         System.currentTimeMillis(),
@@ -516,7 +516,7 @@ public class SegmentCacheManager {
     CellRegion region,
     PrintWriter pw,
     Locus locus ) {
-    ACTOR.execute(
+    actor.execute(
       handler,
       new PrintCacheStateCommand( region, pw, locus ) );
   }
@@ -764,17 +764,118 @@ public class SegmentCacheManager {
     }
 
     public FlushResult call() {
-      // For each measure and each star, ask the index
-      // which headers intersect.
+      final List<Member> measures = CacheControlImpl.findMeasures( region );
+      final SegmentColumn[] flushRegion = CacheControlImpl.findAxisValues( region );
+      final List<RolapStar> starList = CacheControlImpl.getStarList( region );
+
+      final List<SegmentHeader> headers = getIntersectingHeaders( measures, flushRegion );
+
+      // If flushRegion is empty, this means we must clear all
+      // segments for the region's measures.
+      if ( flushRegion.length == 0 ) {
+        clearAllSegmentsForRegionsMeasures( starList, headers );
+        return new FlushResult( Collections.emptyList() );
+      }
+      return getFlushResult( flushRegion, starList, headers );
+
+    }
+
+    private FlushResult getFlushResult( SegmentColumn[] flushRegion, List<RolapStar> starList,
+                                        List<SegmentHeader> headers ) {
+      // Now we know which headers intersect. For each of them,
+      // we append an excluded region.
+      //
+      // TODO: Optimize the logic here. If a segment is mostly
+      // empty, we should trash it completely.
+      final List<Callable<Boolean>> callableList =
+        new ArrayList<>();
+      for ( final SegmentHeader header : headers ) {
+        if ( !header.canConstrain( flushRegion ) ) {
+          // We have to delete that segment altogether.
+          cacheControlImpl.trace(
+            "discard segment - it cannot be constrained and maintain consistency:\n"
+              + header.getDescription() );
+          for ( RolapStar star : starList ) {
+            cacheMgr.indexRegistry.getIndex( star ).remove( header );
+          }
+          continue;
+        }
+
+        // Build the new header's dimensionality
+        final SegmentHeader newHeader = header.constrain( flushRegion );
+
+        // Update the segment index.
+        for ( RolapStar star : starList ) {
+          SegmentCacheIndex index =
+            cacheMgr.indexRegistry.getIndex( star );
+          index.update( header, newHeader );
+        }
+        // Update all of the cache workers.
+        clearCacheWorkers( callableList, header, newHeader );
+      }
+      return new FlushResult( callableList );
+    }
+
+    private void clearCacheWorkers( List<Callable<Boolean>> callableList, SegmentHeader header,
+                                    SegmentHeader newHeader ) {
+      for ( final SegmentCacheWorker worker
+        : cacheMgr.segmentCacheWorkers ) {
+        callableList.add(
+          () -> {
+            boolean existed;
+            if ( worker.supportsRichIndex() ) {
+              final SegmentBody sb = worker.get( header );
+              existed = worker.remove( header );
+              if ( sb != null ) {
+                worker.put( newHeader, sb );
+              }
+            } else {
+              // The cache doesn't support rich index. We
+              // have to clear the segment entirely.
+              existed = worker.remove( header );
+            }
+            return existed;
+          } );
+      }
+    }
+
+    private void clearAllSegmentsForRegionsMeasures( List<RolapStar> starList, List<SegmentHeader> headers ) {
+      for ( final SegmentHeader header : headers ) {
+        for ( RolapStar star : starList ) {
+          cacheMgr.indexRegistry.getIndex( star ).remove( header );
+        }
+        // Remove the segment from external caches. Use an
+        // executor, because it may take some time. We discard
+        // the future, because we don't care too much if it fails.
+        cacheControlImpl.trace(
+          "discard segment - it cannot be constrained and maintain consistency:\n"
+            + header.getDescription() );
+
+        final Future<?> task = cacheMgr.cacheExecutor.submit(
+          () -> {
+            try {
+              // Note that the SegmentCache API doesn't
+              // require us to verify that the segment
+              // exists (by calling "contains") before we
+              // call "remove".
+              cacheMgr.compositeCache.remove( header );
+            } catch ( Exception e ) {
+              LOGGER.warn(
+                "remove header failed: " + header,
+                e );
+            }
+          } );
+        Util.safeGet( task, "SegmentCacheManager.flush" );
+      }
+    }
+
+    /**
+     * For each measure and each star, ask the index
+     * which headers intersect.
+     */
+    private List<SegmentHeader> getIntersectingHeaders( List<Member> measures, SegmentColumn[] flushRegion ) {
       final List<SegmentHeader> headers =
         new ArrayList<>();
-      final List<Member> measures =
-        CacheControlImpl.findMeasures( region );
-      final SegmentColumn[] flushRegion =
-        CacheControlImpl.findAxisValues( region );
-      final List<RolapStar> starList =
-        CacheControlImpl.getStarList( region );
-
       for ( Member member : measures ) {
         if ( !( member instanceof RolapStoredMeasure ) ) {
           continue;
@@ -798,95 +899,7 @@ public class SegmentCacheManager {
           headers.sort( Comparator.comparing( SegmentHeader::getUniqueID ) );
         }
       }
-
-      // If flushRegion is empty, this means we must clear all
-      // segments for the region's measures.
-      if ( flushRegion.length == 0 ) {
-        for ( final SegmentHeader header : headers ) {
-          for ( RolapStar star : starList ) {
-            cacheMgr.indexRegistry.getIndex( star ).remove( header );
-          }
-          // Remove the segment from external caches. Use an
-          // executor, because it may take some time. We discard
-          // the future, because we don't care too much if it fails.
-          cacheControlImpl.trace(
-            "discard segment - it cannot be constrained and maintain consistency:\n"
-              + header.getDescription() );
-
-          final Future<?> task = cacheMgr.cacheExecutor.submit(
-            () -> {
-              try {
-                // Note that the SegmentCache API doesn't
-                // require us to verify that the segment
-                // exists (by calling "contains") before we
-                // call "remove".
-                cacheMgr.compositeCache.remove( header );
-              } catch ( Exception e ) {
-                LOGGER.warn(
-                  "remove header failed: " + header,
-                  e );
-              }
-            } );
-          Util.safeGet( task, "SegmentCacheManager.flush" );
-        }
-        return new FlushResult(
-          Collections.emptyList() );
-      }
-
-      // Now we know which headers intersect. For each of them,
-      // we append an excluded region.
-      //
-      // TODO: Optimize the logic here. If a segment is mostly
-      // empty, we should trash it completely.
-      final List<Callable<Boolean>> callableList =
-        new ArrayList<>();
-      for ( final SegmentHeader header : headers ) {
-        if ( !header.canConstrain( flushRegion ) ) {
-          // We have to delete that segment altogether.
-          cacheControlImpl.trace(
-            "discard segment - it cannot be constrained and maintain consistency:\n"
-              + header.getDescription() );
-          for ( RolapStar star : starList ) {
-            cacheMgr.indexRegistry.getIndex( star ).remove( header );
-          }
-          continue;
-        }
-
-        // Build the new header's dimensionality
-        final SegmentHeader newHeader =
-          header.constrain( flushRegion );
-
-        // Update the segment index.
-        for ( RolapStar star : starList ) {
-          SegmentCacheIndex index =
-            cacheMgr.indexRegistry.getIndex( star );
-          index.update( header, newHeader );
-        }
-
-        // Update all of the cache workers.
-        for ( final SegmentCacheWorker worker
-          : cacheMgr.segmentCacheWorkers ) {
-          callableList.add(
-            () -> {
-              boolean existed;
-              if ( worker.supportsRichIndex() ) {
-                final SegmentBody sb = worker.get( header );
-                existed = worker.remove( header );
-                if ( sb != null ) {
-                  worker.put( newHeader, sb );
-                }
-              } else {
-                // The cache doesn't support rich index. We
-                // have to clear the segment entirely.
-                existed = worker.remove( header );
-              }
-              return existed;
-            } );
-        }
-      }
-
-      // Done
-      return new FlushResult( callableList );
+      return headers;
     }
   }
 
@@ -952,13 +965,13 @@ public class SegmentCacheManager {
     }
   }
 
-  private abstract static class Event implements Message {
+  private static interface Event extends Message {
     /**
      * Dispatches a call to the appropriate {@code visit} method on {@link mondrian.server.monitor.Visitor}.
      *
      * @param visitor Visitor
      */
-    public abstract void acceptWithoutResponse( Visitor visitor );
+    void acceptWithoutResponse( Visitor visitor );
   }
 
   /**
@@ -993,10 +1006,6 @@ public class SegmentCacheManager {
                 responseMap.put(
                   command,
                   Pair.of( result, null ) );
-              } catch ( AbortException e ) {
-                responseMap.put(
-                  command,
-                  Pair.of( null, e ) );
               } catch ( PleaseShutdownException e ) {
                 shutDownAndDrainQueue( command );
                 return; // exit event loop
@@ -1089,7 +1098,7 @@ public class SegmentCacheManager {
     }
   }
 
-  private static class SegmentLoadSucceededEvent extends Event {
+  private static class SegmentLoadSucceededEvent implements Event {
     private final SegmentHeader header;
     private final SegmentBody body;
     private final long timestamp;
@@ -1128,7 +1137,7 @@ public class SegmentCacheManager {
     }
   }
 
-  private static class SegmentLoadFailedEvent extends Event {
+  private static class SegmentLoadFailedEvent implements Event {
     private final SegmentHeader header;
     private final Throwable throwable;
     private final long timestamp;
@@ -1166,7 +1175,7 @@ public class SegmentCacheManager {
     }
   }
 
-  private static class SegmentRemoveEvent extends Event {
+  private static class SegmentRemoveEvent implements Event {
     private final SegmentHeader header;
     private final long timestamp;
     private final Monitor monitor;
@@ -1204,7 +1213,7 @@ public class SegmentCacheManager {
     }
   }
 
-  private static class ExternalSegmentCreatedEvent extends Event {
+  private static class ExternalSegmentCreatedEvent implements Event {
     private final SegmentCacheManager cacheMgr;
     private final SegmentHeader header;
     private final long timestamp;
@@ -1240,7 +1249,7 @@ public class SegmentCacheManager {
     }
   }
 
-  private static class ExternalSegmentDeletedEvent extends Event {
+  private static class ExternalSegmentDeletedEvent implements Event {
     private final SegmentCacheManager cacheMgr;
     private final SegmentHeader header;
     private final long timestamp;
@@ -1299,7 +1308,7 @@ public class SegmentCacheManager {
       Locus.execute(
         Execution.NONE,
         "AsyncCacheListener.handle",
-        (Locus.Action<Void>) () -> {
+        () -> {
           final Command<Void> command;
           final Locus locus = Locus.peek();
           switch ( e.getEventType() ) {
@@ -1515,7 +1524,7 @@ public class SegmentCacheManager {
                 () -> {
                   try {
                     compositeCache.remove( header );
-                  } catch ( Throwable e ) {
+                  } catch ( Exception e ) {
                     LOGGER.warn(
                       "remove header failed: "
                         + header,
