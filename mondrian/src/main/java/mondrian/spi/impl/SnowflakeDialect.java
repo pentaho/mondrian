@@ -4,42 +4,21 @@
  * http://www.eclipse.org/legal/epl-v10.html.
  * You must accept the terms of that agreement to use this software.
  *
- * Copyright (c) 2019 Hitachi Vantara..  All rights reserved.
+ * Copyright (c) 2020 Hitachi Vantara..  All rights reserved.
  */
 package mondrian.spi.impl;
 
 
-import mondrian.olap.Util;
-import mondrian.spi.DialectUtil;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import java.util.stream.Stream;
+
+import mondrian.olap.Util;
+import mondrian.spi.DialectUtil;
 
 public class SnowflakeDialect extends JdbcDialectImpl {
-
-  private final String flagsRegexp = "^(\\(\\?([a-zA-Z]+)\\)).*$";
-  private final Pattern flagsPattern = Pattern.compile( flagsRegexp );
-
-  //Snowflake regex allowed inline modifiers
-  //https://docs.snowflake.net/manuals/sql-reference/functions-regexp.html
-  public enum RegexParameters {
-    CASE_SENSITIVE( "c" ),
-    CASE_INSENSITIVE( "i" ),
-    MULTI_LINE( "m" ),
-    //"e" allowed by snowflake but not compatible with RLIKE
-    WILDCARD_MATCHES_NEWLINE( "s" );
-
-    final String parameter;
-
-    RegexParameters( String param ) {
-      parameter = param;
-    }
-  }
 
   public static final JdbcDialectFactory FACTORY =
     new JdbcDialectFactory( SnowflakeDialect.class, DatabaseProduct.SNOWFLAKE );
@@ -109,33 +88,20 @@ public class SnowflakeDialect extends JdbcDialectImpl {
     javaRegex = javaRegex.replace( "\\Q", "" );
     javaRegex = javaRegex.replace( "\\E", "" );
 
-    final Matcher flagsMatcher = flagsPattern.matcher( javaRegex );
-
-    //only use snowflake compatible parameters
-    StringBuilder parameters = new StringBuilder();
-    if ( flagsMatcher.matches() ) {
-      final String flags = flagsMatcher.group( 2 );
-      Stream.of( RegexParameters.values() )
-        .map( rp -> rp.parameter )
-        .filter( flags::contains )
-        .forEach( parameters::append );
-    }
-
-    //remove the flags as flag parameters will be added to RLIKE
-    if ( flagsMatcher.matches() ) {
-      javaRegex =
-        javaRegex.substring( 0, flagsMatcher.start( 1 ) )
-          + javaRegex.substring( flagsMatcher.end( 1 ) );
-    }
+    StringBuilder mappedFlags = new StringBuilder();
+    //Snowflake regex allowed inline modifiers
+    //https://docs.snowflake.net/manuals/sql-reference/functions-regexp.html
+    String[][] mapping = new String[][]{{"c","c"},{"i","i"},{"m","m"},{"s","s"}};
+    javaRegex = extractEmbeddedFlags( javaRegex, mapping, mappedFlags );
 
     final StringBuilder sb = new StringBuilder();
     sb.append( " RLIKE ( " );
     sb.append( source );
     sb.append( ", " );
     quoteStringLiteral( sb, javaRegex );
-    if ( parameters.toString().length() > 0 ) {
+    if ( mappedFlags.length() > 0 ) {
       sb.append( ", " );
-      quoteStringLiteral( sb, parameters.toString() );
+      quoteStringLiteral( sb, mappedFlags.toString() );
     }
     sb.append( ")" );
     return sb.toString();
