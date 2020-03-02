@@ -4,25 +4,40 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2019 Hitachi Vantara.  All rights reserved.
+// Copyright (c) 2002-2020 Hitachi Vantara.  All rights reserved.
 */
 package mondrian.spi.impl;
+
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.SqlStatement;
 import mondrian.spi.Dialect;
-import mondrian.spi.Dialect.DatabaseProduct;
 import mondrian.spi.StatisticsProvider;
 import mondrian.util.ClassResolver;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.sql.*;
-import java.sql.Date;
-import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * Implementation of {@link Dialect} based on a JDBC connection and metadata.
@@ -124,6 +139,10 @@ public class JdbcDialectImpl implements Dialect {
         DEFAULT_TYPE_MAP = Collections.unmodifiableMap(typeMapInitial);
     }
 
+    private final String flagsRegexp = "^(\\(\\?([a-zA-Z]+)\\)).*$";
+    private final Pattern flagsPattern = Pattern.compile( flagsRegexp );
+    
+    
     /**
      * Creates a JdbcDialectImpl.
      *
@@ -1180,6 +1199,48 @@ public class JdbcDialectImpl implements Dialect {
             Util.close(resultSet, statement, null);
         }
     }
+        
+  /**
+   * Helper method to extract and map Java regular expression embedded flags expressions
+   * to dialect specific flags.
+   * 
+   * All dialects will map the case insensitive expression (?i) to i.  
+   * However, Vertica maps the dotall flag (?s) to n.
+   * 
+   * For example, on Vertica, a regular expression like: 
+   * 
+   * "(?is).*Hello World.*" 
+   * 
+   * will return:
+   * 
+   * ".*Hello World.*" 
+   * 
+   * with dialect flags: 
+   * 
+   * "in"
+   * 
+   * @param origExp Java regular expression
+   * @param mapping 2D String array of supported Java flags that can be mapped to a dialect specific flag.
+   * @param dialectFlags Returns the dialect specific flags in the input regular expression.
+   * @return Regular expression with the Java flags removed.
+   */
+  public String extractEmbeddedFlags( String javaRegex, String[][] mapping, StringBuilder dialectFlags ) {
+    final Matcher flagsMatcher = flagsPattern.matcher( javaRegex );
+
+    if ( flagsMatcher.matches() ) {
+      final String flags = flagsMatcher.group( 2 );
+      for ( String[] flag : mapping ) {
+        if ( flags.contains( flag[0] ) ) {
+          dialectFlags.append( flag[1] );
+        }
+      }
+    }
+
+    if ( flagsMatcher.matches() ) {
+      javaRegex = javaRegex.substring( 0, flagsMatcher.start( 1 ) ) + javaRegex.substring( flagsMatcher.end( 1 ) );
+    }
+    return javaRegex;
+  }
 }
 
 // End JdbcDialectImpl.java
