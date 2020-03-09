@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2018 Hitachi Vantara and others
+// Copyright (C) 2005-2020 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -3939,7 +3939,12 @@ public class FunctionTest extends FoodMartTestCase {
             + "[Promotion Media].[Sunday Paper, Radio, TV]");
     }
 
-    // todo: test unordered
+    public void testBottomCountUnordered() {
+        assertAxisReturns(
+          "BottomCount({[Promotion Media].[Media Type].members}, 2)",
+          "[Promotion Media].[Sunday Paper, Radio, TV]\n"
+            + "[Promotion Media].[TV]");
+    }
 
     public void testBottomPercent() {
         assertAxisReturns(
@@ -8679,6 +8684,13 @@ public class FunctionTest extends FoodMartTestCase {
             "TopCount({[Promotion Media].[Media Type].members}, 2, [Measures].[Unit Sales])",
             "[Promotion Media].[No Media]\n"
             + "[Promotion Media].[Daily Paper, Radio, TV]");
+    }
+
+    public void testTopCountUnordered() {
+        assertAxisReturns(
+          "TopCount({[Promotion Media].[Media Type].members}, 2)",
+          "[Promotion Media].[Bulk Mail]\n"
+            + "[Promotion Media].[Cash Register Handout]");
     }
 
     public void testTopCountTuple() {
