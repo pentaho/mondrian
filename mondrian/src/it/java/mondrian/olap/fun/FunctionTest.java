@@ -10,12 +10,23 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
+import mondrian.olap.Axis;
+import mondrian.olap.Cell;
+import mondrian.olap.Connection;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianException;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Position;
+import mondrian.olap.QueryTimeoutException;
+import mondrian.olap.Result;
+import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
 import mondrian.test.BasicQueryTest;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
-import mondrian.udf.*;
+import mondrian.udf.CurrentDateMemberExactUdf;
+import mondrian.udf.CurrentDateMemberUdf;
+import mondrian.udf.CurrentDateStringUdf;
 import mondrian.util.Bug;
 
 import junit.framework.Assert;
@@ -25,8 +36,13 @@ import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.StringEscaper;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 
 /**
@@ -38,6 +54,7 @@ import java.util.concurrent.CancellationException;
 public class FunctionTest extends FoodMartTestCase {
 
     private static final Logger LOGGER = Logger.getLogger(FunctionTest.class);
+  private static final int NUM_EXPECTED_FUNCTIONS = 325;
 
     private static final String months =
         "[Time].[1997].[Q1].[1]\n"
@@ -117,29 +134,61 @@ public class FunctionTest extends FoodMartTestCase {
      * Tests that Integeer.MIN_VALUE(-2147483648) does not cause NPE.
      */
     public void testParallelPeriodMinValue() {
-        executeQuery(
-            "with "
+    // By running the query and getting a result without an exception, we should assert the return value which will
+    // have empty rows, because the parallel period value is too large, so rows will be empty
+    // data, but it will still return a result.
+    String query = "with "
             + "member [measures].[foo] as "
             + "'([Measures].[unit sales],"
             + "ParallelPeriod([Time].[Quarter], -2147483648))' "
             + "select "
             + "[measures].[foo] on columns, "
             + "[time].[1997].children on rows "
-            + "from [sales]");
+      + "from [sales]";
+    String expected = "Axis #0:\n"
+      + "{}\n"
+      + "Axis #1:\n"
+      + "{[Measures].[foo]}\n"
+      + "Axis #2:\n"
+      + "{[Time].[1997].[Q1]}\n"
+      + "{[Time].[1997].[Q2]}\n"
+      + "{[Time].[1997].[Q3]}\n"
+      + "{[Time].[1997].[Q4]}\n"
+      + "Row #0: \n"
+      + "Row #1: \n"
+      + "Row #2: \n"
+      + "Row #3: \n";
+    assertQueryReturns( query, expected );
     }
 
     /**
      * Tests that Integeer.MIN_VALUE(-2147483648) in Lag is handled correctly.
      */
     public void testLagMinValue() {
-        executeQuery(
-            "with "
+    // By running the query and getting a result without an exception, we should assert the return value which will
+    // have empty rows, because the lag value is too large for the traversal it needs to make, so rows will be empty
+    // data, but it will still return a result.
+    String query = "with "
             + "member [measures].[foo] as "
             + "'([Measures].[unit sales], [Time].[1997].[Q1].Lag(-2147483648))' "
             + "select "
             + "[measures].[foo] on columns, "
             + "[time].[1997].children on rows "
-            + "from [sales]");
+      + "from [sales]";
+    String expected = "Axis #0:\n"
+      + "{}\n"
+      + "Axis #1:\n"
+      + "{[Measures].[foo]}\n"
+      + "Axis #2:\n"
+      + "{[Time].[1997].[Q1]}\n"
+      + "{[Time].[1997].[Q2]}\n"
+      + "{[Time].[1997].[Q3]}\n"
+      + "{[Time].[1997].[Q4]}\n"
+      + "Row #0: \n"
+      + "Row #1: \n"
+      + "Row #2: \n"
+      + "Row #3: \n";
+    assertQueryReturns( query, expected );
     }
 
     /**
@@ -154,12 +203,15 @@ public class FunctionTest extends FoodMartTestCase {
             + "Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})' "
             + "Set [*BASE_MEMBERS_Product] as '{[Product].[All Products].[Drink],[Product].[All Products].[Food]}' "
             + "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' "
-            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Customer Count]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 "
+        + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Customer Count]', FORMAT_STRING = '#,##0', "
+        + "SOLVE_ORDER=400 "
             + "Member [Measures].[*FORMATTED_MEASURE_1] as "
-            + "'([Measures].[Customer Count], ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember))', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200 "
+        + "'([Measures].[Customer Count], ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember))', "
+        + "FORMAT_STRING = '#,##0', SOLVE_ORDER=-200 "
             + "Member [Product].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=-300 "
             + "Select "
-            + "[*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember)}) on rows "
+        + "[*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember)})"
+        + " on rows "
             + "From [Sales] "
             + "Where ([Product].[*FILTER_MEMBER])",
             "Axis #0:\n"
@@ -358,8 +410,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests use of NULL literal to generate a null cell value.
-     * Testcase is from bug 1440344.
+   * Tests use of NULL literal to generate a null cell value. Testcase is from bug 1440344.
      */
     public void testNullValue() {
         assertQueryReturns(
@@ -485,7 +536,8 @@ public class FunctionTest extends FoodMartTestCase {
     public void testIsEmptyQuery() {
         String desiredResult =
             "Axis #0:\n"
-            + "{[Time].[1997].[Q4].[12], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer], [Measures].[Foo]}\n"
+        + "{[Time].[1997].[Q4].[12], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]"
+        + ".[Portsmouth Imported Beer], [Measures].[Foo]}\n"
             + "Axis #1:\n"
             + "{[Store].[USA].[WA].[Bellingham]}\n"
             + "{[Store].[USA].[WA].[Bremerton]}\n"
@@ -507,7 +559,8 @@ public class FunctionTest extends FoodMartTestCase {
             + "SELECT {[Store].[USA].[WA].children} on columns\n"
             + "FROM Sales\n"
             + "WHERE ([Time].[1997].[Q4].[12],\n"
-            + " [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],\n"
+        + " [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth "
+        + "Imported Beer],\n"
             + " [Measures].[Foo])",
             desiredResult);
 
@@ -516,7 +569,8 @@ public class FunctionTest extends FoodMartTestCase {
             + "SELECT {[Store].[USA].[WA].children} on columns\n"
             + "FROM Sales\n"
             + "WHERE ([Time].[1997].[Q4].[12],\n"
-            + " [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],\n"
+        + " [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth "
+        + "Imported Beer],\n"
             + " [Measures].[Foo])",
             desiredResult);
 
@@ -546,8 +600,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #0: false\n");
     }
 
-    public void testIsEmpty()
-    {
+  public void testIsEmpty() {
         assertBooleanExprReturns("[Gender].[All Gender].Parent IS NULL", true);
 
         // Any functions that return a member from parameters that
@@ -578,12 +631,14 @@ public class FunctionTest extends FoodMartTestCase {
         assertBooleanExprReturns(
             "IsEmpty(\n"
             + " ([Time].[1997].[Q4].[12],\n"
-            + "  [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],\n"
+        + "  [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth "
+        + "Imported Beer],\n"
             + "  [Store].[All Stores].[USA].[WA].[Bellingham]))", true);
         assertBooleanExprReturns(
             "IsEmpty(\n"
             + " ([Time].[1997].[Q4].[11],\n"
-            + "  [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],\n"
+        + "  [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth "
+        + "Imported Beer],\n"
             + "  [Store].[All Stores].[USA].[WA].[Bellingham]))", false);
 
         // The empty set is neither EMPTY nor NULL.
@@ -668,7 +723,9 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #2: \n");
     }
 
-    /** Tests the <code>ValidMeasure</code> function. */
+  /**
+   * Tests the <code>ValidMeasure</code> function.
+   */
     public void testValidMeasure() {
         assertQueryReturns(
             "with\n"
@@ -694,11 +751,14 @@ public class FunctionTest extends FoodMartTestCase {
         assertQueryReturns(
             "with set [Foo] as ' Crossjoin({[Time].Children}, {[Measures].[Warehouse Sales]}) '\n"
             + " member [Measures].[with VM] as 'ValidMeasure([Measures].[Unit Sales])'\n"
-            + " member [Measures].[with VM2] as 'Iif(Count(Filter([Foo], not isempty([Measures].CurrentMember))) > 0, ValidMeasure([Measures].[Unit Sales]), NULL)'\n"
-            + "select NON EMPTY Crossjoin({[Time].Children}, {[Measures].[with VM2], [Measures].[Warehouse Sales]}) ON COLUMNS,\n"
+        + " member [Measures].[with VM2] as 'Iif(Count(Filter([Foo], not isempty([Measures].CurrentMember))) > 0, "
+        + "ValidMeasure([Measures].[Unit Sales]), NULL)'\n"
+        + "select NON EMPTY Crossjoin({[Time].Children}, {[Measures].[with VM2], [Measures].[Warehouse Sales]}) ON "
+        + "COLUMNS,\n"
             + "  NON EMPTY {[Warehouse].[All Warehouses].[USA].[WA].Children} ON ROWS\n"
             + "from [Warehouse and Sales]\n"
-            + "where [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]",
+        + "where [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light "
+        + "Beer]",
             "Axis #0:\n"
             + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
             + "Axis #1:\n"
@@ -802,7 +862,8 @@ public class FunctionTest extends FoodMartTestCase {
             + "member measures.vm as 'ValidMeasure(measures.calc)' \n"
             + "select from [warehouse and sales]\n"
             + "where (measures.vm ,gender.f) \n",
-            "The function ValidMeasure cannot be used with the measure '[Measures].[calc]' because it is a calculated member.");
+      "The function ValidMeasure cannot be used with the measure '[Measures].[calc]' because it is a calculated "
+        + "member." );
         // Check the working version
         assertQueryReturns(
             "with \n"
@@ -930,7 +991,8 @@ public class FunctionTest extends FoodMartTestCase {
         assertQueryReturns(
             "with\n"
             + "set [*ancestors] as\n"
-            + "  'Ancestors([Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Eric Long].[Adam Reynolds].[Joshua Huff].[Teanna Cobb], [Employees].[All Employees].Level)'\n"
+        + "  'Ancestors([Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Eric Long]"
+        + ".[Adam Reynolds].[Joshua Huff].[Teanna Cobb], [Employees].[All Employees].Level)'\n"
             + "select\n"
             + "  [*ancestors] on columns\n"
             + "from [HR]\n",
@@ -972,7 +1034,8 @@ public class FunctionTest extends FoodMartTestCase {
         assertQueryReturns(
             "with\n"
             + "set [*ancestors] as\n"
-            + "  'Ancestors([Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Eric Long].[Adam Reynolds].[Joshua Huff].[Teanna Cobb], 3)'\n"
+        + "  'Ancestors([Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Eric Long]"
+        + ".[Adam Reynolds].[Joshua Huff].[Teanna Cobb], 3)'\n"
             + "select\n"
             + "  [*ancestors] on columns\n"
             + "from [HR]\n",
@@ -1005,7 +1068,8 @@ public class FunctionTest extends FoodMartTestCase {
         assertQueryReturns(
             "with\n"
             + "set [*ancestors] as\n"
-            + "  'Ancestors([Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Eric Long].[Adam Reynolds].[Joshua Huff].[Teanna Cobb], [Employees].[All Employees].Level)'\n"
+        + "  'Ancestors([Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Eric Long]"
+        + ".[Adam Reynolds].[Joshua Huff].[Teanna Cobb], [Employees].[All Employees].Level)'\n"
             + "member [Measures].[Depth] as\n"
             + "  'Count([*ancestors])'\n"
             + "select\n"
@@ -1118,7 +1182,8 @@ public class FunctionTest extends FoodMartTestCase {
         assertQueryReturns(
             "with member [Measures].[Closing Unit Sales] as '([Measures].[Unit Sales], ClosingPeriod([Time].[Month]))'\n"
             + "select {[Measures].[Unit Sales], [Measures].[Closing Unit Sales]} on columns,\n"
-            + " {[Time].[1997], [Time].[1997].[Q1], [Time].[1997].[Q1].[1], [Time].[1997].[Q1].[3], [Time].[1997].[Q4].[12]} on rows\n"
+        + " {[Time].[1997], [Time].[1997].[Q1], [Time].[1997].[Q1].[1], [Time].[1997].[Q1].[3], [Time].[1997].[Q4]"
+        + ".[12]} on rows\n"
             + "from [Sales]",
             "Axis #0:\n"
             + "{}\n"
@@ -1385,8 +1450,10 @@ public class FunctionTest extends FoodMartTestCase {
         // <Level>.Members
         testContext.assertAxisReturns(
             "Ascendants([Employees].Members.Item(73))",
-            "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Bertha Jameson].[James Bailey]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Bertha Jameson]\n"
+      "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Bertha "
+        + "Jameson].[James Bailey]\n"
+        + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Bertha "
+        + "Jameson]\n"
             + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy]\n"
             + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie]\n"
             + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]\n"
@@ -1653,7 +1720,8 @@ public class FunctionTest extends FoodMartTestCase {
             break;
         default:
             assertQueryReturns(
-                "WITH MEMBER [Measures].[Unit to Sales ratio] as '[Measures].[Unit Sales] / [Measures].[Store Sales]', FORMAT_STRING='0.0%' "
+          "WITH MEMBER [Measures].[Unit to Sales ratio] as '[Measures].[Unit Sales] / [Measures].[Store Sales]', "
+            + "FORMAT_STRING='0.0%' "
                 + "SELECT {[Measures].AllMembers} ON COLUMNS,"
                 + "non empty({[Store].[Store State].Members}) ON ROWS "
                 + "FROM Sales "
@@ -1715,7 +1783,8 @@ public class FunctionTest extends FoodMartTestCase {
             break;
         default:
             assertQueryReturns(
-                "WITH MEMBER [Measures].[Unit to Sales ratio] as '[Measures].[Unit Sales] / [Measures].[Store Sales]', FORMAT_STRING='0.0%' "
+          "WITH MEMBER [Measures].[Unit to Sales ratio] as '[Measures].[Unit Sales] / [Measures].[Store Sales]', "
+            + "FORMAT_STRING='0.0%' "
                 + "SELECT {[Measures].Members} ON COLUMNS,"
                 + "non empty({[Store].[Store State].Members}) ON ROWS "
                 + "FROM Sales "
@@ -2139,10 +2208,10 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * When evaluating a calculated member, MSOLAP regards that
-     * calculated member as the current member of that dimension, so it
-     * cycles in this case. But I disagree; it is the previous current
-     * member, before the calculated member was expanded.
+   * When evaluating a calculated member, MSOLAP regards that calculated member as the current member of that
+   * dimension,
+   * so it cycles in this case. But I disagree; it is the previous current member, before the calculated member was
+   * expanded.
      */
     public void testCurrentMemberInCalcMember() {
         Result result = executeQuery(
@@ -2869,7 +2938,8 @@ public class FunctionTest extends FoodMartTestCase {
         // [Product].[All Products] is referenced from the expression.
         String s1 = TestContext.allHiersExcept("[Customers]");
         getTestContext().assertExprDependsOn(
-            "Aggregate(Filter([Customers].[City].Members, (([Measures].[Unit Sales] / ([Measures].[Unit Sales], [Product].[All Products])) > 0.1)))",
+      "Aggregate(Filter([Customers].[City].Members, (([Measures].[Unit Sales] / ([Measures].[Unit Sales], [Product]"
+        + ".[All Products])) > 0.1)))",
             s1);
     }
 
@@ -3035,7 +3105,8 @@ public class FunctionTest extends FoodMartTestCase {
     public void testAggregateToSimulateCompoundSlicer() {
         assertQueryReturns(
             "WITH MEMBER [Time].[Time].[1997 H1] as 'Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})'\n"
-            + "  MEMBER [Education Level].[College or higher] as 'Aggregate({[Education Level].[Bachelors Degree], [Education Level].[Graduate Degree]})'\n"
+        + "  MEMBER [Education Level].[College or higher] as 'Aggregate({[Education Level].[Bachelors Degree], "
+        + "[Education Level].[Graduate Degree]})'\n"
             + "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns,\n"
             + "  {[Product].children} on rows\n"
             + "FROM [Sales]\n"
@@ -3058,16 +3129,14 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests behavior where CurrentMember occurs in calculated members and
-     * that member is a set.
+   * Tests behavior where CurrentMember occurs in calculated members and that member is a set.
      *
      * <p>Mosha discusses this behavior in the article
      * <a href="http://www.mosha.com/msolap/articles/mdxmultiselectcalcs.htm">
      * Multiselect friendly MDX calculations</a>.
      *
      * <p>Mondrian's behavior is consistent with MSAS 2K: it returns zeroes.
-     * SSAS 2005 returns an error, which can be fixed by reformulating the
-     * calculated members.
+   * SSAS 2005 returns an error, which can be fixed by reformulating the calculated members.
      *
      * @see mondrian.rolap.FastBatchingCellReaderTest#testAggregateDistinctCount()
      */
@@ -3075,7 +3144,8 @@ public class FunctionTest extends FoodMartTestCase {
         assertQueryReturns(
             "WITH\n"
             + "MEMBER [Measures].[Declining Stores Count] AS\n"
-            + " ' Count(Filter(Descendants(Store.CurrentMember, Store.[Store Name]), [Store Sales] < ([Store Sales],Time.Time.PrevMember))) '\n"
+        + " ' Count(Filter(Descendants(Store.CurrentMember, Store.[Store Name]), [Store Sales] < ([Store Sales],Time"
+        + ".Time.PrevMember))) '\n"
             + " MEMBER \n"
             + "  [Store].[XL_QZX] AS 'Aggregate ({ [Store].[All Stores].[USA].[WA] , [Store].[All Stores].[USA].[CA] })' \n"
             + "SELECT \n"
@@ -3168,8 +3238,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests that the 'null' value is regarded as empty, even if the underlying
-     * cell has fact table rows.
+   * Tests that the 'null' value is regarded as empty, even if the underlying cell has fact table rows.
      *
      * <p>For a fuller test case, see
      * {@link mondrian.xmla.XmlaCognosTest#testCognosMDXSuiteConvertedAdventureWorksToFoodMart_015()}
@@ -3233,8 +3302,8 @@ public class FunctionTest extends FoodMartTestCase {
     /**
      * Testcase for
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-710">
-     * bug MONDRIAN-710, "Count with ExcludeEmpty throws an exception when the
-     * cube does not have a factCountMeasure"</a>.
+   * bug MONDRIAN-710, "Count with ExcludeEmpty throws an exception when the cube does not have a
+   * factCountMeasure"</a>.
      */
     public void testCountExcludeEmptyOnCubeWithNoCountFacts() {
         assertQueryReturns(
@@ -3433,8 +3502,7 @@ public class FunctionTest extends FoodMartTestCase {
     /**
      * Testcase for bug
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-1045">MONDRIAN-1045,
-     * "When I use the Percentile function it cracks when there's only
-     * 1 register"</a>.
+   * "When I use the Percentile function it cracks when there's only 1 register"</a>.
      */
     public void testPercentileBugMondrian1045() {
         assertExprReturns(
@@ -3948,7 +4016,8 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testBottomPercent() {
         assertAxisReturns(
-            "BottomPercent(Filter({[Store].[All Stores].[USA].[CA].Children, [Store].[All Stores].[USA].[OR].Children, [Store].[All Stores].[USA].[WA].Children}, ([Measures].[Unit Sales] > 0.0)), 100.0, [Measures].[Store Sales])",
+      "BottomPercent(Filter({[Store].[All Stores].[USA].[CA].Children, [Store].[All Stores].[USA].[OR].Children, "
+        + "[Store].[All Stores].[USA].[WA].Children}, ([Measures].[Unit Sales] > 0.0)), 100.0, [Measures].[Store Sales])",
             "[Store].[USA].[CA].[San Francisco]\n"
             + "[Store].[USA].[WA].[Walla Walla]\n"
             + "[Store].[USA].[WA].[Bellingham]\n"
@@ -3990,9 +4059,8 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests that Except() successfully removes crossjoined tuples
-     * from the axis results.  Previously, this would fail by returning
-     * all tuples in the first argument to Except.  bug 1439627
+   * Tests that Except() successfully removes crossjoined tuples from the axis results.  Previously, this would fail by
+   * returning all tuples in the first argument to Except.  bug 1439627
      */
     public void testExceptCrossjoin() {
         assertAxisReturns(
@@ -4089,9 +4157,8 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests that TopPercent() operates succesfully on a
-     * axis of crossjoined tuples.  previously, this would
-     * fail with a ClassCastException in FunUtil.java.  bug 1440306
+   * Tests that TopPercent() operates succesfully on a axis of crossjoined tuples.  previously, this would fail with a
+   * ClassCastException in FunUtil.java.  bug 1440306
      */
     public void testTopPercentCrossjoin() {
         assertAxisReturns(
@@ -4213,7 +4280,8 @@ public class FunctionTest extends FoodMartTestCase {
     public void testCrossJoinAsteriskQuery() {
         assertQueryReturns(
             "SELECT {[Measures].members * [1997].children} ON COLUMNS,\n"
-            + " {[Store].[USA].children * [Position].[All Position].children} DIMENSION PROPERTIES [Store].[Store SQFT] ON ROWS\n"
+        + " {[Store].[USA].children * [Position].[All Position].children} DIMENSION PROPERTIES [Store].[Store SQFT] "
+        + "ON ROWS\n"
             + "FROM [HR]",
             "Axis #0:\n"
             + "{}\n"
@@ -4429,9 +4497,8 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Testcase for bug 1889745, "StackOverflowError while resolving
-     * crossjoin". The problem occurs when a calculated member that references
-     * itself is referenced in a crossjoin.
+   * Testcase for bug 1889745, "StackOverflowError while resolving crossjoin". The problem occurs when a calculated
+   * member that references itself is referenced in a crossjoin.
      */
     public void testCrossjoinResolve() {
         assertQueryReturns(
@@ -4462,8 +4529,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Test case for bug 1911832, "Exception converting immutable list to array
-     * in JDK 1.5".
+   * Test case for bug 1911832, "Exception converting immutable list to array in JDK 1.5".
      */
     public void testCrossjoinOrder() {
         assertQueryReturns(
@@ -4506,8 +4572,8 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests cases of different hierarchies in the same dimension.
-     * (Compare to {@link #testCrossjoinDupHierarchyFails()}). Not an error.
+   * Tests cases of different hierarchies in the same dimension. (Compare to {@link #testCrossjoinDupHierarchyFails()}).
+   * Not an error.
      */
     public void testCrossjoinDupDimensionOk() {
         final String expectedResult =
@@ -4773,83 +4839,157 @@ public class FunctionTest extends FoodMartTestCase {
         // leaves, restricted by level
         testContext.assertAxisReturns(
             "Descendants([Employees].[All Employees].[Sheri Nowmer].[Michael Spence], [Employees].[Employee Id], LEAVES)",
-            "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[John Brooks]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Todd Logan]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Joshua Several]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[James Thomas]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Robert Vessa]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Bronson Jacobs]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Rebecca Barley]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Emilio Alvaro]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Becky Waters]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[A. Joyce Jarvis]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Ruby Sue Styles]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Lisa Roy]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Ingrid Burkhardt]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Todd Whitney]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Barbara Wisnewski]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Karren Burkhardt]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[John Long]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Edwin Olenzek]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Jessie Valerio]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Robert Ahlering]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Megan Burke]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Karel Bates]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[James Tran]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Shelley Crow]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Anne Sims]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Clarence Tatman]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Jan Nelsen]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Jeanie Glenn]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Peggy Smith]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Tish Duff]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Anita Lucero]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Stephen Burton]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Amy Consentino]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Stacie Mcanich]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Mary Browning]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Alexandra Wellington]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Cory Bacugalupi]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Stacy Rizzi]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Mike White]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Marty Simpson]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Robert Jones]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Raul Casts]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Bridget Browqett]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Kay Kartz]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Jeanette Cole]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Phyllis Huntsman]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Hannah Arakawa]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Wathalee Steuber]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Pamela Cox]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Helen Lutes]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Linda Ecoffey]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Katherine Swint]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Dianne Slattengren]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Ronald Heymsfield]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Steven Whitehead]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[William Sotelo]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Beth Stanley]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Jill Markwood]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Mildred Valentine]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Suzann Reams]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Audrey Wold]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Susan French]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Trish Pederson]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Eric Renn]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Elizabeth Catalano]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Eric Coleman]\n"
+      "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[John "
+        + "Brooks]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Todd "
+        + "Logan]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Joshua "
+        + "Several]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[James "
+        + "Thomas]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Robert "
+        + "Vessa]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Bronson"
+        + " Jacobs]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Rebecca"
+        + " Barley]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Emilio "
+        + "Alvaro]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Becky "
+        + "Waters]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[A. "
+        + "Joyce Jarvis]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Ruby "
+        + "Sue Styles]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Lisa "
+        + "Roy]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Ingrid "
+        + "Burkhardt]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Todd "
+        + "Whitney]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Barbara"
+        + " Wisnewski]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Karren "
+        + "Burkhardt]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[John "
+        + "Long]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Edwin "
+        + "Olenzek]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Jessie "
+        + "Valerio]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Robert "
+        + "Ahlering]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Megan "
+        + "Burke]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Karel "
+        + "Bates]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[James "
+        + "Tran]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Shelley"
+        + " Crow]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Anne "
+        + "Sims]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard]"
+        + ".[Clarence Tatman]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Jan "
+        + "Nelsen]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Jeanie "
+        + "Glenn]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Peggy "
+        + "Smith]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Tish "
+        + "Duff]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Anita "
+        + "Lucero]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Stephen"
+        + " Burton]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Amy "
+        + "Consentino]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Stacie "
+        + "Mcanich]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Mary "
+        + "Browning]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard]"
+        + ".[Alexandra Wellington]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Cory "
+        + "Bacugalupi]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Stacy "
+        + "Rizzi]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Mike "
+        + "White]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Marty "
+        + "Simpson]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Robert "
+        + "Jones]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Raul "
+        + "Casts]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Bridget"
+        + " Browqett]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Kay "
+        + "Kartz]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[Jeanette Cole]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[Phyllis Huntsman]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[Hannah Arakawa]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[Wathalee Steuber]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[Pamela Cox]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[Helen Lutes]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[Linda Ecoffey]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[Katherine Swint]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[Dianne Slattengren]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[Ronald Heymsfield]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[Steven Whitehead]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[William Sotelo]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Beth"
+        + " Stanley]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Jill"
+        + " Markwood]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[Mildred Valentine]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[Suzann Reams]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[Audrey Wold]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[Susan French]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[Trish Pederson]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Eric"
+        + " Renn]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck]"
+        + ".[Elizabeth Catalano]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Eric"
+        + " Coleman]\n"
             + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Catherine Abel]\n"
             + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Emilo Miller]\n"
             + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Hazel Walker]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Linda Blasingame]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Jackie Blackwell]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[John Ortiz]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Stacey Tearpak]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Fannye Weber]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Diane Kabbes]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Brenda Heaney]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Judith Karavites]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Linda "
+        + "Blasingame]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Jackie "
+        + "Blackwell]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[John "
+        + "Ortiz]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Stacey "
+        + "Tearpak]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Fannye "
+        + "Weber]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Diane "
+        + "Kabbes]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Brenda "
+        + "Heaney]\n"
+        + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Judith "
+        + "Karavites]\n"
             + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Jauna Elson]\n"
             + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Nancy Hirota]\n"
             + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Marie Moya]\n"
@@ -4998,8 +5138,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * tests that an exception is thrown if both parameters in a range function
-     * are null.
+   * tests that an exception is thrown if both parameters in a range function are null.
      */
     public void testTwoNullRange() {
         assertAxisThrows(
@@ -5008,8 +5147,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Large dimensions use a different member reader, therefore need to
-     * be tested separately.
+   * Large dimensions use a different member reader, therefore need to be tested separately.
      */
     public void testRangeLarge() {
         assertAxisReturns(
@@ -5186,8 +5324,7 @@ public class FunctionTest extends FoodMartTestCase {
             "20");
     }
 
-    public void testIIfWithStringAndNull()
-    {
+  public void testIIfWithStringAndNull() {
         assertExprReturns(
             "IIf(([Measures].[Unit Sales],[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]) > 100, null,\"foo\")",
             "");
@@ -5196,8 +5333,7 @@ public class FunctionTest extends FoodMartTestCase {
             "foo");
     }
 
-    public void testIsEmptyWithNull()
-    {
+  public void testIsEmptyWithNull() {
         assertExprReturns(
             "iif (isempty(null), \"is empty\", \"not is empty\")",
             "is empty");
@@ -5245,7 +5381,8 @@ public class FunctionTest extends FoodMartTestCase {
     // MONDRIAN-2408 - Consumer wants ITERABLE or ANY in CrossJoinFunDef.compileCall(ResolvedFunCall, ExpCompiler)
     public void testIIfSetType_InCrossJoin() {
       assertAxisReturns(
-          "CROSSJOIN([Store Type].[Deluxe Supermarket],IIf(1 = 1, {[Store].[USA], [Store].[USA].[CA]}, {[Store].[Mexico], [Store].[USA].[OR]}))",
+      "CROSSJOIN([Store Type].[Deluxe Supermarket],IIf(1 = 1, {[Store].[USA], [Store].[USA].[CA]}, {[Store].[Mexico],"
+        + " [Store].[USA].[OR]}))",
           "{[Store Type].[Deluxe Supermarket], [Store].[USA]}\n"
           + "{[Store Type].[Deluxe Supermarket], [Store].[USA].[CA]}");
     }
@@ -5253,7 +5390,8 @@ public class FunctionTest extends FoodMartTestCase {
     // MONDRIAN-2408 - Consumer wants (immutable) LIST in CrossJoinFunDef.compileCall(ResolvedFunCall, ExpCompiler)
     public void testIIfSetType_InCrossJoinAndAvg() {
       assertExprReturns(
-          "Avg(CROSSJOIN([Store Type].[Deluxe Supermarket],IIf(1 = 1, {[Store].[USA].[OR], [Store].[USA].[WA]}, {[Store].[Mexico], [Store].[USA].[CA]})), [Measures].[Store Sales])",
+      "Avg(CROSSJOIN([Store Type].[Deluxe Supermarket],IIf(1 = 1, {[Store].[USA].[OR], [Store].[USA].[WA]}, {[Store]"
+        + ".[Mexico], [Store].[USA].[CA]})), [Measures].[Store Sales])",
           "81,031.12");
     }
 
@@ -5344,8 +5482,10 @@ public class FunctionTest extends FoodMartTestCase {
         // [DF] is all null and [WA] has numbers for 1997 but not for 1998.
         Result result = executeQuery(
             "with\n"
-            + "    member Measures.[Coal1] as 'coalesceempty(([Time].[1997], Measures.[Store Sales]), ([Time].[1998], Measures.[Store Sales]))'\n"
-            + "    member Measures.[Coal2] as 'coalesceempty(([Time].[1997], Measures.[Unit Sales]), ([Time].[1998], Measures.[Unit Sales]))'\n"
+        + "    member Measures.[Coal1] as 'coalesceempty(([Time].[1997], Measures.[Store Sales]), ([Time].[1998], "
+        + "Measures.[Store Sales]))'\n"
+        + "    member Measures.[Coal2] as 'coalesceempty(([Time].[1997], Measures.[Unit Sales]), ([Time].[1998], "
+        + "Measures.[Unit Sales]))'\n"
             + "select \n"
             + "    {Measures.[Coal1], Measures.[Coal2]} on columns,\n"
             + "    {[Store].[All Stores].[Mexico].[DF], [Store].[All Stores].[USA].[WA]} on rows\n"
@@ -5363,7 +5503,8 @@ public class FunctionTest extends FoodMartTestCase {
         result = executeQuery(
             "with\n"
             + "    member Measures.[Sales Per Customer] as 'Measures.[Sales Count] / Measures.[Customer Count]'\n"
-            + "    member Measures.[Coal] as 'coalesceempty(([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),\n"
+        + "    member Measures.[Coal] as 'coalesceempty(([Measures].[Sales Per Customer], [Store].[All Stores]"
+        + ".[Mexico].[DF]),\n"
             + "        Measures.[Sales Per Customer])'\n"
             + "select \n"
             + "    {Measures.[Sales Per Customer], Measures.[Coal]} on columns,\n"
@@ -5384,7 +5525,8 @@ public class FunctionTest extends FoodMartTestCase {
         result = executeQuery(
             "with\n"
             + "    member Measures.[Sales Per Customer] as 'Measures.[Sales Count] / Measures.[Customer Count]'\n"
-            + "    member Measures.[Coal] as 'coalesceempty(([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),\n"
+        + "    member Measures.[Coal] as 'coalesceempty(([Measures].[Sales Per Customer], [Store].[All Stores]"
+        + ".[Mexico].[DF]),\n"
             + "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),\n"
             + "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),\n"
             + "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),\n"
@@ -5414,7 +5556,8 @@ public class FunctionTest extends FoodMartTestCase {
         Result result = executeQuery(
             "with\n"
             + "    member Measures.[Sales Per Customer] as 'Measures.[Sales Count] / Measures.[Customer Count]'\n"
-            + "    member Measures.[Coal] as 'coalesceempty(([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),\n"
+        + "    member Measures.[Coal] as 'coalesceempty(([Measures].[Sales Per Customer], [Store].[All Stores]"
+        + ".[Mexico].[DF]),\n"
             + "        Measures.[Sales Per Customer])'\n"
             + "select \n"
             + "    {Measures.[Coal]} on columns,\n"
@@ -5517,19 +5660,26 @@ public class FunctionTest extends FoodMartTestCase {
         // constructing a tuple.
         assertExprCompilesTo(
             "([Gender].[M], [Time].[Time].Children.Item(2), [Measures].[Unit Sales])",
-            "MemberArrayValueCalc(name=MemberArrayValueCalc, class=class mondrian.calc.impl.MemberArrayValueCalc, type=SCALAR, resultStyle=VALUE)\n"
-            + "    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender].[M]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[M])\n"
-            + "    Item(name=Item, class=class mondrian.olap.fun.SetItemFunDef$5, type=MemberType<hierarchy=[Time]>, resultStyle=VALUE)\n"
-            + "        Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, type=SetType<MemberType<hierarchy=[Time]>>, resultStyle=LIST)\n"
-            + "            CurrentMemberFixed(hierarchy=[Time], name=CurrentMemberFixed, class=class mondrian.olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Time]>, resultStyle=VALUE)\n"
-            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=DecimalType(0), resultStyle=VALUE_NOT_NULL, value=2)\n"
-            + "    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n");
+      "MemberArrayValueCalc(name=MemberArrayValueCalc, class=class mondrian.calc.impl.MemberArrayValueCalc, "
+        + "type=SCALAR, resultStyle=VALUE)\n"
+        + "    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender]"
+        + ".[M]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[M])\n"
+        + "    Item(name=Item, class=class mondrian.olap.fun.SetItemFunDef$5, type=MemberType<hierarchy=[Time]>, "
+        + "resultStyle=VALUE)\n"
+        + "        Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, "
+        + "type=SetType<MemberType<hierarchy=[Time]>>, resultStyle=LIST)\n"
+        + "            CurrentMemberFixed(hierarchy=[Time], name=CurrentMemberFixed, class=class mondrian.olap.fun"
+        + ".HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Time]>, resultStyle=VALUE)\n"
+        + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=DecimalType(0), "
+        + "resultStyle=VALUE_NOT_NULL, value=2)\n"
+        + "    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, "
+        + "type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit "
+        + "Sales])\n" );
     }
 
     /**
-     * Tests whether the tuple operator can be applied to arguments of various
-     * types. See bug 1491699
-     * "ClassCastException in mondrian.calc.impl.GenericCalc.evaluat".
+   * Tests whether the tuple operator can be applied to arguments of various types. See bug 1491699 "ClassCastException
+   * in mondrian.calc.impl.GenericCalc.evaluat".
      */
     public void testTupleArgTypes() {
         // can coerce dimensions (if they have a unique hierarchy) and
@@ -5550,7 +5700,8 @@ public class FunctionTest extends FoodMartTestCase {
         // coerce args (hierarchy, member, member, dimension)
         assertAxisReturns(
             "{([Time.Weekly], [Measures].[Store Sales], [Marital Status].[M], [Promotion Media])}",
-            "{[Time].[Weekly].[All Weeklys], [Measures].[Store Sales], [Marital Status].[M], [Promotion Media].[All Media]}");
+      "{[Time].[Weekly].[All Weeklys], [Measures].[Store Sales], [Marital Status].[M], [Promotion Media].[All "
+        + "Media]}" );
 
         // usage of different hierarchies in the [Time] dimension
         assertAxisReturns(
@@ -5642,8 +5793,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #0: 409,035.59\n");
     }
 
-    public void testTupleDepends()
-    {
+  public void testTupleDepends() {
         getTestContext().assertMemberExprDependsOn(
             "([Store].[USA], [Gender].[F])", "{}");
 
@@ -5664,8 +5814,7 @@ public class FunctionTest extends FoodMartTestCase {
             TestContext.allHiers());
     }
 
-    public void testItemNull()
-    {
+  public void testItemNull() {
         // In the following queries, MSAS returns 'Formula error - object type
         // is not valid - in an <object> base class. An error occurred during
         // attempt to get cell value'. This is because in MSAS, Item is a COM
@@ -5737,8 +5886,7 @@ public class FunctionTest extends FoodMartTestCase {
     private void checkDataResults(
         Double[][] expected,
         Result result,
-        final double tolerance)
-    {
+    final double tolerance ) {
         int[] coords = new int[2];
 
         for (int row = 0; row < expected.length; row++) {
@@ -5803,8 +5951,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Testcase for bug 1799391, "Case Test function throws class cast
-     * exception"
+   * Testcase for bug 1799391, "Case Test function throws class cast exception"
      */
     public void testCaseTestReturnsMemberBug1799391() {
         assertQueryReturns(
@@ -5874,8 +6021,7 @@ public class FunctionTest extends FoodMartTestCase {
     /**
      * Testcase for
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-853">
-     * bug MONDRIAN-853, "When using CASE WHEN in a CalculatedMember values are
-     * not returned the way expected"</a>.
+   * bug MONDRIAN-853, "When using CASE WHEN in a CalculatedMember values are not returned the way expected"</a>.
      */
     public void testCaseTuple() {
         // The case in the bug, simplified. With the bug, returns a member array
@@ -5884,11 +6030,12 @@ public class FunctionTest extends FoodMartTestCase {
         // member array) needs to be evaluated to a scalar. I think that if we
         // get the type deduction right, the MDX exp compiler will handle the
         // rest.
-        if (false)
+    if ( false ) {
         assertExprReturns(
             "case 1 when 0 then 1.5\n"
             + " else ([Gender].[M], [Measures].[Unit Sales]) end",
             "135,215");
+    }
 
         // "case when" variant always worked
         assertExprReturns(
@@ -5899,20 +6046,22 @@ public class FunctionTest extends FoodMartTestCase {
         // case 2: cannot deduce type (tuple x) vs. (tuple y). Should be able
         // to deduce that the result type is tuple-type<member-type<Gender>,
         // member-type<Measures>>.
-        if (false)
+    if ( false ) {
         assertExprReturns(
             "case when 1=0 then ([Gender].[M], [Measures].[Store Sales])\n"
             + " else ([Gender].[M], [Measures].[Unit Sales]) end",
             "xxx");
+    }
 
         // case 3: mixture of member & tuple. Should be able to deduce that
         // result type is an expression.
-        if (false)
+    if ( false ) {
         assertExprReturns(
             "case when 1=0 then ([Measures].[Store Sales])\n"
             + " else ([Gender].[M], [Measures].[Unit Sales]) end",
             "xxx");
     }
+  }
 
     public void testPropertiesExpr() {
         assertExprReturns(
@@ -5923,8 +6072,7 @@ public class FunctionTest extends FoodMartTestCase {
     /**
      * Test case for bug
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-1227">MONDRIAN-1227,
-     * "Properties function does not implicitly convert dimension to member; has
-     * documentation typos"</a>.
+   * "Properties function does not implicitly convert dimension to member; has documentation typos"</a>.
      */
     public void testPropertiesOnDimension() {
         // [Store] is a dimension. When called with a property like FirstChild,
@@ -6042,7 +6190,6 @@ public class FunctionTest extends FoodMartTestCase {
 
     /**
      * This tests new NULL functionality exception throwing
-     *
      */
     public void testOpeningPeriodNull() {
         assertAxisThrows(
@@ -6268,7 +6415,8 @@ public class FunctionTest extends FoodMartTestCase {
             "with member [Measures].[Prev Unit Sales] as "
             + "        '([Measures].[Unit Sales], parallelperiod([Time].[Quarter], 2))' "
             + "select "
-            + "    crossjoin({[Measures].[Unit Sales], [Measures].[Prev Unit Sales]}, {[Marital Status].[All Marital Status].children}) on columns, "
+        + "    crossjoin({[Measures].[Unit Sales], [Measures].[Prev Unit Sales]}, {[Marital Status].[All Marital "
+        + "Status].children}) on columns, "
             + "    {[Time].[1997].[Q3]} on rows "
             + "from  "
             + "    [Sales] ",
@@ -6293,7 +6441,8 @@ public class FunctionTest extends FoodMartTestCase {
             + "    member [Measures].[Prev Unit Sales] as "
             + "        '([Measures].[Unit Sales], parallelperiod([Time].[Quarter]))' "
             + "select "
-            + "    crossjoin({[Measures].[Unit Sales], [Measures].[Prev Unit Sales]}, {[Marital Status].[All Marital Status].[M]}) on columns, "
+        + "    crossjoin({[Measures].[Unit Sales], [Measures].[Prev Unit Sales]}, {[Marital Status].[All Marital "
+        + "Status].[M]}) on columns, "
             + "    {[Time].[1997].[Q3].[8]} on rows "
             + "from  "
             + "    [Sales]",
@@ -6327,8 +6476,7 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns(NullNumericExpr + " - " + NullNumericExpr, "");
     }
 
-    public void testMinus_bug1234759()
-    {
+  public void testMinus_bug1234759() {
         assertQueryReturns(
             "WITH MEMBER [Customers].[USAMinusMexico]\n"
             + "AS '([Customers].[All Customers].[USA] - [Customers].[All Customers].[Mexico])'\n"
@@ -6370,8 +6518,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Bug 774807 caused expressions to be mistaken for the crossjoin
-     * operator.
+   * Bug 774807 caused expressions to be mistaken for the crossjoin operator.
      */
     public void testMultiplyBug774807() {
         final String desiredResult =
@@ -6600,24 +6747,42 @@ public class FunctionTest extends FoodMartTestCase {
             "NonEmptyCrossJoin("
             + "[Customers].[All Customers].[USA].[CA].Children, "
             + "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].Children)",
-            "{[Customers].[USA].[CA].[Bellflower], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customers].[USA].[CA].[Downey], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
-            + "{[Customers].[USA].[CA].[Glendale], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
-            + "{[Customers].[USA].[CA].[Glendale], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customers].[USA].[CA].[Grossmont], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customers].[USA].[CA].[Imperial Beach], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customers].[USA].[CA].[La Jolla], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
-            + "{[Customers].[USA].[CA].[Lincoln Acres], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
-            + "{[Customers].[USA].[CA].[Lincoln Acres], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customers].[USA].[CA].[Long Beach], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customers].[USA].[CA].[Los Angeles], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
-            + "{[Customers].[USA].[CA].[Newport Beach], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
-            + "{[Customers].[USA].[CA].[Pomona], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
-            + "{[Customers].[USA].[CA].[Pomona], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customers].[USA].[CA].[San Gabriel], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customers].[USA].[CA].[West Covina], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
-            + "{[Customers].[USA].[CA].[West Covina], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customers].[USA].[CA].[Woodland Hills], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}");
+      "{[Customers].[USA].[CA].[Bellflower], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]"
+        + ".[Good Light Beer]}\n"
+        + "{[Customers].[USA].[CA].[Downey], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]"
+        + ".[Good Imported Beer]}\n"
+        + "{[Customers].[USA].[CA].[Glendale], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]"
+        + ".[Good Imported Beer]}\n"
+        + "{[Customers].[USA].[CA].[Glendale], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]"
+        + ".[Good Light Beer]}\n"
+        + "{[Customers].[USA].[CA].[Grossmont], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]"
+        + ".[Good Light Beer]}\n"
+        + "{[Customers].[USA].[CA].[Imperial Beach], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]"
+        + ".[Good].[Good Light Beer]}\n"
+        + "{[Customers].[USA].[CA].[La Jolla], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]"
+        + ".[Good Imported Beer]}\n"
+        + "{[Customers].[USA].[CA].[Lincoln Acres], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]"
+        + ".[Good].[Good Imported Beer]}\n"
+        + "{[Customers].[USA].[CA].[Lincoln Acres], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]"
+        + ".[Good].[Good Light Beer]}\n"
+        + "{[Customers].[USA].[CA].[Long Beach], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]"
+        + ".[Good].[Good Light Beer]}\n"
+        + "{[Customers].[USA].[CA].[Los Angeles], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]"
+        + ".[Good].[Good Imported Beer]}\n"
+        + "{[Customers].[USA].[CA].[Newport Beach], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]"
+        + ".[Good].[Good Imported Beer]}\n"
+        + "{[Customers].[USA].[CA].[Pomona], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]"
+        + ".[Good Imported Beer]}\n"
+        + "{[Customers].[USA].[CA].[Pomona], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]"
+        + ".[Good Light Beer]}\n"
+        + "{[Customers].[USA].[CA].[San Gabriel], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]"
+        + ".[Good].[Good Light Beer]}\n"
+        + "{[Customers].[USA].[CA].[West Covina], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]"
+        + ".[Good].[Good Imported Beer]}\n"
+        + "{[Customers].[USA].[CA].[West Covina], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]"
+        + ".[Good].[Good Light Beer]}\n"
+        + "{[Customers].[USA].[CA].[Woodland Hills], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]"
+        + ".[Good].[Good Imported Beer]}" );
 
         // empty set
         assertAxisReturns(
@@ -6820,9 +6985,8 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Make sure that slicer is in force when expression is applied
-     * on axis, E.g. select filter([Customers].members, [Unit Sales] > 100)
-     * from sales where ([Time].[1998])
+   * Make sure that slicer is in force when expression is applied on axis, E.g. select filter([Customers].members, [Unit
+   * Sales] > 100) from sales where ([Time].[1998])
      */
     public void testFilterWithSlicer() {
         Result result = executeQuery(
@@ -6874,10 +7038,12 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testGenerateDepends() {
         getTestContext().assertSetExprDependsOn(
-            "Generate([Product].CurrentMember.Children, Crossjoin({[Product].CurrentMember}, Crossjoin([Store].[Store State].Members, [Store Type].Members)), ALL)",
+      "Generate([Product].CurrentMember.Children, Crossjoin({[Product].CurrentMember}, Crossjoin([Store].[Store "
+        + "State].Members, [Store Type].Members)), ALL)",
             "{[Product]}");
         getTestContext().assertSetExprDependsOn(
-            "Generate([Product].[All Products].Children, Crossjoin({[Product].CurrentMember}, Crossjoin([Store].[Store State].Members, [Store Type].Members)), ALL)",
+      "Generate([Product].[All Products].Children, Crossjoin({[Product].CurrentMember}, Crossjoin([Store].[Store "
+        + "State].Members, [Store Type].Members)), ALL)",
             "{}");
         getTestContext().assertSetExprDependsOn(
             "Generate({[Store].[USA], [Store].[USA].[CA]}, {[Store].CurrentMember.Children})",
@@ -6960,7 +7126,8 @@ public class FunctionTest extends FoodMartTestCase {
             "{[Store].[USA].[CA], [Product].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Hermanos]}\n"
             + "{[Store].[USA].[CA], [Product].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Tell Tale]}\n"
             + "{[Store].[USA].[CA].[San Francisco], [Product].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Ebony]}\n"
-            + "{[Store].[USA].[CA].[San Francisco], [Product].[Food].[Produce].[Vegetables].[Fresh Vegetables].[High Top]}");
+        + "{[Store].[USA].[CA].[San Francisco], [Product].[Food].[Produce].[Vegetables].[Fresh Vegetables].[High "
+        + "Top]}" );
     }
 
     public void testGenerateString() {
@@ -7023,7 +7190,8 @@ public class FunctionTest extends FoodMartTestCase {
                 + "\"/>", null);
               tc.executeAxis(
                   "Filter("
-                  + "Filter(CrossJoin([Customers].[Name].members, [Product].[Product Name].members), SleepUdf([Measures].[Unit Sales]) > 0),"
+          + "Filter(CrossJoin([Customers].[Name].members, [Product].[Product Name].members), SleepUdf([Measures]"
+          + ".[Unit Sales]) > 0),"
                   + " SleepUdf([Measures].[Sales Count]) > 5) ");
         } catch (QueryTimeoutException e) {
             return;
@@ -7069,8 +7237,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Test case for bug 2488492, "Union between calc mem and head function
-     * throws exception"
+   * Test case for bug 2488492, "Union between calc mem and head function throws exception"
      */
     public void testHeadBug() {
         assertQueryReturns(
@@ -7193,16 +7360,26 @@ public class FunctionTest extends FoodMartTestCase {
             + "[Employees].[Sheri Nowmer].[Derrick Whelply]\n"
             + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]\n"
             + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Leopoldo Renfro]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Donna Brockett]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Laurie Anderson]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Louis Gomez]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Melvin Glass]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Kristin Cohen]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Susan Kharman]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Gordon Kirschner]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Geneva Kouba]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Tricia Clark]");
+        + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton]"
+        + ".[Leopoldo Renfro]\n"
+        + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton]"
+        + ".[Donna Brockett]\n"
+        + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton]"
+        + ".[Laurie Anderson]\n"
+        + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton]"
+        + ".[Louis Gomez]\n"
+        + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton]"
+        + ".[Melvin Glass]\n"
+        + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton]"
+        + ".[Kristin Cohen]\n"
+        + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton]"
+        + ".[Susan Kharman]\n"
+        + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton]"
+        + ".[Gordon Kirschner]\n"
+        + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton]"
+        + ".[Geneva Kouba]\n"
+        + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton]"
+        + ".[Tricia Clark]" );
     }
 
     public void testHierarchizeCrossJoinPre() {
@@ -7256,14 +7433,12 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests that the Hierarchize function works correctly when applied to
-     * a level whose ordering is determined by an 'ordinal' property.
-     * TODO: fix this test (bug 1220787)
-     *
-     * WG: Note that this is disabled right now due to its impact on other
-     * tests later on within the test suite, specifically XMLA tests that
-     * return a list of cubes.  We could run this test after XMLA, or clear
-     * out the cache to solve this.
+   * Tests that the Hierarchize function works correctly when applied to a level whose ordering is determined by an
+   * 'ordinal' property. TODO: fix this test (bug 1220787)
+   * <p>
+   * WG: Note that this is disabled right now due to its impact on other tests later on within the test suite,
+   * specifically XMLA tests that return a list of cubes.  We could run this test after XMLA, or clear out the cache to
+   * solve this.
      */
     public void testHierarchizeOrdinal() {
         TestContext context = getTestContext().withCube("[Sales_Hierarchize]");
@@ -7469,36 +7644,57 @@ public class FunctionTest extends FoodMartTestCase {
         // a ContextCalc.
         assertAxisCompilesTo(
             "order([Product].children, [Measures].[Unit Sales])",
-            "ContextCalc(name=ContextCalc, class=class mondrian.olap.fun.OrderFunDef$ContextCalc, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST)\n"
-            + "    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
-            + "    CalcImpl(name=CalcImpl, class=class mondrian.olap.fun.OrderFunDef$CalcImpl, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST, direction=ASC)\n"
-            + "        Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=LIST)\n"
-            + "            CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian.olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n"
-            + "        ValueCalc(name=ValueCalc, class=class mondrian.calc.impl.ValueCalc, type=SCALAR, resultStyle=VALUE)\n");
+      "ContextCalc(name=ContextCalc, class=class mondrian.olap.fun.OrderFunDef$ContextCalc, "
+        + "type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST)\n"
+        + "    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures]"
+        + ".[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
+        + "    CalcImpl(name=CalcImpl, class=class mondrian.olap.fun.OrderFunDef$CalcImpl, "
+        + "type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST, direction=ASC)\n"
+        + "        Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, "
+        + "type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=LIST)\n"
+        + "            CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian.olap.fun"
+        + ".HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n"
+        + "        ValueCalc(name=ValueCalc, class=class mondrian.calc.impl.ValueCalc, type=SCALAR, "
+        + "resultStyle=VALUE)\n" );
 
         // [Time].[1997] is constant, and is evaluated in a ContextCalc.
         // [Product].Parent is variable, and is evaluated inside the loop.
         assertAxisCompilesTo(
             "order([Product].children,"
             + " ([Time].[1997], [Product].CurrentMember.Parent))",
-            "ContextCalc(name=ContextCalc, class=class mondrian.olap.fun.OrderFunDef$ContextCalc, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST)\n"
-            + "    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Time].[1997]>, resultStyle=VALUE_NOT_NULL, value=[Time].[1997])\n"
-            + "    CalcImpl(name=CalcImpl, class=class mondrian.olap.fun.OrderFunDef$CalcImpl, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST, direction=ASC)\n"
-            + "        Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=LIST)\n"
-            + "            CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian.olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n"
-            + "        MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, resultStyle=VALUE)\n"
-            + "            Parent(name=Parent, class=class mondrian.olap.fun.BuiltinFunTable$15$1, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n"
-            + "                CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian.olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n");
+      "ContextCalc(name=ContextCalc, class=class mondrian.olap.fun.OrderFunDef$ContextCalc, "
+        + "type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST)\n"
+        + "    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Time]"
+        + ".[1997]>, resultStyle=VALUE_NOT_NULL, value=[Time].[1997])\n"
+        + "    CalcImpl(name=CalcImpl, class=class mondrian.olap.fun.OrderFunDef$CalcImpl, "
+        + "type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST, direction=ASC)\n"
+        + "        Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, "
+        + "type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=LIST)\n"
+        + "            CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian.olap.fun"
+        + ".HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n"
+        + "        MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR,"
+        + " resultStyle=VALUE)\n"
+        + "            Parent(name=Parent, class=class mondrian.olap.fun.BuiltinFunTable$15$1, "
+        + "type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n"
+        + "                CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian.olap"
+        + ".fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)"
+        + "\n" );
 
         // No ContextCalc this time. All members are non-variable.
         assertAxisCompilesTo(
             "order([Product].children, [Product].CurrentMember.Parent)",
-            "CalcImpl(name=CalcImpl, class=class mondrian.olap.fun.OrderFunDef$CalcImpl, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST, direction=ASC)\n"
-            + "    Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=LIST)\n"
-            + "        CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian.olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n"
-            + "    MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, resultStyle=VALUE)\n"
-            + "        Parent(name=Parent, class=class mondrian.olap.fun.BuiltinFunTable$15$1, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n"
-            + "            CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian.olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n");
+      "CalcImpl(name=CalcImpl, class=class mondrian.olap.fun.OrderFunDef$CalcImpl, "
+        + "type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST, direction=ASC)\n"
+        + "    Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, "
+        + "type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=LIST)\n"
+        + "        CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian.olap.fun"
+        + ".HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n"
+        + "    MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, "
+        + "resultStyle=VALUE)\n"
+        + "        Parent(name=Parent, class=class mondrian.olap.fun.BuiltinFunTable$15$1, "
+        + "type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n"
+        + "            CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian.olap.fun"
+        + ".HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n" );
 
         // List expression is dependent on one of the constant calcs. It cannot
         // be pulled up, so [Gender].[M] is not in the ContextCalc.
@@ -7511,37 +7707,65 @@ public class FunctionTest extends FoodMartTestCase {
             + "([Gender].[M], [Measures].[Store Sales]))",
             Util.Retrowoven
                 ? ""
-                  + "ContextCalc(name=ContextCalc, class=class mondrian.olap.fun.OrderFunDef$ContextCalc, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST)\n"
-                  + "    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Store Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Store Sales])\n"
-                  + "    MemberCalcImpl(name=MemberCalcImpl, class=class mondrian.olap.fun.OrderFunDef$MemberCalcImpl, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST, direction=ASC)\n"
-                  + "        MemberListIterCalc(name=MemberListIterCalc, class=class mondrian.calc.impl.AbstractExpCompiler$MemberListIterCalc, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=ITERABLE)\n"
-                  + "            ImmutableMemberListCalc(name=ImmutableMemberListCalc, class=class mondrian.olap.fun.FilterFunDef$ImmutableMemberListCalc, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST)\n"
-                  + "                Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=LIST)\n"
-                  + "                    CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian.olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n"
-                  + "                >(name=>, class=class mondrian.olap.fun.BuiltinFunTable$63$1, type=BOOLEAN, resultStyle=VALUE)\n"
-                  + "                    MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, resultStyle=VALUE)\n"
-                  + "                        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
-                  + "                    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=NUMERIC, resultStyle=VALUE_NOT_NULL, value=1000.0)\n"
-                  + "        MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, resultStyle=VALUE)\n"
-                  + "            Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender].[M]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[M])\n"
+        + "ContextCalc(name=ContextCalc, class=class mondrian.olap.fun.OrderFunDef$ContextCalc, "
+        + "type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST)\n"
+        + "    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures]"
+        + ".[Store Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Store Sales])\n"
+        + "    MemberCalcImpl(name=MemberCalcImpl, class=class mondrian.olap.fun.OrderFunDef$MemberCalcImpl, "
+        + "type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST, direction=ASC)\n"
+        + "        MemberListIterCalc(name=MemberListIterCalc, class=class mondrian.calc.impl"
+        + ".AbstractExpCompiler$MemberListIterCalc, type=SetType<MemberType<hierarchy=[Product]>>, "
+        + "resultStyle=ITERABLE)\n"
+        + "            ImmutableMemberListCalc(name=ImmutableMemberListCalc, class=class mondrian.olap.fun"
+        + ".FilterFunDef$ImmutableMemberListCalc, type=SetType<MemberType<hierarchy=[Product]>>, "
+        + "resultStyle=MUTABLE_LIST)\n"
+        + "                Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, "
+        + "type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=LIST)\n"
+        + "                    CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian"
+        + ".olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, "
+        + "resultStyle=VALUE)\n"
+        + "                >(name=>, class=class mondrian.olap.fun.BuiltinFunTable$63$1, type=BOOLEAN, "
+        + "resultStyle=VALUE)\n"
+        + "                    MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, "
+        + "type=SCALAR, resultStyle=VALUE)\n"
+        + "                        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, "
+        + "type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit "
+        + "Sales])\n"
+        + "                    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=NUMERIC, "
+        + "resultStyle=VALUE_NOT_NULL, value=1000.0)\n"
+        + "        MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR,"
+        + " resultStyle=VALUE)\n"
+        + "            Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, "
+        + "type=MemberType<member=[Gender].[M]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[M])\n"
                 : ""
-                  + "ContextCalc(name=ContextCalc, class=class mondrian.olap.fun.OrderFunDef$ContextCalc, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST)\n"
-                  + "    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Store Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Store Sales])\n"
-                  + "    CalcImpl(name=CalcImpl, class=class mondrian.olap.fun.OrderFunDef$CalcImpl, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST, direction=ASC)\n"
-                  + "        ImmutableIterCalc(name=ImmutableIterCalc, class=class mondrian.olap.fun.FilterFunDef$ImmutableIterCalc, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=ITERABLE)\n"
-                  + "            Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=LIST)\n"
-                  + "                CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian.olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n"
+        + "ContextCalc(name=ContextCalc, class=class mondrian.olap.fun.OrderFunDef$ContextCalc, "
+        + "type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST)\n"
+        + "    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures]"
+        + ".[Store Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Store Sales])\n"
+        + "    CalcImpl(name=CalcImpl, class=class mondrian.olap.fun.OrderFunDef$CalcImpl, "
+        + "type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST, direction=ASC)\n"
+        + "        ImmutableIterCalc(name=ImmutableIterCalc, class=class mondrian.olap.fun"
+        + ".FilterFunDef$ImmutableIterCalc, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=ITERABLE)\n"
+        + "            Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, "
+        + "type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=LIST)\n"
+        + "                CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian.olap"
+        + ".fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n"
                   + "            >(name=>, class=class mondrian.olap.fun.BuiltinFunTable$63$1, type=BOOLEAN, resultStyle=VALUE)\n"
-                  + "                MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, resultStyle=VALUE)\n"
-                  + "                    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
-                  + "                Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=NUMERIC, resultStyle=VALUE_NOT_NULL, value=1000.0)\n"
-                  + "        MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, resultStyle=VALUE)\n"
-                  + "            Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender].[M]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[M])\n");
+        + "                MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, "
+        + "type=SCALAR, resultStyle=VALUE)\n"
+        + "                    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, "
+        + "type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit "
+        + "Sales])\n"
+        + "                Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=NUMERIC, "
+        + "resultStyle=VALUE_NOT_NULL, value=1000.0)\n"
+        + "        MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, "
+        + "type=SCALAR, resultStyle=VALUE)\n"
+        + "            Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, "
+        + "type=MemberType<member=[Gender].[M]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[M])\n" );
     }
 
     /**
-     * Verifies that the order function works with a defined member.
-     * See this forum post for additional information:
+   * Verifies that the order function works with a defined member. See this forum post for additional information:
      * http://forums.pentaho.com/showthread.php?p=179473#post179473
      */
     public void testOrderWithMember() {
@@ -7567,7 +7791,6 @@ public class FunctionTest extends FoodMartTestCase {
 
     /**
      * test case for bug # 1797159, Potential MDX Order Non Empty Problem
-     *
      */
     public void testOrderNonEmpty() {
         assertQueryReturns(
@@ -7845,8 +8068,10 @@ public class FunctionTest extends FoodMartTestCase {
         assertQueryReturns(
             "with member [Measures].[Average Unit Sales] as 'Avg(Descendants([Time].[Time].CurrentMember, [Time].[Month]), \n"
             + "[Measures].[Unit Sales])' \n"
-            + "member [Measures].[Max Unit Sales] as 'Max(Descendants([Time].[Time].CurrentMember, [Time].[Month]), [Measures].[Unit Sales])' \n"
-            + "select {[Measures].[Average Unit Sales], [Measures].[Max Unit Sales], [Measures].[Unit Sales]} ON columns, \n"
+        + "member [Measures].[Max Unit Sales] as 'Max(Descendants([Time].[Time].CurrentMember, [Time].[Month]), "
+        + "[Measures].[Unit Sales])' \n"
+        + "select {[Measures].[Average Unit Sales], [Measures].[Max Unit Sales], [Measures].[Unit Sales]} ON columns,"
+        + " \n"
             + "  NON EMPTY Order(\n"
             + "    Crossjoin(\n"
             + "      {[Store].[USA].[OR].[Portland],\n"
@@ -8298,7 +8523,8 @@ public class FunctionTest extends FoodMartTestCase {
             + "     [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young],"
             + "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]})' \n"
             + "select \n"
-            + " Order([NECJ], [Measures].[Unit Sales], BDESC, Ancestor([Customers].currentMember, [Customers].[Name]).OrderKey, BDESC) \n"
+        + " Order([NECJ], [Measures].[Unit Sales], BDESC, Ancestor([Customers].currentMember, [Customers].[Name])"
+        + ".OrderKey, BDESC) \n"
             + "on 0 from [Sales]",
             "Axis #0:\n"
             + "{}\n"
@@ -8324,7 +8550,8 @@ public class FunctionTest extends FoodMartTestCase {
             + "     [Customers].[All Customers].[USA].[CA].[Woodland Hills].[Abel Young],"
             + "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]})' \n"
             + "select \n"
-            + " Order([NECJ], [Measures].[Unit Sales], DESC, Ancestor([Customers].currentMember, [Customers].[Name]), BDESC) \n"
+        + " Order([NECJ], [Measures].[Unit Sales], DESC, Ancestor([Customers].currentMember, [Customers].[Name]), "
+        + "BDESC) \n"
             + "on 0 from [Sales]",
             "Axis #0:\n"
             + "{}\n"
@@ -8365,7 +8592,8 @@ public class FunctionTest extends FoodMartTestCase {
             + "     [Customers].[All Customers].[USA].[CA].[Santa Monica].[Adeline Chun]})' \n"
             + "select \n"
             + "  [Measures].[Org Salary] on columns, \n"
-            + "  Order([CJ], [Position].currentMember.OrderKey, BASC, Ancestor([Customers].currentMember, [Customers].[Name]).OrderKey, BDESC) \n"
+        + "  Order([CJ], [Position].currentMember.OrderKey, BASC, Ancestor([Customers].currentMember, [Customers]"
+        + ".[Name]).OrderKey, BDESC) \n"
             + "on rows \n"
             + "from [Sales vs HR]",
             "Axis #0:\n"
@@ -8376,11 +8604,15 @@ public class FunctionTest extends FoodMartTestCase {
             + "{[Position].[Store Management].[Store Manager], [Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n"
             + "{[Position].[Store Management].[Store Manager], [Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n"
             + "{[Position].[Store Management].[Store Manager], [Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n"
-            + "{[Position].[Store Management].[Store Assistant Manager], [Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n"
-            + "{[Position].[Store Management].[Store Assistant Manager], [Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n"
+        + "{[Position].[Store Management].[Store Assistant Manager], [Customers].[USA].[CA].[Santa Monica].[Adeline "
+        + "Chun]}\n"
+        + "{[Position].[Store Management].[Store Assistant Manager], [Customers].[USA].[CA].[Woodland Hills].[Abel "
+        + "Young]}\n"
             + "{[Position].[Store Management].[Store Assistant Manager], [Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n"
-            + "{[Position].[Store Management].[Store Shift Supervisor], [Customers].[USA].[CA].[Santa Monica].[Adeline Chun]}\n"
-            + "{[Position].[Store Management].[Store Shift Supervisor], [Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n"
+        + "{[Position].[Store Management].[Store Shift Supervisor], [Customers].[USA].[CA].[Santa Monica].[Adeline "
+        + "Chun]}\n"
+        + "{[Position].[Store Management].[Store Shift Supervisor], [Customers].[USA].[CA].[Woodland Hills].[Abel "
+        + "Young]}\n"
             + "{[Position].[Store Management].[Store Shift Supervisor], [Customers].[USA].[WA].[Issaquah].[Abe Tramel]}\n"
             + "Row #0: \n"
             + "Row #1: \n"
@@ -8735,8 +8967,7 @@ public class FunctionTest extends FoodMartTestCase {
      * Tests TopCount applied to a large result set.
      *
      * <p>Before optimizing (see FunUtil.partialSort), on a 2-core 32-bit 2.4GHz
-     * machine, the 1st query took 14.5 secs, the 2nd query took 5.0 secs.
-     * After optimizing, who knows?
+   * machine, the 1st query took 14.5 secs, the 2nd query took 5.0 secs. After optimizing, who knows?
      */
     public void testTopCountHuge() {
         // TODO convert printfs to trace
@@ -8799,7 +9030,8 @@ public class FunctionTest extends FoodMartTestCase {
         assertQueryReturns(
             "with \n"
             + "set [Set1] as 'Crossjoin({[Time].[1997].[Q1]:[Time].[1997].[Q4]},{[Store].[USA].[CA]:[Store].[USA].[OR]})'\n"
-            + "set [Set2] as 'Crossjoin({[Time].[1997].[Q2]:[Time].[1997].[Q3]},{[Store].[Mexico].[DF]:[Store].[Mexico].[Veracruz]})'\n"
+        + "set [Set2] as 'Crossjoin({[Time].[1997].[Q2]:[Time].[1997].[Q3]},{[Store].[Mexico].[DF]:[Store].[Mexico]"
+        + ".[Veracruz]})'\n"
             + "select \n"
             + "{[Measures].[Unit Sales]} ON COLUMNS,\n"
             + "Union([Set1], [Set2], ALL) ON ROWS\n"
@@ -8971,8 +9203,7 @@ public class FunctionTest extends FoodMartTestCase {
     /**
      * Testcase for
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-560">
-     * bug MONDRIAN-560, "StrToMember function doesn't use IgnoreInvalidMembers
-     * option"</a>.
+   * bug MONDRIAN-560, "StrToMember function doesn't use IgnoreInvalidMembers option"</a>.
      */
     public void testStrToMemberIgnoreInvalidMembers() {
         final MondrianProperties properties = MondrianProperties.instance();
@@ -9237,8 +9468,7 @@ public class FunctionTest extends FoodMartTestCase {
     /**
      * Testcase for
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-458">
-     * bug MONDRIAN-458, "error deducing type of Ytd/Qtd/Mtd functions within
-     * Generate"</a>.
+   * bug MONDRIAN-458, "error deducing type of Ytd/Qtd/Mtd functions within Generate"</a>.
      */
     public void testGeneratePlusXtd() {
         assertAxisReturns(
@@ -9532,9 +9762,9 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Executes a scalar expression, and asserts that the result is as
-     * expected. For example, <code>assertExprReturns("1 + 2", "3")</code>
-     * should succeed.
+   * Executes a scalar expression, and asserts that the result is as expected. For example, <code>assertExprReturns
+   * ("1 +
+   * 2", "3")</code> should succeed.
      */
     public void assertExprReturns(String expr, String expected) {
         String actual = executeExpr(expr);
@@ -9542,16 +9772,14 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Executes a scalar expression, and asserts that the result is within
-     * delta of the expected result.
+   * Executes a scalar expression, and asserts that the result is within delta of the expected result.
      *
      * @param expr MDX scalar expression
      * @param expected Expected value
      * @param delta Maximum allowed deviation from expected value
      */
     public void assertExprReturns(
-        String expr, double expected, double delta)
-    {
+    String expr, double expected, double delta ) {
         Object value = getTestContext().executeExprRaw(expr).getValue();
 
         try {
@@ -9572,13 +9800,11 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Compiles a scalar expression, and asserts that the program looks as
-     * expected.
+   * Compiles a scalar expression, and asserts that the program looks as expected.
      */
     public void assertExprCompilesTo(
         String expr,
-        String expectedCalc)
-    {
+    String expectedCalc ) {
         final String actualCalc =
             getTestContext().compileExpression(expr, true);
         final int expDeps =
@@ -9593,13 +9819,11 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Compiles a set expression, and asserts that the program looks as
-     * expected.
+   * Compiles a set expression, and asserts that the program looks as expected.
      */
     public void assertAxisCompilesTo(
         String expr,
-        String expectedCalc)
-    {
+    String expectedCalc ) {
         final String actualCalc =
             getTestContext().compileExpression(expr, false);
         final int expDeps =
@@ -9680,8 +9904,10 @@ public class FunctionTest extends FoodMartTestCase {
         // natural order (member name) because MDX sorts are stable.
         assertQueryReturns(
             "with member [Measures].[Sibling Rank] as ' Rank([Product].CurrentMember, [Product].CurrentMember.Siblings) '\n"
-            + "  member [Measures].[Sales Rank] as ' Rank([Product].CurrentMember, Order([Product].Parent.Children, [Measures].[Unit Sales], DESC)) '\n"
-            + "  member [Measures].[Sales Rank2] as ' Rank([Product].CurrentMember, [Product].Parent.Children, [Measures].[Unit Sales]) '\n"
+        + "  member [Measures].[Sales Rank] as ' Rank([Product].CurrentMember, Order([Product].Parent.Children, "
+        + "[Measures].[Unit Sales], DESC)) '\n"
+        + "  member [Measures].[Sales Rank2] as ' Rank([Product].CurrentMember, [Product].Parent.Children, [Measures]"
+        + ".[Unit Sales]) '\n"
             + "select {[Measures].[Unit Sales], [Measures].[Sales Rank], [Measures].[Sales Rank2]} on columns,\n"
             + " {[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].children} on rows\n"
             + "from [Sales]\n"
@@ -9753,7 +9979,8 @@ public class FunctionTest extends FoodMartTestCase {
             + " Set [Beers for Store] as 'NonEmptyCrossJoin("
             + "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].children, "
             + "{[Store].[USA].[OR].[Portland].[Store 11]})' "
-            + "  member [Measures].[Sales Rank] as ' Rank(([Product].CurrentMember,[Store].CurrentMember), [Beers for Store], [Measures].[Unit Sales]) '\n"
+        + "  member [Measures].[Sales Rank] as ' Rank(([Product].CurrentMember,[Store].CurrentMember), [Beers for "
+        + "Store], [Measures].[Unit Sales]) '\n"
             + "select {[Measures].[Unit Sales], [Measures].[Sales Rank]} on columns,\n"
             + " Generate([Beers for Store], {([Product].CurrentMember, [Store].CurrentMember)}) on rows\n"
             + "from [Sales]\n"
@@ -9764,10 +9991,14 @@ public class FunctionTest extends FoodMartTestCase {
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[Sales Rank]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good], [Store].[USA].[OR].[Portland].[Store 11]}\n"
-            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth], [Store].[USA].[OR].[Portland].[Store 11]}\n"
-            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure], [Store].[USA].[OR].[Portland].[Store 11]}\n"
-            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus], [Store].[USA].[OR].[Portland].[Store 11]}\n"
+        + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good], [Store].[USA].[OR].[Portland]"
+        + ".[Store 11]}\n"
+        + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth], [Store].[USA].[OR]"
+        + ".[Portland].[Store 11]}\n"
+        + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure], [Store].[USA].[OR]"
+        + ".[Portland].[Store 11]}\n"
+        + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus], [Store].[USA].[OR].[Portland]"
+        + ".[Store 11]}\n"
             + "Row #0: 5\n"
             + "Row #0: 1\n"
             + "Row #1: 3\n"
@@ -9841,8 +10072,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests the 3-arg version of the RANK function with a value
-     * which returns null within a set of nulls.
+   * Tests the 3-arg version of the RANK function with a value which returns null within a set of nulls.
      */
     public void testRankWithNulls() {
         assertQueryReturns(
@@ -9861,8 +10091,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests a RANK function which is so large that we need to use caching
-     * in order to execute it efficiently.
+   * Tests a RANK function which is so large that we need to use caching in order to execute it efficiently.
      */
     public void testRankHuge() {
         // If caching is disabled, don't even try -- it will take too long.
@@ -9991,20 +10220,25 @@ public class FunctionTest extends FoodMartTestCase {
         assertQueryReturns(
             "WITH MEMBER \n"
             + "[Measures].[Intercept] AS \n"
-            + "  'LinRegIntercept([Time].CurrentMember.Lag(10) : [Time].CurrentMember, [Measures].[Unit Sales], [Measures].[Store Sales])' \n"
+        + "  'LinRegIntercept([Time].CurrentMember.Lag(10) : [Time].CurrentMember, [Measures].[Unit Sales], "
+        + "[Measures].[Store Sales])' \n"
             + "MEMBER [Measures].[Regression Slope] AS\n"
-            + "  'LinRegSlope([Time].CurrentMember.Lag(9) : [Time].CurrentMember,[Measures].[Unit Sales],[Measures].[Store Sales]) '\n"
+        + "  'LinRegSlope([Time].CurrentMember.Lag(9) : [Time].CurrentMember,[Measures].[Unit Sales],[Measures]"
+        + ".[Store Sales]) '\n"
             + "MEMBER [Measures].[Predict] AS\n"
-            + "  'LinRegPoint([Measures].[Unit Sales],[Time].CurrentMember.Lag(9) : [Time].CurrentMember,[Measures].[Unit Sales],[Measures].[Store Sales])',\n"
+        + "  'LinRegPoint([Measures].[Unit Sales],[Time].CurrentMember.Lag(9) : [Time].CurrentMember,[Measures].[Unit"
+        + " Sales],[Measures].[Store Sales])',\n"
             + "  FORMAT_STRING = 'Standard' \n"
             + "MEMBER [Measures].[Predict Formula] AS\n"
             + "  '([Measures].[Regression Slope] * [Measures].[Unit Sales]) + [Measures].[Intercept]',\n"
             + "  FORMAT_STRING='Standard'\n"
             + "MEMBER [Measures].[Good Fit] AS\n"
-            + "  'LinRegR2([Time].CurrentMember.Lag(9) : [Time].CurrentMember, [Measures].[Unit Sales],[Measures].[Store Sales])',\n"
+        + "  'LinRegR2([Time].CurrentMember.Lag(9) : [Time].CurrentMember, [Measures].[Unit Sales],[Measures].[Store "
+        + "Sales])',\n"
             + "  FORMAT_STRING='#,#.00'\n"
             + "MEMBER [Measures].[Variance] AS\n"
-            + "  'LinRegVariance([Time].CurrentMember.Lag(9) : [Time].CurrentMember,[Measures].[Unit Sales],[Measures].[Store Sales])'\n"
+        + "  'LinRegVariance([Time].CurrentMember.Lag(9) : [Time].CurrentMember,[Measures].[Unit Sales],[Measures]"
+        + ".[Store Sales])'\n"
             + "SELECT \n"
             + "  {[Measures].[Store Sales], \n"
             + "   [Measures].[Intercept], \n"
@@ -10689,16 +10923,17 @@ Intel platforms):
      * Tests that members generated by VisualTotals have correct identity.
      *
      * <p>Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-295">
-     * bug MONDRIAN-295, "Query generated by Excel 2007 gives incorrect
-     * results"</a>.
+   * bug MONDRIAN-295, "Query generated by Excel 2007 gives incorrect results"</a>.
      */
     public void testVisualTotalsIntersect() {
         assertQueryReturns(
             "WITH\n"
-            + "SET [XL_Row_Dim_0] AS 'VisualTotals(Distinct(Hierarchize({Ascendants([Customers].[All Customers].[USA]), Descendants([Customers].[All Customers].[USA])})))' \n"
+        + "SET [XL_Row_Dim_0] AS 'VisualTotals(Distinct(Hierarchize({Ascendants([Customers].[All Customers].[USA]), "
+        + "Descendants([Customers].[All Customers].[USA])})))' \n"
             + "SELECT \n"
             + "NON EMPTY Hierarchize({[Time].[Year].members}) ON COLUMNS , \n"
-            + "NON EMPTY Hierarchize(Intersect({DrilldownLevel({[Customers].[All Customers]})}, [XL_Row_Dim_0])) ON ROWS \n"
+        + "NON EMPTY Hierarchize(Intersect({DrilldownLevel({[Customers].[All Customers]})}, [XL_Row_Dim_0])) ON "
+        + "ROWS \n"
             + "FROM [Sales] \n"
             + "WHERE ([Measures].[Store Sales])",
             "Axis #0:\n"
@@ -10714,8 +10949,7 @@ Intel platforms):
 
     /**
      * <p>Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-668">
-     * bug MONDRIAN-668, "Intersect should return any VisualTotals members in
-     * right-hand set"</a>.
+   * bug MONDRIAN-668, "Intersect should return any VisualTotals members in right-hand set"</a>.
      */
     public void testVisualTotalsWithNamedSetAndPivotSameAxis() {
         assertQueryReturns(
@@ -10770,8 +11004,7 @@ Intel platforms):
 
     /**
      * <p>Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-682">
-     * bug MONDRIAN-682, "VisualTotals + Distinct-count measure gives wrong
-     * results"</a>.
+   * bug MONDRIAN-682, "VisualTotals + Distinct-count measure gives wrong results"</a>.
      */
     public void testVisualTotalsDistinctCountMeasure() {
         // distinct measure
@@ -10880,8 +11113,7 @@ Intel platforms):
 
     /**
      * <p>Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-761">
-     * bug MONDRIAN-761, "VisualTotalMember cannot be cast to
-     * RolapCubeMember"</a>.
+   * bug MONDRIAN-761, "VisualTotalMember cannot be cast to RolapCubeMember"</a>.
      */
     public void testVisualTotalsClassCast() {
         assertQueryReturns(
@@ -10964,9 +11196,8 @@ Intel platforms):
 
     /**
      * <p>Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-678">
-     * bug MONDRIAN-678, "VisualTotals gives UnsupportedOperationException
-     * calling getOrdinal"</a>. Key difference from previous test is that there
-     * are multiple hierarchies in Named set.
+   * bug MONDRIAN-678, "VisualTotals gives UnsupportedOperationException calling getOrdinal"</a>. Key difference from
+   * previous test is that there are multiple hierarchies in Named set.
      */
     public void testVisualTotalsWithNamedSetOfTuples() {
         assertQueryReturns(
@@ -11033,12 +11264,11 @@ Intel platforms):
     }
 
     /**
-     * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-749">
-     * MONDRIAN-749, "Cannot use visual totals members in calculations"</a>.
+   * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-749"> MONDRIAN-749, "Cannot use visual totals
+   * members in calculations"</a>.
      *
      * <p>The bug is not currently fixed, so it is a negative test case. Row #2
-     * cell #1 contains an exception, but should be "**Subtotal - Bread :
-     * Product Subcategory".
+   * cell #1 contains an exception, but should be "**Subtotal - Bread : Product Subcategory".
      */
     public void testVisualTotalsMemberInCalculation() {
         getTestContext().assertQueryReturns(
@@ -11069,7 +11299,8 @@ Intel platforms):
             + "Row #1: 7,870\n"
             + "Row #1: Bread : Product Category\n"
             + "Row #2: 4,312\n"
-            + "Row #2: #ERR: mondrian.olap.fun.MondrianEvaluationException: Could not find an aggregator in the current evaluation context\n"
+        + "Row #2: #ERR: mondrian.olap.fun.MondrianEvaluationException: Could not find an aggregator in the current "
+        + "evaluation context\n"
             + "Row #3: 815\n"
             + "Row #3: Bagels : Product Subcategory\n"
             + "Row #4: 3,497\n"
@@ -11082,9 +11313,12 @@ Intel platforms):
         // child based on current product member.
         assertQueryReturns(
             "with\n"
-            + " member [Product].[All Products].[Drink].[Calculated Child] as '[Product].[All Products].[Drink].[Alcoholic Beverages]'\n"
-            + " member [Product].[All Products].[Non-Consumable].[Calculated Child] as '[Product].[All Products].[Non-Consumable].[Carousel]'\n"
-            + " member [Measures].[Unit Sales CC] as '([Measures].[Unit Sales],[Product].currentmember.CalculatedChild(\"Calculated Child\"))'\n"
+        + " member [Product].[All Products].[Drink].[Calculated Child] as '[Product].[All Products].[Drink]"
+        + ".[Alcoholic Beverages]'\n"
+        + " member [Product].[All Products].[Non-Consumable].[Calculated Child] as '[Product].[All Products]"
+        + ".[Non-Consumable].[Carousel]'\n"
+        + " member [Measures].[Unit Sales CC] as '([Measures].[Unit Sales],[Product].currentmember.CalculatedChild"
+        + "(\"Calculated Child\"))'\n"
             + " select non empty {[Measures].[Unit Sales CC]} on columns,\n"
             + " non empty {[Product].[Drink], [Product].[Non-Consumable]} on rows\n"
             + " from [Sales]",
@@ -11109,9 +11343,12 @@ Intel platforms):
         // calculated child.
         assertQueryReturns(
             "with\n"
-            + " member [Product].[All Products].[Drink].[Calculated Child] as '[Product].[All Products].[Drink].[Alcoholic Beverages]'\n"
-            + " member [Product].[All Products].[Non-Consumable].[Calculated Child] as '[Product].[All Products].[Non-Consumable].[Carousel]'\n"
-            + " member [Measures].[Unit Sales CC] as '([Measures].[Unit Sales],AddCalculatedMembers([Product].currentmember.children).Item(\"Calculated Child\"))'\n"
+        + " member [Product].[All Products].[Drink].[Calculated Child] as '[Product].[All Products].[Drink]"
+        + ".[Alcoholic Beverages]'\n"
+        + " member [Product].[All Products].[Non-Consumable].[Calculated Child] as '[Product].[All Products]"
+        + ".[Non-Consumable].[Carousel]'\n"
+        + " member [Measures].[Unit Sales CC] as '([Measures].[Unit Sales],AddCalculatedMembers([Product]"
+        + ".currentmember.children).Item(\"Calculated Child\"))'\n"
             + " select non empty {[Measures].[Unit Sales CC]} on columns,\n"
             + " non empty {[Product].[Drink], [Product].[Non-Consumable]} on rows\n"
             + " from [Sales]",
@@ -11223,9 +11460,8 @@ Intel platforms):
     }
 
     /**
-     * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-524">
-     * MONDRIAN-524, "VB functions: expected primitive type, got
-     * java.lang.Object"</a>.
+   * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-524"> MONDRIAN-524, "VB functions: expected
+   * primitive type, got java.lang.Object"</a>.
      */
     public void testCastBug524() {
         assertExprReturns(
@@ -11234,15 +11470,14 @@ Intel platforms):
     }
 
     /**
-     * Tests {@link mondrian.olap.FunTable#getFunInfoList()}, but more
-     * importantly, generates an HTML table of all implemented functions into
-     * a file called "functions.html". You can manually include that table
-     * in the <a href="{@docRoot}/../mdx.html">MDX
-     * specification</a>.
+   * Tests {@link mondrian.olap.FunTable#getFunInfoList()}, but more importantly, generates an HTML table of all
+   * implemented functions into a file called "functions.html". You can manually include that table in the <a
+   * href="{@docRoot}/../mdx.html">MDX specification</a>.
      */
     public void testDumpFunctions() throws IOException {
         final List<FunInfo> funInfoList = new ArrayList<FunInfo>();
         funInfoList.addAll(BuiltinFunTable.instance().getFunInfoList());
+    assertEquals( NUM_EXPECTED_FUNCTIONS, funInfoList.size() );
 
         // Add some UDFs.
         funInfoList.add(
@@ -11303,8 +11538,7 @@ Intel platforms):
         pw.close();
     }
 
-    public void testComplexOrExpr()
-    {
+  public void testComplexOrExpr() {
         switch (TestContext.instance().getDialect().getDatabaseProduct()) {
         case INFOBRIGHT:
             // Skip this test on Infobright, because [Promotion Sales] is
@@ -11657,9 +11891,7 @@ Intel platforms):
             + "Row #0: 2,237\n");
     }
 
-    public void
-        testIifFWithBooleanBooleanAndNumericParameterForReturningTruePart()
-    {
+  public void testIifFWithBooleanBooleanAndNumericParameterForReturningTruePart() {
         assertQueryReturns(
             "SELECT Filter(Store.allmembers, "
             + "iif(measures.profit < 400000,"
@@ -11671,9 +11903,7 @@ Intel platforms):
             + "Row #0: 266,773\n");
     }
 
-    public void
-        testIifWithBooleanBooleanAndNumericParameterForReturningFalsePart()
-    {
+  public void testIifWithBooleanBooleanAndNumericParameterForReturningFalsePart() {
         assertQueryReturns(
             "SELECT Filter([Store].[USA].[CA].[Beverly Hills].children, "
             + "iif(measures.profit > 400000,"
@@ -11818,9 +12048,8 @@ Intel platforms):
     }
 
     /**
-     * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-296">
-     * MONDRIAN-296, "Cube getTimeDimension use when Cube has no Time
-     * dimension"</a>.
+   * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-296"> MONDRIAN-296, "Cube getTimeDimension use
+   * when Cube has no Time dimension"</a>.
      */
     public void testCubeTimeDimensionFails() {
         assertQueryThrows(
@@ -12194,11 +12423,9 @@ Intel platforms):
     }
 
 
-
     /**
-     * Executes a query that has a complex parse tree. Goal is to find
-     * algorithmic complexity bugs in the validator which would make the query
-     * run extremely slowly.
+   * Executes a query that has a complex parse tree. Goal is to find algorithmic complexity bugs in the validator which
+   * would make the query run extremely slowly.
      */
     public void testComplexQuery() {
         final String expected =
@@ -12266,8 +12493,7 @@ Intel platforms):
         String indent,
         int depth,
         int depthLimit,
-        int breadth)
-    {
+    int breadth ) {
         buf.append(indent + "Distinct({\n");
         buf.append(indent + "  [Gender],\n");
         for (int i = 0; i < breadth; i++) {
@@ -12291,29 +12517,43 @@ Intel platforms):
     }
 
     /**
-     * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-1050">
-     * MONDRIAN-1050, "MDX Order function fails when using DateTime expression
-     * for ordering"</a>.
+   * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-1050"> MONDRIAN-1050, "MDX Order function fails
+   * when using DateTime expression for ordering"</a>.
      */
     public void testDateParameter() throws Exception {
-        executeQuery(
-            "SELECT {[Measures].[Unit Sales]} ON COLUMNS, Order([Gender].Members, Now(), ASC) ON ROWS FROM [Sales]");
+    String query = "SELECT"
+      + " {[Measures].[Unit Sales]} ON COLUMNS,"
+      + " Order([Gender].Members,"
+      + " Now(), ASC) ON ROWS"
+      + " FROM [Sales]";
+    String expected = "Axis #0:\n"
+      + "{}\n"
+      + "Axis #1:\n"
+      + "{[Measures].[Unit Sales]}\n"
+      + "Axis #2:\n"
+      + "{[Gender].[All Gender]}\n"
+      + "{[Gender].[F]}\n"
+      + "{[Gender].[M]}\n"
+      + "Row #0: 266,773\n"
+      + "Row #1: 131,558\n"
+      + "Row #2: 135,215\n";
+    assertQueryReturns( query, expected );
     }
 
     /**
-     * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-1043">
-     * MONDRIAN-1043, "Hierarchize with Except sort set members differently than
-     * in Mondrian 3.2.1"</a>.
+   * Testcase for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-1043"> MONDRIAN-1043, "Hierarchize with Except
+   * sort set members differently than in Mondrian 3.2.1"</a>.
      *
      * <p>This test makes sure that
-     * Hierarchize and Except can be used within each other and that the
-     * sort order is maintained.</p>
+   * Hierarchize and Except can be used within each other and that the sort order is maintained.</p>
      */
     public void testHierarchizeExcept() throws Exception {
         final String[] mdxA =
             new String[] {
-                "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS, Hierarchize(Except({[Customers].[USA].Children, [Customers].[USA].[CA].Children}, [Customers].[USA].[CA])) ON ROWS FROM [Sales]",
-                "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS, Except(Hierarchize({[Customers].[USA].Children, [Customers].[USA].[CA].Children}), [Customers].[USA].[CA]) ON ROWS FROM [Sales] "
+        "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS, Hierarchize(Except({[Customers].[USA]"
+          + ".Children, [Customers].[USA].[CA].Children}, [Customers].[USA].[CA])) ON ROWS FROM [Sales]",
+        "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS, Except(Hierarchize({[Customers].[USA]"
+          + ".Children, [Customers].[USA].[CA].Children}), [Customers].[USA].[CA]) ON ROWS FROM [Sales] "
         };
         for (String mdx : mdxA) {
             assertQueryReturns(
@@ -12510,7 +12750,8 @@ Intel platforms):
             + "WHERE [Time].[1997].[Q1].[1] : [Time].[1997].[Q3].[8]";
         String queryWithAlias =
             "SELECT\n"
-            + "TOPCOUNT( DISTINCT( [Customers].[Name].Members), 5, [Measures].[Unit Sales]) * [Measures].[Unit Sales] on 0\n"
+        + "TOPCOUNT( DISTINCT( [Customers].[Name].Members), 5, [Measures].[Unit Sales]) * [Measures].[Unit Sales] on "
+        + "0\n"
             + "FROM [Sales]\n"
             + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q3].[8]";
         final TestContext context = TestContext.instance();
@@ -12709,7 +12950,8 @@ Intel platforms):
       TestContext context = getTestContext();
       String query =
           "with "
-          + "member [Time].[H1 1997] as 'Aggregate([Time].[1997].[Q1] : [Time].[1997].[Q2])', $member_scope = \"CUBE\", MEMBER_ORDINAL = 6 "
+        + "member [Time].[H1 1997] as 'Aggregate([Time].[1997].[Q1] : [Time].[1997].[Q2])', $member_scope = \"CUBE\","
+        + " MEMBER_ORDINAL = 6 "
           + "SELECT "
           + "{[Measures].[Customer Count]} ON 0, "
           + "{[Education Level].Members} ON 1 "
@@ -12740,7 +12982,8 @@ Intel platforms):
       TestContext context = getTestContext();
       String query =
           "with "
-          + "member [Time].[H1 1997] as 'Aggregate([Time].[1997].[Q1] : [Time].[1997].[Q2])', $member_scope = \"CUBE\", MEMBER_ORDINAL = 6 "
+        + "member [Time].[H1 1997] as 'Aggregate([Time].[1997].[Q1] : [Time].[1997].[Q2])', $member_scope = \"CUBE\","
+        + " MEMBER_ORDINAL = 6 "
           + "SELECT "
           + "{[Measures].[Customer Count]} ON 0, "
           + "{[Education Level].Members} ON 1 "
@@ -12772,8 +13015,10 @@ Intel platforms):
       TestContext context = getTestContext();
       String query =
           "with "
-          + "member [Time].[H1 1997] as 'Aggregate([Time].[1997].[Q1] : [Time].[1997].[Q2])', $member_scope = \"CUBE\", MEMBER_ORDINAL = 6 "
-          + "member [Education Level].[Partial] as 'Aggregate([Education Level].[Partial College]:[Education Level].[Partial High School])', $member_scope = \"CUBE\", MEMBER_ORDINAL = 7 "
+        + "member [Time].[H1 1997] as 'Aggregate([Time].[1997].[Q1] : [Time].[1997].[Q2])', $member_scope = \"CUBE\","
+        + " MEMBER_ORDINAL = 6 "
+        + "member [Education Level].[Partial] as 'Aggregate([Education Level].[Partial College]:[Education Level]"
+        + ".[Partial High School])', $member_scope = \"CUBE\", MEMBER_ORDINAL = 7 "
           + "SELECT "
           + "{[Measures].[Customer Count]} ON 0 "
           + "FROM [Sales] "
@@ -12886,7 +13131,8 @@ Intel platforms):
           "SELECT "
           + "{[Measures].[Customer Count]} ON 0 "
           + "FROM [Sales] "
-          + "WHERE CROSSJOIN ({[Time].[1997].[Q1],[Time].[1997].[Q2],[Time].[1998].[Q1]} , {[Education Level].[Partial College],[Education Level].[Partial High School]})";
+        + "WHERE CROSSJOIN ({[Time].[1997].[Q1],[Time].[1997].[Q2],[Time].[1998].[Q1]} , {[Education Level].[Partial "
+        + "College],[Education Level].[Partial High School]})";
       String expectedResult =
           "Axis #0:\n"
           + "{[Time].[1997].[Q1], [Education Level].[Partial College]}\n"
@@ -12937,7 +13183,8 @@ Intel platforms):
           "SELECT "
           + "{[Measures].[Customer Count]} ON 0 "
           + "FROM [Sales] "
-          + "WHERE CROSSJOIN ({[Time].[H1 1997],[Time].[1998].[Q1]} , {[Education Level].[Partial College],[Education Level].[Partial High School]})";
+        + "WHERE CROSSJOIN ({[Time].[H1 1997],[Time].[1998].[Q1]} , {[Education Level].[Partial College],[Education "
+        + "Level].[Partial High School]})";
       String expectedResult =
           "Axis #0:\n"
           + "{[Time].[H1 1997], [Education Level].[Partial College]}\n"
@@ -12968,8 +13215,7 @@ Intel platforms):
           + "{[Time].[H1 1997], [Time].[1997].[Q1]} ON 1"
           + "FROM [Sales] "
           + "WHERE "
-          + "{[Education Level].[Partial]} "
-          ;
+        + "{[Education Level].[Partial]} ";
       String expectedResult =
           "Axis #0:\n"
           + "{[Education Level].[Partial]}\n"
@@ -13001,6 +13247,7 @@ Intel platforms):
           "Calculated member 'H1 1997' is not supported within a compound predicate";
       context.assertQueryThrows(query, errorMessagePattern);
     }
+
     public void testExisting() {
         // basic test
         assertQueryReturns(
@@ -13111,33 +13358,33 @@ Intel platforms):
         + "Row #0: {[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Product].[Food].[Eggs].[Eggs]}\n" );
   }
 
-  public void testExistingAggSet() {
-    // aggregate simple set
-    assertQueryReturns(
-      "WITH MEMBER [Measures].[Edible Sales] AS \n"
-        + "Aggregate( Existing {[Product].[Drink], [Product].[Food]}, Measures.[Unit Sales] )\n"
-        + "SELECT {Measures.[Unit Sales], Measures.[Edible Sales]} ON 0,\n"
-        + "{ [Product].[Product Family].Members, [Product].[All Products] } ON 1\n"
-        + "FROM [Sales]",
-      "Axis #0:\n"
-        + "{}\n"
-        + "Axis #1:\n"
-        + "{[Measures].[Unit Sales]}\n"
-        + "{[Measures].[Edible Sales]}\n"
-        + "Axis #2:\n"
-        + "{[Product].[Drink]}\n"
-        + "{[Product].[Food]}\n"
-        + "{[Product].[Non-Consumable]}\n"
-        + "{[Product].[All Products]}\n"
-        + "Row #0: 24,597\n"
-        + "Row #0: 24,597\n"
-        + "Row #1: 191,940\n"
-        + "Row #1: 191,940\n"
-        + "Row #2: 50,236\n"
-        + "Row #2: \n"
-        + "Row #3: 266,773\n"
-        + "Row #3: 216,537\n" );
-  }
+    public void testExistingAggSet() {
+        // aggregate simple set
+        assertQueryReturns(
+            "WITH MEMBER [Measures].[Edible Sales] AS \n"
+            + "Aggregate( Existing {[Product].[Drink], [Product].[Food]}, Measures.[Unit Sales] )\n"
+            + "SELECT {Measures.[Unit Sales], Measures.[Edible Sales]} ON 0,\n"
+            + "{ [Product].[Product Family].Members, [Product].[All Products] } ON 1\n"
+            + "FROM [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Edible Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "{[Product].[All Products]}\n"
+            + "Row #0: 24,597\n"
+            + "Row #0: 24,597\n"
+            + "Row #1: 191,940\n"
+            + "Row #1: 191,940\n"
+            + "Row #2: 50,236\n"
+            + "Row #2: \n"
+            + "Row #3: 266,773\n"
+            + "Row #3: 216,537\n");
+    }
 
     public void testExistingGenerateAgg() {
         // generate overrides existing context
@@ -13146,7 +13393,8 @@ Intel platforms):
             + "  Generate( [Product].[Product Family].Members,\n"
             + "            TopCount( Existing [Product].[Brand Name].Members, 10, Measures.[Unit Sales]) ) \n"
             + "MEMBER Measures.[Top 10 Brand Sales] AS Aggregate(Existing BestOfFamilies, Measures.[Unit Sales])"
-            + "MEMBER Measures.[Rest Brand Sales] AS Aggregate( Except(Existing [Product].[Brand Name].Members, Existing BestOfFamilies), Measures.[Unit Sales])"
+        + "MEMBER Measures.[Rest Brand Sales] AS Aggregate( Except(Existing [Product].[Brand Name].Members, Existing "
+        + "BestOfFamilies), Measures.[Unit Sales])"
             + "SELECT { Measures.[Unit Sales], Measures.[Top 10 Brand Sales], Measures.[Rest Brand Sales] } ON 0,\n"
             + "       {[Product].[Product Family].Members} ON 1\n"
             + "FROM [Sales]",
@@ -13216,7 +13464,8 @@ Intel platforms):
         // this should ideally return 14 for both,
         // but being coherent with exists is good enough
         assertQueryReturns(
-            "WITH MEMBER [Measures].[Count Exists] AS Count(exists( [Time.Weekly].[Week].Members, [Time.Weekly].CurrentMember ) )\n"
+      "WITH MEMBER [Measures].[Count Exists] AS Count(exists( [Time.Weekly].[Week].Members, [Time.Weekly]"
+        + ".CurrentMember ) )\n"
             + " MEMBER [Measures].[Count Existing] AS Count(existing [Time.Weekly].[Week].Members)\n"
             + "SELECT\n"
             + "{[Measures].[Count Exists], [Measures].[Count Existing]}\n"
