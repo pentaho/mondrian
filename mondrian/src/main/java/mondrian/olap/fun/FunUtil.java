@@ -369,7 +369,7 @@ public class FunUtil extends Util {
      *
      * @param strict if true, a member is not an ancestor of itself
      */
-    static boolean isAncestorOf(Member m0, Member m1, boolean strict) {
+    public static boolean isAncestorOf(Member m0, Member m1, boolean strict) {
         if (strict) {
             if (m1 == null) {
                 return false;
@@ -2730,36 +2730,30 @@ public class FunUtil extends Util {
     {
         List<Member> checkedMembers = new ArrayList<Member>();
 
-        for (Member leftMember : leftTuple) {
-            Member rightMember = getCorrespondingMember(
-                leftMember, rightTuple, rightHierarchies, eval);
-            checkedMembers.add(rightMember);
-            if (!isOnSameHierarchyChain(leftMember, rightMember)) {
-                return false;
-            }
-        }
-        // this loop handles members in the right tuple not present in left
-        // Such a member could only impact the resulting tuple list if the
-        // default member of the hierarchy is not the all member.
-        for (Member rightMember : rightTuple) {
-            if (checkedMembers.contains(rightMember)) {
-                // already checked in the previous loop
-                continue;
-            }
-            Member leftMember = getCorrespondingMember(
-                rightMember, leftTuple, leftHierarchies, eval);
-            if (!isOnSameHierarchyChain(leftMember, rightMember)) {
-                return false;
-            }
-        }
-        return true;
+    for ( Member leftMember : leftTuple ) {
+      Member rightMember = getCorrespondingMember(
+        leftMember, rightTuple, rightHierarchies, eval );
+      checkedMembers.add( rightMember );
+      if ( !leftMember.isOnSameHierarchyChain( rightMember ) ) {
+        return false;
+      }
     }
-
-    private static boolean isOnSameHierarchyChain(Member mA, Member mB)
-    {
-        return (FunUtil.isAncestorOf(mA, mB, false))||
-            (FunUtil.isAncestorOf(mB, mA, false));
+    // this loop handles members in the right tuple not present in left
+    // Such a member could only impact the resulting tuple list if the
+    // default member of the hierarchy is not the all member.
+    for ( Member rightMember : rightTuple ) {
+      if ( checkedMembers.contains( rightMember ) ) {
+        // already checked in the previous loop
+        continue;
+      }
+      Member leftMember = getCorrespondingMember(
+        rightMember, leftTuple, leftHierarchies, eval );
+      if ( !leftMember.isOnSameHierarchyChain( rightMember ) ) {
+        return false;
+      }
     }
+    return true;
+  }
 
     /**
      * Returns the corresponding member from tuple, or the default member
@@ -3591,9 +3585,13 @@ public class FunUtil extends Util {
             throw new UnsupportedOperationException();
         }
 
-        public String getUniqueName() {
-            throw new UnsupportedOperationException();
-        }
+    @Override public boolean isOnSameHierarchyChain( Member otherMember ) {
+      throw new UnsupportedOperationException();
+    }
+
+    public String getUniqueName() {
+      throw new UnsupportedOperationException();
+    }
 
         public String getName() {
             throw new UnsupportedOperationException();
