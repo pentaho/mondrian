@@ -372,14 +372,15 @@ public class RolapResult extends ResultBase {
                             Member placeholder = setPlaceholderSlicerAxis(
                                 (RolapMember)tupleList.get(0).get(i),
                                 calc,
-                                false);
+                                false,
+                              tupleList);
                             prevSlicerMembers.add(
                                 evaluator.setContext(placeholder));
                         }
                     }
 
                     Member placeholder = setPlaceholderSlicerAxis(
-                        (RolapMember)tupleList.get(0).get(0), calc, true);
+                        (RolapMember)tupleList.get(0).get(0), calc, true, tupleList);
                     evaluator.setContext(placeholder);
                 }
             } while (phase());
@@ -560,7 +561,7 @@ public class RolapResult extends ResultBase {
      * up the set on the slicer.
      */
     private Member setPlaceholderSlicerAxis(
-        final RolapMember member, final Calc calc, boolean setAxis)
+        final RolapMember member, final Calc calc, boolean setAxis, TupleList tupleList)
     {
         ValueFormatter formatter;
         if (member.getDimension().isMeasures()) {
@@ -572,7 +573,7 @@ public class RolapResult extends ResultBase {
         CompoundSlicerRolapMember placeholderMember =
             new CompoundSlicerRolapMember(
                 (RolapMember)member.getHierarchy().getNullMember(),
-                calc, formatter);
+                calc, formatter, tupleList);
 
 
         placeholderMember.setProperty(
@@ -2259,13 +2260,15 @@ public class RolapResult extends ResultBase {
     {
         private final Calc calc;
         private final ValueFormatter valueFormatter;
+        private final TupleList tupleList;
 
         public CompoundSlicerRolapMember(
-            RolapMember placeholderMember, Calc calc, ValueFormatter formatter)
+            RolapMember placeholderMember, Calc calc, ValueFormatter formatter, TupleList tupleList)
         {
             super(placeholderMember);
             this.calc = calc;
             valueFormatter = formatter;
+            this.tupleList = tupleList;
         }
 
         @Override
@@ -2286,6 +2289,18 @@ public class RolapResult extends ResultBase {
         @Override
         public int getSolveOrder() {
             return 0;
+        }
+
+        @Override
+        public boolean isOnSameHierarchyChain( Member member2 ) {
+            for ( List<Member> subList : tupleList ) {
+                for ( Member m : subList ) {
+                    if (FunUtil.isOnSameHierarchyChain(m, member2)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         public ValueFormatter getFormatter() {

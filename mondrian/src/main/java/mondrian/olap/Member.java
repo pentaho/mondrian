@@ -201,6 +201,13 @@ public interface Member extends OlapElement, Comparable, Annotated {
      * nonleaf member does not have an associated data member.</p>
      */
     Member getDataMember();
+
+    /**
+     * Returns true if this member is on the same hierarchy chain as <code>otherMember</code>.
+     * @param otherMember
+     * @return
+     */
+    boolean isOnSameHierarchyChain( Member otherMember );
 }
 
 // End Member.java

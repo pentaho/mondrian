@@ -2734,7 +2734,7 @@ public class FunUtil extends Util {
             Member rightMember = getCorrespondingMember(
                 leftMember, rightTuple, rightHierarchies, eval);
             checkedMembers.add(rightMember);
-            if (!isOnSameHierarchyChain(leftMember, rightMember)) {
+           if (!(leftMember.isOnSameHierarchyChain(rightMember)||rightMember.isOnSameHierarchyChain(leftMember))) {
                 return false;
             }
         }
@@ -2748,14 +2748,14 @@ public class FunUtil extends Util {
             }
             Member leftMember = getCorrespondingMember(
                 rightMember, leftTuple, leftHierarchies, eval);
-            if (!isOnSameHierarchyChain(leftMember, rightMember)) {
+            if (!(leftMember.isOnSameHierarchyChain(rightMember)||rightMember.isOnSameHierarchyChain(leftMember))) {
                 return false;
             }
         }
         return true;
     }
 
-    private static boolean isOnSameHierarchyChain(Member mA, Member mB)
+    public static boolean isOnSameHierarchyChain(Member mA, Member mB)
     {
         return (FunUtil.isAncestorOf(mA, mB, false))||
             (FunUtil.isAncestorOf(mB, mA, false));
@@ -3588,6 +3588,10 @@ public class FunUtil extends Util {
         }
 
         public Member getDataMember() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override public boolean isOnSameHierarchyChain( Member otherMember ) {
             throw new UnsupportedOperationException();
         }
 
