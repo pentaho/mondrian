@@ -13316,7 +13316,7 @@ Intel platforms):
         + ", NON EMPTY\n"
         + "[*SORTED_ROW_AXIS] ON ROWS\n"
         + "FROM [Sales]",
-    "Axis #0:\n"
+      "Axis #0:\n"
       + "{}\n"
       + "Axis #1:\n"
       + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
@@ -13327,7 +13327,7 @@ Intel platforms):
       + "Row #0: 19,756.43\n"
       + "Row #0: {[Time].[Weekly].[1997].[2]}\n"
       + "Row #1: 11,371.84\n"
-      + "Row #1: {[Time].[Weekly].[1997].[24]}\n");
+      + "Row #1: {[Time].[Weekly].[1997].[24]}\n" );
   }
 
   public void testExistingCalculatedMeasureCompoundSlicer() {
@@ -13342,7 +13342,7 @@ Intel platforms):
         + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]}\n"
         + "Axis #1:\n"
         + "{[Measures].[subcategorystring]}\n"
-        + "Row #0: {[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine]}\n");
+        + "Row #0: {[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine]}\n" );
 
     assertQueryReturns(
       "with MEMBER [Measures].[*CALCULATED_MEASURE_1] AS 'SetToStr( EXISTING [Product].[Product Category].Members )'\n"
@@ -13355,7 +13355,7 @@ Intel platforms):
         + "{[Product].[Food].[Eggs].[Eggs]}\n"
         + "Axis #1:\n"
         + "{[Measures].[*CALCULATED_MEASURE_1]}\n"
-        + "Row #0: {[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Product].[Food].[Eggs].[Eggs]}\n");
+        + "Row #0: {[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Product].[Food].[Eggs].[Eggs]}\n" );
   }
 
   public void testExistingAggSet() {
