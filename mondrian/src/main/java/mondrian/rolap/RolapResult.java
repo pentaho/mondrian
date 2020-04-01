@@ -2288,6 +2288,7 @@ public class RolapResult extends ResultBase {
       return 0;
     }
 
+    @Override
     public boolean isOnSameHierarchyChain( Member otherMember ) {
       return isOnSameHierarchyChainInternal( (MemberBase) otherMember );
     }
