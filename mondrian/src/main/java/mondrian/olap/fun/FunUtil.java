@@ -397,7 +397,7 @@ public class FunUtil extends Util {
    *
    * @param strict if true, a member is not an ancestor of itself
    */
-  static boolean isAncestorOf( Member m0, Member m1, boolean strict ) {
+  public static boolean isAncestorOf( Member m0, Member m1, boolean strict ) {
     if ( strict ) {
       if ( m1 == null ) {
         return false;
@@ -2621,7 +2621,7 @@ public class FunUtil extends Util {
       Member rightMember = getCorrespondingMember(
         leftMember, rightTuple, rightHierarchies, eval );
       checkedMembers.add( rightMember );
-      if ( !isOnSameHierarchyChain( leftMember, rightMember ) ) {
+      if ( !leftMember.isOnSameHierarchyChain( rightMember ) ) {
         return false;
       }
     }
@@ -2635,25 +2635,26 @@ public class FunUtil extends Util {
       }
       Member leftMember = getCorrespondingMember(
         rightMember, leftTuple, leftHierarchies, eval );
-      if ( !isOnSameHierarchyChain( leftMember, rightMember ) ) {
+      if ( !leftMember.isOnSameHierarchyChain( rightMember ) ) {
         return false;
       }
     }
     return true;
   }
-
-  public static boolean isOnSameHierarchyChain( Member mA, Member mB ) {
-    if ( mA instanceof RolapResult.CompoundSlicerRolapMember ) {
-      return ( (RolapResult.CompoundSlicerRolapMember) mA).isOnSameHierarchyChain( mB )
-        || FunUtil.isAncestorOf( mB, mA, false );
-    }
-    if ( mB instanceof RolapResult.CompoundSlicerRolapMember ) {
-      return ( (RolapResult.CompoundSlicerRolapMember) mB).isOnSameHierarchyChain( mA )
-        || FunUtil.isAncestorOf( mA, mB, false );
-    }
-    return ( FunUtil.isAncestorOf( mA, mB, false ) )
-      || ( FunUtil.isAncestorOf( mB, mA, false ) );
-  }
+//
+//  public static boolean isOnSameHierarchyChain( Member mA, Member mB ) {
+//    boolean result = false;
+//    if ( mA instanceof RolapResult.CompoundSlicerRolapMember ) {
+//      result = result || ( (RolapResult.CompoundSlicerRolapMember) mA).isOnSameHierarchyChain( mB )
+//        || FunUtil.isAncestorOf( mB, mA, false );
+//    }
+//    if ( !result && mB instanceof RolapResult.CompoundSlicerRolapMember ) {
+//      result = result || ( (RolapResult.CompoundSlicerRolapMember) mB).isOnSameHierarchyChain( mA )
+//        || FunUtil.isAncestorOf( mA, mB, false );
+//    }
+//    return result || ( FunUtil.isAncestorOf( mA, mB, false ) )
+//      || ( FunUtil.isAncestorOf( mB, mA, false ) );
+//  }
 
   /**
    * Returns the corresponding member from tuple, or the default member for the hierarchy if member is not explicitly
@@ -3461,6 +3462,10 @@ public class FunUtil extends Util {
     }
 
     public Member getDataMember() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override public boolean isOnSameHierarchyChain( Member otherMember ) {
       throw new UnsupportedOperationException();
     }
 

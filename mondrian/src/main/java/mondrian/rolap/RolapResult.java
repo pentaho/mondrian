@@ -38,6 +38,7 @@ import mondrian.olap.Exp;
 import mondrian.olap.ExpCacheDescriptor;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Member;
+import mondrian.olap.MemberBase;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.NamedSet;
 import mondrian.olap.Parameter;
@@ -2287,10 +2288,15 @@ public class RolapResult extends ResultBase {
       return 0;
     }
 
-    public boolean isOnSameHierarchyChain( Member member2 ) {
+    public boolean isOnSameHierarchyChain( Member otherMember ) {
+      return isOnSameHierarchyChainInternal( (MemberBase) otherMember );
+    }
+
+    @Override
+    public boolean isOnSameHierarchyChainInternal( MemberBase member2 ) {
       for ( List<Member> subList : tupleList ) {
         for ( Member m : subList ) {
-          if ( FunUtil.isOnSameHierarchyChain( m, member2 ) ) {
+          if ( member2.isOnSameHierarchyChainInternal( (MemberBase) m ) ) {
             return true;
           }
         }
