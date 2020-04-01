@@ -170,7 +170,7 @@ public class Workbench extends javax.swing.JFrame {
      * load properties
      */
     private void loadWorkbenchProperties() {
-        workbenchProperties = new Properties();
+        workbenchProperties = new WorkbenchProperties();
         try {
             workbenchResourceBundle = ResourceBundle.getBundle(
                 WorkbenchInfoResourceName, Locale.getDefault(),
@@ -860,7 +860,7 @@ public class Workbench extends javax.swing.JFrame {
         // render any plugins
         InputStream pluginStream = null;
         try {
-            Properties props = new Properties();
+            Properties props = new WorkbenchProperties();
             pluginStream = getClass().getResourceAsStream(
                 "/workbench_plugins.properties");
             if (pluginStream != null) {
