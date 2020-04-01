@@ -2287,7 +2287,6 @@ public class RolapResult extends ResultBase {
       return 0;
     }
 
-    @Override
     public boolean isOnSameHierarchyChain( Member member2 ) {
       for ( List<Member> subList : tupleList ) {
         for ( Member m : subList ) {

@@ -282,10 +282,6 @@ public abstract class MemberBase
   public boolean isParentChildLeaf() {
     return false;
   }
-
-  public boolean isOnSameHierarchyChain( Member otherMember ) {
-    return FunUtil.isOnSameHierarchyChain( this, otherMember );
-  }
 }
 
 // End MemberBase.java

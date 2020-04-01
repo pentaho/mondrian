@@ -192,10 +192,6 @@ public class DelegatingRolapMember extends RolapMemberBase {
   public boolean isAllMember() {
     return member.isAllMember();
   }
-
-  public boolean isOnSameHierarchyChain( Member otherMember ) {
-    return member.isOnSameHierarchyChain( otherMember );
-  }
 }
 
 // End DelegatingRolapMember.java

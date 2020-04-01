@@ -54,6 +54,7 @@ import mondrian.olap.type.Type;
 import mondrian.olap.type.TypeUtil;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapHierarchy;
+import mondrian.rolap.RolapResult;
 import mondrian.rolap.RolapUtil;
 import mondrian.server.Execution;
 import mondrian.util.CancellationChecker;
@@ -2620,7 +2621,7 @@ public class FunUtil extends Util {
       Member rightMember = getCorrespondingMember(
         leftMember, rightTuple, rightHierarchies, eval );
       checkedMembers.add( rightMember );
-      if ( !( leftMember.isOnSameHierarchyChain( rightMember ) || rightMember.isOnSameHierarchyChain( leftMember ) ) ) {
+      if ( !isOnSameHierarchyChain( leftMember, rightMember ) ) {
         return false;
       }
     }
@@ -2634,7 +2635,7 @@ public class FunUtil extends Util {
       }
       Member leftMember = getCorrespondingMember(
         rightMember, leftTuple, leftHierarchies, eval );
-      if ( !( leftMember.isOnSameHierarchyChain( rightMember ) || rightMember.isOnSameHierarchyChain( leftMember ) ) ) {
+      if ( !isOnSameHierarchyChain( leftMember, rightMember ) ) {
         return false;
       }
     }
@@ -2642,6 +2643,14 @@ public class FunUtil extends Util {
   }
 
   public static boolean isOnSameHierarchyChain( Member mA, Member mB ) {
+    if ( mA instanceof RolapResult.CompoundSlicerRolapMember ) {
+      return ( (RolapResult.CompoundSlicerRolapMember) mA).isOnSameHierarchyChain( mB )
+        || FunUtil.isAncestorOf( mB, mA, false );
+    }
+    if ( mB instanceof RolapResult.CompoundSlicerRolapMember ) {
+      return ( (RolapResult.CompoundSlicerRolapMember) mB).isOnSameHierarchyChain( mA )
+        || FunUtil.isAncestorOf( mA, mB, false );
+    }
     return ( FunUtil.isAncestorOf( mA, mB, false ) )
       || ( FunUtil.isAncestorOf( mB, mA, false ) );
   }
@@ -3452,10 +3461,6 @@ public class FunUtil extends Util {
     }
 
     public Member getDataMember() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override public boolean isOnSameHierarchyChain( Member otherMember ) {
       throw new UnsupportedOperationException();
     }
 
