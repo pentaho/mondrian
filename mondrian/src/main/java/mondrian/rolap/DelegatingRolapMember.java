@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2020 Hitachi Vantara and others
+// Copyright (C) 2005-2017 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -16,186 +16,184 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Implementation of {@link mondrian.rolap.RolapMember} that delegates all calls to an underlying member.
+ * Implementation of {@link mondrian.rolap.RolapMember} that delegates all calls
+ * to an underlying member.
  *
  * @author jhyde
  * @since Mar 16, 2010
  */
 public class DelegatingRolapMember extends RolapMemberBase {
-  public final RolapMember member;
+    public final RolapMember member;
 
-  protected DelegatingRolapMember( RolapMember member ) {
-    super();
-    this.member = member;
-  }
-
-  public RolapLevel getLevel() {
-    return member.getLevel();
-  }
-
-  public Object getKey() {
-    return member.getKey();
-  }
-
-  public RolapMember getParentMember() {
-    return member.getParentMember();
-  }
-
-  public RolapHierarchy getHierarchy() {
-    return member.getHierarchy();
-  }
-
-  public String getParentUniqueName() {
-    return member.getParentUniqueName();
-  }
-
-  public MemberType getMemberType() {
-    return member.getMemberType();
-  }
-
-  public boolean isParentChildLeaf() {
-    return member.isParentChildLeaf();
-  }
-
-  @Override
-  public boolean isParentChildPhysicalMember() {
-    return member.isParentChildPhysicalMember();
-  }
-
-  public void setName( String name ) {
-    member.setName( name );
-  }
-
-  public boolean isAll() {
-    return member.isAll();
-  }
-
-  public boolean isMeasure() {
-    return member.isMeasure();
-  }
-
-  public boolean isNull() {
-    return member.isNull();
-  }
-
-  public boolean isChildOrEqualTo( Member member2 ) {
-    if ( member2 instanceof DelegatingRolapMember ) {
-      return member
-        .isChildOrEqualTo( ( (DelegatingRolapMember) member2 ).member );
-    } else {
-      return member.isChildOrEqualTo( member2 );
+    protected DelegatingRolapMember(RolapMember member) {
+        super();
+        this.member = member;
     }
-  }
 
-  public boolean isCalculated() {
-    return member.isCalculated();
-  }
+    public RolapLevel getLevel() {
+        return member.getLevel();
+    }
 
-  public boolean isEvaluated() {
-    return member.isEvaluated();
-  }
+    public Object getKey() {
+        return member.getKey();
+    }
 
-  public int getSolveOrder() {
-    return member.getSolveOrder();
-  }
+    public RolapMember getParentMember() {
+        return member.getParentMember();
+    }
 
-  public Exp getExpression() {
-    return member.getExpression();
-  }
+    public RolapHierarchy getHierarchy() {
+        return member.getHierarchy();
+    }
 
-  public List<Member> getAncestorMembers() {
-    return member.getAncestorMembers();
-  }
+    public String getParentUniqueName() {
+        return member.getParentUniqueName();
+    }
 
-  public boolean isCalculatedInQuery() {
-    return member.isCalculatedInQuery();
-  }
+    public MemberType getMemberType() {
+        return member.getMemberType();
+    }
 
-  public Object getPropertyValue( String propertyName ) {
-    return member.getPropertyValue( propertyName );
-  }
+    public boolean isParentChildLeaf() {
+        return member.isParentChildLeaf();
+    }
 
-  public Object getPropertyValue( String propertyName, boolean matchCase ) {
-    return member.getPropertyValue( propertyName, matchCase );
-  }
+    @Override
+    public boolean isParentChildPhysicalMember() {
+        return member.isParentChildPhysicalMember();
+    }
 
-  public String getPropertyFormattedValue( String propertyName ) {
-    return member.getPropertyFormattedValue( propertyName );
-  }
+    public void setName(String name) {
+        member.setName(name);
+    }
 
-  public void setProperty( String name, Object value ) {
-    member.setProperty( name, value );
-  }
+    public boolean isAll() {
+        return member.isAll();
+    }
 
-  public Property[] getProperties() {
-    return member.getProperties();
-  }
+    public boolean isMeasure() {
+        return member.isMeasure();
+    }
 
-  public int getOrdinal() {
-    return member.getOrdinal();
-  }
+    public boolean isNull() {
+        return member.isNull();
+    }
 
-  public Comparable getOrderKey() {
-    return member.getOrderKey();
-  }
+    public boolean isChildOrEqualTo(Member member2) {
+        if (member2 instanceof DelegatingRolapMember) {
+            return member
+                    .isChildOrEqualTo(((DelegatingRolapMember) member2).member);
+        } else {
+            return member.isChildOrEqualTo(member2);
+        }
+    }
 
-  public boolean isHidden() {
-    return member.isHidden();
-  }
+    public boolean isCalculated() {
+        return member.isCalculated();
+    }
 
-  public int getDepth() {
-    return member.getDepth();
-  }
+    public boolean isEvaluated() {
+        return member.isEvaluated();
+    }
 
-  public Member getDataMember() {
-    return member.getDataMember();
-  }
+    public int getSolveOrder() {
+        return member.getSolveOrder();
+    }
 
-  @SuppressWarnings( { "unchecked" } )
-  public int compareTo( Object o ) {
-    return member.compareTo( o );
-  }
+    public Exp getExpression() {
+        return member.getExpression();
+    }
 
-  public String getUniqueName() {
-    return member.getUniqueName();
-  }
+    public List<Member> getAncestorMembers() {
+        return member.getAncestorMembers();
+    }
 
-  public String getName() {
-    return member.getName();
-  }
+    public boolean isCalculatedInQuery() {
+        return member.isCalculatedInQuery();
+    }
 
-  public String getDescription() {
-    return member.getDescription();
-  }
+    public Object getPropertyValue(String propertyName) {
+        return member.getPropertyValue(propertyName);
+    }
 
-  public OlapElement lookupChild(
-    SchemaReader schemaReader, Id.Segment s, MatchType matchType ) {
-    return member.lookupChild( schemaReader, s, matchType );
-  }
+    public Object getPropertyValue(String propertyName, boolean matchCase) {
+        return member.getPropertyValue(propertyName, matchCase);
+    }
 
-  public Map<String, Annotation> getAnnotationMap() {
-    return member.getAnnotationMap();
-  }
+    public String getPropertyFormattedValue(String propertyName) {
+        return member.getPropertyFormattedValue(propertyName);
+    }
 
-  public String getQualifiedName() {
-    return member.getQualifiedName();
-  }
+    public void setProperty(String name, Object value) {
+        member.setProperty(name, value);
+    }
 
-  public String getCaption() {
-    return member.getCaption();
-  }
+    public Property[] getProperties() {
+        return member.getProperties();
+    }
 
-  public Dimension getDimension() {
-    return member.getDimension();
-  }
+    public int getOrdinal() {
+        return member.getOrdinal();
+    }
 
-  public boolean isAllMember() {
-    return member.isAllMember();
-  }
+    public Comparable getOrderKey() {
+        return member.getOrderKey();
+    }
 
-  public boolean isOnSameHierarchyChain( Member otherMember ) {
-    return member.isOnSameHierarchyChain( otherMember );
-  }
+    public boolean isHidden() {
+        return member.isHidden();
+    }
+
+    public int getDepth() {
+        return member.getDepth();
+    }
+
+    public Member getDataMember() {
+        return member.getDataMember();
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public int compareTo(Object o) {
+        return member.compareTo(o);
+    }
+
+    public String getUniqueName() {
+        return member.getUniqueName();
+    }
+
+    public String getName() {
+        return member.getName();
+    }
+
+    public String getDescription() {
+        return member.getDescription();
+    }
+
+    public OlapElement lookupChild(
+        SchemaReader schemaReader, Id.Segment s, MatchType matchType)
+    {
+        return member.lookupChild(schemaReader, s, matchType);
+    }
+
+    public Map<String, Annotation> getAnnotationMap() {
+        return member.getAnnotationMap();
+    }
+
+    public String getQualifiedName() {
+        return member.getQualifiedName();
+    }
+
+    public String getCaption() {
+        return member.getCaption();
+    }
+
+    public Dimension getDimension() {
+        return member.getDimension();
+    }
+
+    public boolean isAllMember() {
+        return member.isAllMember();
+    }
 }
 
 // End DelegatingRolapMember.java
