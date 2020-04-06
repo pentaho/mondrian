@@ -10,6 +10,8 @@
 */
 package mondrian.olap.fun;
 
+import junit.framework.Assert;
+import junit.framework.ComparisonFailure;
 import mondrian.olap.Axis;
 import mondrian.olap.Cell;
 import mondrian.olap.Connection;
@@ -28,12 +30,7 @@ import mondrian.udf.CurrentDateMemberExactUdf;
 import mondrian.udf.CurrentDateMemberUdf;
 import mondrian.udf.CurrentDateStringUdf;
 import mondrian.util.Bug;
-
-import junit.framework.Assert;
-import junit.framework.ComparisonFailure;
-
 import org.apache.log4j.Logger;
-
 import org.eigenbase.xom.StringEscaper;
 
 import java.io.File;
@@ -2208,8 +2205,7 @@ public class FunctionTest extends FoodMartTestCase {
   }
 
   /**
-   * When evaluating a calculated member, MSOLAP regards that calculated member as the current member of that
-   * dimension,
+   * When evaluating a calculated member, MSOLAP regards that calculated member as the current member of that dimension,
    * so it cycles in this case. But I disagree; it is the previous current member, before the calculated member was
    * expanded.
    */
@@ -4017,7 +4013,8 @@ public class FunctionTest extends FoodMartTestCase {
   public void testBottomPercent() {
     assertAxisReturns(
       "BottomPercent(Filter({[Store].[All Stores].[USA].[CA].Children, [Store].[All Stores].[USA].[OR].Children, "
-        + "[Store].[All Stores].[USA].[WA].Children}, ([Measures].[Unit Sales] > 0.0)), 100.0, [Measures].[Store Sales])",
+        + "[Store].[All Stores].[USA].[WA].Children}, ([Measures].[Unit Sales] > 0.0)), 100.0, [Measures].[Store "
+        + "Sales])",
       "[Store].[USA].[CA].[San Francisco]\n"
         + "[Store].[USA].[WA].[Walla Walla]\n"
         + "[Store].[USA].[WA].[Bellingham]\n"
@@ -9762,9 +9759,8 @@ public class FunctionTest extends FoodMartTestCase {
   }
 
   /**
-   * Executes a scalar expression, and asserts that the result is as expected. For example, <code>assertExprReturns
-   * ("1 +
-   * 2", "3")</code> should succeed.
+   * Executes a scalar expression, and asserts that the result is as expected. For example, <code>assertExprReturns ("1
+   * + 2", "3")</code> should succeed.
    */
   public void assertExprReturns( String expr, String expected ) {
     String actual = executeExpr( expr );
@@ -13298,6 +13294,71 @@ Intel platforms):
         + "Row #2: 102\n"
         + "Row #2: 32\n"
         + "Row #2: 32\n" );
+  }
+
+  public void testExistingCalculatedMeasure() {
+    // sorry about the mess, this came from Analyzer
+    assertQueryReturns(
+      "WITH \n"
+        + "SET [*NATIVE_CJ_SET] AS 'FILTER({[Time.Weekly].[All Time.Weeklys].[1997].[2],[Time.Weekly].[All Time"
+        + ".Weeklys].[1997].[24]}, NOT ISEMPTY ([Measures].[Store Sales]) OR NOT ISEMPTY ([Measures]"
+        + ".[CALCULATED_MEASURE_1]))' \n"
+        + "SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],[Time.Weekly].CURRENTMEMBER.ORDERKEY,BASC,ANCESTOR([Time"
+        + ".Weekly].CURRENTMEMBER,[Time.Weekly].[Year]).ORDERKEY,BASC)'\n"
+        + "SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[*FORMATTED_MEASURE_0],[Measures].[CALCULATED_MEASURE_1]}'\n"
+        + "SET [*BASE_MEMBERS__Time.Weekly_] AS '{[Time.Weekly].[All Time.Weeklys].[1997].[2],[Time.Weekly].[All Time"
+        + ".Weeklys].[1997].[24]}'\n"
+        + "SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Time.Weekly].CURRENTMEMBER)})'\n"
+        + "MEMBER [Measures].[CALCULATED_MEASURE_1] AS 'SetToStr( EXISTING [Time.Weekly].[Week].Members )'\n"
+        + "MEMBER [Measures].[*FORMATTED_MEASURE_0] AS '[Measures].[Store Sales]', FORMAT_STRING = '#,###.00', "
+        + "SOLVE_ORDER=500\n"
+        + "SELECT\n"
+        + "[*BASE_MEMBERS__Measures_] ON COLUMNS\n"
+        + ", NON EMPTY\n"
+        + "[*SORTED_ROW_AXIS] ON ROWS\n"
+        + "FROM [Sales]",
+      "Axis #0:\n"
+        + "{}\n"
+        + "Axis #1:\n"
+        + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+        + "{[Measures].[CALCULATED_MEASURE_1]}\n"
+        + "Axis #2:\n"
+        + "{[Time].[Weekly].[1997].[2]}\n"
+        + "{[Time].[Weekly].[1997].[24]}\n"
+        + "Row #0: 19,756.43\n"
+        + "Row #0: {[Time].[Weekly].[1997].[2]}\n"
+        + "Row #1: 11,371.84\n"
+        + "Row #1: {[Time].[Weekly].[1997].[24]}\n" );
+  }
+
+  public void testExistingCalculatedMeasureCompoundSlicer() {
+    // basic test
+    assertQueryReturns(
+      "with \n"
+        + "  member measures.subcategorystring as SetToStr( EXISTING [Product].[Product Subcategory].Members)\n"
+        + "  select { measures.subcategorystring } on 0\n"
+        + "  from [Sales]\n"
+        + "  where {[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]} ",
+      "Axis #0:\n"
+        + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]}\n"
+        + "Axis #1:\n"
+        + "{[Measures].[subcategorystring]}\n"
+        + "Row #0: {[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer], [Product].[Drink].[Alcoholic "
+        + "Beverages].[Beer and Wine].[Wine]}\n" );
+
+    assertQueryReturns(
+      "with MEMBER [Measures].[*CALCULATED_MEASURE_1] AS 'SetToStr( EXISTING [Product].[Product Category].Members )'\n"
+        + " SELECT {[Measures].[*CALCULATED_MEASURE_1]} ON COLUMNS\n"
+        + " FROM [Sales]\n"
+        + " WHERE {[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer], [Product].[Drink].[Alcoholic "
+        + "Beverages].[Beer and Wine].[Wine], [Product].[Food].[Eggs].[Eggs] } ",
+      "Axis #0:\n"
+        + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]}\n"
+        + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine]}\n"
+        + "{[Product].[Food].[Eggs].[Eggs]}\n"
+        + "Axis #1:\n"
+        + "{[Measures].[*CALCULATED_MEASURE_1]}\n"
+        + "Row #0: {[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Product].[Food].[Eggs].[Eggs]}\n" );
   }
 
   public void testExistingAggSet() {
