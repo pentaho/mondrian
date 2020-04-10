@@ -145,9 +145,13 @@ public class TestMember implements Member {
         throw new UnsupportedOperationException();
     }
 
-    public String getUniqueName() {
-        throw new UnsupportedOperationException();
-    }
+  @Override public boolean isOnSameHierarchyChain( Member otherMember ) {
+    throw new UnsupportedOperationException();
+  }
+
+  public String getUniqueName() {
+    throw new UnsupportedOperationException();
+  }
 
     public String getName() {
         throw new UnsupportedOperationException();
