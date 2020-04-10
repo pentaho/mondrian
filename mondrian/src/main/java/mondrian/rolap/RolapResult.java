@@ -361,28 +361,29 @@ public class RolapResult extends ResultBase {
                         query.getSlicerAxis().getSet(),
                         cacheDescriptor);
 
-                    // replace the slicer set with a placeholder to avoid
-                    // interaction between the aggregate calc we just created
-                    // and any calculated members that might be present in
-                    // the slicer.
-                    // Arbitrarily picks the first dim of the first tuple
-                    // to use as placeholder.
-                    if (tupleList.get(0).size() > 1) {
-                        for (int i = 1; i < tupleList.get(0).size(); i++) {
-                            Member placeholder = setPlaceholderSlicerAxis(
-                                (RolapMember)tupleList.get(0).get(i),
-                                calc,
-                                false);
-                            prevSlicerMembers.add(
-                                evaluator.setContext(placeholder));
-                        }
-                    }
+          // replace the slicer set with a placeholder to avoid
+          // interaction between the aggregate calc we just created
+          // and any calculated members that might be present in
+          // the slicer.
+          // Arbitrarily picks the first dim of the first tuple
+          // to use as placeholder.
+          if ( tupleList.get( 0 ).size() > 1 ) {
+            for ( int i = 1; i < tupleList.get( 0 ).size(); i++ ) {
+              Member placeholder = setPlaceholderSlicerAxis(
+                (RolapMember) tupleList.get( 0 ).get( i ),
+                calc,
+                false,
+                tupleList );
+              prevSlicerMembers.add(
+                evaluator.setContext( placeholder ) );
+            }
+          }
 
-                    Member placeholder = setPlaceholderSlicerAxis(
-                        (RolapMember)tupleList.get(0).get(0), calc, true);
-                    evaluator.setContext(placeholder);
-                }
-            } while (phase());
+          Member placeholder = setPlaceholderSlicerAxis(
+            (RolapMember) tupleList.get( 0 ).get( 0 ), calc, true, tupleList );
+          evaluator.setContext( placeholder );
+        }
+      } while ( phase() );
 
             // final slicerEvaluator
             slicerEvaluator = evaluator.push();
@@ -551,28 +552,25 @@ public class RolapResult extends ResultBase {
         }
     }
 
-    /**
-     * Sets slicerAxis to a dummy placeholder RolapAxis containing
-     * a single item TupleList with the null member of hierarchy.
-     * This is used with compound slicer evaluation to avoid the slicer
-     * tuple list from interacting with the aggregate calc which rolls up
-     * the set.  This member will contain the AggregateCalc which rolls
-     * up the set on the slicer.
-     */
-    private Member setPlaceholderSlicerAxis(
-        final RolapMember member, final Calc calc, boolean setAxis)
-    {
-        ValueFormatter formatter;
-        if (member.getDimension().isMeasures()) {
-            formatter = ((RolapMeasure)member).getFormatter();
-        } else {
-            formatter = null;
-        }
+  /**
+   * Sets slicerAxis to a dummy placeholder RolapAxis containing a single item TupleList with the null member of
+   * hierarchy. This is used with compound slicer evaluation to avoid the slicer tuple list from interacting with the
+   * aggregate calc which rolls up the set.  This member will contain the AggregateCalc which rolls up the set on the
+   * slicer.
+   */
+  private Member setPlaceholderSlicerAxis(
+    final RolapMember member, final Calc calc, boolean setAxis, TupleList tupleList ) {
+    ValueFormatter formatter;
+    if ( member.getDimension().isMeasures() ) {
+      formatter = ( (RolapMeasure) member ).getFormatter();
+    } else {
+      formatter = null;
+    }
 
-        CompoundSlicerRolapMember placeholderMember =
-            new CompoundSlicerRolapMember(
-                (RolapMember)member.getHierarchy().getNullMember(),
-                calc, formatter);
+    CompoundSlicerRolapMember placeholderMember =
+      new CompoundSlicerRolapMember(
+        (RolapMember) member.getHierarchy().getNullMember(),
+        calc, formatter, tupleList );
 
 
         placeholderMember.setProperty(
@@ -2247,26 +2245,24 @@ public class RolapResult extends ResultBase {
         return list;
     }
 
-    /**
-     * Member which holds the AggregateCalc used when evaluating
-     * a compound slicer.  This is used to better handle some cases
-     * where calculated members elsewhere in the query can override
-     * the context of the slicer members.
-     * See MONDRIAN-1226.
-     */
-    public class CompoundSlicerRolapMember extends DelegatingRolapMember
-    implements RolapMeasure
-    {
-        private final Calc calc;
-        private final ValueFormatter valueFormatter;
+  /**
+   * Member which holds the AggregateCalc used when evaluating a compound slicer.  This is used to better handle some
+   * cases where calculated members elsewhere in the query can override the context of the slicer members. See
+   * MONDRIAN-1226.
+   */
+  public class CompoundSlicerRolapMember extends DelegatingRolapMember
+    implements RolapMeasure {
+    private final Calc calc;
+    private final ValueFormatter valueFormatter;
+    private final TupleList tupleList;
 
-        public CompoundSlicerRolapMember(
-            RolapMember placeholderMember, Calc calc, ValueFormatter formatter)
-        {
-            super(placeholderMember);
-            this.calc = calc;
-            valueFormatter = formatter;
-        }
+    public CompoundSlicerRolapMember(
+      RolapMember placeholderMember, Calc calc, ValueFormatter formatter, TupleList tupleList ) {
+      super( placeholderMember );
+      this.calc = calc;
+      valueFormatter = formatter;
+      this.tupleList = tupleList;
+    }
 
         @Override
         public boolean isEvaluated() {
@@ -2288,10 +2284,38 @@ public class RolapResult extends ResultBase {
             return 0;
         }
 
-        public ValueFormatter getFormatter() {
-            return valueFormatter;
-        }
+    @Override
+    public boolean isOnSameHierarchyChain( Member otherMember ) {
+      return isOnSameHierarchyChainInternal( (MemberBase) otherMember );
     }
+
+    @Override
+    public boolean isOnSameHierarchyChainInternal( MemberBase member2 ) {
+      // Stores the index of the corresponding member in each tuple
+      int index = -1;
+      for ( List<mondrian.olap.Member> subList : tupleList ) {
+        if ( index == -1 ) {
+          for ( int i = 0; i < subList.size(); i++ ) {
+            if ( member2.getHierarchy().equals( subList.get( i ).getHierarchy() ) ) {
+              index = i;
+            }
+            break;
+          }
+          if ( index == -1 ) {
+            return false; // member2's hierarchy not present in tuple
+          }
+        }
+        if ( member2.isOnSameHierarchyChainInternal( (MemberBase) subList.get( index ) ) ) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    public ValueFormatter getFormatter() {
+      return valueFormatter;
+    }
+  }
 }
 
 // End RolapResult.java

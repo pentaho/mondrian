@@ -10,6 +10,7 @@
 */
 package mondrian.olap;
 
+import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
 import mondrian.spi.MemberFormatter;
 import mondrian.util.Bug;
@@ -285,9 +286,17 @@ public abstract class MemberBase
         return false;
     }
 
-    public boolean isParentChildLeaf() {
-        return false;
-    }
+  public boolean isParentChildLeaf() {
+    return false;
+  }
+
+  public boolean isOnSameHierarchyChain( Member otherMember ) {
+    return ( (MemberBase) otherMember).isOnSameHierarchyChainInternal( this );
+  }
+
+  public boolean isOnSameHierarchyChainInternal( MemberBase otherMember ) {
+    return FunUtil.isAncestorOf( otherMember, this, false ) || FunUtil.isAncestorOf( this, otherMember, false );
+  }
 }
 
 // End MemberBase.java
