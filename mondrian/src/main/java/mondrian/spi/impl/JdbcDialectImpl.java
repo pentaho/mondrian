@@ -1103,7 +1103,11 @@ public class JdbcDialectImpl implements Dialect {
         } else if (upperProductName.equals("MYSQL (INFOBRIGHT)")) {
             return DatabaseProduct.INFOBRIGHT;
         } else if (upperProductName.equals("MYSQL")) {
-            return DatabaseProduct.MYSQL;
+            if (productVersion.toUpperCase().contains(DatabaseProduct.MARIADB.name())) {
+                return DatabaseProduct.MARIADB;
+            } else {
+                return DatabaseProduct.MYSQL;
+            }
         } else if (upperProductName.equals("MONETDB")) {
             return DatabaseProduct.MONETDB;
         } else if (upperProductName.equals("VERTICA")
