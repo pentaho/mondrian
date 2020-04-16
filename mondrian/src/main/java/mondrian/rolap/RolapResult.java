@@ -52,9 +52,9 @@ import mondrian.olap.SchemaReader;
 import mondrian.olap.Util;
 import mondrian.olap.fun.AbstractAggregateFunDef;
 import mondrian.olap.fun.AggregateFunDef;
-import mondrian.olap.fun.FunUtil;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
+import mondrian.olap.fun.sort.Sorter;
 import mondrian.olap.type.ScalarType;
 import mondrian.olap.type.SetType;
 import mondrian.resource.MondrianResource;
@@ -2243,7 +2243,7 @@ public class RolapResult extends ResultBase {
     // if there are unique members on both axes and no order function,
     // sort the list to ensure default order
     if ( halfWay > 0 && halfWay < list.size() && !ordered ) {
-      list = FunUtil.hierarchizeTupleList( list, false );
+      list = Sorter.hierarchizeTupleList( list, false );
     }
 
     return list;

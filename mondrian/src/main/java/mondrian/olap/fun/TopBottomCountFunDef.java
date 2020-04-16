@@ -29,9 +29,12 @@ import mondrian.olap.Hierarchy;
 import mondrian.olap.Member;
 import mondrian.olap.NativeEvaluator;
 import mondrian.olap.SchemaReader;
+import mondrian.olap.fun.sort.Sorter;
 
 import java.util.AbstractList;
 import java.util.List;
+
+import static mondrian.olap.fun.sort.Sorter.partiallySortTuples;
 
 /**
  * Definition of the <code>TopCount</code> and <code>BottomCount</code> MDX builtin functions.
@@ -67,6 +70,7 @@ class TopBottomCountFunDef extends FunDefBase {
   public TopBottomCountFunDef( FunDef dummyFunDef, final boolean top ) {
     super( dummyFunDef );
     this.top = top;
+
   }
 
   public Calc compileCall( final ResolvedFunCall call, ExpCompiler compiler ) {
@@ -154,7 +158,7 @@ class TopBottomCountFunDef extends FunDefBase {
           switch ( list.getArity() ) {
             case 1:
               final List<Member> members =
-                partiallySortMembers(
+                Sorter.partiallySortMembers(
                   evaluator.push(),
                   list.slice( 0 ),
                   orderCalc, n, top );
