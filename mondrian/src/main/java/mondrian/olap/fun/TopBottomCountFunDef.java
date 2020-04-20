@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2020 Hitachi Vantara and others
 // All Rights Reserved.
 */
 
@@ -101,8 +101,10 @@ class TopBottomCountFunDef extends FunDefBase {
                     // REVIEW: Why require "instanceof AbstractList"?
                     if (list instanceof AbstractList && list.size() <= n) {
                         return list;
-                    } else {
+                    } else if (top) {
                         return list.subList(0, n);
+                    } else {
+                        return list.subList(list.size() - n, list.size());
                     }
                 }
 
