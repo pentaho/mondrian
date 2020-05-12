@@ -12,8 +12,6 @@ mvn -DrunITs install
 ```
 Skip the integration tests by omitting `-DrunITs`
 
-The embedded mysql server does not work on Windows.  If you are running on Windows you will need to configure foodmart as explained in the next section.
-
 #### Run Isolate Integration Test
 ```
 mvn verify -DrunITs -Dit.test=NonEmptyTest.java -DfailIfNoTests=false

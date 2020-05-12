@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2020 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.rolap.aggmatcher;
@@ -36,7 +36,7 @@ public class SpeciesNonCollapsedAggTest extends AggTableTestCase {
         + "    </Hierarchy>\n"
         + "  </Dimension>\n"
         + "  <Cube name='Test' defaultMeasure='Population'>\n"
-        + "    <Table name='SPECIES_MART'>\n"
+        + "    <Table name='species_mart'>\n" // See MONDRIAN-2237 - Table name needs to be lower case for embedded Windows MySQL integration testing
         + "      <AggName name='AGG_SPECIES_MART'>\n"
         + "        <AggFactCount column='FACT_COUNT' />\n"
         + "        <AggMeasure name='Measures.[Population]' column='POPULATION' />\n"
