@@ -24,7 +24,7 @@
 100,120,123,s123
 200,230,231,s231
 300,340,345,s345
-## TableName: SPECIES_MART
+## TableName: species_mart
 ## ColumnNames: SPECIES_ID,POPULATION
 ## ColumnTypes: INTEGER,INTEGER
 ## NosOfRows: 5
