@@ -488,7 +488,7 @@ public class SqlStatement {
      */
     public ResultSet getWrappedResultSet() {
         return (ResultSet) Proxy.newProxyInstance(
-            null,
+            ResultSet.class.getClassLoader(),
             new Class<?>[] {ResultSet.class},
             new MyDelegatingInvocationHandler(this));
     }
