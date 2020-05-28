@@ -240,9 +240,9 @@ public class JdbcMetaData {
         try {
             try {
                 rs = md.getSchemas(db.catalogName, null);
-            } catch ( SQLException e ) {
+            } catch ( SQLException | AbstractMethodError e ) {
                 LOGGER.debug( "Error retrieving schemas", e );
-                //teradata does not support passing a catalogName
+                //teradata and jtds do not support passing a catalogName
                 rs = md.getSchemas();
             }
             while (rs.next()) {
