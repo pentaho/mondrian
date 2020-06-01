@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2020 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.server;
@@ -59,6 +59,10 @@ public class Locus {
 
     public static Locus peek() {
         return THREAD_LOCAL.get().peek();
+    }
+    
+    public static boolean isEmpty() {
+      return THREAD_LOCAL.get().isEmpty();
     }
 
     public static <T> T execute(
