@@ -184,6 +184,7 @@ public class SegmentBuilder {
         Aggregator rollupAggregator,
         Datatype datatype)
     {
+        long startTime = System.currentTimeMillis(); 
         class AxisInfo {
             SegmentColumn column;
             SortedSet<Comparable> requestedValues;
@@ -193,6 +194,7 @@ public class SegmentBuilder {
             int src;
             boolean lostPredicate;
         }
+        
         assert allHeadersHaveSameDimensionality(map.keySet());
 
         // store the map values in a list to assure the first header
@@ -298,14 +300,15 @@ public class SegmentBuilder {
         // a stripe of values from the and add them up into a single cell.
         final Map<CellKey, List<Object>> cellValues =
             new HashMap<CellKey, List<Object>>();
-        List<List<Comparable>> addedIntersections =
-            new ArrayList<List<Comparable>>();
+        TreeSet<ColumnValues> addedIntersections =
+            new TreeSet <ColumnValues>();
 
         for (Map.Entry<SegmentHeader, SegmentBody> entry : map.entrySet()) {
             final int[] pos = new int[axes.size()];
             final Comparable[][] valueArrays =
                 new Comparable[firstHeaderConstrainedColumns.size()][];
             final SegmentBody body = entry.getValue();
+            ArrayList<List<Comparable>> axisValueSetsAsArrays = null;
 
             // Copy source value sets into arrays. For axes that are being
             // projected away, store null.
@@ -354,13 +357,26 @@ public class SegmentBuilder {
                 if (!cellValues.containsKey(ck)) {
                     cellValues.put(ck, new ArrayList<Object>());
                 }
-                List<Comparable> colValues =  getColumnValsAtCellKey(
-                    body, vEntry.getKey());
-                if (!addedIntersections.contains(colValues)) {
-                    // only add the cell value if we haven't already.
-                    // there is a potential double add if segments overlap
-                    cellValues.get(ck).add(vEntry.getValue());
-                    addedIntersections.add(colValues);
+                if ( map.size() == 1 ) {
+                  // No de-duping needed when rolling up only 1 segment
+                  cellValues.get(ck).add(vEntry.getValue());
+                } else {
+                  if ( axisValueSetsAsArrays == null ) {
+                    // Cache segment axis values as lists for fast lookup
+                    axisValueSetsAsArrays = new ArrayList<List<Comparable>>();
+                    for ( int i = 0; i < body.getAxisValueSets().length; i++ ) {
+                      List<Comparable> columnVals = new ArrayList<Comparable>();
+                      columnVals.addAll( body.getAxisValueSets()[i] );
+                      axisValueSetsAsArrays.add( columnVals );
+                    }
+                  }
+                  ColumnValues colValues = new ColumnValues(body, vEntry.getKey(), axisValueSetsAsArrays);
+                  if (!addedIntersections.contains(colValues)) {
+                      // only add the cell value if we haven't already.
+                      // there is a potential double add if segments overlap
+                      cellValues.get(ck).add(vEntry.getValue());
+                      addedIntersections.add(colValues);
+                  }
                 }
             }
         }
@@ -515,64 +531,50 @@ public class SegmentBuilder {
                 Collections.<SegmentColumn>emptyList());
         if (LOGGER.isDebugEnabled()) {
             StringBuilder builder = new StringBuilder();
-            builder.append("Rolling up segments with parameters: \n");
+            builder.append("SegmentBuilder.rollup: done rolling up segments with parameters: \n");
             builder.append("keepColumns=" + keepColumns + "\n");
             builder.append("aggregator=" + rollupAggregator + "\n");
             builder.append("datatype=" + datatype + "\n");
             for (Map.Entry<SegmentHeader, SegmentBody > segment : segments) {
                 builder.append(segment.getKey() + "\n");
             }
-            builder.append("AxisInfos constructed:");
-            for (AxisInfo axis : axes) {
-                SortedSet<Comparable> colVals = axis.column.getValues();
-                builder.append(
-                    String.format(
-                        "column.columnExpression=%s\n"
-                        + "column.valueCount=%s\n"
-                        + "column.values=%s\n"
-                        + "requestedValues=%s\n"
-                        + "valueSet=%s\n"
-                        + "values=%s\n"
-                        + "hasNull=%b\n"
-                        + "src=%d\n"
-                        + "lostPredicate=%b\n",
-                        axis.column.columnExpression,
-                        axis.column.getValueCount(),
-                        Arrays.toString(
-                            colVals == null ? null
-                            : colVals.toArray()),
-                        axis.requestedValues,
-                        axis.valueSet,
-                        Arrays.asList(axis.values),
-                        axis.hasNull,
-                        axis.src,
-                        axis.lostPredicate));
+            if (LOGGER.isTraceEnabled()) {
+              builder.append("AxisInfos constructed:");
+              for (AxisInfo axis : axes) {
+                  SortedSet<Comparable> colVals = axis.column.getValues();
+                  builder.append(
+                      String.format(
+                          "column.columnExpression=%s\n"
+                          + "column.valueCount=%s\n"
+                          + "column.values=%s\n"
+                          + "requestedValues=%s\n"
+                          + "valueSet=%s\n"
+                          + "values=%s\n"
+                          + "hasNull=%b\n"
+                          + "src=%d\n"
+                          + "lostPredicate=%b\n",
+                          axis.column.columnExpression,
+                          axis.column.getValueCount(),
+                          Arrays.toString(
+                              colVals == null ? null
+                              : colVals.toArray()),
+                          axis.requestedValues,
+                          axis.valueSet,
+                          Arrays.asList(axis.values),
+                          axis.hasNull,
+                          axis.src,
+                          axis.lostPredicate));
+              }
             }
             builder.append("Resulted in Segment:  \n");
             builder.append(header);
-            builder.append(body.toString());
+            if (LOGGER.isTraceEnabled()) {
+              builder.append(body.toString());
+            }
+            builder.append(", " + (System.currentTimeMillis() - startTime) + " ms \n");
             LOGGER.debug(builder.toString());
         }
         return Pair.of(header, body);
-    }
-
-    private static List<Comparable> getColumnValsAtCellKey(
-        SegmentBody body, CellKey cellKey)
-    {
-        List<Comparable> columnValues = new ArrayList<Comparable>();
-        for (int i = 0; i < body.getAxisValueSets().length; i++) {
-            List<Comparable> columnVals = new ArrayList<Comparable>();
-            columnVals.addAll(body.getAxisValueSets()[i]);
-            int valCoord = body.getNullAxisFlags()[i]
-                ? cellKey.getAxis(i) - 1
-                : cellKey.getAxis(i);
-            if (valCoord >= 0) {
-                columnValues.add(columnVals.get(valCoord));
-            } else {
-                columnValues.add(null);
-            }
-        }
-        return columnValues;
     }
 
     private static boolean allHeadersHaveSameDimensionality(
@@ -881,6 +883,75 @@ public class SegmentBuilder {
             return addData(segment, body);
         }
     }
+    
+    /**
+     * Converts a segment's CellKey into axis values
+     * so that they can be compared across segments.    
+     * 
+     * Ex. (0, 2, 0) to [1997, 21, M]
+     */
+    private static class ColumnValues implements Comparable {
+      
+      List<Comparable> colVals;
+
+      ColumnValues( SegmentBody body, CellKey cellKey, ArrayList<List<Comparable>> axisValues ) {
+        colVals = new ArrayList<Comparable>();
+        for ( int i = 0; i < body.getAxisValueSets().length; i++ ) {
+          int ordinal = cellKey.getAxis( i );
+          if ( ordinal == axisValues.get( i ).size() ) {
+            assert ( body.getNullAxisFlags()[i] );
+            colVals.add( null );
+          } else {
+            colVals.add( axisValues.get( i ).get( ordinal ) );
+          }
+        }
+      }
+
+      @Override
+      public int compareTo( Object o ) {
+        ColumnValues other = (ColumnValues) o;
+        for ( int i = 0; i < colVals.size(); i++ ) {
+          Comparable thisVal = colVals.get( i );
+          Comparable otherVal = other.colVals.get( i );
+          
+          int result = -1;
+          if ( thisVal != null && otherVal != null ) {
+            result = thisVal.compareTo( otherVal );
+          } else if ( thisVal == null && otherVal == null ) {
+              result = 0;
+          } else {
+            if ( thisVal == null ) {
+              result = 1;
+            } else {
+              result = -1;
+            }
+          }          
+          if ( result != 0 ) {
+            return result;
+          }
+        }
+        return 0;
+      }
+
+      @Override
+      public String toString() {
+        return colVals.toString();
+      }
+
+      @Override
+      public int hashCode() {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public boolean equals( Object obj ) {
+        throw new UnsupportedOperationException();
+      }
+      
+      
+    }
+    
+    
 }
 
 // End SegmentBuilder.java
