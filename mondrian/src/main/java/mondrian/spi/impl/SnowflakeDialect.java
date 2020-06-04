@@ -54,25 +54,6 @@ public class SnowflakeDialect extends JdbcDialectImpl {
     return false;
   }
 
-  /**
-   * Requires order by alias, in some cases:
-   *
-   * For example: a select query that lists all the columns used in the ORDER_BY expression will succeed
-   *
-   * <code>SELECT "store_id", "unit_sales" FROM "sales_fact_1997" ORDER BY "store_id" + "unit_sales";</code>
-   *
-   * while a query that only has some of the columns used in the ORDER_BY expression will not:
-   *
-   * <code>SELECT "unit_sales" FROM "sales_fact_1997" ORDER BY "store_id" + "unit_sales";</code>
-   *
-   * @return true,
-   *  in some cases snowflake requires expressions in the ORDER_BY clause to be in aliased in the SELECT clause
-   */
-  @Override
-  public boolean requiresOrderByAlias() {
-    return true;
-  }
-
   @Override
   public boolean allowsRegularExpressionInWhereClause() {
     return true;
