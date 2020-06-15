@@ -32,6 +32,7 @@ esac
 CP="${MONDRIAN_HOME}/lib/*"
 CP="${CP}${PS}${MONDRIAN_HOME}/plugins/*"
 CP="${CP}${PS}${MONDRIAN_HOME}/drivers/*"
+CP="${CP}${PS}${MONDRIAN_HOME}/lib/"
 
 # local directory is ~/.schemaWorkbench
 
