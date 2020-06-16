@@ -10,7 +10,7 @@
   == You must accept the terms of that agreement to use this software.
   ==
   == Copyright (C) 2000-2005 Julian Hyde
-  == Copyright (C) 2005-2019 Hitachi Vantara and others
+  == Copyright (C) 2005-2020 Hitachi Vantara and others
   == All Rights Reserved.
   ==
   == This file contains the text for all messages used by the mondrian
@@ -528,6 +528,10 @@
 
 <exception id="600050" name="IterationLimitExceeded" className="mondrian.olap.ResourceLimitExceededException">
     <text>Number of iterations exceeded limit of {0,number} </text>
+</exception>
+
+<exception id="600060" name="JavaDoubleOverflow" className="java.sql.SQLDataException">
+    <text>Big decimal value in ''{0}'' exceeds double size.</text>
 </exception>
 
 <!-- empty ,invalid Dimension -->
