@@ -4,30 +4,39 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+// Copyright (c) 2002-2020 Hitachi Vantara..  All rights reserved.
 */
 package mondrian.rolap;
 
-import mondrian.olap.*;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
 import mondrian.olap.Util.Functor1;
+import mondrian.resource.MondrianResource;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
-import mondrian.server.monitor.*;
+import mondrian.server.monitor.SqlStatementEndEvent;
+import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.server.monitor.SqlStatementEvent.Purpose;
+import mondrian.server.monitor.SqlStatementExecuteEvent;
+import mondrian.server.monitor.SqlStatementStartEvent;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
-import mondrian.util.*;
+import mondrian.util.Counters;
+import mondrian.util.DelegatingInvocationHandler;
 
+import javax.sql.DataSource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
-
-import java.sql.*;
+import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
-import javax.sql.DataSource;
 
 /**
  * SqlStatement contains a SQL statement and associated resources throughout
@@ -79,9 +88,8 @@ public class SqlStatement {
     private final int resultSetConcurrency;
     private boolean haveSemaphore;
     public int rowCount;
-    private long startTimeNanos;
     private long startTimeMillis;
-    private final List<Accessor> accessors = new ArrayList<Accessor>();
+    private final List<Accessor> accessors = new ArrayList<>();
     private State state = State.FRESH;
     private final long id;
     private Functor1<Void, Statement> callback;
@@ -127,6 +135,7 @@ public class SqlStatement {
      * Executes the current statement, and handles any SQLException.
      */
     public void execute() {
+        long startTimeNanos;
         assert state == State.FRESH : "cannot re-execute";
         state = State.ACTIVE;
         Counters.SQL_STATEMENT_EXECUTE_COUNT.incrementAndGet();
@@ -370,6 +379,8 @@ public class SqlStatement {
         return runtimeException;
     }
 
+    // warning suppressed because breaking this method up would reduce readability
+    @SuppressWarnings( "squid:S3776" )
     private Accessor createAccessor(int column, Type type) {
         final int columnPlusOne = column + 1;
         switch (type) {
@@ -415,6 +426,23 @@ public class SqlStatement {
                     return val;
                 }
             };
+        case DECIMAL:
+            // this type is only present to work around a defect in the Snowflake jdbc driver.
+            // there is currently no plan to support the DECIMAL/BigDecimal type internally
+            return new Accessor() {
+                public Object get() throws SQLException {
+                    final BigDecimal decimal = resultSet.getBigDecimal(columnPlusOne);
+                    if (decimal == null && resultSet.wasNull()) {
+                        return null;
+                    }
+                    final double val = resultSet.getBigDecimal(columnPlusOne).doubleValue();
+                    if (val == Double.NEGATIVE_INFINITY || val == Double.POSITIVE_INFINITY) {
+                        throw MondrianResource.instance().JavaDoubleOverflow
+                          .ex(resultSet.getMetaData().getColumnName(columnPlusOne));
+                    }
+                    return val;
+                }
+            };
         default:
             throw Util.unexpected(type);
         }
@@ -424,7 +452,7 @@ public class SqlStatement {
         final ResultSetMetaData metaData = resultSet.getMetaData();
         final int columnCount = metaData.getColumnCount();
         assert this.types == null || this.types.size() == columnCount;
-        List<Type> types = new ArrayList<Type>();
+        List<Type> typeList = new ArrayList<>();
 
         for (int i = 0; i < columnCount; i++) {
             final Type suggestedType =
@@ -438,14 +466,14 @@ public class SqlStatement {
             Dialect dialect = getDialect(schema);
 
             if (suggestedType != null) {
-                types.add(suggestedType);
+                typeList.add(suggestedType);
             } else if (dialect != null) {
-                types.add(dialect.getType(metaData, i));
+                typeList.add(dialect.getType(metaData, i));
             } else {
-                types.add(Type.OBJECT);
+                typeList.add(Type.OBJECT);
             }
         }
-        return types;
+        return typeList;
     }
 
     /**
@@ -472,7 +500,7 @@ public class SqlStatement {
         return DialectManager.createDialect(dataSource, jdbcConnection);
     }
 
-    public List<Accessor> getAccessors() throws SQLException {
+    public List<Accessor> getAccessors() {
         return accessors;
     }
 
@@ -516,13 +544,17 @@ public class SqlStatement {
      * of this column: the default is {@link java.sql.ResultSet#getObject(int)},
      * but we'd prefer to use native values {@code getInt} and {@code getDouble}
      * if possible.
+     * <p>Note that the DECIMAL type was added to provide a workaround for a bug
+     * in the Snowflake JDBC driver.  There is no plan to support it further than
+     * that.</p>
      */
     public enum Type {
         OBJECT,
         DOUBLE,
         INT,
         LONG,
-        STRING;
+        STRING,
+        DECIMAL;
 
         public Object get(ResultSet resultSet, int column) throws SQLException {
             switch (this) {
@@ -536,6 +568,11 @@ public class SqlStatement {
                 return resultSet.getLong(column + 1);
             case DOUBLE:
                 return resultSet.getDouble(column + 1);
+            case DECIMAL:
+                // this lacks the range checking done in the createAccessor method above, but nothing seems
+                // to call this method anyway.
+                BigDecimal decimal = resultSet.getBigDecimal( column + 1 );
+                return decimal == null ? null : decimal.doubleValue();
             default:
                 throw Util.unexpected(this);
             }
@@ -567,6 +604,7 @@ public class SqlStatement {
             this.sqlStatement = sqlStatement;
         }
 
+        @Override
         protected Object getTarget() throws InvocationTargetException {
             final ResultSet resultSet = sqlStatement.getResultSet();
             if (resultSet == null) {
