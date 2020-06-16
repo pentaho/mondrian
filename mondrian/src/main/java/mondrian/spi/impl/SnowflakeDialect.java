@@ -10,12 +10,15 @@ package mondrian.spi.impl;
 
 
 import java.sql.Connection;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import mondrian.olap.Util;
+import mondrian.rolap.SqlStatement;
 import mondrian.spi.DialectUtil;
 
 public class SnowflakeDialect extends JdbcDialectImpl {
@@ -73,6 +76,22 @@ public class SnowflakeDialect extends JdbcDialectImpl {
   @Override
   public boolean allowsRegularExpressionInWhereClause() {
     return true;
+  }
+
+  @Override
+  public SqlStatement.Type getType(
+    ResultSetMetaData metaData, int columnIndex)
+    throws SQLException
+  {
+    final int scale = metaData.getScale(columnIndex + 1);
+    final int columnType = metaData.getColumnType(columnIndex + 1);
+
+    if (columnType == Types.NUMERIC && scale != 0)
+    {
+      logTypeInfo(metaData, columnIndex, SqlStatement.Type.DECIMAL);
+      return SqlStatement.Type.DECIMAL;
+    }
+    return super.getType(metaData, columnIndex);
   }
 
   @Override
