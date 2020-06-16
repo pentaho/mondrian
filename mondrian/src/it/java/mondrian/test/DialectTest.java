@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2019 Hitachi Vantara and others. All rights reserved.
+// Copyright (c) 2002-2020 Hitachi Vantara and others. All rights reserved.
 */
 package mondrian.test;
 
@@ -1567,6 +1567,22 @@ public class DialectTest extends TestCase {
                     .withScale(0)
                     .build(),
                 0) == SqlStatement.Type.OBJECT);
+    }
+
+    public void testSnowflakeTypeMapQuirks() throws SQLException {
+        MockResultSetMetadata mockResultSetMeta = new MockResultSetMetadata();
+        Dialect greenplumDialect =
+          TestContext.getFakeDialect(Dialect.DatabaseProduct.SNOWFLAKE);
+        assertTrue(
+          "Snowflake dialect NUMBER with precision =X, scale != 0"
+            + ", maps to DECIMAL",
+          greenplumDialect.getType(
+            mockResultSetMeta
+              .withColumnType(Types.NUMERIC)
+              .withPrecision(5)
+              .withScale(2)
+              .build(),
+            0) == SqlStatement.Type.DECIMAL);
     }
 
     public void testNetezzaTypeMapQuirks() throws SQLException {
