@@ -5,25 +5,25 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-mondrian-assemblies</artifactId>
-    <version>9.0.0.0-SNAPSHOT</version>
+    <version>9.0.0.4-634</version>
   </parent>
   <artifactId>psw-ce</artifactId>
-  <version>9.0.0.0-SNAPSHOT</version>
+  <version>9.0.0.4-634</version>
   <packaging>pom</packaging>
   <name>Pentaho Schema Workbench - CE</name>
   <description>Mondrian Schema Workbench</description>
   <url>http://mondrian.pentaho.com</url>
   <properties>
     <jlfgr.version>1.0</jlfgr.version>
-    <pentaho-launcher.version>9.0.0.0-SNAPSHOT</pentaho-launcher.version>
+    <pentaho-launcher.version>9.0.0.4-634</pentaho-launcher.version>
     <guava.version>17.0</guava.version>
     <dependency.groovy-all.revision>2.4.8</dependency.groovy-all.revision>
-    <pdi-dataservice-client-plugin.version>9.0.0.0-SNAPSHOT</pdi-dataservice-client-plugin.version>
-    <oss-licenses.version>9.0.0.0-SNAPSHOT</oss-licenses.version>
+    <pdi-dataservice-client-plugin.version>9.0.0.4-634</pdi-dataservice-client-plugin.version>
+    <oss-licenses.version>9.0.0.4-634</oss-licenses.version>
     <dependency.jersey.revision>1.19.1</dependency.jersey.revision>
-    <pdi.version>9.0.0.0-SNAPSHOT</pdi.version>
-    <commons-xul.version>9.0.0.0-SNAPSHOT</commons-xul.version>
-    <mondrian-schemaworkbench-plugins.version>9.0.0.0-SNAPSHOT</mondrian-schemaworkbench-plugins.version>
+    <pdi.version>9.0.0.4-634</pdi.version>
+    <commons-xul.version>9.0.0.4-634</commons-xul.version>
+    <mondrian-schemaworkbench-plugins.version>9.0.0.4-634</mondrian-schemaworkbench-plugins.version>
   </properties>
   <dependencies>
     <dependency>
