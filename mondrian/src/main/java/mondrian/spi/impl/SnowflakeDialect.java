@@ -67,7 +67,7 @@ public class SnowflakeDialect extends JdbcDialectImpl {
     final int scale = metaData.getScale(columnIndex + 1);
     final int columnType = metaData.getColumnType(columnIndex + 1);
 
-    if (columnType == Types.NUMERIC && scale != 0)
+    if ( ( columnType == Types.NUMERIC || columnType == Types.DECIMAL ) && scale != 0)
     {
       logTypeInfo(metaData, columnIndex, SqlStatement.Type.DECIMAL);
       return SqlStatement.Type.DECIMAL;
