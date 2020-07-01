@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2020 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -88,7 +88,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -4448,23 +4447,6 @@ public class Util extends XOMUtil {
             }
             return matcher;
         }
-    }
-
-    public static Map<Hierarchy, Set<Member>> getMembersToHierarchyMap(List<Member> members){
-        Map<Hierarchy, Set<Member>> map =
-                new HashMap<Hierarchy, Set<Member>>();
-        if (members != null) {
-            for (Member member : members) {
-                Hierarchy hierarchy = member.getHierarchy();
-                if (!map.containsKey(hierarchy)) {
-                    map.put(
-                            hierarchy,
-                            new HashSet<>());
-                }
-                map.get(hierarchy).add(member);
-            }
-        }
-        return map;
     }
 
     /**

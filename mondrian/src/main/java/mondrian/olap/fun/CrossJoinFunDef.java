@@ -62,6 +62,7 @@ import org.apache.log4j.Logger;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -823,14 +824,12 @@ public class CrossJoinFunDef extends FunDefBase {
         }
       }
 
-      List<Member> slicerMembers = null;
+      Map<Hierarchy, Set<Member>> mapOfSlicerMembers = new HashMap<Hierarchy, Set<Member>>();
       if ( evaluator instanceof RolapEvaluator ) {
         RolapEvaluator rev = (RolapEvaluator) evaluator;
-        slicerMembers = rev.getSlicerMembers();
+        mapOfSlicerMembers = rev.getSlicerMembersByHierarchy();
       }
-      // Iterate the list of slicer members, grouping them by hierarchy
-      Map<Hierarchy, Set<Member>> mapOfSlicerMembers = Util.getMembersToHierarchyMap( slicerMembers );
-
+      
       // Now we have the non-List-Members, but some of them may not be
       // All Members (default Member need not be the All Member) and
       // for some Hierarchies there may not be an All Member.
@@ -845,11 +844,6 @@ public class CrossJoinFunDef extends FunDefBase {
       boolean isSlicerMember;
       for ( Member evalMember : evalMembers ) {
         em = evalMember;
-
-        isSlicerMember =
-          slicerMembers != null
-            && slicerMembers.contains( em );
-
         if ( em == null ) {
           // Above we might have removed some by setting them
           // to null. These are the CrossJoin axes.
@@ -857,6 +851,14 @@ public class CrossJoinFunDef extends FunDefBase {
         }
         if ( em.isMeasure() ) {
           continue;
+        }
+        
+        isSlicerMember = false;
+        if (mapOfSlicerMembers != null ) {
+          Set<Member> members = mapOfSlicerMembers.get( em.getHierarchy() );
+          if (members != null) {
+            isSlicerMember = members.contains( em );
+          }
         }
 
         //

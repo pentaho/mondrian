@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2020 Hitachi Vantara and others
 // All Rights Reserved.
 //
 // jhyde, 10 August, 2001
@@ -97,6 +97,7 @@ public class RolapEvaluator implements Evaluator {
     protected CompoundPredicateInfo slicerPredicateInfo;
 
     private final List<Member> slicerMembers;
+    private final Map<Hierarchy, Set<Member>> slicerMembersByHierarchy;
 
     // slicer tuples and extra info
     private TupleList slicerTuples;
@@ -162,6 +163,7 @@ public class RolapEvaluator implements Evaluator {
         calculations = parent.calculations.clone();
         calculationCount = parent.calculationCount;
         slicerMembers = new ArrayList<Member>(parent.slicerMembers);
+        slicerMembersByHierarchy = new HashMap<Hierarchy, Set<Member>>(parent.slicerMembersByHierarchy);
         slicerTuples = parent.slicerTuples;
         slicerPredicateInfo = parent.slicerPredicateInfo;
         disjointSlicerTuple = parent.disjointSlicerTuple;
@@ -221,6 +223,7 @@ public class RolapEvaluator implements Evaluator {
         calculations = new RolapCalculation[currentMembers.length];
         calculationCount = 0;
         slicerMembers = new ArrayList<Member>();
+        slicerMembersByHierarchy = new HashMap<Hierarchy, Set<Member>>();
         aggregationLists = null;
 
         commands = new Object[10];
@@ -503,11 +506,15 @@ public class RolapEvaluator implements Evaluator {
      * so that functions using those evaluators can choose to ignore the
      * slicer members. One such function is CrossJoin emptiness check.
      *
-     * @param member a member in the slicer
+     * @param members members in slicer
+     * @param membersByHierarchy members in slicer by hierarchy
      */
-    public final void setSlicerContext(Member member) {
-        setContext(member);
-        slicerMembers.add(member);
+    public final void setSlicerContext(List<Member> members, Map<Hierarchy, Set<Member>> membersByHierarchy) {
+        for (Member member : members) {
+          setContext(member);
+        }
+        slicerMembers.addAll( members );
+        slicerMembersByHierarchy.putAll( membersByHierarchy );
     }
 
     /**
@@ -515,9 +522,13 @@ public class RolapEvaluator implements Evaluator {
      * @return slicerMembers
      */
     public final List<Member> getSlicerMembers() {
-        return slicerMembers;
+      return slicerMembers;
     }
-
+    
+    public final Map<Hierarchy, Set<Member>> getSlicerMembersByHierarchy() {
+        return slicerMembersByHierarchy;
+    }
+    
     /**
      * Sets the slicer tuple object, used later by native evaluation and
      * non-empty crossjoins.
