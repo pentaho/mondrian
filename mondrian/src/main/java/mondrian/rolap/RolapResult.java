@@ -10,6 +10,19 @@
 */
 package mondrian.rolap;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+
 import mondrian.calc.Calc;
 import mondrian.calc.DummyExp;
 import mondrian.calc.IterCalc;
@@ -64,21 +77,8 @@ import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.spi.CellFormatter;
 import mondrian.util.CancellationChecker;
-import mondrian.util.ConcatenableList;
 import mondrian.util.Format;
 import mondrian.util.ObjectPool;
-import org.apache.log4j.Logger;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -305,16 +305,14 @@ public class RolapResult extends ResultBase {
       final RolapEvaluator savedEvaluator = evaluator.push();
 
       if ( !axisMembers.isEmpty() ) {
-        for ( Member m : axisMembers ) {
-          if ( m == null ) {
-            break;
-          }
-          evaluator.setSlicerContext( m );
-          if ( m.isMeasure() ) {
+        evaluator.setSlicerContext( axisMembers.getMembers(), axisMembers.getMembersByHierarchy() );
+        for (Hierarchy h : axisMembers.getMembersByHierarchy().keySet()) {
+          if (h.getDimension().isMeasures()) {
             // A Measure was explicitly declared in the
             // Slicer, don't need to worry about Measures
             // for this query.
             measureMembers.clear();
+            break;
           }
         }
         replaceNonAllMembers( nonAllMembers, axisMembers );
@@ -1538,6 +1536,8 @@ public class RolapResult extends ResultBase {
    */
   private static class AxisMemberList implements Iterable<Member> {
     private final List<Member> members;
+    // Also store members by hierarchy for faster de-duplication and also reuse in RolapEvaluator
+    private final Map<Hierarchy, Set<Member>> membersByHierarchy;
     private final int limit;
     private boolean isSlicer;
     private int totalCellCount;
@@ -1546,7 +1546,8 @@ public class RolapResult extends ResultBase {
 
     AxisMemberList() {
       this.countOnly = false;
-      this.members = new ConcatenableList<Member>();
+      this.members = new ArrayList<Member>();
+      this.membersByHierarchy =  new HashMap<Hierarchy, Set<Member>>();
       this.totalCellCount = 1;
       this.axisCount = 0;
       // Now that the axes are evaluated, make sure that the number of
@@ -1593,6 +1594,7 @@ public class RolapResult extends ResultBase {
 
     void clearMembers() {
       this.members.clear();
+      this.membersByHierarchy.clear();
       this.axisCount = 0;
       this.totalCellCount = 1;
     }
@@ -1632,8 +1634,8 @@ public class RolapResult extends ResultBase {
       this.axisCount++;
       if ( !countOnly ) {
         if ( isSlicer ) {
-          if ( !members.contains( member ) ) {
-            members.add( member );
+          if ( !contains( member ) ) {
+            addMember( member );
           }
         } else {
           if ( member.isNull() ) {
@@ -1646,11 +1648,35 @@ public class RolapResult extends ResultBase {
             return;
           }
           Member topParent = getTopParent( member );
-          if ( !this.members.contains( topParent ) ) {
-            this.members.add( topParent );
+          if ( !contains( topParent ) ) {
+            addMember( topParent );
           }
         }
       }
+    }
+    
+    private boolean contains( Member member ) {
+      if (!membersByHierarchy.containsKey( member.getHierarchy() )) {
+        return false;
+      }
+      return membersByHierarchy.get( member.getHierarchy() ).contains( member );
+    }
+    
+    private void addMember( Member member ) {
+      members.add(member);
+      Hierarchy hierarchy = member.getHierarchy();
+      if ( !membersByHierarchy.containsKey( hierarchy ) ) {
+        membersByHierarchy.put( hierarchy, new HashSet<>() );
+      }
+      membersByHierarchy.get( hierarchy ).add( member );
+    }
+
+    public List<Member> getMembers() {
+      return members;
+    }
+
+    public Map<Hierarchy, Set<Member>> getMembersByHierarchy() {
+      return membersByHierarchy;
     }
   }
 

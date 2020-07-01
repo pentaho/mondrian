@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2019 Hitachi Vantara and others
+// Copyright (C) 2005-2020 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -799,10 +799,9 @@ public class SqlConstraintUtils {
         Member member,
         RolapEvaluator evaluator)
     {
-        for (Member slicerMember : evaluator.getSlicerMembers()) {
-            if (slicerMember.getHierarchy().equals(member.getHierarchy())) {
-                return slicerMember;
-            }
+        Set<Member> slicerMembers = evaluator.getSlicerMembersByHierarchy().get( member.getHierarchy());
+        if (slicerMembers != null && slicerMembers.size() > 0) {
+          return slicerMembers.iterator().next();
         }
         return member;
     }
@@ -959,23 +958,13 @@ public class SqlConstraintUtils {
         Member[] members,
         Evaluator evaluator)
     {
-        List<Member> slicerMembers = null;
+        Map<Hierarchy, Set<Member>> mapOfSlicerMembers = null;
         if (evaluator instanceof RolapEvaluator) {
             // get the slicer members from the evaluator
-            slicerMembers =
-                ((RolapEvaluator)evaluator).getSlicerMembers();
+            mapOfSlicerMembers =
+                ((RolapEvaluator)evaluator).getSlicerMembersByHierarchy();
         }
-        if (slicerMembers != null) {
-            // Iterate the list of slicer members, grouping them by hierarchy
-            Map<Hierarchy, Set<Member>> mapOfSlicerMembers =
-                new HashMap<Hierarchy, Set<Member>>();
-            for (Member slicerMember : slicerMembers) {
-                Hierarchy hierarchy = slicerMember.getHierarchy();
-                if (!mapOfSlicerMembers.containsKey(hierarchy)) {
-                    mapOfSlicerMembers.put(hierarchy, new HashSet<Member>());
-                }
-                mapOfSlicerMembers.get(hierarchy).add(slicerMember);
-            }
+        if (mapOfSlicerMembers != null) {
             List<Member> listOfMembers = new ArrayList<Member>();
             // Iterate the given list of members, removing any whose hierarchy
             // has multiple members on the slicer axis

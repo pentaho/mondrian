@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2019 Hitachi Vantara..  All rights reserved.
+// Copyright (c) 2002-2020 Hitachi Vantara..  All rights reserved.
 */
 package mondrian.olap.fun;
 
@@ -119,9 +119,19 @@ public class HierarchyCurrentMemberFunDef extends FunDefBase {
         Evaluator evaluator)
     {
         if (evaluator instanceof RolapEvaluator) {
+            StringProperty alertProperty =
+              MondrianProperties.instance()
+                  .CurrentMemberWithCompoundSlicerAlert;
+            String alertValue = alertProperty.get();
+
+            if (alertValue.equalsIgnoreCase(
+                org.apache.log4j.Level.OFF.toString()))
+            {
+                return; // No validation
+            }
+          
             RolapEvaluator rev = (RolapEvaluator) evaluator;
-            Map<Hierarchy, Set<Member>> map =
-                Util.getMembersToHierarchyMap(rev.getSlicerMembers());
+            Map<Hierarchy, Set<Member>> map = rev.getSlicerMembersByHierarchy();
             Set<Member> members = map.get(hierarchy);
 
             if (members != null && members.size() > 1) {
@@ -129,11 +139,7 @@ public class HierarchyCurrentMemberFunDef extends FunDefBase {
                     MondrianResource.instance()
                         .CurrentMemberWithCompoundSlicer.ex(
                             hierarchy.getUniqueName());
-                StringProperty alertProperty =
-                    MondrianProperties.instance()
-                        .CurrentMemberWithCompoundSlicerAlert;
-                String alertValue = alertProperty.get();
-
+                
                 if (alertValue.equalsIgnoreCase(
                         org.apache.log4j.Level.WARN.toString()))
                 {
