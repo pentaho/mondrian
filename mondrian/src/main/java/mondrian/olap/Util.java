@@ -10,15 +10,31 @@
 */
 package mondrian.olap;
 
-import mondrian.mdx.*;
+import mondrian.mdx.DimensionExpr;
+import mondrian.mdx.HierarchyExpr;
+import mondrian.mdx.LevelExpr;
+import mondrian.mdx.MemberExpr;
+import mondrian.mdx.NamedSetExpr;
+import mondrian.mdx.ParameterExpr;
+import mondrian.mdx.QueryPrintWriter;
+import mondrian.mdx.ResolvedFunCall;
+import mondrian.mdx.UnresolvedFunCall;
 import mondrian.olap.fun.FunUtil;
 import mondrian.olap.fun.Resolver;
+import mondrian.olap.fun.sort.Sorter;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.*;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapCubeDimension;
+import mondrian.rolap.RolapLevel;
+import mondrian.rolap.RolapMember;
+import mondrian.rolap.RolapUtil;
 import mondrian.spi.UserDefinedFunction;
-import mondrian.util.*;
-
+import mondrian.util.ArraySortedSet;
+import mondrian.util.ConcatenableList;
+import mondrian.util.Pair;
+import mondrian.util.UtilCompatible;
+import mondrian.util.UtilCompatibleJdk16;
 import org.apache.commons.collections.keyvalue.AbstractMapEntry;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.vfs2.FileContent;
@@ -28,25 +44,74 @@ import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.VFS;
 import org.apache.commons.vfs2.provider.http.HttpFileObject;
 import org.apache.log4j.Logger;
-
 import org.eigenbase.xom.XOMUtil;
-
 import org.olap4j.impl.Olap4jUtil;
-import org.olap4j.mdx.*;
+import org.olap4j.mdx.IdentifierNode;
+import org.olap4j.mdx.IdentifierSegment;
+import org.olap4j.mdx.KeySegment;
+import org.olap4j.mdx.NameSegment;
+import org.olap4j.mdx.Quoting;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.Serializable;
+import java.io.StringWriter;
 import java.lang.ref.Reference;
-import java.lang.reflect.*;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.*;
 import java.sql.Connection;
-import java.util.*;
-import java.util.concurrent.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.AbstractList;
+import java.util.AbstractMap;
+import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.RandomAccess;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.Timer;
+import java.util.TreeSet;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -760,7 +825,7 @@ public class Util extends XOMUtil {
                 for (int j = i + 1; j < names.size(); j++) {
                     List<Member> childrenList =
                         schemaReader.getMemberChildren(bestChild);
-                    FunUtil.hierarchizeMemberList(childrenList, false);
+                    Sorter.hierarchizeMemberList(childrenList, false);
                     if (matchType == MatchType.AFTER) {
                         bestChild = childrenList.get(0);
                     } else {
