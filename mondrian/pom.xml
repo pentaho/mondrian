@@ -5,10 +5,10 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-mondrian-parent-pom</artifactId>
-    <version>8.3.0.2-479</version>
+    <version>8.3.0.2-479-C243</version>
   </parent>
   <artifactId>mondrian</artifactId>
-  <version>8.3.0.2-C243</version>
+  <version>8.3.0.2-479-C243</version>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>Mondrian OLAP Engine</description>
   <url>http://mondrian.pentaho.com</url>
