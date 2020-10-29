@@ -99,6 +99,14 @@ public class MicrosoftSqlServerDialect extends JdbcDialectImpl {
         buf.append("', 120)");
     }
 
+    // PATCH: Fix for MONDRIAN-990. Prepend N to quoted string to support UTF-8 special characters.
+    public void quoteStringLiteral(
+        StringBuilder buf,
+        String s)
+    {
+        buf.append('N');
+        Util.singleQuoteString(s, buf);
+    }
 }
 
 // End MicrosoftSqlServerDialect.java
