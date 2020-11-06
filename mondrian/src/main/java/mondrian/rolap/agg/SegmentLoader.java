@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2018 Hitachi Vantara and others
+// Copyright (C) 2005-2020 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -147,6 +147,7 @@ public class SegmentLoader {
         private final int cellRequestCount;
         private final List<GroupingSet> groupingSets;
         private final List<StarPredicate> compoundPredicateList;
+        private final MDCUtil mdc = new MDCUtil();
 
         public SegmentLoadCommand(
             Locus locus,
@@ -163,6 +164,7 @@ public class SegmentLoader {
         }
 
         public Map<Segment, SegmentWithData> call() throws Exception {
+            mdc.setContextMap();
             Locus.push(locus);
             try {
                 return segmentLoader.loadImpl(

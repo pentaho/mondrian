@@ -23,6 +23,11 @@ public interface Message {
      * @return Value returned by the {@code visit} method
      */
     <T> T accept(Visitor<T> visitor);
+    
+    /**
+     * Sets the MDC context into the current thread
+     */
+    void setContextMap();
 }
 
 // End Message.java

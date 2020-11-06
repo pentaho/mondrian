@@ -4,12 +4,13 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2020 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.server.monitor;
 
 import mondrian.rolap.RolapUtil;
+import mondrian.util.MDCUtil;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -33,6 +34,8 @@ public abstract class Event implements Message {
      */
     public final String stack;
 
+    private final MDCUtil mdc = new MDCUtil();
+    
     /**
      * Creates an Event.
      *
@@ -54,6 +57,11 @@ public abstract class Event implements Message {
         } else {
             this.stack = null;
         }
+    }
+
+    @Override
+    public void setContextMap() {
+      mdc.setContextMap();
     }
 }
 

@@ -15,8 +15,7 @@ import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.agg.SegmentCacheManager;
 import mondrian.server.monitor.*;
-
-import org.apache.log4j.MDC;
+import mondrian.util.MDCUtil;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -85,8 +84,7 @@ public class Execution {
 
     public static final Execution NONE = new Execution(null, 0);
 
-    private final Map<String, Object> mdc =
-        new HashMap<String, Object>();
+    private final MDCUtil mdc = new MDCUtil();
 
     private final Execution parent;
 
@@ -105,28 +103,12 @@ public class Execution {
     }
 
     /**
-     * Copy the current MDC so it can be used later
-     */
-    public void copyMDC() {
-        this.mdc.clear();
-        final Map<String, Object> currentMdc =
-            MDC.getContext();
-        if (currentMdc != null) {
-            this.mdc.putAll(currentMdc);
-        }
-    }
-
-    /**
      * Set the copied mdc into the current MDC. This should be called
      * any time there will be logging in a thread handled by the
      * RolapResultShepherd where original MDC needs to be retrieved
      */
     public void setContextMap() {
-        final Map<String, Object> old = MDC.getContext();
-        if (old != null) {
-            old.clear();
-            old.putAll(mdc);
-        }
+        mdc.setContextMap();
     }
 
     /**

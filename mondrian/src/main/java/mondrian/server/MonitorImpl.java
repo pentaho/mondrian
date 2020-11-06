@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2017 Hitachi Vantara
+// Copyright (C) 2011-2020 Hitachi Vantara
 // All Rights Reserved.
 */
 package mondrian.server;
@@ -143,6 +143,13 @@ class MonitorImpl
      * but even so, it will be stored and the caller must collect it.
      */
     static abstract class Command implements Message {
+      
+      private final MDCUtil mdc = new MDCUtil();
+      
+      @Override
+      public void setContextMap() {
+        mdc.setContextMap();
+      }
     }
 
     static class StatementsCommand extends Command {
@@ -974,6 +981,7 @@ class MonitorImpl
                         final Pair<Handler, Message> entry = eventQueue.take();
                         final Handler handler = entry.left;
                         final Message message = entry.right;
+                        message.setContextMap(); // Set MDC logging info into this thread
                         final Object result = message.accept(handler);
                         if (message instanceof Command) {
                             responseMap.put((Command) message, result);
