@@ -491,6 +491,7 @@ public class Main extends TestSuite {
       addTest( suite, RolapCubeDimensionTest.class );
       addTest( suite, RolapUtilTest.class );
       addTest( suite, AggSchemaScanTest.class );
+      addTest( suite, MdcUtilTest.class );
 
       // Must be the last test.
       addTest( suite, TerminatorTest.class );

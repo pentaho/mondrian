@@ -36,6 +36,7 @@ import mondrian.spi.SegmentColumn;
 import mondrian.spi.SegmentHeader;
 
 import mondrian.util.BlockingHashMap;
+import mondrian.util.MDCUtil;
 import mondrian.util.Pair;
 import org.apache.log4j.Logger;
 
@@ -655,8 +656,10 @@ public class SegmentCacheManager {
       // Remove the segment from external caches. Use an executor, because
       // it may take some time. We discard the future, because we don't
       // care too much if it fails.
+      final MDCUtil mdc = new MDCUtil();
       final Future<?> future = event.cacheMgr.cacheExecutor.submit(
         () -> {
+          mdc.setContextMap();
           try {
             // Note that the SegmentCache API doesn't require
             // us to verify that the segment exists (by calling
@@ -733,16 +736,30 @@ public class SegmentCacheManager {
   }
 
   interface Message {
+    /**
+     * Sets the MDC context into the current thread
+     */
+    void setContextMap();
+
   }
 
-  public interface Command<T> extends Message, Callable<T> {
-    Locus getLocus();
+  public abstract static class Command<T> implements Message {
+
+    private final MDCUtil mdc = new MDCUtil();
+
+    public abstract Locus getLocus();
+    public abstract T call() throws Exception;
+
+    @Override
+    public void setContextMap() {
+      mdc.setContextMap();
+    }
   }
 
   /**
    * Command to flush a particular region from cache.
    */
-  public static final class FlushCommand implements Command<FlushResult> {
+  public static final class FlushCommand extends Command<FlushResult> {
     private final CellRegion region;
     private final CacheControlImpl cacheControlImpl;
     private final Locus locus;
@@ -820,8 +837,10 @@ public class SegmentCacheManager {
                                     SegmentHeader newHeader ) {
       for ( final SegmentCacheWorker worker
         : cacheMgr.segmentCacheWorkers ) {
+        final MDCUtil mdc = new MDCUtil();
         callableList.add(
           () -> {
+            mdc.setContextMap();
             boolean existed;
             if ( worker.supportsRichIndex() ) {
               final SegmentBody sb = worker.get( header );
@@ -851,8 +870,10 @@ public class SegmentCacheManager {
           "discard segment - it cannot be constrained and maintain consistency:\n"
             + header.getDescription() );
 
+        final MDCUtil mdc = new MDCUtil();
         final Future<?> task = cacheMgr.cacheExecutor.submit(
           () -> {
+            mdc.setContextMap();
             try {
               // Note that the SegmentCache API doesn't
               // require us to verify that the segment
@@ -904,7 +925,7 @@ public class SegmentCacheManager {
   }
 
   private class PrintCacheStateCommand
-    implements SegmentCacheManager.Command<Void> {
+    extends SegmentCacheManager.Command<Void> {
     private final PrintWriter pw;
     private final Locus locus;
     private final CellRegion region;
@@ -954,7 +975,7 @@ public class SegmentCacheManager {
     }
   }
 
-  private static class ShutdownCommand implements Command<String> {
+  private static class ShutdownCommand extends Command<String> {
 
     public String call() throws Exception {
       throw new PleaseShutdownException();
@@ -965,13 +986,21 @@ public class SegmentCacheManager {
     }
   }
 
-  private static interface Event extends Message {
+  private abstract static class Event implements Message {
+
+    private final MDCUtil mdc = new MDCUtil();
+
     /**
      * Dispatches a call to the appropriate {@code visit} method on {@link mondrian.server.monitor.Visitor}.
      *
      * @param visitor Visitor
      */
-    void acceptWithoutResponse( Visitor visitor );
+    abstract void acceptWithoutResponse( Visitor visitor );
+
+    @Override
+    public void setContextMap() {
+      mdc.setContextMap();
+    }
   }
 
   /**
@@ -994,6 +1023,7 @@ public class SegmentCacheManager {
           final Pair<Handler, Message> entry = eventQueue.take();
           final Handler handler = entry.left;
           final Message message = entry.right;
+          message.setContextMap(); // Set MDC logging info into this thread
           try {
             // A message is either a command or an event.
             // A command returns a value that must be read by
@@ -1098,7 +1128,7 @@ public class SegmentCacheManager {
     }
   }
 
-  private static class SegmentLoadSucceededEvent implements Event {
+  private static class SegmentLoadSucceededEvent extends Event {
     private final SegmentHeader header;
     private final SegmentBody body;
     private final long timestamp;
@@ -1137,7 +1167,7 @@ public class SegmentCacheManager {
     }
   }
 
-  private static class SegmentLoadFailedEvent implements Event {
+  private static class SegmentLoadFailedEvent extends Event {
     private final SegmentHeader header;
     private final Throwable throwable;
     private final long timestamp;
@@ -1175,7 +1205,7 @@ public class SegmentCacheManager {
     }
   }
 
-  private static class SegmentRemoveEvent implements Event {
+  private static class SegmentRemoveEvent extends Event {
     private final SegmentHeader header;
     private final long timestamp;
     private final Monitor monitor;
@@ -1213,7 +1243,7 @@ public class SegmentCacheManager {
     }
   }
 
-  private static class ExternalSegmentCreatedEvent implements Event {
+  private static class ExternalSegmentCreatedEvent extends Event {
     private final SegmentCacheManager cacheMgr;
     private final SegmentHeader header;
     private final long timestamp;
@@ -1249,7 +1279,7 @@ public class SegmentCacheManager {
     }
   }
 
-  private static class ExternalSegmentDeletedEvent implements Event {
+  private static class ExternalSegmentDeletedEvent extends Event {
     private final SegmentCacheManager cacheMgr;
     private final SegmentHeader header;
     private final long timestamp;
@@ -1465,7 +1495,7 @@ public class SegmentCacheManager {
    * segment to arrive.</p>
    */
   private class PeekCommand
-    implements SegmentCacheManager.Command<PeekResponse> {
+    extends SegmentCacheManager.Command<PeekResponse> {
     private final CellRequest request;
     private final Locus locus;
 
@@ -1519,9 +1549,11 @@ public class SegmentCacheManager {
             // data from our cache. This must be in sync with the
             // actor thread to maintain consistency.
             indexRegistry.getIndex( star ).remove( header );
+            final MDCUtil mdc = new MDCUtil();
             Util.safeGet(
               cacheExecutor.submit(
                 () -> {
+                  mdc.setContextMap();
                   try {
                     compositeCache.remove( header );
                   } catch ( Exception e ) {

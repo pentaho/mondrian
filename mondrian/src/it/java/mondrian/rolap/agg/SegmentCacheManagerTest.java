@@ -120,7 +120,7 @@ public class SegmentCacheManagerTest extends TestCase {
   }
 
 
-  private class MockCommand implements SegmentCacheManager.Command<Object> {
+  private class MockCommand extends SegmentCacheManager.Command<Object> {
     private final Runnable runnable;
 
     MockCommand( Runnable runnable ) {

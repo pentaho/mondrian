@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2020 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -22,7 +22,6 @@ import mondrian.spi.*;
 import mondrian.util.*;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.MDC;
 
 import java.util.*;
 import java.util.concurrent.Future;
@@ -987,16 +986,14 @@ class BatchLoader {
      * requests. Returns the collection of segments.
      */
     public static class LoadBatchCommand
-        implements SegmentCacheManager.Command<LoadBatchResponse>
+        extends SegmentCacheManager.Command<LoadBatchResponse>
     {
         private final Locus locus;
         private final SegmentCacheManager cacheMgr;
         private final Dialect dialect;
         private final RolapCube cube;
         private final List<CellRequest> cellRequests;
-        private final Map<String, Object> mdc =
-            new HashMap<String, Object>();
-
+        
         public LoadBatchCommand(
             Locus locus,
             SegmentCacheManager cacheMgr,
@@ -1009,18 +1006,9 @@ class BatchLoader {
             this.dialect = dialect;
             this.cube = cube;
             this.cellRequests = cellRequests;
-
-            if (MDC.getContext() != null) {
-                this.mdc.putAll(MDC.getContext());
-            }
         }
 
         public LoadBatchResponse call() {
-            if (MDC.getContext() != null) {
-                final Map<String, Object> old = MDC.getContext();
-                old.clear();
-                old.putAll(mdc);
-            }
             return new BatchLoader(locus, cacheMgr, dialect, cube)
                 .load(cellRequests);
         }
