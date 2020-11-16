@@ -35,7 +35,9 @@ Must be a comma-separated list of class names, and the classes must be
 on the class path.
         </Description>
         <Type>String</Type>
-        <Default>sun.jdbc.odbc.JdbcOdbcDriver,org.hsqldb.jdbcDriver,oracle.jdbc.OracleDriver,com.mysql.jdbc.Driver</Default>
+        <!-- PATCH: Do not hard-code JDBC drivers that should be preloaded -->
+        <!-- <Default>sun.jdbc.odbc.JdbcOdbcDriver,org.hsqldb.jdbcDriver,oracle.jdbc.OracleDriver,com.mysql.jdbc.Driver</Default> -->
+        <Default></Default>
     </PropertyDefinition>
 	<PropertyDefinition>
         <Name>CellBatchSize</Name>
